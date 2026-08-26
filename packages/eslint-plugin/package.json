@@ -1,6 +1,6 @@
 {
   "name": "@linteljs/eslint-plugin",
-  "version": "1.4.6",
+  "version": "1.5.0",
   "description": "Opinionated ESLint rules for TypeScript and React: vertical layout, import hygiene, and modern idioms.",
   "homepage": "https://github.com/Faran52/linteljs#readme",
   "license": "MIT",

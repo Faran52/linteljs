@@ -33,7 +33,7 @@ export const PLUGIN_NAME = '@linteljs';
 // Named as well as default: a `.cjs` flat config reaches this through `require`'s namespace, not `default`.
 export const meta = {
   name: '@linteljs/eslint-plugin',
-  version: '1.4.6',
+  version: '1.5.0',
 };
 
 const plugin = {
