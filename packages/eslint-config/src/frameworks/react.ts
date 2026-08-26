@@ -37,6 +37,7 @@ export const react = (): Layer => {
       // The same plugin object `base` registers, so the two registrations are one.
       plugins: { '@linteljs': lintel },
       rules: {
+        '@linteljs/no-duplicate-jsx-props': 'error',
         '@linteljs/prefer-destructured-props': 'error',
         '@linteljs/sort-hook-dependencies': 'error',
       },

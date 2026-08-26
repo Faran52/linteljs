@@ -10,7 +10,10 @@ import { presetOf } from './presetUtils';
 
 describe('presetOf', () => {
   it('wraps a single flat config in an array', () => {
-    const config = { name: 'probe', rules: {} };
+    const config = {
+      name: 'probe',
+      rules: {},
+    };
 
     expect(presetOf(config, 'probe')).toEqual([config]);
   });
@@ -29,7 +32,10 @@ describe('presetOf', () => {
 
   it('throws on an eslintrc config, which flat config would reject far from here', () => {
     expect(() => {
-      return presetOf({ plugins: ['probe'], rules: {} }, 'probe/legacy');
+      return presetOf({
+        plugins: ['probe'],
+        rules: {},
+      }, 'probe/legacy');
     }).toThrow(/probe\/legacy is an eslintrc config/);
   });
 });
@@ -58,7 +64,10 @@ describe('base: resolver', () => {
     const settings = resolverSettingsOf(base({ resolver: { project: 'packages/*/tsconfig.json' } }));
 
     expect(settings?.['import-x/resolver']).toEqual({
-      typescript: { ...DEFAULTS, project: 'packages/*/tsconfig.json' },
+      typescript: {
+        ...DEFAULTS,
+        project: 'packages/*/tsconfig.json',
+      },
     });
     expect(settings).toHaveProperty('import-x/parsers');
   });
@@ -71,6 +80,11 @@ describe('base: resolver', () => {
     const conditionNames = ['import', 'types'];
     const settings = resolverSettingsOf(base({ resolver: { conditionNames } }));
 
-    expect(settings?.['import-x/resolver']).toEqual({ typescript: { ...DEFAULTS, conditionNames } });
+    expect(settings?.['import-x/resolver']).toEqual({
+      typescript: {
+        ...DEFAULTS,
+        conditionNames,
+      },
+    });
   });
 });

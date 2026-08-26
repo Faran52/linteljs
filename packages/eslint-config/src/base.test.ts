@@ -52,6 +52,27 @@ describe('base: stylistic', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/comma-dangle');
   });
 
+  it('reports two object properties sharing a line', async () => {
+    const code = 'export const value = {\n  a: 1, b: 2,\n};\n';
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/object-property-newline');
+  });
+
+  it('reports a brace left hanging on the first property', async () => {
+    const code = 'export const value = { a: 1,\n  b: 2 };\n';
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/object-curly-newline');
+  });
+
+  // Both are scoped to object literals, so an import's braces stay the four `@linteljs` newline rules' business.
+  it('leaves an import to the newline rules that own it', async () => {
+    const code = "import { alpha, bravo } from 'mod';\n\nexport const value = alpha + bravo;\n";
+    const reported = await ruleIdsFor(base(), code, TS_FILE);
+
+    expect(reported).not.toContain('@stylistic/object-property-newline');
+    expect(reported).not.toContain('@stylistic/object-curly-newline');
+  });
+
   it('reports a single-quoted jsx attribute', async () => {
     const code = "export const Widget = () => {\n  return <div className='x' />;\n};\n";
 
@@ -112,7 +133,10 @@ describe('base: ignores', () => {
     }
     finally {
       spy.mockRestore();
-      await rm(root, { recursive: true, force: true });
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
     }
   });
 });
@@ -205,7 +229,10 @@ describe('base: import-x/no-cycle', () => {
   // Negative control: proves the test above isn't passing for an unrelated reason.
   it('does not report the same cycle under the hand-written settings block it replaces', async () => {
     const handWritten: Layer = [
-      { files: ['**/*.{ts,tsx,mts,cts}'], languageOptions: { parser: tseslint.parser } },
+      {
+        files: ['**/*.{ts,tsx,mts,cts}'],
+        languageOptions: { parser: tseslint.parser },
+      },
       {
         plugins: { 'import-x': importX },
         settings: {

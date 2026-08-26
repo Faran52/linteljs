@@ -24,4 +24,20 @@ describe('solid', () => {
 
     expect(ruleIds).toContain('jsx-a11y/alt-text');
   });
+
+  // Solid JSX carries the same silent last-occurrence-wins defect React does.
+  it('reports a JSX prop named twice on one element', async () => {
+    const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
+    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');
+
+    expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
+  it('stays quiet when a spread sits between two same-named props', async () => {
+    const code = 'export const Chip = (props) => {\n'
+      + '  return <span class="a" {...props} class="b" />;\n};\n';
+    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');
+
+    expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
+  });
 });

@@ -1,3 +1,4 @@
+import lintel from '@linteljs/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import solidPlugin from 'eslint-plugin-solid';
 
@@ -22,6 +23,16 @@ export const solid = (): Layer => {
   return [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SOLID_FILES),
     ...presetOf(jsxA11y.flatConfigs.recommended, 'jsx-a11y/recommended', SOLID_FILES),
+
+    {
+      name: '@linteljs/solid',
+      files: SOLID_FILES,
+      // The same plugin object `base` registers, so the two registrations are one.
+      plugins: { '@linteljs': lintel },
+      // Solid renders JSX, so it carries the same duplicate-prop defect React does. Its other two
+      // lintel rules do not apply: hooks do not exist here and destructured props break reactivity.
+      rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
+    },
   ];
 };
 

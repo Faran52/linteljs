@@ -77,9 +77,17 @@ export const base = (options: BaseOptions = {}): Layer => {
 
   return [
     ...gitignored(),
-    ...(ignores ? [{ name: '@linteljs/base/ignores', ignores }] : []),
+    ...(ignores
+      ? [{
+          name: '@linteljs/base/ignores',
+          ignores,
+        }]
+      : []),
 
-    { ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript')[0], settings: importSettings },
+    {
+      ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript')[0],
+      settings: importSettings,
+    },
 
     // Parse TypeScript here; `typescript()` adds its program.
     {
@@ -120,10 +128,28 @@ export const base = (options: BaseOptions = {}): Layer => {
         // The preset ships `semi: never` and `member-delimiter-style: none` as a matched pair, so
         // overriding only semi would leave statements terminated and interface members not.
         '@stylistic/member-delimiter-style': ['error', {
-          multiline: { delimiter: 'semi', requireLast: true },
-          singleline: { delimiter: 'semi', requireLast: false },
+          multiline: {
+            delimiter: 'semi',
+            requireLast: true,
+          },
+          singleline: {
+            delimiter: 'semi',
+            requireLast: false,
+          },
         }],
         '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+        /**
+         * One property per line, the idiom the four `@linteljs` newline rules already hold imports, exports, unions and
+         * destructuring patterns to. `object-curly-newline` is scoped to `ObjectExpression` and paired with it because
+         * `object-property-newline` alone leaves the braces hanging on the first and last property lines.
+         */
+        '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
+        '@stylistic/object-curly-newline': ['error', {
+          ObjectExpression: {
+            multiline: true,
+            consistent: true,
+          },
+        }],
 
         // `interface-order` sits outside `recommended`; `union-newline` is in it but scoped to `**/*.{ts,tsx,mts,cts}`,
         // which excludes an SFC's `<script lang="ts">`, so this widens rather than restates (vue.test.ts pins it).

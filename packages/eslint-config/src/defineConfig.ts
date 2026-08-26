@@ -30,7 +30,10 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   react: async () => {
     const { react, reactGroup } = await import('./frameworks/react');
 
-    return { layer: react(), group: reactGroup };
+    return {
+      layer: react(),
+      group: reactGroup,
+    };
   },
 
   // Next is the one framework that stacks rather than replaces, so this record holds layer lists, not one each.
@@ -38,31 +41,46 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     const { react } = await import('./frameworks/react');
     const { next, nextGroup } = await import('./frameworks/next');
 
-    return { layer: [...react(), ...next()], group: nextGroup };
+    return {
+      layer: [...react(), ...next()],
+      group: nextGroup,
+    };
   },
 
   vue: async () => {
     const { vue, vueGroup } = await import('./frameworks/vue');
 
-    return { layer: vue(), group: vueGroup };
+    return {
+      layer: vue(),
+      group: vueGroup,
+    };
   },
 
   svelte: async () => {
     const { svelte, svelteGroup } = await import('./frameworks/svelte');
 
-    return { layer: svelte(), group: svelteGroup };
+    return {
+      layer: svelte(),
+      group: svelteGroup,
+    };
   },
 
   solid: async () => {
     const { solid, solidGroup } = await import('./frameworks/solid');
 
-    return { layer: solid(), group: solidGroup };
+    return {
+      layer: solid(),
+      group: solidGroup,
+    };
   },
 
   angular: async () => {
     const { angular, angularGroup } = await import('./frameworks/angular');
 
-    return { layer: angular(), group: angularGroup };
+    return {
+      layer: angular(),
+      group: angularGroup,
+    };
   },
 };
 
@@ -137,7 +155,12 @@ export const defineConfig = async (options: DefineConfigOptions = {}): Promise<L
   }
 
   return [
-    ...base(parts === undefined ? baseOptions : { ...baseOptions, frameworkGroup: parts.group }),
+    ...base(parts === undefined
+      ? baseOptions
+      : {
+          ...baseOptions,
+          frameworkGroup: parts.group,
+        }),
     ...(withTypescript === true ? typescript() : []),
     ...(parts === undefined ? [] : parts.layer),
     ...libraryLayers.flat(),

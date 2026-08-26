@@ -17,7 +17,10 @@ const scopedTo = (configs: Linter.Config[], files?: string[]): Linter.Config[] =
   }
 
   return configs.map((config) => {
-    return { ...config, files: config.files ?? files };
+    return {
+      ...config,
+      files: config.files ?? files,
+    };
   });
 };
 

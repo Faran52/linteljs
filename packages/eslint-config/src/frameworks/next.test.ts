@@ -56,7 +56,10 @@ describe('next', () => {
 
   // `next/image` renders an `img`, so `alt-text` has to know about it or every `<Image>` reads as missing alt text.
   it('tells alt-text about next/image', () => {
-    expect(next()[0]?.rules?.['jsx-a11y/alt-text']).toEqual(['error', { elements: ['img'], img: ['Image'] }]);
+    expect(next()[0]?.rules?.['jsx-a11y/alt-text']).toEqual(['error', {
+      elements: ['img'],
+      img: ['Image'],
+    }]);
   });
 
   // Nothing but Next: what a React project gets, a Next project gets by stacking, not by this layer restating it.

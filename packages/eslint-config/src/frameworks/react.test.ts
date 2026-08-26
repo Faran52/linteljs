@@ -103,4 +103,20 @@ describe('react', () => {
 
     expect(ruleIds).toContain('jsx-a11y/aria-props');
   });
+
+  it('reports a JSX prop named twice on one element', async () => {
+    const code = 'export const Chip = () => {\n  return <span className="a" className="b" />;\n};\n';
+    const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
+  // The spread between the pair is the documented override idiom, not a repeat.
+  it('stays quiet when a spread sits between two same-named props', async () => {
+    const code = 'export const Chip = (props) => {\n'
+      + '  return <span className="default" {...props} className="override" />;\n};\n';
+    const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
+  });
 });

@@ -43,7 +43,10 @@ export const next = (): Layer => {
 
         // `next/image` renders an `img`, so without this every `<Image>` reads as missing alt text. The rule itself is
         // enabled by `react()`, at the severity that layer sets; this adds the mapping and nothing else.
-        'jsx-a11y/alt-text': ['error', { elements: ['img'], img: ['Image'] }],
+        'jsx-a11y/alt-text': ['error', {
+          elements: ['img'],
+          img: ['Image'],
+        }],
       },
     },
   ];

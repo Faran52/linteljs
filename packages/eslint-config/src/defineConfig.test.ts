@@ -88,7 +88,10 @@ describe('defineConfig', () => {
     ['vue', 'Home.vue', 'vue/'],
     ['svelte', 'Page.svelte', 'svelte/'],
   ])('orders %s after typescript, so its component still parses', async (framework, fixture, prefix) => {
-    const config = await defineConfig({ framework: framework === 'vue' ? 'vue' : 'svelte', typescript: true });
+    const config = await defineConfig({
+      framework: framework === 'vue' ? 'vue' : 'svelte',
+      typescript: true,
+    });
     const messages = await messagesForFile(config, join(SFC_FIXTURES, fixture));
 
     expect(messages.filter((message) => {
@@ -130,7 +133,10 @@ describe('defineConfig', () => {
       '',
     ].join('\n');
 
-    const config = await defineConfig({ framework: 'react', libraries: ['tanstack-query'] });
+    const config = await defineConfig({
+      framework: 'react',
+      libraries: ['tanstack-query'],
+    });
 
     await expect(ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts'))
       .resolves.toContain('@tanstack/query/exhaustive-deps');
@@ -138,7 +144,10 @@ describe('defineConfig', () => {
 
   it('composes the tailwind layer through the same door', async () => {
     const code = 'export const Card = () => {\n  return <div className="p-2 p-2">x</div>;\n};\n';
-    const config = await defineConfig({ framework: 'react', libraries: ['tailwind'] });
+    const config = await defineConfig({
+      framework: 'react',
+      libraries: ['tailwind'],
+    });
     // The plugin resolves `tailwindcss` from cwd, pinned here to the package that declares it.
     const pinned = [...config, {
       settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '..') } },
@@ -161,7 +170,10 @@ describe('defineConfig', () => {
   it('composes the html layer on request and not otherwise', async () => {
     const code = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 
-    await expect(ruleIdsFor(await defineConfig({ html: true, typescript: true }), code, 'index.html'))
+    await expect(ruleIdsFor(await defineConfig({
+      html: true,
+      typescript: true,
+    }), code, 'index.html'))
       .resolves.toContain('@html-eslint/require-img-alt');
     await expect(ruleIdsFor(await defineConfig({ typescript: true }), code, 'index.html'))
       .resolves.not.toContain('@html-eslint/require-img-alt');
@@ -175,14 +187,21 @@ describe('defineConfig', () => {
   it('composes the astro layer on request and not otherwise', async () => {
     const page = "---\nconst title = 'Home';\n---\n\n<img src='/a.png' />\n";
 
-    await expect(ruleIdsFor(await defineConfig({ astro: true, typescript: true }), page, 'src/pages/index.astro'))
+    await expect(ruleIdsFor(await defineConfig({
+      astro: true,
+      typescript: true,
+    }), page, 'src/pages/index.astro'))
       .resolves.toContain('astro/jsx-a11y/alt-text');
     await expect(ruleIdsFor(await defineConfig({ typescript: true }), page, 'src/pages/index.astro'))
       .resolves.not.toContain('astro/jsx-a11y/alt-text');
   });
 
   it('composes the astro layer beside a hosted framework rather than instead of one', async () => {
-    const config = await defineConfig({ astro: true, framework: 'solid', typescript: true });
+    const config = await defineConfig({
+      astro: true,
+      framework: 'solid',
+      typescript: true,
+    });
     const rules = config.flatMap((entry) => {
       return Object.keys(entry.rules ?? {});
     });

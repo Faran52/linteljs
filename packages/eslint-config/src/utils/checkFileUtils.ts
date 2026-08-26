@@ -32,5 +32,10 @@ export const buildNaming = (naming?: NamingMap, folderNaming?: NamingMap): Linte
 
   // Registered here as well as in `@linteljs/base`: the folder glob reaches `.css`/`.html`, which the
   // script blocks never match; the same imported plugin object twice is not a redefinition.
-  return [{ name: '@linteljs/base/naming', files, plugins: { 'check-file': checkFile }, rules }];
+  return [{
+    name: '@linteljs/base/naming',
+    files,
+    plugins: { 'check-file': checkFile },
+    rules,
+  }];
 };

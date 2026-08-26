@@ -77,7 +77,10 @@ describe('buildGroups', () => {
   });
 
   it('sorts the unnamed aliases so the group is stable between runs', () => {
-    const groups = buildGroups({ '@widgets/*': './src/widgets/*', '@assets/*': './src/assets/*' });
+    const groups = buildGroups({
+      '@widgets/*': './src/widgets/*',
+      '@assets/*': './src/assets/*',
+    });
 
     expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(['^@assets(?:/|$)', '^@widgets(?:/|$)']);
   });
@@ -90,7 +93,10 @@ describe('buildGroups', () => {
    * project, not imagined here.
    */
   it('matches a bare alias as well as a deep one', () => {
-    const groups = buildGroups({ '@engine': './src/engine', '@utils/*': './src/utils/*' });
+    const groups = buildGroups({
+      '@engine': './src/engine',
+      '@utils/*': './src/utils/*',
+    });
     const engine = new RegExp(groups.flat().find((pattern) => {
       return pattern.startsWith('^@engine');
     }) ?? '');
@@ -118,7 +124,10 @@ describe('buildGroups', () => {
   // `$` opens a regex anchor, so an unescaped SvelteKit `$lib` produces `^$lib/`, matching
   // nothing, and every `$lib` import falls through to `^@?\w` and sorts with node_modules.
   it('escapes an alias whose name is regex syntax', () => {
-    const patterns = buildGroups({ '$lib': './src/lib', '$lib/*': './src/lib/*' }).flat();
+    const patterns = buildGroups({
+      '$lib': './src/lib',
+      '$lib/*': './src/lib/*',
+    }).flat();
 
     expect(patterns).toContain(String.raw`^\$lib(?:/|$)`);
     expect(patterns).not.toContain('^$lib(?:/|$)');

@@ -10,7 +10,10 @@ const TEST_FILES = [`**/*.{test,spec}.{${SCRIPT_EXTENSIONS}}`];
 // Scoped to the test glob rather than a `__tests__` folder: colocated tests are the standard.
 export const vitest = (): Layer => {
   return [
-    { ...presetOf(vitestPlugin.configs.recommended, 'vitest/recommended')[0], files: TEST_FILES },
+    {
+      ...presetOf(vitestPlugin.configs.recommended, 'vitest/recommended')[0],
+      files: TEST_FILES,
+    },
     {
       name: '@linteljs/vitest',
       files: TEST_FILES,
