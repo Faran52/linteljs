@@ -99,11 +99,14 @@ jobs:
 
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
+      # No `registry-url` here, deliberately. It makes setup-node write an .npmrc holding
+      # `_authToken=${NODE_AUTH_TOKEN}`, and trusted publishing sets no such variable, so every pnpm command below
+      # would print `Failed to replace env in config`. The gates need no registry credentials; the publish step
+      # writes that file for itself, immediately before it is used.
       - uses: actions/setup-node@v7
         with:
           node-version: 24.19.0
           cache: pnpm
-          registry-url: https://registry.npmjs.org
 
       - run: pnpm install --frozen-lockfile
 
@@ -118,6 +121,14 @@ jobs:
       - run: pnpm --filter @linteljs/eslint-plugin smoke
       - run: pnpm --filter @linteljs/eslint-config smoke
       - run: pnpm --filter @linteljs/create smoke
+
+      # The registry configuration, written here rather than at the top of the job so the gates above run without an
+      # .npmrc naming a token that does not exist. Same file, same contents, four steps later.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
 
       # No NODE_AUTH_TOKEN. Authentication is npm trusted publishing: pnpm exchanges the workflow's
       # OIDC token for a short-lived registry token, so there is no long-lived secret to steal.

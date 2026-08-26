@@ -16,8 +16,21 @@ import react from './react';
  * ESLint 10. It now registers `@next/eslint-plugin-next` directly, so the tests for all of that went with it. What is
  * left to prove is that the rules a Next project actually had are still the rules it gets.
  */
+/**
+ * `no-html-link-for-pages` is off here and nowhere else. It looks for a `pages` directory relative to the working
+ * directory, and finding none in this repository it writes a paragraph to stderr on every lint below. That is noise
+ * about a directory a test fixture is never going to have, not a finding, and none of these tests is about that rule.
+ */
 const composed = (): ReturnType<typeof base> => {
-  return [...base(), ...react(), ...next()];
+  return [
+    ...base(),
+    ...react(),
+    ...next(),
+    {
+      name: 'test/without-a-pages-directory',
+      rules: { '@next/next/no-html-link-for-pages': 'off' },
+    },
+  ];
 };
 
 describe('next', () => {
