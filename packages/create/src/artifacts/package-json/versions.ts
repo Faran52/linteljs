@@ -11,7 +11,7 @@ import type { PackageManager } from '../../model/answers/answers';
  * back out of the table is an index lookup whose `undefined` arm no answer can reach. One constant, used in both
  * places, keeps this file the only one a bump touches without inventing a dead branch to satisfy the type.
  */
-export const ESLINT_RANGE = '^10.9.0';
+export const ESLINT_RANGE = '^10.9.1';
 
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest: it runs the real Angular compiler over the test graph.
@@ -44,7 +44,7 @@ export const VERSIONS: Record<string, string> = {
   '@tailwindcss/postcss': '^4.3.3',
   '@tailwindcss/vite': '^4.3.3',
   '@tanstack/angular-query-experimental': '^5.101.4',
-  '@tanstack/eslint-plugin-query': '^5.102.2',
+  '@tanstack/eslint-plugin-query': '^5.102.3',
   '@tanstack/react-query': '^5.101.4',
   '@tanstack/solid-query': '^5.101.4',
   // The svelte binding is the one that has moved to 6; the rest of the family is still on 5.
@@ -125,7 +125,7 @@ export const VERSIONS: Record<string, string> = {
 
 // Written into `packageManager`, pinning the manager itself: an exact version, since corepack rejects a range.
 export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
-  pnpm: '11.24.0',
+  pnpm: '12.0.0',
   npm: '12.0.2',
   yarn: '4.18.0',
   bun: '1.3.14',
