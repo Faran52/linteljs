@@ -164,7 +164,7 @@ export const interfaceOrder = createRule('interface-order', {
       // Off by default: the only rule that relocates declarations, and comment placement is a judgement call no rule
       // can make reliably.
       recommended: false,
-      description: 'Enforce that top-level interfaces and type aliases are placed after imports, before runtime code.',
+      description: 'Keep top-level interfaces and type aliases together, after imports and before runtime code.',
     },
     fixable: 'code',
     messages: {

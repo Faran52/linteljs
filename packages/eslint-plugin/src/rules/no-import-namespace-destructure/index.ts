@@ -27,7 +27,7 @@ export const noImportNamespaceDestructure = createRule('no-import-namespace-dest
       language: 'universal',
       recommended: true,
       description:
-        'Disallow destructuring namespace imports. Import only the specific named exports needed.',
+        'Avoid destructuring namespace imports when a named import is enough.',
     },
     messages: {
       noDestructureNamespace:

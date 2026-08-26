@@ -20,7 +20,7 @@ export const destructuringPropertyNewline = createRule('destructuring-property-n
       category: 'layout',
       language: 'universal',
       recommended: true,
-      description: 'Enforce consistent newlines in destructuring patterns. Allows all properties on same line.',
+      description: 'Keep destructuring patterns either compact or fully expanded, never half-split.',
     },
     fixable: 'whitespace',
     messages: {

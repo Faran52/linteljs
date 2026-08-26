@@ -26,7 +26,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
       category: 'layout',
       language: 'universal',
       recommended: true,
-      description: 'Forces every export specifier to be on a new line.',
+      description: 'Put each export specifier on its own line.',
     },
     fixable: 'whitespace',
     messages: {
@@ -60,7 +60,10 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
           const currentToken = mustFind(sourceCode.getFirstToken(specifier));
 
           if (sameLine(sourceCode.getLastToken(previous), currentToken)) {
-            shared.push({ isLast: specifier === last, token: currentToken });
+            shared.push({
+              isLast: specifier === last,
+              token: currentToken,
+            });
           }
         }
 

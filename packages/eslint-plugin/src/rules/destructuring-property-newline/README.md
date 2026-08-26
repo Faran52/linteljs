@@ -1,6 +1,6 @@
 # @linteljs/destructuring-property-newline
 
-Enforce consistent newlines in destructuring patterns. Allows all properties on same line.
+Keep destructuring patterns either compact or fully expanded, never half-split.
 
 - Category: `layout`
 - Applies to: JavaScript and TypeScript
@@ -15,11 +15,9 @@ Object patterns and array patterns are both checked.
 ## Examples of incorrect code for this rule
 
 ```ts
-// incorrect: bravo and charlie share a line, alpha has one to itself
 const { alpha,
   bravo, charlie } = source;
 
-// incorrect: the same half-wrapped shape in an array pattern
 const [first,
   second, third] = source;
 ```
@@ -27,27 +25,19 @@ const [first,
 ## Examples of correct code for this rule
 
 ```ts
-// correct: all on one line
 const { alpha, bravo, charlie } = source;
 
-// correct: one per line
 const {
   alpha,
   bravo,
   charlie
 } = source;
 
-// correct: one element per line, array pattern
 const [
   first,
   second,
   third
 ] = source;
-
-// correct: a single property has no pair to be inconsistent with
-const {
-  alpha
-} = source;
 ```
 
 ## What it declines to fix

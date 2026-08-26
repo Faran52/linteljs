@@ -118,14 +118,26 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
 jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
   valid: [
     // Raising the threshold keeps a wider pattern inline.
-    { code: 'const { alpha, bravo, charlie } = source;', options: [{ maxProperties: 3 }] },
-    { code: 'const { alpha, bravo, charlie, delta } = source;', options: [{ maxProperties: 4 }] },
+    {
+      code: 'const { alpha, bravo, charlie } = source;',
+      options: [{ maxProperties: 3 }],
+    },
+    {
+      code: 'const { alpha, bravo, charlie, delta } = source;',
+      options: [{ maxProperties: 4 }],
+    },
 
     // Raising the rest threshold does the same for a pattern carrying a rest.
-    { code: 'const { alpha, bravo, ...rest } = source;', options: [{ maxPropertiesWithRest: 3 }] },
+    {
+      code: 'const { alpha, bravo, ...rest } = source;',
+      options: [{ maxPropertiesWithRest: 3 }],
+    },
 
     // A single property is never split, whatever the threshold says.
-    { code: 'const { alpha } = source;', options: [{ maxProperties: 0 }] },
+    {
+      code: 'const { alpha } = source;',
+      options: [{ maxProperties: 0 }],
+    },
   ],
   invalid: [
     {
@@ -152,7 +164,10 @@ jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
       // A rest element uses its own threshold, not the general one.
       code: 'const { alpha, ...rest } = source;',
       output: 'const {\n  alpha,\n  ...rest\n} = source;',
-      options: [{ maxProperties: 9, maxPropertiesWithRest: 1 }],
+      options: [{
+        maxProperties: 9,
+        maxPropertiesWithRest: 1,
+      }],
       errors: [{ messageId: 'mustSplit' }],
     },
   ],

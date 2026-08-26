@@ -10,11 +10,13 @@ import type { Indents } from '../../utils/layoutUtils.ts';
 // `range`/`loc` are ESTree-optional but always present on a parsed statement; `importKind` is TypeScript-only, unnamed
 // in ESLint's ESTree types.
 export type ImportNode = Extract<RuleNode, { type: 'ImportDeclaration' }> & {
-  source: { range: [number, number]; loc: { end: { line: number } } };
+  source: { range: [number, number];
+    loc: { end: { line: number } }; };
   range: [number, number];
   importKind?: string;
   loc: {
-    start: { line: number; column: number };
+    start: { line: number;
+      column: number; };
     end: { line: number };
   };
 };
@@ -28,7 +30,11 @@ interface ClauseParts {
 // Each specifier's own source text, not a reconstruction: `imported.name` drops an inline `type` prefix and is
 // undefined for a string-literal name.
 const partsOf = (sourceCode: SourceCode, node: ImportNode): ClauseParts => {
-  const parts: ClauseParts = { defaultImport: '', namespaceImport: '', namedImports: [] };
+  const parts: ClauseParts = {
+    defaultImport: '',
+    namespaceImport: '',
+    namedImports: [],
+  };
 
   for (const specifier of node.specifiers) {
     const text = sourceCode.getText(specifier);

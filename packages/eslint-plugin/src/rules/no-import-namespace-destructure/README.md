@@ -1,6 +1,6 @@
 # @linteljs/no-import-namespace-destructure
 
-Disallow destructuring namespace imports. Import only the specific named exports needed.
+Avoid destructuring namespace imports when a named import is enough.
 
 - Category: `imports`
 - Applies to: JavaScript and TypeScript

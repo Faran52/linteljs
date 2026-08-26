@@ -12,8 +12,14 @@ export default defineConfig({
    */
   outExtensions: ({ format }) => {
     return format === 'cjs'
-      ? { js: '.js', dts: '.d.ts' }
-      : { js: '.mjs', dts: '.d.mts' };
+      ? {
+          js: '.js',
+          dts: '.d.ts',
+        }
+      : {
+          js: '.mjs',
+          dts: '.d.mts',
+        };
   },
   dts: true,
   clean: true,

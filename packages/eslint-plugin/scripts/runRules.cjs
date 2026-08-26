@@ -41,7 +41,10 @@ EXPECTED.forEach((name) => {
 });
 
 var messages = linter.verify(FIXTURE, {
-  parserOptions: { ecmaVersion: 2018, sourceType: 'module' },
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: 'module',
+  },
   rules: rules,
 });
 

@@ -225,8 +225,16 @@ const configFor = (names) => {
   };
 
   const config = [
-    { ...shared, files: ['**/*.ts', '**/*.tsx'], languageOptions: { parser: tseslint.parser } },
-    { ...shared, files: ['**/*.js', '**/*.cjs'], languageOptions: { parserOptions: JSX_ON } },
+    {
+      ...shared,
+      files: ['**/*.ts', '**/*.tsx'],
+      languageOptions: { parser: tseslint.parser },
+    },
+    {
+      ...shared,
+      files: ['**/*.js', '**/*.cjs'],
+      languageOptions: { parserOptions: JSX_ON },
+    },
   ];
 
   configCache.set(key, config);
@@ -272,7 +280,10 @@ const parse = (source, name) => {
 
   // Flat config reads `.cjs` as `commonjs` and everything else as `module`,
   // which is the only thing the synthetic JavaScript name carries.
-  return espree.parse(source, { ...JS_PARSE, sourceType: name === 'file.cjs' ? 'commonjs' : 'module' });
+  return espree.parse(source, {
+    ...JS_PARSE,
+    sourceType: name === 'file.cjs' ? 'commonjs' : 'module',
+  });
 };
 
 const parseOrNull = (source, name) => {
@@ -497,12 +508,18 @@ const breaks = (source, tokens, name, names, diff) => {
 // rules reorder members. So re-run the subsets that do promise to keep it intact, and report whichever breaks it.
 const attributeTokens = (source, tokens, name, names) => {
   const scopes = [
-    { diff: orderedDiff, subset: ORDERED_RULES.filter((rule) => {
-      return names.includes(rule);
-    }) },
-    { diff: multisetDiff, subset: MOVE_RULES.filter((rule) => {
-      return names.includes(rule);
-    }) },
+    {
+      diff: orderedDiff,
+      subset: ORDERED_RULES.filter((rule) => {
+        return names.includes(rule);
+      }),
+    },
+    {
+      diff: multisetDiff,
+      subset: MOVE_RULES.filter((rule) => {
+        return names.includes(rule);
+      }),
+    },
   ];
 
   for (const { diff, subset } of scopes) {
@@ -516,7 +533,11 @@ const attributeTokens = (source, tokens, name, names) => {
       return breaks(source, tokens, name, [rule], diff);
     });
 
-    return { category: 'token loss', rules: culprits.length > 0 ? culprits : subset, detail };
+    return {
+      category: 'token loss',
+      rules: culprits.length > 0 ? culprits : subset,
+      detail,
+    };
   }
 
   return undefined;
@@ -559,7 +580,11 @@ const attributeCommentMoves = (source, ast, name, names) => {
     return movesAComment(source, ast, name, [rule]);
   });
 
-  return { category: 'comment moved', rules: culprits.length > 0 ? culprits : subset, detail };
+  return {
+    category: 'comment moved',
+    rules: culprits.length > 0 ? culprits : subset,
+    detail,
+  };
 };
 
 const inspect = (source, ast, fixed, name, names) => {
@@ -575,13 +600,21 @@ const inspect = (source, ast, fixed, name, names) => {
       detail = message(error);
     }
 
-    return [{ category: 'unparseable', rules: names, detail }];
+    return [{
+      category: 'unparseable',
+      rules: names,
+      detail,
+    }];
   }
 
   const findings = [];
 
   if (fix(fixed, name, names) !== fixed) {
-    findings.push({ category: 'non-convergent', rules: names, detail: 'a second --fix pass changed it again' });
+    findings.push({
+      category: 'non-convergent',
+      rules: names,
+      detail: 'a second --fix pass changed it again',
+    });
   }
 
   if (orderedDiff(ast.tokens, after.tokens)) {
@@ -595,7 +628,11 @@ const inspect = (source, ast, fixed, name, names) => {
   const comments = commentDiff(ast.comments, after.comments);
 
   if (comments) {
-    findings.push({ category: 'comment loss', rules: names, detail: comments });
+    findings.push({
+      category: 'comment loss',
+      rules: names,
+      detail: comments,
+    });
   }
 
   if (commentMoveDiff(ast, after)) {
@@ -609,7 +646,11 @@ const inspect = (source, ast, fixed, name, names) => {
   const endings = endingsDiff(source, fixed);
 
   if (endings) {
-    findings.push({ category: 'line-ending change', rules: names, detail: endings });
+    findings.push({
+      category: 'line-ending change',
+      rules: names,
+      detail: endings,
+    });
   }
 
   return findings;
@@ -621,16 +662,29 @@ const evaluate = (source, name, names, parsed) => {
   const ast = parsed ?? parseOrNull(source, name);
 
   if (!ast) {
-    return { parsed: false, changed: false, findings: [] };
+    return {
+      parsed: false,
+      changed: false,
+      findings: [],
+    };
   }
 
   const fixed = fix(source, name, names);
 
   if (fixed === source) {
-    return { parsed: true, changed: false, findings: [] };
+    return {
+      parsed: true,
+      changed: false,
+      findings: [],
+    };
   }
 
-  return { parsed: true, changed: true, fixed, findings: inspect(source, ast, fixed, name, names) };
+  return {
+    parsed: true,
+    changed: true,
+    fixed,
+    findings: inspect(source, ast, fixed, name, names),
+  };
 };
 
 const linesBefore = (text, offset) => {
@@ -651,7 +705,10 @@ const changedLines = (source, fixed) => {
     back += 1;
   }
 
-  return { first: linesBefore(source, start), last: linesBefore(source, source.length - back) };
+  return {
+    first: linesBefore(source, start),
+    last: linesBefore(source, source.length - back),
+  };
 };
 
 // The smallest slice of the file that still shows the same category. Widening from the changed lines outwards,
@@ -669,14 +726,20 @@ const narrow = (source, fixed, name, finding) => {
     if (result.findings.some((candidate) => {
       return candidate.category === finding.category;
     })) {
-      return { snippet: slice, narrowed: true };
+      return {
+        snippet: slice,
+        narrowed: true,
+      };
     }
   }
 
   const from = Math.max(0, first - 3);
   const to = Math.min(lines.length, last + 4);
 
-  return { snippet: `${lines.slice(from, to).join('\n')}\n`, narrowed: false };
+  return {
+    snippet: `${lines.slice(from, to).join('\n')}\n`,
+    narrowed: false,
+  };
 };
 
 const attribute = (source, name, names, category) => {
@@ -758,12 +821,30 @@ const OUTLIER_FLOOR_MS = 2;
 const OUTLIER_FACTOR = 25;
 
 const SIZE_BUCKETS = [
-  { label: 'under 1 KiB', limit: 1024 },
-  { label: '1 to 4 KiB', limit: 4096 },
-  { label: '4 to 16 KiB', limit: 16384 },
-  { label: '16 to 64 KiB', limit: 65536 },
-  { label: '64 to 256 KiB', limit: 262144 },
-  { label: 'over 256 KiB', limit: Infinity },
+  {
+    label: 'under 1 KiB',
+    limit: 1024,
+  },
+  {
+    label: '1 to 4 KiB',
+    limit: 4096,
+  },
+  {
+    label: '4 to 16 KiB',
+    limit: 16384,
+  },
+  {
+    label: '16 to 64 KiB',
+    limit: 65536,
+  },
+  {
+    label: '64 to 256 KiB',
+    limit: 262144,
+  },
+  {
+    label: 'over 256 KiB',
+    limit: Infinity,
+  },
 ];
 
 // Nearest-rank rather than interpolated. The point is to name a file that took
@@ -799,7 +880,10 @@ const dominantRule = (file) => {
   linter.verifyAndFix(source, configFor([]), name);
   const baseline = performance.now() - beforeBaseline;
 
-  let worst = { ms: -Infinity, rule: 'none' };
+  let worst = {
+    ms: -Infinity,
+    rule: 'none',
+  };
 
   for (const rule of activeRules) {
     const started = performance.now();
@@ -807,11 +891,17 @@ const dominantRule = (file) => {
     const ms = performance.now() - started - baseline;
 
     if (ms > worst.ms) {
-      worst = { ms, rule };
+      worst = {
+        ms,
+        rule,
+      };
     }
   }
 
-  return { baseline, ...worst };
+  return {
+    baseline,
+    ...worst,
+  };
 };
 
 const bucketRows = () => {
@@ -1011,7 +1101,10 @@ const hoistedProbe = {
         });
 
         if (early) {
-          context.report({ node, message: 'called above its own declaration' });
+          context.report({
+            node,
+            message: 'called above its own declaration',
+          });
         }
       },
     };
@@ -1021,8 +1114,14 @@ const hoistedProbe = {
 const auditConfig = configFor(AUDIT_RULES).map((entry) => {
   return {
     ...entry,
-    plugins: { ...entry.plugins, probe: { rules: { hoisted: hoistedProbe } } },
-    rules: { ...entry.rules, 'probe/hoisted': 'error' },
+    plugins: {
+      ...entry.plugins,
+      probe: { rules: { hoisted: hoistedProbe } },
+    },
+    rules: {
+      ...entry.rules,
+      'probe/hoisted': 'error',
+    },
   };
 });
 
@@ -1145,14 +1244,22 @@ const shapesOf = (ast) => {
     return true;
   });
 
-  return { functions, namespaceDestructures, promiseCalls };
+  return {
+    functions,
+    namespaceDestructures,
+    promiseCalls,
+  };
 };
 
 const auditCounts = new Map();
 const auditVolume = [];
 
 const auditFinding = (rule, category, detail) => {
-  return { category, detail, rules: [rule.replace('@linteljs/', '')] };
+  return {
+    category,
+    detail,
+    rules: [rule.replace('@linteljs/', '')],
+  };
 };
 
 // One report, judged against the shape its rule claims and, for a conversion, against the original function body.
@@ -1226,12 +1333,18 @@ const audit = (file, source, ast, name) => {
     const finding = judge(report, shapes, probed);
 
     if (finding) {
-      found.push({ ...finding, line: report.line });
+      found.push({
+        ...finding,
+        line: report.line,
+      });
     }
   }
 
   if (volume > 0) {
-    auditVolume.push({ count: volume, file });
+    auditVolume.push({
+      count: volume,
+      file,
+    });
   }
 
   return found;
@@ -1241,10 +1354,21 @@ const audit = (file, source, ast, name) => {
 
 const findings = [];
 const emptyCounts = () => {
-  return { changed: 0, compiled: 0, duplicate: 0, minified: 0, oversized: 0, scanned: 0, unparsed: 0 };
+  return {
+    changed: 0,
+    compiled: 0,
+    duplicate: 0,
+    minified: 0,
+    oversized: 0,
+    scanned: 0,
+    unparsed: 0,
+  };
 };
 
-const counts = { js: emptyCounts(), ts: emptyCounts() };
+const counts = {
+  js: emptyCounts(),
+  ts: emptyCounts(),
+};
 const seen = new Set();
 
 const show = (file, finding, snippet, label) => {
@@ -1298,7 +1422,11 @@ const check = (file) => {
   firstFixMs = undefined;
 
   for (const finding of audit(file, source, ast, name)) {
-    findings.push({ file, flavour, ...finding });
+    findings.push({
+      file,
+      flavour,
+      ...finding,
+    });
     show(file, finding, around(source, finding.line), `reported at line ${finding.line}`);
   }
 
@@ -1307,7 +1435,11 @@ const check = (file) => {
   // Recorded before the findings below, which re-lint the file several times
   // over and would otherwise land in the sample as this file's cost.
   if (firstFixMs !== undefined) {
-    timings.push({ bytes: source.length, file, ms: firstFixMs });
+    timings.push({
+      bytes: source.length,
+      file,
+      ms: firstFixMs,
+    });
   }
 
   if (!result.changed) {
@@ -1323,7 +1455,11 @@ const check = (file) => {
     }
 
     const { snippet, narrowed } = narrow(source, result.fixed, name, finding);
-    findings.push({ file, flavour, ...finding });
+    findings.push({
+      file,
+      flavour,
+      ...finding,
+    });
     show(file, finding, snippet, narrowed ? 'minimal reproduction' : 'changed hunk, could not narrow');
   }
 };
@@ -1380,8 +1516,16 @@ const runFixPass = () => {
     catch (error) {
       // One pathological file must not end the run, and a crash inside a rule
       // is exactly the kind of thing this script exists to surface.
-      const finding = { file, category: 'threw', rules: activeRules, detail: message(error) };
-      findings.push({ flavour: flavourOf(file), ...finding });
+      const finding = {
+        file,
+        category: 'threw',
+        rules: activeRules,
+        detail: message(error),
+      };
+      findings.push({
+        flavour: flavourOf(file),
+        ...finding,
+      });
       show(file, finding, '', 'no snippet');
     }
 
@@ -1569,7 +1713,11 @@ const runOptionSweep = () => {
   console.log('');
 
   const counters = new Map(configurations.map((configuration) => {
-    return [configuration.label, { changed: 0, findings: 0, scanned: 0 }];
+    return [configuration.label, {
+      changed: 0,
+      findings: 0,
+      scanned: 0,
+    }];
   }));
 
   let visited = 0;

@@ -40,7 +40,10 @@ const written = [];
 const languageOptionsFor = (typescript) => {
   return typescript
     ? { parser: tseslint.parser }
-    : { ecmaVersion: 'latest', sourceType: 'module' };
+    : {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      };
 };
 
 // A named sample has to match a `files` pattern or flat config skips it; an unnamed one is `<input>`, matching none.

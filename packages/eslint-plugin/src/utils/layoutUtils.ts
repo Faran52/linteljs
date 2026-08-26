@@ -132,7 +132,10 @@ export const indentReader = (sourceCode: SourceCode): ((node: RuleNode) => Inden
   return (node) => {
     const outer = getIndent(sourceCode, node);
 
-    return { outer, inner: `${outer}${step}` };
+    return {
+      outer,
+      inner: `${outer}${step}`,
+    };
   };
 };
 

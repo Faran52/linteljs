@@ -137,9 +137,18 @@ jsRuleTester.run('import-newlines', importNewlines, {
 
 jsRuleTester.run('import-newlines (options)', importNewlines, {
   valid: [
-    { code: "import { alpha, bravo, charlie } from 'mod';", options: [{ maxItems: 3 }] },
-    { code: "import { alpha, bravo, charlie, delta } from 'mod';", options: [{ maxItems: 4 }] },
-    { code: `import { alpha, ${LONG} } from 'mod';`, options: [{ maxLineLength: 400 }] },
+    {
+      code: "import { alpha, bravo, charlie } from 'mod';",
+      options: [{ maxItems: 3 }],
+    },
+    {
+      code: "import { alpha, bravo, charlie, delta } from 'mod';",
+      options: [{ maxItems: 4 }],
+    },
+    {
+      code: `import { alpha, ${LONG} } from 'mod';`,
+      options: [{ maxLineLength: 400 }],
+    },
   ],
   invalid: [
     {

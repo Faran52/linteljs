@@ -173,13 +173,19 @@ describe('indentReader', () => {
   it('reports the node column and one step further in', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('function load() {\n  const { alpha } = source;\n}\n');
 
-    expect(indentReader(sourceCode)(firstNode('ObjectPattern'))).toEqual({ outer: '  ', inner: '    ' });
+    expect(indentReader(sourceCode)(firstNode('ObjectPattern'))).toEqual({
+      outer: '  ',
+      inner: '    ',
+    });
   });
 
   it('adds the step it read off the file rather than assuming two spaces', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const { alpha } = source;\nfunction load() {\n\treturn 1;\n}\n');
 
-    expect(indentReader(sourceCode)(firstNode('ObjectPattern'))).toEqual({ outer: '', inner: '\t' });
+    expect(indentReader(sourceCode)(firstNode('ObjectPattern'))).toEqual({
+      outer: '',
+      inner: '\t',
+    });
   });
 
   it('reads the step once and answers for any node', () => {
@@ -187,7 +193,10 @@ describe('indentReader', () => {
     const indentsAt = indentReader(sourceCode);
 
     expect(indentsAt(firstNode('ObjectPattern'))).toEqual(indentsAt(firstNode('ObjectPattern')));
-    expect(indentsAt(firstNode('Program'))).toEqual({ outer: '', inner: '  ' });
+    expect(indentsAt(firstNode('Program'))).toEqual({
+      outer: '',
+      inner: '  ',
+    });
   });
 });
 
@@ -251,7 +260,10 @@ const captureFixer = (): Fixer => {
   new Linter().verify('const alpha = 1;\n', [
     {
       plugins: { probe: { rules: { capture } } },
-      languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+      languageOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
       rules: { 'probe/capture': 'error' },
     },
   ]);
@@ -313,7 +325,10 @@ const fixWith = (code: string): string => {
   const { output } = linter.verifyAndFix(code, [
     {
       plugins: { '@linteljs': { rules: { 'import-newlines': importNewlines } } },
-      languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+      languageOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
       rules: { '@linteljs/import-newlines': 'error' },
     },
   ]);

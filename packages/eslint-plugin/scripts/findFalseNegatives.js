@@ -51,9 +51,11 @@ const linter = new Linter();
 // ESLint because pnpm does not hoist a transitive dependency to the top level.
 const espree = createRequire(createRequire(import.meta.url).resolve('eslint'))('espree');
 
-// Every rule the plugin ships, and every rule this audit has shapes for. They are not the same list: a shape has to
-// be written by hand, so a rule added to the plugin is not covered here until someone writes one. `SHAPES` is
-// declared below, so the two are compared at run time rather than here.
+/**
+ * Every rule the plugin ships, and every rule this audit has shapes for. They are not the same list: a shape has to
+ * be written by hand, so a rule added to the plugin is not covered here until someone writes one. `SHAPES` is
+ * declared below, so the two are compared at run time rather than here.
+ */
 const PLUGIN_RULES = Object.keys(rules);
 
 // Both only visit TypeScript nodes, so a JavaScript file can never exercise
@@ -242,20 +244,34 @@ const configFor = (name, options) => {
    * a stub without one rejects every shape that carries an option.
    */
   const rule = name === neuteredRule
-    ? { create: () => {
-        return {};
-      }, meta: rules[name].meta }
+    ? {
+        create: () => {
+          return {};
+        },
+        meta: rules[name].meta,
+      }
     : rules[name];
 
   const shared = {
-    linterOptions: { noInlineConfig: true, reportUnusedDisableDirectives: 'off' },
+    linterOptions: {
+      noInlineConfig: true,
+      reportUnusedDisableDirectives: 'off',
+    },
     plugins: { '@linteljs': { rules: { [name]: rule } } },
     rules: { [`@linteljs/${name}`]: options ? ['error', options] : 'error' },
   };
 
   const config = [
-    { ...shared, files: ['**/*.ts', '**/*.tsx'], languageOptions: { parser: tseslint.parser } },
-    { ...shared, files: ['**/*.js', '**/*.cjs'], languageOptions: { parserOptions: JSX_ON } },
+    {
+      ...shared,
+      files: ['**/*.ts', '**/*.tsx'],
+      languageOptions: { parser: tseslint.parser },
+    },
+    {
+      ...shared,
+      files: ['**/*.js', '**/*.cjs'],
+      languageOptions: { parserOptions: JSX_ON },
+    },
   ];
 
   configCache.set(key, config);
@@ -298,7 +314,10 @@ const parse = (source, name) => {
     return tseslint.parser.parseForESLint(source, { filePath: name }).ast;
   }
 
-  return espree.parse(source, { ...JS_PARSE, sourceType: name === 'file.cjs' ? 'commonjs' : 'module' });
+  return espree.parse(source, {
+    ...JS_PARSE,
+    sourceType: name === 'file.cjs' ? 'commonjs' : 'module',
+  });
 };
 
 const parseOrNull = (source, name) => {
@@ -947,7 +966,10 @@ const arrowDeclarationOf = (node) => {
     return undefined;
   }
 
-  return { arrow, name: declarator.id.name };
+  return {
+    arrow,
+    name: declarator.id.name,
+  };
 };
 
 const STATEMENT_PARENTS = new Set(['Program', 'BlockStatement', 'ExportNamedDeclaration']);
@@ -1353,9 +1375,12 @@ const dependencyNames = (node, hooks) => {
   });
 
   return plain
-    ? { array: last, names: last.elements.map((element) => {
-        return element.name;
-      }) }
+    ? {
+        array: last,
+        names: last.elements.map((element) => {
+          return element.name;
+        }),
+      }
     : undefined;
 };
 
@@ -1438,7 +1463,10 @@ const relocateType = (state, node) => {
   const text = state.source.slice(node.range[0], to).trimEnd();
   const kept = `${state.source.slice(0, from)}${state.source.slice(to)}`.trimEnd();
 
-  return { source: `${kept}\n\n${text}\n`, offset: kept.length + 2 };
+  return {
+    source: `${kept}\n\n${text}\n`,
+    offset: kept.length + 2,
+  };
 };
 
 /**
@@ -1487,7 +1515,10 @@ const typeBelowRuntimeCase = (header) => {
      */
     const directive = "'use strict';\n\n";
 
-    return { offset: moved.offset + directive.length, source: directive + moved.source };
+    return {
+      offset: moved.offset + directive.length,
+      source: directive + moved.source,
+    };
   };
 };
 
@@ -1518,9 +1549,11 @@ const propsPatternNames = (pattern) => {
   return names;
 };
 
-// A prop name bound again anywhere inside the function: a nested declaration, a nested function's own
-// parameter, an import, a catch clause. Any of these means the identifier the rewrite would emit no longer
-// refers to the prop everywhere in range, so the whole case is skipped rather than guessed at.
+/**
+ * A prop name bound again anywhere inside the function: a nested declaration, a nested function's own
+ * parameter, an import, a catch clause. Any of these means the identifier the rewrite would emit no longer
+ * refers to the prop everywhere in range, so the whole case is skipped rather than guessed at.
+ */
 const isDeclaringUse = (node) => {
   const parent = node.parent;
 
@@ -1641,9 +1674,17 @@ const componentPropsRewrite = (state, fn, names) => {
   const [firstParam] = fn.params;
 
   const edits = [
-    { from: firstParam.range[0] - base, to: firstParam.range[1] - base, text: PROBE_PROPS },
+    {
+      from: firstParam.range[0] - base,
+      to: firstParam.range[1] - base,
+      text: PROBE_PROPS,
+    },
     ...references.map((node) => {
-      return { from: node.range[0] - base, to: node.range[1] - base, text: `${PROBE_PROPS}.${node.name}` };
+      return {
+        from: node.range[0] - base,
+        to: node.range[1] - base,
+        text: `${PROBE_PROPS}.${node.name}`,
+      };
     }),
   ].sort((left, right) => {
     return right.from - left.from;
@@ -1689,80 +1730,223 @@ const functionDeclarationComponentCase = (state) => {
 // reported on its own: a rule can be awake on the shape someone thought to test and asleep on the next.
 const SHAPES = {
   'destructuring-property-newline': [
-    { build: patternGapCase('ObjectPattern', false), shape: 'object pattern, last gap closed' },
-    { build: patternGapCase('ObjectPattern', true), shape: 'object pattern, first gap closed' },
-    { build: patternGapCase('ArrayPattern', false), shape: 'array pattern, last gap closed' },
+    {
+      build: patternGapCase('ObjectPattern', false),
+      shape: 'object pattern, last gap closed',
+    },
+    {
+      build: patternGapCase('ObjectPattern', true),
+      shape: 'object pattern, first gap closed',
+    },
+    {
+      build: patternGapCase('ArrayPattern', false),
+      shape: 'array pattern, last gap closed',
+    },
   ],
   'export-specifier-newline': [
-    { build: exportJoinedCase, shape: 'specifiers joined onto one line' },
-    { build: exportPairCase('local'), shape: 'second specifier added to a local export' },
-    { build: exportPairCase('from'), shape: 'second specifier added to a re-export' },
-    { build: exportPairCase('type'), shape: 'second specifier added to a type-only export' },
+    {
+      build: exportJoinedCase,
+      shape: 'specifiers joined onto one line',
+    },
+    {
+      build: exportPairCase('local'),
+      shape: 'second specifier added to a local export',
+    },
+    {
+      build: exportPairCase('from'),
+      shape: 'second specifier added to a re-export',
+    },
+    {
+      build: exportPairCase('type'),
+      shape: 'second specifier added to a type-only export',
+    },
   ],
   'import-newlines': [
-    { build: importJoinedCase, shape: 'joined onto one line, over the item limit' },
-    { build: importSplitCase, shape: 'split one per line, under the item limit' },
-    { build: importLongLineCase, shape: 'padded past maxLineLength' },
-    { build: importTailJoinedCase, shape: 'two members left sharing a line' },
-    { build: importBlankLineCase, shape: 'blank line between two members' },
+    {
+      build: importJoinedCase,
+      shape: 'joined onto one line, over the item limit',
+    },
+    {
+      build: importSplitCase,
+      shape: 'split one per line, under the item limit',
+    },
+    {
+      build: importLongLineCase,
+      shape: 'padded past maxLineLength',
+    },
+    {
+      build: importTailJoinedCase,
+      shape: 'two members left sharing a line',
+    },
+    {
+      build: importBlankLineCase,
+      shape: 'blank line between two members',
+    },
   ],
   'interface-order': [
-    { build: typeBelowRuntimeCase('imports'), shape: 'type moved below runtime code, under imports' },
-    { build: typeBelowRuntimeCase('directive'), shape: 'type moved below runtime code, under a directive' },
-    { build: typeBelowRuntimeCase('none'), shape: 'type moved below runtime code, no header' },
+    {
+      build: typeBelowRuntimeCase('imports'),
+      shape: 'type moved below runtime code, under imports',
+    },
+    {
+      build: typeBelowRuntimeCase('directive'),
+      shape: 'type moved below runtime code, under a directive',
+    },
+    {
+      build: typeBelowRuntimeCase('none'),
+      shape: 'type moved below runtime code, no header',
+    },
   ],
   'newline-destructuring': [
-    { build: patternJoinedCase(false), shape: 'pattern joined onto one line, over maxProperties' },
-    { build: patternJoinedCase(true), shape: 'pattern with a rest element joined onto one line' },
-    { build: patternSplitCase, shape: 'pattern at the threshold split across lines' },
-    { build: patternBlankLineCase, shape: 'blank line between two properties' },
-    { build: typeMembersJoinedCase('TSInterfaceBody', 'body'), shape: 'interface body joined onto one line' },
-    { build: typeMembersJoinedCase('TSTypeLiteral', 'members'), shape: 'type literal joined onto one line' },
+    {
+      build: patternJoinedCase(false),
+      shape: 'pattern joined onto one line, over maxProperties',
+    },
+    {
+      build: patternJoinedCase(true),
+      shape: 'pattern with a rest element joined onto one line',
+    },
+    {
+      build: patternSplitCase,
+      shape: 'pattern at the threshold split across lines',
+    },
+    {
+      build: patternBlankLineCase,
+      shape: 'blank line between two properties',
+    },
+    {
+      build: typeMembersJoinedCase('TSInterfaceBody', 'body'),
+      shape: 'interface body joined onto one line',
+    },
+    {
+      build: typeMembersJoinedCase('TSTypeLiteral', 'members'),
+      shape: 'type literal joined onto one line',
+    },
   ],
   'no-import-namespace-destructure': [
-    { build: namespaceDestructureCase('module'), shape: 'destructured at module scope' },
-    { build: namespaceDestructureCase('function'), shape: 'destructured inside a function body' },
-    { build: namespaceDestructureCase('block'), shape: 'destructured inside a nested block' },
+    {
+      build: namespaceDestructureCase('module'),
+      shape: 'destructured at module scope',
+    },
+    {
+      build: namespaceDestructureCase('function'),
+      shape: 'destructured inside a function body',
+    },
+    {
+      build: namespaceDestructureCase('block'),
+      shape: 'destructured inside a nested block',
+    },
   ],
   'prefer-arrow-functions': [
-    { build: functionDeclarationCase, shape: 'rewritten as a function declaration' },
-    { build: functionExpressionCase, shape: 'rewritten as a function expression' },
-    { build: propertyFunctionCase(false), shape: 'rewritten as a long-form property value' },
-    { build: propertyFunctionCase(true), shape: 'rewritten as a shorthand method' },
-    { build: defaultExportFunctionCase, shape: 'rewritten as an anonymous default export' },
-    { build: expressionBodyCase, shape: 'block body collapsed to an expression body' },
+    {
+      build: functionDeclarationCase,
+      shape: 'rewritten as a function declaration',
+    },
+    {
+      build: functionExpressionCase,
+      shape: 'rewritten as a function expression',
+    },
+    {
+      build: propertyFunctionCase(false),
+      shape: 'rewritten as a long-form property value',
+    },
+    {
+      build: propertyFunctionCase(true),
+      shape: 'rewritten as a shorthand method',
+    },
+    {
+      build: defaultExportFunctionCase,
+      shape: 'rewritten as an anonymous default export',
+    },
+    {
+      build: expressionBodyCase,
+      shape: 'block body collapsed to an expression body',
+    },
   ],
   'prefer-await-to-then': [
-    { build: detachedHandlerCase('then'), shape: 'detached .then() in statement position' },
-    { build: detachedHandlerCase('catch'), shape: 'detached .catch() in statement position' },
-    { build: detachedHandlerCase('finally'), shape: 'detached .finally() in statement position' },
-    { build: strictAwaitedHandlerCase, options: { strict: true }, shape: 'awaited .then() under strict' },
+    {
+      build: detachedHandlerCase('then'),
+      shape: 'detached .then() in statement position',
+    },
+    {
+      build: detachedHandlerCase('catch'),
+      shape: 'detached .catch() in statement position',
+    },
+    {
+      build: detachedHandlerCase('finally'),
+      shape: 'detached .finally() in statement position',
+    },
+    {
+      build: strictAwaitedHandlerCase,
+      options: { strict: true },
+      shape: 'awaited .then() under strict',
+    },
   ],
   'prefer-destructured-props': [
-    { build: arrowComponentCase, shape: 'arrow assigned to an uppercase const, rewritten to a props parameter' },
-    { build: functionDeclarationComponentCase, shape: 'function declaration, rewritten to a props parameter' },
+    {
+      build: arrowComponentCase,
+      shape: 'arrow assigned to an uppercase const, rewritten to a props parameter',
+    },
+    {
+      build: functionDeclarationComponentCase,
+      shape: 'function declaration, rewritten to a props parameter',
+    },
   ],
   'prefer-try-catch': [
-    { build: awaitedHandlerCase(`.catch(${PROBE_HANDLER})`), shape: 'rejection handler on an await' },
-    { build: awaitedHandlerCase(`.then(lintelFulfilProbe, ${PROBE_HANDLER})`),
-      shape: 'two-argument .then() on an await' },
-    { build: awaitedHandlerCase(`.catch(${PROBE_HANDLER}).then(lintelParseProbe)`),
-      shape: 'rejection handler buried mid-chain' },
-    { build: asyncReturnHandlerCase, shape: 'rejection handler on an async return' },
+    {
+      build: awaitedHandlerCase(`.catch(${PROBE_HANDLER})`),
+      shape: 'rejection handler on an await',
+    },
+    {
+      build: awaitedHandlerCase(`.then(lintelFulfilProbe, ${PROBE_HANDLER})`),
+      shape: 'two-argument .then() on an await',
+    },
+    {
+      build: awaitedHandlerCase(`.catch(${PROBE_HANDLER}).then(lintelParseProbe)`),
+      shape: 'rejection handler buried mid-chain',
+    },
+    {
+      build: asyncReturnHandlerCase,
+      shape: 'rejection handler on an async return',
+    },
   ],
   'sort-hook-dependencies': [
-    { build: hookOrderCase(DEFAULT_HOOKS, 'desc'), shape: 'dependencies sorted the wrong way' },
-    { build: hookOrderCase(DEFAULT_HOOKS, 'asc'), options: { order: 'desc' },
-      shape: 'dependencies sorted ascending under order: desc' },
-    { build: hookOrderCase(EXTRA_HOOKS, 'desc'), options: { hooks: EXTRA_HOOKS },
-      shape: 'dependencies of a hook named by the hooks option' },
+    {
+      build: hookOrderCase(DEFAULT_HOOKS, 'desc'),
+      shape: 'dependencies sorted the wrong way',
+    },
+    {
+      build: hookOrderCase(DEFAULT_HOOKS, 'asc'),
+      options: { order: 'desc' },
+      shape: 'dependencies sorted ascending under order: desc',
+    },
+    {
+      build: hookOrderCase(EXTRA_HOOKS, 'desc'),
+      options: { hooks: EXTRA_HOOKS },
+      shape: 'dependencies of a hook named by the hooks option',
+    },
   ],
   'union-newline': [
-    { build: unionWithMemberCase('({ lintelProbeMember: string })'), shape: 'union with an object member' },
-    { build: unionWithMemberCase('(() => void)'), shape: 'union with a function member' },
-    { build: unionWithMemberCase('(new () => LintelProbe)'), shape: 'union with a constructor member' },
-    { build: unionWithMemberCase('({ [K in LintelProbeKeys]: string })'), shape: 'union with a mapped member' },
-    { build: unionGenericCase, shape: 'four plain members inside a generic argument' },
+    {
+      build: unionWithMemberCase('({ lintelProbeMember: string })'),
+      shape: 'union with an object member',
+    },
+    {
+      build: unionWithMemberCase('(() => void)'),
+      shape: 'union with a function member',
+    },
+    {
+      build: unionWithMemberCase('(new () => LintelProbe)'),
+      shape: 'union with a constructor member',
+    },
+    {
+      build: unionWithMemberCase('({ [K in LintelProbeKeys]: string })'),
+      shape: 'union with a mapped member',
+    },
+    {
+      build: unionGenericCase,
+      shape: 'four plain members inside a generic argument',
+    },
   ],
 };
 
@@ -1791,7 +1975,11 @@ if (unknownRules.length > 0) {
 
 const activeShapes = selectedRules.flatMap((rule) => {
   return SHAPES[rule].map((entry) => {
-    return { ...entry, key: `${rule} :: ${entry.shape}`, rule };
+    return {
+      ...entry,
+      key: `${rule} :: ${entry.shape}`,
+      rule,
+    };
   });
 }).filter((entry) => {
   return onlyShape === undefined || entry.shape.includes(onlyShape);
@@ -1803,7 +1991,13 @@ if (activeShapes.length === 0) {
 }
 
 const emptyStats = () => {
-  return { attempts: 0, cases: 0, misses: [], seen: 0, skips: new Map() };
+  return {
+    attempts: 0,
+    cases: 0,
+    misses: [],
+    seen: 0,
+    skips: new Map(),
+  };
 };
 
 const stats = new Map(activeShapes.map((entry) => {
@@ -1894,12 +2088,20 @@ const attempt = (entry, file, state, name, cache) => {
     return;
   }
 
-  const miss = { file, snippet: snippetAt(candidate.source, candidate.offset) };
+  const miss = {
+    file,
+    snippet: snippetAt(candidate.source, candidate.offset),
+  };
   bucket.misses.push(miss);
   showMiss(entry, file, miss);
 };
 
-const counts = { duplicate: 0, scanned: 0, skipped: 0, unparsed: 0 };
+const counts = {
+  duplicate: 0,
+  scanned: 0,
+  skipped: 0,
+  unparsed: 0,
+};
 const seen = new Set();
 
 const shapesStillHungry = () => {

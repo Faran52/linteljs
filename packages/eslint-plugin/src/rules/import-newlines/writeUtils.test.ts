@@ -16,7 +16,8 @@ const isImportNode = (node: RuleNode): node is ImportNode => {
   return node.type === 'ImportDeclaration';
 };
 
-const importNodeFrom = (code: string): { sourceCode: SourceCode; node: ImportNode } => {
+const importNodeFrom = (code: string): { sourceCode: SourceCode;
+  node: ImportNode; } => {
   const { sourceCode, firstNode } = sourceCodeFrom(code);
   const node = firstNode('ImportDeclaration');
 
@@ -24,7 +25,10 @@ const importNodeFrom = (code: string): { sourceCode: SourceCode; node: ImportNod
     throw new Error(`not an import: ${code}`);
   }
 
-  return { sourceCode, node };
+  return {
+    sourceCode,
+    node,
+  };
 };
 
 describe('writeImport', () => {
@@ -37,7 +41,10 @@ describe('writeImport', () => {
   it('splits a named clause across the given indents', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, { outer: '', inner: '  ' }, '\n'))
+    expect(writeImport(sourceCode, node, {
+      outer: '',
+      inner: '  ',
+    }, '\n'))
       .toBe("import {\n  alpha,\n  bravo\n} from 'mod';");
   });
 
@@ -45,14 +52,20 @@ describe('writeImport', () => {
   it('anchors the split at the outer indent it is given', () => {
     const { sourceCode, node } = importNodeFrom("  import { alpha, bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, { outer: '  ', inner: '    ' }, '\n'))
+    expect(writeImport(sourceCode, node, {
+      outer: '  ',
+      inner: '    ',
+    }, '\n'))
       .toBe("import {\n    alpha,\n    bravo\n  } from 'mod';");
   });
 
   it('writes the line terminator it is given rather than assuming LF', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, { outer: '', inner: '  ' }, '\r\n'))
+    expect(writeImport(sourceCode, node, {
+      outer: '',
+      inner: '  ',
+    }, '\r\n'))
       .toBe("import {\r\n  alpha,\r\n  bravo\r\n} from 'mod';");
   });
 
@@ -88,7 +101,10 @@ describe('writeImport', () => {
       "import { alpha, bravo } from 'mod' with { type: 'json' };",
     );
 
-    expect(writeImport(sourceCode, node, { outer: '', inner: '  ' }, '\n'))
+    expect(writeImport(sourceCode, node, {
+      outer: '',
+      inner: '  ',
+    }, '\n'))
       .toBe("import {\n  alpha,\n  bravo\n} from 'mod' with { type: 'json' };");
   });
 
@@ -96,7 +112,10 @@ describe('writeImport', () => {
   it('returns null when a comment sits inside the statement', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, /* keep */ bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, { outer: '', inner: '  ' }, '\n')).toBeNull();
+    expect(writeImport(sourceCode, node, {
+      outer: '',
+      inner: '  ',
+    }, '\n')).toBeNull();
   });
 
   // The same rebuild path serves the collapse check, so a comment declines it too, not only the split.

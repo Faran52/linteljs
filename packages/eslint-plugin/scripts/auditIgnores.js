@@ -60,7 +60,10 @@ const coverageFor = (file) => {
   });
 
   if (!entry) {
-    return { statements: 0, branches: 0 };
+    return {
+      statements: 0,
+      branches: 0,
+    };
   }
 
   const [, metrics] = entry;
@@ -71,7 +74,10 @@ const coverageFor = (file) => {
     return count === 0;
   }).length;
 
-  return { statements, branches };
+  return {
+    statements,
+    branches,
+  };
 };
 
 const files = walk(join(root, 'src'));

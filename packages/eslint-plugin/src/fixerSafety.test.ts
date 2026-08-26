@@ -29,7 +29,10 @@ describe.each(ruleNames)('%s', (name) => {
 
   it.each(samples)('settles on %s', (_label, sample: FixerSample) => {
     const once = fixWith(sample, name);
-    const twice = fixWith({ ...sample, code: once }, name);
+    const twice = fixWith({
+      ...sample,
+      code: once,
+    }, name);
 
     // A fixer that keeps editing on a second pass never reaches a stable file.
     expect(twice).toBe(once);
@@ -122,7 +125,10 @@ describe('the whole plugin at once', () => {
 
   it.each(samples)('settles on %s', (_label, sample: FixerSample) => {
     const once = fixWith(sample);
-    const twice = fixWith({ ...sample, code: once });
+    const twice = fixWith({
+      ...sample,
+      code: once,
+    });
 
     expect(twice).toBe(once);
   });

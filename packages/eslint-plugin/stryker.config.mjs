@@ -10,7 +10,7 @@
  * not found, and the run falls back to defaults with no error. The extension is upstream's list, not a redundancy.
  */
 
-/** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
+// @type {import('@stryker-mutator/api/core').PartialStrykerOptions}
 const config = {
   packageManager: 'pnpm',
   testRunner: 'vitest',

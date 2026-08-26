@@ -38,11 +38,13 @@ const isRuleModule = (value: unknown): value is LoadedRule => {
 // take the whole file down at zero failures; importing inside the test body turns that into one ordinary failure.
 
 const RULE_MODULES = [
+  'comment-delimiter',
   'destructuring-property-newline',
   'export-specifier-newline',
   'import-newlines',
   'interface-order',
   'newline-destructuring',
+  'no-duplicate-jsx-props',
   'no-import-namespace-destructure',
   'prefer-arrow-functions',
   'prefer-await-to-then',

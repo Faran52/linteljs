@@ -13,11 +13,20 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
     // Natural ordering, so item2 sorts before item10 rather than after it.
     'useEffect(() => {}, [item2, item10]);',
 
-    { code: 'useEffect(() => {}, [charlie, bravo, alpha]);', options: [{ order: 'desc' }] },
-    { code: 'useEffect(() => {}, [alpha, bravo]);', options: [{ order: 'asc' }] },
+    {
+      code: 'useEffect(() => {}, [charlie, bravo, alpha]);',
+      options: [{ order: 'desc' }],
+    },
+    {
+      code: 'useEffect(() => {}, [alpha, bravo]);',
+      options: [{ order: 'asc' }],
+    },
     'useState(() => {}, [bravo, alpha]);',
     'useDeepCompareEffect(() => {}, [bravo, alpha]);',
-    { code: 'useEffect(() => {}, [bravo, alpha]);', options: [{ hooks: ['useCustom'] }] },
+    {
+      code: 'useEffect(() => {}, [bravo, alpha]);',
+      options: [{ hooks: ['useCustom'] }],
+    },
     'somethingElse(() => {}, [bravo, alpha]);',
 
     // A member callee is left alone, so `React.useEffect` is not checked.
@@ -102,7 +111,10 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
     {
       code: 'createEffect(() => {}, [bravo, alpha]);',
       output: 'createEffect(() => {}, [alpha, bravo]);',
-      options: [{ hooks: ['createEffect'], order: 'asc' }],
+      options: [{
+        hooks: ['createEffect'],
+        order: 'asc',
+      }],
       errors: [{ messageId: 'sort' }],
     },
   ],

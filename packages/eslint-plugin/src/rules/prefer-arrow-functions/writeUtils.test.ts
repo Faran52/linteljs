@@ -38,7 +38,10 @@ const functionFrom = (code: string): ParsedFunction => {
     throw new Error(`not a function: ${code}`);
   }
 
-  return { sourceCode, fn };
+  return {
+    sourceCode,
+    fn,
+  };
 };
 
 // Generics and a return type annotation are TypeScript-only syntax, so these fixtures need the TypeScript parser
@@ -85,7 +88,10 @@ const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction =>
     throw new Error(`no function in snippet: ${code}`);
   }
 
-  return { sourceCode: captured, fn };
+  return {
+    sourceCode: captured,
+    fn,
+  };
 };
 
 describe('getFunctionId', () => {

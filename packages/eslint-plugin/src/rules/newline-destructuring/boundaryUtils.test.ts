@@ -31,7 +31,8 @@ const isPropertyNode = (node: RuleNode): node is PropertyNode => {
 
 // Every node in the snippet, in document order, with `parent` intact: `.properties` on the node carries
 // `@types/estree`'s shape rather than `RuleNode`'s, so the parent link is the cast-free way to the members.
-const propertiesOf = (code: string): { sourceCode: SourceCode; members: PropertyNode[] } => {
+const propertiesOf = (code: string): { sourceCode: SourceCode;
+  members: PropertyNode[]; } => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];
   let captured: SourceCode | undefined;
@@ -51,7 +52,10 @@ const propertiesOf = (code: string): { sourceCode: SourceCode; members: Property
   linter.verify(code, [
     {
       plugins: { probe: { rules: { capture } } },
-      languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+      languageOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
       rules: { 'probe/capture': 'error' },
     },
   ]);
@@ -74,7 +78,10 @@ const propertiesOf = (code: string): { sourceCode: SourceCode; members: Property
     })
     .filter(isPropertyNode);
 
-  return { sourceCode: captured, members };
+  return {
+    sourceCode: captured,
+    members,
+  };
 };
 
 describe('startTokenOf', () => {

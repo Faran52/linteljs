@@ -1,6 +1,6 @@
 # @linteljs/union-newline
 
-Enforce newlines in union types containing objects/functions, or in generic type arguments with many keys.
+Split union types when object or function members make them hard to read.
 
 - Category: `layout`
 - Applies to: TypeScript only

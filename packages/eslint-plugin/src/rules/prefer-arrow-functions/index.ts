@@ -71,7 +71,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       category: 'functions',
       language: 'universal',
       recommended: true,
-      description: 'Prefer arrow functions over plain functions when conversion preserves behaviour.',
+      description: 'Prefer arrow functions when the conversion keeps behaviour the same.',
     },
     fixable: 'code',
     messages: {

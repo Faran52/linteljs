@@ -1,6 +1,6 @@
 # @linteljs/import-newlines
 
-Enforce multiple lines for import statements past a certain number of items.
+Split import lists when they get crowded or too long.
 
 - Category: `layout`
 - Applies to: JavaScript and TypeScript
@@ -18,57 +18,33 @@ and a trailing comma, which is more than spacing.
 ## Examples of incorrect code for this rule
 
 ```ts
-// incorrect: three named members on one line, over the default maxItems of 2
 import { alpha, bravo, charlie } from 'mod';
 
-// incorrect: over 120 characters, so it splits even at two members
 import { createConfiguration, resolveConfiguration } from '../../infrastructure/configuration/environmentAwareConfigLoader';
 
-// incorrect: split across lines with only one member, so it collapses back
 import {
   delta
 } from 'one';
-
-// incorrect: split, but two members share a line
-import {
-  echo, foxtrot,
-  golf
-} from 'two';
-
-// incorrect: a blank line inside the member list
-import {
-  hotel,
-
-  india,
-  juliet
-} from 'three';
 ```
 
 ## Examples of correct code for this rule
 
 ```ts
-// correct: two named members, at the default maxItems
 import { alpha, bravo } from 'mod';
 
-// correct: three members, one per line
 import {
   charlie,
   delta,
   echo
 } from 'one';
 
-// correct: a default import alongside the named list
 import defaultExport, {
   foxtrot,
   golf,
   hotel
 } from 'two';
 
-// correct: no member list to reflow
 import 'side-effects-only';
-
-// correct: a namespace import has nothing splittable, however long the line
-import * as everythingFromTheConfigurationInfrastructureLayer from '../../infrastructure/configuration/loader';
 ```
 
 ## Options

@@ -160,9 +160,15 @@ const eslint = new ESLint({
       plugins: { sonarjs },
       languageOptions: {
         parser: tseslint.parser,
-        parserOptions: { projectService: true, tsconfigRootDir: root },
+        parserOptions: {
+          projectService: true,
+          tsconfigRootDir: root,
+        },
       },
-      linterOptions: { noInlineConfig: true, reportUnusedDisableDirectives: false },
+      linterOptions: {
+        noInlineConfig: true,
+        reportUnusedDisableDirectives: false,
+      },
       rules,
     },
     {
@@ -173,7 +179,10 @@ const eslint = new ESLint({
         parser: tseslint.parser,
         sourceType: 'module',
       },
-      linterOptions: { noInlineConfig: true, reportUnusedDisableDirectives: false },
+      linterOptions: {
+        noInlineConfig: true,
+        reportUnusedDisableDirectives: false,
+      },
       rules,
     },
   ],

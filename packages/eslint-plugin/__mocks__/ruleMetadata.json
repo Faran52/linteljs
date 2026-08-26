@@ -1,4 +1,19 @@
 {
+  "comment-delimiter": {
+    "messages": {
+      "useSlashes": "Use `//` lines for a JSDoc block of one or two lines.",
+      "useJsdoc": "Use one `/** */` block for three or more consecutive `//` lines."
+    },
+    "schema": [],
+    "type": "layout",
+    "fixable": "code",
+    "docs": {
+      "category": "layout",
+      "language": "universal",
+      "recommended": true,
+      "description": "Use `//` for short comments and JSDoc blocks for longer prose."
+    }
+  },
   "destructuring-property-newline": {
     "messages": {
       "propertiesOnNewline": "Destructuring properties must go on a new line if they aren't all on the same line."
@@ -10,7 +25,7 @@
       "category": "layout",
       "language": "universal",
       "recommended": true,
-      "description": "Enforce consistent newlines in destructuring patterns. Allows all properties on same line."
+      "description": "Keep destructuring patterns either compact or fully expanded, never half-split."
     }
   },
   "export-specifier-newline": {
@@ -24,7 +39,7 @@
       "category": "layout",
       "language": "universal",
       "recommended": true,
-      "description": "Forces every export specifier to be on a new line."
+      "description": "Put each export specifier on its own line."
     }
   },
   "import-newlines": {
@@ -59,7 +74,7 @@
       "category": "layout",
       "language": "universal",
       "recommended": true,
-      "description": "Enforce multiple lines for import statements past a certain number of items."
+      "description": "Split import lists when they get crowded or too long."
     }
   },
   "interface-order": {
@@ -73,7 +88,7 @@
       "category": "ordering",
       "language": "typescript",
       "recommended": false,
-      "description": "Enforce that top-level interfaces and type aliases are placed after imports, before runtime code."
+      "description": "Keep top-level interfaces and type aliases together, after imports and before runtime code."
     }
   },
   "newline-destructuring": {
@@ -107,7 +122,21 @@
       "category": "layout",
       "language": "universal",
       "recommended": true,
-      "description": "Enforce newlines in object destructuring, interfaces, and type literals when there are too many properties."
+      "description": "Keep crowded destructuring patterns, interfaces, and type literals on separate lines."
+    }
+  },
+  "no-duplicate-jsx-props": {
+    "messages": {
+      "duplicateProp": "The {{name}} prop is already on this element; React keeps the last occurrence silently."
+    },
+    "schema": [],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "functions",
+      "language": "universal",
+      "recommended": false,
+      "description": "Report duplicate JSX props on the same element."
     }
   },
   "no-import-namespace-destructure": {
@@ -121,7 +150,7 @@
       "category": "imports",
       "language": "universal",
       "recommended": true,
-      "description": "Disallow destructuring namespace imports. Import only the specific named exports needed."
+      "description": "Avoid destructuring namespace imports when a named import is enough."
     }
   },
   "prefer-arrow-functions": {
@@ -148,7 +177,7 @@
       "category": "functions",
       "language": "universal",
       "recommended": true,
-      "description": "Prefer arrow functions over plain functions when conversion preserves behaviour."
+      "description": "Prefer arrow functions when the conversion keeps behaviour the same."
     }
   },
   "prefer-await-to-then": {
@@ -173,7 +202,7 @@
       "category": "promises",
       "language": "universal",
       "recommended": true,
-      "description": "Prefer await to then()/catch()/finally() for reading Promise values."
+      "description": "Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values."
     }
   },
   "prefer-destructured-props": {
@@ -187,7 +216,7 @@
       "category": "functions",
       "language": "universal",
       "recommended": false,
-      "description": "Requires props to be destructured in the signature rather than read member by member."
+      "description": "Destructure component props in the function signature instead of reading them one field at a time."
     }
   },
   "prefer-try-catch": {
@@ -202,7 +231,7 @@
       "category": "promises",
       "language": "universal",
       "recommended": true,
-      "description": "Prefer try/catch around an await to a promise rejection handler."
+      "description": "Prefer `try`/`catch` around an awaited rejection path instead of a promise callback."
     }
   },
   "sort-hook-dependencies": {
@@ -244,7 +273,7 @@
       "category": "ordering",
       "language": "universal",
       "recommended": false,
-      "description": "Requires that hook dependency arrays are sorted alphabetically."
+      "description": "Keep hook dependency arrays in a consistent order."
     }
   },
   "union-newline": {
@@ -271,7 +300,7 @@
       "category": "layout",
       "language": "typescript",
       "recommended": true,
-      "description": "Enforce newlines in union types containing objects/functions, or in generic type arguments with many keys."
+      "description": "Split union types when object or function members make them hard to read."
     }
   }
 }

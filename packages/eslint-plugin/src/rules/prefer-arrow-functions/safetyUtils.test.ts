@@ -33,7 +33,8 @@ const isFunctionLike = (node: RuleNode): node is FunctionLike => {
 
 // Finds the last function-like node via a real Linter run, not @mocks/sourceCodeFrom, which returns only the first node
 // of a type; the ts/script options serve fixtures needing the TypeScript parser or a non-strict sourceType.
-const parseFunction = (code: string, options: { ts?: boolean; script?: boolean } = {}): ParsedFunction => {
+const parseFunction = (code: string, options: { ts?: boolean;
+  script?: boolean; } = {}): ParsedFunction => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];
   let captured: SourceCode | undefined;
@@ -72,15 +73,30 @@ const parseFunction = (code: string, options: { ts?: boolean; script?: boolean }
     throw new Error(`no function in snippet: ${code}`);
   }
 
-  return { sourceCode: captured, fn };
+  return {
+    sourceCode: captured,
+    fn,
+  };
 };
 
 describe('isInsideFunctionBody', () => {
   it.each([
-    { label: 'a node nested inside a function', code: 'function outer() {\n  return 1;\n}', expected: true },
-    { label: 'a node at the top level, with no enclosing function', code: 'const value = 1;', expected: false },
+    {
+      label: 'a node nested inside a function',
+      code: 'function outer() {\n  return 1;\n}',
+      expected: true,
+    },
+    {
+      label: 'a node at the top level, with no enclosing function',
+      code: 'const value = 1;',
+      expected: false,
+    },
     // An arrow is a function too, so a reference inside one counts the same as inside a `function`.
-    { label: 'a node nested inside an arrow function', code: 'const outer = () => {\n  return 1;\n};', expected: true },
+    {
+      label: 'a node nested inside an arrow function',
+      code: 'const outer = () => {\n  return 1;\n};',
+      expected: true,
+    },
   ])('is $expected for $label', ({ code, expected }) => {
     const { sourceCode, firstNode } = sourceCodeFrom(code);
     const literal = firstNode('Literal');
@@ -139,7 +155,11 @@ describe('sitsInUnsafePosition', () => {
     },
     // `void` takes the function as a bare operand, where an arrow would need parentheses of its
     // own, so a unary operator is not in the safe-parent list.
-    { label: 'an operand of a unary operator', code: 'void function () {\n  run();\n}();', expected: true },
+    {
+      label: 'an operand of a unary operator',
+      code: 'void function () {\n  run();\n}();',
+      expected: true,
+    },
   ])('is $expected for $label', ({ code, expected }) => {
     const { sourceCode, fn } = parseFunction(code);
 
@@ -176,7 +196,11 @@ describe('isSafeToConvert', () => {
       code: 'function greet() {\n  return 1;\n}',
       expected: true,
     },
-    { label: 'a generator', code: 'function* walk() {\n  yield 1;\n}', expected: false },
+    {
+      label: 'a generator',
+      code: 'function* walk() {\n  yield 1;\n}',
+      expected: false,
+    },
     // `super` is only legal inside a method, so the fixture has to be one.
     {
       label: 'a method that reaches for super',

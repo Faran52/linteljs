@@ -60,8 +60,7 @@ export const newlineDestructuring = createRule('newline-destructuring', {
       category: 'layout',
       language: 'universal',
       recommended: true,
-      description: 'Enforce newlines in object destructuring, interfaces, and type literals '
-        + 'when there are too many properties.',
+      description: 'Keep crowded destructuring patterns, interfaces, and type literals on separate lines.',
     },
     // `code`, not `whitespace`: the `ObjectPattern` branch rebuilds the pattern and drops a
     // trailing comma, a token edit that `--fix-type whitespace` would skip.
@@ -196,7 +195,11 @@ export const newlineDestructuring = createRule('newline-destructuring', {
         return false;
       }
 
-      context.report({ node, messageId: 'multilineProperty', fix });
+      context.report({
+        node,
+        messageId: 'multilineProperty',
+        fix,
+      });
 
       return true;
     };
@@ -216,11 +219,19 @@ export const newlineDestructuring = createRule('newline-destructuring', {
       }
 
       if (analysis.hasSameLinePairs) {
-        context.report({ node, messageId: 'consistNewline', fix });
+        context.report({
+          node,
+          messageId: 'consistNewline',
+          fix,
+        });
       }
 
       if (analysis.hasBlankBetween) {
-        context.report({ node, messageId: 'noBlankBetween', fix });
+        context.report({
+          node,
+          messageId: 'noBlankBetween',
+          fix,
+        });
       }
     };
 

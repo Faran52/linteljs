@@ -1,6 +1,6 @@
 # @linteljs/prefer-destructured-props
 
-Requires props to be destructured in the signature rather than read member by member.
+Destructure component props in the function signature instead of reading them one field at a time.
 
 - Category: `functions`
 - Applies to: JavaScript and TypeScript

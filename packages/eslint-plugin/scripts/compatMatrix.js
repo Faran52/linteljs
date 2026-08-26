@@ -83,7 +83,10 @@ const EXPECTED = [
 
 const legacyConfig = JSON.stringify({
   root: true,
-  parserOptions: { ecmaVersion: 2018, sourceType: 'module' },
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: 'module',
+  },
   plugins: ['@linteljs'],
   extends: ['plugin:@linteljs/recommended'],
   // Enrolled by hand: the rule sits outside `recommended`, and it still owes the six-major proof.
@@ -101,13 +104,20 @@ const flatConfig = [
 ].join('\n');
 
 const run = (command, args, cwd) => {
-  return execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return execFileSync(command, args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
 };
 
 // The packed tarball, not `src/` or `dist/` by path: what a consumer installs is the tarball, and an entry missing
 // from `files` or an `exports` map resolving only in this repo is the defect a matrix over source cannot see.
 const packPlugin = () => {
-  rmSync(matrixDir, { recursive: true, force: true });
+  rmSync(matrixDir, {
+    recursive: true,
+    force: true,
+  });
   mkdirSync(matrixDir, { recursive: true });
 
   run('npm', ['pack', '--pack-destination', matrixDir], pkgDir);

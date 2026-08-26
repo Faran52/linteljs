@@ -22,10 +22,17 @@ const smokeDir = join(root, '.smoke');
 const pkgDir = join(smokeDir, 'package');
 
 const run = (cmd, args, cwd = root) => {
-  return execFileSync(cmd, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+  return execFileSync(cmd, args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
 };
 
-rmSync(smokeDir, { recursive: true, force: true });
+rmSync(smokeDir, {
+  recursive: true,
+  force: true,
+});
 mkdirSync(smokeDir, { recursive: true });
 
 console.log('• packing tarball');
@@ -134,7 +141,11 @@ const checkFlavour = (name, configFile, configSource) => {
     output = execFileSync(
       process.execPath,
       [eslintBin, '--no-config-lookup', '-c', configFile, '-f', 'json', 'fixture.js'],
-      { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
+      {
+        cwd: dir,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'inherit'],
+      },
     );
   }
   catch (error) {
@@ -324,5 +335,8 @@ for (const doc of packedDocs) {
 
 console.log(`  ✓ ${String(packedDocs.length)} rule docs packed at the published path`);
 
-rmSync(smokeDir, { recursive: true, force: true });
+rmSync(smokeDir, {
+  recursive: true,
+  force: true,
+});
 console.log('✓ packed artifact smoke test passed');

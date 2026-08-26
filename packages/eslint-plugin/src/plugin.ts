@@ -36,7 +36,10 @@ export const meta = {
   version: '1.4.6',
 };
 
-const plugin = { meta, rules } satisfies ESLint.Plugin;
+const plugin = {
+  meta,
+  rules,
+} satisfies ESLint.Plugin;
 
 const ruleEntries = Object.entries(rules) as [RuleName, LintelRuleModule][];
 
@@ -116,7 +119,10 @@ const defineLegacyPreset = (
     rules: toRuleRecord(byLanguage(selected, 'universal')),
     overrides: typescriptOnly.length === 0
       ? []
-      : [{ files: [...TYPESCRIPT_FILES], rules: toRuleRecord(typescriptOnly) }],
+      : [{
+          files: [...TYPESCRIPT_FILES],
+          rules: toRuleRecord(typescriptOnly),
+        }],
   };
 };
 

@@ -1,6 +1,6 @@
 # @linteljs/newline-destructuring
 
-Enforce newlines in object destructuring, interfaces, and type literals when there are too many properties.
+Keep crowded destructuring patterns, interfaces, and type literals on separate lines.
 
 - Category: `layout`
 - Applies to: JavaScript and TypeScript
@@ -15,67 +15,36 @@ destructuring of it read the same way.
 ## Examples of incorrect code for this rule
 
 ```ts
-// incorrect: three properties on one line, over the default maxProperties of 2
 const { alpha, bravo, charlie } = source;
 
-// incorrect: a rest element drops the threshold to maxPropertiesWithRest, which is 1
 const { delta, ...rest } = source;
 
-// incorrect: interfaces and type literals count the same way
 interface Wide { echo: string; foxtrot: number; golf: boolean }
 
-// incorrect: split, but two properties still share a line
 const { hotel, india,
   juliet } = source;
-
-// incorrect: a blank line between properties
-const {
-  kilo,
-
-  lima,
-  mike
-} = source;
-
-// incorrect: one property spans lines while the rest sit on the opening line
-const { november, oscar = { first: 1,
-  second: 2 } } = source;
 ```
 
 ## Examples of correct code for this rule
 
 ```ts
-// correct: two properties, at the default threshold
 const { alpha, bravo } = source;
 
-// correct: three properties, one per line
 const {
   charlie,
   delta,
   echo
 } = source;
 
-// correct: a rest element counts towards the total, so any named property
-// alongside it puts the pattern over maxPropertiesWithRest and it splits
 const {
   foxtrot,
   ...rest
 } = other;
 
-// correct: an interface, one member per line
 interface Wide {
   golf: string;
   hotel: number;
   india: boolean;
-}
-
-// correct: a doc comment above a member belongs to that member
-interface Documented {
-  /** How many times to retry. */
-  juliet: string;
-  /** Milliseconds between attempts. */
-  kilo: number;
-  /** Whether to give up on the first refusal. */
-  lima: boolean;
 }
 ```
 

@@ -1,11 +1,11 @@
 # @linteljs/interface-order
 
-Enforce that top-level interfaces and type aliases are placed after imports, before runtime code.
+Keep top-level interfaces and type aliases together, after imports and before runtime code.
 
 - Category: `ordering`
 - Applies to: TypeScript only
 - Fixable: yes (code)
-- In `recommended`: no, opt in explicitly
+- In `recommended`: no
 
 Types belong in one block near the top of the file, where a reader looking for the shape of things
 can find them without scrolling past the implementation. Only top-level `interface` and `type`

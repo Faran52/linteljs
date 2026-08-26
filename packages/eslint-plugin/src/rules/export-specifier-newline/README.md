@@ -1,6 +1,6 @@
 # @linteljs/export-specifier-newline
 
-Forces every export specifier to be on a new line.
+Put each export specifier on its own line.
 
 - Category: `layout`
 - Applies to: JavaScript and TypeScript

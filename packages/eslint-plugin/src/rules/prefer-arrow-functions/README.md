@@ -1,6 +1,6 @@
 # @linteljs/prefer-arrow-functions
 
-Prefer arrow functions over plain functions when conversion preserves behaviour.
+Prefer arrow functions when the conversion keeps behaviour the same.
 
 - Category: `functions`
 - Applies to: JavaScript and TypeScript
@@ -19,30 +19,18 @@ function was left alone.
 ## Examples of incorrect code for this rule
 
 ```ts
-// incorrect: a plain function declaration
 function greet(name: string) {
   return name;
 }
 
-// incorrect: a function expression as an object property
 const service = {
   send: function () {
     return 1;
   }
 };
 
-// incorrect: method shorthand is a function expression too
-const client = {
-  fetch() {
-    return 2;
-  }
-};
-
-// incorrect: an arrow with a bare expression body, which gets an explicit return
 const total = () => 3;
 
-// incorrect: reported under its own message and deliberately not fixed, because
-// `const` is not hoisted and the rewrite would throw ReferenceError
 notify();
 
 function notify() {
@@ -53,30 +41,18 @@ function notify() {
 ## Examples of correct code for this rule
 
 ```ts
-// correct: an arrow with an explicit return
 const greet = (name: string) => {
   return name;
 };
 
-// correct: an arrow as an object property
 const service = {
   send: () => {
     return 1;
   }
 };
 
-// correct: the explicit return written out
 const total = () => { return 3; };
 
-// correct, and still reported for its concise body, not for its `this`: adding
-// a block body cannot move what an arrow's `this` resolves to
-class Service {
-  read = () => {
-    return this.value;
-  };
-}
-
-// correct: the declaration comes before the call, so nothing is hoisted over
 const notify = () => {
   return 4;
 };

@@ -19,7 +19,10 @@ const root = resolve(import.meta.dirname, '..');
 const rulesDir = join(root, 'src', 'rules');
 const docsDir = join(root, 'docs', 'rules');
 
-rmSync(docsDir, { recursive: true, force: true });
+rmSync(docsDir, {
+  recursive: true,
+  force: true,
+});
 mkdirSync(docsDir, { recursive: true });
 
 const ruleIds = readdirSync(rulesDir, { withFileTypes: true })

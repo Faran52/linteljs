@@ -9,7 +9,7 @@ export const preferTryCatch = createRule('prefer-try-catch', {
       category: 'promises',
       language: 'universal',
       recommended: true,
-      description: 'Prefer try/catch around an await to a promise rejection handler.',
+      description: 'Prefer `try`/`catch` around an awaited rejection path instead of a promise callback.',
     },
     messages: {
       preferTryCatchOverCatch:

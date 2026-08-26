@@ -40,8 +40,7 @@ export const unionNewline = createRule('union-newline', {
       category: 'layout',
       language: 'typescript',
       recommended: true,
-      description: 'Enforce newlines in union types containing objects/functions, or in '
-        + 'generic type arguments with many keys.',
+      description: 'Split union types when object or function members make them hard to read.',
     },
     fixable: 'whitespace',
     messages: {

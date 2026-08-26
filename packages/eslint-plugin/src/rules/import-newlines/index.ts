@@ -30,7 +30,7 @@ export const importNewlines = createRule('import-newlines', {
       category: 'layout',
       language: 'universal',
       recommended: true,
-      description: 'Enforce multiple lines for import statements past a certain number of items.',
+      description: 'Split import lists when they get crowded or too long.',
     },
     // `code`, not `whitespace`: rebuilding the clause can drop a redundant `as alpha` or a trailing comma.
     fixable: 'code',

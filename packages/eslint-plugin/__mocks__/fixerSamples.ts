@@ -22,21 +22,46 @@ export interface FixerSample {
 }
 
 export const FIXER_SAMPLES: FixerSample[] = [
-  { name: 'empty named import', code: "import {\n} from 'mod';" },
-  { name: 'side-effect import over two lines', code: "import\n'mod';" },
+  {
+    name: 'empty named import',
+    code: "import {\n} from 'mod';",
+  },
+  {
+    name: 'side-effect import over two lines',
+    code: "import\n'mod';",
+  },
   {
     name: 'string-literal import name',
     code: "import { 'a-b' as first, second, third } from 'mod';",
     typescript: true,
   },
-  { name: 'import with a comment between specifiers', code: "import { alpha, /* keep */ bravo, charlie } from 'mod';" },
-  { name: 'import attributes', code: "import data from './x.json' with { type: 'json' };", typescript: true },
-  { name: 'default-only import split over lines', code: "import\ndefaultExport from 'mod';" },
+  {
+    name: 'import with a comment between specifiers',
+    code: "import { alpha, /* keep */ bravo, charlie } from 'mod';",
+  },
+  {
+    name: 'import attributes',
+    code: "import data from './x.json' with { type: 'json' };",
+    typescript: true,
+  },
+  {
+    name: 'default-only import split over lines',
+    code: "import\ndefaultExport from 'mod';",
+  },
 
-  { name: 'export with a comment after the brace', code: "export { /* keep */ alpha, bravo } from 'mod';" },
-  { name: 'export with a trailing comma', code: "export { alpha, bravo, } from 'mod';" },
+  {
+    name: 'export with a comment after the brace',
+    code: "export { /* keep */ alpha, bravo } from 'mod';",
+  },
+  {
+    name: 'export with a trailing comma',
+    code: "export { alpha, bravo, } from 'mod';",
+  },
 
-  { name: 'rest target is a member expression', code: '({ alpha, bravo, ...target.rest } = source);' },
+  {
+    name: 'rest target is a member expression',
+    code: '({ alpha, bravo, ...target.rest } = source);',
+  },
   // The `?` sits inside the `ObjectPattern`, between its closing brace and the
   // annotation; a pattern rebuild can drop it and still parse.
   {
@@ -49,16 +74,40 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'interface Loader {\n  load({ alpha, bravo, charlie }?: Options): void;\n}',
     typescript: true,
   },
-  { name: 'nested destructuring', code: 'const { alpha: { one, two, three }, bravo } = source;' },
-  { name: 'destructuring with a comment', code: 'const { alpha, /* keep */ bravo, charlie } = source;' },
-  { name: 'array pattern with a leading hole', code: 'const [, alpha, bravo,\n  charlie] = source;' },
+  {
+    name: 'nested destructuring',
+    code: 'const { alpha: { one, two, three }, bravo } = source;',
+  },
+  {
+    name: 'destructuring with a comment',
+    code: 'const { alpha, /* keep */ bravo, charlie } = source;',
+  },
+  {
+    name: 'array pattern with a leading hole',
+    code: 'const [, alpha, bravo,\n  charlie] = source;',
+  },
 
-  { name: 'negated function expression', code: '!function () {\n  run();\n}();' },
-  { name: 'void function expression', code: 'void function () {\n  run();\n}();' },
-  { name: 'typeof function expression', code: 'const kind = typeof function () {\n  return 1;\n};' },
-  { name: 'new on a function expression', code: 'const made = new function () {\n  return 1;\n}();' },
+  {
+    name: 'negated function expression',
+    code: '!function () {\n  run();\n}();',
+  },
+  {
+    name: 'void function expression',
+    code: 'void function () {\n  run();\n}();',
+  },
+  {
+    name: 'typeof function expression',
+    code: 'const kind = typeof function () {\n  return 1;\n};',
+  },
+  {
+    name: 'new on a function expression',
+    code: 'const made = new function () {\n  return 1;\n}();',
+  },
   // The callee is still a callee here; `() => {}()` does not parse.
-  { name: 'immediately invoked function expression', code: 'const value = function () {\n  return 1;\n}();' },
+  {
+    name: 'immediately invoked function expression',
+    code: 'const value = function () {\n  return 1;\n}();',
+  },
   {
     name: 'immediately invoked function expression as an argument',
     code: 'run(function () {\n  return 1;\n}());',
@@ -111,7 +160,10 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'sample.cjs',
   },
 
-  { name: 'hook dependencies with a comment', code: 'useEffect(() => {}, [\n  bravo, // needed\n  alpha,\n]);' },
+  {
+    name: 'hook dependencies with a comment',
+    code: 'useEffect(() => {}, [\n  bravo, // needed\n  alpha,\n]);',
+  },
 
   {
     name: 'union with a comment before the pipe',
@@ -151,7 +203,40 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: "import { thing } from 'mod'; // note\n\nconst value = thing;\n\ntype Alpha = string;\n",
     typescript: true,
   },
-  { name: 'fluent chain, unawaited', code: 'function load() {\n  return fetch(url).then(parse).catch(handle);\n}' },
+  // comment-delimiter declines all of these, so they pin where it stops rather than what it rewrites;
+  // a delimiter conversion changes a comment's type, which the corpus's comment checks cannot absorb.
+  {
+    name: 'three-line jsdoc stays JSDoc',
+    code: '/**\n * alpha\n * bravo\n * charlie\n */\nconst value = 1;\n',
+  },
+  {
+    name: 'two slash lines stay separate',
+    code: '// alpha\n// bravo\nconst value = 1;\n',
+  },
+  {
+    name: 'directive run stays machine-addressed',
+    // No `eslint-disable` here: ESLint's own fix pass deletes a disable directive that suppresses nothing,
+    // which drops a comment for reasons that have nothing to do with the rule under test.
+    code: '// @ts-expect-error legacy\n// v8 ignore next\n// istanbul ignore next\nconst value = 1;\n',
+    typescript: true,
+  },
+  {
+    name: 'shebang stays a hashbang',
+    code: '#!/usr/bin/env node\nconst value = 1;\n',
+  },
+  {
+    name: 'triple-slash reference stays a directive',
+    code: '/// <reference lib="dom" />\nconst value = 1;\n',
+    typescript: true,
+  },
+  {
+    name: 'trailing slash note beside code',
+    code: 'const value = 1; // why it is one\n',
+  },
+  {
+    name: 'fluent chain, unawaited',
+    code: 'function load() {\n  return fetch(url).then(parse).catch(handle);\n}',
+  },
   {
     name: 'fluent chain, awaited',
     code: 'async function load() {\n  return await fetch(url).then(parse).catch(handle);\n}',
@@ -160,19 +245,34 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'chain returned from an async function',
     code: 'async function load() {\n  return fetch(url).catch(handle);\n}',
   },
-  { name: 'chain at the top level', code: 'fetch(url).then(parse).catch(handle);' },
-  { name: 'then with two arguments', code: 'function load() {\n  return fetch(url).then(parse, handle);\n}' },
+  {
+    name: 'chain at the top level',
+    code: 'fetch(url).then(parse).catch(handle);',
+  },
+  {
+    name: 'then with two arguments',
+    code: 'function load() {\n  return fetch(url).then(parse, handle);\n}',
+  },
   {
     name: 'then with three arguments',
     code: 'function load() {\n  return fetch(url).then(parse, handle, extra);\n}',
   },
-  { name: 'catch with no argument', code: 'function load() {\n  return fetch(url).catch();\n}' },
+  {
+    name: 'catch with no argument',
+    code: 'function load() {\n  return fetch(url).catch();\n}',
+  },
   {
     name: 'chain on a member object',
     code: 'function load() {\n  return api.client.fetch(url).then(parse);\n}',
   },
-  { name: 'computed promise method', code: 'const key = name;\nfunction load() {\n  return promise[key](parse);\n}' },
-  { name: 'string-literal promise method', code: "function load() {\n  return promise['then'](parse);\n}" },
+  {
+    name: 'computed promise method',
+    code: 'const key = name;\nfunction load() {\n  return promise[key](parse);\n}',
+  },
+  {
+    name: 'string-literal promise method',
+    code: "function load() {\n  return promise['then'](parse);\n}",
+  },
   {
     name: 'chain inside a constructor',
     code: 'class Service {\n  constructor() {\n    fetch(url).then(parse);\n  }\n}',
@@ -182,10 +282,22 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'async function outer() {\n  function inner() {\n    return fetch(url).then(parse);\n  }\n'
       + '\n  return inner();\n}',
   },
-  { name: 'chain yielded from a generator', code: 'function* walk() {\n  yield fetch(url).then(parse);\n}' },
-  { name: 'chain in an arrow with an expression body', code: 'const load = () => fetch(url).then(parse);' },
-  { name: 'chain in an async arrow with an expression body', code: 'const load = async () => fetch(url).then(parse);' },
-  { name: 'then called bare', code: 'function load() {\n  return then(parse);\n}' },
+  {
+    name: 'chain yielded from a generator',
+    code: 'function* walk() {\n  yield fetch(url).then(parse);\n}',
+  },
+  {
+    name: 'chain in an arrow with an expression body',
+    code: 'const load = () => fetch(url).then(parse);',
+  },
+  {
+    name: 'chain in an async arrow with an expression body',
+    code: 'const load = async () => fetch(url).then(parse);',
+  },
+  {
+    name: 'then called bare',
+    code: 'function load() {\n  return then(parse);\n}',
+  },
   {
     name: 'chain assigned, not returned',
     code: 'function load() {\n  const pending = fetch(url).then(parse);\n  return pending;\n}',
@@ -286,7 +398,10 @@ const sourceTypeFor = (filename?: string): 'commonjs' | 'module' => {
 const languageOptionsFor = ({ typescript, filename }: Pick<FixerSample, 'filename' | 'typescript'>) => {
   return typescript
     ? { parser: tseslint.parser }
-    : { ecmaVersion: 'latest' as const, sourceType: sourceTypeFor(filename) };
+    : {
+        ecmaVersion: 'latest' as const,
+        sourceType: sourceTypeFor(filename),
+      };
 };
 
 // A named sample opts itself in via `files`; an unnamed one is linted as
@@ -298,7 +413,13 @@ const filesFor = (filename?: string) => {
 // Parse errors in a snippet, so a fixer's output can be checked for validity.
 export const parseErrorsIn = (code: string, typescript = false, filename?: string): string[] => {
   return linter
-    .verify(code, [{ ...filesFor(filename), languageOptions: languageOptionsFor({ typescript, filename }) }], filename)
+    .verify(code, [{
+      ...filesFor(filename),
+      languageOptions: languageOptionsFor({
+        typescript,
+        filename,
+      }),
+    }], filename)
     .filter((message) => {
       return message.fatal;
     })
@@ -322,7 +443,10 @@ const astOf = (code: string, typescript: boolean, filename?: string): AST.Progra
   linter.verify(code, [{
     ...filesFor(filename),
     plugins: { probe: { rules: { capture: probe } } },
-    languageOptions: languageOptionsFor({ typescript, filename }),
+    languageOptions: languageOptionsFor({
+      typescript,
+      filename,
+    }),
     rules: { 'probe/capture': 'error' },
   }], filename);
 

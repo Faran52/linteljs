@@ -34,7 +34,10 @@ export const sourceCodeFrom = (code: string): ParsedSnippet => {
   linter.verify(code, [
     {
       plugins: { probe: { rules: { capture } } },
-      languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+      languageOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
       rules: { 'probe/capture': 'error' },
     },
   ]);

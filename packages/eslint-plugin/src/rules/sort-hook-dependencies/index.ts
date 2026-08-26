@@ -30,7 +30,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
       language: 'universal',
       // Off by default: matches on bare call names, so opting in should be a decision, not inherited from a preset.
       recommended: false,
-      description: 'Requires that hook dependency arrays are sorted alphabetically.',
+      description: 'Keep hook dependency arrays in a consistent order.',
     },
     fixable: 'code',
     messages: {

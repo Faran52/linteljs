@@ -95,8 +95,14 @@ tsRuleTester.run('union-newline', unionNewline, {
 
 tsRuleTester.run('union-newline (options)', unionNewline, {
   valid: [
-    { code: "type Alpha = Record<'a' | 'b' | 'c' | 'd', string>;", options: [{ maxGenericMembers: 4 }] },
-    { code: "type Alpha = Record<'a' | 'b', string>;", options: [{ maxGenericMembers: 2 }] },
+    {
+      code: "type Alpha = Record<'a' | 'b' | 'c' | 'd', string>;",
+      options: [{ maxGenericMembers: 4 }],
+    },
+    {
+      code: "type Alpha = Record<'a' | 'b', string>;",
+      options: [{ maxGenericMembers: 2 }],
+    },
   ],
   invalid: [
     {

@@ -1,6 +1,6 @@
 # @linteljs/prefer-await-to-then
 
-Prefer await to then()/catch()/finally() for reading Promise values.
+Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values.
 
 - Category: `promises`
 - Applies to: JavaScript and TypeScript

@@ -1,5 +1,27 @@
 # Changelog
 
+All three packages share one version and release together. An entry here describes this package;
+when a version's change lives in a sibling it is described there instead:
+
+- [`@linteljs/create`](../create/CHANGELOG.md)
+- [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
+
+## 1.5.0
+
+Two rules, taking the total to fourteen.
+
+- `no-duplicate-jsx-props` reports a prop named more than once on one element. React keeps the last
+  occurrence and drops the rest in silence, so the first value disappears without a word from the
+  compiler, the type checker or any other rule. Report only: deleting either occurrence guesses
+  which value the author meant. A spread between two occurrences resets the count, since overriding
+  through `{...props}` is deliberate.
+- `comment-delimiter` keeps `//` for comments of one or two lines and JSDoc for three or more,
+  which the published standard has always said and nothing checked. It fixes in both directions and
+  leaves directives, trailing comments and test files alone.
+
+Neither is in `recommended`: `comment-delimiter` is, and arrives through the preset; the JSX rule is
+turned on by the React and Solid layers of `@linteljs/eslint-config`.
+
 ## 1.4.6
 
 No change to the rules. The three versions move together, so this carries the write-time guard fix in

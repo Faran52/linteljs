@@ -1,6 +1,6 @@
 # @linteljs/prefer-try-catch
 
-Prefer try/catch around an await to a promise rejection handler.
+Prefer `try`/`catch` around an awaited rejection path instead of a promise callback.
 
 - Category: `promises`
 - Applies to: JavaScript and TypeScript

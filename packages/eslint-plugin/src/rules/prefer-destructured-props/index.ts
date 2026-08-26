@@ -65,7 +65,7 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
       language: 'universal',
       // Uppercase implies a component only in rendering frameworks.
       recommended: false,
-      description: 'Requires props to be destructured in the signature rather than read member by member.',
+      description: 'Destructure component props in the function signature instead of reading them one field at a time.',
     },
     messages: {
       destructure: 'Destructure the props in the signature instead of reading them member by member.',

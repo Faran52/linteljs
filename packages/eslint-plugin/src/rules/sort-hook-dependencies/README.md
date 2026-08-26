@@ -1,6 +1,6 @@
 # @linteljs/sort-hook-dependencies
 
-Requires that hook dependency arrays are sorted alphabetically.
+Keep hook dependency arrays in a consistent order.
 
 - Category: `ordering`
 - Applies to: JavaScript and TypeScript
