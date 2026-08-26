@@ -37,7 +37,7 @@ describe.
   real text through a real `ESLint` (`packages/eslint-config/__mocks__/lintText.ts`), never by
   reading the config object back.
 - `__mocks__/fixerSamples.ts` is a shared corpus run against **every** rule. A fixer defect belongs
-  there as well as in the rule's own suite: one nasty input then covers all eleven rules.
+  there as well as in the rule's own suite: one nasty input then covers all fourteen rules.
 - `packages/create/src/run/pipeline/pipeline.e2e.test.ts` is excluded from the default run by its
   `.e2e.` infix. It scaffolds, installs and gates all nine targets for real, plus one case per answer
   dimension, and takes minutes.

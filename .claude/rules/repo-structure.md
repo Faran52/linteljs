@@ -113,7 +113,7 @@ Three files in `eslint-plugin` are named for what they cover rather than for one
 because what they cover is the plugin: `meta.test.ts` holds the whole published surface against
 `__mocks__/ruleMetadata.json`, `ruleModules.test.ts` checks the registry against the directory
 listing, and `fixerSafety.test.ts` runs the shared corpus through every rule at once. Splitting
-any of them per rule would be eleven copies of one assertion.
+any of them per rule would be fourteen copies of one assertion.
 
 Coverage is gated at 100% on all four metrics for all three packages. A line that cannot be
 reached is deleted rather than ignored; the one sanctioned exception is a `/* v8 ignore */` on a

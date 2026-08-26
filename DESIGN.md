@@ -7,6 +7,12 @@ Everything else lives with the thing it describes: the layers are documented in
 non-obvious mechanism in a comment beside the code that needed it. A design document that
 restates code goes stale and then misleads.
 
+## Contents
+
+For a consumer deciding whether to use lintel: The problem, The goal, Non-goals.
+For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure.
+For work on this workspace itself: One version per shared dependency; What a project owns; Renaming a generated agent file; React Native build; Releasing; Workspace lint exemptions.
+
 ## The problem
 
 Lint, type, test and agent standards get copied by hand into each new project. The copies drift.
@@ -31,43 +37,6 @@ One repo was fixed and the other was not, and nothing could have told you which.
 One command produces a new project with the standard already applied. One command re-applies it
 to a project that already exists. The shared rules live in a published package, so a fix reaches
 every project on update instead of being re-copied into some of them.
-
-## One version per shared dependency
-
-The same argument the paragraph above makes about rules applies to this workspace's own versions.
-Eight dependencies were declared in more than one `package.json`, and `@types/node` had already
-drifted: `~24.13.3` at the root and in `eslint-config`, `^24.13.3` in `eslint-plugin`, with nothing
-to say which was meant. They now read `catalog:`, and the version lives once in the `catalog:` block
-of `pnpm-workspace.yaml`.
-
-Being shared is necessary but not sufficient. A dependency is catalogued when more than one package
-declares it **and all of them mean the same thing by it**. Three cases stay out:
-
-- **One consumer.** It already has exactly one place to change; a catalog entry would add a hop for
-  nothing.
-- **Part of a published surface.** `eslint-config` pins every runtime dependency exactly, so the rule
-  set it ships is reproducible. `eslint-plugin` declares two of those as well, but only to lint
-  itself with them. Catalogued, the two stop being separable, and a bump that reads like dev-tooling
-  maintenance edits what `eslint-config` publishes. That is the reason, and it does not depend on the
-  two ranges looking different: whether `eslint-plugin` carets or pins is its own business, and
-  either way its dev choice must not reach through a shared entry into a released dependency.
-  `eslint-plugin-sonarjs` and `typescript-eslint` were briefly catalogued for exactly the wrong
-  reason, which is that one package dev-uses what another ships.
-- **Peer ranges.** Deliberately wider than what this workspace installs: `eslint` is `>=9` for a
-  consumer and `catalog:` for development.
-
-What is left is the six that are unambiguously shared dev tooling: `@types/node`,
-`@vitest/coverage-v8`, `eslint`, `tsdown`, `typescript` and `vitest`.
-
-`pnpm pack` rewrites the protocol, verified on `eslint-config`, whose runtime dependencies are the
-ones that would ship it: the tarball carries `4.2.0` and `8.67.0`, and no `catalog:` survives. That
-does mean releases go through pnpm; a bare `npm publish` would ship the protocol verbatim.
-
-`@linteljs/create`'s `VERSIONS` table is deliberately **not** on the catalog. It names versions for
-somebody else's project, not for this workspace, and the two move for different reasons. The one
-coupling that does matter is that a generated project must not be handed something older than the
-layers it installs were built against, and `versions.test.ts` gates exactly that against the
-catalog rather than leaving it to a comment.
 
 ## Non-goals
 
@@ -244,6 +213,50 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   flag that declined it; `--rspack` is the one alternative. Neither is passed. A generated project
   takes the framework's default, which is the same position every other target is in.
 
+## One item per line, object literals included
+
+`@linteljs/eslint-plugin` shipped four newline-per-item rules and the config enabled none for
+object literals, so a four-property literal stayed on one line while the identical destructuring
+pattern was split by `destructuring-property-newline`. At 120 columns `max-len` never reached it
+either, which is how `thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 }`
+passed unchanged. A reader who has internalised one of the four rules expects the fifth case to
+behave the same way, and the asymmetry read as an oversight because that is what it was.
+
+`base` now enables `@stylistic/object-property-newline` with `allowAllPropertiesOnSameLine: false`,
+paired with `@stylistic/object-curly-newline` scoped to `ObjectExpression`. The pairing is not
+decoration: `object-property-newline` alone fixes to a hanging brace on the first and last property
+lines, which is worse than the shape it replaced. The scope is what keeps it off imports, exports
+and destructuring patterns, which the four `@linteljs` rules already own and would otherwise fight.
+
+## Duplicate JSX props: this plugin's rule, not a dependency
+
+A component with the same prop twice passes lint, typecheck and the type floor. React keeps the
+last occurrence and drops the rest without a word, so two overlapping edits left `usage={null}
+nowMs={0}` twice on eight call sites in one file with every gate green. Had the two values
+differed, the first would have been discarded silently.
+
+The config enables ten duplicate-related rules and none covers JSX attributes.
+`@eslint-react/eslint-plugin` ships `no-duplicate-key` and no props equivalent: checked against
+5.18.6, which is the latest published version, and none of its 140 rules is about duplicate
+attributes. The rule that does catch it, `react/jsx-no-duplicate-props`, lives in
+`eslint-plugin-react`, which this config does not install.
+
+So `@linteljs/no-duplicate-jsx-props` is roughly sixty lines here rather than a dependency every
+React consumer installs for one rule, and rather than the hundred-odd other rules that dependency
+would arrive with and the config would then have to switch off. Two details in it are the ones
+most likely to be questioned later:
+
+- **Report-only, no fixer.** Deleting either occurrence guesses which value the author meant, and
+  the two values usually differ. A fixer that guesses is worse than a report that does not.
+- **A spread resets the count.** `{...props}` can override every explicit prop before it and be
+  overridden by every explicit prop after it, which is the documented way to offer a default, so
+  the same name on either side of a spread is deliberate rather than a repeat. Three occurrences
+  with a spread between the first two still report the third.
+
+It is not in `recommended`, because the plugin ships no JSX layer of its own. The React and Solid
+layers of `@linteljs/eslint-config` turn it on, and those are the two that render JSX; Vue and
+Svelte templates are not JSX and take nothing.
+
 ## Targets
 
 Nine: React, Next.js, Vue, Svelte, Solid, Angular, Astro, React Native through Expo, and a
@@ -393,6 +406,43 @@ lib/apis/
 ```
 
 Request and response are separate schemas per endpoint, never one shape serving both directions.
+
+## One version per shared dependency
+
+The same argument The goal makes about rules reaching every project applies to this workspace's own versions.
+Eight dependencies were declared in more than one `package.json`, and `@types/node` had already
+drifted: `~24.13.3` at the root and in `eslint-config`, `^24.13.3` in `eslint-plugin`, with nothing
+to say which was meant. They now read `catalog:`, and the version lives once in the `catalog:` block
+of `pnpm-workspace.yaml`.
+
+Being shared is necessary but not sufficient. A dependency is catalogued when more than one package
+declares it **and all of them mean the same thing by it**. Three cases stay out:
+
+- **One consumer.** It already has exactly one place to change; a catalog entry would add a hop for
+  nothing.
+- **Part of a published surface.** `eslint-config` pins every runtime dependency exactly, so the rule
+  set it ships is reproducible. `eslint-plugin` declares two of those as well, but only to lint
+  itself with them. Catalogued, the two stop being separable, and a bump that reads like dev-tooling
+  maintenance edits what `eslint-config` publishes. That is the reason, and it does not depend on the
+  two ranges looking different: whether `eslint-plugin` carets or pins is its own business, and
+  either way its dev choice must not reach through a shared entry into a released dependency.
+  `eslint-plugin-sonarjs` and `typescript-eslint` were briefly catalogued for exactly the wrong
+  reason, which is that one package dev-uses what another ships.
+- **Peer ranges.** Deliberately wider than what this workspace installs: `eslint` is `>=9` for a
+  consumer and `catalog:` for development.
+
+What is left is the six that are unambiguously shared dev tooling: `@types/node`,
+`@vitest/coverage-v8`, `eslint`, `tsdown`, `typescript` and `vitest`.
+
+`pnpm pack` rewrites the protocol, verified on `eslint-config`, whose runtime dependencies are the
+ones that would ship it: the tarball carries `4.2.0` and `8.67.0`, and no `catalog:` survives. That
+does mean releases go through pnpm; a bare `npm publish` would ship the protocol verbatim.
+
+`@linteljs/create`'s `VERSIONS` table is deliberately **not** on the catalog. It names versions for
+somebody else's project, not for this workspace, and the two move for different reasons. The one
+coupling that does matter is that a generated project must not be handed something older than the
+layers it installs were built against, and `versions.test.ts` gates exactly that against the
+catalog rather than leaving it to a comment.
 
 ## What a project owns, and the four things three migrations changed
 

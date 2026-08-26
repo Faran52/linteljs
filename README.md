@@ -1,41 +1,32 @@
 # lintel
 
 [![npm](https://img.shields.io/npm/v/@linteljs/create.svg)](https://www.npmjs.com/package/@linteljs/create)
-[![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg)](https://www.npmjs.com/package/@linteljs/eslint-config)
-[![npm](https://img.shields.io/npm/v/@linteljs/eslint-plugin.svg)](https://www.npmjs.com/package/@linteljs/eslint-plugin)
 [![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
 
-Lintel scaffolds a TypeScript project with a shared lint, type-check, and test standard. It starts with the
-framework's own generator, then adds the configuration and project files that usually get copied from the last
-repository.
+Lint, type-check, and test standards for TypeScript projects, shipped as three packages: a scaffolder, a
+shared ESLint flat config, and the custom rules behind it.
 
 ```bash
-pnpm create @linteljs my-app
+npm create @linteljs
 ```
 
-Use the package manager you have.
-
-| Runner | Command |
-| --- | --- |
-| pnpm | `pnpm create @linteljs my-app` |
-| npm | `npm create @linteljs my-app` |
-| Yarn 2+ | `yarn create @linteljs my-app` |
-| Bun | `bun create @linteljs my-app` |
-
-The generated project has ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent
-rules. It supports React, Next.js, Vue, Svelte, Solid, Angular, Astro, React Native through Expo, and Manifest V3 web
+The scaffolder runs the framework's own generator first, then layers the lintel standard on top. The result
+is a project with ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent rules,
+ready for React, Next.js, Vue, Svelte, Solid, Angular, Astro, React Native through Expo, and Manifest V3 web
 extensions.
 
-It starts with a working gate:
+Other package managers, the long forms, and the Yarn 1 caveat are in the
+[create package README](packages/create).
+
+## The gate
+
+Every generated project starts with a single command:
 
 ```bash
-pnpm check
+npm check
 ```
 
-That runs linting, CSS linting, type-checking, coverage, and the build. Coverage thresholds are 100%.
-
-Yarn 1 cannot use its `create` shorthand for this package. Use `npx @linteljs/create my-app`. Long forms are
-in the [create package README](packages/create).
+It runs linting, CSS linting, type-checking, coverage, and the build. Coverage thresholds are 100%.
 
 ## Packages
 
@@ -45,31 +36,28 @@ in the [create package README](packages/create).
 | [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers. |
 | [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the custom rules behind the config. |
 
-## What stays shared
-
-Generated projects depend on `@linteljs/eslint-config`, rather than carrying private copies of rules. Their
-`eslint.config.js` selects layers. It does not contain rule logic. Updating the package is how a project takes
-a shared improvement.
-
-`defineConfig` owns the layer order. You can still import each layer from its subpath and compose an array
-yourself when a project needs it.
-
 ## Existing projects
+
+Lintel applies to an existing repository without scaffolding it:
 
 ```bash
 npx @linteljs/create --skip-scaffold
+```
+
+Later, review what an update would change before it touches anything:
+
+```bash
 npx @linteljs/create sync
 ```
 
-The first command applies the standard to the current repository. The second compares Lintel-owned files with
-the current version. It prints diffs and writes nothing until `--force` is passed. It plans from
-`lintel.config.json`, so it does not guess a framework or replace recorded choices.
+`sync` diffs Lintel-owned files against the versions on disk and writes nothing until `--force` is passed.
+It plans from `lintel.config.json`, so it never guesses a framework or overrides recorded choices.
 
 ## Why
 
-Copied configuration drifts quietly. A missing setting can disable a rule while two config files still look
-alike. Lintel keeps shared rules in a published package and makes generated files explicit, so projects can
-update them with a reviewable diff.
+Copied configuration drifts quietly: a missing setting can disable a rule while two config files still look
+alike. Lintel keeps the shared rules in a published package and the generated files explicit, so an update
+arrives as a reviewable diff. [DESIGN.md](DESIGN.md) carries the reasoning, including the non-goals.
 
 ## Development
 
@@ -78,7 +66,10 @@ pnpm install
 pnpm check
 ```
 
-`pnpm check` runs linting, CSS linting, type-checking, coverage, and all builds. The networked generation suite
-is separate: `pnpm --filter @linteljs/create test:e2e` scaffolds every target and runs each generated gate.
+Requires Node 24+ and pnpm 11. `pnpm check` runs the same chain a generated project gets. The networked
+end-to-end suite is separate: `pnpm --filter @linteljs/create test:e2e` scaffolds every target for real and
+runs each generated gate.
+
+## License
 
 MIT
