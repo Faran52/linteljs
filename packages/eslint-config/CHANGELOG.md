@@ -1,5 +1,23 @@
 # Changelog
 
+All three packages share one version and release together. An entry here describes this package;
+when a version's change lives in a sibling it is described there instead:
+
+- [`@linteljs/create`](../create/CHANGELOG.md)
+- [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
+
+## 1.5.0
+
+- Object literals take one property per line, through `@stylistic/object-property-newline` with
+  `allowAllPropertiesOnSameLine: false`. It is paired with `@stylistic/object-curly-newline` scoped
+  to `ObjectExpression`, because the first rule alone fixes to a hanging brace, and the scope keeps
+  both off imports, exports and destructuring patterns, which the four `@linteljs` newline rules
+  already own.
+- The React and Solid layers enable `@linteljs/no-duplicate-jsx-props`.
+- Plugin peers move: `@html-eslint/*` to 0.65, `@next/eslint-plugin-next` to 16.3.3,
+  `@tanstack/eslint-plugin-query` to 5.102.5, and `eslint-plugin-solid` to 0.16, which crosses two
+  minors on 0.x.
+
 ## 1.4.6
 
 No change to the layers. The three versions move together, so this carries the write-time guard fix in

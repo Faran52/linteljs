@@ -34,10 +34,8 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   platform: 'node',
-  /**
-   * No sourcemaps, deliberately: tsdown drives declaration sourcemaps off the same flag, so with it on the
-   * emitted `.d.mts` carries a `sourceMappingURL` for a file never written, a dead link in every editor.
-   */
+  // No sourcemaps, deliberately: tsdown drives declaration sourcemaps off the same flag, so with it on the
+  // emitted `.d.mts` carries a `sourceMappingURL` for a file never written, a dead link in every editor.
   sourcemap: false,
   /**
    * The floor its own peer requires, not this workspace's: `peerDependencies.eslint` is `>=9` and ESLint 9 runs

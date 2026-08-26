@@ -26,10 +26,17 @@ const smokeDir = join(root, '.smoke');
 const pkgDir = join(smokeDir, 'package');
 
 const run = (cmd, args, cwd = root) => {
-  return execFileSync(cmd, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+  return execFileSync(cmd, args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
 };
 
-rmSync(smokeDir, { recursive: true, force: true });
+rmSync(smokeDir, {
+  recursive: true,
+  force: true,
+});
 mkdirSync(smokeDir, { recursive: true });
 
 console.log('• packing tarball');
@@ -45,9 +52,11 @@ run('tar', ['-xzf', join(smokeDir, tarball)], smokeDir);
 
 const manifest = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));
 
-// Linked rather than installed: Node walks up from `.smoke/` for everything else, so the package's own
-// dependencies still resolve out of the workspace's `node_modules`. The link's parent is made from the
-// manifest name, because a scoped package puts the scope directory between `node_modules` and the link.
+/**
+ * Linked rather than installed: Node walks up from `.smoke/` for everything else, so the package's own
+ * dependencies still resolve out of the workspace's `node_modules`. The link's parent is made from the
+ * manifest name, because a scoped package puts the scope directory between `node_modules` and the link.
+ */
 const linkPath = join(smokeDir, 'node_modules', manifest.name);
 
 mkdirSync(dirname(linkPath), { recursive: true });
@@ -71,7 +80,10 @@ const GROUP_EXPORTS = {
 };
 
 const specifiers = subpaths.map((subpath) => {
-  return { subpath, specifier: manifest.name + subpath.slice(1) };
+  return {
+    subpath,
+    specifier: manifest.name + subpath.slice(1),
+  };
 });
 
 const checks = `
@@ -124,5 +136,8 @@ writeFileSync(join(smokeDir, 'probe.mjs'), esmProbe);
 console.log(`• loading ${subpaths.length} subpaths`);
 run('node', [join(smokeDir, 'probe.mjs')], smokeDir);
 
-rmSync(smokeDir, { recursive: true, force: true });
+rmSync(smokeDir, {
+  recursive: true,
+  force: true,
+});
 console.log(`\n✓ all ${subpaths.length} subpaths resolve from the packed tarball`);

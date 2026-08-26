@@ -22,7 +22,10 @@ export const startsWith = (prefix: string) => {
 // Lints a source string against a layer, returning its rule ids. `overrideConfigFile: true` stops ESLint
 // walking up to this workspace's `eslint.config.ts`, so the layer is tested as the whole config a consumer gets.
 export const ruleIdsFor = async (config: Layer, code: string, filePath: string): Promise<(string | null)[]> => {
-  const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: config });
+  const eslint = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: config,
+  });
   const [result] = await eslint.lintText(code, { filePath });
 
   if (!result) {
@@ -40,7 +43,10 @@ export const ruleIdsFor = async (config: Layer, code: string, filePath: string):
  * no rule id, only a `fatal` message, the only evidence a layer order broke the top-level parser.
  */
 export const messagesForFile = async (config: Layer, filePath: string): Promise<Linter.LintMessage[]> => {
-  const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: config });
+  const eslint = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: config,
+  });
   const [result] = await eslint.lintFiles([filePath]);
 
   if (!result) {
