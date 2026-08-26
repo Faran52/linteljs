@@ -15,6 +15,7 @@ describe('emitClaudeSettings', () => {
     ]));
 
     expect(settings).toEqual({
+      includeCoAuthoredBy: false,
       enabledPlugins: {
         'linteljs@linteljs': true,
         'ponytail@ponytail': true,
@@ -48,6 +49,7 @@ describe('emitClaudeSettings', () => {
     const settings: unknown = JSON.parse(emitClaudeSettings([]));
 
     expect(settings).toEqual({
+      includeCoAuthoredBy: false,
       enabledPlugins: { 'linteljs@linteljs': true },
       extraKnownMarketplaces: {
         linteljs: {
@@ -65,6 +67,7 @@ describe('emitClaudeSettings', () => {
     const settings: unknown = JSON.parse(output);
 
     expect(settings).toEqual({
+      includeCoAuthoredBy: false,
       enabledPlugins: {
         'linteljs@linteljs': true,
         'context7@claude-plugins-official': true,

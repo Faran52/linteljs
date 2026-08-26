@@ -8,6 +8,9 @@ interface MarketplaceRef {
 
 // Type only keys this CLI owns; spreads preserve every project-owned setting.
 export interface ClaudeSettings {
+  // Explicitly `| undefined`, because the merge below reads it off a parsed file that may not carry it and
+  // `exactOptionalPropertyTypes` separates a missing key from one set to undefined.
+  includeCoAuthoredBy?: boolean | undefined;
   enabledPlugins?: Record<string, boolean>;
   extraKnownMarketplaces?: Record<string, MarketplaceRef>;
 }
@@ -38,6 +41,9 @@ export const mergeClaudeSettings = (emitted: string, current: string | null): st
   const theirs = settingsIn(current);
 
   const settings: ClaudeSettings = {
+    // Ours first, so a project that has answered this question for itself keeps its answer and one that has not
+    // takes the default. The two keys below are the other way round, because those are lists this CLI owns.
+    includeCoAuthoredBy: ours.includeCoAuthoredBy,
     ...theirs,
     enabledPlugins: {
       ...theirs.enabledPlugins,

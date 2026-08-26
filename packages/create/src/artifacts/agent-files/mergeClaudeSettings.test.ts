@@ -63,6 +63,20 @@ describe('mergeClaudeSettings', () => {
     expect(mergeClaudeSettings(OURS, null)).toBe(OURS);
   });
 
+  // The existing case above holds a project that already answered `false`, which the default matches, so it cannot
+  // tell precedence. This one can: the answer is the project's, and ours is only what it starts with.
+  it('leaves a project that wants the trailer alone', () => {
+    const merged = parsedMerge(`${JSON.stringify({ includeCoAuthoredBy: true })}\n`);
+
+    expect(merged.includeCoAuthoredBy).toBe(true);
+  });
+
+  it('supplies the default to a project that has never set it', () => {
+    const merged = parsedMerge(`${JSON.stringify({ enabledPlugins: { 'caveman@caveman': true } })}\n`);
+
+    expect(merged.includeCoAuthoredBy).toBe(false);
+  });
+
   // The failure this exists to stop: one sync used to take all three of these with it.
   it('keeps the keys the project owns', () => {
     const merged = parsedMerge(THEIRS);
