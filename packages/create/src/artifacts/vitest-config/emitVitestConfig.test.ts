@@ -17,7 +17,10 @@ interface AnswerOverrides {
 }
 
 const configFor = (overrides: AnswerOverrides = {}): string | null => {
-  const answers = { ...DEFAULT_ANSWERS, ...overrides };
+  const answers = {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 
   return emitVitestConfig(answers, setupTestsPath(answers));
 };

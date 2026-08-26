@@ -40,12 +40,20 @@ export interface Artifact {
 }
 
 export const emitted = (stage: Stage, target: string, text: string): Artifact => {
-  return { stage, target, content: { text } };
+  return {
+    stage,
+    target,
+    content: { text },
+  };
 };
 
 // A shipped file that lands unchanged, from one source or several concatenated. Every one is stage 4, `standard`.
 export const copied = (target: string, ...sources: string[]): Artifact => {
-  return { stage: 'standard', target, content: { sources } };
+  return {
+    stage: 'standard',
+    target,
+    content: { sources },
+  };
 };
 
 export const merged = (
@@ -53,5 +61,9 @@ export const merged = (
   target: string,
   merge: (current: string | null) => string,
 ): Artifact => {
-  return { stage, target, content: { merge } };
+  return {
+    stage,
+    target,
+    content: { merge },
+  };
 };

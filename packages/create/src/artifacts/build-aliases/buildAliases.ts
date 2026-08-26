@@ -21,7 +21,6 @@ export const buildAliases = (answers: Answers): AliasMap => {
     ...target.hooksAlias,
     '@utils/*': './src/lib/utils/*',
     '@services/*': './src/lib/services/*',
-    '@providers/*': './src/lib/providers/*',
     // Zod owns lib/apis/ (endpoint definitions and schemas); without it the folder has nothing to alias.
     ...(hasLibrary(answers, 'zod') ? { '@apis/*': './src/lib/apis/*' } : {}),
     // What one target alone has: Next's lib/server/ and src/content/, SvelteKit's $lib, the extension's lib/model/,

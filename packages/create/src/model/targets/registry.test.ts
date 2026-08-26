@@ -42,7 +42,10 @@ interface Axes {
 
 // Every record is built from answers now, so a test naming only an id still has to hand over a whole set.
 const recordFor = (target: TargetId): TargetRecord => {
-  return targetFor({ ...DEFAULT_ANSWERS, target });
+  return targetFor({
+    ...DEFAULT_ANSWERS,
+    target,
+  });
 };
 
 // Every `assets/` path a record names; `pipeline.ts` reads each straight off the record with `readFile`, so a typo here
@@ -108,7 +111,10 @@ const axisCases = (): [string, Answers][] => {
   const cases: [string, Answers][] = [];
 
   for (const target of TARGET_IDS) {
-    const base: Answers = { ...DEFAULT_ANSWERS, target };
+    const base: Answers = {
+      ...DEFAULT_ANSWERS,
+      target,
+    };
     const {
       browsers,
       hosted,
@@ -210,6 +216,12 @@ describe('a framework layer and the plugins it loads', () => {
       return !installed.includes(name);
     });
 
-    expect({ label, missing }).toEqual({ label, missing: [] });
+    expect({
+      label,
+      missing,
+    }).toEqual({
+      label,
+      missing: [],
+    });
   });
 });

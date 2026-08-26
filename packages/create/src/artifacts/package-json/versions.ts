@@ -11,7 +11,7 @@ import type { PackageManager } from '../../model/answers/answers';
  * back out of the table is an index lookup whose `undefined` arm no answer can reach. One constant, used in both
  * places, keeps this file the only one a bump touches without inventing a dead branch to satisfy the type.
  */
-export const ESLINT_RANGE = '^10.8.1';
+export const ESLINT_RANGE = '^10.9.0';
 
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest: it runs the real Angular compiler over the test graph.
@@ -28,8 +28,8 @@ export const VERSIONS: Record<string, string> = {
   // Reads manifest.json and builds every surface it names: what makes an extension build out of a vanilla one.
   '@crxjs/vite-plugin': '^2.7.1',
   '@eslint-react/eslint-plugin': '^5.18.6',
-  '@html-eslint/eslint-plugin': '^0.64.0',
-  '@html-eslint/parser': '^0.64.0',
+  '@html-eslint/eslint-plugin': '^0.65.0',
+  '@html-eslint/parser': '^0.65.0',
   // NgRx stable (21.x) peers on Angular 21 while `ng new` writes Angular 22; the rc peers `^22.0.0`, and the caret
   // admits every stable 22.x the day it lands, so the range self-heals. Measurements in DESIGN.md.
   '@ngrx/signals': '^22.0.0-rc.0',
@@ -44,7 +44,7 @@ export const VERSIONS: Record<string, string> = {
   '@tailwindcss/postcss': '^4.3.3',
   '@tailwindcss/vite': '^4.3.3',
   '@tanstack/angular-query-experimental': '^5.101.4',
-  '@tanstack/eslint-plugin-query': '^5.101.4',
+  '@tanstack/eslint-plugin-query': '^5.102.2',
   '@tanstack/react-query': '^5.101.4',
   '@tanstack/solid-query': '^5.101.4',
   // The svelte binding is the one that has moved to 6; the rest of the family is still on 5.
@@ -55,32 +55,34 @@ export const VERSIONS: Record<string, string> = {
   '@testing-library/react': '^16.3.2',
   '@testing-library/react-native': '^14.0.1',
   '@testing-library/svelte': '^5.4.2',
-  '@types/babel__core': '^7.20.5',
   '@types/chrome': '^0.2.5',
   '@types/firefox-webext-browser': '^143.0.0',
   '@types/node': '^24.13.3',
   '@types/react': '^19.2.18',
   '@types/react-dom': '^19.2.4',
   '@vitejs/plugin-react': '^6.0.5',
-  '@vitest/coverage-v8': '^4.1.10',
+  // The SWC build plugin, which the Babel-based compiler pass runs ahead of; the RN record keeps the plain plugin,
+  // but only as a vitest transform.
+  '@vitejs/plugin-react-swc': '^4.3.1',
+  '@vitest/coverage-v8': '^4.1.11',
   '@vitest/eslint-plugin': '^1.6.27',
   '@vue/test-utils': '^2.4.11',
   'angular-eslint': '^22.1.0',
   'astro': '^7.2.1',
-  'astro-eslint-parser': '^3.0.0',
+  'astro-eslint-parser': '^3.1.0',
   'babel-plugin-react-compiler': '^1.0.0',
   'eslint': ESLINT_RANGE,
   // The plugin, not `eslint-config-next`: the config bundles three plugins the layers already cover with newer ones.
   // See `frameworks/next.ts`.
-  '@next/eslint-plugin-next': '^16.3.0',
+  '@next/eslint-plugin-next': '^16.3.2',
   // The sibling package: tracks its own version, and versions.test.ts fails the moment they diverge.
   '@linteljs/eslint-config': '^1.4.6',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.1.0',
   'eslint-plugin-jsx-a11y': '^6.10.2',
   'eslint-plugin-better-tailwindcss': '^4.7.0',
-  'eslint-plugin-solid': '^0.14.5',
-  'eslint-plugin-svelte': '^3.22.0',
+  'eslint-plugin-solid': '^0.16.0',
+  'eslint-plugin-svelte': '^3.23.0',
   '@vitejs/plugin-vue': '^6.0.8',
   'eslint-plugin-vue': '^10.10.0',
   'eslint-plugin-vuejs-accessibility': '^2.6.0',
@@ -98,9 +100,9 @@ export const VERSIONS: Record<string, string> = {
   'stylelint-config-recess-order': '^7.8.0',
   'stylelint-config-standard': '^40.0.0',
   'stylelint-config-tailwindcss': '^1.0.1',
-  'svelte': '^5.56.8',
+  'svelte': '^5.56.10',
   'svelte-check': '^4.7.5',
-  'svelte-eslint-parser': '^1.8.0',
+  'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',
   /**
    * Tilde, not caret, and the one entry here that carries a ceiling: `typescript-eslint` peers
@@ -111,7 +113,7 @@ export const VERSIONS: Record<string, string> = {
    */
   'typescript': '~6.0.3',
   'vite-plugin-solid': '^2.11.14',
-  'vitest': '^4.1.10',
+  'vitest': '^4.1.11',
   'vue': '^3.5.41',
   'vue-eslint-parser': '^10.4.1',
   'vue-tsc': '^3.3.9',
@@ -123,7 +125,7 @@ export const VERSIONS: Record<string, string> = {
 
 // Written into `packageManager`, pinning the manager itself: an exact version, since corepack rejects a range.
 export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
-  pnpm: '11.21.0',
+  pnpm: '11.24.0',
   npm: '12.0.2',
   yarn: '4.18.0',
   bun: '1.3.14',

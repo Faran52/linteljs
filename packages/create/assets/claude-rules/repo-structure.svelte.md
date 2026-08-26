@@ -5,6 +5,8 @@ paths:
   - "svelte.config.js"
 ---
 
+*Shipped verbatim into generated projects; this workspace's own copy lives under .claude/rules/*.
+
 # Repository Structure
 
 Use this rule when adding, moving, renaming, or importing a source file.

@@ -4,10 +4,8 @@
  * the project's blocks are lifted back over the empty ones.
  */
 
-/**
- * The declaration through its closing `];`, empty on one line or with entries closing on a line of its own. Read as a
- * whole line, since a reason written beside an entry quoting code (`arr[0];`) carries that pair and ended it early.
- */
+// The declaration through its closing `];`, empty on one line or with entries closing on a line of its own. Read as a
+// whole line, since a reason written beside an entry quoting code (`arr[0];`) carries that pair and ended it early.
 const blockOf = (source: string, name: string): string | null => {
   const opening = source.indexOf(`const ${name}`);
 

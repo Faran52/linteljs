@@ -4,6 +4,8 @@ paths:
   - "**/use*.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # React State Rules
 
 Use this rule when adding or refactoring state that derives from or reacts to props, or when

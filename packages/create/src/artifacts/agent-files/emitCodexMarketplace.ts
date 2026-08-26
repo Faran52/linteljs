@@ -17,8 +17,14 @@ interface MarketplaceEntry {
 
 const LOCAL_LINTEL: MarketplaceEntry = {
   name: 'linteljs',
-  source: { source: 'local', path: './plugins/linteljs' },
-  policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+  source: {
+    source: 'local',
+    path: './plugins/linteljs',
+  },
+  policy: {
+    installation: 'INSTALLED_BY_DEFAULT',
+    authentication: 'ON_INSTALL',
+  },
   category: 'Developer Tools',
 };
 
@@ -30,7 +36,10 @@ const THIRD_PARTY: Record<Plugin, MarketplaceEntry> = {
       url: 'https://github.com/DietrichGebert/ponytail.git',
       ref: 'main',
     },
-    policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+    policy: {
+      installation: 'INSTALLED_BY_DEFAULT',
+      authentication: 'ON_INSTALL',
+    },
     category: 'Productivity',
   },
   'context7': {
@@ -41,7 +50,10 @@ const THIRD_PARTY: Record<Plugin, MarketplaceEntry> = {
       path: 'external_plugins/context7',
       ref: 'main',
     },
-    policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+    policy: {
+      installation: 'INSTALLED_BY_DEFAULT',
+      authentication: 'ON_INSTALL',
+    },
     category: 'Developer Tools',
   },
   'frontend-design': {
@@ -52,7 +64,10 @@ const THIRD_PARTY: Record<Plugin, MarketplaceEntry> = {
       path: 'plugins/frontend-design',
       ref: 'main',
     },
-    policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+    policy: {
+      installation: 'INSTALLED_BY_DEFAULT',
+      authentication: 'ON_INSTALL',
+    },
     category: 'Design',
   },
 };

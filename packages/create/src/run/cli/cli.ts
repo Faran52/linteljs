@@ -75,13 +75,37 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     args: argv,
     allowPositionals: true,
     options: {
-      'skip-scaffold': { type: 'boolean', default: false },
-      'no-install': { type: 'boolean', default: false },
-      'fresh': { type: 'boolean', default: false },
-      'skip': { type: 'string', multiple: true, default: [] },
-      'yes': { type: 'boolean', short: 'y', default: false },
-      'force': { type: 'boolean', default: false },
-      'help': { type: 'boolean', short: 'h', default: false },
+      'skip-scaffold': {
+        type: 'boolean',
+        default: false,
+      },
+      'no-install': {
+        type: 'boolean',
+        default: false,
+      },
+      'fresh': {
+        type: 'boolean',
+        default: false,
+      },
+      'skip': {
+        type: 'string',
+        multiple: true,
+        default: [],
+      },
+      'yes': {
+        type: 'boolean',
+        short: 'y',
+        default: false,
+      },
+      'force': {
+        type: 'boolean',
+        default: false,
+      },
+      'help': {
+        type: 'boolean',
+        short: 'h',
+        default: false,
+      },
     },
   });
 
@@ -127,7 +151,10 @@ const askedFrom = async (
   hasTerminal: boolean,
 ): Promise<Asked> => {
   const named = (answers: Answers): Asked => {
-    return { name: options.name, answers };
+    return {
+      name: options.name,
+      answers,
+    };
   };
 
   // The parsed config is the plan's answers, with no conversion between the two. See `LintelConfig`.

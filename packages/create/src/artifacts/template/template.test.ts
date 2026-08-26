@@ -20,7 +20,10 @@ interface AnswerOverrides {
 
 describe('fillSlots', () => {
   it('replaces every slot with its value', () => {
-    expect(fillSlots('{{A}} and {{B}}', { A: 'one', B: 'two' }, 'label')).toBe('one and two');
+    expect(fillSlots('{{A}} and {{B}}', {
+      A: 'one',
+      B: 'two',
+    }, 'label')).toBe('one and two');
   });
 
   it('replaces a slot repeated more than once', () => {
@@ -42,7 +45,10 @@ describe('fillSlots', () => {
 
 describe('sharedSlots', () => {
   const answersFor = (overrides: AnswerOverrides): Answers => {
-    return { ...DEFAULT_ANSWERS, ...overrides };
+    return {
+      ...DEFAULT_ANSWERS,
+      ...overrides,
+    };
   };
 
   it('names the project, the target label and the package manager run prefix', () => {

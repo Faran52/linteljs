@@ -1,4 +1,3 @@
-import { hasLibrary } from '../answers/answers';
 import {
   COMPONENT,
   FOLDER_NAMING,
@@ -91,7 +90,10 @@ export const astro: TargetBuilder = (answers) => {
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
     // Empty, like the other targets that own no `vite.config.ts`; see the field on `TargetRecord`.
-    vitePlugin: { imports: [], calls: [] },
+    vitePlugin: {
+      imports: [],
+      calls: [],
+    },
     // No `vite.config.ts` to merge, so the test run borrows Astro's own resolved config.
     vitestFactory: {
       imports: [
@@ -107,10 +109,8 @@ export const astro: TargetBuilder = (answers) => {
       call: 'getViteConfig',
     },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    /**
-     * `astro check` rather than `tsc --noEmit`: only it knows how to type a template, and it is the same tool Astro's
-     * own docs put in a CI gate. `astro sync` first, since the types the check reads are generated.
-     */
+    // `astro check` rather than `tsc --noEmit`: only it knows how to type a template, and it is the same tool Astro's
+    // own docs put in a CI gate. `astro sync` first, since the types the check reads are generated.
     typecheck: 'astro sync && astro check',
     build: 'astro build',
     // Generates `.astro/types.d.ts` and the tsconfig the emitted one extends, so it has to run before the gate.
@@ -121,7 +121,10 @@ export const astro: TargetBuilder = (answers) => {
      * and demonstrates the rule the template cannot: logic lives in `lib/`, where a test can reach it.
      */
     starterFiles: [
-      { source: 'starter/astro/formatDate.ts', target: 'src/lib/utils/formatDate.ts' },
+      {
+        source: 'starter/astro/formatDate.ts',
+        target: 'src/lib/utils/formatDate.ts',
+      },
     ],
     starterTests: [
       {
@@ -130,16 +133,27 @@ export const astro: TargetBuilder = (answers) => {
         covers: 'src/lib/utils/formatDate.ts',
       },
     ],
-    ...(hosted === undefined ? {} : { dependencies: [...hosted.dependencies] }),
+    /**
+     * Astro itself is a runtime dependency: the base template puts it there because the `@astrojs/node` adapter runs
+     * it from `dist/server/entry.mjs`, and a second entry in devDependencies only drifts against the first. Declared
+     * unconditionally so a `--skip-scaffold` run, whose manifest has neither copy, still installs it.
+     */
+    dependencies: ['astro', ...(hosted === undefined ? [] : hosted.dependencies)],
     devDependencies: [
-      'astro',
       // The type checker `typecheck` calls, and the two packages the `.astro` lint layer loads.
       '@astrojs/check',
       'eslint-plugin-astro',
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
-      ...hosted?.devDependencies ?? [],
-      ...(hasLibrary(answers, 'tailwind') ? ['@tailwindcss/vite'] : []),
+      /**
+       * The hosted framework's own packages, less the build plugin, which belongs to a `vite.config.ts` this target
+       * does not own: `@astrojs/react` brings its own copy of `@vitejs/plugin-react` and the compiler rides that
+       * plugin's Babel passthrough, so the SWC variant would install and never be imported. The Babel packages stay,
+       * because that passthrough is what loads them.
+       */
+      ...(hosted?.devDependencies ?? []).filter((name) => {
+        return name !== '@vitejs/plugin-react-swc';
+      }),
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),
     // Astro's build pulls esbuild, whose install script pnpm refuses to run unless the project says so:

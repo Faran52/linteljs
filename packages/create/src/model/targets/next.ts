@@ -37,8 +37,14 @@ export const next: TargetRecord = {
   html: false,
   vite: false,
   routeUnit: 'src/app/',
-  hooksSlot: { label: 'Hooks', path: 'src/lib/hooks/ (use*)' },
-  store: { label: 'Zustand', dependency: 'zustand' },
+  hooksSlot: {
+    label: 'Hooks',
+    path: 'src/lib/hooks/ (use*)',
+  },
+  store: {
+    label: 'Zustand',
+    dependency: 'zustand',
+  },
   ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
   naming: NAMING.next,
   folderNaming: FOLDER_NAMING.next,
@@ -49,7 +55,10 @@ export const next: TargetRecord = {
   },
   styleEntry: 'src/app/globals.css',
   // No vite config of its own, so nothing to contribute; see the field on `TargetRecord`.
-  vitePlugin: { imports: [], calls: [] },
+  vitePlugin: {
+    imports: [],
+    calls: [],
+  },
   tsconfig: {
     jsx: 'react-jsx',
     plugins: [{ name: 'next' }],

@@ -14,3 +14,4 @@ description: Apply this project's LintelJS structure, type-safety, testing, and 
 - Run the package-manager `check` command before declaring implementation work complete.
 - Run the package-manager `lint:fix` command, not lint without fixes.
 - Never use `git stash`, `git reset`, `--no-verify`, `--amend`, `git add -A`, or `git add .`.
+- Commit messages carry no `Co-Authored-By` or tool-attribution trailers.

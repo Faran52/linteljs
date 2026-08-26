@@ -66,7 +66,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 const SCAFFOLDED = JSON.stringify({
@@ -85,8 +88,14 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
-  await rm(external, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
+  await rm(external, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const generate = async (overrides: AnswerOverrides): Promise<string[]> => {
@@ -184,7 +193,7 @@ describe('runPipeline with --skip-scaffold', () => {
     expect(readme).toContain('# demo-app');
     expect(readme).toContain('React (Vite)');
     expect(readme).toContain('`pnpm lint:css`');
-    expect(readme).toContain('pnpm lint && pnpm lint:css && pnpm typecheck');
+    expect(readme).toContain('pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck');
   });
 
   it('leaves the fixture dependencies and scripts intact', async () => {
@@ -231,7 +240,10 @@ describe('runPipeline with --skip-scaffold', () => {
 
 describe('selected agent setup', () => {
   it('writes only the Codex adapter and host declaration when Codex is selected', async () => {
-    const written = await generate({ agents: ['codex'], plugins: ['context7'] });
+    const written = await generate({
+      agents: ['codex'],
+      plugins: ['context7'],
+    });
 
     expect(written).toEqual(expect.arrayContaining([
       CONFIG_PATH,
@@ -424,7 +436,7 @@ describe('coverage surface', () => {
     };
 
     expect(await viteConfig({}))
-      .toContain('...(process.env.VITEST === undefined ? [babel(');
+      .toContain('...(process.env.VITEST === undefined ? [await reactCompiler()] : []),');
     expect(await viteConfig({ target: 'solid' }))
       .toContain('solid({ hot: process.env.VITEST === undefined })');
   });
@@ -581,7 +593,10 @@ describe('the webextension surfaces', () => {
     await runPipeline({
       name: 'demo-app',
       cwd,
-      answers: answersFor({ target: 'webextension', browsers: ['chrome', 'firefox'] }),
+      answers: answersFor({
+        target: 'webextension',
+        browsers: ['chrome', 'firefox'],
+      }),
       skip: ['scaffold', 'install'],
       fresh: true,
       onWrite: (path) => {
@@ -621,7 +636,10 @@ describe('the webextension surfaces', () => {
     await runPipeline({
       name: 'demo-app',
       cwd,
-      answers: answersFor({ target: 'webextension', testing: 'none' }),
+      answers: answersFor({
+        target: 'webextension',
+        testing: 'none',
+      }),
       skip: ['scaffold', 'install'],
       fresh: true,
     });
@@ -753,7 +771,15 @@ describe('.claude/settings.json', () => {
       join(cwd, '.claude/settings.json'),
       `${JSON.stringify({
         includeCoAuthoredBy: false,
-        hooks: { PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'guard.sh' }] }] },
+        hooks: {
+          PreToolUse: [{
+            matcher: 'Bash',
+            hooks: [{
+              type: 'command',
+              command: 'guard.sh',
+            }],
+          }],
+        },
         enabledPlugins: { 'caveman@caveman': true },
       }, null, 2)}\n`,
       'utf8',
@@ -803,8 +829,14 @@ describe('scaffoldCommand', () => {
   // Next sets Tailwind up at generate time, so it's the one scaffolder flag that has to follow the answer; hardcoding
   // `--no-tailwind` installs the library with none of the wiring.
   it('passes the tailwind answer through to the one generator that acts on it', () => {
-    expect(scaffoldFor({ target: 'next', libraries: ['tailwind'] })).toContain('--tailwind');
-    expect(scaffoldFor({ target: 'next', libraries: ['tailwind'] })).not.toContain('--no-tailwind');
+    expect(scaffoldFor({
+      target: 'next',
+      libraries: ['tailwind'],
+    })).toContain('--tailwind');
+    expect(scaffoldFor({
+      target: 'next',
+      libraries: ['tailwind'],
+    })).not.toContain('--no-tailwind');
     expect(scaffoldFor({ target: 'next' })).toContain('--no-tailwind');
   });
 
@@ -820,7 +852,10 @@ describe('scaffoldCommand', () => {
 
   it('leaves --vitest off the vue scaffold when testing is declined', () => {
     expect(scaffoldFor({ target: 'vue' })).toContain('--vitest');
-    expect(scaffoldFor({ target: 'vue', testing: 'none' })).not.toContain('--vitest');
+    expect(scaffoldFor({
+      target: 'vue',
+      testing: 'none',
+    })).not.toContain('--vitest');
   });
 
   // The one property that has to hold for every target: `--yes` promises the tool asks nothing, though four of these
@@ -845,8 +880,14 @@ describe('scaffoldCommand', () => {
   });
 
   it('follows the package manager answer where the generator takes one', () => {
-    expect(scaffoldFor({ target: 'next', packageManager: 'bun' })).toContain('--use-bun');
-    expect(scaffoldFor({ target: 'angular', packageManager: 'yarn' })).toContain('yarn');
+    expect(scaffoldFor({
+      target: 'next',
+      packageManager: 'bun',
+    })).toContain('--use-bun');
+    expect(scaffoldFor({
+      target: 'angular',
+      packageManager: 'yarn',
+    })).toContain('yarn');
   });
 });
 
@@ -1172,7 +1213,10 @@ describe('the eslint --fix pass', () => {
     await runPipeline({
       name: 'demo-app',
       cwd,
-      answers: { ...answersFor({}), packageManager: 'bun' },
+      answers: {
+        ...answersFor({}),
+        packageManager: 'bun',
+      },
       skip: ['scaffold', 'install', 'fix'],
       onNotice: (message) => {
         notices.push(message);

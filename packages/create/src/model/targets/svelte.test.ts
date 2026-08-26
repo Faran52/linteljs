@@ -99,7 +99,11 @@ describe('the tailwind stylesheet import', () => {
   it('imports the stylesheet from the root layout when tailwind was answered', () => {
     const output = transformFor(
       'src/routes/+layout.svelte',
-      { ...DEFAULT_ANSWERS, target: 'svelte', libraries: ['tailwind'] },
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'svelte',
+        libraries: ['tailwind'],
+      },
     )(SV_LAYOUT);
 
     expect(output).toContain("import '../app.css';");

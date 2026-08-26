@@ -40,8 +40,16 @@ const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
     install: 'pnpm install --frozen-lockfile',
   },
   // `npm ci` is the only install that refuses to edit the lockfile, which is what a gate wants.
-  npm: { before: [], cache: 'npm', install: 'npm ci' },
-  yarn: { before: [], cache: 'yarn', install: 'yarn install --immutable' },
+  npm: {
+    before: [],
+    cache: 'npm',
+    install: 'npm ci',
+  },
+  yarn: {
+    before: [],
+    cache: 'yarn',
+    install: 'yarn install --immutable',
+  },
   // No `cache`: `setup-node` knows npm, yarn and pnpm, and naming anything else fails the step outright.
   bun: {
     before: ['- uses: oven-sh/setup-bun@v2'],

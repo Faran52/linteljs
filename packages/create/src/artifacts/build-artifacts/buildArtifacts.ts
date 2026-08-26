@@ -64,8 +64,14 @@ export const buildArtifacts = (
     emitted('lint', 'stylelint.config.js', emitStylelintConfig(answers)),
     ...agentArtifacts(answers),
     checkerArtifact(answers),
-    { ...copied('.husky/pre-commit', 'husky/pre-commit'), executable: true },
-    { ...copied('.husky/commit-msg', 'husky/commit-msg'), executable: true },
+    {
+      ...copied('.husky/pre-commit', 'husky/pre-commit'),
+      executable: true,
+    },
+    {
+      ...copied('.husky/commit-msg', 'husky/commit-msg'),
+      executable: true,
+    },
     copied('lint-staged.config.js', 'lint-staged.config.js'),
     copied('commitlint.config.js', 'commitlint.config.js'),
     emitted('package', 'tsconfig.json', emitTsconfig(answers)),
@@ -86,10 +92,8 @@ export const buildArtifacts = (
     artifacts.push(merged('standard', styleEntry, mergeStyleEntry));
   }
 
-  /**
-   * `coverage/` and `*.tsbuildinfo` are this tool's output, so no generator ignores them. Merged rather than written,
-   * to keep the scaffolder's own list (`.next/` and friends).
-   */
+  // `coverage/` and `*.tsbuildinfo` are this tool's output, so no generator ignores them. Merged rather than written,
+  // to keep the scaffolder's own list (`.next/` and friends).
   /**
    * Merged, not written by the package stage alone, for the reason `.gitignore` and `pnpm-workspace.yaml` were
    * converted in 1.3.2: `sync` writes artifacts, so anything a stage writes never reaches a project that already
@@ -122,21 +126,33 @@ export const buildArtifacts = (
    * has. Only the emitted default can be written blind; the maintained version cannot.
    */
   if (viteConfig !== null) {
-    artifacts.push({ ...emitted('standard', 'vite.config.ts', viteConfig), preserve: true });
+    artifacts.push({
+      ...emitted('standard', 'vite.config.ts', viteConfig),
+      preserve: true,
+    });
   }
 
   // Astro's equivalent, and the only place its Vite options are read from.
   if (astroConfig !== null) {
-    artifacts.push({ ...emitted('standard', 'astro.config.mjs', astroConfig), preserve: true });
+    artifacts.push({
+      ...emitted('standard', 'astro.config.mjs', astroConfig),
+      preserve: true,
+    });
   }
 
   if (vitestConfig !== null) {
-    artifacts.push({ ...emitted('standard', 'vitest.config.ts', vitestConfig), preserve: true });
+    artifacts.push({
+      ...emitted('standard', 'vitest.config.ts', vitestConfig),
+      preserve: true,
+    });
   }
 
   if (hasTests(answers)) {
     // Preserve project mocks in the setup file Vitest loads before collecting tests.
-    artifacts.push({ ...copied(setup, ...setupSources(answers, target)), preserve: true });
+    artifacts.push({
+      ...copied(setup, ...setupSources(answers, target)),
+      preserve: true,
+    });
   }
 
   return artifacts;

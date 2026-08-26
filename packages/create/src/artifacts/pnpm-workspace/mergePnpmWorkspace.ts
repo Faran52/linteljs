@@ -39,10 +39,8 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
 
   const remainder = kept.join('\n').replace(/^\n+/, '');
 
-  /**
-   * Each block is decided on its own, because a project that predates one of them already has the other. Where a
-   * block is already present it is the project's: leave the list alone rather than reasserting ours over it.
-   */
+  // Each block is decided on its own, because a project that predates one of them already has the other. Where a
+  // block is already present it is the project's: leave the list alone rather than reasserting ours over it.
   const head = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
 
   // Already there is the project's, including a rule it widened by hand.

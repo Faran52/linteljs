@@ -20,8 +20,14 @@ describe('emitCodexMarketplace', () => {
       plugins: [
         {
           name: 'linteljs',
-          source: { source: 'local', path: './plugins/linteljs' },
-          policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+          source: {
+            source: 'local',
+            path: './plugins/linteljs',
+          },
+          policy: {
+            installation: 'INSTALLED_BY_DEFAULT',
+            authentication: 'ON_INSTALL',
+          },
           category: 'Developer Tools',
         },
         {
@@ -31,7 +37,10 @@ describe('emitCodexMarketplace', () => {
             url: 'https://github.com/DietrichGebert/ponytail.git',
             ref: 'main',
           },
-          policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+          policy: {
+            installation: 'INSTALLED_BY_DEFAULT',
+            authentication: 'ON_INSTALL',
+          },
           category: 'Productivity',
         },
         {
@@ -42,7 +51,10 @@ describe('emitCodexMarketplace', () => {
             path: 'external_plugins/context7',
             ref: 'main',
           },
-          policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+          policy: {
+            installation: 'INSTALLED_BY_DEFAULT',
+            authentication: 'ON_INSTALL',
+          },
           category: 'Developer Tools',
         },
         {
@@ -53,7 +65,10 @@ describe('emitCodexMarketplace', () => {
             path: 'plugins/frontend-design',
             ref: 'main',
           },
-          policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+          policy: {
+            installation: 'INSTALLED_BY_DEFAULT',
+            authentication: 'ON_INSTALL',
+          },
           category: 'Design',
         },
       ],
@@ -70,8 +85,14 @@ describe('emitCodexMarketplace', () => {
       plugins: [
         {
           name: 'linteljs',
-          source: { source: 'local', path: './plugins/linteljs' },
-          policy: { installation: 'INSTALLED_BY_DEFAULT', authentication: 'ON_INSTALL' },
+          source: {
+            source: 'local',
+            path: './plugins/linteljs',
+          },
+          policy: {
+            installation: 'INSTALLED_BY_DEFAULT',
+            authentication: 'ON_INSTALL',
+          },
           category: 'Developer Tools',
         },
       ],

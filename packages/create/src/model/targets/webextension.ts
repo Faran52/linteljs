@@ -93,8 +93,14 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
     // `manifest.json` names the entry, so it must exist before the first `vite build`, and no vanilla scaffold
     // writes one. The handler lives beside it and is covered like any other module.
     files.push(
-      { source: browser.starter.entry, target: 'src/background/index.ts' },
-      { source: browser.starter.handler, target: 'src/background/onInstalled.ts' },
+      {
+        source: browser.starter.entry,
+        target: 'src/background/index.ts',
+      },
+      {
+        source: browser.starter.handler,
+        target: 'src/background/onInstalled.ts',
+      },
     );
   }
 
@@ -102,11 +108,26 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
     files.push(
       // Two folders, not one: `repo-structure.webextension.md` gives the devtools page and the panel a folder each,
       // and the entry HTML stays flat at the root because the browser resolves manifest paths against it.
-      { source: 'starter/webextension/devtools.html', target: 'devtools.html' },
-      { source: browser.starter.devtools, target: 'src/devtools/index.ts' },
-      { source: 'starter/webextension/panel.html', target: 'panel.html' },
-      { source: 'starter/webextension/panelEntry.ts', target: 'src/panel/index.ts' },
-      { source: 'starter/webextension/renderPanel.ts', target: 'src/panel/renderPanel.ts' },
+      {
+        source: 'starter/webextension/devtools.html',
+        target: 'devtools.html',
+      },
+      {
+        source: browser.starter.devtools,
+        target: 'src/devtools/index.ts',
+      },
+      {
+        source: 'starter/webextension/panel.html',
+        target: 'panel.html',
+      },
+      {
+        source: 'starter/webextension/panelEntry.ts',
+        target: 'src/panel/index.ts',
+      },
+      {
+        source: 'starter/webextension/renderPanel.ts',
+        target: 'src/panel/renderPanel.ts',
+      },
     );
   }
 
@@ -145,10 +166,10 @@ export const webextension: TargetBuilder = (answers) => {
     naming: hosted === undefined ? NAMING.webextension : hostedNaming(hosted.framework),
     // No router, so no segment a kebab-case folder rule has to make room for.
     folderNaming: FOLDER_NAMING.webextension,
-    // `lib/model/` is this target's own layout with no alias; `@store/*`/`@providers/*` alias directories this layout
-    // doesn't have, an alias naming nothing being a dead end a reader follows for no reason.
+    // `lib/model/` is this target's own layout with no alias; `@store/*` aliases a directory this layout doesn't
+    // have, an alias naming nothing being a dead end a reader follows for no reason.
     extraAliases: { '@model/*': './src/lib/model/*' },
-    omitAliases: ['@store/*', '@providers/*'],
+    omitAliases: ['@store/*'],
     styleEntry: 'src/style.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     ...(hosted?.sfcExtension === undefined ? {} : { sfcExtension: hosted.sfcExtension }),
@@ -215,7 +236,7 @@ export const webextension: TargetBuilder = (answers) => {
       ...hosted?.devDependencies ?? [],
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: hosted.testDevDependencies }),
-    allowBuilds: [],
+    allowBuilds: hosted?.allowBuilds ?? [],
     stateRules: hosted?.stateRules ?? [],
   };
 };

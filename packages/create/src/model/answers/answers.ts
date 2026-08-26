@@ -30,16 +30,12 @@ export type Library
     | 'tanstack-query'
     | 'tailwind';
 
-/**
- * Which browser an extension targets. `@crxjs/vite-plugin` builds for both, so this decides the manifest shape (a
- * service worker against an event page), the ambient types, and whether `web-ext` comes along to run and package it.
- */
+// Which browser an extension targets. `@crxjs/vite-plugin` builds for both, so this decides the manifest shape (a
+// service worker against an event page), the ambient types, and whether `web-ext` comes along to run and package it.
 export type Browser = 'chrome' | 'firefox';
 
-/**
- * The UI frameworks a host target can render with. Angular brings its own builder and Next is a framework rather than
- * a library, so neither is hostable; these four are the ones with both a Vite plugin and an Astro integration.
- */
+// The UI frameworks a host target can render with. Angular brings its own builder and Next is a framework rather than
+// a library, so neither is hostable; these four are the ones with both a Vite plugin and an Astro integration.
 export type HostedFramework
   = 'react'
     | 'vue'
@@ -64,15 +60,11 @@ export interface Answers {
   target: TargetId;
   // Asked only for the extension target; `chrome` everywhere else, where nothing reads it.
   browser: Browser;
-  /**
-   * The UI framework a host target renders with, where it hosts one: the extension target and Astro both do, and both
-   * work without one. Absent means the host's own plain-TypeScript shape.
-   */
+  // The UI framework a host target renders with, where it hosts one: the extension target and Astro both do, and both
+  // work without one. Absent means the host's own plain-TypeScript shape.
   hostedFramework?: HostedFramework;
-  /**
-   * Asked only for the extension target. Absent means `popup` and `background`, which is the only shape this CLI wrote
-   * before the answer existed, so a `lintel.config.json` written then still describes its own project.
-   */
+  // Asked only for the extension target. Absent means `popup` and `background`, which is the only shape this CLI wrote
+  // before the answer existed, so a `lintel.config.json` written then still describes its own project.
   surfaces?: Surface[];
   testing: Testing;
   packageManager: PackageManager;

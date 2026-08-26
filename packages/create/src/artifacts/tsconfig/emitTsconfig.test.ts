@@ -26,7 +26,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 describe('buildTsconfig', () => {
@@ -107,7 +110,10 @@ describe('alias coupling', () => {
       const label = `${target}${withZod ? ' with zod' : ''}`;
 
       it(`emits the same alias map into tsconfig paths and base() for ${label}`, () => {
-        const answers = answersFor({ target, libraries });
+        const answers = answersFor({
+          target,
+          libraries,
+        });
         const aliases = buildAliases(answers);
         const { paths } = buildTsconfig(answers).compilerOptions;
         const config = emitEslintConfig(answers);
@@ -147,7 +153,10 @@ describe('alias coupling', () => {
   it("carries a project's own aliases through all three consumers", () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
-      aliases: { '@engine': './src/lib/engine/index.ts', '@workers/*': './src/workers/*' },
+      aliases: {
+        '@engine': './src/lib/engine/index.ts',
+        '@workers/*': './src/workers/*',
+      },
     };
     const { paths } = buildTsconfig(answers).compilerOptions;
     const config = emitEslintConfig(answers);
@@ -161,7 +170,10 @@ describe('alias coupling', () => {
 
   // Last in the map, so the standard set still reads first and a restated one is deliberate rather than accidental.
   it('lets a project restate a standard alias, and keeps the order', () => {
-    const answers: Answers = { ...DEFAULT_ANSWERS, aliases: { '@utils/*': './src/shared/utils/*' } };
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      aliases: { '@utils/*': './src/shared/utils/*' },
+    };
     const aliases = buildAliases(answers);
 
     expect(aliases['@utils/*']).toBe('./src/shared/utils/*');
@@ -192,7 +204,7 @@ describe('alias coupling', () => {
   });
 
   // An alias naming a directory the target's own repo-structure.md doesn't describe is a dead end; the extension target
-  // has lib/model/, not lib/store/ or lib/providers/.
+  // has lib/model/, not lib/store/, and providers/ is aliased on no target because no template creates it.
   it("matches the extension target's own documented layout", () => {
     const { paths } = buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions;
 
@@ -201,6 +213,8 @@ describe('alias coupling', () => {
     expect(paths).not.toHaveProperty('@providers/*');
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
       .toHaveProperty('@store/*');
+    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
+      .not.toHaveProperty('@providers/*');
   });
 
   /**
@@ -243,7 +257,10 @@ describe('ambient types', () => {
 describe('a hosted framework brings its own JSX settings', () => {
   it('gives the extension solid’s mode and import source', () => {
     const { compilerOptions } = buildTsconfig(
-      answersFor({ target: 'webextension', hostedFramework: 'solid' }),
+      answersFor({
+        target: 'webextension',
+        hostedFramework: 'solid',
+      }),
     );
 
     expect(compilerOptions.jsx).toBe('preserve');
@@ -252,7 +269,10 @@ describe('a hosted framework brings its own JSX settings', () => {
 
   it('gives it react’s, which needs no import source', () => {
     const { compilerOptions } = buildTsconfig(
-      answersFor({ target: 'webextension', hostedFramework: 'react' }),
+      answersFor({
+        target: 'webextension',
+        hostedFramework: 'react',
+      }),
     );
 
     expect(compilerOptions.jsx).toBe('react-jsx');
@@ -261,7 +281,10 @@ describe('a hosted framework brings its own JSX settings', () => {
 
   // Vue and Svelte templates are single-file components, so there is no JSX for TypeScript to be told about.
   it('adds none for a single-file-component framework, or for no framework at all', () => {
-    expect(buildTsconfig(answersFor({ target: 'webextension', hostedFramework: 'vue' })).compilerOptions)
+    expect(buildTsconfig(answersFor({
+      target: 'webextension',
+      hostedFramework: 'vue',
+    })).compilerOptions)
       .not.toHaveProperty('jsx');
     expect(buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions)
       .not.toHaveProperty('jsx');

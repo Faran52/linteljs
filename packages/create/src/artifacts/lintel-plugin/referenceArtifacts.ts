@@ -18,7 +18,10 @@ const copiedReference = (name: string, ...sources: string[]): Artifact => {
   return {
     stage: 'standard',
     target: reference(name),
-    content: { sources, transform: withoutClaudePaths },
+    content: {
+      sources,
+      transform: withoutClaudePaths,
+    },
   };
 };
 

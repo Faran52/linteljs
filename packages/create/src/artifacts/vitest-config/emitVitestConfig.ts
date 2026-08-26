@@ -162,10 +162,8 @@ ${conditions}${block}
 `;
   }
 
-  /**
-   * A factory instead of `defineConfig`: Astro's `getViteConfig` resolves `astro.config.mjs` and hands the test run the
-   * same Vite config the build uses, which is the only way to reach it when there is no `vite.config.ts` to merge.
-   */
+  // A factory instead of `defineConfig`: Astro's `getViteConfig` resolves `astro.config.mjs` and hands the test run the
+  // same Vite config the build uses, which is the only way to reach it when there is no `vite.config.ts` to merge.
   const { vitestFactory } = target;
 
   if (vitestFactory !== undefined) {

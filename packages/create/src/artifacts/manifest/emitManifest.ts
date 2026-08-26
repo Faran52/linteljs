@@ -39,7 +39,8 @@ export interface Manifest {
   description: string;
   permissions: string[];
   host_permissions: string[];
-  browser_specific_settings?: { gecko: { id: string; strict_min_version: string } };
+  browser_specific_settings?: { gecko: { id: string;
+    strict_min_version: string; }; };
   action?: { default_popup: string };
   background?: EventPage | ServiceWorker;
   devtools_page?: string;
@@ -64,7 +65,10 @@ export const parseManifest = (text: string): Manifest => {
 const backgroundFor = (browser: Browser): ServiceWorker | EventPage => {
   return browser === 'firefox'
     ? { scripts: ['src/background/index.ts'] }
-    : { service_worker: 'src/background/index.ts', type: 'module' };
+    : {
+        service_worker: 'src/background/index.ts',
+        type: 'module',
+      };
 };
 
 /**
@@ -91,7 +95,10 @@ export const emitManifest = (
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {
-            gecko: { id: `${projectName}@example.com`, strict_min_version: '140.0' },
+            gecko: {
+              id: `${projectName}@example.com`,
+              strict_min_version: '140.0',
+            },
           },
         }
       : {}),

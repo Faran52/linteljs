@@ -1,3 +1,4 @@
+*Shipped verbatim into generated projects.*
 
 ## Relaxed type safety
 

@@ -23,7 +23,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 /**
@@ -50,7 +53,6 @@ const config = await defineConfig({
     '@hooks/*': './src/lib/hooks/*',
     '@utils/*': './src/lib/utils/*',
     '@services/*': './src/lib/services/*',
-    '@providers/*': './src/lib/providers/*',
     '@config/*': './src/config/*',
     '@mocks/*': './__mocks__/*',
   },
@@ -150,7 +152,13 @@ describe('emitEslintConfig', () => {
         return line.length > 120;
       });
 
-      expect({ target, tooLong }).toEqual({ target, tooLong: [] });
+      expect({
+        target,
+        tooLong,
+      }).toEqual({
+        target,
+        tooLong: [],
+      });
     }
   });
 
@@ -180,7 +188,10 @@ describe('emitEslintConfig', () => {
     // The one path this CLI creates rather than finds: `sv create --template minimal` ships no stylesheet.
     ['svelte', './src/app.css'],
   ])('names %s tailwind entry point as its stylesheet', (target, entry) => {
-    expect(emitEslintConfig(answersFor({ target, libraries: ['tailwind'] })))
+    expect(emitEslintConfig(answersFor({
+      target,
+      libraries: ['tailwind'],
+    })))
       .toContain(`tailwindEntryPoint: '${entry}',`);
   });
 

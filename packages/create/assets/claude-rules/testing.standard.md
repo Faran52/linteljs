@@ -1,3 +1,5 @@
+*Shipped verbatim into generated projects; this workspace's own copy lives under .claude/rules/*.
+
 ## Standard
 
 - **Zero casts, including in tests.** No `as X`, `as unknown as X`, `as never`. Build a fixture the

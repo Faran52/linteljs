@@ -50,10 +50,22 @@ type StageRunner = (
 // `create` and `dlx` are the same intent under four different spellings; getting this wrong reads as a package manager
 // trying to install a package called `vite my-app`.
 const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine>> = {
-  pnpm: { create: ['pnpm', 'create'], dlx: ['pnpm', 'dlx'] },
-  npm: { create: ['npm', 'create'], dlx: ['npx', '--yes'] },
-  yarn: { create: ['yarn', 'create'], dlx: ['yarn', 'dlx'] },
-  bun: { create: ['bun', 'create'], dlx: ['bunx'] },
+  pnpm: {
+    create: ['pnpm', 'create'],
+    dlx: ['pnpm', 'dlx'],
+  },
+  npm: {
+    create: ['npm', 'create'],
+    dlx: ['npx', '--yes'],
+  },
+  yarn: {
+    create: ['yarn', 'create'],
+    dlx: ['yarn', 'dlx'],
+  },
+  bun: {
+    create: ['bun', 'create'],
+    dlx: ['bunx'],
+  },
 };
 
 const run = async (command: string, args: string[], cwd: string): Promise<void> => {
@@ -63,7 +75,10 @@ const run = async (command: string, args: string[], cwd: string): Promise<void> 
       stdio: 'inherit',
       shell: false,
       // Angular's CLI otherwise prompts for analytics with no flag to decline; unanswered it blocks the scaffold.
-      env: { ...env, NG_CLI_ANALYTICS: 'false' },
+      env: {
+        ...env,
+        NG_CLI_ANALYTICS: 'false',
+      },
     });
 
     child.on('error', fail);
@@ -215,10 +230,8 @@ const stageStandard = async (
   const readme = await readFile(join(ASSETS_ROOT, 'readme/template.md'), 'utf8');
   await write(options, 'README.md', emitReadme(readme, options.name, options.answers));
 
-  /**
-   * Birth only, and `null` for the eight targets that are not extensions. A manifest becomes the project's own file
-   * immediately: its permissions, icons and store metadata are not this CLI's to keep rewriting.
-   */
+  // Birth only, and `null` for the eight targets that are not extensions. A manifest becomes the project's own file
+  // immediately: its permissions, icons and store metadata are not this CLI's to keep rewriting.
   if (isFresh(options)) {
     /**
      * One per browser the project packages for, which is more than one only where it ships to two stores. The primary

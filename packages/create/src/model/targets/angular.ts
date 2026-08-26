@@ -24,7 +24,10 @@ export const angular: TargetRecord = {
   vite: false,
   routeUnit: 'src/app/',
   // SignalStore over classic @ngrx/store: the decision and its measurements live in DESIGN.md.
-  store: { label: 'NgRx SignalStore', dependency: '@ngrx/signals' },
+  store: {
+    label: 'NgRx SignalStore',
+    dependency: '@ngrx/signals',
+  },
   ignores: ['.angular/**'],
   /**
    * No `--file-name-style-guide` flag: pinning only affects initial files, and `ng generate` later always writes the
@@ -35,7 +38,10 @@ export const angular: TargetRecord = {
   folderNaming: FOLDER_NAMING.angular,
   styleEntry: 'src/styles.css',
   // No vite config of its own, so nothing to contribute; see the field on `TargetRecord`.
-  vitePlugin: { imports: [], calls: [] },
+  vitePlugin: {
+    imports: [],
+    calls: [],
+  },
   tsconfig: {
     useDefineForClassFields: false,
     dropsErasableSyntaxOnly: true,

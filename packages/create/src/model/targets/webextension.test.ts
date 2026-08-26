@@ -70,8 +70,14 @@ describe('the browser axis', () => {
     const record = recordFor({ browser });
 
     expect(record.starterFiles).toEqual([
-      { source: `starter/webextension/background${infix}.ts`, target: 'src/background/index.ts' },
-      { source: `starter/webextension/onInstalled${infix}.ts`, target: 'src/background/onInstalled.ts' },
+      {
+        source: `starter/webextension/background${infix}.ts`,
+        target: 'src/background/index.ts',
+      },
+      {
+        source: `starter/webextension/onInstalled${infix}.ts`,
+        target: 'src/background/onInstalled.ts',
+      },
     ]);
     expect(record.starterTests).toContainEqual({
       source: `starter/webextension/onInstalled${infix}.test.ts`,
@@ -134,8 +140,14 @@ describe('the surfaces axis', () => {
     ['chrome', 'starter/webextension/devtools.ts'],
     ['firefox', 'starter/webextension/devtools.firefox.ts'],
   ])('gives %s the devtools registration in its own namespace', (browser, source) => {
-    expect(recordFor({ browser, surfaces: ['devtools-panel'] }).starterFiles)
-      .toContainEqual({ source, target: 'src/devtools/index.ts' });
+    expect(recordFor({
+      browser,
+      surfaces: ['devtools-panel'],
+    }).starterFiles)
+      .toContainEqual({
+        source,
+        target: 'src/devtools/index.ts',
+      });
   });
 
   // A popup's page and entry come from the Vite scaffold, so the surface adds no starter of its own.

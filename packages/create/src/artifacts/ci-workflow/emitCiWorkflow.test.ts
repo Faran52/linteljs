@@ -21,7 +21,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 describe('emitCiWorkflow', () => {

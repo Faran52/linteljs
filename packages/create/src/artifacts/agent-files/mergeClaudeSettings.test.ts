@@ -12,7 +12,8 @@ interface MergedSettings {
   includeCoAuthoredBy?: boolean;
   hooks?: { PreToolUse: { matcher: string }[] };
   enabledPlugins: Record<string, boolean>;
-  extraKnownMarketplaces: Record<string, { source: { repo?: string; path?: string } }>;
+  extraKnownMarketplaces: Record<string, { source: { repo?: string;
+    path?: string; }; }>;
 }
 
 const OURS = emitClaudeSettings(['context7']);
@@ -23,12 +24,23 @@ const THEIRS = `${JSON.stringify({
   includeCoAuthoredBy: false,
   hooks: {
     PreToolUse: [
-      { matcher: 'Bash', hooks: [{ type: 'command', command: 'bash ./guard.sh' }] },
+      {
+        matcher: 'Bash',
+        hooks: [{
+          type: 'command',
+          command: 'bash ./guard.sh',
+        }],
+      },
     ],
   },
   enabledPlugins: { 'caveman@caveman': true },
   extraKnownMarketplaces: {
-    caveman: { source: { source: 'github', repo: 'JuliusBrussee/caveman' } },
+    caveman: {
+      source: {
+        source: 'github',
+        repo: 'JuliusBrussee/caveman',
+      },
+    },
   },
 }, null, 2)}\n`;
 
@@ -74,7 +86,14 @@ describe('mergeClaudeSettings', () => {
   it('wins on an entry both sides declare', () => {
     const stale = `${JSON.stringify({
       enabledPlugins: { 'linteljs@linteljs': false },
-      extraKnownMarketplaces: { linteljs: { source: { source: 'github', repo: 'wrong/place' } } },
+      extraKnownMarketplaces: {
+        linteljs: {
+          source: {
+            source: 'github',
+            repo: 'wrong/place',
+          },
+        },
+      },
     })}\n`;
 
     const merged = parsedMerge(stale);

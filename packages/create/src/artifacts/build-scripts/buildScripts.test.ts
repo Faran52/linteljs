@@ -21,7 +21,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 describe('buildScripts', () => {
@@ -37,15 +40,51 @@ describe('buildScripts', () => {
 
   it('chains check through every gate the answers enable', () => {
     expect(buildScripts(answersFor({})).check).toBe(
-      'pnpm lint && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build',
+      'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck'
+      + ' && pnpm test:coverage && pnpm build',
     );
     expect(buildScripts(answersFor({ testing: 'none' })).check).toBe(
-      'pnpm lint && pnpm lint:css && pnpm typecheck && pnpm build',
+      'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck && pnpm build',
     );
     expect(buildScripts(answersFor({ packageManager: 'npm' })).check).toBe(
-      'npm run lint && npm run lint:css && npm run typecheck && npm run test:coverage'
-      + ' && npm run build',
+      'npm run lint && npm run lint:types && npm run lint:css && npm run typecheck'
+      + ' && npm run test:coverage && npm run build',
     );
+  });
+
+  /**
+   * The type floor as a gate of its own: lint-staged scans staged files only, so without this `check` passes on
+   * code the commit then rejects. The extension list covers the target's own source extensions, an SFC being where
+   * a Vue or Svelte project's logic lives.
+   */
+  it('scans the banned patterns over the source extensions the target writes', () => {
+    const names = (target: TargetId): string => {
+      const script = buildScripts(answersFor({ target }))['lint:types'];
+
+      if (script === undefined) {
+        throw new Error(`no lint:types script for ${target}`);
+      }
+
+      return script;
+    };
+
+    for (const target of ['react', 'next', 'angular', 'webextension', 'react-native'] as const) {
+      expect(names(target)).toContain("-name '*.ts' -o -name '*.tsx' ");
+      expect(names(target)).not.toMatch(/-name '\*\.(astro|vue|svelte)'/u);
+    }
+
+    expect(names('astro')).toContain("find src -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.astro' \\)"
+      + ' -exec node scripts/checkBannedPatterns.ts {} +');
+    expect(names('vue')).toContain("-name '*.ts' -o -name '*.tsx' -o -name '*.vue'");
+    expect(names('svelte')).toContain("-name '*.ts' -o -name '*.tsx' -o -name '*.svelte'");
+  });
+
+  // The fixing counterpart to `lint:fix`, over the same glob the gate reads; stylelint exits 2 on an empty match.
+  it('gives css a fix script beside its gate', () => {
+    expect(buildScripts(answersFor({}))['lint:css:fix'])
+      .toBe('stylelint "src/**/*.css" --fix --allow-empty-input');
+    expect(buildScripts(answersFor({ target: 'vue' }))['lint:css:fix'])
+      .toBe('stylelint "src/**/*.{css,vue}" --fix --allow-empty-input');
   });
 
   // build is inherited from the scaffolder except React Native, whose eas build needs an account; expo export is the

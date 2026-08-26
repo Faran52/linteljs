@@ -23,7 +23,10 @@ describe('scaffold', () => {
   });
 
   it('names whichever package manager the answers carry', () => {
-    const spec = angular.scaffold('demo-app', { ...DEFAULT_ANSWERS, packageManager: 'npm' });
+    const spec = angular.scaffold('demo-app', {
+      ...DEFAULT_ANSWERS,
+      packageManager: 'npm',
+    });
 
     expect(spec.args).toEqual(expect.arrayContaining(['--package-manager', 'npm']));
   });

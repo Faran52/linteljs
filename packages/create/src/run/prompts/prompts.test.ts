@@ -23,10 +23,14 @@ import {
 const askWith = async (
   answers: Parameters<typeof scripted>[0],
   input?: AskInput,
-): Promise<{ result: Asked; recorded: Recorded }> => {
+): Promise<{ result: Asked;
+  recorded: Recorded; }> => {
   const recorded = scripted(answers);
 
-  return { result: await ask(recorded.prompter, input), recorded };
+  return {
+    result: await ask(recorded.prompter, input),
+    recorded,
+  };
 };
 
 describe('ask', () => {
@@ -152,7 +156,10 @@ describe('ask', () => {
       'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
     ]);
 
-    expect(result).toEqual({ name: 'demo-app', answers: DEFAULT_ANSWERS });
+    expect(result).toEqual({
+      name: 'demo-app',
+      answers: DEFAULT_ANSWERS,
+    });
   });
 
   it('selects both agents and no plugins', async () => {

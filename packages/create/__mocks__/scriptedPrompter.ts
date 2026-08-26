@@ -40,7 +40,8 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
   const labels: Record<string, string[]> = {};
   let index = 0;
 
-  const record = (message: string, options: { label?: string; value: string }[]): void => {
+  const record = (message: string, options: { label?: string;
+    value: string; }[]): void => {
     calls.push(message);
     labels[message] = options.map((option) => {
       return option.label ?? option.value;

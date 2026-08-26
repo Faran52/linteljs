@@ -4,6 +4,8 @@ paths:
   - "src/lib/composables/**/*.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # Vue Reactivity Rules
 
 Use this rule when adding state, deriving a value, or reaching for `watch`.

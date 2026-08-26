@@ -36,7 +36,10 @@ const CLAUDE_ONLY = [
   'plugins/linteljs/.claude-plugin/marketplace.json',
 ];
 
-const CODEX_ONLY: Answers = { ...DEFAULT_ANSWERS, agents: ['codex'] };
+const CODEX_ONLY: Answers = {
+  ...DEFAULT_ANSWERS,
+  agents: ['codex'],
+};
 
 let cwd = '';
 
@@ -45,7 +48,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 // `sync --force` without the CLI.

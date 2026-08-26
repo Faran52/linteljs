@@ -10,5 +10,6 @@ export const emitAgentAdapter = (answers: Answers): string => {
 - Run \`${run} check\` before declaring implementation work complete.
 - Run \`${run} lint:fix\`, not lint without fixes.
 - Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.
+- Commit messages carry no \`Co-Authored-By\` or tool-attribution trailers.
 `;
 };

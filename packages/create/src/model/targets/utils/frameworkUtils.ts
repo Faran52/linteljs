@@ -17,17 +17,19 @@ export interface FrameworkParts {
   devDependencies: string[];
   // Installed only when a suite was asked for.
   testDevDependencies: string[];
+  /**
+   * Install scripts a host must approve for this framework's build plugin, since pnpm aborts the first install on
+   * `ERR_PNPM_IGNORED_BUILDS` otherwise. Only React has one: `@vitejs/plugin-react-swc` pulls `@swc/core`, which is
+   * a native binary.
+   */
+  allowBuilds?: string[];
   // Resolve conditions the test run needs; Svelte and Solid ship a server build that `mount()` cannot use.
   testConditions?: string[];
-  /**
-   * The `jsxImportSource` a host's tsconfig needs so TypeScript resolves this framework's JSX types. Only Solid: React
-   * is what `@types/react` already answers for, and the two single-file-component frameworks have no JSX to type.
-   */
+  // The `jsxImportSource` a host's tsconfig needs so TypeScript resolves this framework's JSX types. Only Solid: React
+  // is what `@types/react` already answers for, and the two single-file-component frameworks have no JSX to type.
   jsxImportSource?: string;
-  /**
-   * The `jsx` mode a host's tsconfig needs. Absent for the two single-file-component frameworks, which have no JSX at
-   * all. A host with no framework has no `jsx` either, so this is what a hosted one adds rather than overrides.
-   */
+  // The `jsx` mode a host's tsconfig needs. Absent for the two single-file-component frameworks, which have no JSX at
+  // all. A host with no framework has no `jsx` either, so this is what a hosted one adds rather than overrides.
   jsx?: 'preserve' | 'react-jsx';
   // The reactivity rule asset, relative to `assets/claude-rules/`.
   stateRules: string[];
@@ -48,34 +50,52 @@ export interface FrameworkParts {
  */
 export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 
+// The one spelling of React's build wiring, read by the React target's own record and by every host that composes it.
+export const REACT_VITE_PLUGIN: PluginSpec = {
+  imports: [
+    "import react from '@vitejs/plugin-react-swc';",
+    "import babel from '@rolldown/plugin-babel';",
+  ],
+  prelude: [
+    '// Ahead of SWC while the source is still raw TSX; the VITEST guard keeps the memo cache out of the test',
+    '// run, where it leaves one permanently-uncovered branch in every component.',
+    'const reactCompiler = async () => {',
+    '  const compilerBabel = await babel({',
+    '    include: [/\\.[tj]sx$/],',
+    "    parserOpts: { plugins: ['jsx', 'typescript'] },",
+    "    plugins: ['babel-plugin-react-compiler'],",
+    '  });',
+    '',
+    "  return { ...compilerBabel, enforce: 'pre' };",
+    '};',
+  ],
+  calls: [
+    'react()',
+    `...(${OUTSIDE_TESTS} ? [await reactCompiler()] : [])`,
+  ],
+};
+
 const PARTS: Record<HostedFramework, FrameworkParts> = {
   react: {
     framework: 'react',
     jsx: 'react-jsx',
     componentGlob: 'src/**/*.tsx',
-    vitePlugin: {
-      imports: [
-        "import react, { reactCompilerPreset } from '@vitejs/plugin-react';",
-        "import babel from '@rolldown/plugin-babel';",
-      ],
-      calls: [
-        'react()',
-        `...(${OUTSIDE_TESTS} ? [babel({ presets: [reactCompilerPreset()] })] : [])`,
-      ],
-    },
+    vitePlugin: REACT_VITE_PLUGIN,
     devDependencies: [
       '@eslint-react/eslint-plugin',
       'eslint-plugin-jsx-a11y',
       'eslint-plugin-react-hooks',
-      '@vitejs/plugin-react',
+      '@vitejs/plugin-react-swc',
       '@rolldown/plugin-babel',
+      // No @types/babel__core: Babel 8 bundles its own declarations, which is what `@rolldown/plugin-babel`'s
+      // types import resolves through.
       '@babel/core',
-      '@types/babel__core',
       'babel-plugin-react-compiler',
       '@types/react',
       '@types/react-dom',
     ],
     dependencies: ['react', 'react-dom'],
+    allowBuilds: ['@swc/core'],
     testDevDependencies: ['@testing-library/dom', '@testing-library/react'],
     stateRules: ['react-state.md', 'hooks-order.md'],
   },
@@ -83,7 +103,10 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
     framework: 'vue',
     sfcExtension: 'vue',
     componentGlob: 'src/**/*.vue',
-    vitePlugin: { imports: ["import vue from '@vitejs/plugin-vue';"], calls: ['vue()'] },
+    vitePlugin: {
+      imports: ["import vue from '@vitejs/plugin-vue';"],
+      calls: ['vue()'],
+    },
     dependencies: ['vue'],
     devDependencies: [
       'eslint-plugin-vue',
@@ -136,10 +159,8 @@ export const partsFor = (framework: HostedFramework): FrameworkParts => {
   return PARTS[framework];
 };
 
-/**
- * A host's naming map once a framework is in it: the framework's own component extension marks a component, and every
- * other script is a module. Replaces the host's directory-based rule, which only exists for a host with no framework.
- */
+// A host's naming map once a framework is in it: the framework's own component extension marks a component, and every
+// other script is a module. Replaces the host's directory-based rule, which only exists for a host with no framework.
 export const hostedNaming = (framework: HostedFramework): NamingMap => {
   const { componentGlob } = partsFor(framework);
 

@@ -26,14 +26,20 @@ describe('scaffold', () => {
   });
 
   it('flags tailwind only when the library is chosen', () => {
-    const withTailwind = next.scaffold('demo-app', { ...DEFAULT_ANSWERS, libraries: ['tailwind'] });
+    const withTailwind = next.scaffold('demo-app', {
+      ...DEFAULT_ANSWERS,
+      libraries: ['tailwind'],
+    });
 
     expect(withTailwind.args).toContain('--tailwind');
     expect(withTailwind.args).not.toContain('--no-tailwind');
   });
 
   it('names whichever package manager the answers carry', () => {
-    const spec = next.scaffold('demo-app', { ...DEFAULT_ANSWERS, packageManager: 'yarn' });
+    const spec = next.scaffold('demo-app', {
+      ...DEFAULT_ANSWERS,
+      packageManager: 'yarn',
+    });
 
     expect(spec.args).toContain('--use-yarn');
   });

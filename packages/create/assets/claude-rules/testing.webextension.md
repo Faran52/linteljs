@@ -5,6 +5,8 @@ paths:
   - "vitest.config.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # Testing Rules
 
 Use these rules when touching tests, mocks, or test setup.

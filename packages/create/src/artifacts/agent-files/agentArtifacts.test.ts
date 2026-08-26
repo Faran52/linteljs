@@ -41,16 +41,30 @@ interface SkillExpectation {
 }
 
 const HOST_CASES: HostCase[] = [
-  { label: 'Claude', agents: ['claude-code'] },
-  { label: 'Codex', agents: ['codex'] },
-  { label: 'dual host', agents: ['claude-code', 'codex'] },
+  {
+    label: 'Claude',
+    agents: ['claude-code'],
+  },
+  {
+    label: 'Codex',
+    agents: ['codex'],
+  },
+  {
+    label: 'dual host',
+    agents: ['claude-code', 'codex'],
+  },
 ];
 
 const ARTIFACT_MATRIX: ArtifactMatrixCase[] = HOST_CASES.flatMap((host) => {
   return TARGET_IDS.flatMap((target) => {
     return [false, true].flatMap((zod) => {
       return TESTING_CHOICES.map((testing) => {
-        return { ...host, target, zod, testing };
+        return {
+          ...host,
+          target,
+          zod,
+          testing,
+        };
       });
     });
   });
@@ -102,6 +116,9 @@ const SKILL_COMMANDS: SkillExpectation[] = [
   },
 ];
 
+// The same line both adapters carry: with --amend banned, the default has to be set before the first commit.
+const TRAILER_POLICY = '- Commit messages carry no `Co-Authored-By` or tool-attribution trailers.';
+
 const BANNED_GIT_OPERATIONS = [
   'git stash',
   'git reset',
@@ -112,7 +129,11 @@ const BANNED_GIT_OPERATIONS = [
 ];
 
 const answersFor = (agents: Agent[], plugins: Plugin[] = DEFAULT_ANSWERS.plugins): Answers => {
-  return { ...DEFAULT_ANSWERS, agents, plugins };
+  return {
+    ...DEFAULT_ANSWERS,
+    agents,
+    plugins,
+  };
 };
 
 const answersForMatrix = ({
@@ -175,7 +196,10 @@ const parseSkill = (text: string): SkillDocument => {
     return [line.slice(0, separator), line.slice(separator + 2)];
   });
 
-  return { frontmatter: new Map(entries), body: match[2] };
+  return {
+    frontmatter: new Map(entries),
+    body: match[2],
+  };
 };
 
 const skillDocument = async (): Promise<SkillDocument> => {
@@ -291,6 +315,7 @@ describe('agentArtifacts', () => {
 - Run \`pnpm check\` before declaring implementation work complete.
 - Run \`pnpm lint:fix\`, not lint without fixes.
 - Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.
+- Commit messages carry no \`Co-Authored-By\` or tool-attribution trailers.
 `;
 
     expect(await contentFor(['claude-code'], 'CLAUDE.md')).toBe(expected);
@@ -299,7 +324,10 @@ describe('agentArtifacts', () => {
 
   // npm is the one manager whose scripts need `run`; for the other three the name is the command.
   it('puts run in front of an npm script and nothing in front of the rest', async () => {
-    const artifact = agentArtifacts({ ...DEFAULT_ANSWERS, packageManager: 'npm' })
+    const artifact = agentArtifacts({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'npm',
+    })
       .find((candidate) => {
         return candidate.target === 'CLAUDE.md';
       });
@@ -394,6 +422,14 @@ describe('SKILL.md', () => {
     const { body } = await skillDocument();
 
     expect(body).toContain(`\`${operation}\``);
+  });
+
+  it('states the commit trailer policy beside the git bans', async () => {
+    const { body } = await skillDocument();
+
+    expect(body).toContain(TRAILER_POLICY);
+    // Same list, same place: directly after the operations it qualifies.
+    expect(body.indexOf('- Never use `git stash`')).toBeLessThan(body.indexOf(TRAILER_POLICY));
   });
 });
 

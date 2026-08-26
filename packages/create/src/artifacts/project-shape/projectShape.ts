@@ -11,7 +11,10 @@ export interface ProjectShape {
 }
 
 // Birth, and what a caller planning without reading disk passes.
-export const EMPTY_PROJECT: ProjectShape = { setupTests: [], styleEntries: [] };
+export const EMPTY_PROJECT: ProjectShape = {
+  setupTests: [],
+  styleEntries: [],
+};
 
 /**
  * The target's own spelling where the project has it, the project's first otherwise. That order because a project can

@@ -8,7 +8,7 @@ import {
 } from 'vitest';
 
 import { parsePackageJson } from './emitPackageJson';
-import { VERSIONS } from './versions';
+import { PACKAGE_MANAGER_VERSIONS, VERSIONS } from './versions';
 
 interface Sibling {
   name: string;
@@ -31,7 +31,10 @@ const siblingIn = (directory: string): Sibling => {
     throw new Error(`${path} declares no name or version`);
   }
 
-  return { name, version };
+  return {
+    name,
+    version,
+  };
 };
 
 describe('VERSIONS against the workspace', () => {
@@ -108,6 +111,56 @@ const atLeast = (range: string, minimum: string): boolean => {
     });
   });
 };
+
+/**
+ * The layers were built and tested against whatever `@linteljs/eslint-config` declares, so a range in `VERSIONS` that
+ * is older hands a generated project a plugin its own config has never run against. The catalog block above covers
+ * the five dependencies this workspace shares; these are the two dozen it does not, and five of them had already
+ * drifted before anything checked. `catalog:` entries are skipped here, since the block above is where they answer.
+ */
+const configDependencies = (): [string, string][] => {
+  const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
+  const { devDependencies } = parsePackageJson(readFileSync(path, 'utf8'));
+
+  return Object.entries(devDependencies ?? {}).filter(([, range]) => {
+    return range !== 'catalog:';
+  });
+};
+
+describe('VERSIONS against the config it installs beside', () => {
+  it('reads dependencies off the config, so the assertion below is not vacuous', () => {
+    expect(configDependencies().length).toBeGreaterThan(0);
+  });
+
+  it('ships nothing older than the version the layers were built against', () => {
+    const stale = configDependencies()
+      .filter(([name, range]) => {
+        const shipped = VERSIONS[name];
+
+        return shipped !== undefined && !atLeast(shipped, range);
+      })
+      .map(([name, range]) => {
+        return `${name}: VERSIONS has ${String(VERSIONS[name])}, eslint-config has ${range}`;
+      });
+
+    expect(stale).toEqual([]);
+  });
+});
+
+/**
+ * `packageManager` in a generated project is written from `PACKAGE_MANAGER_VERSIONS`, and pnpm rewrites this
+ * workspace's own field on every install. Without this the two drift apart silently, which is how a project was being
+ * pinned to 11.21.0 by a workspace running 11.24.0.
+ */
+describe('PACKAGE_MANAGER_VERSIONS against the workspace', () => {
+  it('pins pnpm no older than the one this workspace runs', () => {
+    const path = join(import.meta.dirname, '..', '..', '..', '..', '..', 'package.json');
+    const { packageManager } = parsePackageJson(readFileSync(path, 'utf8'));
+    const running = String(packageManager).replace('pnpm@', '');
+
+    expect(atLeast(PACKAGE_MANAGER_VERSIONS.pnpm, running)).toBe(true);
+  });
+});
 
 describe('VERSIONS against the workspace catalog', () => {
   it('reads a catalog with entries in it, so the assertion below is not vacuous', () => {

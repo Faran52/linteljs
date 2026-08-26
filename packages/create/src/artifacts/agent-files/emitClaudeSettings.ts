@@ -15,11 +15,19 @@ export const emitClaudeSettings = (plugins: Plugin[]): string => {
         : {}),
     },
     extraKnownMarketplaces: {
-      linteljs: { source: { source: 'directory', path: './plugins/linteljs' } },
+      linteljs: {
+        source: {
+          source: 'directory',
+          path: './plugins/linteljs',
+        },
+      },
       ...(plugins.includes('ponytail')
         ? {
             ponytail: {
-              source: { source: 'github', repo: 'DietrichGebert/ponytail' },
+              source: {
+                source: 'github',
+                repo: 'DietrichGebert/ponytail',
+              },
             },
           }
         : {}),

@@ -4,6 +4,8 @@ paths:
   - "**/use*.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # Hooks Order
 
 `react-hooks/rules-of-hooks` is enabled and enforces the invariants: unconditional, top level,

@@ -15,7 +15,10 @@ import { targetFor } from '../../model/targets';
 import { STYLE_ENTRY_CANDIDATES, styleEntryPath } from './styleEntryPath';
 
 const answersFor = (target: TargetId): Answers => {
-  return { ...DEFAULT_ANSWERS, target };
+  return {
+    ...DEFAULT_ANSWERS,
+    target,
+  };
 };
 
 describe('styleEntryPath', () => {

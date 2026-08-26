@@ -37,7 +37,10 @@ export const GENERATED_AGENT_TARGETS: readonly string[] = [
 ];
 
 const adapter = (target: 'CLAUDE.md' | 'AGENTS.md', answers: Answers): Artifact => {
-  return { ...emitted('standard', target, emitAgentAdapter(answers)), preserve: true };
+  return {
+    ...emitted('standard', target, emitAgentAdapter(answers)),
+    preserve: true,
+  };
 };
 
 export const agentArtifacts = (answers: Answers): Artifact[] => {

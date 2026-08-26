@@ -98,80 +98,272 @@ const BASH_PAYLOADS: BashPayloadCase[] = [
 ];
 
 const BANNED_GIT_COMMANDS: CommandProbe[] = [
-  { label: 'direct stash', command: 'git stash' },
-  { label: 'direct reset', command: 'git reset --hard HEAD' },
-  { label: 'commit --no-verify', command: 'git commit --no-verify' },
-  { label: 'commit --amend', command: 'git commit --amend' },
-  { label: 'add -A', command: 'git add -A' },
-  { label: 'add --all', command: 'git add --all' },
-  { label: 'add dot', command: 'git add .' },
-  { label: 'quoted add dot', command: 'git add "."' },
-  { label: 'global -C before stash', command: 'git -C . stash' },
-  { label: 'global --no-pager before reset', command: 'git --no-pager reset --hard HEAD' },
-  { label: 'add option before -A', command: 'git add -v -A' },
-  { label: 'env wrapper', command: 'env LINTEL_TEST=1 git commit --amend' },
-  { label: 'env split-string wrapper', command: "env -S 'git stash'" },
-  { label: 'env long split-string wrapper', command: "env --split-string 'git reset --hard HEAD'" },
-  { label: 'env separate short split with trailing argv', command: 'env -S git stash' },
-  { label: 'env attached short split with trailing argv', command: 'env -Sgit stash' },
-  { label: 'env separate long split with trailing argv', command: 'env --split-string git stash' },
+  {
+    label: 'direct stash',
+    command: 'git stash',
+  },
+  {
+    label: 'direct reset',
+    command: 'git reset --hard HEAD',
+  },
+  {
+    label: 'commit --no-verify',
+    command: 'git commit --no-verify',
+  },
+  {
+    label: 'commit --amend',
+    command: 'git commit --amend',
+  },
+  {
+    label: 'add -A',
+    command: 'git add -A',
+  },
+  {
+    label: 'add --all',
+    command: 'git add --all',
+  },
+  {
+    label: 'add dot',
+    command: 'git add .',
+  },
+  {
+    label: 'quoted add dot',
+    command: 'git add "."',
+  },
+  {
+    label: 'global -C before stash',
+    command: 'git -C . stash',
+  },
+  {
+    label: 'global --no-pager before reset',
+    command: 'git --no-pager reset --hard HEAD',
+  },
+  {
+    label: 'add option before -A',
+    command: 'git add -v -A',
+  },
+  {
+    label: 'env wrapper',
+    command: 'env LINTEL_TEST=1 git commit --amend',
+  },
+  {
+    label: 'env split-string wrapper',
+    command: "env -S 'git stash'",
+  },
+  {
+    label: 'env long split-string wrapper',
+    command: "env --split-string 'git reset --hard HEAD'",
+  },
+  {
+    label: 'env separate short split with trailing argv',
+    command: 'env -S git stash',
+  },
+  {
+    label: 'env attached short split with trailing argv',
+    command: 'env -Sgit stash',
+  },
+  {
+    label: 'env separate long split with trailing argv',
+    command: 'env --split-string git stash',
+  },
   {
     label: 'env attached long split with trailing argv',
     command: 'env --split-string=git reset --hard HEAD',
   },
-  { label: 'env separate path operand', command: 'env -P /usr/bin git stash' },
-  { label: 'env attached path operand', command: 'env -P/usr/bin git stash' },
-  { label: 'env missing path operand', command: 'env -P' },
-  { label: 'env empty split string', command: 'env --split-string=' },
-  { label: 'env unknown long option', command: 'env --future-path /usr/bin git status' },
-  { label: 'env unknown short option', command: 'env -Q /usr/bin git status' },
-  { label: 'env option operand', command: 'env --unset LINTEL_TEST git stash' },
-  { label: 'command wrapper', command: 'command git add --all' },
-  { label: 'shell wrapper', command: "bash -c 'git -C . stash'" },
-  { label: 'five nested shell wrappers', command: shellWrapped('git stash', 5) },
-  { label: 'exec argv-zero wrapper', command: 'exec -a lintel git reset --hard HEAD' },
-  { label: 'nohup option terminator', command: 'nohup -- git stash' },
-  { label: 'sudo wrapper', command: 'sudo -u root git reset --hard HEAD' },
-  { label: 'and-separated invocation', command: 'echo safe && git -C . stash' },
-  { label: 'pipe-separated invocation', command: 'printf safe | git --no-pager reset --hard HEAD' },
-  { label: 'newline-separated invocation', command: 'git status\ngit add -v -A' },
-  { label: 'tokenizer failure', command: 'echo "unterminated' },
-  { label: 'recursion depth exhaustion', command: shellWrapped('echo safe', 20) },
+  {
+    label: 'env separate path operand',
+    command: 'env -P /usr/bin git stash',
+  },
+  {
+    label: 'env attached path operand',
+    command: 'env -P/usr/bin git stash',
+  },
+  {
+    label: 'env missing path operand',
+    command: 'env -P',
+  },
+  {
+    label: 'env empty split string',
+    command: 'env --split-string=',
+  },
+  {
+    label: 'env unknown long option',
+    command: 'env --future-path /usr/bin git status',
+  },
+  {
+    label: 'env unknown short option',
+    command: 'env -Q /usr/bin git status',
+  },
+  {
+    label: 'env option operand',
+    command: 'env --unset LINTEL_TEST git stash',
+  },
+  {
+    label: 'command wrapper',
+    command: 'command git add --all',
+  },
+  {
+    label: 'shell wrapper',
+    command: "bash -c 'git -C . stash'",
+  },
+  {
+    label: 'five nested shell wrappers',
+    command: shellWrapped('git stash', 5),
+  },
+  {
+    label: 'exec argv-zero wrapper',
+    command: 'exec -a lintel git reset --hard HEAD',
+  },
+  {
+    label: 'nohup option terminator',
+    command: 'nohup -- git stash',
+  },
+  {
+    label: 'sudo wrapper',
+    command: 'sudo -u root git reset --hard HEAD',
+  },
+  {
+    label: 'and-separated invocation',
+    command: 'echo safe && git -C . stash',
+  },
+  {
+    label: 'pipe-separated invocation',
+    command: 'printf safe | git --no-pager reset --hard HEAD',
+  },
+  {
+    label: 'newline-separated invocation',
+    command: 'git status\ngit add -v -A',
+  },
+  {
+    label: 'tokenizer failure',
+    command: 'echo "unterminated',
+  },
+  {
+    label: 'recursion depth exhaustion',
+    command: shellWrapped('echo safe', 20),
+  },
 ];
 
 const ALLOWED_GIT_COMMANDS: CommandProbe[] = [
-  { label: 'status', command: 'git status' },
-  { label: 'explicit source path', command: 'git add src/app.ts' },
-  { label: 'quoted source path', command: 'git add "src/app.ts"' },
-  { label: 'unrelated stash text', command: 'printf "%s\\n" "legit stash"' },
-  { label: 'unrelated --no-verify argument', command: 'node scripts/report.js --no-verify' },
-  { label: 'explicit --amend filename', command: 'git add -- --amend' },
-  { label: 'explicit --no-verify filename', command: 'git add -- --no-verify' },
-  { label: 'commit path after separator', command: 'git commit -- --amend' },
-  { label: 'Git text passed to rg', command: 'rg "git stash" docs' },
-  { label: 'command lookup', command: 'command -v git && echo stash' },
-  { label: 'unrelated shell wrapper', command: "bash -c 'echo legit stash'" },
-  { label: 'env separate short split status', command: 'env -S git status' },
-  { label: 'env attached short split status', command: 'env -Sgit status' },
-  { label: 'env separate long split status', command: 'env --split-string git status' },
-  { label: 'env attached long split status', command: 'env --split-string=git status' },
-  { label: 'env separate path status', command: 'env -P /usr/bin git status' },
-  { label: 'env attached path status', command: 'env -P/usr/bin git status' },
+  {
+    label: 'status',
+    command: 'git status',
+  },
+  {
+    label: 'explicit source path',
+    command: 'git add src/app.ts',
+  },
+  {
+    label: 'quoted source path',
+    command: 'git add "src/app.ts"',
+  },
+  {
+    label: 'unrelated stash text',
+    command: 'printf "%s\\n" "legit stash"',
+  },
+  {
+    label: 'unrelated --no-verify argument',
+    command: 'node scripts/report.js --no-verify',
+  },
+  {
+    label: 'explicit --amend filename',
+    command: 'git add -- --amend',
+  },
+  {
+    label: 'explicit --no-verify filename',
+    command: 'git add -- --no-verify',
+  },
+  {
+    label: 'commit path after separator',
+    command: 'git commit -- --amend',
+  },
+  {
+    label: 'Git text passed to rg',
+    command: 'rg "git stash" docs',
+  },
+  {
+    label: 'command lookup',
+    command: 'command -v git && echo stash',
+  },
+  {
+    label: 'unrelated shell wrapper',
+    command: "bash -c 'echo legit stash'",
+  },
+  {
+    label: 'env separate short split status',
+    command: 'env -S git status',
+  },
+  {
+    label: 'env attached short split status',
+    command: 'env -Sgit status',
+  },
+  {
+    label: 'env separate long split status',
+    command: 'env --split-string git status',
+  },
+  {
+    label: 'env attached long split status',
+    command: 'env --split-string=git status',
+  },
+  {
+    label: 'env separate path status',
+    command: 'env -P /usr/bin git status',
+  },
+  {
+    label: 'env attached path status',
+    command: 'env -P/usr/bin git status',
+  },
 ];
 
 const ESLINT_WARNING_COMMANDS: CommandProbe[] = [
-  { label: 'direct executable', command: 'eslint src' },
-  { label: 'local executable path', command: './node_modules/.bin/eslint src' },
-  { label: 'pnpm target', command: 'pnpm eslint src' },
-  { label: 'pnpm exec target', command: 'pnpm exec eslint src' },
-  { label: 'npm exec target', command: 'npm exec eslint -- src' },
-  { label: 'npx target', command: 'npx eslint src' },
-  { label: 'yarn target', command: 'yarn eslint src' },
-  { label: 'bunx target', command: 'bunx eslint src' },
-  { label: 'environment wrapper', command: 'env NODE_ENV=test pnpm exec eslint src' },
-  { label: 'environment split-string wrapper', command: "env -S 'eslint src'" },
-  { label: 'environment separate short split with trailing argv', command: 'env -S eslint src' },
-  { label: 'environment attached short split with trailing argv', command: 'env -Seslint src' },
+  {
+    label: 'direct executable',
+    command: 'eslint src',
+  },
+  {
+    label: 'local executable path',
+    command: './node_modules/.bin/eslint src',
+  },
+  {
+    label: 'pnpm target',
+    command: 'pnpm eslint src',
+  },
+  {
+    label: 'pnpm exec target',
+    command: 'pnpm exec eslint src',
+  },
+  {
+    label: 'npm exec target',
+    command: 'npm exec eslint -- src',
+  },
+  {
+    label: 'npx target',
+    command: 'npx eslint src',
+  },
+  {
+    label: 'yarn target',
+    command: 'yarn eslint src',
+  },
+  {
+    label: 'bunx target',
+    command: 'bunx eslint src',
+  },
+  {
+    label: 'environment wrapper',
+    command: 'env NODE_ENV=test pnpm exec eslint src',
+  },
+  {
+    label: 'environment split-string wrapper',
+    command: "env -S 'eslint src'",
+  },
+  {
+    label: 'environment separate short split with trailing argv',
+    command: 'env -S eslint src',
+  },
+  {
+    label: 'environment attached short split with trailing argv',
+    command: 'env -Seslint src',
+  },
   {
     label: 'environment separate long split with trailing argv',
     command: 'env --split-string eslint src',
@@ -180,32 +372,89 @@ const ESLINT_WARNING_COMMANDS: CommandProbe[] = [
     label: 'environment attached long split with trailing argv',
     command: 'env --split-string=eslint src',
   },
-  { label: 'environment separate path operand', command: 'env -P /usr/bin eslint src' },
-  { label: 'environment attached path operand', command: 'env -P/usr/bin eslint src' },
-  { label: 'environment missing path operand', command: 'env -P' },
-  { label: 'environment empty split string', command: 'env --split-string=' },
+  {
+    label: 'environment separate path operand',
+    command: 'env -P /usr/bin eslint src',
+  },
+  {
+    label: 'environment attached path operand',
+    command: 'env -P/usr/bin eslint src',
+  },
+  {
+    label: 'environment missing path operand',
+    command: 'env -P',
+  },
+  {
+    label: 'environment empty split string',
+    command: 'env --split-string=',
+  },
   {
     label: 'environment unknown long option',
     command: 'env --future-path /usr/bin eslint src',
   },
-  { label: 'environment unknown short option', command: 'env -Q /usr/bin eslint src' },
-  { label: 'shell wrapper', command: "bash -c 'eslint src'" },
-  { label: 'exec argv-zero wrapper', command: 'exec -a lintel eslint src' },
-  { label: '--fix-dry-run only', command: 'eslint src --fix-dry-run' },
-  { label: '--fix-type only', command: 'eslint src --fix-type problem' },
-  { label: '--fix after option separator', command: 'eslint src -- --fix' },
-  { label: 'later segment echoing --fix', command: 'pnpm eslint src; echo --fix' },
-  { label: 'operator-separated target', command: 'echo safe && eslint src' },
+  {
+    label: 'environment unknown short option',
+    command: 'env -Q /usr/bin eslint src',
+  },
+  {
+    label: 'shell wrapper',
+    command: "bash -c 'eslint src'",
+  },
+  {
+    label: 'exec argv-zero wrapper',
+    command: 'exec -a lintel eslint src',
+  },
+  {
+    label: '--fix-dry-run only',
+    command: 'eslint src --fix-dry-run',
+  },
+  {
+    label: '--fix-type only',
+    command: 'eslint src --fix-type problem',
+  },
+  {
+    label: '--fix after option separator',
+    command: 'eslint src -- --fix',
+  },
+  {
+    label: 'later segment echoing --fix',
+    command: 'pnpm eslint src; echo --fix',
+  },
+  {
+    label: 'operator-separated target',
+    command: 'echo safe && eslint src',
+  },
 ];
 
 const ESLINT_ALLOWED_COMMANDS: CommandProbe[] = [
-  { label: 'direct exact --fix', command: 'eslint src --fix' },
-  { label: 'runner exact --fix', command: 'pnpm exec eslint --fix src' },
-  { label: 'npm forwarded exact --fix', command: 'npm exec eslint -- --fix src' },
-  { label: 'exact --fix with fix type', command: 'eslint --fix-type problem --fix src' },
-  { label: 'environment split-string exact --fix', command: "env -S 'eslint src --fix'" },
-  { label: 'environment separate short split exact --fix', command: 'env -S eslint src --fix' },
-  { label: 'environment attached short split exact --fix', command: 'env -Seslint src --fix' },
+  {
+    label: 'direct exact --fix',
+    command: 'eslint src --fix',
+  },
+  {
+    label: 'runner exact --fix',
+    command: 'pnpm exec eslint --fix src',
+  },
+  {
+    label: 'npm forwarded exact --fix',
+    command: 'npm exec eslint -- --fix src',
+  },
+  {
+    label: 'exact --fix with fix type',
+    command: 'eslint --fix-type problem --fix src',
+  },
+  {
+    label: 'environment split-string exact --fix',
+    command: "env -S 'eslint src --fix'",
+  },
+  {
+    label: 'environment separate short split exact --fix',
+    command: 'env -S eslint src --fix',
+  },
+  {
+    label: 'environment attached short split exact --fix',
+    command: 'env -Seslint src --fix',
+  },
   {
     label: 'environment separate long split exact --fix',
     command: 'env --split-string eslint src --fix',
@@ -214,13 +463,34 @@ const ESLINT_ALLOWED_COMMANDS: CommandProbe[] = [
     label: 'environment attached long split exact --fix',
     command: 'env --split-string=eslint src --fix',
   },
-  { label: 'environment separate path exact --fix', command: 'env -P /usr/bin eslint src --fix' },
-  { label: 'environment attached path exact --fix', command: 'env -P/usr/bin eslint src --fix' },
-  { label: 'shell wrapper exact --fix', command: "bash -c 'eslint src --fix'" },
-  { label: 'unrelated report script', command: 'node scripts/eslint-report.js' },
-  { label: 'unrelated text', command: 'echo eslint' },
-  { label: 'unrelated segments', command: 'echo eslint; echo --fix' },
-  { label: 'command lookup', command: 'command -v eslint' },
+  {
+    label: 'environment separate path exact --fix',
+    command: 'env -P /usr/bin eslint src --fix',
+  },
+  {
+    label: 'environment attached path exact --fix',
+    command: 'env -P/usr/bin eslint src --fix',
+  },
+  {
+    label: 'shell wrapper exact --fix',
+    command: "bash -c 'eslint src --fix'",
+  },
+  {
+    label: 'unrelated report script',
+    command: 'node scripts/eslint-report.js',
+  },
+  {
+    label: 'unrelated text',
+    command: 'echo eslint',
+  },
+  {
+    label: 'unrelated segments',
+    command: 'echo eslint; echo --fix',
+  },
+  {
+    label: 'command lookup',
+    command: 'command -v eslint',
+  },
 ];
 
 const parseHookOutput = (text: string): HookOutput => {
@@ -290,7 +560,10 @@ describe('portable hook assets', () => {
   });
 
   afterEach(() => {
-    rmSync(cwd, { recursive: true, force: true });
+    rmSync(cwd, {
+      recursive: true,
+      force: true,
+    });
   });
 
   const checkedPaths = (): string[] => {
@@ -363,7 +636,10 @@ describe('portable hook assets', () => {
   });
 
   it('keeps missing Bash command host data as a silent allow', () => {
-    expect(runHook('git-safety-guard.sh', { cwd, tool_input: {} })).toBe('');
+    expect(runHook('git-safety-guard.sh', {
+      cwd,
+      tool_input: {},
+    })).toBe('');
   });
 
   it('checks a Claude Write path relative to the payload cwd', () => {

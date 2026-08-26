@@ -33,13 +33,19 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 // The repairs are read off a record, and a record is built from answers, so a test naming only a target
 // still hands over a whole set.
 const answersFor = (target: TargetId): Answers => {
-  return { ...DEFAULT_ANSWERS, target };
+  return {
+    ...DEFAULT_ANSWERS,
+    target,
+  };
 };
 
 // The generator's own output, planted at the paths a generator would have written it to.
@@ -291,7 +297,10 @@ describe('starter fixes', () => {
   it('reports each file it repaired, so the CLI can list it beside the ones it wrote', async () => {
     const written: string[] = [];
 
-    await scaffold({ 'index.html': '<html lang="">\n', 'src/App.vue': '<template />\n' });
+    await scaffold({
+      'index.html': '<html lang="">\n',
+      'src/App.vue': '<template />\n',
+    });
     await repairScaffoldedOutput(cwd, answersFor('vue'), (path) => {
       written.push(path);
     });

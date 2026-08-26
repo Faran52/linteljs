@@ -37,7 +37,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 // The generator's own output, planted at the paths a generator would have written it to.
@@ -50,7 +53,10 @@ const scaffold = async (files: Record<string, string>): Promise<void> => {
 
 // A record is built from answers now, so a test naming only a target still hands over a whole set.
 const answersFor = (target: TargetId): Answers => {
-  return { ...DEFAULT_ANSWERS, target };
+  return {
+    ...DEFAULT_ANSWERS,
+    target,
+  };
 };
 
 describe('sourceFiles', () => {
@@ -93,7 +99,10 @@ describe('stripTsExtensions', () => {
 });
 
 describe('markTypeOnlyImports', () => {
-  const typeOnly = { '@angular/core': ['ApplicationConfig'], '@angular/router': ['Routes'] };
+  const typeOnly = {
+    '@angular/core': ['ApplicationConfig'],
+    '@angular/router': ['Routes'],
+  };
 
   it('marks the type in a clause that also imports values', () => {
     expect(markTypeOnlyImports(

@@ -71,7 +71,10 @@ export const runFixPass = (
     return;
   }
 
-  const result = spawnSync(binary, ['.', '--fix', '--format', 'json'], { cwd, encoding: 'utf8' });
+  const result = spawnSync(binary, ['.', '--fix', '--format', 'json'], {
+    cwd,
+    encoding: 'utf8',
+  });
 
   // Exit 2 is a configuration failure, and the config is ours. Anything else means eslint ran.
   if (result.error !== undefined || result.status === 2) {

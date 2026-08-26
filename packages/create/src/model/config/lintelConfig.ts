@@ -111,10 +111,8 @@ const arrayChoices = <T extends string>(
   return choices;
 };
 
-/**
- * Export-map condition names are an open vocabulary (`node`, `bun`, `worker`, whatever a package chose), so this
- * validates the shape rather than the members: a non-empty list of distinct non-empty strings.
- */
+// Export-map condition names are an open vocabulary (`node`, `bun`, `worker`, whatever a package chose), so this
+// validates the shape rather than the members: a non-empty list of distinct non-empty strings.
 const conditionNames = (value: JsonValue | undefined): string[] => {
   if (!isJsonArray(value) || value.length === 0) {
     throw new Error('resolveConditions must be a non-empty array');
@@ -162,10 +160,8 @@ const aliasMap = (value: JsonValue | undefined): AliasMap => {
   }));
 };
 
-/**
- * Paths a project lints nothing in. An open vocabulary like `resolveConditions`, so only the shape is checked: a
- * non-empty list of distinct non-empty strings.
- */
+// Paths a project lints nothing in. An open vocabulary like `resolveConditions`, so only the shape is checked: a
+// non-empty list of distinct non-empty strings.
 const globList = (value: JsonValue | undefined): string[] => {
   if (!isJsonArray(value) || value.length === 0) {
     throw new Error('ignores must be a non-empty array');

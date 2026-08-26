@@ -47,7 +47,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 /**
@@ -62,14 +65,21 @@ const plain = (text: string): string => {
   }).join('');
 };
 
-const run = (staged: string[]): { status: number | null; output: string } => {
+const run = (staged: string[]): { status: number | null;
+  output: string; } => {
   const result = spawnSync(execPath, [CHECKER, ...staged], {
     encoding: 'utf8',
     cwd,
-    env: { ...process.env, TYPECHECK_COMMAND: `${TSC} --noEmit -p tsconfig.json` },
+    env: {
+      ...process.env,
+      TYPECHECK_COMMAND: `${TSC} --noEmit -p tsconfig.json`,
+    },
   });
 
-  return { status: result.status, output: plain(`${result.stdout}${result.stderr}`) };
+  return {
+    status: result.status,
+    output: plain(`${result.stdout}${result.stderr}`),
+  };
 };
 
 describe('a type-clean staged file', () => {

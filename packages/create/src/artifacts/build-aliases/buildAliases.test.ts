@@ -8,6 +8,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type Library,
+  TARGET_IDS,
   type TargetId,
 } from '../../model/answers/answers';
 
@@ -19,7 +20,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 describe('buildAliases', () => {
@@ -33,7 +37,6 @@ describe('buildAliases', () => {
       '@hooks/*': './src/lib/hooks/*',
       '@utils/*': './src/lib/utils/*',
       '@services/*': './src/lib/services/*',
-      '@providers/*': './src/lib/providers/*',
       '@config/*': './src/config/*',
       '@mocks/*': './__mocks__/*',
     });
@@ -67,11 +70,23 @@ describe('buildAliases', () => {
     const plain = buildAliases(answersFor({ target: 'webextension' }));
 
     expect(plain['@store/*']).toBeUndefined();
-    expect(plain['@providers/*']).toBeUndefined();
     expect(plain['@model/*']).toBe('./src/lib/model/*');
   });
 
+  /**
+   * No template creates `src/lib/providers/`, so the alias named a directory a reader would chase for nothing; it
+   * ships on no target rather than being omitted per target.
+   */
+  it('aliases providers on no target at all', () => {
+    for (const target of TARGET_IDS) {
+      expect(buildAliases(answersFor({ target }))['@providers/*']).toBeUndefined();
+    }
+  });
+
   it('drops @mocks when testing is declined', () => {
-    expect(buildAliases({ ...answersFor({}), testing: 'none' })['@mocks/*']).toBeUndefined();
+    expect(buildAliases({
+      ...answersFor({}),
+      testing: 'none',
+    })['@mocks/*']).toBeUndefined();
   });
 });

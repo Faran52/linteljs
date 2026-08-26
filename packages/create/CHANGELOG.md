@@ -1,5 +1,31 @@
 # Changelog
 
+All three packages share one version and release together. An entry here describes this package;
+when a version's change lives in a sibling it is described there instead:
+
+- [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
+- [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
+
+## 1.5.0
+
+Twelve findings from a report against a scaffolded Astro workspace, plus four the end-to-end suite
+found while they were being fixed.
+
+- Astro wires the React Compiler it was already installing, as plain Babel options through
+  `@astrojs/react`. The preset form fails that path outright.
+- Non-Astro React builds move to `@vitejs/plugin-react-swc`, with the compiler running ahead of it.
+  Astro keeps the Babel passthrough, and `@swc/core` is approved so the first install does not abort.
+- Astro takes the Tailwind Vite adapter alone. The choice now asks whether a target calls the Vite
+  plugin rather than whether it owns a `vite.config.ts`, which is the one case where those differ.
+- `astro` is a runtime dependency, declared once, rather than drifting between two sections.
+- The generated `check` runs the type floor as `lint:types`, so the documented gate is the gate the
+  commit runs, and `lint:css:fix` exists so the CSS half of "run lint:fix" is followable.
+- The stale `@providers/*` alias is gone, and the agent rules state the commit trailer policy.
+- The banned-pattern checker grants `unknown` on a promise chain's catch, which a scaffolded
+  Angular project's own `main.ts` needs, and no longer reports a directive written inside a string.
+- `VERSIONS` is gated against the config's own dependencies, not the catalog alone. Six pins had
+  drifted behind the layers they install beside.
+
 ## 1.4.6
 
 ### Fixed

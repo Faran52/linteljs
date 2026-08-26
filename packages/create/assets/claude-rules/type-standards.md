@@ -1,5 +1,7 @@
 # Type and Code Standards
 
+*Shipped verbatim into generated projects; this workspace's own copy lives under .claude/rules/*.
+
 Load before any type tracing, code authoring, or test work.
 
 What ESLint already enforces is not repeated here. `@linteljs/eslint-config` owns line length, quote
@@ -55,8 +57,11 @@ stops updating.
 
 - A comment says **why**: the constraint that forced the code, the measurement behind a constant,
   the bug a guard prevents. If it restates the code, delete it.
+- No em dashes, anywhere a comment can land. A colon or a comma carries the same turn; a hyphen
+  covers the ranges and compounds an em dash is reached for instead.
 - `//` for one or two lines.
-- `/** */` JSDoc at three lines or more.
+- `/** */` JSDoc at three lines or more. `@linteljs/comment-delimiter` enforces both halves and
+  fixes either direction, so this is a gate rather than a habit.
 - Comments stay minimal either way. Length is not a virtue; the shortest comment that carries the reason wins.
 - No comments in test files. The test name carries the meaning.
 

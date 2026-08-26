@@ -44,7 +44,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 const targetsOf = (overrides: AnswerOverrides): string[] => {
@@ -206,7 +209,10 @@ describe('buildArtifacts', () => {
 
   for (const target of TARGET_IDS) {
     it(`resolves every artifact for ${target}`, async () => {
-      const artifacts = buildArtifacts(answersFor({ target, libraries: ['zod'] }));
+      const artifacts = buildArtifacts(answersFor({
+        target,
+        libraries: ['zod'],
+      }));
 
       await Promise.all(artifacts.flatMap((artifact) => {
         // Only a copied artifact names files on disk; emitted and merged both build their text.
@@ -269,28 +275,41 @@ describe('the emitted checker against the emitted starter code', () => {
 
   // Everything the pipeline puts on disk that the checker would be handed, at its own path and as its own text: an
   // artifact composed from several sources is only scannable once it has been composed.
-  const scannedFor = async (target: TargetId): Promise<{ target: string; text: string }[]> => {
+  const scannedFor = async (target: TargetId): Promise<{ target: string;
+    text: string; }[]> => {
     const record = targetFor(answersFor({ target }));
 
     const files = [
-      ...buildArtifacts(answersFor({ target, libraries: ['tanstack-query'] })).flatMap((artifact) => {
+      ...buildArtifacts(answersFor({
+        target,
+        libraries: ['tanstack-query'],
+      })).flatMap((artifact) => {
         return 'text' in artifact.content || artifact.target === CHECKER
           ? []
-          : [{ target: artifact.target, read: async () => {
-              return await contentOf(artifact.content);
-            } }];
+          : [{
+              target: artifact.target,
+              read: async () => {
+                return await contentOf(artifact.content);
+              },
+            }];
       }),
       ...[...record.starterFiles ?? [], ...record.starterTests ?? []].map(({ source, target: path }) => {
-        return { target: path, read: async () => {
-          return await readFile(join(ASSETS_ROOT, source), 'utf8');
-        } };
+        return {
+          target: path,
+          read: async () => {
+            return await readFile(join(ASSETS_ROOT, source), 'utf8');
+          },
+        };
       }),
     ].filter(({ target: path }) => {
       return /\.[cm]?tsx?$/.test(path);
     });
 
     return await Promise.all(files.map(async ({ target: path, read }) => {
-      return { target: path, text: await read() };
+      return {
+        target: path,
+        text: await read(),
+      };
     }));
   };
 
@@ -315,13 +334,19 @@ describe('the emitted checker against the emitted starter code', () => {
         [CHECKER, ...scanned.map(({ target: path }) => {
           return path;
         })],
-        { cwd, encoding: 'utf8' },
+        {
+          cwd,
+          encoding: 'utf8',
+        },
       );
 
       expect(`${String(status)}\n${stderr}`).toBe('0\n');
     }
     finally {
-      await rm(cwd, { recursive: true, force: true });
+      await rm(cwd, {
+        recursive: true,
+        force: true,
+      });
     }
   });
 });
@@ -333,7 +358,10 @@ describe('the shipped test setup', () => {
 
   // `.tsx` on the React family, `.ts` elsewhere, so the lookup follows the same rule the emitter does.
   const setupFor = async (overrides: AnswerOverrides): Promise<string> => {
-    return await textFor(overrides, setupTestsPath({ ...DEFAULT_ANSWERS, ...overrides }));
+    return await textFor(overrides, setupTestsPath({
+      ...DEFAULT_ANSWERS,
+      ...overrides,
+    }));
   };
 
   it('ships the router mocks to every target with a binding they could stand in for', async () => {
@@ -366,12 +394,21 @@ describe('the shipped test setup', () => {
   });
 
   it('appends them on every target, including the one whose setup is not the shared file', async () => {
-    expect(await setupFor({ target: 'angular', libraries: ['tanstack-query'] })).toContain('TEST_QUERY_OPTIONS');
-    expect(await setupFor({ target: 'react-native', libraries: ['tanstack-query'] })).toContain('TEST_QUERY_OPTIONS');
+    expect(await setupFor({
+      target: 'angular',
+      libraries: ['tanstack-query'],
+    })).toContain('TEST_QUERY_OPTIONS');
+    expect(await setupFor({
+      target: 'react-native',
+      libraries: ['tanstack-query'],
+    })).toContain('TEST_QUERY_OPTIONS');
   });
 
   it('keeps the target own setup ahead of both fragments', async () => {
-    const setup = await setupFor({ target: 'react-native', libraries: ['tanstack-query'] });
+    const setup = await setupFor({
+      target: 'react-native',
+      libraries: ['tanstack-query'],
+    });
 
     expect(setup.indexOf("vi.mock('expo-device'")).toBeLessThan(setup.indexOf('navigateMock'));
     expect(setup.indexOf('navigateMock')).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
@@ -385,7 +422,10 @@ describe('the shipped test setup', () => {
   });
 
   it('ships no setup, and so no fragment, to a project that declined tests', () => {
-    expect(targetsOf({ testing: 'none', libraries: ['tanstack-query'] })).not.toContain('__mocks__/setupTests.tsx');
+    expect(targetsOf({
+      testing: 'none',
+      libraries: ['tanstack-query'],
+    })).not.toContain('__mocks__/setupTests.tsx');
   });
 
   // The project adds its own mocks to this file, so a sync must install it when missing and never overwrite it.
@@ -397,7 +437,10 @@ describe('the shipped test setup', () => {
   it('keeps the setup spelling a project already has, config included', () => {
     const artifacts = buildArtifacts(
       answersFor({ target: 'react' }),
-      { setupTests: ['__mocks__/setupTests.ts'], styleEntries: [] },
+      {
+        setupTests: ['__mocks__/setupTests.ts'],
+        styleEntries: [],
+      },
     );
 
     const targets = artifacts.map((artifact) => {
@@ -428,7 +471,10 @@ describe('the test runner', () => {
   });
 
   it('gives a project that declined tests none at all', () => {
-    expect(targetsOf({ target: 'react-native', testing: 'none' })).not.toContain('vitest.config.ts');
+    expect(targetsOf({
+      target: 'react-native',
+      testing: 'none',
+    })).not.toContain('vitest.config.ts');
   });
 
   it('writes no jest config for anything', () => {

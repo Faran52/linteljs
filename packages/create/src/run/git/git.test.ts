@@ -25,7 +25,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 describe('git', () => {
@@ -41,7 +44,10 @@ describe('git', () => {
 
     const result = git(
       ['diff', '--no-index', '--no-color', '--', 'a.txt', '-'],
-      { cwd, input: 'two\n' },
+      {
+        cwd,
+        input: 'two\n',
+      },
     );
 
     expect(result.stdout).toContain('-one');

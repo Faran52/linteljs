@@ -24,7 +24,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const plant = async (relative: string): Promise<void> => {
@@ -34,7 +37,10 @@ const plant = async (relative: string): Promise<void> => {
 
 describe('readProjectShape', () => {
   it('reads an empty directory as a project holding none of them', async () => {
-    expect(await readProjectShape(cwd)).toEqual({ setupTests: [], styleEntries: [] });
+    expect(await readProjectShape(cwd)).toEqual({
+      setupTests: [],
+      styleEntries: [],
+    });
   });
 
   it('answers every spelling the project has, in candidate order', async () => {

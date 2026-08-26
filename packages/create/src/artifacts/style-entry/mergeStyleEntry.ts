@@ -1,7 +1,9 @@
-// The stylesheet named by `styleEntry`, guaranteed to pull Tailwind in. Installing `tailwindcss` and calling the Vite
-// plugin generates nothing on its own: a utility class only exists because some CSS file imported the framework, and
-// only `create-next-app --tailwind` writes that line itself. Merged rather than emitted, because the rest of the file
-// is the project's theme.
+/**
+ * The stylesheet named by `styleEntry`, guaranteed to pull Tailwind in. Installing `tailwindcss` and calling the Vite
+ * plugin generates nothing on its own: a utility class only exists because some CSS file imported the framework, and
+ * only `create-next-app --tailwind` writes that line itself. Merged rather than emitted, because the rest of the file
+ * is the project's theme.
+ */
 
 export const TAILWIND_IMPORT = '@import "tailwindcss";';
 

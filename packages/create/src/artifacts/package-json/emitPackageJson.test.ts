@@ -7,6 +7,7 @@ import {
 import {
   type Answers,
   DEFAULT_ANSWERS,
+  type HostedFramework,
   LIBRARIES,
   type Library,
   type PackageManager,
@@ -27,6 +28,7 @@ import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from './versions';
 
 interface AnswerOverrides {
   target?: TargetId;
+  hostedFramework?: HostedFramework;
   testing?: Testing;
   packageManager?: PackageManager;
   libraries?: Library[];
@@ -34,7 +36,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 const SCAFFOLDED: PackageJson = {
@@ -42,8 +47,15 @@ const SCAFFOLDED: PackageJson = {
   version: '0.0.0',
   private: true,
   dependencies: { react: '^19.2.0' },
-  devDependencies: { vite: '^7.2.0', prettier: '^3.6.0' },
-  scripts: { dev: 'vite', build: 'vite build', lint: 'vite lint' },
+  devDependencies: {
+    vite: '^7.2.0',
+    prettier: '^3.6.0',
+  },
+  scripts: {
+    dev: 'vite',
+    build: 'vite build',
+    lint: 'vite lint',
+  },
 };
 
 // A silent skip on a missing VERSIONS entry is how @types/node and @vitest/eslint-plugin vanished from every generated
@@ -54,7 +66,11 @@ describe('versioned', () => {
       for (const library of LIBRARIES) {
         expect(() => {
           // `store: true` so every target's store dependency is held to a VERSIONS entry too.
-          return patchPackageJson({}, answersFor({ target, libraries: [library], store: true }));
+          return patchPackageJson({}, answersFor({
+            target,
+            libraries: [library],
+            store: true,
+          }));
         }).not.toThrow();
       }
     }
@@ -75,7 +91,10 @@ describe('versioned', () => {
   it('installs no TanStack binding for the one target that has none', () => {
     const patched = patchPackageJson(
       {},
-      answersFor({ target: 'webextension', libraries: ['tanstack-query'] }),
+      answersFor({
+        target: 'webextension',
+        libraries: ['tanstack-query'],
+      }),
     );
 
     expect(patched.dependencies).toBeUndefined();
@@ -121,6 +140,26 @@ describe('patchPackageJson', () => {
     );
   });
 
+  /**
+   * `create vite`'s React template declares the Babel plugin and the emitted `vite.config.ts` imports the SWC one, so
+   * the inherited copy is dead weight. React Native declares the same package for its vitest transform, which is why
+   * the filter runs on what the scaffolder left and not on the merged result.
+   */
+  it('drops an inherited plugin-react, and keeps the one a target asks for', () => {
+    const scaffolded: PackageJson = {
+      ...SCAFFOLDED,
+      devDependencies: {
+        ...SCAFFOLDED.devDependencies,
+        '@vitejs/plugin-react': '^6.0.0',
+      },
+    };
+
+    expect(patchPackageJson(scaffolded, answersFor({ target: 'react' })).devDependencies)
+      .not.toHaveProperty('@vitejs/plugin-react');
+    expect(patchPackageJson(scaffolded, answersFor({ target: 'react-native' })).devDependencies)
+      .toHaveProperty('@vitejs/plugin-react');
+  });
+
   // Reads the pin off the table rather than repeating it, so `versions.ts` stays the one file a bump touches.
   it('sets type, packageManager and engines', () => {
     const patched = patchPackageJson(SCAFFOLDED, answersFor({ packageManager: 'bun' }));
@@ -128,7 +167,10 @@ describe('patchPackageJson', () => {
 
     expect(patched.type).toBe('module');
     expect(patched.packageManager).toBe(`bun@${bun}`);
-    expect(patched.engines).toEqual({ node: NODE_ENGINE, bun: `>=${bun}` });
+    expect(patched.engines).toEqual({
+      node: NODE_ENGINE,
+      bun: `>=${bun}`,
+    });
   });
 
   // build is inherited from the scaffolder except React Native, whose eas build needs an account; expo export is the
@@ -153,7 +195,10 @@ describe('patchPackageJson', () => {
   it('installs the store dependency only on a yes', () => {
     const withStore = patchPackageJson({}, answersFor({ store: true }));
     const without = patchPackageJson({}, answersFor({}));
-    const angular = patchPackageJson({}, answersFor({ target: 'angular', store: true }));
+    const angular = patchPackageJson({}, answersFor({
+      target: 'angular',
+      store: true,
+    }));
 
     expect(withStore.dependencies).toHaveProperty('zustand');
     expect(without.dependencies).toBeUndefined();
@@ -162,12 +207,18 @@ describe('patchPackageJson', () => {
 
   // Pinia arrives through create-vue's own --pinia flag, so a version pinned here would fight the scaffolder's.
   it('installs nothing for a store the scaffolder itself installs', () => {
-    expect(patchPackageJson({}, answersFor({ target: 'vue', store: true })).dependencies)
+    expect(patchPackageJson({}, answersFor({
+      target: 'vue',
+      store: true,
+    })).dependencies)
       .toBeUndefined();
   });
 
   it('installs the framework binding for tanstack query, plus its lint plugin', () => {
-    const vue = patchPackageJson({}, answersFor({ target: 'vue', libraries: ['tanstack-query'] }));
+    const vue = patchPackageJson({}, answersFor({
+      target: 'vue',
+      libraries: ['tanstack-query'],
+    }));
 
     expect(vue.dependencies).toHaveProperty('@tanstack/vue-query');
     expect(vue.devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
@@ -182,10 +233,56 @@ describe('patchPackageJson', () => {
     expect(without.devDependencies).not.toHaveProperty('eslint-plugin-better-tailwindcss');
   });
 
+  /**
+   * The adapter follows whether the target calls `@tailwindcss/vite`, not whether it owns a vite.config.ts: Astro
+   * calls the plugin from `astro.config.mjs`'s vite key while owning no config file, and shipping both adapters left
+   * PostCSS installed with nothing to load it.
+   */
+  it('gives astro the vite adapter alone, and postcss to the targets with neither route', () => {
+    const astro = patchPackageJson({}, answersFor({
+      target: 'astro',
+      libraries: ['tailwind'],
+    }));
+
+    expect(astro.devDependencies).toHaveProperty('@tailwindcss/vite');
+    expect(astro.devDependencies).not.toHaveProperty('@tailwindcss/postcss');
+
+    for (const target of ['next', 'angular', 'react-native'] as const) {
+      const postcss = patchPackageJson({}, answersFor({
+        target,
+        libraries: ['tailwind'],
+      }));
+
+      expect(postcss.devDependencies).toHaveProperty('@tailwindcss/postcss');
+      expect(postcss.devDependencies).not.toHaveProperty('@tailwindcss/vite');
+    }
+  });
+
+  /**
+   * The base template puts astro in dependencies, where the node adapter's runtime entry needs it; the record used
+   * to add a second entry to devDependencies and the two ranges drifted. One declaration, in dependencies.
+   */
+  it('declares astro once for an astro project, hosted or not', () => {
+    const plain = patchPackageJson({}, answersFor({ target: 'astro' }));
+    const hosted = patchPackageJson({}, answersFor({
+      target: 'astro',
+      hostedFramework: 'react',
+      libraries: ['tailwind', 'zod', 'tanstack-query'],
+    }));
+
+    for (const patched of [plain, hosted]) {
+      expect(patched.dependencies).toHaveProperty('astro');
+      expect(patched.devDependencies).not.toHaveProperty('astro');
+    }
+  });
+
   it('adds no runtime dependency for a library that has no binding on this target', () => {
     const plain = patchPackageJson(
       {},
-      answersFor({ target: 'webextension', libraries: ['tanstack-query'] }),
+      answersFor({
+        target: 'webextension',
+        libraries: ['tanstack-query'],
+      }),
     );
 
     expect(plain.dependencies).toBeUndefined();
@@ -226,7 +323,10 @@ describe('patchPackageJson', () => {
   it('names the rendering library the vue testing rule tells an agent to use', () => {
     expect(patchPackageJson({}, answersFor({ target: 'vue' })).devDependencies)
       .toHaveProperty('@vue/test-utils');
-    expect(patchPackageJson({}, answersFor({ target: 'vue', testing: 'none' })).devDependencies)
+    expect(patchPackageJson({}, answersFor({
+      target: 'vue',
+      testing: 'none',
+    })).devDependencies)
       .not.toHaveProperty('@vue/test-utils');
   });
 });

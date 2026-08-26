@@ -23,8 +23,14 @@ export const reactNative: TargetRecord = {
   html: false,
   vite: false,
   routeUnit: 'src/app/',
-  hooksSlot: { label: 'Hooks', path: 'src/hooks/ (use*)' },
-  store: { label: 'Zustand', dependency: 'zustand' },
+  hooksSlot: {
+    label: 'Hooks',
+    path: 'src/hooks/ (use*)',
+  },
+  store: {
+    label: 'Zustand',
+    dependency: 'zustand',
+  },
   // `scripts/reset-project.js` is Expo's own throwaway helper: CommonJS with sixteen findings, deleted by most projects
   // on day one and not the gate's concern to lint.
   ignores: ['.expo/**', 'android/**', 'ios/**', 'expo-env.d.ts', 'scripts/reset-project.js'],
@@ -41,12 +47,18 @@ export const reactNative: TargetRecord = {
    * outright, so dropping them makes every one unresolved (measured: thirty `no-unresolved` findings dragging a hundred
    * fifty `no-unsafe-*` behind them). `@/assets/*` is separate: the assets sit outside `src/`, where `@/*` can't reach.
    */
-  extraAliases: { '@/assets/*': './assets/*', '@/*': './src/*' },
+  extraAliases: {
+    '@/assets/*': './assets/*',
+    '@/*': './src/*',
+  },
   // `expo/tsconfig.base` carries the module resolution and asset declarations React Native needs; `.expo/types` (from
   // `expo customize tsconfig`) holds generated route types, and `expo-env.d.ts` declares the bundler's own modules.
   styleEntry: 'src/global.css',
   // No vite config of its own, so nothing to contribute; see the field on `TargetRecord`.
-  vitePlugin: { imports: [], calls: [] },
+  vitePlugin: {
+    imports: [],
+    calls: [],
+  },
   tsconfig: {
     jsx: 'react-jsx',
     extends: 'expo/tsconfig.base',
@@ -80,18 +92,39 @@ export const reactNative: TargetRecord = {
   starterFiles: [
     // Not written by a `--no-install` scaffold, so without it `import '@/global.css'` has no declaration and `tsc`
     // stops.
-    { source: 'starter/react-native/expo-env.d.ts', target: 'expo-env.d.ts' },
+    {
+      source: 'starter/react-native/expo-env.d.ts',
+      target: 'expo-env.d.ts',
+    },
     // Declares the types `esmAssetImports`'s rewritten imports need to typecheck.
-    { source: 'starter/react-native/assets.d.ts', target: 'src/typings/assets.d.ts' },
+    {
+      source: 'starter/react-native/assets.d.ts',
+      target: 'src/typings/assets.d.ts',
+    },
     // The one render helper every starter test shares.
-    { source: 'mocks/renderScreen.tsx', target: '__mocks__/renderScreen.tsx' },
+    {
+      source: 'mocks/renderScreen.tsx',
+      target: '__mocks__/renderScreen.tsx',
+    },
   ],
   // Nineteen findings survived Expo's template against lintel's `--fix` pass; every one is repaired below.
   starterFixes: [
-    { path: 'src/app/explore.tsx', transform: esmAssetImports },
-    { path: 'src/components/animated-icon.web.tsx', transform: esmAssetImports },
-    { path: 'src/components/app-tabs.tsx', transform: esmAssetImports },
-    { path: 'src/components/web-badge.tsx', transform: esmAssetImports },
+    {
+      path: 'src/app/explore.tsx',
+      transform: esmAssetImports,
+    },
+    {
+      path: 'src/components/animated-icon.web.tsx',
+      transform: esmAssetImports,
+    },
+    {
+      path: 'src/components/app-tabs.tsx',
+      transform: esmAssetImports,
+    },
+    {
+      path: 'src/components/web-badge.tsx',
+      transform: esmAssetImports,
+    },
     {
       path: 'src/components/animated-icon.tsx',
       // Rewrites the asset requires and replaces the floating promise chain, keeping `finally`'s guarantee that the app
@@ -193,20 +226,62 @@ export const reactNative: TargetRecord = {
   // `src/app` is absent on purpose: expo-router resolves a route by filename, so renaming `index.tsx` would rename the
   // route.
   starterRenames: [
-    { from: 'src/components/animated-icon.tsx', to: 'src/components/AnimatedIcon.tsx' },
-    { from: 'src/components/animated-icon.web.tsx', to: 'src/components/AnimatedIcon.web.tsx' },
-    { from: 'src/components/animated-icon.module.css', to: 'src/components/AnimatedIcon.module.css' },
-    { from: 'src/components/app-tabs.tsx', to: 'src/components/AppTabs.tsx' },
-    { from: 'src/components/app-tabs.web.tsx', to: 'src/components/AppTabs.web.tsx' },
-    { from: 'src/components/external-link.tsx', to: 'src/components/ExternalLink.tsx' },
-    { from: 'src/components/hint-row.tsx', to: 'src/components/HintRow.tsx' },
-    { from: 'src/components/themed-text.tsx', to: 'src/components/ThemedText.tsx' },
-    { from: 'src/components/themed-view.tsx', to: 'src/components/ThemedView.tsx' },
-    { from: 'src/components/web-badge.tsx', to: 'src/components/WebBadge.tsx' },
-    { from: 'src/components/ui/collapsible.tsx', to: 'src/components/ui/Collapsible.tsx' },
-    { from: 'src/hooks/use-color-scheme.ts', to: 'src/hooks/useColorScheme.ts' },
-    { from: 'src/hooks/use-color-scheme.web.ts', to: 'src/hooks/useColorScheme.web.ts' },
-    { from: 'src/hooks/use-theme.ts', to: 'src/hooks/useTheme.ts' },
+    {
+      from: 'src/components/animated-icon.tsx',
+      to: 'src/components/AnimatedIcon.tsx',
+    },
+    {
+      from: 'src/components/animated-icon.web.tsx',
+      to: 'src/components/AnimatedIcon.web.tsx',
+    },
+    {
+      from: 'src/components/animated-icon.module.css',
+      to: 'src/components/AnimatedIcon.module.css',
+    },
+    {
+      from: 'src/components/app-tabs.tsx',
+      to: 'src/components/AppTabs.tsx',
+    },
+    {
+      from: 'src/components/app-tabs.web.tsx',
+      to: 'src/components/AppTabs.web.tsx',
+    },
+    {
+      from: 'src/components/external-link.tsx',
+      to: 'src/components/ExternalLink.tsx',
+    },
+    {
+      from: 'src/components/hint-row.tsx',
+      to: 'src/components/HintRow.tsx',
+    },
+    {
+      from: 'src/components/themed-text.tsx',
+      to: 'src/components/ThemedText.tsx',
+    },
+    {
+      from: 'src/components/themed-view.tsx',
+      to: 'src/components/ThemedView.tsx',
+    },
+    {
+      from: 'src/components/web-badge.tsx',
+      to: 'src/components/WebBadge.tsx',
+    },
+    {
+      from: 'src/components/ui/collapsible.tsx',
+      to: 'src/components/ui/Collapsible.tsx',
+    },
+    {
+      from: 'src/hooks/use-color-scheme.ts',
+      to: 'src/hooks/useColorScheme.ts',
+    },
+    {
+      from: 'src/hooks/use-color-scheme.web.ts',
+      to: 'src/hooks/useColorScheme.web.ts',
+    },
+    {
+      from: 'src/hooks/use-theme.ts',
+      to: 'src/hooks/useTheme.ts',
+    },
   ],
   /**
    * One suite per module of Expo's template, since the coverage gate is 100% and this is a demo app, not the single
@@ -325,6 +400,8 @@ export const reactNative: TargetRecord = {
   testDevDependencies: [
     '@srsholmes/vitest-react-native',
     '@testing-library/react-native',
+    // The vitest transform only: this target owns no vite build, so it never becomes the SWC variant the React
+    // target's build wiring moved to.
     '@vitejs/plugin-react',
   ],
   allowBuilds: ['esbuild'],

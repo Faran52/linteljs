@@ -37,7 +37,10 @@ export interface SyncResult {
 const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
   const result = git(
     ['diff', '--no-index', '--no-color', '--', currentPath, '-'],
-    { cwd, input: shipped },
+    {
+      cwd,
+      input: shipped,
+    },
   );
 
   // git missing or unable to spawn: report the status without a diff rather than failing sync.
@@ -51,7 +54,11 @@ const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry
 
   for (const target of GENERATED_AGENT_TARGETS) {
     if (!expected.has(target) && await entryExists(join(cwd, target))) {
-      entries.push({ target, status: 'obsolete', diff: '' });
+      entries.push({
+        target,
+        status: 'obsolete',
+        diff: '',
+      });
     }
   }
 
@@ -71,13 +78,21 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
     const current = await readIfPresent(path);
 
     if (current === null) {
-      entries.push({ target: artifact.target, status: 'missing', diff: '' });
+      entries.push({
+        target: artifact.target,
+        status: 'missing',
+        diff: '',
+      });
       continue;
     }
 
     // Reporting an edit here would invite a `--force` that undoes it. Only absence is still lintel's to fix.
     if (artifact.preserve === true) {
-      entries.push({ target: artifact.target, status: 'unchanged', diff: '' });
+      entries.push({
+        target: artifact.target,
+        status: 'unchanged',
+        diff: '',
+      });
       continue;
     }
 
@@ -85,7 +100,11 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
 
     entries.push(
       current === shipped
-        ? { target: artifact.target, status: 'unchanged', diff: '' }
+        ? {
+            target: artifact.target,
+            status: 'unchanged',
+            diff: '',
+          }
         : {
             target: artifact.target,
             status: 'changed',
@@ -167,5 +186,8 @@ export const applySync = async (
 
   await pruneEmpty(cwd, removed);
 
-  return { written, removed };
+  return {
+    written,
+    removed,
+  };
 };

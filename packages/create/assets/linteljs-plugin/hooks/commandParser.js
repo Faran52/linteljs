@@ -337,8 +337,15 @@ const envOption = (tokens, index) => {
   if (option === '-S' || option === '--split-string') {
     const splitString = tokens[index + 1];
     return splitString === undefined
-      ? { index, result: INDETERMINATE }
-      : { index: index + 2, result: CLEAR, splitString };
+      ? {
+          index,
+          result: INDETERMINATE,
+        }
+      : {
+          index: index + 2,
+          result: CLEAR,
+          splitString,
+        };
   }
   if (option.startsWith('--split-string=')) {
     return {
@@ -348,25 +355,50 @@ const envOption = (tokens, index) => {
     };
   }
   if (option.startsWith('-S') && option.length > 2) {
-    return { index: index + 1, result: CLEAR, splitString: option.slice(2) };
+    return {
+      index: index + 1,
+      result: CLEAR,
+      splitString: option.slice(2),
+    };
   }
   if (option === '-P') {
     return index + 1 >= tokens.length
-      ? { index, result: INDETERMINATE }
-      : { index: index + 2, result: CLEAR };
+      ? {
+          index,
+          result: INDETERMINATE,
+        }
+      : {
+          index: index + 2,
+          result: CLEAR,
+        };
   }
   if (option.startsWith('-P') && option.length > 2) {
-    return { index: index + 1, result: CLEAR };
+    return {
+      index: index + 1,
+      result: CLEAR,
+    };
   }
   if (['-u', '--unset', '-C', '--chdir', '-a', '--argv0'].includes(option)) {
     return index + 1 >= tokens.length
-      ? { index, result: INDETERMINATE }
-      : { index: index + 2, result: CLEAR };
+      ? {
+          index,
+          result: INDETERMINATE,
+        }
+      : {
+          index: index + 2,
+          result: CLEAR,
+        };
   }
   if (['-', '-0', '--null', '-i', '--ignore-environment', '-v', '--debug'].includes(option)) {
-    return { index: index + 1, result: CLEAR };
+    return {
+      index: index + 1,
+      result: CLEAR,
+    };
   }
-  return { index, result: INDETERMINATE };
+  return {
+    index,
+    result: INDETERMINATE,
+  };
 };
 
 const splitEnvArguments = (splitString, trailing) => {
@@ -379,32 +411,55 @@ const splitEnvArguments = (splitString, trailing) => {
 
 const inspectEnv = (tokens, start, depth) => {
   if (depth > MAX_DEPTH) {
-    return { index: start, result: INDETERMINATE, tokens };
+    return {
+      index: start,
+      result: INDETERMINATE,
+      tokens,
+    };
   }
   let index = start;
   while (index < tokens.length) {
     const option = tokens[index];
     if (option === '--') {
-      return { index: index + 1, result: CLEAR, tokens };
+      return {
+        index: index + 1,
+        result: CLEAR,
+        tokens,
+      };
     }
     if (isAssignment(option) || !option.startsWith('-')) {
-      return { index, result: CLEAR, tokens };
+      return {
+        index,
+        result: CLEAR,
+        tokens,
+      };
     }
 
     const inspected = envOption(tokens, index);
     if (inspected.result !== CLEAR) {
-      return { ...inspected, tokens };
+      return {
+        ...inspected,
+        tokens,
+      };
     }
     index = inspected.index;
     if (inspected.splitString !== undefined) {
       const effective = splitEnvArguments(inspected.splitString, tokens.slice(index));
       if (effective === undefined) {
-        return { index, result: INDETERMINATE, tokens };
+        return {
+          index,
+          result: INDETERMINATE,
+          tokens,
+        };
       }
       return inspectEnv(effective, 0, depth + 1);
     }
   }
-  return { index, result: CLEAR, tokens };
+  return {
+    index,
+    result: CLEAR,
+    tokens,
+  };
 };
 
 const skipAssignments = (tokens, start) => {
@@ -421,14 +476,21 @@ const commandWrapper = (tokens, start) => {
   while ((tokens[index] ?? '').startsWith('-')) {
     const option = tokens[index];
     if (option === '--') {
-      return { index: index + 1, result: CLEAR };
+      return {
+        index: index + 1,
+        result: CLEAR,
+      };
     }
     if (option.includes('v') || option.includes('V')) {
       lookup = true;
     }
     index += 1;
   }
-  return { index, result: CLEAR, terminal: lookup };
+  return {
+    index,
+    result: CLEAR,
+    terminal: lookup,
+  };
 };
 
 const execWrapper = (tokens, start) => {
@@ -436,11 +498,17 @@ const execWrapper = (tokens, start) => {
   while ((tokens[index] ?? '').startsWith('-')) {
     const option = tokens[index];
     if (option === '--') {
-      return { index: skipAssignments(tokens, index + 1), result: CLEAR };
+      return {
+        index: skipAssignments(tokens, index + 1),
+        result: CLEAR,
+      };
     }
     if (option === '-a' || option === '--argv0') {
       if (index + 1 >= tokens.length) {
-        return { index, result: INDETERMINATE };
+        return {
+          index,
+          result: INDETERMINATE,
+        };
       }
       index += 2;
     }
@@ -448,14 +516,23 @@ const execWrapper = (tokens, start) => {
       index += 1;
     }
   }
-  return { index: skipAssignments(tokens, index), result: CLEAR };
+  return {
+    index: skipAssignments(tokens, index),
+    result: CLEAR,
+  };
 };
 
 const optionWrapper = (tokens, start, valued) => {
   const index = skipOptions(tokens, start, valued);
   return index === undefined
-    ? { index: start, result: INDETERMINATE }
-    : { index: skipAssignments(tokens, index), result: CLEAR };
+    ? {
+        index: start,
+        result: INDETERMINATE,
+      }
+    : {
+        index: skipAssignments(tokens, index),
+        result: CLEAR,
+      };
 };
 
 const shellWrapper = (tokens, start, mode, depth) => {
@@ -478,14 +555,21 @@ const shellWrapper = (tokens, start, mode, depth) => {
       break;
     }
   }
-  return { index: start, result: CLEAR, terminal: true };
+  return {
+    index: start,
+    result: CLEAR,
+    terminal: true,
+  };
 };
 
 const wrapperResult = (tokens, index, mode, depth) => {
   const name = commandName(tokens[index]);
   if (name === 'env') {
     const result = inspectEnv(tokens, index + 1, depth);
-    return { ...result, index: skipAssignments(result.tokens, result.index) };
+    return {
+      ...result,
+      index: skipAssignments(result.tokens, result.index),
+    };
   }
   if (name === 'command') {
     return commandWrapper(tokens, index + 1);
@@ -495,7 +579,10 @@ const wrapperResult = (tokens, index, mode, depth) => {
   }
   if (name === 'nohup') {
     const start = tokens[index + 1] === '--' ? index + 2 : index + 1;
-    return { index: start, result: CLEAR };
+    return {
+      index: start,
+      result: CLEAR,
+    };
   }
   if (name === 'sudo') {
     return optionWrapper(tokens, index + 1, new Set([

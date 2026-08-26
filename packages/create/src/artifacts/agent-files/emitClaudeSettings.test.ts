@@ -22,10 +22,23 @@ describe('emitClaudeSettings', () => {
         'frontend-design@claude-plugins-official': true,
       },
       extraKnownMarketplaces: {
-        'linteljs': { source: { source: 'directory', path: './plugins/linteljs' } },
-        'ponytail': { source: { source: 'github', repo: 'DietrichGebert/ponytail' } },
+        'linteljs': {
+          source: {
+            source: 'directory',
+            path: './plugins/linteljs',
+          },
+        },
+        'ponytail': {
+          source: {
+            source: 'github',
+            repo: 'DietrichGebert/ponytail',
+          },
+        },
         'claude-plugins-official': {
-          source: { source: 'github', repo: 'anthropics/claude-plugins-official' },
+          source: {
+            source: 'github',
+            repo: 'anthropics/claude-plugins-official',
+          },
         },
       },
     });
@@ -37,7 +50,12 @@ describe('emitClaudeSettings', () => {
     expect(settings).toEqual({
       enabledPlugins: { 'linteljs@linteljs': true },
       extraKnownMarketplaces: {
-        linteljs: { source: { source: 'directory', path: './plugins/linteljs' } },
+        linteljs: {
+          source: {
+            source: 'directory',
+            path: './plugins/linteljs',
+          },
+        },
       },
     });
   });
@@ -52,9 +70,17 @@ describe('emitClaudeSettings', () => {
         'context7@claude-plugins-official': true,
       },
       extraKnownMarketplaces: {
-        'linteljs': { source: { source: 'directory', path: './plugins/linteljs' } },
+        'linteljs': {
+          source: {
+            source: 'directory',
+            path: './plugins/linteljs',
+          },
+        },
         'claude-plugins-official': {
-          source: { source: 'github', repo: 'anthropics/claude-plugins-official' },
+          source: {
+            source: 'github',
+            repo: 'anthropics/claude-plugins-official',
+          },
         },
       },
     });

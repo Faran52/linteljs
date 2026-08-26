@@ -28,7 +28,10 @@ export const vue: TargetRecord = {
   vite: true,
   sfcExtension: 'vue',
   routeUnit: 'src/views/, routed from src/router/',
-  hooksSlot: { label: 'Composables', path: 'src/lib/composables/ (use*)' },
+  hooksSlot: {
+    label: 'Composables',
+    path: 'src/lib/composables/ (use*)',
+  },
   // No dependency: the scaffold flag above has create-vue install Pinia itself.
   store: { label: 'Pinia' },
   ignores: [],
@@ -36,12 +39,22 @@ export const vue: TargetRecord = {
   folderNaming: FOLDER_NAMING.vue,
   hooksAlias: { '@composables/*': './src/lib/composables/*' },
   styleEntry: 'src/assets/main.css',
-  vitePlugin: { imports: ["import vue from '@vitejs/plugin-vue';"], calls: ['vue()'] },
-  tsconfig: { jsx: 'preserve', include: ['**/*.vue'] },
+  vitePlugin: {
+    imports: ["import vue from '@vitejs/plugin-vue';"],
+    calls: ['vue()'],
+  },
+  tsconfig: {
+    jsx: 'preserve',
+    include: ['**/*.vue'],
+  },
   // One mount of `App` with the real router walks the whole welcome tree; the store test covers the one module the demo
   // never renders, and its `covers` gate skips it where the store answer declined `--pinia`.
   starterTests: [
-    { source: 'starter/vue/App.test.ts', target: 'src/App.test.ts', covers: 'src/App.vue' },
+    {
+      source: 'starter/vue/App.test.ts',
+      target: 'src/App.test.ts',
+      covers: 'src/App.vue',
+    },
     {
       source: 'starter/vue/counter.test.ts',
       target: 'src/lib/store/counter.test.ts',

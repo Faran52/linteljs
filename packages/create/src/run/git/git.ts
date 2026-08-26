@@ -56,5 +56,8 @@ export const git = (args: string[], options: GitOptions): SpawnSyncReturns<strin
     };
   }
 
-  return spawnSync(binary, args, { ...options, encoding: 'utf8' });
+  return spawnSync(binary, args, {
+    ...options,
+    encoding: 'utf8',
+  });
 };

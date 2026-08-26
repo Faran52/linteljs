@@ -24,6 +24,11 @@ export const emitViteConfig = (answers: Answers): string | null => {
     ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
   ].join('\n');
 
+  // A plugin assembled in place declares its helper between the imports and the config; most specs have none.
+  const prelude = vitePlugin.prelude === undefined
+    ? ''
+    : `${vitePlugin.prelude.join('\n')}\n\n`;
+
   const calls = [
     ...vitePlugin.calls,
     ...(tailwind ? ['tailwindcss()'] : []),
@@ -38,10 +43,8 @@ export const emitViteConfig = (answers: Answers): string | null => {
     return `    ${call},\n`;
   }).join('');
 
-  /**
-   * Only where a target asks for one. crx reads its inputs out of the manifest, so this exists for the one page a
-   * manifest cannot name: a devtools panel, opened at runtime rather than declared.
-   */
+  // Only where a target asks for one. crx reads its inputs out of the manifest, so this exists for the one page a
+  // manifest cannot name: a devtools panel, opened at runtime rather than declared.
   const entries = Object.entries(viteInputs ?? {}).map(([name, page]) => {
     return `${name}: '${page}'`;
   }).join(', ');
@@ -54,7 +57,7 @@ export const emitViteConfig = (answers: Answers): string | null => {
 
   return `${imports}
 
-export default defineConfig({
+${prelude}export default defineConfig({
   plugins: [
 ${plugins}  ],
 ${inputs}  resolve: { tsconfigPaths: true },

@@ -105,8 +105,14 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
-  await rm(external, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
+  await rm(external, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const config = (overrides: ConfigOverrides = {}): string => {
@@ -224,7 +230,11 @@ describe('emitLintelConfig', () => {
 describe('parseLintelConfig', () => {
   it('reads the version-one envelope and every answer', () => {
     expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS)))
-      .toEqual({ $schema: CONFIG_SCHEMA_URL, schemaVersion: 1, ...DEFAULT_ANSWERS });
+      .toEqual({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: 1,
+        ...DEFAULT_ANSWERS,
+      });
   });
 
   /**
@@ -266,7 +276,11 @@ describe('parseLintelConfig', () => {
     };
 
     expect(parseLintelConfig(emitLintelConfig(answers)))
-      .toEqual({ $schema: CONFIG_SCHEMA_URL, schemaVersion: 1, ...answers });
+      .toEqual({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: 1,
+        ...answers,
+      });
   });
 
   it.each([
@@ -286,7 +300,10 @@ describe('parseLintelConfig', () => {
   });
 
   it('round-trips the resolver conditions', () => {
-    const answers: Answers = { ...DEFAULT_ANSWERS, resolveConditions: ['import', 'default'] };
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      resolveConditions: ['import', 'default'],
+    };
 
     expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
@@ -321,7 +338,10 @@ describe('parseLintelConfig', () => {
   it('round-trips a project\'s own aliases, in both shapes', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
-      aliases: { '@engine': './src/lib/engine/index.ts', '@workers/*': './src/workers/*' },
+      aliases: {
+        '@engine': './src/lib/engine/index.ts',
+        '@workers/*': './src/workers/*',
+      },
     };
 
     expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
@@ -430,7 +450,10 @@ describe('parseLintelConfig', () => {
   // A hand-edited string is no version to compare, so it is malformed rather than unsupported.
   it('rejects a schema version that is not a number', () => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({ $schema: CONFIG_SCHEMA_URL, schemaVersion: '1' }));
+      return parseLintelConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: '1',
+      }));
     }).toThrow(/schemaVersion must be 1/);
   });
 

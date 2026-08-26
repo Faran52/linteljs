@@ -39,8 +39,14 @@ export const mergeClaudeSettings = (emitted: string, current: string | null): st
 
   const settings: ClaudeSettings = {
     ...theirs,
-    enabledPlugins: { ...theirs.enabledPlugins, ...ours.enabledPlugins },
-    extraKnownMarketplaces: { ...theirs.extraKnownMarketplaces, ...ours.extraKnownMarketplaces },
+    enabledPlugins: {
+      ...theirs.enabledPlugins,
+      ...ours.enabledPlugins,
+    },
+    extraKnownMarketplaces: {
+      ...theirs.extraKnownMarketplaces,
+      ...ours.extraKnownMarketplaces,
+    },
   };
 
   return `${JSON.stringify(settings, null, 2)}\n`;

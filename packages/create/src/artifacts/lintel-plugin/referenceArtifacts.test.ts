@@ -25,7 +25,10 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 const targetsOf = (overrides: AnswerOverrides): string[] => {
@@ -76,7 +79,10 @@ describe('referenceArtifacts', () => {
   });
 
   it('adds the testing reference from the target head and shared standard with a test runner', () => {
-    const artifact = find({ target: 'vue', testing: 'vitest' }, reference('testing.md'));
+    const artifact = find({
+      target: 'vue',
+      testing: 'vitest',
+    }, reference('testing.md'));
 
     expect(sourcesOf(artifact)).toEqual([
       'claude-rules/testing.vue.md',

@@ -19,13 +19,23 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 describe('emitPnpmWorkspace', () => {
   it('allows the two builds every target needs, sorted', () => {
-    expect(allowBuildsBlock(answersFor({ target: 'react' }))).toBe(
+    expect(allowBuildsBlock(answersFor({ target: 'vue' }))).toBe(
       "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n",
+    );
+  });
+
+  // `@vitejs/plugin-react-swc` pulls `@swc/core`, whose install script pnpm aborts the first install over.
+  it('allows the swc binary the react build plugin pulls', () => {
+    expect(allowBuildsBlock(answersFor({ target: 'react' }))).toBe(
+      "allowBuilds:\n  '@swc/core': true\n  'sharp': true\n  'unrs-resolver': true\n",
     );
   });
 
@@ -74,7 +84,10 @@ describe('peerDependencyRules', () => {
 
   // Read off the dependencies the project installs, so an extension hosting solid is covered without naming it here.
   it('follows a hosted framework onto the target that hosts it', () => {
-    const hosted = emitPnpmWorkspace(answersFor({ target: 'webextension', hostedFramework: 'solid' }));
+    const hosted = emitPnpmWorkspace(answersFor({
+      target: 'webextension',
+      hostedFramework: 'solid',
+    }));
     const plain = emitPnpmWorkspace(answersFor({ target: 'webextension' }));
 
     expect(hosted).toContain("    'eslint-plugin-solid>eslint': '10'");

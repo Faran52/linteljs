@@ -26,7 +26,10 @@ interface AnswerOverrides {
 const SHIPPED = join(ASSETS_ROOT, 'scripts/checkBannedPatterns.ts');
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return { ...DEFAULT_ANSWERS, ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  };
 };
 
 const transformOf = (answers: Answers): ((source: string, current: string | null) => string) => {

@@ -88,10 +88,16 @@ const run = (command: string, args: string[], cwd: string, input = ''): RunResul
     encoding: 'utf8',
     // Generated projects install from the public registry; a host config pinning a private one should not be inherited
     // silently.
-    env: { ...env, npm_config_registry: 'https://registry.npmjs.org/' },
+    env: {
+      ...env,
+      npm_config_registry: 'https://registry.npmjs.org/',
+    },
   });
 
-  return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}` };
+  return {
+    status: result.status ?? 1,
+    output: `${result.stdout}${result.stderr}`,
+  };
 };
 
 // Folds the exit status into the asserted value so a failure prints the process output in the diff, rather than a bare
@@ -141,18 +147,32 @@ run(
 );
 
 afterAll(() => {
-  rmSync(workspace, { recursive: true, force: true });
+  rmSync(workspace, {
+    recursive: true,
+    force: true,
+  });
 });
 
 // One case per target on the defaults, plus one per answer dimension the defaults never reach (libraries, no testing,
 // the relaxed floor); one per dimension rather than every combination, since each case is a real install.
-const CASES: { label: string; answers: Answers }[] = [
+const CASES: { label: string;
+  answers: Answers; }[] = [
   ...TARGET_IDS.map((target) => {
-    return { label: target, answers: { ...DEFAULT_ANSWERS, target } };
+    return {
+      label: target,
+      answers: {
+        ...DEFAULT_ANSWERS,
+        target,
+      },
+    };
   }),
   {
     label: 'next with every library',
-    answers: { ...DEFAULT_ANSWERS, target: 'next', libraries: LIBRARIES },
+    answers: {
+      ...DEFAULT_ANSWERS,
+      target: 'next',
+      libraries: LIBRARIES,
+    },
   },
   {
     // `store: true` rides along so the one store path with a runtime install is proven end to end.
@@ -166,11 +186,19 @@ const CASES: { label: string; answers: Answers }[] = [
   },
   {
     label: 'webextension with no tests',
-    answers: { ...DEFAULT_ANSWERS, target: 'webextension', testing: 'none' },
+    answers: {
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+      testing: 'none',
+    },
   },
   {
     label: 'react on the relaxed floor',
-    answers: { ...DEFAULT_ANSWERS, target: 'react', typeSafety: 'relaxed' },
+    answers: {
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+      typeSafety: 'relaxed',
+    },
   },
   /**
    * The two axes, one case each, on the combination that exercises the most: Solid, because it is the framework whose
@@ -179,7 +207,11 @@ const CASES: { label: string; answers: Answers }[] = [
    */
   {
     label: 'astro hosting solid',
-    answers: { ...DEFAULT_ANSWERS, target: 'astro', hostedFramework: 'solid' },
+    answers: {
+      ...DEFAULT_ANSWERS,
+      target: 'astro',
+      hostedFramework: 'solid',
+    },
   },
   /**
    * Hosted Vue, which no case reached before: it was the one hosted framework whose Vite plugin had no `VERSIONS`

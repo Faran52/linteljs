@@ -14,6 +14,8 @@ import {
   VERSIONS,
 } from './versions';
 
+import type { TargetRecord } from '../../model/targets/record';
+
 // Patches `package.json` rather than writing it: the scaffolder's dependencies, name and unset scripts survive.
 
 export interface PackageJson {
@@ -42,6 +44,12 @@ const SUPERSEDED = [
   // environment the emitted vitest.config.ts picks (happy-dom is).
   'vite-plugin-vue-devtools',
   'jsdom',
+  /**
+   * `create vite`'s React template declares the Babel plugin; the emitted `vite.config.ts` imports the SWC one
+   * instead. React Native keeps its own copy, which is why this filters what a scaffolder brought and not what a
+   * target asked for.
+   */
+  '@vitejs/plugin-react',
 ];
 
 const SHARED_DEV_DEPENDENCIES = [
@@ -69,10 +77,19 @@ const RUNNER_DEV_DEPENDENCIES = [
 
 const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
 
-// A target with no vite.config.ts to call `@tailwindcss/vite` from (next, angular, react-native) takes PostCSS.
-const tailwindDevDependencies = (vite: boolean): string[] => {
+/**
+ * Whether the target calls `@tailwindcss/vite` from a build config it owns: a `vite.config.ts` for most, the `vite`
+ * key of `astro.config.mjs` for Astro, which owns no config file at all. Ownership of a Vite config is the wrong
+ * question for exactly that case, so it is read off the record rather than off `vite`. Next, Angular and React Native
+ * have neither route and take PostCSS.
+ */
+const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
+  return target.vite || target.astro === true;
+};
+
+const tailwindDevDependencies = (target: TargetRecord): string[] => {
   return [
-    vite ? '@tailwindcss/vite' : '@tailwindcss/postcss',
+    usesTailwindVitePlugin(target) ? '@tailwindcss/vite' : '@tailwindcss/postcss',
     'stylelint-config-tailwindcss',
     'tailwindcss',
   ];
@@ -160,7 +177,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
   const optional: Record<Library, string[]> = {
     'zod': [],
     'tanstack-query': ['@tanstack/eslint-plugin-query'],
-    'tailwind': ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target.vite)],
+    'tailwind': ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
   };
 
   return versioned([
@@ -192,19 +209,29 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
 
   Reflect.deleteProperty(packageJson, 'lintel');
 
-  const dependencies = { ...existing.dependencies, ...buildDependencies(answers) };
-  const devDependencies = withoutSuperseded({
-    ...existing.devDependencies,
+  const dependencies = {
+    ...existing.dependencies,
+    ...buildDependencies(answers),
+  };
+  // Filtered before the merge, not after: a package this target names for itself is not one the scaffolder left behind.
+  const devDependencies = {
+    ...withoutSuperseded(existing.devDependencies ?? {}),
     ...buildDevDependencies(answers),
-  });
+  };
   const managerVersion = PACKAGE_MANAGER_VERSIONS[answers.packageManager];
 
   return {
     ...packageJson,
     type: 'module',
     packageManager: `${answers.packageManager}@${managerVersion}`,
-    engines: { node: NODE_ENGINE, [answers.packageManager]: `>=${managerVersion}` },
-    scripts: { ...existing.scripts, ...buildScripts(answers) },
+    engines: {
+      node: NODE_ENGINE,
+      [answers.packageManager]: `>=${managerVersion}`,
+    },
+    scripts: {
+      ...existing.scripts,
+      ...buildScripts(answers),
+    },
     ...(Object.keys(dependencies).length > 0 ? { dependencies } : {}),
     devDependencies,
   };

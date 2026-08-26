@@ -124,7 +124,10 @@ export const guardMountLookups = (source: string): string => {
 
 export const sourceFiles = async (root: string): Promise<string[]> => {
   try {
-    const entries = await readdir(root, { withFileTypes: true, recursive: true });
+    const entries = await readdir(root, {
+      withFileTypes: true,
+      recursive: true,
+    });
 
     return entries
       .filter((entry) => {

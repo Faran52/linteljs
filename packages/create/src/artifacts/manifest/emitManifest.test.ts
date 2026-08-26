@@ -23,7 +23,11 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {
-  return { ...DEFAULT_ANSWERS, target: 'webextension', ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    target: 'webextension',
+    ...overrides,
+  };
 };
 
 const manifestFor = (overrides: AnswerOverrides = {}): Manifest => {
@@ -61,21 +65,30 @@ describe('emitManifest', () => {
     const manifest = manifestFor();
 
     expect(manifest.action).toEqual({ default_popup: 'index.html' });
-    expect(manifest.background).toEqual({ service_worker: 'src/background/index.ts', type: 'module' });
+    expect(manifest.background).toEqual({
+      service_worker: 'src/background/index.ts',
+      type: 'module',
+    });
     expect(manifest.devtools_page).toBeUndefined();
   });
 
   // Chrome takes a service worker, Firefox an event page. One surface, two spellings.
   it('spells the background entry the way the browser expects', () => {
     expect(manifestFor({ browser: 'chrome' }).background)
-      .toEqual({ service_worker: 'src/background/index.ts', type: 'module' });
+      .toEqual({
+        service_worker: 'src/background/index.ts',
+        type: 'module',
+      });
     expect(manifestFor({ browser: 'firefox' }).background)
       .toEqual({ scripts: ['src/background/index.ts'] });
   });
 
   it('carries gecko settings on firefox and not on chrome', () => {
     expect(manifestFor({ browser: 'firefox' }).browser_specific_settings).toEqual({
-      gecko: { id: 'demo-app@example.com', strict_min_version: '140.0' },
+      gecko: {
+        id: 'demo-app@example.com',
+        strict_min_version: '140.0',
+      },
     });
     expect(manifestFor({ browser: 'chrome' }).browser_specific_settings).toBeUndefined();
   });

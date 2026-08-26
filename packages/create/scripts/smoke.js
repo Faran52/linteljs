@@ -30,7 +30,11 @@ const smokeDir = join(root, '.smoke');
 const pkgDir = join(smokeDir, 'package');
 
 const run = (cmd, args, cwd = root) => {
-  return execFileSync(cmd, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+  return execFileSync(cmd, args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
 };
 
 const filesUnder = (dir) => {
@@ -45,7 +49,10 @@ const filesUnder = (dir) => {
   });
 };
 
-rmSync(smokeDir, { recursive: true, force: true });
+rmSync(smokeDir, {
+  recursive: true,
+  force: true,
+});
 mkdirSync(smokeDir, { recursive: true });
 
 console.log('• packing tarball');
@@ -59,9 +66,11 @@ assert.ok(tarball, 'pnpm pack produced no tarball');
 console.log(`• extracting ${tarball}`);
 run('tar', ['-xzf', join(smokeDir, tarball)], smokeDir);
 
-// The binary a user reaches through `pnpm create @linteljs`, run from the extracted tarball, not the workspace.
-// It resolves `../dist/index.mjs` relatively, so a `files` list that packed `bin` and forgot `dist` fails here and
-// nowhere else.
+/**
+ * The binary a user reaches through `pnpm create @linteljs`, run from the extracted tarball, not the workspace.
+ * It resolves `../dist/index.mjs` relatively, so a `files` list that packed `bin` and forgot `dist` fails here and
+ * nowhere else.
+ */
 console.log('• running the packed binary');
 
 const help = run(process.execPath, [join(pkgDir, 'bin', 'create-linteljs.js'), '--help'], smokeDir);
@@ -129,5 +138,8 @@ assert.deepEqual(missing, [], `assets in the repo that \`files\` did not pack:\n
 
 console.log(`  ✓ all ${String(packed.size)} shipped assets packed, test fixtures excluded`);
 
-rmSync(smokeDir, { recursive: true, force: true });
+rmSync(smokeDir, {
+  recursive: true,
+  force: true,
+});
 console.log('✓ packed artifact smoke test passed');

@@ -73,8 +73,14 @@ interface Described {
 }
 
 const TESTING_DESCRIPTIONS: Record<Answers['testing'], Described> = {
-  vitest: { label: 'Vitest', hint: 'Test runner with built-in coverage' },
-  none: { label: 'None', hint: 'No test suite' },
+  vitest: {
+    label: 'Vitest',
+    hint: 'Test runner with built-in coverage',
+  },
+  none: {
+    label: 'None',
+    hint: 'No test suite',
+  },
 };
 
 const PACKAGE_MANAGER_DESCRIPTIONS: Record<Answers['packageManager'], Described> = {
@@ -85,45 +91,105 @@ const PACKAGE_MANAGER_DESCRIPTIONS: Record<Answers['packageManager'], Described>
 };
 
 const LIBRARY_DESCRIPTIONS: Record<Answers['libraries'][number], Described> = {
-  'zod': { label: 'Zod', hint: 'Schema validation and parsing' },
-  'tanstack-query': { label: 'TanStack Query', hint: 'Async data fetching and caching' },
-  'tailwind': { label: 'Tailwind CSS', hint: 'Utility-first styling' },
+  'zod': {
+    label: 'Zod',
+    hint: 'Schema validation and parsing',
+  },
+  'tanstack-query': {
+    label: 'TanStack Query',
+    hint: 'Async data fetching and caching',
+  },
+  'tailwind': {
+    label: 'Tailwind CSS',
+    hint: 'Utility-first styling',
+  },
 };
 
 const BROWSER_DESCRIPTIONS: Record<Browser, Described> = {
-  chrome: { label: 'Chrome', hint: 'MV3 service worker' },
-  firefox: { label: 'Firefox', hint: 'MV3 event page, packaged with web-ext' },
+  chrome: {
+    label: 'Chrome',
+    hint: 'MV3 service worker',
+  },
+  firefox: {
+    label: 'Firefox',
+    hint: 'MV3 event page, packaged with web-ext',
+  },
 };
 
 const SURFACE_DESCRIPTIONS: Record<Surface, Described> = {
-  'popup': { label: 'Popup', hint: 'The toolbar button\'s page' },
-  'background': { label: 'Background', hint: 'The service worker or event page' },
-  'devtools-panel': { label: 'DevTools panel', hint: 'A tab inside the browser\'s developer tools' },
+  'popup': {
+    label: 'Popup',
+    hint: 'The toolbar button\'s page',
+  },
+  'background': {
+    label: 'Background',
+    hint: 'The service worker or event page',
+  },
+  'devtools-panel': {
+    label: 'DevTools panel',
+    hint: 'A tab inside the browser\'s developer tools',
+  },
 };
 
 // `none` is not a `HostedFramework`, so it is spelled here rather than added to the vocabulary for one prompt.
 const HOSTED_FRAMEWORK_DESCRIPTIONS: Record<HostedFramework | 'none', Described> = {
-  none: { label: 'None', hint: 'Plain TypeScript and the DOM' },
-  react: { label: 'React', hint: '' },
-  vue: { label: 'Vue', hint: '' },
-  svelte: { label: 'Svelte', hint: '' },
-  solid: { label: 'Solid', hint: '' },
+  none: {
+    label: 'None',
+    hint: 'Plain TypeScript and the DOM',
+  },
+  react: {
+    label: 'React',
+    hint: '',
+  },
+  vue: {
+    label: 'Vue',
+    hint: '',
+  },
+  svelte: {
+    label: 'Svelte',
+    hint: '',
+  },
+  solid: {
+    label: 'Solid',
+    hint: '',
+  },
 };
 
 const TYPE_SAFETY_DESCRIPTIONS: Record<Answers['typeSafety'], Described> = {
-  strict: { label: 'Strict', hint: 'Bans casts, any and suppression directives' },
-  relaxed: { label: 'Relaxed', hint: 'Only what the compiler itself catches' },
+  strict: {
+    label: 'Strict',
+    hint: 'Bans casts, any and suppression directives',
+  },
+  relaxed: {
+    label: 'Relaxed',
+    hint: 'Only what the compiler itself catches',
+  },
 };
 
 const AGENT_DESCRIPTIONS: Record<Answers['agents'][number], Described> = {
-  'claude-code': { label: 'Claude Code', hint: "Anthropic's coding agent" },
-  'codex': { label: 'Codex', hint: "OpenAI's coding agent" },
+  'claude-code': {
+    label: 'Claude Code',
+    hint: "Anthropic's coding agent",
+  },
+  'codex': {
+    label: 'Codex',
+    hint: "OpenAI's coding agent",
+  },
 };
 
 const PLUGIN_DESCRIPTIONS: Record<Answers['plugins'][number], Described> = {
-  'ponytail': { label: 'Ponytail', hint: 'Keeps changes small and questions bloat' },
-  'context7': { label: 'Context7', hint: 'Pulls current library docs into context' },
-  'frontend-design': { label: 'Frontend Design', hint: 'Guidance on visual and UX choices' },
+  'ponytail': {
+    label: 'Ponytail',
+    hint: 'Keeps changes small and questions bloat',
+  },
+  'context7': {
+    label: 'Context7',
+    hint: 'Pulls current library docs into context',
+  },
+  'frontend-design': {
+    label: 'Frontend Design',
+    hint: 'Guidance on visual and UX choices',
+  },
 };
 
 // The real terminal. `cli.ts` uses this by default and a test substitutes its own, so nothing here ever has to fake
@@ -173,10 +239,17 @@ const askChoice = async <T extends string>(
   describe: (choice: T) => Described,
 ): Promise<T> => {
   const options: Option<string>[] = choices.map((choice) => {
-    return { value: choice, ...describe(choice) };
+    return {
+      value: choice,
+      ...describe(choice),
+    };
   });
 
-  const answer = await prompter.select({ message, initialValue, options });
+  const answer = await prompter.select({
+    message,
+    initialValue,
+    options,
+  });
 
   // `Prompter` erases every choice to `string`, so `T` comes back the one way the standard still allows: a cast onto
   // the bare generic parameter this function itself declares, not onto a shape built from it.
@@ -197,8 +270,14 @@ const STORE_CHOICES = ['store', 'none'] as const;
 const askStore = async (prompter: Prompter, slot: StoreSlot): Promise<boolean> => {
   const chosen = await askChoice(prompter, 'State store', [...STORE_CHOICES], 'none', (choice) => {
     return choice === 'none'
-      ? { label: 'None', hint: "The framework's own state, and nothing installed" }
-      : { label: slot.label, hint: `Installs ${slot.label} and gives it a place to live` };
+      ? {
+          label: 'None',
+          hint: "The framework's own state, and nothing installed",
+        }
+      : {
+          label: slot.label,
+          hint: `Installs ${slot.label} and gives it a place to live`,
+        };
   });
 
   return chosen === 'store';
@@ -220,7 +299,10 @@ const askMulti = async <T extends string>(
   describe: (choice: T) => Described,
 ): Promise<T[]> => {
   const options: Option<string>[] = choices.map((choice) => {
-    return { value: choice, ...describe(choice) };
+    return {
+      value: choice,
+      ...describe(choice),
+    };
   });
 
   const answer = await prompter.multiselect({
@@ -264,26 +346,30 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
   const name = input.name ?? await askName(prompter);
 
   const target = await askChoice(prompter, 'Framework', TARGET_IDS, DEFAULT_ANSWERS.target, (id) => {
-    return { label: targetFor({ ...DEFAULT_ANSWERS, target: id }).label };
+    return {
+      label: targetFor({
+        ...DEFAULT_ANSWERS,
+        target: id,
+      }).label,
+    };
   });
 
   // Only `label` and `store` are read here, and neither varies by an answer still unasked.
-  const record = targetFor({ ...DEFAULT_ANSWERS, target });
+  const record = targetFor({
+    ...DEFAULT_ANSWERS,
+    target,
+  });
 
-  /**
-   * Both are asked only where the target has the slot, the way the store question already works. A host with no
-   * framework is a real answer rather than a missing one, so `none` is offered rather than the question skipped.
-   */
+  // Both are asked only where the target has the slot, the way the store question already works. A host with no
+  // framework is a real answer rather than a missing one, so `none` is offered rather than the question skipped.
   const browser = record.hostsBrowser === true
     ? await askChoice(prompter, 'Browser', BROWSERS, DEFAULT_ANSWERS.browser, (choice) => {
         return BROWSER_DESCRIPTIONS[choice];
       })
     : DEFAULT_ANSWERS.browser;
 
-  /**
-   * Required, because an extension with no surface is not an extension: it would build to a manifest naming nothing.
-   * Defaults to the pair this target wrote before the question existed.
-   */
+  // Required, because an extension with no surface is not an extension: it would build to a manifest naming nothing.
+  // Defaults to the pair this target wrote before the question existed.
   const surfaces = record.hostsBrowser === true
     ? await askMulti(prompter, 'Surfaces', SURFACES, surfacesOf(DEFAULT_ANSWERS), true, (choice) => {
         return SURFACE_DESCRIPTIONS[choice];

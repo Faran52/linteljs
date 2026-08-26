@@ -4,6 +4,8 @@ paths:
   - "src/lib/primitives/**/*.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # Solid Reactivity Rules
 
 Use this rule when adding state, deriving a value, or reaching for `createEffect`.

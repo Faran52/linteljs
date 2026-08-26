@@ -6,8 +6,8 @@ import { argv, exit } from 'node:process';
 interface BannedPattern {
   name: string;
   re: RegExp;
-  // Test the raw line rather than the string- and comment-stripped one.
-  raw?: boolean;
+  // Test the line with string literals blanked but comments kept: a directive lives inside a comment.
+  inComments?: boolean;
   // Shapes the rule file grants explicitly. A line matching one of these is not a hit.
   allowed?: RegExp[];
 }
@@ -31,7 +31,15 @@ const DYNAMIC_IMPORT = /:\s*unknown\s*=\s*await import\(/;
  */
 const CAUGHT_VALUE = /\(\s*(?:error|cause|reason)\s*:\s*unknown\s*\)/;
 
-// Tested against the raw line: the strip below hides comments, and a directive lives inside one.
+/**
+ * The same value reached through a promise: `.catch(cb)` binds exactly what a `catch` clause would, so the callback's
+ * one parameter is a caught value whatever it is named. Structural rather than a name list, which is why it grants
+ * `err` and every other spelling the name grant above cannot enumerate.
+ */
+const CAUGHT_IN_CHAIN = /\.catch\(\s*(?:async\s*)?\(\s*\w+\s*:\s*unknown\s*\)/;
+
+// Tested with strings blanked and comments kept: a directive lives inside a comment, and the same words inside
+// a string literal are fixture text addressed to no tool.
 const directive = (name: string): RegExp => {
   return new RegExp(`(?://|/\\*)\\s*${name}`);
 };
@@ -39,17 +47,54 @@ const directive = (name: string): RegExp => {
 // Plain `as X` is not gated: tsc already rejects non-overlapping casts, and a regex fires on `import * as x` and `catch
 // (e) as`.
 const BANNED: BannedPattern[] = [
-  { name: 'as never', re: /\bas never\b/ },
-  { name: 'as unknown', re: /\bas unknown\b/ },
-  { name: ': unknown', re: /:\s*unknown\b/, allowed: [NARROWING_GUARD, PARSED_JSON, DYNAMIC_IMPORT, CAUGHT_VALUE] },
-  { name: '=> unknown', re: /=>\s*unknown\b/ },
-  { name: 'unknown[]', re: /unknown\[]/ },
-  { name: '<unknown>', re: /<unknown[,>]/ },
-  { name: '@ts-ignore', re: directive('@ts-ignore'), raw: true },
-  { name: '@ts-expect-error', re: directive('@ts-expect-error'), raw: true },
-  { name: 'eslint-disable', re: directive('eslint-disable'), raw: true },
-  { name: 'Record<string, unknown>', re: /Record<string,\s*unknown>/ },
-  { name: 'index signature', re: /\[[A-Za-z_]\w*:\s*(?:string|number|symbol)]/ },
+  {
+    name: 'as never',
+    re: /\bas never\b/,
+  },
+  {
+    name: 'as unknown',
+    re: /\bas unknown\b/,
+  },
+  {
+    name: ': unknown',
+    re: /:\s*unknown\b/,
+    allowed: [NARROWING_GUARD, PARSED_JSON, DYNAMIC_IMPORT, CAUGHT_VALUE, CAUGHT_IN_CHAIN],
+  },
+  {
+    name: '=> unknown',
+    re: /=>\s*unknown\b/,
+  },
+  {
+    name: 'unknown[]',
+    re: /unknown\[]/,
+  },
+  {
+    name: '<unknown>',
+    re: /<unknown[,>]/,
+  },
+  {
+    name: '@ts-ignore',
+    re: directive('@ts-ignore'),
+    inComments: true,
+  },
+  {
+    name: '@ts-expect-error',
+    re: directive('@ts-expect-error'),
+    inComments: true,
+  },
+  {
+    name: 'eslint-disable',
+    re: directive('eslint-disable'),
+    inComments: true,
+  },
+  {
+    name: 'Record<string, unknown>',
+    re: /Record<string,\s*unknown>/,
+  },
+  {
+    name: 'index signature',
+    re: /\[[A-Za-z_]\w*:\s*(?:string|number|symbol)]/,
+  },
 ];
 
 // Add project-specific patterns here. Empty by default.
@@ -107,12 +152,20 @@ const blankMultilineSpans = (content: string): string => {
     .replace(/`(?:\\[\s\S]|[^`\\])*`/g, blankSpan);
 };
 
-// What is left after the pass above: single-line strings and line comments.
-const stripStringsAndComments = (line: string): string => {
+/**
+ * Strings blanked, comments kept, which is what a directive pattern is matched against. Stripping comments would hide
+ * every directive there is, and matching the untouched line reported the same words inside a string literal, where
+ * they are a test fixture rather than an instruction to any tool.
+ */
+const stripStrings = (line: string): string => {
   return line
     .replace(/\\['"]/g, '  ')
-    .replace(/'[^']*'|"[^"]*"/g, blankSpan)
-    .replace(/\/\/.*/, '');
+    .replace(/'[^']*'|"[^"]*"/g, blankSpan);
+};
+
+// What is left after the pass above: single-line strings and line comments.
+const stripStringsAndComments = (line: string): string => {
+  return stripStrings(line).replace(/\/\/.*/, '');
 };
 
 const SCRIPT_FILE = /\.[cm]?tsx?$/;
@@ -168,7 +221,7 @@ for (const file of files) {
     const scrubbed = stripStringsAndComments(source[index] ?? '');
 
     const match = patterns.find((pattern) => {
-      const subject = pattern.raw === true ? line : scrubbed;
+      const subject = pattern.inComments === true ? stripStrings(source[index] ?? '') : scrubbed;
 
       return pattern.re.test(subject) && !pattern.allowed?.some((shape) => {
         return shape.test(subject);

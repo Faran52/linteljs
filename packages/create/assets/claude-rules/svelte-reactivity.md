@@ -5,6 +5,8 @@ paths:
   - "src/lib/hooks/**/*.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # Svelte Reactivity Rules
 
 Use this rule when adding state, deriving a value, or reaching for `$effect`.

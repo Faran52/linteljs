@@ -28,7 +28,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const plantEslint = async (body: string): Promise<void> => {
@@ -53,7 +56,10 @@ describe('nextStep', () => {
   });
 
   it('uses run for a package manager whose script form needs it', () => {
-    expect(nextStep({ ...DEFAULT_ANSWERS, packageManager: 'bun' }))
+    expect(nextStep({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'bun',
+    }))
       .toBe('next: bun install && bun run lint:fix');
   });
 });

@@ -67,8 +67,14 @@ beforeEach(async () => {
 
 afterEach(async () => {
   chdir(entered);
-  await rm(project, { recursive: true, force: true });
-  await rm(external, { recursive: true, force: true });
+  await rm(project, {
+    recursive: true,
+    force: true,
+  });
+  await rm(external, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const runMain = async (argv: string[], recorded?: Recorded): Promise<Run> => {
@@ -86,7 +92,11 @@ const runMain = async (argv: string[], recorded?: Recorded): Promise<Run> => {
   try {
     const code = await main(argv, recorded?.prompter);
 
-    return { code, printed: chunks.join(''), errors };
+    return {
+      code,
+      printed: chunks.join(''),
+      errors,
+    };
   }
   finally {
     printing.mockRestore();
@@ -220,7 +230,10 @@ describe('main: what it prints and what it returns', () => {
       expect(parsePackageJson(await readFile(join(named, 'package.json'), 'utf8')).name).toBe('demo-app');
     }
     finally {
-      await rm(join(project, 'fake-bin'), { recursive: true, force: true });
+      await rm(join(project, 'fake-bin'), {
+        recursive: true,
+        force: true,
+      });
     }
   });
 
@@ -350,7 +363,10 @@ describe('main: create', () => {
       expect(patched.name).toBe('asked-app');
     }
     finally {
-      await rm(join(project, 'fake-bin'), { recursive: true, force: true });
+      await rm(join(project, 'fake-bin'), {
+        recursive: true,
+        force: true,
+      });
     }
   });
 
@@ -639,7 +655,10 @@ describe('main: sync', () => {
   it('removes the files of a host the config stopped selecting, and nothing beside them', async () => {
     await generated();
     await writeFile(join(project, '.claude/notes.md'), '# ours\n', 'utf8');
-    await writeConfig({ ...DEFAULT_ANSWERS, agents: ['codex'] });
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      agents: ['codex'],
+    });
 
     const { printed } = await runMain(['sync', '--force'], scripted([]));
 
@@ -656,7 +675,10 @@ describe('main: sync', () => {
 
   it('lists an obsolete file without removing it when --force was not passed', async () => {
     await generated();
-    await writeConfig({ ...DEFAULT_ANSWERS, agents: ['codex'] });
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      agents: ['codex'],
+    });
 
     const { printed } = await runMain(['sync'], scripted([]));
 
@@ -703,7 +725,10 @@ describe('main: sync', () => {
   });
 
   it('plans from the root config rather than asking again', async () => {
-    await writeConfig({ ...DEFAULT_ANSWERS, target: 'svelte' });
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      target: 'svelte',
+    });
 
     const asked = scripted([]);
     const { printed } = await runMain(['sync'], asked);
@@ -717,7 +742,10 @@ describe('main: sync', () => {
    * disk and written into the emitted config.
    */
   it('carries recorded resolver conditions into the emitted config', async () => {
-    await writeConfig({ ...DEFAULT_ANSWERS, resolveConditions: ['import', 'require', 'node', 'default'] });
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      resolveConditions: ['import', 'require', 'node', 'default'],
+    });
 
     await runMain(['sync', '--force'], scripted([]));
 
@@ -742,7 +770,10 @@ describe('main: sync', () => {
    * shipped in 1.2.0 reached new projects and no old one, which a real migration found rather than a test.
    */
   it('merges into the workspace file and the gitignore a project already has', async () => {
-    await writeConfig({ ...DEFAULT_ANSWERS, target: 'next' });
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      target: 'next',
+    });
     await writeFile(
       join(project, 'pnpm-workspace.yaml'),
       "allowBuilds:\n  'sharp': true\n",
@@ -849,10 +880,16 @@ describe('main: sync', () => {
    * existing one. Both repos had to add plugins by hand that their own recorded answers already implied.
    */
   it('adds the dependencies the answers imply and keeps what the project declared', async () => {
-    await writeConfig({ ...DEFAULT_ANSWERS, target: 'solid' });
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      target: 'solid',
+    });
     await writeFile(
       join(project, 'package.json'),
-      `${JSON.stringify({ name: 'demo', devDependencies: { 'some-tool': '^1.0.0' } }, null, 2)}\n`,
+      `${JSON.stringify({
+        name: 'demo',
+        devDependencies: { 'some-tool': '^1.0.0' },
+      }, null, 2)}\n`,
       'utf8',
     );
 

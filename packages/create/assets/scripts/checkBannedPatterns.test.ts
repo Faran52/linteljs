@@ -28,7 +28,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await rm(cwd, { recursive: true, force: true });
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const check = async (source: string): Promise<string> => {
@@ -64,6 +67,10 @@ describe('the carve-out the rule file grants', () => {
     // `catch` binds `unknown` by language rule, so a helper turning a throw into a message has no other parameter type.
     ['a caught value', 'const messageOf = (error: unknown): string => {\n  return String(error);\n};\n'],
     ['a caught value named cause', 'const codeOf = (cause: unknown): string => {\n  return String(cause);\n};\n'],
+    // `.catch(cb)` binds what `catch` would, so the callback's one parameter is granted whatever it is named. Angular's
+    // own `main.ts` is written this way, and without the grant a fresh scaffold failed its own type floor.
+    ['a caught value in a promise chain', 'run().catch((err: unknown) => {\n  report(err);\n});\n'],
+    ['a caught value in an async promise chain', 'run().catch(async (e: unknown) => {\n  await report(e);\n});\n'],
   ])('allows %s', async (_label, source) => {
     expect(await check(source)).toBe('');
   });
@@ -98,8 +105,23 @@ describe('mentions rather than directives', () => {
       'a banned pattern inside a block comment',
       '/**\n * Never write `value: unknown` outside a guard.\n */\nconst value = 1;\n',
     ],
+    // A rule that has to leave directives alone cannot be tested without holding them as fixture text, and text inside
+    // a string literal instructs no tool.
+    [
+      'a directive inside a string literal',
+      "const fixture = '// eslint-disable-next-line no-console';\n",
+    ],
+    [
+      'a directive inside a multiline template',
+      'const fixture = `\n// @ts-ignore\nconst value = 1;\n`;\n',
+    ],
   ])('says nothing about %s', async (_label, source) => {
     expect(await check(source)).toBe('');
+  });
+
+  it('still reports the same directive written as one', async () => {
+    expect(await check('// eslint-disable-next-line no-console\nconsole.log(1);\n'))
+      .toContain('[eslint-disable]');
   });
 });
 

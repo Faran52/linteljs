@@ -15,7 +15,11 @@ import type {
 } from '../answers/answers';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
-  return { ...DEFAULT_ANSWERS, target: 'astro', ...overrides };
+  return {
+    ...DEFAULT_ANSWERS,
+    target: 'astro',
+    ...overrides,
+  };
 };
 
 const recordFor = (overrides: Partial<Answers> = {}) => {
@@ -48,7 +52,10 @@ describe('the build it owns', () => {
     const record = recordFor();
 
     expect(record.vite).toBe(false);
-    expect(record.vitePlugin).toEqual({ imports: [], calls: [] });
+    expect(record.vitePlugin).toEqual({
+      imports: [],
+      calls: [],
+    });
     expect(record.vitestFactory?.call).toBe('getViteConfig');
     // The second import is what makes `test` a legal key; `astro check` rejects the config without it.
     expect(record.vitestFactory?.imports).toEqual([
@@ -89,7 +96,7 @@ describe('the hosted framework axis', () => {
     expect(record.hostsFramework).toBe(true);
     expect(record.framework).toBeUndefined();
     expect(record.stateRules).toEqual([]);
-    expect(record.dependencies).toBeUndefined();
+    expect(record.dependencies).toEqual(['astro']);
     // The template component rule stands on its own, with no framework extension beside it.
     expect(record.naming['src/**/*.astro']).toBe('!([a-z]*[A-Z]*)');
   });
@@ -109,12 +116,41 @@ describe('the hosted framework axis', () => {
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
   });
 
-  it('brings the framework itself and its testing library', () => {
+  /**
+   * The SWC plugin belongs to a `vite.config.ts` this target does not own, so it would install and never be imported.
+   * The Babel three stay: `@astrojs/react` runs the compiler through its own passthrough, which is what loads them.
+   */
+  it('leaves the react build plugin to the targets that own a vite config', () => {
+    const { devDependencies } = recordFor({ hostedFramework: 'react' });
+
+    expect(devDependencies).not.toContain('@vitejs/plugin-react-swc');
+    expect(devDependencies).toContain('babel-plugin-react-compiler');
+    expect(devDependencies).toContain('@rolldown/plugin-babel');
+    expect(devDependencies).toContain('@babel/core');
+  });
+
+  it('brings the framework itself and its testing library beside astro', () => {
     const record = recordFor({ hostedFramework: 'vue' });
 
-    expect(record.dependencies).toEqual(['vue']);
+    expect(record.dependencies).toEqual(['astro', 'vue']);
     expect(record.testDevDependencies).toEqual(['@vue/test-utils']);
     expect(record.stateRules).toEqual(['vue-reactivity.md']);
+  });
+
+  /**
+   * The base template writes astro into dependencies, where the node adapter's runtime entry needs it; a second
+   * entry in devDependencies is the duplicate that drifts. Unconditional so a --skip-scaffold run still installs it.
+   */
+  it('declares astro once, as a runtime dependency, hosted or not', () => {
+    const records = [recordFor(), recordFor({ hostedFramework: 'react' })];
+
+    for (const record of records) {
+      expect(record.dependencies).toContain('astro');
+      expect(record.devDependencies).not.toContain('astro');
+      expect(record.devDependencies.filter((name) => {
+        return name === 'astro';
+      })).toHaveLength(0);
+    }
   });
 
   /**
@@ -128,10 +164,10 @@ describe('the hosted framework axis', () => {
   });
 
   // The lint layer loads both, whether or not the site hosts a framework.
-  it('installs astro, its checker and the two packages the lint layer loads', () => {
+  it('installs its checker and the two packages the lint layer loads beside astro', () => {
     const record = recordFor();
 
-    expect(record.devDependencies).toContain('astro');
+    expect(record.dependencies).toContain('astro');
     expect(record.devDependencies).toContain('@astrojs/check');
     expect(record.devDependencies).toContain('eslint-plugin-astro');
     expect(record.devDependencies).toContain('astro-eslint-parser');
@@ -142,11 +178,24 @@ describe('the hosted framework axis', () => {
     expect(recordFor().allowBuilds).toContain('esbuild');
   });
 
-  // Tailwind reaches an Astro build as a Vite plugin, so the project installs that rather than an integration.
-  it('installs the tailwind vite plugin when tailwind was answered', () => {
+  /**
+   * The adapter is chosen once, in the package-json emitter, from whether the target calls the Tailwind Vite plugin.
+   * Astro does, through `astro.config.mjs`'s `vite` key despite owning no config file, so the record adds nothing of
+   * its own and the two additions that used to both land are one.
+   */
+  it('adds no tailwind adapter of its own', () => {
     const libraries: Library[] = ['tailwind'];
 
-    expect(recordFor({ libraries }).devDependencies).toContain('@tailwindcss/vite');
-    expect(recordFor().devDependencies).not.toContain('@tailwindcss/vite');
+    expect(recordFor({ libraries }).devDependencies).not.toContain('@tailwindcss/vite');
+    expect(recordFor({ libraries }).devDependencies).not.toContain('@tailwindcss/postcss');
+  });
+
+  /**
+   * Nothing in an Astro scaffold imports `@babel/core`: the compiler wiring lives in `astro.config.mjs`, JavaScript
+   * that nothing typechecks. The Babel types belong to a TypeScript build config, which Astro has none of.
+   */
+  it('ships no babel type stub even when react is hosted', () => {
+    expect(recordFor({ hostedFramework: 'react' }).devDependencies).not.toContain('@types/babel__core');
+    expect(recordFor({ hostedFramework: 'react' }).devDependencies).toContain('@babel/core');
   });
 });

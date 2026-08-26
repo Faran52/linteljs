@@ -4,6 +4,8 @@ paths:
   - "**/schemas.ts"
 ---
 
+*Shipped verbatim into generated projects.*
+
 # Schema Standards
 
 Load alongside `type-standards.md` when touching anything under `src/lib/apis/`.

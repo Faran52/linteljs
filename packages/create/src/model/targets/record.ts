@@ -67,6 +67,12 @@ export interface TestPlatform {
 export interface PluginSpec {
   imports: string[];
   calls: string[];
+  /**
+   * Helper declarations emitted between the imports and the config, for a plugin assembled rather than called: the
+   * React Compiler's Babel pass is an async factory so it can pin itself to the `pre` group ahead of SWC. Absent on
+   * every spec that names its plugins directly.
+   */
+  prelude?: string[];
 }
 
 // The framework's hook equivalent; `label` exists so Solid can name its own "primitives" rather than "Hooks". Absent on
@@ -154,8 +160,8 @@ export interface TargetRecord {
   hooksAlias?: AliasMap;
   // Aliases only this target has, merged at the tail of the lib family so ordering holds.
   extraAliases?: AliasMap;
-  // Shared aliases this target lacks; plain TypeScript's `repo-structure.md` has no `lib/store/`/`lib/providers/`, so
-  // aliasing them would name nothing.
+  // Shared aliases this target lacks; plain TypeScript's `repo-structure.md` has no `lib/store/`, so aliasing it
+  // would name nothing.
   omitAliases?: string[];
   tsconfig: TsconfigDelta;
   // Names this scaffolder imports as values although they are types, keyed by module; `rewriteScaffoldedSource` adds
@@ -174,7 +180,8 @@ export interface TargetRecord {
    * options live in `astro.config.mjs` and `getViteConfig` is the documented way to hand them to vitest, since there is
    * no `vite.config.ts` to merge.
    */
-  vitestFactory?: { imports: string[]; call: string };
+  vitestFactory?: { imports: string[];
+    call: string; };
   // Coverage exclusions beyond the shared set: modules with no branch to miss.
   coverageExclude?: string[];
   // Resolve conditions for the test run only; without `browser`, vitest loads Svelte's server build and `mount()`
