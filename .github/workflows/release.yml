@@ -47,6 +47,21 @@ jobs:
             fi
           done
 
+      # Read here rather than after the publish, because a release whose notes turn out to be empty is one nobody can
+      # fix afterwards without editing the release by hand. Not all three: one version covers all three packages, and
+      # a version whose change lives in one of them says so there and nowhere else.
+      - name: Verify a changelog describes this version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          for pkg in eslint-plugin eslint-config create; do
+            if grep -qxF "## $VERSION" "packages/$pkg/CHANGELOG.md"; then
+              exit 0
+            fi
+          done
+          echo "No packages/*/CHANGELOG.md has a '## $VERSION' section." >&2
+          echo "The release notes are written from those sections, so this would publish an empty release." >&2
+          exit 1
+
       # A second push to the same branch would otherwise try to publish a version that is already on
       # npm and fail deep in the publish step, after twenty minutes of gates. The tag written at the
       # end of a successful run is what makes that knowable in one command, here.
@@ -149,9 +164,28 @@ jobs:
           git tag -a "$GITHUB_REF_NAME" -m "$GITHUB_REF_NAME"
           git push origin "refs/tags/$GITHUB_REF_NAME"
 
+      # The three changelog sections for this version, in dependency order, which is the order the packages publish in
+      # above. Generated notes still follow underneath: they answer "which commits", and these answer "what changed",
+      # and the second is the one a consumer arriving from npm came for.
+      - name: Compose the release notes from the changelogs
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          : > "$RUNNER_TEMP/notes.md"
+          for pkg in eslint-plugin eslint-config create; do
+            SECTION="$(awk -v heading="## $VERSION" '
+              $0 == heading { found = 1; next }
+              found && /^## / { exit }
+              found
+            ' "packages/$pkg/CHANGELOG.md")"
+            if [ -n "$(printf '%s' "$SECTION" | tr -d '[:space:]')" ]; then
+              printf '## @linteljs/%s\n%s\n\n' "$pkg" "$SECTION" >> "$RUNNER_TEMP/notes.md"
+            fi
+          done
+
       - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ github.ref_name }}
+          body_path: ${{ runner.temp }}/notes.md
           generate_release_notes: true
 
       # The branch has done its job: the tag holds the commit and the release is out, so leaving it
