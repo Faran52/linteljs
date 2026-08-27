@@ -6,6 +6,14 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 
+## 1.5.1
+
+No rule changes. The three versions move together, so this carries the pnpm 12 generated-project
+pin and mature dependency floors in `@linteljs/create` and `@linteljs/eslint-config`.
+
+The mutation audit moves to Stryker 10.0.0; its Vitest dry run still discovers 2,146 mutants and
+passes all 5,076 tests before mutation execution.
+
 ## 1.5.0
 
 Two rules, taking the total to fourteen.

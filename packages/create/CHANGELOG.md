@@ -6,6 +6,12 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.1
+
+- Generated pnpm projects pin pnpm 12.0.0, matching the workspace version used to build and test them.
+- Emitted dependency floors move with the mature workspace set: ESLint 10.9.1,
+  `@tanstack/eslint-plugin-query` 5.102.3 and `@next/eslint-plugin-next` 16.3.3.
+
 ## 1.5.0
 
 Twelve findings from a report against a scaffolded Astro workspace, plus four the end-to-end suite

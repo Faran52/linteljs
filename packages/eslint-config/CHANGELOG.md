@@ -6,6 +6,11 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.1
+
+- `typescript-eslint` moves to 8.68.0 and the Next.js development surface moves to 16.3.3 after
+  both releases cleared the workspace's two-day maturity window.
+
 ## 1.5.0
 
 - Object literals take one property per line, through `@stylistic/object-property-newline` with
@@ -14,8 +19,8 @@ when a version's change lives in a sibling it is described there instead:
   both off imports, exports and destructuring patterns, which the four `@linteljs` newline rules
   already own.
 - The React and Solid layers enable `@linteljs/no-duplicate-jsx-props`.
-- Plugin peers move: `@html-eslint/*` to 0.65, `@next/eslint-plugin-next` to 16.3.3,
-  `@tanstack/eslint-plugin-query` to 5.102.5, and `eslint-plugin-solid` to 0.16, which crosses two
+- Plugin peers move: `@html-eslint/*` to 0.65, `@next/eslint-plugin-next` to 16.3.2,
+  `@tanstack/eslint-plugin-query` to 5.102.2, and `eslint-plugin-solid` to 0.16, which crosses two
   minors on 0.x.
 
 ## 1.4.6
