@@ -38,7 +38,7 @@ local-only. That version is not the source of truth any more. This repo owns the
 
 ## 2. Conventions
 
-- **pnpm 12 only** to develop, Node 24 to develop, and neither is what the package declares.
+- **pnpm 12 only** to develop, Node 26 to develop, and neither is what the package declares.
   `engines.node` is `>=12.0.0` and `peerDependencies.eslint` is `>=5.0.0`, matching what is
   published: `@linteljs/eslint-plugin` has installs against those floors and narrowing them is a silent
   break. That is why `tsdown.config.ts` targets `node12`, why no rule uses `findLast`,

@@ -6,6 +6,11 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.2
+
+- `@tanstack/eslint-plugin-query` moves to 5.102.8, `eslint-plugin-solid` to 0.16.1 and `vue` to
+  3.5.42, after all three cleared the workspace's two-day maturity window.
+
 ## 1.5.1
 
 - `typescript-eslint` moves to 8.68.0 and the Next.js development surface moves to 16.3.3 after

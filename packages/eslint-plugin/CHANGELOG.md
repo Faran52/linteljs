@@ -6,6 +6,13 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 
+## 1.5.2
+
+`comment-delimiter` no longer merges a run of `//` lines into a `/** */` block when one of them
+carries a literal `*/`: merging closed the block early and spilled the rest of the comment as code.
+The corpus audit's own comment-loss check moves with it, comparing normalized content lines rather
+than whole comment values, so a legitimate merge or split no longer reads as every comment vanishing.
+
 ## 1.5.1
 
 No rule changes. The three versions move together, so this carries the pnpm 12 generated-project

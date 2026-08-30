@@ -9,7 +9,7 @@ that package.
 ## Operating contract
 
 - `package.json` is canonical for the package manager, engines, dependencies and scripts. Read it
-  rather than assuming a version. pnpm 12 only, Node 24.
+  rather than assuming a version. pnpm 12 only, Node 26.
 - A dependency more than one package uses reads `catalog:`, and its one version lives in the
   `catalog:` block of `pnpm-workspace.yaml`. Bump it there, not in a `package.json`. `pnpm pack`
   rewrites the protocol to a real range, so a published tarball never carries `catalog:`.

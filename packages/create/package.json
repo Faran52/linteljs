@@ -1,6 +1,6 @@
 {
   "name": "@linteljs/create",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Scaffold a project with the lintel standard: ESLint layers, tsconfig, git hooks and agent rules.",
   "license": "MIT",
   "author": "Faran Ali",

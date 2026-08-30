@@ -6,6 +6,11 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.2
+
+No rule changes. The three versions move together, so this carries generated-project floors moving
+with the workspace: pnpm 12.1.0, Node >=26.8.1, and `@types/node` 26.4.0.
+
 ## 1.5.1
 
 - Generated pnpm projects pin pnpm 12.0.0, matching the workspace version used to build and test them.
