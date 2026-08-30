@@ -129,6 +129,9 @@ jobs:
 
       - run: pnpm --filter @linteljs/eslint-plugin audit:ignores
 
+      # SonarSource's own analyser for JS/TS, run locally since this project has no SonarQube server or token.
+      - run: pnpm --filter @linteljs/eslint-plugin audit:security
+
       # Every major in `peerDependencies`, not the pinned devDependency alone. The support table in
       # the plugin's README is a claim until this runs.
       - run: pnpm --filter @linteljs/eslint-plugin compat

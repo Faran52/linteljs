@@ -11,13 +11,14 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"packages/*/src/**/*.css\" --allow-empty-input",
+    "lint:types": "node scripts/lintTypes.ts",
     "typecheck": "tsc --noEmit -p tsconfig.root.json && pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "build": "pnpm -r build",
-    "check": "pnpm lint && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build",
-    "e2e:pack": "node -e \"require('node:fs').rmSync('.e2e',{recursive:true,force:true})\" && pnpm -r pack --pack-destination .e2e",
+    "check": "pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build",
+    "e2e:pack": "node scripts/cleanE2ePack.ts && pnpm -r pack --pack-destination .e2e",
     "prepare": "husky"
   },
   "devDependencies": {
