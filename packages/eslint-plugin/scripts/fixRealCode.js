@@ -365,10 +365,29 @@ const multisetDiff = (before, after) => {
   return missingFrom(comparable(before), comparable(after), describe, 'token');
 };
 
+// A block's continuation lines carry a leading `*` that is delimiter, not content; a line comment carries none.
+// Without stripping it, `comment-delimiter` merging three `//` lines into one `/** */` block (or splitting one back
+// out) reads as every old comment vanishing and a new one appearing, because the check below used to key on a whole
+// node's `value` rather than on what it says.
+const contentLinesOf = (comments) => {
+  return comments.flatMap((comment) => {
+    return comment.value
+      .split('\n')
+      .map((line) => {
+        const trimmed = line.trim();
+
+        return comment.type === 'Block' && trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
+      })
+      .filter((line) => {
+        return line !== '';
+      });
+  });
+};
+
 const commentDiff = (before, after) => {
-  return missingFrom(before, after, (comment) => {
-    return `${comment.type} ${JSON.stringify(comment.value)}`;
-  }, 'comment');
+  return missingFrom(contentLinesOf(before), contentLinesOf(after), (line) => {
+    return JSON.stringify(line);
+  }, 'comment line');
 };
 
 // A note cannot be written against an opening bracket, so one that follows a
