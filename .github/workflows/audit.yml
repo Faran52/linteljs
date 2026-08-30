@@ -43,9 +43,9 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # Pinned to the same patch as every other workflow: a floating `24` resolved below the `>=24.19.0` this
+          # Pinned to the same patch as every other workflow: a floating `26` resolved below the `>=26.8.1` this
           # workspace declares, so the audit measured the rules on a Node the project says it does not support.
-          node-version: 24.19.0
+          node-version: 26.8.1
           cache: pnpm
 
       # The audits import `src/rules/index.ts` directly, so they need the dev

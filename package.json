@@ -2,10 +2,10 @@
   "name": "linteljs-workspace",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.0.0",
+  "packageManager": "pnpm@12.1.0",
   "engines": {
-    "node": ">=24.19.0",
-    "pnpm": ">=12.0.0"
+    "node": ">=26.8.1",
+    "pnpm": ">=12.1.0"
   },
   "scripts": {
     "lint": "eslint .",
@@ -28,7 +28,7 @@
     "eslint": "catalog:",
     "husky": "^9.1.7",
     "jiti": "^2.7.0",
-    "lint-staged": "^17.3.0",
+    "lint-staged": "^17.4.1",
     "stylelint": "^17.14.1",
     "stylelint-config-recess-order": "^7.8.0",
     "stylelint-config-standard": "^40.0.0",

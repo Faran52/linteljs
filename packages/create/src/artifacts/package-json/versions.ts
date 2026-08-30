@@ -44,7 +44,7 @@ export const VERSIONS: Record<string, string> = {
   '@tailwindcss/postcss': '^4.3.3',
   '@tailwindcss/vite': '^4.3.3',
   '@tanstack/angular-query-experimental': '^5.101.4',
-  '@tanstack/eslint-plugin-query': '^5.102.3',
+  '@tanstack/eslint-plugin-query': '^5.102.8',
   '@tanstack/react-query': '^5.101.4',
   '@tanstack/solid-query': '^5.101.4',
   // The svelte binding is the one that has moved to 6; the rest of the family is still on 5.
@@ -57,7 +57,7 @@ export const VERSIONS: Record<string, string> = {
   '@testing-library/svelte': '^5.4.2',
   '@types/chrome': '^0.2.5',
   '@types/firefox-webext-browser': '^143.0.0',
-  '@types/node': '^24.13.3',
+  '@types/node': '^26.4.0',
   '@types/react': '^19.2.18',
   '@types/react-dom': '^19.2.4',
   '@vitejs/plugin-react': '^6.0.5',
@@ -81,7 +81,7 @@ export const VERSIONS: Record<string, string> = {
   'eslint-plugin-astro': '^3.1.0',
   'eslint-plugin-jsx-a11y': '^6.10.2',
   'eslint-plugin-better-tailwindcss': '^4.7.0',
-  'eslint-plugin-solid': '^0.16.0',
+  'eslint-plugin-solid': '^0.16.1',
   'eslint-plugin-svelte': '^3.23.0',
   '@vitejs/plugin-vue': '^6.0.8',
   'eslint-plugin-vue': '^10.10.0',
@@ -114,7 +114,7 @@ export const VERSIONS: Record<string, string> = {
   'typescript': '~6.0.3',
   'vite-plugin-solid': '^2.11.14',
   'vitest': '^4.1.11',
-  'vue': '^3.5.41',
+  'vue': '^3.5.42',
   'vue-eslint-parser': '^10.4.1',
   'vue-tsc': '^3.3.9',
   // Runs, lints and packages a Firefox extension; it is not a bundler, which crxjs still is.
@@ -125,10 +125,10 @@ export const VERSIONS: Record<string, string> = {
 
 // Written into `packageManager`, pinning the manager itself: an exact version, since corepack rejects a range.
 export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
-  pnpm: '12.0.0',
+  pnpm: '12.1.0',
   npm: '12.0.2',
   yarn: '4.18.0',
   bun: '1.3.14',
 };
 
-export const NODE_ENGINE = '>=24.19.0';
+export const NODE_ENGINE = '>=26.8.1';

@@ -120,7 +120,7 @@ jobs:
       # writes that file for itself, immediately before it is used.
       - uses: actions/setup-node@v7
         with:
-          node-version: 24.19.0
+          node-version: 26.8.1
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -141,7 +141,7 @@ jobs:
       # .npmrc naming a token that does not exist. Same file, same contents, four steps later.
       - uses: actions/setup-node@v7
         with:
-          node-version: 24.19.0
+          node-version: 26.8.1
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
