@@ -50,6 +50,8 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     },
     // A short block with code after it on the same line is a trailing note, and moving it would move the code.
     '/** short */ const value = 1;',
+    // Merged into a block, this line's `*/` would close it early and spill the rest as code.
+    '// alpha\n// bravo `*/` charlie\n// delta\nexport const value = 1;\n',
   ],
   invalid: [
     {

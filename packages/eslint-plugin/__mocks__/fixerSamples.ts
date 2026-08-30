@@ -213,6 +213,12 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'two slash lines stay separate',
     code: '// alpha\n// bravo\nconst value = 1;\n',
   },
+  // A three-line run merges into one `/** */` block; if a line already carries a literal `*/`, merging it would
+  // close that block early and spill the rest of the run as code.
+  {
+    name: 'run carrying a literal close-block sequence stays slash lines',
+    code: '// alpha\n// bravo `*/` charlie\n// delta\nconst value = 1;\n',
+  },
   {
     name: 'directive run stays machine-addressed',
     // No `eslint-disable` here: ESLint's own fix pass deletes a disable directive that suppresses nothing,

@@ -122,6 +122,14 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
     return;
   }
 
+  // A `//` line can hold `*/` as plain text; a `/** */` block cannot, since that sequence closes it wherever it
+  // falls. Merging a run that carries one would truncate the block early and spill the rest as code.
+  if (run.some((entry) => {
+    return entry.text.includes('*/');
+  })) {
+    return;
+  }
+
   context.report({
     node: first.comment,
     messageId: 'useJsdoc',
