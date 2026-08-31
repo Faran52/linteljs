@@ -6,6 +6,14 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.3
+
+The emitted `vitest.config.ts` passes `execArgv: ['--no-experimental-webstorage']`. Node 25+ exposes
+a native `localStorage` that throws without `--localstorage-file`, and happy-dom no longer replaces
+it, so a storage-backed component test read `undefined` on every generated project. React Native is
+unaffected: its platform projects run `environment: 'node'`.
+See [capricorn86/happy-dom#1950](https://github.com/capricorn86/happy-dom/issues/1950).
+
 ## 1.5.2
 
 No rule changes. The three versions move together, so this carries generated-project floors moving

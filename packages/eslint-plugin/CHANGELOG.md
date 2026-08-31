@@ -6,6 +6,10 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 
+## 1.5.3
+
+No rule changes. The version moves with `@linteljs/create`.
+
 ## 1.5.2
 
 `comment-delimiter` no longer merges a run of `//` lines into a `/** */` block when one of them

@@ -1,6 +1,6 @@
 {
   "name": "@linteljs/eslint-config",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Shareable ESLint flat-config layers: one base, one per framework, composed by @linteljs/create.",
   "homepage": "https://github.com/Faran52/linteljs#readme",
   "license": "MIT",

@@ -6,6 +6,10 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.3
+
+No config changes. The version moves with `@linteljs/create`.
+
 ## 1.5.2
 
 - `@tanstack/eslint-plugin-query` moves to 5.102.8, `eslint-plugin-solid` to 0.16.1 and `vue` to
