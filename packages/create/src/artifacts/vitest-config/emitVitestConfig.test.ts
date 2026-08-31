@@ -56,6 +56,19 @@ describe('emitVitestConfig', () => {
   });
 
   /**
+   * happy-dom no longer shims `localStorage` over Node 25+'s native one, which throws unconfigured;
+   * disabling the native module hands the global back. React Native runs on `environment: 'node'`
+   * and never touches it, so its platform projects stay as they were.
+   */
+  it('disables native web storage for every happy-dom target', () => {
+    for (const target of ['react', 'next', 'vue', 'angular', 'svelte', 'solid', 'webextension'] as const) {
+      expect(configFor({ target })).toContain("execArgv: ['--no-experimental-webstorage'],");
+    }
+
+    expect(configFor({ target: 'react-native' })).not.toContain('execArgv');
+  });
+
+  /**
    * Svelte and Solid ship a server build and a client build behind export conditions; without the condition vitest
    * resolves the server half and the first component rendered throws.
    * Written per target, not as one loop, so a target added without conditions has to be listed here on purpose.

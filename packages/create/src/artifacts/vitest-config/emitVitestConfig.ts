@@ -64,11 +64,20 @@ ${indent}  thresholds: { lines: 100, branches: 100, functions: 100, statements: 
 ${indent}},`;
 };
 
+/*
+ * `execArgv`: Node 25+ exposes a native `localStorage` that throws without
+ * `--localstorage-file`, and happy-dom stopped replacing it, so a storage-backed
+ * component test reads `undefined`. Turning the native one off hands the global
+ * back to happy-dom's shim. https://github.com/capricorn86/happy-dom/issues/1950
+ * Unconditional: `NODE_ENGINE` is `>=26.8.1`, so every generated project is past
+ * the version where this matters.
+ */
 const testBlock = (include: string, exclude: string[], setup: string): string => {
   return `  test: {
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./${setup}'],
+    execArgv: ['--no-experimental-webstorage'],
 ${coverageBlock(include, exclude, '    ')}
   },`;
 };
