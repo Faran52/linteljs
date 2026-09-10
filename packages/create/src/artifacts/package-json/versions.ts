@@ -11,7 +11,7 @@ import type { PackageManager } from '../../model/answers/answers';
  * back out of the table is an index lookup whose `undefined` arm no answer can reach. One constant, used in both
  * places, keeps this file the only one a bump touches without inventing a dead branch to satisfy the type.
  */
-export const ESLINT_RANGE = '^10.9.1';
+export const ESLINT_RANGE = '^10.10.0';
 
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest: it runs the real Angular compiler over the test graph.
@@ -27,7 +27,7 @@ export const VERSIONS: Record<string, string> = {
   '@commitlint/config-conventional': '^21.2.2',
   // Reads manifest.json and builds every surface it names: what makes an extension build out of a vanilla one.
   '@crxjs/vite-plugin': '^2.7.1',
-  '@eslint-react/eslint-plugin': '^5.18.6',
+  '@eslint-react/eslint-plugin': '^5.19.0',
   '@html-eslint/eslint-plugin': '^0.65.0',
   '@html-eslint/parser': '^0.65.0',
   // NgRx stable (21.x) peers on Angular 21 while `ng new` writes Angular 22; the rc peers `^22.0.0`, and the caret
@@ -57,7 +57,7 @@ export const VERSIONS: Record<string, string> = {
   '@testing-library/svelte': '^5.4.2',
   '@types/chrome': '^0.2.5',
   '@types/firefox-webext-browser': '^143.0.0',
-  '@types/node': '^26.4.0',
+  '@types/node': '^26.5.0',
   '@types/react': '^19.2.18',
   '@types/react-dom': '^19.2.4',
   '@vitejs/plugin-react': '^6.0.5',
@@ -67,14 +67,14 @@ export const VERSIONS: Record<string, string> = {
   '@vitest/coverage-v8': '^4.1.11',
   '@vitest/eslint-plugin': '^1.6.27',
   '@vue/test-utils': '^2.4.11',
-  'angular-eslint': '^22.1.0',
+  'angular-eslint': '^22.5.0',
   'astro': '^7.2.1',
   'astro-eslint-parser': '^3.1.0',
   'babel-plugin-react-compiler': '^1.0.0',
   'eslint': ESLINT_RANGE,
   // The plugin, not `eslint-config-next`: the config bundles three plugins the layers already cover with newer ones.
   // See `frameworks/next.ts`.
-  '@next/eslint-plugin-next': '^16.3.3',
+  '@next/eslint-plugin-next': '^16.3.4',
   // The sibling package: tracks its own version, and versions.test.ts fails the moment they diverge.
   '@linteljs/eslint-config': '^1.5.2',
   'eslint-plugin-react-hooks': '^7.1.1',
@@ -84,7 +84,7 @@ export const VERSIONS: Record<string, string> = {
   'eslint-plugin-solid': '^0.16.1',
   'eslint-plugin-svelte': '^3.23.0',
   '@vitejs/plugin-vue': '^6.0.8',
-  'eslint-plugin-vue': '^10.10.0',
+  'eslint-plugin-vue': '^10.11.0',
   'eslint-plugin-vuejs-accessibility': '^2.6.0',
   'happy-dom': '^20.11.2',
   'husky': '^9.1.7',
@@ -100,7 +100,7 @@ export const VERSIONS: Record<string, string> = {
   'stylelint-config-recess-order': '^7.8.0',
   'stylelint-config-standard': '^40.0.0',
   'stylelint-config-tailwindcss': '^1.0.1',
-  'svelte': '^5.56.10',
+  'svelte': '^5.57.0',
   'svelte-check': '^4.7.5',
   'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',
@@ -125,10 +125,10 @@ export const VERSIONS: Record<string, string> = {
 
 // Written into `packageManager`, pinning the manager itself: an exact version, since corepack rejects a range.
 export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
-  pnpm: '12.1.0',
+  pnpm: '12.4.1',
   npm: '12.0.2',
   yarn: '4.18.0',
   bun: '1.3.14',
 };
 
-export const NODE_ENGINE = '>=26.8.1';
+export const NODE_ENGINE = '>=26.8.2';

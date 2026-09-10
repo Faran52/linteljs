@@ -48,7 +48,7 @@ export interface Prompter {
   text: (opts: TextOptions) => Promise<string | symbol>;
   // Every one of the three above resolves to a cancel symbol instead of its value when a person hits Ctrl+C
   // mid-questionnaire; `isCancel` is how `unwrap` tells that apart from a real answer.
-  isCancel: typeof isCancel;
+  isCancel: (value: string | readonly string[] | symbol) => value is symbol;
 }
 
 export interface AskInput {
@@ -218,7 +218,7 @@ export const NOTHING_ANSWERED_MESSAGE
  */
 export const RUN_CANCELLED_MESSAGE = 'Cancelled: nothing was written.';
 
-const unwrap = <T>(prompter: Prompter, value: T | symbol): T => {
+const unwrap = <T extends string | readonly string[]>(prompter: Prompter, value: T | symbol): T => {
   if (prompter.isCancel(value)) {
     throw Object.assign(new Error(RUN_CANCELLED_MESSAGE), { code: 'CANCELLED' });
   }

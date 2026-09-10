@@ -53,7 +53,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=26.8.1"
+    "node": ">=26.8.2"
   },
   "scripts": {
     "build": "tsdown",
