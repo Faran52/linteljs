@@ -292,9 +292,11 @@ describe('the project name question', () => {
           throw new TypeError('the project name question must validate with a function');
         }
 
+        const r0 = validate(undefined);
+        const r1 = validate('My-App');
         seen.push(
-          String(validate(undefined) ?? ''),
-          String(validate('My-App') ?? ''),
+          typeof r0 === 'string' ? r0 : '',
+          typeof r1 === 'string' ? r1 : '',
           validate('my-app') === undefined ? undefined : 'unexpected',
         );
 
