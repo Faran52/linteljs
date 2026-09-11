@@ -27,7 +27,7 @@ import {
   type Prompter,
 } from '../prompts/prompts';
 import { applySync, planSync } from '../sync/sync';
-import { entryExists } from '../utils/fsUtils';
+import { entryExists, isCommandAvailable } from '../utils/fsUtils';
 
 export interface CliOptions {
   command: 'create' | 'sync';
@@ -43,6 +43,13 @@ export interface CliOptions {
   force: boolean;
   help: boolean;
 }
+
+const PM_COMMANDS: Record<string, string> = {
+  pnpm: 'pnpm',
+  npm: 'npm',
+  yarn: 'yarn',
+  bun: 'bun',
+};
 
 // Everything the user asked to see goes to stdout via `stdout.write`, not `console.log`/`console.warn` (which is stderr
 // and satisfies `no-console`); `console.error` stays for failures.
@@ -256,6 +263,53 @@ const argumentError = (options: CliOptions): string | undefined => {
   return projectNameError(options);
 };
 
+// Install the package manager via corepack if it is not already on PATH.
+const ensurePackageManager = async (pm: string): Promise<void> => {
+  const command = PM_COMMANDS[pm];
+
+  if (command === undefined || isCommandAvailable(command)) {
+    return;
+  }
+
+  say(`Installing ${pm} via corepack...`);
+
+  const { spawnSync } = await import('node:child_process');
+
+  const corepackAvailable = isCommandAvailable('corepack');
+
+  if (!corepackAvailable) {
+    say('corepack not found; installing it globally...');
+    const installCorepack = spawnSync('npm', ['install', '-g', 'corepack'], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
+
+    if (installCorepack.status !== 0) {
+      throw new Error(
+        `npm install -g corepack failed: ${installCorepack.stdout}${installCorepack.stderr}`,
+      );
+    }
+  }
+
+  const enable = spawnSync('corepack', ['enable'], {
+    encoding: 'utf8',
+    stdio: 'pipe',
+  });
+
+  if (enable.status !== 0) {
+    throw new Error(`corepack enable failed: ${enable.stdout}${enable.stderr}`);
+  }
+
+  const install = spawnSync('corepack', ['install', '-g', pm], {
+    encoding: 'utf8',
+    stdio: 'pipe',
+  });
+
+  if (install.status !== 0) {
+    throw new Error(`corepack install -g ${pm} failed: ${install.stdout}${install.stderr}`);
+  }
+};
+
 // Returns the exit code rather than calling `process.exit`, which would drop queued stderr writes;
 // `bin/create-linteljs.js` assigns it to `process.exitCode`.
 export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
@@ -302,6 +356,8 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
 
       return 0;
     }
+
+    await ensurePackageManager(answers.packageManager);
 
     await runPipeline({
       // With --skip-scaffold there's no name argument and none was asked for, so the directory's existing name is
