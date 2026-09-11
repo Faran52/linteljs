@@ -97,7 +97,14 @@ export const scaffoldCommand = (
   packageManager: PackageManager,
   spec: ScaffoldSpec,
 ): CommandLine => {
-  return [...SCAFFOLD_COMMANDS[packageManager][spec.kind], ...spec.args];
+  const base = SCAFFOLD_COMMANDS[packageManager][spec.kind];
+  const args = [...base, ...spec.args];
+  if (packageManager === 'npm' && spec.kind === 'create') {
+    // `npm create` doesn't forward flags to the template without `--`; the project name is always
+    // the second element of `spec.args`, so it sits at `base.length + 1` in the combined array.
+    args.splice(base.length + 2, 0, '--');
+  }
+  return args as CommandLine;
 };
 
 const write = async (options: PipelineOptions, relative: string, text: string): Promise<void> => {

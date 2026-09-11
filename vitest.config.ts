@@ -7,7 +7,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/types.ts'],
+      exclude: ['**/*.test.ts', '**/types.ts', '**/e2e/helpers.ts'],
       // A gate, not an aspiration: a number that has to come down is a regression, not a new
       // baseline. One key per package, on purpose. DESIGN.md: Coverage thresholds
       thresholds: {

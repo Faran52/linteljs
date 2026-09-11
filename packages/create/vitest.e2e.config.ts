@@ -7,6 +7,9 @@ import { defineConfig } from 'vitest/config';
  *
  * No `testTimeout` here: the suite sets its own per-case timeout, because the number that
  * matters is per target rather than per file.
+ *
+ * Sharding: Use `--shard <index>/<count>` to parallelize across CI runners. Each shard runs
+ * a subset of the test files. Example: `vitest run --config vitest.e2e.config.ts --shard 1/4`
  */
 export default defineConfig({
   resolve: {
@@ -15,8 +18,8 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['src/**/*.e2e.test.ts'],
-    // One real scaffold and install per case. Running them at once thrashes the pnpm store and
-    // interleaves their output into something unreadable when one fails.
+    // Shards run in separate processes, each with its own store access. Within a shard,
+    // tests run sequentially to avoid thrashing the pnpm store and interleaving output.
     fileParallelism: false,
     hookTimeout: 120_000,
   },

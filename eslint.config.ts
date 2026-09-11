@@ -100,6 +100,19 @@ const config = [
       'sonarjs/no-empty-test-file': 'off',
     },
   },
+
+  /**
+   * `vitest/expect-expect` cannot see assertions inside `it.each(...)(label, fn)` callbacks.
+   * The end-to-end suite delegates assertions into `runE2eCase`, which the rule cannot trace.
+   * DESIGN.md: `@linteljs/workspace/rule-tester`
+   */
+  {
+    name: '@linteljs/workspace/e2e-test',
+    files: ['packages/create/src/run/pipeline/e2e/*.e2e.test.ts'],
+    rules: {
+      'vitest/expect-expect': 'off',
+    },
+  },
 ];
 
 export default config;
