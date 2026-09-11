@@ -320,7 +320,7 @@ const askMulti = async <T extends string>(
 };
 
 const askAgents = async (prompter: Prompter): Promise<Answers['agents']> => {
-  return askMulti(prompter, 'AI agents', AGENTS, ['claude-code'], true, (agent) => {
+  return askMulti(prompter, 'AI agents', AGENTS, [], false, (agent) => {
     return AGENT_DESCRIPTIONS[agent];
   });
 };

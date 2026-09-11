@@ -513,7 +513,6 @@ describe('parseLintelConfig', () => {
       /typeSafety must be one of: strict, relaxed/,
     ],
     ['a non-array agent list', config({ agents: 'codex' }), /agents must be an array/],
-    ['an empty agent list', config({ agents: [] }), /agents must contain at least 1 value/],
     ['an unknown agent', config({ agents: ['cursor'] }), /agents must be one of: claude-code, codex/],
     ['a duplicate agent', config({ agents: ['codex', 'codex'] }), /agents must not contain duplicate values/],
     ['a non-array plugin list', config({ plugins: 'ponytail' }), /plugins must be an array/],

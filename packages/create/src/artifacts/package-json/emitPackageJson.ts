@@ -28,6 +28,8 @@ export interface PackageJson {
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  overrides?: Record<string, string>;
+  resolutions?: Record<string, string>;
 }
 
 // Dropped from the patched `package.json`: @linteljs/eslint-config supersedes every one, the first three as @stylistic.
