@@ -826,6 +826,24 @@ describe('scaffoldCommand', () => {
     expect(scaffoldCommand('bun', svelte)[0]).toBe('bunx');
   });
 
+  it('inserts -- separator for npm create to forward flags', () => {
+    const react = targetFor(answersFor({ target: 'react' })).scaffold('demo-app', answersFor({ target: 'react' }));
+    const npm = scaffoldCommand('npm', react);
+
+    expect(npm).toEqual([
+      'npm', 'create', 'vite', 'demo-app', '--',
+      '--template', 'react-ts', '--eslint', '--no-interactive', '--no-immediate',
+    ]);
+  });
+
+  it('does not insert -- separator for pnpm, yarn, and bun create', () => {
+    const react = targetFor(answersFor({ target: 'react' })).scaffold('demo-app', answersFor({ target: 'react' }));
+
+    expect(scaffoldCommand('pnpm', react)).not.toContain('--');
+    expect(scaffoldCommand('yarn', react)).not.toContain('--');
+    expect(scaffoldCommand('bun', react)).not.toContain('--');
+  });
+
   // Next sets Tailwind up at generate time, so it's the one scaffolder flag that has to follow the answer; hardcoding
   // `--no-tailwind` installs the library with none of the wiring.
   it('passes the tailwind answer through to the one generator that acts on it', () => {
