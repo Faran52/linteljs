@@ -142,7 +142,7 @@ export const svelte: TargetBuilder = (answers) => {
     typecheck: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings',
     prepare: 'svelte-kit sync',
     testDevDependencies: ['@testing-library/svelte'],
-    devDependencies: ['eslint-plugin-svelte', 'svelte-eslint-parser', 'svelte-check'],
+    devDependencies: ['eslint-plugin-svelte', 'svelte-eslint-parser', 'svelte-check', 'vite'],
     allowBuilds: [],
     stateRules: ['svelte-reactivity.md'],
   };

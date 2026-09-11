@@ -23,6 +23,8 @@ export const VERSIONS: Record<string, string> = {
   '@astrojs/svelte': '^9.0.1',
   '@astrojs/vue': '^7.0.2',
   '@babel/core': '^8.0.1',
+  // The Vite runtime that powers the vite.config.ts and provides vite/client type definitions.
+  'vite': '^8.2.2',
   '@commitlint/cli': '^21.2.2',
   '@commitlint/config-conventional': '^21.2.2',
   // Reads manifest.json and builds every surface it names: what makes an extension build out of a vanilla one.
