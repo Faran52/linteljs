@@ -51,7 +51,7 @@ describe('ask', () => {
         libraries: ['zod', 'tailwind'],
         store: false,
         typeSafety: 'relaxed',
-        agents: ['claude-code'],
+        agents: [],
         plugins: [...PLUGINS],
       },
     });
@@ -158,7 +158,10 @@ describe('ask', () => {
 
     expect(result).toEqual({
       name: 'demo-app',
-      answers: DEFAULT_ANSWERS,
+      answers: {
+        ...DEFAULT_ANSWERS,
+        agents: [],
+      },
     });
   });
 

@@ -99,7 +99,7 @@ const arrayChoices = <T extends string>(
     return choice(item, field, allowed);
   });
 
-  // `agents` is the only field with a floor and the floor is one, so there is no plural form to spell.
+  // `agents` has no floor, so there is no plural form to spell.
   if (choices.length < minimum) {
     throw new Error(`${field} must contain at least ${String(minimum)} value`);
   }
@@ -269,7 +269,7 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
     libraries: arrayChoices(parsed.libraries, 'libraries', LIBRARIES),
     store,
     typeSafety: choice(parsed.typeSafety, 'typeSafety', TYPE_SAFETY_CHOICES),
-    agents: arrayChoices(parsed.agents, 'agents', AGENTS, 1),
+    agents: arrayChoices(parsed.agents, 'agents', AGENTS),
     ...(parsed.resolveConditions === undefined
       ? {}
       : { resolveConditions: conditionNames(parsed.resolveConditions) }),
