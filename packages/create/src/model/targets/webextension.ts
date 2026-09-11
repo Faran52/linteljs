@@ -232,6 +232,7 @@ export const webextension: TargetBuilder = (answers) => {
     ...(hosted === undefined ? {} : { dependencies: hosted.dependencies }),
     devDependencies: [
       '@crxjs/vite-plugin',
+      'vite',
       ...browser.devDependencies,
       ...hosted?.devDependencies ?? [],
     ],

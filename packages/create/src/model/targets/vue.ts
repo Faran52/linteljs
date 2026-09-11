@@ -101,7 +101,7 @@ export const vue: TargetRecord = {
   // Declared rather than inherited from `create-vue --vitest`: `testing.vue.md` names it as the rendering library, and
   // a rule file may not depend on another generator's choice holding.
   testDevDependencies: ['@vue/test-utils'],
-  devDependencies: ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility', 'vue-eslint-parser', 'vue-tsc'],
+  devDependencies: ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility', 'vue-eslint-parser', 'vue-tsc', 'vite'],
   allowBuilds: [],
   stateRules: ['vue-reactivity.md'],
 };

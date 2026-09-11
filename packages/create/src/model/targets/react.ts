@@ -43,11 +43,10 @@ export const react: TargetRecord = {
   devDependencies: [
     ...COMMON_REACT_PLUGINS,
     '@vitejs/plugin-react-swc',
-    // Peers of the compiler's Babel transport; not optional extras. No @types/babel__core: Babel 8 bundles its
-    // own declarations, which is what `@rolldown/plugin-babel`'s types resolve through.
     '@rolldown/plugin-babel',
     '@babel/core',
     'babel-plugin-react-compiler',
+    'vite',
   ],
   // `@vitejs/plugin-react-swc` pulls `@swc/core`, a native binary whose install script pnpm refuses to run unless the
   // project says so: without this the very first `pnpm install` aborts with ERR_PNPM_IGNORED_BUILDS.
