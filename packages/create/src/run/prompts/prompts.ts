@@ -422,9 +422,11 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
     },
   );
   const agents = await askAgents(prompter);
-  const plugins = await askMulti(prompter, 'AI plugins', PLUGINS, PLUGINS, false, (choice) => {
-    return PLUGIN_DESCRIPTIONS[choice];
-  });
+  const plugins = agents.length > 0
+    ? await askMulti(prompter, 'AI plugins', PLUGINS, [], false, (choice) => {
+        return PLUGIN_DESCRIPTIONS[choice];
+      })
+    : [];
 
   return {
     name,
