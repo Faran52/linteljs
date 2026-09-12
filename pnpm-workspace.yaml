@@ -8,7 +8,6 @@ catalog:
   tsdown: ^0.22.14
   typescript: ~6.0.3
   vitest: ^4.1.11
-  vite: ^8.2.2
 
 peerDependencyRules:
   allowedVersions:

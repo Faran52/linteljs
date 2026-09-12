@@ -124,7 +124,7 @@ describe('patchPackageJson', () => {
     const patched = patchPackageJson(SCAFFOLDED, answersFor({}));
 
     expect(patched.dependencies?.['react']).toBe('^19.2.0');
-    expect(patched.devDependencies?.['vite']).toBe('^7.2.0');
+    expect(patched.devDependencies?.['vite']).toBe('^8.2.2');
     expect(patched.scripts?.['dev']).toBe('vite');
     expect(patched.name).toBe('demo-app');
     expect(patched.private).toBe(true);
