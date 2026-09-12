@@ -9,7 +9,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS, PLUGINS } from '../../model/answers/answers';
+import { DEFAULT_ANSWERS } from '../../model/answers/answers';
 
 import {
   ask,
@@ -52,7 +52,7 @@ describe('ask', () => {
         store: false,
         typeSafety: 'relaxed',
         agents: [],
-        plugins: [...PLUGINS],
+        plugins: [],
       },
     });
   });
@@ -161,6 +161,7 @@ describe('ask', () => {
       answers: {
         ...DEFAULT_ANSWERS,
         agents: [],
+        plugins: [],
       },
     });
   });
@@ -205,6 +206,16 @@ describe('ask', () => {
       'Libraries': ['Zod', 'TanStack Query', 'Tailwind CSS'],
       'Type safety': ['Strict', 'Relaxed'],
       'AI agents': ['Claude Code', 'Codex'],
+    });
+  });
+
+  it('offers AI plugins label only when agents are selected', async () => {
+    const { recorded } = await askWith([
+      'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, ['codex'],
+      undefined,
+    ]);
+
+    expect(recorded.labels).toMatchObject({
       'AI plugins': ['Ponytail', 'Context7', 'Frontend Design'],
     });
   });
