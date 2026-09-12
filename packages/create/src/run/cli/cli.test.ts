@@ -947,3 +947,17 @@ describe('main: an unexpected failure', () => {
     expect(errors.join('\n')).toContain('JSON');
   });
 });
+
+describe('ensurePackageManager', () => {
+  it('does nothing when the package manager is already available', async () => {
+    const spy = vi.spyOn(await import('../utils/fsUtils'), 'isCommandAvailable').mockReturnValue(true);
+
+    const { main } = await import('./cli');
+    const code = await main(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(spy).toHaveBeenCalledWith('pnpm');
+
+    spy.mockRestore();
+  });
+});
