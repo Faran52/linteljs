@@ -155,5 +155,9 @@ export const buildArtifacts = (
     });
   }
 
+  if (answers.packageManager === 'npm') {
+    artifacts.push(copied('.npmrc', 'npm/npmrc'));
+  }
+
   return artifacts;
 };
