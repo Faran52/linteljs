@@ -11,6 +11,10 @@ when a version's change lives in a sibling it is described there instead:
 No rule changes. The three versions move together, so this carries generated-project floors moving
 with the workspace: pnpm 12.1.0, Node >=26.8.1, and `@types/node` 26.4.0.
 
+- `stylelint-order` is now an explicit dev dependency in generated projects. `stylelint-config-recess-order`
+  declares it as a peer dependency, so pnpm does not install it automatically; without it `stylelint`
+  fails with `Could not find "stylelint-order"` at runtime.
+
 ## 1.5.1
 
 - Generated pnpm projects pin pnpm 12.0.0, matching the workspace version used to build and test them.

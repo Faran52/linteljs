@@ -67,6 +67,7 @@ const SHARED_DEV_DEPENDENCIES = [
   'stylelint',
   'stylelint-config-recess-order',
   'stylelint-config-standard',
+  'stylelint-order',
 ];
 
 // Optional peer: omitting @vitest/eslint-plugin fails the first `eslint .` on ERR_MODULE_NOT_FOUND, not install.
