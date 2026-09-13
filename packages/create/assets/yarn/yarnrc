@@ -1,0 +1,3 @@
+enableScripts: true
+enableGlobalCache: true
+nodeLinker: node-modules

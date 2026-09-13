@@ -159,5 +159,13 @@ export const buildArtifacts = (
     artifacts.push(copied('.npmrc', 'npm/npmrc'));
   }
 
+  if (answers.packageManager === 'yarn') {
+    artifacts.push(copied('.yarnrc.yml', 'yarn/yarnrc'));
+  }
+
+  if (answers.packageManager === 'bun') {
+    artifacts.push(copied('bunfig.toml', 'bun/bunfig'));
+  }
+
   return artifacts;
 };
