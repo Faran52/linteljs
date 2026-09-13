@@ -1,6 +1,6 @@
 {
   "name": "@linteljs/eslint-config",
-  "version": "1.5.2",
+  "version": "1.5.4",
   "description": "Shareable ESLint flat-config layers: one base, one per framework, composed by @linteljs/create.",
   "homepage": "https://github.com/Faran52/linteljs#readme",
   "license": "MIT",
@@ -140,7 +140,7 @@
     "@eslint-react/eslint-plugin": "^5.19.0",
     "@html-eslint/eslint-plugin": "^0.65.0",
     "@html-eslint/parser": "^0.65.0",
-    "@next/eslint-plugin-next": "^16.3.4",
+    "@next/eslint-plugin-next": "^16.3.5",
     "@tanstack/eslint-plugin-query": "^5.102.8",
     "@types/node": "catalog:",
     "@vitest/eslint-plugin": "^1.6.27",

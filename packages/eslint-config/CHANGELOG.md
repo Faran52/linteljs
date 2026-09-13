@@ -6,6 +6,18 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.4
+
+- `@tanstack/eslint-plugin-query` moves to 5.102.8, `eslint-plugin-solid` to 0.16.1 and `vue` to
+  3.5.42, after all three cleared the workspace's two-day maturity window.
+- `typescript-eslint` moves to 8.70.0, `@next/eslint-plugin-next` to 16.3.5, `angular-eslint`
+  to 22.5.0, `eslint-plugin-vue` to 10.11.0, and `eslint-config-recess-order` dependency
+  `stylelint-config-standard` to ^40.0.0.
+
+## 1.5.3
+
+No config changes. The version moves with `@linteljs/create`.
+
 ## 1.5.2
 
 - `@tanstack/eslint-plugin-query` moves to 5.102.8, `eslint-plugin-solid` to 0.16.1 and `vue` to

@@ -76,9 +76,9 @@ export const VERSIONS: Record<string, string> = {
   'eslint': ESLINT_RANGE,
   // The plugin, not `eslint-config-next`: the config bundles three plugins the layers already cover with newer ones.
   // See `frameworks/next.ts`.
-  '@next/eslint-plugin-next': '^16.3.4',
+  '@next/eslint-plugin-next': '^16.3.5',
   // The sibling package: tracks its own version, and versions.test.ts fails the moment they diverge.
-  '@linteljs/eslint-config': '^1.5.2',
+  '@linteljs/eslint-config': '^1.5.4',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.1.0',
   'eslint-plugin-jsx-a11y': '^6.10.2',
