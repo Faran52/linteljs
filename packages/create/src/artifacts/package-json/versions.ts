@@ -102,6 +102,9 @@ export const VERSIONS: Record<string, string> = {
   'stylelint-config-recess-order': '^7.8.0',
   'stylelint-config-standard': '^40.0.0',
   'stylelint-config-tailwindcss': '^1.0.1',
+  // stylelint-config-recess-order peers on stylelint-order (^7 || ^8); it must be explicit so pnpm
+  // installs it rather than leaving lint to fail at runtime on ERR_MODULE_NOT_FOUND.
+  'stylelint-order': '^8.1.1',
   'svelte': '^5.57.0',
   'svelte-check': '^4.7.5',
   'svelte-eslint-parser': '^1.8.1',
