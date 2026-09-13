@@ -230,6 +230,15 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       node: NODE_ENGINE,
       [answers.packageManager]: `>=${managerVersion}`,
     },
+    ...(answers.packageManager === 'npm'
+      ? {
+          allowScripts: {
+            '@swc/core': true,
+            'fsevents': true,
+            'unrs-resolver': true,
+          },
+        }
+      : {}),
     scripts: {
       ...existing.scripts,
       ...buildScripts(answers),
