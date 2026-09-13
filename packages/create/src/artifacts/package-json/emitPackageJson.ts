@@ -230,10 +230,15 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       node: NODE_ENGINE,
       [answers.packageManager]: `>=${managerVersion}`,
     },
-    overrides: {
-      'eslint-plugin-jsx-a11y>eslint': '^10',
-      'eslint-plugin-solid>eslint': '^10',
-    },
+    ...(answers.packageManager === 'npm'
+      ? {
+          allowScripts: {
+            '@swc/core': true,
+            'fsevents': true,
+            'unrs-resolver': true,
+          },
+        }
+      : {}),
     scripts: {
       ...existing.scripts,
       ...buildScripts(answers),

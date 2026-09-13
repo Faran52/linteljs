@@ -22,5 +22,9 @@ peerDependencyRules:
     # an override, which would downgrade a progress renderer inside somebody else's CLI to quieten a warning.
     '@listr2/prompt-adapter-inquirer>listr2': '10.2.2'
 
+overrides:
+  'eslint-plugin-jsx-a11y>eslint': '10'
+  'eslint-plugin-solid>eslint': '10'
+
 packages:
   - 'packages/*'
