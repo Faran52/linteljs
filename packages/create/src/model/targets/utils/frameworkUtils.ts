@@ -51,6 +51,7 @@ export const REACT_VITE_PLUGIN: PluginSpec = {
     "import { reactCompilerPreset } from '@vitejs/plugin-react';",
     "import babel from '@rolldown/plugin-babel';",
   ],
+  prelude: ['// The React Compiler preset for babel'],
   calls: [
     `...(${OUTSIDE_TESTS}\n`
     + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'

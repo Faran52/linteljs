@@ -52,6 +52,8 @@ describe('emitViteConfig', () => {
       + "import { reactCompilerPreset } from '@vitejs/plugin-react';\n"
       + "import babel from '@rolldown/plugin-babel';\n"
       + '\n'
+      + '// The React Compiler preset for babel\n'
+      + '\n'
       + 'export default defineConfig({\n'
       + '  plugins: [\n'
       + '    ...(process.env.VITEST === undefined\n'
