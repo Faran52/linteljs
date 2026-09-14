@@ -35,39 +35,28 @@ describe('emitViteConfig', () => {
   it('imports and calls the framework plugin', () => {
     const react = configFor({ target: 'react' }) ?? '';
 
-    expect(react).toContain("import react from '@vitejs/plugin-react-swc';");
-    expect(react).toContain('    react(),\n');
+    expect(react).toContain("import react from '@vitejs/plugin-react';");
+    expect(react).toContain('  ? [babel({ presets: [reactCompilerPreset()] }), react()]');
   });
 
   /**
-   * The compiler is a Babel pass through `@rolldown/plugin-babel`, declared as an async helper so it can pin itself
-   * to the `pre` group ahead of SWC while the source is still raw TSX. The guard keeps its memo cache out of the
-   * test run, where it would leave one branch uncovered in every component.
+   * The compiler is passed via Babel options to `@vitejs/plugin-react`. The VITEST guard keeps its memo cache out of
+   * the test run, where it would leave one branch uncovered in every component.
    */
-  it('declares the compiler helper between the imports and the config', () => {
+  it('declares the compiler in the plugin call', () => {
     const react = configFor({ target: 'react' }) ?? '';
 
     expect(react).toBe(
       "import { defineConfig } from 'vite';\n"
-      + "import react from '@vitejs/plugin-react-swc';\n"
+      + "import react from '@vitejs/plugin-react';\n"
+      + "import { reactCompilerPreset } from '@vitejs/plugin-react';\n"
       + "import babel from '@rolldown/plugin-babel';\n"
-      + '\n'
-      + '// Ahead of SWC while the source is still raw TSX; the VITEST guard keeps the memo cache out of the test\n'
-      + '// run, where it leaves one permanently-uncovered branch in every component.\n'
-      + 'const reactCompiler = async () => {\n'
-      + '  const compilerBabel = await babel({\n'
-      + '    include: [/\\.[tj]sx$/],\n'
-      + "    parserOpts: { plugins: ['jsx', 'typescript'] },\n"
-      + "    plugins: ['babel-plugin-react-compiler'],\n"
-      + '  });\n'
-      + '\n'
-      + "  return { ...compilerBabel, enforce: 'pre' };\n"
-      + '};\n'
       + '\n'
       + 'export default defineConfig({\n'
       + '  plugins: [\n'
-      + '    react(),\n'
-      + '    ...(process.env.VITEST === undefined ? [await reactCompiler()] : []),\n'
+      + '    ...(process.env.VITEST === undefined\n'
+      + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'
+      + '      : [react()]),\n'
       + '  ],\n'
       + '  resolve: { tsconfigPaths: true },\n'
       + '  server: { port: 3000 },\n'

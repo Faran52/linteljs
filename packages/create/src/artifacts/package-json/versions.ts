@@ -35,7 +35,7 @@ export const VERSIONS: Record<string, string> = {
   // NgRx stable (21.x) peers on Angular 21 while `ng new` writes Angular 22; the rc peers `^22.0.0`, and the caret
   // admits every stable 22.x the day it lands, so the range self-heals. Measurements in DESIGN.md.
   '@ngrx/signals': '^22.0.0-rc.0',
-  '@rolldown/plugin-babel': '^0.2.3',
+  '@rolldown/plugin-babel': '^0.2.4',
   '@solidjs/testing-library': '^0.8.10',
   // What lets vitest load React Native at all: strips the untranspiled Flow types and stands in for native modules.
   '@srsholmes/vitest-react-native': '^0.1.5',
@@ -63,9 +63,6 @@ export const VERSIONS: Record<string, string> = {
   '@types/react': '^19.2.18',
   '@types/react-dom': '^19.2.4',
   '@vitejs/plugin-react': '^6.0.5',
-  // The SWC build plugin, which the Babel-based compiler pass runs ahead of; the RN record keeps the plain plugin,
-  // but only as a vitest transform.
-  '@vitejs/plugin-react-swc': '^4.3.1',
   '@vitest/coverage-v8': '^5.0.0',
   '@vitest/eslint-plugin': '^1.6.27',
   '@vue/test-utils': '^2.4.11',
@@ -78,7 +75,7 @@ export const VERSIONS: Record<string, string> = {
   // See `frameworks/next.ts`.
   '@next/eslint-plugin-next': '^16.3.5',
   // The sibling package: tracks its own version, and versions.test.ts fails the moment they diverge.
-  '@linteljs/eslint-config': '^1.5.4',
+  '@linteljs/eslint-config': '^1.5.3',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.1.0',
   'eslint-plugin-jsx-a11y': '^6.10.2',

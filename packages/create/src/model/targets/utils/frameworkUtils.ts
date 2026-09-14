@@ -17,12 +17,6 @@ export interface FrameworkParts {
   devDependencies: string[];
   // Installed only when a suite was asked for.
   testDevDependencies: string[];
-  /**
-   * Install scripts a host must approve for this framework's build plugin, since pnpm aborts the first install on
-   * `ERR_PNPM_IGNORED_BUILDS` otherwise. Only React has one: `@vitejs/plugin-react-swc` pulls `@swc/core`, which is
-   * a native binary.
-   */
-  allowBuilds?: string[];
   // Resolve conditions the test run needs; Svelte and Solid ship a server build that `mount()` cannot use.
   testConditions?: string[];
   // The `jsxImportSource` a host's tsconfig needs so TypeScript resolves this framework's JSX types. Only Solid: React
@@ -53,25 +47,14 @@ export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 // The one spelling of React's build wiring, read by the React target's own record and by every host that composes it.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: [
-    "import react from '@vitejs/plugin-react-swc';",
+    "import react from '@vitejs/plugin-react';",
+    "import { reactCompilerPreset } from '@vitejs/plugin-react';",
     "import babel from '@rolldown/plugin-babel';",
   ],
-  prelude: [
-    '// Ahead of SWC while the source is still raw TSX; the VITEST guard keeps the memo cache out of the test',
-    '// run, where it leaves one permanently-uncovered branch in every component.',
-    'const reactCompiler = async () => {',
-    '  const compilerBabel = await babel({',
-    '    include: [/\\.[tj]sx$/],',
-    "    parserOpts: { plugins: ['jsx', 'typescript'] },",
-    "    plugins: ['babel-plugin-react-compiler'],",
-    '  });',
-    '',
-    "  return { ...compilerBabel, enforce: 'pre' };",
-    '};',
-  ],
   calls: [
-    'react()',
-    `...(${OUTSIDE_TESTS} ? [await reactCompiler()] : [])`,
+    `...(${OUTSIDE_TESTS}\n`
+    + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'
+    + '      : [react()])',
   ],
 };
 
@@ -85,17 +68,13 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
       '@eslint-react/eslint-plugin',
       'eslint-plugin-jsx-a11y',
       'eslint-plugin-react-hooks',
-      '@vitejs/plugin-react-swc',
-      '@rolldown/plugin-babel',
-      // No @types/babel__core: Babel 8 bundles its own declarations, which is what `@rolldown/plugin-babel`'s
-      // types import resolves through.
+      '@vitejs/plugin-react',
       '@babel/core',
       'babel-plugin-react-compiler',
       '@types/react',
       '@types/react-dom',
     ],
     dependencies: ['react', 'react-dom'],
-    allowBuilds: ['@swc/core'],
     testDevDependencies: ['@testing-library/dom', '@testing-library/react'],
     stateRules: ['react-state.md', 'hooks-order.md'],
   },

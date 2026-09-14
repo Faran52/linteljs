@@ -42,15 +42,13 @@ export const react: TargetRecord = {
   testDevDependencies: ['@testing-library/dom', '@testing-library/react'],
   devDependencies: [
     ...COMMON_REACT_PLUGINS,
-    '@vitejs/plugin-react-swc',
+    '@vitejs/plugin-react',
     '@rolldown/plugin-babel',
     '@babel/core',
     'babel-plugin-react-compiler',
     'vite',
   ],
-  // `@vitejs/plugin-react-swc` pulls `@swc/core`, a native binary whose install script pnpm refuses to run unless the
-  // project says so: without this the very first `pnpm install` aborts with ERR_PNPM_IGNORED_BUILDS.
-  allowBuilds: ['@swc/core'],
+  allowBuilds: [],
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMocks: true,
 };
