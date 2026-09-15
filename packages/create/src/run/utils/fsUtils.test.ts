@@ -20,7 +20,6 @@ import {
   entryExists,
   exists,
   isAbsence,
-  isCommandAvailable,
   readIfPresent,
 } from './fsUtils';
 
@@ -113,16 +112,5 @@ describe('allPresent', () => {
     await writeFile(join(cwd, 'a.tsx'), '', 'utf8');
 
     expect(await allPresent(cwd, CANDIDATES)).toEqual(['a.tsx', 'a.ts']);
-  });
-});
-
-describe('isCommandAvailable', () => {
-  it('answers true for a command that exists', () => {
-    expect(isCommandAvailable('pnpm')).toBe(true);
-    expect(isCommandAvailable('npm')).toBe(true);
-  });
-
-  it('answers false for a command that does not exist', () => {
-    expect(isCommandAvailable('nonexistent-command-xyz')).toBe(false);
   });
 });

@@ -89,7 +89,9 @@ export const buildArtifacts = (
   const styleEntry = styleEntryPath(answers, project.styleEntries);
 
   if (hasLibrary(answers, 'tailwind') && styleEntry !== undefined) {
-    artifacts.push(merged('standard', styleEntry, mergeStyleEntry));
+    artifacts.push(merged('standard', styleEntry, (current) => {
+      return mergeStyleEntry(current, target.tailwind?.imports);
+    }));
   }
 
   // `coverage/` and `*.tsbuildinfo` are this tool's output, so no generator ignores them. Merged rather than written,

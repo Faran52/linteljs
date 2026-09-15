@@ -22,6 +22,7 @@ export default defineConfig({
     solid: 'src/frameworks/solid.ts',
     angular: 'src/frameworks/angular.ts',
     tanstackQuery: 'src/libraries/tanstackQuery.ts',
+    tanstackRouter: 'src/libraries/tanstackRouter.ts',
     tailwind: 'src/libraries/tailwind.ts',
   },
   /**

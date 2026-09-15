@@ -15,13 +15,17 @@ import {
   type Browser,
   BROWSERS,
   DEFAULT_ANSWERS,
+  FORM_LIBRARIES,
   HOSTED_FRAMEWORKS,
   type HostedFramework,
   isValidProjectName,
   LIBRARIES,
+  type Library,
   PACKAGE_MANAGERS,
   PLUGINS,
   PROJECT_NAME_RULE,
+  REACT_LIBRARIES,
+  type Router,
   type Surface,
   SURFACES,
   surfacesOf,
@@ -84,10 +88,22 @@ const TESTING_DESCRIPTIONS: Record<Answers['testing'], Described> = {
 };
 
 const PACKAGE_MANAGER_DESCRIPTIONS: Record<Answers['packageManager'], Described> = {
-  pnpm: { label: 'pnpm' },
-  npm: { label: 'npm' },
-  yarn: { label: 'Yarn' },
-  bun: { label: 'Bun' },
+  pnpm: {
+    label: 'pnpm',
+    hint: 'Content-addressed store, strict by default',
+  },
+  npm: {
+    label: 'npm',
+    hint: 'Ships with Node',
+  },
+  yarn: {
+    label: 'Yarn',
+    hint: 'Yarn Berry with node_modules linking',
+  },
+  bun: {
+    label: 'Bun',
+    hint: 'Fast installs; runs scripts under Bun',
+  },
 };
 
 const LIBRARY_DESCRIPTIONS: Record<Answers['libraries'][number], Described> = {
@@ -99,9 +115,44 @@ const LIBRARY_DESCRIPTIONS: Record<Answers['libraries'][number], Described> = {
     label: 'TanStack Query',
     hint: 'Async data fetching and caching',
   },
+  'tanstack-form': {
+    label: 'TanStack Form',
+    hint: 'Typed forms with Zod-ready validation',
+  },
+  'react-hook-form': {
+    label: 'React Hook Form',
+    hint: 'Uncontrolled React forms, React targets only',
+  },
   'tailwind': {
     label: 'Tailwind CSS',
-    hint: 'Utility-first styling',
+    hint: 'Utility-first styling; NativeWind on React Native',
+  },
+  'es-toolkit': {
+    label: 'es-toolkit',
+    hint: 'Typed utility functions, the modern lodash',
+  },
+  'ts-pattern': {
+    label: 'ts-pattern',
+    hint: 'Exhaustive pattern matching',
+  },
+  't3-env': {
+    label: 't3-env',
+    hint: 'Zod-validated environment variables',
+  },
+};
+
+const ROUTER_DESCRIPTIONS: Record<Router | 'none', Described> = {
+  'none': {
+    label: 'None',
+    hint: 'A single page, or a router added later',
+  },
+  'react-router': {
+    label: 'React Router',
+    hint: 'Declarative routes in src/routes/router.tsx',
+  },
+  'tanstack-router': {
+    label: 'TanStack Router',
+    hint: 'Type-safe file routes under src/routes/',
   },
 };
 
@@ -337,11 +388,8 @@ const askName = async (prompter: Prompter): Promise<string> => {
   return unwrap(prompter, answer);
 };
 
-/**
- * Nine questions, in order: project name, framework, testing, package manager, libraries, an optional store, type
- * safety, AI agents, AI plugins. A target with no `store` slot skips the store question (see `StoreSlot`); no
- * language question, since this CLI is TS-only.
- */
+// In order: project name, framework, testing, package manager, libraries, form library, an optional router and store,
+// type safety, AI agents, AI plugins. A target with no `routers` or `store` slot skips that question.
 export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
   const name = input.name ?? await askName(prompter);
 
@@ -400,9 +448,50 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
       return PACKAGE_MANAGER_DESCRIPTIONS[choice];
     },
   );
-  const libraries = await askMulti(prompter, 'Libraries', LIBRARIES, DEFAULT_ANSWERS.libraries, false, (choice) => {
-    return LIBRARY_DESCRIPTIONS[choice];
+  const isReact = targetFor({
+    ...DEFAULT_ANSWERS,
+    target,
+    ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
+  }).framework === 'react';
+  const offered = (library: Library): boolean => {
+    return isReact || !REACT_LIBRARIES.includes(library);
+  };
+  const picked = await askMulti(
+    prompter,
+    'Libraries',
+    LIBRARIES.filter((library) => {
+      return !FORM_LIBRARIES.includes(library) && offered(library);
+    }),
+    DEFAULT_ANSWERS.libraries,
+    false,
+    (choice) => {
+      return LIBRARY_DESCRIPTIONS[choice];
+    },
+  );
+  // One form library at most, so it is a radio rather than two checkboxes.
+  const form = await askChoice(
+    prompter,
+    'Form library',
+    ['none', ...FORM_LIBRARIES.filter(offered)],
+    'none',
+    (choice) => {
+      return choice === 'none'
+        ? {
+            label: 'None',
+            hint: 'Plain controlled inputs',
+          }
+        : LIBRARY_DESCRIPTIONS[choice];
+    },
+  );
+  const libraries = LIBRARIES.filter((library) => {
+    return picked.includes(library) || library === form;
   });
+
+  const router = record.routers === undefined
+    ? 'none'
+    : await askChoice(prompter, 'Router', ['none', ...record.routers], 'none', (choice) => {
+        return ROUTER_DESCRIPTIONS[choice];
+      });
 
   // The slot guards first: a target with no store slot stays at false, and the question is never asked, whatever
   // `--store`/`--no-store` said.
@@ -438,6 +527,7 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
       testing,
       packageManager,
       libraries,
+      ...(router === 'none' ? {} : { router }),
       store,
       typeSafety,
       agents,

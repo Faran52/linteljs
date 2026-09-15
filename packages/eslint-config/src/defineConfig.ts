@@ -90,6 +90,11 @@ const LIBRARIES: Record<LibraryLayer, (options: LibraryOptions) => Promise<Layer
 
     return tanstackQuery();
   },
+  'tanstack-router': async () => {
+    const { tanstackRouter } = await import('./libraries/tanstackRouter');
+
+    return tanstackRouter();
+  },
   'tailwind': async ({ tailwindEntryPoint }) => {
     const { tailwind } = await import('./libraries/tailwind');
 

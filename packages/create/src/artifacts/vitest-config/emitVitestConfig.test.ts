@@ -9,11 +9,16 @@ import { setupTestsPath } from '../banned-patterns/checkerArtifact';
 
 import { emitVitestConfig } from './emitVitestConfig';
 
-import type { TargetId, Testing } from '../../model/answers/answers';
+import type {
+  Router,
+  TargetId,
+  Testing,
+} from '../../model/answers/answers';
 
 interface AnswerOverrides {
   target?: TargetId;
   testing?: Testing;
+  router?: Router;
 }
 
 const configFor = (overrides: AnswerOverrides = {}): string | null => {
@@ -84,4 +89,14 @@ describe('emitVitestConfig', () => {
       expect(configFor({ target })).toContain('resolve: { tsconfigPaths: true },');
     },
   );
+});
+
+describe('the router', () => {
+  it('keeps the route table and the generated tree out of coverage', () => {
+    const config = configFor({ router: 'tanstack-router' }) ?? '';
+
+    expect(config).toContain("'src/routes/**'");
+    expect(config).toContain("'src/routeTree.gen.ts'");
+    expect(configFor({})).not.toContain('src/routes/**');
+  });
 });

@@ -33,6 +33,7 @@ import {
   type Library,
   type PackageManager,
   type Plugin,
+  type Router,
   TARGET_IDS,
   type TargetId,
   type Testing,
@@ -63,6 +64,7 @@ interface AnswerOverrides {
   agents?: Agent[];
   plugins?: Plugin[];
   browsers?: Browser[];
+  router?: Router;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -490,24 +492,25 @@ describe('build configs a project already owns', () => {
   });
 });
 
+// Stages 2 to 6 on a directory declared fresh, answering with the paths written.
+const fresh = async (overrides: AnswerOverrides): Promise<string[]> => {
+  const written: string[] = [];
+
+  await runPipeline({
+    name: 'demo-app',
+    cwd,
+    answers: answersFor(overrides),
+    skip: ['scaffold', 'install'],
+    fresh: true,
+    onWrite: (path) => {
+      written.push(path);
+    },
+  });
+
+  return written;
+};
+
 describe('starter tests', () => {
-  const fresh = async (overrides: AnswerOverrides): Promise<string[]> => {
-    const written: string[] = [];
-
-    await runPipeline({
-      name: 'demo-app',
-      cwd,
-      answers: answersFor(overrides),
-      skip: ['scaffold', 'install'],
-      fresh: true,
-      onWrite: (path) => {
-        written.push(path);
-      },
-    });
-
-    return written;
-  };
-
   it('writes one beside the code the generator wrote', async () => {
     await mkdir(join(cwd, 'src'), { recursive: true });
     await writeFile(join(cwd, 'src/App.tsx'), 'export default () => null;\n', 'utf8');
@@ -1455,5 +1458,46 @@ describe('what create and sync each discover about a project', () => {
     expect(await exists(join(cwd, '__mocks__/setupTests.tsx'))).toBe(false);
     expect(await readFile(join(cwd, 'vitest.config.ts'), 'utf8'))
       .toContain('__mocks__/setupTests.ts');
+  });
+});
+
+describe('starter files for a router', () => {
+  it('writes none without a router', async () => {
+    const written = await fresh({});
+
+    expect(written).not.toContain('src/main.tsx');
+    expect(written).not.toContain('src/routes/router.tsx');
+  });
+
+  it('writes the react-router table and entry, and nothing of tanstack', async () => {
+    const written = await fresh({ router: 'react-router' });
+
+    expect(written).toContain('src/main.tsx');
+    expect(written).toContain('src/routes/router.tsx');
+    expect(written).not.toContain('src/routeTree.gen.ts');
+    expect(await readFile(join(cwd, 'src/main.tsx'), 'utf8')).toContain("from 'react-router'");
+  });
+
+  it('writes the tanstack routes, entry and committed tree', async () => {
+    const written = await fresh({ router: 'tanstack-router' });
+
+    expect(written).toEqual(expect.arrayContaining([
+      'src/main.tsx',
+      'src/routes/__root.tsx',
+      'src/routes/index.tsx',
+      'src/routeTree.gen.ts',
+    ]));
+    expect(written).not.toContain('src/routes/router.tsx');
+  });
+
+  it('writes the NativeWind metro config only when tailwind was chosen on React Native', async () => {
+    expect(await fresh({
+      target: 'react-native',
+      libraries: ['tailwind'],
+    })).toContain('metro.config.js');
+    expect(await fresh({
+      target: 'react-native',
+      libraries: [],
+    })).not.toContain('metro.config.js');
   });
 });

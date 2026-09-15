@@ -49,3 +49,18 @@ describe('an entry that already imports tailwind another way', () => {
     expect(mergeStyleEntry(current)).toBe(current);
   });
 });
+
+// NativeWind's entry imports Tailwind by subpath, so the detector has to read those as an import too.
+describe('a target with its own import block', () => {
+  const NATIVE = ['@import "tailwindcss/theme.css" layer(theme);', '@import "nativewind/theme";'];
+
+  it('writes the block it was given', () => {
+    expect(mergeStyleEntry(null, NATIVE)).toBe(`${NATIVE.join('\n')}\n`);
+  });
+
+  it('is idempotent on a subpath import', () => {
+    const once = mergeStyleEntry('.a { color: red; }\n', NATIVE);
+
+    expect(mergeStyleEntry(once, NATIVE)).toBe(once);
+  });
+});

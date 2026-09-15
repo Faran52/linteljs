@@ -1,9 +1,10 @@
 import {
   type Answers,
+  type Framework,
   hasLibrary,
   hasTests,
   type Library,
-  type TargetId,
+  type Router,
 } from '../../model/answers/answers';
 import { targetFor } from '../../model/targets';
 import { buildScripts } from '../build-scripts/buildScripts';
@@ -89,21 +90,58 @@ const tailwindDevDependencies = (target: TargetRecord): string[] => {
     usesTailwindVitePlugin(target) ? '@tailwindcss/vite' : '@tailwindcss/postcss',
     'stylelint-config-tailwindcss',
     'tailwindcss',
+    ...target.tailwind?.devDependencies ?? [],
   ];
 };
 
-// One binding package per framework; plain TypeScript has none, so nothing is installed at runtime there.
-const TANSTACK_QUERY_BINDINGS: Record<TargetId, string> = {
-  'react': '@tanstack/react-query',
-  'next': '@tanstack/react-query',
-  'vue': '@tanstack/vue-query',
-  'svelte': '@tanstack/svelte-query',
-  'solid': '@tanstack/solid-query',
-  'angular': '@tanstack/angular-query-experimental',
-  // Whatever framework the site hosts brings its own binding; an Astro island is that framework's component.
-  'astro': '',
-  'webextension': '',
-  'react-native': '@tanstack/react-query',
+// One binding per framework; a host with no framework installs nothing at runtime.
+const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
+  react: '@tanstack/react-query',
+  next: '@tanstack/react-query',
+  vue: '@tanstack/vue-query',
+  svelte: '@tanstack/svelte-query',
+  solid: '@tanstack/solid-query',
+  angular: '@tanstack/angular-query-experimental',
+};
+
+const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
+  react: '@tanstack/react-form',
+  next: '@tanstack/react-form',
+  vue: '@tanstack/vue-form',
+  svelte: '@tanstack/svelte-form',
+  solid: '@tanstack/solid-form',
+  angular: '@tanstack/angular-form',
+};
+
+const ROUTER_DEPENDENCIES: Record<Router, string[]> = {
+  'react-router': ['react-router'],
+  'tanstack-router': ['@tanstack/react-router'],
+};
+
+const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
+  'react-router': [],
+  'tanstack-router': ['@tanstack/router-plugin', '@tanstack/eslint-plugin-router'],
+};
+
+const libraryDependencies = (answers: Answers, target: TargetRecord): string[] => {
+  const { framework } = target;
+  const bound = (bindings: Record<Framework, string>): string[] => {
+    return framework === undefined ? [] : [bindings[framework]];
+  };
+  const runtime: Record<Library, string[]> = {
+    'zod': ['zod'],
+    'tanstack-query': bound(TANSTACK_QUERY_BINDINGS),
+    'tanstack-form': bound(TANSTACK_FORM_BINDINGS),
+    'react-hook-form': ['react-hook-form', ...(hasLibrary(answers, 'zod') ? ['@hookform/resolvers'] : [])],
+    'tailwind': target.tailwind?.dependencies ?? [],
+    'es-toolkit': ['es-toolkit'],
+    'ts-pattern': ['ts-pattern'],
+    't3-env': [answers.target === 'next' ? '@t3-oss/env-nextjs' : '@t3-oss/env-core'],
+  };
+
+  return answers.libraries.flatMap((library) => {
+    return runtime[library];
+  });
 };
 
 const isPackageJson = (value: unknown): value is PackageJson => {
@@ -143,17 +181,11 @@ export const versioned = (names: string[]): Record<string, string> => {
 };
 
 export const buildDependencies = (answers: Answers): Record<string, string> => {
-  const names: string[] = [];
-
-  if (hasLibrary(answers, 'zod')) {
-    names.push('zod');
-  }
-
-  if (hasLibrary(answers, 'tanstack-query')) {
-    names.push(TANSTACK_QUERY_BINDINGS[answers.target]);
-  }
-
   const target = targetFor(answers);
+  const names = [
+    ...libraryDependencies(answers, target),
+    ...(answers.router === undefined ? [] : ROUTER_DEPENDENCIES[answers.router]),
+  ];
 
   // A hosted framework is not installed by the host's scaffolder, so the record brings it.
   names.push(...target.dependencies ?? []);
@@ -171,8 +203,7 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
 
-  const optional: Record<Library, string[]> = {
-    'zod': [],
+  const optional: Partial<Record<Library, string[]>> = {
     'tanstack-query': ['@tanstack/eslint-plugin-query'],
     'tailwind': ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
   };
@@ -188,8 +219,9 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
       ? [...RUNNER_DEV_DEPENDENCIES, ...target.testDevDependencies ?? []]
       : []),
     ...answers.libraries.flatMap((library) => {
-      return optional[library];
+      return optional[library] ?? [];
     }),
+    ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),
   ]);
 };
 

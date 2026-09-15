@@ -8,6 +8,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type Library,
+  type Router,
   type TargetId,
 } from '../../model/answers/answers';
 
@@ -16,6 +17,7 @@ import { emitViteConfig } from './emitViteConfig';
 interface AnswerOverrides {
   target?: TargetId;
   libraries?: Library[];
+  router?: Router;
 }
 
 const configFor = (overrides: AnswerOverrides): string | null => {
@@ -55,8 +57,6 @@ describe('emitViteConfig', () => {
       + "import { reactCompilerPreset } from '@vitejs/plugin-react';\n"
       + "import babel from '@rolldown/plugin-babel';\n"
       + '\n'
-      + '// The React Compiler preset for babel\n'
-      + '\n'
       + 'export default defineConfig({\n'
       + '  plugins: [\n'
       + '    ...(process.env.VITEST === undefined\n'
@@ -67,14 +67,6 @@ describe('emitViteConfig', () => {
       + '  server: { port: 3000 },\n'
       + '});\n',
     );
-  });
-
-  // A spec that names its plugins directly carries no helper, so nothing changes for it.
-  it('emits no prelude for a spec without one', () => {
-    const vue = configFor({ target: 'vue' }) ?? '';
-
-    expect(vue).not.toContain('const ');
-    expect(vue.split('\n')[0]).toBe("import { defineConfig } from 'vite';");
   });
 
   // One call per line: React's compiler call plus tailwind joined is 128 characters, over the emitted config's own 120
@@ -145,5 +137,20 @@ describe('extra rollup inputs', () => {
     });
 
     expect(output).not.toContain('rollupOptions');
+  });
+});
+
+describe('the router', () => {
+  it('runs the tanstack router plugin ahead of the framework plugin', () => {
+    const react = configFor({ router: 'tanstack-router' }) ?? '';
+    const plugin = react.indexOf("tanstackRouter({ target: 'react', autoCodeSplitting: true })");
+
+    expect(react).toContain("import { tanstackRouter } from '@tanstack/router-plugin/vite';");
+    expect(plugin).toBeGreaterThan(-1);
+    expect(plugin).toBeLessThan(react.indexOf('react()'));
+  });
+
+  it('adds nothing for react-router', () => {
+    expect(configFor({ router: 'react-router' })).not.toContain('tanstackRouter');
   });
 });

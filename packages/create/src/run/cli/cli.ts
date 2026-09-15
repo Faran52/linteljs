@@ -10,13 +10,20 @@ import {
 } from 'node:process';
 import { parseArgs } from 'node:util';
 
+import { RUN_PREFIX } from '../../artifacts/build-scripts/buildScripts';
 import {
   type Answers,
   DEFAULT_ANSWERS,
   isValidProjectName,
   PROJECT_NAME_RULE,
 } from '../../model/answers/answers';
-import { CONFIG_PATH, readLintelConfig } from '../../model/config/lintelConfig';
+import {
+  CONFIG_PATH,
+  CONFIG_SCHEMA_URL,
+  CURRENT_SCHEMA_VERSION,
+  parseLintelConfig,
+  readLintelConfig,
+} from '../../model/config/lintelConfig';
 import { type Stage, STAGES } from '../../model/stages/stages';
 import { runPipeline } from '../pipeline/pipeline';
 import {
@@ -27,12 +34,31 @@ import {
   type Prompter,
 } from '../prompts/prompts';
 import { applySync, planSync } from '../sync/sync';
-import { entryExists, isCommandAvailable } from '../utils/fsUtils';
+import { ensurePackageManager } from '../utils/commandUtils';
+import { entryExists } from '../utils/fsUtils';
+
+// Answers given as flags, validated by the config parser so a wrong value names its choices.
+export interface AnswerFlags {
+  target?: string;
+  browser?: string;
+  hostedFramework?: string;
+  surfaces?: string[];
+  testing?: string;
+  packageManager?: string;
+  libraries?: string[];
+  router?: string;
+  store?: boolean;
+  typeSafety?: string;
+  agents?: string[];
+  plugins?: string[];
+}
 
 export interface CliOptions {
   command: 'create' | 'sync';
   name: string;
   cwd: string;
+  // Present when any answer flag was passed; the run then asks nothing.
+  answers?: AnswerFlags;
   skip: Stage[];
   // `--skip` values naming no stage, and positionals past the name. Carried rather than thrown on, so `main` reports
   // all of them the same way; what `parseArgs` itself rejects still throws, and `main` catches that.
@@ -44,12 +70,21 @@ export interface CliOptions {
   help: boolean;
 }
 
-const PM_COMMANDS: Record<string, string> = {
-  pnpm: 'pnpm',
-  npm: 'npm',
-  yarn: 'yarn',
-  bun: 'bun',
-};
+// The answer flags as `parseArgs` hands them over, before the config parser checks the values.
+interface RawAnswerFlags {
+  'target'?: string;
+  'browser'?: string;
+  'hosted'?: string;
+  'surfaces'?: string[];
+  'testing'?: string;
+  'pm'?: string;
+  'libraries'?: string[];
+  'router'?: string;
+  'store'?: boolean;
+  'type-safety'?: string;
+  'agents'?: string[];
+  'plugins'?: string[];
+}
 
 // Everything the user asked to see goes to stdout via `stdout.write`, not `console.log`/`console.warn` (which is stderr
 // and satisfies `no-console`); `console.error` stays for failures.
@@ -68,8 +103,46 @@ const USAGE = `@linteljs/create [name] [options]
   --force           sync: overwrite without asking
   --help, -h
 
-A non-interactive create needs a project name and --yes to accept the defaults on purpose.
+Answers, for a run that asks nothing (unset ones take the defaults):
+  --target <id>         react, next, vue, svelte, solid, angular, astro, webextension, react-native
+  --pm <name>           pnpm, npm, yarn, bun
+  --testing <choice>    vitest, none
+  --type-safety <floor> strict, relaxed
+  --libraries <list>    zod, tanstack-query, tanstack-form, react-hook-form, tailwind, es-toolkit, ts-pattern, t3-env
+  --router <id>         react-router, tanstack-router (react only)
+  --store               install the target's state store
+  --agents <list>       claude-code, codex
+  --plugins <list>      ponytail, context7, frontend-design
+  --browser <name>      chrome, firefox (webextension only)
+  --hosted <framework>  react, vue, svelte, solid (webextension and astro only)
+  --surfaces <list>     popup, background, devtools-panel (webextension only)
+A list is comma-separated or the flag repeated.
+
+A non-interactive create needs a project name, or --yes to take the directory's.
 `;
+
+const list = (flag: string[]): string[] => {
+  return flag.flatMap((value) => {
+    return value.split(',');
+  });
+};
+
+const answerFlagsFrom = (values: RawAnswerFlags): AnswerFlags => {
+  return {
+    ...(values.target === undefined ? {} : { target: values.target }),
+    ...(values.browser === undefined ? {} : { browser: values.browser }),
+    ...(values.hosted === undefined ? {} : { hostedFramework: values.hosted }),
+    ...(values.surfaces === undefined ? {} : { surfaces: list(values.surfaces) }),
+    ...(values.testing === undefined ? {} : { testing: values.testing }),
+    ...(values.pm === undefined ? {} : { packageManager: values.pm }),
+    ...(values.libraries === undefined ? {} : { libraries: list(values.libraries) }),
+    ...(values.router === undefined ? {} : { router: values.router }),
+    ...(values.store === true ? { store: true } : {}),
+    ...(values['type-safety'] === undefined ? {} : { typeSafety: values['type-safety'] }),
+    ...(values.agents === undefined ? {} : { agents: list(values.agents) }),
+    ...(values.plugins === undefined ? {} : { plugins: list(values.plugins) }),
+  };
+};
 
 const isStage = (value: string): value is Stage => {
   return STAGES.some((stage) => {
@@ -113,8 +186,38 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
         short: 'h',
         default: false,
       },
+      'target': { type: 'string' },
+      'pm': { type: 'string' },
+      'testing': { type: 'string' },
+      'type-safety': { type: 'string' },
+      'libraries': {
+        type: 'string',
+        multiple: true,
+      },
+      'router': { type: 'string' },
+      'store': {
+        type: 'boolean',
+        default: false,
+      },
+      'agents': {
+        type: 'string',
+        multiple: true,
+      },
+      'plugins': {
+        type: 'string',
+        multiple: true,
+      },
+      'browser': { type: 'string' },
+      'hosted': { type: 'string' },
+      'surfaces': {
+        type: 'string',
+        multiple: true,
+      },
     },
   });
+
+  const flagged = answerFlagsFrom(values);
+  const answered = Object.keys(flagged).length > 0;
 
   const [first = '', ...unexpectedArguments] = positionals;
   const command = first === 'sync' ? 'sync' : 'create';
@@ -140,11 +243,31 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     skip,
     unknownSkips,
     unexpectedArguments,
-    yes: values.yes,
+    ...(answered ? { answers: flagged } : {}),
+    // An answer flag makes the run non-interactive the way --yes does; the rest take the defaults.
+    yes: values.yes || answered,
     fresh: values.fresh,
     force: values.force,
     help: values.help,
   };
+};
+
+// Through the config parser rather than a second validator: every flag gets the same message a bad config does.
+const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
+  return parseLintelConfig(JSON.stringify({
+    $schema: CONFIG_SCHEMA_URL,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    ...DEFAULT_ANSWERS,
+    ...flags,
+  }));
+};
+
+// What to do next, once every stage has run.
+const summary = (name: string, options: CliOptions, answers: Answers): string => {
+  const run = RUN_PREFIX[answers.packageManager];
+  const enter = options.skip.includes('scaffold') ? [] : [`  cd ${name}`];
+
+  return ['', 'Done. Next:', ...enter, `  ${run} check`].join('\n');
 };
 
 /**
@@ -174,7 +297,7 @@ const askedFrom = async (
   }
 
   if (options.yes) {
-    return named(DEFAULT_ANSWERS);
+    return named(flaggedAnswers(options.answers));
   }
 
   /**
@@ -263,53 +386,6 @@ const argumentError = (options: CliOptions): string | undefined => {
   return projectNameError(options);
 };
 
-// Install the package manager via corepack if it is not already on PATH.
-const ensurePackageManager = async (pm: string): Promise<void> => {
-  const command = PM_COMMANDS[pm];
-
-  if (command === undefined || isCommandAvailable(command)) {
-    return;
-  }
-
-  say(`Installing ${pm} via corepack...`);
-
-  const { spawnSync } = await import('node:child_process');
-
-  const corepackAvailable = isCommandAvailable('corepack');
-
-  if (!corepackAvailable) {
-    say('corepack not found; installing it globally...');
-    const installCorepack = spawnSync('npm', ['install', '-g', 'corepack'], {
-      encoding: 'utf8',
-      stdio: 'pipe',
-    });
-
-    if (installCorepack.status !== 0) {
-      throw new Error(
-        `npm install -g corepack failed: ${installCorepack.stdout}${installCorepack.stderr}`,
-      );
-    }
-  }
-
-  const enable = spawnSync('corepack', ['enable'], {
-    encoding: 'utf8',
-    stdio: 'pipe',
-  });
-
-  if (enable.status !== 0) {
-    throw new Error(`corepack enable failed: ${enable.stdout}${enable.stderr}`);
-  }
-
-  const install = spawnSync('corepack', ['install', '-g', pm], {
-    encoding: 'utf8',
-    stdio: 'pipe',
-  });
-
-  if (install.status !== 0) {
-    throw new Error(`corepack install -g ${pm} failed: ${install.stdout}${install.stderr}`);
-  }
-};
-
 // Returns the exit code rather than calling `process.exit`, which would drop queued stderr writes;
 // `bin/create-linteljs.js` assigns it to `process.exitCode`.
 export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
@@ -357,7 +433,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       return 0;
     }
 
-    await ensurePackageManager(answers.packageManager);
+    ensurePackageManager(answers.packageManager, say);
 
     await runPipeline({
       // With --skip-scaffold there's no name argument and none was asked for, so the directory's existing name is
@@ -375,7 +451,12 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       onNotice: (message) => {
         say(message);
       },
+      onStage: (stage, index, count) => {
+        say(`[${String(index)}/${String(count)}] ${stage}`);
+      },
     });
+
+    say(summary(name, options, answers));
   }
   catch (error) {
     // A person cancelling the questionnaire is not a failure: no "Error:" prefix, no advice to answer every

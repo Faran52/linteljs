@@ -10,7 +10,9 @@ import {
 import {
   type Answers,
   DEFAULT_ANSWERS,
+  type Router,
   type TargetId,
+  type Testing,
   type TypeSafety,
 } from '../../model/answers/answers';
 import { ASSETS_ROOT } from '../../run/shipped-assets/shippedAssets';
@@ -20,6 +22,8 @@ import { checkerArtifact } from './checkerArtifact';
 interface AnswerOverrides {
   target?: TargetId;
   typeSafety?: TypeSafety;
+  router?: Router;
+  testing?: Testing;
 }
 
 // The file the artifact copies from, read the way `contentOf` reads it.
@@ -137,5 +141,19 @@ describe('the checker merge when a block cannot be found', () => {
     const merged = transformOf(answersFor({}))(shipped, broken);
 
     expect(merged).toContain('const PROJECT_BANNED: BannedPattern[] = [];');
+  });
+});
+
+describe('the generated route tree', () => {
+  it('is skipped by the checker, since TanStack writes it with as any', () => {
+    const tree = "  'src/routeTree.gen.ts',";
+
+    expect(transformOf(answersFor({ router: 'tanstack-router' }))('const PROJECT_SKIPPED: string[] = [];\n', null))
+      .toContain(tree);
+    expect(transformOf(answersFor({
+      router: 'tanstack-router',
+      testing: 'none',
+    }))('const PROJECT_SKIPPED: string[] = [];\n', null)).toContain(tree);
+    expect(transformOf(answersFor({}))('const PROJECT_SKIPPED: string[] = [];\n', null)).not.toContain(tree);
   });
 });

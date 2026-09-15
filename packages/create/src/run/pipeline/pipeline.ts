@@ -6,7 +6,11 @@ import { env } from 'node:process';
 import { type Artifact, buildArtifacts } from '../../artifacts';
 import { emitManifest } from '../../artifacts/manifest/emitManifest';
 import { emitReadme } from '../../artifacts/readme/emitReadme';
-import { browsersOf, hasTests } from '../../model/answers/answers';
+import {
+  browsersOf,
+  hasLibrary,
+  hasTests,
+} from '../../model/answers/answers';
 import { CONFIG_PATH, emitLintelConfig } from '../../model/config/lintelConfig';
 import { type Stage, STAGES } from '../../model/stages/stages';
 import {
@@ -36,6 +40,8 @@ export interface PipelineOptions {
   onWrite?: (path: string) => void;
   // Reports what happened that was not a file write: the fix pass, or the next step.
   onNotice?: (message: string) => void;
+  // Called as each stage starts, with its position in the full list.
+  onStage?: (stage: Stage, index: number, count: number) => void;
 }
 
 // A tuple so the first element is guaranteed a command: no unreachable `undefined` guard, no `?? []` fallback.
@@ -97,14 +103,11 @@ export const scaffoldCommand = (
   packageManager: PackageManager,
   spec: ScaffoldSpec,
 ): CommandLine => {
-  const base = SCAFFOLD_COMMANDS[packageManager][spec.kind];
-  const args = [...base, ...spec.args];
-  if (packageManager === 'npm' && spec.kind === 'create') {
-    // `npm create` doesn't forward flags to the template without `--`; the project name is always
-    // the second element of `spec.args`, so it sits at `base.length + 1` in the combined array.
-    args.splice(base.length + 2, 0, '--');
-  }
-  return args as CommandLine;
+  const [scaffolder, name, ...flags] = spec.args;
+  // `npm create` keeps the flags for itself unless `--` follows the project name.
+  const separator = packageManager === 'npm' && spec.kind === 'create' ? ['--'] : [];
+
+  return [...SCAFFOLD_COMMANDS[packageManager][spec.kind], scaffolder, name, ...separator, ...flags];
 };
 
 const write = async (options: PipelineOptions, relative: string, text: string): Promise<void> => {
@@ -178,7 +181,13 @@ const writeStarterFiles = async (options: PipelineOptions): Promise<void> => {
     return;
   }
 
-  for (const file of starterFiles) {
+  const { answers } = options;
+  const wanted = starterFiles.filter((file) => {
+    return (file.library === undefined || hasLibrary(answers, file.library))
+      && (file.router === undefined || answers.router === file.router);
+  });
+
+  for (const file of wanted) {
     await write(options, file.target, await readFile(join(ASSETS_ROOT, file.source), 'utf8'));
   }
 };
@@ -297,6 +306,7 @@ export const runPipeline = async (options: PipelineOptions): Promise<void> => {
     }
 
     if (!options.skip.includes(stage)) {
+      options.onStage?.(stage, STAGES.indexOf(stage) + 1, STAGES.length);
       await STAGE_RUNNERS[stage](options, artifacts, stage);
     }
   }

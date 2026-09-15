@@ -49,9 +49,11 @@ const withTypeSafety = (source: string, answers: Answers): string => {
 const starterSkips = (answers: Answers): string[] => {
   const target = targetFor(answers);
   const tests = target.exemptsStarterTests === true ? target.starterTests : undefined;
+  // TanStack's generated tree carries `as any` and `@ts-nocheck` by design.
+  const generated = answers.router === 'tanstack-router' ? ['src/routeTree.gen.ts'] : [];
 
   if (tests === undefined || !hasTests(answers)) {
-    return [];
+    return generated;
   }
 
   return [
@@ -59,6 +61,7 @@ const starterSkips = (answers: Answers): string[] => {
     ...tests.map((test) => {
       return test.target;
     }),
+    ...generated,
   ];
 };
 

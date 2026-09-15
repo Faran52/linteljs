@@ -7,10 +7,13 @@ import {
   type AliasMap,
   type Answers,
   BROWSERS,
+  FORM_LIBRARIES,
   HOSTED_FRAMEWORKS,
   LIBRARIES,
+  type Library,
   PACKAGE_MANAGERS,
   PLUGINS,
+  ROUTERS,
   SURFACES,
   TARGET_IDS,
   TESTING_CHOICES,
@@ -43,6 +46,7 @@ interface ConfigObject {
   testing?: JsonValue;
   packageManager?: JsonValue;
   libraries?: JsonValue;
+  router?: JsonValue;
   store?: JsonValue;
   typeSafety?: JsonValue;
   agents?: JsonValue;
@@ -182,6 +186,19 @@ const globList = (value: JsonValue | undefined): string[] => {
   return globs;
 };
 
+// One form library at most: both bind the same inputs, and the prompt offers them as one choice.
+const libraryChoices = (value: JsonValue | undefined): Library[] => {
+  const libraries = arrayChoices(value, 'libraries', LIBRARIES);
+
+  if (libraries.filter((library) => {
+    return FORM_LIBRARIES.includes(library);
+  }).length > 1) {
+    throw new Error(`libraries must contain at most one of: ${FORM_LIBRARIES.join(', ')}`);
+  }
+
+  return libraries;
+};
+
 const expectedKeys = [
   '$schema',
   'schemaVersion',
@@ -195,6 +212,7 @@ const expectedKeys = [
   'testing',
   'packageManager',
   'libraries',
+  'router',
   'store',
   'typeSafety',
   'agents',
@@ -266,7 +284,8 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
       : { surfaces: arrayChoices(parsed.surfaces, 'surfaces', SURFACES) }),
     testing: choice(parsed.testing, 'testing', TESTING_CHOICES),
     packageManager: choice(parsed.packageManager, 'packageManager', PACKAGE_MANAGERS),
-    libraries: arrayChoices(parsed.libraries, 'libraries', LIBRARIES),
+    libraries: libraryChoices(parsed.libraries),
+    ...(parsed.router === undefined ? {} : { router: choice(parsed.router, 'router', ROUTERS) }),
     store,
     typeSafety: choice(parsed.typeSafety, 'typeSafety', TYPE_SAFETY_CHOICES),
     agents: arrayChoices(parsed.agents, 'agents', AGENTS),

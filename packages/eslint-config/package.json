@@ -117,6 +117,12 @@
         "default": "./dist/tanstackQuery.mjs"
       }
     },
+    "./tanstack-router": {
+      "import": {
+        "types": "./dist/tanstackRouter.d.mts",
+        "default": "./dist/tanstackRouter.mjs"
+      }
+    },
     "./tailwind": {
       "import": {
         "types": "./dist/tailwind.d.mts",
@@ -142,6 +148,7 @@
     "@html-eslint/parser": "^0.65.0",
     "@next/eslint-plugin-next": "^16.3.5",
     "@tanstack/eslint-plugin-query": "^5.102.8",
+    "@tanstack/eslint-plugin-router": "^1.162.0",
     "@types/node": "catalog:",
     "@vitest/eslint-plugin": "^1.6.27",
     "angular-eslint": "^22.5.0",
@@ -150,7 +157,6 @@
     "eslint-plugin-astro": "^3.1.0",
     "eslint-plugin-better-tailwindcss": "^4.7.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-solid": "^0.16.1",
     "eslint-plugin-svelte": "^3.23.0",
@@ -174,6 +180,7 @@
     "@html-eslint/parser": ">=0.35",
     "@next/eslint-plugin-next": ">=15",
     "@tanstack/eslint-plugin-query": ">=5",
+    "@tanstack/eslint-plugin-router": ">=1",
     "@vitest/eslint-plugin": ">=1",
     "angular-eslint": ">=20",
     "astro-eslint-parser": ">=1",
@@ -181,7 +188,6 @@
     "eslint-plugin-astro": ">=1",
     "eslint-plugin-better-tailwindcss": ">=4",
     "eslint-plugin-jsx-a11y": ">=6",
-    "eslint-plugin-react-compiler": ">=19",
     "eslint-plugin-react-hooks": ">=7",
     "eslint-plugin-solid": ">=0.14",
     "eslint-plugin-svelte": ">=3",
@@ -206,6 +212,9 @@
     "@tanstack/eslint-plugin-query": {
       "optional": true
     },
+    "@tanstack/eslint-plugin-router": {
+      "optional": true
+    },
     "@vitest/eslint-plugin": {
       "optional": true
     },
@@ -222,9 +231,6 @@
       "optional": true
     },
     "eslint-plugin-jsx-a11y": {
-      "optional": true
-    },
-    "eslint-plugin-react-compiler": {
       "optional": true
     },
     "eslint-plugin-react-hooks": {

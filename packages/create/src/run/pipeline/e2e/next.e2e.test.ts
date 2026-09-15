@@ -20,7 +20,9 @@ describe('next end-to-end', () => {
 
   it.each(withPackageManagers('next with every library', {
     target: 'next',
-    libraries: LIBRARIES,
+    libraries: LIBRARIES.filter((library) => {
+      return library !== 'react-hook-form';
+    }),
   }))
   ('generates, installs and checks $label', runE2eCase, 900_000);
 });

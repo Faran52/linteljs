@@ -4,8 +4,12 @@ import { COMMON_REACT_PLUGINS, esmAssetImports } from './utils/targetUtils';
 
 import type { TargetRecord } from './record';
 
-const isAppConfigWithExpo = (value: unknown): value is { expo: { experiments: { reactCompiler: boolean } } } => {
-  return typeof value === 'object' && value !== null && 'expo' in value;
+interface AppConfig {
+  expo?: { experiments?: { reactCompiler?: boolean } };
+}
+
+const isAppConfig = (value: unknown): value is AppConfig => {
+  return typeof value === 'object' && value !== null;
 };
 
 // React Native through Expo; `framework: 'react'` rather than its own layer, since `eslint-plugin-react-native` caps at
@@ -58,6 +62,17 @@ export const reactNative: TargetRecord = {
   // `expo/tsconfig.base` carries the module resolution and asset declarations React Native needs; `.expo/types` (from
   // `expo customize tsconfig`) holds generated route types, and `expo-env.d.ts` declares the bundler's own modules.
   styleEntry: 'src/global.css',
+  // Metro has no Tailwind pipeline; NativeWind 5 runs Tailwind 4 through PostCSS inside `withNativewind`.
+  tailwind: {
+    imports: [
+      '@import "tailwindcss/theme.css" layer(theme);',
+      '@import "tailwindcss/preflight.css" layer(base);',
+      '@import "tailwindcss/utilities.css";',
+      '@import "nativewind/theme";',
+    ],
+    dependencies: ['nativewind', 'react-native-css'],
+    devDependencies: ['postcss'],
+  },
   // No vite config of its own, so nothing to contribute; see the field on `TargetRecord`.
   vitePlugin: {
     imports: [],
@@ -109,6 +124,16 @@ export const reactNative: TargetRecord = {
     {
       source: 'mocks/renderScreen.tsx',
       target: '__mocks__/renderScreen.tsx',
+    },
+    {
+      source: 'starter/react-native/metro.config.js',
+      target: 'metro.config.js',
+      library: 'tailwind',
+    },
+    {
+      source: 'starter/react-native/nativewind-env.d.ts',
+      target: 'nativewind-env.d.ts',
+      library: 'tailwind',
     },
   ],
   // Nineteen findings survived Expo's template against lintel's `--fix` pass; every one is repaired below.
@@ -225,26 +250,21 @@ export const reactNative: TargetRecord = {
       },
     },
     {
-      // The React Compiler experiment must be enabled in app.json for Expo SDK 53 and earlier;
-      // SDK 55+ has it bundled with eslint-config-expo, but lintel's own config still needs the plugin.
+      // Expo reads `experiments.reactCompiler` from app.json; the template does not always write it.
       path: 'app.json',
       transform: (source: string): string => {
         const config: unknown = JSON.parse(source);
 
-        if (isAppConfigWithExpo(config)) {
-          const expo = config.expo;
-          if ('experiments' in expo) {
-            const experiments = expo.experiments;
-            if (!experiments.reactCompiler) {
-              expo.experiments = {
-                ...experiments,
-                reactCompiler: true,
-              };
-            }
-          }
+        if (!isAppConfig(config) || config.expo === undefined) {
+          return source;
         }
 
-        return JSON.stringify(config, null, 2) + '\n';
+        config.expo.experiments = {
+          ...config.expo.experiments,
+          reactCompiler: true,
+        };
+
+        return `${JSON.stringify(config, null, 2)}\n`;
       },
     },
   ],
@@ -421,7 +441,7 @@ export const reactNative: TargetRecord = {
   // web` stands in, since web is also the platform that statically renders every route.
   build: 'expo export --platform web',
   // The shared list, not a copy of it: this target composes `react()`, so it installs what that layer loads.
-  devDependencies: [...COMMON_REACT_PLUGINS, 'eslint-plugin-react-compiler'],
+  devDependencies: [...COMMON_REACT_PLUGINS],
   // `@srsholmes/vitest-react-native` is what lets vitest load React Native at all, stripping the untranspiled Flow
   // types and standing in for native modules; its `esbuild` dependency needs an install script, hence `allowBuilds`.
   testDevDependencies: [

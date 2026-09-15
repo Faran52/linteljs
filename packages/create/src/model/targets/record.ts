@@ -2,7 +2,9 @@ import type {
   AliasMap,
   Answers,
   Framework,
+  Library,
   NamingMap,
+  Router,
   TargetId,
 } from '../answers/answers';
 
@@ -12,7 +14,8 @@ export type ScaffoldKind = 'create' | 'dlx';
 
 export interface ScaffoldSpec {
   kind: ScaffoldKind;
-  args: string[];
+  // `[scaffolder, name, ...flags]`: `scaffoldCommand` relies on the name sitting second.
+  args: [string, string, ...string[]];
 }
 
 export interface TsconfigPlugin {
@@ -41,6 +44,10 @@ export interface StarterFile {
   // Relative to `assets/`.
   source: string;
   target: string;
+  // Written only when this library was chosen.
+  library?: Library;
+  // Written only when this router was chosen.
+  router?: Router;
 }
 
 // One repair to a generator's starter code. `run/repair` owns when these run, and why.
@@ -67,12 +74,6 @@ export interface TestPlatform {
 export interface PluginSpec {
   imports: string[];
   calls: string[];
-  /**
-   * Helper declarations emitted between the imports and the config, for a plugin assembled rather than called: the
-   * React Compiler's Babel pass is an async factory so it can pin itself to the `pre` group ahead of SWC. Absent on
-   * every spec that names its plugins directly.
-   */
-  prelude?: string[];
 }
 
 // The framework's hook equivalent; `label` exists so Solid can name its own "primitives" rather than "Hooks". Absent on
@@ -92,6 +93,13 @@ export interface StoreSlot {
   label: string;
   // The runtime package a yes installs; absent on Vue, whose `--pinia` flag has `create-vue` install Pinia itself.
   dependency?: string;
+}
+
+export interface TailwindSlot {
+  // What the style entry imports instead of `@import "tailwindcss";`.
+  imports: string[];
+  dependencies: string[];
+  devDependencies: string[];
 }
 
 export interface TsconfigDelta {
@@ -148,6 +156,10 @@ export interface TargetRecord {
   hooksSlot?: HooksSlot;
   // What the state-store question offers this target; absent, the question is not asked.
   store?: StoreSlot;
+  // The routers this target can take; absent, the question is not asked.
+  routers?: Router[];
+  // How Tailwind reaches a target with no Vite or PostCSS pipeline of its own; React Native takes NativeWind.
+  tailwind?: TailwindSlot;
   // Whether the browser question is asked for this target. The extension target is the only one it means anything to.
   hostsBrowser?: true;
   // Whether the UI-framework question is asked. Set on a target that renders with a framework but is not one.

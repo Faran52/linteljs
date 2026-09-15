@@ -76,7 +76,6 @@ export const VERSIONS: Record<string, string> = {
   '@next/eslint-plugin-next': '^16.3.5',
   // The sibling package: tracks its own version, and versions.test.ts fails the moment they diverge.
   '@linteljs/eslint-config': '^1.5.3',
-  'eslint-plugin-react-compiler': '^19.1.0-rc.2',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.1.0',
   'eslint-plugin-jsx-a11y': '^6.10.2',
@@ -123,6 +122,24 @@ export const VERSIONS: Record<string, string> = {
   // Runs, lints and packages a Firefox extension; it is not a bundler, which crxjs still is.
   'web-ext': '^10.6.0',
   'zod': '^4.4.3',
+  '@hookform/resolvers': '^5.9.1',
+  '@t3-oss/env-core': '^0.13.11',
+  '@t3-oss/env-nextjs': '^0.13.11',
+  '@tanstack/angular-form': '^1.33.5',
+  '@tanstack/eslint-plugin-router': '^1.162.0',
+  '@tanstack/react-form': '^1.33.5',
+  '@tanstack/react-router': '^1.170.36',
+  '@tanstack/router-plugin': '^1.168.38',
+  '@tanstack/solid-form': '^1.33.5',
+  '@tanstack/svelte-form': '^1.33.5',
+  '@tanstack/vue-form': '^1.33.5',
+  'es-toolkit': '^1.52.0',
+  'nativewind': '^5.0.0-rc.0',
+  'postcss': '^8.5.28',
+  'react-hook-form': '^7.88.0',
+  'react-native-css': '^3.0.7',
+  'react-router': '^8.4.0',
+  'ts-pattern': '^5.9.0',
   'zustand': '^5.0.14',
 };
 

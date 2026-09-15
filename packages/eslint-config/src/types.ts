@@ -43,7 +43,7 @@ export type Framework
     | 'solid'
     | 'angular';
 
-export type LibraryLayer = 'tanstack-query' | 'tailwind';
+export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind';
 
 // `frameworkGroup` is dropped: the composer reads it off the framework layer, not a caller. Every flag defaults off.
 export interface DefineConfigOptions extends Omit<BaseOptions, 'frameworkGroup'> {

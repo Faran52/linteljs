@@ -134,7 +134,12 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
 
   const target = targetFor(answers);
   const include = coverageInclude(target.sfcExtension);
-  const exclude = [...SHARED_COVERAGE_EXCLUDE, ...target.coverageExclude ?? []];
+  // A route table is configuration; the generated tree is the plugin's.
+  const exclude = [
+    ...SHARED_COVERAGE_EXCLUDE,
+    ...target.coverageExclude ?? [],
+    ...(answers.router === undefined ? [] : ['src/routes/**', 'src/routeTree.gen.ts']),
+  ];
 
   if (target.testPlatforms !== undefined) {
     return platformProjects(target.testPlatforms, include, exclude, setup);

@@ -101,17 +101,11 @@ const config = [
     },
   },
 
-  /**
-   * `vitest/expect-expect` cannot see assertions inside `it.each(...)(label, fn)` callbacks.
-   * The end-to-end suite delegates assertions into `runE2eCase`, which the rule cannot trace.
-   * DESIGN.md: `@linteljs/workspace/rule-tester`
-   */
+  // The e2e files pass `runE2eCase` by reference, out of the rule's reach. DESIGN.md: `@linteljs/workspace/e2e-test`
   {
     name: '@linteljs/workspace/e2e-test',
     files: ['packages/create/src/run/pipeline/e2e/*.e2e.test.ts'],
-    rules: {
-      'vitest/expect-expect': 'off',
-    },
+    rules: { 'vitest/expect-expect': 'off' },
   },
 ];
 

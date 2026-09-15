@@ -17,19 +17,18 @@ export const emitViteConfig = (answers: Answers): string | null => {
   }
 
   const tailwind = hasLibrary(answers, 'tailwind');
+  const tanstackRouter = answers.router === 'tanstack-router';
 
   const imports = [
     "import { defineConfig } from 'vite';",
+    ...(tanstackRouter ? ["import { tanstackRouter } from '@tanstack/router-plugin/vite';"] : []),
     ...vitePlugin.imports,
     ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
   ].join('\n');
 
-  // A plugin assembled in place declares its helper between the imports and the config; most specs have none.
-  const prelude = vitePlugin.prelude === undefined
-    ? ''
-    : `${vitePlugin.prelude.join('\n')}\n\n`;
-
+  // The router plugin goes first: it rewrites route files before the framework plugin transforms them.
   const calls = [
+    ...(tanstackRouter ? ["tanstackRouter({ target: 'react', autoCodeSplitting: true })"] : []),
     ...vitePlugin.calls,
     ...(tailwind ? ['tailwindcss()'] : []),
   ];
@@ -57,7 +56,7 @@ export const emitViteConfig = (answers: Answers): string | null => {
 
   return `${imports}
 
-${prelude}export default defineConfig({
+export default defineConfig({
   plugins: [
 ${plugins}  ],
 ${inputs}  resolve: { tsconfigPaths: true },
