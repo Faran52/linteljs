@@ -112,7 +112,10 @@ describe('the tailwind stylesheet import', () => {
   });
 
   it('leaves the layout without a stylesheet import when tailwind was not answered', () => {
-    const output = transformFor('src/routes/+layout.svelte')(SV_LAYOUT);
+    const output = transformFor('src/routes/+layout.svelte', {
+      ...DEFAULT_ANSWERS,
+      libraries: [],
+    })(SV_LAYOUT);
 
     expect(output).not.toContain('app.css');
   });

@@ -44,7 +44,10 @@ describe('emitViteConfig', () => {
    * the test run, where it would leave one branch uncovered in every component.
    */
   it('declares the compiler in the plugin call', () => {
-    const react = configFor({ target: 'react' }) ?? '';
+    const react = configFor({
+      target: 'react',
+      libraries: [],
+    }) ?? '';
 
     expect(react).toBe(
       "import { defineConfig } from 'vite';\n"
@@ -111,7 +114,10 @@ describe('emitViteConfig', () => {
   });
 
   it('leaves tailwind out when it was not chosen', () => {
-    expect(configFor({ target: 'vue' }) ?? '').not.toContain('tailwind');
+    expect(configFor({
+      target: 'vue',
+      libraries: [],
+    }) ?? '').not.toContain('tailwind');
   });
 });
 

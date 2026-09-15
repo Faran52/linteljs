@@ -226,7 +226,7 @@ describe('patchPackageJson', () => {
 
   it('installs the class linter beside the tailwind toolchain', () => {
     const withTailwind = patchPackageJson({}, answersFor({ libraries: ['tailwind'] }));
-    const without = patchPackageJson({}, answersFor({}));
+    const without = patchPackageJson({}, answersFor({ libraries: [] }));
 
     expect(withTailwind.devDependencies).toHaveProperty('eslint-plugin-better-tailwindcss');
     expect(withTailwind.devDependencies).toHaveProperty('tailwindcss');

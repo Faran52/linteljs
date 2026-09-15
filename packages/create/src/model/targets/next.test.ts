@@ -16,7 +16,7 @@ describe('scaffold', () => {
         'next-app@latest', 'demo-app',
         '--ts',
         '--no-eslint', '--app', '--src-dir', '--no-agents-md',
-        '--no-tailwind',
+        '--tailwind',
         '--import-alias', '@/*',
         '--use-pnpm',
         '--skip-install',
