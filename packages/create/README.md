@@ -24,7 +24,7 @@ pnpm --config.minimumReleaseAge=0 create @linteljs my-app
 
 ## Requirements
 
-Node 24 or newer is required.
+Node 26.8.2 or newer. A missing pnpm or Yarn is installed through corepack; Bun has to be installed first.
 
 ## What you get
 
@@ -81,14 +81,51 @@ the directory you are in.
 
 ## Questions and options
 
-The questionnaire covers project name, framework, testing, package manager, libraries, an optional state
-store, type safety, AI agents, and AI plugins. A question is asked only where the target has a slot for
-it. A target without a store choice does not ask for one, and the extension target additionally asks for
-its browser, surfaces (popup, background, devtools panel), and the UI framework it hosts, while Astro asks
-only for the last of those.
+Every answer is a question in the terminal, a flag on the command line, or a key in `lintel.config.json`.
+A question is asked only where the target has a slot for it.
 
-`--yes` accepts defaults, including React, Vitest, pnpm, strict type safety, Claude Code, and all three AI
-plugins.
+| Question | Flag | Choices | Default | Asked on |
+| --- | --- | --- | --- | --- |
+| Project name | positional | a valid npm package name | the directory's name with `--yes` | every run that scaffolds |
+| Framework | `--target` | `react`, `next`, `vue`, `svelte`, `solid`, `angular`, `astro`, `webextension`, `react-native` | `react` | every target |
+| Browser | `--browser` | `chrome`, `firefox` | `chrome` | webextension |
+| Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` | `popup,background` | webextension |
+| UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid`, or none | none | webextension, astro |
+| Testing | `--testing` | `vitest`, `none` | `vitest` | every target |
+| Package manager | `--pm` | `pnpm`, `npm`, `yarn`, `bun` | `pnpm` | every target |
+| Libraries | `--libraries` | `zod`, `tanstack-query`, `tailwind`, `es-toolkit`, `ts-pattern`, `t3-env` | `tailwind` | every target |
+| Form library | `--libraries` | `tanstack-form`, `react-hook-form` (React only), or none | none | every target |
+| Router | `--router` | `react-router`, `tanstack-router`, or none | none | react |
+| State store | `--store` | the target's store, or none | none | react, next, vue, angular, react-native |
+| Type safety | `--type-safety` | `strict`, `relaxed` | `strict` | every target |
+| AI agents | `--agents` | `claude-code`, `codex` | `claude-code` | every target |
+| AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three | when an agent was chosen |
+
+A list flag takes comma-separated values or the flag repeated. Passing any answer flag makes the run
+non-interactive: the answers not given take their defaults, the way `--yes` takes all of them.
+
+```bash
+npx @linteljs/create my-app --target svelte --pm bun --libraries zod,es-toolkit --testing none
+```
+
+What the libraries bring:
+
+- **Zod** adds `lib/apis/` to the layout and, beside React Hook Form, `@hookform/resolvers`.
+- **TanStack Query** and **TanStack Form** install the binding for the target's framework and, for Query, its
+  ESLint rules. A host with no UI framework installs neither.
+- **Tailwind CSS** wires `@tailwindcss/vite` or PostCSS and the class-order rules. React Native takes NativeWind 5,
+  with `metro.config.js`, `nativewind-env.d.ts` and the NativeWind imports in `src/global.css`.
+- **es-toolkit**, **ts-pattern** and **t3-env** are runtime dependencies only; Next gets `@t3-oss/env-nextjs`.
+
+What the router brings, on React (Vite):
+
+- **React Router** in declarative form: `src/routes/router.tsx` holds the table, `src/main.tsx` mounts the
+  provider. A page lives in `src/pages/<kebab>/{Name}Page.tsx` and is named in the table once.
+- **TanStack Router** in file-based form: `src/routes/__root.tsx` and `src/routes/index.tsx`, the Vite plugin
+  ahead of React's, its ESLint rules, and a committed `src/routeTree.gen.ts` the plugin regenerates on every
+  run. The tree is generated code: ESLint, coverage and the banned-pattern checker all skip it.
+
+Both routers' `useNavigate` is mocked in the test setup, so a navigation asserts without a mounted router.
 
 ```text
 @linteljs/create [name] [options]
@@ -103,8 +140,21 @@ plugins.
   --help, -h
 ```
 
-The CLI refuses a non-interactive run unless you pass `--yes`. With no name argument it uses the directory's,
-so `mkdir my-app && cd my-app && create --yes` needs nothing else. Ctrl+C writes nothing.
+The CLI refuses a non-interactive run unless you pass `--yes` or an answer flag. With no name argument it uses
+the directory's, so `mkdir my-app && cd my-app && create --yes` needs nothing else. Ctrl+C writes nothing.
+
+A run numbers each stage as it starts and ends with what to do next:
+
+```text
+[1/6] scaffold
+...
+[6/6] fix
+eslint --fix rewrote 3 files
+
+Done. Next:
+  cd my-app
+  pnpm check
+```
 
 ## Existing projects and updates
 

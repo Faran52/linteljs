@@ -104,41 +104,24 @@ const isUnpublishedYet = (pm: PackageManager, output: string): boolean => {
   });
 };
 
-const getCmd = (pm: PackageManager): string => {
-  if (pm === 'npm') {
-    return 'npm';
-  }
-  if (pm === 'yarn') {
-    return 'yarn';
-  }
-  if (pm === 'bun') {
-    return 'bun';
-  }
-  return 'pnpm';
+// `why` and a script name, spelled the way each manager wants them.
+const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
+  pnpm: {},
+  yarn: {},
+  npm: {
+    why: ['ls'],
+    lint: ['run', 'lint'],
+    check: ['run', 'check'],
+  },
+  bun: { why: ['pm', 'ls', '--all'] },
 };
 
 export const runPm = (pm: PackageManager, args: string[], project: string): RunResult => {
-  const cmd = getCmd(pm);
-  const mapArg = (a: string): string => {
-    if (a === 'why') {
-      if (pm === 'npm') {
-        return 'ls';
-      }
-      if (pm === 'bun') {
-        return 'pm ls';
-      }
-      return a;
-    }
-    if (a === 'lint' || a === 'check') {
-      if (pm === 'npm') {
-        return `run ${a}`;
-      }
-      return a;
-    }
-    return a;
-  };
-  const mapped = args.map(mapArg);
-  return run(cmd, mapped, project);
+  const mapped = args.flatMap((arg) => {
+    return SPELLINGS[pm][arg] ?? [arg];
+  });
+
+  return run(pm, mapped, project);
 };
 
 let cliRoot: string | undefined;
@@ -174,7 +157,13 @@ export const installCli = (): string => {
 export const runInstallingCli = (project: string, pm: PackageManager): RunResult => {
   const root = installCli();
   const attempt = (): RunResult => {
-    return run('node', [join(root, 'package/bin/create-linteljs.js'), '--skip-scaffold', '--fresh'], project);
+    // `--skip package`: the first pass wrote package.json, and a second write would put the registry range back over
+    // the tarball the direct dependency now names, which npm refuses as EOVERRIDE.
+    return run(
+      'node',
+      [join(root, 'package/bin/create-linteljs.js'), '--skip-scaffold', '--fresh', '--skip', 'package'],
+      project,
+    );
   };
 
   const first = attempt();
@@ -273,6 +262,11 @@ export const applyTarballOverrides = (project: string, pm: PackageManager): void
       ...pkg[overridesKey],
       '@linteljs/eslint-config': `file:${configTarball}`,
       '@linteljs/eslint-plugin': `file:${pluginTarball}`,
+    };
+    // npm refuses an override that disagrees with the direct dependency (EOVERRIDE), so the direct one moves too.
+    pkg.devDependencies = {
+      ...pkg.devDependencies,
+      '@linteljs/eslint-config': `file:${configTarball}`,
     };
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
   }

@@ -32,7 +32,7 @@ It runs linting, CSS linting, type-checking, coverage, and the build. Coverage t
 
 | Package | Use it for |
 | --- | --- |
-| [`@linteljs/create`](packages/create) | Start a project or bring an existing one under the standard. |
+| [`@linteljs/create`](packages/create) | Start a project or bring an existing one under the standard. Nine targets, eight libraries and two React routers as answers. |
 | [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers. |
 | [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the custom rules behind the config. |
 
@@ -66,7 +66,7 @@ pnpm install
 pnpm check
 ```
 
-Requires Node 24+ and pnpm 11. `pnpm check` runs the same chain a generated project gets. The networked
+Requires Node 26.8.2+ and pnpm 12. `pnpm check` runs the same chain a generated project gets. The networked
 end-to-end suite is separate: `pnpm --filter @linteljs/create test:e2e` scaffolds every target for real and
 runs each generated gate.
 
