@@ -46,12 +46,6 @@ const SUPERSEDED = [
   // environment the emitted vitest.config.ts picks (happy-dom is).
   'vite-plugin-vue-devtools',
   'jsdom',
-  /**
-   * `create vite`'s React template declares the Babel plugin; the emitted `vite.config.ts` imports the SWC one
-   * instead. React Native keeps its own copy, which is why this filters what a scaffolder brought and not what a
-   * target asked for.
-   */
-  '@vitejs/plugin-react',
 ];
 
 const SHARED_DEV_DEPENDENCIES = [

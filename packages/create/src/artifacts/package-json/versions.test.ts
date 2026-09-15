@@ -95,7 +95,7 @@ const catalogEntries = (): [string, string][] => {
 
 // Floor of a range, as numbers, so `^10.8.1` and `~10.8.1` compare as 10.8.1 rather than as strings.
 const floorOf = (range: string): number[] => {
-  return range.replace(/^[\^~]/, '').split('.').map(Number);
+  return range.replace(/^[\^~]/, '').replace(/-rc\.\d+/, '').split('.').map(Number);
 };
 
 const atLeast = (range: string, minimum: string): boolean => {

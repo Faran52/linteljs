@@ -1,6 +1,7 @@
 import eslintReact from '@eslint-react/eslint-plugin';
 import lintel from '@linteljs/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactCompiler from 'eslint-plugin-react-compiler';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 import { SCRIPT_EXTENSIONS } from '../utils/globUtils';
@@ -22,6 +23,9 @@ const REACT_FILES = [`**/*.{${SCRIPT_EXTENSIONS}}`];
  * The plugin's own `recommended` preset, not a hand-picked subset: `eslint-config-next` enabled six of these rules at
  * `warn` and that was Next's choice of floor, not a standard, and every other preset in this package arrives the same
  * way. The plugin's `files` glob is absent, so this scopes it the way the layers above are scoped.
+ *
+ * `eslint-plugin-react-compiler` provides the `react-compiler/react-compiler` rule, which enforces the rules of React
+ * for the React Compiler. This layer enables it so generated React Native and Vite React projects are compiler-ready.
  */
 export const react = (): Layer => {
   return [
@@ -30,6 +34,12 @@ export const react = (): Layer => {
     // eslintrc form, which flat config rejects with "This appears to be in eslintrc format".
     ...presetOf(reactHooks.configs.flat.recommended, 'react-hooks/flat/recommended', REACT_FILES),
     ...presetOf(jsxA11y.flatConfigs.recommended, 'jsx-a11y/recommended', REACT_FILES),
+    {
+      name: 'react-compiler/recommended',
+      plugins: { 'react-compiler': reactCompiler },
+      rules: { 'react-compiler/react-compiler': 'error' },
+      files: REACT_FILES,
+    },
 
     {
       name: '@linteljs/react',

@@ -141,11 +141,11 @@ describe('patchPackageJson', () => {
   });
 
   /**
-   * `create vite`'s React template declares the Babel plugin and the emitted `vite.config.ts` imports the SWC one, so
-   * the inherited copy is dead weight. React Native declares the same package for its vitest transform, which is why
-   * the filter runs on what the scaffolder left and not on the merged result.
+   * `create vite`'s React template declares the Babel plugin and the emitted `vite.config.ts` also imports it,
+   * so the inherited copy merges with the target's own. React Native declares the same package for its vitest
+   * transform, which is why the filter runs on what the scaffolder left and not on the merged result.
    */
-  it('drops an inherited plugin-react, and keeps the one a target asks for', () => {
+  it('keeps the inherited plugin-react, and keeps the one a target asks for', () => {
     const scaffolded: PackageJson = {
       ...SCAFFOLDED,
       devDependencies: {
@@ -155,7 +155,7 @@ describe('patchPackageJson', () => {
     };
 
     expect(patchPackageJson(scaffolded, answersFor({ target: 'react' })).devDependencies)
-      .not.toHaveProperty('@vitejs/plugin-react');
+      .toHaveProperty('@vitejs/plugin-react');
     expect(patchPackageJson(scaffolded, answersFor({ target: 'react-native' })).devDependencies)
       .toHaveProperty('@vitejs/plugin-react');
   });

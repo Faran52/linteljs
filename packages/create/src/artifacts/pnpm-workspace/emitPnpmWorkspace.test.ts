@@ -32,10 +32,10 @@ describe('emitPnpmWorkspace', () => {
     );
   });
 
-  // `@vitejs/plugin-react-swc` pulls `@swc/core`, whose install script pnpm aborts the first install over.
-  it('allows the swc binary the react build plugin pulls', () => {
+  // `@vitejs/plugin-react` has no native binary, so React needs no extra build allowance.
+  it('allows only the shared builds for the react target', () => {
     expect(allowBuildsBlock(answersFor({ target: 'react' }))).toBe(
-      "allowBuilds:\n  '@swc/core': true\n  'sharp': true\n  'unrs-resolver': true\n",
+      "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n",
     );
   });
 
