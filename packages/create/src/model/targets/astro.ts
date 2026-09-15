@@ -148,11 +148,11 @@ export const astro: TargetBuilder = (answers) => {
       /**
        * The hosted framework's own packages, less the build plugin, which belongs to a `vite.config.ts` this target
        * does not own: `@astrojs/react` brings its own copy of `@vitejs/plugin-react` and the compiler rides that
-       * plugin's Babel passthrough, so the SWC variant would install and never be imported. The Babel packages stay,
-       * because that passthrough is what loads them.
+       * plugin's Babel passthrough, so the standalone plugin would install and never be imported. The Babel packages
+       * stay, because that passthrough is what loads them.
        */
       ...(hosted?.devDependencies ?? []).filter((name) => {
-        return name !== '@vitejs/plugin-react-swc';
+        return name !== '@vitejs/plugin-react';
       }),
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),

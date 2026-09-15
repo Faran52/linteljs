@@ -70,7 +70,9 @@ React Native needs **npm 11 on PATH** when using the current published Expo scaf
 shells out to `npm pack --dry-run --json`, and npm 12 returns an object where npm 11 returned an array, so
 the scaffold fails before writing a file with `Could not parse JSON returned from "npm pack"`. That is
 [expo/expo#48091](https://github.com/expo/expo/issues/48091). Node 24 bundles npm 12, so this bites by
-default: `npm i -g npm@11` first, and undo it once a fixed `create-expo-app` ships.
+default: `npm i -g npm@11` first, and undo it once a fixed `create-expo-app` ships. A fix has been
+merged upstream in [expo/expo#48392](https://github.com/expo/expo/pull/48392) but is not yet
+published to npm.
 
 The project name argument uses lowercase letters, digits, dots, dashes and underscores, starts with a letter
 or digit, is not one of npm's reserved names, and is at most 214 characters. Anything past the name is

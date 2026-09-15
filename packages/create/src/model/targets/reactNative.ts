@@ -4,6 +4,10 @@ import { COMMON_REACT_PLUGINS, esmAssetImports } from './utils/targetUtils';
 
 import type { TargetRecord } from './record';
 
+const isAppConfigWithExpo = (value: unknown): value is { expo: { experiments: { reactCompiler: boolean } } } => {
+  return typeof value === 'object' && value !== null && 'expo' in value;
+};
+
 // React Native through Expo; `framework: 'react'` rather than its own layer, since `eslint-plugin-react-native` caps at
 // `eslint ^9` and `eslint-config-expo` bundles plugins that collide with what `base()` already registers.
 export const reactNative: TargetRecord = {
@@ -220,6 +224,29 @@ export const reactNative: TargetRecord = {
           );
       },
     },
+    {
+      // The React Compiler experiment must be enabled in app.json for Expo SDK 53 and earlier;
+      // SDK 55+ has it bundled with eslint-config-expo, but lintel's own config still needs the plugin.
+      path: 'app.json',
+      transform: (source: string): string => {
+        const config: unknown = JSON.parse(source);
+
+        if (isAppConfigWithExpo(config)) {
+          const expo = config.expo;
+          if ('experiments' in expo) {
+            const experiments = expo.experiments;
+            if (!experiments.reactCompiler) {
+              expo.experiments = {
+                ...experiments,
+                reactCompiler: true,
+              };
+            }
+          }
+        }
+
+        return JSON.stringify(config, null, 2) + '\n';
+      },
+    },
   ],
   // The starter suite below is the one that cannot meet the strict floor: `record.ts` carries why.
   exemptsStarterTests: true,
@@ -394,7 +421,7 @@ export const reactNative: TargetRecord = {
   // web` stands in, since web is also the platform that statically renders every route.
   build: 'expo export --platform web',
   // The shared list, not a copy of it: this target composes `react()`, so it installs what that layer loads.
-  devDependencies: [...COMMON_REACT_PLUGINS],
+  devDependencies: [...COMMON_REACT_PLUGINS, 'eslint-plugin-react-compiler'],
   // `@srsholmes/vitest-react-native` is what lets vitest load React Native at all, stripping the untranspiled Flow
   // types and standing in for native modules; its `esbuild` dependency needs an install script, hence `allowBuilds`.
   testDevDependencies: [

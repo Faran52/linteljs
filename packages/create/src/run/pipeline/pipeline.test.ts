@@ -436,7 +436,7 @@ describe('coverage surface', () => {
     };
 
     expect(await viteConfig({}))
-      .toContain('...(process.env.VITEST === undefined ? [await reactCompiler()] : []),');
+      .toContain('  ? [babel({ presets: [reactCompilerPreset()] }), react()]');
     expect(await viteConfig({ target: 'solid' }))
       .toContain('solid({ hot: process.env.VITEST === undefined })');
   });

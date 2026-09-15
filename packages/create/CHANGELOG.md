@@ -6,22 +6,35 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## 1.5.4
+
+- `stylelint-order` is now an explicit dev dependency in generated projects. `stylelint-config-recess-order`
+  declares it as a peer dependency, so pnpm does not install it automatically; without it `stylelint`
+  fails with `Could not find "stylelint-order"` at runtime.
+- Generated projects get `overrides` and `resolutions` fields for npm peer dependency resolution,
+  alongside `.npmrc` with `allow-scripts` and `legacy-peer-deps` for npm, `.yarnrc.yml` and
+  `bunfig.toml` for yarn and bun, and `corepack` detection with `ensurePackageManager`.
+- `eslint-plugin-vue` moves to 10.11.0, `@next/eslint-plugin-next` to 16.3.5, `angular-eslint`
+  to 22.5.0, `@types/node` to 26.5.1, and catalog dependencies (`eslint`, `tsdown`, `vitest`,
+  `@vitest/coverage-v8`) move to their latest compatible releases.
+- Skip the AI plugins question when no AI agent is selected; fix the AI agents `isCancel` type
+  narrowing in `askMulti`.
+- Expand e2e tests to cover all targets across all package managers with sharding support.
+
+## 1.5.3
+
+The emitted `vitest.config.ts` passes `execArgv: ['--no-experimental-webstorage']`. Node 25+ exposes
+a native `localStorage` that throws without `--localstorage-file`, and happy-dom no longer replaces
+it, so a storage-backed component test read `undefined` on every generated project. React Native is
+unaffected: its platform projects run `environment: 'node'`.
+See [capricorn86/happy-dom#1950](https://github.com/capricorn86/happy-dom/issues/1950).
+
 ## 1.5.2
 
 No rule changes. The three versions move together, so this carries generated-project floors moving
 with the workspace: pnpm 12.1.0, Node >=26.8.1, and `@types/node` 26.4.0.
 
-- `stylelint-order` is now an explicit dev dependency in generated projects. `stylelint-config-recess-order`
-  declares it as a peer dependency, so pnpm does not install it automatically; without it `stylelint`
-  fails with `Could not find "stylelint-order"` at runtime.
-
 ## 1.5.1
-
-- Generated pnpm projects pin pnpm 12.0.0, matching the workspace version used to build and test them.
-- Emitted dependency floors move with the mature workspace set: ESLint 10.9.1,
-  `@tanstack/eslint-plugin-query` 5.102.3 and `@next/eslint-plugin-next` 16.3.3.
-
-## 1.5.0
 
 Twelve findings from a report against a scaffolded Astro workspace, plus four the end-to-end suite
 found while they were being fixed.

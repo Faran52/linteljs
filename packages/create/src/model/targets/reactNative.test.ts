@@ -132,4 +132,58 @@ describe('starterFixes', () => {
     expect(output).not.toContain('useEffect');
     expect(output).not.toContain('setHasHydrated');
   });
+
+  it('adds reactCompiler experiment to app.json', () => {
+    const source = JSON.stringify({
+      expo: {
+        experiments: {
+          reactCompiler: false,
+        },
+      },
+    }, null, 2) + '\n';
+
+    const output = transformFor('app.json')(source);
+    const parsed = JSON.parse(output) as { expo: { experiments: { reactCompiler: boolean } } };
+
+    expect(parsed.expo.experiments.reactCompiler).toBe(true);
+  });
+
+  it('keeps reactCompiler true in app.json', () => {
+    const source = JSON.stringify({
+      expo: {
+        experiments: {
+          reactCompiler: true,
+        },
+      },
+    }, null, 2) + '\n';
+
+    const output = transformFor('app.json')(source);
+    const parsed = JSON.parse(output) as { expo: { experiments: { reactCompiler: boolean } } };
+
+    expect(parsed.expo.experiments.reactCompiler).toBe(true);
+  });
+
+  it('leaves app.json unchanged when expo has no experiments', () => {
+    const source = JSON.stringify({
+      expo: {
+        sdkVersion: '53.0.0',
+      },
+    }, null, 2) + '\n';
+
+    const output = transformFor('app.json')(source);
+
+    expect(output).toContain('sdkVersion');
+    expect(output).not.toContain('reactCompiler');
+  });
+
+  it('leaves app.json unchanged when it has no expo key', () => {
+    const source = JSON.stringify({
+      name: 'my-app',
+    }, null, 2) + '\n';
+
+    const output = transformFor('app.json')(source);
+
+    expect(output).toContain('name');
+    expect(output).not.toContain('reactCompiler');
+  });
 });

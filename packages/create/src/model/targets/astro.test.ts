@@ -117,15 +117,15 @@ describe('the hosted framework axis', () => {
   });
 
   /**
-   * The SWC plugin belongs to a `vite.config.ts` this target does not own, so it would install and never be imported.
-   * The Babel three stay: `@astrojs/react` runs the compiler through its own passthrough, which is what loads them.
+   * The build plugin belongs to a `vite.config.ts` this target does not own, so it would install and never be
+   * imported. The Babel two stay: `@astrojs/react` runs the compiler through its own passthrough, which is what
+   * loads them.
    */
   it('leaves the react build plugin to the targets that own a vite config', () => {
     const { devDependencies } = recordFor({ hostedFramework: 'react' });
 
-    expect(devDependencies).not.toContain('@vitejs/plugin-react-swc');
+    expect(devDependencies).not.toContain('@vitejs/plugin-react');
     expect(devDependencies).toContain('babel-plugin-react-compiler');
-    expect(devDependencies).toContain('@rolldown/plugin-babel');
     expect(devDependencies).toContain('@babel/core');
   });
 
