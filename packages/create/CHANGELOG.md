@@ -6,20 +6,40 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
-## 1.5.4
+## 1.6.0
 
-- `stylelint-order` is now an explicit dev dependency in generated projects. `stylelint-config-recess-order`
-  declares it as a peer dependency, so pnpm does not install it automatically; without it `stylelint`
-  fails with `Could not find "stylelint-order"` at runtime.
-- Generated projects get `overrides` and `resolutions` fields for npm peer dependency resolution,
-  alongside `.npmrc` with `allow-scripts` and `legacy-peer-deps` for npm, `.yarnrc.yml` and
-  `bunfig.toml` for yarn and bun, and `corepack` detection with `ensurePackageManager`.
-- `eslint-plugin-vue` moves to 10.11.0, `@next/eslint-plugin-next` to 16.3.5, `angular-eslint`
-  to 22.5.0, `@types/node` to 26.5.1, and catalog dependencies (`eslint`, `tsdown`, `vitest`,
-  `@vitest/coverage-v8`) move to their latest compatible releases.
-- Skip the AI plugins question when no AI agent is selected; fix the AI agents `isCancel` type
-  narrowing in `askMulti`.
-- Expand e2e tests to cover all targets across all package managers with sharding support.
+1.5.4 was cut and never published; its notes are folded in here.
+
+- Five more libraries: es-toolkit, ts-pattern, t3-env (`@t3-oss/env-nextjs` on Next), TanStack Form
+  and React Hook Form. The two form libraries are one choice, asked as a radio after the libraries
+  list; React Hook Form is offered only where the target renders with React, and beside Zod it brings
+  `@hookform/resolvers`. TanStack Query and Form bind to the framework a host renders with, so an Astro
+  site hosting React now installs `@tanstack/react-query` rather than the lint plugin alone.
+- A Router question on React (Vite): React Router in its declarative form, or TanStack Router
+  file-based with its Vite plugin, its ESLint layer and a committed `src/routeTree.gen.ts`. Either
+  replaces `src/main.tsx` and writes `src/routes/`; the route table is out of coverage.
+- Tailwind on React Native is NativeWind 5 on Tailwind 4: `nativewind`, `react-native-css`,
+  `metro.config.js`, `nativewind-env.d.ts`, and NativeWind's imports in `src/global.css`.
+- Every answer is a flag: `--target`, `--pm`, `--testing`, `--type-safety`, `--libraries`, `--router`,
+  `--store`, `--agents`, `--plugins`, `--browser`, `--hosted`, `--surfaces`. An answer flag makes the run
+  non-interactive; a wrong value gets the config parser's message. A run numbers each stage as it starts
+  and ends with the next command.
+- Tailwind is a default library. `eslint-plugin-react-compiler` is gone: `eslint-plugin-react-hooks` 7
+  ships the compiler rules, so the extra plugin doubled them and pinned an rc. The React (Vite) build
+  uses `@vitejs/plugin-react` 6 with `reactCompilerPreset` through `@rolldown/plugin-babel`; the SWC
+  plugin and its `@swc/core` build approval are gone. Expo's `app.json` gets
+  `experiments.reactCompiler: true`.
+- A missing pnpm or Yarn is installed through corepack, which Node 26 no longer bundles. A missing Bun
+  is reported with where to get it, since corepack does not know it.
+- `stylelint-order` is an explicit dev dependency: `stylelint-config-recess-order` peers on it and pnpm
+  does not install it alone. npm projects get `.npmrc`, Yarn projects `.yarnrc.yml`, and Bun projects
+  `trustedDependencies` in package.json, which is the list bun reads for install scripts. `npm create` gets the `--` its scaffolders need to see their flags.
+- The AI plugins question is skipped when no agent was chosen; agents may be empty.
+- `eslint-plugin-vue` moves to 10.11.0, `@next/eslint-plugin-next` to 16.3.5, `angular-eslint` to
+  22.5.0, `@types/node` to 26.5.1, `@rolldown/plugin-babel` to 0.2.4, and the catalog (`eslint`,
+  `tsdown`, `vitest`, `@vitest/coverage-v8`) to its latest compatible releases.
+- The end-to-end suite is one file per target, each across all four package managers, with shard
+  support.
 
 ## 1.5.3
 

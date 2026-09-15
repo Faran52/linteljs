@@ -37,7 +37,7 @@ Each layer switch is off unless you enable it.
 | `vitest` | Enables rules for `*.test.*` and `*.spec.*` files. |
 | `html` | Enables the HTML layer. |
 | `astro` | Enables Astro rules for `.astro` templates. It stacks with a framework layer rather than replacing one. |
-| `libraries` | Adds `'tanstack-query'` and/or `'tailwind'`. |
+| `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'` and `'tailwind'`. |
 | `tailwindEntryPoint` | Path to the CSS file that contains `@import "tailwindcss"`, passed to the Tailwind layer. Ignored unless `libraries` includes `'tailwind'`. |
 | `ignores`, `naming`, `folderNaming`, `aliases`, `resolver` | Passed through to `base` under the same names. |
 
@@ -93,6 +93,7 @@ choice for a project config.
 | `solid()` | `/solid` | Solid TypeScript rules and JSX accessibility. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y` |
 | `angular()` | `/angular` | Angular TypeScript rules, plus template rules and template accessibility. | `angular-eslint` |
 | `tanstackQuery()` | `/tanstack-query` | TanStack Query recommended rules. | `@tanstack/eslint-plugin-query` |
+| `tanstackRouter()` | `/tanstack-router` | TanStack Router recommended rules. | `@tanstack/eslint-plugin-router` |
 | `tailwind()` | `/tailwind` | Tailwind class-order, duplicate, and conflict checks. | `eslint-plugin-better-tailwindcss` |
 
 Framework and library plugins are optional peer dependencies. Install the peers for layers you enable; the

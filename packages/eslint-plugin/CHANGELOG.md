@@ -6,10 +6,10 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 
-## 1.5.4
+## 1.6.0
 
-No rule changes. The three versions move together, so this carries the pnpm 12 generated-project
-pin and mature dependency floors in `@linteljs/create` and `@linteljs/eslint-config`.
+No rule changes. The three versions move together; the change is in `@linteljs/create` and
+`@linteljs/eslint-config`. 1.5.4 was cut and never published.
 
 ## 1.5.3
 

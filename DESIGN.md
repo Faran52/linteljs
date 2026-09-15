@@ -10,7 +10,7 @@ restates code goes stale and then misleads.
 ## Contents
 
 For a consumer deciding whether to use lintel: The problem, The goal, Non-goals.
-For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure.
+For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure; Libraries and routers; Package manager files; Comments.
 For work on this workspace itself: One version per shared dependency; What a project owns; Renaming a generated agent file; React Native build; Releasing; Workspace lint exemptions.
 
 ## The problem
@@ -407,6 +407,63 @@ lib/apis/
 
 Request and response are separate schemas per endpoint, never one shape serving both directions.
 
+## Libraries and routers
+
+Eight libraries and two routers are answers rather than a starter kit, because each one changes what the
+CLI emits: a dependency, a lint layer, a starter file, a coverage exclusion. Something that changes
+nothing the CLI writes is a `pnpm add` and not a question.
+
+- **One form library at most.** TanStack Form and React Hook Form bind the same inputs, so the prompt
+  offers them as one radio and the config parser refuses both together. React Hook Form is offered only
+  where the target renders with React, which includes an Astro or extension host with a React island.
+- **Bindings follow the framework, not the target.** TanStack Query and Form install
+  `@tanstack/<framework>-*` for `target.framework`, so an Astro site hosting React gets the React binding
+  and a plain-TypeScript extension gets none. Before 1.6.0 the map was keyed by target and a hosted
+  framework got the lint plugin with no runtime package behind it.
+- **t3-env** is `@t3-oss/env-core` everywhere except Next, whose own package reads `process.env` the way
+  the App Router exposes it.
+- **React Native takes NativeWind for tailwind.** Metro has no Tailwind pipeline, so `@tailwindcss/postcss`
+  alone installs and never runs. NativeWind 5 runs Tailwind 4 through PostCSS inside `withNativewind`, from
+  `metro.config.js`; NativeWind 4 would have pinned React Native alone to Tailwind 3 against the
+  latest-only non-goal. It is an rc at 1.6.0 and pinned `^5.0.0-rc.0`, which admits the stable release the
+  day it lands. The style entry gets NativeWind's four imports in place of `@import "tailwindcss"`, and the
+  merge recognises a subpath import so `sync` does not prepend a second block.
+- **Two routers on React (Vite), and only there.** Next, SvelteKit, Expo and Astro route by file already;
+  Vue's scaffolder installs its router; Solid and Angular are a `pnpm add`. React Router is emitted in its
+  declarative form (a route table in `src/routes/router.tsx`, pages under `src/pages/`), because framework
+  mode replaces Vite's entry and build, which is a different project. TanStack Router is file-based, since
+  that is the form its type safety comes from; its Vite plugin runs ahead of React's so route files are
+  rewritten before they are transformed. `src/routeTree.gen.ts` is written at birth and committed: the
+  plugin regenerates it on every dev and build run, but `tsc --noEmit` runs before either in `check`, and a
+  CI checkout without the file fails the typecheck. It is generated code with `as any` inside, so ESLint,
+  coverage and the banned-pattern checker skip it by name. `src/routes/**` is out of coverage on both
+  routers: a route table is configuration.
+- **Answer flags** go through `parseLintelConfig`, so `--target wat` fails with the same message a bad
+  `lintel.config.json` does and there is one validator, not two.
+
+## Package manager files
+
+pnpm reads the approved install scripts from `allowBuilds` in `pnpm-workspace.yaml`; bun reads
+`trustedDependencies` in `package.json` and nothing else. Measured on bun 1.3.11 with a local package
+carrying a postinstall: an `allowBuilds` key in `bunfig.toml` left the script blocked exactly as no file
+at all did, so 1.5.4's `bunfig.toml` shipped a key bun never read. Both managers now take the one list
+`allowedBuildNames` builds.
+
+`.npmrc` (`legacy-peer-deps`) and `.yarnrc.yml` (discarding the YN0002 and YN0060 peer notices) were
+added in the same release without a measurement. They hide the warnings a maintainer drives the CLI by
+hand to see, so they stay only until an install with each file removed is measured per target; that
+measurement is owed, not done.
+
+## Comments
+
+A comment states a why the code cannot: a measurement, an upstream issue, a constraint, a deliberate
+deviation. One or two lines. What the next line does is not a comment; history is not a comment; a
+decision worth a paragraph lives in this file and the comment points here. Exported API in the two
+published packages keeps a one-sentence doc where the name alone does not say what a value means.
+Tests keep a comment where a fixture's shape has a reason not on screen. This policy replaced a
+codebase where seventeen percent of `@linteljs/create` and twenty-two percent of `@linteljs/eslint-config`
+were comment lines.
+
 ## One version per shared dependency
 
 The same argument The goal makes about rules reaching every project applies to this workspace's own versions.
@@ -683,6 +740,11 @@ so `layoutUtils.test.ts` is judged on `layoutUtils`.
 The one place the default resolver cannot work it out for itself. It reads a single tsconfig
 discovered from the working directory, which in a workspace is the root, and the root has no
 `paths`. Each package's `@mocks/*` lives in its own tsconfig.
+
+`noWarnOnMultipleProjects` rides beside it. The resolver prints "Multiple projects found" twice per
+run when `project` is a glob, and the advice it gives (one tsconfig with references) is the layout
+this workspace deliberately does not have. Measured: the notice carries no finding, so silencing it
+changes nothing in what `pnpm lint` reports.
 
 ### `@linteljs/workspace/create-rings`
 
