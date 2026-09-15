@@ -1,7 +1,6 @@
 import { RuleTester } from 'eslint';
 import tseslint from 'typescript-eslint';
 
-// Plain JavaScript, for rules that never touch TypeScript syntax.
 export const jsRuleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 'latest',
@@ -9,7 +8,6 @@ export const jsRuleTester = new RuleTester({
   },
 });
 
-// TypeScript without JSX.
 export const tsRuleTester = new RuleTester({
   languageOptions: {
     parser: tseslint.parser,

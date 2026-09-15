@@ -26,7 +26,6 @@ describe('base: stylistic', () => {
     await expect(ruleIdsFor(base(), long, TS_FILE)).resolves.toContain('@stylistic/max-len');
   });
 
-  // Same class of thing `ignoreUrls` already exempts: one unbreakable token.
   it('exempts a line that is only a long attribute value', async () => {
     const path = `  d="${'M10 3.22l-.61-.6a5.5 5.5 0 0 0-7.666.105 '.repeat(30)}"`;
 
@@ -45,7 +44,6 @@ describe('base: stylistic', () => {
       .resolves.toContain('@stylistic/quotes');
   });
 
-  // These come from `@stylistic/recommended`, not a rule `base` sets directly.
   it('reports a missing trailing comma in a multiline literal', async () => {
     const code = 'export const value = {\n  a: 1,\n  b: 2\n};\n';
 
@@ -64,7 +62,6 @@ describe('base: stylistic', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/object-curly-newline');
   });
 
-  // Both are scoped to object literals, so an import's braces stay the four `@linteljs` newline rules' business.
   it('leaves an import to the newline rules that own it', async () => {
     const code = "import { alpha, bravo } from 'mod';\n\nexport const value = alpha + bravo;\n";
     const reported = await ruleIdsFor(base(), code, TS_FILE);
@@ -93,14 +90,9 @@ describe('base: stylistic', () => {
   });
 });
 
-// `ignores` has to reach ESLint as a global ignore entry, not another `files` scope.
 describe('base: ignores', () => {
   const doubleQuoted = 'export const value = "x";\n';
-  /**
-   * Not a `dist/` path: `base()` also ignores whatever this repository's own `.gitignore` covers, and that includes
-   * `dist`, so a built path is no longer the "nothing covers this" case. `built` below is what the `ignores` option is
-   * asked about, and it has to be a path git does not already ignore for the two assertions to be about the option.
-   */
+  // Not `dist/`: this repository's `.gitignore` already covers that, and the option is what is under test.
   const built = 'src/generated/bundle.js';
 
   it('lints a path no ignore covers', async () => {
@@ -112,13 +104,11 @@ describe('base: ignores', () => {
       .resolves.not.toContain('@stylistic/quotes');
   });
 
-  // The other half: what git ignores, ESLint ignores, without the project repeating it in `ignores`.
   it('reports nothing under a path only .gitignore covers', async () => {
     await expect(ruleIdsFor(base(), doubleQuoted, 'dist/bundle.js'))
       .resolves.not.toContain('@stylistic/quotes');
   });
 
-  // A project need not have one, and a missing file is not an error: there is simply nothing to add.
   it('still builds a config where there is no .gitignore to read', async () => {
     const root = await mkdtemp(join(tmpdir(), 'lintel-nogit-'));
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
@@ -156,16 +146,6 @@ describe('base: quality', () => {
     await expect(ruleIdsFor(base(), 'console.log(1);\n', 'src/tool.js')).resolves.toContain('no-console');
   });
 
-  /**
-   * The one place stdout is the product. Every reference repo had turned the rule off for a glob of its own, and each
-   * reached for `**\/*.js`, which silences a genuine stray anywhere in plain-JS source. Granting the directory this
-   * standard already puts scripts in is narrower than what a project writes when the standard declines to say.
-   */
-  /**
-   * A hotspot rule has no clean state: it asks a human to confirm the execution is safe, and a fake of
-   * `inspectedWindow.eval` that does not execute a source string is not a fake of it. Granted in the fixture
-   * directory only, which is where this standard already puts fakes.
-   */
   it('allows a fixture to execute a source string, and no source file to', async () => {
     const code = "import { runInThisContext } from 'node:vm';\n\nexport const run = (source: string): unknown => {\n"
       + '  return runInThisContext(source);\n};\n';
@@ -176,7 +156,6 @@ describe('base: quality', () => {
       .resolves.toContain('sonarjs/code-eval');
   });
 
-  // The grant is one rule wide. A fixture is still ordinary source for everything else base reports.
   it('grants a fixture nothing beyond that one rule', async () => {
     await expect(ruleIdsFor(base(), 'console.log(1);\n', '__mocks__/chromeFixture.ts'))
       .resolves.toContain('no-console');
@@ -210,7 +189,6 @@ describe('base: lintel rules', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/union-newline');
   });
 
-  // The one rule the plugin publishes and holds out of `recommended`, so `base` is what enables it.
   it('reports interface-order', async () => {
     const code = 'export const value = 1;\n\nexport interface Shape {\n  a: string;\n}\n';
 
@@ -218,7 +196,7 @@ describe('base: lintel rules', () => {
   });
 });
 
-// Without `import-x/parsers` naming a `.cts`/`.mts` parser, `no-cycle` cannot parse the dependency and stays silent.
+// Without `import-x/parsers` naming a `.cts`/`.mts` parser, `no-cycle` stays silent.
 describe('base: import-x/no-cycle', () => {
   const entry = join(import.meta.dirname, '../__mocks__/fixtures/cycle/a.cts');
 
@@ -226,7 +204,7 @@ describe('base: import-x/no-cycle', () => {
     await expect(ruleIdsForFile(base(), entry)).resolves.toContain('import-x/no-cycle');
   });
 
-  // Negative control: proves the test above isn't passing for an unrelated reason.
+  // Negative control.
   it('does not report the same cycle under the hand-written settings block it replaces', async () => {
     const handWritten: Layer = [
       {
@@ -244,5 +222,31 @@ describe('base: import-x/no-cycle', () => {
     ];
 
     await expect(ruleIdsForFile(handWritten, entry)).resolves.toEqual([]);
+  });
+});
+
+describe('base: resolver options', () => {
+  const settingsOf = (layer: Layer) => {
+    return layer.find((block) => {
+      return block.settings?.['import-x/resolver'] !== undefined;
+    })?.settings;
+  };
+
+  it('passes noWarnOnMultipleProjects through only when asked', () => {
+    expect(settingsOf(base({
+      resolver: {
+        project: 'packages/*/tsconfig.json',
+        noWarnOnMultipleProjects: true,
+      },
+    }))).toMatchObject({
+      'import-x/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: 'packages/*/tsconfig.json',
+          noWarnOnMultipleProjects: true,
+        },
+      },
+    });
+    expect(settingsOf(base())).toMatchObject({ 'import-x/resolver': { typescript: { alwaysTryTypes: true } } });
   });
 });

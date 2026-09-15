@@ -8,23 +8,18 @@ jsRuleTester.run('no-import-namespace-destructure', noImportNamespaceDestructure
     "import * as namespace from 'mod';\nconst value = namespace.thing;",
     "import * as namespace from 'mod';\nnamespace.run();",
 
-    // Named and default imports are already specific.
     "import { thing } from 'mod';\nconst { alpha } = thing;",
     "import thing from 'mod';\nconst { alpha } = thing;",
 
-    // Local objects are none of this rule's business.
     'const source = {};\nconst { alpha } = source;',
     'const { alpha } = globalThis;',
 
-    // The initialiser has to be a bare identifier.
     "import * as namespace from 'mod';\nconst { alpha } = namespace.nested;",
     "import * as namespace from 'mod';\nconst { alpha } = getThing();",
 
-    // The binding has to be an object pattern.
     "import * as namespace from 'mod';\nconst [alpha] = namespace;",
     "import * as namespace from 'mod';\nconst alias = namespace;",
 
-    // Declared without an initialiser.
     'let alpha;',
 
     // A `for...of` head is the one destructuring declarator with no initialiser, so it
@@ -49,11 +44,9 @@ function run() {
     // rule inspects is the variable, not the import.
     "import * as namespace from 'mod';\nconst alias = namespace;\nconst { alpha } = alias;",
 
-    // Catch parameters and function declarations resolve to their own defs.
     'try { run(); } catch (error) { const { message } = error; use(message); }',
     'function factory() {}\nconst { alpha } = factory;',
 
-    // Class and for-of bindings are not imports.
     'class Thing {}\nconst { alpha } = Thing;',
     'for (const item of list) {\n  const { alpha } = item;\n  use(alpha);\n}',
 
@@ -143,7 +136,6 @@ for (const item of list) {
       errors: [{ messageId: 'noDestructureNamespace' }],
     },
     {
-      // Two destructures of the same namespace each report.
       code: `import * as namespace from 'mod';
 const { alpha } = namespace;
 function run() {

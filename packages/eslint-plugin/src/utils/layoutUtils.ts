@@ -12,12 +12,10 @@ export interface Located {
   loc?: AST.Token['loc'] | null | undefined;
 }
 
-// Either end of a gap a layout fixer rewrites, which it needs offsets for.
 export interface SpliceAnchor extends Located {
   range?: AST.Range | undefined;
 }
 
-// The column a block sits at, and one step further in.
 export interface Indents {
   outer: string;
   inner: string;

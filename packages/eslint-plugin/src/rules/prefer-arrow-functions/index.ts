@@ -224,7 +224,6 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return;
         }
 
-        // The three readers below all ask about this declaration's own binding, so it is resolved once here.
         const nameVariable = nameVariableOf(context, fn);
 
         /* v8 ignore next 3 -- a function declaration always declares its own name */

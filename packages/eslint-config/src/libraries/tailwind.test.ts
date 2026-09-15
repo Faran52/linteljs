@@ -14,15 +14,14 @@ import tailwind from './tailwind';
 
 import type { Layer } from '../types';
 
-// The plugin resolves `tailwindcss` from cwd, which is the repo root when the whole workspace
-// runs; this pins it to the package that actually declares the devDependency.
+// The plugin resolves `tailwindcss` from cwd, which is the repo root when the whole workspace runs.
 const CWD_SETTINGS: Layer = [{
   settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../..') } },
 }];
 
 const layer = [...base(), ...react(), ...tailwind(), ...CWD_SETTINGS];
 
-// By name, not by index: the recommended preset ahead of it may grow a block without this stopping to say so.
+// By name: the preset ahead of it may grow a block.
 const ownBlockOf = (built: Layer): Layer[number] => {
   const block = built.find((entry) => {
     return entry.name === '@linteljs/tailwind';
@@ -60,18 +59,14 @@ describe('tailwind', () => {
     expect(ruleIds).toContain('better-tailwindcss/enforce-consistent-class-order');
   });
 
-  /**
-   * The setting is what lets the plugin read the project's own theme. Asserted on the layer rather than through a lint
-   * run, because proving the effect needs a real CSS entry with a custom token in it, and the block carrying the
-   * setting is the whole contract with `@linteljs/create`.
-   */
+  // On the layer, not a lint run: proving the effect needs a real CSS entry with a custom token.
   it('carries the entry point through to the plugin when given one', () => {
     expect(ownBlockOf(tailwind('./src/app/globals.css')).settings).toEqual(
       { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } },
     );
   });
 
-  // Absent, not present-and-undefined: the plugin treats an explicit undefined as a configured-but-missing entry.
+  // The plugin treats an explicit undefined as a configured-but-missing entry.
   it('sets no entry point when none is given', () => {
     expect(ownBlockOf(tailwind()).settings).toBeUndefined();
   });

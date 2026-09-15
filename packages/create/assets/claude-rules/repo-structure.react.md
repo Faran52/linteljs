@@ -38,7 +38,7 @@ src/
     hooks/        cross-cutting hooks
     apis/         endpoint definitions and schemas
   pages/<kebab>/  {Name}Page.tsx and its private slots
-  routes/         route table
+  routes/         route table: react-router's `router.tsx`, or TanStack's one file per route
 ```
 
 ## Placement

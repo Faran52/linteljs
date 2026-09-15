@@ -22,3 +22,6 @@ packages/eslint-plugin/reports/
 
 # Local hook cache, written by the impeccable tooling. Never shared.
 .impeccable/
+
+# Worktrees the coding agent harness creates for background agents. Never shared.
+.claude/worktrees/

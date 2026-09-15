@@ -10,21 +10,18 @@ import { entryExists, readIfPresent } from '../utils/fsUtils';
 
 import type { Answers } from '../../model/answers/answers';
 
-// Re-applies shipped artifacts from the installed CLI using the answers in `lintel.config.json`, diffing first rather
-// than rewriting everything blind the way `--skip-scaffold` does.
+// Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 
 export interface SyncEntry {
   target: string;
   status: SyncStatus;
-  // Empty when the file is unchanged, absent or obsolete.
   diff: string;
 }
 
 export interface SyncPlan {
   entries: SyncEntry[];
-  // Everything the user has to decide about: changed, missing or obsolete.
   pending: SyncEntry[];
 }
 
@@ -33,7 +30,7 @@ export interface SyncResult {
   removed: string[];
 }
 
-// `git diff --no-index` rather than a diff dependency. See `git.ts` for why that is safe.
+// `git diff --no-index` rather than a diff dependency; `git.ts` says why that is safe.
 const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
   const result = git(
     ['diff', '--no-index', '--no-color', '--', currentPath, '-'],
@@ -43,12 +40,11 @@ const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
     },
   );
 
-  // git missing or unable to spawn: report the status without a diff rather than failing sync.
+  // Without git, the status is reported with no diff rather than failing sync.
   return result.error === undefined ? result.stdout : '';
 };
 
-// A closed list of exact paths, not a directory walk: dropping a deselected host's files must not reach anything the
-// project put beside them.
+// A closed list of exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
 const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
   const entries: SyncEntry[] = [];
 
@@ -86,7 +82,7 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
       continue;
     }
 
-    // Reporting an edit here would invite a `--force` that undoes it. Only absence is still lintel's to fix.
+    // Reporting an edit here would invite a `--force` that undoes it.
     if (artifact.preserve === true) {
       entries.push({
         target: artifact.target,
@@ -123,7 +119,7 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
   };
 };
 
-// An empty `.claude/` left behind reads as if the host were still configured.
+// An empty `.claude/` reads as if the host were still configured.
 const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
   const directories = new Set<string>();
 
@@ -136,7 +132,7 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
     }
   }
 
-  // A child path is always longer than its parent, so length descending is depth-first without counting separators.
+  // A child path is always longer than its parent, so length descending is depth-first.
   const deepestFirst = [...directories].sort((left, right) => {
     return right.length - left.length;
   });
@@ -146,7 +142,6 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
       await rmdir(join(cwd, directory));
     }
     catch {
-      // Still holds something, or already gone. Either way, leave it.
     }
   }
 };
@@ -179,7 +174,7 @@ export const applySync = async (
       continue;
     }
 
-    // Every inventory member is a file, and on a symlink this drops the link rather than its target.
+    // On a symlink this drops the link, not its target.
     await rm(await safeProjectPath(cwd, target), { force: true });
     removed.push(target);
   }

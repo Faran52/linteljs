@@ -12,7 +12,6 @@ const isAsyncFunction = (node: Ancestor | RuleNode): boolean => {
 
 // Climbs to the end of a fluent chain: `fetch(url)` in `fetch(url).then(parse).catch(handle)` answers for it all.
 export const outermostCall = (node: RuleNode): RuleNode => {
-  // Callers arrive holding the call or its callee, per selector: CallExpression or MemberExpression.callee.
   let current = node.type === 'MemberExpression'
     && node.parent.type === 'CallExpression'
     && node.parent.callee === node

@@ -31,8 +31,7 @@ const SFC_FIXTURES = join(import.meta.dirname, '../__mocks__/fixtures/sfc');
 
 const TYPED_FILE = join(import.meta.dirname, '../__mocks__/fixtures/typed/floating.ts');
 
-// Sorted only when the config's framework bucket owns the specifier; otherwise both imports
-// fall into the package bucket and the blank line between them is reported.
+// Without a framework bucket both imports fall into the package bucket and the blank line is reported.
 const sortedFor = (specifier: string): string => {
   return [
     `import framework from '${specifier}';`,
@@ -71,7 +70,6 @@ describe('defineConfig', () => {
     expect(ruleIds).toContain('@typescript-eslint/no-floating-promises');
   });
 
-  // The composer gets the sort bucket from the framework it just loaded, not from a caller.
   it.each(FRAMEWORK_PACKAGES)('gives base the sort bucket %s owns', async (framework, specifier) => {
     const code = sortedFor(specifier);
 
@@ -82,8 +80,7 @@ describe('defineConfig', () => {
     expect(none).toContain(SORT_RULE);
   });
 
-  // `vue()`/`svelte()` own the top-level parser for their component, so `typescript()` composed after them
-  // would take it away. `layer order` below lints that failure directly; this asserts the composer cannot make it.
+  // `layer order` below lints the failure directly; this asserts the composer cannot make it.
   it.each([
     ['vue', 'Home.vue', 'vue/'],
     ['svelte', 'Page.svelte', 'svelte/'],
@@ -167,7 +164,7 @@ describe('defineConfig', () => {
       framework: 'react',
       libraries: ['tailwind'],
     });
-    // The plugin resolves `tailwindcss` from cwd, pinned here to the package that declares it.
+    // The plugin resolves `tailwindcss` from cwd.
     const pinned = [...config, {
       settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '..') } },
     }];
@@ -198,11 +195,6 @@ describe('defineConfig', () => {
       .resolves.not.toContain('@html-eslint/require-img-alt');
   });
 
-  /**
-   * A file type, not a framework, so it composes *alongside* one: an Astro site hosting Solid islands needs the solid
-   * layer for its `.tsx` and this layer for its `.astro`, which is why it is a boolean beside `html` rather than a
-   * `framework` value.
-   */
   it('composes the astro layer on request and not otherwise', async () => {
     const page = "---\nconst title = 'Home';\n---\n\n<img src='/a.png' />\n";
 
@@ -225,7 +217,6 @@ describe('defineConfig', () => {
       return Object.keys(entry.rules ?? {});
     });
 
-    // Both sets are present: the site's templates and its islands are judged by their own rules.
     expect(rules.some((rule) => {
       return rule.startsWith('astro/');
     })).toBe(true);
@@ -250,8 +241,7 @@ describe('defineConfig', () => {
   });
 });
 
-// ESLint compares plugins by identity, so one spread into a fresh object registers again under the same name
-// and the config is rejected with "Cannot redefine plugin". `Linter.verify` normalises as a real run does.
+// A plugin spread into a fresh object is rejected with "Cannot redefine plugin"; `Linter.verify` normalises as a run.
 const composes = (config: Layer): void => {
   new Linter().verify('const value = 1;\n', config, 'src/lib/utils/sample.ts');
 };
@@ -294,7 +284,6 @@ describe('composition', () => {
   });
 });
 
-// Both SFC layers set `projectService: true`, so their files must exist inside a real tsconfig.
 const SFC_ORDER: [string, () => Layer, string, string][] = [
   ['vue', vue, 'Home.vue', 'vue/'],
   ['svelte', svelte, 'Page.svelte', 'svelte/'],
@@ -320,14 +309,8 @@ const reportsFrom = (messages: Linter.LintMessage[], prefix: string): (string | 
     });
 };
 
-/**
- * `vue-eslint-parser`/`svelte-eslint-parser` are the top-level parser for their component, nesting
- * `typescript-eslint` under `parserOptions.parser`. `typescript()`'s `strictTypeChecked` sets
- * `languageOptions.parser` with no `files` glob, so placed after the framework layer it wins there too and the
- * component fails to parse, the error naming the component, not the config. `react()` before `next()` is not
- * tested: `calculateConfigForFile` shows both orders resolve identically, differing only in `settings`
- * key-insertion order, which no rule reads.
- */
+// `strictTypeChecked` sets a parser with no `files` glob, so placed after an SFC layer it wins and the component
+// fails to parse. `react()` before `next()` is not tested: both orders resolve identically.
 describe('layer order', () => {
   it.each(SFC_ORDER)(
     '%s after typescript parses a component; before it, the component does not parse at all',

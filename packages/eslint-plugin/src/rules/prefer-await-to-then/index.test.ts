@@ -4,7 +4,6 @@ import { preferAwaitToThen } from './index.ts';
 
 jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
   valid: [
-    // Top level is exempt, so a module can still kick work off.
     'promise.then(parse);',
     'promise.catch(handle);',
     'promise.finally(cleanup);',
@@ -27,7 +26,6 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
     // A constructor cannot be async, so there is no await to reach for.
     'class Service {\n  constructor() {\n    load().then(parse);\n  }\n}',
 
-    // Methods this rule does not care about.
     'function run() {\n  list.map(parse);\n}',
     'function run() {\n  emitter.on(handle);\n}',
     "function run() {\n  promise['then'](parse);\n}",

@@ -57,7 +57,7 @@ let project = '';
 let entered = '';
 let external = '';
 
-// `parseCliArgs` reads `process.cwd()`, so running from the temporary project is what makes `main` testable at all.
+// `parseCliArgs` reads `process.cwd()`.
 beforeEach(async () => {
   entered = processCwd();
   project = await mkdtemp(join(tmpdir(), 'lintel-cli-'));
@@ -135,8 +135,7 @@ describe('parseCliArgs', () => {
   });
 
   it('turns --no-install into skipping both the install and the fix that needs it', () => {
-    // node's parseArgs has no `--no-` negation, so this only works because the flag is declared under its literal name;
-    // a boolean `install` option would reject it outright.
+    // `parseArgs` has no `--no-` negation; the flag is declared under its literal name.
     expect(parseCliArgs(['demo-app', '--no-install']).skip).toEqual(['install', 'fix']);
   });
 
@@ -153,8 +152,7 @@ describe('parseCliArgs', () => {
     expect(options.force).toBe(true);
   });
 
-  // A stage name it doesn't recognise is reported and stops, rather than dropped silently, so the run that happens is
-  // the run that was asked for.
+  // Reported and stopped rather than dropped, so the run that happens is the one asked for.
   it('keeps a stage name it does not know, rather than dropping it', () => {
     const options = parseCliArgs(['demo-app', '--skip', 'standard', '--skip', 'nonsense']);
 
@@ -172,8 +170,7 @@ describe('parseCliArgs', () => {
   });
 });
 
-// `--help` and the written-file list are the product of the CLI, so they go to stdout, not stderr
-// (`@linteljs/create --help | grep skip` would print nothing otherwise).
+// stdout, not stderr: `create --help | grep skip` would print nothing otherwise.
 describe('main: what it prints and what it returns', () => {
   it('prints the usage to stdout and succeeds', async () => {
     const { code, printed } = await runMain(['--help']);
@@ -182,7 +179,6 @@ describe('main: what it prints and what it returns', () => {
     expect(printed).toContain('--skip-scaffold');
   });
 
-  // Failing on an unknown stage name is the only honest answer, and nothing may be written first.
   it('fails on a stage name it does not know, before writing anything', async () => {
     const { code, errors } = await runMain(['demo-app', '--skip', 'lnt']);
 
@@ -202,18 +198,13 @@ describe('main: what it prints and what it returns', () => {
     const { code, errors } = await runMain(argv);
 
     expect(code).toBe(1);
-    // The line opens with what a user has to act on. `parseArgs` answers a `TypeError` named
-    // `TypeError [ERR_PARSE_ARGS_UNKNOWN_OPTION]`, and printing the thrown value puts all of that first.
+    // The line opens with what a user has to act on, not the `TypeError [ERR_PARSE_ARGS_UNKNOWN_OPTION]` class name.
     expect(errors).toHaveLength(1);
     expect(errors[0]?.startsWith(message)).toBe(true);
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
-  /**
-   * `--yes` means the defaults on purpose, and a directory already standing is the default for the one answer it can
-   * supply. `mkdir demo-app && cd demo-app && create --yes` scaffolds into it under its own name, with no argument and
-   * no question. A guard requiring the argument was written and taken back out for refusing exactly this.
-   */
+  // `mkdir demo-app && cd demo-app && create --yes` scaffolds into it under its own name.
   it('scaffolds into the directory it stands in when --yes gave no name', async () => {
     const named = join(project, 'demo-app');
 
@@ -237,8 +228,7 @@ describe('main: what it prints and what it returns', () => {
     }
   });
 
-  // The name used to be required up front. It is a question now, so a bare run is only refused for the reason any
-  // unanswered question is: there is no terminal to ask it on.
+  // The name is a question, so a bare run is refused only because there is no terminal to ask it on.
   it('asks for a missing name rather than requiring it, and still refuses with no terminal', async () => {
     const { code, errors } = await runMain([]);
 
@@ -247,7 +237,7 @@ describe('main: what it prints and what it returns', () => {
     expect(errors).toEqual([expect.stringContaining('answer every question')]);
   });
 
-  // `--skip-scaffold` creates nothing, so the directory it patches is already named and the question has no purpose.
+  // `--skip-scaffold` patches a directory that is already named.
   it('does not ask the name when there is no directory to create', async () => {
     const asked = scripted([
       undefined, undefined, undefined, undefined, undefined,
@@ -260,8 +250,7 @@ describe('main: what it prints and what it returns', () => {
   });
 });
 
-// A person quitting on purpose is not a failure, and reads nothing like one: unlike every other dead end in this
-// file, there is no "Error:" prefix, no advice to answer every question, and the exit code is 130, not 1.
+// Quitting on purpose is not a failure: no "Error:" prefix, exit 130 rather than 1.
 describe('main: cancelled mid-questionnaire', () => {
   it('prints a calm message and exits 130, with nothing written and nothing on stderr', async () => {
     const {
@@ -280,7 +269,6 @@ describe('main: cancelled mid-questionnaire', () => {
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
-  // Reachable partway through, not only on the first question, the same way a real Ctrl+C could land anywhere.
   it('is reachable after some real answers, not only on the first question', async () => {
     const { code } = await runMain(
       ['--skip-scaffold', '--no-install'],
@@ -308,8 +296,7 @@ describe('main: create', () => {
     });
   });
 
-  // With `--skip-scaffold` there's no name argument, so the directory's own name is what package.json keeps calling
-  // it. Agent adapters are intentionally project-name agnostic.
+  // With `--skip-scaffold` the directory's own name is what package.json keeps calling it.
   it('names the project after the directory when no name was given', async () => {
     await generated();
 
@@ -342,7 +329,6 @@ describe('main: create', () => {
     expect(printed).toContain('wrote plugins/linteljs/skills/linteljs/references/svelte-reactivity.md');
   });
 
-  // The name is a question now, so a run with no argument scaffolds into whatever the questionnaire answered.
   it('scaffolds into the name the questionnaire gave when no argument did', async () => {
     await plantBinary(join(project, 'fake-bin'), 'pnpm', [
       "require('node:fs').mkdirSync(process.argv[4], { recursive: true });",
@@ -374,8 +360,7 @@ describe('main: create', () => {
     }
   });
 
-  // The scaffolder makes `<name>/` under the working directory, so every later stage runs inside it; getting this wrong
-  // writes the whole standard one level too high.
+  // Wrong, the whole standard lands one level too high.
   it('patches the directory the scaffolder made, not the one it was run from', async () => {
     await plantBinary(join(project, 'fake-bin'), 'pnpm', [
       "require('node:fs').mkdirSync(process.argv[4], { recursive: true });",
@@ -393,7 +378,6 @@ describe('main: create', () => {
         await readFile(join(project, 'demo-app', 'package.json'), 'utf8'),
       );
 
-      // The name came from the argument, not from the directory it happens to have landed in.
       expect(patched.name).toBe('demo-app');
       expect(patched).not.toHaveProperty('lintel');
       expect(parseLintelConfig(
@@ -423,8 +407,7 @@ describe('main: create', () => {
   });
 });
 
-// Behind a pipe, EOF reads as a blank line, the default answer, whose target is React; unguarded this rewrites the
-// whole project as React and exits 0, which hit four of seven agents generating a target.
+// Behind a pipe, EOF reads as the default answer; unguarded this rewrote the project as React for four of seven agents.
 describe('main: patching a project that already exists', () => {
   const asSvelte = async (): Promise<void> => {
     await runMain(
@@ -517,11 +500,7 @@ describe('main: patching a project that already exists', () => {
   });
 });
 
-/**
- * No prompter injected, the way tests everywhere else in this file arrange one: this is the one place `main` reads
- * the real `process.stdin`, so it is the one place `stdin.isTTY` has to be stubbed rather than faked through a
- * prompter.
- */
+// The one place `main` reads the real `process.stdin`, so `stdin.isTTY` is stubbed rather than faked by a prompter.
 describe('main: no prompter injected, so the real terminal decides', () => {
   afterEach(() => {
     stdin.isTTY = false;
@@ -537,7 +516,6 @@ describe('main: no prompter injected, so the real terminal decides', () => {
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
-  // `--yes` never reaches the terminal check at all, whether or not one is attached.
   it('needs no terminal when --yes is passed, even with one attached', async () => {
     stdin.isTTY = true;
 
@@ -625,7 +603,7 @@ describe('main: sync', () => {
     expect(await readFile(join(project, RULE), 'utf8')).not.toBe('# local edit\n');
   });
 
-  // Both hold the project's own edits, so `--force` is never offered them in the first place.
+  // Both hold the project's own edits, so `--force` is never offered them.
   it('never proposes a preserved file that it would only have kept', async () => {
     await generated();
 
@@ -655,7 +633,7 @@ describe('main: sync', () => {
     expect(await readFile(join(project, 'CLAUDE.md'), 'utf8')).toContain('LintelJS project');
   });
 
-  // Only the exact paths this CLI writes go: the adapter is the project's, and so is anything it added itself.
+  // Only the exact paths this CLI writes go.
   it('removes the files of a host the config stopped selecting, and nothing beside them', async () => {
     await generated();
     await writeFile(join(project, '.claude/notes.md'), '# ours\n', 'utf8');
@@ -741,10 +719,7 @@ describe('main: sync', () => {
     expect(printed).toContain('plugins/linteljs/skills/linteljs/references/svelte-reactivity.md: missing');
   });
 
-  /**
-   * Recorded by hand in the config rather than answered, so the only route it can travel is this one: read back off
-   * disk and written into the emitted config.
-   */
+  // Recorded by hand, so its only route is read back off disk and written into the emitted config.
   it('carries recorded resolver conditions into the emitted config', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
@@ -758,21 +733,9 @@ describe('main: sync', () => {
     expect(emitted).toContain("resolver: { conditionNames: ['import', 'require', 'node', 'default'] },");
   });
 
-  /**
-   * Both extension axes have to survive the round trip through the recorded config, since `sync` and
-   * `--skip-scaffold` plan from it rather than asking again. The reactivity reference is the visible proof that the
-   * hosted framework reached the record.
-   */
-  /**
-   * The surfaces the config recorded, not the default pair. `answersIn` rebuilds `Answers` field by field, so a new
-   * answer is dropped silently until it is threaded through there too: this one was, and the plan for a devtools-panel
-   * project came back as a popup-and-background one. Only the end-to-end suite saw it, which is why it is pinned here.
-   */
-  /**
-   * The bug this pins: both merges were written by a pipeline stage rather than being artifacts, so `sync` never ran
-   * them and a project that already existed could not gain a block added to either. The `peerDependencyRules` allowance
-   * shipped in 1.2.0 reached new projects and no old one, which a real migration found rather than a test.
-   */
+  // Both extension axes survive the round trip, since `sync` and `--skip-scaffold` plan from the record.
+  // `answersIn` once dropped a new answer silently and replanned a devtools-panel project as a popup one.
+  // Both merges were once stage writes, so the 1.2.0 `peerDependencyRules` allowance reached no existing project.
   it('merges into the workspace file and the gitignore a project already has', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
@@ -791,7 +754,7 @@ describe('main: sync', () => {
     const ignore = await readFile(join(project, '.gitignore'), 'utf8');
 
     expect(workspace).toContain('peerDependencyRules:');
-    // Merged, so the project's own entry survives rather than being replaced by ours.
+    // Merged, so the project's own entry survives.
     expect(workspace).toContain("'sharp': true");
     expect(ignore).toContain('coverage');
     expect(ignore).toContain('.next');
@@ -806,22 +769,15 @@ describe('main: sync', () => {
 
     await runMain(['sync', '--force'], scripted([]));
 
-    // The panel's Rollup input, asked for by this surface alone, and reached only if the answer arrived at all.
     expect(await readFile(join(project, 'vite.config.ts'), 'utf8'))
       .toContain("input: { panel: 'panel.html' }");
-    // The background entry is not excluded from coverage, because this project has no background entry.
+    // This project has no background entry.
     expect(await readFile(join(project, 'vitest.config.ts'), 'utf8'))
       .not.toContain('src/background/index.ts');
-    // And the answer survives the round trip into the config the sync rewrites.
     expect((await configAt()).surfaces).toEqual(['devtools-panel']);
   });
 
-  /**
-   * The same failure mode as `surfaces` above, and the reason both are pinned here rather than at the emitter: a new
-   * answer is invisible until `answersIn` names it, and everything below that point keeps working on the default. An
-   * alias that survives the parse but not the whitelist is one a project loses on its first sync, which is exactly
-   * what recording it was meant to prevent.
-   */
+  // An alias that survives the parse but not the whitelist is lost on the first sync.
   it("keeps a project's own aliases through a sync, in every consumer", async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
@@ -835,7 +791,7 @@ describe('main: sync', () => {
     const eslintConfig = await readFile(join(project, 'eslint.config.js'), 'utf8');
 
     expect(eslintConfig).toContain("'@engine': './src/lib/engine/index.ts',");
-    // After the shared list, not instead of it: a project adds to the standard rather than replacing it.
+    // After the shared list: a project adds to the standard.
     expect(eslintConfig).toContain("'src/lib/compat-data/generatedRegistry.ts',");
     expect(eslintConfig).toContain("'coverage/**'");
     expect(await readFile(join(project, 'tsconfig.json'), 'utf8'))
@@ -847,11 +803,7 @@ describe('main: sync', () => {
     expect(config.browsers).toEqual(['chrome', 'firefox']);
   });
 
-  /**
-   * The general form of the two above, which each pin one answer: answer by answer is a race the tests lose, and
-   * `surfaces` won it. Run through `--skip-scaffold`, the route that writes the config back, so a field lost on the
-   * way in is missing on the way out; a `sync` would only read the file this test wrote.
-   */
+  // The general form of the two above, through the route that writes the config back.
   it('plans from every answer a recorded config carries, not a subset of them', async () => {
     const recorded: Answers = {
       ...DEFAULT_ANSWERS,
@@ -878,11 +830,7 @@ describe('main: sync', () => {
     expect(await configAt()).toMatchObject(recorded);
   });
 
-  /**
-   * The gap this closes, found by two of three reference migrations: `package.json` was reconciled by a pipeline
-   * stage and `sync` writes artifacts, so a dependency a release added to a layer reached every new project and no
-   * existing one. Both repos had to add plugins by hand that their own recorded answers already implied.
-   */
+  // Two of three migrations had to add plugins by hand that their recorded answers already implied.
   it('adds the dependencies the answers imply and keeps what the project declared', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
@@ -903,7 +851,7 @@ describe('main: sync', () => {
 
     expect(packageJson.devDependencies).toHaveProperty('eslint-plugin-solid');
     expect(packageJson.devDependencies).toHaveProperty('@linteljs/eslint-config');
-    // Nothing the project declared is dropped, which is what makes this a merge rather than an overwrite.
+    // A merge, not an overwrite.
     expect(packageJson.devDependencies?.['some-tool']).toBe('^1.0.0');
     expect(packageJson.name).toBe('demo');
   });
@@ -939,8 +887,7 @@ describe('main: sync', () => {
   });
 });
 
-// What reaches `main`'s catch is a stage that threw: a dead scaffolder, a full disk, an uninstalled package manager;
-// rethrowing would surface an unhandled rejection over a half-written directory.
+// A stage that threw is surfaced as one line rather than an unhandled rejection over a half-written directory.
 describe('main: an unexpected failure', () => {
   it('reports the message and exits 1 rather than throwing', async () => {
     await writeFile(join(project, 'package.json'), '{ not json', 'utf8');

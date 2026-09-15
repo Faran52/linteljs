@@ -81,7 +81,6 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
         memberObjects.set(spanOf(node.object), !node.computed || node.property.type === 'Literal');
       },
 
-      // Visit after members have been recorded.
       ':function:exit': (node: FunctionLike) => {
         if (!/^[A-Z]/.test(bindingNameOf(node))) {
           return;
@@ -108,7 +107,6 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
           return;
         }
 
-        // A whole-value use means the object itself is needed.
         if (references.some((reference) => {
           return memberObjects.get(spanOf(reference.identifier)) !== true;
         })) {

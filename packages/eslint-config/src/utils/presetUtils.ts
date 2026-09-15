@@ -6,7 +6,7 @@ type PluginConfig = PluginConfigs[string];
 
 type SingleConfig = Extract<PluginConfig, { rules?: unknown }>;
 
-// eslintrc carries `plugins` as an array, so flatness is checked at runtime, not asserted.
+// eslintrc carries `plugins` as an array.
 const isFlatConfig = (config: SingleConfig): config is Linter.Config => {
   return !Array.isArray(config.plugins);
 };
@@ -24,8 +24,7 @@ const scopedTo = (configs: Linter.Config[], files?: string[]): Linter.Config[] =
   });
 };
 
-// A preset read off a plugin, normalised to a flat-config array since `Plugin.configs` holds three shapes at once.
-// `files` fills any entry with no glob of its own: vue scopes its parser block but not its rules, solid nothing.
+// Normalises the three shapes `Plugin.configs` holds; `files` fills any entry with no glob of its own.
 export const presetOf = (config: PluginConfig | undefined, label: string, files?: string[]): Linter.Config[] => {
   if (!config) {
     throw new Error(`@linteljs/eslint-config: ${label} is not published by its plugin`);

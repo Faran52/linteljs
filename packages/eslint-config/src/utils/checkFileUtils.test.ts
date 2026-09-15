@@ -76,8 +76,7 @@ describe('base: check-file', () => {
       .resolves.toContain('check-file/folder-naming-convention');
   });
 
-  // The derived folder glob reaches files `base`'s script blocks never see: an `.html` opted in by `html()`
-  // still crosses the naming block, so it registers the plugin itself or ESLint can't resolve the rule and exits 2.
+  // Without its own plugin registration, an `.html` under the folder glob makes ESLint exit 2.
   it('judges a file outside the script globs without losing the plugin', async () => {
     const withHtml = [...layer, ...html()];
 

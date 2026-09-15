@@ -20,15 +20,8 @@ import {
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
 
-/**
- * A recorded config is the answers, plus two fields describing the file. `extends`, so the routes that plan from one
- * pass it straight to a plan: `run/cli` rebuilt `Answers` from it field by field, and dropped in silence any answer it
- * had not been taught about, which is how a devtools-panel project came back replanned as a popup one. This parser is
- * the only list, and it refuses an unknown property by name.
- *
- * `$schema` and `schemaVersion` come along. Both are validated to one permitted value, and `emitLintelConfig` writes
- * those same constants itself.
- */
+// `extends Answers`, so a config plans directly. This parser is the only list and refuses an unknown property by
+// name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project as a popup one.
 export interface LintelConfig extends Answers {
   $schema: typeof CONFIG_SCHEMA_URL;
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
@@ -103,7 +96,6 @@ const arrayChoices = <T extends string>(
     return choice(item, field, allowed);
   });
 
-  // `agents` has no floor, so there is no plural form to spell.
   if (choices.length < minimum) {
     throw new Error(`${field} must contain at least ${String(minimum)} value`);
   }
@@ -115,8 +107,7 @@ const arrayChoices = <T extends string>(
   return choices;
 };
 
-// Export-map condition names are an open vocabulary (`node`, `bun`, `worker`, whatever a package chose), so this
-// validates the shape rather than the members: a non-empty list of distinct non-empty strings.
+// An open vocabulary, so only the shape is checked.
 const conditionNames = (value: JsonValue | undefined): string[] => {
   if (!isJsonArray(value) || value.length === 0) {
     throw new Error('resolveConditions must be a non-empty array');
@@ -137,11 +128,8 @@ const conditionNames = (value: JsonValue | undefined): string[] => {
   return names;
 };
 
-/**
- * A project's own aliases. Validated as a shape rather than against a list, the way `resolveConditions` is: the names
- * are a project's to choose. The sigil is checked because both consumers depend on it, `simple-import-sort` grouping
- * on it and tsconfig resolving through it, and a bare `engine` key silently sorts as a package instead.
- */
+// Names are the project's; the sigil is checked because `simple-import-sort` groups on it and a bare key sorts as a
+// package.
 const aliasMap = (value: JsonValue | undefined): AliasMap => {
   if (!isPlainObject(value)) {
     throw new Error('aliases must be an object');
@@ -164,8 +152,7 @@ const aliasMap = (value: JsonValue | undefined): AliasMap => {
   }));
 };
 
-// Paths a project lints nothing in. An open vocabulary like `resolveConditions`, so only the shape is checked: a
-// non-empty list of distinct non-empty strings.
+// An open vocabulary, so only the shape is checked.
 const globList = (value: JsonValue | undefined): string[] => {
   if (!isJsonArray(value) || value.length === 0) {
     throw new Error('ignores must be a non-empty array');
@@ -186,7 +173,7 @@ const globList = (value: JsonValue | undefined): string[] => {
   return globs;
 };
 
-// One form library at most: both bind the same inputs, and the prompt offers them as one choice.
+// One form library at most; the prompt offers them as one choice.
 const libraryChoices = (value: JsonValue | undefined): Library[] => {
   const libraries = arrayChoices(value, 'libraries', LIBRARIES);
 
@@ -269,16 +256,11 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
     $schema: schema,
     schemaVersion,
     target: choice(parsed.target, 'target', TARGET_IDS),
-    /**
-     * All three default rather than being required, so a config written before they existed still parses: absent
-     * `browser` is the chrome the only extension target used to assume, absent `hostedFramework` is the
-     * plain-TypeScript shape every host had, and absent `surfaces` is the popup and background pair.
-     */
+    // All three default so a config written before they existed still parses.
     browser: parsed.browser === undefined ? 'chrome' : choice(parsed.browser, 'browser', BROWSERS),
     ...(parsed.hostedFramework === undefined
       ? {}
       : { hostedFramework: choice(parsed.hostedFramework, 'hostedFramework', HOSTED_FRAMEWORKS) }),
-    // Absent means the popup-and-background pair, for the same reason: it is the only shape written before the answer.
     ...(parsed.surfaces === undefined
       ? {}
       : { surfaces: arrayChoices(parsed.surfaces, 'surfaces', SURFACES) }),
@@ -293,11 +275,9 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
       ? {}
       : { resolveConditions: conditionNames(parsed.resolveConditions) }),
     ...(parsed.aliases === undefined ? {} : { aliases: aliasMap(parsed.aliases) }),
-    // More than one only where the project ships to two stores; absent means just `browser`.
     ...(parsed.browsers === undefined
       ? {}
       : { browsers: arrayChoices(parsed.browsers, 'browsers', BROWSERS, 1) }),
-    // Globs are a project's to choose, so this validates the shape the way `resolveConditions` does.
     ...(parsed.ignores === undefined ? {} : { ignores: globList(parsed.ignores) }),
     plugins: arrayChoices(parsed.plugins, 'plugins', PLUGINS),
   };
@@ -340,8 +320,7 @@ export const readLintelConfig = async (cwd: string): Promise<LintelConfig> => {
     const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
 
     try {
-      // Asks the descriptor rather than the name, so it catches a swap after the `lstat` above. No test can stage
-      // that race, hence the ignore.
+      // Asks the descriptor, catching a swap after the `lstat`; no test can stage the race.
       /* v8 ignore next 3 */
       if (!(await file.stat()).isFile()) {
         throw new Error('lintel.config.json must be a regular file');
@@ -358,7 +337,7 @@ export const readLintelConfig = async (cwd: string): Promise<LintelConfig> => {
       throw new Error('lintel.config.json was not found; this is not a LintelJS-managed project');
     }
 
-    // The same race: a link that appeared after the `lstat`, answered with the message a named one gets.
+    // The same race, answered with the message a named link gets.
     /* v8 ignore next 3 */
     if (error instanceof Error && 'code' in error && error.code === 'ELOOP') {
       throw new Error('lintel.config.json must be a regular file; symbolic links are not allowed');

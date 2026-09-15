@@ -5,15 +5,11 @@ export type RuleCategory = (typeof RULE_CATEGORIES)[number];
 export type RuleLanguage = (typeof RULE_LANGUAGES)[number];
 
 export interface LintelRuleDocs {
-  // One line, rendered into the README rule table.
   description: string;
-  // Which `configs.<category>` preset the rule lands in.
   category: RuleCategory;
-  // Whether the config scopes the rule behind a TypeScript glob.
   language: RuleLanguage;
   // Whether `configs.recommended` enables it. Category presets carry it either way.
   recommended: boolean;
-  // Derived by `createRule`; never written by hand.
   url: string;
 }
 

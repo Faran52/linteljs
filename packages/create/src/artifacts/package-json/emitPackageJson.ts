@@ -17,7 +17,7 @@ import {
 
 import type { TargetRecord } from '../../model/targets/record';
 
-// Patches `package.json` rather than writing it: the scaffolder's dependencies, name and unset scripts survive.
+// Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 
 export interface PackageJson {
   name?: string;
@@ -31,9 +31,10 @@ export interface PackageJson {
   devDependencies?: Record<string, string>;
   overrides?: Record<string, string>;
   resolutions?: Record<string, string>;
+  trustedDependencies?: string[];
 }
 
-// Dropped from the patched `package.json`: @linteljs/eslint-config supersedes every one, the first three as @stylistic.
+// Superseded by @linteljs/eslint-config.
 const SUPERSEDED = [
   'prettier',
   'eslint-config-prettier',
@@ -43,8 +44,7 @@ const SUPERSEDED = [
   'typescript-eslint',
   'eslint-plugin-react-refresh',
   'oxlint',
-  // create-vue's two: the devtools plugin is only called from the vite.config.ts this replaces, and jsdom is not the
-  // environment the emitted vitest.config.ts picks (happy-dom is).
+  // create-vue's two: one is only called from the replaced vite.config.ts, jsdom is not the chosen environment.
   'vite-plugin-vue-devtools',
   'jsdom',
 ];
@@ -52,8 +52,7 @@ const SUPERSEDED = [
 const SHARED_DEV_DEPENDENCIES = [
   '@commitlint/cli',
   '@commitlint/config-conventional',
-  // Declared, not inherited: relying on a scaffolder's own copy makes tsc --noEmit fail on "Cannot find type definition
-  // file for 'node'" when it has none.
+  // Declared: a scaffolder without its own copy fails tsc on "Cannot find type definition file for 'node'".
   '@types/node',
   'eslint',
   '@linteljs/eslint-config',
@@ -65,7 +64,7 @@ const SHARED_DEV_DEPENDENCIES = [
   'stylelint-order',
 ];
 
-// Optional peer: omitting @vitest/eslint-plugin fails the first `eslint .` on ERR_MODULE_NOT_FOUND, not install.
+// Omitting @vitest/eslint-plugin fails the first `eslint .`, not the install.
 const RUNNER_DEV_DEPENDENCIES = [
   '@vitest/coverage-v8',
   '@vitest/eslint-plugin',
@@ -75,12 +74,8 @@ const RUNNER_DEV_DEPENDENCIES = [
 
 const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
 
-/**
- * Whether the target calls `@tailwindcss/vite` from a build config it owns: a `vite.config.ts` for most, the `vite`
- * key of `astro.config.mjs` for Astro, which owns no config file at all. Ownership of a Vite config is the wrong
- * question for exactly that case, so it is read off the record rather than off `vite`. Next, Angular and React Native
- * have neither route and take PostCSS.
- */
+// Astro calls `@tailwindcss/vite` from `astro.config.mjs` while owning no vite config, so this reads the record
+// rather than `vite`. Next, Angular and React Native take PostCSS.
 const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
   return target.vite || target.astro === true;
 };
@@ -94,7 +89,7 @@ const tailwindDevDependencies = (target: TargetRecord): string[] => {
   ];
 };
 
-// One binding per framework; a host with no framework installs nothing at runtime.
+// A host with no framework installs nothing at runtime.
 const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
   react: '@tanstack/react-query',
   next: '@tanstack/react-query',
@@ -158,8 +153,8 @@ export const parsePackageJson = (text: string): PackageJson => {
   return parsed;
 };
 
-// Sorted and de-duped to match what a package manager writes back, `en` pinned since the output is committed.
-// Throws on a missing VERSIONS entry instead of skipping it: a silent skip is how @types/node vanished before.
+// Sorted and de-duped like a package manager writes back. Throws on a missing entry: a silent skip is how
+// @types/node vanished before.
 export const versioned = (names: string[]): Record<string, string> => {
   const result: Record<string, string> = {};
 
@@ -187,10 +182,10 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
     ...(answers.router === undefined ? [] : ROUTER_DEPENDENCIES[answers.router]),
   ];
 
-  // A hosted framework is not installed by the host's scaffolder, so the record brings it.
+  // A hosted framework is not installed by the host's scaffolder.
   names.push(...target.dependencies ?? []);
 
-  // Vue's slot has no dependency: its scaffold flag has create-vue install Pinia itself.
+  // Vue's slot has no dependency: create-vue installs Pinia itself.
   const store = target.store;
 
   if (answers.store && store?.dependency !== undefined) {
@@ -210,7 +205,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
 
   return versioned([
     ...SHARED_DEV_DEPENDENCIES,
-    // The stylelint syntax for an SFC `<style>` block, named by the config emitted alongside.
+    // Stylelint's syntax for an SFC `<style>` block.
     ...(target.sfcExtension === undefined ? [] : ['postcss-html']),
     ...target.devDependencies,
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
@@ -233,6 +228,15 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
   );
 };
 
+// Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`.
+const SHARED_ALLOWED_BUILDS = ['sharp', 'unrs-resolver'];
+
+export const allowedBuildNames = (answers: Answers): string[] => {
+  return [...new Set([...SHARED_ALLOWED_BUILDS, ...targetFor(answers).allowBuilds])].sort((left, right) => {
+    return left.localeCompare(right, 'en');
+  });
+};
+
 export const patchPackageJson = (existing: PackageJson, answers: Answers): PackageJson => {
   const packageJson = { ...existing };
 
@@ -242,7 +246,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...existing.dependencies,
     ...buildDependencies(answers),
   };
-  // Filtered before the merge, not after: a package this target names for itself is not one the scaffolder left behind.
+  // Filtered before the merge: a package this target names is not one the scaffolder left behind.
   const devDependencies = {
     ...withoutSuperseded(existing.devDependencies ?? {}),
     ...buildDevDependencies(answers),
@@ -263,6 +267,8 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     },
     ...(Object.keys(dependencies).length > 0 ? { dependencies } : {}),
     devDependencies,
+    // bun blocks every install script it has not been told about, and reads the list from here rather than bunfig.
+    ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuildNames(answers) } : {}),
   };
 };
 

@@ -8,24 +8,16 @@ import type {
   LibraryLayer,
 } from './types';
 
-/**
- * Composer: fixes the layer order (base, typescript, framework, libraries, vitest, html) so vue()/svelte(),
- * which nest typescript-eslint under their own top-level parser, keep it. Also reads the `simple-import-sort`
- * bucket off the framework layer already loaded, rather than a caller threading it back down.
- */
-
 interface FrameworkParts {
   layer: Layer;
   group: string[];
 }
 
-// What a library layer may read off the caller's options. An object rather than a positional, so the day a second
-// layer needs something the signature gains a key instead of an argument every entry has to accept.
 interface LibraryOptions {
   tailwindEntryPoint?: string;
 }
 
-// Loaded on demand: each plugin here is an optional peer, so importing all six statically breaks most projects.
+// Loaded on demand: each plugin is an optional peer.
 const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   react: async () => {
     const { react, reactGroup } = await import('./frameworks/react');
@@ -36,7 +28,6 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
-  // Next is the one framework that stacks rather than replaces, so this record holds layer lists, not one each.
   next: async () => {
     const { react } = await import('./frameworks/react');
     const { next, nextGroup } = await import('./frameworks/next');
@@ -120,7 +111,7 @@ const astroLayer = async (): Promise<Layer> => {
   return astro();
 };
 
-// Async because the layers above load on demand; a config file may await it or hand ESLint the promise.
+// Layer order is fixed here: `vue()`/`svelte()` nest typescript-eslint under their own parser and must follow it.
 export const defineConfig = async (options: DefineConfigOptions = {}): Promise<Layer> => {
   const {
     framework,
@@ -129,7 +120,6 @@ export const defineConfig = async (options: DefineConfigOptions = {}): Promise<L
     html: withHtml,
     astro: withAstro,
     libraries = [],
-    // Destructured so it does not reach `base()`, which takes no such option.
     tailwindEntryPoint,
     ...baseOptions
   } = options;
@@ -171,7 +161,6 @@ export const defineConfig = async (options: DefineConfigOptions = {}): Promise<L
     ...libraryLayers.flat(),
     ...vitestRules,
     ...htmlRules,
-    // Last, so its parser owns `.astro` after `typescript()` has claimed the script extensions.
     ...astroRules,
   ];
 };

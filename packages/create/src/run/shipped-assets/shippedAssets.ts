@@ -5,8 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import type { ArtifactContent } from '../../artifacts';
 
-// Walks up to find `assets/` rather than a fixed relative path, since this module sits at different depths in the
-// workspace (`src/run/`) and once published (flattened `dist/index.mjs`).
+// Walks up to `assets/`: this module sits at `src/run/` in the workspace and at `dist/` once published.
 const assetsRootFrom = (start: string): string => {
   let dir = start;
 
@@ -19,8 +18,7 @@ const assetsRootFrom = (start: string): string => {
 
 export const ASSETS_ROOT = assetsRootFrom(dirname(fileURLToPath(import.meta.url)));
 
-// `pipeline` writes this text and `sync` compares against it, so the two can never be composed differently.
-// `current` is what is on disk, or null when nothing is: only a merge reads it.
+// `pipeline` writes this text and `sync` compares against it, so the two never compose differently.
 export const contentOf = async (
   content: ArtifactContent,
   current: string | null = null,

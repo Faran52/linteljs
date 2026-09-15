@@ -7,7 +7,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     // One and two whole-line `//` comments are the standard's own form.
     '// one line\nexport const value = 1;\n',
     '// first line\n// second line\nexport const value = 1;\n',
-    // Three content lines is JSDoc already.
     '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;\n',
     // A paragraph break counts as a line.
     '/**\n * alpha\n *\n * bravo\n */\nexport const value = 1;\n',
@@ -61,7 +60,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useSlashes' }],
     },
     {
-      // Two content lines move together.
       code: '/**\n * Adds two numbers.\n * Returns a number.\n */\nexport const add = 1;',
       output: '// Adds two numbers.\n// Returns a number.\nexport const add = 1;',
       errors: [{ messageId: 'useSlashes' }],
@@ -74,7 +72,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useSlashes' }],
     },
     {
-      // Column 0 is an indent too.
       code: '/**\n * First.\n * Second.\n */',
       output: '// First.\n// Second.',
       errors: [{ messageId: 'useSlashes' }],
@@ -91,7 +88,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useJsdoc' }],
     },
     {
-      // Four merge as four.
       code: '// alpha\n// bravo\n// charlie\n// delta\nexport const value = 1;',
       output: '/**\n * alpha\n * bravo\n * charlie\n * delta\n */\nexport const value = 1;',
       errors: [{ messageId: 'useJsdoc' }],
@@ -109,7 +105,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useJsdoc' }],
     },
     {
-      // Two violations report twice in one pass.
       code: '/** one short */\nconst first = 1;\n\n// alpha\n// bravo\n// charlie\nconst second = 2;',
       output: '// one short\nconst first = 1;\n\n/**\n * alpha\n * bravo\n * charlie\n */\nconst second = 2;',
       errors: [{ messageId: 'useSlashes' }, { messageId: 'useJsdoc' }],

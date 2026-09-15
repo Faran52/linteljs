@@ -1,5 +1,4 @@
-// Stage 4, `standard`, also writes the git hooks, commitlint, lint-staged, the banned-pattern checker, the test setup
-// and `vite.config.ts`/`vitest.config.ts`, not just `.claude/` and `CLAUDE.md`.
+// Stage 4, `standard`, also writes the hooks, the checker, the test setup and the build configs.
 
 export type Stage
   = 'scaffold'

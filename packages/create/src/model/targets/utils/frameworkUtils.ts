@@ -4,47 +4,36 @@ import type { HostedFramework, NamingMap } from '../../answers/answers';
 import type { PluginSpec } from '../record';
 
 export interface FrameworkParts {
-  // The `@linteljs/eslint-config` layer name, which is the same string as the framework id.
+  // The layer name, the same string as the framework id.
   framework: HostedFramework;
-  // The single-file-component extension, where the framework has one.
   sfcExtension?: 'vue' | 'svelte';
-  // What the component file looks like, so a host's naming map marks components by extension rather than by directory.
+  // So a host's naming map marks components by extension rather than by directory.
   componentGlob: string;
   vitePlugin: PluginSpec;
-  // The framework itself, which a vanilla or Astro scaffold does not install.
+  // Not installed by a vanilla or Astro scaffold.
   dependencies: string[];
-  // The ESLint plugins and parsers the layer peers on, plus the Vite plugin itself.
+  // The layer's peers, plus the Vite plugin.
   devDependencies: string[];
-  // Installed only when a suite was asked for.
+  // Installed only with a suite.
   testDevDependencies: string[];
-  // Resolve conditions the test run needs; Svelte and Solid ship a server build that `mount()` cannot use.
+  // Svelte and Solid ship a server build that `mount()` cannot use.
   testConditions?: string[];
-  // The `jsxImportSource` a host's tsconfig needs so TypeScript resolves this framework's JSX types. Only Solid: React
-  // is what `@types/react` already answers for, and the two single-file-component frameworks have no JSX to type.
+  // Only Solid: `@types/react` already answers for React, and the SFC frameworks have no JSX to type.
   jsxImportSource?: string;
-  // The `jsx` mode a host's tsconfig needs. Absent for the two single-file-component frameworks, which have no JSX at
-  // all. A host with no framework has no `jsx` either, so this is what a hosted one adds rather than overrides.
+  // Absent for the SFC frameworks; a host with no framework has no `jsx` either.
   jsx?: 'preserve' | 'react-jsx';
-  // The reactivity rule asset, relative to `assets/claude-rules/`.
+  // Relative to `assets/claude-rules/`.
   stateRules: string[];
 }
 
-/**
- * The pieces a UI framework contributes to a record that is not itself a framework target: the extension target and
- * Astro both host one. Composed from here rather than read off the framework's own record, because those records are
- * app-shaped: their `scaffold`, `routeUnit`, `typecheck`, `starterTests` and aliases describe a standalone app, and a
- * host has its own. What a host needs is the narrow set below, which is exactly what varies with the framework.
- */
+// What a host (the extension target, Astro) takes from a framework: the framework's own record is app-shaped, so
+// only the narrow set here is composed.
 
-/**
- * Off for the test run: the React Compiler's memo cache and `vite-plugin-solid`'s HMR handler each leave one
- * permanently-uncovered branch in every component, putting 100% branch coverage out of reach otherwise. Uses
- * `process.env.VITEST` rather than `mode`, because `vitest.config.ts` merges the vite config as an object, and a
- * function config cannot be merged.
- */
+// Off for the test run: the React Compiler's memo cache and `vite-plugin-solid`'s HMR handler each leave one
+// uncovered branch per component. `process.env.VITEST`, not `mode`, because a function config cannot be merged.
 export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 
-// The one spelling of React's build wiring, read by the React target's own record and by every host that composes it.
+// The one spelling of React's build wiring, read by the React target and every host.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: [
     "import react from '@vitejs/plugin-react';",
@@ -101,7 +90,7 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
     framework: 'svelte',
     sfcExtension: 'svelte',
     componentGlob: 'src/**/*.svelte',
-    // The bare plugin, not `sveltekit()`: a host owns its own entry, and the kit plugin would take it over.
+    // The bare plugin: a host owns its own entry, and `sveltekit()` would take it over.
     vitePlugin: {
       imports: ["import { svelte } from '@sveltejs/vite-plugin-svelte';"],
       calls: ['svelte()'],
@@ -138,8 +127,7 @@ export const partsFor = (framework: HostedFramework): FrameworkParts => {
   return PARTS[framework];
 };
 
-// A host's naming map once a framework is in it: the framework's own component extension marks a component, and every
-// other script is a module. Replaces the host's directory-based rule, which only exists for a host with no framework.
+// The framework's extension marks a component, replacing the host's directory-based rule.
 export const hostedNaming = (framework: HostedFramework): NamingMap => {
   const { componentGlob } = partsFor(framework);
 

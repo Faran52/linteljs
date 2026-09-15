@@ -28,7 +28,7 @@ import { emitVitestConfig } from '../vitest-config/emitVitestConfig';
 
 import type { TargetRecord } from '../../model/targets/record';
 
-// Append import-free fragments after the target setup, so Angular imports remain first.
+// Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {
   return [
     target.testSetup ?? 'mocks/setupTests.ts',
@@ -37,17 +37,8 @@ const setupSources = (answers: Answers, target: TargetRecord): string[] => {
   ];
 };
 
-/**
- * Every file this CLI owns some or all of, which is what both `create` and `sync` write from. Template fills and
- * birth-only files are not here, because a project owns those after the first write.
- *
- * A merge belongs here too, not in a pipeline stage. `.gitignore` and `pnpm-workspace.yaml` were written by `create`
- * alone for exactly that reason, so a project that already existed never gained a block added to either: the
- * `peerDependencyRules` allowance shipped in 1.2.0 reached new projects and no old one, which a real migration found.
- *
- * `project` is what the directory already holds, in one record rather than an argument per discovered file, which let
- * `runPipeline` skip one silently. See `ProjectShape`.
- */
+// Every file this CLI owns some or all of, which both `create` and `sync` write from. A merge belongs here, not in a
+// stage: the `peerDependencyRules` allowance of 1.2.0 reached new projects and no old one while it was stage-only.
 export const buildArtifacts = (
   answers: Answers,
   project: ProjectShape = EMPTY_PROJECT,
@@ -76,16 +67,15 @@ export const buildArtifacts = (
     copied('commitlint.config.js', 'commitlint.config.js'),
     emitted('package', 'tsconfig.json', emitTsconfig(answers)),
     copied('scripts/typecheckStaged.ts', 'scripts/typecheckStaged.ts'),
-    // Stage `standard`, with the rest of the gate: the workflow runs `check`, which the package stage assembles.
+    // Stage `standard`, with the rest of the gate.
     emitted('standard', '.github/workflows/ci.yml', emitCiWorkflow(answers)),
   ];
 
-  // Relaxed projects get ambient type vocabulary; strict projects narrow with guards.
   if (answers.typeSafety === 'relaxed') {
     artifacts.push(copied('src/typings/customTypes.d.ts', 'typings/customTypes.d.ts'));
   }
 
-  // Tailwind generates nothing until a stylesheet imports it, and only create-next-app writes that line itself.
+  // Tailwind generates nothing until a stylesheet imports it; only create-next-app writes that line itself.
   const styleEntry = styleEntryPath(answers, project.styleEntries);
 
   if (hasLibrary(answers, 'tailwind') && styleEntry !== undefined) {
@@ -94,39 +84,24 @@ export const buildArtifacts = (
     }));
   }
 
-  // `coverage/` and `*.tsbuildinfo` are this tool's output, so no generator ignores them. Merged rather than written,
-  // to keep the scaffolder's own list (`.next/` and friends).
-  /**
-   * Merged, not written by the package stage alone, for the reason `.gitignore` and `pnpm-workspace.yaml` were
-   * converted in 1.3.2: `sync` writes artifacts, so anything a stage writes never reaches a project that already
-   * exists. Two of three reference migrations had to add dependencies by hand that their answers already implied,
-   * because a release that adds a plugin to a layer reached every new project and no old one.
-   */
+  // Merged for the same reason `.gitignore` is: two of three migrations had to add dependencies by hand that their
+  // answers already implied.
   artifacts.push(merged('package', 'package.json', (current) => {
     return mergePackageJson(current, answers, name);
   }));
 
+  // Merged, to keep the scaffolder's own list.
   artifacts.push(merged('package', '.gitignore', mergeGitignore));
 
-  // Merged for the same reason, and only where it means something: discarding it breaks an install that already wrote
-  // into it, and skipping it leaves `create-next-app`'s build opt-out in place.
+  // Only where it means something; discarding it breaks an install that already wrote into it.
   if (answers.packageManager === 'pnpm') {
     artifacts.push(merged('package', 'pnpm-workspace.yaml', (current) => {
       return mergePnpmWorkspace(current, answers);
     }));
   }
 
-  /**
-   * The three build configs are birth-only, not emitted every sync. What this CLI writes is a starting point that any
-   * real project outgrows within its first feature: a Firefox extension needs one IIFE bundle per content script and
-   * a native host target, and a project shipping a second build mode adds one. Re-emitting flattens that, and even
-   * reporting it as `changed` invites a `--force` that does the flattening. Two migrations found this the same way,
-   * which is why it is ownership rather than a better default.
-   *
-   * The vitest excludes are the sharper half of the same argument: they name `src/background/index.ts` and
-   * `src/typings/**`, which are this CLI's own layout guesses, and a project excludes the entry points it actually
-   * has. Only the emitted default can be written blind; the maintained version cannot.
-   */
+  // The build configs are birth-only: a real project outgrows them within its first feature, and re-emitting
+  // flattens that. The vitest excludes name this CLI's layout guesses, which a project replaces with its own.
   if (viteConfig !== null) {
     artifacts.push({
       ...emitted('standard', 'vite.config.ts', viteConfig),
@@ -134,7 +109,6 @@ export const buildArtifacts = (
     });
   }
 
-  // Astro's equivalent, and the only place its Vite options are read from.
   if (astroConfig !== null) {
     artifacts.push({
       ...emitted('standard', 'astro.config.mjs', astroConfig),
@@ -150,7 +124,7 @@ export const buildArtifacts = (
   }
 
   if (hasTests(answers)) {
-    // Preserve project mocks in the setup file Vitest loads before collecting tests.
+    // Keeps the project's own mocks.
     artifacts.push({
       ...copied(setup, ...setupSources(answers, target)),
       preserve: true,
@@ -163,10 +137,6 @@ export const buildArtifacts = (
 
   if (answers.packageManager === 'yarn') {
     artifacts.push(copied('.yarnrc.yml', 'yarn/yarnrc'));
-  }
-
-  if (answers.packageManager === 'bun') {
-    artifacts.push(copied('bunfig.toml', 'bun/bunfig'));
   }
 
   return artifacts;

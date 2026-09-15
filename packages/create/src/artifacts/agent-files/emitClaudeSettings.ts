@@ -4,13 +4,8 @@ export const emitClaudeSettings = (plugins: Plugin[]): string => {
   const usesOfficialMarketplace = plugins.includes('context7')
     || plugins.includes('frontend-design');
   const settings = {
-    /**
-     * The harness setting, not just the rule. `CLAUDE.md` and `AGENTS.md` both state that a commit message carries no
-     * trailer, and a rule with nothing behind it is what lets one arrive anyway: every current coding agent appends
-     * `Co-Authored-By` by default, and the same generated rules ban rewriting a commit, which is the only in-repo way
-     * to take one back off. `mergeClaudeSettings` keeps whatever a project sets here, so this is a default rather than
-     * a decision imposed on it.
-     */
+    // The harness setting, not just the rule: every current agent appends `Co-Authored-By` by default, and the
+    // generated rules ban rewriting a commit. `mergeClaudeSettings` keeps a project's own value.
     includeCoAuthoredBy: false,
     enabledPlugins: {
       'linteljs@linteljs': true,

@@ -85,13 +85,7 @@ describe('buildGroups', () => {
     expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(['^@assets(?:/|$)', '^@widgets(?:/|$)']);
   });
 
-  /**
-   * An alias can be declared bare, pointing at a barrel and imported as `from '@engine'` with
-   * nothing after it. A pattern ending in `/` never matches that, so a project whose aliases are
-   * all barrels used to get no alias bucket at all: every one of its own imports fell through to
-   * `^@?\w` and sorted in with node_modules, with lint green the whole time. Found on a real
-   * project, not imagined here.
-   */
+  // A project whose aliases were all barrels once got no alias bucket at all, with lint green.
   it('matches a bare alias as well as a deep one', () => {
     const groups = buildGroups({
       '@engine': './src/engine',
@@ -104,12 +98,9 @@ describe('buildGroups', () => {
     expect(indexOfPattern(groups, '^@engine(?:/|$)')).toBeGreaterThan(-1);
     expect(engine.exec('@engine')).not.toBeNull();
     expect(engine.exec('@engine/parse')).not.toBeNull();
-    // Still anchored: a package that merely starts with the alias name is not the alias.
     expect(engine.exec('@engineering/toolkit')).toBeNull();
   });
 
-  // The known buckets take the same treatment, since `@utils` is as likely to be a barrel as
-  // `@utils/*` is to be a directory.
   it('matches a bare alias in a named bucket too', () => {
     const utils = new RegExp(
       buildGroups({ '@utils': './src/utils' }).flat().find((pattern) => {
@@ -121,8 +112,7 @@ describe('buildGroups', () => {
     expect(utils.exec('@utils/format')).not.toBeNull();
   });
 
-  // `$` opens a regex anchor, so an unescaped SvelteKit `$lib` produces `^$lib/`, matching
-  // nothing, and every `$lib` import falls through to `^@?\w` and sorts with node_modules.
+  // Unescaped, SvelteKit's `$lib` produces `^$lib/`, which matches nothing.
   it('escapes an alias whose name is regex syntax', () => {
     const patterns = buildGroups({
       '$lib': './src/lib',
@@ -131,7 +121,6 @@ describe('buildGroups', () => {
 
     expect(patterns).toContain(String.raw`^\$lib(?:/|$)`);
     expect(patterns).not.toContain('^$lib(?:/|$)');
-    // The escaped pattern must match a real specifier: unescaped, it's `^` then `$` then `lib/`.
     expect('$lib/store/user'.startsWith('$lib/')).toBe(true);
     expect(new RegExp(String.raw`^\$lib(?:/|$)`).exec('$lib/store/user')).not.toBeNull();
     expect(new RegExp('^$lib(?:/|$)').exec('$lib/store/user')).toBeNull();

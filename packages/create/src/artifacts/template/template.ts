@@ -4,8 +4,7 @@ import { buildScripts, RUN_PREFIX } from '../build-scripts/buildScripts';
 
 import type { Answers } from '../../model/answers/answers';
 
-// A slot left unfilled throws rather than shipping: an intact `{{RUN}}` in a generated CLAUDE.md would read as
-// documentation until someone tried the command.
+// An unfilled slot throws: an intact `{{RUN}}` in a generated CLAUDE.md reads as documentation.
 
 const SLOT_PATTERN = /\{\{[A-Z_]+\}\}/g;
 
@@ -15,7 +14,7 @@ const testRows = (answers: Answers, run: string): string => {
     : '';
 };
 
-// What CLAUDE.md and README.md both say (identity, how to run the gate); shared so a new slot is one edit, not two.
+// Shared by CLAUDE.md and README.md, so a new slot is one edit.
 export const sharedSlots = (projectName: string, answers: Answers): Record<string, string> => {
   const run = RUN_PREFIX[answers.packageManager];
 

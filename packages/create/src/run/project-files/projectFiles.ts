@@ -70,12 +70,11 @@ export const writeProjectFile = async (
   const path = await safeProjectPath(cwd, target);
 
   await mkdir(dirname(path), { recursive: true });
-  // Walked again, because the first walk stops at the first parent that did not exist yet and `mkdir` has just
-  // created those. Its answer is the same path; it is called for the refusal, not the value.
+  // Walked again: the first walk stopped at the first parent that did not exist yet. Called for the refusal.
   await safeProjectPath(cwd, target);
 
   try {
-    // Generated files may replace regular files, but never a symbolic link and whatever it points at.
+    // Never a symbolic link and whatever it points at.
     const file = await open(
       path,
       constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW,
@@ -98,13 +97,8 @@ export const writeProjectFile = async (
   }
 };
 
-/**
- * `fresh` says the directory is scaffolder output, which is what decides whether a `preserve` artifact that already
- * exists is the project's or somebody else's default. The build configs are the case that needs telling apart: a
- * scaffolder writes its own `vite.config.ts` moments before this runs, so preserving it at birth would hand a new
- * project Vite's defaults instead of this standard's, while preserving it on every later run is the whole point.
- * Nothing else is affected, because no other preserved file exists yet at birth.
- */
+// `fresh` decides whether an existing `preserve` file is the project's or a scaffolder's default: a scaffolder
+// writes its own `vite.config.ts` moments before this runs.
 export const applyArtifact = async (
   cwd: string,
   artifact: Artifact,
@@ -116,7 +110,7 @@ export const applyArtifact = async (
     return false;
   }
 
-  // A transform too, not only a merge: the checker is copied and still carries the project's own blocks.
+  // A transform too: the checker is copied and still carries the project's own blocks.
   const reads = 'merge' in artifact.content || 'transform' in artifact.content;
   const current = reads ? await readIfPresent(path) : null;
 

@@ -6,10 +6,9 @@ interface MarketplaceRef {
   };
 }
 
-// Type only keys this CLI owns; spreads preserve every project-owned setting.
+// Only the keys this CLI owns are typed; spreads keep every project-owned setting.
 export interface ClaudeSettings {
-  // Explicitly `| undefined`, because the merge below reads it off a parsed file that may not carry it and
-  // `exactOptionalPropertyTypes` separates a missing key from one set to undefined.
+  // Explicitly `| undefined`: `exactOptionalPropertyTypes` separates a missing key from one set to undefined.
   includeCoAuthoredBy?: boolean | undefined;
   enabledPlugins?: Record<string, boolean>;
   extraKnownMarketplaces?: Record<string, MarketplaceRef>;
@@ -19,7 +18,7 @@ const isClaudeSettings = (value: unknown): value is ClaudeSettings => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
 
-// Treat invalid project settings as absent so a sync is never blocked by an editable file.
+// Invalid project settings read as absent, so a sync is never blocked by an editable file.
 const settingsIn = (text: string | null): ClaudeSettings => {
   if (text === null) {
     return {};
@@ -35,14 +34,12 @@ const settingsIn = (text: string | null): ClaudeSettings => {
   }
 };
 
-// Merge owned keys while preserving project settings; replacing the file loses both.
 export const mergeClaudeSettings = (emitted: string, current: string | null): string => {
   const ours = settingsIn(emitted);
   const theirs = settingsIn(current);
 
   const settings: ClaudeSettings = {
-    // Ours first, so a project that has answered this question for itself keeps its answer and one that has not
-    // takes the default. The two keys below are the other way round, because those are lists this CLI owns.
+    // Ours first, so a project's own answer wins; the two lists below are the other way round, being this CLI's.
     includeCoAuthoredBy: ours.includeCoAuthoredBy,
     ...theirs,
     enabledPlugins: {

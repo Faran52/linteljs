@@ -1,5 +1,4 @@
-// `defineConfig` is not exported here, though its types are: this barrel would then load all six framework
-// layers and every plugin behind them. It lives at `@linteljs/eslint-config/define-config`, loading only what is asked.
+// No `defineConfig`: the barrel would load all six framework layers. It lives at `/define-config`.
 export { astro } from './astro';
 export { base } from './base';
 export {

@@ -60,14 +60,12 @@ const SCAFFOLDED: PackageJson = {
   },
 };
 
-// A silent skip on a missing VERSIONS entry is how @types/node and @vitest/eslint-plugin vanished from every generated
-// project.
+// A silent skip on a missing VERSIONS entry is how @types/node vanished from every generated project.
 describe('versioned', () => {
   it('has a resolvable range for every dependency every target and library declares', () => {
     for (const target of TARGET_IDS) {
       for (const library of LIBRARIES) {
         expect(() => {
-          // `store: true` so every target's store dependency is held to a VERSIONS entry too.
           return patchPackageJson({}, answersFor({
             target,
             libraries: [library],
@@ -84,8 +82,6 @@ describe('versioned', () => {
     }).toThrow('No version in VERSIONS for not-a-real-package');
   });
 
-  // The empty string is how TANSTACK_QUERY_BINDINGS spells "this target has no binding", the one absence that must not
-  // reach the lookup above.
   it('drops the empty name, sorts and de-duplicates what is left', () => {
     expect(Object.keys(versioned(['vitest', '', 'eslint', 'vitest']))).toEqual(['eslint', 'vitest']);
   });
@@ -142,11 +138,8 @@ describe('patchPackageJson', () => {
     );
   });
 
-  /**
-   * `create vite`'s React template declares the Babel plugin and the emitted `vite.config.ts` also imports it,
-   * so the inherited copy merges with the target's own. React Native declares the same package for its vitest
-   * transform, which is why the filter runs on what the scaffolder left and not on the merged result.
-   */
+  // React Native declares the same package for its vitest transform, so the filter runs on what the scaffolder
+  // left, not the merged result.
   it('keeps the inherited plugin-react, and keeps the one a target asks for', () => {
     const scaffolded: PackageJson = {
       ...SCAFFOLDED,
@@ -162,7 +155,6 @@ describe('patchPackageJson', () => {
       .toHaveProperty('@vitejs/plugin-react');
   });
 
-  // Reads the pin off the table rather than repeating it, so `versions.ts` stays the one file a bump touches.
   it('sets type, packageManager and engines', () => {
     const patched = patchPackageJson(SCAFFOLDED, answersFor({ packageManager: 'bun' }));
     const bun = PACKAGE_MANAGER_VERSIONS.bun;
@@ -175,8 +167,7 @@ describe('patchPackageJson', () => {
     });
   });
 
-  // build is inherited from the scaffolder except React Native, whose eas build needs an account; expo export is the
-  // local Metro bundle instead (measurements in DESIGN.md).
+  // React Native's `eas build` needs an account; `expo export` is the local bundle (measurements in DESIGN.md).
   it('preserves the scaffolder build script, and gates on it', () => {
     const patched = patchPackageJson(
       { scripts: { build: 'tsc -b && vite build' } },
@@ -207,7 +198,7 @@ describe('patchPackageJson', () => {
     expect(angular.dependencies).toHaveProperty('@ngrx/signals');
   });
 
-  // Pinia arrives through create-vue's own --pinia flag, so a version pinned here would fight the scaffolder's.
+  // A version pinned here would fight create-vue's own --pinia install.
   it('installs nothing for a store the scaffolder itself installs', () => {
     expect(patchPackageJson({}, answersFor({
       target: 'vue',
@@ -235,11 +226,8 @@ describe('patchPackageJson', () => {
     expect(without.devDependencies).not.toHaveProperty('eslint-plugin-better-tailwindcss');
   });
 
-  /**
-   * The adapter follows whether the target calls `@tailwindcss/vite`, not whether it owns a vite.config.ts: Astro
-   * calls the plugin from `astro.config.mjs`'s vite key while owning no config file, and shipping both adapters left
-   * PostCSS installed with nothing to load it.
-   */
+  // Astro calls the plugin from `astro.config.mjs` while owning no vite config; shipping both adapters once left
+  // PostCSS installed with nothing to load it.
   it('gives astro the vite adapter alone, and postcss to the targets with neither route', () => {
     const astro = patchPackageJson({}, answersFor({
       target: 'astro',
@@ -260,10 +248,7 @@ describe('patchPackageJson', () => {
     }
   });
 
-  /**
-   * The base template puts astro in dependencies, where the node adapter's runtime entry needs it; the record used
-   * to add a second entry to devDependencies and the two ranges drifted. One declaration, in dependencies.
-   */
+  // The node adapter's runtime entry needs astro in dependencies; a second entry drifted.
   it('declares astro once for an astro project, hosted or not', () => {
     const plain = patchPackageJson({}, answersFor({ target: 'astro' }));
     const hosted = patchPackageJson({}, answersFor({
@@ -304,15 +289,13 @@ describe('patchPackageJson', () => {
     expect(patchPackageJson({}, answersFor({})).scripts?.['prepare']).toBe('husky');
   });
 
-  // SvelteKit's own prepare writes .svelte-kit/tsconfig.json, which the emitted tsconfig extends; replacing it outright
-  // breaks typecheck.
+  // Replacing SvelteKit's own prepare breaks typecheck.
   it("keeps a target's own prepare ahead of husky rather than replacing it", () => {
     expect(patchPackageJson({}, answersFor({ target: 'svelte' })).scripts?.['prepare'])
       .toBe('svelte-kit sync && husky');
   });
 
-  // Named by customSyntax in the emitted stylelint config; without it, lint:css can't load its own syntax on the two
-  // targets that need one.
+  // Without it, lint:css cannot load the syntax the emitted config names.
   it('installs the SFC stylelint syntax only where a component holds the styles', () => {
     expect(patchPackageJson({}, answersFor({ target: 'vue' })).devDependencies)
       .toHaveProperty('postcss-html');
@@ -345,8 +328,7 @@ describe('parsePackageJson', () => {
   });
 });
 
-// The scripts must name the runner actually installed: naming vitest in a jest project is a check that fails on
-// command-not-found.
+// Naming vitest in a jest project is a check that fails on command-not-found.
 describe('the test scripts', () => {
   it('installs no runner where tests were declined', () => {
     const devDependencies = buildDevDependencies(answersFor({ testing: 'none' }));
@@ -355,8 +337,7 @@ describe('the test scripts', () => {
     expect(devDependencies).not.toHaveProperty('jest');
   });
 
-  // React Native loads through an adapter, not a preset of its own; it's still vitest underneath, so the runner and
-  // coverage provider come from the shared list.
+  // React Native loads through an adapter; it is still vitest underneath.
   it('gives react native the adapter on top of the shared runner', () => {
     const devDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
 
@@ -444,5 +425,19 @@ describe('the router', () => {
 
   it('installs no router by default', () => {
     expect(patchPackageJson({}, answersFor({})).dependencies ?? {}).not.toHaveProperty('react-router');
+  });
+});
+
+// Measured on bun 1.3.11: a `bunfig.toml` `allowBuilds` key is ignored and the postinstall stays blocked; only
+// `trustedDependencies` in package.json is read.
+describe('trustedDependencies', () => {
+  it('names every approved build for bun and nothing for the other managers', () => {
+    const bun = patchPackageJson({}, answersFor({
+      target: 'react-native',
+      packageManager: 'bun',
+    }));
+
+    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['sharp', 'unrs-resolver', 'esbuild']));
+    expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
   });
 });

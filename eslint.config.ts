@@ -31,7 +31,10 @@ const config = [
       'packages/*/src/**/': 'KEBAB_CASE',
     },
     // DESIGN.md: `resolver: { project: 'packages/*/tsconfig.json' }`
-    resolver: { project: 'packages/*/tsconfig.json' },
+    resolver: {
+      project: 'packages/*/tsconfig.json',
+      noWarnOnMultipleProjects: true,
+    },
   }),
   ...typescript(),
   ...vitest(),

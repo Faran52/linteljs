@@ -23,7 +23,6 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
     'function schedule() {\n  task().catch(report);\n}',
     'const cleanup = () => {\n  close().catch(report);\n};',
 
-    // Already the shape the rule is asking for.
     `async function load() {
   try {
     return await fetch(url);
@@ -32,12 +31,10 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
   }
 }`,
 
-    // Awaited, but no rejection handler in sight.
     'async function load() {\n  return await fetch(url);\n}',
     'async function load() {\n  return await fetch(url).then(parse);\n}',
     'async function load() {\n  return await fetch(url).finally(cleanup);\n}',
 
-    // `catch` with no handler passed is not handling anything.
     'async function load() {\n  return await fetch(url).catch();\n}',
 
     // A private field is not an Identifier, so this calls a field named `catch`, not the promise method.
@@ -55,7 +52,6 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
     "async function load() {\n  return await fetch(url)['catch'](handle);\n}",
     'const c = key;\nasync function load() {\n  return await fetch(url)[c](handle);\n}',
 
-    // Nested one function deeper, inside a non-async callback.
     'async function load() {\n  items.forEach(function (item) {\n    item.catch(handle);\n  });\n}',
 
     // A per-item handler in Promise.all stops one failure from rejecting the whole batch;
@@ -129,7 +125,6 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
       errors: [{ messageId: 'preferTryCatchOverThenHandler' }],
     },
     {
-      // A method on a class, and an object method, both async.
       code: 'class Loader {\n  async load() {\n    return await fetch(url).catch(handle);\n  }\n}',
       errors: [{ messageId: 'preferTryCatchOverCatch' }],
     },
@@ -146,7 +141,6 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
       ],
     },
     {
-      // Top level await in a module: `try`/`catch` is available there too.
       code: 'const data = await fetch(url).catch(handle);',
       errors: [{ messageId: 'preferTryCatchOverCatch' }],
     },

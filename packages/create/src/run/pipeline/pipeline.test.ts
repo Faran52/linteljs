@@ -158,11 +158,7 @@ describe('runPipeline with --skip-scaffold', () => {
     });
     expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLintelConfig(DEFAULT_ANSWERS));
 
-    /**
-     * Both are stage-`package` writes and the config now comes first, because `package.json` became a merged
-     * artifact so that `sync` reconciles dependencies too. What matters is that they land in the same stage, which
-     * is what makes the recorded answers and the dependencies they imply agree.
-     */
+    // Same stage, config first, so the recorded answers and the dependencies they imply agree.
     expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
 
     const packageJson = parsePackageJson(await readFile(join(cwd, 'package.json'), 'utf8'));
@@ -170,8 +166,7 @@ describe('runPipeline with --skip-scaffold', () => {
     expect(packageJson).not.toHaveProperty('lintel');
   });
 
-  // Both are lintel's own script output, not the generator's, so no generator ignores them; both showed up
-  // untracked in a fresh project.
+  // Both are lintel's own output, so no generator ignores them.
   it('ignores what its own scripts produce, keeping what the generator listed', async () => {
     await writeFile(join(cwd, '.gitignore'), 'node_modules\n', 'utf8');
     await generate({});
@@ -183,8 +178,7 @@ describe('runPipeline with --skip-scaffold', () => {
     expect(ignored).toContain('*.tsbuildinfo');
   });
 
-  // The scaffolder's README describes its own toolchain, which contradicts the project after later stages run (e.g.
-  // React's tells you to configure `typescript-eslint`, which CLAUDE.md forbids).
+  // The scaffolder's README contradicts the project after later stages run.
   it("replaces the scaffolder's README with one that matches the project", async () => {
     await writeFile(join(cwd, 'README.md'), '# use npm, yarn or bun\n', 'utf8');
     await generate({});
@@ -353,14 +347,9 @@ describe('generated write safety', () => {
   });
 });
 
-// The 100% thresholds are measured over exactly the code somebody wrote: what never counts, and what ships a test on
-// day one.
+// The 100% thresholds are measured over exactly the code somebody wrote.
 describe('coverage surface', () => {
-  /**
-   * A birth run, because that is the only run that writes this file: `vitest.config.ts` is the project's once it
-   * exists, so a plain `generate` would answer whatever the previous call in this test left behind rather than what
-   * the target being asked about emits.
-   */
+  // A birth run: `vitest.config.ts` is the project's once it exists.
   const vitestConfig = async (overrides: AnswerOverrides): Promise<string> => {
     await runPipeline({
       name: 'demo-app',
@@ -377,8 +366,7 @@ describe('coverage surface', () => {
     expect(await vitestConfig({})).toContain("'src/{main,index}.{ts,tsx}'");
   });
 
-  // `src/**` alone hands rolldown files it cannot parse (`src/app.html`, `src/app/app.html`), throwing `RolldownError:
-  // Parse failed` on an otherwise clean `pnpm check`.
+  // `src/**` alone hands rolldown files it cannot parse, printing `RolldownError: Parse failed` on a clean check.
   it('measures only what v8 can instrument, plus the target component format', async () => {
     expect(await vitestConfig({ target: 'react' }))
       .toContain("include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs}']");
@@ -388,8 +376,7 @@ describe('coverage surface', () => {
       .toContain("include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs,vue}']");
   });
 
-  // Extensionless, vite warns every run; as `.ts` it's TS5097 since `allowImportingTsExtensions` is off. `.js` under
-  // `moduleResolution: bundler` resolves to the `.ts` file and satisfies both.
+  // Extensionless, vite warns every run; `.ts` is TS5097; `.js` resolves to the `.ts` under `bundler`.
   it('names the vite config with the extension both vite and tsc accept', async () => {
     expect(await vitestConfig({})).toContain("import viteConfig from './vite.config.js';");
   });
@@ -400,8 +387,7 @@ describe('coverage surface', () => {
     expect(await vitestConfig({ target: 'react' })).not.toContain('layout');
   });
 
-  // Excluding the layout here (unlike Next's) leaves the project at `100% (0/0)`: `--template minimal`'s only
-  // executable code is the layout, and a threshold over an empty denominator asserts nothing.
+  // Excluding the layout leaves `--template minimal` at `100% (0/0)`, asserting nothing.
   it('measures the svelte root layout rather than excluding it', async () => {
     expect(await vitestConfig({ target: 'svelte' })).not.toContain('+layout.svelte');
   });
@@ -415,15 +401,13 @@ describe('coverage surface', () => {
     }
   });
 
-  // Without the browser resolve condition, vitest resolves Svelte's server build and the first `render()` throws
-  // `lifecycle_function_unavailable`.
+  // Without the browser condition vitest resolves Svelte's server build and `render()` throws.
   it('gives svelte the browser resolve condition its renderer needs', async () => {
     expect(await vitestConfig({ target: 'svelte' })).toContain("resolve: { conditions: ['browser'] }");
     expect(await vitestConfig({ target: 'vue' })).not.toContain('conditions');
   });
 
-  // Both transforms rewrite every component and leave one branch no test can reach; left on, the 100% branch threshold
-  // is unreachable in any React or Solid project.
+  // Both transforms leave one branch no test can reach in every component.
   it('keeps the build-time transforms out of the test run', async () => {
     const viteConfig = async (overrides: AnswerOverrides): Promise<string> => {
       await runPipeline({
@@ -444,12 +428,7 @@ describe('coverage surface', () => {
   });
 });
 
-/**
- * The build configs are the project's after the first write, which is what a migration onto this standard depends on:
- * an extension building one IIFE bundle per content script, or a project with a second build mode, has a
- * `vite.config.ts` that no emitted default can reproduce. Both reference repos hit this, and the emitted vitest
- * excludes are the same argument again, naming entry points this CLI guessed rather than the ones a project has.
- */
+// The build configs are the project's after the first write: both reference repos rewrote `vite.config.ts` wholesale.
 describe('build configs a project already owns', () => {
   const OWN_VITE = '// hand-written: three IIFE bundles\nexport default {};\n';
   const OWN_VITEST = "// hand-written: excludes this project's own entry points\nexport default {};\n";
@@ -466,8 +445,7 @@ describe('build configs a project already owns', () => {
     await expect(readFile(join(cwd, 'vitest.config.ts'), 'utf8')).resolves.toBe(OWN_VITEST);
   });
 
-  // The other half: at birth the file on disk is the scaffolder's default, not the project's, so this standard's
-  // version has to land over it. Preserving there would ship every new project Vite's own config instead.
+  // At birth the file on disk is the scaffolder's default, so this standard's version has to land over it.
   it('replaces the scaffolder default on a birth run', async () => {
     await writeFile(join(cwd, 'vite.config.ts'), '// vite scaffolder default\n', 'utf8');
 
@@ -483,7 +461,6 @@ describe('build configs a project already owns', () => {
       .resolves.toContain('defineConfig');
   });
 
-  // Absence is still this CLI's to fix, the same way it is for every other preserved file.
   it('installs them when the project has neither', async () => {
     const written = await generate({});
 
@@ -518,13 +495,11 @@ describe('starter tests', () => {
     expect(await fresh({})).toContain('src/App.test.tsx');
   });
 
-  // A generator that rearranged its starter costs the example, not a suite that cannot import.
   it('writes none when the file it would cover is absent', async () => {
     expect(await fresh({})).not.toContain('src/App.test.tsx');
   });
 
-  // Svelte's layout is measured rather than excluded since it's the only executable code `--template minimal` writes;
-  // both starter tests have to land or the threshold runs over an empty denominator.
+  // The layout is the only executable code `--template minimal` writes, so both tests have to land.
   it('covers both the svelte page and its root layout', async () => {
     await mkdir(join(cwd, 'src/routes'), { recursive: true });
     await writeFile(join(cwd, 'src/routes/+page.svelte'), '<h1>SvelteKit</h1>\n', 'utf8');
@@ -534,8 +509,7 @@ describe('starter tests', () => {
       .toEqual(expect.arrayContaining(['src/routes/page.test.ts', 'src/routes/layout.test.ts']));
   });
 
-  // `--skip-scaffold` without `--fresh` points at a repository somebody has worked in; a test for a demo component that
-  // was never there is noise at best.
+  // `--skip-scaffold` without `--fresh` points at a repository somebody has worked in.
   it('writes none into a repository the CLI did not scaffold', async () => {
     await mkdir(join(cwd, 'src'), { recursive: true });
     await writeFile(join(cwd, 'src/App.tsx'), 'export default () => null;\n', 'utf8');
@@ -551,8 +525,7 @@ describe('starter tests', () => {
   });
 });
 
-// The extension is the one target where lintel writes source, not just config: no scaffold has a service worker, and a
-// manifest naming a missing one is an extension the browser refuses to load.
+// The one target where lintel writes source: a manifest naming a missing service worker will not load.
 describe('the webextension surfaces', () => {
   const fresh = async (): Promise<string[]> => {
     const written: string[] = [];
@@ -585,11 +558,7 @@ describe('the webextension surfaces', () => {
     expect(manifest).not.toMatch(/\{\{/);
   });
 
-  /**
-   * A project shipping to both stores. The two manifests cannot be one file, because Chrome rejects
-   * `browser_specific_settings` and AMO requires the gecko id, so the build makes one bundle and the packaging step
-   * swaps the manifest into it. The reference repo doing this had no way to say so, and carried both files by hand.
-   */
+  // Chrome rejects `browser_specific_settings` and AMO requires it, so a project shipping to both stores gets two.
   it('writes a second manifest for a project packaged for two stores', async () => {
     const written: string[] = [];
 
@@ -613,15 +582,12 @@ describe('the webextension surfaces', () => {
     const chrome = await readFile(join(cwd, 'manifest.json'), 'utf8');
     const firefox = await readFile(join(cwd, 'manifest.firefox.json'), 'utf8');
 
-    // The one field that cannot be shared, in exactly one of the two.
     expect(chrome).not.toContain('browser_specific_settings');
     expect(firefox).toContain('browser_specific_settings');
-    // And each spells the background the way its own browser takes it.
     expect(chrome).toContain('"service_worker"');
     expect(firefox).toContain('"scripts"');
   });
 
-  // The default, and the shape every project that ships to one store keeps.
   it('writes one manifest when the project ships to one store', async () => {
     expect(await fresh()).not.toContain('manifest.firefox.json');
   });
@@ -741,7 +707,7 @@ describe('pnpm-workspace.yaml', () => {
 
     const merged = await readFile(join(cwd, 'pnpm-workspace.yaml'), 'utf8');
 
-    // The curated list survives untouched. The peer block that follows is a separate decision, and this file had none.
+    // The peer block is a separate decision, and this file had none.
     expect(merged.startsWith("allowBuilds:\n  'esbuild': true\n")).toBe(true);
     expect(merged).not.toContain('sharp');
   });
@@ -847,8 +813,7 @@ describe('scaffoldCommand', () => {
     expect(scaffoldCommand('bun', react)).not.toContain('--');
   });
 
-  // Next sets Tailwind up at generate time, so it's the one scaffolder flag that has to follow the answer; hardcoding
-  // `--no-tailwind` installs the library with none of the wiring.
+  // Next wires Tailwind at generate time, so this is the one scaffolder flag that follows the answer.
   it('passes the tailwind answer through to the one generator that acts on it', () => {
     expect(scaffoldFor({
       target: 'next',
@@ -864,13 +829,11 @@ describe('scaffoldCommand', () => {
     })).toContain('--no-tailwind');
   });
 
-  // Four generators, three spellings of "TypeScript": a target that omitted its own would scaffold a JavaScript
-  // project under a tsconfig that then typechecks nothing.
+  // Three spellings of "TypeScript"; omitting one scaffolds JavaScript under a tsconfig that checks nothing.
   it('asks each generator for TypeScript in its own spelling', () => {
     expect(scaffoldFor({})).toContain('react-ts');
     expect(scaffoldFor({ target: 'next' })).toContain('--ts');
     expect(scaffoldFor({ target: 'vue' })).toContain('--ts');
-    // `--types` is a fixed-choice flag, so the value is a separate argument.
     expect(scaffoldFor({ target: 'svelte' })).toEqual(expect.arrayContaining(['--types', 'ts']));
   });
 
@@ -882,17 +845,14 @@ describe('scaffoldCommand', () => {
     })).not.toContain('--vitest');
   });
 
-  // The one property that has to hold for every target: `--yes` promises the tool asks nothing, though four of these
-  // generators ask plenty when handed only a project name.
+  // `--yes` promises the tool asks nothing, though four generators ask plenty when handed only a name.
   it('passes each generator its own non-interactive flag', () => {
     const suppressors = [
       '--yes',
       '--defaults',
       '--no-interactive',
-      // create-vue skips every prompt as soon as one feature flag is present; --router is the flag every answer set
-      // passes, since --pinia now follows the store answer.
+      // create-vue skips every prompt once one feature flag is present; --router is the one every answer set passes.
       '--router',
-      // sv documents --template, --types, an add-on decision and an install decision as its set.
       '--no-add-ons',
     ];
 
@@ -954,7 +914,6 @@ describe('sync', () => {
     expect((await planSync(cwd, answersFor({}))).pending).toEqual([]);
   });
 
-  // They drift for the same reason the rules do: an option this CLI writes gets added or renamed.
   it('reaches the configs it emitted, not only the files it copied', async () => {
     await generate({});
     await writeFile(join(cwd, 'eslint.config.js'), '// hand edited\n', 'utf8');
@@ -974,8 +933,7 @@ describe('sync', () => {
     expect((await planSync(cwd, answersFor({}))).pending).toEqual([]);
   });
 
-  // The diff is `git diff --no-index`; a machine with no git still needs to be told which files differ, even though the
-  // husky hooks it installs are inert without git anyway.
+  // A machine with no git still needs to be told which files differ.
   it('reports a changed file without a diff when git cannot be spawned', async () => {
     await generate({});
     await writeFile(
@@ -998,7 +956,7 @@ describe('sync', () => {
     }
   });
 
-  // Merged rather than preserved: preserving froze the standard's half along with the project's.
+  // Merged rather than preserved: preserving froze the standard's half too.
   it('carries the project blocks of checkBannedPatterns over the shipped floor', async () => {
     await generate({});
 
@@ -1013,7 +971,6 @@ describe('sync', () => {
     const merged = await readFile(path, 'utf8');
 
     expect(merged).toContain("{ name: 'ours', re: /ours/ },");
-    // And the standard's half is the shipped one rather than whatever the project froze.
     expect(merged).toContain('CAUGHT_VALUE');
   });
 
@@ -1047,7 +1004,6 @@ describe('root config', () => {
     });
     expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLintelConfig(answers));
 
-    // Same stage, config first: see the note on the ordering assertion above.
     expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
   });
 
@@ -1063,8 +1019,7 @@ describe('root config', () => {
   });
 });
 
-// Both stages run a name off `PATH` with `shell: false`, so a stand-in earlier on `PATH` is the whole seam: it records
-// the argv and cwd it was given and picks its own exit code.
+// Both stages run a name off `PATH` with `shell: false`, so a stand-in earlier on `PATH` is the whole seam.
 describe('the stages that shell out', () => {
   const MARKER = 'invocation.txt';
 
@@ -1109,8 +1064,7 @@ describe('the stages that shell out', () => {
     expect(notices).toEqual(['installing with yarn']);
   });
 
-  // Fatal on purpose: every later step reads `node_modules`, so reporting success with none installed is worse than
-  // stopping and saying which command failed.
+  // Fatal on purpose: every later step reads `node_modules`.
   it('stops on a failed install rather than carrying on to the fix pass', async () => {
     await planted('yarn', 3);
 
@@ -1133,8 +1087,7 @@ describe('the stages that shell out', () => {
     })).rejects.toThrow('ENOENT');
   });
 
-  // The scaffolder creates `<name>/` itself, so it runs a directory above where every later stage runs; getting that
-  // wrong nests the project inside itself.
+  // The scaffolder creates `<name>/` itself; wrong, the project nests inside itself.
   it('runs the scaffolder one directory above the project it is creating', async () => {
     await planted('pnpm', 0);
 
@@ -1154,13 +1107,12 @@ describe('the stages that shell out', () => {
   });
 });
 
-// Filters out stage 4's repository notice, whose own describe block below owns that assertion.
+// Stage 4's repository notice has its own describe below.
 const notAboutTheRepository = (notice: string): boolean => {
   return !notice.startsWith('git init:') && !notice.startsWith('no git repository');
 };
 
-// husky's `prepare` exits 0 even when `.git` can't be found, buried in the install output, so a project can ship hooks
-// that never run; only Next's generator initialises git.
+// husky's `prepare` exits 0 even when `.git` cannot be found, so a project can ship hooks that never run.
 describe('the repository the hooks install into', () => {
   const noticesFromAgent = async (): Promise<string[]> => {
     const notices: string[] = [];
@@ -1185,8 +1137,7 @@ describe('the repository the hooks install into', () => {
     expect(await exists(join(cwd, '.git'))).toBe(true);
   });
 
-  // `--skip-scaffold` inside a subdirectory of somebody's repository has no `.git` of its own; nesting a second
-  // repository over their working tree is not a thing to do quietly.
+  // A subdirectory of somebody's repository has no `.git` of its own; nesting one there is not done quietly.
   it('says nothing where the directory is already inside a work tree', async () => {
     await noticesFromAgent();
 
@@ -1194,8 +1145,7 @@ describe('the repository the hooks install into', () => {
   });
 
   it('says the hooks will not install when it cannot make one', async () => {
-    // A `.git` that is a file rather than a directory: both `rev-parse` and `init` fail on it, but ordinary writes
-    // still work, so the rest of the stage runs.
+    // A `.git` that is a file: `rev-parse` and `init` both fail, ordinary writes still work.
     await writeFile(join(cwd, '.git'), 'not a gitfile\n', 'utf8');
 
     expect(await noticesFromAgent()).toEqual([
@@ -1204,8 +1154,7 @@ describe('the repository the hooks install into', () => {
   });
 });
 
-// The fix pass's whole contract is that it never takes a generated project down with it, so every failure mode below
-// asserts generation still completed.
+// The fix pass never takes a generated project down with it.
 describe('the eslint --fix pass', () => {
   const noticesFrom = async (skip: Stage[]): Promise<string[]> => {
     const notices: string[] = [];
@@ -1224,14 +1173,12 @@ describe('the eslint --fix pass', () => {
   };
 
   it('reports the install step when the project has no eslint yet', async () => {
-    // The pipeline never installs here: stage 3 only adds eslint to package.json, so this is what a fresh generate
-    // actually does.
+    // Stage 3 only adds eslint to package.json, so this is what a fresh generate does.
     expect(await noticesFrom(['scaffold', 'install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
   });
 
   it('installs with the package manager from the answers, not a hardcoded pnpm', async () => {
-    // Proven by the notice rather than a real install, since actually installing would take minutes and reach the
-    // network.
+    // The notice, since a real install takes minutes and reaches the network.
     const notices: string[] = [];
 
     await runPipeline({
@@ -1254,10 +1201,9 @@ describe('the eslint --fix pass', () => {
     expect(await noticesFrom(['scaffold', 'lint', 'install'])).toEqual([]);
   });
 
-  // A stand-in for the project's own eslint: prints every result, with `output` present exactly on files it rewrote.
+  // A stand-in eslint with `output` present exactly on files it rewrote.
   const plantedEslint = async (printed: string, exitCode: number): Promise<void> => {
-    // Written into the project rather than onto PATH: the fix pass runs the binary by absolute path, which is how it
-    // tells a missing eslint from a broken one.
+    // In the project, not on PATH: the fix pass runs the binary by absolute path.
     const bin = join(cwd, 'node_modules', '.bin');
 
     await mkdir(bin, { recursive: true });
@@ -1276,7 +1222,7 @@ describe('the eslint --fix pass', () => {
   it('runs eslint and reports the files it changed', async () => {
     await plantedEslint(
       '[{"filePath":"a.ts","output":"fixed"},{"filePath":"b.ts"}]',
-      // Exit 1 means findings remain, which is the normal outcome and must not abort generation.
+      // Exit 1 means findings remain, the normal outcome.
       1,
     );
 
@@ -1295,8 +1241,7 @@ describe('the eslint --fix pass', () => {
     expect(await noticesFrom(['scaffold', 'install'])).toEqual(['eslint --fix: nothing to fix']);
   });
 
-  // A formatter emitting something unreadable is not worth failing a generate over; it counts as nothing fixed rather
-  // than throwing out the project.
+  // Unreadable formatter output counts as nothing fixed.
   it.each([
     ['output that is not JSON at all', 'Oops! Something went wrong.'],
     ['JSON that is not a result list', '{"results":[]}'],
@@ -1311,7 +1256,7 @@ describe('the eslint --fix pass', () => {
     const bin = join(cwd, 'node_modules', '.bin');
 
     await mkdir(bin, { recursive: true });
-    // Exit 2 is an eslint configuration failure, the one case that is not "it found problems".
+    // Exit 2 is a configuration failure.
     await writeFile(join(bin, 'eslint'), '#!/usr/bin/env node\nprocess.exit(2);\n', 'utf8');
     await chmod(join(bin, 'eslint'), 0o755);
 
@@ -1321,8 +1266,7 @@ describe('the eslint --fix pass', () => {
     expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
   });
 
-  // The stylesheet half of the same pass; starter CSS fails `lint:css` by dozens of findings until this runs, measured
-  // at 261 across the three Vite templates alone.
+  // Measured: 261 stylelint findings across the three Vite templates before this pass.
   const plantedStylelint = async (): Promise<void> => {
     const bin = join(cwd, 'node_modules', '.bin');
 
@@ -1378,7 +1322,7 @@ describe('the eslint --fix pass', () => {
       'utf8',
     );
     await chmod(join(bin, 'eslint'), 0o755);
-    // Present but not executable, the one shape that makes `spawnSync` report an error rather than an exit code.
+    // Present but not executable: the one shape where `spawnSync` reports an error rather than an exit code.
     await writeFile(join(bin, 'stylelint'), 'not a program\n', 'utf8');
     await chmod(join(bin, 'stylelint'), 0o644);
 
@@ -1390,10 +1334,7 @@ describe('the eslint --fix pass', () => {
   });
 });
 
-/**
- * Both routes that write artifacts read the directory, and they have to read it the same way. `sync` looked the style
- * entry up and `runPipeline` did not, so `--skip-scaffold` wrote a second stylesheet nothing imports.
- */
+// Both routes read the directory the same way: `--skip-scaffold` once wrote a second stylesheet nothing imports.
 describe('what create and sync each discover about a project', () => {
   const withTailwind = (): Answers => {
     return answersFor({ libraries: ['tailwind'] });
@@ -1435,8 +1376,7 @@ describe('what create and sync each discover about a project', () => {
     expect(await exists(join(cwd, 'src/index.css'))).toBe(false);
   });
 
-  // The guard against the next discovered file reaching one route only. `sync` is asked before anything is written,
-  // so this compares what each made of the same directory rather than what one left behind for the other.
+  // `sync` is asked before anything is written, so this compares what each made of the same directory.
   it('plans the same stylesheet as sync does, from the same directory', async () => {
     await plant('src/styles/tailwind.css');
 
@@ -1448,8 +1388,7 @@ describe('what create and sync each discover about a project', () => {
       .toEqual(styleEntriesIn(planned));
   });
 
-  // The other discovered spelling: a React project generated before it became `.tsx` keeps `.ts`. Asserted on the
-  // config that names it, since the setup file is preserved and a misread shows up as a second file beside it.
+  // A React project generated before the setup file became `.tsx` keeps `.ts`.
   it("keeps the setup spelling the project already has, rather than its target's", async () => {
     await plant('__mocks__/setupTests.ts');
 

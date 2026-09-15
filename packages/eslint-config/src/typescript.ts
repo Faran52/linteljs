@@ -16,20 +16,20 @@ export const typescript = (): Layer => {
       },
     },
 
-    // `strictTypeChecked` lacks a files glob; keep config files untyped while SFC layers stay typed.
+    // `strictTypeChecked` has no files glob; config files stay untyped.
     {
       ...tseslint.configs.disableTypeChecked,
       name: '@linteljs/typescript/untyped',
       files: ['**/*.{js,jsx,mjs,cjs}', '**/*.html'],
     },
 
-    // Restore base's unused-vars handoff after `strictTypeChecked` re-enables it.
+    // `strictTypeChecked` re-enables what `base` handed to `unused-imports`.
     {
       name: '@linteljs/typescript/unused-vars-handover',
       rules: { '@typescript-eslint/no-unused-vars': 'off' },
     },
 
-    // Metro assets need `require`; allow extensions only, keeping package imports reported.
+    // Metro assets need `require`; a package import is still reported.
     {
       name: '@linteljs/typescript/asset-requires',
       rules: {

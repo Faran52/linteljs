@@ -7,16 +7,10 @@ import { mergeChecker } from './mergeChecker';
 
 import type { Answers } from '../../model/answers/answers';
 
-/**
- * The test setup, whose path the vitest artifact and the skip list below have to agree on. `.tsx`
- * on the React family, where a setup that renders anything needs JSX; `.ts` elsewhere, since Vue,
- * Svelte and Angular keep markup out of it. Read off the target's own `jsx` rather than a list of
- * ids: Solid and Vue set `preserve` and are deliberately not included.
- */
-// Both spellings, newest first: `run/` asks which one a project already holds before writing.
+// `.tsx` on the React family, where a rendering setup needs JSX (read off `jsx`, since Solid and Vue set `preserve`).
+// Newest first: `run/` asks which one a project already holds.
 export const SETUP_TESTS_CANDIDATES = ['__mocks__/setupTests.tsx', '__mocks__/setupTests.ts'];
 
-// The target's own spelling where the project has it, the project's own otherwise. See `projectSpelling`.
 export const setupTestsPath = (answers: Answers, present: readonly string[] = []): string => {
   const own = targetFor(answers).tsconfig.jsx === 'react-jsx'
     ? '__mocks__/setupTests.tsx'
@@ -25,7 +19,7 @@ export const setupTestsPath = (answers: Answers, present: readonly string[] = []
   return projectSpelling(own, present);
 };
 
-// Throws rather than no-op: a silent miss on a drifted anchor would ship the strict floor to a relaxed project.
+// Throws: a silent miss on a drifted anchor would ship the strict floor to a relaxed project.
 const replaceAnchored = (source: string, anchor: string, replacement: string): string => {
   if (!source.includes(anchor)) {
     throw new Error(`checkBannedPatterns.ts no longer contains the anchor: ${anchor}`);
@@ -44,8 +38,7 @@ const withTypeSafety = (source: string, answers: Answers): string => {
     : source;
 };
 
-// React Native only: the target record's exemptsStarterTests carries why. Skips are derived from starterTests
-// rather than listed here, so a stale exemption can't outlive the file it names.
+// Derived from starterTests, so a stale exemption cannot outlive the file it names.
 const starterSkips = (answers: Answers): string[] => {
   const target = targetFor(answers);
   const tests = target.exemptsStarterTests === true ? target.starterTests : undefined;
@@ -65,7 +58,7 @@ const starterSkips = (answers: Answers): string[] => {
   ];
 };
 
-// Included in the emitted file, so the reason travels with the list rather than staying only here.
+// Included in the emitted file, so the reason travels with the list.
 const SKIP_REASON = [
   '  /*',
   '   * The starter suite `@linteljs/create` wrote, and the setup file behind it. These stand in for',
@@ -99,8 +92,6 @@ export const checkerArtifact = (answers: Answers): Artifact => {
     target: 'scripts/checkBannedPatterns.ts',
     content: {
       sources: ['scripts/checkBannedPatterns.ts'],
-      // Applies the type-safety floor, then the exemptions it cannot hold, writing both as values in the file the
-      // project owns.
       transform: (source, current) => {
         return mergeChecker(withStarterSkips(withTypeSafety(source, answers), answers), current);
       },

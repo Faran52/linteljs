@@ -6,9 +6,7 @@ import type { RuleNode, SourceCode } from '../src/utils/ruleUtils.ts';
 // A real `SourceCode` for a snippet: there is no public constructor, so this runs a throwaway rule to capture one.
 export interface ParsedSnippet {
   sourceCode: SourceCode;
-  // The first node of the requested type, for helpers that take one.
   firstNode: (type: string) => RuleNode;
-  // The last node of the requested type, for reaching the inner half of a nested pair.
   lastNode: (type: string) => RuleNode;
 }
 

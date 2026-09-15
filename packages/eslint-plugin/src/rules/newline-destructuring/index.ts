@@ -175,7 +175,6 @@ export const newlineDestructuring = createRule('newline-destructuring', {
         const { outer, inner } = indentsAt(node);
         const openBrace = sourceCode.getFirstToken(node);
 
-        // The first member moves down only if it is sharing the brace's line.
         yield* spliceOntoNewline(fixer, openBrace, startTokenOf(sourceCode, firstMember), inner, eol);
 
         yield* splitMembers(fixer, members, inner);

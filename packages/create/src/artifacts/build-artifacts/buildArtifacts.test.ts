@@ -62,7 +62,7 @@ const artifactFor = (overrides: AnswerOverrides, target: string): Artifact | und
   });
 };
 
-// Composed text, or the empty string where the answers emit no such artifact, which every caller asserts against.
+// The empty string where the answers emit no such artifact.
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
   const artifact = artifactFor(overrides, target);
 
@@ -104,7 +104,6 @@ describe('buildArtifacts', () => {
       .not.toContain('plugins/linteljs/skills/linteljs/references/testing.md');
   });
 
-  // Every project is a TypeScript project, so neither follows an answer any more.
   it('always ships the tsconfig and the staged typecheck', () => {
     expect(targetsOf({ testing: 'none' })).toEqual(
       expect.arrayContaining(['tsconfig.json', 'scripts/typecheckStaged.ts']),
@@ -144,50 +143,33 @@ describe('buildArtifacts', () => {
     expect(targetsOf({ testing: 'none' })).not.toContain('vitest.config.ts');
   });
 
-  /**
-   * Birth-only, so a project that grew a real build keeps it. Both extension migrations rewrote `vite.config.ts`
-   * wholesale, one for per-content-script IIFE bundles and a native host, the other for a second build mode, and the
-   * emitted vitest excludes name entry points this CLI guessed rather than the ones a project has. Emitting either on
-   * every sync flattens that, and `preserve` is also what keeps `--force` from doing it.
-   */
+  // Birth-only: both extension migrations rewrote `vite.config.ts` wholesale, and `preserve` keeps `--force` off it.
   it('hands the build configs to the project after the first write', () => {
     expect(artifactFor({}, 'vite.config.ts')?.preserve).toBe(true);
     expect(artifactFor({}, 'vitest.config.ts')?.preserve).toBe(true);
     expect(artifactFor({ target: 'astro' }, 'astro.config.mjs')?.preserve).toBe(true);
   });
 
-  // The lint and package configs are the opposite case: they carry the standard itself, so a release has to reach them.
+  // The lint and package configs carry the standard itself, so a release has to reach them.
   it('keeps emitting the configs that carry the standard', () => {
     expect(artifactFor({}, 'eslint.config.js')?.preserve).toBeUndefined();
     expect(artifactFor({}, 'stylelint.config.js')?.preserve).toBeUndefined();
     expect(artifactFor({}, 'tsconfig.json')?.preserve).toBeUndefined();
   });
 
-  /**
-   * `package.json` and `README.md` stay out: the first is reconciled by the package stage against what a project
-   * already declares, and the second is a project's own the moment anyone edits it.
-   *
-   * A merge is not in that category, and treating it as one was a defect. `.gitignore` and `pnpm-workspace.yaml` are
-   * merged artifacts, so `sync` applies them to a project that already exists; while they were written by a pipeline
-   * stage instead, the `peerDependencyRules` allowance added in 1.2.0 reached new projects and no old one.
-   */
+  // `package.json` and `README.md` stay out. `.gitignore` and `pnpm-workspace.yaml` are merged artifacts: as stage
+  // writes, the 1.2.0 `peerDependencyRules` allowance reached no existing project.
   it('claims the merges it owns half of, and not the files a project owns', () => {
     const targets = targetsOf({});
 
     expect(targets).toContain('.gitignore');
     expect(targets).toContain('pnpm-workspace.yaml');
-    /**
-     * `package.json` joins them for the same reason they were converted in 1.3.2. It was reconciled by the package
-     * stage, and `sync` writes artifacts rather than stages, so a dependency a release added reached every new
-     * project and no existing one. Two of three reference migrations had to add plugins by hand that their own
-     * answers already implied.
-     */
+    // `package.json` joined them in 1.3.2, after two migrations added plugins by hand their answers already implied.
     expect(targets).toContain('package.json');
     expect(targets).not.toContain('README.md');
     expect(artifactFor({}, 'CLAUDE.md')?.preserve).toBe(true);
   });
 
-  // Nothing to merge into for the three managers with no workspace file of this shape.
   it('owns the workspace file only under pnpm', () => {
     expect(targetsOf({ packageManager: 'pnpm' })).toContain('pnpm-workspace.yaml');
     expect(targetsOf({ packageManager: 'npm' })).not.toContain('pnpm-workspace.yaml');
@@ -215,7 +197,7 @@ describe('buildArtifacts', () => {
       }));
 
       await Promise.all(artifacts.flatMap((artifact) => {
-        // Only a copied artifact names files on disk; emitted and merged both build their text.
+        // Only a copied artifact names files on disk.
         return 'sources' in artifact.content
           ? artifact.content.sources.map((source) => {
               return access(join(ASSETS_ROOT, source), constants.R_OK);
@@ -228,8 +210,7 @@ describe('buildArtifacts', () => {
   }
 });
 
-// typeSafety reaches three places that must agree: the checker's constant, the rule file's deviations section, and the
-// relaxed vocabulary; disagreement is worse than either alone.
+// typeSafety reaches three places that must agree: the checker's constant, the rule file, and the relaxed vocabulary.
 describe('typeSafety', () => {
   const contentAt = async (target: string, overrides: AnswerOverrides): Promise<string> => {
     return await textFor(overrides, target);
@@ -268,13 +249,11 @@ describe('typeSafety', () => {
   });
 });
 
-// Nothing else runs the checker against starter code: `pnpm check` never invokes it, and the
-// end-to-end suite never commits. React Native has twelve starter files that fail a strict floor.
+// Nothing else runs the checker against starter code: `pnpm check` never invokes it and e2e never commits.
 describe('the emitted checker against the emitted starter code', () => {
   const CHECKER = 'scripts/checkBannedPatterns.ts';
 
-  // Everything the pipeline puts on disk that the checker would be handed, at its own path and as its own text: an
-  // artifact composed from several sources is only scannable once it has been composed.
+  // A composed artifact is only scannable once composed.
   const scannedFor = async (target: TargetId): Promise<{ target: string;
     text: string; }[]> => {
     const record = targetFor(answersFor({ target }));
@@ -328,7 +307,7 @@ describe('the emitted checker against the emitted starter code', () => {
         await writeFile(join(cwd, file.target), file.text, 'utf8');
       }
 
-      // Relative paths, because that is what lint-staged hands it and what the skip list matches.
+      // Relative paths, which is what lint-staged hands it.
       const { status, stderr } = spawnSync(
         execPath,
         [CHECKER, ...scanned.map(({ target: path }) => {
@@ -351,12 +330,10 @@ describe('the emitted checker against the emitted starter code', () => {
   });
 });
 
-// The setup is one file built from a target source plus per-answer fragments, so what a project ends up with is only
-// visible in the composed text.
+// The setup is composed from a target source plus per-answer fragments.
 describe('the shipped test setup', () => {
   const FRAGMENTS = ['mocks/setupTests.router.ts', 'mocks/setupTests.tanstackQuery.ts'];
 
-  // `.tsx` on the React family, `.ts` elsewhere, so the lookup follows the same rule the emitter does.
   const setupFor = async (overrides: AnswerOverrides): Promise<string> => {
     return await textFor(overrides, setupTestsPath({
       ...DEFAULT_ANSWERS,
@@ -378,7 +355,7 @@ describe('the shipped test setup', () => {
     expect(await setupFor({ target: 'webextension' })).not.toContain('navigateMock');
   });
 
-  // Measured: the factory runs only on import, so a mock of a package the project never installed costs nothing.
+  // A mock of a package the project never installed costs nothing: the factory runs only on import.
   it('mocks all three bindings at once, since lintel installs none of them', async () => {
     const setup = await setupFor({ target: 'react' });
 
@@ -414,7 +391,7 @@ describe('the shipped test setup', () => {
     expect(setup.indexOf('navigateMock')).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
   });
 
-  // The invariant behind that order: an import in a fragment lands after the statements of the setup it follows.
+  // An import in a fragment lands after the statements of the setup it follows.
   it.each(FRAGMENTS)('keeps %s import-free', async (fragment) => {
     const text = await readFile(join(ASSETS_ROOT, fragment), 'utf8');
 
@@ -428,12 +405,8 @@ describe('the shipped test setup', () => {
     })).not.toContain('__mocks__/setupTests.tsx');
   });
 
-  // The project adds its own mocks to this file, so a sync must install it when missing and never overwrite it.
-  /**
-   * A React project generated before the setup file became `.tsx` still holds `.ts`, and it is
-   * preserved, so the emitted vitest config has to point at the file that is actually there rather
-   * than at the one this version would write.
-   */
+  // The project adds its own mocks here, so a sync installs it when missing and never overwrites it.
+  // A React project generated before the setup became `.tsx` still holds `.ts`, preserved.
   it('keeps the setup spelling a project already has, config included', () => {
     const artifacts = buildArtifacts(
       answersFor({ target: 'react' }),
@@ -463,7 +436,6 @@ describe('the shipped test setup', () => {
   });
 });
 
-// One runner, every target. A project either has a vitest config or has no suite.
 describe('the test runner', () => {
   it('gives every target with a suite the same vitest config', () => {
     expect(targetsOf({ target: 'react' })).toContain('vitest.config.ts');

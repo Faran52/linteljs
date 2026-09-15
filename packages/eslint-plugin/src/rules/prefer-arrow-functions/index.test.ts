@@ -11,7 +11,6 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
     'const greet = () => {\n  return 1;\n};',
     'const greet = (name) => {\n  return name;\n};',
 
-    // A generator cannot be an arrow.
     'function* walk() {\n  yield 1;\n}',
     'const walker = {\n  * walk() {\n    yield 1;\n  }\n};',
 
@@ -71,10 +70,8 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
     // `super` is only legal inside a method, so shorthand that reaches for it cannot become an arrow either.
     'const service = {\n  greet() {\n    return super.toString();\n  }\n};',
 
-    // A named default export keeps its declaration form.
     'export default function greet() {\n  return 1;\n}',
 
-    // Accessors are not convertible.
     'const service = {\n  get value() {\n    return 1;\n  }\n};',
     'const service = {\n  set value(next) {\n    this.next = next;\n  }\n};',
     'const service = {\n  set value(next) {\n    store(next);\n  }\n};',
@@ -129,7 +126,6 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // An argument is a safe position, so this converts.
       code: 'register(function () {\n  return 1;\n});',
       output: 'register(() => {\n  return 1;\n});',
       errors: [{ messageId: 'preferArrow' }],
@@ -283,13 +279,11 @@ class Holder {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // Named, but never refers to itself, so dropping the name is safe.
       code: 'const run = function helper(value) {\n  return value;\n};',
       output: 'const run = (value) => {\n  return value;\n};',
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // A first parameter that is not `this` does not block conversion.
       code: 'function greet(that, other) {\n  return that + other;\n}',
       output: 'const greet = (that, other) => {\n  return that + other;\n};',
       errors: [{ messageId: 'preferArrow' }],
@@ -301,7 +295,6 @@ class Holder {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // A member access that is not `prototype` says nothing about the binding.
       code: 'function make() {\n  return 1;\n}\n\nmake.displayName = \'x\';',
       output: 'const make = () => {\n  return 1;\n};\n\nmake.displayName = \'x\';',
       errors: [{ messageId: 'preferArrow' }],
@@ -342,7 +335,6 @@ class Holder {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // Referenced only after the declaration, so converting is safe.
       code: 'function greet() {\n  return 1;\n}\n\ngreet();',
       output: 'const greet = () => {\n  return 1;\n};\n\ngreet();',
       errors: [{ messageId: 'preferArrow' }],
@@ -375,7 +367,6 @@ class Holder {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // A concise body that only returns is rewritten to an explicit return.
       code: 'const greet = () => 1;',
       output: 'const greet = () => { return 1 };',
       errors: [{ messageId: 'preferExplicit' }],
@@ -388,7 +379,6 @@ class Holder {
       errors: [{ messageId: 'preferExplicit' }],
     },
     {
-      // The same for a class field, which is where this shape actually shows up.
       code: 'class Service {\n  handler = () => this.value;\n}',
       output: 'class Service {\n  handler = () => { return this.value };\n}',
       errors: [{ messageId: 'preferExplicit' }],
@@ -454,7 +444,6 @@ class Holder {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // With the option on, an ordinary declaration behaves the same as before.
       code: 'function greet() {\n  return 1;\n}\n\ngreet();',
       output: 'const greet = () => {\n  return 1;\n};\n\ngreet();',
       options: [{ forceHoisted: true }],
@@ -481,13 +470,11 @@ class Holder {
 
 tsRuleTester.run('prefer-arrow-functions (typescript)', preferArrowFunctions, {
   valid: [
-    // `as`, `satisfies` and `!` all take the function as a bare operand.
     'const fn = function (): number {\n  return 1;\n} as () => number;',
     'const fn = function (): number {\n  return 1;\n} satisfies () => number;',
     'const fn = (function (): number {\n  return 1;\n})!;',
     'const load = async () => {\n  return await function () {\n    return 1;\n  };\n};',
 
-    // An assertion signature is only valid on a declaration.
     `function assertString(value: unknown): asserts value is string {
   if (typeof value !== 'string') {
     throw new Error('no');
@@ -498,7 +485,6 @@ tsRuleTester.run('prefer-arrow-functions (typescript)', preferArrowFunctions, {
     // the instance instead, a different program.
     'class Service {\n  handler = function (): number {\n    return 1;\n  };\n}',
 
-    // An explicit `this` parameter cannot move to an arrow.
     'function greet(this: Service): string {\n  return this.name;\n}',
     'function greet(this: Service, name: string): string {\n  return name;\n}',
 
@@ -548,7 +534,6 @@ export function greet(value: unknown): unknown {
 
 tsxRuleTester.run('prefer-arrow-functions (tsx)', preferArrowFunctions, {
   valid: [
-    // Already an arrow with the disambiguating comma in place.
     {
       filename: 'component.tsx',
       code: 'const identity = <T,>(value: T): T => {\n  return value;\n};',
@@ -577,7 +562,6 @@ tsxRuleTester.run('prefer-arrow-functions (tsx)', preferArrowFunctions, {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // Two parameters are already unambiguous, so no comma is added.
       filename: 'component.tsx',
       code: 'function pair<A, B>(first: A, second: B): [A, B] {\n  return [first, second];\n}',
       output: 'const pair = <A, B>(first: A, second: B): [A, B] => {\n  return [first, second];\n};',
@@ -591,7 +575,6 @@ tsxRuleTester.run('prefer-arrow-functions (tsx)', preferArrowFunctions, {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // A JSX attribute value is a safe position for an arrow.
       filename: 'component.tsx',
       code: 'const view = <Panel render={function () {\n  return 1;\n}} />;',
       output: 'const view = <Panel render={() => {\n  return 1;\n}} />;',

@@ -12,7 +12,6 @@ import { mustFind, rebuildLosesComments } from '../../utils/ruleUtils.ts';
 
 import type { AST } from 'eslint';
 
-// A specifier that starts on the line the one before it ended on, and its first token.
 interface SharedLine {
   // Whether it is the last specifier, which is what the closing-brace splice hangs off.
   isLast: boolean;
@@ -48,7 +47,6 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
           return;
         }
 
-        // Members sit one step in from the statement, braces on their own lines.
         const { outer: indent, inner } = indentsAt(node);
         const openBrace = sourceCode.getTokenBefore(first);
         const closeBrace = sourceCode.getTokenAfter(last);
@@ -78,7 +76,6 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
                 return;
               }
 
-              // Comments are already ruled out above, so the gap is blank.
               const split = fixCommaToNewline(sourceCode, fixer, pair.token, inner);
 
               /* v8 ignore next 3 -- the comment check above guarantees a blank gap */

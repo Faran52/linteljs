@@ -60,8 +60,7 @@ export interface CliOptions {
   // Present when any answer flag was passed; the run then asks nothing.
   answers?: AnswerFlags;
   skip: Stage[];
-  // `--skip` values naming no stage, and positionals past the name. Carried rather than thrown on, so `main` reports
-  // all of them the same way; what `parseArgs` itself rejects still throws, and `main` catches that.
+  // Kept rather than thrown on, so `main` reports every argv problem the same way.
   unknownSkips: string[];
   unexpectedArguments: string[];
   yes: boolean;
@@ -86,8 +85,7 @@ interface RawAnswerFlags {
   'plugins'?: string[];
 }
 
-// Everything the user asked to see goes to stdout via `stdout.write`, not `console.log`/`console.warn` (which is stderr
-// and satisfies `no-console`); `console.error` stays for failures.
+// stdout for what the user asked to see; `console.error` for failures.
 const say = (message: string): void => {
   stdout.write(`${message}\n`);
 };
@@ -230,8 +228,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     skip.push('scaffold');
   }
 
-  // Declines both install and fix, since the fix pass reads `node_modules`; named `no-install` because `parseArgs` has
-  // no `--no-` negation, so a boolean `install` option would reject the flag itself.
+  // `parseArgs` has no `--no-` negation, so the flag is declared under its literal name.
   if (values['no-install']) {
     skip.push('install', 'fix');
   }
@@ -270,11 +267,7 @@ const summary = (name: string, options: CliOptions, answers: Answers): string =>
   return ['', 'Done. Next:', ...enter, `  ${run} check`].join('\n');
 };
 
-/**
- * The name comes back beside the answers because only the questionnaire can supply a missing one, and every route
- * that skips the questionnaire already knows it: `sync` never scaffolds, `--skip-scaffold` keeps the directory's own
- * name, and `--yes` means the argument was the last word on it.
- */
+// Only the questionnaire can supply a missing name; every route that skips it already knows the name.
 const askedFrom = async (
   options: CliOptions,
   prompter: Prompter,
@@ -287,7 +280,6 @@ const askedFrom = async (
     };
   };
 
-  // The parsed config is the plan's answers, with no conversion between the two. See `LintelConfig`.
   if (options.command === 'sync') {
     return named(await readLintelConfig(options.cwd));
   }
@@ -300,17 +292,12 @@ const askedFrom = async (
     return named(flaggedAnswers(options.answers));
   }
 
-  /**
-   * A pipe, a hook or CI leaves no terminal to answer from; measured at four of seven agents piping `/dev/null` and
-   * silently getting the default target, hence refusing outright rather than asking clack to read a stream that
-   * isn't there.
-   */
+  // Measured: four of seven agents piped `/dev/null` and silently took the default target.
   if (!hasTerminal) {
     throw new Error(NOTHING_ANSWERED_MESSAGE);
   }
 
-  // Only a run that creates a directory has a name to choose. With `--skip-scaffold` the directory is already there
-  // and already named, so the question is answered before it is asked.
+  // With `--skip-scaffold` the directory is already named.
   const known = options.skip.includes('scaffold') ? basename(options.cwd) : options.name;
 
   return await ask(prompter, known === '' ? {} : { name: known });
@@ -354,13 +341,8 @@ const runSync = async (options: CliOptions, answers: Answers): Promise<void> => 
   }
 };
 
-/**
- * A name that cannot be a package name, refused before anything runs rather than at install.
- *
- * The argument only. A run with no argument takes the directory's name, and that one is left alone deliberately: a
- * directory is not chosen as a package name and often cannot be one, so refusing `~/Projects/MyApp` would stop a run
- * over something the user never typed. Adopting a directory is exactly what `--skip-scaffold` is for.
- */
+// The argument only: a directory name was never chosen as a package name, and adopting one is what
+// `--skip-scaffold` is for.
 const projectNameError = (options: CliOptions): string | undefined => {
   if (options.command === 'sync' || options.name === '') {
     return undefined;
@@ -369,8 +351,7 @@ const projectNameError = (options: CliOptions): string | undefined => {
   return isValidProjectName(options.name) ? undefined : `Project name must be ${PROJECT_NAME_RULE}.`;
 };
 
-// Every reason to refuse the argv itself, in the order a user meets them, so `main` carries one bail-out rather than
-// one per reason.
+// Every refusal of the argv, in the order a user meets them.
 const argumentError = (options: CliOptions): string | undefined => {
   if (options.unexpectedArguments.length > 0) {
     const plural = options.unexpectedArguments.length === 1 ? '' : 's';
@@ -378,7 +359,6 @@ const argumentError = (options: CliOptions): string | undefined => {
     return `Unexpected argument${plural}: ${options.unexpectedArguments.join(', ')}`;
   }
 
-  // Stopping is the only honest answer for an unknown skip: the run asked for is not the run that would happen.
   if (options.unknownSkips.length > 0) {
     return `Not a stage: ${options.unknownSkips.join(', ')}. Pass one of: ${STAGES.join(', ')}.`;
   }
@@ -386,8 +366,7 @@ const argumentError = (options: CliOptions): string | undefined => {
   return projectNameError(options);
 };
 
-// Returns the exit code rather than calling `process.exit`, which would drop queued stderr writes;
-// `bin/create-linteljs.js` assigns it to `process.exitCode`.
+// Returns the exit code rather than calling `process.exit`, which drops queued stderr writes.
 export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
   let options: CliOptions;
 
@@ -395,13 +374,12 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     options = parseCliArgs(argv);
   }
   catch (error) {
-    // `parseArgs` throws a `TypeError` and nothing else, so no test can stage the other arm, hence the ignore.
+    // `parseArgs` throws a `TypeError` and nothing else.
     /* v8 ignore next 3 */
     if (!(error instanceof Error)) {
       throw error;
     }
 
-    // The message alone: the class name of what `parseArgs` threw is not something a user asked about.
     console.error(error.message);
 
     return 1;
@@ -420,8 +398,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     return 1;
   }
 
-  // A prompter passed in stands in for a person, the way tests use it; only the real default reads the real
-  // terminal, so only that path needs telling whether one is there.
+  // Only the real prompter reads a real terminal, so only that path needs telling whether one is there.
   const hasTerminal = prompter !== undefined || stdin.isTTY;
 
   try {
@@ -436,11 +413,9 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     ensurePackageManager(answers.packageManager, say);
 
     await runPipeline({
-      // With --skip-scaffold there's no name argument and none was asked for, so the directory's existing name is
-      // what package.json and the adapters should keep calling it.
+      // With --skip-scaffold the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
-      // A scaffolder creates `<name>/` under the current directory, so every later stage runs inside it, knowable only
-      // after stage 1 picks a name.
+      // A scaffolder creates `<name>/` under cwd, so every later stage runs inside it.
       cwd: options.skip.includes('scaffold') ? options.cwd : resolve(options.cwd, name),
       answers,
       skip: options.skip,
@@ -459,16 +434,14 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     say(summary(name, options, answers));
   }
   catch (error) {
-    // A person cancelling the questionnaire is not a failure: no "Error:" prefix, no advice to answer every
-    // question, and 130, the conventional exit code for a SIGINT, rather than 1.
+    // Cancelling is not a failure: no "Error:" prefix, and 130, the SIGINT exit code.
     if (error instanceof Error && 'code' in error && error.code === 'CANCELLED') {
       say(error.message);
 
       return 130;
     }
 
-    // A stage that threw, surfaced as one line: what reaches here is a scaffolder that died, a disk that filled, or an
-    // uninstalled package manager; rethrowing would surface an unhandled rejection over a half-written directory.
+    // One line, not a rethrow: an unhandled rejection over a half-written directory helps nobody.
     console.error(String(error));
 
     return 1;

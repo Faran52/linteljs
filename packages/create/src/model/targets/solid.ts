@@ -30,8 +30,7 @@ export const solid: TargetRecord = {
     jsx: 'preserve',
     jsxImportSource: 'solid-js',
   },
-  // `solid-js`/`solid-js/web` ship server and client builds behind export conditions; without these, vitest resolves
-  // the server build and a rendered component has no reactive owner.
+  // Without these, vitest resolves the server build and a rendered component has no reactive owner.
   testConditions: ['development', 'browser'],
   starterTests: [{
     source: 'starter/solid/App.test.tsx',

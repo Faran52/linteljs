@@ -19,8 +19,7 @@ import svelte from './svelte';
 const FILENAME_RULE = 'check-file/filename-naming-convention';
 
 describe('svelte', () => {
-  // Composed with `base()`, which registers the `import-x` plugin the layer configures to
-  // ignore SvelteKit's `$`-prefixed virtual modules.
+  // With `base()`, which registers the `import-x` plugin the layer configures.
   it('parses a component and reports on it', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...svelte()], join(SFC_FIXTURES, 'Page.svelte'));
 
@@ -28,11 +27,7 @@ describe('svelte', () => {
     expect(ruleIds.some(startsWith('svelte/'))).toBe(true);
   });
 
-  /**
-   * `reserved` proves the exemption load-bearing: a name the convention accepts must be `false` here, keeping
-   * the glob no wider than what SvelteKit owns. `.svelte` route files are absent because `projectService: true`
-   * throws on a path with no file behind it; the end-to-end suite covers them instead.
-   */
+  // `.svelte` route files are absent: `projectService` throws on a path with no file; the e2e suite covers them.
   it.each([
     ['src/routes/+page.ts', true],
     ['src/routes/+page.server.ts', true],

@@ -5,14 +5,12 @@ import { presetOf } from '../utils/presetUtils';
 
 import type { Layer } from '../types';
 
-// SvelteKit-owned virtual modules, not project aliases: no file backs either, so they belong here, not in a
-// `tsconfig.paths` bucket. Named once, used twice: the sort bucket and the `no-unresolved` allowance are one set.
+// SvelteKit's virtual modules: the sort bucket and the `no-unresolved` allowance are one set.
 const VIRTUAL_MODULES = [String.raw`^\$app/`, String.raw`^\$env/`];
 
 export const svelteGroup: string[] = ['^svelte$', '^svelte/', '^@sveltejs/', ...VIRTUAL_MODULES];
 
-// The filenames SvelteKit itself owns, and only those: `+` is not a word character and
-// `service-worker` is not camelCase, so a naming convention rejects both.
+// Filenames SvelteKit owns, which no naming convention accepts.
 const SVELTEKIT_ROUTE_FILES = [
   '**/routes/**/+*.svelte',
   '**/routes/**/+*.ts',
@@ -20,11 +18,10 @@ const SVELTEKIT_ROUTE_FILES = [
   '**/service-worker.{ts,js}',
 ];
 
-// `$lib` lives in a `svelte-kit sync` output that may not exist when ESLint runs, and
-// `$app`/`$env` have no file at all, so a stock layout opens with `no-unresolved` on itself.
+// `$lib` is a `svelte-kit sync` output that may not exist yet; `$app`/`$env` have no file at all.
 const SVELTEKIT_VIRTUAL_MODULES = [String.raw`^\$lib/`, ...VIRTUAL_MODULES];
 
-// Must come after `typescript()`, like `vue()`: `svelte-eslint-parser` is top-level and nests TypeScript beneath it.
+// After `typescript()`, like `vue()`: `svelte-eslint-parser` is top-level and nests TypeScript beneath it.
 export const svelte = (): Layer => {
   return [
     ...presetOf(sveltePlugin.configs['flat/recommended'], 'svelte/flat/recommended'),
@@ -51,8 +48,7 @@ export const svelte = (): Layer => {
         parserOptions: {
           parser: tseslint.parser,
           extraFileExtensions: ['.svelte'],
-          // Same reason as `vue()`: `typescript()` scopes `projectService` to TS extensions
-          // only, but the type-aware rules it enables have no `files` glob at all.
+          // As in `vue()`: the type-aware rules have no `files` glob, `projectService` does.
           projectService: true,
         },
       },

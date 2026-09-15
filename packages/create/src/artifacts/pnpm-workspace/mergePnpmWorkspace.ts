@@ -6,14 +6,12 @@ import {
 
 import type { Answers } from '../../model/answers/answers';
 
-// Top-level keys whose block is dropped on merge, with why.
 const SUPERSEDED_KEYS = [
-  // create-next-app writes ignoredBuiltDependencies: [sharp, unrs-resolver], opting out of exactly the builds
-  // lintel opts into; left in place, pnpm would refuse the install with ERR_PNPM_IGNORED_BUILDS.
+  // create-next-app opts out of exactly the builds lintel opts into; left in, pnpm refuses the install.
   'ignoredBuiltDependencies',
 ];
 
-// Line-based, not a YAML round-trip, which would reformat every line the user wrote to drop one block.
+// Line-based: a YAML round-trip would reformat every line the user wrote.
 export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
   if (existing === null) {
     return emitPnpmWorkspace(answers);
@@ -39,15 +37,13 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
 
   const remainder = kept.join('\n').replace(/^\n+/, '');
 
-  // Each block is decided on its own, because a project that predates one of them already has the other. Where a
-  // block is already present it is the project's: leave the list alone rather than reasserting ours over it.
+  // Each block on its own, since a project that predates one already has the other; a present block is the project's.
   const head = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
 
-  // Already there is the project's, including a rule it widened by hand.
   if (/^peerDependencyRules:/m.test(head)) {
     return head;
   }
 
-  // `trimEnd`, not a trailing-newline pattern: an anchored `\n+$` is the shape `sonarjs/super-linear-regex` reports.
+  // `trimEnd`: an anchored `\n+$` is the shape `sonarjs/super-linear-regex` reports.
   return `${head.trimEnd()}\n${peerRulesBlock(answers)}`;
 };

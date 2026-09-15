@@ -1,6 +1,5 @@
 import type { AliasMap } from '../types';
 
-// Node built-ins. `fs` and `path` are listed for codebases still writing the bare specifier.
 const BUILTIN_GROUP = ['^node:', '^fs$', '^path$'];
 
 const PACKAGE_GROUP = [String.raw`^@?\w`];
@@ -9,18 +8,15 @@ const PARENT_GROUP = [String.raw`^\.\.(?!/?$)`, String.raw`^\.\./?$`];
 
 const SIBLING_GROUP = [String.raw`^\./`];
 
-// Type imports, near the end. simple-import-sort appends a NUL to an `import type` source, which
-// the trailing `\u0000` matches. `.css` and `.json` are excluded so those sort with their kind.
+// simple-import-sort appends a NUL to an `import type` source; `.css` and `.json` sort with their kind instead.
 const TYPE_GROUP = [
   String.raw`^(?!.*[.](?:css|json)$)[^.].*\u0000$`,
   String.raw`^[.].*\u0000$`,
 ];
 
-// Styles, always last: a stylesheet import is a side effect, and it should read as one.
 const STYLE_GROUP = [String.raw`^.+\.s?css$`];
 
-// The alias buckets, in the spine's dependency direction, so a sorted import block reads
-// top-down as the architecture. A project only gets the patterns its own alias map declares.
+// In dependency direction, so a sorted import block reads top-down as the architecture.
 const ALIAS_BUCKETS = [
   ['@config', '@typings'],
   ['@lib', '@store', '@services', '@providers', '@apis', '@utils'],
@@ -29,38 +25,25 @@ const ALIAS_BUCKETS = [
   ['@mocks'],
 ];
 
-// `'@ui/*'` and `'@ui'` both name the alias `@ui`.
 const aliasNameOf = (alias: string): string => {
   return alias.replace(/\/\*$/, '');
 };
 
-// `$` opens a regex anchor, so SvelteKit's `$lib` would produce `^$lib/`, matching nothing.
-// Escaped by hand, not `RegExp.escape`, which also rewrites `@` and would churn every group.
+// Not `RegExp.escape`, which also rewrites `@` and would churn every group.
 const REGEX_SPECIAL = /[$^\\.*+?()[\]{}|]/g;
 
 const ESCAPED = '\\$&';
 
-/**
- * `/` or the end of the specifier, not `/` alone. An alias can be declared bare (`'@engine':
- * './src/engine'`, imported as `from '@engine'`), and a trailing `/` never matches that, so a
- * project whose aliases are all barrels got no alias bucket at all: every one of its own imports
- * fell through to `^@?\w` and sorted in with node_modules, silently and with lint green. Found by
- * migrating a real project that declares nothing but barrels.
- *
- * A type import is unaffected: `simple-import-sort` appends a NUL to those, so `$` cannot match
- * one, and `TYPE_GROUP` is where they are meant to land anyway.
- */
+// `/` or end of specifier: a bare barrel alias (`from '@engine'`) otherwise sorted in with node_modules.
 const patternFor = (alias: string): string => {
   return `^${aliasNameOf(alias).replace(REGEX_SPECIAL, ESCAPED)}(?:/|$)`;
 };
 
-// Aliases the buckets above do not name. They sort after the known buckets rather than falling
-// through to `^@?\w`, which would file them with node_modules.
+// Unknown aliases sort after the known buckets rather than with node_modules.
 const unknownAliasesIn = (aliases: string[]): string[] => {
   const known = new Set(ALIAS_BUCKETS.flat());
 
-  // Deduplicated, because `'@engine'` and `'@engine/*'` are one alias declared twice and name one
-  // bucket; without this the group carries the same pattern twice.
+  // `'@engine'` and `'@engine/*'` are one alias.
   const patterns = new Set(aliases.filter((alias) => {
     return !known.has(aliasNameOf(alias));
   }).map(patternFor));
@@ -82,7 +65,6 @@ const knownAliasGroups = (aliases: string[]): string[][] => {
   });
 };
 
-// Derived rather than hand-written; order inside a bucket doesn't decide grouping, the longest match wins.
 export const buildGroups = (aliases: AliasMap = {}, frameworkGroup?: string[]): string[][] => {
   const declared = Object.keys(aliases);
   const unknown = unknownAliasesIn(declared);

@@ -30,7 +30,6 @@ export interface Ranged {
 // Taken from the method rather than guessed, so no call site needs a cast.
 type CommentHost = Parameters<SourceCode['getCommentsInside']>[0];
 
-// Shared rather than duplicated at each of the two walks that need it.
 export const FUNCTION_TYPES = new Set([
   'ArrowFunctionExpression',
   'FunctionDeclaration',

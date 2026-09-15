@@ -4,12 +4,10 @@ import { newlineDestructuring } from './index.ts';
 
 jsRuleTester.run('newline-destructuring', newlineDestructuring, {
   valid: [
-    // At or under the threshold, on one line.
     'const { alpha } = source;',
     'const { alpha, bravo } = source;',
     'const {} = source;',
 
-    // Over the threshold, one per line.
     'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
 
     // A rest element drops the threshold to one, so this has to be split.
@@ -18,7 +16,6 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
     // Already one per line with the braces on their own lines, so neither brace gap needs touching.
     'const {\n  alpha,\n  bravo,\n  charlie,\n} = source;',
 
-    // Not an object pattern.
     'const [alpha, bravo, charlie] = source;',
     'const alpha = source;',
   ],
@@ -95,7 +92,6 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
       errors: [{ messageId: 'noBlankBetween' }],
     },
     {
-      // Under the threshold but wrapped, so it collapses back onto one line.
       code: 'const {\n  alpha,\n  bravo\n} = source;',
       output: 'const { alpha, bravo } = source;',
       errors: [{ messageId: 'mustSplit' }],
@@ -117,7 +113,6 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
 
 jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
   valid: [
-    // Raising the threshold keeps a wider pattern inline.
     {
       code: 'const { alpha, bravo, charlie } = source;',
       options: [{ maxProperties: 3 }],
@@ -127,13 +122,11 @@ jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
       options: [{ maxProperties: 4 }],
     },
 
-    // Raising the rest threshold does the same for a pattern carrying a rest.
     {
       code: 'const { alpha, bravo, ...rest } = source;',
       options: [{ maxPropertiesWithRest: 3 }],
     },
 
-    // A single property is never split, whatever the threshold says.
     {
       code: 'const { alpha } = source;',
       options: [{ maxProperties: 0 }],
@@ -141,14 +134,12 @@ jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
   ],
   invalid: [
     {
-      // Lowering it splits a pair that the default would leave alone.
       code: 'const { alpha, bravo } = source;',
       output: 'const {\n  alpha,\n  bravo\n} = source;',
       options: [{ maxProperties: 1 }],
       errors: [{ messageId: 'mustSplit' }],
     },
     {
-      // The message reports the threshold that actually fired.
       code: 'const { alpha, bravo, charlie } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
       options: [{ maxProperties: 2 }],
@@ -161,7 +152,6 @@ jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
       errors: [{ message: 'Properties must be broken into multiple lines if there are more than 3.' }],
     },
     {
-      // A rest element uses its own threshold, not the general one.
       code: 'const { alpha, ...rest } = source;',
       output: 'const {\n  alpha,\n  ...rest\n} = source;',
       options: [{
@@ -321,7 +311,6 @@ tsRuleTester.run('newline-destructuring (typescript)', newlineDestructuring, {
       errors: [{ messageId: 'mustSplit' }],
     },
     {
-      // Both visitors reach the same fixer through different member lists.
       code: 'type Wide = { alpha: string; bravo: number; charlie: boolean; /* end */ };',
       output: null,
       errors: [{ messageId: 'mustSplit' }],
@@ -350,7 +339,6 @@ tsRuleTester.run('newline-destructuring (typescript)', newlineDestructuring, {
       errors: [{ messageId: 'mustSplit' }],
     },
     {
-      // The collapse path rebuilds the same way, so it drops the same token.
       code: 'const load = ({\n  alpha,\n  bravo\n}?: Options) => {};',
       output: 'const load = ({ alpha, bravo }?: Options) => {};',
       errors: [{ messageId: 'mustSplit' }],

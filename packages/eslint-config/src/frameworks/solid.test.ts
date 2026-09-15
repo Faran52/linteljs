@@ -17,7 +17,6 @@ describe('solid', () => {
     expect(ruleIds.some(startsWith('solid/'))).toBe(true);
   });
 
-  // Solid renders JSX too, and `eslint-plugin-solid` carries no accessibility rules of its own.
   it('reports an image with no alt text', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/Logo.tsx');
@@ -25,7 +24,6 @@ describe('solid', () => {
     expect(ruleIds).toContain('jsx-a11y/alt-text');
   });
 
-  // Solid JSX carries the same silent last-occurrence-wins defect React does.
   it('reports a JSX prop named twice on one element', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');
