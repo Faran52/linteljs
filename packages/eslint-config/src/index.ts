@@ -28,6 +28,7 @@ export {
 } from './frameworks/vue';
 export { html } from './html';
 export { tanstackQuery } from './libraries/tanstackQuery';
+export { tanstackRouter } from './libraries/tanstackRouter';
 export type {
   AliasMap,
   BaseOptions,

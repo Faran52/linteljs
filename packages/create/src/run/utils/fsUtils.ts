@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import {
   access,
   lstat,
@@ -64,14 +63,4 @@ export const allPresent = async (cwd: string, candidates: string[]): Promise<str
   return found.filter((candidate) => {
     return candidate !== undefined;
   });
-};
-
-// Check if a command is available in the system PATH.
-export const isCommandAvailable = (command: string): boolean => {
-  const result = spawnSync(command, ['--version'], {
-    encoding: 'utf8',
-    stdio: 'pipe',
-  });
-
-  return result.status === 0;
 };

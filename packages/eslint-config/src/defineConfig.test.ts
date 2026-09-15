@@ -142,6 +142,25 @@ describe('defineConfig', () => {
       .resolves.toContain('@tanstack/query/exhaustive-deps');
   });
 
+  it('composes the tanstack-router layer through the same door', async () => {
+    const code = [
+      "import { createFileRoute } from '@tanstack/react-router';",
+      '',
+      "export const Route = createFileRoute('/')({",
+      '  loader: () => 1,',
+      '  beforeLoad: () => 1,',
+      '});',
+      '',
+    ].join('\n');
+    const config = await defineConfig({
+      framework: 'react',
+      libraries: ['tanstack-router'],
+    });
+
+    await expect(ruleIdsFor(config, code, 'src/routes/index.tsx'))
+      .resolves.toContain('@tanstack/router/create-route-property-order');
+  });
+
   it('composes the tailwind layer through the same door', async () => {
     const code = 'export const Card = () => {\n  return <div className="p-2 p-2">x</div>;\n};\n';
     const config = await defineConfig({

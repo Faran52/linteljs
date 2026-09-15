@@ -7,13 +7,15 @@
 
 export const TAILWIND_IMPORT = '@import "tailwindcss";';
 
-// Either quoting and the `url()` form: a project's own `@import url("tailwindcss") source(none)` read as no import at
-// all, so a second unrestricted one went in above it and undid the scan restriction.
-const IMPORTS_TAILWIND = /@import\s+(?:url\(\s*)?['"]tailwindcss['"]/;
+// Either quoting, the `url()` form and a subpath (`tailwindcss/theme.css`): a project's own `@import url("tailwindcss")
+// source(none)` read as no import at all, so a second unrestricted one went in above it and undid the scan restriction.
+const IMPORTS_TAILWIND = /@import\s+(?:url\(\s*)?['"]tailwindcss(?:\/[^'"]*)?['"]/;
 
-export const mergeStyleEntry = (current: string | null): string => {
+export const mergeStyleEntry = (current: string | null, imports: string[] = [TAILWIND_IMPORT]): string => {
+  const block = imports.join('\n');
+
   if (current === null) {
-    return `${TAILWIND_IMPORT}\n`;
+    return `${block}\n`;
   }
 
   if (IMPORTS_TAILWIND.test(current)) {
@@ -22,5 +24,5 @@ export const mergeStyleEntry = (current: string | null): string => {
 
   // Prepended, not appended: `no-invalid-position-at-import-rule` reports an `@import` sitting after a rule, and the
   // cascade puts the framework's own layers first anyway.
-  return `${TAILWIND_IMPORT}\n\n${current}`;
+  return `${block}\n\n${current}`;
 };

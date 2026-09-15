@@ -28,7 +28,14 @@ export type TypeSafety = 'strict' | 'relaxed';
 export type Library
   = 'zod'
     | 'tanstack-query'
-    | 'tailwind';
+    | 'tanstack-form'
+    | 'react-hook-form'
+    | 'tailwind'
+    | 'es-toolkit'
+    | 'ts-pattern'
+    | 't3-env';
+
+export type Router = 'react-router' | 'tanstack-router';
 
 // Which browser an extension targets. `@crxjs/vite-plugin` builds for both, so this decides the manifest shape (a
 // service worker against an event page), the ambient types, and whether `web-ext` comes along to run and package it.
@@ -69,6 +76,8 @@ export interface Answers {
   testing: Testing;
   packageManager: PackageManager;
   libraries: Library[];
+  // Asked only where the target has a `routers` slot; absent is no router.
+  router?: Router;
   // Always false on a target with no `store` slot, where the question is never asked.
   store: boolean;
   typeSafety: TypeSafety;
@@ -139,8 +148,8 @@ export type Framework
     | 'solid'
     | 'angular';
 
-// The subset of `Library` that has a layer behind it. Zod brings no ESLint rules.
-export type LibraryLayer = 'tanstack-query' | 'tailwind';
+// The libraries and routers with a layer behind them; the rest bring no ESLint rules.
+export type LibraryLayer = 'tanstack-query' | 'tailwind' | 'tanstack-router';
 
 export interface ResolverOptions {
   project?: string;
@@ -164,7 +173,7 @@ export interface DefineConfigOptions {
 }
 
 // Emit order for the `libraries` option, so the written config is stable across runs.
-export const LIBRARY_LAYERS: LibraryLayer[] = ['tanstack-query', 'tailwind'];
+export const LIBRARY_LAYERS: LibraryLayer[] = ['tanstack-query', 'tanstack-router', 'tailwind'];
 
 export const TARGET_IDS: TargetId[] = [
   'react',
@@ -188,8 +197,20 @@ export const PACKAGE_MANAGERS: PackageManager[] = [
 export const LIBRARIES: Library[] = [
   'zod',
   'tanstack-query',
+  'tanstack-form',
+  'react-hook-form',
   'tailwind',
+  'es-toolkit',
+  'ts-pattern',
+  't3-env',
 ];
+
+// The two form libraries are one choice; `react-hook-form` binds React only.
+export const FORM_LIBRARIES: Library[] = ['tanstack-form', 'react-hook-form'];
+
+export const REACT_LIBRARIES: Library[] = ['react-hook-form'];
+
+export const ROUTERS: Router[] = ['react-router', 'tanstack-router'];
 
 export const BROWSERS: Browser[] = ['chrome', 'firefox'];
 
@@ -224,6 +245,12 @@ export const DEFAULT_ANSWERS: Answers = {
 
 export const hasLibrary = (answers: Answers, library: Library): boolean => {
   return answers.libraries.includes(library);
+};
+
+export const formLibraryOf = (answers: Answers): Library | undefined => {
+  return FORM_LIBRARIES.find((library) => {
+    return hasLibrary(answers, library);
+  });
 };
 
 export const surfacesOf = (answers: Answers): Surface[] => {

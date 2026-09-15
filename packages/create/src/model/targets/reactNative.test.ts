@@ -163,17 +163,18 @@ describe('starterFixes', () => {
     expect(parsed.expo.experiments.reactCompiler).toBe(true);
   });
 
-  it('leaves app.json unchanged when expo has no experiments', () => {
+  it('adds the experiments block when app.json has none', () => {
     const source = JSON.stringify({
       expo: {
         sdkVersion: '53.0.0',
       },
     }, null, 2) + '\n';
 
-    const output = transformFor('app.json')(source);
+    const parsed = JSON.parse(transformFor('app.json')(source)) as { expo: { sdkVersion: string;
+      experiments: { reactCompiler: boolean }; }; };
 
-    expect(output).toContain('sdkVersion');
-    expect(output).not.toContain('reactCompiler');
+    expect(parsed.expo.sdkVersion).toBe('53.0.0');
+    expect(parsed.expo.experiments.reactCompiler).toBe(true);
   });
 
   it('leaves app.json unchanged when it has no expo key', () => {

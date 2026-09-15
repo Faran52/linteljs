@@ -746,6 +746,14 @@ shape of the file the rule accepts. The suite it calls empty is most of the test
 
 Scoped to the RuleTester directory alone. Every other test file in the repo is held to the rule.
 
+### `@linteljs/workspace/e2e-test`
+
+Each `*.e2e.test.ts` under `run/pipeline/e2e/` is one `it.each(cases)(label, runE2eCase)` per target, and
+every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the callback body for `expect` calls
+and finds no body at all, since the helper is passed by reference. Measured: `assertFunctionNames:
+['runE2eCase']` does not help either, because the option matches calls inside the body and there is no
+call. Off for that directory alone; every other test file is held to the rule.
+
 ### Coverage thresholds, in `vitest.config.ts`
 
 A gate, not an aspiration. Without them `pnpm check` could not fail on coverage at all: the root

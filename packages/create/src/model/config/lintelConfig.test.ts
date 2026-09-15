@@ -47,6 +47,7 @@ interface ConfigOverrides {
   testing?: string;
   packageManager?: string;
   libraries?: string | string[];
+  router?: string;
   store?: boolean | string;
   typeSafety?: string;
   agents?: string | string[];
@@ -503,7 +504,7 @@ describe('parseLintelConfig', () => {
     [
       'an unknown library',
       config({ libraries: ['jquery'] }),
-      /libraries must be one of: zod, tanstack-query, tailwind/,
+      /libraries must be one of: zod, tanstack-query, tanstack-form/,
     ],
     ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
     ['a non-boolean store', config({ store: 'false' }), /store must be a boolean/],
@@ -616,5 +617,31 @@ describe('lintel config schemas', () => {
     expect(canonicalSchema.properties.agents.items?.choices).toEqual(AGENTS);
     expect(canonicalSchema.properties.plugins.items?.choices).toEqual(PLUGINS);
     expect(canonicalSchema.properties.surfaces.items?.choices).toEqual(SURFACES);
+  });
+});
+
+describe('the router and the form libraries', () => {
+  it('round-trips a router', () => {
+    const answers = {
+      ...DEFAULT_ANSWERS,
+      router: 'tanstack-router' as const,
+    };
+
+    expect(parseLintelConfig(emitLintelConfig(answers))).toMatchObject({ router: 'tanstack-router' });
+    expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS))).not.toHaveProperty('router');
+  });
+
+  it('rejects an unknown router', () => {
+    expect(() => {
+      return parseLintelConfig(config({ router: 'wouter' }));
+    }).toThrow(/router must be one of: react-router, tanstack-router/);
+  });
+
+  it('rejects two form libraries at once', () => {
+    expect(() => {
+      return parseLintelConfig(config({ libraries: ['tanstack-form', 'react-hook-form'] }));
+    }).toThrow(/libraries must contain at most one of: tanstack-form, react-hook-form/);
+    expect(parseLintelConfig(config({ libraries: ['zod', 'react-hook-form'] })).libraries)
+      .toEqual(['zod', 'react-hook-form']);
   });
 });

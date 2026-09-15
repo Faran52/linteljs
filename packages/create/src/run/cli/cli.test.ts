@@ -249,7 +249,10 @@ describe('main: what it prints and what it returns', () => {
 
   // `--skip-scaffold` creates nothing, so the directory it patches is already named and the question has no purpose.
   it('does not ask the name when there is no directory to create', async () => {
-    const asked = scripted([undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+    const asked = scripted([
+      undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined,
+    ]);
 
     await runMain(['--skip-scaffold', '--no-install'], asked);
 
@@ -319,7 +322,7 @@ describe('main: create', () => {
   it('runs the questionnaire and writes both selected adapters when --yes was not passed', async () => {
     const { printed } = await runMain(
       ['--skip-scaffold', '--no-install'],
-      scripted(['svelte', undefined, undefined, ['zod'], undefined, ['claude-code', 'codex'], []]),
+      scripted(['svelte', undefined, undefined, ['zod'], undefined, undefined, ['claude-code', 'codex'], []]),
     );
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
@@ -346,7 +349,8 @@ describe('main: create', () => {
     ]);
 
     const asked = scripted([
-      'asked-app', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+      'asked-app', undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined,
     ]);
 
     try {
@@ -948,16 +952,79 @@ describe('main: an unexpected failure', () => {
   });
 });
 
-describe('ensurePackageManager', () => {
-  it('does nothing when the package manager is already available', async () => {
-    const spy = vi.spyOn(await import('../utils/fsUtils'), 'isCommandAvailable').mockReturnValue(true);
+describe('main: the package manager', () => {
+  it('is checked for before the pipeline runs', async () => {
+    const commands = await import('../utils/commandUtils');
+    const spy = vi.spyOn(commands, 'ensurePackageManager').mockImplementation(() => {
+      throw new Error('bun is not installed.');
+    });
 
-    const { main } = await import('./cli');
-    const code = await main(['--skip-scaffold', '--no-install', '--yes']);
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'bun',
+    });
 
-    expect(code).toBe(0);
-    expect(spy).toHaveBeenCalledWith('pnpm');
+    const { code, errors } = await runMain(['--skip-scaffold', '--no-install']);
+
+    expect(code).toBe(1);
+    expect(errors.join('\n')).toContain('bun is not installed.');
+    expect(spy).toHaveBeenCalledWith('bun', expect.any(Function));
 
     spy.mockRestore();
+  });
+});
+
+describe('main: answers given as flags', () => {
+  it('takes every flag, asks nothing, and records the answers', async () => {
+    const asked = scripted([]);
+    const { code } = await runMain([
+      '--skip-scaffold', '--no-install', '--target', 'svelte', '--pm', 'bun', '--libraries', 'zod,es-toolkit',
+      '--libraries', 'tailwind', '--testing', 'none', '--type-safety', 'relaxed', '--agents', 'codex',
+    ], asked);
+
+    expect(code).toBe(0);
+    expect(asked.calls).toEqual([]);
+    expect(await configAt()).toMatchObject({
+      target: 'svelte',
+      packageManager: 'bun',
+      libraries: ['zod', 'es-toolkit', 'tailwind'],
+      testing: 'none',
+      typeSafety: 'relaxed',
+      agents: ['codex'],
+      plugins: [...DEFAULT_ANSWERS.plugins],
+    });
+  });
+
+  it('records a router and a store', async () => {
+    await runMain(['--skip-scaffold', '--no-install', '--router', 'tanstack-router', '--store']);
+
+    expect(await configAt()).toMatchObject({
+      router: 'tanstack-router',
+      store: true,
+    });
+  });
+
+  it.each([
+    [['--target', 'wat'], 'target must be one of: react, next'],
+    [['--libraries', 'tanstack-form', '--libraries', 'react-hook-form'], 'libraries must contain at most one of'],
+    [['--router', 'wouter'], 'router must be one of: react-router, tanstack-router'],
+  ])('refuses %j with the message a bad config gets, before writing anything', async (flags, message) => {
+    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', ...flags]);
+
+    expect(code).toBe(1);
+    expect(errors.join('\n')).toContain(message);
+    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
+  });
+});
+
+describe('main: what a run reports', () => {
+  it('numbers each stage as it starts and closes with the next command', async () => {
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+
+    expect(printed).toContain('[2/6] lint');
+    expect(printed).toContain('[4/6] standard');
+    expect(printed).not.toContain('[1/6] scaffold');
+    expect(printed).toContain('Done. Next:\n  npm run check');
+    expect(printed).not.toContain('  cd ');
   });
 });

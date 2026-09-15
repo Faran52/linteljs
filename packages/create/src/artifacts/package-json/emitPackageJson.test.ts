@@ -11,6 +11,7 @@ import {
   LIBRARIES,
   type Library,
   type PackageManager,
+  type Router,
   TARGET_IDS,
   type TargetId,
   type Testing,
@@ -33,6 +34,7 @@ interface AnswerOverrides {
   packageManager?: PackageManager;
   libraries?: Library[];
   store?: boolean;
+  router?: Router;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -363,5 +365,84 @@ describe('the test scripts', () => {
     expect(devDependencies).toHaveProperty('@vitest/coverage-v8');
     expect(devDependencies).not.toHaveProperty('jest');
     expect(devDependencies).not.toHaveProperty('jest-expo');
+  });
+});
+
+describe('the libraries added in 1.6.0', () => {
+  it('binds the form library per framework, and the zod resolver only beside zod', () => {
+    const vue = patchPackageJson({}, answersFor({
+      target: 'vue',
+      libraries: ['tanstack-form'],
+    }));
+    const hookForm = patchPackageJson({}, answersFor({ libraries: ['react-hook-form'] }));
+    const withZod = patchPackageJson({}, answersFor({ libraries: ['zod', 'react-hook-form'] }));
+
+    expect(vue.dependencies).toHaveProperty('@tanstack/vue-form');
+    expect(hookForm.dependencies).toHaveProperty('react-hook-form');
+    expect(hookForm.dependencies).not.toHaveProperty('@hookform/resolvers');
+    expect(withZod.dependencies).toHaveProperty('@hookform/resolvers');
+  });
+
+  it('gives Next its own t3-env package and every other target the core one', () => {
+    expect(patchPackageJson({}, answersFor({ libraries: ['t3-env'] })).dependencies)
+      .toHaveProperty('@t3-oss/env-core');
+    expect(patchPackageJson({}, answersFor({
+      target: 'next',
+      libraries: ['t3-env'],
+    })).dependencies).toHaveProperty('@t3-oss/env-nextjs');
+  });
+
+  it('installs the two runtime-only libraries as plain dependencies', () => {
+    const { dependencies, devDependencies } = patchPackageJson({}, answersFor({
+      libraries: ['es-toolkit', 'ts-pattern'],
+    }));
+
+    expect(dependencies).toHaveProperty('es-toolkit');
+    expect(dependencies).toHaveProperty('ts-pattern');
+    expect(devDependencies).not.toHaveProperty('es-toolkit');
+  });
+
+  it('binds tanstack query to the framework a host renders with', () => {
+    const hosted = patchPackageJson({}, answersFor({
+      target: 'astro',
+      hostedFramework: 'react',
+      libraries: ['tanstack-query'],
+    }));
+
+    expect(hosted.dependencies).toHaveProperty('@tanstack/react-query');
+  });
+
+  it('takes NativeWind on React Native, where Metro has no Tailwind pipeline', () => {
+    const native = patchPackageJson({}, answersFor({
+      target: 'react-native',
+      libraries: ['tailwind'],
+    }));
+
+    expect(native.dependencies).toHaveProperty('nativewind');
+    expect(native.dependencies).toHaveProperty('react-native-css');
+    expect(native.devDependencies).toHaveProperty('postcss');
+    expect(patchPackageJson({}, answersFor({ libraries: ['tailwind'] })).dependencies ?? {})
+      .not.toHaveProperty('nativewind');
+  });
+});
+
+describe('the router', () => {
+  it('installs react-router alone', () => {
+    const { dependencies, devDependencies } = patchPackageJson({}, answersFor({ router: 'react-router' }));
+
+    expect(dependencies).toHaveProperty('react-router');
+    expect(devDependencies).not.toHaveProperty('@tanstack/router-plugin');
+  });
+
+  it('installs tanstack router with its vite plugin and lint plugin', () => {
+    const { dependencies, devDependencies } = patchPackageJson({}, answersFor({ router: 'tanstack-router' }));
+
+    expect(dependencies).toHaveProperty('@tanstack/react-router');
+    expect(devDependencies).toHaveProperty('@tanstack/router-plugin');
+    expect(devDependencies).toHaveProperty('@tanstack/eslint-plugin-router');
+  });
+
+  it('installs no router by default', () => {
+    expect(patchPackageJson({}, answersFor({})).dependencies ?? {}).not.toHaveProperty('react-router');
   });
 });

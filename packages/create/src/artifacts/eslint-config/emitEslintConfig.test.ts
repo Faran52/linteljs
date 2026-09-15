@@ -8,6 +8,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type Library,
+  type Router,
   TARGET_IDS,
   type TargetId,
   type Testing,
@@ -20,6 +21,7 @@ interface AnswerOverrides {
   target?: TargetId;
   testing?: Testing;
   libraries?: Library[];
+  router?: Router;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -344,5 +346,27 @@ describe('ignores', () => {
     });
 
     expect(duplicated).toEqual([]);
+  });
+});
+
+describe('the router', () => {
+  it('composes the tanstack-router layer and ignores the generated tree', () => {
+    const config = emitEslintConfig(answersFor({
+      target: 'react',
+      router: 'tanstack-router',
+    }));
+
+    expect(config).toContain("'tanstack-router'");
+    expect(config).toContain("'src/routeTree.gen.ts'");
+  });
+
+  it('adds nothing for react-router, which ships no rules', () => {
+    const config = emitEslintConfig(answersFor({
+      target: 'react',
+      router: 'react-router',
+    }));
+
+    expect(config).not.toContain('tanstack-router');
+    expect(config).not.toContain('routeTree');
   });
 });
