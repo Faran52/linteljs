@@ -400,7 +400,7 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
       return PACKAGE_MANAGER_DESCRIPTIONS[choice];
     },
   );
-  const libraries = await askMulti(prompter, 'Libraries', LIBRARIES, [], false, (choice) => {
+  const libraries = await askMulti(prompter, 'Libraries', LIBRARIES, DEFAULT_ANSWERS.libraries, false, (choice) => {
     return LIBRARY_DESCRIPTIONS[choice];
   });
 

@@ -214,7 +214,7 @@ export const DEFAULT_ANSWERS: Answers = {
   browser: 'chrome',
   testing: 'vitest',
   packageManager: 'pnpm',
-  libraries: [],
+  libraries: ['tailwind'],
   // No store by default: a fresh project earns a state library the day component state stops being enough.
   store: false,
   typeSafety: 'strict',

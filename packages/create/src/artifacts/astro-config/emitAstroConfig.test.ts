@@ -36,7 +36,7 @@ describe('emitAstroConfig', () => {
   });
 
   it('writes a bare config for a site that hosts nothing and takes no library', () => {
-    expect(emitAstroConfig(answersFor())).toBe(
+    expect(emitAstroConfig(answersFor({ libraries: [] }))).toBe(
       "import { defineConfig } from 'astro/config';\n\nexport default defineConfig({\n});\n",
     );
   });
@@ -59,7 +59,10 @@ describe('emitAstroConfig', () => {
    * `@astrojs/react` passthrough, since its Rolldown preset form fails the build with `Unknown option: .preset`.
    */
   it('wires the react compiler for a react island', () => {
-    const output = emitAstroConfig(answersFor({ hostedFramework: 'react' }));
+    const output = emitAstroConfig(answersFor({
+      hostedFramework: 'react',
+      libraries: [],
+    }));
 
     expect(output).toBe(
       "import { defineConfig } from 'astro/config';\n"

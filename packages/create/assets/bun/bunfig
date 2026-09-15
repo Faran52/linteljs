@@ -1,2 +1,3 @@
 [install]
 ignoreScripts = false
+allowBuilds = ["sharp", "unrs-resolver"]

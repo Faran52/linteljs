@@ -71,7 +71,10 @@ export default config;
 
 describe('emitEslintConfig', () => {
   it('reproduces the frozen contract file for default React answers', () => {
-    expect(emitEslintConfig(answersFor({ target: 'react' }))).toBe(CANONICAL_REACT);
+    expect(emitEslintConfig(answersFor({
+      target: 'react',
+      libraries: [],
+    }))).toBe(CANONICAL_REACT);
   });
 
   // The composer subpath, never the barrel: the barrel pulls in all six framework layers, five unneeded by any one

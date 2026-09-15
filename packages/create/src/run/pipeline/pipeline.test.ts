@@ -855,7 +855,10 @@ describe('scaffoldCommand', () => {
       target: 'next',
       libraries: ['tailwind'],
     })).not.toContain('--no-tailwind');
-    expect(scaffoldFor({ target: 'next' })).toContain('--no-tailwind');
+    expect(scaffoldFor({
+      target: 'next',
+      libraries: [],
+    })).toContain('--no-tailwind');
   });
 
   // Four generators, three spellings of "TypeScript": a target that omitted its own would scaffold a JavaScript

@@ -20,7 +20,10 @@ describe('emitStylelintConfig', () => {
   // Without it every `@apply` in the project is an unknown-at-rule error, so the entry follows the tailwind answer
   // rather than being fixed either way.
   it('teaches stylelint the tailwind at-rules only when tailwind was chosen', () => {
-    expect(emitStylelintConfig(DEFAULT_ANSWERS)).not.toContain('stylelint-config-tailwindcss');
+    expect(emitStylelintConfig({
+      ...DEFAULT_ANSWERS,
+      libraries: [],
+    })).not.toContain('stylelint-config-tailwindcss');
     expect(emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       libraries: ['tailwind'],
@@ -84,7 +87,10 @@ describe('the tailwind nesting carve-out', () => {
   });
 
   it('leaves it on for a project with no tailwind', () => {
-    expect(emitStylelintConfig(DEFAULT_ANSWERS))
+    expect(emitStylelintConfig({
+      ...DEFAULT_ANSWERS,
+      libraries: [],
+    }))
       .not.toContain('nesting-selector-no-missing-scoping-root');
   });
 });
