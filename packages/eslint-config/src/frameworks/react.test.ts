@@ -53,7 +53,6 @@ describe('react', () => {
       .resolves.toContain('@linteljs/sort-hook-dependencies');
   });
 
-  // Composed with base() so the .tsx fixture's JSX parses, the way a consumer would run it.
   it('reports a component reading its props member by member', async () => {
     const code = [
       'export const Widget = (props) => {',
@@ -78,18 +77,13 @@ describe('react', () => {
       .resolves.not.toContain('@linteljs/prefer-destructured-props');
   });
 
-  // The headline preset: the cases above pin only `react-hooks` and two lintel rules, so a
-  // dropped `files` glob or renamed preset key here would leave all of them still green.
+  // The cases above pin only `react-hooks` and two lintel rules; a renamed preset key would leave them green.
   it('reports through the eslint-react preset it composes', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...typescript(), ...react()], JSX_FIXTURE);
 
     expect(ruleIds).toContain('@eslint-react/no-array-index-key');
   });
 
-  /**
-   * Accessibility belongs to JSX, so it is enabled here rather than in `next()`, which is where it used to arrive by
-   * accident through `eslint-config-next`. A Vite React app now gets the same floor a Next app does.
-   */
   it('reports an image with no alt text', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Logo.tsx');
@@ -111,7 +105,7 @@ describe('react', () => {
     expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
   });
 
-  // The spread between the pair is the documented override idiom, not a repeat.
+  // The documented override idiom.
   it('stays quiet when a spread sits between two same-named props', async () => {
     const code = 'export const Chip = (props) => {\n'
       + '  return <span className="default" {...props} className="override" />;\n};\n';

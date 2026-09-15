@@ -32,16 +32,11 @@ export interface RunResult {
   output: string;
 }
 
-// Installed from packed tarballs, not the workspace: a workspace install dedupes plugin instances, hiding the `Cannot
-// redefine plugin` collision a real consumer would hit.
-export const TARBALL_DIR = env['LINTEL_TARBALLS'] ?? resolve(import.meta.dirname, '../../../../../.e2e');
+// Packed tarballs, not the workspace: a workspace install dedupes plugin instances and hides `Cannot redefine plugin`.
+export const TARBALL_DIR = env['LINTEL_TARBALLS'] ?? resolve(import.meta.dirname, '../../../../../../.e2e');
 
-/**
- * Exactly one tarball per package. Two versions means the directory was filled in by hand and picking the first would
- * test the wrong one silently; none means the pack step did not produce what it is named for. Both throw, and neither
- * skips: `test:e2e` runs `e2e:pack` immediately before this suite, so there is no state in which having no tarball is
- * the expected one. A suite that skipped instead reported a green run having installed nothing.
- */
+// Exactly one tarball per package, and never a skip: `test:e2e` packs immediately before this suite, and a suite
+// that skipped once reported green having installed nothing.
 const tarballFor = (prefix: string): string => {
   const matches = (existsSync(TARBALL_DIR) ? readdirSync(TARBALL_DIR) : []).filter((file) => {
     return file.startsWith(`${prefix}-`) && file.endsWith('.tgz');
@@ -66,8 +61,7 @@ const tarballFor = (prefix: string): string => {
   return join(TARBALL_DIR, match);
 };
 
-// pnpm pack flattens the scope into the filename, so `@linteljs/eslint-config` packs as
-// `linteljs-eslint-config-<version>`.
+// pnpm pack flattens the scope into the filename.
 export const configTarball = tarballFor('linteljs-eslint-config');
 export const pluginTarball = tarballFor('linteljs-eslint-plugin');
 export const cliTarball = tarballFor('linteljs-create');
@@ -77,8 +71,7 @@ export const run = (command: string, args: string[], cwd: string, input = ''): R
     cwd,
     input,
     encoding: 'utf8',
-    // Generated projects install from the public registry; a host config pinning a private one should not be inherited
-    // silently.
+    // A host config pinning a private registry must not be inherited silently.
     env: {
       ...env,
       npm_config_registry: 'https://registry.npmjs.org/',
@@ -91,21 +84,13 @@ export const run = (command: string, args: string[], cwd: string, input = ''): R
   };
 };
 
-// Folds the exit status into the asserted value so a failure prints the process output in the diff, rather than a bare
-// `1 !== 0`.
+// Folds the exit status into the asserted value, so a failure prints the process output.
 export const outcome = (result: RunResult, label: string): string => {
   return result.status === 0 ? `${label}: ok` : `${label}: exit ${String(result.status)}\n${result.output}`;
 };
 
-/**
- * The one failure worth retrying, and only this one. A scaffolder pins the version it just saw, so a run that starts
- * in the minutes around an upstream release asks the registry for something it has not finished publishing:
- * `create astro` wrote `astro: ^7.2.2` and the install died 33 seconds before that version existed, failing a release
- * that had nothing wrong with it.
- *
- * Matched on the error code rather than on any install failure, because every other one means the generated project
- * is genuinely broken, which is the whole point of this suite.
- */
+// The one failure worth retrying: a scaffolder pins the version it just saw, and `create astro` once asked for a
+// version 33 seconds before it was published. Matched on the error code, since any other failure is real.
 const UNPUBLISHED_YET_BY_PM: Record<PackageManager, string[]> = {
   pnpm: ['ERR_PNPM_NO_MATCHING_VERSION'],
   npm: ['npm ERR! code E404', 'npm ERR! 404 Not Found'],
@@ -169,11 +154,8 @@ const getCliRoot = (): string => {
   return root;
 };
 
-/**
- * A tarball is not an installation: `npx` fetches the runtime dependencies too, and without them the packed binary
- * dies on ERR_MODULE_NOT_FOUND before writing a file. Production only, since nothing here runs the package's tests,
- * and `--prefer-offline` so the cache serves it rather than the registry on every run.
- */
+// A tarball is not an installation: without the runtime dependencies the packed binary dies on ERR_MODULE_NOT_FOUND.
+// Production only, `--prefer-offline` so the cache serves it.
 let installed = false;
 
 export const installCli = (): string => {
@@ -209,7 +191,6 @@ export const afterAllCleanup = (): void => {
   });
 };
 
-// Creates cases for a target across all package managers.
 export const withPackageManagers = (
   label: string,
   baseAnswers: Partial<Answers>,
@@ -227,7 +208,6 @@ export const withPackageManagers = (
   });
 };
 
-// Creates cases for a target with default package manager (pnpm).
 export const withDefaultPm = (
   label: string,
   baseAnswers: Partial<Answers>,
@@ -250,8 +230,7 @@ export const scaffoldProject = (
 ): void => {
   mkdirSync(root, { recursive: true });
 
-  // The product's own invocation, not a copy: this line and stage 1 build the same argv from the same
-  // `scaffoldCommand` function.
+  // Stage 1 builds the same argv from the same `scaffoldCommand`.
   const spec = targetFor(answers).scaffold(name, answers);
   const [command, ...argv] = scaffoldCommand(answers.packageManager, spec);
 
@@ -259,18 +238,12 @@ export const scaffoldProject = (
 
   expect(existsSync(join(project, 'package.json')) ? 'scaffolded' : scaffold.output).toBe('scaffolded');
 
-  /**
-   * `create-linteljs` asks nothing over a real terminal here, and cannot be piped one: a non-interactive run either
-   * takes `--yes` or, like this, already has a `lintel.config.json` to plan from, the same route `--skip-scaffold`
-   * takes on a second run of any project. Writing the file directly is the honest equivalent of a person having
-   * already answered the questionnaire once, without scripting keypresses over a pty this suite does not have.
-   */
+  // Writing `lintel.config.json` is the honest equivalent of a person having answered once, with no pty to script.
   writeFileSync(join(project, CONFIG_PATH), emitLintelConfig(answers), 'utf8');
 };
 
 export const generateLintel = (project: string): RunResult => {
-  // `--fresh`: this directory is new scaffolder output the CLI didn't create, and without it starter fixes stay off.
-  // `--no-install` so the tarball overrides land before install; the second invocation exercises install and fix.
+  // `--fresh` turns starter fixes on; `--no-install` so the tarball overrides land before install.
   return run(
     'node',
     [join(installCli(), 'package/bin/create-linteljs.js'), '--skip-scaffold', '--fresh', '--no-install'],
@@ -279,8 +252,7 @@ export const generateLintel = (project: string): RunResult => {
 };
 
 export const applyTarballOverrides = (project: string, pm: PackageManager): void => {
-  // Override the lintel packages with local tarballs so the install uses them rather than the registry.
-  // pnpm uses `pnpm-workspace.yaml`; npm/yarn/bun use `package.json`.
+  // pnpm uses `pnpm-workspace.yaml`; npm, yarn and bun use `package.json`.
   if (pm === 'pnpm') {
     appendFileSync(
       join(project, 'pnpm-workspace.yaml'),
@@ -307,32 +279,30 @@ export const applyTarballOverrides = (project: string, pm: PackageManager): void
 };
 
 export const verifyLintOutput = (pm: PackageManager, project: string): void => {
-  // Proves the override took rather than assuming it
+  // Proves the override took.
   const why = runPm(pm, ['why', '@linteljs/eslint-plugin'], project);
 
   expect(why.output).toContain('@linteljs/eslint-plugin');
   expect(why.output).toContain('@linteljs/eslint-config');
 
-  // ESLint exits 2 on a configuration failure and 1 when it ran and found problems
+  // ESLint exits 2 on a configuration failure and 1 on findings.
   const lint = runPm(pm, ['lint'], project);
 
   expect(lint.status < 2 ? 'eslint ran' : `eslint config error\n${lint.output}`).toBe('eslint ran');
 
-  // Zero, with no per-target allowance: an exception here is a finding the pipeline failed to repair
+  // Zero, with no per-target allowance.
   const found = Number(/✖ (\d+) problem/.exec(lint.output)?.[1] ?? '0');
 
   expect(`${String(found)} findings\n${found === 0 ? '' : lint.output}`).toBe('0 findings\n');
 
-  // Runs `check` rather than its five commands separately, so the gate has one definition
+  // `check`, so the gate has one definition.
   expect(outcome(runPm(pm, ['check'], project), 'check')).toBe('check: ok');
 };
 
-// Runs the full e2e test for a given set of answers.
 export const runE2eCase = ({ label, answers }: { label: string;
   answers: Answers; }): void => {
   const root = join(workspace, label.replaceAll(' ', '-'));
-  // The target id doubles as the project name, except `react-native`: `create-expo-app` rejects a name matching one
-  // of its own dependencies, so this is a legal name choice, not a workaround.
+  // `create-expo-app` rejects a name matching one of its own dependencies.
   const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
   const project = join(root, name);
 
@@ -350,7 +320,6 @@ export const runE2eCase = ({ label, answers }: { label: string;
 
   applyTarballOverrides(project, answers.packageManager);
 
-  // Stages 2-6, including install and the eslint --fix pass
   const complete = runInstallingCli(project, answers.packageManager);
 
   expect(outcome(complete, '@linteljs/create install+fix')).toBe('@linteljs/create install+fix: ok');

@@ -7,18 +7,11 @@ import { presetOf } from '../utils/presetUtils';
 
 import type { Layer } from '../types';
 
-// Solid's bucket.
 export const solidGroup: string[] = ['^solid-js$', '^solid-js/', '^@solidjs/'];
 
 const SOLID_FILES = [`**/*.{${SCRIPT_EXTENSIONS}}`];
 
-/**
- * The plugin's preset carries no `files` glob, so the layer supplies one; without it the
- * reactivity rules read as enabled on `.html` and `.css`.
- *
- * Accessibility applies here for the same reason it applies to React: Solid renders JSX, and these rules read the
- * markup rather than the framework. `eslint-plugin-solid` carries no a11y rules of its own.
- */
+// Scoped, since the preset carries no `files` glob; `eslint-plugin-solid` has no a11y rules of its own.
 export const solid = (): Layer => {
   return [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SOLID_FILES),
@@ -27,10 +20,8 @@ export const solid = (): Layer => {
     {
       name: '@linteljs/solid',
       files: SOLID_FILES,
-      // The same plugin object `base` registers, so the two registrations are one.
       plugins: { '@linteljs': lintel },
-      // Solid renders JSX, so it carries the same duplicate-prop defect React does. Its other two
-      // lintel rules do not apply: hooks do not exist here and destructured props break reactivity.
+      // Not the other two React rules: hooks do not exist here and destructured props break reactivity.
       rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },
   ];

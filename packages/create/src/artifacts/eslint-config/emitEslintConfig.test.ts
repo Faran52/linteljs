@@ -32,11 +32,8 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 };
 
 /**
- * The emitted config, character for character: the README.md of both this package and the workspace quote it, so an
- * edit here is a documentation change too.
- * An ordinary template literal, not `String.raw`: the emitted file now carries a `String.raw` of its own, and a raw
- * fixture cannot hold the backticks that tag needs. So the escapes are spelled here instead, where `\\[` is the
- * literal `\[` the emitter writes and `` \` `` is the backtick it wraps the glob in.
+ * Character for character: both READMEs quote it. An ordinary literal, not `String.raw`, since the emitted file now
+ * carries a `String.raw` of its own and a raw fixture cannot hold the backticks that tag needs.
  */
 const CANONICAL_REACT = `import { defineConfig } from '@linteljs/eslint-config/define-config';
 
@@ -79,8 +76,7 @@ describe('emitEslintConfig', () => {
     }))).toBe(CANONICAL_REACT);
   });
 
-  // The composer subpath, never the barrel: the barrel pulls in all six framework layers, five unneeded by any one
-  // project.
+  // The barrel pulls in all six framework layers.
   it('imports the composer from its subpath, once, and nothing else', () => {
     const output = emitEslintConfig(answersFor({ target: 'vue' }));
 
@@ -89,8 +85,7 @@ describe('emitEslintConfig', () => {
     expect(output).toContain("import { defineConfig } from '@linteljs/eslint-config/define-config';");
   });
 
-  // `next` names one framework, not two layers in an order: the composer puts react underneath it and reads the
-  // ordering off the layer itself.
+  // The composer puts react underneath next and reads the order off the layer.
   it('names next as one framework rather than composing react beneath it here', () => {
     const output = emitEslintConfig(answersFor({ target: 'next' }));
 
@@ -142,15 +137,13 @@ describe('emitEslintConfig', () => {
     expect(output).not.toContain('@mocks/*');
   });
 
-  // The layer imports @vitest/eslint-plugin, which only a project with a suite installs; asked for without one, eslint
-  // . dies on ERR_MODULE_NOT_FOUND.
+  // The layer imports @vitest/eslint-plugin, which only a project with a suite installs.
   it('asks for the vitest layer only where a suite was chosen', () => {
     expect(emitEslintConfig(answersFor({ testing: 'vitest' }))).toContain('vitest: true');
     expect(emitEslintConfig(answersFor({ testing: 'none' }))).not.toContain('vitest');
   });
 
-  // The emitted file is linted by the config it emits; React Native's eight ignores on one line came to 133 characters
-  // and self-reported a finding.
+  // React Native's eight ignores on one line came to 133 characters and self-reported a finding.
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {
     for (const target of TARGET_IDS) {
       const tooLong = emitEslintConfig(answersFor({ target })).split('\n').filter((line) => {
@@ -172,16 +165,12 @@ describe('emitEslintConfig', () => {
       .toContain("libraries: ['tanstack-query'],");
     expect(emitEslintConfig(answersFor({ libraries: ['tailwind'] })))
       .toContain("libraries: ['tailwind'],");
-    // Emit order is fixed by LIBRARY_LAYERS, not by the order the libraries were picked in.
     expect(emitEslintConfig(answersFor({ libraries: ['tailwind', 'tanstack-query'] })))
       .toContain("libraries: ['tanstack-query', 'tailwind'],");
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
   });
 
-  /**
-   * The path is the scaffolder's, verified per target, and it is what lets the plugin read the project's own theme
-   * rather than Tailwind's defaults.
-   */
+  // The scaffolder's own path lets the plugin read the project's theme rather than Tailwind's defaults.
   it.each<[TargetId, string]>([
     ['react', './src/index.css'],
     ['next', './src/app/globals.css'],
@@ -190,7 +179,7 @@ describe('emitEslintConfig', () => {
     ['angular', './src/styles.css'],
     ['webextension', './src/style.css'],
     ['react-native', './src/global.css'],
-    // The one path this CLI creates rather than finds: `sv create --template minimal` ships no stylesheet.
+    // `sv create --template minimal` ships no stylesheet.
     ['svelte', './src/app.css'],
   ])('names %s tailwind entry point as its stylesheet', (target, entry) => {
     expect(emitEslintConfig(answersFor({
@@ -200,10 +189,7 @@ describe('emitEslintConfig', () => {
       .toContain(`tailwindEntryPoint: '${entry}',`);
   });
 
-  /**
-   * Recorded rather than asked: a dependency publishing subpaths through a wildcard `exports` map is a fact about the
-   * project, and this is what keeps needing it from costing an override block.
-   */
+  // Recorded rather than asked, so needing it costs a line rather than an override block.
   it('emits the resolver conditions a project recorded', () => {
     const output = emitEslintConfig({
       ...answersFor({}),
@@ -238,7 +224,7 @@ describe('emitEslintConfig', () => {
     expect(react).not.toContain("'@content/*'");
   });
 
-  // Next's list is the one that runs past `max-len`, so this covers the wrapped form as well as the order.
+  // Next's list runs past `max-len`, so this covers the wrapped form.
   it('carries the target ignores on top of the shared ones', () => {
     expect(emitEslintConfig(answersFor({ target: 'next' }))).toContain(
       [
@@ -256,15 +242,13 @@ describe('emitEslintConfig', () => {
     );
   });
 
-  // The published `defineConfig` option is consumer API and still takes a boolean; what this CLI emits is always true.
   it('turns the typescript layer on for every target', () => {
     for (const target of TARGET_IDS) {
       expect(emitEslintConfig(answersFor({ target }))).toContain('typescript: true,');
     }
   });
 
-  // A test/spec mirrors its subject's name and carries no key of its own: check-file applies every matching key, so
-  // App.test.ts beside App.vue could satisfy the camelCase rule and the subject's PascalCase both, which is impossible.
+  // check-file applies every matching key, so App.test.ts beside App.vue could satisfy camelCase and PascalCase both.
   it('excludes tests, specs and declarations from the script convention', () => {
     const vue = emitEslintConfig(answersFor({ target: 'vue' }));
 
@@ -272,8 +256,7 @@ describe('emitEslintConfig', () => {
     expect(vue).toContain("'src/**/*.d.ts':");
   });
 
-  // A router that names routes by filename owns the spelling, so its directory is exempt from the script convention:
-  // `+page.server.ts` is the framework's name, not camelCase.
+  // `+page.server.ts` is the framework's spelling, not camelCase.
   it('exempts a route directory the framework names, and only where there is one', () => {
     expect(emitEslintConfig(answersFor({ target: 'next' })))
       .toContain("'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',");
@@ -281,7 +264,6 @@ describe('emitEslintConfig', () => {
     expect(emitEslintConfig(answersFor({ target: 'svelte' })))
       .toContain("'src/!(routes)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',");
 
-    // React has no route directory, so the two-key split never appears.
     expect(emitEslintConfig(answersFor({ target: 'react' })))
       .not.toContain("'src/!(");
   });
@@ -294,8 +276,7 @@ describe('folderNaming', () => {
     }
   });
 
-  // A router segment (`[slug]`, `(tabs)`) is not kebab-case, so the React family, Solid and Svelte permit both via a
-  // raw glob rather than an exclusion by path.
+  // `[slug]` and `(tabs)` are not kebab-case; the React family, Solid and Svelte admit them via a raw glob.
   it('permits a router segment only where a router names one', () => {
     const routed = ['react', 'next', 'solid', 'react-native', 'svelte'] as const;
     const plain = ['vue', 'angular', 'webextension'] as const;
@@ -311,11 +292,7 @@ describe('folderNaming', () => {
     }
   });
 
-  /**
-   * A backslash in an ordinary string literal parses back as an escape, so the glob has to reach the file intact.
-   * `String.raw` carries it verbatim, which is why the emitted text equals the pattern rather than a doubled copy of
-   * it: read the tagged literal back and it is the glob the policy declared.
-   */
+  // `String.raw` carries a backslash verbatim, so the emitted text equals the glob the policy declared.
   it('emits the glob raw, so the file parses back to the pattern it declared', () => {
     const emitted = emitEslintConfig(answersFor({ target: 'react-native' }));
     const tagged = /'src\/\*\*\/': String\.raw`([^`]*)`/.exec(emitted)?.[1];
@@ -324,10 +301,8 @@ describe('folderNaming', () => {
   });
 });
 
-/**
- * The emitted list is `BASE_IGNORES` plus the target's own, concatenated without deduplication, so a target repeating
- * a shared entry writes it twice into a published config. Astro and the extension target both did.
- */
+// Concatenated without deduplication, so a target repeating a shared entry published it twice. Astro and the
+// extension both did.
 describe('ignores', () => {
   it('never repeats an entry for any target', () => {
     const duplicated = TARGET_IDS.flatMap((target) => {

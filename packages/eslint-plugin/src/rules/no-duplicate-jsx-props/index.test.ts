@@ -12,13 +12,11 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
     'const view = <span className="a" id="b" />;',
     // A shorthand attribute is a name like any other, so one shorthand beside its spelled-out twin is fine.
     'const view = <button disabled type="button">go</button>;',
-    // Namespaced names compare by their full text.
     'const view = <use xlink:href="#a" xlink:title="b" />;',
     'const view = <text xml:lang="en" lang="en" />;',
     // Two occurrences with a spread between are the documented override idiom.
     'const view = <span className="a" {...props} className="b" />;',
     'const view = <span a={1} {...first} b={2} {...second} a={3} />;',
-    // Each opening element starts from an empty set.
     'const view = <><span a={1} /><span a={2} /></>;',
     {
       code: 'const view = <span\n  className="a"\n  id="b"\n  title="c"\n/>;',
@@ -49,7 +47,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
     {
-      // Three occurrences report twice.
       code: 'const view = <span a={1} a={2} a={3} />;',
       errors: [
         {
@@ -87,7 +84,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
     {
-      // A shorthand duplicates its spelled-out twin.
       code: 'const view = <button disabled disabled />;',
       errors: [{
         messageId: 'duplicateProp',

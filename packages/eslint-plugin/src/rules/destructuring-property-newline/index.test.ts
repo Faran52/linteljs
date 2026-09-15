@@ -4,7 +4,6 @@ import { destructuringPropertyNewline } from './index.ts';
 
 jsRuleTester.run('destructuring-property-newline', destructuringPropertyNewline, {
   valid: [
-    // Nothing to separate.
     'const {} = source;',
     'const { alpha } = source;',
     'const [] = source;',
@@ -16,12 +15,10 @@ jsRuleTester.run('destructuring-property-newline', destructuringPropertyNewline,
     'const [alpha, bravo, charlie] = source;',
     'const { alpha, ...rest } = source;',
 
-    // Fully wrapped.
     'const {\n  alpha,\n  bravo\n} = source;',
     'const [\n  alpha,\n  bravo\n] = source;',
     'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
 
-    // Patterns in other positions.
     'const fn = ({ alpha, bravo }) => alpha + bravo;',
     'const fn = ({\n  alpha,\n  bravo\n}) => alpha + bravo;',
     'for (const { alpha, bravo } of source) { use(alpha, bravo); }',
@@ -40,7 +37,6 @@ jsRuleTester.run('destructuring-property-newline', destructuringPropertyNewline,
     // A trailing comma adds no element, so the walk finds no pair sharing a line.
     'const [alpha,\n  bravo, ] = source;',
 
-    // Defaults and nesting on one line.
     'const { alpha = 1, bravo = 2 } = source;',
   ],
   invalid: [

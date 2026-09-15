@@ -61,7 +61,6 @@ jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
       errors: [{ messageId: 'specifiersOnNewline' }],
     },
     {
-      // Fix lands at the statement's own column, not at zero.
       code: "if (ready) {\n  module.exports = 1;\n}\nexport { alpha, bravo } from 'mod';",
       output: "if (ready) {\n  module.exports = 1;\n}\nexport {\n  alpha,\n  bravo\n} from 'mod';",
       errors: [{ messageId: 'specifiersOnNewline' }],

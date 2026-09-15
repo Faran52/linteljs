@@ -39,8 +39,6 @@ afterEach(async () => {
   });
 });
 
-// The repairs are read off a record, and a record is built from answers, so a test naming only a target
-// still hands over a whole set.
 const answersFor = (target: TargetId): Answers => {
   return {
     ...DEFAULT_ANSWERS,
@@ -48,7 +46,6 @@ const answersFor = (target: TargetId): Answers => {
   };
 };
 
-// The generator's own output, planted at the paths a generator would have written it to.
 const scaffold = async (files: Record<string, string>): Promise<void> => {
   for (const [path, body] of Object.entries(files)) {
     await mkdir(join(cwd, path, '..'), { recursive: true });
@@ -56,11 +53,9 @@ const scaffold = async (files: Record<string, string>): Promise<void> => {
   }
 };
 describe('starter fixes', () => {
-  // Each case plants the generator's kebab-case name and reads back the PascalCase one: `repairScaffoldedOutput` fixes
-  // text at the original path before `starterRenames` moves it, so reading the original back asserts the wrong order.
+  // `repairScaffoldedOutput` fixes text at the original path before `starterRenames` moves it.
 
-  // `require` is typed `any`, so every asset request in Expo's template tripped `no-unsafe-assignment` wherever it
-  // landed.
+  // `require` is typed `any`, so every asset request tripped `no-unsafe-assignment`.
   it('turns the react native asset requires into imports, one per distinct asset', async () => {
     await scaffold({
       'src/components/app-tabs.tsx': [
@@ -84,7 +79,7 @@ describe('starter fixes', () => {
     expect(output).toContain("import homeAsset from '@/assets/images/tabIcons/home.png';");
     expect(output).toContain("import exploreAsset from '@/assets/images/tabIcons/explore.png';");
     expect(output).not.toContain('require(');
-    // The repeat binds once and is used twice, rather than importing the same file under two names.
+    // The repeat binds once and is used twice.
     expect(output.match(/import homeAsset/g)).toHaveLength(1);
     expect(output).toContain('const again = homeAsset;');
   });
@@ -121,7 +116,7 @@ describe('starter fixes', () => {
       .resolves.toBe('SplashScreen.preventAutoHideAsync();\n');
   });
 
-  // `onPress` wants void back, so an `async` handler returned a promise nothing awaited.
+  // `onPress` wants void back.
   it('drops the async from the external link handler and voids the browser call', async () => {
     await scaffold({
       'src/components/external-link.tsx': [
@@ -229,8 +224,7 @@ describe('starter fixes', () => {
     expect(await readFile(join(cwd, 'index.html'), 'utf8')).toBe('<html lang="en">\n');
   });
 
-  // A template `src` is not an import to ESLint or to `vue-tsc`, so this line clears every other
-  // gate and fails the build: the emitted tsconfig and vite config carry no `@/`.
+  // A template `src` is not an import to ESLint or `vue-tsc`, so only the build catches the missing `@/`.
   it('relativises the @/ alias create-vue points its logo at', async () => {
     await scaffold({ 'src/App.vue': '<template><img src="@/assets/logo.svg" /></template>\n' });
 
@@ -305,7 +299,7 @@ describe('starter fixes', () => {
       written.push(path);
     });
 
-    // Only the file the fix changed: `App.vue` has no `@/` in it and is left alone.
+    // `App.vue` has no `@/` in it.
     expect(written).toEqual(['index.html']);
   });
 
@@ -320,8 +314,7 @@ describe('starter fixes', () => {
     await expect(repairScaffoldedOutput(cwd, answersFor('vue'))).rejects.toThrow(/EISDIR/);
   });
 
-  // `no-empty-source` and `no-duplicate-selectors` have no fixer, so these two are the whole
-  // difference between a `lint:css` gate that passes on day one and one that does not.
+  // Neither rule has a fixer, so these two are the whole difference on day one.
   it("fills angular's empty component stylesheet, which no fixer reaches", async () => {
     await scaffold({ 'src/app/app.css': '' });
     await repairScaffoldedOutput(cwd, answersFor('angular'));
@@ -362,8 +355,7 @@ describe('starter fixes', () => {
     expect(merged).toContain('--color-text: var(--vt-c-white);');
   });
 
-  // The repo-structure rule shipped beside it says a Pinia store lives in `lib/store/`, and
-  // nothing in `create-vue`'s output imports the demo one, so the move is the whole repair.
+  // Nothing imports the demo store, so the move is the whole repair.
   it("moves create-vue's demo store to where the layout rule puts it", async () => {
     const written: string[] = [];
     const store = 'export const useCounterStore = defineStore("counter", () => ({}));\n';
@@ -379,8 +371,7 @@ describe('starter fixes', () => {
   });
 });
 
-// The tsconfig halves `create-vite`/`create-vue` reach through `references`, but the emitted root tsconfig is
-// standalone, so they configure nothing while still reading as authoritative.
+// The emitted root tsconfig is standalone, so the referenced halves configure nothing.
 describe('stale scaffolder files', () => {
   const noticesFor = async (
     target: TargetId,
@@ -418,16 +409,14 @@ describe('stale scaffolder files', () => {
       .toEqual(['removed tsconfig.app.json, which nothing references now']);
   });
 
-  // Angular's `tsconfig.app.json` and `tsconfig.spec.json` are named by `angular.json`, so they
-  // are live configuration rather than orphans.
+  // `angular.json` names both, so they are live configuration.
   it("keeps angular's, which its own build reads", async () => {
     expect(await noticesFor('angular', { 'tsconfig.app.json': '{}\n' })).toEqual([]);
     expect(await exists(join(cwd, 'tsconfig.app.json'))).toBe(true);
   });
 });
 
-// Renames the Expo template onto the convention: its files are kebab-case where a `.tsx` here is PascalCase, so `check-
-// file` would flag every generated component; renaming closes that rather than adding an exception to the naming map.
+// Expo's files are kebab-case where a `.tsx` here is PascalCase; renaming closes that rather than an exception.
 describe('starterRenames', () => {
   const read = async (path: string): Promise<string> => {
     return await readFile(join(cwd, path), 'utf8');
@@ -454,11 +443,7 @@ describe('starterRenames', () => {
     expect(await read('src/components/HintRow.tsx')).toContain("from '@/hooks/useTheme'");
   });
 
-  /**
-   * `animated-icon.web.tsx` and `animated-icon.tsx` are separate modules, and a stylesheet keeps its extension where a
-   * script drops one, so shortest-first would leave `./AnimatedIcon.web` as `./AnimatedIcon` with a stray `.web`,
-   * resolving to the wrong platform variant.
-   */
+  // Longest first: shortest-first would leave `./AnimatedIcon.web` as `./AnimatedIcon` with a stray `.web`.
   it('keeps a platform variant and a stylesheet distinct from the module beside them', async () => {
     await scaffold({
       'src/components/animated-icon.tsx': 'export const AnimatedIcon = 1;\n',
@@ -473,11 +458,10 @@ describe('starterRenames', () => {
     expect(await exists(join(cwd, 'src/components/AnimatedIcon.module.css'))).toBe(true);
     expect(await read('src/components/AnimatedIcon.web.tsx'))
       .toContain("from './AnimatedIcon.module.css'");
-    // The route file is not renamed, but a specifier inside it still has to follow.
     expect(await read('src/app/index.tsx')).toContain("from '@/components/AnimatedIcon'");
   });
 
-  // A case-only move, which a case-insensitive filesystem is the hazard for.
+  // A case-only move, the hazard on a case-insensitive filesystem.
   it('renames a file differing from its target only in case', async () => {
     await scaffold({ 'src/components/ui/collapsible.tsx': 'export const Collapsible = 1;\n' });
 
@@ -486,7 +470,7 @@ describe('starterRenames', () => {
     expect(await exists(join(cwd, 'src/components/ui/Collapsible.tsx'))).toBe(true);
   });
 
-  // expo-router resolves a route by its filename, so renaming one would rename the route.
+  // Renaming a route file renames the route.
   it('leaves the route directory alone', async () => {
     await scaffold({ 'src/app/index.tsx': 'export default 1;\n' });
 

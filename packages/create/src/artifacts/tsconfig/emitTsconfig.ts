@@ -3,8 +3,7 @@ import { buildAliases } from '../build-aliases/buildAliases';
 
 import type { Answers } from '../../model/answers/answers';
 
-// Emits `tsconfig.json`: one shared base plus the target's delta. `noUnusedLocals`/`noUnusedParameters` are
-// deliberately absent since `unused-imports` owns that and both firing double-reports the same line.
+// `noUnusedLocals`/`noUnusedParameters` are absent: `unused-imports` owns that, and both would double-report.
 
 export interface CompilerOptions {
   rootDir: string;
@@ -42,7 +41,6 @@ export interface CompilerOptions {
 }
 
 export interface TsconfigFile {
-  // Only where a framework supplies a config the project has to build on. See `TsconfigDelta`.
   extends?: string;
   compilerOptions: CompilerOptions;
   include: string[];
@@ -52,16 +50,14 @@ export interface TsconfigFile {
 const BASE_INCLUDE = ['**/*.ts', '**/*.tsx', '**/*.mts'];
 const BASE_EXCLUDE = ['node_modules', 'dist', 'build', 'coverage'];
 
-// `vite/client` carries the ambient declarations for `./logo.svg`, `./App.css` and `import.meta.env`; without it a
-// fresh project fails `tsc --noEmit` on its own starter component.
+// `vite/client` declares `./logo.svg`, `./App.css` and `import.meta.env`, which the starter component uses.
 const typesFor = (answers: Answers): string[] => {
   const target = targetFor(answers);
 
   return [
     'node',
     ...(target.vite ? ['vite/client'] : []),
-    // Named rather than "some runner", so a project that declined a suite doesn't typecheck against ambient describe/it
-    // declarations it has no runner to satisfy.
+    // Named, so a project that declined a suite does not typecheck against ambient `describe`.
     ...(answers.testing === 'vitest' ? ['vitest/globals'] : []),
     ...target.tsconfig.types ?? [],
   ];
@@ -85,8 +81,7 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
 
       target: 'esnext',
       lib: ['dom', 'dom.iterable', 'esnext'],
-      // Angular flips this: its DI and input decorators read fields the base class constructor hasn't defined yet, and
-      // [[Define]] semantics wipe them.
+      // Angular's decorators read fields before the base constructor defines them; [[Define]] wipes them.
       useDefineForClassFields: delta.useDefineForClassFields ?? true,
       ...(delta.jsx === undefined ? {} : { jsx: delta.jsx }),
       ...(delta.jsxImportSource === undefined ? {} : { jsxImportSource: delta.jsxImportSource }),
@@ -94,16 +89,14 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
       module: 'esnext',
       moduleResolution: 'bundler',
       resolveJsonModule: true,
-      // Off: rewriteScaffoldedSource strips the extension from the three generated lines that need it, rather than
-      // carrying a bundler-only escape hatch for the project's life.
+      // Off: `rewriteScaffoldedSource` strips the extensions instead.
       allowImportingTsExtensions: false,
       isolatedModules: true,
       moduleDetection: 'force',
       importHelpers: true,
       verbatimModuleSyntax: true,
 
-      // Absent on Angular: ngtsc emits nothing under it, so the vitest compiler produces no output; typecheck passes
-      // --noEmit on the command line regardless.
+      // Absent on Angular: ngtsc emits nothing under it; `typecheck` passes --noEmit on the command line.
       ...(delta.dropsNoEmit === true ? {} : { noEmit: true }),
       incremental: true,
 
@@ -112,14 +105,11 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
       exactOptionalPropertyTypes: true,
       noImplicitOverride: true,
       noFallthroughCasesInSwitch: true,
-      /**
-       * `noPropertyAccessFromIndexSignature` is absent: Vite and Next both declare CSS modules as `{ readonly [key:
-       * string]: string }`, rejecting `styles.page` and failing Next's own starter page eight times.
-       * `noUncheckedIndexedAccess` stays instead, adding `| undefined` without forbidding the access.
-       */
+      // `noPropertyAccessFromIndexSignature` is absent: CSS modules are index signatures, and it failed Next's own
+      // starter page eight times. `noUncheckedIndexedAccess` covers the safety half.
       allowUnreachableCode: false,
       allowUnusedLabels: false,
-      // Constructor parameter properties are not erasable, and Angular's DI is built on them.
+      // Parameter properties are not erasable, and Angular's DI is built on them.
       ...(delta.dropsErasableSyntaxOnly === true ? {} : { erasableSyntaxOnly: true }),
       allowJs: true,
       checkJs: false,

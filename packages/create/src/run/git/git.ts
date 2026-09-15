@@ -13,11 +13,11 @@ import { env } from 'node:process';
 
 export interface GitOptions {
   cwd: string;
-  // Fed on stdin: `git diff --no-index -` reads the shipped file from it.
+  // `git diff --no-index -` reads the shipped file from stdin.
   input?: string;
 }
 
-// Resolve `git` from PATH so `sync` can run it from another cwd; reject executable directories.
+// Resolved from PATH so `sync` can run it from another cwd; executable directories are rejected.
 const resolvedGit = (): string | undefined => {
   for (const directory of (env['PATH'] ?? '').split(delimiter)) {
     if (directory === '') {
@@ -40,7 +40,6 @@ const resolvedGit = (): string | undefined => {
   return undefined;
 };
 
-// `sync` degrades to a change without a diff when Git is unavailable.
 export const git = (args: string[], options: GitOptions): SpawnSyncReturns<string> => {
   const binary = resolvedGit();
 

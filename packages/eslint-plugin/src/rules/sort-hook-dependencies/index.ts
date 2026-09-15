@@ -102,7 +102,6 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
           messageId: 'sort',
           node: lastArg,
           fix: (fixer) => {
-            // A comment on a dependency is not ours to drop.
             if (rebuildLosesComments(sourceCode, lastArg)) {
               return null;
             }

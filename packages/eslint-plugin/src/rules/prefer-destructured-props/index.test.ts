@@ -4,7 +4,6 @@ import { preferDestructuredProps } from './index.ts';
 
 tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
   valid: [
-    // Already destructured in the signature.
     'const Widget = ({ alpha, bravo }) => alpha + bravo;',
 
     // A lowercase name is a hook or a helper, where a bag of options is an ordinary parameter.
@@ -21,7 +20,6 @@ tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
     // One member read beside one whole use still keeps the object itself in play.
     'const Widget = (props) => { log(props); return props.alpha; };',
 
-    // Reassignment is a whole-value use too.
     'const Widget = (props) => { props = normalise(props); return props.alpha; };',
 
     // The identifier is the computed key here, not the object being read.
@@ -75,17 +73,14 @@ tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
       errors: [{ messageId: 'destructure' }],
     },
     {
-      // Bracket access is still a member read.
       code: "const Widget = (props) => props['alpha'];",
       errors: [{ messageId: 'destructure' }],
     },
     {
-      // Every reference inside the JSX is a member read.
       code: 'const Widget = (props) => <div>{props.alpha}{props.bravo}</div>;',
       errors: [{ messageId: 'destructure' }],
     },
     {
-      // An optional member read is still a member read.
       code: 'const Widget = (props) => props?.alpha;',
       errors: [{ messageId: 'destructure' }],
     },

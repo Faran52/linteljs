@@ -36,10 +36,7 @@ describe('scaffold', () => {
 });
 
 describe('the browser axis', () => {
-  /**
-   * `crx` builds for both, so what the browser decides is the manifest shape and the ambient types. Its own manifest
-   * type carries the `service_worker` and the `scripts` background forms and `browser_specific_settings.gecko`.
-   */
+  // `crx` builds for both, so the browser decides the manifest shape and the ambient types.
   it.each<[Browser, string]>([
     ['chrome', 'chrome'],
     ['firefox', 'firefox-webext-browser'],
@@ -52,17 +49,13 @@ describe('the browser axis', () => {
     expect(recordFor({ browser: 'firefox' }).vitePlugin.calls).toContain('crx({ manifest })');
   });
 
-  // `web-ext` runs, lints and packages a Firefox build; Chrome has no equivalent it needs.
+  // Chrome has no equivalent it needs.
   it('brings web-ext on firefox and not on chrome', () => {
     expect(recordFor({ browser: 'firefox' }).devDependencies).toContain('web-ext');
     expect(recordFor({ browser: 'chrome' }).devDependencies).not.toContain('web-ext');
   });
 
-  /**
-   * The starter is per browser, not shared. Found end to end: the Firefox project shipped Chrome's `chrome.runtime`
-   * entry against types that declare `browser.*` alone, which lints as three findings on an unresolvable global. The
-   * handler's test moves with it because Firefox's details type requires `temporary`.
-   */
+  // Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone.
   it.each<[Browser, string]>([
     ['chrome', ''],
     ['firefox', '.firefox'],
@@ -88,10 +81,7 @@ describe('the browser axis', () => {
 });
 
 describe('the surfaces axis', () => {
-  /**
-   * The default is what this target wrote before the answer existed, so nothing changes for a project generated then.
-   * Asserted as the exact list because the point is that it is a pair, not that it is non-empty.
-   */
+  // What this target wrote before the answer existed; asserted as the exact pair.
   it('defaults to a popup and a background', () => {
     const record = recordFor();
 
@@ -102,11 +92,7 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toBeUndefined();
   });
 
-  /**
-   * A devtools panel is two pages: the devtools page the browser opens invisibly, whose only job is to register the
-   * panel, and the panel itself. crx builds the first because the manifest names it, and cannot know about the second,
-   * so the panel needs a Rollup input of its own.
-   */
+  // A devtools panel is two pages; crx cannot know about the second, so it needs a Rollup input of its own.
   it('ships both devtools pages and gives the panel a build input', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
     const targets = record.starterFiles?.map((file) => {
@@ -123,7 +109,7 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toEqual({ panel: 'panel.html' });
   });
 
-  // Same reason the background entry is excluded: a registration call has no branch of its own.
+  // A registration call has no branch of its own.
   it('excludes both entry shells and covers the panel body', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
 
@@ -135,7 +121,6 @@ describe('the surfaces axis', () => {
     });
   });
 
-  // The devtools registration names a namespace, so it moves with the browser exactly as the background entry does.
   it.each<[Browser, string]>([
     ['chrome', 'starter/webextension/devtools.ts'],
     ['firefox', 'starter/webextension/devtools.firefox.ts'],
@@ -150,7 +135,7 @@ describe('the surfaces axis', () => {
       });
   });
 
-  // A popup's page and entry come from the Vite scaffold, so the surface adds no starter of its own.
+  // A popup's page and entry come from the Vite scaffold.
   it('adds no starter for a popup, whose page the scaffold already wrote', () => {
     expect(recordFor({ surfaces: ['popup'] }).starterFiles).toEqual([]);
   });
@@ -162,7 +147,6 @@ describe('the hosted framework axis', () => {
 
     expect(record.framework).toBeUndefined();
     expect(record.stateRules).toEqual([]);
-    // The directory-based component rule, which only a host with no framework uses.
     expect(record.naming['src/components/**/!(*.d|*.test|*.spec).ts']).toBe('PASCAL_CASE');
   });
 
@@ -176,11 +160,10 @@ describe('the hosted framework axis', () => {
 
     expect(record.framework).toBe(hostedFramework);
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
-    // Replaced, not added to: two disagreeing conventions on one file satisfy neither.
+    // Replaced: two conventions on one file satisfy neither.
     expect(record.naming['src/components/**/!(*.d|*.test|*.spec).ts']).toBeUndefined();
   });
 
-  // The framework plugin has to run before `crx`, which wraps whatever the plugins ahead of it produced.
   it('runs the framework plugin ahead of crx', () => {
     const { calls } = recordFor({ hostedFramework: 'solid' }).vitePlugin;
 
@@ -188,7 +171,7 @@ describe('the hosted framework axis', () => {
       .toBeLessThan(calls.indexOf('crx({ manifest })'));
   });
 
-  // A vanilla scaffold installs no framework, so the record has to bring it as a runtime dependency.
+  // A vanilla scaffold installs no framework.
   it('brings the framework itself, its lint plugins and its testing library', () => {
     const record = recordFor({ hostedFramework: 'vue' });
 
@@ -199,20 +182,18 @@ describe('the hosted framework axis', () => {
     expect(record.stateRules).toEqual(['vue-reactivity.md']);
   });
 
-  // Drives the stylelint syntax and the `lint:css` glob, so a `<style>` block in an extension is linted too.
   it('carries the single-file-component extension where the framework has one', () => {
     expect(recordFor({ hostedFramework: 'svelte' }).sfcExtension).toBe('svelte');
     expect(recordFor({ hostedFramework: 'react' }).sfcExtension).toBeUndefined();
   });
 
-  // Without `browser`, vitest resolves Svelte's and Solid's server build and the first render throws.
+  // Without `browser`, vitest resolves the server build and the first render throws.
   it('carries the resolve conditions the framework needs under test', () => {
     expect(recordFor({ hostedFramework: 'svelte' }).testConditions).toEqual(['browser']);
     expect(recordFor({ hostedFramework: 'react' }).testConditions).toBeUndefined();
   });
 });
 
-// Both questions are asked only where they mean something, the way the store question already works.
 describe('the host slots', () => {
   it('declares both, so the questionnaire asks them', () => {
     expect(recordFor().hostsBrowser).toBe(true);

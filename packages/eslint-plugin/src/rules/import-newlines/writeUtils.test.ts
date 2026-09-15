@@ -48,7 +48,6 @@ describe('writeImport', () => {
       .toBe("import {\n  alpha,\n  bravo\n} from 'mod';");
   });
 
-  // The split form steps in from the statement's own column, not from zero.
   it('anchors the split at the outer indent it is given', () => {
     const { sourceCode, node } = importNodeFrom("  import { alpha, bravo } from 'mod';");
 

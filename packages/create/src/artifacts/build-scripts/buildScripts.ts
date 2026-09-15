@@ -3,7 +3,7 @@ import { targetFor } from '../../model/targets';
 
 import type { Answers, PackageManager } from '../../model/answers/answers';
 
-// `pnpm test` works; `npm test` works but `npm lint` does not. Only npm and bun need `run`.
+// Only npm and bun need `run` for a script that is not `test`.
 export const RUN_PREFIX: Record<PackageManager, string> = {
   pnpm: 'pnpm',
   npm: 'npm run',
@@ -11,19 +11,14 @@ export const RUN_PREFIX: Record<PackageManager, string> = {
   bun: 'bun run',
 };
 
-// Exported so `lint:css` and the stage-6 fix pass can't disagree about what the gate covers.
-// SFC extensions are included because `src/**/*.css` matches none of a Vue or Svelte project's styles.
+// Shared with the fix pass; SFC extensions included because `src/**/*.css` matches none of a Vue project's styles.
 export const styleGlob = (answers: Answers): string => {
   const { sfcExtension } = targetFor(answers);
 
   return sfcExtension === undefined ? 'src/**/*.css' : `src/**/*.{css,${sfcExtension}}`;
 };
 
-/**
- * The source extensions the type floor scans, named the way `find -name` takes them. An SFC is where a Vue or Svelte
- * project's logic lives, so its extension joins the script ones; `.astro` joins for the target whose components are
- * templates.
- */
+// What the type floor scans, spelled the way `find -name` takes it; SFC and `.astro` join the script extensions.
 const bannedPatternNames = (answers: Answers): string[] => {
   const { astro, sfcExtension } = targetFor(answers);
 
@@ -35,7 +30,7 @@ const bannedPatternNames = (answers: Answers): string[] => {
   ];
 };
 
-// check is named in the return type so callers need no unreachable, type-demanded `?? ''` fallback.
+// `check` is named in the return type so callers need no unreachable `?? ''`.
 export const buildScripts = (answers: Answers): Record<string, string> & { check: string } => {
   const run = RUN_PREFIX[answers.packageManager];
   const target = targetFor(answers);
@@ -44,34 +39,28 @@ export const buildScripts = (answers: Answers): Record<string, string> & { check
   const scripts: Record<string, string> = {
     'lint': 'eslint .',
     'lint:fix': 'eslint . --fix',
-    /**
-     * The type floor as a gate of its own: lint-staged runs it over staged files only, so without this `check`
-     * passes on code the commit then rejects. `find`, not `git ls-files`, because the index does not see a newly
-     * added file, which is exactly the case during active development.
-     */
+    // The type floor as a gate, since lint-staged scans staged files only. `find`, because the index does not see a
+    // newly added file.
     'lint:types': `find src -type f \\( ${bannedPatternNames(answers).join(' -o ')} \\)`
       + ' -exec node scripts/checkBannedPatterns.ts {} +',
-    // A real gate, not a dead script: without it, 87 stylelint findings in starter CSS passed check unnoticed.
-    // `--allow-empty-input` because stylelint exits 2 on a glob that matches nothing.
+    // Measured: 87 stylelint findings in starter CSS passed check without it. `--allow-empty-input`, since stylelint
+    // exits 2 on a glob matching nothing.
     'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,
-    // The fixing counterpart to `lint:fix`: the recess-order config is almost entirely auto-fixable, and an agent
-    // told to run fixes rather than bare lint needs a script to comply with.
+    // The recess-order config is almost entirely auto-fixable.
     'lint:css:fix': `stylelint "${styleGlob(answers)}" --fix --allow-empty-input`,
     'typecheck': target.typecheck,
   };
 
-  // A target's own extras, before the gates below so `check` still reads as the gate list.
   Object.assign(scripts, target.extraScripts);
 
   if (hasTests(answers)) {
-    // vitest exits 1 on an empty run (hence --passWithNoTests); test:coverage stays strict, since check uses it.
+    // vitest exits 1 on an empty run; test:coverage stays strict, since check uses it.
     scripts['test'] = 'vitest run --passWithNoTests';
     scripts['test:coverage'] = 'vitest run --coverage';
     gates.push('test:coverage');
   }
 
-  // build comes from the scaffolder for most targets; the gate stays unconditional, since a target with none
-  // is a gap, not a shape to accommodate.
+  // `build` comes from the scaffolder for most targets; a target with none is a gap, not a shape.
   if (target.build !== undefined) {
     scripts['build'] = target.build;
   }
@@ -85,8 +74,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & { check
         return `${run} ${gate}`;
       })
       .join(' && '),
-    // husky installs the hooks on `install`; without this the .husky/ files sit there inert. A target's own `prepare`
-    // runs first, not replaced: SvelteKit's writes .svelte-kit/tsconfig.json, which the emitted tsconfig extends.
+    // husky installs the hooks on `install`. A target's own `prepare` runs first, not replaced.
     prepare: target.prepare === undefined ? 'husky' : `${target.prepare} && husky`,
   };
 };

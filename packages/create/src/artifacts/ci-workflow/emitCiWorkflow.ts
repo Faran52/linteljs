@@ -3,43 +3,30 @@ import { NODE_ENGINE } from '../package-json/versions';
 
 import type { Answers, PackageManager } from '../../model/answers/answers';
 
-/**
- * Emits `.github/workflows/ci.yml`, the one workflow this standard owns. Everything else it ships is a gate that
- * nothing ran: a project got `check`, the hooks and the whole lint surface, and no push ever exercised them. A
- * reference repo renamed `check` and its workflow called the old name for two days, green locally and red on every
- * push, and `sync` reported the project fully up to date because `.github/` was nobody's.
- *
- * Emitted rather than preserved, unlike the build configs: this file *is* the gate, so a release that changes the
- * gate has to reach it, and a project with more to run adds `deploy.yml` beside it rather than editing this one.
- * That split is what makes a drifting `ci.yml` show up as a `sync` diff.
- */
+// The one workflow this standard owns, emitted rather than preserved because it is the gate: a reference repo renamed
+// `check` and its workflow called the old name for two days while `sync` reported it up to date.
 
 interface ManagerSetup {
-  // Steps before `setup-node`, for a manager whose binary the runner does not ship.
+  // Before `setup-node`, for a manager the runner does not ship.
   before: string[];
-  // What `actions/setup-node` caches for. Absent where the manager is not one of its known values.
+  // Absent where `setup-node` does not know the manager.
   cache?: string;
   install: string;
 }
 
-// Pinned, not a floating major: `engines.node` declares a floor, and a runner resolving `24` to something below it
-// would install a Node the project says it does not support.
+// Pinned: a runner resolving a floating major below `engines.node` installs a Node the project rejects.
 const nodeVersion = (): string => {
   return NODE_ENGINE.replace(/^[>=~^]+/, '');
 };
 
-/**
- * A third-party action is pinned to the commit its tag pointed at, because a tag can be moved onto different code
- * without the reference here changing; GitHub's own actions go by major tag, which is the boundary they support.
- * The pnpm SHA is `v6.0.10` resolved through the tag object, checked against the registry rather than copied.
- */
+// Third-party actions are pinned to a commit, since a tag can move; GitHub's own go by major tag.
 const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
   pnpm: {
     before: ['- uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10'],
     cache: 'pnpm',
     install: 'pnpm install --frozen-lockfile',
   },
-  // `npm ci` is the only install that refuses to edit the lockfile, which is what a gate wants.
+  // The only install that refuses to edit the lockfile.
   npm: {
     before: [],
     cache: 'npm',
@@ -50,7 +37,7 @@ const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
     cache: 'yarn',
     install: 'yarn install --immutable',
   },
-  // No `cache`: `setup-node` knows npm, yarn and pnpm, and naming anything else fails the step outright.
+  // `setup-node` fails outright on a `cache` value it does not know.
   bun: {
     before: ['- uses: oven-sh/setup-bun@v2'],
     install: 'bun install --frozen-lockfile',

@@ -158,7 +158,6 @@ jsRuleTester.run('import-newlines (options)', importNewlines, {
       errors: [{ message: 'Imports must be broken into multiple lines if there are more than 1 elements.' }],
     },
     {
-      // The message carries the configured value, not the default.
       code: "import { alpha, bravo, charlie, delta } from 'mod';",
       output: "import {\n  alpha,\n  bravo,\n  charlie,\n  delta\n} from 'mod';",
       options: [{ maxItems: 3 }],

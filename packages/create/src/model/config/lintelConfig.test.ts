@@ -53,7 +53,7 @@ interface ConfigOverrides {
   agents?: string | string[];
   plugins?: string | (string | number)[];
   unexpected?: boolean | object;
-  // An answer this version does not have, which is the shape a config written before it was dropped still carries.
+  // An answer this version does not have, which an older config still carries.
   typescript?: boolean;
 }
 
@@ -238,11 +238,7 @@ describe('parseLintelConfig', () => {
       });
   });
 
-  /**
-   * All three fields arrived after the schema did, so a config written without them still has to parse: an absent
-   * `browser` is the chrome the only extension target used to assume, an absent `hostedFramework` is the
-   * plain-TypeScript shape every host had, and absent `surfaces` is the popup and background pair.
-   */
+  // All three arrived after the schema did, so a config written without them still parses.
   it('defaults the extension axes when a config predates them', () => {
     const withoutAxes = JSON.stringify({
       $schema: CONFIG_SCHEMA_URL,
@@ -261,13 +257,13 @@ describe('parseLintelConfig', () => {
 
     expect(config.browser).toBe('chrome');
     expect(config.hostedFramework).toBeUndefined();
-    // Left absent rather than filled in, so the file keeps saying what its author said.
+    // Left absent, so the file keeps saying what its author said.
     expect(config.surfaces).toBeUndefined();
     expect(surfacesOf(config)).toEqual(['popup', 'background']);
   });
 
   it('round-trips all three extension axes', () => {
-    // Annotated rather than `as const`: a readonly tuple is not assignable to the mutable list `Answers` declares.
+    // A readonly tuple is not assignable to the mutable list `Answers` declares.
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
       target: 'webextension',
@@ -313,7 +309,6 @@ describe('parseLintelConfig', () => {
     });
   });
 
-  // An open vocabulary, so the shape is what gets validated: a non-empty list of distinct non-empty strings.
   it.each([
     [[], 'must be a non-empty array'],
     [['import', ''], 'must contain only non-empty strings'],
@@ -331,11 +326,7 @@ describe('parseLintelConfig', () => {
     }).toThrow(new RegExp(message));
   });
 
-  /**
-   * The reason this field exists rather than being hand-edited into `eslint.config.js`: that file is emitted whole,
-   * so an alias added there is gone on the next sync. Recorded here it reaches the config, the tsconfig paths and the
-   * resolver together, which is the coupling `emitTsconfig.test.ts` pins.
-   */
+  // Hand-edited into `eslint.config.js`, an alias is gone on the next sync.
   it('round-trips a project\'s own aliases, in both shapes', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -352,8 +343,7 @@ describe('parseLintelConfig', () => {
     });
   });
 
-  // The names are a project's to choose, so the sigil is all that is checked: both consumers key on it, and a bare
-  // `engine` sorts as a package rather than as the project's own.
+  // Only the sigil is checked: a bare `engine` sorts as a package.
   it.each([
     [{ engine: './src/lib/engine' }, 'must start with @ or \\$'],
     [{ '@engine': '' }, 'must be a non-empty string'],
@@ -371,7 +361,6 @@ describe('parseLintelConfig', () => {
     }).toThrow(new RegExp(message));
   });
 
-  // Separate from `browser`, which still decides the background shape, the ambient types and the starter code.
   it('round-trips the stores a project packages for', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -401,11 +390,7 @@ describe('parseLintelConfig', () => {
     }).toThrow(new RegExp(message));
   });
 
-  /**
-   * Not for build outputs, which `base()` already covers by reading `.gitignore`. This exists for the one thing that
-   * file cannot name: a generated file the project commits, which a reference repo has as a compat-data registry its
-   * CI regenerates and diffs.
-   */
+  // Not for build outputs, which `base()` covers through `.gitignore`: for a generated file the project commits.
   it("round-trips a project's own ignores", () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -448,7 +433,7 @@ describe('parseLintelConfig', () => {
     }).toThrow(/schemaVersion/);
   });
 
-  // A hand-edited string is no version to compare, so it is malformed rather than unsupported.
+  // A hand-edited string is malformed, not unsupported.
   it('rejects a schema version that is not a number', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
@@ -480,8 +465,7 @@ describe('parseLintelConfig', () => {
   it.each([
     ['a non-object value', '[]', /lintel\.config\.json must be a JSON object/],
     ['an unexpected property', config({ unexpected: true }), /unexpected property: unexpected/],
-    // Pinned by name rather than left to the generic case above: DESIGN.md's "No JavaScript output" rests on this
-    // refusal, since planning such a project as TypeScript rewrites its config over source that is not.
+    // DESIGN.md's "No JavaScript output" rests on this refusal.
     ['a project recorded as javascript', config({ typescript: false }), /unexpected property: typescript/],
     ['a different schema URL', config({ $schema: 'https://example.com/schema.json' }), /\$schema must be/],
     [

@@ -7,23 +7,23 @@ import { isAbsence } from '../utils/fsUtils';
 
 import type { Answers } from '../../model/answers/answers';
 
-// Always rewrite `src/`: non-compiling generator output is not a project decision.
+// Non-compiling generator output is not a project decision.
 export const SOURCE_ROOT = 'src';
 
 const SCRIPT_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts']);
 
-// Keep `.d.ts` extensions, which are part of their specifier.
+// `.d.ts` extensions are part of their specifier.
 const RELATIVE_TS_IMPORT
   = /(\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(['"])(\.{1,2}\/[^'"\n]*?)(?<!\.d)\.[cm]?tsx?\2/g;
 
 const IMPORT_CLAUSE = /import\s+\{([^}]*)\}\s+from\s+(['"])([^'"]+)\2/g;
 
-// Remove relative TypeScript extensions instead of enabling the bundler-only tsconfig escape hatch.
+// Rather than enabling the bundler-only tsconfig escape hatch.
 export const stripTsExtensions = (source: string): string => {
   return source.replace(RELATIVE_TS_IMPORT, '$1$2$3$2');
 };
 
-// Angular needs per-specifier `type` modifiers because mixed clauses fail `verbatimModuleSyntax`.
+// Mixed clauses fail `verbatimModuleSyntax`.
 export const markTypeOnlyImports = (
   source: string,
   typeOnly: Record<string, string[]>,
@@ -44,7 +44,7 @@ export const markTypeOnlyImports = (
   });
 };
 
-// Limit the rewrite to literal `document` lookups, not arbitrary assertions or side effects.
+// Literal `document` lookups only.
 const DOM_LOOKUP_ASSERTION
   = /document\.(getElementById|querySelector)(<[^>]+>)?\((['"])([^'"]+)\3\)!/g;
 
@@ -56,7 +56,6 @@ const HOISTED_LOOKUP = new RegExp(
   'm',
 );
 
-// `getElementById('root')` looks for `#root`; `querySelector('#app')` already reads as one.
 const asSelector = (method: string, argument: string): string => {
   return method === 'getElementById' ? `#${argument}` : argument;
 };
@@ -69,9 +68,8 @@ const guardFor = (name: string, selector: string, indent: string): string => {
   ].join('\n');
 };
 
-// Replace known template mount assertions with a selector-naming guard; leave other shapes untouched.
 export const guardMountLookups = (source: string): string => {
-  // Solid's template hoists the lookup and asserts at the use site instead, so it needs its own branch.
+  // Solid hoists the lookup and asserts at the use site.
   const hoisted = HOISTED_LOOKUP.exec(source);
 
   if (hoisted) {
@@ -83,12 +81,10 @@ export const guardMountLookups = (source: string): string => {
       ? source
       : source.replace(line, `${line}\n\n${guardFor(name, asSelector(method, argument), indent)}`);
 
-    // Only the asserted uses lose their `!`; an unasserted read of the same binding is untouched.
     return guarded.replaceAll(new RegExp(`\\b${name}!`, 'g'), name);
   }
 
-  // Split rather than a multiline regex: matching indent and body in one pattern makes the two
-  // halves ambiguous, and it backtracks across every line of a long template.
+  // Split rather than one multiline regex, which backtracks across every line of a long template.
   return source.split('\n').map((line) => {
     const matches = [...line.matchAll(DOM_LOOKUP_ASSERTION)];
 
@@ -96,16 +92,11 @@ export const guardMountLookups = (source: string): string => {
       return line;
     }
 
-    /**
-     * Each match is hoisted above its line, correct even inside a template literal since every occurrence here starts
-     * the statement containing it. The indent is sliced rather than matched: `/^[ \t]*\/` always matches (leaving
-     * `?? ''` unreachable) and the inverse pattern backtracks (`sonarjs/super-linear-regex`).
-     */
+    // The indent is sliced rather than matched: the matching pattern always matches, and the inverse backtracks.
     const indent = line.slice(0, line.length - line.trimStart().length);
     const declarations: string[] = [];
 
     const rewritten = matches.reduce((text, [expression, method = '', , , argument = '']) => {
-      // `#app` -> `app`, `root` -> `root`: a non-identifier character cannot reach a binding.
       const name = argument.replace(/[^\w$]/g, '');
 
       declarations.push(
@@ -138,7 +129,7 @@ export const sourceFiles = async (root: string): Promise<string[]> => {
       });
   }
   catch (error) {
-    // No `src/` (`--skip-scaffold` against a repo keeping source elsewhere) is not an error; other failures still are.
+    // No `src/` is not an error under `--skip-scaffold`; other failures still are.
     if (isAbsence(error)) {
       return [];
     }
@@ -147,8 +138,7 @@ export const sourceFiles = async (root: string): Promise<string[]> => {
   }
 };
 
-// The entry module a bundler mounts from (`main`/`index` directly under `src/`); confined to it since the pattern is
-// legitimate to write by hand and `--skip-scaffold` points this pass at a long-lived repository.
+// The entry module only: the pattern is legitimate by hand, and `--skip-scaffold` points this at a long-lived repo.
 const isMountEntry = (path: string, root: string): boolean => {
   const relative = path.slice(root.length + 1);
 

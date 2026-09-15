@@ -11,12 +11,8 @@ import { webextension } from './webextension';
 import type { Answers, TargetId } from '../answers/answers';
 import type { TargetRecord } from './record';
 
-/**
- * A record per target, built from the answers rather than looked up, because one target's record is not decided by
- * its id alone: an extension composes a browser and, optionally, a framework, and those move most of the fields on it.
- * The seven that vary by nothing at all ignore the argument, which keeps the emitters reading one shape and free of
- * `switch (target)`.
- */
+// Built from the answers: an extension composes a browser and a framework, which move most of its fields. The
+// seven fixed records ignore the argument, so emitters read one shape.
 export type TargetBuilder = (answers: Answers) => TargetRecord;
 
 export const TARGETS: Record<TargetId, TargetBuilder> = {

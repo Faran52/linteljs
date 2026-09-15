@@ -22,25 +22,13 @@ const NARROWING_GUARD = /:\s*unknown\b[^)]*\)\s*:\s*\w+\s+is\s/;
 const PARSED_JSON = /:\s*unknown\s*=\s*JSON\.parse\(/;
 const DYNAMIC_IMPORT = /:\s*unknown\s*=\s*await import\(/;
 
-/**
- * A thrown value, which `catch` binds as `unknown` by language rule under `useUnknownInCatchVariables`. Matched on
- * the whole parameter list rather than on `: unknown` anywhere in it, and on the three conventional names for a
- * caught value, so it grants a single-argument helper turning a throw into something readable and nothing else.
- *
- * Structural evidence is not available here: TypeScript has no distinct type for a caught value, so the line carries
- * no shape a regex could key on instead of the name.
- */
+// A caught value has no distinct type, so the grant keys on the three conventional names and a single parameter.
 const CAUGHT_VALUE = /\(\s*(?:error|cause|reason)\s*:\s*unknown\s*\)/;
 
-/**
- * The same value reached through a promise: `.catch(cb)` binds exactly what a `catch` clause would, so the callback's
- * one parameter is a caught value whatever it is named. Structural rather than a name list, which is why it grants
- * `err` and every other spelling the name grant above cannot enumerate.
- */
+// `.catch(cb)` binds a caught value whatever it is named, so this grant is structural.
 const CAUGHT_IN_CHAIN = /\.catch\(\s*(?:async\s*)?\(\s*\w+\s*:\s*unknown\s*\)/;
 
-// Anchor directives to comments so ordinary prose can name them, and match them with strings blanked, so the same
-// words inside a string literal stay fixture text rather than an instruction.
+// Anchored to comments, so prose can name a directive and a string literal stays fixture text.
 const directive = (name: string): RegExp => {
   return new RegExp(`(?://|/\\*)\\s*${name}`);
 };
@@ -106,7 +94,6 @@ const STRICT_ONLY: BannedPattern[] = [
   },
 ];
 
-// Lookup preserves the relaxed branch for coverage.
 const FLOORS: Record<TypeSafety, BannedPattern[]> = {
   strict: [...ALWAYS_BANNED, ...STRICT_ONLY],
   relaxed: ALWAYS_BANNED,
@@ -129,7 +116,7 @@ const isSkipped = (filePath: string): boolean => {
   });
 };
 
-// Ignore import and alias `as`, which are not assertions.
+// Import and alias `as` are not assertions.
 const isAliasOrImportLine = (line: string): boolean => {
   return line.includes('* as ')
     || /^\s*import\b/.test(line)
@@ -137,23 +124,20 @@ const isAliasOrImportLine = (line: string): boolean => {
     || /^\s*(?:type\s+)?[A-Za-z_]\w*\s+as\s+[A-Za-z_]\w*,?\s*$/.test(line);
 };
 
-// Preserve offsets so reported lines remain correct.
+// Offsets preserved so reported lines stay correct.
 const blankSpan = (match: string): string => {
   return match.replace(/[^\n]/g, ' ');
 };
 
-// Strip comments before templates so unmatched prose backticks cannot span the file.
+// Comments first, so unmatched prose backticks cannot span the file.
 const blankMultilineSpans = (content: string): string => {
   return content
     .replace(/\/\*[\s\S]*?\*\//g, blankSpan)
     .replace(/`(?:\\[\s\S]|[^`\\])*`/g, blankSpan);
 };
 
-/**
- * Strings blanked, comments kept, which is what a directive pattern is matched against. Stripping comments would hide
- * every directive there is, and matching the untouched line reported the same words inside a string literal, where
- * they are a test fixture rather than an instruction to any tool.
- */
+// Strings blanked, comments kept: stripping comments hides every directive, and an untouched line reported the
+// same words inside a string literal.
 const stripStrings = (line: string): string => {
   return line
     .replace(/\\['"]/g, '  ')
@@ -168,7 +152,7 @@ const SCRIPT_FILE = /\.[cm]?tsx?$/;
 const SFC_FILE = /\.(?:vue|svelte)$/;
 const SFC_SCRIPT_BLOCK = /(<script\b[^>]*>)([\s\S]*?)<\/script>/gi;
 
-// Keep only SFC script blocks, blanking the rest to preserve line numbers.
+// Line numbers preserved.
 const scriptBlocksOnly = (content: string): string => {
   let output = '';
   let cursor = 0;
@@ -203,12 +187,9 @@ for (const file of files) {
   }
 
   const hits: string[] = [];
-  // Same line count, so `source[index]` is the scannable half of the line reported as `line`.
   const source = blankMultilineSpans(sfc ? scriptBlocksOnly(content) : content).split('\n');
 
   for (const [index, line] of content.split('\n').entries()) {
-    // `continue`, not `return`: this skips one line, which is what the callback's `return` meant before the loop was
-    // a loop rather than a `forEach`.
     if (isAliasOrImportLine(line)) {
       continue;
     }

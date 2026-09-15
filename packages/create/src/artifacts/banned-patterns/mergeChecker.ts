@@ -1,11 +1,7 @@
-/**
- * The checker holds the standard's pattern list and the project's own `PROJECT_SKIPPED` and `PROJECT_BANNED`.
- * Preserving it froze both, emitting it would delete the project's half, so the shipped file supplies everything and
- * the project's blocks are lifted back over the empty ones.
- */
+// Preserving the checker froze the pattern list, emitting it deleted the project's blocks; so the shipped file
+// supplies everything and the project's `PROJECT_SKIPPED` and `PROJECT_BANNED` are lifted back over it.
 
-// The declaration through its closing `];`, empty on one line or with entries closing on a line of its own. Read as a
-// whole line, since a reason written beside an entry quoting code (`arr[0];`) carries that pair and ended it early.
+// The declaration through its closing `];`, read as whole lines since a reason quoting `arr[0];` ended it early.
 const blockOf = (source: string, name: string): string | null => {
   const opening = source.indexOf(`const ${name}`);
 
@@ -14,8 +10,7 @@ const blockOf = (source: string, name: string): string | null => {
   }
 
   const rest = source.slice(opening);
-  // `split` with a limit of one answers exactly one element for any string, so this is the declaration line or all
-  // of what follows it, and never nothing.
+  // `split` with a limit of one answers exactly one element for any string.
   const declaration = rest.split('\n', 1).join('');
 
   if (declaration.includes('];')) {
@@ -32,11 +27,11 @@ const carriedOver = (shipped: string, current: string, name: string): string => 
   const ours = blockOf(shipped, name);
 
   if (theirs === null || ours === null) {
-    // A project that never edited its block, or a shipped file that stopped declaring one.
+    // Never edited, or no longer declared.
     return shipped;
   }
 
-  // By function: `$&` or `$'` in a string replacement reads as the match and the text after it.
+  // By function: `$&` in a string replacement reads as the match.
   return shipped.replace(ours, () => {
     return theirs;
   });

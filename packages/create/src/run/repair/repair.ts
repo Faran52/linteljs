@@ -13,7 +13,7 @@ import { entryExists, isAbsence } from '../utils/fsUtils';
 import type { Answers } from '../../model/answers/answers';
 import type { StarterRename } from '../../model/targets';
 
-// Only fresh projects get repairs; exact generator text turns upstream drift into a notice.
+// Fresh projects only; exact generator text turns upstream drift into a notice.
 const applyStarterFixes = async (
   cwd: string,
   answers: Answers,
@@ -58,12 +58,12 @@ const applyStarterFixes = async (
   }
 };
 
-// Drop script extensions only, preserving names such as `x.module.css`.
+// Script extensions only, so `x.module.css` keeps its name.
 const specifierFor = (path: string): string => {
   return path.replace(/\.[cm]?tsx?$/, '');
 };
 
-// Match trailing path segments, longest first, to avoid partial rename matches.
+// Longest first, so a rename never matches part of a longer path.
 const specifierEdits = (renames: StarterRename[]): [string, string][] => {
   return renames.map(({ from, to }): [string, string] => {
     return [`/${basename(specifierFor(from))}`, `/${basename(specifierFor(to))}`];
@@ -74,12 +74,12 @@ const specifierEdits = (renames: StarterRename[]): [string, string][] => {
 
 const repointSpecifiers = (source: string, edits: [string, string][]): string => {
   return edits.reduce((text, [from, to]) => {
-    // Include the closing quote to avoid rewriting a longer filename's stem.
+    // The closing quote is included so a longer filename's stem is not rewritten.
     return text.replaceAll(`${from}'`, `${to}'`).replaceAll(`${from}"`, `${to}"`);
   }, source);
 };
 
-// Rename after starter fixes, which match original paths; `rename` handles case-only APFS moves.
+// After the starter fixes, which match original paths; `rename` handles case-only APFS moves.
 const renameStarterFiles = async (
   cwd: string,
   answers: Answers,
@@ -93,12 +93,12 @@ const renameStarterFiles = async (
     const present = await entryExists(from);
 
     if (!present) {
-      // Warned, not thrown: a generator that moved its own file is not a reason to fail a generate.
+      // Warned, not thrown: a generator that moved its own file is not a reason to fail.
       onNotice?.(`  starter rename for ${entry.from} found nothing: the generator changed what it writes.`);
       continue;
     }
 
-    // Always a write, since the destination is what changed rather than the text.
+    // Always a write, since the destination changed rather than the text.
     await rename(from, await safeProjectPath(cwd, entry.to));
     moved.push(entry);
     onWrite?.(entry.to);
@@ -108,7 +108,6 @@ const renameStarterFiles = async (
     return;
   }
 
-  // Every source file, at its final path, so each is read and written once.
   const edits = specifierEdits(moved);
 
   for (const path of await sourceFiles(join(cwd, SOURCE_ROOT))) {
@@ -124,8 +123,7 @@ const renameStarterFiles = async (
   }
 };
 
-// Removes what the generator wrote that lintel's own files then orphaned, per each target's `staleScaffoldFiles`
-// (e.g. an unreferenced `tsconfig.app.json` still reads as the tsconfig).
+// Removes what lintel's own files orphaned, per `staleScaffoldFiles`.
 const removeStaleScaffoldFiles = async (
   cwd: string,
   answers: Answers,
@@ -140,7 +138,7 @@ const removeStaleScaffoldFiles = async (
     }
 
     await rm(full);
-    // Reported, not silent: a delete the user did not ask for has to appear in the log.
+    // A delete the user did not ask for has to appear in the log.
     onNotice?.(`removed ${path}, which nothing references now`);
   }
 };

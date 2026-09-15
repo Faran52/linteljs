@@ -1,4 +1,4 @@
-// Runs the project typecheck and filters the errors down to the staged files.
+// Runs the project typecheck and keeps only the errors in the staged files.
 // Usage: node scripts/typecheckStaged.ts src/App.tsx src/lib/utils/dateUtils.ts
 import { type ExecException, execSync } from 'node:child_process';
 import {
@@ -12,12 +12,12 @@ interface ExecSyncError extends ExecException {
   stderr: string;
 }
 
-// A caught value is untyped by construction, so this is the one place a guard has to narrow it.
+// A caught value is untyped by construction.
 const isExecSyncError = (value: unknown): value is ExecSyncError => {
   return value instanceof Error && 'stdout' in value && 'stderr' in value;
 };
 
-// Overridable for vue-tsc or svelte-check; destructuring also satisfies the tsconfig's index-signature rule.
+// Overridable for vue-tsc or svelte-check.
 const { TYPECHECK_COMMAND } = env;
 const typecheckCommand = TYPECHECK_COMMAND ?? 'npm run typecheck';
 const ANSI_ESCAPE_GLOBAL = /\u001b\[[0-9;]*m/g;

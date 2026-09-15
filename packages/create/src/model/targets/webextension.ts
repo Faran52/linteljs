@@ -8,42 +8,26 @@ import type { Answers, Browser } from '../answers/answers';
 import type { PluginSpec, StarterFile } from './record';
 import type { TargetBuilder } from './registry';
 
-/**
- * A Manifest V3 extension on the vanilla TypeScript scaffold, with no official generator of its own; stage 4 adds the
- * manifest, the surfaces it names, and `@crxjs/vite-plugin` to build them.
- *
- * Two axes move this record. The browser decides the manifest shape and the ambient types, not the bundler: `crx`
- * builds for both, and its own manifest type carries the `service_worker` and the `scripts` background forms plus
- * `browser_specific_settings.gecko`. The hosted framework decides what a component is, which Vite plugin runs and
- * which layer lints it, leaving the manifest and the surface layout alone.
- */
+// Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
+// ambient types; the hosted framework decides what a component is and which plugin and layer handle it.
 
-// Per browser: the ambient types, the manifest template, and what runs and packages the build.
 interface BrowserParts {
   types: string[];
   devDependencies: string[];
-  // A way to run the built extension, where the browser has a runner for it.
   scripts?: Record<string, string>;
-  /**
-   * The background entry and its handler, in the namespace this browser's own types declare. Not shared: the Chrome
-   * types declare `chrome.*` and the Firefox ones `browser.*`, so one file cannot satisfy both. Found by an end-to-end
-   * run, where the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`. The handler's
-   * own test comes with it: the two details types are not the same shape either, Firefox's carrying a required
-   * `temporary`, so an object literal written for one fails `typecheck` against the other.
-   */
+  // Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
+  // both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
   starter: {
     entry: string;
     handler: string;
     test: string;
-    // The devtools page's registration call, which names a namespace for the same reason the background entry does.
     devtools: string;
   };
 }
 
 const BROWSERS: Record<Browser, BrowserParts> = {
   chrome: {
-    // Both shipped rule files assume `chrome.*`, and without the types the first line of extension code fails
-    // `typecheck`. An allow-list once populated: installed but unlisted still lints `chrome.*` as unresolved.
+    // Without the types the first line of extension code fails `typecheck`; once listed, `types` is an allow-list.
     types: ['chrome'],
     devDependencies: ['@types/chrome'],
     starter: {
@@ -54,13 +38,11 @@ const BROWSERS: Record<Browser, BrowserParts> = {
     },
   },
   firefox: {
-    // Firefox implements the same surface under `browser.*`, promise-returning rather than callback-taking. These types
-    // declare that namespace and only that one: they carry no `chrome`, so Chrome's starter does not typecheck here.
+    // `browser.*`, promise-returning; these types carry no `chrome`, so Chrome's starter does not typecheck here.
     types: ['firefox-webext-browser'],
-    // `web-ext` runs the extension in a real Firefox, lints the manifest the way AMO will, and builds the upload
-    // archive. It is not a bundler, so `crx` still is.
+    // `web-ext` runs, lints and packages; it is not a bundler, so `crx` still is.
     devDependencies: ['@types/firefox-webext-browser', 'web-ext'],
-    // `--no-reload` because the build is a one-shot `vite build`, not a watch: a reload would serve a stale `dist/`.
+    // `--no-reload`: the build is a one-shot `vite build`, so a reload would serve a stale `dist/`.
     scripts: { start: 'web-ext run --source-dir dist --no-reload' },
     starter: {
       entry: 'starter/webextension/background.firefox.ts',
@@ -79,19 +61,13 @@ const CRX: PluginSpec = {
   calls: ['crx({ manifest })'],
 };
 
-/**
- * What each surface contributes. A surface is not a file list alone: it decides what the manifest names, which the
- * manifest emitter reads from the same answer, and whether the build needs an input the manifest does not give it.
- *
- * `popup` contributes nothing here. Its page is `index.html` and its entry `src/main.ts`, both of which the Vite
- * scaffold already wrote, and the manifest points `action.default_popup` at the first.
- */
+// A surface decides what the manifest names and whether the build needs an input the manifest does not give it.
+// `popup` contributes nothing: the Vite scaffold already wrote `index.html` and `src/main.ts`.
 const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] => {
   const files: StarterFile[] = [];
 
   if (hasSurface(answers, 'background')) {
-    // `manifest.json` names the entry, so it must exist before the first `vite build`, and no vanilla scaffold
-    // writes one. The handler lives beside it and is covered like any other module.
+    // `manifest.json` names the entry, so it must exist before the first `vite build`.
     files.push(
       {
         source: browser.starter.entry,
@@ -106,8 +82,8 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
 
   if (hasSurface(answers, 'devtools-panel')) {
     files.push(
-      // Two folders, not one: `repo-structure.webextension.md` gives the devtools page and the panel a folder each,
-      // and the entry HTML stays flat at the root because the browser resolves manifest paths against it.
+      // A folder each for the devtools page and the panel; the entry HTML stays at the root, where manifest paths
+      // resolve.
       {
         source: 'starter/webextension/devtools.html',
         target: 'devtools.html',
@@ -134,7 +110,7 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
   return files;
 };
 
-// Entry shells: a registration call with no branch of its own, which is the case `src/{main,index}` is excluded for.
+// Entry shells with no branch of their own, excluded like `src/{main,index}`.
 const surfaceCoverageExclude = (answers: Answers): string[] => {
   return [
     ...hasSurface(answers, 'background') ? ['src/background/index.ts'] : [],
@@ -159,30 +135,22 @@ export const webextension: TargetBuilder = (answers) => {
     html: true,
     vite: true,
     routeUnit: 'manifest.json, whose entries name every surface',
-    // Nothing of its own: `dist/**` is a shared ignore, and it was repeated here until a duplicate was noticed
-    // in the emitted config.
     ignores: [],
-    // With a framework, the component is marked by its own extension; without one, by living under `components/`.
+    // With a framework the component is marked by its extension; without one, by living under `components/`.
     naming: hosted === undefined ? NAMING.webextension : hostedNaming(hosted.framework),
-    // No router, so no segment a kebab-case folder rule has to make room for.
     folderNaming: FOLDER_NAMING.webextension,
-    // `lib/model/` is this target's own layout with no alias; `@store/*` aliases a directory this layout doesn't
-    // have, an alias naming nothing being a dead end a reader follows for no reason.
+    // `lib/model/` has no alias, and `@store/*` would name a directory this layout lacks.
     extraAliases: { '@model/*': './src/lib/model/*' },
     omitAliases: ['@store/*'],
     styleEntry: 'src/style.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     ...(hosted?.sfcExtension === undefined ? {} : { sfcExtension: hosted.sfcExtension }),
-    // The framework plugin runs before `crx`, which reads the manifest and wraps whatever the plugins above produced.
+    // The framework plugin runs before `crx`, which wraps whatever the plugins above produced.
     vitePlugin: {
       imports: [...hosted?.vitePlugin.imports ?? [], ...CRX.imports],
       calls: [...hosted?.vitePlugin.calls ?? [], ...CRX.calls],
     },
-    /**
-     * The hosted framework's JSX settings, which a host with no framework has none of. Without them every `.tsx` file
-     * in the project fails to compile: a real migration hit 213 `TS17004` and 245 `TS7026`, because the axis wired the
-     * Vite plugin and the dependencies and then never told TypeScript what the templates were.
-     */
+    // Without the hosted framework's JSX settings every `.tsx` fails: measured at 213 TS17004 and 245 TS7026.
     tsconfig: {
       types: browser.types,
       ...(hosted?.jsx === undefined ? {} : { jsx: hosted.jsx }),
@@ -221,11 +189,7 @@ export const webextension: TargetBuilder = (answers) => {
       },
     ],
     coverageExclude: surfaceCoverageExclude(answers),
-    /**
-     * crx builds every page the manifest names, and the panel is not one: a devtools page opens it at runtime through
-     * `devtools.panels.create`. Verified against the crx docs, which say an extra page goes in
-     * `build.rollupOptions.input`.
-     */
+    // crx builds only pages the manifest names; the panel is opened at runtime, so it goes in `rollupOptions.input`.
     ...(hasSurface(answers, 'devtools-panel') ? { viteInputs: { panel: 'panel.html' } } : {}),
     typecheck: 'tsc --noEmit',
     ...(browser.scripts === undefined ? {} : { extraScripts: browser.scripts }),

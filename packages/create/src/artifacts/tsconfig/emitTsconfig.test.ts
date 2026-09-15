@@ -101,8 +101,7 @@ describe('buildTsconfig', () => {
   });
 });
 
-// The alias list feeds three consumers: tsconfig paths, base({ aliases })'s import-sort buckets, and the import-x
-// resolver; hand-kept copies are what drifted in the reference repos.
+// The alias list feeds tsconfig paths, the import-sort buckets and the resolver; hand-kept copies drifted.
 describe('alias coupling', () => {
   for (const target of TARGET_IDS) {
     for (const withZod of [true, false]) {
@@ -125,14 +124,8 @@ describe('alias coupling', () => {
           expect(config).toContain(`'${alias}': '${directory}',`);
         }
 
-        /**
-         * Nothing outside the shared list may reach the config: an alias emitted into one consumer and not the
-         * others is the exact failure this pins. The pattern matches `[@$]` with an optional wildcard, because
-         * SvelteKit's `$lib` is a real alias spelled both ways, and a segment may be empty because Expo's own
-         * `@/*` and `@/assets/*` put the slash straight after the sigil. Import lines are dropped first, because
-         * `@linteljs/eslint-config/define-config` is a scoped package specifier, not an alias, and matches the
-         * same shape.
-         */
+        // Anything outside the shared list reaching one consumer and not the others is the failure this pins.
+        // `[@$]` with an optional wildcard, since `$lib` is spelled both ways and Expo's `@/*` has no segment.
         const body = config.replaceAll(/^import .*$/gm, '');
         const emitted = body.match(/'[@$][\w-]*(?:\/[\w-]+)*(?:\/\*)?'/g) ?? [];
 
@@ -145,11 +138,7 @@ describe('alias coupling', () => {
     }
   }
 
-  /**
-   * A project's own, from `lintel.config.json`. The whole point is that they reach the same three consumers the
-   * standard set does: hand-edited into `eslint.config.js` they lasted until the next sync, which is why the
-   * reference repo carrying nine of them could not adopt the standard.
-   */
+  // Hand-edited into `eslint.config.js` they lasted until the next sync.
   it("carries a project's own aliases through all three consumers", () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -168,7 +157,7 @@ describe('alias coupling', () => {
     expect(config).toContain("'@workers/*': './src/workers/*',");
   });
 
-  // Last in the map, so the standard set still reads first and a restated one is deliberate rather than accidental.
+  // Last, so a restated one is deliberate.
   it('lets a project restate a standard alias, and keeps the order', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -203,8 +192,7 @@ describe('alias coupling', () => {
     }
   });
 
-  // An alias naming a directory the target's own repo-structure.md doesn't describe is a dead end; the extension target
-  // has lib/model/, not lib/store/, and providers/ is aliased on no target because no template creates it.
+  // An alias naming a directory the target's repo-structure.md does not describe is a dead end.
   it("matches the extension target's own documented layout", () => {
     const { paths } = buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions;
 
@@ -217,11 +205,7 @@ describe('alias coupling', () => {
       .not.toHaveProperty('@providers/*');
   });
 
-  /**
-   * `svelte-kit sync` writes `.svelte-kit/tsconfig.json` ($app/*, ambient declarations, route types); SvelteKit warns
-   * on svelte-check, vitest and vite build without extending it.
-   * An extending config replaces `paths` rather than merging, so `$lib` has to be re-declared here.
-   */
+  // `svelte-kit sync` writes `.svelte-kit/tsconfig.json`; extending it replaces `paths`, so `$lib` is redeclared.
   it('extends what SvelteKit generates, and keeps $lib resolvable through it', () => {
     const config = buildTsconfig(answersFor({ target: 'svelte' }));
 
@@ -232,8 +216,7 @@ describe('alias coupling', () => {
   });
 });
 
-// `types` stops being a supplement the moment it names anything: TypeScript treats it as the whole allow-list, so an
-// unlisted `@types/chrome` leaves every `chrome.*` call unresolved.
+// `types` is the whole allow-list once it names anything.
 describe('ambient types', () => {
   it("names the target's own alongside the shared ones", () => {
     const config = buildTsconfig(answersFor({ target: 'webextension' }));
@@ -249,11 +232,7 @@ describe('ambient types', () => {
   });
 });
 
-/**
- * The axis wired the Vite plugin and the dependencies and then never told TypeScript what the templates were, so every
- * `.tsx` file in a hosted extension failed to compile: a real migration hit 213 `TS17004` and 245 `TS7026`. A host
- * without a framework still has no `jsx` at all, which is what makes this an addition rather than an override.
- */
+// Measured: 213 `TS17004` and 245 `TS7026` in a hosted extension before the JSX settings arrived.
 describe('a hosted framework brings its own JSX settings', () => {
   it('gives the extension solid’s mode and import source', () => {
     const { compilerOptions } = buildTsconfig(
@@ -279,7 +258,6 @@ describe('a hosted framework brings its own JSX settings', () => {
     expect(compilerOptions).not.toHaveProperty('jsxImportSource');
   });
 
-  // Vue and Svelte templates are single-file components, so there is no JSX for TypeScript to be told about.
   it('adds none for a single-file-component framework, or for no framework at all', () => {
     expect(buildTsconfig(answersFor({
       target: 'webextension',

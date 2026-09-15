@@ -34,17 +34,16 @@ export interface PipelineOptions {
   cwd: string;
   answers: Answers;
   skip: Stage[];
-  // Treat the directory as freshly generated output even though this run did not scaffold it.
+  // Treat the directory as fresh scaffolder output although this run did not scaffold it.
   fresh?: boolean;
-  // Reports every path written, so the CLI and the tests see the same list.
   onWrite?: (path: string) => void;
-  // Reports what happened that was not a file write: the fix pass, or the next step.
+  // What happened that was not a file write.
   onNotice?: (message: string) => void;
   // Called as each stage starts, with its position in the full list.
   onStage?: (stage: Stage, index: number, count: number) => void;
 }
 
-// A tuple so the first element is guaranteed a command: no unreachable `undefined` guard, no `?? []` fallback.
+// A tuple, so the first element is a command with no `undefined` guard.
 type CommandLine = [string, ...string[]];
 
 type StageRunner = (
@@ -53,8 +52,7 @@ type StageRunner = (
   stage: Stage,
 ) => Promise<void> | void;
 
-// `create` and `dlx` are the same intent under four different spellings; getting this wrong reads as a package manager
-// trying to install a package called `vite my-app`.
+// Four spellings of the same intent; wrong, it reads as installing a package called `vite my-app`.
 const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine>> = {
   pnpm: {
     create: ['pnpm', 'create'],
@@ -80,7 +78,7 @@ const run = async (command: string, args: string[], cwd: string): Promise<void> 
       cwd,
       stdio: 'inherit',
       shell: false,
-      // Angular's CLI otherwise prompts for analytics with no flag to decline; unanswered it blocks the scaffold.
+      // Angular's CLI otherwise prompts for analytics with no flag to decline.
       env: {
         ...env,
         NG_CLI_ANALYTICS: 'false',
@@ -116,7 +114,6 @@ const write = async (options: PipelineOptions, relative: string, text: string): 
   options.onWrite?.(relative);
 };
 
-// Every artifact this stage owns. Stage 2 is this and nothing else.
 const writeArtifacts = async (
   options: PipelineOptions,
   artifacts: Artifact[],
@@ -137,32 +134,29 @@ const stageScaffold = async (options: PipelineOptions): Promise<void> => {
   const spec = targetFor(options.answers).scaffold(options.name, options.answers);
   const [command, ...args] = scaffoldCommand(options.answers.packageManager, spec);
 
-  // The scaffolder creates `<name>/` itself, so this runs one directory above `options.cwd`, the project directory.
+  // The scaffolder creates `<name>/` itself, so this runs one directory above.
   const parent = dirname(options.cwd);
 
   await mkdir(parent, { recursive: true });
   await run(command, args, parent);
 };
 
-// Whether this directory is scaffolder output: true when stage 1 ran, or forced by `--fresh`.
 const isFresh = (options: PipelineOptions): boolean => {
   return options.fresh === true || !options.skip.includes('scaffold');
 };
 
-// `tsconfig.json` is the artifact; the three files below are merges, and say why.
 const stagePackage = async (
   options: PipelineOptions,
   artifacts: Artifact[],
   stage: Stage,
 ): Promise<void> => {
-  // `package.json` is a merged artifact now, so `writeArtifacts` below writes it and `sync` runs the same merge.
   await write(options, CONFIG_PATH, emitLintelConfig(options.answers));
   await writeArtifacts(options, artifacts, stage);
 
-  // Paired with the tsconfig above: rewrites the scaffolder's own source to compile under the flags it just set.
+  // Rewrites the scaffolder's source to compile under the flags the tsconfig just set.
   await rewriteScaffoldedSource(options.cwd, options.answers, options.onWrite);
 
-  // Not paired with anything: these are defects in the generator's output, not lintel's, so they gate on fresh alone.
+  // Defects in the generator's output, so they gate on fresh alone.
   if (isFresh(options)) {
     await repairScaffoldedOutput(
       options.cwd,
@@ -173,7 +167,7 @@ const stagePackage = async (
   }
 };
 
-// Source no scaffolder wrote that the target can't run without; fresh output only, whatever the testing answer.
+// Source no scaffolder wrote; fresh output only, whatever the testing answer.
 const writeStarterFiles = async (options: PipelineOptions): Promise<void> => {
   const { starterFiles } = targetFor(options.answers);
 
@@ -192,8 +186,7 @@ const writeStarterFiles = async (options: PipelineOptions): Promise<void> => {
   }
 };
 
-// Fresh output only, and skipped when the file it covers is absent, so a generator that rearranged its starter costs
-// the example rather than a broken import.
+// Skipped when the covered file is absent: a rearranged starter costs the example, not a broken import.
 const writeStarterTests = async (options: PipelineOptions): Promise<void> => {
   const { starterTests } = targetFor(options.answers);
 
@@ -208,13 +201,11 @@ const writeStarterTests = async (options: PipelineOptions): Promise<void> => {
   }
 };
 
-// Uses `git rev-parse`, not `existsSync('.git')`: `--skip-scaffold` in a subdirectory of an existing repo has no `.git`
-// of its own, and initialising one there would nest a repo inside somebody's working tree.
+// `git rev-parse`, not `existsSync('.git')`: a subdirectory of an existing repo must not get a nested one.
 const ensureRepository = (options: PipelineOptions): void => {
   const inside = git(['rev-parse', '--is-inside-work-tree'], { cwd: options.cwd });
 
-  // Said out loud, not degraded silently: without git there is no repository and no hooks, which
-  // is a different project than the one this tool promises.
+  // Said out loud: without git there are no hooks, which is a different project than promised.
   if (inside.error !== undefined) {
     options.onNotice?.(`git unavailable, skipping repository setup: ${inside.error.message}`);
 
@@ -241,20 +232,14 @@ const stageStandard = async (
 
   await writeArtifacts(options, artifacts, stage);
 
-  // Replaced rather than left: every scaffolder's README describes its own toolchain, which the stages above make it
-  // contradict. See `emitReadme`.
+  // Every scaffolder's README describes a toolchain the stages above replaced; see `emitReadme`.
   const readme = await readFile(join(ASSETS_ROOT, 'readme/template.md'), 'utf8');
   await write(options, 'README.md', emitReadme(readme, options.name, options.answers));
 
-  // Birth only, and `null` for the eight targets that are not extensions. A manifest becomes the project's own file
-  // immediately: its permissions, icons and store metadata are not this CLI's to keep rewriting.
+  // Birth only: a manifest's permissions and store metadata are the project's to keep.
   if (isFresh(options)) {
-    /**
-     * One per browser the project packages for, which is more than one only where it ships to two stores. The primary
-     * keeps `manifest.json`; a second is named for its browser, because the two cannot be one file: Chrome rejects
-     * `browser_specific_settings` and AMO requires it, so the build produces one bundle and the packaging step swaps
-     * the manifest into it.
-     */
+    // One per packaged browser; the second is named for its browser since Chrome rejects `browser_specific_settings`
+    // and AMO requires it.
     for (const browser of browsersOf(options.answers)) {
       const manifest = emitManifest(options.answers, options.name, browser);
       const target = browser === options.answers.browser
@@ -271,14 +256,13 @@ const stageStandard = async (
   await writeStarterTests(options);
 };
 
-// Installs the dependencies stage 3 declared; fatal on purpose, since every later step reads `node_modules`.
+// Fatal on purpose: every later step reads `node_modules`.
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
   options.onNotice?.(`installing with ${options.answers.packageManager}`);
 
   await run(options.answers.packageManager, ['install'], options.cwd);
 };
 
-// The fix pass is synchronous; every other stage awaits. `await` on a void return is a no-op.
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {
   scaffold: stageScaffold,
   lint: writeArtifacts,
@@ -291,8 +275,7 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
 };
 
 export const runPipeline = async (options: PipelineOptions): Promise<void> => {
-  // Read before the stages, so this is the directory as the user had it rather than as a scaffolder left it: empty at
-  // birth, which is the answer that hands a new project its target's default.
+  // Read before the stages, so this is the directory as the user had it.
   const artifacts = buildArtifacts(
     options.answers,
     await readProjectShape(options.cwd),
@@ -300,7 +283,7 @@ export const runPipeline = async (options: PipelineOptions): Promise<void> => {
   );
 
   for (const stage of STAGES) {
-    // Skipped with lint: `--skip lint` means somebody else's rules, and fixing against those is an unasked-for edit.
+    // `--skip lint` means somebody else's rules, and fixing against those is an unasked-for edit.
     if (stage === 'fix' && options.skip.includes('lint')) {
       continue;
     }
@@ -311,8 +294,7 @@ export const runPipeline = async (options: PipelineOptions): Promise<void> => {
     }
   }
 
-  // Declining the install leaves the project unfixed, so it says so, but only when fix was skipped outright, since fix
-  // already reports the same thing if it ran.
+  // Declining the install leaves the project unfixed; fix says so itself when it ran.
   const declined = options.skip.includes('install') && options.skip.includes('fix');
 
   if (declined && !options.skip.includes('lint')) {

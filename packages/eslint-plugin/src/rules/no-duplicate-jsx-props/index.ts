@@ -2,11 +2,7 @@ import { createRule } from '../../types.ts';
 
 import type { RuleNode } from '../../utils/ruleUtils.ts';
 
-/**
- * JSX is not in ESLint's ESTree types, so the listener hands its node over as `any` and the shape has to be named
- * here. Narrow on purpose: the rule reads an attribute's name and its location and nothing else, and a wider
- * declaration would be a second, wronger copy of the parser's own types.
- */
+// JSX is not in ESLint's ESTree types, so the listener's `any` is narrowed to the two fields this rule reads.
 interface Position {
   line: number;
   column: number;
@@ -48,11 +44,8 @@ const isOpeningElement = (node: TypedNode): node is TypedNode & JsxOpeningElemen
   return 'attributes' in node && Array.isArray(node.attributes);
 };
 
-/**
- * An empty list rather than a guard clause in the visitor: a lint run only ever hands the listener a real opening
- * element, so a branch up there is one no test can reach, and this way the declining path is reachable from a direct
- * call and covered honestly.
- */
+// An empty list rather than a visitor guard: a lint run never hands over anything else, so only a direct call reaches
+// it.
 export const attributesOf = (node: TypedNode): (JsxAttribute | JsxSpreadAttribute)[] => {
   return isOpeningElement(node) ? node.attributes : [];
 };
@@ -84,11 +77,7 @@ export const noDuplicateJsxProps = createRule('no-duplicate-jsx-props', {
   },
   create: (context) => {
     return {
-      /**
-       * `RuleNode` rather than the JSX shape above: ESLint does not type this selector, so it falls to
-       * `RuleListener`'s index signature, and the parameter has to be a supertype of every visitor shape in that
-       * union. `RuleNode` is one; the JSX interface is not.
-       */
+      // `RuleNode`, not the JSX shape: an untyped selector's parameter must be a supertype of every visitor shape.
       JSXOpeningElement: (node: RuleNode) => {
         const seen = new Set<string>();
 

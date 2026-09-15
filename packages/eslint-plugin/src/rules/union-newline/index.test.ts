@@ -69,13 +69,11 @@ tsRuleTester.run('union-newline', unionNewline, {
       errors: [{ messageId: 'complexUnionNewline' }],
     },
     {
-      // Splits past the threshold even though every member is a simple literal.
       code: "type Alpha = Record<'a' | 'b' | 'c' | 'd', string>;",
       output: "type Alpha = Record<'a'\n  | 'b'\n  | 'c'\n  | 'd', string>;",
       errors: [{ messageId: 'genericUnionNewline' }],
     },
     {
-      // Partially split still reports: every member must be on its own line.
       code: 'type Alpha = { first: string } | string\n  | number;',
       output: 'type Alpha = { first: string }\n  | string\n  | number;',
       errors: [{ messageId: 'complexUnionNewline' }],
@@ -112,14 +110,12 @@ tsRuleTester.run('union-newline (options)', unionNewline, {
       errors: [{ message: 'Union in generic type argument must split when more than 2 members.' }],
     },
     {
-      // The message carries the configured value, not the default.
       code: "type Alpha = Record<'a' | 'b' | 'c' | 'd' | 'e', string>;",
       output: "type Alpha = Record<'a'\n  | 'b'\n  | 'c'\n  | 'd'\n  | 'e', string>;",
       options: [{ maxGenericMembers: 4 }],
       errors: [{ message: 'Union in generic type argument must split when more than 4 members.' }],
     },
     {
-      // An object member always splits, whatever the threshold is.
       code: 'type Alpha = { first: string } | string;',
       output: 'type Alpha = { first: string }\n  | string;',
       options: [{ maxGenericMembers: 99 }],

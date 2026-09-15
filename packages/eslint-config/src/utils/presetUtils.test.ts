@@ -41,7 +41,6 @@ describe('presetOf', () => {
 });
 
 describe('base: resolver', () => {
-  // `alwaysTryTypes` is the safe half. Reordering `conditionNames` is not a default; see base.ts for the measurement.
   const DEFAULTS = { alwaysTryTypes: true };
 
   const resolverSettingsOf = (layer: ReturnType<typeof base>) => {
@@ -54,7 +53,6 @@ describe('base: resolver', () => {
     const settings = resolverSettingsOf(base());
 
     expect(settings?.['import-x/resolver']).toEqual({ typescript: DEFAULTS });
-    // The whole point of spreading the upstream config: these three come with it.
     expect(settings).toHaveProperty('import-x/parsers');
     expect(settings).toHaveProperty('import-x/extensions');
     expect(settings).toHaveProperty('import-x/external-module-folders');
@@ -72,10 +70,7 @@ describe('base: resolver', () => {
     expect(settings).toHaveProperty('import-x/parsers');
   });
 
-  /**
-   * Opt-in, never a default: `import` ahead of `types` resolves a wildcard `exports` subpath but makes `react-native`
-   * resolve to its Flow `index.js`, which import-x cannot parse. Measured in base.ts.
-   */
+  // Opt-in, never a default; see base.ts for the measurement.
   it('passes through the conditions a project asks for', () => {
     const conditionNames = ['import', 'types'];
     const settings = resolverSettingsOf(base({ resolver: { conditionNames } }));

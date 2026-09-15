@@ -1,5 +1,4 @@
-// Appends coverage/ and *.tsbuildinfo (lintel's own output) rather than writing the file, since the scaffolder's
-// list is the one that knows about .next/, .angular/ and .svelte-kit/.
+// Appended rather than written: the scaffolder's list knows about `.next/` and `.svelte-kit/`.
 
 const LINTEL_IGNORED = ['coverage/', '*.tsbuildinfo'];
 
@@ -7,8 +6,7 @@ const HEADING = '# lintel';
 
 export const mergeGitignore = (existing: string | null): string => {
   const current = existing ?? '';
-  // Split on either ending: splitting on `\n` alone leaves a trailing `\r` on a Windows checkout, so an entry never
-  // matches and gets appended again.
+  // Either line ending, or a Windows checkout's trailing `\r` gets the entry appended again.
   const lines = current.split(/\r?\n/);
 
   const missing = LINTEL_IGNORED.filter((entry) => {

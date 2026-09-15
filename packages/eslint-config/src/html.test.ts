@@ -23,8 +23,7 @@ describe('html', () => {
     expect(ruleIds.filter(Boolean)).toEqual([]);
   });
 
-  // Without `**\/*.html` in typescript()'s untyped tail, `index.html` throws "you have used a
-  // rule which requires type information" once composed with the type-aware layer.
+  // Without `**/*.html` in typescript()'s untyped tail, `index.html` throws on a type-aware rule.
   it('survives composition with the type-aware layer', async () => {
     await expect(ruleIdsFor([...base(), ...typescript(), ...html()], NO_ALT, 'index.html'))
       .resolves.toContain('@html-eslint/require-img-alt');

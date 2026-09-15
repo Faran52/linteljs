@@ -1,11 +1,7 @@
 import type { AliasMap } from '../../answers/answers';
 import type { ScaffoldSpec } from '../record';
 
-/**
- * `--no-interactive` forces the piped behaviour `create-vite` otherwise skips only under a TTY. `--eslint` is
- * React-only: the default instead writes `.oxlintrc.json`, which stage 2 doesn't know about and which would sit in an
- * ESLint project forever. The `-ts` template unconditionally: this CLI generates TypeScript only.
- */
+// `--no-interactive` forces the piped behaviour; `--eslint` is React-only, since the default writes `.oxlintrc.json`.
 export const viteScaffold = (template: string, eslint = false) => {
   return (name: string): ScaffoldSpec => {
     return {
@@ -23,7 +19,7 @@ export const viteScaffold = (template: string, eslint = false) => {
   };
 };
 
-// Leading tabs to two spaces. SvelteKit indents its templates with tabs; `no-tabs` has no fixer.
+// SvelteKit indents with tabs; `no-tabs` has no fixer.
 export const tabsToSpaces = (source: string): string => {
   return source.replaceAll(/^[ \t]+/gm, (indent) => {
     return indent.replaceAll('\t', '  ');
@@ -32,8 +28,7 @@ export const tabsToSpaces = (source: string): string => {
 
 export const HOOKS_ALIAS: AliasMap = { '@hooks/*': './src/lib/hooks/*' };
 
-// `jsx-a11y` is here because `react()` loads it: accessibility is a property of JSX, so every target composing that
-// layer installs it, not just Next.
+// `jsx-a11y` is here because `react()` loads it, so every target composing that layer installs it.
 export const COMMON_REACT_PLUGINS = [
   '@eslint-react/eslint-plugin',
   'eslint-plugin-jsx-a11y',
@@ -42,8 +37,7 @@ export const COMMON_REACT_PLUGINS = [
 
 const ASSET_REQUIRE = /require\('([^']+\.(?:png|jpe?g|gif|webp|avif|svg))'\)/g;
 
-// A binding name off the asset's filename, forced into a legal identifier: `-` marks a camelCase hump, every other
-// illegal character is dropped (`icon@2x.png`, `logo.dark.png`), and a name still opening with a digit takes a prefix.
+// A legal identifier off the filename: `-` marks a hump, other illegal characters drop, a leading digit takes a prefix.
 const bindingFor = (path: string): string => {
   const base = path.slice(path.lastIndexOf('/') + 1).replace(/\.\w+$/, '');
   const camel = base.replaceAll(/-(\w)/g, (_match, letter: string) => {
@@ -54,15 +48,11 @@ const bindingFor = (path: string): string => {
   return /^\d/.test(name) ? `asset${name}` : name;
 };
 
-/**
- * Rewrites `require('./x.png')` into a real import, one binding per distinct asset: `require` is declared to return
- * `any`, so every asset arrived as one and tripped `no-unsafe-assignment`, where an import instead typechecks against
- * `src/typings/assets.d.ts`. Imports are left unsorted since stage 6's `eslint --fix` reorders them anyway.
- */
+// `require` returns `any`, so every asset tripped `no-unsafe-assignment`; an import typechecks against
+// `src/typings/assets.d.ts`. Left unsorted since the fix pass reorders imports.
 export const esmAssetImports = (source: string): string => {
   const bindings = new Map<string, string>();
-  // How many paths have already claimed a base name; two assets sharing a filename in different directories would
-  // otherwise collide on one `const`, so the second onward is numbered.
+  // Two assets sharing a filename in different directories would collide on one `const`.
   const claimed = new Map<string, number>();
 
   const rewritten = source.replaceAll(ASSET_REQUIRE, (_match, path: string) => {

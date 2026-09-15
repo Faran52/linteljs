@@ -44,7 +44,6 @@ describe('ask', () => {
       name: 'demo-app',
       answers: {
         target: 'svelte',
-        // Svelte hosts neither axis, so both questions are skipped and the browser keeps its default.
         browser: 'chrome',
         testing: 'none',
         packageManager: 'bun',
@@ -57,11 +56,7 @@ describe('ask', () => {
     });
   });
 
-  /**
-   * The extension target is the only one that hosts either axis, so it is the only one asked. `webextension` has no
-   * store slot, so this is name plus nine answers: target, browser, UI framework, testing, manager, libraries, type
-   * safety, agents, plugins.
-   */
+  // The extension target is the only one that hosts either axis; no store slot, so name plus nine answers.
   it('asks the browser and the UI framework for an extension, and records both', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', 'firefox', ['popup', 'background'], 'solid',
@@ -74,7 +69,7 @@ describe('ask', () => {
     expect(result.answers.hostedFramework).toBe('solid');
   });
 
-  // `none` is a real answer, not a skipped question: an extension without a framework is the default shape.
+  // `none` is a real answer, not a skipped question.
   it('records no hosted framework when the answer is none', async () => {
     const { result } = await askWith([
       'demo-app', 'webextension', 'chrome', ['popup', 'background'], 'none',
@@ -85,10 +80,7 @@ describe('ask', () => {
     expect(result.answers.browser).toBe('chrome');
   });
 
-  /**
-   * The surfaces answer is recorded only where it was asked, so the eight non-extension targets keep a config with no
-   * key for it rather than one naming a pair that means nothing to them.
-   */
+  // Recorded only where asked, so the eight other targets keep a config with no key for it.
   it('asks the surfaces for an extension, and records the ones chosen', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', 'firefox', ['devtools-panel'], 'solid',
@@ -131,19 +123,14 @@ describe('ask', () => {
     await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
-  // One real answer, then the script runs out: the input disappearing, not a person cancelling, so this is still
-  // `NOTHING_ANSWERED_MESSAGE`, proven reachable partway through rather than only on the first question.
+  // The input disappearing, not a person cancelling, partway through.
   it('throws once the script runs out, even partway through', async () => {
     const recorded = scripted(['demo-app']);
 
     await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
-  /**
-   * A person cancelling is a different problem from the terminal disappearing, and `unwrap` now tells them apart:
-   * a calm, distinct message, tagged the way this codebase already tags a thrown error worth telling apart
-   * (`'code' in error`), reachable partway through rather than only on the first question.
-   */
+  // Cancelling is tagged by `code`, the way a filesystem error already is, and reachable partway through.
   it('throws a distinct, calm error when a person cancels mid-questionnaire', async () => {
     const recorded = scripted(['demo-app', CANCEL]);
 
@@ -195,11 +182,7 @@ describe('ask', () => {
     });
   });
 
-  /**
-   * The one thing about a question a person reads and nothing else asserts. Every product is spelled the way its own
-   * documentation spells it, and none of these strings is the value written to `lintel.config.json`: the answers
-   * asserted above are `tanstack-query`, `claude-code`, `ponytail`, and they must stay that way.
-   */
+  // What a person reads; none of these strings is the value written to `lintel.config.json`.
   it('offers every option in the product\'s own name and casing', async () => {
     const { recorded } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined,
@@ -243,8 +226,7 @@ describe('ask', () => {
 });
 
 describe('the store question', () => {
-  // A radio over the target's own store and None, not a yes/no: the store is named as an option rather than in the
-  // message, which is what lets a target that comes to offer two name both without the question changing kind.
+  // A radio, so a target that comes to offer two stores names both without the question changing kind.
   it('offers the target store and None, and takes the store', async () => {
     const { result, recorded } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, 'store',
@@ -265,8 +247,7 @@ describe('the store question', () => {
     expect(recorded.labels['State store']).toEqual(['NgRx SignalStore', 'None']);
   });
 
-  // Only one store is installable at a time, so None is a choice among the stores rather than the absence of a yes,
-  // and it is where the cursor starts.
+  // None is a choice among the stores, and where the cursor starts.
   it('takes None as an answer of its own', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, 'none',
@@ -285,7 +266,7 @@ describe('the store question', () => {
     expect(result.answers.store).toBe(false);
   });
 
-  // Svelte's store is the framework's own runes, so there is nothing to choose and no question.
+  // Svelte's store is the framework's own runes.
   it('is not asked on a target without a store slot', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'svelte', undefined, undefined, undefined, undefined, undefined, undefined, undefined,
@@ -298,8 +279,7 @@ describe('the store question', () => {
   });
 });
 
-// The question carries its own rule so a bad name is refused at the prompt, rather than surviving to a scaffolder
-// that fails on it much later with a message about something else.
+// Refused at the prompt rather than by a scaffolder much later with a message about something else.
 describe('the project name question', () => {
   it('refuses a name npm would not accept and passes one it would', async () => {
     const recorded = scripted([
@@ -310,12 +290,10 @@ describe('the project name question', () => {
     const prompter: Prompter = {
       ...recorded.prompter,
       text: (options: Parameters<Prompter['text']>[0]) => {
-        // `undefined` is what clack passes before anything is typed, and an empty name is no more valid than a
-        // malformed one.
+        // `undefined` is what clack passes before anything is typed.
         const validate = options.validate;
 
-        // clack types `validate` as a function or a schema. The question passes a function, and a schema here would
-        // mean the question stopped validating, so failing loudly beats quietly asserting the shape.
+        // clack types `validate` as a function or a schema; a schema here would mean the question stopped validating.
         if (typeof validate !== 'function') {
           throw new TypeError('the project name question must validate with a function');
         }

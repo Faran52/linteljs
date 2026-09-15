@@ -100,7 +100,6 @@ export const importNewlines = createRule('import-newlines', {
         const before = sourceCode.getLastToken(previous);
         const current = sourceCode.getFirstToken(specifier);
 
-        // Both always exist for a parsed specifier: a type requirement, not a real branch.
         if (before && current && current.loc.start.line - before.loc.end.line > 1) {
           return true;
         }

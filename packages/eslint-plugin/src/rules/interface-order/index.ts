@@ -7,10 +7,8 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
-// What a `Program` holds. Wider than `Statement[]`: a directive is its own type.
 type ProgramEntry = Extract<RuleNode, { type: 'Program' }>['body'][number];
 
-// One misplaced declaration: the text to re-insert, and the span to delete.
 interface TypeCut {
   node: ProgramEntry;
   text: string;
@@ -21,7 +19,6 @@ const readText = (entry: { text: string }): string => {
   return entry.text;
 };
 
-// One place for the optional-location fallback, rather than one at every read.
 const startLineOf = (node: { loc?: { start: { line: number } }
   | null
   | undefined; }): number => {
@@ -45,11 +42,7 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
   return false;
 };
 
-/**
- * A 'use client'/'use strict' prologue counts only while nothing precedes it, which is what Next.js reads to pick a
- * Client Component. Every ExpressionStatement carries a directive key, undefined for non-directives, so narrowing
- * needs `object`, not the declared type.
- */
+// Every ExpressionStatement carries a `directive` key, undefined off the prologue, so narrowing needs `object`.
 const directiveOf = (node: object): string | undefined => {
   return 'directive' in node && typeof node.directive === 'string' ? node.directive : undefined;
 };
@@ -58,28 +51,13 @@ const isDirective = (node: ProgramEntry): boolean => {
   return node.type === 'ExpressionStatement' && directiveOf(node) !== undefined;
 };
 
-// The last index satisfying a predicate. `Array.prototype.findLastIndex` is Node 18.
-const lastIndexWhere = <T>(items: T[], matches: (item: T) => boolean): number => {
-  for (let index = items.length - 1; index >= 0; index -= 1) {
-    const item = items[index];
-
-    if (item !== undefined && matches(item)) {
-      return index;
-    }
-  }
-
-  return -1;
-};
-
-// The header a moved block must land below: the directive prologue, then any imports.
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
-  return lastIndexWhere(body, (statement) => {
+  return body.findLastIndex((statement) => {
     return statement.type === 'ImportDeclaration' || isDirective(statement);
   });
 };
 
 const findFirstRuntimeIndex = (body: ProgramEntry[], afterIndex: number): number => {
-  // -1 for no match is what the caller checks.
   return body.findIndex((entry, index) => {
     return index > afterIndex && !isTypeDeclaration(entry);
   });
@@ -106,11 +84,8 @@ const trailingNoteOf = (sourceCode: SourceCode, node: ProgramEntry): [number, nu
   return before?.loc.end.line === startLineOf(note) ? note.range : undefined;
 };
 
-/**
- * Deletion starts after whatever precedes it, so the blank line goes too but a trailing comment above stays put.
- * `getCommentsBefore` starts at that statement's last token, so a trailing `// why` arrives alongside the
- * declaration's own heading comments; the line split sorts which travel.
- */
+// Cut from the end of the previous entry, so the blank line goes and a trailing note above stays; `getCommentsBefore`
+// hands back that note beside the declaration's own heading comments, and the line split sorts which travel.
 const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: ProgramEntry): TypeCut => {
   /* v8 ignore next 1 -- every parsed node carries a location */
   const previousEndLine = previous.loc?.end.line ?? -1;

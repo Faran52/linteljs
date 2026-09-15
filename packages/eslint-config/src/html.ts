@@ -5,8 +5,7 @@ import { presetOf } from './utils/presetUtils';
 
 import type { Layer } from './types';
 
-// Markup, offered to every target but Angular, whose template processor covers it. A layer
-// rather than a rule block because `.html` cannot go through the TypeScript parser.
+// Every target but Angular, whose template processor covers markup.
 export const html = (): Layer => {
   return [
     {

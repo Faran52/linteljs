@@ -3,11 +3,8 @@ import { projectSpelling } from '../project-shape/projectShape';
 
 import type { Answers } from '../../model/answers/answers';
 
-/**
- * Where a project keeps the stylesheet Tailwind is imported into, discovered rather than asked, the way `setupTests`
- * already is: writing the target's default beside a project's own left a second entry nothing imported. Every target's
- * entry plus the spellings the scaffolders use.
- */
+// Discovered rather than asked: writing the target's default beside a project's own left a second entry nothing
+// imported.
 export const STYLE_ENTRY_CANDIDATES = [
   'src/styles/tailwind.css',
   'src/styles/global.css',
@@ -23,7 +20,7 @@ export const STYLE_ENTRY_CANDIDATES = [
   'src/style.css',
 ];
 
-// The target's own entry where the project has it, the project's own otherwise, and the target's default at birth.
+// The target's own where present, the project's otherwise, and the target's default at birth.
 export const styleEntryPath = (answers: Answers, present: readonly string[]): string | undefined => {
   return projectSpelling(targetFor(answers).styleEntry, present);
 };

@@ -10,7 +10,6 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
     'useCallback(() => {}, [alpha, bravo, charlie]);',
     'useMemo(() => value, [alpha, bravo]);',
 
-    // Natural ordering, so item2 sorts before item10 rather than after it.
     'useEffect(() => {}, [item2, item10]);',
 
     {
@@ -97,7 +96,6 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
       errors: [{ messageId: 'sort' }],
     },
     {
-      // Case is folded by localeCompare, so Bravo sorts after alpha.
       code: 'useEffect(() => {}, [Bravo, alpha]);',
       output: 'useEffect(() => {}, [alpha, Bravo]);',
       errors: [{ messageId: 'sort' }],

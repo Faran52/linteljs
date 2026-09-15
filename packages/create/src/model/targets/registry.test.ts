@@ -29,18 +29,13 @@ import type {
 } from '../answers/answers';
 import type { TargetRecord } from './record';
 
-/**
- * Every reachable combination of those answers, labelled so a failure names the combination rather than only the
- * target. A record that hosts no axis contributes its single default case. Both tests below read this: an asset path
- * and a layer's plugin list are moved by the same answers.
- */
+// Every reachable combination, labelled so a failure names the combination rather than only the target.
 interface Axes {
   browsers: (Browser | undefined)[];
   hosted: (HostedFramework | undefined)[];
   surfaces: (Surface | undefined)[];
 }
 
-// Every record is built from answers now, so a test naming only an id still has to hand over a whole set.
 const recordFor = (target: TargetId): TargetRecord => {
   return targetFor({
     ...DEFAULT_ANSWERS,
@@ -48,8 +43,7 @@ const recordFor = (target: TargetId): TargetRecord => {
   });
 };
 
-// Every `assets/` path a record names; `pipeline.ts` reads each straight off the record with `readFile`, so a typo here
-// becomes an ENOENT partway through a generate rather than a failing test.
+// `pipeline.ts` reads each straight off the record with `readFile`, so a typo is an ENOENT mid-generate.
 const assetPathsOf = (target: TargetRecord): string[] => {
   return [
     ...(target.starterFiles ?? []).map((file) => {
@@ -62,22 +56,13 @@ const assetPathsOf = (target: TargetRecord): string[] => {
     ...target.stateRules.map((rule) => {
       return `claude-rules/${rule}`;
     }),
-    // Not on the record: `ruleArtifacts` derives both from the id, so a target added without them emits a path to a
-    // file that isn't there.
+    // `ruleArtifacts` derives both from the id, so a target added without them emits a path to nothing.
     `claude-rules/repo-structure.${target.id}.md`,
     `claude-rules/testing.${target.id}.md`,
   ];
 };
 
-/**
- * One case per reachable combination of the answers that move a record, labelled so a failure names the combination
- * rather than only the target. A record that hosts neither axis contributes its single default case. Both tests below
- * read this: an asset path and a layer's plugin list are moved by the same two answers.
- */
-/**
- * One case, from the answers that move a record. A surface arrives singly rather than as a set: each contributes
- * its own files and manifest entries independently, so a combination adds no path one of them does not.
- */
+// A surface arrives singly: each contributes its own files, so a combination adds no path one of them does not.
 const caseFor = (
   base: Answers,
   browser: Browser | undefined,
@@ -95,8 +80,7 @@ const caseFor = (
   return [label, answers];
 };
 
-// `undefined` is a case of its own everywhere: not answering is what most projects do, and it is the answer an older
-// config gives. A target with no slot for an axis contributes only that.
+// `undefined` is a case of its own: not answering is what most projects do.
 const axesOf = (base: Answers): Axes => {
   const { hostsBrowser, hostsFramework } = targetFor(base);
 
@@ -121,7 +105,6 @@ const axisCases = (): [string, Answers][] => {
       surfaces,
     } = axesOf(base);
 
-    // Plain loops rather than a triple `flatMap`, which nests four functions deep and reads as one expression.
     for (const browser of browsers) {
       for (const hostedFramework of hosted) {
         for (const surface of surfaces) {
@@ -149,17 +132,11 @@ describe('TARGETS', () => {
     expect(Object.keys(TARGETS).sort(byName)).toEqual([...TARGET_IDS].sort(byName));
   });
 
-  /**
-   * Every answer set that can change an asset path, not just the defaults. Both axes reach into `assets/`: the browser
-   * picks the background starter and the manifest, and a hosted framework adds its own state rule. Under the defaults
-   * alone this test never opened a Firefox or an island file, and an end-to-end run is what caught the first path that
-   * did not resolve.
-   */
+  // Both axes reach into `assets/`; under the defaults alone this never opened a Firefox or an island file.
   it.each(axisCases())('names only shipped assets on %s', async (_label, answers) => {
     const paths = assetPathsOf(targetFor(answers));
 
-    // Resolved together and asserted on the whole list, so a run names every missing file at once rather than only the
-    // first.
+    // The whole list, so a run names every missing file at once.
     const missing = await Promise.all(paths.map(async (path) => {
       try {
         await access(join(ASSETS_ROOT, path), constants.R_OK);
@@ -186,20 +163,15 @@ describe('targetFor', () => {
 });
 
 /**
- * A layer only works if the project installed what it imports. React Native listed its own copy of the react set rather
- * than the shared one, and adding `jsx-a11y` to the shared list therefore missed it: the generated project died on
- * `ERR_MODULE_NOT_FOUND` at the first `eslint .`, which only the end-to-end suite saw. This asserts the composition
- * instead of trusting each record to remember.
- *
- * One entry per framework layer, holding exactly what that layer's source imports, so the table is checkable by reading
- * the top of the layer file. It is read over every axis combination rather than the defaults, because a hosted
- * framework composes the same layer and owes it the same installs.
+ * A layer only works if the project installed what it imports: React Native once listed its own copy of the react
+ * set, and adding `jsx-a11y` to the shared list missed it (`ERR_MODULE_NOT_FOUND` at the first `eslint .`). One
+ * entry per layer, holding what that layer's source imports.
  */
 const REACT_PLUGINS = ['@eslint-react/eslint-plugin', 'eslint-plugin-react-hooks', 'eslint-plugin-jsx-a11y'];
 
 const LAYER_PLUGINS: Record<Framework, string[]> = {
   react: REACT_PLUGINS,
-  // `defineConfig` composes `react()` ahead of `next()`, so a Next project owes both sets.
+  // `defineConfig` composes `react()` ahead of `next()`.
   next: [...REACT_PLUGINS, '@next/eslint-plugin-next'],
   solid: ['eslint-plugin-solid', 'eslint-plugin-jsx-a11y'],
   vue: ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],

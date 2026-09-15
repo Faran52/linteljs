@@ -11,13 +11,11 @@ interface EslintFixResult {
   output?: string;
 }
 
-// What the user has to run themselves when the fix pass could not.
 export const nextStep = (answers: Answers): string => {
   return `next: ${answers.packageManager} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
 };
 
-// With `--fix`, eslint reports a fixed file's rewritten source under `output`, so counting that field needs no separate
-// dry run.
+// `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed.
 const parseFixReport = (stdout: string): number => {
   try {
     const parsed: unknown = JSON.parse(stdout);
@@ -31,12 +29,12 @@ const parseFixReport = (stdout: string): number => {
     }).length;
   }
   catch {
-    // A formatter that emitted nothing parseable is not worth failing a generate over.
+    // Unparseable formatter output is not worth failing a generate over.
     return 0;
   }
 };
 
-// Silent about its count, unlike the eslint pass: stylelint's JSON report names files rather than which it rewrote.
+// Silent about its count: stylelint's JSON report names files, not which it rewrote.
 const fixStyles = (cwd: string, answers: Answers, report: (message: string) => void): void => {
   const binary = join(cwd, 'node_modules', '.bin', 'stylelint');
 
@@ -54,8 +52,7 @@ const fixStyles = (cwd: string, answers: Answers, report: (message: string) => v
   }
 };
 
-// Never fatal: `--fix` exiting 1 on remaining findings is normal, and a missing eslint reports a next step instead of
-// failing the generate.
+// Never fatal: exit 1 on remaining findings is normal, and a missing eslint reports a next step instead.
 export const runFixPass = (
   cwd: string,
   answers: Answers,
@@ -76,7 +73,7 @@ export const runFixPass = (
     encoding: 'utf8',
   });
 
-  // Exit 2 is a configuration failure, and the config is ours. Anything else means eslint ran.
+  // Exit 2 is a configuration failure, and the config is ours.
   if (result.error !== undefined || result.status === 2) {
     report('eslint --fix could not run; run it yourself once dependencies are installed');
     return;

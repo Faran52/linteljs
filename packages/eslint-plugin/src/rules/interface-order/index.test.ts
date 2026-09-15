@@ -113,19 +113,16 @@ const value = thing;`,
       errors: [{ messageId: 'moveAfterImports' }],
     },
     {
-      // Two strays gather into one block, in source order.
       code: 'const value = 1;\n\ntype Alpha = string;\n\ntype Bravo = number;',
       output: 'type Alpha = string;\n\ntype Bravo = number;\n\nconst value = 1;',
       errors: [{ messageId: 'moveAfterImports' }],
     },
     {
-      // A type already in the right place anchors the insertion point.
       code: "import { thing } from 'mod';\n\ntype Alpha = string;\n\nconst value = thing;\n\ntype Bravo = number;",
       output: "import { thing } from 'mod';\n\ntype Alpha = string;\n\ntype Bravo = number;\n\nconst value = thing;",
       errors: [{ messageId: 'moveAfterImports' }],
     },
     {
-      // The comment belongs to the declaration and travels with it.
       code: 'const value = 1;\n\n// what this models\ntype Alpha = string;',
       output: '// what this models\ntype Alpha = string;\n\nconst value = 1;',
       errors: [{ messageId: 'moveAfterImports' }],
