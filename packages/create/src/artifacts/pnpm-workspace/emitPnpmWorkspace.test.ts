@@ -11,7 +11,11 @@ import {
   type TargetId,
 } from '../../model/answers/answers';
 
-import { allowBuildsBlock, emitPnpmWorkspace } from './emitPnpmWorkspace';
+import {
+  allowBuildsBlock,
+  emitPnpmWorkspace,
+  peerRulesBlock,
+} from './emitPnpmWorkspace';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -27,7 +31,7 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 
 describe('emitPnpmWorkspace', () => {
   it('allows the two builds every target needs, sorted', () => {
-    expect(allowBuildsBlock(answersFor({ target: 'vue' }))).toBe(
+    expect(allowBuildsBlock(answersFor({ target: 'svelte' }))).toBe(
       "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n",
     );
   });
@@ -101,5 +105,12 @@ describe('peerDependencyRules', () => {
 
     expect(output).not.toContain('eslint-plugin-jsx-a11y>');
     expect(output).not.toContain('eslint-plugin-solid>');
+  });
+});
+
+describe('peer allowances a target carries', () => {
+  it('lets Angular install vitest 5 under a build that peers on 4', () => {
+    expect(peerRulesBlock(answersFor({ target: 'angular' }))).toContain("    '@angular/build>vitest': '5'\n");
+    expect(peerRulesBlock(answersFor({ target: 'react' }))).not.toContain('@angular/build');
   });
 });

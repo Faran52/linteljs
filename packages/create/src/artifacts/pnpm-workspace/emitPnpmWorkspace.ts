@@ -1,3 +1,4 @@
+import { targetFor } from '../../model/targets';
 import { allowedBuildNames, buildDevDependencies } from '../package-json/emitPackageJson';
 import { ESLINT_RANGE } from '../package-json/versions';
 
@@ -49,11 +50,14 @@ export const peerRangeAllowances = (answers: Answers): string[] => {
 export const peerRulesBlock = (answers: Answers): string => {
   const allowed = peerRangeAllowances(answers);
   const major = eslintMajor();
-  const entries = allowed
-    .map((name) => {
+  const entries = [
+    ...allowed.map((name) => {
       return `    '${name}>eslint': '${major}'`;
-    })
-    .join('\n');
+    }),
+    ...Object.entries(targetFor(answers).peerAllowances ?? {}).map(([pair, version]) => {
+      return `    '${pair}': '${version}'`;
+    }),
+  ].join('\n');
 
   return `\npeerDependencyRules:\n  allowedVersions:\n${entries}\n`;
 };

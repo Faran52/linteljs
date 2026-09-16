@@ -23,6 +23,13 @@ describe('webextension end-to-end', () => {
   }))
   ('generates, installs and checks $label', runE2eCase, 900_000);
 
+  // The React host composes the compiler wiring, so every package `vite.config.ts` imports has to be installed.
+  it.each(withDefaultPm('webextension hosting react', {
+    target: 'webextension',
+    hostedFramework: 'react',
+  }))
+  ('generates, installs and checks $label', runE2eCase, 900_000);
+
   it.each(withDefaultPm('webextension on firefox hosting solid', {
     target: 'webextension',
     browser: 'firefox',

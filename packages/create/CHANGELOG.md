@@ -34,6 +34,15 @@ when a version's change lives in a sibling it is described there instead:
   `experiments.reactCompiler: true`.
 - A missing pnpm or Yarn is installed through corepack, which Node 26 no longer bundles. A missing Bun
   is reported with where to get it, since corepack does not know it.
+- Found by driving every target for real: Vue with TanStack Query could not install on pnpm
+  (`vue-demi`'s build script was not approved); an extension or Astro site hosting React imported
+  `@rolldown/plugin-babel` without installing it; Next on npm could not run `check` because
+  `legacy-peer-deps` installs no peers and `vite` is vitest's; React Native's `metro.config.js` failed
+  its own lint and its color-scheme starter had an empty arrow; Angular's build peered on vitest 4; the
+  extension's manifest import lacked its `with { type: 'json' }`; `vite.config.ts` and
+  `vitest.config.ts` were emitted in a shape the fix pass then rewrote. All fixed, and an answer a
+  target never asks for (`--router` on Vue, `--store` on Svelte, `react-hook-form` off React) is
+  refused by the config parser with the target named.
 - `stylelint-order` is an explicit dev dependency: `stylelint-config-recess-order` peers on it and pnpm
   does not install it alone. npm projects get `.npmrc`, Yarn projects `.yarnrc.yml`, and Bun projects
   `trustedDependencies` in package.json, which is the list bun reads for install scripts. `npm create` gets the `--` its scaffolders need to see their flags.

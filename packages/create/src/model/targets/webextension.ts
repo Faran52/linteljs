@@ -56,7 +56,7 @@ const BROWSERS: Record<Browser, BrowserParts> = {
 const CRX: PluginSpec = {
   imports: [
     "import { crx } from '@crxjs/vite-plugin';",
-    "import manifest from './manifest.json';",
+    "import manifest from './manifest.json' with { type: 'json' };",
   ],
   calls: ['crx({ manifest })'],
 };

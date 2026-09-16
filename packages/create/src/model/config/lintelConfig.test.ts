@@ -46,6 +46,9 @@ interface ConfigOverrides {
   target?: string | undefined;
   testing?: string;
   packageManager?: string;
+  browser?: string;
+  hostedFramework?: string;
+  surfaces?: string[];
   libraries?: string | string[];
   router?: string;
   store?: boolean | string;
@@ -627,5 +630,51 @@ describe('the router and the form libraries', () => {
     }).toThrow(/libraries must contain at most one of: tanstack-form, react-hook-form/);
     expect(parseLintelConfig(config({ libraries: ['zod', 'react-hook-form'] })).libraries)
       .toEqual(['zod', 'react-hook-form']);
+  });
+});
+
+describe('answers a target never asks for', () => {
+  it.each([
+    ['a router on Vue', {
+      target: 'vue',
+      router: 'react-router',
+    }, 'router is not an answer for vue'],
+    ['a hosted framework on React', {
+      target: 'react',
+      hostedFramework: 'vue',
+    }, 'hostedFramework is not an answer for react'],
+    ['a browser on Svelte', {
+      target: 'svelte',
+      browser: 'firefox',
+    }, 'browser is not an answer for svelte'],
+    ['surfaces on Next', {
+      target: 'next',
+      surfaces: ['popup'],
+    }, 'surfaces is not an answer for next'],
+    ['a store on Svelte', {
+      target: 'svelte',
+      store: true,
+    }, 'store is not an answer for svelte'],
+    ['react-hook-form on Vue', {
+      target: 'vue',
+      libraries: ['react-hook-form'],
+    }, 'react-hook-form is not an answer for vue'],
+  ])('refuses %s', (_case, overrides, message) => {
+    expect(() => {
+      return parseLintelConfig(config(overrides));
+    }).toThrow(message);
+  });
+
+  it('accepts the same answers where the target asks for them', () => {
+    expect(parseLintelConfig(config({
+      target: 'astro',
+      hostedFramework: 'react',
+      libraries: ['react-hook-form'],
+    })).libraries).toEqual(['react-hook-form']);
+    expect(parseLintelConfig(config({
+      target: 'react',
+      router: 'tanstack-router',
+      store: true,
+    })).router).toBe('tanstack-router');
   });
 });

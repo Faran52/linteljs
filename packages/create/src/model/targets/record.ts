@@ -194,6 +194,8 @@ export interface TargetRecord {
   testDevDependencies?: string[];
   // Beyond the shared two; pnpm aborts with `ERR_PNPM_IGNORED_BUILDS` when one is missing.
   allowBuilds: string[];
+  // `dependent>peer` pairs pnpm may satisfy with the version named, beyond the eslint ones every project carries.
+  peerAllowances?: Record<string, string>;
   // Relative to `assets/claude-rules/`.
   stateRules: string[];
   // Overridden only where a test environment is needed.

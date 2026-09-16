@@ -393,11 +393,10 @@ describe('coverage surface', () => {
   });
 
   it('keeps the thresholds at 100 for every target', async () => {
-    const thresholds = 'thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 }';
+    const thresholds = /thresholds: \{\s*lines: 100,\s*branches: 100,\s*functions: 100,\s*statements: 100,\s*\}/;
 
     for (const target of TARGET_IDS) {
-      expect([target, await vitestConfig({ target })])
-        .toEqual([target, expect.stringContaining(thresholds)]);
+      expect([target, thresholds.test(await vitestConfig({ target }))]).toEqual([target, true]);
     }
   });
 

@@ -284,7 +284,7 @@ const STAGE_LABELS: Record<Stage, string> = {
 const summary = (name: string, options: CliOptions, answers: Answers): string => {
   const { packageManager } = answers;
   const run = RUN_PREFIX[packageManager];
-  const enter = options.skip.includes('scaffold') ? [] : [`  cd ${name}`];
+  const enter = options.skip.includes('scaffold') || name === '' ? [] : [`  cd ${name}`];
   const install = options.skip.includes('install') ? [`  ${packageManager} install`, `  ${run} lint:fix`] : [];
 
   return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');

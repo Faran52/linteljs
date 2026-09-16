@@ -65,10 +65,12 @@ const SHARED_DEV_DEPENDENCIES = [
 ];
 
 // Omitting @vitest/eslint-plugin fails the first `eslint .`, not the install.
+// `vite` is vitest's required peer; npm under `legacy-peer-deps` installs no peers, so it is named outright.
 const RUNNER_DEV_DEPENDENCIES = [
   '@vitest/coverage-v8',
   '@vitest/eslint-plugin',
   'happy-dom',
+  'vite',
   'vitest',
 ];
 

@@ -37,7 +37,7 @@ describe('emitViteConfig', () => {
   it('imports and calls the framework plugin', () => {
     const react = configFor({ target: 'react' }) ?? '';
 
-    expect(react).toContain("import react from '@vitejs/plugin-react';");
+    expect(react).toContain("import react, { reactCompilerPreset } from '@vitejs/plugin-react';");
     expect(react).toContain('  ? [babel({ presets: [reactCompilerPreset()] }), react()]');
   });
 
@@ -52,10 +52,9 @@ describe('emitViteConfig', () => {
     }) ?? '';
 
     expect(react).toBe(
-      "import { defineConfig } from 'vite';\n"
-      + "import react from '@vitejs/plugin-react';\n"
-      + "import { reactCompilerPreset } from '@vitejs/plugin-react';\n"
-      + "import babel from '@rolldown/plugin-babel';\n"
+      "import babel from '@rolldown/plugin-babel';\n"
+      + "import react, { reactCompilerPreset } from '@vitejs/plugin-react';\n"
+      + "import { defineConfig } from 'vite';\n"
       + '\n'
       + 'export default defineConfig({\n'
       + '  plugins: [\n'
@@ -88,7 +87,7 @@ describe('emitViteConfig', () => {
     const extension = configFor({ target: 'webextension' }) ?? '';
 
     expect(extension).toContain("import { crx } from '@crxjs/vite-plugin';");
-    expect(extension).toContain("import manifest from './manifest.json';");
+    expect(extension).toContain("\n\nimport manifest from './manifest.json' with { type: 'json' };");
     expect(extension).toContain('    crx({ manifest }),');
   });
 
