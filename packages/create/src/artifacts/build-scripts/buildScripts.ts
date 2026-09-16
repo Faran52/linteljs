@@ -74,7 +74,9 @@ export const buildScripts = (answers: Answers): Record<string, string> & { check
         return `${run} ${gate}`;
       })
       .join(' && '),
-    // husky installs the hooks on `install`. A target's own `prepare` runs first, not replaced.
-    prepare: target.prepare === undefined ? 'husky' : `${target.prepare} && husky`,
+    // husky installs the hooks on `install`; a target's own step runs first. Yarn 2+ never runs `prepare`, only
+    // `postinstall`, so the same line moves there: measured on SvelteKit, whose `svelte-kit sync` otherwise never ran.
+    [answers.packageManager === 'yarn' ? 'postinstall' : 'prepare']:
+      target.prepare === undefined ? 'husky' : `${target.prepare} && husky`,
   };
 };

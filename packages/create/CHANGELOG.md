@@ -43,6 +43,9 @@ when a version's change lives in a sibling it is described there instead:
   `vitest.config.ts` were emitted in a shape the fix pass then rewrote. All fixed, and an answer a
   target never asks for (`--router` on Vue, `--store` on Svelte, `react-hook-form` off React) is
   refused by the config parser with the target named.
+- On Yarn the husky install and a target's own install step (`svelte-kit sync`) run from `postinstall`,
+  since Yarn 2+ never runs `prepare`: measured on SvelteKit, whose lint had 31 unresolved imports because
+  `.svelte-kit/tsconfig.json` was never written.
 - `stylelint-order` is an explicit dev dependency: `stylelint-config-recess-order` peers on it and pnpm
   does not install it alone. npm projects get `.npmrc`, Yarn projects `.yarnrc.yml`, and Bun projects
   `trustedDependencies` in package.json, which is the list bun reads for install scripts. `npm create` gets the `--` its scaffolders need to see their flags.

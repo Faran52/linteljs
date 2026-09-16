@@ -290,6 +290,16 @@ describe('patchPackageJson', () => {
   });
 
   // Replacing SvelteKit's own prepare breaks typecheck.
+  it('wires husky and the target step through postinstall on yarn, which runs no prepare', () => {
+    const { scripts } = patchPackageJson({}, answersFor({
+      target: 'svelte',
+      packageManager: 'yarn',
+    }));
+
+    expect(scripts?.['postinstall']).toBe('svelte-kit sync && husky');
+    expect(scripts).not.toHaveProperty('prepare');
+  });
+
   it("keeps a target's own prepare ahead of husky rather than replacing it", () => {
     expect(patchPackageJson({}, answersFor({ target: 'svelte' })).scripts?.['prepare'])
       .toBe('svelte-kit sync && husky');
