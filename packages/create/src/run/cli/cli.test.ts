@@ -287,7 +287,7 @@ describe('main: create', () => {
     expect(printed).toContain('wrote eslint.config.js');
     expect(printed).toContain(`wrote ${RULE}`);
     expect(printed).toContain(`wrote ${CONFIG_PATH}`);
-    expect(printed).toContain('next: pnpm install && pnpm lint:fix');
+    expect(printed).toContain('Done. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
     expect(await exists(join(project, 'eslint.config.js'))).toBe(true);
     expect(await configAt()).toEqual({
       $schema: CONFIG_SCHEMA_URL,
@@ -414,6 +414,7 @@ describe('main: patching a project that already exists', () => {
       ['--skip-scaffold', '--no-install'],
       scripted([
         'svelte',
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -965,13 +966,20 @@ describe('main: answers given as flags', () => {
 });
 
 describe('main: what a run reports', () => {
+  it('prints the version and nothing else', async () => {
+    const { code, printed } = await runMain(['--version']);
+
+    expect(code).toBe(0);
+    expect(printed.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
   it('numbers each stage as it starts and closes with the next command', async () => {
     const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
 
-    expect(printed).toContain('[2/6] lint');
-    expect(printed).toContain('[4/6] standard');
+    expect(printed).toContain('[2/6] lint: eslint and stylelint config');
+    expect(printed).toContain('[4/6] standard:');
     expect(printed).not.toContain('[1/6] scaffold');
-    expect(printed).toContain('Done. Next:\n  npm run check');
+    expect(printed).toContain('Done. Next:\n  npm install\n  npm run lint:fix\n  npm run check');
     expect(printed).not.toContain('  cd ');
   });
 });

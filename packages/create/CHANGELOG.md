@@ -22,8 +22,11 @@ when a version's change lives in a sibling it is described there instead:
   `metro.config.js`, `nativewind-env.d.ts`, and NativeWind's imports in `src/global.css`.
 - Every answer is a flag: `--target`, `--pm`, `--testing`, `--type-safety`, `--libraries`, `--router`,
   `--store`, `--agents`, `--plugins`, `--browser`, `--hosted`, `--surfaces`. An answer flag makes the run
-  non-interactive; a wrong value gets the config parser's message. A run numbers each stage as it starts
-  and ends with the next command.
+  non-interactive; a wrong value gets the config parser's message. A run opens with the version, names
+  each stage as it starts with what it does, indents what it wrote under it, and ends with the next
+  commands, including the install when it was skipped. `--version` prints the version; `sync` opens
+  with how many files would change. The interactive AI-agents default is Claude Code, as `--yes` and the
+  README already said.
 - Tailwind is a default library. `eslint-plugin-react-compiler` is gone: `eslint-plugin-react-hooks` 7
   ships the compiler rules, so the extra plugin doubled them and pinned an rc. The React (Vite) build
   uses `@vitejs/plugin-react` 6 with `reactCompilerPreset` through `@rolldown/plugin-babel`; the SWC

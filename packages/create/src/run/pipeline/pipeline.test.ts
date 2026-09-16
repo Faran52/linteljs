@@ -1177,8 +1177,12 @@ describe('the eslint --fix pass', () => {
     expect(await noticesFrom(['scaffold', 'install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
   });
 
-  it('installs with the package manager from the answers, not a hardcoded pnpm', async () => {
-    // The notice, since a real install takes minutes and reaches the network.
+  // The CLI's closing summary names the install; a second notice here said the same thing twice.
+  it('says nothing more when the fix pass was skipped outright', async () => {
+    expect(await noticesFrom(['scaffold', 'install', 'fix'])).toEqual([]);
+  });
+
+  it('reports nothing about the package manager when install and fix were both skipped', async () => {
     const notices: string[] = [];
 
     await runPipeline({
@@ -1194,7 +1198,7 @@ describe('the eslint --fix pass', () => {
       },
     });
 
-    expect(notices.filter(notAboutTheRepository)).toEqual(['next: bun install && bun run lint:fix']);
+    expect(notices.filter(notAboutTheRepository)).toEqual([]);
   });
 
   it('does not run when the lint stage was skipped', async () => {

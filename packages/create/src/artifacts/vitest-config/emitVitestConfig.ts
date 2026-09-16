@@ -1,7 +1,7 @@
 import { targetFor } from '../../model/targets';
 
 import type { Answers } from '../../model/answers/answers';
-import type { TestPlatform } from '../../model/targets/record';
+import type { PluginSpec, TestPlatform } from '../../model/targets/record';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
 // on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.
@@ -112,6 +112,44 @@ ${coverageBlock(include, exclude, '    ')}
 `;
 };
 
+const mergedConfig = (block: string, testConditions: string[] | undefined): string => {
+  const conditions = testConditions === undefined
+    ? ''
+    : `  resolve: { conditions: [${quoted(testConditions)}] },\n`;
+
+  return `import {
+  defineConfig,
+  mergeConfig,
+} from 'vitest/config';
+
+import viteConfig from './vite.config.js';
+
+export default mergeConfig(
+  viteConfig,
+  defineConfig({
+${conditions}${block}
+  }),
+);
+`;
+};
+
+// A standalone config inherits no resolution; measured on a real Next project, 27 of 36 suites failed on the
+// import line without `tsconfigPaths`.
+const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined): string => {
+  const pluginImports = vitestPlugin === undefined ? '' : `${vitestPlugin.imports.join('\n')}\n`;
+  const plugins = vitestPlugin === undefined
+    ? ''
+    : `  plugins: [${vitestPlugin.calls.join(', ')}],\n`;
+
+  return `${pluginImports}import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+${plugins}  resolve: { tsconfigPaths: true },
+${block}
+});
+`;
+};
+
 export const emitVitestConfig = (answers: Answers, setup: string): string | null => {
   if (answers.testing !== 'vitest') {
     return null;
@@ -131,52 +169,20 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
   }
 
   const block = testBlock(include, exclude, setup);
-  const conditions = target.testConditions === undefined
-    ? ''
-    : `  resolve: { conditions: [${quoted(target.testConditions)}] },\n`;
 
   if (target.vite) {
-    return `import {
-  defineConfig,
-  mergeConfig,
-} from 'vitest/config';
-
-import viteConfig from './vite.config.js';
-
-export default mergeConfig(
-  viteConfig,
-  defineConfig({
-${conditions}${block}
-  }),
-);
-`;
+    return mergedConfig(block, target.testConditions);
   }
 
   // Astro's `getViteConfig` is the only way to reach its Vite config when there is no `vite.config.ts` to merge.
-  const { vitestFactory } = target;
+  if (target.vitestFactory !== undefined) {
+    return `${target.vitestFactory.imports.join('\n')}
 
-  if (vitestFactory !== undefined) {
-    return `${vitestFactory.imports.join('\n')}
-
-export default ${vitestFactory.call}({
+export default ${target.vitestFactory.call}({
 ${block}
 });
 `;
   }
 
-  const { vitestPlugin } = target;
-  const pluginImports = vitestPlugin === undefined ? '' : `${vitestPlugin.imports.join('\n')}\n`;
-  const plugins = vitestPlugin === undefined
-    ? ''
-    : `  plugins: [${vitestPlugin.calls.join(', ')}],\n`;
-
-  // A standalone config inherits no resolution; measured on a real Next project, 27 of 36 suites failed on the
-  // import line without this.
-  return `${pluginImports}import { defineConfig } from 'vitest/config';
-
-export default defineConfig({
-${plugins}  resolve: { tsconfigPaths: true },
-${block}
-});
-`;
+  return standaloneConfig(block, target.vitestPlugin);
 };

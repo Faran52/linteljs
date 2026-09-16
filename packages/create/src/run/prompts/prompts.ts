@@ -30,11 +30,13 @@ import {
   SURFACES,
   surfacesOf,
   TARGET_IDS,
+  type TargetId,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../../model/answers/answers';
 import { targetFor } from '../../model/targets';
-import { type StoreSlot } from '../../model/targets/record';
+
+import type { StoreSlot, TargetRecord } from '../../model/targets/record';
 
 /**
  * `@clack/prompts` is the one dependency this CLI carries: reading raw keypresses is not something `node:readline`
@@ -63,6 +65,12 @@ export interface Asked {
 interface Described {
   label: string;
   hint?: string;
+}
+
+interface HostAnswers {
+  browser: Browser;
+  surfaces: Surface[] | undefined;
+  hosted: HostedFramework | 'none';
 }
 
 const TESTING_DESCRIPTIONS: Record<Answers['testing'], Described> = {
@@ -329,7 +337,7 @@ const askMulti = async <T extends string>(
 };
 
 const askAgents = async (prompter: Prompter): Promise<Answers['agents']> => {
-  return askMulti(prompter, 'AI agents', AGENTS, [], false, (agent) => {
+  return askMulti(prompter, 'AI agents', AGENTS, DEFAULT_ANSWERS.agents, false, (agent) => {
     return AGENT_DESCRIPTIONS[agent];
   });
 };
@@ -344,6 +352,75 @@ const askName = async (prompter: Prompter): Promise<string> => {
   });
 
   return unwrap(prompter, answer);
+};
+
+// The two host targets ask for what they render with; `none` is a real answer, so the question is not skipped.
+const askHost = async (prompter: Prompter, record: TargetRecord): Promise<HostAnswers> => {
+  const browser = record.hostsBrowser === true
+    ? await askChoice(prompter, 'Browser', BROWSERS, DEFAULT_ANSWERS.browser, (choice) => {
+        return BROWSER_DESCRIPTIONS[choice];
+      })
+    : DEFAULT_ANSWERS.browser;
+
+  // Required: an extension with no surface builds a manifest naming nothing.
+  const surfaces = record.hostsBrowser === true
+    ? await askMulti(prompter, 'Surfaces', SURFACES, surfacesOf(DEFAULT_ANSWERS), true, (choice) => {
+        return SURFACE_DESCRIPTIONS[choice];
+      })
+    : undefined;
+
+  const hosted = record.hostsFramework === true
+    ? await askChoice(prompter, 'UI framework', ['none', ...HOSTED_FRAMEWORKS], 'none', (choice) => {
+        return HOSTED_FRAMEWORK_DESCRIPTIONS[choice];
+      })
+    : 'none';
+
+  return {
+    browser,
+    surfaces,
+    hosted,
+  };
+};
+
+// The checkbox list, then the form library as a radio: one form library at most.
+const askLibraries = async (
+  prompter: Prompter,
+  target: TargetId,
+  hosted: HostedFramework | 'none',
+): Promise<Library[]> => {
+  const isReact = targetFor({
+    ...DEFAULT_ANSWERS,
+    target,
+    ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
+  }).framework === 'react';
+  const offered = (library: Library): boolean => {
+    return isReact || !REACT_LIBRARIES.includes(library);
+  };
+  const picked = await askMulti(
+    prompter,
+    'Libraries',
+    LIBRARIES.filter((library) => {
+      return !FORM_LIBRARIES.includes(library) && offered(library);
+    }),
+    DEFAULT_ANSWERS.libraries,
+    false,
+    (choice) => {
+      return LIBRARY_DESCRIPTIONS[choice];
+    },
+  );
+  const forms: ('none' | Library)[] = ['none', ...FORM_LIBRARIES.filter(offered)];
+  const form = await askChoice(prompter, 'Form library', forms, 'none', (choice) => {
+    return choice === 'none'
+      ? {
+          label: 'None',
+          hint: 'Plain controlled inputs',
+        }
+      : LIBRARY_DESCRIPTIONS[choice];
+  });
+
+  return LIBRARIES.filter((library) => {
+    return picked.includes(library) || library === form;
+  });
 };
 
 // In order: project name, framework, testing, package manager, libraries, form library, an optional router and store,
@@ -365,31 +442,11 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
     target,
   });
 
-  // A host with no framework is a real answer, so `none` is offered rather than the question skipped.
-  const browser = record.hostsBrowser === true
-    ? await askChoice(prompter, 'Browser', BROWSERS, DEFAULT_ANSWERS.browser, (choice) => {
-        return BROWSER_DESCRIPTIONS[choice];
-      })
-    : DEFAULT_ANSWERS.browser;
-
-  // Required: an extension with no surface builds a manifest naming nothing.
-  const surfaces = record.hostsBrowser === true
-    ? await askMulti(prompter, 'Surfaces', SURFACES, surfacesOf(DEFAULT_ANSWERS), true, (choice) => {
-        return SURFACE_DESCRIPTIONS[choice];
-      })
-    : undefined;
-
-  const hosted = record.hostsFramework === true
-    ? await askChoice(
-        prompter,
-        'UI framework',
-        ['none', ...HOSTED_FRAMEWORKS],
-        'none',
-        (choice) => {
-          return HOSTED_FRAMEWORK_DESCRIPTIONS[choice];
-        },
-      )
-    : 'none';
+  const {
+    browser,
+    surfaces,
+    hosted,
+  } = await askHost(prompter, record);
 
   const testing = await askChoice(prompter, 'Testing', TESTING_CHOICES, DEFAULT_ANSWERS.testing, (choice) => {
     return TESTING_DESCRIPTIONS[choice];
@@ -403,44 +460,7 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
       return PACKAGE_MANAGER_DESCRIPTIONS[choice];
     },
   );
-  const isReact = targetFor({
-    ...DEFAULT_ANSWERS,
-    target,
-    ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
-  }).framework === 'react';
-  const offered = (library: Library): boolean => {
-    return isReact || !REACT_LIBRARIES.includes(library);
-  };
-  const picked = await askMulti(
-    prompter,
-    'Libraries',
-    LIBRARIES.filter((library) => {
-      return !FORM_LIBRARIES.includes(library) && offered(library);
-    }),
-    DEFAULT_ANSWERS.libraries,
-    false,
-    (choice) => {
-      return LIBRARY_DESCRIPTIONS[choice];
-    },
-  );
-  // One form library at most, so it is a radio rather than two checkboxes.
-  const form = await askChoice(
-    prompter,
-    'Form library',
-    ['none', ...FORM_LIBRARIES.filter(offered)],
-    'none',
-    (choice) => {
-      return choice === 'none'
-        ? {
-            label: 'None',
-            hint: 'Plain controlled inputs',
-          }
-        : LIBRARY_DESCRIPTIONS[choice];
-    },
-  );
-  const libraries = LIBRARIES.filter((library) => {
-    return picked.includes(library) || library === form;
-  });
+  const libraries = await askLibraries(prompter, target, hosted);
 
   const router = record.routers === undefined
     ? 'none'
