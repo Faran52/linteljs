@@ -8,8 +8,9 @@ import {
   stdin,
   stdout,
 } from 'node:process';
-import { parseArgs } from 'node:util';
+import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
+import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_PREFIX } from '../../artifacts/build-scripts/buildScripts';
 import {
   type Answers,
@@ -67,6 +68,7 @@ export interface CliOptions {
   fresh: boolean;
   force: boolean;
   help: boolean;
+  version: boolean;
 }
 
 // The answer flags as `parseArgs` hands them over, before the config parser checks the values.
@@ -99,6 +101,7 @@ const USAGE = `@linteljs/create [name] [options]
   --skip <stage>    skip a stage: scaffold, lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing
   --force           sync: overwrite without asking
+  --version, -v
   --help, -h
 
 Answers, for a run that asks nothing (unset ones take the defaults):
@@ -148,70 +151,77 @@ const isStage = (value: string): value is Stage => {
   });
 };
 
+const CLI_OPTIONS = {
+  'skip-scaffold': {
+    type: 'boolean',
+    default: false,
+  },
+  'no-install': {
+    type: 'boolean',
+    default: false,
+  },
+  'fresh': {
+    type: 'boolean',
+    default: false,
+  },
+  'skip': {
+    type: 'string',
+    multiple: true,
+    default: [],
+  },
+  'yes': {
+    type: 'boolean',
+    short: 'y',
+    default: false,
+  },
+  'force': {
+    type: 'boolean',
+    default: false,
+  },
+  'help': {
+    type: 'boolean',
+    short: 'h',
+    default: false,
+  },
+  'version': {
+    type: 'boolean',
+    short: 'v',
+    default: false,
+  },
+  'target': { type: 'string' },
+  'pm': { type: 'string' },
+  'testing': { type: 'string' },
+  'type-safety': { type: 'string' },
+  'libraries': {
+    type: 'string',
+    multiple: true,
+  },
+  'router': { type: 'string' },
+  'store': {
+    type: 'boolean',
+    default: false,
+  },
+  'agents': {
+    type: 'string',
+    multiple: true,
+  },
+  'plugins': {
+    type: 'string',
+    multiple: true,
+  },
+  'browser': { type: 'string' },
+  'hosted': { type: 'string' },
+  'surfaces': {
+    type: 'string',
+    multiple: true,
+  },
+} satisfies ParseArgsOptionsConfig;
+
 export const parseCliArgs = (argv: string[]): CliOptions => {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: {
-      'skip-scaffold': {
-        type: 'boolean',
-        default: false,
-      },
-      'no-install': {
-        type: 'boolean',
-        default: false,
-      },
-      'fresh': {
-        type: 'boolean',
-        default: false,
-      },
-      'skip': {
-        type: 'string',
-        multiple: true,
-        default: [],
-      },
-      'yes': {
-        type: 'boolean',
-        short: 'y',
-        default: false,
-      },
-      'force': {
-        type: 'boolean',
-        default: false,
-      },
-      'help': {
-        type: 'boolean',
-        short: 'h',
-        default: false,
-      },
-      'target': { type: 'string' },
-      'pm': { type: 'string' },
-      'testing': { type: 'string' },
-      'type-safety': { type: 'string' },
-      'libraries': {
-        type: 'string',
-        multiple: true,
-      },
-      'router': { type: 'string' },
-      'store': {
-        type: 'boolean',
-        default: false,
-      },
-      'agents': {
-        type: 'string',
-        multiple: true,
-      },
-      'plugins': {
-        type: 'string',
-        multiple: true,
-      },
-      'browser': { type: 'string' },
-      'hosted': { type: 'string' },
-      'surfaces': {
-        type: 'string',
-        multiple: true,
-      },
-    },
+    options: CLI_OPTIONS,
   });
 
   const flagged = answerFlagsFrom(values);
@@ -246,6 +256,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     fresh: values.fresh,
     force: values.force,
     help: values.help,
+    version: values.version,
   };
 };
 
@@ -259,12 +270,24 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
   }));
 };
 
-// What to do next, once every stage has run.
-const summary = (name: string, options: CliOptions, answers: Answers): string => {
-  const run = RUN_PREFIX[answers.packageManager];
-  const enter = options.skip.includes('scaffold') ? [] : [`  cd ${name}`];
+// What each stage does, on the line that announces it.
+const STAGE_LABELS: Record<Stage, string> = {
+  scaffold: 'scaffold: the official generator',
+  lint: 'lint: eslint and stylelint config',
+  package: 'package: package.json, tsconfig and the manager files',
+  standard: 'standard: hooks, agent files, test setup and starter tests',
+  install: 'install',
+  fix: 'fix: eslint and stylelint --fix',
+};
 
-  return ['', 'Done. Next:', ...enter, `  ${run} check`].join('\n');
+// What to do next, once every stage has run: enter the directory, install what was skipped, run the gate.
+const summary = (name: string, options: CliOptions, answers: Answers): string => {
+  const { packageManager } = answers;
+  const run = RUN_PREFIX[packageManager];
+  const enter = options.skip.includes('scaffold') ? [] : [`  cd ${name}`];
+  const install = options.skip.includes('install') ? [`  ${packageManager} install`, `  ${run} lint:fix`] : [];
+
+  return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
 };
 
 // Only the questionnaire can supply a missing name; every route that skips it already knows the name.
@@ -310,6 +333,8 @@ const runSync = async (options: CliOptions, answers: Answers): Promise<void> => 
     say('Everything is already up to date.');
     return;
   }
+
+  say(`${String(pending.length)} file${pending.length === 1 ? '' : 's'} would change:`);
 
   for (const entry of pending) {
     say(`\n${entry.target}: ${entry.status}`);
@@ -390,6 +415,11 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     return 0;
   }
 
+  if (options.version) {
+    say(packageJson.version);
+    return 0;
+  }
+
   const refusal = argumentError(options);
 
   if (refusal !== undefined) {
@@ -400,6 +430,10 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
 
   // Only the real prompter reads a real terminal, so only that path needs telling whether one is there.
   const hasTerminal = prompter !== undefined || stdin.isTTY;
+
+  if (options.command === 'create') {
+    say(`@linteljs/create ${packageJson.version}`);
+  }
 
   try {
     const { name, answers } = await askedFrom(options, prompter ?? clackPrompter, hasTerminal);
@@ -421,13 +455,13 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       skip: options.skip,
       fresh: options.fresh,
       onWrite: (path) => {
-        say(`wrote ${path}`);
+        say(`  wrote ${path}`);
       },
       onNotice: (message) => {
-        say(message);
+        say(`  ${message}`);
       },
       onStage: (stage, index, count) => {
-        say(`[${String(index)}/${String(count)}] ${stage}`);
+        say(`[${String(index)}/${String(count)}] ${STAGE_LABELS[stage]}`);
       },
     });
 

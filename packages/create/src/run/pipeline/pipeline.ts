@@ -18,7 +18,7 @@ import {
   type ScaffoldSpec,
   targetFor,
 } from '../../model/targets';
-import { nextStep, runFixPass } from '../fix-pass/fixPass';
+import { runFixPass } from '../fix-pass/fixPass';
 import { git } from '../git/git';
 import { applyArtifact, writeProjectFile } from '../project-files/projectFiles';
 import { readProjectShape } from '../project-shape/readProjectShape';
@@ -292,12 +292,5 @@ export const runPipeline = async (options: PipelineOptions): Promise<void> => {
       options.onStage?.(stage, STAGES.indexOf(stage) + 1, STAGES.length);
       await STAGE_RUNNERS[stage](options, artifacts, stage);
     }
-  }
-
-  // Declining the install leaves the project unfixed; fix says so itself when it ran.
-  const declined = options.skip.includes('install') && options.skip.includes('fix');
-
-  if (declined && !options.skip.includes('lint')) {
-    options.onNotice?.(nextStep(options.answers));
   }
 };

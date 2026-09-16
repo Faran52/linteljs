@@ -137,6 +137,7 @@ Both routers' `useNavigate` is mocked in the test setup, so a navigation asserts
   --skip <stage>    skip scaffold, lint, package, standard, install, or fix (repeatable)
   --yes, -y         accept defaults, ask nothing
   --force           sync: overwrite without asking
+  --version, -v
   --help, -h
 ```
 
@@ -146,15 +147,22 @@ the directory's, so `mkdir my-app && cd my-app && create --yes` needs nothing el
 A run numbers each stage as it starts and ends with what to do next:
 
 ```text
-[1/6] scaffold
+@linteljs/create 1.6.0
+[1/6] scaffold: the official generator
 ...
-[6/6] fix
-eslint --fix rewrote 3 files
+[4/6] standard: hooks, agent files, test setup and starter tests
+  wrote CLAUDE.md
+  ...
+[6/6] fix: eslint and stylelint --fix
+  eslint --fix: 3 files changed
 
 Done. Next:
   cd my-app
   pnpm check
 ```
+
+With `--no-install` the next steps start with the install and the fix pass that needs it. `sync` opens with
+how many files would change, then one diff per file.
 
 ## Existing projects and updates
 

@@ -50,8 +50,8 @@ describe('ask', () => {
         libraries: ['zod', 'tailwind'],
         store: false,
         typeSafety: 'relaxed',
-        agents: [],
-        plugins: [],
+        agents: ['claude-code'],
+        plugins: ['ponytail', 'context7', 'frontend-design'],
       },
     });
   });
@@ -148,11 +148,7 @@ describe('ask', () => {
 
     expect(result).toEqual({
       name: 'demo-app',
-      answers: {
-        ...DEFAULT_ANSWERS,
-        agents: [],
-        plugins: [],
-      },
+      answers: DEFAULT_ANSWERS,
     });
   });
 
@@ -198,6 +194,19 @@ describe('ask', () => {
       'Type safety': ['Strict', 'Relaxed'],
       'AI agents': ['Claude Code', 'Codex'],
     });
+  });
+
+  it('skips the plugins question when no agent was chosen', async () => {
+    const { result, recorded } = await askWith([
+      'demo-app', undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, [],
+    ]);
+
+    expect(result.answers).toMatchObject({
+      agents: [],
+      plugins: [],
+    });
+    expect(recorded.calls).not.toContain('AI plugins');
   });
 
   it('offers AI plugins label only when agents are selected', async () => {
