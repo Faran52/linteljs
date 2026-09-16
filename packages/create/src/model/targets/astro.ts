@@ -112,7 +112,7 @@ export const astro: TargetBuilder = (answers) => {
       // Less the build plugin: `@astrojs/react` brings its own `@vitejs/plugin-react`, and the compiler rides its
       // Babel passthrough, which is what still loads the Babel packages.
       ...(hosted?.devDependencies ?? []).filter((name) => {
-        return name !== '@vitejs/plugin-react';
+        return name !== '@vitejs/plugin-react' && name !== '@rolldown/plugin-babel';
       }),
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),

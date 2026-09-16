@@ -36,8 +36,7 @@ export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 // The one spelling of React's build wiring, read by the React target and every host.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: [
-    "import react from '@vitejs/plugin-react';",
-    "import { reactCompilerPreset } from '@vitejs/plugin-react';",
+    "import react, { reactCompilerPreset } from '@vitejs/plugin-react';",
     "import babel from '@rolldown/plugin-babel';",
   ],
   calls: [
@@ -58,6 +57,7 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
       'eslint-plugin-jsx-a11y',
       'eslint-plugin-react-hooks',
       '@vitejs/plugin-react',
+      '@rolldown/plugin-babel',
       '@babel/core',
       'babel-plugin-react-compiler',
       '@types/react',

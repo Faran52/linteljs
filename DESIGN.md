@@ -449,10 +449,15 @@ carrying a postinstall: an `allowBuilds` key in `bunfig.toml` left the script bl
 at all did, so 1.5.4's `bunfig.toml` shipped a key bun never read. Both managers now take the one list
 `allowedBuildNames` builds.
 
-`.npmrc` (`legacy-peer-deps`) and `.yarnrc.yml` (discarding the YN0002 and YN0060 peer notices) were
-added in the same release without a measurement. They hide the warnings a maintainer drives the CLI by
-hand to see, so they stay only until an install with each file removed is measured per target; that
-measurement is owed, not done.
+`.npmrc` and `.yarnrc.yml` are both load-bearing, measured on React and Next with each file removed.
+Without `legacy-peer-deps` npm refuses the install outright: `eslint-plugin-jsx-a11y` caps its eslint
+peer at 9 and npm treats that as a conflict, where pnpm and yarn take the `peerDependencyRules`
+allowance. Its price is that npm then installs no peers at all, which is why `vite` is a named dev
+dependency wherever vitest is. Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
+TypeScript resolver and `check` fails with 46 errors; its `logFilters` discard the same jsx-a11y cap
+(YN0060) and one collateral notice, `@rolldown/plugin-babel` peering on `rolldown`, which Vite 8
+bundles rather than exposes. `.npmrc`'s `allow-scripts` line prevented nothing measurable and
+`create astro` overrides it with its own `allowScripts`, so it is gone.
 
 ## Comments
 

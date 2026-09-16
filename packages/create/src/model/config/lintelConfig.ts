@@ -19,6 +19,7 @@ import {
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
+import { targetFor } from '../targets';
 
 // `extends Answers`, so a config plans directly. This parser is the only list and refuses an unknown property by
 // name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project as a popup one.
@@ -186,6 +187,24 @@ const libraryChoices = (value: JsonValue | undefined): Library[] => {
   return libraries;
 };
 
+// An answer the target never asks for is refused, so neither a flag nor a hand edit installs a router into a Vue app.
+const refuseMisfit = (answers: Answers): void => {
+  const record = targetFor(answers);
+  const misfit = (condition: boolean, answer: string): void => {
+    if (condition) {
+      throw new Error(`${answer} is not an answer for ${answers.target}`);
+    }
+  };
+
+  misfit(answers.router !== undefined && record.routers === undefined, 'router');
+  misfit(answers.hostedFramework !== undefined && record.hostsFramework !== true, 'hostedFramework');
+  misfit(answers.browser !== 'chrome' && record.hostsBrowser !== true, 'browser');
+  misfit(answers.surfaces !== undefined && record.hostsBrowser !== true, 'surfaces');
+  misfit(answers.browsers !== undefined && record.hostsBrowser !== true, 'browsers');
+  misfit(answers.store && record.store === undefined, 'store');
+  misfit(answers.libraries.includes('react-hook-form') && record.framework !== 'react', 'react-hook-form');
+};
+
 const expectedKeys = [
   '$schema',
   'schemaVersion',
@@ -252,7 +271,7 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
     throw new Error('store must be a boolean');
   }
 
-  return {
+  const config: LintelConfig = {
     $schema: schema,
     schemaVersion,
     target: choice(parsed.target, 'target', TARGET_IDS),
@@ -281,6 +300,10 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
     ...(parsed.ignores === undefined ? {} : { ignores: globList(parsed.ignores) }),
     plugins: arrayChoices(parsed.plugins, 'plugins', PLUGINS),
   };
+
+  refuseMisfit(config);
+
+  return config;
 };
 
 export const parseLintelConfig = (text: string): LintelConfig => {

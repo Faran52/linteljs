@@ -94,6 +94,7 @@ export const vue: TargetRecord = {
   // another generator's choice.
   testDevDependencies: ['@vue/test-utils'],
   devDependencies: ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility', 'vue-eslint-parser', 'vue-tsc', 'vite'],
-  allowBuilds: [],
+  // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
+  allowBuilds: ['vue-demi'],
   stateRules: ['vue-reactivity.md'],
 };

@@ -3,6 +3,26 @@ import { targetFor } from '../../model/targets';
 
 // For the five Vite targets. `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
 
+// Everything after `from`, quotes included, so sorting by it is sorting by specifier.
+const specifierOf = (line: string): string => {
+  return line.replace(/^import .* from /, '');
+};
+
+// The order `simple-import-sort` would fix to: packages by specifier, then the project's own files after a blank line.
+const sortedImports = (lines: string[]): string => {
+  const bySpecifier = (left: string, right: string): number => {
+    return specifierOf(left).localeCompare(specifierOf(right), 'en');
+  };
+  const packages = lines.filter((line) => {
+    return !specifierOf(line).startsWith("'.");
+  }).sort(bySpecifier);
+  const own = lines.filter((line) => {
+    return specifierOf(line).startsWith("'.");
+  }).sort(bySpecifier);
+
+  return [packages.join('\n'), ...(own.length === 0 ? [] : [own.join('\n')])].join('\n\n');
+};
+
 export const emitViteConfig = (answers: Answers): string | null => {
   // Read off the record, so a host composes both plugins without this emitter knowing which.
   const {
@@ -18,12 +38,12 @@ export const emitViteConfig = (answers: Answers): string | null => {
   const tailwind = hasLibrary(answers, 'tailwind');
   const tanstackRouter = answers.router === 'tanstack-router';
 
-  const imports = [
+  const imports = sortedImports([
     "import { defineConfig } from 'vite';",
     ...(tanstackRouter ? ["import { tanstackRouter } from '@tanstack/router-plugin/vite';"] : []),
     ...vitePlugin.imports,
     ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
-  ].join('\n');
+  ]);
 
   // The router plugin rewrites route files before the framework plugin transforms them.
   const calls = [

@@ -782,6 +782,7 @@ describe('main: sync', () => {
   it("keeps a project's own aliases through a sync, in every consumer", async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
+      target: 'webextension',
       aliases: { '@engine': './src/lib/engine/index.ts' },
       browsers: ['chrome', 'firefox'],
       ignores: ['src/lib/compat-data/generatedRegistry.ts'],
@@ -815,7 +816,7 @@ describe('main: sync', () => {
       testing: 'none',
       packageManager: 'npm',
       libraries: ['zod', 'tailwind'],
-      store: true,
+      store: false,
       typeSafety: 'relaxed',
       agents: ['codex'],
       plugins: ['context7'],
@@ -956,6 +957,8 @@ describe('main: answers given as flags', () => {
     [['--target', 'wat'], 'target must be one of: react, next'],
     [['--libraries', 'tanstack-form', '--libraries', 'react-hook-form'], 'libraries must contain at most one of'],
     [['--router', 'wouter'], 'router must be one of: react-router, tanstack-router'],
+    [['--target', 'vue', '--router', 'react-router'], 'router is not an answer for vue'],
+    [['--target', 'svelte', '--store'], 'store is not an answer for svelte'],
   ])('refuses %j with the message a bad config gets, before writing anything', async (flags, message) => {
     const { code, errors } = await runMain(['--skip-scaffold', '--no-install', ...flags]);
 

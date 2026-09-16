@@ -49,17 +49,22 @@ ${indent}  provider: 'v8',
 ${indent}  include: ['${include}'],
 ${indent}  exclude: [${excludeList(exclude)}
 ${indent}  ],
-${indent}  thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
+${indent}  thresholds: {
+${indent}    lines: 100,
+${indent}    branches: 100,
+${indent}    functions: 100,
+${indent}    statements: 100,
+${indent}  },
 ${indent}},`;
 };
 
-const testBlock = (include: string, exclude: string[], setup: string): string => {
-  return `  test: {
-    globals: true,
-    environment: 'happy-dom',
-    setupFiles: ['./${setup}'],
-${coverageBlock(include, exclude, '    ')}
-  },`;
+const testBlock = (include: string, exclude: string[], setup: string, indent = '  '): string => {
+  return `${indent}test: {
+${indent}  globals: true,
+${indent}  environment: 'happy-dom',
+${indent}  setupFiles: ['./${setup}'],
+${coverageBlock(include, exclude, `${indent}  `)}
+${indent}},`;
 };
 
 // `resolve.extensions` makes `foo.web.tsx` outrank `foo.tsx` as Metro does; without the second project `.web`
@@ -115,12 +120,9 @@ ${coverageBlock(include, exclude, '    ')}
 const mergedConfig = (block: string, testConditions: string[] | undefined): string => {
   const conditions = testConditions === undefined
     ? ''
-    : `  resolve: { conditions: [${quoted(testConditions)}] },\n`;
+    : `    resolve: { conditions: [${quoted(testConditions)}] },\n`;
 
-  return `import {
-  defineConfig,
-  mergeConfig,
-} from 'vitest/config';
+  return `import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config.js';
 
@@ -168,11 +170,11 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
     return platformProjects(target.testPlatforms, include, exclude, setup);
   }
 
-  const block = testBlock(include, exclude, setup);
-
   if (target.vite) {
-    return mergedConfig(block, target.testConditions);
+    return mergedConfig(testBlock(include, exclude, setup, '    '), target.testConditions);
   }
+
+  const block = testBlock(include, exclude, setup);
 
   // Astro's `getViteConfig` is the only way to reach its Vite config when there is no `vite.config.ts` to merge.
   if (target.vitestFactory !== undefined) {
