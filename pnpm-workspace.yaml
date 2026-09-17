@@ -11,20 +11,18 @@ catalog:
 
 peerDependencyRules:
   allowedVersions:
-    'eslint-plugin-jsx-a11y>eslint': '10'
-    'eslint-plugin-solid>eslint': '10'
     # Never loaded: no layer imports it. It arrives as an *optional* peer of `eslint-import-resolver-typescript`, which
     # pnpm installs anyway, and the layers resolve imports through `import-x`. So its `eslint` range describes a plugin
     # that never runs. It used to run, through `eslint-config-next`; that is the part that got fixed.
     'eslint-plugin-import>eslint': '10'
+    # Same shape, one layer out: `eslint-plugin-astro` takes `eslint-plugin-jsx-a11y` as an optional peer, pnpm
+    # installs it, and that plugin's own range stops at 9. It does run: the astro layer keeps its rules as
+    # `astro/jsx-a11y/*`. The direct dependency is `eslint-plugin-jsx-a11y-x`, whose range admits 10.
+    'eslint-plugin-jsx-a11y>eslint': '10'
     # Nothing of this repo's: `@angular/cli` (reached through `angular-eslint`) depends on both `listr2` and an adapter
     # that pins it to exactly 10.2.1, so its own two halves disagree by a patch. Allowed rather than pinned back with
     # an override, which would downgrade a progress renderer inside somebody else's CLI to quieten a warning.
     '@listr2/prompt-adapter-inquirer>listr2': '10.2.2'
-
-overrides:
-  'eslint-plugin-jsx-a11y>eslint': '10'
-  'eslint-plugin-solid>eslint': '10'
 
 packages:
   - 'packages/*'

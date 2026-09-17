@@ -39,9 +39,10 @@ eslint-plugin  <-  eslint-config  <-  create
 The direction is one way and enforced. `create` never imports `eslint-config` at runtime; it writes
 the package name into text, which is why it can be built and tested before that package publishes.
 
-- **`packages/eslint-plugin`** is the rules. One directory per rule, named for its id, holding
-  `index.ts`, `index.test.ts` and `README.md`. Adding one has six steps, and they are listed in that
-  package's own `CLAUDE.md`.
+- **`packages/eslint-plugin`** is the rules. One directory per rule, named for its id, holding the
+  rule named for its export, its test beside it, `README.md`, and a `utils/` directory where the rule
+  has private helpers. Adding one has six steps, and they are listed in that package's own
+  `CLAUDE.md`.
 - **`packages/eslint-config`** is the flat config layers. One file per layer, named for its single
   export. `defineConfig.ts` composes them and owns the ordering.
 - **`packages/create`** is the scaffolder, in three rings: `model/` is what the user chose,

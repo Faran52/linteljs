@@ -41,8 +41,19 @@ describe.
 - `packages/create/src/run/pipeline/e2e/*.e2e.test.ts` files are excluded from the default run by their
   `.e2e.` infix. Each file covers one target across all package managers, plus special cases for that
   target. They scaffold, install and gate all nine targets for real, and take minutes per target.
-- **That suite never skips.** A missing tarball throws, because `test:e2e` packs all three
-  immediately before running: there is no state in which having none is expected. It previously
-  guarded itself with `describe.skipIf`, which meant a pack that produced nothing reported a green
-  run having installed nothing. The only legitimate skip is a `-t` filter on the command line, and
-  the count it prints as skipped is the cases the filter excluded, not cases the suite declined.
+- **It shards in CI only.** `e2e.yml` runs four, one runner each, because the whole suite is around
+  forty-seven minutes and a shard is around thirteen. A shard gets its own registry port and its own
+  `.e2e` subdirectory, but that is not enough to run two on one machine: `bunx` and `bun create` read
+  `~/.bun/install/cache` whatever the bun cache variables say, and key an entry by registry host with
+  no port, so a shard that finishes and stops its registry leaves the others fetching a scaffolder
+  from a dead port. Run it unsharded locally. The floor is the slowest single file, `react`.
+- **That suite installs the checkout, never npm.** `registrySetup.ts` starts a Verdaccio in front
+  of npmjs, publishes the three workspace packages into it, and installs the CLI from it; every
+  case then runs one `create-linteljs` command with answer flags, the way a user does, with the
+  registry set in the environment. Nothing under `@linteljs/*` is ever fetched from the real
+  registry, so the suite tests exactly what is unreleased.
+- **That suite never skips.** A registry that fails to start or publish throws in `globalSetup`:
+  there is no state in which installing nothing is expected. It previously guarded itself with
+  `describe.skipIf`, which meant a pack that produced nothing reported a green run having installed
+  nothing. The only legitimate skip is a `-t` filter on the command line, and the count it prints
+  as skipped is the cases the filter excluded, not cases the suite declined.

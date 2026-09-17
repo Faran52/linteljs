@@ -53,14 +53,15 @@ excluded from `check` and from the default test run because it hits the network.
 - `packages/eslint-config/src/`: the layers. `base` is shared, `typescript` turns the program on,
   `frameworks/` and `libraries/` add their own.
 - `packages/eslint-plugin/src/rules/`: one directory per rule, named for its `kebab-case` id and
-  holding `index.ts`, `index.test.ts` and `README.md`. The id and the path are the same string, so
-  nothing has to translate between two spellings. A helper only one rule uses sits in that rule's
-  directory; `src/utils/` is for what rules share.
+  holding `<camelCaseExport>.ts`, its test beside it, and `README.md`. The directory name is the id,
+  so the id is spelled once. `index` is a barrel and nothing else, which is why the rule is not one:
+  `src/rules/index.ts` is the only `index` in the package. A helper only one rule uses sits under
+  that rule's own `utils/`, suffixed `*Utils` like every other; `src/utils/` is for what rules share.
 - Any `utils/` directory, in either package: `*Utils.ts`, so `ruleUtils.ts` and `checkFileUtils.ts`
   rather than `ruleApi.ts` and `checkFile.ts`. Enforced rather than asked for: the `naming` map in
   the root `eslint.config.ts` maps `**/utils/*.ts` to the `*Utils` glob, so a helper module under
-  any other name fails `pnpm lint`. A helper inside a rule directory is outside that glob and
-  carries the suffix by convention instead. This is the workspace's own convention and
+  any other name fails `pnpm lint`. A rule's private helpers sit under its own `utils/` for this
+  reason: there the suffix is enforced rather than asked for. This is the workspace's own convention and
   `@linteljs/create` deliberately does not ship it to generated projects; DESIGN.md carries that as a
   non-goal.
 
@@ -71,6 +72,9 @@ The rule files under `packages/create/assets/claude-rules/` are the published st
 repo differs: `type-standards.md`, `testing.md` and `repo-structure.md`. Read them before writing
 code here. The per-target rule files do not apply, because this is not one of the nine targets: a
 state rule for React or Svelte reactivity has nothing to govern in a package of ESLint rules.
+`repo-structure.library.md` is published for a package that is imported rather than run, which is
+what these three are, so this workspace's structure rule adopts it rather than asserting a shape of
+its own. No target selects it; it ships because the standard for a library is part of the standard.
 
 The enforcement half is installed too, and is the same set a generated project receives:
 `.claude/hooks/` with `.claude/settings.json` wiring them, `.husky/pre-commit` and `commit-msg`,
