@@ -56,6 +56,30 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # The registry's own storage, and nothing else. Every tarball npmjs serves is stored once here
+      # and handed to all four package managers, which all speak the registry protocol, so this is
+      # one copy where their four caches would be four. Those are deliberately not cached: npm's
+      # cacache alone reached 125GB locally, it never evicts, and a manager refetching over loopback
+      # is cheap. Verdaccio rewrites `dist.tarball` per request, so a restored storage works on
+      # whatever port the shard binds.
+      #
+      # The week in the key is the eviction policy. A tarball is immutable and is never replaced, so
+      # a new version of a dependency is added beside the old one and the directory only grows;
+      # rotating weekly rebuilds it from npmjs instead. Metadata is not at stake either way, since
+      # verdaccio revalidates a packument after two minutes and a run picks up what was published.
+      - id: week
+        run: echo "id=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: .e2e-cache/shard-${{ matrix.shard }}/registry
+          key: e2e-registry-${{ steps.week.outputs.id }}-shard-${{ matrix.shard }}
+          # This week only. A prefix reaching further back would restore last week's directory and save
+          # it again under this week's key, so it would never rebuild and the rotation would buy
+          # nothing. Another shard of the same week is a fair hit: the tarballs are the same bytes.
+          restore-keys: |
+            e2e-registry-${{ steps.week.outputs.id }}-
+
       # This is the only suite where the emitted text meets the real layers. Everything else
       # asserts on strings, and a plugin registered twice, a peer nobody installs or a version
       # range that does not resolve all pass a unit test and then break the first project.

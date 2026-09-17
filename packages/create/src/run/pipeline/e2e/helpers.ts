@@ -57,23 +57,16 @@ export const run = (command: string, args: string[], cwd: string, input = ''): R
       YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
       YARN_NPM_MINIMAL_AGE_GATE: '0',
       /**
-       * Split by what each directory remembers, because this suite republishes one version many times. Anything
-       * recording which tarball a version resolved to starts empty every run, or the manager serves the previous
-       * run's build: bun reported `Integrity check failed` on every target, and pnpm handed React Native a plugin
-       * from before its rules existed. Anything content-addressed is keyed by the bytes it holds, cannot go stale,
-       * and persists so the other 1300 packages are still reused. npm's cacache is integrity-keyed and needs
-       * neither treatment; bun offers no split, so the whole cache is per run.
+       * Split by what each directory remembers. A cache of bytes is keyed by the bytes and persists. A cache of
+       * *which versions exist* starts empty every run, because `registrySetup` publishes a version no run has used
+       * before and a manifest cached last run does not list it: the range resolves to the previous run's build and
+       * the `why` assertion catches it. Publishing a unique version ends the other staleness, where one version was
+       * republished with different bytes and bun reported `Integrity check failed`, but not this one.
+       * npm's cacache is integrity-keyed and needs neither treatment; bun offers no split, so its cache is per run.
        */
       npm_config_cache: join(registry.cacheDir, 'npm'),
       pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
       pnpm_config_cache_dir: join(registry.runDir, 'pnpm-cache'),
-      /**
-       * Split on purpose. The global folder holds yarn's registry metadata, which records the tarball a version
-       * resolves to, and this suite republishes one version many times, so that half must start empty every run. The
-       * cache folder holds the downloads, whose filenames carry a checksum, so changed contents land beside the old
-       * ones rather than on top and the other 1300 packages are still reused. Deleting the cache outright instead
-       * made a single-process registry serve the whole tree again and took four green files red.
-       */
       YARN_GLOBAL_FOLDER: join(registry.runDir, 'yarn'),
       YARN_CACHE_FOLDER: join(registry.cacheDir, 'yarn-cache'),
       BUN_INSTALL_CACHE_DIR: join(registry.runDir, 'bun'),
@@ -179,6 +172,7 @@ export const answerFlags = (answers: Answers): string[] => {
     ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
     ...(answers.hostedFramework === undefined ? [] : ['--hosted', answers.hostedFramework]),
     ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
+    ...(answers.form === undefined ? [] : ['--form', answers.form]),
     ...(answers.router === undefined ? [] : ['--router', answers.router]),
     ...(answers.store ? ['--store'] : []),
   ];

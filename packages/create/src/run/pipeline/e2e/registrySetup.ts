@@ -4,16 +4,12 @@ import {
   spawnSync,
 } from 'node:child_process';
 import {
-  existsSync,
   mkdirSync,
-  readdirSync,
   readFileSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from 'node:fs';
 import { createServer } from 'node:net';
-import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
@@ -25,9 +21,9 @@ export interface E2eRegistry {
   url: string;
   version: string;
   cliBin: string;
-  // Persists between runs, for downloads that carry their own checksum.
+  // Persists between runs: the registry's storage, and the caches keyed by the bytes they hold.
   cacheDir: string;
-  // Wiped at the start of every run, for anything recording which tarball a version resolved to.
+  // Wiped at the start of every run, for anything recording which versions exist.
   runDir: string;
 }
 
@@ -116,46 +112,6 @@ const waitForPing = async (url: string, child: ChildProcess): Promise<void> => {
   throw new Error(`verdaccio did not answer at ${url} within 20 seconds`);
 };
 
-/**
- * `bunx` and `bun create` read this cache whatever `BUN_INSTALL_CACHE_DIR` and `BUN_INSTALL` say, and key an entry by
- * registry host with no port. An entry left by a run on another port names a registry that is gone, so bun answers
- * `ConnectionRefused downloading tarball create-vue@3.24.0` before a scaffolder writes a file. Only this suite writes
- * a `127.0.0.1` key, so only those go.
- */
-const purgeBunRegistryCache = (): void => {
-  const cache = join(homedir(), '.bun', 'install', 'cache');
-
-  if (!existsSync(cache)) {
-    return;
-  }
-
-  for (const entry of readdirSync(cache)) {
-    if (entry.includes('@@127.0.0.1@@')) {
-      rmSync(join(cache, entry), {
-        recursive: true,
-        force: true,
-      });
-    }
-  }
-};
-
-/**
- * Once per run, not once per shard: the cache is one directory for all of them, so a shard purging it while another
- * downloads deletes what that one just wrote. Called under the publish lock, so the first shard in does it and the
- * rest see the marker. Within a run every shard's port is live, so a shared entry resolves against a registry that
- * is up; the staleness only bites across runs that moved the port.
- */
-const purgeOncePerRun = (): void => {
-  const marker = join(ROOT, '.e2e', 'bun-cache.purged');
-
-  if (existsSync(marker) && Date.now() - statSync(marker).mtimeMs < 60_000) {
-    return;
-  }
-
-  purgeBunRegistryCache();
-  writeFileSync(marker, '');
-};
-
 const check = (command: string, args: string[], cwd: string): void => {
   const result = spawnSync(command, args, {
     cwd,
@@ -200,6 +156,10 @@ const withPublishLock = async (run: () => void): Promise<void> => {
   throw new Error(`another shard held ${lock} for five minutes`);
 };
 
+const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin'].map((name) => {
+  return join(ROOT, 'packages', name, 'package.json');
+});
+
 const createVersion = (): string => {
   const { version } = parsePackageJson(readFileSync(join(ROOT, 'packages/create/package.json'), 'utf8'));
 
@@ -210,6 +170,49 @@ const createVersion = (): string => {
   return version;
 };
 
+/**
+ * Unique, increasing, and inside the `^1.6.0` a generated project asks for. Not a prerelease: `1.6.0-e2e.x` sorts
+ * below `1.6.0` and satisfies no caret, so every install would resolve nothing. A patch of the current second
+ * satisfies the range and is always the highest, so `maxSatisfying` picks this run's build.
+ */
+const runVersion = (base: string): string => {
+  const [major, minor] = base.split('.');
+
+  if (major === undefined || minor === undefined) {
+    throw new Error(`packages/create/package.json carries no major.minor: ${base}`);
+  }
+
+  return `${major}.${minor}.${String(Math.floor(Date.now() / 1000))}`;
+};
+
+/**
+ * A version no run has published before. The suite used to republish one version with different bytes, so every
+ * directory recording which tarball a version resolved to had to start empty, which is what kept bun's whole cache
+ * and yarn's metadata cold on every run. A version published once can never go stale, so all of them persist.
+ * `workspace:*` between the three resolves to whatever is published, so they move together.
+ */
+const publishedAs = (version: string, publish: () => void): void => {
+  const originals = WORKSPACE_MANIFESTS.map((path) => {
+    return {
+      path,
+      text: readFileSync(path, 'utf8'),
+    };
+  });
+
+  try {
+    for (const { path, text } of originals) {
+      writeFileSync(path, text.replace(/"version": "[^"]*"/, `"version": "${version}"`));
+    }
+
+    publish();
+  }
+  finally {
+    for (const { path, text } of originals) {
+      writeFileSync(path, text);
+    }
+  }
+};
+
 // A registry holding the workspace versions in front of npmjs, so an install resolves `@linteljs/*` to what is
 // checked out and everything else to the real thing. Nothing published is ever consulted for this scope.
 export const setup = async (project: TestProject): Promise<() => void> => {
@@ -218,13 +221,19 @@ export const setup = async (project: TestProject): Promise<() => void> => {
     port,
     cacheDir,
   } = pathsFor(project.vitest.config.shard);
+  /**
+   * Outside `dir`, so it survives the wipe. One npmjs tarball is stored once and served to all four managers, which
+   * all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a port.
+   * Measured: the same storage on a different port with the uplink unreachable still serves metadata and tarballs.
+   */
+  const storage = join(cacheDir, 'registry');
 
   rmSync(dir, {
     recursive: true,
     force: true,
   });
-  mkdirSync(join(dir, 'storage'), { recursive: true });
-  mkdirSync(cacheDir, { recursive: true });
+  mkdirSync(dir, { recursive: true });
+  mkdirSync(storage, { recursive: true });
 
   await requireFreePort(port);
 
@@ -232,7 +241,7 @@ export const setup = async (project: TestProject): Promise<() => void> => {
   const config = join(dir, 'verdaccio.yaml');
 
   writeFileSync(config, [
-    `storage: ${join(dir, 'storage')}`,
+    `storage: ${storage}`,
     'uplinks:',
     '  npmjs:',
     '    url: https://registry.npmjs.org/',
@@ -261,9 +270,12 @@ export const setup = async (project: TestProject): Promise<() => void> => {
 
   await waitForPing(url, verdaccio);
 
+  const version = runVersion(createVersion());
+
   await withPublishLock(() => {
-    purgeOncePerRun();
-    check('pnpm', ['-r', 'publish', '--registry', url, '--no-git-checks'], ROOT);
+    publishedAs(version, () => {
+      check('pnpm', ['-r', 'publish', '--registry', url, '--no-git-checks'], ROOT);
+    });
   });
 
   // Installed from the registry like a user's `create @linteljs`, so the bin runs on its published dependency tree.
@@ -271,7 +283,6 @@ export const setup = async (project: TestProject): Promise<() => void> => {
 
   mkdirSync(cliDir, { recursive: true });
   writeFileSync(join(cliDir, 'package.json'), '{}\n');
-  const version = createVersion();
 
   check(
     'npm',
