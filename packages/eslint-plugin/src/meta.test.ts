@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import { ESLint, type Linter } from 'eslint';
 import {
@@ -37,8 +37,32 @@ const filesIn = (ruleName: string): string[] => {
   return readdirSync(join(rulesDir, ruleName));
 };
 
+// Every module a rule owns, its own and the private helpers under `utils/`, as paths relative to the rule directory.
+const modulesIn = (ruleName: string): string[] => {
+  return readdirSync(join(rulesDir, ruleName), {
+    withFileTypes: true,
+    recursive: true,
+  }).filter((entry) => {
+    return entry.isFile() && entry.name.endsWith('.ts');
+  }).map((entry) => {
+    return relative(join(rulesDir, ruleName), join(entry.parentPath, entry.name));
+  });
+};
+
+// The implementation file is named for its single export, so the directory name is the only place the rule id
+// appears. `index` is a barrel in this repo and a rule directory is not one.
+const moduleNameOf = (ruleName: string): string => {
+  return ruleName.replace(/-([a-z])/g, (_match, letter: string) => {
+    return letter.toUpperCase();
+  });
+};
+
 // What every rule directory owes: the rule, its suite, and the page GitHub renders via `meta.docs.url`.
-const REQUIRED_FILES = ['index.ts', 'index.test.ts', 'README.md'];
+const requiredFiles = (ruleName: string): string[] => {
+  const module = moduleNameOf(ruleName);
+
+  return [`${module}.ts`, `${module}.test.ts`, 'README.md'];
+};
 
 const readJson = (path: string): Record<string, unknown> => {
   const parsed: unknown = JSON.parse(readFileSync(join(root, path), 'utf8'));
@@ -163,19 +187,34 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   it('keeps its rule, its suite and its doc in its own directory', () => {
     const present = filesIn(name);
 
-    expect(REQUIRED_FILES.filter((file) => {
+    expect(requiredFiles(name).filter((file) => {
       return !present.includes(file);
     })).toEqual([]);
   });
 
-  // Complements the required-files check: a stray file could sit here forever otherwise. `*Utils`
-  // is convention, since `check-file` doesn't reach a rule directory.
-  it('holds nothing beside them but a suffixed helper', () => {
+  // The directory is the one place the kebab-case id is written, so a rename that missed one half shows up here.
+  it('names its module for its single export, not index', () => {
+    expect(filesIn(name)).not.toContain('index.ts');
+    expect(Object.keys(rule)).toContain('create');
+  });
+
+  // Complements the required-files check: a stray file could sit here forever otherwise. A private helper belongs
+  // under `utils/`, where the root config's `**/utils/*.ts` naming map enforces the `*Utils` suffix on it.
+  it('holds nothing beside them but a utils directory', () => {
     const strays = filesIn(name).filter((file) => {
-      return !REQUIRED_FILES.includes(file) && !/^[a-z][A-Za-z]*Utils(\.test)?\.ts$/.test(file);
+      return !requiredFiles(name).includes(file) && file !== 'utils';
     });
 
     expect(strays).toEqual([]);
+  });
+
+  it('suffixes every private helper and puts it under utils', () => {
+    const misplaced = modulesIn(name).filter((file) => {
+      return !requiredFiles(name).includes(file)
+        && !/^utils\/[a-z][A-Za-z]*Utils(\.test)?\.ts$/.test(file);
+    });
+
+    expect(misplaced).toEqual([]);
   });
 
   it('declares a valid rule type', () => {
@@ -220,9 +259,9 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   });
 
   it('marks itself fixable when it provides a fix', () => {
-    // Reads every non-test module, not just `index.ts`, since a fixer may live in a sibling like `writeUtils.ts`.
-    const source = filesIn(name).filter((file) => {
-      return file.endsWith('.ts') && !file.endsWith('.test.ts');
+    // Reads every non-test module, not just the rule's own, since a fixer may live in `utils/writeUtils.ts`.
+    const source = modulesIn(name).filter((file) => {
+      return !file.endsWith('.test.ts');
     }).map((file) => {
       return readFileSync(join(rulesDir, name, file), 'utf8');
     }).join('\n');
@@ -237,7 +276,7 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
 // that throws while its module evaluates, since this file imports `./index` too; `ruleModules.test.ts` covers it.
 describe('rule modules load', () => {
   it.each(ruleNames)('%s builds a usable rule at import time', async (name) => {
-    const loaded: unknown = await import(`./rules/${name}/index.ts`);
+    const loaded: unknown = await import(`./rules/${name}/${moduleNameOf(name)}.ts`);
     const rule = isNamespace(loaded) ? Object.values(loaded).find(isRuleModule) : undefined;
 
     if (!rule) {

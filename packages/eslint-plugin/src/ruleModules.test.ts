@@ -50,13 +50,21 @@ const RULE_MODULES = [
   'prefer-await-to-then',
   'prefer-destructured-props',
   'prefer-try-catch',
+  'react-native-accessible-name',
+  'react-native-no-nested-touchables',
+  'react-native-valid-accessibility-actions',
+  'react-native-valid-accessibility-role',
+  'react-native-valid-accessibility-state',
   'sort-hook-dependencies',
   'union-newline',
 ];
 
 describe.each(RULE_MODULES)('%s', (moduleName) => {
   it('builds a complete rule when its module is evaluated', async () => {
-    const loaded: unknown = await import(`./rules/${moduleName}/index.ts`);
+    const module = moduleName.replace(/-([a-z])/g, (_match, letter: string) => {
+      return letter.toUpperCase();
+    });
+    const loaded: unknown = await import(`./rules/${moduleName}/${module}.ts`);
     const rule = isNamespace(loaded) ? Object.values(loaded).find(isRuleModule) : undefined;
 
     if (!rule) {

@@ -1,17 +1,28 @@
-import { commentDelimiter } from './comment-delimiter/index.ts';
-import { destructuringPropertyNewline } from './destructuring-property-newline/index.ts';
-import { exportSpecifierNewline } from './export-specifier-newline/index.ts';
-import { importNewlines } from './import-newlines/index.ts';
-import { interfaceOrder } from './interface-order/index.ts';
-import { newlineDestructuring } from './newline-destructuring/index.ts';
-import { noDuplicateJsxProps } from './no-duplicate-jsx-props/index.ts';
-import { noImportNamespaceDestructure } from './no-import-namespace-destructure/index.ts';
-import { preferArrowFunctions } from './prefer-arrow-functions/index.ts';
-import { preferAwaitToThen } from './prefer-await-to-then/index.ts';
-import { preferDestructuredProps } from './prefer-destructured-props/index.ts';
-import { preferTryCatch } from './prefer-try-catch/index.ts';
-import { sortHookDependencies } from './sort-hook-dependencies/index.ts';
-import { unionNewline } from './union-newline/index.ts';
+import { commentDelimiter } from './comment-delimiter/commentDelimiter.ts';
+import { destructuringPropertyNewline } from './destructuring-property-newline/destructuringPropertyNewline.ts';
+import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifierNewline.ts';
+import { importNewlines } from './import-newlines/importNewlines.ts';
+import { interfaceOrder } from './interface-order/interfaceOrder.ts';
+import { newlineDestructuring } from './newline-destructuring/newlineDestructuring.ts';
+import { noDuplicateJsxProps } from './no-duplicate-jsx-props/noDuplicateJsxProps.ts';
+import { noImportNamespaceDestructure } from './no-import-namespace-destructure/noImportNamespaceDestructure.ts';
+import { preferArrowFunctions } from './prefer-arrow-functions/preferArrowFunctions.ts';
+import { preferAwaitToThen } from './prefer-await-to-then/preferAwaitToThen.ts';
+import { preferDestructuredProps } from './prefer-destructured-props/preferDestructuredProps.ts';
+import { preferTryCatch } from './prefer-try-catch/preferTryCatch.ts';
+import { reactNativeAccessibleName } from './react-native-accessible-name/reactNativeAccessibleName.ts';
+import { reactNativeNoNestedTouchables } from './react-native-no-nested-touchables/reactNativeNoNestedTouchables.ts';
+import {
+  reactNativeValidAccessibilityActions,
+} from './react-native-valid-accessibility-actions/reactNativeValidAccessibilityActions.ts';
+import {
+  reactNativeValidAccessibilityRole,
+} from './react-native-valid-accessibility-role/reactNativeValidAccessibilityRole.ts';
+import {
+  reactNativeValidAccessibilityState,
+} from './react-native-valid-accessibility-state/reactNativeValidAccessibilityState.ts';
+import { sortHookDependencies } from './sort-hook-dependencies/sortHookDependencies.ts';
+import { unionNewline } from './union-newline/unionNewline.ts';
 
 import type { LintelRuleModule } from '../types.ts';
 
@@ -32,6 +43,11 @@ export const rules = {
   'prefer-await-to-then': preferAwaitToThen,
   'prefer-destructured-props': preferDestructuredProps,
   'prefer-try-catch': preferTryCatch,
+  'react-native-accessible-name': reactNativeAccessibleName,
+  'react-native-no-nested-touchables': reactNativeNoNestedTouchables,
+  'react-native-valid-accessibility-actions': reactNativeValidAccessibilityActions,
+  'react-native-valid-accessibility-role': reactNativeValidAccessibilityRole,
+  'react-native-valid-accessibility-state': reactNativeValidAccessibilityState,
   'sort-hook-dependencies': sortHookDependencies,
   'union-newline': unionNewline,
 } satisfies Record<string, LintelRuleModule>;

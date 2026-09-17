@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-`@linteljs/eslint-plugin`. A published ESLint plugin: 14 rules for vertical layout, comment shape, import hygiene and
-modern idioms in TypeScript and React. Public repo, published to npm, so everything in it is
-outward-facing.
+`@linteljs/eslint-plugin`. A published ESLint plugin: 19 rules for vertical layout, comment shape,
+import hygiene, modern idioms in TypeScript and React, and React Native accessibility. Public repo,
+published to npm, so everything in it is outward-facing.
 
 The rules were lifted from `~/Projects/self-portfolio/tools/eslint`, where they ran unbundled and
 local-only. That version is not the source of truth any more. This repo owns them.
@@ -18,17 +18,19 @@ local-only. That version is not the source of truth any more. This repo owns the
   `eslint` is a peer, everything else is a devDependency.
 - **No casts to satisfy a type, anywhere, including tests.** A cast means the fixture is wrong.
   Five survive and are tracked debt, with no new ones added. Three narrow an ESLint node to the
-  shape the traversal actually hands over: `as RuleNode` in `prefer-arrow-functions/index.ts`,
-  `as ImportNode` in `import-newlines/index.ts`, `as PropertyNode[]` in
-  `newline-destructuring/index.ts`. The other two are not that shape and were undercounted here
-  until a review found them: `{} as LintelConfigs` in `plugin.ts`, a `Record` keyed by a union that
-  cannot be built incrementally without one, and `as Partial<T>` in `utils/ruleUtils.ts`, which
-  `.claude/rules/type-standards.md` carries in its own exempt table. `plugin.ts` and not `index.ts`:
-  the preset assembly moved out of the barrel and both the cast and the `Partial<>` went with it.
+  shape the traversal actually hands over: `as RuleNode` in
+  `prefer-arrow-functions/preferArrowFunctions.ts`, `as ImportNode` in
+  `import-newlines/importNewlines.ts`, `as PropertyNode[]` in
+  `newline-destructuring/newlineDestructuring.ts`. The other two are not that shape and were
+  undercounted here until a review found them: `{} as LintelConfigs` in `plugin.ts`, a `Record`
+  keyed by a union that cannot be built incrementally without one, and `as Partial<T>` in
+  `utils/ruleUtils.ts`, which `.claude/rules/type-standards.md` carries in its own exempt table.
+  `plugin.ts` and not `index.ts`: the preset assembly moved out of the barrel and both the cast and
+  the `Partial<>` went with it.
 
   `utils/compatUtils.ts` needs none: it describes both ESLint shapes as one interface with every
-  member optional, which a real context satisfies structurally. `union-newline/index.ts` used to
-  carry a sixth, `(node.parent?.type as string)`, suppressing a real TS2367 rather than narrowing
+  member optional, which a real context satisfies structurally. `union-newline/unionNewline.ts`
+  used to carry a sixth, `(node.parent?.type as string)`, suppressing a real TS2367 rather than narrowing
   anything; it reads `String(node.parent?.type)` now, because ESLint types `parent` as ESTree and
   a TypeScript node type genuinely does occur there.
 - **A test that cannot fail is not a test.** Break the rule, watch the suite go red, revert.
@@ -49,7 +51,11 @@ local-only. That version is not the source of truth any more. This repo owns the
   Linting comes from the workspace root's `eslint.config.ts`, which carries this package's two
   documented rule exemptions.
 - A rule is a `kebab-case` directory named after its id, and everything that rule owns lives in it:
-  `index.ts`, `index.test.ts`, `README.md`. `README.md` rather than the kebab filename because
+  `<camelCaseExport>.ts`, `<camelCaseExport>.test.ts`, `README.md`, and a `utils/` subdirectory for
+  the helpers only that rule uses. The implementation file is named for its single export, which is
+  the repo-wide convention, so the directory is the one place the kebab-case id is written and
+  nothing has to translate between two spellings of it. `index` means a barrel in this package and
+  `src/rules/index.ts` is the only one. `README.md` rather than the camelCase filename because
   GitHub renders a directory's README when you browse to it, which is what makes `meta.docs.url`
   point at the directory and land on the doc and the source at once.
 - `package.json` is canonical for package manager, engines, dependencies and scripts.
@@ -59,11 +65,11 @@ local-only. That version is not the source of truth any more. This repo owns the
 Six steps. The type system catches a missed one in the first two, and `src/meta.test.ts` catches
 the rest.
 
-1. `src/rules/<kebab-case>/index.ts`, built with `createRule('<kebab-case>', { ... })` from
+1. `src/rules/<kebab-case>/<camelCaseExport>.ts`, built with `createRule('<kebab-case>', { ... })` from
    `src/types.ts`. `category`, `language` and `recommended` are compulsory, so the presets cannot
    be forgotten.
 2. One line in the `rules` object in `src/rules/index.ts`.
-3. `src/rules/<kebab-case>/index.test.ts`.
+3. `src/rules/<kebab-case>/<camelCaseExport>.test.ts`.
 4. `src/rules/<kebab-case>/README.md`.
 5. An entry in `__mocks__/ruleMetadata.json`. It is a golden file of every rule's public surface:
    messages, schema, type, fixable and the four `docs` fields. `meta.test.ts` asserts it covers
@@ -73,41 +79,50 @@ the rest.
    at the top level on purpose: a rule that throws while its module is being evaluated would take
    the whole file down before a test ran, and the runner would report zero failures rather than
    one. Importing inside the test body turns it into an ordinary failure with the rule's name on
-   it. `meta.test.ts` cannot stand in for this, because it imports `./index` statically and dies
-   the same way.
+   it. `meta.test.ts` cannot stand in for this, because it imports `./index` (the package barrel)
+   statically and dies the same way.
 
 Steps 1, 3 and 4 are the same directory, and `meta.test.ts` reads that directory back rather than
 probing three derived paths: it lists `src/rules/`, holds the listing against the registry in both
-directions, and then holds each directory's contents against `index.ts`, `index.test.ts`,
-`README.md`. A directory nobody registered now fails, which the old per-rule `existsSync` could
-not see.
+directions, and then holds each directory's contents against the three names derived from the id.
+A directory nobody registered now fails, which the old per-rule `existsSync` could not see. It also
+asserts no `index.ts` survives in a rule directory and that every remaining `.ts` sits at
+`utils/*Utils.ts`, so half a rename is caught rather than left to read oddly.
 
-Code shared *between* rules lives in four modules under `src/utils`, and a helper belongs to
+Code shared *between* rules lives in five modules under `src/utils`, and a helper belongs to
 exactly one of them: `ruleUtils.ts` for the names ESLint's rule API is reached through (the node
 type aliases, `mustFind`, `rangeOf`, `optionsOf`, `rebuildLosesComments`, `FUNCTION_TYPES`),
 `layoutUtils.ts` for anything that reads or writes whitespace, `promiseChainUtils.ts` for the
-fluent-chain walk the two promise rules share, and `compatUtils.ts` for anything that reads an
-accessor ESLint moved between majors. Each has a colocated test file.
+fluent-chain walk the two promise rules share, `compatUtils.ts` for anything that reads an
+accessor ESLint moved between majors, and `jsxUtils.ts` for reading a JSX element: its name, its
+attributes, the value behind one, and the walk down its children. Each has a colocated test file.
 
-Code one rule owns stays in that rule's directory. Splitting it out of `src/utils` used to be the
-wrong move for a single-consumer helper, and out of a flat `rules/` it broke one-rule-per-file; a
-rule directory is where it belongs. Three rules carry one today:
+`jsxUtils.ts` is where the five React Native accessibility rules get their node shapes. JSX is
+absent from ESLint's ESTree types, so it describes what those rules read as structural interfaces
+with every field optional, which a real parsed node satisfies without a cast. The cost is that a
+few reads (`elementAttributesOf`, `propertiesOf`, `elementsOf`, and the declining arm of each
+guard) can only be reached by calling them directly, which is what `jsxUtils.test.ts` does and
+why that file is shaped the way it is rather than driving everything through a rule.
 
-- `prefer-arrow-functions/writeUtils.ts`, the emitter (function node in, arrow text out), and
-  `safetyUtils.ts`, the layer that decides whether a rewrite is allowed at all.
-- `import-newlines/writeUtils.ts`, the same emitter split: statement in, replacement text out.
-  Answering with a string rather than a fix is what lets the rule measure a collapsed import
+Code one rule owns stays in that rule's own `utils/` subdirectory. Splitting it out into
+`src/utils` used to be the wrong move for a single-consumer helper, and out of a flat `rules/` it
+broke one-rule-per-file; a `utils/` beside the rule is where it belongs, because a helper sitting
+as a sibling of the rule reads like a second rule. Three rules carry one today:
+
+- `prefer-arrow-functions/utils/writeUtils.ts`, the emitter (function node in, arrow text out), and
+  `utils/safetyUtils.ts`, the layer that decides whether a rewrite is allowed at all.
+- `import-newlines/utils/writeUtils.ts`, the same emitter split: statement in, replacement text
+  out. Answering with a string rather than a fix is what lets the rule measure a collapsed import
   against the line limit before deciding to report it.
-- `newline-destructuring/boundaryUtils.ts`, where a member begins and ends once its comments are
-  counted, and the layout analysis read off those boundaries. Two of that rule's defects lived
+- `newline-destructuring/utils/boundaryUtils.ts`, where a member begins and ends once its comments
+  are counted, and the layout analysis read off those boundaries. Two of that rule's defects lived
   there, and both fix strategies plus the whole report ladder are decided from it.
 
-The `Utils` suffix is enforced under `src/utils` and only there: the root `eslint.config.ts` maps
-`**/utils/*.ts` to `*Utils` through `check-file`, and a rule directory is not a `utils/` directory,
-so nothing fails a helper named otherwise beside a rule. Carry the suffix there anyway. It is what
-tells a reader that a `.ts` file in a rule directory is not a second rule, and the alternative is
-two naming conventions for the same kind of module depending on which directory it sits in.
-Neither count above is derived, and both are only as true as the last person who read them.
+The `Utils` suffix is enforced wherever the directory is called `utils`: the root
+`eslint.config.ts` maps `**/utils/*.ts` to `*Utils` through `check-file`, which now reaches a rule's
+own `utils/` as well as `src/utils`. That is the reason the helpers moved into one rather than
+staying beside the rule under a convention nothing checked. Neither count above is derived, and
+both are only as true as the last person who read them.
 
 The presets and the docs URL derive from the registry, so do not hand-maintain those. The
 README rule table is **not** derived: no script writes it. `meta.test.ts` only checks that each
