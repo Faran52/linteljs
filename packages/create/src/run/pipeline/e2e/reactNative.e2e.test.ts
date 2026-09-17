@@ -4,15 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import {
-  afterAllCleanup,
-  runE2eCase,
-  withPackageManagers,
-} from './helpers';
+import { casesFor } from './cases';
+import { afterAllCleanup, runE2eCase } from './helpers';
 
 describe('react-native end-to-end', () => {
   afterAll(afterAllCleanup);
 
-  it.each(withPackageManagers('react-native', { target: 'react-native' }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
+  it.concurrent.each(casesFor('react-native'))('generates, installs and checks $label', runE2eCase, 900_000);
 });

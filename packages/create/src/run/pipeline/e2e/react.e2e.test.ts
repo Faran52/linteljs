@@ -4,51 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import { LIBRARIES } from '../../../model/answers/answers';
-
-import {
-  afterAllCleanup,
-  runE2eCase,
-  withDefaultPm,
-  withPackageManagers,
-} from './helpers';
+import { casesFor } from './cases';
+import { afterAllCleanup, runE2eCase } from './helpers';
 
 describe('react end-to-end', () => {
   afterAll(afterAllCleanup);
 
-  it.each(withPackageManagers('react', { target: 'react' }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
-
-  it.each(withPackageManagers('react with every library', {
-    target: 'react',
-    libraries: LIBRARIES,
-    form: 'tanstack-form',
-    store: true,
-  }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
-
-  it.each(withDefaultPm('react with react-hook-form and zod', {
-    target: 'react',
-    libraries: ['zod'],
-    form: 'react-hook-form',
-  }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
-
-  it.each(withDefaultPm('react with react-router', {
-    target: 'react',
-    router: 'react-router',
-  }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
-
-  it.each(withDefaultPm('react with tanstack router', {
-    target: 'react',
-    router: 'tanstack-router',
-  }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
-
-  it.each(withDefaultPm('react on the relaxed floor', {
-    target: 'react',
-    typeSafety: 'relaxed',
-  }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
+  it.concurrent.each(casesFor('react'))('generates, installs and checks $label', runE2eCase, 900_000);
 });

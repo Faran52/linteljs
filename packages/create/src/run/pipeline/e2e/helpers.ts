@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -13,12 +13,10 @@ import { env } from 'node:process';
 import { inject } from 'vitest';
 
 import { parsePackageJson } from '../../../artifacts/package-json/emitPackageJson';
-import {
-  type Answers,
-  DEFAULT_ANSWERS,
-  type PackageManager,
-} from '../../../model/answers/answers';
+import { type Answers, type PackageManager } from '../../../model/answers/answers';
 import { CONFIG_PATH, parseLintelConfig } from '../../../model/config/lintelConfig';
+
+import type { E2eCase } from './cases';
 
 export interface RunResult {
   status: number;
@@ -30,7 +28,7 @@ const registry = inject('registry');
 // Every manager, and every scaffolder and install the CLI spawns, reads the workspace registry from its environment.
 const LAUNCHER_KEYS = new Set(['npm_execpath', 'npm_node_execpath', 'npm_config_user_agent']);
 
-export const run = (command: string, args: string[], cwd: string, input = ''): RunResult => {
+export const run = async (command: string, args: string[], cwd: string): Promise<RunResult> => {
   /**
    * A generated project must not inherit which manager launched this suite. `run-p` reads `npm_execpath` to choose
    * what it spawns, and `pnpm run test:e2e` sets it, so `vue on bun` ran pnpm inside a project pinned to bun and got
@@ -41,42 +39,68 @@ export const run = (command: string, args: string[], cwd: string, input = ''): R
     return !LAUNCHER_KEYS.has(key) && !key.startsWith('npm_package_') && !key.startsWith('npm_lifecycle_');
   }));
 
-  const result = spawnSync(command, args, {
-    cwd,
-    input,
-    encoding: 'utf8',
-    env: {
-      ...parentEnv,
-      npm_config_registry: registry.url,
-      NPM_CONFIG_REGISTRY: registry.url,
-      pnpm_config_registry: registry.url,
-      // pnpm 12 and Yarn 4 refuse a version younger than their age gate, and the workspace ones are seconds old.
-      pnpm_config_minimum_release_age: '0',
-      BUN_CONFIG_REGISTRY: registry.url,
-      YARN_NPM_REGISTRY_SERVER: registry.url,
-      YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
-      YARN_NPM_MINIMAL_AGE_GATE: '0',
-      /**
-       * Split by what each directory remembers. A cache of bytes is keyed by the bytes and persists. A cache of
-       * *which versions exist* starts empty every run, because `registrySetup` publishes a version no run has used
-       * before and a manifest cached last run does not list it: the range resolves to the previous run's build and
-       * the `why` assertion catches it. Publishing a unique version ends the other staleness, where one version was
-       * republished with different bytes and bun reported `Integrity check failed`, but not this one.
-       * npm's cacache is integrity-keyed and needs neither treatment; bun offers no split, so its cache is per run.
-       */
-      npm_config_cache: join(registry.cacheDir, 'npm'),
-      pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
-      pnpm_config_cache_dir: join(registry.runDir, 'pnpm-cache'),
-      YARN_GLOBAL_FOLDER: join(registry.runDir, 'yarn'),
-      YARN_CACHE_FOLDER: join(registry.cacheDir, 'yarn-cache'),
-      BUN_INSTALL_CACHE_DIR: join(registry.runDir, 'bun'),
-    },
-  });
+  // `spawn` rather than `spawnSync`: a case is one `it.concurrent`, and a synchronous spawn blocks the event loop
+  // for the whole install, so every case in a file would run one at a time however high `maxConcurrency` is set.
+  return new Promise<RunResult>((settle) => {
+    const child = spawn(command, args, {
+      cwd,
+      env: {
+        ...parentEnv,
+        npm_config_registry: registry.url,
+        NPM_CONFIG_REGISTRY: registry.url,
+        pnpm_config_registry: registry.url,
+        // pnpm 12 and Yarn 4 refuse a version younger than their age gate, and the workspace ones are seconds old.
+        pnpm_config_minimum_release_age: '0',
+        BUN_CONFIG_REGISTRY: registry.url,
+        YARN_NPM_REGISTRY_SERVER: registry.url,
+        YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
+        YARN_NPM_MINIMAL_AGE_GATE: '0',
+        /**
+         * Split by what each directory remembers. A cache of bytes is keyed by the bytes and persists. A cache of
+         * *which versions exist* starts empty every run, because `registrySetup` publishes a version no run has used
+         * before and a manifest cached last run does not list it: the range resolves to the previous run's build and
+         * the `why` assertion catches it. Publishing a unique version ends the other staleness, where one version was
+         * republished with different bytes and bun reported `Integrity check failed`, but not this one.
+         * npm's cacache is integrity-keyed and needs neither treatment; bun's is pruned of `@linteljs` by
+         * `registrySetup` at the start of a run, which is the same split spelled by hand.
+         */
+        npm_config_cache: join(registry.cacheDir, 'npm'),
+        pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
+        pnpm_config_cache_dir: join(registry.runDir, 'pnpm-cache'),
+        YARN_GLOBAL_FOLDER: join(registry.runDir, 'yarn'),
+        YARN_CACHE_FOLDER: join(registry.cacheDir, 'yarn-cache'),
+        BUN_INSTALL_CACHE_DIR: join(registry.cacheDir, 'bun'),
+      },
+    });
 
-  return {
-    status: result.status ?? 1,
-    output: `${result.stdout}${result.stderr}`,
-  };
+    // Kept apart and joined at the end, the way `spawnSync` handed them over: every matcher in `INSTALL_NOISE` is
+    // line-anchored, and interleaving two streams by chunk can split one line across a switch between them.
+    const out: string[] = [];
+    const err: string[] = [];
+    const joined = (): string => {
+      return `${out.join('')}${err.join('')}`;
+    };
+
+    child.stdout.on('data', (chunk: Buffer) => {
+      out.push(chunk.toString('utf8'));
+    });
+    child.stderr.on('data', (chunk: Buffer) => {
+      err.push(chunk.toString('utf8'));
+    });
+    // A manager that is not installed at all, which is a failure to report rather than one to throw through.
+    child.on('error', (error) => {
+      settle({
+        status: 1,
+        output: `${joined()}${error.message}`,
+      });
+    });
+    child.on('close', (code) => {
+      settle({
+        status: code ?? 1,
+        output: joined(),
+      });
+    });
+  });
 };
 
 // Folds the exit status into the asserted value, so a failure prints the process output.
@@ -111,7 +135,7 @@ const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
   bun: { why: ['pm', 'ls', '--all'] },
 };
 
-export const runPm = (pm: PackageManager, args: string[], project: string): RunResult => {
+export const runPm = async (pm: PackageManager, args: string[], project: string): Promise<RunResult> => {
   const mapped = args.flatMap((arg) => {
     return SPELLINGS[pm][arg] ?? [arg];
   });
@@ -126,37 +150,6 @@ export const afterAllCleanup = (): void => {
     recursive: true,
     force: true,
   });
-};
-
-export const withPackageManagers = (
-  label: string,
-  baseAnswers: Partial<Answers>,
-): { label: string;
-  answers: Answers; }[] => {
-  return (['pnpm', 'npm', 'yarn', 'bun'] as const).map((packageManager) => {
-    return {
-      label: `${label} on ${packageManager}`,
-      answers: {
-        ...DEFAULT_ANSWERS,
-        ...baseAnswers,
-        packageManager,
-      },
-    };
-  });
-};
-
-export const withDefaultPm = (
-  label: string,
-  baseAnswers: Partial<Answers>,
-): { label: string;
-  answers: Answers; }[] => {
-  return [{
-    label,
-    answers: {
-      ...DEFAULT_ANSWERS,
-      ...baseAnswers,
-    },
-  }];
 };
 
 // The answers as a person would type them; a flag a target never asks for is refused, so those go only when set.
@@ -179,10 +172,10 @@ export const answerFlags = (answers: Answers): string[] => {
 };
 
 // One command from an empty parent directory, which is the whole of what a user does.
-export const createProject = (root: string, name: string, answers: Answers): RunResult => {
+export const createProject = async (root: string, name: string, answers: Answers): Promise<RunResult> => {
   mkdirSync(root, { recursive: true });
 
-  const attempt = (): RunResult => {
+  const attempt = async (): Promise<RunResult> => {
     rmSync(join(root, name), {
       recursive: true,
       force: true,
@@ -191,7 +184,7 @@ export const createProject = (root: string, name: string, answers: Answers): Run
     return run('node', [registry.cliBin, name, ...answerFlags(answers)], root);
   };
 
-  const first = attempt();
+  const first = await attempt();
 
   return first.status === 0 || !isUnpublishedYet(answers.packageManager, first.output) ? first : attempt();
 };
@@ -240,9 +233,9 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   },
 };
 
-export const verifyLintOutput = (pm: PackageManager, project: string): void => {
+export const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
   // Proves the install resolved the workspace versions rather than anything published.
-  const why = runPm(pm, ['why', '@linteljs/eslint-plugin'], project);
+  const why = await runPm(pm, ['why', '@linteljs/eslint-plugin'], project);
 
   const version = registry.version.replaceAll('.', String.raw`\.`);
 
@@ -250,7 +243,7 @@ export const verifyLintOutput = (pm: PackageManager, project: string): void => {
   expect(why.output).toMatch(new RegExp(`@linteljs/eslint-config[@ ](npm:)?${version}`));
 
   // ESLint exits 2 on a configuration failure and 1 on findings.
-  const lint = runPm(pm, ['lint'], project);
+  const lint = await runPm(pm, ['lint'], project);
 
   expect(lint.status < 2 ? 'eslint ran' : `eslint config error\n${lint.output}`).toBe('eslint ran');
 
@@ -260,17 +253,16 @@ export const verifyLintOutput = (pm: PackageManager, project: string): void => {
   expect(`${String(found)} findings\n${found === 0 ? '' : lint.output}`).toBe('0 findings\n');
 
   // `check`, so the gate has one definition.
-  expect(outcome(runPm(pm, ['check'], project), 'check')).toBe('check: ok');
+  expect(outcome(await runPm(pm, ['check'], project), 'check')).toBe('check: ok');
 };
 
-export const runE2eCase = ({ label, answers }: { label: string;
-  answers: Answers; }): void => {
+export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => {
   const root = join(workspace, label.replaceAll(' ', '-'));
   // `create-expo-app` rejects a name matching one of its own dependencies.
   const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
   const project = join(root, name);
 
-  const create = createProject(root, name, answers);
+  const create = await createProject(root, name, answers);
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
   expect(create.output).not.toContain('next: ');
@@ -286,5 +278,5 @@ export const runE2eCase = ({ label, answers }: { label: string;
   expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
     .not.toHaveProperty('lintel');
 
-  verifyLintOutput(answers.packageManager, project);
+  await verifyLintOutput(answers.packageManager, project);
 };

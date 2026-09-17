@@ -4,24 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import { LIBRARIES } from '../../../model/answers/answers';
-
-import {
-  afterAllCleanup,
-  runE2eCase,
-  withPackageManagers,
-} from './helpers';
+import { casesFor } from './cases';
+import { afterAllCleanup, runE2eCase } from './helpers';
 
 describe('next end-to-end', () => {
   afterAll(afterAllCleanup);
 
-  it.each(withPackageManagers('next', { target: 'next' }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
-
-  it.each(withPackageManagers('next with every library', {
-    target: 'next',
-    libraries: LIBRARIES,
-    form: 'tanstack-form',
-  }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
+  it.concurrent.each(casesFor('next'))('generates, installs and checks $label', runE2eCase, 900_000);
 });

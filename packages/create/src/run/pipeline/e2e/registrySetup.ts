@@ -5,6 +5,7 @@ import {
 } from 'node:child_process';
 import {
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -27,17 +28,6 @@ export interface E2eRegistry {
   runDir: string;
 }
 
-interface ShardPaths {
-  dir: string;
-  port: number;
-}
-
-interface ShardPaths {
-  dir: string;
-  port: number;
-  cacheDir: string;
-}
-
 declare module 'vitest' {
   export interface ProvidedContext {
     registry: E2eRegistry;
@@ -45,34 +35,50 @@ declare module 'vitest' {
 }
 
 const ROOT = resolve(import.meta.dirname, '../../../../../..');
-/**
- * Derived from the shard rather than chosen freshly: Yarn caches package metadata globally, tarball URLs included, and
- * Verdaccio answers its conditional request with 304 whenever upstream is unchanged, so a port that moved between runs
- * is a dead tarball host. One registry and one directory per shard, since shards are separate processes and on one
- * machine they would otherwise bind the same port and publish into the same storage.
- */
-const BASE_PORT = 48730;
 
 /**
- * `cacheDir` sits outside `dir` and is never wiped. A package manager's cache records the registry a tarball came
- * from, so a cache shared with another port serves URLs into a dead one, and a cache shared with an earlier run
- * serves the build published under this same version last time. Tying it to the shard that owns the port keeps both
- * true and still lets the next run reuse the downloads.
+ * One registry for a run, on a fixed port. Sharding is a stride over the cases inside one process (`cases.ts`), and
+ * every shard in `e2e.yml` is its own machine, so two registries never want the same machine at once. Fixed rather
+ * than chosen freshly because Yarn caches package metadata globally, tarball URLs included, and Verdaccio answers its
+ * conditional request with 304 whenever upstream is unchanged: a port that moved between runs is a dead tarball host.
+ *
+ * This is also what makes bun usable. `bunx` and `bun create` resolve a scaffolder against whatever registry they
+ * find and got `ConnectionRefused` whenever a second port existed on the same machine, which is the only reason the
+ * suite was ever documented as CI-shards-only.
  */
-const pathsFor = (shard: { index: number;
-  count: number; }
-  | undefined): ShardPaths => {
-  const name = shard === undefined ? 'single' : `shard-${String(shard.index)}`;
+const PORT = 48730;
 
-  return {
-    dir: join(ROOT, '.e2e', name),
-    port: shard === undefined ? BASE_PORT : BASE_PORT + shard.index,
-    cacheDir: join(ROOT, '.e2e-cache', name),
-  };
+// Wiped at the start of every run: anything recording which versions exist rather than what bytes they hold.
+const RUN_DIR = join(ROOT, '.e2e');
+
+// Never wiped, and outside `RUN_DIR`. A package manager's cache records the registry a tarball came from, which the
+// fixed port above keeps valid between runs, so every download survives to the next one.
+const CACHE_DIR = join(ROOT, '.e2e-cache');
+
+/**
+ * bun's cache is the one that cannot tell "these bytes" from "these versions exist", so the suite used to throw the
+ * whole thing away every run and re-download every dependency of every bun case. Only `@linteljs/*` is republished
+ * under a version a cached manifest cannot know about, so only `@linteljs/*` has to go. Anything this misses fails
+ * loudly rather than quietly: `verifyLintOutput` asserts the resolved version is this run's.
+ */
+const pruneBunCache = (): void => {
+  const cache = join(CACHE_DIR, 'bun');
+
+  mkdirSync(cache, { recursive: true });
+
+  // A scope directory, a flattened `@linteljs%2f*` entry and a `.npm` manifest beside it all carry the scope.
+  for (const name of readdirSync(cache).filter((entry) => {
+    return entry.includes('@linteljs');
+  })) {
+    rmSync(join(cache, name), {
+      recursive: true,
+      force: true,
+    });
+  }
 };
 
 // A verdaccio orphaned by a killed run still answers `-/ping`, so `waitForPing` would pass against a registry serving
-// a directory this shard has just deleted, and every later request is refused. Fail on the clash instead.
+// a directory this run has just deleted, and every later request is refused. Fail on the clash instead.
 const requireFreePort = async (port: number): Promise<void> => {
   await new Promise<void>((resolve, reject) => {
     const probe = createServer();
@@ -121,39 +127,6 @@ const check = (command: string, args: string[], cwd: string): void => {
   if (result.status !== 0) {
     throw new Error(`${command} ${args.join(' ')} exited ${String(result.status)}\n${result.stdout}${result.stderr}`);
   }
-};
-
-/**
- * Every `pnpm publish` fires `prepack`, which rebuilds all three packages into the one `dist/` they share. Shards are
- * separate processes against separate registries, so they publish at the same moment and tear each other's output.
- * `mkdir` is atomic, so it is the lock.
- */
-const withPublishLock = async (run: () => void): Promise<void> => {
-  const lock = join(ROOT, '.e2e', 'publish.lock');
-
-  for (let attempt = 0; attempt < 600; attempt += 1) {
-    try {
-      mkdirSync(lock);
-    }
-    catch {
-      await sleep(500);
-      continue;
-    }
-
-    try {
-      run();
-    }
-    finally {
-      rmSync(lock, {
-        recursive: true,
-        force: true,
-      });
-    }
-
-    return;
-  }
-
-  throw new Error(`another shard held ${lock} for five minutes`);
 };
 
 const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin'].map((name) => {
@@ -216,29 +189,25 @@ const publishedAs = (version: string, publish: () => void): void => {
 // A registry holding the workspace versions in front of npmjs, so an install resolves `@linteljs/*` to what is
 // checked out and everything else to the real thing. Nothing published is ever consulted for this scope.
 export const setup = async (project: TestProject): Promise<() => void> => {
-  const {
-    dir,
-    port,
-    cacheDir,
-  } = pathsFor(project.vitest.config.shard);
   /**
-   * Outside `dir`, so it survives the wipe. One npmjs tarball is stored once and served to all four managers, which
-   * all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a port.
-   * Measured: the same storage on a different port with the uplink unreachable still serves metadata and tarballs.
+   * Outside `RUN_DIR`, so it survives the wipe. One npmjs tarball is stored once and served to all four managers,
+   * which all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a
+   * port. Measured: the same storage on a different port with the uplink unreachable still serves both.
    */
-  const storage = join(cacheDir, 'registry');
+  const storage = join(CACHE_DIR, 'registry');
 
-  rmSync(dir, {
+  rmSync(RUN_DIR, {
     recursive: true,
     force: true,
   });
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(RUN_DIR, { recursive: true });
   mkdirSync(storage, { recursive: true });
+  pruneBunCache();
 
-  await requireFreePort(port);
+  await requireFreePort(PORT);
 
-  const url = `http://127.0.0.1:${String(port)}/`;
-  const config = join(dir, 'verdaccio.yaml');
+  const url = `http://127.0.0.1:${String(PORT)}/`;
+  const config = join(RUN_DIR, 'verdaccio.yaml');
 
   writeFileSync(config, [
     `storage: ${storage}`,
@@ -264,7 +233,7 @@ export const setup = async (project: TestProject): Promise<() => void> => {
 
   const verdaccio = spawn(
     join(ROOT, 'node_modules/.bin/verdaccio'),
-    ['--config', config, '--listen', `127.0.0.1:${String(port)}`],
+    ['--config', config, '--listen', `127.0.0.1:${String(PORT)}`],
     { stdio: 'inherit' },
   );
 
@@ -272,14 +241,12 @@ export const setup = async (project: TestProject): Promise<() => void> => {
 
   const version = runVersion(createVersion());
 
-  await withPublishLock(() => {
-    publishedAs(version, () => {
-      check('pnpm', ['-r', 'publish', '--registry', url, '--no-git-checks'], ROOT);
-    });
+  publishedAs(version, () => {
+    check('pnpm', ['-r', 'publish', '--registry', url, '--no-git-checks'], ROOT);
   });
 
   // Installed from the registry like a user's `create @linteljs`, so the bin runs on its published dependency tree.
-  const cliDir = join(dir, 'cli');
+  const cliDir = join(RUN_DIR, 'cli');
 
   mkdirSync(cliDir, { recursive: true });
   writeFileSync(join(cliDir, 'package.json'), '{}\n');
@@ -294,8 +261,8 @@ export const setup = async (project: TestProject): Promise<() => void> => {
     url,
     version,
     cliBin: join(cliDir, 'node_modules/.bin/create-linteljs'),
-    cacheDir,
-    runDir: dir,
+    cacheDir: CACHE_DIR,
+    runDir: RUN_DIR,
   });
 
   return () => {

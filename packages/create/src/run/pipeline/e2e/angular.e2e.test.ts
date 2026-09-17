@@ -4,15 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import {
-  afterAllCleanup,
-  runE2eCase,
-  withPackageManagers,
-} from './helpers';
+import { casesFor } from './cases';
+import { afterAllCleanup, runE2eCase } from './helpers';
 
 describe('angular end-to-end', () => {
   afterAll(afterAllCleanup);
 
-  it.each(withPackageManagers('angular', { target: 'angular' }))
-  ('generates, installs and checks $label', runE2eCase, 900_000);
+  it.concurrent.each(casesFor('angular'))('generates, installs and checks $label', runE2eCase, 900_000);
 });

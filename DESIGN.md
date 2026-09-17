@@ -11,7 +11,7 @@ restates code goes stale and then misleads.
 
 For a consumer deciding whether to use lintel: The problem, The goal, Non-goals.
 For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure; Libraries and routers; Package manager files; Comments.
-For work on this workspace itself: One version per shared dependency; What a project owns; Renaming a generated agent file; React Native build; Releasing; Workspace lint exemptions.
+For work on this workspace itself: One version per shared dependency; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
 
 ## The problem
 
@@ -763,6 +763,99 @@ and neither carries a dev-time dependency for it.
 `web-ext lint` and `web-ext sign` are the real reasons to reach for the tool, and both run under `npx` on the day
 an extension is submitted to addons.mozilla.org, which is not a reason to install it in every project from birth.
 
+## The end-to-end matrix: two families, not one cross product
+
+Every answer this CLI can be given is covered, and the two ways of covering them cost 327 cases
+rather than 1200. `cases.ts` enumerates them; nothing is listed by hand.
+
+The full cross product is 1200. Fixing the rule first, because an earlier count of 1328 assumed a
+Vue project chooses a router and it does not: `create-vue` is called with `--router` unconditionally,
+which is the whole of the 128 difference. A multi-select axis is never combined, it is always its
+full value (`libraries`, `agents`, `plugins`, `surfaces`); the single-select axes combine
+(`packageManager`, `testing`, `typeSafety`, `form`, `router`, `store`, `browser`, `hostedFramework`).
+Per target that is 288 for React, 352 for the extension, 176 for Astro, 96 each for Next and React
+Native, 64 each for Vue and Angular, 32 each for Svelte and Solid.
+
+Measured, an install is around 60% of a case: 19.7 to 30.5 seconds of a 39 to 52 second one. So 1200
+is about 15 hours of machine time, and sharding divides that rather than reducing it.
+
+**Installing once per distinct dependency set does not fix it, which is why it was not built.**
+`typeSafety` is the only axis that changes nothing installed, so it is a clean 2:1 and very nearly
+the only one; every other axis moves at least one package, and the manager splits the install by
+definition. Deduplicating gives 600 installs and still 1200 gates, about 10.5 hours. A 30% cut for a
+tree-cloning mechanism is not a trade worth making, and at 327 cases the same mechanism would save
+under an hour in five.
+
+What cuts it is noticing that the manager axis and the option axes answer different questions:
+
+- `managerCases`: every target on every manager, every multi-select at full value. 36 cases. This is
+  the heaviest dependency set a target has, installed four ways, and it is the only thing that
+  answers "does this library break the project" and "does this manager resolve the same manifest
+  differently". It is also the only family that runs anything but pnpm.
+- `optionCases`: every combination of the single-select axes, on pnpm alone. 300 cases. A package
+  manager does not decide which config is emitted, so multiplying these by four bought four copies
+  of one answer.
+
+They overlap on exactly one case per target, which `ALL_CASES` drops: 327, all 327 labels distinct,
+and every one of them legal under `refuseMisfit`.
+
+The two halves are complementary rather than redundant. `managerCases` cannot catch a package the
+emitted config needs but only installs when its answer is selected, because everything is always
+selected there; `optionCases` is what catches it. `optionCases` cannot catch npm and bun resolving
+the same manifest to different trees; `managerCases` is what catches that.
+
+### One registry on a fixed port, and the bun failure that made it necessary
+
+The suite used to derive a registry port per shard so two shards could share a machine. Nothing ever
+successfully did: `bunx` and `bun create` answered `ConnectionRefused` for the create package's own
+tarball while `curl` got 200 on the same URL, reproducibly, with seven hypotheses falsified. It only
+ever happened with several registries on several ports at once.
+
+So the port is fixed and there is one registry per run. In `e2e.yml` every shard is its own machine,
+so one per run is one per machine; locally, parallelism is `maxConcurrency` inside one process rather
+than several processes against several ports. The configuration that reached the bun defect no longer
+exists, which was a smaller change than an upstream fix.
+
+Three things fell out of it. The publish lock is gone, because one process publishes once. The CI
+cache key no longer carries a shard, because all four hold the same bytes. And Yarn's global metadata
+cache, which stores tarball URLs including the port, is now valid between runs instead of pointing at
+a dead host.
+
+### Sharding is a stride over the cases, not vitest's `--shard`
+
+Vitest splits by file. The nine files hold 11 to 91 cases each, so a file split cannot balance them.
+`E2E_SHARD`/`E2E_SHARDS` take every Nth case from the ordered list instead, which hands each shard an
+even share of every target: no shard is the one that drew React Native and Angular together. Measured
+at four shards: 82, 82, 82, 81.
+
+The ceiling is 11 shards, the smallest target's case count, below which a shard could draw no case
+from a file at all and vitest would call the file empty.
+
+### `run` spawns asynchronously so that concurrency is real
+
+A case is an `it.concurrent`, and `spawnSync` blocks the event loop for the length of an install, so
+the previous helper would have serialised a file however high `maxConcurrency` was set. `run` now
+collects from a `spawn`, keeping stdout and stderr in separate buffers and joining them at the end
+exactly as `spawnSync` handed them over: every matcher in `INSTALL_NOISE` is line-anchored, and
+interleaving two streams by chunk can split a line across a switch between them.
+
+Files stay serial and the cases inside a file run together. Only `managerCases` is not pnpm, and its
+four cases sit at the head of one file, so at most one bun, one yarn and one npm install is ever in
+flight. The managers whose caches are least happy about a second writer are serialised by the shape
+of the suite rather than by a lock.
+
+### bun's cache is pruned rather than deleted
+
+Three of the four managers keep a persistent cache in `.e2e-cache`; bun's was pointed at the
+directory wiped every run, so every bun case re-downloaded its whole tree every time. The reason was
+real: bun offers no split between a cache of bytes and a cache of which versions exist, and this
+suite publishes `@linteljs/*` under a version no run has used before, so a manifest cached last run
+does not list it.
+
+Only `@linteljs/*` is republished, so only `@linteljs/*` has to go. `pruneBunCache` deletes the
+entries carrying that scope and the rest of the cache persists. Anything the prune misses fails
+loudly rather than quietly, because `verifyLintOutput` asserts the resolved version is this run's.
+
 ## Releasing
 
 Push a branch named for the version. That is the whole ritual:
@@ -938,11 +1031,11 @@ Scoped to the RuleTester directory alone. Every other test file in the repo is h
 
 ### `@linteljs/workspace/e2e-test`
 
-Each `*.e2e.test.ts` under `run/pipeline/e2e/` is one `it.each(cases)(label, runE2eCase)` per target, and
-every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the callback body for `expect` calls
-and finds no body at all, since the helper is passed by reference. Measured: `assertFunctionNames:
-['runE2eCase']` does not help either, because the option matches calls inside the body and there is no
-call. Off for that directory alone; every other test file is held to the rule.
+Each `*.e2e.test.ts` under `run/pipeline/e2e/` is one `it.concurrent.each(casesFor(target))(label,
+runE2eCase)`, and every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the callback body
+for `expect` calls and finds no body at all, since the helper is passed by reference. Measured:
+`assertFunctionNames: ['runE2eCase']` does not help either, because the option matches calls inside the
+body and there is no call. Off for that directory alone; every other test file is held to the rule.
 
 ### Coverage thresholds, in `vitest.config.ts`
 

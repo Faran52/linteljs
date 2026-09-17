@@ -1,3 +1,5 @@
+import { env } from 'node:process';
+
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -8,10 +10,10 @@ import { defineConfig } from 'vitest/config';
  * No `testTimeout` here: the suite sets its own per-case timeout, because the number that
  * matters is per target rather than per file.
  *
- * Sharding: `--shard <index>/<count>` splits the files across runners; `e2e.yml` runs four. A shard
- * is its own process, so `registrySetup.ts` gives it its own registry port and its own `.e2e`
- * directory, which is what lets two run on one machine. Example:
- * `vitest run --config vitest.e2e.config.ts --shard 1/4`
+ * Sharding is `E2E_SHARD`/`E2E_SHARDS`, read in `cases.ts`, not vitest's own `--shard`. Vitest
+ * splits by file, and the nine files hold 11 to 91 cases each, so a file split cannot balance
+ * them; the stride in `cases.ts` gives every shard an even share of every target. `e2e.yml` runs
+ * four, one machine each.
  */
 export default defineConfig({
   resolve: {
@@ -20,11 +22,16 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['src/**/*.e2e.test.ts'],
-    // Starts a registry holding the workspace versions; every case installs through it.
+    // Starts the one registry holding the workspace versions; every case installs through it.
     globalSetup: ['src/run/pipeline/e2e/registrySetup.ts'],
-    // Within a shard, tests run sequentially: they each drive a real package manager install, and
-    // running two at once thrashes the store, interleaves output and overloads the one registry.
+    /**
+     * Files run one at a time and the cases inside a file run together. Every case but the four in `managerCases`
+     * is pnpm, and those four sit at the head of one file, so at most one bun, one yarn and one npm install is ever
+     * in flight: the managers whose caches are least happy about a second writer are serialised by the shape of the
+     * suite rather than by a lock.
+     */
     fileParallelism: false,
+    maxConcurrency: Number(env['E2E_CONCURRENCY'] ?? '4'),
     hookTimeout: 120_000,
   },
 });

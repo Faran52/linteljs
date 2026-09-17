@@ -7,7 +7,9 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/types.ts', '**/e2e/helpers.ts', '**/e2e/registrySetup.ts', '**/cli.ts'],
+      // The e2e directory whole rather than file by file: nothing in it runs under the default gate, so a
+      // new helper there would otherwise land as a 0% file against a 100% threshold.
+      exclude: ['**/*.test.ts', '**/types.ts', '**/e2e/**', '**/cli.ts'],
       // A gate, not an aspiration: a number that has to come down is a regression, not a new
       // baseline. One key per package, on purpose. DESIGN.md: Coverage thresholds
       thresholds: {
