@@ -47,6 +47,7 @@ export interface AnswerFlags {
   testing?: string;
   packageManager?: string;
   libraries?: string[];
+  form?: string;
   router?: string;
   store?: boolean;
   typeSafety?: string;
@@ -80,6 +81,7 @@ interface RawAnswerFlags {
   'testing'?: string;
   'pm'?: string;
   'libraries'?: string[];
+  'form'?: string;
   'router'?: string;
   'store'?: boolean;
   'type-safety'?: string;
@@ -109,10 +111,11 @@ Answers, for a run that asks nothing (unset ones take the defaults):
   --pm <name>           pnpm, npm, yarn, bun
   --testing <choice>    vitest, none
   --type-safety <floor> strict, relaxed
-  --libraries <list>    zod, tanstack-query, tanstack-form, react-hook-form, tailwind, es-toolkit, ts-pattern, t3-env
+  --libraries <list>    zod, tanstack-query, tailwind, es-toolkit, ts-pattern, t3-env
+  --form <id>           tanstack-form, react-hook-form (react only)
   --router <id>         react-router, tanstack-router (react only)
   --store               install the target's state store
-  --agents <list>       claude-code, codex
+  --agents <list>       claude-code, codex, copilot, cursor
   --plugins <list>      ponytail, context7, frontend-design
   --browser <name>      chrome, firefox (webextension only)
   --hosted <framework>  react, vue, svelte, solid (webextension and astro only)
@@ -137,6 +140,7 @@ const answerFlagsFrom = (values: RawAnswerFlags): AnswerFlags => {
     ...(values.testing === undefined ? {} : { testing: values.testing }),
     ...(values.pm === undefined ? {} : { packageManager: values.pm }),
     ...(values.libraries === undefined ? {} : { libraries: list(values.libraries) }),
+    ...(values.form === undefined ? {} : { form: values.form }),
     ...(values.router === undefined ? {} : { router: values.router }),
     ...(values.store === true ? { store: true } : {}),
     ...(values['type-safety'] === undefined ? {} : { typeSafety: values['type-safety'] }),
@@ -196,6 +200,7 @@ const CLI_OPTIONS = {
     type: 'string',
     multiple: true,
   },
+  'form': { type: 'string' },
   'router': { type: 'string' },
   'store': {
     type: 'boolean',

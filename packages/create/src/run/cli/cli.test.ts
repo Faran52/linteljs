@@ -681,8 +681,8 @@ describe('main: sync', () => {
     ],
     [
       'was written by a newer release',
-      emitLintelConfig(DEFAULT_ANSWERS).replace('"schemaVersion": 1', '"schemaVersion": 2'),
-      'lintel.config.json schema version 2 is unsupported; update @linteljs/create',
+      emitLintelConfig(DEFAULT_ANSWERS).replace('"schemaVersion": 2', '"schemaVersion": 3'),
+      'lintel.config.json schema version 3 is unsupported; update @linteljs/create',
     ],
   ])('refuses to sync a config that %s, and writes nothing', async (_case, config, message) => {
     const asked = scripted([]);
@@ -955,7 +955,9 @@ describe('main: answers given as flags', () => {
 
   it.each([
     [['--target', 'wat'], 'target must be one of: react, next'],
-    [['--libraries', 'tanstack-form', '--libraries', 'react-hook-form'], 'libraries must contain at most one of'],
+    [['--libraries', 'react-hook-form'], 'react-hook-form is a form library: name it in "form"'],
+    [['--form', 'formik'], 'form must be one of: tanstack-form, react-hook-form'],
+    [['--target', 'vue', '--form', 'react-hook-form'], 'react-hook-form is not an answer for vue'],
     [['--router', 'wouter'], 'router must be one of: react-router, tanstack-router'],
     [['--target', 'vue', '--router', 'react-router'], 'router is not an answer for vue'],
     [['--target', 'svelte', '--store'], 'store is not an answer for svelte'],

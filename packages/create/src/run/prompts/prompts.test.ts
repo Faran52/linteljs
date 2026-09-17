@@ -192,7 +192,7 @@ describe('ask', () => {
       'Form library': ['None', 'TanStack Form', 'React Hook Form'],
       'Router': ['None', 'React Router', 'TanStack Router'],
       'Type safety': ['Strict', 'Relaxed'],
-      'AI agents': ['Claude Code', 'Codex'],
+      'AI agents': ['Claude Code', 'Codex', 'GitHub Copilot', 'Cursor'],
     });
   });
 
@@ -329,13 +329,24 @@ describe('the project name question', () => {
 });
 
 describe('the form library and router questions', () => {
-  it('folds the form choice into the libraries, in declaration order', async () => {
+  // Its own answer: the checkbox list carries the libraries and nothing else.
+  it('records the form choice apart from the libraries', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined, ['tailwind', 'zod'], 'react-hook-form',
       undefined, undefined, undefined, undefined, undefined,
     ]);
 
-    expect(result.answers.libraries).toEqual(['zod', 'react-hook-form', 'tailwind']);
+    expect(result.answers.libraries).toEqual(['zod', 'tailwind']);
+    expect(result.answers.form).toBe('react-hook-form');
+  });
+
+  it('leaves form unset when none is chosen', async () => {
+    const { result } = await askWith([
+      'demo-app', undefined, undefined, undefined, ['zod'], 'none',
+      undefined, undefined, undefined, undefined, undefined,
+    ]);
+
+    expect(result.answers).not.toHaveProperty('form');
   });
 
   it('offers react-hook-form only where the target renders with React', async () => {

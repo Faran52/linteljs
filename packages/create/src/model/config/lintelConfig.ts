@@ -7,7 +7,8 @@ import {
   type AliasMap,
   type Answers,
   BROWSERS,
-  FORM_LIBRARIES,
+  type Form,
+  FORMS,
   HOSTED_FRAMEWORKS,
   LIBRARIES,
   type Library,
@@ -40,6 +41,7 @@ interface ConfigObject {
   testing?: JsonValue;
   packageManager?: JsonValue;
   libraries?: JsonValue;
+  form?: JsonValue;
   router?: JsonValue;
   store?: JsonValue;
   typeSafety?: JsonValue;
@@ -53,8 +55,12 @@ interface ConfigObject {
 
 export const CONFIG_PATH = 'lintel.config.json';
 export const CONFIG_SCHEMA_URL
+  = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v2.schema.json';
+// Still published: a project written before v2 carries this in `$schema` and its editor resolves it.
+export const CONFIG_SCHEMA_URL_V1
   = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v1.schema.json';
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
+const FORM_NAMES: string[] = FORMS;
 
 const isPlainObject = (value: unknown): value is object => {
   return typeof value === 'object'
@@ -174,19 +180,6 @@ const globList = (value: JsonValue | undefined): string[] => {
   return globs;
 };
 
-// One form library at most; the prompt offers them as one choice.
-const libraryChoices = (value: JsonValue | undefined): Library[] => {
-  const libraries = arrayChoices(value, 'libraries', LIBRARIES);
-
-  if (libraries.filter((library) => {
-    return FORM_LIBRARIES.includes(library);
-  }).length > 1) {
-    throw new Error(`libraries must contain at most one of: ${FORM_LIBRARIES.join(', ')}`);
-  }
-
-  return libraries;
-};
-
 // An answer the target never asks for is refused, so neither a flag nor a hand edit installs a router into a Vue app.
 const refuseMisfit = (answers: Answers): void => {
   const record = targetFor(answers);
@@ -202,7 +195,7 @@ const refuseMisfit = (answers: Answers): void => {
   misfit(answers.surfaces !== undefined && record.hostsBrowser !== true, 'surfaces');
   misfit(answers.browsers !== undefined && record.hostsBrowser !== true, 'browsers');
   misfit(answers.store && record.store === undefined, 'store');
-  misfit(answers.libraries.includes('react-hook-form') && record.framework !== 'react', 'react-hook-form');
+  misfit(answers.form === 'react-hook-form' && record.framework !== 'react', 'react-hook-form');
 };
 
 const expectedKeys = [
@@ -218,6 +211,7 @@ const expectedKeys = [
   'testing',
   'packageManager',
   'libraries',
+  'form',
   'router',
   'store',
   'typeSafety',
@@ -234,22 +228,67 @@ export const emitLintelConfig = (answers: Answers): string => {
   }, null, 2)}\n`;
 };
 
-const configFrom = (parsed: ConfigObject): LintelConfig => {
-  const schemaVersion = parsed.schemaVersion;
+const isForm = (value: unknown): value is Form => {
+  return typeof value === 'string' && FORM_NAMES.includes(value);
+};
 
-  if (schemaVersion === undefined) {
-    throw new Error('schemaVersion must be 1');
+// v1 kept the form library inside `libraries`. Lift it before the members are checked against today's `LIBRARIES`,
+// or a valid v1 file fails as an unknown library. Silent, the way an absent `surfaces` still describes its project.
+const migrateForm = (parsed: ConfigObject, schemaVersion: number): ConfigObject => {
+  const listed = parsed.libraries;
+
+  if (schemaVersion !== 1 || !isJsonArray(listed)) {
+    return parsed;
   }
 
-  if (typeof schemaVersion !== 'number') {
-    throw new Error('schemaVersion must be 1');
+  const forms = listed.filter(isForm);
+
+  if (forms.length > 1) {
+    throw new Error(`libraries must contain at most one of: ${FORMS.join(', ')}`);
   }
 
-  if (schemaVersion !== CURRENT_SCHEMA_VERSION) {
-    throw new Error(
-      `lintel.config.json schema version ${String(schemaVersion)} is unsupported; update @linteljs/create`,
-    );
+  const [form] = forms;
+
+  if (form === undefined) {
+    return parsed;
   }
+
+  return {
+    ...parsed,
+    libraries: listed.filter((library) => {
+      return !isForm(library);
+    }),
+    form,
+  };
+};
+
+// The v1 spelling, and what a `--libraries react-hook-form` flag still reaches for.
+const libraryChoices = (value: JsonValue | undefined): Library[] => {
+  const named = isJsonArray(value) ? value.find(isForm) : undefined;
+
+  if (named !== undefined) {
+    throw new Error(`${named} is a form library: name it in "form" rather than in "libraries"`);
+  }
+
+  return arrayChoices(value, 'libraries', LIBRARIES);
+};
+
+// 1 is read and migrated, 2 is current. Anything else names the fix rather than the shape.
+const schemaVersionOf = (value: JsonValue | undefined): number => {
+  if (typeof value !== 'number') {
+    throw new Error('schemaVersion must be 1 or 2');
+  }
+
+  if (value !== 1 && value !== CURRENT_SCHEMA_VERSION) {
+    throw new Error(`lintel.config.json schema version ${String(value)} is unsupported; update @linteljs/create`);
+  }
+
+  return value;
+};
+
+const configFrom = (raw: ConfigObject): LintelConfig => {
+  const schemaVersion = schemaVersionOf(raw.schemaVersion);
+  const parsed = migrateForm(raw, schemaVersion);
 
   const unexpected = Object.keys(parsed).find((key) => {
     return !expectedKeys.includes(key);
@@ -259,10 +298,10 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
     throw new Error(`lintel.config.json has unexpected property: ${unexpected}`);
   }
 
-  const schema = parsed.$schema;
+  const expectedSchema = schemaVersion === 1 ? CONFIG_SCHEMA_URL_V1 : CONFIG_SCHEMA_URL;
 
-  if (schema !== CONFIG_SCHEMA_URL) {
-    throw new Error(`$schema must be ${CONFIG_SCHEMA_URL}`);
+  if (parsed.$schema !== expectedSchema) {
+    throw new Error(`$schema must be ${expectedSchema}`);
   }
 
   const store = parsed.store;
@@ -272,8 +311,8 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
   }
 
   const config: LintelConfig = {
-    $schema: schema,
-    schemaVersion,
+    $schema: CONFIG_SCHEMA_URL,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     target: choice(parsed.target, 'target', TARGET_IDS),
     // All three default so a config written before they existed still parses.
     browser: parsed.browser === undefined ? 'chrome' : choice(parsed.browser, 'browser', BROWSERS),
@@ -286,6 +325,7 @@ const configFrom = (parsed: ConfigObject): LintelConfig => {
     testing: choice(parsed.testing, 'testing', TESTING_CHOICES),
     packageManager: choice(parsed.packageManager, 'packageManager', PACKAGE_MANAGERS),
     libraries: libraryChoices(parsed.libraries),
+    ...(parsed.form === undefined ? {} : { form: choice(parsed.form, 'form', FORMS) }),
     ...(parsed.router === undefined ? {} : { router: choice(parsed.router, 'router', ROUTERS) }),
     store,
     typeSafety: choice(parsed.typeSafety, 'typeSafety', TYPE_SAFETY_CHOICES),

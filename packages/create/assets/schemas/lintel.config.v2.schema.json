@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v2.schema.json",
+  "title": "LintelJS configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "target",
+    "testing",
+    "packageManager",
+    "libraries",
+    "store",
+    "typeSafety",
+    "agents",
+    "plugins"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v2.schema.json"
+    },
+    "schemaVersion": {
+      "const": 2
+    },
+    "target": {
+      "enum": [
+        "react",
+        "next",
+        "vue",
+        "svelte",
+        "solid",
+        "angular",
+        "astro",
+        "webextension",
+        "react-native"
+      ]
+    },
+    "browser": {
+      "enum": [
+        "chrome",
+        "firefox"
+      ]
+    },
+    "hostedFramework": {
+      "enum": [
+        "react",
+        "vue",
+        "svelte",
+        "solid"
+      ]
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "popup",
+          "background",
+          "devtools-panel"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "testing": {
+      "enum": [
+        "vitest",
+        "none"
+      ]
+    },
+    "packageManager": {
+      "enum": [
+        "pnpm",
+        "npm",
+        "yarn",
+        "bun"
+      ]
+    },
+    "libraries": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "zod",
+          "tanstack-query",
+          "tailwind",
+          "es-toolkit",
+          "ts-pattern",
+          "t3-env"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "form": {
+      "enum": [
+        "tanstack-form",
+        "react-hook-form"
+      ]
+    },
+    "router": {
+      "enum": [
+        "react-router",
+        "tanstack-router"
+      ]
+    },
+    "store": {
+      "type": "boolean"
+    },
+    "typeSafety": {
+      "enum": [
+        "strict",
+        "relaxed"
+      ]
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "claude-code",
+          "codex",
+          "copilot",
+          "cursor"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "resolveConditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "ponytail",
+          "context7",
+          "frontend-design"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "browsers": {
+      "type": "array",
+      "description": "The browsers this extension is packaged for, where that is more than the one its code targets. Absent means just `browser`. A second manifest is emitted per extra browser, because Chrome rejects browser_specific_settings and AMO requires it.",
+      "items": {
+        "enum": [
+          "chrome",
+          "firefox"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "ignores": {
+      "type": "array",
+      "description": "Paths this project lints nothing in, beyond the standard list. Not for build outputs: base() already ignores whatever .gitignore does. This is for what that file cannot name, such as a generated file the project commits.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "aliases": {
+      "type": "object",
+      "description": "Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a directory; one ending in a file names a barrel imported bare.",
+      "propertyNames": {
+        "pattern": "^[@$]"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

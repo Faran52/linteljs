@@ -66,13 +66,20 @@ still compose exported layers by hand.
 The CLI runs each scaffolder through the package manager selected in the questionnaire. The pnpm spellings are
 not hard-coded into an npm, Yarn, or Bun project.
 
-React Native needs **npm 11 on PATH** when using the current published Expo scaffolder. `create-expo-app`
-shells out to `npm pack --dry-run --json`, and npm 12 returns an object where npm 11 returned an array, so
-the scaffold fails before writing a file with `Could not parse JSON returned from "npm pack"`. That is
-[expo/expo#48091](https://github.com/expo/expo/issues/48091). Node 24 bundles npm 12, so this bites by
-default: `npm i -g npm@11` first, and undo it once a fixed `create-expo-app` ships. A fix has been
-merged upstream in [expo/expo#48392](https://github.com/expo/expo/pull/48392) but is not yet
-published to npm.
+React Native scaffolds through **npm**, whichever package manager you answered. `create-expo-app` shells
+out to npm whatever launched it, so npm is the only launcher it is tested against; under Yarn it dies before
+writing a file, handing a web `ReadableStream` to `fs.write`. That reproduces against the public registry, so
+it is not a lintel problem, and nothing about the generated project changes: the install and every later
+stage still use the manager you answered.
+
+An npm project is pinned to **npm 11**, in both `packageManager` and `engines`. `create-expo-app` shells out
+to `npm pack --dry-run --json`, and npm 12 returns an object where npm 11 returned an array, so React Native
+fails before writing a file with `Could not parse JSON returned from "npm pack"`. That is
+[expo/expo#48091](https://github.com/expo/expo/issues/48091); a fix is merged in
+[expo/expo#48392](https://github.com/expo/expo/pull/48392) and unpublished. Node 24 bundles npm 12, so run
+`npm i -g npm@11` before scaffolding React Native. The floor is 11 for every target rather than 12 for eight
+of them, because a project declaring a 12 floor warns `EBADENGINE` on every install under the npm 11 that
+React Native needs. Raise it once a fixed `create-expo-app` ships.
 
 The project name argument uses lowercase letters, digits, dots, dashes and underscores, starts with a letter
 or digit, is not one of npm's reserved names, and is at most 214 characters. Anything past the name is
@@ -94,7 +101,7 @@ A question is asked only where the target has a slot for it.
 | Testing | `--testing` | `vitest`, `none` | `vitest` | every target |
 | Package manager | `--pm` | `pnpm`, `npm`, `yarn`, `bun` | `pnpm` | every target |
 | Libraries | `--libraries` | `zod`, `tanstack-query`, `tailwind`, `es-toolkit`, `ts-pattern`, `t3-env` | `tailwind` | every target |
-| Form library | `--libraries` | `tanstack-form`, `react-hook-form` (React only), or none | none | every target |
+| Form library | `--form` | `tanstack-form`, `react-hook-form` (React only), or none | none | every target |
 | Router | `--router` | `react-router`, `tanstack-router`, or none | none | react |
 | State store | `--store` | the target's store, or none | none | react, next, vue, angular, react-native |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` | every target |
