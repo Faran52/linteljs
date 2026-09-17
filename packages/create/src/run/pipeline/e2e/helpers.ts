@@ -44,6 +44,21 @@ export const run = async (command: string, args: string[], cwd: string): Promise
   return new Promise<RunResult>((settle) => {
     const child = spawn(command, args, {
       cwd,
+      /**
+       * `spawnSync` was handed `input: ''`, which closed every child's stdin; `spawn`'s default leaves it an open
+       * pipe that is never written and never ended, so anything that reads stdin waits for ever. `pipeline.ts`
+       * spawns the scaffolder and the install with `stdio: 'inherit'`, so that dead pipe is inherited all the way
+       * down. Nothing prompts today; `ignore` is what keeps that true when some upstream tool grows a question.
+       */
+      stdio: ['ignore', 'pipe', 'pipe'],
+      /**
+       * Well inside the 900s a case is given, so a leg that stalls is killed and reported as itself: `close` fires
+       * with a null code, `outcome` prints what the command had printed before it stopped, and the failure names
+       * its own stage. Without it a stall is a bare per-case timeout carrying nothing, which is what four
+       * concurrent `vite build` and `ng build` runs produced.
+       */
+      timeout: 600_000,
+      killSignal: 'SIGKILL',
       env: {
         ...parentEnv,
         npm_config_registry: registry.url,
