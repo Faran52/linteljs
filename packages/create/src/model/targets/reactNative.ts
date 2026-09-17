@@ -22,9 +22,15 @@ export const reactNative: TargetRecord = {
     return {
       kind: 'create',
       args: ['expo-app@latest', name, '--yes', '--no-install'],
+      /**
+       * `create-expo-app` shells out to `npm pack` whatever launched it, so npm is the only launcher it is tested
+       * against. Under yarn it dies before writing a file, passing a web ReadableStream to `fs.write` and then an
+       * error code where `process.exitCode` wants a number. Measured against the public registry, so not ours.
+       */
+      via: 'npm',
     };
   },
-  framework: 'react',
+  framework: 'react-native',
   // No document for the html layer; the template does ship CSS, so `lint:css` has a real glob.
   html: false,
   vite: false,
@@ -37,8 +43,19 @@ export const reactNative: TargetRecord = {
     label: 'Zustand',
     dependency: 'zustand',
   },
-  // `scripts/reset-project.js` is Expo's CommonJS throwaway helper, deleted by most projects on day one.
-  ignores: ['.expo/**', 'android/**', 'ios/**', 'expo-env.d.ts', 'scripts/reset-project.js'],
+  /**
+   * `scripts/reset-project.js` is Expo's CommonJS throwaway helper, deleted by most projects on day one.
+   * `metro.config.js` is here because Metro loads it with `require`, so it cannot be ESM and cannot pass
+   * `no-require-imports`. This CLI writes that file, so linting it reports its own text.
+   */
+  ignores: [
+    '.expo/**',
+    'android/**',
+    'ios/**',
+    'expo-env.d.ts',
+    'metro.config.js',
+    'scripts/reset-project.js',
+  ],
   // `src/app` stays exempt: expo-router resolves a route by its filename.
   naming: NAMING['react-native'],
   folderNaming: FOLDER_NAMING['react-native'],
@@ -213,6 +230,7 @@ export const reactNative: TargetRecord = {
             `  const hasHydrated = useSyncExternalStore(
     () => {
       return () => {
+        // Hydration happens once and never reverts, so there is nothing to unsubscribe from.
       };
     },
     () => {
@@ -410,7 +428,10 @@ export const reactNative: TargetRecord = {
   typecheck: 'tsc --noEmit',
   // `eas build` needs a remote account, so `expo export --platform web` stands in.
   build: 'expo export --platform web',
-  devDependencies: [...COMMON_REACT_PLUGINS],
+  // Not `COMMON_REACT_PLUGINS`: the accessibility plugin in that list cannot fire on React Native.
+  devDependencies: COMMON_REACT_PLUGINS.filter((name) => {
+    return name !== 'eslint-plugin-jsx-a11y-x';
+  }),
   // `@srsholmes/vitest-react-native` strips the Flow types and stands in for native modules; its `esbuild` needs an
   // install script, hence `allowBuilds`.
   testDevDependencies: [
@@ -418,8 +439,23 @@ export const reactNative: TargetRecord = {
     '@testing-library/react-native',
     // The vitest transform only: this target owns no vite build.
     '@vitejs/plugin-react',
+    'test-renderer',
   ],
   allowBuilds: ['esbuild'],
+  // Inside react-native's own tree: `@react-native/community-cli-plugin@0.86.3` peers that exact metro-config and
+  // pnpm resolves a newer one. Nothing here declares either.
+  peerAllowances: { '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1' },
+  // Hard peers of two packages `create-expo-app` writes, which no manifest here answers.
+  peerExtensions: {
+    'react-native-css': {
+      'lightningcss': '>=1.27.0',
+      '@expo/metro-config': '>=54',
+    },
+    'react-native-worklets': {
+      '@babel/core': '^7',
+      '@react-native/metro-config': '0.87.1',
+    },
+  },
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMocks: true,
 };

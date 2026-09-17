@@ -4,6 +4,7 @@ import type {
   Framework,
   Library,
   NamingMap,
+  PackageManager,
   Router,
   TargetId,
 } from '../answers/answers';
@@ -15,6 +16,9 @@ export interface ScaffoldSpec {
   kind: ScaffoldKind;
   // `[scaffolder, name, ...flags]`: `scaffoldCommand` relies on the name sitting second.
   args: [string, string, ...string[]];
+  // Runs the scaffolder through this manager rather than the answered one. For a scaffolder that shells out to npm
+  // whatever launched it, so launching it through anything else only adds a layer that can break on its own.
+  via?: PackageManager;
 }
 
 export interface TsconfigPlugin {
@@ -196,6 +200,8 @@ export interface TargetRecord {
   allowBuilds: string[];
   // `dependent>peer` pairs pnpm may satisfy with the version named, beyond the eslint ones every project carries.
   peerAllowances?: Record<string, string>;
+  // Peers yarn must see declared, as `dependent -> peer -> range`; the scaffolder's tree asks for them.
+  peerExtensions?: Record<string, Record<string, string>>;
   // Relative to `assets/claude-rules/`.
   stateRules: string[];
   // Overridden only where a test environment is needed.
