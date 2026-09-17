@@ -234,6 +234,115 @@
       "description": "Prefer `try`/`catch` around an awaited rejection path instead of a promise callback."
     }
   },
+  "react-native-accessible-name": {
+    "messages": {
+      "interactiveNeedsName": "{{name}} can be operated but is announced with no name. Add an accessibilityLabel, or text inside it.",
+      "hintNeedsName": "accessibilityHint has no name to follow. A hint is read after the label, not instead of one.",
+      "emptyName": "An empty accessibilityLabel clears this name rather than setting one. Remove it, or give it text."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "accessibility",
+      "language": "universal",
+      "recommended": false,
+      "description": "Require an accessible name on React Native elements that are announced."
+    }
+  },
+  "react-native-no-nested-touchables": {
+    "messages": {
+      "nestedTouchable": "This container is one focus stop, so the {{name}} inside it cannot be reached. Move accessible onto it, or drop it from the container."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "accessibility",
+      "language": "universal",
+      "recommended": false,
+      "description": "Disallow controls inside a container marked accessible."
+    }
+  },
+  "react-native-valid-accessibility-actions": {
+    "messages": {
+      "actionsNeedHandler": "accessibilityActions without onAccessibilityAction offers actions nothing can perform.",
+      "handlerNeedsActions": "onAccessibilityAction without accessibilityActions is never called.",
+      "notAnArray": "accessibilityActions takes an array of actions.",
+      "emptyActions": "An empty accessibilityActions array offers no action. Remove it, or list one.",
+      "actionNeedsName": "Every accessibilityActions entry needs a name, which is what the handler switches on.",
+      "customActionNeedsLabel": "The custom action {{name}} has no label, so a screen reader announces the raw name instead.",
+      "unknownActionKey": "accessibilityActions entries take name and label only, so {{key}} is dropped."
+    },
+    "schema": [],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "accessibility",
+      "language": "universal",
+      "recommended": false,
+      "description": "Require accessibilityActions and onAccessibilityAction to be declared together and well formed."
+    }
+  },
+  "react-native-valid-accessibility-role": {
+    "messages": {
+      "invalidRole": "{{value}} is not a value {{prop}} accepts. React Native ignores it and announces nothing."
+    },
+    "schema": [],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "accessibility",
+      "language": "universal",
+      "recommended": false,
+      "description": "Require accessibilityRole and role values React Native understands."
+    }
+  },
+  "react-native-valid-accessibility-state": {
+    "messages": {
+      "notAnObject": "accessibilityState takes an object, so this value is dropped.",
+      "unknownStateKey": "accessibilityState has no {{key}} key, so this entry is dropped.",
+      "badStateValue": "accessibilityState.{{key}} takes a boolean.",
+      "badCheckedValue": "accessibilityState.checked takes a boolean or the string 'mixed'."
+    },
+    "schema": [],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "accessibility",
+      "language": "universal",
+      "recommended": false,
+      "description": "Require accessibilityState to be an object of the keys React Native reads."
+    }
+  },
   "sort-hook-dependencies": {
     "messages": {
       "sort": "Dependencies should be sorted alphabetically."

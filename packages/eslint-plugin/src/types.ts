@@ -32,6 +32,7 @@ export const RULE_CATEGORIES = [
   'imports',
   'functions',
   'promises',
+  'accessibility',
 ] as const;
 
 // Which files a rule can meaningfully run against; a typescript rule wastes a traversal on a .js file.

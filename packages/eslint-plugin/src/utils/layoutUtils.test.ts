@@ -6,7 +6,7 @@ import {
   it,
 } from 'vitest';
 
-import { importNewlines } from '../rules/import-newlines/index.ts';
+import { importNewlines } from '../rules/import-newlines/importNewlines.ts';
 import { type Fixer, mustFind } from '../utils/ruleUtils.ts';
 
 import {

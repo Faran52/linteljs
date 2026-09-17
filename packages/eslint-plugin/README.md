@@ -66,7 +66,12 @@ export default [
 ];
 ```
 
-Available categories are `layout`, `ordering`, `imports`, `functions`, and `promises`.
+Available categories are `layout`, `ordering`, `imports`, `functions`, `promises`, and
+`accessibility`.
+
+The `accessibility` rules are React Native only and none is in `recommended`. They key on React
+Native component names and props, so `flat/accessibility` belongs in a React Native config and
+nowhere else.
 
 TypeScript-only rules are scoped to `**/*.{ts,tsx,mts,cts}`. Add a TypeScript parser before relying on them:
 
@@ -104,6 +109,11 @@ Each rule link has examples, options, and cases it declines to fix.
 | [`@linteljs/prefer-await-to-then`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-await-to-then) | Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values. | promises | yes | | `strict` |
 | [`@linteljs/prefer-destructured-props`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-destructured-props) | Destructure component props in the function signature instead of reading them one field at a time. | functions | | | |
 | [`@linteljs/prefer-try-catch`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-try-catch) | Prefer `try`/`catch` around an awaited rejection path instead of a promise callback. | promises | yes | | |
+| [`@linteljs/react-native-accessible-name`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-accessible-name) | Require an accessible name on React Native elements that are announced. | accessibility | | | `components` |
+| [`@linteljs/react-native-no-nested-touchables`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-no-nested-touchables) | Disallow controls inside a container marked accessible. | accessibility | | | `components` |
+| [`@linteljs/react-native-valid-accessibility-actions`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-actions) | Require accessibilityActions and onAccessibilityAction to be declared together and well formed. | accessibility | | |  |
+| [`@linteljs/react-native-valid-accessibility-role`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-role) | Require accessibilityRole and role values React Native understands. | accessibility | | |  |
+| [`@linteljs/react-native-valid-accessibility-state`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-state) | Require accessibilityState to be an object of the keys React Native reads. | accessibility | | |  |
 | [`@linteljs/sort-hook-dependencies`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/sort-hook-dependencies) | Keep hook dependency arrays in a consistent order. | ordering | | | `order`, `hooks` |
 | [`@linteljs/union-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/union-newline) | Split union types when object or function members make them hard to read. | layout | yes | yes | `maxGenericMembers` |
 
