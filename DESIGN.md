@@ -432,8 +432,11 @@ nothing the CLI writes is a `pnpm add` and not a question.
   left a single-select hiding inside a multi-select, and every consumer had to know: the end-to-end cases
   filtered `react-hook-form` out of `LIBRARIES` by hand, and `LIBRARIES` itself was not a legal value of
   `libraries`. `form` is now a field of its own, so the full library set is always legal and the type says
-  what the rule was. React Hook Form is offered only where the target renders with React, which includes an
-  Astro or extension host with a React island.
+  what the rule was. React Hook Form is offered only where the target renders with React, which is Next and React
+  Native as well as React itself, and an Astro or extension host with a React island. `rendersWithReact` is that
+  question; asking `framework === 'react'` instead refused it on Next and React Native, which are their own
+  `framework` values because each takes its own ESLint layer, while the TanStack binding map had always handed all
+  three `@tanstack/react-form`.
 - **A version-one config is migrated, never refused.** `schemaVersion: 1` is read, its form library lifted
   out of `libraries` into `form`, and the file reports v2 from then on. Silent, for the reason an absent
   `surfaces` still describes its own project: a config written before an answer existed is not broken.

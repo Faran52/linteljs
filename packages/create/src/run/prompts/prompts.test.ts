@@ -361,6 +361,16 @@ describe('the form library and router questions', () => {
     expect(hostedReact.recorded.labels['Form library']).toEqual(['None', 'TanStack Form', 'React Hook Form']);
   });
 
+  // Their own `framework` values, and both render with React; asking for the exact `react` left them out.
+  it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
+    const { recorded } = await askWith([
+      'demo-app', target, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined,
+    ]);
+
+    expect(recorded.labels['Form library']).toEqual(['None', 'TanStack Form', 'React Hook Form']);
+  });
+
   it('asks for a router on React alone, and records the one chosen', async () => {
     const react = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined, 'tanstack-router',

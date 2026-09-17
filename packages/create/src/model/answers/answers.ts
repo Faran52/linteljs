@@ -134,6 +134,15 @@ export interface DefineConfigOptions {
   resolver?: ResolverOptions;
 }
 
+/**
+ * Next and React Native render with React, so a React-only answer belongs on all three. `framework` keeps them apart
+ * because each takes its own ESLint layer; asking `=== 'react'` instead refused React Hook Form on the two of them,
+ * while the TanStack binding map in `emitPackageJson` had always handed all three `@tanstack/react-form`.
+ */
+export const rendersWithReact = (framework: Framework | undefined): boolean => {
+  return framework === 'react' || framework === 'next' || framework === 'react-native';
+};
+
 // Emit order, so the written config is stable.
 export const LIBRARY_LAYERS: LibraryLayer[] = ['tanstack-query', 'tanstack-router', 'tailwind'];
 
