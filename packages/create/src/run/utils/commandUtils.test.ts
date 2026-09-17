@@ -16,11 +16,11 @@ vi.mock('node:child_process', () => {
 
 const spawn = vi.mocked(spawnSync);
 
-// Only `status` is read; the rest of `SpawnSyncReturns` never is.
-const exit = (status: number): ReturnType<typeof spawnSync> => {
+// Only `status` and `stdout` are read; the rest of `SpawnSyncReturns` never is.
+const exit = (status: number, stdout = ''): ReturnType<typeof spawnSync> => {
   return {
     status,
-    stdout: '',
+    stdout,
     stderr: '',
     pid: 0,
     output: [],
@@ -54,8 +54,47 @@ describe('ensurePackageManager', () => {
     notices.push(message);
   };
 
-  it('does nothing when the manager is on PATH', () => {
-    spawn.mockReturnValueOnce(exit(0));
+  it('does nothing when the manager on PATH is new enough', () => {
+    spawn.mockReturnValueOnce(exit(0, '12.4.1\n'));
+
+    ensurePackageManager('pnpm', notice);
+
+    expect(calls()).toEqual(['pnpm --version']);
+  });
+
+  /**
+   * Yarn 1 is still on a great many machines and `yarn create` means something else there, so the old check, which
+   * asked only whether yarn existed, let the scaffold run under it and fail with `exited with 127` three stages on.
+   * Refused rather than upgraded: someone running an older major on purpose keeps it, and hears why this stopped.
+   */
+  it('refuses a manager whose major is below what a generated project declares', () => {
+    spawn.mockReturnValueOnce(exit(0, '1.22.22\n'));
+
+    expect(() => {
+      ensurePackageManager('yarn', notice);
+    }).toThrow('yarn 1.22.22 is on PATH, and a project this CLI writes declares yarn 4.18.0');
+    expect(calls()).toEqual(['yarn --version']);
+  });
+
+  it('names the corepack command that would install the right one', () => {
+    spawn.mockReturnValueOnce(exit(0, '8.15.9\n'));
+
+    expect(() => {
+      ensurePackageManager('pnpm', notice);
+    }).toThrow('corepack install -g pnpm@12.4.1');
+  });
+
+  // No corepack shim for bun, so the refusal points at the installer instead.
+  it('points an older bun at its own installer', () => {
+    spawn.mockReturnValueOnce(exit(0, '0.8.1\n'));
+
+    expect(() => {
+      ensurePackageManager('bun', notice);
+    }).toThrow('https://bun.sh');
+  });
+
+  it('accepts a newer major than the one declared', () => {
+    spawn.mockReturnValueOnce(exit(0, '13.0.0\n'));
 
     ensurePackageManager('pnpm', notice);
 
