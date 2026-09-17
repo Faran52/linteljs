@@ -15,7 +15,8 @@ import {
   type Browser,
   BROWSERS,
   DEFAULT_ANSWERS,
-  FORM_LIBRARIES,
+  type Form,
+  FORMS,
   HOSTED_FRAMEWORKS,
   type HostedFramework,
   isValidProjectName,
@@ -24,7 +25,6 @@ import {
   PACKAGE_MANAGERS,
   PLUGINS,
   PROJECT_NAME_RULE,
-  REACT_LIBRARIES,
   type Router,
   type Surface,
   SURFACES,
@@ -103,6 +103,17 @@ const PACKAGE_MANAGER_DESCRIPTIONS: Record<Answers['packageManager'], Described>
   },
 };
 
+const FORM_DESCRIPTIONS: Record<Form, Described> = {
+  'tanstack-form': {
+    label: 'TanStack Form',
+    hint: 'Typed forms with Zod-ready validation',
+  },
+  'react-hook-form': {
+    label: 'React Hook Form',
+    hint: 'Uncontrolled React forms, React targets only',
+  },
+};
+
 const LIBRARY_DESCRIPTIONS: Record<Answers['libraries'][number], Described> = {
   'zod': {
     label: 'Zod',
@@ -111,14 +122,6 @@ const LIBRARY_DESCRIPTIONS: Record<Answers['libraries'][number], Described> = {
   'tanstack-query': {
     label: 'TanStack Query',
     hint: 'Async data fetching and caching',
-  },
-  'tanstack-form': {
-    label: 'TanStack Form',
-    hint: 'Typed forms with Zod-ready validation',
-  },
-  'react-hook-form': {
-    label: 'React Hook Form',
-    hint: 'Uncontrolled React forms, React targets only',
   },
   'tailwind': {
     label: 'Tailwind CSS',
@@ -160,7 +163,7 @@ const BROWSER_DESCRIPTIONS: Record<Browser, Described> = {
   },
   firefox: {
     label: 'Firefox',
-    hint: 'MV3 event page, packaged with web-ext',
+    hint: 'MV3 event page, loaded from about:debugging',
   },
 };
 
@@ -222,6 +225,14 @@ const AGENT_DESCRIPTIONS: Record<Answers['agents'][number], Described> = {
   'codex': {
     label: 'Codex',
     hint: "OpenAI's coding agent",
+  },
+  'copilot': {
+    label: 'GitHub Copilot',
+    hint: 'Reads .github/copilot-instructions.md and .github/instructions/',
+  },
+  'cursor': {
+    label: 'Cursor',
+    hint: 'Reads .cursor/rules/',
   },
 };
 
@@ -382,45 +393,36 @@ const askHost = async (prompter: Prompter, record: TargetRecord): Promise<HostAn
   };
 };
 
-// The checkbox list, then the form library as a radio: one form library at most.
-const askLibraries = async (
+const askLibraries = async (prompter: Prompter): Promise<Library[]> => {
+  return askMulti(prompter, 'Libraries', LIBRARIES, DEFAULT_ANSWERS.libraries, false, (choice) => {
+    return LIBRARY_DESCRIPTIONS[choice];
+  });
+};
+
+// `react-hook-form` binds React, so a non-React target is offered the other one alone.
+const askForm = async (
   prompter: Prompter,
   target: TargetId,
   hosted: HostedFramework | 'none',
-): Promise<Library[]> => {
+): Promise<Form | undefined> => {
   const isReact = targetFor({
     ...DEFAULT_ANSWERS,
     target,
     ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
   }).framework === 'react';
-  const offered = (library: Library): boolean => {
-    return isReact || !REACT_LIBRARIES.includes(library);
-  };
-  const picked = await askMulti(
-    prompter,
-    'Libraries',
-    LIBRARIES.filter((library) => {
-      return !FORM_LIBRARIES.includes(library) && offered(library);
-    }),
-    DEFAULT_ANSWERS.libraries,
-    false,
-    (choice) => {
-      return LIBRARY_DESCRIPTIONS[choice];
-    },
-  );
-  const forms: ('none' | Library)[] = ['none', ...FORM_LIBRARIES.filter(offered)];
-  const form = await askChoice(prompter, 'Form library', forms, 'none', (choice) => {
+  const offered: ('none' | Form)[] = ['none', ...FORMS.filter((form) => {
+    return isReact || form !== 'react-hook-form';
+  })];
+  const picked = await askChoice(prompter, 'Form library', offered, 'none', (choice) => {
     return choice === 'none'
       ? {
           label: 'None',
           hint: 'Plain controlled inputs',
         }
-      : LIBRARY_DESCRIPTIONS[choice];
+      : FORM_DESCRIPTIONS[choice];
   });
 
-  return LIBRARIES.filter((library) => {
-    return picked.includes(library) || library === form;
-  });
+  return picked === 'none' ? undefined : picked;
 };
 
 // In order: project name, framework, testing, package manager, libraries, form library, an optional router and store,
@@ -460,7 +462,8 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
       return PACKAGE_MANAGER_DESCRIPTIONS[choice];
     },
   );
-  const libraries = await askLibraries(prompter, target, hosted);
+  const libraries = await askLibraries(prompter);
+  const form = await askForm(prompter, target, hosted);
 
   const router = record.routers === undefined
     ? 'none'
@@ -497,6 +500,7 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
       testing,
       packageManager,
       libraries,
+      ...(form === undefined ? {} : { form }),
       ...(router === 'none' ? {} : { router }),
       store,
       typeSafety,

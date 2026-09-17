@@ -22,6 +22,7 @@ import {
   AGENTS,
   type Answers,
   DEFAULT_ANSWERS,
+  FORMS,
   LIBRARIES,
   PACKAGE_MANAGERS,
   PLUGINS,
@@ -35,6 +36,7 @@ import {
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
+  CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
   emitLintelConfig,
   parseLintelConfig,
@@ -50,6 +52,7 @@ interface ConfigOverrides {
   hostedFramework?: string;
   surfaces?: string[];
   libraries?: string | string[];
+  form?: string;
   router?: string;
   store?: boolean | string;
   typeSafety?: string;
@@ -74,6 +77,7 @@ interface LintelConfigSchema {
     testing: SchemaNode;
     packageManager: SchemaNode;
     libraries: SchemaNode;
+    form: SchemaNode;
     typeSafety: SchemaNode;
     agents: SchemaNode;
     plugins: SchemaNode;
@@ -91,6 +95,7 @@ interface SchemaFields {
   testing?: SchemaValue;
   packageManager?: SchemaValue;
   libraries?: SchemaValue;
+  form?: SchemaValue;
   typeSafety?: SchemaValue;
   agents?: SchemaValue;
   plugins?: SchemaValue;
@@ -213,6 +218,7 @@ const schemaFrom = (text: string): LintelConfigSchema => {
       testing: choiceNode(properties, 'testing'),
       packageManager: choiceNode(properties, 'packageManager'),
       libraries: { items: choiceNode(libraries, 'items') },
+      form: choiceNode(properties, 'form'),
       typeSafety: choiceNode(properties, 'typeSafety'),
       agents: { items: choiceNode(objectField(properties, 'agents'), 'items') },
       plugins: { items: choiceNode(objectField(properties, 'plugins'), 'items') },
@@ -222,21 +228,21 @@ const schemaFrom = (text: string): LintelConfigSchema => {
 };
 
 describe('emitLintelConfig', () => {
-  it('writes the version-one envelope around every answer', () => {
+  it('writes the current envelope around every answer', () => {
     expect(JSON.parse(emitLintelConfig(DEFAULT_ANSWERS))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
     });
   });
 });
 
 describe('parseLintelConfig', () => {
-  it('reads the version-one envelope and every answer', () => {
+  it('reads the current envelope and every answer', () => {
     expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS)))
       .toEqual({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
       });
   });
@@ -245,7 +251,7 @@ describe('parseLintelConfig', () => {
   it('defaults the extension axes when a config predates them', () => {
     const withoutAxes = JSON.stringify({
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       target: 'webextension',
       testing: 'vitest',
       packageManager: 'pnpm',
@@ -278,7 +284,7 @@ describe('parseLintelConfig', () => {
     expect(parseLintelConfig(emitLintelConfig(answers)))
       .toEqual({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         ...answers,
       });
   });
@@ -289,7 +295,7 @@ describe('parseLintelConfig', () => {
   ])('rejects an unknown %s', (field, value) => {
     const config = {
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
       [field]: value,
     };
@@ -307,7 +313,7 @@ describe('parseLintelConfig', () => {
 
     expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
     });
   });
@@ -322,7 +328,7 @@ describe('parseLintelConfig', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         resolveConditions,
       }));
@@ -341,7 +347,7 @@ describe('parseLintelConfig', () => {
 
     expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
     });
   });
@@ -357,7 +363,7 @@ describe('parseLintelConfig', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         aliases,
       }));
@@ -373,7 +379,7 @@ describe('parseLintelConfig', () => {
 
     expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
     });
   });
@@ -386,7 +392,7 @@ describe('parseLintelConfig', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         browsers,
       }));
@@ -402,7 +408,7 @@ describe('parseLintelConfig', () => {
 
     expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: 1,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
     });
   });
@@ -417,7 +423,7 @@ describe('parseLintelConfig', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
         ignores,
       }));
@@ -443,26 +449,26 @@ describe('parseLintelConfig', () => {
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: '1',
       }));
-    }).toThrow(/schemaVersion must be 1/);
+    }).toThrow(/schemaVersion must be 1 or 2/);
   });
 
-  it('rejects a future schema version before version-one fields', () => {
+  it('rejects a future schema version before the fields it carries', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 2,
+        schemaVersion: 3,
       }));
-    }).toThrow(/schema version 2.*update @linteljs\/create/);
+    }).toThrow(/schema version 3.*update @linteljs\/create/);
   });
 
   it('rejects a future schema version before inspecting new object-valued fields', () => {
     expect(() => {
       return parseLintelConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: 2,
+        schemaVersion: 3,
         future: { nested: true },
       }));
-    }).toThrow(/schema version 2.*update @linteljs\/create/);
+    }).toThrow(/schema version 3.*update @linteljs\/create/);
   });
 
   it.each([
@@ -491,7 +497,7 @@ describe('parseLintelConfig', () => {
     [
       'an unknown library',
       config({ libraries: ['jquery'] }),
-      /libraries must be one of: zod, tanstack-query, tanstack-form/,
+      /libraries must be one of: zod, tanstack-query, tailwind/,
     ],
     ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
     ['a non-boolean store', config({ store: 'false' }), /store must be a boolean/],
@@ -501,7 +507,11 @@ describe('parseLintelConfig', () => {
       /typeSafety must be one of: strict, relaxed/,
     ],
     ['a non-array agent list', config({ agents: 'codex' }), /agents must be an array/],
-    ['an unknown agent', config({ agents: ['cursor'] }), /agents must be one of: claude-code, codex/],
+    [
+      'an unknown agent',
+      config({ agents: ['windsurf'] }),
+      /agents must be one of: claude-code, codex, copilot, cursor/,
+    ],
     ['a duplicate agent', config({ agents: ['codex', 'codex'] }), /agents must not contain duplicate values/],
     ['a non-array plugin list', config({ plugins: 'ponytail' }), /plugins must be an array/],
     [
@@ -584,8 +594,8 @@ describe('readLintelConfig', () => {
 describe('lintel config schemas', () => {
   it('keep the canonical and packaged schemas in sync with the answer vocabulary', async () => {
     const [canonical, packaged] = await Promise.all([
-      readFile(join(process.cwd(), 'schemas/lintel.config.v1.schema.json'), 'utf8'),
-      readFile(join(process.cwd(), 'packages/create/assets/schemas/lintel.config.v1.schema.json'), 'utf8'),
+      readFile(join(process.cwd(), 'schemas/lintel.config.v2.schema.json'), 'utf8'),
+      readFile(join(process.cwd(), 'packages/create/assets/schemas/lintel.config.v2.schema.json'), 'utf8'),
     ]);
     const canonicalJson: unknown = JSON.parse(canonical);
     const packagedJson: unknown = JSON.parse(packaged);
@@ -600,6 +610,7 @@ describe('lintel config schemas', () => {
     expect(canonicalSchema.properties.testing.choices).toEqual(TESTING_CHOICES);
     expect(canonicalSchema.properties.packageManager.choices).toEqual(PACKAGE_MANAGERS);
     expect(canonicalSchema.properties.libraries.items?.choices).toEqual(LIBRARIES);
+    expect(canonicalSchema.properties.form.choices).toEqual(FORMS);
     expect(canonicalSchema.properties.typeSafety.choices).toEqual(TYPE_SAFETY_CHOICES);
     expect(canonicalSchema.properties.agents.items?.choices).toEqual(AGENTS);
     expect(canonicalSchema.properties.plugins.items?.choices).toEqual(PLUGINS);
@@ -624,12 +635,86 @@ describe('the router and the form libraries', () => {
     }).toThrow(/router must be one of: react-router, tanstack-router/);
   });
 
-  it('rejects two form libraries at once', () => {
+  it('round-trips a form library, and keeps it out of libraries', () => {
+    const answers = {
+      ...DEFAULT_ANSWERS,
+      form: 'tanstack-form' as const,
+    };
+    const parsed = parseLintelConfig(emitLintelConfig(answers));
+
+    expect(parsed).toMatchObject({ form: 'tanstack-form' });
+    expect(parsed.libraries).not.toContain('tanstack-form');
+    expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS))).not.toHaveProperty('form');
+  });
+
+  // The v1 spelling: the error names where the answer went rather than calling it an unknown library.
+  it('refuses a form library listed among the libraries', () => {
     expect(() => {
-      return parseLintelConfig(config({ libraries: ['tanstack-form', 'react-hook-form'] }));
+      return parseLintelConfig(config({ libraries: ['zod', 'react-hook-form'] }));
+    }).toThrow(/react-hook-form is a form library: name it in "form" rather than in "libraries"/);
+  });
+
+  it('rejects an unknown form', () => {
+    expect(() => {
+      return parseLintelConfig(config({ form: 'formik' }));
+    }).toThrow(/form must be one of: tanstack-form, react-hook-form/);
+  });
+});
+
+// v1 kept the form library inside `libraries`; a project written then still describes itself.
+describe('a version-one config', () => {
+  const v1 = (overrides: ConfigOverrides = {}): string => {
+    return JSON.stringify({
+      $schema: CONFIG_SCHEMA_URL_V1,
+      ...DEFAULT_ANSWERS,
+      ...overrides,
+      schemaVersion: 1,
+    });
+  };
+
+  it.each([
+    ['tanstack-form', 'vue'],
+    ['react-hook-form', 'react'],
+  ])('lifts %s out of libraries', (form, target) => {
+    const parsed = parseLintelConfig(v1({
+      target,
+      libraries: ['tailwind', form],
+    }));
+
+    expect(parsed.form).toBe(form);
+    expect(parsed.libraries).toEqual(['tailwind']);
+  });
+
+  // Migrated means migrated: what is written back is a v2 file.
+  it('reports the current version and schema', () => {
+    const parsed = parseLintelConfig(v1({ libraries: ['tanstack-form'] }));
+
+    expect(parsed.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(parsed.$schema).toBe(CONFIG_SCHEMA_URL);
+    expect(JSON.parse(emitLintelConfig(parsed))).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION });
+  });
+
+  it('leaves a config naming no form library alone', () => {
+    const parsed = parseLintelConfig(v1());
+
+    expect(parsed).not.toHaveProperty('form');
+    expect(parsed.libraries).toEqual(DEFAULT_ANSWERS.libraries);
+  });
+
+  // The one shape v1 itself refused, refused on the way through.
+  it('still rejects both form libraries at once', () => {
+    expect(() => {
+      return parseLintelConfig(v1({ libraries: ['tanstack-form', 'react-hook-form'] }));
     }).toThrow(/libraries must contain at most one of: tanstack-form, react-hook-form/);
-    expect(parseLintelConfig(config({ libraries: ['zod', 'react-hook-form'] })).libraries)
-      .toEqual(['zod', 'react-hook-form']);
+  });
+
+  it('holds a version-one file to the version-one schema url', () => {
+    expect(() => {
+      return parseLintelConfig(JSON.stringify({
+        ...JSON.parse(v1()),
+        $schema: CONFIG_SCHEMA_URL,
+      }));
+    }).toThrow(/\$schema must be .*v1\.schema\.json/);
   });
 });
 
@@ -657,7 +742,7 @@ describe('answers a target never asks for', () => {
     }, 'store is not an answer for svelte'],
     ['react-hook-form on Vue', {
       target: 'vue',
-      libraries: ['react-hook-form'],
+      form: 'react-hook-form',
     }, 'react-hook-form is not an answer for vue'],
   ])('refuses %s', (_case, overrides, message) => {
     expect(() => {
@@ -669,8 +754,8 @@ describe('answers a target never asks for', () => {
     expect(parseLintelConfig(config({
       target: 'astro',
       hostedFramework: 'react',
-      libraries: ['react-hook-form'],
-    })).libraries).toEqual(['react-hook-form']);
+      form: 'react-hook-form',
+    })).form).toBe('react-hook-form');
     expect(parseLintelConfig(config({
       target: 'react',
       router: 'tanstack-router',

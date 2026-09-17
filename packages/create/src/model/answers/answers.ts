@@ -26,16 +26,17 @@ export type TypeSafety = 'strict' | 'relaxed';
 export type Library
   = 'zod'
     | 'tanstack-query'
-    | 'tanstack-form'
-    | 'react-hook-form'
     | 'tailwind'
     | 'es-toolkit'
     | 'ts-pattern'
     | 't3-env';
 
+// One choice, not two libraries: a project binds one form library or none. `react-hook-form` binds React only.
+export type Form = 'tanstack-form' | 'react-hook-form';
+
 export type Router = 'react-router' | 'tanstack-router';
 
-// Decides the manifest shape, the ambient types, and whether `web-ext` comes along; `crx` builds for both.
+// Decides the manifest shape and the ambient types; `crx` builds for both.
 export type Browser = 'chrome' | 'firefox';
 
 // The four with both a Vite plugin and an Astro integration; Angular and Next are not hostable.
@@ -51,7 +52,7 @@ export type Surface
     | 'background'
     | 'devtools-panel';
 
-export type Agent = 'claude-code' | 'codex';
+export type Agent = 'claude-code' | 'codex' | 'copilot' | 'cursor';
 
 export type Plugin = 'ponytail' | 'context7' | 'frontend-design';
 
@@ -66,6 +67,8 @@ export interface Answers {
   testing: Testing;
   packageManager: PackageManager;
   libraries: Library[];
+  // Absent is no form library.
+  form?: Form;
   // Asked only where the target has a `routers` slot; absent is no router.
   router?: Router;
   // Always false on a target with no `store` slot, where the question is never asked.
@@ -101,6 +104,7 @@ export type NamingMap = Record<string, NamingRule>;
 export type Framework
   = 'react'
     | 'next'
+    | 'react-native'
     | 'vue'
     | 'svelte'
     | 'solid'
@@ -155,18 +159,13 @@ export const PACKAGE_MANAGERS: PackageManager[] = [
 export const LIBRARIES: Library[] = [
   'zod',
   'tanstack-query',
-  'tanstack-form',
-  'react-hook-form',
   'tailwind',
   'es-toolkit',
   'ts-pattern',
   't3-env',
 ];
 
-// The two form libraries are one choice; `react-hook-form` binds React only.
-export const FORM_LIBRARIES: Library[] = ['tanstack-form', 'react-hook-form'];
-
-export const REACT_LIBRARIES: Library[] = ['react-hook-form'];
+export const FORMS: Form[] = ['tanstack-form', 'react-hook-form'];
 
 export const ROUTERS: Router[] = ['react-router', 'tanstack-router'];
 
@@ -184,7 +183,7 @@ export const HOSTED_FRAMEWORKS: HostedFramework[] = [
   'solid',
 ];
 
-export const AGENTS: Agent[] = ['claude-code', 'codex'];
+export const AGENTS: Agent[] = ['claude-code', 'codex', 'copilot', 'cursor'];
 
 export const PLUGINS: Plugin[] = ['ponytail', 'context7', 'frontend-design'];
 

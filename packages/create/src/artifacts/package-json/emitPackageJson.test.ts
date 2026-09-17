@@ -7,6 +7,8 @@ import {
 import {
   type Answers,
   DEFAULT_ANSWERS,
+  type Form,
+  FORMS,
   type HostedFramework,
   LIBRARIES,
   type Library,
@@ -33,6 +35,7 @@ interface AnswerOverrides {
   testing?: Testing;
   packageManager?: PackageManager;
   libraries?: Library[];
+  form?: Form;
   store?: boolean;
   router?: Router;
 }
@@ -69,6 +72,16 @@ describe('versioned', () => {
           return patchPackageJson({}, answersFor({
             target,
             libraries: [library],
+            store: true,
+          }));
+        }).not.toThrow();
+      }
+
+      for (const form of FORMS) {
+        expect(() => {
+          return patchPackageJson({}, answersFor({
+            target,
+            form,
             store: true,
           }));
         }).not.toThrow();
@@ -363,10 +376,13 @@ describe('the libraries added in 1.6.0', () => {
   it('binds the form library per framework, and the zod resolver only beside zod', () => {
     const vue = patchPackageJson({}, answersFor({
       target: 'vue',
-      libraries: ['tanstack-form'],
+      form: 'tanstack-form',
     }));
-    const hookForm = patchPackageJson({}, answersFor({ libraries: ['react-hook-form'] }));
-    const withZod = patchPackageJson({}, answersFor({ libraries: ['zod', 'react-hook-form'] }));
+    const hookForm = patchPackageJson({}, answersFor({ form: 'react-hook-form' }));
+    const withZod = patchPackageJson({}, answersFor({
+      form: 'react-hook-form',
+      libraries: ['zod'],
+    }));
 
     expect(vue.dependencies).toHaveProperty('@tanstack/vue-form');
     expect(hookForm.dependencies).toHaveProperty('react-hook-form');
@@ -449,5 +465,24 @@ describe('trustedDependencies', () => {
 
     expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['sharp', 'unrs-resolver', 'esbuild']));
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
+  });
+});
+
+// npm 12 blocks unlisted install scripts and warns; `.npmrc` `allow-scripts` is ignored once package.json has it.
+describe('allowScripts', () => {
+  it('approves every build for npm, keeps what the scaffolder approved, and writes nothing elsewhere', () => {
+    const npm = patchPackageJson({ allowScripts: { 'some-native': true } }, answersFor({
+      target: 'angular',
+      packageManager: 'npm',
+    }));
+
+    expect(npm.allowScripts).toMatchObject({
+      'some-native': true,
+      'esbuild': true,
+      'lmdb': true,
+      'fsevents': true,
+      'unrs-resolver': true,
+    });
+    expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('allowScripts');
   });
 });

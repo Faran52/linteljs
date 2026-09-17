@@ -1,5 +1,6 @@
 import {
   type Answers,
+  type Form,
   type Framework,
   hasLibrary,
   hasTests,
@@ -32,6 +33,7 @@ export interface PackageJson {
   overrides?: Record<string, string>;
   resolutions?: Record<string, string>;
   trustedDependencies?: string[];
+  allowScripts?: Record<string, boolean | string>;
 }
 
 // Superseded by @linteljs/eslint-config.
@@ -93,21 +95,23 @@ const tailwindDevDependencies = (target: TargetRecord): string[] => {
 
 // A host with no framework installs nothing at runtime.
 const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
-  react: '@tanstack/react-query',
-  next: '@tanstack/react-query',
-  vue: '@tanstack/vue-query',
-  svelte: '@tanstack/svelte-query',
-  solid: '@tanstack/solid-query',
-  angular: '@tanstack/angular-query-experimental',
+  'react': '@tanstack/react-query',
+  'next': '@tanstack/react-query',
+  'react-native': '@tanstack/react-query',
+  'vue': '@tanstack/vue-query',
+  'svelte': '@tanstack/svelte-query',
+  'solid': '@tanstack/solid-query',
+  'angular': '@tanstack/angular-query-experimental',
 };
 
 const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
-  react: '@tanstack/react-form',
-  next: '@tanstack/react-form',
-  vue: '@tanstack/vue-form',
-  svelte: '@tanstack/svelte-form',
-  solid: '@tanstack/solid-form',
-  angular: '@tanstack/angular-form',
+  'react': '@tanstack/react-form',
+  'next': '@tanstack/react-form',
+  'react-native': '@tanstack/react-form',
+  'vue': '@tanstack/vue-form',
+  'svelte': '@tanstack/svelte-form',
+  'solid': '@tanstack/solid-form',
+  'angular': '@tanstack/angular-form',
 };
 
 const ROUTER_DEPENDENCIES: Record<Router, string[]> = {
@@ -128,17 +132,22 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
   const runtime: Record<Library, string[]> = {
     'zod': ['zod'],
     'tanstack-query': bound(TANSTACK_QUERY_BINDINGS),
-    'tanstack-form': bound(TANSTACK_FORM_BINDINGS),
-    'react-hook-form': ['react-hook-form', ...(hasLibrary(answers, 'zod') ? ['@hookform/resolvers'] : [])],
     'tailwind': target.tailwind?.dependencies ?? [],
     'es-toolkit': ['es-toolkit'],
     'ts-pattern': ['ts-pattern'],
     't3-env': [answers.target === 'next' ? '@t3-oss/env-nextjs' : '@t3-oss/env-core'],
   };
+  const forms: Record<Form, string[]> = {
+    'tanstack-form': bound(TANSTACK_FORM_BINDINGS),
+    'react-hook-form': ['react-hook-form', ...(hasLibrary(answers, 'zod') ? ['@hookform/resolvers'] : [])],
+  };
 
-  return answers.libraries.flatMap((library) => {
-    return runtime[library];
-  });
+  return [
+    ...answers.libraries.flatMap((library) => {
+      return runtime[library];
+    }),
+    ...(answers.form === undefined ? [] : forms[answers.form]),
+  ];
 };
 
 const isPackageJson = (value: unknown): value is PackageJson => {
@@ -233,6 +242,9 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
 // Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`.
 const SHARED_ALLOWED_BUILDS = ['sharp', 'unrs-resolver'];
 
+// npm alone blocks these two as well; pnpm and bun run them unasked.
+const NPM_ALLOWED_BUILDS = ['@swc/core', 'fsevents'];
+
 export const allowedBuildNames = (answers: Answers): string[] => {
   return [...new Set([...SHARED_ALLOWED_BUILDS, ...targetFor(answers).allowBuilds])].sort((left, right) => {
     return left.localeCompare(right, 'en');
@@ -271,6 +283,17 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     devDependencies,
     // bun blocks every install script it has not been told about, and reads the list from here rather than bunfig.
     ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuildNames(answers) } : {}),
+    // npm 12 blocks every install script it has not been told about and reads the list from here, not `.npmrc`.
+    ...(answers.packageManager === 'npm'
+      ? {
+          allowScripts: {
+            ...existing.allowScripts,
+            ...Object.fromEntries([...allowedBuildNames(answers), ...NPM_ALLOWED_BUILDS].map((name) => {
+              return [name, true];
+            })),
+          },
+        }
+      : {}),
   };
 };
 
