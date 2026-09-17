@@ -22,10 +22,12 @@ const transformFor = (path: string): (source: string) => string => {
 };
 
 describe('scaffold', () => {
-  it('writes the exact argv for the default answers', () => {
+  // `via` is the whole reason this target differs: every other one launches its scaffolder with the answered manager.
+  it('writes the exact argv for the default answers, launched through npm', () => {
     expect(reactNative.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'create',
       args: ['expo-app@latest', 'demo-app', '--yes', '--no-install'],
+      via: 'npm',
     });
   });
 });
