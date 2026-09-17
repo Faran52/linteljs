@@ -1,5 +1,5 @@
 import lintel from '@linteljs/eslint-plugin';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
+import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import solidPlugin from 'eslint-plugin-solid';
 
 import { SCRIPT_EXTENSIONS } from '../utils/globUtils';
@@ -15,7 +15,7 @@ const SOLID_FILES = [`**/*.{${SCRIPT_EXTENSIONS}}`];
 export const solid = (): Layer => {
   return [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SOLID_FILES),
-    ...presetOf(jsxA11y.flatConfigs.recommended, 'jsx-a11y/recommended', SOLID_FILES),
+    ...presetOf(jsxA11y.configs.recommended, 'jsx-a11y-x/recommended', SOLID_FILES),
 
     {
       name: '@linteljs/solid',

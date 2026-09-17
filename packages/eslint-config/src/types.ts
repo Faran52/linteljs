@@ -30,10 +30,11 @@ export interface BaseOptions {
   resolver?: ResolverOptions;
 }
 
-// `next` implies `react` beneath it.
+// `next` implies `react` beneath it; `react-native` is `react` without the accessibility preset.
 export type Framework
   = 'react'
     | 'next'
+    | 'react-native'
     | 'vue'
     | 'svelte'
     | 'solid'

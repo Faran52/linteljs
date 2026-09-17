@@ -19,7 +19,7 @@ interface LibraryOptions {
 
 // Loaded on demand: each plugin is an optional peer.
 const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
-  react: async () => {
+  'react': async () => {
     const { react, reactGroup } = await import('./frameworks/react');
 
     return {
@@ -28,7 +28,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
-  next: async () => {
+  'next': async () => {
     const { react } = await import('./frameworks/react');
     const { next, nextGroup } = await import('./frameworks/next');
 
@@ -38,7 +38,16 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
-  vue: async () => {
+  'react-native': async () => {
+    const { reactNative, reactNativeGroup } = await import('./frameworks/reactNative');
+
+    return {
+      layer: reactNative(),
+      group: reactNativeGroup,
+    };
+  },
+
+  'vue': async () => {
     const { vue, vueGroup } = await import('./frameworks/vue');
 
     return {
@@ -47,7 +56,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
-  svelte: async () => {
+  'svelte': async () => {
     const { svelte, svelteGroup } = await import('./frameworks/svelte');
 
     return {
@@ -56,7 +65,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
-  solid: async () => {
+  'solid': async () => {
     const { solid, solidGroup } = await import('./frameworks/solid');
 
     return {
@@ -65,7 +74,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
-  angular: async () => {
+  'angular': async () => {
     const { angular, angularGroup } = await import('./frameworks/angular');
 
     return {

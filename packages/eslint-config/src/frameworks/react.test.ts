@@ -88,14 +88,14 @@ describe('react', () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Logo.tsx');
 
-    expect(ruleIds).toContain('jsx-a11y/alt-text');
+    expect(ruleIds).toContain('jsx-a11y-x/alt-text');
   });
 
   it('reports an aria attribute that is not a real one', async () => {
     const code = 'export const Box = () => {\n  return <div aria-nonsense="x">a</div>;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Box.tsx');
 
-    expect(ruleIds).toContain('jsx-a11y/aria-props');
+    expect(ruleIds).toContain('jsx-a11y-x/aria-props');
   });
 
   it('reports a JSX prop named twice on one element', async () => {
