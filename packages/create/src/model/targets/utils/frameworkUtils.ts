@@ -54,7 +54,7 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
     vitePlugin: REACT_VITE_PLUGIN,
     devDependencies: [
       '@eslint-react/eslint-plugin',
-      'eslint-plugin-jsx-a11y',
+      'eslint-plugin-jsx-a11y-x',
       'eslint-plugin-react-hooks',
       '@vitejs/plugin-react',
       '@rolldown/plugin-babel',
@@ -116,7 +116,7 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
     },
     dependencies: ['solid-js'],
     jsxImportSource: 'solid-js',
-    devDependencies: ['eslint-plugin-jsx-a11y', 'eslint-plugin-solid', 'vite-plugin-solid'],
+    devDependencies: ['eslint-plugin-jsx-a11y-x', 'eslint-plugin-solid', 'vite-plugin-solid'],
     testDevDependencies: ['@solidjs/testing-library'],
     testConditions: ['development', 'browser'],
     stateRules: ['solid-reactivity.md'],

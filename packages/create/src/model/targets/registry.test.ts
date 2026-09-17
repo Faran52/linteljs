@@ -167,16 +167,20 @@ describe('targetFor', () => {
  * set, and adding `jsx-a11y` to the shared list missed it (`ERR_MODULE_NOT_FOUND` at the first `eslint .`). One
  * entry per layer, holding what that layer's source imports.
  */
-const REACT_PLUGINS = ['@eslint-react/eslint-plugin', 'eslint-plugin-react-hooks', 'eslint-plugin-jsx-a11y'];
+const REACT_PLUGINS = ['@eslint-react/eslint-plugin', 'eslint-plugin-react-hooks', 'eslint-plugin-jsx-a11y-x'];
 
 const LAYER_PLUGINS: Record<Framework, string[]> = {
-  react: REACT_PLUGINS,
+  'react': REACT_PLUGINS,
   // `defineConfig` composes `react()` ahead of `next()`.
-  next: [...REACT_PLUGINS, '@next/eslint-plugin-next'],
-  solid: ['eslint-plugin-solid', 'eslint-plugin-jsx-a11y'],
-  vue: ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
-  svelte: ['eslint-plugin-svelte'],
-  angular: ['angular-eslint'],
+  'next': [...REACT_PLUGINS, '@next/eslint-plugin-next'],
+  // `reactNative()` composes `reactCore()`, which is `react()` without the accessibility preset.
+  'react-native': REACT_PLUGINS.filter((name) => {
+    return name !== 'eslint-plugin-jsx-a11y-x';
+  }),
+  'solid': ['eslint-plugin-solid', 'eslint-plugin-jsx-a11y-x'],
+  'vue': ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
+  'svelte': ['eslint-plugin-svelte'],
+  'angular': ['angular-eslint'],
 };
 
 describe('a framework layer and the plugins it loads', () => {

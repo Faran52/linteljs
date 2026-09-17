@@ -25,6 +25,7 @@ import { emitStylelintConfig } from '../stylelint-config/emitStylelintConfig';
 import { emitTsconfig } from '../tsconfig/emitTsconfig';
 import { emitViteConfig } from '../vite-config/emitViteConfig';
 import { emitVitestConfig } from '../vitest-config/emitVitestConfig';
+import { emitYarnrc } from '../yarnrc/emitYarnrc';
 
 import type { TargetRecord } from '../../model/targets/record';
 
@@ -136,7 +137,7 @@ export const buildArtifacts = (
   }
 
   if (answers.packageManager === 'yarn') {
-    artifacts.push(copied('.yarnrc.yml', 'yarn/yarnrc'));
+    artifacts.push(emitted('package', '.yarnrc.yml', emitYarnrc(answers)));
   }
 
   return artifacts;

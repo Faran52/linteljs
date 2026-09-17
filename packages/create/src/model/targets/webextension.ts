@@ -14,7 +14,6 @@ import type { TargetBuilder } from './registry';
 interface BrowserParts {
   types: string[];
   devDependencies: string[];
-  scripts?: Record<string, string>;
   // Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
   // both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
   starter: {
@@ -40,10 +39,7 @@ const BROWSERS: Record<Browser, BrowserParts> = {
   firefox: {
     // `browser.*`, promise-returning; these types carry no `chrome`, so Chrome's starter does not typecheck here.
     types: ['firefox-webext-browser'],
-    // `web-ext` runs, lints and packages; it is not a bundler, so `crx` still is.
-    devDependencies: ['@types/firefox-webext-browser', 'web-ext'],
-    // `--no-reload`: the build is a one-shot `vite build`, so a reload would serve a stale `dist/`.
-    scripts: { start: 'web-ext run --source-dir dist --no-reload' },
+    devDependencies: ['@types/firefox-webext-browser'],
     starter: {
       entry: 'starter/webextension/background.firefox.ts',
       handler: 'starter/webextension/onInstalled.firefox.ts',
@@ -192,7 +188,6 @@ export const webextension: TargetBuilder = (answers) => {
     // crx builds only pages the manifest names; the panel is opened at runtime, so it goes in `rollupOptions.input`.
     ...(hasSurface(answers, 'devtools-panel') ? { viteInputs: { panel: 'panel.html' } } : {}),
     typecheck: 'tsc --noEmit',
-    ...(browser.scripts === undefined ? {} : { extraScripts: browser.scripts }),
     ...(hosted === undefined ? {} : { dependencies: hosted.dependencies }),
     devDependencies: [
       '@crxjs/vite-plugin',

@@ -40,7 +40,7 @@ export const solid: TargetRecord = {
   staleScaffoldFiles: ['tsconfig.app.json', 'tsconfig.node.json'],
   typecheck: 'tsc --noEmit',
   testDevDependencies: ['@solidjs/testing-library'],
-  devDependencies: ['eslint-plugin-jsx-a11y', 'eslint-plugin-solid', 'vite-plugin-solid', 'vite'],
+  devDependencies: ['eslint-plugin-jsx-a11y-x', 'eslint-plugin-solid', 'vite-plugin-solid', 'vite'],
   allowBuilds: [],
   stateRules: ['solid-reactivity.md'],
   routerMocks: true,

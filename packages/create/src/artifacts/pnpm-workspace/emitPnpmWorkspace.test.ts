@@ -6,6 +6,7 @@ import {
 
 import {
   type Answers,
+  type Browser,
   DEFAULT_ANSWERS,
   type HostedFramework,
   type TargetId,
@@ -19,6 +20,7 @@ import {
 
 interface AnswerOverrides {
   target?: TargetId;
+  browser?: Browser;
   hostedFramework?: HostedFramework;
 }
 
@@ -59,52 +61,37 @@ describe('emitPnpmWorkspace', () => {
 });
 
 /**
- * Three plugins close their `eslint` peer range before the major this CLI installs. `jsx-a11y` and `solid` genuinely
- * run; `eslint-plugin-import` never does, arriving as an optional peer of the resolver every project installs.
+ * One plugin left: `eslint-plugin-import` never runs, arriving as an optional peer of the resolver every project
+ * installs. `jsx-a11y-x` and `solid` both admit eslint 10 now, so neither needs an allowance.
  */
 describe('peerDependencyRules', () => {
-  it('allows the accessibility plugin the next layer names', () => {
-    const output = emitPnpmWorkspace(answersFor({ target: 'next' }));
-
-    expect(output).toContain('peerDependencyRules:\n  allowedVersions:\n');
-    expect(output).toContain("    'eslint-plugin-jsx-a11y>eslint': '10'");
-    // Gone with `eslint-config-next`: the layer registers neither plugin now, so neither is in the tree.
-    expect(output).not.toContain('eslint-plugin-react>');
-  });
-
   // The resolver is a dependency of the config every project installs, so this one is not target-specific.
   it('allows the inert resolver peer for every target', () => {
-    expect(emitPnpmWorkspace(answersFor({ target: 'react' })))
-      .toContain("    'eslint-plugin-import>eslint': '10'");
+    const output = emitPnpmWorkspace(answersFor({ target: 'react' }));
+
+    expect(output).toContain('peerDependencyRules:\n  allowedVersions:\n');
+    expect(output).toContain("    'eslint-plugin-import>eslint': '10'");
   });
 
-  // Solid gets both: its own plugin, and the accessibility one `solid()` loads because Solid renders JSX.
-  it('allows the solid plugin, and accessibility with it, for a solid project', () => {
-    const output = emitPnpmWorkspace(answersFor({ target: 'solid' }));
+  // Both used to need one and no longer do: an allowance for a range that already admits the installed major is dead
+  // config, and a reader cannot tell dead config from a live exemption.
+  it('names no allowance for the accessibility or solid plugins', () => {
+    for (const target of ['next', 'solid', 'vue'] as const) {
+      const output = emitPnpmWorkspace(answersFor({ target }));
 
-    expect(output).toContain("    'eslint-plugin-solid>eslint': '10'");
-    expect(output).toContain("    'eslint-plugin-jsx-a11y>eslint': '10'");
+      expect(output).not.toContain('jsx-a11y');
+      expect(output).not.toContain('eslint-plugin-solid>');
+    }
   });
 
-  // Read off the dependencies the project installs, so an extension hosting solid is covered without naming it here.
-  it('follows a hosted framework onto the target that hosts it', () => {
-    const hosted = emitPnpmWorkspace(answersFor({
-      target: 'webextension',
-      hostedFramework: 'solid',
-    }));
-    const plain = emitPnpmWorkspace(answersFor({ target: 'webextension' }));
-
-    expect(hosted).toContain("    'eslint-plugin-solid>eslint': '10'");
-    expect(plain).not.toContain('eslint-plugin-solid>');
-  });
-
-  // Vue renders templates rather than JSX, so neither plugin is in its tree; its own accessibility plugin would be
-  // `eslint-plugin-vuejs-accessibility`, which this standard does not ship yet.
-  it('names no accessibility or solid allowance on a target that uses neither', () => {
-    const output = emitPnpmWorkspace(answersFor({ target: 'vue' }));
-
-    expect(output).not.toContain('eslint-plugin-jsx-a11y>');
-    expect(output).not.toContain('eslint-plugin-solid>');
+  // The one target that still meets the stale plugin: `eslint-plugin-astro` takes it as an optional peer and runs its
+  // rules as `astro/jsx-a11y/*`, so the allowance is keyed by the plugin that brings it, not by the target.
+  it('allows the stale peer the astro plugin drags in, sorted beside the resolver', () => {
+    expect(emitPnpmWorkspace(answersFor({ target: 'astro' }))).toContain(
+      'peerDependencyRules:\n  allowedVersions:\n'
+      + "    'eslint-plugin-import>eslint': '10'\n"
+      + "    'eslint-plugin-jsx-a11y>eslint': '10'\n",
+    );
   });
 });
 
@@ -112,5 +99,26 @@ describe('peer allowances a target carries', () => {
   it('lets Angular install vitest 5 under a build that peers on 4', () => {
     expect(peerRulesBlock(answersFor({ target: 'angular' }))).toContain("    '@angular/build>vitest': '5'\n");
     expect(peerRulesBlock(answersFor({ target: 'react' }))).not.toContain('@angular/build');
+  });
+});
+
+/**
+ * React Native's own toolchain disagrees with itself about metro-config, which is a resolution this CLI can state.
+ * A deprecation is not: nothing here mutes one, for any target. React Native's `expo` reaches an end-of-life `uuid`,
+ * the notice is true, and it belongs to whoever owns the dependency.
+ */
+describe('react native allowances', () => {
+  it('allows the metro-config peer react-native resolves past, and mutes no deprecation', () => {
+    const output = emitPnpmWorkspace(answersFor({ target: 'react-native' }));
+
+    expect(output).toContain("    '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1'");
+    expect(output).not.toContain('allowedDeprecatedVersions');
+  });
+
+  it('mutes no deprecation for a firefox extension either', () => {
+    expect(emitPnpmWorkspace(answersFor({
+      target: 'webextension',
+      browser: 'firefox',
+    }))).not.toContain('allowedDeprecatedVersions');
   });
 });

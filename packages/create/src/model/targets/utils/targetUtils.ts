@@ -28,10 +28,10 @@ export const tabsToSpaces = (source: string): string => {
 
 export const HOOKS_ALIAS: AliasMap = { '@hooks/*': './src/lib/hooks/*' };
 
-// `jsx-a11y` is here because `react()` loads it, so every target composing that layer installs it.
+// `jsx-a11y-x` is here because `react()` loads it, so every target composing that layer installs it.
 export const COMMON_REACT_PLUGINS = [
   '@eslint-react/eslint-plugin',
-  'eslint-plugin-jsx-a11y',
+  'eslint-plugin-jsx-a11y-x',
   'eslint-plugin-react-hooks',
 ];
 

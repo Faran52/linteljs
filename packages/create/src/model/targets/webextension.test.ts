@@ -49,10 +49,15 @@ describe('the browser axis', () => {
     expect(recordFor({ browser: 'firefox' }).vitePlugin.calls).toContain('crx({ manifest })');
   });
 
-  // Chrome has no equivalent it needs.
-  it('brings web-ext on firefox and not on chrome', () => {
-    expect(recordFor({ browser: 'firefox' }).devDependencies).toContain('web-ext');
-    expect(recordFor({ browser: 'chrome' }).devDependencies).not.toContain('web-ext');
+  // Equal length is the assertion: a browser contributes its ambient types and nothing else, so neither costs more
+  // than the other. DESIGN.md: the extension target ships no browser runner.
+  it('brings only the types each browser needs, and the same count for both', () => {
+    const firefox = recordFor({ browser: 'firefox' }).devDependencies;
+    const chrome = recordFor({ browser: 'chrome' }).devDependencies;
+
+    expect(firefox).toContain('@types/firefox-webext-browser');
+    expect(chrome).toContain('@types/chrome');
+    expect(firefox).toHaveLength(chrome.length);
   });
 
   // Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone.

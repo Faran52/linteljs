@@ -64,9 +64,9 @@ export const VERSIONS: Record<string, string> = {
   '@linteljs/eslint-config': '^1.6.0',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.1.0',
-  'eslint-plugin-jsx-a11y': '^6.10.2',
+  'eslint-plugin-jsx-a11y-x': '^0.2.0',
   'eslint-plugin-better-tailwindcss': '^4.7.0',
-  'eslint-plugin-solid': '^0.16.1',
+  'eslint-plugin-solid': '^0.18.0',
   'eslint-plugin-svelte': '^3.23.0',
   '@vitejs/plugin-vue': '^6.0.8',
   'eslint-plugin-vue': '^10.11.0',
@@ -90,6 +90,12 @@ export const VERSIONS: Record<string, string> = {
   'svelte-check': '^4.7.5',
   'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',
+  /**
+   * Named rather than left to the peer resolver: `@testing-library/react-native` requires it, pnpm installs a
+   * peer unasked and npm under `legacy-peer-deps` does not, and without it every `screen.getByTestId().props`
+   * resolves to an error type that `skipLibCheck` hides from `tsc` and typescript-eslint reports.
+   */
+  'test-renderer': '^1.2.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
   'vite-plugin-solid': '^2.11.14',
@@ -97,7 +103,6 @@ export const VERSIONS: Record<string, string> = {
   'vue': '^3.5.42',
   'vue-eslint-parser': '^10.4.1',
   'vue-tsc': '^3.3.9',
-  'web-ext': '^10.6.0',
   'zod': '^4.4.3',
   '@hookform/resolvers': '^5.9.1',
   '@t3-oss/env-core': '^0.13.11',
@@ -114,7 +119,8 @@ export const VERSIONS: Record<string, string> = {
   'nativewind': '^5.0.0-rc.0',
   'postcss': '^8.5.28',
   'react-hook-form': '^7.88.0',
-  'react-native-css': '^3.0.7',
+  // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version, so a caret resolves past it.
+  'react-native-css': '3.1.0-rc.0',
   'react-router': '^8.4.0',
   'ts-pattern': '^5.9.0',
   'zustand': '^5.0.14',
@@ -123,7 +129,9 @@ export const VERSIONS: Record<string, string> = {
 // An exact version: corepack rejects a range in `packageManager`.
 export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
   pnpm: '12.4.1',
-  npm: '12.0.2',
+  // 11, not 12: `create-expo-app` cannot read npm 12's `npm pack --dry-run --json`, so React Native needs npm 11
+  // on PATH, and a project declaring a 12 floor then warns EBADENGINE on every install. expo/expo#48091.
+  npm: '11.19.1',
   yarn: '4.18.0',
   bun: '1.3.14',
 };
