@@ -6,6 +6,7 @@ import {
 
 import {
   type Answers,
+  type Browser,
   DEFAULT_ANSWERS,
   type TargetId,
 } from '../../model/answers/answers';
@@ -15,6 +16,7 @@ import { mergePnpmWorkspace } from './mergePnpmWorkspace';
 
 interface AnswerOverrides {
   target?: TargetId;
+  browser?: Browser;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -73,7 +75,7 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
     // The project's own allowBuilds list survives: one name, not the two this CLI would have written.
     expect(merged).toContain("allowBuilds:\n  'sharp': true");
     expect(merged).not.toContain('unrs-resolver');
-    expect(merged).toContain("    'eslint-plugin-jsx-a11y>eslint': '10'");
+    expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
   });
 
   // Already there is the project's: a hand-widened range is not this CLI's to narrow back.
@@ -84,13 +86,12 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
     expect(merged).toBe(withRules);
   });
 
-  // Every target installs the resolver that drags the inert plugin, so every target gets a block. Vue is one whose
-  // tree has nothing else in it: it renders templates, not JSX.
-  it('names no accessibility allowance for a target that does not use it', () => {
+  // Every target installs the resolver that drags the inert plugin, so every target gets a block.
+  it('names the inert resolver peer for a target with nothing else capped', () => {
     const merged = mergePnpmWorkspace(existing, answersFor({ target: 'vue' }));
 
     expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
-    expect(merged).not.toContain('eslint-plugin-jsx-a11y>');
+    expect(merged).not.toContain('jsx-a11y');
   });
 });
 
@@ -99,6 +100,6 @@ it('adds both blocks to a next scaffold that has neither', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 
   expect(merged).toContain("allowBuilds:\n  'sharp': true");
-  expect(merged).toContain("    'eslint-plugin-jsx-a11y>eslint': '10'");
+  expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
   expect(merged).not.toContain('ignoredBuiltDependencies');
 });

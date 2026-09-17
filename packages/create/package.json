@@ -59,7 +59,7 @@
     "build": "tsdown",
     "prepack": "pnpm run build",
     "smoke": "node scripts/smoke.js",
-    "test:e2e": "pnpm -w run e2e:pack && vitest run --config vitest.e2e.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "typecheck": "tsc --noEmit",
     "prepare": "pnpm run build"
   },

@@ -1,2 +1,1 @@
 legacy-peer-deps=true
-allow-scripts=@swc/core,fsevents,unrs-resolver

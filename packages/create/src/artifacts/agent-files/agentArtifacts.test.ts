@@ -50,8 +50,21 @@ const HOST_CASES: HostCase[] = [
     agents: ['codex'],
   },
   {
+    label: 'Copilot',
+    agents: ['copilot'],
+  },
+  {
+    label: 'Cursor',
+    agents: ['cursor'],
+  },
+  {
     label: 'dual host',
     agents: ['claude-code', 'codex'],
+  },
+  // Every agent at once: the only shape that emits the whole inventory, and the one a project picking all four gets.
+  {
+    label: 'every host',
+    agents: ['claude-code', 'codex', 'copilot', 'cursor'],
   },
 ];
 
@@ -456,8 +469,31 @@ describe('GENERATED_AGENT_TARGETS', () => {
       'plugins/linteljs/hooks/eslint-fix-warning.sh',
       'plugins/linteljs/hooks/git-safety-guard.sh',
       'plugins/linteljs/hooks/banned-pattern-guard.sh',
+      '.github/instructions/type-standards.instructions.md',
+      '.github/instructions/repo-structure.instructions.md',
+      '.github/instructions/react-state.instructions.md',
+      '.github/instructions/hooks-order.instructions.md',
+      '.github/instructions/vue-reactivity.instructions.md',
+      '.github/instructions/svelte-reactivity.instructions.md',
+      '.github/instructions/solid-reactivity.instructions.md',
+      '.github/instructions/type-standards-zod.instructions.md',
+      '.github/instructions/testing.instructions.md',
+      '.cursor/rules/type-standards.mdc',
+      '.cursor/rules/repo-structure.mdc',
+      '.cursor/rules/react-state.mdc',
+      '.cursor/rules/hooks-order.mdc',
+      '.cursor/rules/vue-reactivity.mdc',
+      '.cursor/rules/svelte-reactivity.mdc',
+      '.cursor/rules/solid-reactivity.mdc',
+      '.cursor/rules/type-standards-zod.mdc',
+      '.cursor/rules/testing.mdc',
     ]);
-    expect(GENERATED_AGENT_TARGETS).not.toEqual(expect.arrayContaining(['CLAUDE.md', 'AGENTS.md']));
+    expect(GENERATED_AGENT_TARGETS).not.toEqual(expect.arrayContaining([
+      'CLAUDE.md',
+      'AGENTS.md',
+      '.github/copilot-instructions.md',
+      '.cursor/rules/linteljs.mdc',
+    ]));
   });
 
   it.each(ARTIFACT_MATRIX)(

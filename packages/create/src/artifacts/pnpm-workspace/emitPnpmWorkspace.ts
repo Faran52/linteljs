@@ -14,8 +14,8 @@ const PEER_RANGE_GAPS: Record<string, string[]> = {
   // Never loaded: pnpm installs `eslint-plugin-import` as an optional peer of the resolver, and the layers use
   // `import-x`.
   '@linteljs/eslint-config': ['eslint-plugin-import'],
-  'eslint-plugin-jsx-a11y': ['eslint-plugin-jsx-a11y'],
-  'eslint-plugin-solid': ['eslint-plugin-solid'],
+  // Optional peer, installed anyway, and this one does run: `astro/jsx-a11y/*` is the stale plugin's rules rebadged.
+  'eslint-plugin-astro': ['eslint-plugin-jsx-a11y'],
 };
 
 export const allowBuildsBlock = (answers: Answers): string => {

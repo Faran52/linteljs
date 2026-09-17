@@ -102,10 +102,11 @@ export const scaffoldCommand = (
   spec: ScaffoldSpec,
 ): CommandLine => {
   const [scaffolder, name, ...flags] = spec.args;
+  const launcher = spec.via ?? packageManager;
   // `npm create` keeps the flags for itself unless `--` follows the project name.
-  const separator = packageManager === 'npm' && spec.kind === 'create' ? ['--'] : [];
+  const separator = launcher === 'npm' && spec.kind === 'create' ? ['--'] : [];
 
-  return [...SCAFFOLD_COMMANDS[packageManager][spec.kind], scaffolder, name, ...separator, ...flags];
+  return [...SCAFFOLD_COMMANDS[launcher][spec.kind], scaffolder, name, ...separator, ...flags];
 };
 
 const write = async (options: PipelineOptions, relative: string, text: string): Promise<void> => {

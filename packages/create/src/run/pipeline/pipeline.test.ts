@@ -794,6 +794,21 @@ describe('scaffoldCommand', () => {
     expect(scaffoldCommand('bun', svelte)[0]).toBe('bunx');
   });
 
+  // React Native alone: `create-expo-app` shells out to npm whatever launched it, and dies under yarn.
+  it('launches through the manager a spec names, not the answered one', () => {
+    const answers = answersFor({
+      target: 'react-native',
+      packageManager: 'yarn',
+    });
+    const spec = targetFor(answers).scaffold('demo-app', answers);
+
+    expect(scaffoldCommand('yarn', spec)).toEqual([
+      'npm', 'create', 'expo-app@latest', 'demo-app', '--', '--yes', '--no-install',
+    ]);
+    // The separator follows the launcher too, or npm keeps the flags for itself.
+    expect(scaffoldCommand('bun', spec)).toContain('--');
+  });
+
   it('inserts -- separator for npm create to forward flags', () => {
     const react = targetFor(answersFor({ target: 'react' })).scaffold('demo-app', answersFor({ target: 'react' }));
     const npm = scaffoldCommand('npm', react);
