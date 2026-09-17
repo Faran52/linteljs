@@ -6,6 +6,7 @@ coverage/
 .DS_Store
 .idea/
 .e2e/
+.e2e-cache/
 .compat/
 .worktrees/
 .superpowers/

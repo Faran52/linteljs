@@ -169,7 +169,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   not a hand-written glob, because gitignore semantics (negation, anchoring, directory-only patterns)
   are easy to get subtly wrong and are not this package's problem to own. The hardcoded entries stay:
   a project may not gitignore `dist/`, and `plugins/linteljs/` is committed on purpose.
-- **Accessibility belongs to JSX, not to a framework.** `jsx-a11y` used to reach Next projects only,
+- **Accessibility belongs to JSX, not to a framework.** `jsx-a11y-x` used to reach Next projects only,
   by accident, because `eslint-config-next` bundled it and enabled six of its rules at `warn`. An
   element with no accessible name is the same defect in a Vite React app, in a Solid app and in an
   extension, so `react()` and `solid()` enable the plugin's own `recommended` preset and every target
@@ -177,8 +177,21 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   preset in these layers arrives: six rules chosen by a framework's config is that framework's floor,
   not a standard. Measured before landing: 31 newly error-level rules against a real Next project,
   zero new findings.
+- **The accessibility plugin is the `-x` fork, and that is a bun decision.** `eslint-plugin-jsx-a11y`
+  last published in October 2024 with its `eslint` peer capped at 9. It runs fine on 10; the metadata
+  is stale. npm waves it through with `legacy-peer-deps`, pnpm with `peerDependencyRules` and yarn
+  with `logFilters`, but bun has no equivalent: measured against a real install, `.npmrc`
+  `legacy-peer-deps`, `bunfig.toml` `logLevel = "error"`, `install.peer = false`, `--omit=peer`,
+  `--silent`, a root `peerDependenciesMeta` and even a `bun patch` of the plugin's own range all
+  still print `warn: incorrect peer dependency`, because bun reads the range from the registry
+  manifest rather than from disk. So the layers take `eslint-plugin-jsx-a11y-x`, whose range admits
+  10. The cost is the rule prefix: every id is `jsx-a11y-x/*`, which breaks a disable comment written
+  against the old one. `eslint-plugin-astro` is the exception and keeps the original, because it
+  loads it by literal name and prefixes that plugin's own ids with `astro/`; aliasing the fork in
+  would emit `astro/jsx-a11y-x/*` ids it never registers, and ESLint would fail on every one. That is
+  the single `eslint-plugin-jsx-a11y>eslint` allowance the emitted `pnpm-workspace.yaml` still names.
 - **The template frameworks get the same floor, by three different mechanisms.** Vue, Svelte and
-  Angular render templates rather than JSX, so `jsx-a11y` cannot see them. Each is covered now, and
+  Angular render templates rather than JSX, so `jsx-a11y-x` cannot see them. Each is covered now, and
   the mechanism differs per framework because what each ecosystem ships differs:
 
   | framework | mechanism | why not the others |
@@ -409,13 +422,24 @@ Request and response are separate schemas per endpoint, never one shape serving 
 
 ## Libraries and routers
 
-Eight libraries and two routers are answers rather than a starter kit, because each one changes what the
+Six libraries, a form library and two routers are answers rather than a starter kit, because each one changes what the
 CLI emits: a dependency, a lint layer, a starter file, a coverage exclusion. Something that changes
 nothing the CLI writes is a `pnpm add` and not a question.
 
-- **One form library at most.** TanStack Form and React Hook Form bind the same inputs, so the prompt
-  offers them as one radio and the config parser refuses both together. React Hook Form is offered only
-  where the target renders with React, which includes an Astro or extension host with a React island.
+- **The form library is its own answer, not a library.** TanStack Form and React Hook Form bind the same
+  inputs, so at most one is ever installed. Until 1.7.0 both sat in `libraries`, a multi-select, and the
+  exclusion was re-imposed afterwards by the parser; the prompt had always asked them as one radio. That
+  left a single-select hiding inside a multi-select, and every consumer had to know: the end-to-end cases
+  filtered `react-hook-form` out of `LIBRARIES` by hand, and `LIBRARIES` itself was not a legal value of
+  `libraries`. `form` is now a field of its own, so the full library set is always legal and the type says
+  what the rule was. React Hook Form is offered only where the target renders with React, which includes an
+  Astro or extension host with a React island.
+- **A version-one config is migrated, never refused.** `schemaVersion: 1` is read, its form library lifted
+  out of `libraries` into `form`, and the file reports v2 from then on. Silent, for the reason an absent
+  `surfaces` still describes its own project: a config written before an answer existed is not broken.
+  `lintel.config.v1.schema.json` stays published, because those files name it in `$schema` and an editor
+  resolves it. Naming a form library in `libraries` now fails with the field to use rather than with
+  "not a valid library".
 - **Bindings follow the framework, not the target.** TanStack Query and Form install
   `@tanstack/<framework>-*` for `target.framework`, so an Astro site hosting React gets the React binding
   and a plain-TypeScript extension gets none. Before 1.6.0 the map was keyed by target and a hosted
@@ -450,14 +474,32 @@ at all did, so 1.5.4's `bunfig.toml` shipped a key bun never read. Both managers
 `allowedBuildNames` builds.
 
 `.npmrc` and `.yarnrc.yml` are both load-bearing, measured on React and Next with each file removed.
-Without `legacy-peer-deps` npm refuses the install outright: `eslint-plugin-jsx-a11y` caps its eslint
-peer at 9 and npm treats that as a conflict, where pnpm and yarn take the `peerDependencyRules`
+Without `legacy-peer-deps` npm refuses the install outright, where pnpm and yarn take their own
 allowance. Its price is that npm then installs no peers at all, which is why `vite` is a named dev
 dependency wherever vitest is. Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
-TypeScript resolver and `check` fails with 46 errors; its `logFilters` discard the same jsx-a11y cap
-(YN0060) and one collateral notice, `@rolldown/plugin-babel` peering on `rolldown`, which Vite 8
-bundles rather than exposes. `.npmrc`'s `allow-scripts` line prevented nothing measurable and
-`create astro` overrides it with its own `allowScripts`, so it is gone.
+TypeScript resolver and `check` fails with 46 errors.
+
+`.yarnrc.yml` answers a peer with `packageExtensions` and never with `logFilters`. Measured by
+emptying the filter list and running the yarn half of the suite. `@rolldown/plugin-babel` peering on
+`rolldown`, `@vue/test-utils` on `@vue/compiler-dom` and `eslint-plugin-vuejs-accessibility` on
+`globals` are requests the project has no business answering, each already supplied by a tree it does
+not own, so each is marked optional on the package that asks. `postcss-html` on `postcss` is the one
+answered by supplying it: stylelint 17 dropped its own postcss, so nothing in a generated project
+declares one and `postcss-html` reaches whatever `postcss-safe-parser` happens to hoist. Marking that
+optional leaves YN0002 printing, measured on a bare project at the versions pinned here, and resting
+on a transitive's hoist is the thing the warning is about, so the extension gives `postcss-html` the
+dependency instead. Declaring `postcss` in the generated project would answer it too, and is the
+alternative if these ever need to agree across all four managers rather than yarn alone.
+
+A blanket `YN0002`/`YN0060` discard used to cover all of them, which also meant the suite's
+no-warnings assertion could never fire on yarn: with nothing printed, yarn never reports `Done with
+warnings` and the check short-circuits. The only filter left is the one a target earns by declaring
+`peerAllowances`, angular alone, where `@angular/build` requests a vitest the standard exceeds.
+Yarn reports that as `YN0060` with a `YN0086` summary, so the allowance discards both.
+`.npmrc`'s `allow-scripts` line prevented nothing measurable and `create astro` overrides it with
+its own `allowScripts`, so it is gone. npm 12 reads that field from `package.json` instead, which
+`patchPackageJson` writes, and `.yarnrc.yml` is emitted rather than copied so its `packageExtensions`
+follow the dependencies a project actually installs.
 
 ## Comments
 
@@ -556,7 +598,7 @@ generated project shows it. That whitelist is deliberate and each addition is pi
 by the package stage, and `sync` writes artifacts rather than stages, so a dependency a release added to a layer
 reached every new project and no existing one. Two of three reference migrations had to add plugins by hand that
 their own recorded answers already implied: one needed `@next/eslint-plugin-next`, the other needed
-`eslint-plugin-jsx-a11y`, both `@html-eslint` packages and `@types/chrome`. The merge is `patchPackageJson`, which
+the accessibility plugin, both `@html-eslint` packages and `@types/chrome`. The merge is `patchPackageJson`, which
 already did the right thing for a `create` run and never ran for a `sync` one, so both routes now agree.
 
 **The end-to-end suite retries one install error and no other.** A scaffolder pins the version it just saw, so a run
@@ -639,6 +681,84 @@ major to silence a warning is the wrong trade.
 Do not change the record's `build` or move a test back under `src/app/` without running
 `pnpm --filter @linteljs/create test:e2e -t react-native`. That command is the only thing that sees
 any of this.
+
+### React Native lints as react without the accessibility preset
+
+`Framework` carries a `react-native` member whose layer is `reactCore()`: everything `react()` has except the
+`jsx-a11y-x` preset. Measured before the split, on one snippet written twice: as web markup it reports four findings,
+`alt-text`, `anchor-is-valid`, `click-events-have-key-events` and `no-static-element-interactions`; as React Native
+markup it reports none. Those rules key on lowercase DOM element names, and React Native renders `<Image>`, `<Text>`
+and `<Pressable>`, which they read as unknown custom components and skip. So the preset was 34 rules that could not
+fire, plus a dependency installed to hold them, and React Native no longer installs it.
+
+In its place the layer composes `@linteljs/eslint-plugin`'s own `flat/accessibility`: five rules reading the props
+React Native actually announces with. They are scoped to this layer and not shared, because `Button`, `Switch`,
+`Image` and `TextInput` are ordinary names that mean something else on the web.
+
+**Why the rules are ours rather than a dependency.** Two published packages were measured and both refused.
+`eslint-plugin-react-native-a11y` last published 2024-11-04, caps its `eslint` peer at 8 and ships eslintrc configs
+only, so installing it reintroduces on bun exactly the unfixable peer warning the `jsx-a11y-x` fork was adopted to
+remove. `eslint-plugin-triple-rn-a11y` is the live alternative, flat config, no peers declared at all, published the
+day this was written, but it is one agency's internal plugin at 179 weekly downloads whose rule ids carry a
+`triple-rn-a11y/` vendor prefix a user would type into disable comments. All four packages, including this one, are
+MIT, so the choice was never a licensing one.
+
+**None of the five has a fixer, on purpose.** `eslint-plugin-react-native-a11y` inserts `accessibilityLabel="Text
+input field"` for a missing name. That is an invented label: it silences the rule, reads as done, and ships a control
+that announces the wrong thing. A name is a sentence only the author knows, a role guessed from `"img"` could be
+`image` or `imagebutton` and those announce differently, and the two repairs for a nested touchable produce different
+interfaces. Reporting is the honest answer for all five.
+
+### React Native carries three upstream workarounds
+
+None is a choice about the standard; each is a defect in somebody else's published package, and each has its
+measurement here so it can be removed rather than inherited.
+
+- **The scaffolder runs through npm.** `ScaffoldSpec.via` exists for this one target. `create-expo-app` shells out
+  to `npm pack --dry-run --json` whatever launched it, so npm is the only launcher it is tested against. Launched
+  through Yarn it dies before writing a file with `ERR_INVALID_ARG_TYPE`, passing a web `ReadableStream` where a
+  Buffer is wanted, then passing that error's code to `process.exitCode`, which wants a number. Measured against
+  the public registry as well as this suite's own, so the registry is not the cause.
+- **npm is pinned to 11, for all nine targets.** Same scaffolder, same `npm pack --dry-run --json`: npm 12 answers
+  with an object where npm 11 answered with an array, and `create-expo-app` cannot read it. expo/expo#48091 is
+  merged in expo/expo#48392 and unpublished. The floor is 11 everywhere rather than 12 for the eight that could
+  take it, because a project declaring a 12 floor warns `EBADENGINE` on every install under the npm 11 this one
+  needs. Raise `PACKAGE_MANAGER_VERSIONS.npm`, and delete the CI step that installs npm 11, together.
+- **One allowance the target declares.** `@react-native/community-cli-plugin@0.86.3` peers exactly one version of
+  `@react-native/metro-config` while pnpm resolves a newer one, and nothing here declares either package.
+
+  The deprecated `uuid@7` that `expo` reaches through `@expo/config-plugins` and `xcode` is deliberately *not*
+  allowed away. See below.
+
+### A deprecation notice is never muted
+
+Nothing emitted here writes `allowedDeprecatedVersions`, and the end-to-end suite asserts on install warnings for
+all four managers but never on a deprecation. A deprecation says a third-party package reached end of life. It is
+true, the project it names belongs to somebody else, and no config a generated project carries changes the fact;
+all such config does is hide it from the person who could act on it, or report it upstream.
+
+One reaches a generated project today: React Native's `expo` pulls `uuid@7` through `@expo/config-plugins` and
+`xcode`, which writes the native Xcode project. Nothing this CLI writes imports it, and it is fixed by its owner
+upgrading, not by this repo. The Firefox extension's two, `eslint@9` and `whatwg-encoding@3` under
+`addons-linter`, left with `web-ext` itself.
+
+An earlier pass did carry a `DEPRECATED_SUBDEPENDENCIES` map and emitted the allowance. It is gone: the two cases
+differed only in whether a scaffolder or this CLI installed the parent, which has no bearing on who can fix it.
+
+### The extension target ships no browser runner
+
+Measured on `web-ext@10.6.0`: 329 packages and 81 MB, wired to one script, `start`, running
+`web-ext run --source-dir dist --no-reload`. Among what it drags in are a second ESLint, deprecated at that, and
+`adbkit`, an Android Debug Bridge client. It also carried the only two deprecation notices a generated project
+printed besides React Native's.
+
+What it bought was the difference between a command and a few clicks, on one of the two browsers. Chrome
+extensions never had an equivalent: a Chrome developer opens the extensions page and loads `dist/` unpacked, and a
+Firefox developer does the same at `about:debugging` with "Load Temporary Add-on". Both browsers now cost the same
+and neither carries a dev-time dependency for it.
+
+`web-ext lint` and `web-ext sign` are the real reasons to reach for the tool, and both run under `npx` on the day
+an extension is submitted to addons.mozilla.org, which is not a reason to install it in every project from birth.
 
 ## Releasing
 
