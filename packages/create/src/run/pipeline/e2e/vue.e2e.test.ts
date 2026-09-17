@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { LIBRARIES } from '../../../model/answers/answers';
+
 import {
   afterAllCleanup,
   runE2eCase,
@@ -20,7 +22,8 @@ describe('vue end-to-end', () => {
   // `@tanstack/vue-query` pulls `vue-demi`, whose build script pnpm refuses unless approved.
   it.each(withDefaultPm('vue with every library and pinia', {
     target: 'vue',
-    libraries: ['zod', 'tanstack-query', 'tanstack-form', 'tailwind', 'es-toolkit', 'ts-pattern', 't3-env'],
+    libraries: LIBRARIES,
+    form: 'tanstack-form',
     store: true,
   }))
   ('generates, installs and checks $label', runE2eCase, 900_000);

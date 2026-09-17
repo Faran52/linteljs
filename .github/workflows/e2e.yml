@@ -1,7 +1,8 @@
 name: e2e
 
-# The generation suite: nine targets plus eight answer shapes, each scaffolded, installed and put
-# through its own `pnpm check`. Seventeen network installs keep it off pull requests.
+# The generation suite: nine targets on all four managers, plus eleven answer shapes on the default
+# one, each scaffolded, installed and put through its own `pnpm check`. Fifty-five network installs
+# keep it off pull requests.
 
 on:
   push:
@@ -17,9 +18,19 @@ concurrency:
 
 jobs:
   generate:
-    name: every target generates and passes its own gate
+    # Four shards of the nine files, one runner each. Vitest splits by file, ordered by a hash of the
+    # path rather than by duration, so the shards are even in count and uneven in time; the floor is
+    # the slowest single file, `react.e2e.test.ts` at around ten minutes. More shards than four buys
+    # nothing until that file is split. Each runner is its own machine, so each starts its own
+    # registry on its own port with its own storage, and nothing is shared between them.
+    name: targets pass their own gate (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
+    strategy:
+      # Every shard reports: one failing target must not hide a second in another shard.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
 
@@ -35,8 +46,12 @@ jobs:
       # before writing a file, whichever package manager the case selected: it shells out to npm
       # directly. https://github.com/expo/expo/issues/48091 is open with no released fix.
       #
-      # Delete this step once a create-expo-app carrying that fix is published.
-      - run: npm i -g npm@11
+      # On every shard, not just the one holding that file: the hash decides which shard that is.
+      # The version matches `PACKAGE_MANAGER_VERSIONS.npm`, which an npm project writes into its
+      # own `engines`; a runner on a lower npm would warn EBADENGINE on every install.
+      #
+      # Delete this step, and raise that constant, once a create-expo-app carrying the fix ships.
+      - run: npm i -g npm@11.19.1
       - run: npm --version
 
       - run: pnpm install --frozen-lockfile
@@ -44,4 +59,4 @@ jobs:
       # This is the only suite where the emitted text meets the real layers. Everything else
       # asserts on strings, and a plugin registered twice, a peer nobody installs or a version
       # range that does not resolve all pass a unit test and then break the first project.
-      - run: pnpm --filter @linteljs/create test:e2e
+      - run: pnpm --filter @linteljs/create test:e2e --shard ${{ matrix.shard }}/4
