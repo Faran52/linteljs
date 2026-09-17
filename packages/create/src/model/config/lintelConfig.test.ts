@@ -750,6 +750,23 @@ describe('answers a target never asks for', () => {
     }).toThrow(message);
   });
 
+  // Next and React Native are their own `framework` values, and both render with React.
+  it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
+    expect(parseLintelConfig(config({
+      target,
+      form: 'react-hook-form',
+    })).form).toBe('react-hook-form');
+  });
+
+  it.each(['vue', 'svelte', 'solid', 'angular'])('still refuses react-hook-form on %s', (target) => {
+    expect(() => {
+      return parseLintelConfig(config({
+        target,
+        form: 'react-hook-form',
+      }));
+    }).toThrow(`react-hook-form is not an answer for ${target}`);
+  });
+
   it('accepts the same answers where the target asks for them', () => {
     expect(parseLintelConfig(config({
       target: 'astro',

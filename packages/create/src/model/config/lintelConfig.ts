@@ -14,6 +14,7 @@ import {
   type Library,
   PACKAGE_MANAGERS,
   PLUGINS,
+  rendersWithReact,
   ROUTERS,
   SURFACES,
   TARGET_IDS,
@@ -195,7 +196,7 @@ const refuseMisfit = (answers: Answers): void => {
   misfit(answers.surfaces !== undefined && record.hostsBrowser !== true, 'surfaces');
   misfit(answers.browsers !== undefined && record.hostsBrowser !== true, 'browsers');
   misfit(answers.store && record.store === undefined, 'store');
-  misfit(answers.form === 'react-hook-form' && record.framework !== 'react', 'react-hook-form');
+  misfit(answers.form === 'react-hook-form' && !rendersWithReact(record.framework), 'react-hook-form');
 };
 
 const expectedKeys = [

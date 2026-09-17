@@ -25,6 +25,7 @@ import {
   PACKAGE_MANAGERS,
   PLUGINS,
   PROJECT_NAME_RULE,
+  rendersWithReact,
   type Router,
   type Surface,
   SURFACES,
@@ -405,11 +406,11 @@ const askForm = async (
   target: TargetId,
   hosted: HostedFramework | 'none',
 ): Promise<Form | undefined> => {
-  const isReact = targetFor({
+  const isReact = rendersWithReact(targetFor({
     ...DEFAULT_ANSWERS,
     target,
     ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
-  }).framework === 'react';
+  }).framework);
   const offered: ('none' | Form)[] = ['none', ...FORMS.filter((form) => {
     return isReact || form !== 'react-hook-form';
   })];
