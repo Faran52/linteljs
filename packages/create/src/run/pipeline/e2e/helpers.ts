@@ -1,17 +1,16 @@
 import { spawnSync } from 'node:child_process';
 import {
-  appendFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readdirSync,
   readFileSync,
   rmSync,
-  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { env } from 'node:process';
+
+import { inject } from 'vitest';
 
 import { parsePackageJson } from '../../../artifacts/package-json/emitPackageJson';
 import {
@@ -19,62 +18,65 @@ import {
   DEFAULT_ANSWERS,
   type PackageManager,
 } from '../../../model/answers/answers';
-import {
-  CONFIG_PATH,
-  emitLintelConfig,
-  parseLintelConfig,
-} from '../../../model/config/lintelConfig';
-import { targetFor } from '../../../model/targets';
-import { scaffoldCommand } from '../pipeline';
+import { CONFIG_PATH, parseLintelConfig } from '../../../model/config/lintelConfig';
 
 export interface RunResult {
   status: number;
   output: string;
 }
 
-// Packed tarballs, not the workspace: a workspace install dedupes plugin instances and hides `Cannot redefine plugin`.
-export const TARBALL_DIR = env['LINTEL_TARBALLS'] ?? resolve(import.meta.dirname, '../../../../../../.e2e');
+const registry = inject('registry');
 
-// Exactly one tarball per package, and never a skip: `test:e2e` packs immediately before this suite, and a suite
-// that skipped once reported green having installed nothing.
-const tarballFor = (prefix: string): string => {
-  const matches = (existsSync(TARBALL_DIR) ? readdirSync(TARBALL_DIR) : []).filter((file) => {
-    return file.startsWith(`${prefix}-`) && file.endsWith('.tgz');
-  });
-
-  if (matches.length > 1) {
-    throw new Error(
-      `${TARBALL_DIR} holds ${String(matches.length)} tarballs for ${prefix}: ${matches.join(', ')}. `
-      + 'Run `pnpm -w run e2e:pack` to repack from a clean directory.',
-    );
-  }
-
-  const [match] = matches;
-
-  if (match === undefined) {
-    throw new Error(
-      `${TARBALL_DIR} holds no tarball for ${prefix}. `
-      + 'Run `pnpm --filter @linteljs/create test:e2e`, which packs all three first.',
-    );
-  }
-
-  return join(TARBALL_DIR, match);
-};
-
-// pnpm pack flattens the scope into the filename.
-export const configTarball = tarballFor('linteljs-eslint-config');
-export const pluginTarball = tarballFor('linteljs-eslint-plugin');
-export const cliTarball = tarballFor('linteljs-create');
+// Every manager, and every scaffolder and install the CLI spawns, reads the workspace registry from its environment.
+const LAUNCHER_KEYS = new Set(['npm_execpath', 'npm_node_execpath', 'npm_config_user_agent']);
 
 export const run = (command: string, args: string[], cwd: string, input = ''): RunResult => {
+  /**
+   * A generated project must not inherit which manager launched this suite. `run-p` reads `npm_execpath` to choose
+   * what it spawns, and `pnpm run test:e2e` sets it, so `vue on bun` ran pnpm inside a project pinned to bun and got
+   * `ERR_PNPM_OTHER_PM_EXPECTED`. Set under `pnpm run` and not `pnpm exec`, which is why it passed one way and
+   * failed the other. `npm_config_registry` and the cache paths below are this suite's own and stay.
+   */
+  const parentEnv = Object.fromEntries(Object.entries(env).filter(([key]) => {
+    return !LAUNCHER_KEYS.has(key) && !key.startsWith('npm_package_') && !key.startsWith('npm_lifecycle_');
+  }));
+
   const result = spawnSync(command, args, {
     cwd,
     input,
     encoding: 'utf8',
-    // A host config pinning a private registry must not be inherited silently.
     env: {
-      ...env,
-      npm_config_registry: 'https://registry.npmjs.org/',
+      ...parentEnv,
+      npm_config_registry: registry.url,
+      NPM_CONFIG_REGISTRY: registry.url,
+      pnpm_config_registry: registry.url,
+      // pnpm 12 and Yarn 4 refuse a version younger than their age gate, and the workspace ones are seconds old.
+      pnpm_config_minimum_release_age: '0',
+      BUN_CONFIG_REGISTRY: registry.url,
+      YARN_NPM_REGISTRY_SERVER: registry.url,
+      YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
+      YARN_NPM_MINIMAL_AGE_GATE: '0',
+      /**
+       * Split by what each directory remembers, because this suite republishes one version many times. Anything
+       * recording which tarball a version resolved to starts empty every run, or the manager serves the previous
+       * run's build: bun reported `Integrity check failed` on every target, and pnpm handed React Native a plugin
+       * from before its rules existed. Anything content-addressed is keyed by the bytes it holds, cannot go stale,
+       * and persists so the other 1300 packages are still reused. npm's cacache is integrity-keyed and needs
+       * neither treatment; bun offers no split, so the whole cache is per run.
+       */
+      npm_config_cache: join(registry.cacheDir, 'npm'),
+      pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
+      pnpm_config_cache_dir: join(registry.runDir, 'pnpm-cache'),
+      /**
+       * Split on purpose. The global folder holds yarn's registry metadata, which records the tarball a version
+       * resolves to, and this suite republishes one version many times, so that half must start empty every run. The
+       * cache folder holds the downloads, whose filenames carry a checksum, so changed contents land beside the old
+       * ones rather than on top and the other 1300 packages are still reused. Deleting the cache outright instead
+       * made a single-process registry serve the whole tree again and took four green files red.
+       */
+      YARN_GLOBAL_FOLDER: join(registry.runDir, 'yarn'),
+      YARN_CACHE_FOLDER: join(registry.cacheDir, 'yarn-cache'),
+      BUN_INSTALL_CACHE_DIR: join(registry.runDir, 'bun'),
     },
   });
 
@@ -124,53 +126,6 @@ export const runPm = (pm: PackageManager, args: string[], project: string): RunR
   return run(pm, mapped, project);
 };
 
-let cliRoot: string | undefined;
-
-const getCliRoot = (): string => {
-  if (cliRoot !== undefined) {
-    return cliRoot;
-  }
-  const root = join(mkdtempSync(join(tmpdir(), 'lintel-e2e-')), 'cli');
-  mkdirSync(root, { recursive: true });
-  run('tar', ['-xzf', cliTarball, '-C', root], TARBALL_DIR);
-  cliRoot = root;
-  return root;
-};
-
-// A tarball is not an installation: without the runtime dependencies the packed binary dies on ERR_MODULE_NOT_FOUND.
-// Production only, `--prefer-offline` so the cache serves it.
-let installed = false;
-
-export const installCli = (): string => {
-  const root = getCliRoot();
-  if (!installed) {
-    run(
-      'npm',
-      ['install', '--omit=dev', '--prefer-offline', '--no-audit', '--no-fund'],
-      join(root, 'package'),
-    );
-    installed = true;
-  }
-  return root;
-};
-
-export const runInstallingCli = (project: string, pm: PackageManager): RunResult => {
-  const root = installCli();
-  const attempt = (): RunResult => {
-    // `--skip package`: the first pass wrote package.json, and a second write would put the registry range back over
-    // the tarball the direct dependency now names, which npm refuses as EOVERRIDE.
-    return run(
-      'node',
-      [join(root, 'package/bin/create-linteljs.js'), '--skip-scaffold', '--fresh', '--skip', 'package'],
-      project,
-    );
-  };
-
-  const first = attempt();
-
-  return first.status === 0 || !isUnpublishedYet(pm, first.output) ? first : attempt();
-};
-
 export const workspace = mkdtempSync(join(tmpdir(), 'lintel-e2e-'));
 
 export const afterAllCleanup = (): void => {
@@ -211,73 +166,94 @@ export const withDefaultPm = (
   }];
 };
 
-export const scaffoldProject = (
-  root: string,
-  name: string,
-  answers: Answers,
-  project: string,
-): void => {
+// The answers as a person would type them; a flag a target never asks for is refused, so those go only when set.
+export const answerFlags = (answers: Answers): string[] => {
+  return [
+    '--target', answers.target,
+    '--pm', answers.packageManager,
+    '--testing', answers.testing,
+    '--type-safety', answers.typeSafety,
+    '--libraries', answers.libraries.join(','),
+    '--agents', answers.agents.join(','),
+    '--plugins', answers.plugins.join(','),
+    ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
+    ...(answers.hostedFramework === undefined ? [] : ['--hosted', answers.hostedFramework]),
+    ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
+    ...(answers.router === undefined ? [] : ['--router', answers.router]),
+    ...(answers.store ? ['--store'] : []),
+  ];
+};
+
+// One command from an empty parent directory, which is the whole of what a user does.
+export const createProject = (root: string, name: string, answers: Answers): RunResult => {
   mkdirSync(root, { recursive: true });
 
-  // Stage 1 builds the same argv from the same `scaffoldCommand`.
-  const spec = targetFor(answers).scaffold(name, answers);
-  const [command, ...argv] = scaffoldCommand(answers.packageManager, spec);
+  const attempt = (): RunResult => {
+    rmSync(join(root, name), {
+      recursive: true,
+      force: true,
+    });
 
-  const scaffold = run(command, argv, root);
+    return run('node', [registry.cliBin, name, ...answerFlags(answers)], root);
+  };
 
-  expect(existsSync(join(project, 'package.json')) ? 'scaffolded' : scaffold.output).toBe('scaffolded');
+  const first = attempt();
 
-  // Writing `lintel.config.json` is the honest equivalent of a person having answered once, with no pty to script.
-  writeFileSync(join(project, CONFIG_PATH), emitLintelConfig(answers), 'utf8');
+  return first.status === 0 || !isUnpublishedYet(answers.packageManager, first.output) ? first : attempt();
 };
 
-export const generateLintel = (project: string): RunResult => {
-  // `--fresh` turns starter fixes on; `--no-install` so the tarball overrides land before install.
-  return run(
-    'node',
-    [join(installCli(), 'package/bin/create-linteljs.js'), '--skip-scaffold', '--fresh', '--no-install'],
-    project,
-  );
-};
+/**
+ * Never asserted on, for any manager. A deprecation notice reports that a third-party package reached end of life,
+ * which is true of trees this CLI does not choose: `expo` reaches a deprecated `uuid` through the Xcode writer, and
+ * a scaffolder installs `expo`, not lintel. No emitted config makes it go away, and muting it in a generated project
+ * would hide a real fact from whoever does own the dependency.
+ */
+const DEPRECATION = /deprecated/i;
 
-export const applyTarballOverrides = (project: string, pm: PackageManager): void => {
-  // pnpm uses `pnpm-workspace.yaml`; npm, yarn and bun use `package.json`.
-  if (pm === 'pnpm') {
-    appendFileSync(
-      join(project, 'pnpm-workspace.yaml'),
-      [
-        'overrides:',
-        `  '@linteljs/eslint-config': file:${configTarball}`,
-        `  '@linteljs/eslint-plugin': file:${pluginTarball}`,
-        'minimumReleaseAge: 0',
-        '',
-      ].join('\n'),
-    );
-  }
-  else {
-    const pkgPath = join(project, 'package.json');
-    const pkg = parsePackageJson(readFileSync(pkgPath, 'utf8'));
-    const overridesKey = pm === 'yarn' ? 'resolutions' : 'overrides';
-    pkg[overridesKey] = {
-      ...pkg[overridesKey],
-      '@linteljs/eslint-config': `file:${configTarball}`,
-      '@linteljs/eslint-plugin': `file:${pluginTarball}`,
-    };
-    // npm refuses an override that disagrees with the direct dependency (EOVERRIDE), so the direct one moves too.
-    pkg.devDependencies = {
-      ...pkg.devDependencies,
-      '@linteljs/eslint-config': `file:${configTarball}`,
-    };
-    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-  }
+// What each manager prints when an install was not clean. Yarn's codes carry no severity, so its summary line
+// decides and every coded line but the banner is then shown.
+const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
+  pnpm: (output) => {
+    // `Request took` and the speed notice are this suite's own registry on a cold fetch, not the project.
+    return (output.match(/^.*(?:\bWARN\b|Ignored build scripts).*$/gm) ?? []).filter((line) => {
+      return !line.includes('Request took')
+        && !line.includes('Tarball download average speed')
+        && !DEPRECATION.test(line);
+    });
+  },
+  /**
+   * `npm warn exec` is npx fetching the scaffolder itself, in the stage before this one. It is matched by name rather
+   * than cut with the others, because npm writes it to stderr and `run` appends stderr whole after stdout, so the
+   * stage boundary below does not contain it.
+   */
+  npm: (output) => {
+    return (output.match(/^npm (?:warn|WARN).*$/gm) ?? []).filter((line) => {
+      return !line.startsWith('npm warn exec') && !DEPRECATION.test(line);
+    });
+  },
+  yarn: (output) => {
+    return output.includes('Done with warnings')
+      ? (output.match(/^.*YN0(?!000)\d{3}.*$/gm) ?? []).filter((line) => {
+          return !DEPRECATION.test(line);
+        })
+      : [];
+  },
+  bun: (output) => {
+    return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? []).filter((line) => {
+      // `Slow filesystem` names this suite's own cache directory, which is a fact about the machine, not the project.
+      return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');
+    });
+  },
 };
 
 export const verifyLintOutput = (pm: PackageManager, project: string): void => {
-  // Proves the override took.
+  // Proves the install resolved the workspace versions rather than anything published.
   const why = runPm(pm, ['why', '@linteljs/eslint-plugin'], project);
 
-  expect(why.output).toContain('@linteljs/eslint-plugin');
-  expect(why.output).toContain('@linteljs/eslint-config');
+  const version = registry.version.replaceAll('.', String.raw`\.`);
+
+  expect(why.output).toMatch(new RegExp(`@linteljs/eslint-plugin[@ ](npm:)?${version}`));
+  expect(why.output).toMatch(new RegExp(`@linteljs/eslint-config[@ ](npm:)?${version}`));
 
   // ESLint exits 2 on a configuration failure and 1 on findings.
   const lint = runPm(pm, ['lint'], project);
@@ -300,24 +276,21 @@ export const runE2eCase = ({ label, answers }: { label: string;
   const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
   const project = join(root, name);
 
-  scaffoldProject(root, name, answers, project);
+  const create = createProject(root, name, answers);
 
-  const generate = generateLintel(project);
+  expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
+  expect(create.output).not.toContain('next: ');
+  // From the install stage on: what a scaffolder's own `npx` or `dlx` prints before lintel exists is not lintel's.
+  const installed = create.output.slice(create.output.indexOf('installing with '));
 
-  expect(outcome(generate, '@linteljs/create')).toBe('@linteljs/create: ok');
+  expect(INSTALL_NOISE[answers.packageManager](installed)).toEqual([]);
+  // `prepare` (`postinstall` on yarn) ran: husky writes its runner there.
+  expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
-  expect(existsSync(join(project, CONFIG_PATH))).toBe(true);
   expect(parseLintelConfig(readFileSync(join(project, CONFIG_PATH), 'utf8')))
     .toMatchObject(answers);
   expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
     .not.toHaveProperty('lintel');
-
-  applyTarballOverrides(project, answers.packageManager);
-
-  const complete = runInstallingCli(project, answers.packageManager);
-
-  expect(outcome(complete, '@linteljs/create install+fix')).toBe('@linteljs/create install+fix: ok');
-  expect(complete.output).not.toContain('next: ');
 
   verifyLintOutput(answers.packageManager, project);
 };
