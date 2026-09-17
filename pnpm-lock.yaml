@@ -173,6 +173,9 @@ catalogs:
     eslint:
       specifier: ^10.10.0
       version: 10.10.0
+    jiti:
+      specifier: ^2.7.0
+      version: 2.7.0
     tsdown:
       specifier: ^0.23.0
       version: 0.23.0
@@ -206,7 +209,7 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
       jiti:
-        specifier: ^2.7.0
+        specifier: 'catalog:'
         version: 2.7.0
       lint-staged:
         specifier: ^17.5.0
@@ -238,6 +241,10 @@ importers:
       '@clack/prompts':
         specifier: ^1.8.0
         version: 1.8.0
+    devDependencies:
+      jiti:
+        specifier: 'catalog:'
+        version: 2.7.0
 
   packages/eslint-config:
     dependencies:

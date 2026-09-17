@@ -27,7 +27,7 @@
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "husky": "^9.1.7",
-    "jiti": "^2.7.0",
+    "jiti": "catalog:",
     "lint-staged": "^17.5.0",
     "stylelint": "^17.15.0",
     "stylelint-config-recess-order": "^7.8.0",

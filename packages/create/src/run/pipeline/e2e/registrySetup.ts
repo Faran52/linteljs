@@ -186,9 +186,16 @@ const publishedAs = (version: string, publish: () => void): void => {
   }
 };
 
-// A registry holding the workspace versions in front of npmjs, so an install resolves `@linteljs/*` to what is
-// checked out and everything else to the real thing. Nothing published is ever consulted for this scope.
-export const setup = async (project: TestProject): Promise<() => void> => {
+/**
+ * A registry holding the workspace versions in front of npmjs, so an install resolves `@linteljs/*` to what is
+ * checked out and everything else to the real thing. Nothing published is ever consulted for this scope.
+ *
+ * Exported apart from `setup` because the suite is not its only caller: `scripts/collectBuildScripts.ts` needs the
+ * same registry and the same freshly published CLI, and duplicating a hundred lines of verdaccio wiring to get them
+ * is how the two drift.
+ */
+export const startRegistry = async (): Promise<{ registry: E2eRegistry;
+  stop: () => void; }> => {
   /**
    * Outside `RUN_DIR`, so it survives the wipe. One npmjs tarball is stored once and served to all four managers,
    * which all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a
@@ -257,15 +264,25 @@ export const setup = async (project: TestProject): Promise<() => void> => {
     cliDir,
   );
 
-  project.provide('registry', {
-    url,
-    version,
-    cliBin: join(cliDir, 'node_modules/.bin/create-linteljs'),
-    cacheDir: CACHE_DIR,
-    runDir: RUN_DIR,
-  });
-
-  return () => {
-    verdaccio.kill();
+  return {
+    registry: {
+      url,
+      version,
+      cliBin: join(cliDir, 'node_modules/.bin/create-linteljs'),
+      cacheDir: CACHE_DIR,
+      runDir: RUN_DIR,
+    },
+    stop: () => {
+      verdaccio.kill();
+    },
   };
+};
+
+// The vitest half: `globalSetup` hands the registry to every case through `inject`.
+export const setup = async (project: TestProject): Promise<() => void> => {
+  const { registry, stop } = await startRegistry();
+
+  project.provide('registry', registry);
+
+  return stop;
 };

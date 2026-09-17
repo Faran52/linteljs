@@ -57,6 +57,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "collect:builds": "jiti scripts/collectBuildScripts.ts",
     "prepack": "pnpm run build",
     "smoke": "node scripts/smoke.js",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
@@ -65,5 +66,8 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.8.0"
+  },
+  "devDependencies": {
+    "jiti": "catalog:"
   }
 }
