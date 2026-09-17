@@ -168,7 +168,7 @@ const stagePackage = async (
   }
 };
 
-// Source no scaffolder wrote; fresh output only, whatever the testing answer.
+// Source no scaffolder wrote; fresh output only, and never a test helper the testing answer declined.
 const writeStarterFiles = async (options: PipelineOptions): Promise<void> => {
   const { starterFiles } = targetFor(options.answers);
 
@@ -179,7 +179,8 @@ const writeStarterFiles = async (options: PipelineOptions): Promise<void> => {
   const { answers } = options;
   const wanted = starterFiles.filter((file) => {
     return (file.library === undefined || hasLibrary(answers, file.library))
-      && (file.router === undefined || answers.router === file.router);
+      && (file.router === undefined || answers.router === file.router)
+      && (file.tests === undefined || hasTests(answers));
   });
 
   for (const file of wanted) {

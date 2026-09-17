@@ -3,8 +3,13 @@ import {
   rename,
   rm,
 } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import {
+  basename,
+  join,
+  relative,
+} from 'node:path';
 
+import { hasTests } from '../../model/answers/answers';
 import { targetFor } from '../../model/targets';
 import { safeProjectPath, writeProjectFile } from '../project-files/projectFiles';
 import { SOURCE_ROOT, sourceFiles } from '../rewrite/rewrite';
@@ -143,6 +148,37 @@ const removeStaleScaffoldFiles = async (
   }
 };
 
+/**
+ * The other half of `testing: none`: a suite this CLI never wrote, but a scaffolder did. `ng new` writes
+ * `src/app/app.spec.ts` whatever it is asked for, and with no vitest layer enabled its `describe` and `it` resolve
+ * to nothing, so `no-unsafe-call` fires ten times and the project fails its own gate at birth.
+ *
+ * Matched rather than listed per target, because the next generator to start writing a spec file should not need a
+ * record entry to be handled. Fresh output only, like everything else here: an existing project's tests are its own,
+ * and a `sync` that answered `none` must never delete them.
+ */
+const DECLINED_TEST_FILE = /\.(?:spec|test)\.[^.]+$/;
+
+const removeDeclinedTests = async (
+  cwd: string,
+  answers: Answers,
+  onNotice?: (message: string) => void,
+): Promise<void> => {
+  if (hasTests(answers)) {
+    return;
+  }
+
+  for (const full of await sourceFiles(join(cwd, SOURCE_ROOT))) {
+    if (!DECLINED_TEST_FILE.test(basename(full))) {
+      continue;
+    }
+
+    await rm(full);
+    // A delete the user did not ask for has to appear in the log.
+    onNotice?.(`removed ${relative(cwd, full)}, which testing: none declines`);
+  }
+};
+
 export const repairScaffoldedOutput = async (
   cwd: string,
   answers: Answers,
@@ -152,4 +188,5 @@ export const repairScaffoldedOutput = async (
   await applyStarterFixes(cwd, answers, onWrite, onNotice);
   await renameStarterFiles(cwd, answers, onWrite, onNotice);
   await removeStaleScaffoldFiles(cwd, answers, onNotice);
+  await removeDeclinedTests(cwd, answers, onNotice);
 };

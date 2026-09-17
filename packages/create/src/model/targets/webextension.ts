@@ -196,7 +196,7 @@ export const webextension: TargetBuilder = (answers) => {
       ...hosted?.devDependencies ?? [],
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: hosted.testDevDependencies }),
-    allowBuilds: [],
+    allowBuilds: [...hosted?.allowBuilds ?? []],
     stateRules: hosted?.stateRules ?? [],
   };
 };

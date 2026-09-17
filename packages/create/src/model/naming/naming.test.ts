@@ -65,8 +65,18 @@ describe('NAMING', () => {
   });
 
   // `app.spec.ts` and `app.config.ts` reduce to `app`, already kebab-case, so the one key needs no exclusions.
+  // The declaration key is separate because a `.d.ts` this CLI ships is not kebab: `customTypes.d.ts`.
   it('holds Angular to kebab-case, which is what ng generate writes', () => {
-    expect(NAMING.angular).toEqual({ 'src/**/*.ts': 'KEBAB_CASE' });
+    expect(NAMING.angular).toEqual({
+      'src/**/*.ts': 'KEBAB_CASE',
+      'src/**/*.d.ts': DECLARATION,
+    });
+  });
+
+  it('exempts a declaration file on every target, Angular included', () => {
+    for (const map of Object.values(NAMING)) {
+      expect(map['src/**/*.d.ts']).toBe(DECLARATION);
+    }
   });
 
   it('marks an extension component by its directory instead of an extension', () => {

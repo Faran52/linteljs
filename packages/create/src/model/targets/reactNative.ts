@@ -122,6 +122,9 @@ export const reactNative: TargetRecord = {
     {
       source: 'mocks/renderScreen.tsx',
       target: '__mocks__/renderScreen.tsx',
+      // It imports `@testing-library/react-native`, which `testing: none` never installs, and the `@mocks/*` alias
+      // it sits behind is not written either.
+      tests: true,
     },
     {
       source: 'starter/react-native/metro.config.js',

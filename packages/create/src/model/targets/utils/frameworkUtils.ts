@@ -18,6 +18,8 @@ export interface FrameworkParts {
   testDevDependencies: string[];
   // Svelte and Solid ship a server build that `mount()` cannot use.
   testConditions?: string[];
+  // A build script the framework's own tree needs approved; a denied one fails with ERR_PNPM_IGNORED_BUILDS.
+  allowBuilds?: string[];
   // Only Solid: `@types/react` already answers for React, and the SFC frameworks have no JSX to type.
   jsxImportSource?: string;
   // Absent for the SFC frameworks; a host with no framework has no `jsx` either.
@@ -71,6 +73,8 @@ const PARTS: Record<HostedFramework, FrameworkParts> = {
     framework: 'vue',
     sfcExtension: 'vue',
     componentGlob: 'src/**/*.vue',
+    // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses unless it is named.
+    allowBuilds: ['vue-demi'],
     vitePlugin: {
       imports: ["import vue from '@vitejs/plugin-vue';"],
       calls: ['vue()'],

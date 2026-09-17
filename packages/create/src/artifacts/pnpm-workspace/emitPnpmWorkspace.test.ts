@@ -45,6 +45,27 @@ describe('emitPnpmWorkspace', () => {
     );
   });
 
+  /**
+   * `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses unless it is named. The Vue record said so
+   * and the two hosts did not, so `create` died on ERR_PNPM_IGNORED_BUILDS for every Astro or extension project
+   * hosting Vue.
+   */
+  it("takes a hosted framework's build allowance into the host", () => {
+    expect(allowBuildsBlock(answersFor({
+      target: 'astro',
+      hostedFramework: 'vue',
+    }))).toContain("'vue-demi': true");
+    expect(allowBuildsBlock(answersFor({
+      target: 'webextension',
+      hostedFramework: 'vue',
+    }))).toContain("'vue-demi': true");
+  });
+
+  it('names no framework build where the host hosts none', () => {
+    expect(allowBuildsBlock(answersFor({ target: 'astro' }))).not.toContain('vue-demi');
+    expect(allowBuildsBlock(answersFor({ target: 'webextension' }))).not.toContain('vue-demi');
+  });
+
   it('merges in the builds a target needs beyond the shared two, sorted with them', () => {
     const output = allowBuildsBlock(answersFor({ target: 'angular' }));
 

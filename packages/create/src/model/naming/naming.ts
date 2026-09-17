@@ -61,8 +61,12 @@ export const NAMING: Record<TargetId, NamingMap> = {
     ...scriptKeys('pages'),
     ...DECLARATION_KEY,
   },
-  // `ng generate`'s own spelling; `ignoreMiddleExtensions` already reduces `app.spec.ts` to `app`.
-  'angular': { 'src/**/*.ts': 'KEBAB_CASE' },
+  // `ng generate`'s own spelling; `ignoreMiddleExtensions` already reduces `app.spec.ts` to `app`. The declaration
+  // key is not optional here either: `customTypes.d.ts` ships with `typeSafety: relaxed` and is not kebab.
+  'angular': {
+    'src/**/*.ts': 'KEBAB_CASE',
+    ...DECLARATION_KEY,
+  },
   // A component is marked by directory rather than a `.tsx` extension.
   'webextension': {
     'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',

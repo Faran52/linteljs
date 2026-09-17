@@ -50,6 +50,8 @@ export interface StarterFile {
   library?: Library;
   // Written only when this router was chosen.
   router?: Router;
+  // Written only with a suite: a test helper is a test artifact, and `testing: none` declines it.
+  tests?: true;
 }
 
 // One repair to a generator's starter code; `run/repair` owns when these run.

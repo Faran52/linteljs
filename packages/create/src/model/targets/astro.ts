@@ -117,7 +117,7 @@ export const astro: TargetBuilder = (answers) => {
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),
     // Astro's build pulls esbuild, whose install script pnpm refuses without this (ERR_PNPM_IGNORED_BUILDS).
-    allowBuilds: ['esbuild'],
+    allowBuilds: ['esbuild', ...hosted?.allowBuilds ?? []],
     stateRules: hosted?.stateRules ?? [],
   };
 };

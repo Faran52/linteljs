@@ -21,6 +21,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type TargetId,
+  type Testing,
 } from '../../model/answers/answers';
 import { exists } from '../utils/fsUtils';
 
@@ -413,6 +414,59 @@ describe('stale scaffolder files', () => {
   it("keeps angular's, which its own build reads", async () => {
     expect(await noticesFor('angular', { 'tsconfig.app.json': '{}\n' })).toEqual([]);
     expect(await exists(join(cwd, 'tsconfig.app.json'))).toBe(true);
+  });
+});
+
+/**
+ * The other half of `testing: none`. `ng new` writes `src/app/app.spec.ts` whatever it is asked for, and with no
+ * vitest layer its `describe` and `it` resolve to nothing: ten `no-unsafe-call` findings, so the project failed its
+ * own gate at birth. Matched rather than listed per target, so the next generator to write one needs no record entry.
+ */
+describe('tests the answers declined', () => {
+  const repairWith = async (
+    testing: Testing,
+    files: Record<string, string>,
+  ): Promise<string[]> => {
+    const notices: string[] = [];
+
+    await scaffold(files);
+    await repairScaffoldedOutput(
+      cwd,
+      {
+        ...answersFor('angular'),
+        testing,
+      },
+      undefined,
+      (message) => {
+        notices.push(message);
+      },
+    );
+
+    return notices;
+  };
+
+  it("removes the generator's spec file when no suite was asked for", async () => {
+    const notices = await repairWith('none', { 'src/app/app.spec.ts': 'describe(\'app\', () => {});\n' });
+
+    expect(await exists(join(cwd, 'src/app/app.spec.ts'))).toBe(false);
+    expect(notices).toEqual(['removed src/app/app.spec.ts, which testing: none declines']);
+  });
+
+  it('keeps it when a suite was asked for', async () => {
+    const notices = await repairWith('vitest', { 'src/app/app.spec.ts': 'describe(\'app\', () => {});\n' });
+
+    expect(await exists(join(cwd, 'src/app/app.spec.ts'))).toBe(true);
+    expect(notices).toEqual([]);
+  });
+
+  it('takes a `.test` file too, and leaves ordinary source where it is', async () => {
+    await repairWith('none', {
+      'src/lib/dates.test.ts': 'export const covered = 1;\n',
+      'src/lib/dates.ts': 'export const dates = 2;\n',
+    });
+
+    expect(await exists(join(cwd, 'src/lib/dates.test.ts'))).toBe(false);
+    expect(await exists(join(cwd, 'src/lib/dates.ts'))).toBe(true);
   });
 });
 

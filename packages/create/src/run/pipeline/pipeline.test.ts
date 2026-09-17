@@ -1447,6 +1447,19 @@ describe('starter files for a router', () => {
     expect(written).not.toContain('src/routes/router.tsx');
   });
 
+  // `renderScreen` imports `@testing-library/react-native`, which `testing: none` never installs, so writing it
+  // anyway left every React Native project of that answer failing its own lint on an unresolved import.
+  it('writes the React Native test helper only when a suite was asked for', async () => {
+    expect(await fresh({
+      target: 'react-native',
+      testing: 'vitest',
+    })).toContain('__mocks__/renderScreen.tsx');
+    expect(await fresh({
+      target: 'react-native',
+      testing: 'none',
+    })).not.toContain('__mocks__/renderScreen.tsx');
+  });
+
   it('writes the NativeWind metro config only when tailwind was chosen on React Native', async () => {
     expect(await fresh({
       target: 'react-native',
