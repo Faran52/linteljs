@@ -94,8 +94,13 @@ export const VERSIONS: Record<string, string> = {
    * Named rather than left to the peer resolver: `@testing-library/react-native` requires it, pnpm installs a
    * peer unasked and npm under `legacy-peer-deps` does not, and without it every `screen.getByTestId().props`
    * resolves to an error type that `skipLibCheck` hides from `tsc` and typescript-eslint reports.
+   *
+   * Tilde, like `typescript` below, and for the same kind of reason. 1.2.0 depends on `react-reconciler ~0.33.0`,
+   * which peers `react ^19.2.0`; 1.3.0 moved to `~0.34.0`, which peers `react ^19.3.0`. Expo pins react 19.2.3, so
+   * a caret floated every React Native project onto an unmet peer, which the end-to-end suite reads as install
+   * noise and refuses. Raise this once an Expo SDK ships react 19.3.
    */
-  'test-renderer': '^1.2.0',
+  'test-renderer': '~1.2.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
   'vite-plugin-solid': '^2.11.14',
