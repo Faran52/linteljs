@@ -86,11 +86,11 @@ choice for a project config.
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |
 | `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro`, `astro-eslint-parser` |
-| `react()` | `/react` | React, React Hooks, JSX accessibility, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y` |
+| `react()` | `/react` | React, React Hooks, JSX accessibility, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |
 | `next()` | `/next` | Next configuration, composed after React. | `@next/eslint-plugin-next`, plus the peers of `react()`. |
 | `vue()` | `/vue` | Vue recommended rules and template accessibility, with TypeScript nested in the SFC parser. | `eslint-plugin-vue`, `vue-eslint-parser`, `eslint-plugin-vuejs-accessibility` |
 | `svelte()` | `/svelte` | Svelte recommended rules with the same parser arrangement. Accessibility is the compiler's, reported by `svelte-check --fail-on-warnings`, not this layer's. | `eslint-plugin-svelte`, `svelte-eslint-parser` |
-| `solid()` | `/solid` | Solid TypeScript rules and JSX accessibility. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y` |
+| `solid()` | `/solid` | Solid TypeScript rules and JSX accessibility. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y-x` |
 | `angular()` | `/angular` | Angular TypeScript rules, plus template rules and template accessibility. | `angular-eslint` |
 | `tanstackQuery()` | `/tanstack-query` | TanStack Query recommended rules. | `@tanstack/eslint-plugin-query` |
 | `tanstackRouter()` | `/tanstack-router` | TanStack Router recommended rules. | `@tanstack/eslint-plugin-router` |

@@ -120,6 +120,18 @@ describe('defineConfig', () => {
     expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
   });
 
+  // The one framework that is another with a layer removed, so the composer is what proves the removal reaches a
+  // project rather than only the layer's own suite.
+  it('composes react-native as react without the accessibility preset', async () => {
+    const code = 'export const Logo = () => {\n  return <img src="/a.png" src="/b.png" />;\n};\n';
+    const native = await ruleIdsFor(await defineConfig({ framework: 'react-native' }), code, 'src/Logo.tsx');
+    const web = await ruleIdsFor(await defineConfig({ framework: 'react' }), code, 'src/Logo.tsx');
+
+    expect(web).toContain('jsx-a11y-x/alt-text');
+    expect(native).not.toContain('jsx-a11y-x/alt-text');
+    expect(native).toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
   it('composes the library layers on top of the framework', async () => {
     const code = [
       "import { useQuery } from '@tanstack/react-query';",

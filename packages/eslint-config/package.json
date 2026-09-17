@@ -156,9 +156,9 @@
     "eslint": "catalog:",
     "eslint-plugin-astro": "^3.1.0",
     "eslint-plugin-better-tailwindcss": "^4.7.0",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-jsx-a11y-x": "^0.2.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-solid": "^0.16.1",
+    "eslint-plugin-solid": "^0.18.0",
     "eslint-plugin-svelte": "^3.23.0",
     "eslint-plugin-vue": "^10.11.0",
     "eslint-plugin-vuejs-accessibility": "^2.6.0",
@@ -187,13 +187,14 @@
     "eslint": ">=9",
     "eslint-plugin-astro": ">=1",
     "eslint-plugin-better-tailwindcss": ">=4",
-    "eslint-plugin-jsx-a11y": ">=6",
+    "eslint-plugin-jsx-a11y-x": ">=0.2",
     "eslint-plugin-react-hooks": ">=7",
     "eslint-plugin-solid": ">=0.14",
     "eslint-plugin-svelte": ">=3",
     "eslint-plugin-vue": ">=10",
     "eslint-plugin-vuejs-accessibility": ">=2",
     "svelte-eslint-parser": ">=1",
+    "typescript": ">=5",
     "vue-eslint-parser": ">=10"
   },
   "peerDependenciesMeta": {
@@ -230,7 +231,7 @@
     "eslint-plugin-better-tailwindcss": {
       "optional": true
     },
-    "eslint-plugin-jsx-a11y": {
+    "eslint-plugin-jsx-a11y-x": {
       "optional": true
     },
     "eslint-plugin-react-hooks": {

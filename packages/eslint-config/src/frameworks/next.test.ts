@@ -39,21 +39,21 @@ describe('next', () => {
 
   it('adds only the next/image mapping on top of the accessibility react() enables', () => {
     const a11y = Object.keys(next()[0]?.rules ?? {}).filter((rule) => {
-      return rule.startsWith('jsx-a11y/');
+      return rule.startsWith('jsx-a11y-x/');
     });
 
-    expect(a11y).toEqual(['jsx-a11y/alt-text']);
+    expect(a11y).toEqual(['jsx-a11y-x/alt-text']);
   });
 
   it('reports an unsupported aria attribute through those rules', async () => {
     const code = 'export const Page = () => {\n  return <div aria-nonsense="x">a</div>;\n};\n';
     const ruleIds = await ruleIdsFor(composed(), code, 'src/app/page.tsx');
 
-    expect(ruleIds).toContain('jsx-a11y/aria-props');
+    expect(ruleIds).toContain('jsx-a11y-x/aria-props');
   });
 
   it('tells alt-text about next/image', () => {
-    expect(next()[0]?.rules?.['jsx-a11y/alt-text']).toEqual(['error', {
+    expect(next()[0]?.rules?.['jsx-a11y-x/alt-text']).toEqual(['error', {
       elements: ['img'],
       img: ['Image'],
     }]);

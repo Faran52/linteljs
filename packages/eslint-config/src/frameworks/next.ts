@@ -23,7 +23,7 @@ export const next = (): Layer => {
         ...nextPlugin.configs['core-web-vitals'].rules,
 
         // `next/image` renders an `img`; `react()` enables the rule, this only adds the mapping.
-        'jsx-a11y/alt-text': ['error', {
+        'jsx-a11y-x/alt-text': ['error', {
           elements: ['img'],
           img: ['Image'],
         }],

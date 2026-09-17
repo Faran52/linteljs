@@ -21,7 +21,7 @@ describe('solid', () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/Logo.tsx');
 
-    expect(ruleIds).toContain('jsx-a11y/alt-text');
+    expect(ruleIds).toContain('jsx-a11y-x/alt-text');
   });
 
   it('reports a JSX prop named twice on one element', async () => {
