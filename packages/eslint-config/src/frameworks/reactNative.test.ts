@@ -67,7 +67,7 @@ describe('reactNative', () => {
    */
   it('reaches no module that imports the web accessibility plugin', async () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const sources = await Promise.all(['reactNative.ts', 'reactCore.ts'].map(async (name) => {
+    const sources = await Promise.all(['reactNative.ts', 'utils/reactCoreUtils.ts'].map(async (name) => {
       return await readFile(join(here, name), 'utf8');
     }));
 

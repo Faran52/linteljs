@@ -1,6 +1,6 @@
 import nextPlugin from '@next/eslint-plugin-next';
 
-import { SCRIPT_EXTENSIONS } from '../utils/globUtils';
+import { SCRIPT_EXTENSIONS } from '../config/globs';
 
 import { reactGroup } from './react';
 

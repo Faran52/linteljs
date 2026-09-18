@@ -6,7 +6,7 @@ import {
   REACT_FILES,
   reactCore,
   reactGroup,
-} from './reactCore';
+} from './utils/reactCoreUtils';
 
 import type { Layer } from '../types';
 

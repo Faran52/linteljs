@@ -2,7 +2,7 @@ import lintel from '@linteljs/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import solidPlugin from 'eslint-plugin-solid';
 
-import { SCRIPT_EXTENSIONS } from '../utils/globUtils';
+import { SCRIPT_EXTENSIONS } from '../config/globs';
 import { presetOf } from '../utils/presetUtils';
 
 import type { Layer } from '../types';

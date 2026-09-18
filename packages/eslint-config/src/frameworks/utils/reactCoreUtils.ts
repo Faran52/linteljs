@@ -2,10 +2,10 @@ import eslintReact from '@eslint-react/eslint-plugin';
 import lintel from '@linteljs/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-import { SCRIPT_EXTENSIONS } from '../utils/globUtils';
-import { presetOf } from '../utils/presetUtils';
+import { SCRIPT_EXTENSIONS } from '../../config/globs';
+import { presetOf } from '../../utils/presetUtils';
 
-import type { Layer } from '../types';
+import type { Layer } from '../../types';
 
 export const reactGroup: string[] = ['^react$', '^react-dom$', '^react/', '^react-', '^@react'];
 

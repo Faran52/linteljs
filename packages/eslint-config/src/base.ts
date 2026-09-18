@@ -11,8 +11,8 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
+import { SCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS } from './config/globs';
 import { buildNaming } from './utils/checkFileUtils';
-import { SCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS } from './utils/globUtils';
 import { buildGroups } from './utils/importSortUtils';
 import { presetOf } from './utils/presetUtils';
 

@@ -1,6 +1,6 @@
 import vitestPlugin from '@vitest/eslint-plugin';
 
-import { SCRIPT_EXTENSIONS } from './utils/globUtils';
+import { SCRIPT_EXTENSIONS } from './config/globs';
 import { presetOf } from './utils/presetUtils';
 
 import type { Layer } from './types';
