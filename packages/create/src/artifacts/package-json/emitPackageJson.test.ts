@@ -487,11 +487,12 @@ describe('allowScripts', () => {
   });
 
   /**
-   * Exactly one name beyond pnpm's own list, measured rather than assumed: `COLLECT_NPM=... collect:builds` against
+   * Exactly npm's two beyond pnpm's own list. `fsevents` is measured: `COLLECT_NPM=... collect:builds` against
    * npm 12, which blocks where npm 11 only warns, names `fsevents` on eleven of the seventeen combinations and
-   * nothing else. `@swc/core` used to sit beside it and is reached by none of them.
+   * nothing else. `@swc/core` is not reached today and is carried as insurance: an allowance for an absent
+   * package is silent on both managers. Pinned exactly, so a third name has to be added on purpose.
    */
-  it('adds fsevents for npm and nothing else beyond what pnpm already needs', () => {
+  it('adds the two npm needs and nothing else beyond what pnpm already needs', () => {
     const npm = patchPackageJson({}, answersFor({
       target: 'react',
       packageManager: 'npm',
@@ -499,6 +500,6 @@ describe('allowScripts', () => {
 
     expect(Object.keys(npm.allowScripts ?? {}).sort((left, right) => {
       return left.localeCompare(right, 'en');
-    })).toEqual(['fsevents', 'unrs-resolver']);
+    })).toEqual(['@swc/core', 'fsevents', 'unrs-resolver']);
   });
 });

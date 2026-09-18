@@ -250,14 +250,14 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
 const SHARED_ALLOWED_BUILDS = ['unrs-resolver'];
 
 /**
- * npm alone blocks this as well; pnpm and bun run it unasked.
+ * npm alone blocks these two as well; pnpm and bun run them unasked.
  *
  * Measured on npm 12, not on the npm 11 a project declares: 11 warns where 12 blocks, so 11 reports nothing here and
  * the list would look dead. Under 12, `COLLECT_NPM=... collect:builds` names `fsevents` on eleven of the seventeen
  * combinations, arriving as an optional dependency of the watchers in each tree. `@swc/core` sat beside it and is
  * reached by nothing on either version, so it went.
  */
-const NPM_ALLOWED_BUILDS = ['fsevents'];
+const NPM_ALLOWED_BUILDS = ['@swc/core', 'fsevents'];
 
 export const allowedBuildNames = (answers: Answers): string[] => {
   return [...new Set([...SHARED_ALLOWED_BUILDS, ...targetFor(answers).allowBuilds])].sort((left, right) => {
