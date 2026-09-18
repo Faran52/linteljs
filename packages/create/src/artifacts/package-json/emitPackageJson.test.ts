@@ -485,4 +485,20 @@ describe('allowScripts', () => {
     });
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('allowScripts');
   });
+
+  /**
+   * Exactly one name beyond pnpm's own list, measured rather than assumed: `COLLECT_NPM=... collect:builds` against
+   * npm 12, which blocks where npm 11 only warns, names `fsevents` on eleven of the seventeen combinations and
+   * nothing else. `@swc/core` used to sit beside it and is reached by none of them.
+   */
+  it('adds fsevents for npm and nothing else beyond what pnpm already needs', () => {
+    const npm = patchPackageJson({}, answersFor({
+      target: 'react',
+      packageManager: 'npm',
+    }));
+
+    expect(Object.keys(npm.allowScripts ?? {}).sort((left, right) => {
+      return left.localeCompare(right, 'en');
+    })).toEqual(['fsevents', 'unrs-resolver']);
+  });
 });

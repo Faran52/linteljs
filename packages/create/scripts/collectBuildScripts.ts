@@ -71,6 +71,18 @@ interface ScriptListing {
 }
 
 /**
+ * Which npm the npm pass runs. A generated project declares npm 11, which *warns* about an uncovered install script
+ * where npm 12 *blocks* it, and the pin stays until `create-expo-app` stops reading `npm pack --dry-run --json` as
+ * an array (4.0.0 still throws `Invalid response from npm` on npm 12's object). The question of what npm 12 will
+ * refuse is answerable before then, so point this at one:
+ *
+ *   npm install --prefix /tmp/npm12 npm@12
+ *   COLLECT_NPM=/tmp/npm12/node_modules/npm/bin/npm-cli.js pnpm --filter @linteljs/create collect:builds
+ */
+const NPM_CLI = env['COLLECT_NPM'];
+const NPM: [string, string[]] = NPM_CLI === undefined ? ['npm', []] : ['node', [NPM_CLI]];
+
+/**
  * Everything installable turned on, which is what makes one run per target enough: every library, every agent and
  * plugin, a store and a form and a router wherever the target offers one, and a suite, since test dependencies carry
  * build scripts of their own. The axes left at their default are the ones that only ever *replace* a package rather
@@ -183,14 +195,28 @@ const PASSES: Record<Collected, Pass> = {
     install: ['install', '--no-audit', '--no-fund'],
     // npm 11 warns where npm 12 blocks, and `install-scripts ls` answers either way. `--json` rather than the prose.
     list: (project, registry) => {
-      const listing = run('npm', ['install-scripts', 'ls', '--json'], project, registry);
-      const parsed: unknown = JSON.parse(listing.slice(listing.indexOf('{')));
+      const listing = run(NPM[0], [...NPM[1], 'install-scripts', 'ls', '--json'], project, registry);
+      const opening = listing.indexOf('{');
 
-      return isScriptListing(parsed)
-        ? parsed.allowScripts.map((entry) => {
-            return entry.name;
-          })
-        : [];
+      if (opening === -1) {
+        return [];
+      }
+
+      // A version without the subcommand answers prose, or nothing; neither is a reason to lose the whole run.
+      try {
+        const parsed: unknown = JSON.parse(listing.slice(opening));
+
+        return isScriptListing(parsed)
+          ? parsed.allowScripts.map((entry) => {
+              return entry.name;
+            })
+          : [];
+      }
+      catch {
+        console.log(`npm install-scripts ls answered no JSON:\n${listing.slice(0, 400)}`);
+
+        return [];
+      }
     },
   },
 };
@@ -230,8 +256,10 @@ const collectFor = (
       continue;
     }
 
-    // pnpm exits 1 on the first ignored build and npm only warns; both are expected here rather than failures.
-    run(pm, pass.install, project, registry);
+    // pnpm exits 1 on the first ignored build and npm 11 only warns; both are expected here rather than failures.
+    const [binary, prefix] = pm === 'npm' ? NPM : [pm, []];
+
+    run(binary, [...prefix, ...pass.install], project, registry);
     perManager[pm] = pass.list(project, registry);
   }
 
