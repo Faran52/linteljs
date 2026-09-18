@@ -15,13 +15,22 @@ export interface LintelRuleDocs {
 
 type BaseMeta = NonNullable<Rule.RuleModule['meta']>;
 
+// The `docs` half of each meta, named so neither is written inline beside the `Omit` that carries it.
+interface PublishedDocs {
+  docs: LintelRuleDocs;
+}
+
+interface AuthoredDocs {
+  docs: Omit<LintelRuleDocs, 'url'>;
+}
+
 // Omit, not an intersection: intersecting would merge ESLint's deprecated meta.docs.category into ours.
 export interface LintelRuleModule extends Omit<Rule.RuleModule, 'meta'> {
-  meta: Omit<BaseMeta, 'docs'> & { docs: LintelRuleDocs };
+  meta: Omit<BaseMeta, 'docs'> & PublishedDocs;
 }
 
 interface LintelRuleDefinition {
-  meta: Omit<BaseMeta, 'docs'> & { docs: Omit<LintelRuleDocs, 'url'> };
+  meta: Omit<BaseMeta, 'docs'> & AuthoredDocs;
   create: Rule.RuleModule['create'];
 }
 
@@ -34,6 +43,7 @@ export const RULE_CATEGORIES = [
   'promises',
   'accessibility',
   'suppression',
+  'types',
 ] as const;
 
 // Which files a rule can meaningfully run against; a typescript rule wastes a traversal on a .js file.

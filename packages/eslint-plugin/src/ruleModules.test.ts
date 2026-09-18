@@ -8,16 +8,20 @@ import type { Rule } from 'eslint';
 
 // Every member optional so the test fails on whichever one is missing; `create` is typed off
 // ESLint's own rule module rather than `unknown`, since the test reads it back.
+interface LoadedDocs {
+  description?: string;
+  category?: string;
+  language?: string;
+  recommended?: boolean;
+}
+
+interface LoadedMeta {
+  docs?: LoadedDocs;
+  messages?: Record<string, string>;
+}
+
 interface LoadedRule {
-  meta?: {
-    docs?: {
-      description?: string;
-      category?: string;
-      language?: string;
-      recommended?: boolean;
-    };
-    messages?: Record<string, string>;
-  };
+  meta?: LoadedMeta;
   create?: Rule.RuleModule['create'];
 }
 
@@ -46,6 +50,7 @@ const RULE_MODULES = [
   'newline-destructuring',
   'no-duplicate-jsx-props',
   'no-eslint-disable',
+  'no-inline-object-types',
   'no-import-namespace-destructure',
   'prefer-arrow-functions',
   'prefer-await-to-then',

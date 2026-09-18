@@ -181,6 +181,34 @@
       "description": "Avoid destructuring namespace imports when a named import is enough."
     }
   },
+  "no-inline-object-types": {
+    "messages": {
+      "nameTheType": "Give this object type a name. An inline shape cannot be referenced, extended or documented."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "allowIn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "types",
+      "language": "typescript",
+      "recommended": true,
+      "description": "Give an object type a name instead of writing its shape inline."
+    }
+  },
   "prefer-arrow-functions": {
     "messages": {
       "preferArrow": "Prefer using arrow functions over plain functions",

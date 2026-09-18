@@ -341,7 +341,16 @@ describe('configs', () => {
 
       expect(Array.isArray(preset)).toBe(false);
       expect(preset.plugins).toEqual([PLUGIN_NAME]);
-      expect(Object.keys(preset.rules).length).toBeGreaterThan(0);
+
+      /**
+       * Both halves, because a category can be entirely TypeScript-only and then carries nothing in `rules`:
+       * `types` is the first one that is. The property under test is that a preset enables something, not where.
+       */
+      const enabled = Object.keys(preset.rules).length + preset.overrides.reduce((total, override) => {
+        return total + Object.keys(override.rules).length;
+      }, 0);
+
+      expect(enabled).toBeGreaterThan(0);
     }
   });
 

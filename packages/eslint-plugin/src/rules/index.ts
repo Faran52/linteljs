@@ -7,6 +7,7 @@ import { newlineDestructuring } from './newline-destructuring/newlineDestructuri
 import { noDuplicateJsxProps } from './no-duplicate-jsx-props/noDuplicateJsxProps.ts';
 import { noEslintDisable } from './no-eslint-disable/noEslintDisable.ts';
 import { noImportNamespaceDestructure } from './no-import-namespace-destructure/noImportNamespaceDestructure.ts';
+import { noInlineObjectTypes } from './no-inline-object-types/noInlineObjectTypes.ts';
 import { preferArrowFunctions } from './prefer-arrow-functions/preferArrowFunctions.ts';
 import { preferAwaitToThen } from './prefer-await-to-then/preferAwaitToThen.ts';
 import { preferDestructuredProps } from './prefer-destructured-props/preferDestructuredProps.ts';
@@ -40,6 +41,7 @@ export const rules = {
   'newline-destructuring': newlineDestructuring,
   'no-duplicate-jsx-props': noDuplicateJsxProps,
   'no-eslint-disable': noEslintDisable,
+  'no-inline-object-types': noInlineObjectTypes,
   'no-import-namespace-destructure': noImportNamespaceDestructure,
   'prefer-arrow-functions': preferArrowFunctions,
   'prefer-await-to-then': preferAwaitToThen,
