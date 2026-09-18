@@ -5,7 +5,7 @@ import {
   merged,
 } from './artifact';
 import { emitClaudeSettings } from './claude-settings/emitClaudeSettings';
-import { mergeClaudeSettings } from './claude-settings/utils/mergeUtils';
+import { mergeClaudeSettings } from './claude-settings/mergeClaudeSettings';
 import { emitCodexMarketplace } from './codex-marketplace/emitCodexMarketplace';
 import { copilotArtifacts } from './copilot-instructions/copilotArtifacts';
 import { cursorArtifacts } from './cursor-rules/cursorArtifacts';
