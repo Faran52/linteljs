@@ -1,15 +1,12 @@
 import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import {
-  accessSync,
-  constants,
-  statSync,
-} from 'node:fs';
-import {
   delimiter,
   join,
   resolve,
 } from 'node:path';
 import { env } from 'node:process';
+
+import { isExecutableFile } from '../files/utils/fsUtils';
 
 export interface GitOptions {
   cwd: string;
@@ -26,14 +23,8 @@ const resolvedGit = (): string | undefined => {
 
     const candidate = resolve(join(directory, 'git'));
 
-    try {
-      accessSync(candidate, constants.X_OK);
-
-      if (statSync(candidate).isFile()) {
-        return candidate;
-      }
-    }
-    catch {
+    if (isExecutableFile(candidate)) {
+      return candidate;
     }
   }
 

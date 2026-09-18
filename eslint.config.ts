@@ -51,7 +51,7 @@ const config = [
   ...typescript(),
   ...vitest(),
 
-  // `@linteljs/create`'s three rings, made mechanical. DESIGN.md: `@linteljs/workspace/create-rings`
+  // `@linteljs/create`'s direction, made mechanical. DESIGN.md: `@linteljs/workspace/create-rings`
   {
     name: '@linteljs/workspace/create-rings',
     files: ['packages/create/src/**'],
@@ -79,6 +79,43 @@ const config = [
               'packages/create/src/terminal',
             ],
             message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
+          },
+        ],
+      }],
+    },
+  },
+
+  /**
+   * One folder per responsibility, and which one a module belongs to is decided by the world it reaches into rather
+   * than by judgement: `node:fs` means `files/`, `node:child_process` means `process/`, argv and the terminal mean
+   * `terminal/`. Everything else goes through them, which is what makes the inner rings testable without a disk.
+   * `e2e/` is the harness rather than the package, and it spawns real managers on purpose.
+   * DESIGN.md: `@linteljs/workspace/create-worlds`
+   */
+  {
+    name: '@linteljs/workspace/create-worlds',
+    files: ['packages/create/src/**'],
+    ignores: [
+      'packages/create/src/terminal/**',
+      'packages/create/src/files/**',
+      'packages/create/src/process/**',
+      'packages/create/src/pipeline/e2e/**',
+      '**/*.test.ts',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['node:fs', 'node:fs/*'],
+            message: 'The filesystem lives in files/. Reach it through files/utils/fsUtils.',
+          },
+          {
+            group: ['node:child_process'],
+            message: 'Spawning lives in process/.',
+          },
+          {
+            group: ['node:process', '@clack/*'],
+            message: 'argv and the terminal live in terminal/.',
           },
         ],
       }],

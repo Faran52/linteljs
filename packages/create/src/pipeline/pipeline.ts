@@ -1,4 +1,3 @@
-import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import {
@@ -15,7 +14,11 @@ import { emitReadme } from '../emitters/readme/emitReadme';
 import { applyArtifact, writeProjectFile } from '../files/projectFiles';
 import { readProjectShape } from '../files/readProjectShape';
 import { ASSETS_ROOT } from '../files/shippedAssets';
-import { exists } from '../files/utils/fsUtils';
+import {
+  exists,
+  mkdir,
+  readFile,
+} from '../files/utils/fsUtils';
 import { git } from '../process/git';
 import { run } from '../process/run';
 import { scaffoldCommand } from '../process/scaffoldCommand';

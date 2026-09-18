@@ -1,8 +1,11 @@
-import { readdir, readFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 
 import { writeProjectFile } from '../files/projectFiles';
-import { isAbsence } from '../files/utils/fsUtils';
+import {
+  isAbsence,
+  readdir,
+  readFile,
+} from '../files/utils/fsUtils';
 import { targetFor } from '../targets';
 
 import type { Answers } from '../answers/answers';

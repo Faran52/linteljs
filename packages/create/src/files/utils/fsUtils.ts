@@ -1,4 +1,9 @@
 import {
+  accessSync,
+  constants,
+  statSync,
+} from 'node:fs';
+import {
   access,
   lstat,
   readFile,
@@ -9,6 +14,32 @@ import { join } from 'node:path';
 interface NotFound {
   code: 'ENOENT';
 }
+
+/**
+ * The filesystem itself, re-exported rather than reached for directly everywhere. `node:fs` is importable from
+ * `files/` alone, enforced in the root `eslint.config.ts`, so this is the one place the rest of the package
+ * substitutes when it needs to run without touching a disk.
+ */
+export {
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  rmdir,
+} from 'node:fs/promises';
+
+// Sync because its answer feeds a `spawnSync`: `process/` resolves a binary with no asynchronous point to wait at.
+export const isExecutableFile = (path: string): boolean => {
+  try {
+    accessSync(path, constants.X_OK);
+
+    return statSync(path).isFile();
+  }
+  catch {
+    return false;
+  }
+};
 
 // Absence only: a permission error stays an error.
 export const isAbsence = (error: unknown): error is Error & NotFound => {

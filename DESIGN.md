@@ -998,11 +998,17 @@ changes nothing in what `pnpm lint` reports.
 
 ### `@linteljs/workspace/create-rings`
 
-`model/` is what the user chose, `artifacts/` turns those answers into file text, `run/` is
-everything touching disk, argv or a terminal. The direction only ever points inward. That already
-held in the import graph before the rule existed: `artifacts/` reached into `answers`, `targets`,
-`aliases` and `versions` twenty times and into `cli`, `pipeline`, `sync`, `prompts` and `rewrite`
-never. The rule is what stops it quietly stopping.
+`answers/` is what the user chose and `targets/` is what lintel knows; neither reaches outward.
+`emitters/` turns the two into file text and may read them. `terminal/`, `files/`, `process/` and
+`pipeline/` are outside all three. The direction only ever points inward. That already held in the
+import graph before the rule existed: the emitters reached into `answers`, `targets`, `aliases` and
+`versions` twenty times and into `cli`, `pipeline`, `sync`, `prompts` and `rewrite` never. The rule
+is what stops it quietly stopping.
+
+Three folders where one ring used to be, because `model/` and `run/` were each several
+responsibilities under one name. `model/` held data that flows through a run beside a knowledge base
+that is the same on every run. `run/` held the terminal, the filesystem, subprocesses and the
+sequence that drives them, which is four.
 
 A route around it through the barrel is not a third zone: `src/index.ts` re-exports from `run/`, so
 an inner ring importing it is a cycle, which `import-x/no-cycle` in `base` already reports.
@@ -1010,6 +1016,31 @@ an inner ring importing it is a cycle, which `import-x/no-cycle` in `base` alrea
 It lives in the workspace config rather than a layer because the ring names are this package's, not
 the standard's. It is scoped to source: a test arranges and asserts across rings by nature, and
 policing its imports protects nothing.
+
+### `@linteljs/workspace/create-worlds`
+
+Which folder a module belongs to is read off its import lines rather than decided: `node:fs` means
+`files/`, `node:child_process` means `process/`, `node:process` and `@clack/prompts` mean
+`terminal/`. Nothing else may reach a world, so the only route to a disk is a function that can be
+substituted, and `answers/`, `targets/` and `emitters/` are provably pure.
+
+Measured, not asserted. At the time the rule went in, the non-test modules outside those three
+folders reaching a builtin were exactly five: `pipeline.ts`, `sync.ts`, `rewrite.ts`, `repair.ts` and
+`fixPass.ts`, all on `node:fs`. They call `files/utils/fsUtils` now, which re-exports the six
+operations they need from one place. `fixPass.ts` lost its `existsSync` probe entirely: `spawnSync`
+already reports an absent binary as ENOENT, so `process/localBinary.ts` answers `null` and the
+separate check was a second way to ask the same question.
+
+`node:path`, `node:os` and `node:url` are not restricted. Path arithmetic touches nothing, and the
+other two are read only inside `files/`.
+
+`process/` reaches `files/` for one thing: `isExecutableFile`, which is how `git.ts` resolves a
+binary on `PATH`. Finding an executable is a filesystem question that only a spawner asks, and the
+direction is one way, since nothing in `files/` spawns. Sync on purpose, because its answer feeds a
+`spawnSync` that has no asynchronous point to wait at.
+
+`pipeline/e2e/` is exempt. It is the harness rather than the package, and spawning real package
+managers is the whole of what it does.
 
 ### `noInlineConfig`
 

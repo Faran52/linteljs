@@ -1,9 +1,4 @@
 import {
-  readFile,
-  rename,
-  rm,
-} from 'node:fs/promises';
-import {
   basename,
   join,
   relative,
@@ -11,7 +6,13 @@ import {
 
 import { hasTests } from '../answers/answers';
 import { safeProjectPath, writeProjectFile } from '../files/projectFiles';
-import { entryExists, isAbsence } from '../files/utils/fsUtils';
+import {
+  entryExists,
+  isAbsence,
+  readFile,
+  rename,
+  rm,
+} from '../files/utils/fsUtils';
 import { targetFor } from '../targets';
 
 import { SOURCE_ROOT, sourceFiles } from './rewrite';

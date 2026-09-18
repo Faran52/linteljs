@@ -1,8 +1,5 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { RUN_PREFIX, styleGlob } from '../emitters/utils/scriptUtils';
+import { runLocalBinary } from '../process/localBinary';
 
 import type { Answers } from '../answers/answers';
 
@@ -36,18 +33,9 @@ const parseFixReport = (stdout: string): number => {
 
 // Silent about its count: stylelint's JSON report names files, not which it rewrote.
 const fixStyles = (cwd: string, answers: Answers, report: (message: string) => void): void => {
-  const binary = join(cwd, 'node_modules', '.bin', 'stylelint');
+  const result = runLocalBinary(cwd, 'stylelint', [styleGlob(answers), '--fix', '--allow-empty-input']);
 
-  if (!existsSync(binary)) {
-    return;
-  }
-
-  const result = spawnSync(binary, [styleGlob(answers), '--fix', '--allow-empty-input'], {
-    cwd,
-    encoding: 'utf8',
-  });
-
-  if (result.error !== undefined) {
+  if (result?.failed === true) {
     report('stylelint --fix could not run; run it yourself once dependencies are installed');
   }
 };
@@ -61,20 +49,15 @@ export const runFixPass = (
   const report = onNotice ?? (() => {
     return undefined;
   });
-  const binary = join(cwd, 'node_modules', '.bin', 'eslint');
+  const result = runLocalBinary(cwd, 'eslint', ['.', '--fix', '--format', 'json']);
 
-  if (!existsSync(binary)) {
+  if (result === null) {
     report(nextStep(answers));
     return;
   }
 
-  const result = spawnSync(binary, ['.', '--fix', '--format', 'json'], {
-    cwd,
-    encoding: 'utf8',
-  });
-
   // Exit 2 is a configuration failure, and the config is ours.
-  if (result.error !== undefined || result.status === 2) {
+  if (result.failed || result.status === 2) {
     report('eslint --fix could not run; run it yourself once dependencies are installed');
     return;
   }
