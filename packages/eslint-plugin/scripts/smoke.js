@@ -70,18 +70,24 @@ const expectedRuleIds = [
  * the source under test, so a rename fails here rather than in somebody's config.
  */
 const expectedPresetNames = [
+  'accessibility',
+  'flat/accessibility',
   'flat/functions',
   'flat/imports',
   'flat/layout',
   'flat/ordering',
   'flat/promises',
   'flat/recommended',
+  'flat/suppression',
+  'flat/types',
   'functions',
   'imports',
   'layout',
   'ordering',
   'promises',
   'recommended',
+  'suppression',
+  'types',
 ];
 
 // The preset spread a consumer actually writes. The configs below name their
@@ -223,10 +229,15 @@ for (const [label, shape] of [['cjs require()', cjsNamespace], ['esm default', e
 
     assert.ok(!Array.isArray(preset), `${label}: configs.${presetName} is an array, not eslintrc`);
     assert.deepEqual(preset.plugins, ['@linteljs'], `${label}: configs.${presetName} names no plugin`);
-    assert.ok(
-      Object.keys(preset.rules).length > 0,
-      `${label}: configs.${presetName} enables nothing`,
-    );
+
+    // Both halves: a category can be entirely TypeScript-only, and then carries everything in `overrides` and
+    // nothing in `rules`. `types` is the first one that is. What matters is that the preset enables something.
+    const enabled = Object.keys(preset.rules).length
+      + (preset.overrides ?? []).reduce((total, override) => {
+        return total + Object.keys(override.rules ?? {}).length;
+      }, 0);
+
+    assert.ok(enabled > 0, `${label}: configs.${presetName} enables nothing`);
   }
 }
 
