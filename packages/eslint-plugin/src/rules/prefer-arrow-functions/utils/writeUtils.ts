@@ -11,24 +11,40 @@ interface TypeAnnotation {
   asserts?: boolean;
 }
 
-type ReturnTypeNode = RuleNode & {
+interface Annotated {
   typeAnnotation: TypeAnnotation;
-};
+}
 
-type TypeParametersNode = RuleNode & {
-  params: { name: { name: string } }[];
-};
+type ReturnTypeNode = RuleNode & Annotated;
+
+interface Named {
+  name: string;
+}
+
+interface TypeParameter {
+  name: Named;
+}
+
+interface Parameterised {
+  params: TypeParameter[];
+}
+
+type TypeParametersNode = RuleNode & Parameterised;
 
 // The three function nodes, picked out of the node union, with `returnType` and
 // `typeParameters` added since they are TypeScript nodes ESLint's ESTree types have no name for.
-export type FunctionLike = Extract<
-  RuleNode,
-  { type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression' }
-> & {
+interface FunctionNode {
+  type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression';
+}
+
+// `returnType` and `typeParameters` are TypeScript nodes ESLint's ESTree types have no name for.
+interface FunctionExtras {
   id?: FunctionId | null;
   returnType?: ReturnTypeNode;
   typeParameters?: TypeParametersNode;
-};
+}
+
+export type FunctionLike = Extract<RuleNode, FunctionNode> & FunctionExtras;
 
 export const getFunctionId = (fn: FunctionLike): FunctionId | null => {
   return fn.id ?? null;

@@ -7,11 +7,13 @@ import type { Answers, HostedFramework } from '../../model/answers/answers';
 // Astro's Vite options live here, so there is no `vite.config.ts`. `.mjs` is the name `astro check` looks for first.
 // Null for every other target.
 
-const INTEGRATIONS: Record<HostedFramework, {
+interface Integration {
   specifier: string;
   call: string;
   compiler?: string[];
-}> = {
+}
+
+const INTEGRATIONS: Record<HostedFramework, Integration> = {
   // Plain Babel options, not `reactCompilerPreset()`: `@astrojs/react` fails the build on the preset form with
   // `Unknown option: .preset`. The guard keeps the memo cache out of the test run's coverage.
   react: {

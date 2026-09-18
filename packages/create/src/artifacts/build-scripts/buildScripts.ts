@@ -3,6 +3,12 @@ import { targetFor } from '../../model/targets';
 
 import type { Answers, PackageManager } from '../../model/answers/answers';
 
+// `check` is named in the return type so callers need no unreachable `?? ''`.
+// `check` is named so callers need no unreachable `?? ''`.
+interface CheckScript {
+  check: string;
+}
+
 // Only npm and bun need `run` for a script that is not `test`.
 export const RUN_PREFIX: Record<PackageManager, string> = {
   pnpm: 'pnpm',
@@ -30,8 +36,7 @@ const bannedPatternNames = (answers: Answers): string[] => {
   ];
 };
 
-// `check` is named in the return type so callers need no unreachable `?? ''`.
-export const buildScripts = (answers: Answers): Record<string, string> & { check: string } => {
+export const buildScripts = (answers: Answers): Record<string, string> & CheckScript => {
   const run = RUN_PREFIX[answers.packageManager];
   const target = targetFor(answers);
   const gates = ['lint', 'lint:types', 'lint:css', 'typecheck'];

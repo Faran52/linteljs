@@ -31,6 +31,26 @@ export interface E2eCase {
 }
 
 /**
+ * Every combination of two answers, in as few cases as the greedy will manage.
+ *
+ * The full cross product is 348 on pnpm; every defect this suite has found was a two-way interaction, and none
+ * needed a third axis pinned: `vue-demi` is hosted-vue with TanStack Query, the devtools floating promise is the
+ * extension on chrome, the leftover suites are `testing: none` on angular and on react-native, and `customTypes.d.ts`
+ * is `typeSafety: relaxed` on angular. So the suite covers every *pair* of answers rather than every combination.
+ *
+ * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
+ * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the
+ * reachable one. Deterministic, because the shard is a stride over this list: ties go to the earlier case.
+ *
+ * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
+ */
+// The running best of the greedy: absent until some case gains a pair, which the first pass always does.
+interface Leader {
+  item?: E2eCase;
+  gain: number;
+}
+
+/**
  * Two families, and between them every answer this CLI can be given.
  *
  * `managers` is every target on every package manager with every multi-select at its full value: the heaviest
@@ -231,20 +251,6 @@ const pairsOf = (answers: Answers): string[] => {
   });
 };
 
-/**
- * Every combination of two answers, in as few cases as the greedy will manage.
- *
- * The full cross product is 348 on pnpm; every defect this suite has found was a two-way interaction, and none
- * needed a third axis pinned: `vue-demi` is hosted-vue with TanStack Query, the devtools floating promise is the
- * extension on chrome, the leftover suites are `testing: none` on angular and on react-native, and `customTypes.d.ts`
- * is `typeSafety: relaxed` on angular. So the suite covers every *pair* of answers rather than every combination.
- *
- * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
- * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the
- * reachable one. Deterministic, because the shard is a stride over this list: ties go to the earlier case.
- *
- * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
- */
 const coveringSubset = (cases: E2eCase[]): E2eCase[] => {
   const uncovered = new Set(cases.flatMap((item) => {
     return pairsOf(item.answers);
@@ -252,8 +258,7 @@ const coveringSubset = (cases: E2eCase[]): E2eCase[] => {
   const chosen: E2eCase[] = [];
 
   while (uncovered.size > 0) {
-    const best = cases.reduce<{ item?: E2eCase;
-      gain: number; }>((leader, item) => {
+    const best = cases.reduce<Leader>((leader, item) => {
       const gain = pairsOf(item.answers).filter((pair) => {
         return uncovered.has(pair);
       }).length;

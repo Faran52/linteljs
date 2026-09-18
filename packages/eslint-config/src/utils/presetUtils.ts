@@ -4,7 +4,13 @@ type PluginConfigs = NonNullable<ESLint.Plugin['configs']>;
 
 type PluginConfig = PluginConfigs[string];
 
-type SingleConfig = Extract<PluginConfig, { rules?: unknown }>;
+// The matcher `Extract` reads, picking the flat arm out of the union. `unknown` is the type-level wildcard here and
+// no value ever carries it, which is why `type-standards.md` exempts this file from the mechanical floor.
+interface RuleBearing {
+  rules?: unknown;
+}
+
+type SingleConfig = Extract<PluginConfig, RuleBearing>;
 
 // eslintrc carries `plugins` as an array.
 const isFlatConfig = (config: SingleConfig): config is Linter.Config => {

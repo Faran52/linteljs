@@ -8,11 +8,13 @@
 declare module 'eslint-plugin-jsx-a11y-x' {
   import type { ESLint, Linter } from 'eslint';
 
+  interface JsxA11yConfigs {
+    recommended: Linter.Config;
+    strict: Linter.Config;
+  }
+
   interface JsxA11yPlugin extends ESLint.Plugin {
-    configs: {
-      recommended: Linter.Config;
-      strict: Linter.Config;
-    };
+    configs: JsxA11yConfigs;
   }
 
   const plugin: JsxA11yPlugin;

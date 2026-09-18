@@ -18,6 +18,12 @@ import { parsePackageJson } from '../../../artifacts/package-json/emitPackageJso
 
 import type { TestProject } from 'vitest/node';
 
+// The registry and the handle that stops it, so a caller cannot take one without the other.
+interface StartedRegistry {
+  registry: E2eRegistry;
+  stop: () => void;
+}
+
 export interface E2eRegistry {
   url: string;
   version: string;
@@ -194,8 +200,7 @@ const publishedAs = (version: string, publish: () => void): void => {
  * same registry and the same freshly published CLI, and duplicating a hundred lines of verdaccio wiring to get them
  * is how the two drift.
  */
-export const startRegistry = async (): Promise<{ registry: E2eRegistry;
-  stop: () => void; }> => {
+export const startRegistry = async (): Promise<StartedRegistry> => {
   /**
    * Outside `RUN_DIR`, so it survives the wipe. One npmjs tarball is stored once and served to all four managers,
    * which all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a

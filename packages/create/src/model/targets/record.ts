@@ -116,6 +116,12 @@ export interface TsconfigDelta {
 }
 
 // One record per target, so emitters stay free of `switch (target)`.
+// A factory instead of `defineConfig`; Astro alone, whose Vite options come through `getViteConfig`.
+interface VitestFactory {
+  imports: string[];
+  call: string;
+}
+
 export interface TargetRecord {
   id: TargetId;
   label: string;
@@ -163,9 +169,7 @@ export interface TargetRecord {
   vitePlugin: PluginSpec;
   // Only a non-Vite target can need one.
   vitestPlugin?: PluginSpec;
-  // A factory instead of `defineConfig`; Astro alone, whose Vite options come through `getViteConfig`.
-  vitestFactory?: { imports: string[];
-    call: string; };
+  vitestFactory?: VitestFactory;
   // Beyond the shared set: modules with no branch to miss.
   coverageExclude?: string[];
   // Test run only; without `browser`, vitest loads Svelte's server build and `mount()` throws.

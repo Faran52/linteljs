@@ -9,6 +9,29 @@ import { DEFAULT_ANSWERS } from '../answers/answers';
 import { reactNative } from './reactNative';
 import { esmAssetImports } from './utils/targetUtils';
 
+// The shapes `app.json` is read back as. Named because this workspace writes no object type inline, and because
+// three assertions share the first of them.
+interface CompilerExperiments {
+  reactCompiler: boolean;
+}
+
+interface CompilerExpo {
+  experiments: CompilerExperiments;
+}
+
+interface CompilerConfig {
+  expo: CompilerExpo;
+}
+
+interface VersionedExpo {
+  sdkVersion: string;
+  experiments: CompilerExperiments;
+}
+
+interface VersionedConfig {
+  expo: VersionedExpo;
+}
+
 const transformFor = (path: string): (source: string) => string => {
   const fix = (reactNative.starterFixes ?? []).find((entry) => {
     return entry.path === path;
@@ -145,7 +168,7 @@ describe('starterFixes', () => {
     }, null, 2) + '\n';
 
     const output = transformFor('app.json')(source);
-    const parsed = JSON.parse(output) as { expo: { experiments: { reactCompiler: boolean } } };
+    const parsed = JSON.parse(output) as CompilerConfig;
 
     expect(parsed.expo.experiments.reactCompiler).toBe(true);
   });
@@ -160,7 +183,7 @@ describe('starterFixes', () => {
     }, null, 2) + '\n';
 
     const output = transformFor('app.json')(source);
-    const parsed = JSON.parse(output) as { expo: { experiments: { reactCompiler: boolean } } };
+    const parsed = JSON.parse(output) as CompilerConfig;
 
     expect(parsed.expo.experiments.reactCompiler).toBe(true);
   });
@@ -172,8 +195,7 @@ describe('starterFixes', () => {
       },
     }, null, 2) + '\n';
 
-    const parsed = JSON.parse(transformFor('app.json')(source)) as { expo: { sdkVersion: string;
-      experiments: { reactCompiler: boolean }; }; };
+    const parsed = JSON.parse(transformFor('app.json')(source)) as VersionedConfig;
 
     expect(parsed.expo.sdkVersion).toBe('53.0.0');
     expect(parsed.expo.experiments.reactCompiler).toBe(true);

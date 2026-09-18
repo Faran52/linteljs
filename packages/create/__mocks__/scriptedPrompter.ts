@@ -20,13 +20,6 @@ export interface Recorded {
 }
 
 /**
- * Placed in a script to simulate a person cancelling that question on purpose, the way a real Ctrl+C resolves: every
- * prompt still ahead of it is never asked. Distinct from a script that simply runs out, which simulates the input
- * disappearing instead, and is a different problem `unwrap` tells apart by throwing directly rather than resolving.
- */
-export const CANCEL = Symbol('scripted-cancel');
-
-/**
  * A scripted terminal for `ask`.
  *
  * Each entry in `answers` is one prompt's answer, in the order `ask` asks them: `undefined` takes that prompt's own
@@ -35,13 +28,25 @@ export const CANCEL = Symbol('scripted-cancel');
  * prompt from there on throws `NOTHING_ANSWERED_MESSAGE` directly, the same way a pipe with nobody left on the other
  * end would, so a test can drive either of `ask`'s two dead ends without a real terminal.
  */
+// What a prompter hands its recorder: the label is absent on a plain choice.
+interface PromptOption {
+  label?: string;
+  value: string;
+}
+
+/**
+ * Placed in a script to simulate a person cancelling that question on purpose, the way a real Ctrl+C resolves: every
+ * prompt still ahead of it is never asked. Distinct from a script that simply runs out, which simulates the input
+ * disappearing instead, and is a different problem `unwrap` tells apart by throwing directly rather than resolving.
+ */
+export const CANCEL = Symbol('scripted-cancel');
+
 export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | undefined)[]): Recorded => {
   const calls: string[] = [];
   const labels: Record<string, string[]> = {};
   let index = 0;
 
-  const record = (message: string, options: { label?: string;
-    value: string; }[]): void => {
+  const record = (message: string, options: PromptOption[]): void => {
     calls.push(message);
     labels[message] = options.map((option) => {
       return option.label ?? option.value;

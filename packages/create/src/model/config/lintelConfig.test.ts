@@ -69,20 +69,22 @@ interface SchemaNode {
   items?: SchemaNode;
 }
 
+interface SchemaProperties {
+  schemaVersion: SchemaNode;
+  target: SchemaNode;
+  testing: SchemaNode;
+  packageManager: SchemaNode;
+  libraries: SchemaNode;
+  form: SchemaNode;
+  typeSafety: SchemaNode;
+  agents: SchemaNode;
+  plugins: SchemaNode;
+  surfaces: SchemaNode;
+}
+
 interface LintelConfigSchema {
   $id: string;
-  properties: {
-    schemaVersion: SchemaNode;
-    target: SchemaNode;
-    testing: SchemaNode;
-    packageManager: SchemaNode;
-    libraries: SchemaNode;
-    form: SchemaNode;
-    typeSafety: SchemaNode;
-    agents: SchemaNode;
-    plugins: SchemaNode;
-    surfaces: SchemaNode;
-  };
+  properties: SchemaProperties;
 }
 
 type SchemaValue = string | number | boolean | string[] | SchemaFields;

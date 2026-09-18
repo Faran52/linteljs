@@ -7,19 +7,38 @@ import {
 
 import type { Indents } from '../../../utils/layoutUtils.ts';
 
-// `range`/`loc` are ESTree-optional but always present on a parsed statement; `importKind` is TypeScript-only, unnamed
-// in ESLint's ESTree types.
-export type ImportNode = Extract<RuleNode, { type: 'ImportDeclaration' }> & {
-  source: { range: [number, number];
-    loc: { end: { line: number } }; };
+// The matcher `Extract` reads, named because nothing in this workspace is written inline.
+interface ImportDeclarationNode {
+  type: 'ImportDeclaration';
+}
+
+// What a parsed node carries at each end of its location. Both fields are always there; the emitter reads `line`
+// off both ends and `column` off the start.
+interface Position {
+  line: number;
+  column: number;
+}
+
+interface NodeLocation {
+  start: Position;
+  end: Position;
+}
+
+interface ImportSource {
+  range: [number, number];
+  loc: NodeLocation;
+}
+
+// `range`/`loc` are ESTree-optional but always present on a parsed statement; `importKind` is TypeScript-only,
+// unnamed in ESLint's ESTree types.
+interface ImportShape {
+  source: ImportSource;
   range: [number, number];
   importKind?: string;
-  loc: {
-    start: { line: number;
-      column: number; };
-    end: { line: number };
-  };
-};
+  loc: NodeLocation;
+}
+
+export type ImportNode = Extract<RuleNode, ImportDeclarationNode> & ImportShape;
 
 interface ClauseParts {
   defaultImport: string;

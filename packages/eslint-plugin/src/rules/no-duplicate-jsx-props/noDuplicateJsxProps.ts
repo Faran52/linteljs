@@ -8,22 +8,30 @@ interface Position {
   column: number;
 }
 
+interface JsxIdentifier {
+  type: 'JSXIdentifier';
+  name: string;
+}
+
+interface NamePart {
+  name: string;
+}
+
+interface JsxNamespacedName {
+  type: 'JSXNamespacedName';
+  namespace: NamePart;
+  name: NamePart;
+}
+
+interface AttributeLocation {
+  start: Position;
+  end: Position;
+}
+
 interface JsxAttribute {
   type: 'JSXAttribute';
-  name:
-    | {
-      type: 'JSXIdentifier';
-      name: string;
-    }
-    | {
-      type: 'JSXNamespacedName';
-      namespace: { name: string };
-      name: { name: string };
-    };
-  loc: {
-    start: Position;
-    end: Position;
-  };
+  name: JsxIdentifier | JsxNamespacedName;
+  loc: AttributeLocation;
 }
 
 interface JsxSpreadAttribute {

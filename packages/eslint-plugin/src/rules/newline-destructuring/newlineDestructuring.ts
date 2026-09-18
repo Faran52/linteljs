@@ -23,20 +23,30 @@ import {
 
 import type { Rule } from 'eslint';
 
+interface ObjectPatternMatch {
+  type: 'ObjectPattern';
+}
+
 // `typeAnnotation` is TypeScript-only, so it is optional here rather than asserted, letting the visitor skip a cast.
-type ObjectPatternNode = Extract<RuleNode, { type: 'ObjectPattern' }> & {
+interface PatternExtras {
   optional?: boolean;
   typeAnnotation?: RuleNode;
-};
+}
+
+type ObjectPatternNode = Extract<RuleNode, ObjectPatternMatch> & PatternExtras;
 
 // Same as `ObjectPatternNode`: ESLint 10 checks a selector's handler against `Rule.Node`, which carries neither list.
-type InterfaceBodyNode = RuleNode & {
+interface Bodied {
   body?: PropertyNode[];
-};
+}
 
-type TypeLiteralNode = RuleNode & {
+type InterfaceBodyNode = RuleNode & Bodied;
+
+interface Membered {
   members?: PropertyNode[];
-};
+}
+
+type TypeLiteralNode = RuleNode & Membered;
 
 // What `context.report` accepts; the two builders answer different shapes, so one ladder serves both without a cast.
 type ReportFix = (fixer: Fixer) => IterableIterator<Rule.Fix> | Rule.Fix | null;
@@ -46,7 +56,11 @@ interface NewlineDestructuringOptions {
   maxPropertiesWithRest: number;
 }
 
-const isRestElement = (property: { type: string }): boolean => {
+interface Typed {
+  type: string;
+}
+
+const isRestElement = (property: Typed): boolean => {
   return property.type === 'RestElement';
 };
 

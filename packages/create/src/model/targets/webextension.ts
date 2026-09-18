@@ -11,17 +11,19 @@ import type { TargetBuilder } from './registry';
 // Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
 // ambient types; the hosted framework decides what a component is and which plugin and layer handle it.
 
+// Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
+// both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
+interface BrowserStarter {
+  entry: string;
+  handler: string;
+  test: string;
+  devtools: string;
+}
+
 interface BrowserParts {
   types: string[];
   devDependencies: string[];
-  // Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
-  // both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
-  starter: {
-    entry: string;
-    handler: string;
-    test: string;
-    devtools: string;
-  };
+  starter: BrowserStarter;
 }
 
 const BROWSERS: Record<Browser, BrowserParts> = {

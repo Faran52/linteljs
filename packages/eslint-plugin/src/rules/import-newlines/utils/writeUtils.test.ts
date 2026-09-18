@@ -9,6 +9,11 @@ import { type ImportNode, writeImport } from './writeUtils.ts';
 
 import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
 
+interface ParsedImport {
+  sourceCode: SourceCode;
+  node: ImportNode;
+}
+
 // The `importKind === 'type'` branch cannot be reached from plain JS fixtures here; it's covered via tsRuleTester in
 // index.test.ts.
 
@@ -16,8 +21,7 @@ const isImportNode = (node: RuleNode): node is ImportNode => {
   return node.type === 'ImportDeclaration';
 };
 
-const importNodeFrom = (code: string): { sourceCode: SourceCode;
-  node: ImportNode; } => {
+const importNodeFrom = (code: string): ParsedImport => {
   const { sourceCode, firstNode } = sourceCodeFrom(code);
   const node = firstNode('ImportDeclaration');
 

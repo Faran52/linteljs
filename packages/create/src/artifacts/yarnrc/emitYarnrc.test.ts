@@ -14,9 +14,13 @@ import {
 
 import { emitYarnrc } from './emitYarnrc';
 
-const answersFor = (overrides: { target?: TargetId;
+interface AnswerOverrides {
+  target?: TargetId;
   libraries?: Library[];
-  form?: Form; }): Answers => {
+  form?: Form;
+}
+
+const answersFor = (overrides: AnswerOverrides): Answers => {
   return {
     ...DEFAULT_ANSWERS,
     ...overrides,

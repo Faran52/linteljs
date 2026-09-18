@@ -20,6 +20,13 @@ import {
 
 import type { Rule } from 'eslint';
 
+// Every node in the snippet, in document order, with `parent` intact: `.properties` on the node carries
+// `@types/estree`'s shape rather than `RuleNode`'s, so the parent link is the cast-free way to the members.
+interface ParsedProperties {
+  sourceCode: SourceCode;
+  members: PropertyNode[];
+}
+
 // The boundary readers, driven directly rather than through the rule's own fixer. All three node kinds share identical
 // comment and blank-line handling, so an `ObjectPattern` fixture covers them without the TypeScript parser.
 
@@ -29,10 +36,7 @@ const isPropertyNode = (node: RuleNode): node is PropertyNode => {
   return node.loc != null;
 };
 
-// Every node in the snippet, in document order, with `parent` intact: `.properties` on the node carries
-// `@types/estree`'s shape rather than `RuleNode`'s, so the parent link is the cast-free way to the members.
-const propertiesOf = (code: string): { sourceCode: SourceCode;
-  members: PropertyNode[]; } => {
+const propertiesOf = (code: string): ParsedProperties => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];
   let captured: SourceCode | undefined;

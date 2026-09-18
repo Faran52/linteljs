@@ -4,8 +4,16 @@ import { COMMON_REACT_PLUGINS, esmAssetImports } from './utils/targetUtils';
 
 import type { TargetRecord } from './record';
 
+interface ExpoExperiments {
+  reactCompiler?: boolean;
+}
+
+interface ExpoSection {
+  experiments?: ExpoExperiments;
+}
+
 interface AppConfig {
-  expo?: { experiments?: { reactCompiler?: boolean } };
+  expo?: ExpoSection;
 }
 
 const isAppConfig = (value: unknown): value is AppConfig => {

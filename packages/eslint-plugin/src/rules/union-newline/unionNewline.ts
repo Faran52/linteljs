@@ -20,9 +20,11 @@ interface UnionNewlineOptions {
 }
 
 // `types` is optional: ESLint 10 checks handlers against `Rule.Node`, which lacks it; the selector guarantees it.
-type UnionTypeNode = RuleNode & {
+interface Typed {
   types?: RuleNode[];
-};
+}
+
+type UnionTypeNode = RuleNode & Typed;
 
 const COMPLEX_UNION_MEMBER_TYPES = new Set([
   'TSTypeLiteral',

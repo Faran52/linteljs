@@ -11,13 +11,15 @@
 declare module 'eslint-plugin-solid' {
   import type { ESLint, Linter } from 'eslint';
 
+  interface SolidConfigs {
+    'recommended': Linter.Config;
+    'typescript': Linter.Config;
+    'flat/recommended': Linter.Config;
+    'flat/typescript': Linter.Config;
+  }
+
   interface SolidPlugin extends ESLint.Plugin {
-    configs: {
-      'recommended': Linter.Config;
-      'typescript': Linter.Config;
-      'flat/recommended': Linter.Config;
-      'flat/typescript': Linter.Config;
-    };
+    configs: SolidConfigs;
   }
 
   const plugin: SolidPlugin;

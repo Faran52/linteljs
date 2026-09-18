@@ -8,12 +8,28 @@ import { emitClaudeSettings } from './emitClaudeSettings';
 import { mergeClaudeSettings } from './mergeClaudeSettings';
 
 // The merged shape as these tests read it: this CLI's two keys, plus the project ones above.
+interface Matcher {
+  matcher: string;
+}
+
+interface MergedHooks {
+  PreToolUse: Matcher[];
+}
+
+interface MergedSource {
+  repo?: string;
+  path?: string;
+}
+
+interface MergedMarketplace {
+  source: MergedSource;
+}
+
 interface MergedSettings {
   includeCoAuthoredBy?: boolean;
-  hooks?: { PreToolUse: { matcher: string }[] };
+  hooks?: MergedHooks;
   enabledPlugins: Record<string, boolean>;
-  extraKnownMarketplaces: Record<string, { source: { repo?: string;
-    path?: string; }; }>;
+  extraKnownMarketplaces: Record<string, MergedMarketplace>;
 }
 
 const OURS = emitClaudeSettings(['context7']);

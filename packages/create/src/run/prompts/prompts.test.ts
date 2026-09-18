@@ -20,11 +20,15 @@ import {
   RUN_CANCELLED_MESSAGE,
 } from './prompts';
 
+interface AskOutcome {
+  result: Asked;
+  recorded: Recorded;
+}
+
 const askWith = async (
   answers: Parameters<typeof scripted>[0],
   input?: AskInput,
-): Promise<{ result: Asked;
-  recorded: Recorded; }> => {
+): Promise<AskOutcome> => {
   const recorded = scripted(answers);
 
   return {

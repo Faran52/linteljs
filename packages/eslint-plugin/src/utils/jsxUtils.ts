@@ -74,6 +74,10 @@ export interface TypedNode {
   type: string;
 }
 
+interface Attributed {
+  attributes: JsxAttributeLike[];
+}
+
 // Both spellings of every prop that carries the same meaning: React Native maps the ARIA alias onto the legacy name,
 // so a rule that knows only one of the two reports a component that is already accessible.
 export const LABEL_PROPS = ['accessibilityLabel', 'aria-label'] as const;
@@ -111,7 +115,7 @@ export const TOUCHABLE_COMPONENTS = [
 // element as a focus stop and leaves its children reachable, which is a different thing from being hidden.
 const HIDDEN_PROPS = ['aria-hidden', 'accessibilityElementsHidden'] as const;
 
-const isElementList = (node: TypedNode): node is TypedNode & { attributes: JsxAttributeLike[] } => {
+const isElementList = (node: TypedNode): node is TypedNode & Attributed => {
   return 'attributes' in node && Array.isArray(node.attributes);
 };
 

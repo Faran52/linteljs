@@ -21,11 +21,15 @@ import {
 
 import { ASSETS_ROOT } from '../../run/shipped-assets/shippedAssets';
 
+interface ToolInput {
+  command: string;
+}
+
 interface BashHookPayload {
   cwd: string;
   hook_event_name: 'PreToolUse';
   tool_name: 'Bash';
-  tool_input: { command: string };
+  tool_input: ToolInput;
 }
 
 interface BashPayloadCase {

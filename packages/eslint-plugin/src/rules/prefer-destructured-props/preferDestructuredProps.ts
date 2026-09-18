@@ -11,14 +11,25 @@ interface FunctionName {
 }
 
 // Read off the union, not a narrowed arm, so the null `export default function () {}` carries survives.
-type FunctionLike = Extract<
-  RuleNode,
-  { type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression' }
-> & {
-  id?: FunctionName | null;
-};
+interface FunctionNode {
+  type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression';
+}
 
-type MemberExpressionNode = Extract<RuleNode, { type: 'MemberExpression' }>;
+interface Identified {
+  id?: FunctionName | null;
+}
+
+type FunctionLike = Extract<RuleNode, FunctionNode> & Identified;
+
+interface MemberExpressionMatch {
+  type: 'MemberExpression';
+}
+
+type MemberExpressionNode = Extract<RuleNode, MemberExpressionMatch>;
+
+interface Called {
+  arguments: Ranged[];
+}
 
 const declarationNameOf = (fn: FunctionLike): string => {
   return fn.id?.name ?? '';
@@ -28,7 +39,7 @@ const sameRange = (left: Ranged, right: Ranged): boolean => {
   return rangeOf(left)[0] === rangeOf(right)[0] && rangeOf(left)[1] === rangeOf(right)[1];
 };
 
-const isArgumentOf = (call: { arguments: Ranged[] }, node: Ranged): boolean => {
+const isArgumentOf = (call: Called, node: Ranged): boolean => {
   return call.arguments.some((argument) => {
     return sameRange(argument, node);
   });

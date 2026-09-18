@@ -1,9 +1,11 @@
+interface MarketplaceLocation {
+  source: string;
+  repo?: string;
+  path?: string;
+}
+
 interface MarketplaceRef {
-  source: {
-    source: string;
-    repo?: string;
-    path?: string;
-  };
+  source: MarketplaceLocation;
 }
 
 // Only the keys this CLI owns are typed; spreads keep every project-owned setting.

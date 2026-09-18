@@ -16,7 +16,11 @@ interface ImportNewlinesOptions {
   maxLineLength: number;
 }
 
-const isNamedSpecifier = (specifier: { type: string }): boolean => {
+interface Typed {
+  type: string;
+}
+
+const isNamedSpecifier = (specifier: Typed): boolean => {
   return specifier.type === 'ImportSpecifier';
 };
 

@@ -23,6 +23,13 @@ interface ParsedFunction {
   fn: FunctionLike;
 }
 
+// Finds the last function-like node via a real Linter run, not @mocks/sourceCodeFrom, which returns only the first node
+// of a type; the ts/script options serve fixtures needing the TypeScript parser or a non-strict sourceType.
+interface ParseOptions {
+  ts?: boolean;
+  script?: boolean;
+}
+
 // Driven directly with real parsed function nodes, the same way index.ts reaches them.
 
 const isFunctionLike = (node: RuleNode): node is FunctionLike => {
@@ -31,10 +38,7 @@ const isFunctionLike = (node: RuleNode): node is FunctionLike => {
     || node.type === 'FunctionExpression';
 };
 
-// Finds the last function-like node via a real Linter run, not @mocks/sourceCodeFrom, which returns only the first node
-// of a type; the ts/script options serve fixtures needing the TypeScript parser or a non-strict sourceType.
-const parseFunction = (code: string, options: { ts?: boolean;
-  script?: boolean; } = {}): ParsedFunction => {
+const parseFunction = (code: string, options: ParseOptions = {}): ParsedFunction => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];
   let captured: SourceCode | undefined;

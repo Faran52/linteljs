@@ -9,6 +9,11 @@ import { type Answers, TARGET_IDS } from '../../../model/answers/answers';
 
 import { optionCases } from './cases';
 
+// Only the answers are read, so the cases arrive as the narrowest thing that carries them.
+interface Answered {
+  answers: Answers;
+}
+
 /**
  * Derived here rather than imported, so this is a second opinion on what a pair is instead of a restatement of the
  * generator's own. A bug in `axesOf` that dropped an axis would be invisible to a test that shared it.
@@ -31,13 +36,13 @@ const pairsOf = (answers: Answers): string[] => {
   });
 };
 
-const coveredBy = (cases: { answers: Answers }[]): Set<string> => {
+const coveredBy = (cases: Answered[]): Set<string> => {
   return new Set(cases.flatMap((item) => {
     return pairsOf(item.answers);
   }));
 };
 
-const everyCase = (target: (typeof TARGET_IDS)[number]): { answers: Answers }[] => {
+const everyCase = (target: (typeof TARGET_IDS)[number]): Answered[] => {
   vi.stubEnv('E2E_FULL', '1');
 
   const every = optionCases(target);

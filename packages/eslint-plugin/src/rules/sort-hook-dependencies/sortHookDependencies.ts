@@ -7,17 +7,19 @@ interface SortHookDepsOptions {
   hooks: string[];
 }
 
+interface Typed {
+  type: string;
+}
+
 // Matching is by call name only, so a project with its own hooks replaces this list through the `hooks` option.
 const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
 
 // Wider than the `Identifier` these two care about, so both take ESLint's loosest expression union.
-const isPlainIdentifier = (element: { type: string }
-  | null): boolean => {
+const isPlainIdentifier = (element: Typed | null): boolean => {
   return element?.type === 'Identifier';
 };
 
-const nameOf = (element: { type: string }
-  | null): string => {
+const nameOf = (element: Typed | null): string => {
   /* v8 ignore next 2 -- only reached once isPlainIdentifier has cleared every element */
   return element && 'name' in element && typeof element.name === 'string' ? element.name : '';
 };

@@ -1,17 +1,21 @@
 import type { Plugin } from '../../model/answers/answers';
 
+interface MarketplaceSource {
+  source: 'git-subdir' | 'local' | 'url';
+  path?: string;
+  ref?: string;
+  url?: string;
+}
+
+interface MarketplacePolicy {
+  installation: 'INSTALLED_BY_DEFAULT';
+  authentication: 'ON_INSTALL';
+}
+
 interface MarketplaceEntry {
   name: Plugin | 'linteljs';
-  source: {
-    source: 'git-subdir' | 'local' | 'url';
-    path?: string;
-    ref?: string;
-    url?: string;
-  };
-  policy: {
-    installation: 'INSTALLED_BY_DEFAULT';
-    authentication: 'ON_INSTALL';
-  };
+  source: MarketplaceSource;
+  policy: MarketplacePolicy;
   category: 'Design' | 'Developer Tools' | 'Productivity';
 }
 

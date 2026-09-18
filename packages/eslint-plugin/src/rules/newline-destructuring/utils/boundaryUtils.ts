@@ -4,14 +4,22 @@ import { adjacentPairs, sameLine } from '../../../utils/layoutUtils.ts';
 
 import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
 
-// The location every reader needs; `loc` is optional on ESTree nodes, so stating it once avoids per-reader fallbacks.
-export type PropertyNode = RuleNode & {
+interface LineRef {
+  line: number;
+}
+
+interface PropertyLocation {
+  start: LineRef;
+  end: LineRef;
+}
+
+interface Placed {
   type: string;
-  loc: {
-    start: { line: number };
-    end: { line: number };
-  };
-};
+  loc: PropertyLocation;
+}
+
+// The location every reader needs; `loc` is optional on ESTree nodes, so stating it once avoids per-reader fallbacks.
+export type PropertyNode = RuleNode & Placed;
 
 export interface PatternAnalysis {
   isMultiLine: boolean;

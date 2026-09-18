@@ -11,7 +11,11 @@ interface PreferAwaitToThenOptions {
   strict: boolean;
 }
 
-type MemberExpressionNode = Extract<RuleNode, { type: 'MemberExpression' }>;
+interface MemberExpressionMatch {
+  type: 'MemberExpression';
+}
+
+type MemberExpressionNode = Extract<RuleNode, MemberExpressionMatch>;
 
 const PROMISE_METHODS = new Set([
   'then',

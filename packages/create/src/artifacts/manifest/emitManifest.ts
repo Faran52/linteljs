@@ -18,6 +18,20 @@ interface EventPage {
   scripts: string[];
 }
 
+// Firefox alone: Chrome rejects `browser_specific_settings` and AMO requires it.
+interface Gecko {
+  id: string;
+  strict_min_version: string;
+}
+
+interface GeckoSettings {
+  gecko: Gecko;
+}
+
+interface BrowserAction {
+  default_popup: string;
+}
+
 // A starting point, not the whole of MV3.
 export interface Manifest {
   manifest_version: number;
@@ -26,9 +40,8 @@ export interface Manifest {
   description: string;
   permissions: string[];
   host_permissions: string[];
-  browser_specific_settings?: { gecko: { id: string;
-    strict_min_version: string; }; };
-  action?: { default_popup: string };
+  browser_specific_settings?: GeckoSettings;
+  action?: BrowserAction;
   background?: EventPage | ServiceWorker;
   devtools_page?: string;
 }

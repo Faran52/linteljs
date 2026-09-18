@@ -6,7 +6,12 @@ import {
 import { join } from 'node:path';
 
 // Absence only: a permission error stays an error.
-export const isAbsence = (error: unknown): error is Error & { code: 'ENOENT' } => {
+interface NotFound {
+  code: 'ENOENT';
+}
+
+// Absence only: a permission error stays an error.
+export const isAbsence = (error: unknown): error is Error & NotFound => {
   return error instanceof Error && 'code' in error && error.code === 'ENOENT';
 };
 

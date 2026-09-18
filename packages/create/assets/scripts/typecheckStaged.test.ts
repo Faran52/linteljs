@@ -19,6 +19,11 @@ import {
 
 import { ASSETS_ROOT } from '../../src/run/shipped-assets/shippedAssets';
 
+interface RunResult {
+  status: number | null;
+  output: string;
+}
+
 // Spawned rather than imported: it reads `argv` and calls `exit`, which would take the runner down with it.
 const CHECKER = join(ASSETS_ROOT, 'scripts/typecheckStaged.ts');
 
@@ -65,8 +70,7 @@ const plain = (text: string): string => {
   }).join('');
 };
 
-const run = (staged: string[]): { status: number | null;
-  output: string; } => {
+const run = (staged: string[]): RunResult => {
   const result = spawnSync(execPath, [CHECKER, ...staged], {
     encoding: 'utf8',
     cwd,

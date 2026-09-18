@@ -66,8 +66,12 @@ interface Pass {
   list: (project: string, registry: E2eRegistry) => string[];
 }
 
+interface ScriptEntry {
+  name: string;
+}
+
 interface ScriptListing {
-  allowScripts: { name: string }[];
+  allowScripts: ScriptEntry[];
 }
 
 /**
@@ -224,7 +228,8 @@ const PASSES: Record<Collected, Pass> = {
 const isScriptListing = (value: unknown): value is ScriptListing => {
   return typeof value === 'object'
     && value !== null
-    && Array.isArray((value as { allowScripts?: unknown }).allowScripts);
+    && 'allowScripts' in value
+    && Array.isArray(value.allowScripts);
 };
 
 // One probe, both managers. Separate from `main` so the reporting below reads as reporting.

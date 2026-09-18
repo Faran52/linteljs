@@ -43,6 +43,12 @@ interface AnswerOverrides {
   packageManager?: PackageManager;
 }
 
+// Only the path and the text are read back off a composed artifact.
+interface ScannedArtifact {
+  target: string;
+  text: string;
+}
+
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {
     ...DEFAULT_ANSWERS,
@@ -254,8 +260,7 @@ describe('the emitted checker against the emitted starter code', () => {
   const CHECKER = 'scripts/checkBannedPatterns.ts';
 
   // A composed artifact is only scannable once composed.
-  const scannedFor = async (target: TargetId): Promise<{ target: string;
-    text: string; }[]> => {
+  const scannedFor = async (target: TargetId): Promise<ScannedArtifact[]> => {
     const record = targetFor(answersFor({ target }));
 
     const files = [

@@ -240,7 +240,7 @@ const TS_FIXTURE = [
   '};',
   '',
   // `union-newline` speaks on a *complex* union, one carrying an object arm, not on a row of string literals.
-  "export type Wide = { first: string } | { second: string } | string;",
+  'export type Wide = { first: string } | { second: string } | string;',
   '',
   'export const value = 1;',
   '',

@@ -11,20 +11,27 @@ import type { ESLint, Linter } from 'eslint';
 
 export type PresetName = 'recommended' | RuleCategory;
 
+// A `files`-scoped block inside an eslintrc preset, which is where the TypeScript-only rules go.
+export interface LegacyOverride {
+  files: string[];
+  rules: Partial<Record<string, Linter.RuleEntry>>;
+}
+
 // The eslintrc shape, for the majors that still read one.
 export interface LegacyPreset {
   plugins: string[];
   rules: Partial<Record<string, Linter.RuleEntry>>;
-  overrides: {
-    files: string[];
-    rules: Partial<Record<string, Linter.RuleEntry>>;
-  }[];
+  overrides: LegacyOverride[];
 }
 
 // Both `recommended` (eslintrc object) and `flat/recommended` (array), for eslintrc consumers on the peer floor.
 export type LintelConfigs
   = & Record<PresetName, LegacyPreset>
     & Record<`flat/${PresetName}`, Linter.Config[]>;
+
+interface WithConfigs {
+  configs: LintelConfigs;
+}
 
 // Must track the package name: the eslintrc form derives the prefix from it, so a renamed package
 // keeping the old prefix breaks every ESLint 5 to 8 consumer.
@@ -142,6 +149,6 @@ const buildConfigs = (): LintelConfigs => {
 export const configs: LintelConfigs = buildConfigs();
 
 // The same object the presets register: ESLint compares plugins by identity ("Cannot redefine plugin").
-const lintel: ESLint.Plugin & { configs: LintelConfigs } = Object.assign(plugin, { configs });
+const lintel: ESLint.Plugin & WithConfigs = Object.assign(plugin, { configs });
 
 export default lintel;
