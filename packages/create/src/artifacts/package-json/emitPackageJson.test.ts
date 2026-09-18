@@ -463,7 +463,7 @@ describe('trustedDependencies', () => {
       packageManager: 'bun',
     }));
 
-    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['unrs-resolver', 'esbuild']));
+    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['sharp', 'unrs-resolver', 'esbuild']));
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
   });
 });
@@ -487,12 +487,13 @@ describe('allowScripts', () => {
   });
 
   /**
-   * Exactly npm's two beyond pnpm's own list. `fsevents` is measured: `COLLECT_NPM=... collect:builds` against
+   * One list reaches all three managers now, so npm gets no more and no less than pnpm and bun. `fsevents` is
+   * measured: `COLLECT_NPM=... collect:builds` against
    * npm 12, which blocks where npm 11 only warns, names `fsevents` on eleven of the seventeen combinations and
-   * nothing else. `@swc/core` is not reached today and is carried as insurance: an allowance for an absent
-   * package is silent on both managers. Pinned exactly, so a third name has to be added on purpose.
+   * nothing else. `@swc/core` and `sharp` are reached by nothing and carried as insurance, an allowance for an
+   * absent package being silent on both managers. Pinned exactly, so a fifth name has to be added on purpose.
    */
-  it('adds the two npm needs and nothing else beyond what pnpm already needs', () => {
+  it('gives npm the same list as every other manager', () => {
     const npm = patchPackageJson({}, answersFor({
       target: 'react',
       packageManager: 'npm',
@@ -500,6 +501,6 @@ describe('allowScripts', () => {
 
     expect(Object.keys(npm.allowScripts ?? {}).sort((left, right) => {
       return left.localeCompare(right, 'en');
-    })).toEqual(['@swc/core', 'fsevents', 'unrs-resolver']);
+    })).toEqual(['@swc/core', 'fsevents', 'sharp', 'unrs-resolver']);
   });
 });

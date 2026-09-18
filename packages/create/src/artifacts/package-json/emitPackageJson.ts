@@ -240,27 +240,28 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
 };
 
 /**
- * Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`.
+ * Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`,
+ * npm reads `allowScripts`. Yarn is absent because it runs install scripts by default and has nothing to approve.
  *
- * Measured rather than guessed: `pnpm --filter @linteljs/create collect:builds` installs the maximal dependency set
- * of all seventeen target and hosted-framework combinations and reports what each manager would refuse to build.
- * `unrs-resolver` is the one every target reaches, through `eslint-import-resolver-typescript`. `sharp` used to sit
- * here too and no combination reaches it, so it went; add back only what that script reports.
- */
-const SHARED_ALLOWED_BUILDS = ['unrs-resolver'];
-
-/**
- * npm alone blocks these two as well; pnpm and bun run them unasked.
+ * One list for all three, not a shared pair plus an npm-only pair. Measured with
+ * `pnpm --filter @linteljs/create collect:builds`, which installs the maximal dependency set of all seventeen target
+ * and hosted-framework combinations against pnpm and npm and reports what each would refuse to build:
  *
- * Measured on npm 12, not on the npm 11 a project declares: 11 warns where 12 blocks, so 11 reports nothing here and
- * the list would look dead. Under 12, `COLLECT_NPM=... collect:builds` names `fsevents` on eleven of the seventeen
- * combinations, arriving as an optional dependency of the watchers in each tree. `@swc/core` sat beside it and is
- * reached by nothing on either version, so it went.
+ * - `unrs-resolver` every target reaches, through `eslint-import-resolver-typescript`.
+ * - `fsevents` npm 12 refuses on eleven of the seventeen, as an optional dependency of the watchers in each tree.
+ *   npm 11 only warns, so it reports nothing and this entry looks dead on the version a project declares.
+ * - `sharp` and `@swc/core` no combination reaches, on either manager, and both stay. Measured: an allowance for a
+ *   package that is not installed is silent on pnpm and on npm 12, down to a name no registry has, so each costs a
+ *   line. Without them, the day something pulls one, a user's first install stops; with them, the next
+ *   `collect:builds` reports the change and nobody is interrupted. `create-next-app` writes
+ *   `ignoredBuiltDependencies: - sharp` into its own scaffold, which is the ecosystem saying a Next tree meets it.
+ *
+ * Add a name because that script reported it, or because it is obviously of this kind. Removing one buys nothing.
  */
-const NPM_ALLOWED_BUILDS = ['@swc/core', 'fsevents'];
+const ALLOWED_BUILDS = ['@swc/core', 'fsevents', 'sharp', 'unrs-resolver'];
 
 export const allowedBuildNames = (answers: Answers): string[] => {
-  return [...new Set([...SHARED_ALLOWED_BUILDS, ...targetFor(answers).allowBuilds])].sort((left, right) => {
+  return [...new Set([...ALLOWED_BUILDS, ...targetFor(answers).allowBuilds])].sort((left, right) => {
     return left.localeCompare(right, 'en');
   });
 };
@@ -302,7 +303,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       ? {
           allowScripts: {
             ...existing.allowScripts,
-            ...Object.fromEntries([...allowedBuildNames(answers), ...NPM_ALLOWED_BUILDS].map((name) => {
+            ...Object.fromEntries(allowedBuildNames(answers).map((name) => {
               return [name, true];
             })),
           },

@@ -67,14 +67,16 @@ describe('mergePnpmWorkspace', () => {
  * `allowBuilds` and would otherwise never gain them.
  */
 describe('mergePnpmWorkspace: peerDependencyRules', () => {
-  const existing = "allowBuilds:\n  'sharp': true\n";
+  // A name this CLI never emits, so the survival below cannot pass by being written rather than kept.
+  const existing = "allowBuilds:\n  'some-native': true\n";
 
   it('adds the block to a project that already has allowBuilds but not the rules', () => {
     const merged = mergePnpmWorkspace(existing, answersFor({ target: 'next' }));
 
-    // The project's own allowBuilds list survives untouched, and the name this CLI would have written is not added.
-    expect(merged).toContain("allowBuilds:\n  'sharp': true");
+    // The project's own allowBuilds list survives untouched, and the names this CLI would have written are not added.
+    expect(merged).toContain("allowBuilds:\n  'some-native': true");
     expect(merged).not.toContain('unrs-resolver');
+    expect(merged).not.toContain('sharp');
     expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
   });
 
@@ -99,7 +101,7 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
 it('adds both blocks to a next scaffold that has neither', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 
-  expect(merged).toContain("allowBuilds:\n  'unrs-resolver': true");
+  expect(merged).toContain("allowBuilds:\n  '@swc/core': true");
   expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
   expect(merged).not.toContain('ignoredBuiltDependencies');
 });
