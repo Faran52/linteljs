@@ -12,7 +12,7 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
 import { buildNaming } from './utils/checkFileUtils';
-import { SCRIPT_EXTENSIONS } from './utils/globUtils';
+import { SCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS } from './utils/globUtils';
 import { buildGroups } from './utils/importSortUtils';
 import { presetOf } from './utils/presetUtils';
 
@@ -21,6 +21,13 @@ import type { BaseOptions, Layer } from './types';
 
 // Limit presets to script parsers: Angular markup crashes `@stylistic/indent` and is owned by `angular()`.
 const SCRIPT_FILES = [`**/*.{${SCRIPT_EXTENSIONS},vue,svelte}`];
+
+/**
+ * TypeScript, plus the two single-file component extensions whose `<script lang="ts">` block is TypeScript in a file
+ * the TypeScript globs do not match. A TypeScript-only rule is restated over this when the plugin's own preset,
+ * which scopes itself to the four TypeScript extensions, would miss the SFC half.
+ */
+const TYPED_FILES = [`**/*.{${TYPESCRIPT_EXTENSIONS},vue,svelte}`];
 
 // What git ignores, ESLint ignores: a hardcoded list only ever covers the outputs it can guess. `process.cwd()` off
 // the global so a test can replace it; this file resolves from inside `node_modules`.
@@ -120,10 +127,6 @@ export const base = (options: BaseOptions = {}): Layer => {
           },
         }],
 
-        // `union-newline` is in `recommended` but scoped to `.ts`; restated here so an SFC script block gets it too.
-        '@linteljs/union-newline': 'error',
-        '@linteljs/interface-order': 'error',
-
         'import-x/no-unresolved': 'error',
         'import-x/no-duplicates': 'error',
         'import-x/first': 'error',
@@ -155,6 +158,20 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
 
     // A script's stdout is its output. Without this every reference repo turned `no-console` off for `**/*.js`.
+    /**
+     * Both read TypeScript nodes, so both are restated over the SFC extensions the plugin's own preset cannot reach.
+     * Over `TYPED_FILES` rather than `SCRIPT_FILES`: on a `.js` file they matched nothing and were listed as enabled
+     * anyway, which contradicts the language scoping every other TypeScript rule here gets.
+     */
+    {
+      name: '@linteljs/base/typescript-rules',
+      files: TYPED_FILES,
+      rules: {
+        '@linteljs/union-newline': 'error',
+        '@linteljs/interface-order': 'error',
+      },
+    },
+
     {
       name: '@linteljs/base/scripts',
       files: [`scripts/**/*.{${SCRIPT_EXTENSIONS}}`],

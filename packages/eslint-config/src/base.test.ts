@@ -3,7 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
-import { ruleIdsFor, ruleIdsForFile } from '@mocks/lintText';
+import {
+  ruleIdsFor,
+  ruleIdsForFile,
+  ruleNamesFor,
+} from '@mocks/lintText';
 import importX from 'eslint-plugin-import-x';
 import tseslint from 'typescript-eslint';
 import {
@@ -193,6 +197,27 @@ describe('base: lintel rules', () => {
     const code = 'export const value = 1;\n\nexport interface Shape {\n  a: string;\n}\n';
 
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/interface-order');
+  });
+
+  /**
+   * Both read TypeScript nodes, so both are restated over the SFC extensions the plugin's own preset cannot reach.
+   * That restatement used to run over every script extension, which listed them as enabled on a `.js` file where
+   * they can match nothing. A rule enabled where it cannot fire is a claim about the config that is not true.
+   */
+  it('leaves the TypeScript-only rules off a plain .js file', async () => {
+    const names = await ruleNamesFor(base(), 'src/lib/utils/sample.js');
+
+    expect(names).not.toContain('@linteljs/union-newline');
+    expect(names).not.toContain('@linteljs/interface-order');
+  });
+
+  it('keeps them on for TypeScript and for an SFC, which is why they are restated at all', async () => {
+    for (const file of ['src/lib/utils/sample.ts', 'src/components/Card.vue', 'src/components/Card.svelte']) {
+      const names = await ruleNamesFor(base(), file);
+
+      expect(`${file}: ${String(names.includes('@linteljs/union-newline'))}`).toBe(`${file}: true`);
+      expect(`${file}: ${String(names.includes('@linteljs/interface-order'))}`).toBe(`${file}: true`);
+    }
   });
 });
 
