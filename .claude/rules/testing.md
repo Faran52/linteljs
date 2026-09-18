@@ -41,7 +41,7 @@ describe.
 - `packages/create/src/run/pipeline/e2e/*.e2e.test.ts` files are excluded from the default run by their
   `.e2e.` infix. Each is four lines: the cases come from `cases.ts`, which enumerates them rather than
   listing them, so a new answer is covered the day the model gains it and not the day someone
-  remembers. 327 cases, each one a real scaffold, install and `check`.
+  remembers. 98 cases, each one a real scaffold, install and `check`.
 - **The cases are two families, and between them every answer.** `managerCases` is every target on
   every package manager with every multi-select at full value: the heaviest dependency set a target
   has, installed four ways, which is what catches a library breaking a project and a manager resolving
@@ -49,6 +49,10 @@ describe.
   alone, because a manager does not decide which config is emitted. Multiplying the two together is
   what made the matrix 1200; kept apart they are 327, and the one case per target they share is
   dropped.
+- **`optionCases` covers every pair of answers, not every combination.** Greedy set cover over the
+  legal enumeration takes 327 to 98. Every defect the suite has found was a two-way interaction, and
+  `cases.test.ts` pins both halves: that no reachable pair is lost, and that the combination behind
+  each of those defects survives. `E2E_FULL=1` runs the cross product for a pre-release sweep.
 - **One registry on one fixed port, always.** Sharding is `E2E_SHARD`/`E2E_SHARDS`, a stride over the
   ordered case list inside one process, not vitest's own `--shard`: vitest splits by file, and the
   nine files hold 11 to 91 cases each. `e2e.yml` runs four shards, one machine each, so no machine

@@ -765,8 +765,9 @@ an extension is submitted to addons.mozilla.org, which is not a reason to instal
 
 ## The end-to-end matrix: two families, not one cross product
 
-Every answer this CLI can be given is covered, and the two ways of covering them cost 327 cases
-rather than 1200. `cases.ts` enumerates them; nothing is listed by hand.
+Every answer this CLI can be given is covered, and it costs 98 cases rather than 1200. `cases.ts`
+enumerates them; nothing is listed by hand. Two families get it to 327, and covering every *pair* of
+answers rather than every combination gets it to 98.
 
 The full cross product is 1200. Fixing the rule first, because an earlier count of 1328 assumed a
 Vue project chooses a router and it does not: `create-vue` is called with `--router` unconditionally,
@@ -803,6 +804,34 @@ The two halves are complementary rather than redundant. `managerCases` cannot ca
 emitted config needs but only installs when its answer is selected, because everything is always
 selected there; `optionCases` is what catches it. `optionCases` cannot catch npm and bun resolving
 the same manifest to different trees; `managerCases` is what catches that.
+
+### Every pair of answers, not every combination
+
+The cross product of the single-select axes is 348 on pnpm. `optionCases` covers every pair of
+answer values instead, which is 98 cases with the manager family included.
+
+The evidence is the suite's own record. Every defect it has found was a two-way interaction, and not
+one needed a third axis pinned:
+
+| defect | the two answers |
+| --- | --- |
+| `ERR_PNPM_IGNORED_BUILDS` on `vue-demi` | hosted framework Vue, with TanStack Query |
+| floating promise in `src/devtools/index.ts` | the extension target, on Chrome |
+| the generator's `app.spec.ts` left behind | Angular, with `testing: none` |
+| `@mocks/renderScreen` importing what is not installed | React Native, with `testing: none` |
+| `customTypes.d.ts` against KEBAB_CASE | Angular, with `typeSafety: relaxed` |
+
+A pairwise set would have caught all five, and the 327-case run took 2h51m to report the same ones.
+
+Greedy set cover over the legal enumeration rather than synthesised candidates: every case the
+greedy can pick is one `refuseMisfit` already accepts, so nothing has to be checked for legality and
+the pair universe is by construction the reachable one. It is deterministic, because the shard is a
+stride over the result and a case that moved between runs would move between shards.
+
+What this gives up is three-way interactions, the kind that only appear when a hosted framework, a
+testing answer and a type floor coincide. `E2E_FULL=1` runs the cross product for a pre-release
+sweep, which is one branch rather than a second generator. `cases.test.ts` pins both halves: that no
+reachable pair is lost, and that the combination behind each defect above still appears.
 
 ### One registry on a fixed port, and the bun failure that made it necessary
 

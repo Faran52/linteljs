@@ -38,11 +38,12 @@ that package.
 `pnpm check` chains `lint && lint:css && typecheck && test:coverage && build`, which is the same
 chain a generated project gets. `lint:css` passes on an empty glob rather than being absent: this
 workspace has no CSS today, and a repo that ships the gate to nine targets should run it. The
-end-to-end suite is 327 cases, each a real scaffold, install and gate: every target on every package
-manager at full dependency pressure, plus every combination of the single-select answers on pnpm. It
-is excluded from `check` and from the default test run because every case hits the network. Shard it
-with `E2E_SHARD`/`E2E_SHARDS` and widen it with `E2E_CONCURRENCY`; `DESIGN.md` carries why those
-exist rather than vitest's own `--shard`.
+end-to-end suite is 98 cases, each a real scaffold, install and gate: every target on every package
+manager at full dependency pressure, plus enough answer combinations on pnpm to cover every *pair*
+of answers. It is excluded from `check` and from the default test run because every case hits the
+network. Shard it with `E2E_SHARD`/`E2E_SHARDS`, widen it with `E2E_CONCURRENCY`, and run the whole
+cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than vitest's own
+`--shard`, and why pairs rather than combinations.
 
 ## Structure
 

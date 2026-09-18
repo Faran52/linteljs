@@ -129,8 +129,8 @@ const managerCases = (target: TargetId): E2eCase[] => {
   });
 };
 
-// Every combination of the single-select axes a target actually asks for, on pnpm.
-const optionCases = (target: TargetId): E2eCase[] => {
+// Every legal combination of the single-select axes a target asks for, on pnpm. Reduced by `coveringSubset`.
+const everyOptionCase = (target: TargetId): E2eCase[] => {
   const recordOf = (variant: Partial<Answers>): TargetRecord => {
     return recordFor(target, variant.hostedFramework);
   };
@@ -207,6 +207,86 @@ const optionCases = (target: TargetId): E2eCase[] => {
   });
 };
 
+// The axes a case is a point in. A constant one costs a pair that any case covers, so they are all listed rather
+// than filtered per target: the arithmetic is the same and the list stays readable.
+const axesOf = (answers: Answers): string[] => {
+  return [
+    `host:${answers.hostedFramework ?? 'none'}`,
+    `browser:${answers.browser}`,
+    `form:${answers.form ?? 'none'}`,
+    `router:${answers.router ?? 'none'}`,
+    `store:${String(answers.store)}`,
+    `testing:${answers.testing}`,
+    `safety:${answers.typeSafety}`,
+  ];
+};
+
+const pairsOf = (answers: Answers): string[] => {
+  const axes = axesOf(answers);
+
+  return axes.flatMap((left, index) => {
+    return axes.slice(index + 1).map((right) => {
+      return `${left}|${right}`;
+    });
+  });
+};
+
+/**
+ * Every combination of two answers, in as few cases as the greedy will manage.
+ *
+ * The full cross product is 348 on pnpm; every defect this suite has found was a two-way interaction, and none
+ * needed a third axis pinned: `vue-demi` is hosted-vue with TanStack Query, the devtools floating promise is the
+ * extension on chrome, the leftover suites are `testing: none` on angular and on react-native, and `customTypes.d.ts`
+ * is `typeSafety: relaxed` on angular. So the suite covers every *pair* of answers rather than every combination.
+ *
+ * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
+ * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the
+ * reachable one. Deterministic, because the shard is a stride over this list: ties go to the earlier case.
+ *
+ * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
+ */
+const coveringSubset = (cases: E2eCase[]): E2eCase[] => {
+  const uncovered = new Set(cases.flatMap((item) => {
+    return pairsOf(item.answers);
+  }));
+  const chosen: E2eCase[] = [];
+
+  while (uncovered.size > 0) {
+    const best = cases.reduce<{ item?: E2eCase;
+      gain: number; }>((leader, item) => {
+      const gain = pairsOf(item.answers).filter((pair) => {
+        return uncovered.has(pair);
+      }).length;
+
+      return gain > leader.gain
+        ? {
+            item,
+            gain,
+          }
+        : leader;
+    }, { gain: 0 });
+
+    // Unreachable: every pair in `uncovered` came from a case, so some case always gains.
+    if (best.item === undefined) {
+      break;
+    }
+
+    for (const pair of pairsOf(best.item.answers)) {
+      uncovered.delete(pair);
+    }
+
+    chosen.push(best.item);
+  }
+
+  return chosen;
+};
+
+export const optionCases = (target: TargetId): E2eCase[] => {
+  const every = everyOptionCase(target);
+
+  return env['E2E_FULL'] === '1' ? every : coveringSubset(every);
+};
+
 // Grouped by target and ordered, because the shard below is a stride over this list and the label is its identity.
 const ALL_CASES: E2eCase[] = TARGET_IDS.flatMap((target) => {
   const seen = new Set<string>();
@@ -232,9 +312,21 @@ const ALL_CASES: E2eCase[] = TARGET_IDS.flatMap((target) => {
 const SHARD = Number(env['E2E_SHARD'] ?? '1');
 const SHARDS = Number(env['E2E_SHARDS'] ?? '1');
 
-// The ceiling is the smallest target's case count, 11, below which a shard could draw no case from a file at all.
-if (SHARDS > 11 || SHARD < 1 || SHARD > SHARDS) {
-  throw new Error(`E2E_SHARD ${String(SHARD)} of ${String(SHARDS)} is out of range: 1 to 11 shards`);
+/**
+ * The ceiling is the smallest target's case count, below which a shard could draw nothing from that file at all and
+ * vitest would call it empty. Derived rather than written down: the pairwise reduction moved it from 11 to 8 and a
+ * number in a comment would not have noticed.
+ */
+const MAX_SHARDS = Math.min(...TARGET_IDS.map((target) => {
+  return ALL_CASES.filter((item) => {
+    return item.answers.target === target;
+  }).length;
+}));
+
+if (SHARDS > MAX_SHARDS || SHARD < 1 || SHARD > SHARDS) {
+  throw new Error(
+    `E2E_SHARD ${String(SHARD)} of ${String(SHARDS)} is out of range: 1 to ${String(MAX_SHARDS)} shards`,
+  );
 }
 
 export const casesFor = (target: TargetId): E2eCase[] => {
