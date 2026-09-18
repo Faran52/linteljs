@@ -7,6 +7,7 @@ import {
   cwd as processCwd,
   stdin,
   stdout,
+  versions,
 } from 'node:process';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
@@ -35,7 +36,7 @@ import {
   type Prompter,
 } from '../prompts/prompts';
 import { applySync, planSync } from '../sync/sync';
-import { ensurePackageManager } from '../utils/commandUtils';
+import { ensurePackageManager, nodeVersionRefusal } from '../utils/commandUtils';
 import { entryExists } from '../utils/fsUtils';
 
 // Answers given as flags, validated by the config parser so a wrong value names its choices.
@@ -429,6 +430,15 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
 
   if (refusal !== undefined) {
     console.error(refusal);
+
+    return 1;
+  }
+
+  // After `--help` and `--version`, which owe an answer on any Node, and before the questionnaire, which does not.
+  const tooOld = nodeVersionRefusal(versions.node);
+
+  if (tooOld !== undefined) {
+    console.error(tooOld);
 
     return 1;
   }
