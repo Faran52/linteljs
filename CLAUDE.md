@@ -52,15 +52,22 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
 
 ## Structure
 
-- `packages/create/src/`: the CLI, in three rings. `model/` is what the user chose (the answers,
-  the aliases, the versions, one record per target under `model/targets/`), `artifacts/` turns those
-  answers into file text, `run/` is everything touching disk, argv or a terminal. The direction
-  points inward only, enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`.
-  The emitters stay free of `switch (target)`.
+- `packages/create/src/`: the CLI, one folder per responsibility. `answers/` is what the user chose,
+  `targets/` is what lintel knows (one record per target, the registry, the naming policy),
+  `emitters/` turns the two into file text, `terminal/` reads argv and the terminal, `files/` reads
+  and writes files, `process/` spawns, `pipeline/` sequences them. The direction points inward only,
+  enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`, and which folder a
+  module belongs to is decided by the world it reaches into rather than by judgement: `node:fs`
+  means `files/`, `node:child_process` means `process/`, argv and the terminal mean `terminal/`,
+  enforced by `no-restricted-imports` in the same file. The emitters stay free of `switch (target)`.
+- `packages/create/src/emitters/`: one directory per file lintel puts on disk, named for that file,
+  exactly as a rule directory is named for its rule id. A module that writes no file is not an
+  emitter: the kernel sits at the root, shared helpers under `utils/`, data tables under `config/`.
 - `packages/create/assets/`: files copied onto disk in a generated project, not imported. The
   standard this repo publishes lives here.
-- `packages/eslint-config/src/`: the layers. `base` is shared, `typescript` turns the program on,
-  `frameworks/` and `libraries/` add their own.
+- `packages/eslint-config/src/`: the layers, flat because each file is a tsdown entry backing a
+  published `exports` subpath. `base` is shared, `typescript` turns the program on, `frameworks/`
+  and `libraries/` add their own, `config/` holds the glob tables several layers read.
 - `packages/eslint-plugin/src/rules/`: one directory per rule, named for its `kebab-case` id and
   holding `<camelCaseExport>.ts`, its test beside it, and `README.md`. The directory name is the id,
   so the id is spelled once. `index` is a barrel and nothing else, which is why the rule is not one:

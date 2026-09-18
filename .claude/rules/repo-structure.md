@@ -35,19 +35,32 @@ aliases it duplicates instead of importing carry a comment saying so.
   the workspace's own convention and `@linteljs/create` deliberately does not ship it; `DESIGN.md`
   carries that as a non-goal, which is why it is absent from the published standard.
 
-- **`create`'s rings are fixed at three and named.** The standard leaves the count open.
+- **`create` is one folder per responsibility, and membership is decided rather than chosen.** The
+  standard leaves the ring count open; this package has seven folders, and a lint rule rather than
+  taste decides which one a module belongs to.
 
   ```
-  model/      what the user chose. No fs, no process, no child_process.
-  artifacts/  answers to file text. Pure.
-  run/        everything touching disk, argv or a terminal.
+  answers/    what the user chose. Reaches nothing.
+  targets/    what lintel knows: the records, the registry, the naming policy. Reaches nothing.
+  emitters/   answers + targets into file text. Reaches nothing.
+  terminal/   argv and the terminal.
+  files/      reading and writing files.
+  process/    spawning.
+  pipeline/   the stage machine, sync, and the passes over generator output.
   ```
 
-  `model/` is `answers/`, `config/`, `naming/`, `stages/` and `targets/`; `targets/` is one file per
-  target plus `record.ts` for the shape they share. `artifacts/` is one directory per thing lintel
-  puts on disk, and `package-json/versions.ts` is the one data table, so a version bump is one file.
-  `run/` is one directory per job, including the split pair `rewrite/` (makes scaffolded source
-  compile, ungated) and `repair/` (the `fresh`-gated starter repairs).
+  The outer three are named for the world they reach into, which is readable off an import line:
+  `node:fs` means `files/`, `node:child_process` means `process/`, `node:process` and
+  `@clack/prompts` mean `terminal/`. Nothing outside those three may reach a world, so the inner
+  three are provably pure and substitutable without touching a disk. `no-restricted-imports` in the
+  root `eslint.config.ts` enforces it, with `pipeline/e2e/` exempt because the harness spawns real
+  package managers on purpose. `process/` reaches `files/` for `isExecutableFile` and never the
+  reverse: finding a binary on `PATH` is a filesystem fact only a spawner asks for.
+
+  Inside `emitters/`, a directory is named for the file it writes, so that path is spelled once,
+  exactly as a rule directory in `eslint-plugin` is named for its rule id. A module that writes no
+  file is not an emitter: `artifact.ts`, `buildArtifacts.ts` and `projectShape.ts` sit at the root,
+  helpers with more than one consumer under `utils/`, and the two data tables under `config/`.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.
@@ -60,7 +73,10 @@ aliases it duplicates instead of importing carry a comment saying so.
 
 - **`eslint-config` is one file per layer, not a ring.** `base.ts` exports `base`, `typescript.ts`
   exports `typescript`; `frameworks/` and `libraries/` group the layers that come in sets.
-  `defineConfig.ts` composes them and owns the ordering, which is load-bearing.
+  `defineConfig.ts` composes them and owns the ordering, which is load-bearing. Flat rather than
+  foldered because each layer file is a tsdown entry backing a published `exports` subpath, which
+  `scripts/smoke.js` resolves against the packed tarball. `config/globs.ts` holds the extension
+  tables six of them read: a table several modules share is not a helper, so it is not in `utils/`.
 
 - **`create/assets/` sits outside `src/`** and mirrors the artifact folder names. The standard puts
   only `typings/` outside. The shipped templates cannot live under `src/`: twelve are TypeScript, one

@@ -372,7 +372,7 @@ Measured 2026-08-06 to 2026-08-08:
 
 ### File naming
 
-The policy is `packages/create/src/model/naming/naming.ts`, one entry per target. Every glob was
+The policy is `packages/create/src/targets/naming.ts`, one entry per target. Every glob was
 measured at authoring time against `micromatch@4.0.8`, which is what `check-file` matches with;
 `naming.test.ts` pins the exact strings, and the end-to-end suite is what re-verifies match
 behaviour against real scaffolds, so an edited glob needs a fresh probe before it lands. What
@@ -668,7 +668,7 @@ project can reach it. Measured on expo-router 57.0.11, both failures from one ca
 With the six suites out of `src/app/`, both platforms export clean, and the exported route list
 is exactly `/`, `/explore`, `/_sitemap`, `/+not-found`.
 
-So the layout rule, which the route suites in `model/targets/reactNative.ts` also carry: **no
+So the layout rule, which the route suites in `targets/reactNative.ts` also carry: **no
 test file under `src/app/`, ever.** The route suites sit directly in `src/` beside the directory
 they cover, named for the route with the path flattened, `app-index.test.tsx` for
 `src/app/index.tsx`. A test for the route unit sits beside the route unit the way a test for a
@@ -1116,7 +1116,7 @@ Scoped to the RuleTester directory alone. Every other test file in the repo is h
 
 ### `@linteljs/workspace/e2e-test`
 
-Each `*.e2e.test.ts` under `run/pipeline/e2e/` is one `it.concurrent.each(casesFor(target))(label,
+Each `*.e2e.test.ts` under `pipeline/e2e/` is one `it.concurrent.each(casesFor(target))(label,
 runE2eCase)`, and every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the callback body
 for `expect` calls and finds no body at all, since the helper is passed by reference. Measured:
 `assertFunctionNames: ['runE2eCase']` does not help either, because the option matches calls inside the
