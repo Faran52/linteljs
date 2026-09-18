@@ -32,16 +32,17 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 };
 
 describe('emitPnpmWorkspace', () => {
-  it('allows the two builds every target needs, sorted', () => {
+  // One, not two: `collect:builds` reaches `sharp` from no target, so it is not in the shared list any more.
+  it('allows the one build every target needs', () => {
     expect(allowBuildsBlock(answersFor({ target: 'svelte' }))).toBe(
-      "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n",
+      "allowBuilds:\n  'unrs-resolver': true\n",
     );
   });
 
   // `@vitejs/plugin-react` has no native binary, so React needs no extra build allowance.
   it('allows only the shared builds for the react target', () => {
     expect(allowBuildsBlock(answersFor({ target: 'react' }))).toBe(
-      "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n",
+      "allowBuilds:\n  'unrs-resolver': true\n",
     );
   });
 
@@ -66,7 +67,7 @@ describe('emitPnpmWorkspace', () => {
     expect(allowBuildsBlock(answersFor({ target: 'webextension' }))).not.toContain('vue-demi');
   });
 
-  it('merges in the builds a target needs beyond the shared two, sorted with them', () => {
+  it('merges in the builds a target needs beyond the shared one, sorted with it', () => {
     const output = allowBuildsBlock(answersFor({ target: 'angular' }));
 
     expect(output).toBe(
@@ -75,7 +76,6 @@ describe('emitPnpmWorkspace', () => {
       + "  'esbuild': true\n"
       + "  'lmdb': true\n"
       + "  'msgpackr-extract': true\n"
-      + "  'sharp': true\n"
       + "  'unrs-resolver': true\n",
     );
   });

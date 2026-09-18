@@ -239,8 +239,15 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
   );
 };
 
-// Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`.
-const SHARED_ALLOWED_BUILDS = ['sharp', 'unrs-resolver'];
+/**
+ * Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`.
+ *
+ * Measured rather than guessed: `pnpm --filter @linteljs/create collect:builds` installs the maximal dependency set
+ * of all seventeen target and hosted-framework combinations and reports what each manager would refuse to build.
+ * `unrs-resolver` is the one every target reaches, through `eslint-import-resolver-typescript`. `sharp` used to sit
+ * here too and no combination reaches it, so it went; add back only what that script reports.
+ */
+const SHARED_ALLOWED_BUILDS = ['unrs-resolver'];
 
 // npm alone blocks these two as well; pnpm and bun run them unasked.
 const NPM_ALLOWED_BUILDS = ['@swc/core', 'fsevents'];

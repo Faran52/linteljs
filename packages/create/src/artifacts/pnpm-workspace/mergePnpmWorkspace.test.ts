@@ -72,7 +72,7 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
   it('adds the block to a project that already has allowBuilds but not the rules', () => {
     const merged = mergePnpmWorkspace(existing, answersFor({ target: 'next' }));
 
-    // The project's own allowBuilds list survives: one name, not the two this CLI would have written.
+    // The project's own allowBuilds list survives untouched, and the name this CLI would have written is not added.
     expect(merged).toContain("allowBuilds:\n  'sharp': true");
     expect(merged).not.toContain('unrs-resolver');
     expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
@@ -99,7 +99,7 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
 it('adds both blocks to a next scaffold that has neither', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 
-  expect(merged).toContain("allowBuilds:\n  'sharp': true");
+  expect(merged).toContain("allowBuilds:\n  'unrs-resolver': true");
   expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
   expect(merged).not.toContain('ignoredBuiltDependencies');
 });

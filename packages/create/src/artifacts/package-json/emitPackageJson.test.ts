@@ -463,7 +463,7 @@ describe('trustedDependencies', () => {
       packageManager: 'bun',
     }));
 
-    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['sharp', 'unrs-resolver', 'esbuild']));
+    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['unrs-resolver', 'esbuild']));
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
   });
 });

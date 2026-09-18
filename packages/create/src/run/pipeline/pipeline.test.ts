@@ -680,7 +680,7 @@ describe('pnpm-workspace.yaml', () => {
     const merged = await readFile(join(cwd, 'pnpm-workspace.yaml'), 'utf8');
 
     expect(merged).not.toContain('ignoredBuiltDependencies');
-    expect(merged).toContain("'sharp': true");
+    expect(merged).toContain("'unrs-resolver': true");
   });
 
   it('keeps whatever else the file already carried', async () => {
