@@ -3,16 +3,16 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { env } from 'node:process';
 
-import { type Artifact, buildArtifacts } from '../../artifacts';
-import { emitManifest } from '../../artifacts/manifest/emitManifest';
-import { emitReadme } from '../../artifacts/readme/emitReadme';
+import { type Artifact, buildArtifacts } from '../../emitters';
+import { type Stage, STAGES } from '../../emitters/artifact';
+import { emitManifest } from '../../emitters/manifest/emitManifest';
+import { emitReadme } from '../../emitters/readme/emitReadme';
 import {
   browsersOf,
   hasLibrary,
   hasTests,
 } from '../../model/answers/answers';
 import { CONFIG_PATH, emitLintelConfig } from '../../model/config/lintelConfig';
-import { type Stage, STAGES } from '../../model/stages/stages';
 import {
   type ScaffoldKind,
   type ScaffoldSpec,

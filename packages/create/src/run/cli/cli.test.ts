@@ -31,7 +31,7 @@ import {
   vi,
 } from 'vitest';
 
-import { parsePackageJson } from '../../artifacts/package-json/emitPackageJson';
+import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
 import { type Answers, DEFAULT_ANSWERS } from '../../model/answers/answers';
 import {
   CONFIG_PATH,

@@ -14,7 +14,7 @@ import {
   sep,
 } from 'node:path';
 
-import { type Artifact } from '../../artifacts';
+import { type Artifact } from '../../emitters';
 import { contentOf } from '../shipped-assets/shippedAssets';
 import {
   entryExists,

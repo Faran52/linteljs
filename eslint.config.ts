@@ -61,13 +61,13 @@ const config = [
         zones: [
           {
             target: ['packages/create/src/model', 'packages/create/src/targets'],
-            from: ['packages/create/src/artifacts', 'packages/create/src/run'],
+            from: ['packages/create/src/emitters', 'packages/create/src/run'],
             message: 'model/ is the answers, targets/ is what lintel knows. Neither reaches outward.',
           },
           {
-            target: 'packages/create/src/artifacts',
+            target: 'packages/create/src/emitters',
             from: 'packages/create/src/run',
-            message: 'artifacts/ turns answers into text. Disk, argv and terminals live in run/.',
+            message: 'emitters/ turns answers into text. Disk, argv and terminals live in run/.',
           },
         ],
       }],

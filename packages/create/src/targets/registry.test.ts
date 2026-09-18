@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 
-import { buildDevDependencies } from '../artifacts/package-json/emitPackageJson';
+import { buildDevDependencies } from '../emitters/package-json/emitPackageJson';
 import {
   BROWSERS,
   DEFAULT_ANSWERS,

@@ -12,7 +12,7 @@ import { env } from 'node:process';
 
 import { inject } from 'vitest';
 
-import { parsePackageJson } from '../../../artifacts/package-json/emitPackageJson';
+import { parsePackageJson } from '../../../emitters/package-json/emitPackageJson';
 import { type Answers, type PackageManager } from '../../../model/answers/answers';
 import { CONFIG_PATH, parseLintelConfig } from '../../../model/config/lintelConfig';
 

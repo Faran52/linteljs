@@ -27,7 +27,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process, { env } from 'node:process';
 
-import { parsePackageJson } from '../src/artifacts/package-json/emitPackageJson';
+import { parsePackageJson } from '../src/emitters/package-json/emitPackageJson';
 import {
   AGENTS,
   type Answers,

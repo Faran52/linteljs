@@ -12,7 +12,8 @@ import {
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
 import packageJson from '../../../package.json' with { type: 'json' };
-import { RUN_PREFIX } from '../../artifacts/build-scripts/buildScripts';
+import { type Stage, STAGES } from '../../emitters/artifact';
+import { RUN_PREFIX } from '../../emitters/utils/scriptUtils';
 import {
   type Answers,
   DEFAULT_ANSWERS,
@@ -26,7 +27,6 @@ import {
   parseLintelConfig,
   readLintelConfig,
 } from '../../model/config/lintelConfig';
-import { type Stage, STAGES } from '../../model/stages/stages';
 import { runPipeline } from '../pipeline/pipeline';
 import {
   ask,

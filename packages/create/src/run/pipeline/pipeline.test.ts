@@ -23,8 +23,9 @@ import {
   vi,
 } from 'vitest';
 
-import { parsePackageJson } from '../../artifacts/package-json/emitPackageJson';
-import { STYLE_ENTRY_CANDIDATES } from '../../artifacts/style-entry/styleEntryPath';
+import { type Stage } from '../../emitters/artifact';
+import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
+import { STYLE_ENTRY_CANDIDATES } from '../../emitters/style-entry/styleEntryPath';
 import {
   type Agent,
   type Answers,
@@ -45,7 +46,6 @@ import {
   emitLintelConfig,
   readLintelConfig,
 } from '../../model/config/lintelConfig';
-import { type Stage } from '../../model/stages/stages';
 import { targetFor } from '../../targets';
 import { applySync, planSync } from '../sync/sync';
 import {

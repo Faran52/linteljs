@@ -942,7 +942,7 @@ finding a config whose plugin is not there yet.
 
 **A version bump touches five files, not three.** The three `package.json`s, plus
 `packages/eslint-plugin/src/plugin.ts`, which hand-writes `meta.version` because ESLint reads it off
-the plugin object, and `packages/create/src/artifacts/package-json/versions.ts`, which pins the range
+the plugin object, and `packages/create/src/emitters/config/versions.ts`, which pins the range
 generated projects get for `@linteljs/eslint-config`. Both are held against `package.json` by a test
 (`meta.test.ts`, `versions.test.ts`), so a missed one fails `pnpm check` rather than shipping wrong.
 Neither is derived today, and nothing has been measured about whether it could be; the tests are why

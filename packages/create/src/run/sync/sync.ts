@@ -1,7 +1,7 @@
 import { rm, rmdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { buildArtifacts, GENERATED_AGENT_TARGETS } from '../../artifacts';
+import { buildArtifacts, GENERATED_AGENT_TARGETS } from '../../emitters';
 import { git } from '../git/git';
 import { applyArtifact, safeProjectPath } from '../project-files/projectFiles';
 import { readProjectShape } from '../project-shape/readProjectShape';

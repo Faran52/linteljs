@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { RUN_PREFIX, styleGlob } from '../../artifacts/build-scripts/buildScripts';
+import { RUN_PREFIX, styleGlob } from '../../emitters/utils/scriptUtils';
 
 import type { Answers } from '../../model/answers/answers';
 

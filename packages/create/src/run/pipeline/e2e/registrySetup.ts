@@ -14,7 +14,7 @@ import { createServer } from 'node:net';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import { parsePackageJson } from '../../../artifacts/package-json/emitPackageJson';
+import { parsePackageJson } from '../../../emitters/package-json/emitPackageJson';
 
 import type { TestProject } from 'vitest/node';
 

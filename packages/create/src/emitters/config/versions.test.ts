@@ -1,0 +1,166 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { parsePackageJson } from '../package-json/emitPackageJson';
+
+import { PACKAGE_MANAGER_VERSIONS, VERSIONS } from './versions';
+
+interface Sibling {
+  name: string;
+  version: string;
+}
+
+// The only ranges this repository can check without the network. `^0.1.0` once sat while the package reached 0.2.0:
+// a caret on 0.x is minor-locked.
+const WORKSPACE_PACKAGES = ['eslint-config', 'eslint-plugin'];
+
+const siblingIn = (directory: string): Sibling => {
+  const path = join(import.meta.dirname, '..', '..', '..', '..', directory, 'package.json');
+  const { name, version } = parsePackageJson(readFileSync(path, 'utf8'));
+
+  if (name === undefined || version === undefined) {
+    throw new Error(`${path} declares no name or version`);
+  }
+
+  return {
+    name,
+    version,
+  };
+};
+
+describe('VERSIONS against the workspace', () => {
+  it.each(WORKSPACE_PACKAGES)('carries no stale range for %s', (directory) => {
+    const { name, version } = siblingIn(directory);
+    const range = VERSIONS[name];
+
+    // Only @linteljs/eslint-config is written into a generated project.
+    expect(range === undefined || range === `^${version}`).toBe(true);
+  });
+
+  it('names the one package a generated project depends on', () => {
+    expect(VERSIONS[siblingIn('eslint-config').name]).toBeDefined();
+  });
+});
+
+// An entry in both places must not ship something older than the layers were built against. A line match, not a
+// YAML parser, for a flat block.
+const catalogEntries = (): [string, string][] => {
+  const yaml = readFileSync(join(import.meta.dirname, '..', '..', '..', '..', '..', 'pnpm-workspace.yaml'), 'utf8');
+  const lines = yaml.split('\n');
+  const start = lines.indexOf('catalog:');
+
+  if (start === -1) {
+    throw new Error('pnpm-workspace.yaml declares no catalog');
+  }
+
+  const entries: [string, string][] = [];
+
+  // Line by line: a regex spanning a block is the shape `sonarjs/slow-regex` reports.
+  for (const line of lines.slice(start + 1)) {
+    const indented = line.startsWith(' ') || line.startsWith('\t');
+
+    if (!indented && line.trim() !== '') {
+      break;
+    }
+
+    const trimmed = line.trim();
+    const separator = trimmed.indexOf(':');
+
+    if (trimmed.startsWith('#') || separator === -1) {
+      continue;
+    }
+
+    const name = trimmed.slice(0, separator).replaceAll("'", '');
+
+    entries.push([name, trimmed.slice(separator + 1).trim()]);
+  }
+
+  return entries;
+};
+
+// So `^10.8.1` and `~10.8.1` compare as numbers.
+const floorOf = (range: string): number[] => {
+  return range.replace(/^[\^~]/, '').replace(/-rc\.\d+/, '').split('.').map(Number);
+};
+
+const atLeast = (range: string, minimum: string): boolean => {
+  const left = floorOf(range);
+  const right = floorOf(minimum);
+
+  return left.every((part, index) => {
+    const other = right[index] ?? 0;
+
+    return part === other || part > other || left.slice(0, index).some((earlier, at) => {
+      return earlier > (right[at] ?? 0);
+    });
+  });
+};
+
+// A range older than what `@linteljs/eslint-config` declares hands a project a plugin its config never ran against;
+// five had drifted before anything checked. `catalog:` entries answer in the block above.
+const configDependencies = (): [string, string][] => {
+  const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
+  const { devDependencies } = parsePackageJson(readFileSync(path, 'utf8'));
+
+  return Object.entries(devDependencies ?? {}).filter(([, range]) => {
+    return range !== 'catalog:';
+  });
+};
+
+describe('VERSIONS against the config it installs beside', () => {
+  it('reads dependencies off the config, so the assertion below is not vacuous', () => {
+    expect(configDependencies().length).toBeGreaterThan(0);
+  });
+
+  it('ships nothing older than the version the layers were built against', () => {
+    const stale = configDependencies()
+      .filter(([name, range]) => {
+        const shipped = VERSIONS[name];
+
+        return shipped !== undefined && !atLeast(shipped, range);
+      })
+      .map(([name, range]) => {
+        return `${name}: VERSIONS has ${String(VERSIONS[name])}, eslint-config has ${range}`;
+      });
+
+    expect(stale).toEqual([]);
+  });
+});
+
+// pnpm rewrites this workspace's `packageManager` on every install; a project was once pinned to 11.21.0 by a
+// workspace running 11.24.0.
+describe('PACKAGE_MANAGER_VERSIONS against the workspace', () => {
+  it('pins pnpm no older than the one this workspace runs', () => {
+    const path = join(import.meta.dirname, '..', '..', '..', '..', '..', 'package.json');
+    const { packageManager } = parsePackageJson(readFileSync(path, 'utf8'));
+    const running = String(packageManager).replace('pnpm@', '');
+
+    expect(atLeast(PACKAGE_MANAGER_VERSIONS.pnpm, running)).toBe(true);
+  });
+});
+
+describe('VERSIONS against the workspace catalog', () => {
+  it('reads a catalog with entries in it, so the assertion below is not vacuous', () => {
+    expect(catalogEntries().length).toBeGreaterThan(0);
+  });
+
+  it('ships nothing older than the version this workspace installs', () => {
+    const stale = catalogEntries()
+      .filter(([name, range]) => {
+        const shipped = VERSIONS[name];
+
+        return shipped !== undefined && !atLeast(shipped, range);
+      })
+      .map(([name, range]) => {
+        return `${name}: VERSIONS has ${String(VERSIONS[name])}, catalog has ${range}`;
+      });
+
+    expect(stale).toEqual([]);
+  });
+});
