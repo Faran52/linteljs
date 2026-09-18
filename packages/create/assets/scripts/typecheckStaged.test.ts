@@ -17,7 +17,7 @@ import {
   it,
 } from 'vitest';
 
-import { ASSETS_ROOT } from '../../src/run/shipped-assets/shippedAssets';
+import { ASSETS_ROOT } from '../../src/files/shippedAssets';
 
 interface RunResult {
   status: number | null;

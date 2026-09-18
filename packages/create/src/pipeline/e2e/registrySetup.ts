@@ -14,7 +14,7 @@ import { createServer } from 'node:net';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import { parsePackageJson } from '../../../emitters/package-json/emitPackageJson';
+import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
 
 import type { TestProject } from 'vitest/node';
 
@@ -40,7 +40,7 @@ declare module 'vitest' {
   }
 }
 
-const ROOT = resolve(import.meta.dirname, '../../../../../..');
+const ROOT = resolve(import.meta.dirname, '../../../../..');
 
 /**
  * One registry for a run, on a fixed port. Sharding is a stride over the cases inside one process (`cases.ts`), and

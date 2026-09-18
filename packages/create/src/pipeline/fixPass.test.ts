@@ -17,7 +17,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../../answers/answers';
+import { DEFAULT_ANSWERS } from '../answers/answers';
 
 import { nextStep, runFixPass } from './fixPass';
 

@@ -1,14 +1,14 @@
 import { rm, rmdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { buildArtifacts, GENERATED_AGENT_TARGETS } from '../../emitters';
-import { applyArtifact, safeProjectPath } from '../../files/projectFiles';
-import { readProjectShape } from '../../files/readProjectShape';
-import { contentOf } from '../../files/shippedAssets';
-import { entryExists, readIfPresent } from '../../files/utils/fsUtils';
-import { git } from '../../process/git';
+import { buildArtifacts, GENERATED_AGENT_TARGETS } from '../emitters';
+import { applyArtifact, safeProjectPath } from '../files/projectFiles';
+import { readProjectShape } from '../files/readProjectShape';
+import { contentOf } from '../files/shippedAssets';
+import { entryExists, readIfPresent } from '../files/utils/fsUtils';
+import { git } from '../process/git';
 
-import type { Answers } from '../../answers/answers';
+import type { Answers } from '../answers/answers';
 
 // Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
 

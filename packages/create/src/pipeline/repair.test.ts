@@ -22,8 +22,8 @@ import {
   DEFAULT_ANSWERS,
   type TargetId,
   type Testing,
-} from '../../answers/answers';
-import { exists } from '../../files/utils/fsUtils';
+} from '../answers/answers';
+import { exists } from '../files/utils/fsUtils';
 
 import { repairScaffoldedOutput } from './repair';
 

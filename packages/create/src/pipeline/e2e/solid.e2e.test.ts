@@ -5,7 +5,8 @@ import {
 } from 'vitest';
 
 import { casesFor } from './cases';
-import { afterAllCleanup, runE2eCase } from './helpers';
+import { runE2eCase } from './runE2eCase';
+import { afterAllCleanup } from './utils/workspaceUtils';
 
 describe('solid end-to-end', () => {
   afterAll(afterAllCleanup);

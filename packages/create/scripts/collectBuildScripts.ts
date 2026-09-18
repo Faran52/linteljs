@@ -27,7 +27,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process, { env } from 'node:process';
 
-import { parsePackageJson } from '../src/emitters/package-json/emitPackageJson';
 import {
   AGENTS,
   type Answers,
@@ -39,12 +38,13 @@ import {
   SURFACES,
   TARGET_IDS,
   type TargetId,
-} from '../src/model/answers/answers';
-import { startRegistry } from '../src/run/pipeline/e2e/registrySetup';
+} from '../src/answers/answers';
+import { parsePackageJson } from '../src/emitters/package-json/emitPackageJson';
+import { startRegistry } from '../src/pipeline/e2e/registrySetup';
 import { targetFor } from '../src/targets';
 
-import type { E2eCase } from '../src/run/pipeline/e2e/cases';
-import type { E2eRegistry } from '../src/run/pipeline/e2e/registrySetup';
+import type { E2eCase } from '../src/pipeline/e2e/cases';
+import type { E2eRegistry } from '../src/pipeline/e2e/registrySetup';
 
 /**
  * Both managers, because they do not block the same set. npm blocks a *superset*: every install script it has not

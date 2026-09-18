@@ -64,8 +64,8 @@ const config = [
             from: [
               'packages/create/src/emitters',
               'packages/create/src/files',
+              'packages/create/src/pipeline',
               'packages/create/src/process',
-              'packages/create/src/run',
               'packages/create/src/terminal',
             ],
             message: 'answers/ is what the user chose, targets/ what lintel knows. Neither reaches outward.',
@@ -74,8 +74,8 @@ const config = [
             target: 'packages/create/src/emitters',
             from: [
               'packages/create/src/files',
+              'packages/create/src/pipeline',
               'packages/create/src/process',
-              'packages/create/src/run',
               'packages/create/src/terminal',
             ],
             message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
@@ -133,7 +133,7 @@ const config = [
   // The e2e files pass `runE2eCase` by reference, out of the rule's reach. DESIGN.md: `@linteljs/workspace/e2e-test`
   {
     name: '@linteljs/workspace/e2e-test',
-    files: ['packages/create/src/run/pipeline/e2e/*.e2e.test.ts'],
+    files: ['packages/create/src/pipeline/e2e/*.e2e.test.ts'],
     rules: { 'vitest/expect-expect': 'off' },
   },
 ];

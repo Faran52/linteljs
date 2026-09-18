@@ -18,8 +18,8 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../../answers/answers';
-import { exists } from '../../files/utils/fsUtils';
+import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
+import { exists } from '../files/utils/fsUtils';
 
 import {
   applySync,

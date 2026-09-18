@@ -20,10 +20,10 @@ import {
   type TargetId,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
-} from '../../../answers/answers';
-import { targetFor } from '../../../targets';
+} from '../../answers/answers';
+import { targetFor } from '../../targets';
 
-import type { TargetRecord } from '../../../targets/record';
+import type { TargetRecord } from '../../targets/record';
 
 export interface E2eCase {
   label: string;

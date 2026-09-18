@@ -5,29 +5,27 @@ import {
   browsersOf,
   hasLibrary,
   hasTests,
-} from '../../answers/answers';
-import { CONFIG_PATH } from '../../answers/lintelConfig';
-import { type Artifact, buildArtifacts } from '../../emitters';
-import { type Stage, STAGES } from '../../emitters/artifact';
-import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig';
-import { emitManifest } from '../../emitters/manifest/emitManifest';
-import { emitReadme } from '../../emitters/readme/emitReadme';
-import { applyArtifact, writeProjectFile } from '../../files/projectFiles';
-import { readProjectShape } from '../../files/readProjectShape';
-import { ASSETS_ROOT } from '../../files/shippedAssets';
-import { exists } from '../../files/utils/fsUtils';
-import { git } from '../../process/git';
-import { run } from '../../process/run';
-import {
-  type ScaffoldKind,
-  type ScaffoldSpec,
-  targetFor,
-} from '../../targets';
-import { runFixPass } from '../fix-pass/fixPass';
-import { repairScaffoldedOutput } from '../repair/repair';
-import { rewriteScaffoldedSource } from '../rewrite/rewrite';
+} from '../answers/answers';
+import { CONFIG_PATH } from '../answers/lintelConfig';
+import { type Artifact, buildArtifacts } from '../emitters';
+import { type Stage, STAGES } from '../emitters/artifact';
+import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
+import { emitManifest } from '../emitters/manifest/emitManifest';
+import { emitReadme } from '../emitters/readme/emitReadme';
+import { applyArtifact, writeProjectFile } from '../files/projectFiles';
+import { readProjectShape } from '../files/readProjectShape';
+import { ASSETS_ROOT } from '../files/shippedAssets';
+import { exists } from '../files/utils/fsUtils';
+import { git } from '../process/git';
+import { run } from '../process/run';
+import { scaffoldCommand } from '../process/scaffoldCommand';
+import { targetFor } from '../targets';
 
-import type { Answers, PackageManager } from '../../answers/answers';
+import { runFixPass } from './fixPass';
+import { repairScaffoldedOutput } from './repair';
+import { rewriteScaffoldedSource } from './rewrite';
+
+import type { Answers } from '../answers/answers';
 
 export interface PipelineOptions {
   name: string;
@@ -43,46 +41,11 @@ export interface PipelineOptions {
   onStage?: (stage: Stage, index: number, count: number) => void;
 }
 
-// A tuple, so the first element is a command with no `undefined` guard.
-type CommandLine = [string, ...string[]];
-
 type StageRunner = (
   options: PipelineOptions,
   artifacts: Artifact[],
   stage: Stage,
 ) => Promise<void> | void;
-
-// Four spellings of the same intent; wrong, it reads as installing a package called `vite my-app`.
-const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine>> = {
-  pnpm: {
-    create: ['pnpm', 'create'],
-    dlx: ['pnpm', 'dlx'],
-  },
-  npm: {
-    create: ['npm', 'create'],
-    dlx: ['npx', '--yes'],
-  },
-  yarn: {
-    create: ['yarn', 'create'],
-    dlx: ['yarn', 'dlx'],
-  },
-  bun: {
-    create: ['bun', 'create'],
-    dlx: ['bunx'],
-  },
-};
-
-export const scaffoldCommand = (
-  packageManager: PackageManager,
-  spec: ScaffoldSpec,
-): CommandLine => {
-  const [scaffolder, name, ...flags] = spec.args;
-  const launcher = spec.via ?? packageManager;
-  // `npm create` keeps the flags for itself unless `--` follows the project name.
-  const separator = launcher === 'npm' && spec.kind === 'create' ? ['--'] : [];
-
-  return [...SCAFFOLD_COMMANDS[launcher][spec.kind], scaffolder, name, ...separator, ...flags];
-};
 
 const write = async (options: PipelineOptions, relative: string, text: string): Promise<void> => {
   await writeProjectFile(options.cwd, relative, text);

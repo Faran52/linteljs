@@ -23,7 +23,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.e2e.test.ts'],
     // Starts the one registry holding the workspace versions; every case installs through it.
-    globalSetup: ['src/run/pipeline/e2e/registrySetup.ts'],
+    globalSetup: ['src/pipeline/e2e/registrySetup.ts'],
     /**
      * Files run one at a time and the cases inside a file run together. Every case but the four in `managerCases`
      * is pnpm, and those four sit at the head of one file, so at most one bun, one yarn and one npm install is ever

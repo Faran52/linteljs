@@ -38,7 +38,7 @@ describe.
   reading the config object back.
 - `__mocks__/fixerSamples.ts` is a shared corpus run against **every** rule. A fixer defect belongs
   there as well as in the rule's own suite: one nasty input then covers all fourteen rules.
-- `packages/create/src/run/pipeline/e2e/*.e2e.test.ts` files are excluded from the default run by their
+- `packages/create/src/pipeline/e2e/*.e2e.test.ts` files are excluded from the default run by their
   `.e2e.` infix. Each is four lines: the cases come from `cases.ts`, which enumerates them rather than
   listing them, so a new answer is covered the day the model gains it and not the day someone
   remembers. 98 cases, each one a real scaffold, install and `check`.

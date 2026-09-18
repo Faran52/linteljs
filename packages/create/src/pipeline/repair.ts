@@ -9,14 +9,15 @@ import {
   relative,
 } from 'node:path';
 
-import { hasTests } from '../../answers/answers';
-import { safeProjectPath, writeProjectFile } from '../../files/projectFiles';
-import { entryExists, isAbsence } from '../../files/utils/fsUtils';
-import { targetFor } from '../../targets';
-import { SOURCE_ROOT, sourceFiles } from '../rewrite/rewrite';
+import { hasTests } from '../answers/answers';
+import { safeProjectPath, writeProjectFile } from '../files/projectFiles';
+import { entryExists, isAbsence } from '../files/utils/fsUtils';
+import { targetFor } from '../targets';
 
-import type { Answers } from '../../answers/answers';
-import type { StarterRename } from '../../targets';
+import { SOURCE_ROOT, sourceFiles } from './rewrite';
+
+import type { Answers } from '../answers/answers';
+import type { StarterRename } from '../targets';
 
 // Fresh projects only; exact generator text turns upstream drift into a notice.
 const applyStarterFixes = async (

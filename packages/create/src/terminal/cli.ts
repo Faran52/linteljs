@@ -28,9 +28,9 @@ import { type Stage, STAGES } from '../emitters/artifact';
 import { RUN_PREFIX } from '../emitters/utils/scriptUtils';
 import { readLintelConfig } from '../files/readLintelConfig';
 import { entryExists } from '../files/utils/fsUtils';
+import { runPipeline } from '../pipeline/pipeline';
+import { applySync, planSync } from '../pipeline/sync';
 import { ensurePackageManager, nodeVersionRefusal } from '../process/packageManager';
-import { runPipeline } from '../run/pipeline/pipeline';
-import { applySync, planSync } from '../run/sync/sync';
 
 import {
   ask,

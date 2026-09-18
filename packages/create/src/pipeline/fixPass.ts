@@ -2,9 +2,9 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { RUN_PREFIX, styleGlob } from '../../emitters/utils/scriptUtils';
+import { RUN_PREFIX, styleGlob } from '../emitters/utils/scriptUtils';
 
-import type { Answers } from '../../answers/answers';
+import type { Answers } from '../answers/answers';
 
 interface EslintFixResult {
   // Present exactly when the file was fixed.
