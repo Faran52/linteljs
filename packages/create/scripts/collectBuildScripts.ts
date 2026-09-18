@@ -43,12 +43,8 @@ import {
 import { targetFor } from '../src/model/targets';
 import { startRegistry } from '../src/run/pipeline/e2e/registrySetup';
 
+import type { E2eCase } from '../src/run/pipeline/e2e/cases';
 import type { E2eRegistry } from '../src/run/pipeline/e2e/registrySetup';
-
-interface Probe {
-  label: string;
-  answers: Answers;
-}
 
 /**
  * Both managers, because they do not block the same set. npm blocks a *superset*: every install script it has not
@@ -115,7 +111,7 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
 };
 
 // Seventeen: the seven plain targets, plus Astro and the extension once per framework they can host and once without.
-const probes = (): Probe[] => {
+const probes = (): E2eCase[] => {
   return TARGET_IDS.flatMap((target) => {
     const hosts = targetFor({
       ...DEFAULT_ANSWERS,
@@ -234,7 +230,7 @@ const isScriptListing = (value: unknown): value is ScriptListing => {
 
 // One probe, both managers. Separate from `main` so the reporting below reads as reporting.
 const collectFor = (
-  { label, answers }: Probe,
+  { label, answers }: E2eCase,
   workspace: string,
   registry: E2eRegistry,
 ): Record<Collected, string[]> => {
