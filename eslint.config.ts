@@ -64,13 +64,20 @@ const config = [
             from: [
               'packages/create/src/emitters',
               'packages/create/src/files',
+              'packages/create/src/process',
               'packages/create/src/run',
+              'packages/create/src/terminal',
             ],
             message: 'answers/ is what the user chose, targets/ what lintel knows. Neither reaches outward.',
           },
           {
             target: 'packages/create/src/emitters',
-            from: ['packages/create/src/files', 'packages/create/src/run'],
+            from: [
+              'packages/create/src/files',
+              'packages/create/src/process',
+              'packages/create/src/run',
+              'packages/create/src/terminal',
+            ],
             message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
           },
         ],

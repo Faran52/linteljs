@@ -11,33 +11,34 @@ import {
 } from 'node:process';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
-import packageJson from '../../../package.json' with { type: 'json' };
+import packageJson from '../../package.json' with { type: 'json' };
 import {
   type Answers,
   DEFAULT_ANSWERS,
   isValidProjectName,
   PROJECT_NAME_RULE,
-} from '../../answers/answers';
+} from '../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   parseLintelConfig,
-} from '../../answers/lintelConfig';
-import { type Stage, STAGES } from '../../emitters/artifact';
-import { RUN_PREFIX } from '../../emitters/utils/scriptUtils';
-import { readLintelConfig } from '../../files/readLintelConfig';
-import { runPipeline } from '../pipeline/pipeline';
+} from '../answers/lintelConfig';
+import { type Stage, STAGES } from '../emitters/artifact';
+import { RUN_PREFIX } from '../emitters/utils/scriptUtils';
+import { readLintelConfig } from '../files/readLintelConfig';
+import { entryExists } from '../files/utils/fsUtils';
+import { ensurePackageManager, nodeVersionRefusal } from '../process/packageManager';
+import { runPipeline } from '../run/pipeline/pipeline';
+import { applySync, planSync } from '../run/sync/sync';
+
 import {
   ask,
   type Asked,
   clackPrompter,
   NOTHING_ANSWERED_MESSAGE,
   type Prompter,
-} from '../prompts/prompts';
-import { applySync, planSync } from '../sync/sync';
-import { ensurePackageManager, nodeVersionRefusal } from '../utils/commandUtils';
-import { entryExists } from '../utils/fsUtils';
+} from './prompts';
 
 // Answers given as flags, validated by the config parser so a wrong value names its choices.
 export interface AnswerFlags {

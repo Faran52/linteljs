@@ -14,7 +14,7 @@ import {
   it,
 } from 'vitest';
 
-import { exists } from '../utils/fsUtils';
+import { exists } from '../files/utils/fsUtils';
 
 import { git } from './git';
 

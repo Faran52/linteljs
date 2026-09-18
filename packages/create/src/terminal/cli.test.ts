@@ -31,19 +31,19 @@ import {
   vi,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../../answers/answers';
+import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   parseLintelConfig,
-} from '../../answers/lintelConfig';
-import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig';
-import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
-import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/prompts';
-import { exists } from '../utils/fsUtils';
+} from '../answers/lintelConfig';
+import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
+import { parsePackageJson } from '../emitters/package-json/emitPackageJson';
+import { exists } from '../files/utils/fsUtils';
 
 import { main, parseCliArgs } from './cli';
+import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from './prompts';
 
 interface Run {
   code: number;
@@ -903,7 +903,7 @@ describe('main: an unexpected failure', () => {
 
 describe('main: the package manager', () => {
   it('is checked for before the pipeline runs', async () => {
-    const commands = await import('../utils/commandUtils');
+    const commands = await import('../process/packageManager');
     const spy = vi.spyOn(commands, 'ensurePackageManager').mockImplementation(() => {
       throw new Error('bun is not installed.');
     });

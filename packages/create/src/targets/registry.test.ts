@@ -15,7 +15,7 @@ import {
   TARGET_IDS,
 } from '../answers/answers';
 import { buildDevDependencies } from '../emitters/package-json/emitPackageJson';
-import { ASSETS_ROOT } from '../run/shipped-assets/shippedAssets';
+import { ASSETS_ROOT } from '../files/shippedAssets';
 
 import { targetFor, TARGETS } from './registry';
 

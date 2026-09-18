@@ -10,10 +10,10 @@ import {
 } from 'node:path';
 
 import { hasTests } from '../../answers/answers';
+import { safeProjectPath, writeProjectFile } from '../../files/projectFiles';
+import { entryExists, isAbsence } from '../../files/utils/fsUtils';
 import { targetFor } from '../../targets';
-import { safeProjectPath, writeProjectFile } from '../project-files/projectFiles';
 import { SOURCE_ROOT, sourceFiles } from '../rewrite/rewrite';
-import { entryExists, isAbsence } from '../utils/fsUtils';
 
 import type { Answers } from '../../answers/answers';
 import type { StarterRename } from '../../targets';

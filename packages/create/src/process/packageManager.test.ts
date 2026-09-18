@@ -12,7 +12,7 @@ import {
   ensurePackageManager,
   isCommandAvailable,
   nodeVersionRefusal,
-} from './commandUtils';
+} from './packageManager';
 
 vi.mock('node:child_process', () => {
   return { spawnSync: vi.fn() };

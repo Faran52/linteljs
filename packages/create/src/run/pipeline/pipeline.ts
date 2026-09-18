@@ -1,7 +1,5 @@
-import { spawn } from 'node:child_process';
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { env } from 'node:process';
 
 import {
   browsersOf,
@@ -14,19 +12,20 @@ import { type Stage, STAGES } from '../../emitters/artifact';
 import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig';
 import { emitManifest } from '../../emitters/manifest/emitManifest';
 import { emitReadme } from '../../emitters/readme/emitReadme';
+import { applyArtifact, writeProjectFile } from '../../files/projectFiles';
+import { readProjectShape } from '../../files/readProjectShape';
+import { ASSETS_ROOT } from '../../files/shippedAssets';
+import { exists } from '../../files/utils/fsUtils';
+import { git } from '../../process/git';
+import { run } from '../../process/run';
 import {
   type ScaffoldKind,
   type ScaffoldSpec,
   targetFor,
 } from '../../targets';
 import { runFixPass } from '../fix-pass/fixPass';
-import { git } from '../git/git';
-import { applyArtifact, writeProjectFile } from '../project-files/projectFiles';
-import { readProjectShape } from '../project-shape/readProjectShape';
 import { repairScaffoldedOutput } from '../repair/repair';
 import { rewriteScaffoldedSource } from '../rewrite/rewrite';
-import { ASSETS_ROOT } from '../shipped-assets/shippedAssets';
-import { exists } from '../utils/fsUtils';
 
 import type { Answers, PackageManager } from '../../answers/answers';
 
@@ -71,31 +70,6 @@ const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine
     create: ['bun', 'create'],
     dlx: ['bunx'],
   },
-};
-
-const run = async (command: string, args: string[], cwd: string): Promise<void> => {
-  await new Promise<void>((settle, fail) => {
-    const child = spawn(command, args, {
-      cwd,
-      stdio: 'inherit',
-      shell: false,
-      // Angular's CLI otherwise prompts for analytics with no flag to decline.
-      env: {
-        ...env,
-        NG_CLI_ANALYTICS: 'false',
-      },
-    });
-
-    child.on('error', fail);
-    child.on('close', (code) => {
-      if (code === 0) {
-        settle();
-        return;
-      }
-
-      fail(new Error(`${command} ${args.join(' ')} exited with ${String(code)}`));
-    });
-  });
 };
 
 export const scaffoldCommand = (

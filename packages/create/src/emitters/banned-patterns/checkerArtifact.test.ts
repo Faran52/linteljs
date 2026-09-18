@@ -15,7 +15,7 @@ import {
   type Testing,
   type TypeSafety,
 } from '../../answers/answers';
-import { ASSETS_ROOT } from '../../run/shipped-assets/shippedAssets';
+import { ASSETS_ROOT } from '../../files/shippedAssets';
 
 import { checkerArtifact } from './checkerArtifact';
 

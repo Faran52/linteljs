@@ -1,1 +1,1 @@
-export { main } from './run/cli/cli';
+export { main } from './terminal/cli';

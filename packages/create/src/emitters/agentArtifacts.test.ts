@@ -14,7 +14,7 @@ import {
   type Testing,
   TESTING_CHOICES,
 } from '../answers/answers';
-import { contentOf } from '../run/shipped-assets/shippedAssets';
+import { contentOf } from '../files/shippedAssets';
 
 import { agentArtifacts } from './agentArtifacts';
 import { type Artifact } from './artifact';

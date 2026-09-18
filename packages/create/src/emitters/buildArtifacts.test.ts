@@ -28,7 +28,7 @@ import {
   type Testing,
   type TypeSafety,
 } from '../answers/answers';
-import { ASSETS_ROOT, contentOf } from '../run/shipped-assets/shippedAssets';
+import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
 
 import { type Artifact } from './artifact';

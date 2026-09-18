@@ -2,11 +2,11 @@ import { rm, rmdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { buildArtifacts, GENERATED_AGENT_TARGETS } from '../../emitters';
-import { git } from '../git/git';
-import { applyArtifact, safeProjectPath } from '../project-files/projectFiles';
-import { readProjectShape } from '../project-shape/readProjectShape';
-import { contentOf } from '../shipped-assets/shippedAssets';
-import { entryExists, readIfPresent } from '../utils/fsUtils';
+import { applyArtifact, safeProjectPath } from '../../files/projectFiles';
+import { readProjectShape } from '../../files/readProjectShape';
+import { contentOf } from '../../files/shippedAssets';
+import { entryExists, readIfPresent } from '../../files/utils/fsUtils';
+import { git } from '../../process/git';
 
 import type { Answers } from '../../answers/answers';
 

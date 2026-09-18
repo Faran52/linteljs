@@ -19,7 +19,7 @@ import {
   it,
 } from 'vitest';
 
-import { ASSETS_ROOT } from '../../run/shipped-assets/shippedAssets';
+import { ASSETS_ROOT } from '../../files/shippedAssets';
 
 interface ToolInput {
   command: string;

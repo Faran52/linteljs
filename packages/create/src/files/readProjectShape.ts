@@ -1,7 +1,8 @@
-import { SETUP_TESTS_CANDIDATES } from '../../emitters/banned-patterns/checkerArtifact';
-import { type ProjectShape } from '../../emitters/projectShape';
-import { STYLE_ENTRY_CANDIDATES } from '../../emitters/style-entry/styleEntryPath';
-import { allPresent } from '../utils/fsUtils';
+import { SETUP_TESTS_CANDIDATES } from '../emitters/banned-patterns/checkerArtifact';
+import { type ProjectShape } from '../emitters/projectShape';
+import { STYLE_ENTRY_CANDIDATES } from '../emitters/style-entry/styleEntryPath';
+
+import { allPresent } from './utils/fsUtils';
 
 // The one place a directory is read for the files `artifacts/` has more than one spelling of.
 export const readProjectShape = async (cwd: string): Promise<ProjectShape> => {

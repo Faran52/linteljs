@@ -19,12 +19,12 @@ import {
   it,
 } from 'vitest';
 
-import { emitted, merged } from '../../emitters/artifact';
-import { readIfPresent } from '../utils/fsUtils';
+import { emitted, merged } from '../emitters/artifact';
 
 import { applyArtifact, writeProjectFile } from './projectFiles';
+import { readIfPresent } from './utils/fsUtils';
 
-import type { Artifact } from '../../emitters';
+import type { Artifact } from '../emitters';
 
 let cwd = '';
 

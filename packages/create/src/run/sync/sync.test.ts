@@ -19,7 +19,7 @@ import {
 } from 'vitest';
 
 import { type Answers, DEFAULT_ANSWERS } from '../../answers/answers';
-import { exists } from '../utils/fsUtils';
+import { exists } from '../../files/utils/fsUtils';
 
 import {
   applySync,

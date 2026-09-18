@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { ArtifactContent } from '../../emitters';
+import type { ArtifactContent } from '../emitters';
 
 // Walks up to `assets/`: this module sits at `src/run/` in the workspace and at `dist/` once published.
 const assetsRootFrom = (start: string): string => {

@@ -12,7 +12,7 @@ import {
   type Testing,
   type TypeSafety,
 } from '../../answers/answers';
-import { contentOf } from '../../run/shipped-assets/shippedAssets';
+import { contentOf } from '../../files/shippedAssets';
 import { type Artifact } from '../artifact';
 
 import { referenceArtifacts } from './referenceArtifacts';

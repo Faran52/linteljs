@@ -23,7 +23,7 @@ import {
   type TargetId,
   type Testing,
 } from '../../answers/answers';
-import { exists } from '../utils/fsUtils';
+import { exists } from '../../files/utils/fsUtils';
 
 import { repairScaffoldedOutput } from './repair';
 

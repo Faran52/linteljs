@@ -14,13 +14,14 @@ import {
   sep,
 } from 'node:path';
 
-import { type Artifact } from '../../emitters';
-import { contentOf } from '../shipped-assets/shippedAssets';
+import { type Artifact } from '../emitters';
+
+import { contentOf } from './shippedAssets';
 import {
   entryExists,
   isAbsence,
   readIfPresent,
-} from '../utils/fsUtils';
+} from './utils/fsUtils';
 
 export const safeProjectPath = async (cwd: string, target: string): Promise<string> => {
   const root = resolve(cwd);

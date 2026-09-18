@@ -46,13 +46,13 @@ import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig'
 import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
 import { STYLE_ENTRY_CANDIDATES } from '../../emitters/style-entry/styleEntryPath';
 import { readLintelConfig } from '../../files/readLintelConfig';
-import { targetFor } from '../../targets';
-import { applySync, planSync } from '../sync/sync';
 import {
   entryExists,
   exists,
   readIfPresent,
-} from '../utils/fsUtils';
+} from '../../files/utils/fsUtils';
+import { targetFor } from '../../targets';
+import { applySync, planSync } from '../sync/sync';
 
 import { runPipeline, scaffoldCommand } from './pipeline';
 
