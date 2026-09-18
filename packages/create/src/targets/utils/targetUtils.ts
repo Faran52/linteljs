@@ -1,4 +1,4 @@
-import type { AliasMap } from '../../model/answers/answers';
+import type { AliasMap } from '../../answers/answers';
 import type { ScaffoldSpec } from '../record';
 
 // `--no-interactive` forces the piped behaviour; `--eslint` is React-only, since the default writes `.oxlintrc.json`.

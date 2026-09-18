@@ -3,7 +3,7 @@ import {
   type Answers,
   hasLibrary,
   hasTests,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 // Read by tsconfig `paths`, `base({ aliases })` and the resolver; the order is the dependency direction, so a

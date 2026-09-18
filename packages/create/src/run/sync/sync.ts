@@ -8,7 +8,7 @@ import { readProjectShape } from '../project-shape/readProjectShape';
 import { contentOf } from '../shipped-assets/shippedAssets';
 import { entryExists, readIfPresent } from '../utils/fsUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
 

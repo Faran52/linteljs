@@ -5,7 +5,7 @@ import {
   vi,
 } from 'vitest';
 
-import { type Answers, TARGET_IDS } from '../../../model/answers/answers';
+import { type Answers, TARGET_IDS } from '../../../answers/answers';
 
 import { optionCases } from './cases';
 

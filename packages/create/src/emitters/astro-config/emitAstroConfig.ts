@@ -1,8 +1,8 @@
-import { hasLibrary } from '../../model/answers/answers';
+import { hasLibrary } from '../../answers/answers';
 import { targetFor } from '../../targets';
 import { OUTSIDE_TESTS } from '../../targets/utils/frameworkUtils';
 
-import type { Answers, HostedFramework } from '../../model/answers/answers';
+import type { Answers, HostedFramework } from '../../answers/answers';
 
 // Astro's Vite options live here, so there is no `vite.config.ts`. `.mjs` is the name `astro check` looks for first.
 // Null for every other target.

@@ -1,6 +1,6 @@
 import { COMPONENT, DECLARATION } from '../naming';
 
-import type { HostedFramework, NamingMap } from '../../model/answers/answers';
+import type { HostedFramework, NamingMap } from '../../answers/answers';
 import type { PluginSpec } from '../record';
 
 export interface FrameworkParts {

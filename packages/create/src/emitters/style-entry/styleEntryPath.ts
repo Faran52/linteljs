@@ -1,7 +1,7 @@
 import { targetFor } from '../../targets';
 import { projectSpelling } from '../projectShape';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // Discovered rather than asked: writing the target's default beside a project's own left a second entry nothing
 // imported.

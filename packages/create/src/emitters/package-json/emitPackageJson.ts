@@ -6,7 +6,7 @@ import {
   hasTests,
   type Library,
   type Router,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 import {
   NODE_ENGINE,

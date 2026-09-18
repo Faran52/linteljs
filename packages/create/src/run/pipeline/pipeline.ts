@@ -3,16 +3,17 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { env } from 'node:process';
 
-import { type Artifact, buildArtifacts } from '../../emitters';
-import { type Stage, STAGES } from '../../emitters/artifact';
-import { emitManifest } from '../../emitters/manifest/emitManifest';
-import { emitReadme } from '../../emitters/readme/emitReadme';
 import {
   browsersOf,
   hasLibrary,
   hasTests,
-} from '../../model/answers/answers';
-import { CONFIG_PATH, emitLintelConfig } from '../../model/config/lintelConfig';
+} from '../../answers/answers';
+import { CONFIG_PATH } from '../../answers/lintelConfig';
+import { type Artifact, buildArtifacts } from '../../emitters';
+import { type Stage, STAGES } from '../../emitters/artifact';
+import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig';
+import { emitManifest } from '../../emitters/manifest/emitManifest';
+import { emitReadme } from '../../emitters/readme/emitReadme';
 import {
   type ScaffoldKind,
   type ScaffoldSpec,
@@ -27,7 +28,7 @@ import { rewriteScaffoldedSource } from '../rewrite/rewrite';
 import { ASSETS_ROOT } from '../shipped-assets/shippedAssets';
 import { exists } from '../utils/fsUtils';
 
-import type { Answers, PackageManager } from '../../model/answers/answers';
+import type { Answers, PackageManager } from '../../answers/answers';
 
 export interface PipelineOptions {
   name: string;

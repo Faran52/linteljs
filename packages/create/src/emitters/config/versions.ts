@@ -1,4 +1,4 @@
-import type { PackageManager } from '../../model/answers/answers';
+import type { PackageManager } from '../../answers/answers';
 
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
 // `catalog:` version in `pnpm-workspace.yaml`; `versions.test.ts` gates it.

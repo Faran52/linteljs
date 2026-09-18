@@ -5,7 +5,7 @@ import { targetFor } from '../../targets';
 import { writeProjectFile } from '../project-files/projectFiles';
 import { isAbsence } from '../utils/fsUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // Non-compiling generator output is not a project decision.
 export const SOURCE_ROOT = 'src';

@@ -1,7 +1,7 @@
 import { targetFor } from '../../targets';
 import { buildDependencies, buildDevDependencies } from '../package-json/emitPackageJson';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 const HEAD = `enableScripts: true
 enableGlobalCache: true

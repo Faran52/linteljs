@@ -12,7 +12,7 @@ import { cursorArtifacts } from './cursor-rules/cursorArtifacts';
 import { referenceArtifacts } from './lintel-plugin/referenceArtifacts';
 import { emitAgentAdapter } from './utils/adapterUtils';
 
-import type { Answers } from '../model/answers/answers';
+import type { Answers } from '../answers/answers';
 
 const adapter = (target: 'CLAUDE.md' | 'AGENTS.md', answers: Answers): Artifact => {
   return {

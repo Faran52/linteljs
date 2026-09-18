@@ -1,4 +1,4 @@
-import { type Answers, hasLibrary } from '../../model/answers/answers';
+import { type Answers, hasLibrary } from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 // `stylelint-config-tailwindcss` teaches it Tailwind's at-rules; without it every `@apply` is unknown.

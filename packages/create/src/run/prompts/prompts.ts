@@ -34,7 +34,7 @@ import {
   type TargetId,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 import type { StoreSlot, TargetRecord } from '../../targets/record';

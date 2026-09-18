@@ -10,7 +10,7 @@ import {
   type Library,
   type Router,
   type TargetId,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 
 import { emitViteConfig } from './emitViteConfig';
 

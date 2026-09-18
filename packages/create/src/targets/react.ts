@@ -1,4 +1,4 @@
-import { ROUTERS } from '../model/answers/answers';
+import { ROUTERS } from '../answers/answers';
 
 import { FOLDER_NAMING, NAMING } from './naming';
 import { REACT_VITE_PLUGIN } from './utils/frameworkUtils';

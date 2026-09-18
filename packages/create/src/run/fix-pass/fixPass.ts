@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { RUN_PREFIX, styleGlob } from '../../emitters/utils/scriptUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 interface EslintFixResult {
   // Present exactly when the file was fixed.

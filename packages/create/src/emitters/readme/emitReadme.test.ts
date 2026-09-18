@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../../model/answers/answers';
+import { DEFAULT_ANSWERS } from '../../answers/answers';
 
 import { emitReadme } from './emitReadme';
 

@@ -1,4 +1,4 @@
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 export const emitAgentAdapter = (answers: Answers): string => {
   const run = answers.packageManager === 'npm' ? 'npm run' : answers.packageManager;

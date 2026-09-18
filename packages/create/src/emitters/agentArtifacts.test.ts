@@ -13,7 +13,7 @@ import {
   type TargetId,
   type Testing,
   TESTING_CHOICES,
-} from '../model/answers/answers';
+} from '../answers/answers';
 import { contentOf } from '../run/shipped-assets/shippedAssets';
 
 import { agentArtifacts } from './agentArtifacts';

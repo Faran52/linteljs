@@ -9,13 +9,13 @@ import {
   relative,
 } from 'node:path';
 
-import { hasTests } from '../../model/answers/answers';
+import { hasTests } from '../../answers/answers';
 import { targetFor } from '../../targets';
 import { safeProjectPath, writeProjectFile } from '../project-files/projectFiles';
 import { SOURCE_ROOT, sourceFiles } from '../rewrite/rewrite';
 import { entryExists, isAbsence } from '../utils/fsUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 import type { StarterRename } from '../../targets';
 
 // Fresh projects only; exact generator text turns upstream drift into a notice.

@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS, TARGET_IDS } from '../../model/answers/answers';
+import { DEFAULT_ANSWERS, TARGET_IDS } from '../../answers/answers';
 
 import { emitStylelintConfig } from './emitStylelintConfig';
 

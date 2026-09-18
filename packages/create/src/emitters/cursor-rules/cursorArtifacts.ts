@@ -6,7 +6,7 @@ import {
   titleOf,
 } from '../utils/ruleFileUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 export const cursorArtifacts = (answers: Answers): Artifact[] => {
   return [

@@ -2,7 +2,7 @@ import { type Artifact, emitted } from '../artifact';
 import { emitAgentAdapter } from '../utils/adapterUtils';
 import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 export const copilotArtifacts = (answers: Answers): Artifact[] => {
   return [

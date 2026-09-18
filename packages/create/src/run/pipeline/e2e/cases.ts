@@ -20,7 +20,7 @@ import {
   type TargetId,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
-} from '../../../model/answers/answers';
+} from '../../../answers/answers';
 import { targetFor } from '../../../targets';
 
 import type { TargetRecord } from '../../../targets/record';

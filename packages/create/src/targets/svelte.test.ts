@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../model/answers/answers';
+import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
 
 import { svelte } from './svelte';
 import { tabsToSpaces } from './utils/targetUtils';

@@ -2,7 +2,7 @@ import {
   type Answers,
   hasLibrary,
   hasTests,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 import { type Artifact } from '../artifact';
 

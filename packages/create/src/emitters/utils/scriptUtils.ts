@@ -1,7 +1,7 @@
-import { hasTests } from '../../model/answers/answers';
+import { hasTests } from '../../answers/answers';
 import { targetFor } from '../../targets';
 
-import type { Answers, PackageManager } from '../../model/answers/answers';
+import type { Answers, PackageManager } from '../../answers/answers';
 
 // `check` is named in the return type so callers need no unreachable `?? ''`.
 // `check` is named so callers need no unreachable `?? ''`.

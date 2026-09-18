@@ -23,9 +23,6 @@ import {
   vi,
 } from 'vitest';
 
-import { type Stage } from '../../emitters/artifact';
-import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
-import { STYLE_ENTRY_CANDIDATES } from '../../emitters/style-entry/styleEntryPath';
 import {
   type Agent,
   type Answers,
@@ -38,14 +35,17 @@ import {
   TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-  emitLintelConfig,
-  readLintelConfig,
-} from '../../model/config/lintelConfig';
+} from '../../answers/lintelConfig';
+import { type Stage } from '../../emitters/artifact';
+import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig';
+import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
+import { STYLE_ENTRY_CANDIDATES } from '../../emitters/style-entry/styleEntryPath';
+import { readLintelConfig } from '../../files/readLintelConfig';
 import { targetFor } from '../../targets';
 import { applySync, planSync } from '../sync/sync';
 import {

@@ -31,15 +31,15 @@ import {
   vi,
 } from 'vitest';
 
-import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
-import { type Answers, DEFAULT_ANSWERS } from '../../model/answers/answers';
+import { type Answers, DEFAULT_ANSWERS } from '../../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-  emitLintelConfig,
   parseLintelConfig,
-} from '../../model/config/lintelConfig';
+} from '../../answers/lintelConfig';
+import { emitLintelConfig } from '../../emitters/lintel-config/emitLintelConfig';
+import { parsePackageJson } from '../../emitters/package-json/emitPackageJson';
 import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/prompts';
 import { exists } from '../utils/fsUtils';
 

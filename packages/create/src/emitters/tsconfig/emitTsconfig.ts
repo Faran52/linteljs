@@ -1,7 +1,7 @@
 import { targetFor, type TsconfigPlugin } from '../../targets';
 import { buildAliases } from '../utils/aliasUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // `noUnusedLocals`/`noUnusedParameters` are absent: `unused-imports` owns that, and both would double-report.
 

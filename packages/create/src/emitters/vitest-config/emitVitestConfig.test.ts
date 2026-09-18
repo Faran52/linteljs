@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../../model/answers/answers';
+import { DEFAULT_ANSWERS } from '../../answers/answers';
 import { setupTestsPath } from '../banned-patterns/checkerArtifact';
 
 import { emitVitestConfig } from './emitVitestConfig';
@@ -13,7 +13,7 @@ import type {
   Router,
   TargetId,
   Testing,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 
 interface AnswerOverrides {
   target?: TargetId;

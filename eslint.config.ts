@@ -60,14 +60,18 @@ const config = [
       'import-x/no-restricted-paths': ['error', {
         zones: [
           {
-            target: ['packages/create/src/model', 'packages/create/src/targets'],
-            from: ['packages/create/src/emitters', 'packages/create/src/run'],
-            message: 'model/ is the answers, targets/ is what lintel knows. Neither reaches outward.',
+            target: ['packages/create/src/answers', 'packages/create/src/targets'],
+            from: [
+              'packages/create/src/emitters',
+              'packages/create/src/files',
+              'packages/create/src/run',
+            ],
+            message: 'answers/ is what the user chose, targets/ what lintel knows. Neither reaches outward.',
           },
           {
             target: 'packages/create/src/emitters',
-            from: 'packages/create/src/run',
-            message: 'emitters/ turns answers into text. Disk, argv and terminals live in run/.',
+            from: ['packages/create/src/files', 'packages/create/src/run'],
+            message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
           },
         ],
       }],

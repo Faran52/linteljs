@@ -10,7 +10,7 @@ import {
   DEFAULT_ANSWERS,
   type HostedFramework,
   type TargetId,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 
 import {
   allowBuildsBlock,

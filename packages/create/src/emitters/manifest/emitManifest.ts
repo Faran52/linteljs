@@ -2,7 +2,7 @@ import {
   type Answers,
   type Browser,
   hasSurface,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 // Emitted rather than templated: browser times surfaces would be twelve templates holding one shape. Birth only,

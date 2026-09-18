@@ -1,4 +1,4 @@
-import { hasTests } from '../model/answers/answers';
+import { hasTests } from '../answers/answers';
 
 import { FOLDER_NAMING, NAMING } from './naming';
 

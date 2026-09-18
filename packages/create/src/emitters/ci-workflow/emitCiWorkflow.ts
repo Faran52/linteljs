@@ -1,7 +1,7 @@
 import { NODE_ENGINE } from '../config/versions';
 import { RUN_PREFIX } from '../utils/scriptUtils';
 
-import type { Answers, PackageManager } from '../../model/answers/answers';
+import type { Answers, PackageManager } from '../../answers/answers';
 
 // The one workflow this standard owns, emitted rather than preserved because it is the gate: a reference repo renamed
 // `check` and its workflow called the old name for two days while `sync` reported it up to date.

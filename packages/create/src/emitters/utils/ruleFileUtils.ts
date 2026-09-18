@@ -1,6 +1,6 @@
 import { ruleSources } from '../lintel-plugin/referenceArtifacts';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 import type { Artifact } from '../artifact';
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;

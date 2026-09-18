@@ -1,8 +1,5 @@
-import { constants } from 'node:fs';
-import { lstat, open } from 'node:fs/promises';
-import { join } from 'node:path';
+import { targetFor } from '../targets';
 
-import { targetFor } from '../../targets';
 import {
   AGENTS,
   type AliasMap,
@@ -21,7 +18,7 @@ import {
   TARGET_IDS,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
-} from '../answers/answers';
+} from './answers';
 
 // `extends Answers`, so a config plans directly. This parser is the only list and refuses an unknown property by
 // name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project as a popup one.
@@ -221,14 +218,6 @@ const expectedKeys = [
   'resolveConditions',
 ];
 
-export const emitLintelConfig = (answers: Answers): string => {
-  return `${JSON.stringify({
-    $schema: CONFIG_SCHEMA_URL,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    ...answers,
-  }, null, 2)}\n`;
-};
-
 const isForm = (value: unknown): value is Form => {
   return typeof value === 'string' && FORM_NAMES.includes(value);
 };
@@ -364,51 +353,4 @@ export const parseLintelConfig = (text: string): LintelConfig => {
 
     throw error;
   }
-};
-
-export const readLintelConfig = async (cwd: string): Promise<LintelConfig> => {
-  const path = join(cwd, CONFIG_PATH);
-  let text: string;
-
-  try {
-    const entry = await lstat(path);
-
-    if (entry.isSymbolicLink()) {
-      throw new Error('lintel.config.json must be a regular file; symbolic links are not allowed');
-    }
-
-    if (!entry.isFile()) {
-      throw new Error('lintel.config.json must be a regular file');
-    }
-
-    const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
-
-    try {
-      // Asks the descriptor, catching a swap after the `lstat`; no test can stage the race.
-      /* v8 ignore next 3 */
-      if (!(await file.stat()).isFile()) {
-        throw new Error('lintel.config.json must be a regular file');
-      }
-
-      text = await file.readFile('utf8');
-    }
-    finally {
-      await file.close();
-    }
-  }
-  catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      throw new Error('lintel.config.json was not found; this is not a LintelJS-managed project');
-    }
-
-    // The same race, answered with the message a named link gets.
-    /* v8 ignore next 3 */
-    if (error instanceof Error && 'code' in error && error.code === 'ELOOP') {
-      throw new Error('lintel.config.json must be a regular file; symbolic links are not allowed');
-    }
-
-    throw error;
-  }
-
-  return parseLintelConfig(text);
 };

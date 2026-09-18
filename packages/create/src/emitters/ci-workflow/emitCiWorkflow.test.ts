@@ -9,7 +9,7 @@ import {
   DEFAULT_ANSWERS,
   type PackageManager,
   type TargetId,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { NODE_ENGINE } from '../config/versions';
 import { buildScripts } from '../utils/scriptUtils';
 

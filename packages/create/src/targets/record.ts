@@ -7,7 +7,7 @@ import type {
   PackageManager,
   Router,
   TargetId,
-} from '../model/answers/answers';
+} from '../answers/answers';
 
 // `create` runs a create-shorthand (`pnpm create vite`); `dlx` runs a binary with no create alias.
 export type ScaffoldKind = 'create' | 'dlx';

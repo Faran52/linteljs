@@ -1,6 +1,6 @@
 import { targetFor } from '../../targets';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 import type { PluginSpec, TestPlatform } from '../../targets/record';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`

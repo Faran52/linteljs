@@ -18,7 +18,7 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../../model/answers/answers';
+import { type Answers, DEFAULT_ANSWERS } from '../../answers/answers';
 import { exists } from '../utils/fsUtils';
 
 import {

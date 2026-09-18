@@ -2,7 +2,7 @@ import { targetFor } from '../../targets';
 import { ESLINT_RANGE } from '../config/versions';
 import { allowedBuildNames, buildDevDependencies } from '../package-json/emitPackageJson';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 /**
  * No `packages:` key: the file exists for `allowBuilds` (a denied build fails with ERR_PNPM_IGNORED_BUILDS) and

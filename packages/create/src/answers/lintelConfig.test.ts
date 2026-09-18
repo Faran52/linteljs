@@ -1,22 +1,13 @@
-import {
-  mkdir,
-  mkdtemp,
-  readFile,
-  readlink,
-  rm,
-  symlink,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
-  afterEach,
-  beforeEach,
   describe,
   expect,
   it,
 } from 'vitest';
+
+import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
 
 import {
   AGENTS,
@@ -31,16 +22,12 @@ import {
   TARGET_IDS,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
-} from '../answers/answers';
-
+} from './answers';
 import {
-  CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
-  emitLintelConfig,
   parseLintelConfig,
-  readLintelConfig,
 } from './lintelConfig';
 
 interface ConfigOverrides {
@@ -107,25 +94,6 @@ interface SchemaFields {
   items?: SchemaValue;
 }
 
-let cwd = '';
-let external = '';
-
-beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-config-'));
-  external = await mkdtemp(join(tmpdir(), 'lintel-config-external-'));
-});
-
-afterEach(async () => {
-  await rm(cwd, {
-    recursive: true,
-    force: true,
-  });
-  await rm(external, {
-    recursive: true,
-    force: true,
-  });
-});
-
 const config = (overrides: ConfigOverrides = {}): string => {
   return JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
@@ -133,19 +101,6 @@ const config = (overrides: ConfigOverrides = {}): string => {
     ...DEFAULT_ANSWERS,
     ...overrides,
   });
-};
-
-const readOptional = async (path: string): Promise<string | null> => {
-  try {
-    return await readFile(path, 'utf8');
-  }
-  catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      return null;
-    }
-
-    throw error;
-  }
 };
 
 const isObject = (value: unknown): value is object => {
@@ -228,16 +183,6 @@ const schemaFrom = (text: string): LintelConfigSchema => {
     },
   };
 };
-
-describe('emitLintelConfig', () => {
-  it('writes the current envelope around every answer', () => {
-    expect(JSON.parse(emitLintelConfig(DEFAULT_ANSWERS))).toEqual({
-      $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
-    });
-  });
-});
 
 describe('parseLintelConfig', () => {
   it('reads the current envelope and every answer', () => {
@@ -534,70 +479,11 @@ describe('parseLintelConfig', () => {
   });
 });
 
-describe('readLintelConfig', () => {
-  it('reads a valid config file', async () => {
-    await writeFile(join(cwd, CONFIG_PATH), emitLintelConfig(DEFAULT_ANSWERS), 'utf8');
-
-    await expect(readLintelConfig(cwd)).resolves.toEqual({
-      $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
-    });
-  });
-
-  it('preserves the parse error for malformed JSON', async () => {
-    await writeFile(join(cwd, CONFIG_PATH), '{', 'utf8');
-
-    await expect(readLintelConfig(cwd)).rejects.toThrow(/lintel\.config\.json is not valid JSON/);
-  });
-
-  it('leaves the config file byte-for-byte unchanged', async () => {
-    const text = emitLintelConfig(DEFAULT_ANSWERS);
-
-    await writeFile(join(cwd, CONFIG_PATH), text, 'utf8');
-    await readLintelConfig(cwd);
-
-    await expect(readFile(join(cwd, CONFIG_PATH), 'utf8')).resolves.toBe(text);
-  });
-
-  it.each([
-    ['live', emitLintelConfig(DEFAULT_ANSWERS)],
-    ['dangling', null],
-  ])('rejects a %s symbolic-link config without touching its target', async (_case, original) => {
-    const target = join(external, 'actual-config.json');
-    const path = join(cwd, CONFIG_PATH);
-
-    if (original !== null) {
-      await writeFile(target, original, 'utf8');
-    }
-
-    await symlink(target, path);
-
-    await expect(readLintelConfig(cwd)).rejects.toThrow(
-      'lintel.config.json must be a regular file; symbolic links are not allowed',
-    );
-    await expect(readlink(path)).resolves.toBe(target);
-    await expect(readOptional(target)).resolves.toBe(original);
-  });
-
-  it('rejects a non-regular config entry before trying to read it', async () => {
-    await mkdir(join(cwd, CONFIG_PATH));
-
-    await expect(readLintelConfig(cwd))
-      .rejects.toThrow('lintel.config.json must be a regular file');
-  });
-
-  it('rejects a directory without a LintelJS config', async () => {
-    await expect(readLintelConfig(cwd))
-      .rejects.toThrow('lintel.config.json was not found; this is not a LintelJS-managed project');
-  });
-});
-
 describe('lintel config schemas', () => {
   it('keep the canonical and packaged schemas in sync with the answer vocabulary', async () => {
     // Off this file rather than `process.cwd()`, which is the workspace root under `pnpm test` there and this
     // package's own directory under `pnpm --filter @linteljs/create test`.
-    const packageRoot = join(import.meta.dirname, '../../..');
+    const packageRoot = join(import.meta.dirname, '../..');
     const workspaceRoot = join(packageRoot, '../..');
     const [canonical, packaged] = await Promise.all([
       readFile(join(workspaceRoot, 'schemas/lintel.config.v2.schema.json'), 'utf8'),

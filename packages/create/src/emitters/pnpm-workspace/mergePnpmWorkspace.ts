@@ -4,7 +4,7 @@ import {
   peerRulesBlock,
 } from './emitPnpmWorkspace';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 const SUPERSEDED_KEYS = [
   // create-next-app opts out of exactly the builds lintel opts into; left in, pnpm refuses the install.

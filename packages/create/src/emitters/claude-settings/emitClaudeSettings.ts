@@ -1,4 +1,4 @@
-import type { Plugin } from '../../model/answers/answers';
+import type { Plugin } from '../../answers/answers';
 
 export const emitClaudeSettings = (plugins: Plugin[]): string => {
   const usesOfficialMarketplace = plugins.includes('context7')

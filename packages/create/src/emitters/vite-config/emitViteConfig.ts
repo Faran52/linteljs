@@ -1,4 +1,4 @@
-import { type Answers, hasLibrary } from '../../model/answers/answers';
+import { type Answers, hasLibrary } from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 // For the five Vite targets. `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.

@@ -12,9 +12,9 @@ import { env } from 'node:process';
 
 import { inject } from 'vitest';
 
+import { type Answers, type PackageManager } from '../../../answers/answers';
+import { CONFIG_PATH, parseLintelConfig } from '../../../answers/lintelConfig';
 import { parsePackageJson } from '../../../emitters/package-json/emitPackageJson';
-import { type Answers, type PackageManager } from '../../../model/answers/answers';
-import { CONFIG_PATH, parseLintelConfig } from '../../../model/config/lintelConfig';
 
 import type { E2eCase } from './cases';
 

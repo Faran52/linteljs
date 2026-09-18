@@ -3,7 +3,7 @@ import {
   type DefineConfigOptions,
   hasLibrary,
   LIBRARY_LAYERS,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 import { buildAliases } from '../utils/aliasUtils';
 

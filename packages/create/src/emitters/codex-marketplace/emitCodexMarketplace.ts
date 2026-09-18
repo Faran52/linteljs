@@ -1,4 +1,4 @@
-import type { Plugin } from '../../model/answers/answers';
+import type { Plugin } from '../../answers/answers';
 
 interface MarketplaceSource {
   source: 'git-subdir' | 'local' | 'url';

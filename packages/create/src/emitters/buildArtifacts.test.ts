@@ -27,7 +27,7 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '../model/answers/answers';
+} from '../answers/answers';
 import { ASSETS_ROOT, contentOf } from '../run/shipped-assets/shippedAssets';
 import { targetFor } from '../targets';
 

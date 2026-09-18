@@ -10,7 +10,7 @@ import {
   type Library,
   TARGET_IDS,
   type TargetId,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 
 import { buildAliases } from './aliasUtils';
 

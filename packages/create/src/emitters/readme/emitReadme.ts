@@ -1,6 +1,6 @@
 import { fillSlots, sharedSlots } from '../utils/templateUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // Replaced outright: the scaffolder's advice is wrong in a way someone acts on (Solid's port 5173 against the
 // emitted 3000). Never touched by `sync`.

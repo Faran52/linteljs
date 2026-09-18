@@ -1,4 +1,4 @@
-import { hasLibrary } from '../model/answers/answers';
+import { hasLibrary } from '../answers/answers';
 
 import { FOLDER_NAMING, NAMING } from './naming';
 import { HOOKS_ALIAS, tabsToSpaces } from './utils/targetUtils';

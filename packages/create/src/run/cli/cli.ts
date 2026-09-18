@@ -12,21 +12,21 @@ import {
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
 import packageJson from '../../../package.json' with { type: 'json' };
-import { type Stage, STAGES } from '../../emitters/artifact';
-import { RUN_PREFIX } from '../../emitters/utils/scriptUtils';
 import {
   type Answers,
   DEFAULT_ANSWERS,
   isValidProjectName,
   PROJECT_NAME_RULE,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   parseLintelConfig,
-  readLintelConfig,
-} from '../../model/config/lintelConfig';
+} from '../../answers/lintelConfig';
+import { type Stage, STAGES } from '../../emitters/artifact';
+import { RUN_PREFIX } from '../../emitters/utils/scriptUtils';
+import { readLintelConfig } from '../../files/readLintelConfig';
 import { runPipeline } from '../pipeline/pipeline';
 import {
   ask,

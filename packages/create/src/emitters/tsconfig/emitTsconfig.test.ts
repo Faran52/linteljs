@@ -12,7 +12,7 @@ import {
   TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { emitEslintConfig } from '../eslint-config/emitEslintConfig';
 import { buildAliases } from '../utils/aliasUtils';
 

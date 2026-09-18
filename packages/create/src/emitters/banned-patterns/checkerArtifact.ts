@@ -1,11 +1,11 @@
-import { hasTests } from '../../model/answers/answers';
+import { hasTests } from '../../answers/answers';
 import { targetFor } from '../../targets';
 import { type Artifact } from '../artifact';
 import { projectSpelling } from '../projectShape';
 
 import { mergeChecker } from './utils/mergeUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // `.tsx` on the React family, where a rendering setup needs JSX (read off `jsx`, since Solid and Vue set `preserve`).
 // Newest first: `run/` asks which one a project already holds.

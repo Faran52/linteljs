@@ -12,7 +12,7 @@ import {
   TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { FOLDER_ROUTED } from '../../targets/naming';
 
 import { emitEslintConfig } from './emitEslintConfig';

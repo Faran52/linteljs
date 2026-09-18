@@ -10,7 +10,7 @@ import {
   type PackageManager,
   type TargetId,
   type Testing,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 
 import { buildScripts } from './scriptUtils';
 

@@ -9,7 +9,7 @@ import {
   DEFAULT_ANSWERS,
   TARGET_IDS,
   type TargetId,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 import { STYLE_ENTRY_CANDIDATES, styleEntryPath } from './styleEntryPath';

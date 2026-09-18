@@ -8,7 +8,7 @@ import { svelte } from './svelte';
 import { vue } from './vue';
 import { webextension } from './webextension';
 
-import type { Answers, TargetId } from '../model/answers/answers';
+import type { Answers, TargetId } from '../answers/answers';
 import type { TargetRecord } from './record';
 
 // Built from the answers: an extension composes a browser and a framework, which move most of its fields. The

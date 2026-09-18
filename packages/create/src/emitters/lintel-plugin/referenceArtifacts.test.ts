@@ -11,7 +11,7 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { contentOf } from '../../run/shipped-assets/shippedAssets';
 import { type Artifact } from '../artifact';
 

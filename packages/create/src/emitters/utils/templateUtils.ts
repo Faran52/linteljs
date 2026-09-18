@@ -1,9 +1,9 @@
-import { hasTests } from '../../model/answers/answers';
+import { hasTests } from '../../answers/answers';
 import { targetFor } from '../../targets';
 
 import { buildScripts, RUN_PREFIX } from './scriptUtils';
 
-import type { Answers } from '../../model/answers/answers';
+import type { Answers } from '../../answers/answers';
 
 // An unfilled slot throws: an intact `{{RUN}}` in a generated CLAUDE.md reads as documentation.
 

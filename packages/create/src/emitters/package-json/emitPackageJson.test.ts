@@ -17,7 +17,7 @@ import {
   TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../../model/answers/answers';
+} from '../../answers/answers';
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../config/versions';
 
 import {
