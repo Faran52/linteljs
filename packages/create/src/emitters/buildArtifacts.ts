@@ -5,7 +5,7 @@ import {
 } from '../model/answers/answers';
 import { targetFor } from '../targets';
 
-import { agentArtifacts } from './agent-files/agentArtifacts';
+import { agentArtifacts } from './agentArtifacts';
 import {
   type Artifact,
   copied,

@@ -1,15 +1,13 @@
-import { type Artifact, emitted } from '../artifact';
 import { ruleSources } from '../lintel-plugin/referenceArtifacts';
 
-import { emitAgentAdapter } from './emitAgentAdapter';
-
 import type { Answers } from '../../model/answers/answers';
+import type { Artifact } from '../artifact';
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
 
 // One comma-separated string, which is how both tools spell a multi-glob. Empty where the rule carries no `paths:`
 // list, which several do: `type-standards.md` and `testing.standard.md` govern any file, not a set of them.
-const globsOf = (source: string): string => {
+export const globsOf = (source: string): string => {
   const listed = PATHS.exec(source)?.[1];
 
   return listed === undefined
@@ -20,7 +18,7 @@ const globsOf = (source: string): string => {
 };
 
 // The rule's own first heading, so neither tool needs a second description to drift from it.
-const titleOf = (source: string): string => {
+export const titleOf = (source: string): string => {
   return /^# (.+)$/mu.exec(source)?.[1] ?? 'LintelJS project standard';
 };
 
@@ -38,7 +36,7 @@ const named = (name: string, suffix: string): string => {
  * of its own. Both are fed the same `claude-rules/` sources as the plugin skill references, with the shared `paths:`
  * list rewritten into the key that tool actually reads.
  */
-const ruleArtifacts = (
+export const ruleArtifacts = (
   answers: Answers,
   directory: string,
   suffix: string,
@@ -56,40 +54,4 @@ const ruleArtifacts = (
       },
     };
   });
-};
-
-export const copilotArtifacts = (answers: Answers): Artifact[] => {
-  return [
-    {
-      ...emitted('standard', '.github/copilot-instructions.md', emitAgentAdapter(answers)),
-      preserve: true,
-    },
-    // `**` where the rule lists no paths: it governs any file, which is what Copilot reads that glob as.
-    ...ruleArtifacts(answers, '.github/instructions', '.instructions.md', (source) => {
-      const globs = globsOf(source);
-
-      return `---\napplyTo: "${globs === '' ? '**' : globs}"\n---\n\n`;
-    }),
-  ];
-};
-
-export const cursorArtifacts = (answers: Answers): Artifact[] => {
-  return [
-    {
-      ...emitted(
-        'standard',
-        '.cursor/rules/linteljs.mdc',
-        `---\ndescription: LintelJS project\nalwaysApply: true\n---\n\n${emitAgentAdapter(answers)}`,
-      ),
-      preserve: true,
-    },
-    // A rule listing no paths governs any file, and Cursor spells that `alwaysApply` rather than with a glob, so the
-    // two keys move together: globs and not always, or always and no globs.
-    ...ruleArtifacts(answers, '.cursor/rules', '.mdc', (source) => {
-      const globs = globsOf(source);
-      const scope = globs === '' ? 'alwaysApply: true' : `globs: ${globs}\nalwaysApply: false`;
-
-      return `---\ndescription: ${titleOf(source)}\n${scope}\n---\n\n`;
-    }),
-  ];
 };

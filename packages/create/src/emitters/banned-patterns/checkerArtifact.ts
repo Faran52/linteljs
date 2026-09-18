@@ -3,7 +3,7 @@ import { targetFor } from '../../targets';
 import { type Artifact } from '../artifact';
 import { projectSpelling } from '../projectShape';
 
-import { mergeChecker } from './mergeChecker';
+import { mergeChecker } from './utils/mergeUtils';
 
 import type { Answers } from '../../model/answers/answers';
 

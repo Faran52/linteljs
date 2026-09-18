@@ -4,8 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import { emitClaudeSettings } from './emitClaudeSettings';
-import { mergeClaudeSettings } from './mergeClaudeSettings';
+import { emitClaudeSettings } from '../emitClaudeSettings';
+
+import { mergeClaudeSettings } from './mergeUtils';
 
 // The merged shape as these tests read it: this CLI's two keys, plus the project ones above.
 interface Matcher {

@@ -1,7 +1,4 @@
-export {
-  agentArtifacts,
-  GENERATED_AGENT_TARGETS,
-} from './agent-files/agentArtifacts';
+export { agentArtifacts } from './agentArtifacts';
 export {
   type Artifact,
   type ArtifactContent,
@@ -10,4 +7,5 @@ export {
   type MergedText,
 } from './artifact';
 export { buildArtifacts } from './buildArtifacts';
+export { GENERATED_AGENT_TARGETS } from './config/ruleFiles';
 export { referenceArtifacts } from './lintel-plugin/referenceArtifacts';
