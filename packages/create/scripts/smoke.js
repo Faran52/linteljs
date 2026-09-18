@@ -104,7 +104,7 @@ assert.match(help, /@linteljs\/create sync/, '--help does not mention the sync c
 console.log('  ✓ binary runs from the tarball and documents its flags');
 
 // `assets/` beside `dist/`, which is what `assetsRootFrom` walks up to find. In the workspace it starts from
-// `src/run/` and here from the flattened `dist/`, so the published depth is only exercised by the packed layout.
+// `src/files/` and here from the flattened `dist/`, so the published depth is only exercised by the packed layout.
 assert.ok(existsSync(join(pkgDir, 'dist', 'index.mjs')), 'no dist/index.mjs in the tarball');
 assert.ok(existsSync(join(pkgDir, 'assets')), 'no assets/ beside dist/ for the walk-up to find');
 
