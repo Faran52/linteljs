@@ -139,6 +139,34 @@
       "description": "Report duplicate JSX props on the same element."
     }
   },
+  "no-eslint-disable": {
+    "messages": {
+      "noDisable": "Remove this directive. Fix what the rule reports, or name the exemption in the ESLint config."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "allowRules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "category": "suppression",
+      "language": "universal",
+      "recommended": true,
+      "description": "Fix what a rule reports, or name the exemption in the config. Do not disable it inline."
+    }
+  },
   "no-import-namespace-destructure": {
     "messages": {
       "noDestructureNamespace": "Do not destructure namespace imports; import only specific members needed."

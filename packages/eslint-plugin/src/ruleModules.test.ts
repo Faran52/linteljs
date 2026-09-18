@@ -45,6 +45,7 @@ const RULE_MODULES = [
   'interface-order',
   'newline-destructuring',
   'no-duplicate-jsx-props',
+  'no-eslint-disable',
   'no-import-namespace-destructure',
   'prefer-arrow-functions',
   'prefer-await-to-then',
