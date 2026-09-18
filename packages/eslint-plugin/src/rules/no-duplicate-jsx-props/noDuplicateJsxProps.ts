@@ -1,37 +1,28 @@
 import { createRule } from '../../types.ts';
 
-import type { RuleNode } from '../../utils/ruleUtils.ts';
+import type {
+  NamedNode,
+  NodeLocation,
+  RuleNode,
+  TypedNode,
+} from '../../utils/ruleUtils.ts';
 
 // JSX is not in ESLint's ESTree types, so the listener's `any` is narrowed to the two fields this rule reads.
-interface Position {
-  line: number;
-  column: number;
-}
-
 interface JsxIdentifier {
   type: 'JSXIdentifier';
   name: string;
 }
 
-interface NamePart {
-  name: string;
-}
-
 interface JsxNamespacedName {
   type: 'JSXNamespacedName';
-  namespace: NamePart;
-  name: NamePart;
-}
-
-interface AttributeLocation {
-  start: Position;
-  end: Position;
+  namespace: NamedNode;
+  name: NamedNode;
 }
 
 interface JsxAttribute {
   type: 'JSXAttribute';
   name: JsxIdentifier | JsxNamespacedName;
-  loc: AttributeLocation;
+  loc: NodeLocation;
 }
 
 interface JsxSpreadAttribute {
@@ -44,10 +35,6 @@ interface JsxOpeningElement {
 
 // The one property every ESLint node carries, and all this rule asks for before it narrows. Narrower than `RuleNode`
 // on purpose, so a test can hand this a two-field object instead of assembling a whole parsed node.
-interface TypedNode {
-  type: string;
-}
-
 const isOpeningElement = (node: TypedNode): node is TypedNode & JsxOpeningElement => {
   return 'attributes' in node && Array.isArray(node.attributes);
 };

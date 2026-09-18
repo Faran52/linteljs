@@ -1,25 +1,25 @@
 import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
-import { optionsOf, rebuildLosesComments } from '../../utils/ruleUtils.ts';
+import {
+  optionsOf,
+  rebuildLosesComments,
+  type TypedNode,
+} from '../../utils/ruleUtils.ts';
 
 interface SortHookDepsOptions {
   order: 'asc' | 'desc';
   hooks: string[];
 }
 
-interface Typed {
-  type: string;
-}
-
 // Matching is by call name only, so a project with its own hooks replaces this list through the `hooks` option.
 const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
 
 // Wider than the `Identifier` these two care about, so both take ESLint's loosest expression union.
-const isPlainIdentifier = (element: Typed | null): boolean => {
+const isPlainIdentifier = (element: TypedNode | null): boolean => {
   return element?.type === 'Identifier';
 };
 
-const nameOf = (element: Typed | null): string => {
+const nameOf = (element: TypedNode | null): string => {
   /* v8 ignore next 2 -- only reached once isPlainIdentifier has cleared every element */
   return element && 'name' in element && typeof element.name === 'string' ? element.name : '';
 };

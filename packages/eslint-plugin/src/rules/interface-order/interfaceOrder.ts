@@ -1,6 +1,10 @@
 import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
-import { adjacentPairs, lineTerminatorOf } from '../../utils/layoutUtils.ts';
+import {
+  adjacentPairs,
+  lineTerminatorOf,
+  type Located,
+} from '../../utils/layoutUtils.ts';
 import {
   rangeOf,
   type RuleNode,
@@ -24,23 +28,11 @@ interface Texted {
   text: string;
 }
 
-interface LineStart {
-  line: number;
-}
-
-interface Located {
-  start: LineStart;
-}
-
-interface MaybeLocated {
-  loc?: Located | null | undefined;
-}
-
 const readText = (entry: Texted): string => {
   return entry.text;
 };
 
-const startLineOf = (node: MaybeLocated): number => {
+const startLineOf = (node: Located): number => {
   /* v8 ignore next 1 -- every parsed node and comment carries a location */
   return node.loc?.start.line ?? 0;
 };

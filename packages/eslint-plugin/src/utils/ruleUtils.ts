@@ -22,10 +22,52 @@ export interface AncestorReader {
   getAncestors(node: Ancestor): Ancestor[];
 }
 
+// Where the parse put something. Taken from ESLint's own token type rather than written out again: a node, a token
+// and a comment all carry the same shape, and four rules had described it under six names between them.
+export type NodeLocation = AST.Token['loc'];
+
+export type Position = NodeLocation['start'];
+
 // A parsed thing carrying a source range; shaped rather than RuleNode so a test can call rangeOf({}) with no cast.
 export interface Ranged {
   range?: AST.Range | undefined;
 }
+
+// The one property every node carries, and what a rule reads before it narrows.
+export interface TypedNode {
+  type: string;
+}
+
+// An identifier read for its name: a function's `id`, a type parameter, one part of a JSX name.
+export interface NamedNode {
+  name: string;
+}
+
+// The matchers `Extract` reads. Private, because what a rule wants is the node they pick out, not the shape.
+interface ObjectPatternMatch {
+  type: 'ObjectPattern';
+}
+
+interface ArrayPatternMatch {
+  type: 'ArrayPattern';
+}
+
+interface MemberExpressionMatch {
+  type: 'MemberExpression';
+}
+
+interface FunctionMatch {
+  type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression';
+}
+
+export type ObjectPatternNode = Extract<RuleNode, ObjectPatternMatch>;
+
+export type ArrayPatternNode = Extract<RuleNode, ArrayPatternMatch>;
+
+export type MemberExpressionNode = Extract<RuleNode, MemberExpressionMatch>;
+
+// Read off the union, not a narrowed arm, so the null `id` that `export default function () {}` carries survives.
+export type FunctionNode = Extract<RuleNode, FunctionMatch>;
 
 // Taken from the method rather than guessed, so no call site needs a cast.
 type CommentHost = Parameters<SourceCode['getCommentsInside']>[0];

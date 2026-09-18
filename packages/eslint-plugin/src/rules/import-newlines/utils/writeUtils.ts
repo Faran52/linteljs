@@ -1,5 +1,6 @@
 // Emitter: import statement in, replacement text out. A string, not a fix, so `index.ts` can measure it first.
 import {
+  type NodeLocation,
   rebuildLosesComments,
   type RuleNode,
   type SourceCode,
@@ -10,18 +11,6 @@ import type { Indents } from '../../../utils/layoutUtils.ts';
 // The matcher `Extract` reads, named because nothing in this workspace is written inline.
 interface ImportDeclarationNode {
   type: 'ImportDeclaration';
-}
-
-// What a parsed node carries at each end of its location. Both fields are always there; the emitter reads `line`
-// off both ends and `column` off the start.
-interface Position {
-  line: number;
-  column: number;
-}
-
-interface NodeLocation {
-  start: Position;
-  end: Position;
 }
 
 interface ImportSource {

@@ -1,10 +1,11 @@
 // The emitter: a function node in, the arrow that replaces it out. Nothing here decides
 // whether a rewrite is allowed; `safetyUtils.ts` is the other half.
-import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
-
-export interface FunctionId {
-  name: string;
-}
+import type {
+  FunctionNode,
+  NamedNode,
+  RuleNode,
+  SourceCode,
+} from '../../../utils/ruleUtils.ts';
 
 interface TypeAnnotation {
   type: string;
@@ -17,12 +18,8 @@ interface Annotated {
 
 type ReturnTypeNode = RuleNode & Annotated;
 
-interface Named {
-  name: string;
-}
-
 interface TypeParameter {
-  name: Named;
+  name: NamedNode;
 }
 
 interface Parameterised {
@@ -31,22 +28,16 @@ interface Parameterised {
 
 type TypeParametersNode = RuleNode & Parameterised;
 
-// The three function nodes, picked out of the node union, with `returnType` and
-// `typeParameters` added since they are TypeScript nodes ESLint's ESTree types have no name for.
-interface FunctionNode {
-  type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression';
-}
-
 // `returnType` and `typeParameters` are TypeScript nodes ESLint's ESTree types have no name for.
 interface FunctionExtras {
-  id?: FunctionId | null;
+  id?: NamedNode | null;
   returnType?: ReturnTypeNode;
   typeParameters?: TypeParametersNode;
 }
 
-export type FunctionLike = Extract<RuleNode, FunctionNode> & FunctionExtras;
+export type FunctionLike = FunctionNode & FunctionExtras;
 
-export const getFunctionId = (fn: FunctionLike): FunctionId | null => {
+export const getFunctionId = (fn: FunctionLike): NamedNode | null => {
   return fn.id ?? null;
 };
 

@@ -6,20 +6,17 @@ import {
   indentReader,
   sameLine,
 } from '../../utils/layoutUtils.ts';
-import { mustFind, type RuleNode } from '../../utils/ruleUtils.ts';
-
-interface ObjectPatternMatch {
-  type: 'ObjectPattern';
-}
-
-interface ArrayPatternMatch {
-  type: 'ArrayPattern';
-}
+import {
+  type ArrayPatternNode,
+  mustFind,
+  type ObjectPatternNode,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 // A member of either pattern; the array-pattern side carries holes in `[, , third]` as nulls, hence the null.
 type PatternMember
-  = Extract<RuleNode, ObjectPatternMatch>['properties'][number]
-    | Extract<RuleNode, ArrayPatternMatch>['elements'][number];
+  = ObjectPatternNode['properties'][number]
+    | ArrayPatternNode['elements'][number];
 
 export const destructuringPropertyNewline = createRule('destructuring-property-newline', {
   meta: {

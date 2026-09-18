@@ -5,7 +5,11 @@ import {
   indentReader,
   lineTerminatorOf,
 } from '../../utils/layoutUtils.ts';
-import { type Fixer, optionsOf } from '../../utils/ruleUtils.ts';
+import {
+  type Fixer,
+  optionsOf,
+  type TypedNode,
+} from '../../utils/ruleUtils.ts';
 
 import { type ImportNode, writeImport } from './utils/writeUtils.ts';
 
@@ -16,11 +20,7 @@ interface ImportNewlinesOptions {
   maxLineLength: number;
 }
 
-interface Typed {
-  type: string;
-}
-
-const isNamedSpecifier = (specifier: Typed): boolean => {
+const isNamedSpecifier = (specifier: TypedNode): boolean => {
   return specifier.type === 'ImportSpecifier';
 };
 

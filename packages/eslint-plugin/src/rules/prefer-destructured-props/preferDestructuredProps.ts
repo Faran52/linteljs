@@ -1,31 +1,18 @@
 import { createRule } from '../../types.ts';
 import { declaredVariablesOf } from '../../utils/compatUtils.ts';
 import {
+  type FunctionNode,
+  type MemberExpressionNode,
+  type NamedNode,
   type Ranged,
   rangeOf,
-  type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-interface FunctionName {
-  name: string;
-}
-
-// Read off the union, not a narrowed arm, so the null `export default function () {}` carries survives.
-interface FunctionNode {
-  type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression';
-}
-
 interface Identified {
-  id?: FunctionName | null;
+  id?: NamedNode | null;
 }
 
-type FunctionLike = Extract<RuleNode, FunctionNode> & Identified;
-
-interface MemberExpressionMatch {
-  type: 'MemberExpression';
-}
-
-type MemberExpressionNode = Extract<RuleNode, MemberExpressionMatch>;
+type FunctionLike = FunctionNode & Identified;
 
 interface Called {
   arguments: Ranged[];

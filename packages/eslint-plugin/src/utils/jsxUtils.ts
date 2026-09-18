@@ -1,6 +1,8 @@
 // JSX is absent from ESLint's ESTree types, so the accessibility rules describe the nodes they read as structural
 // interfaces. Structural rather than nominal so a test can hand these a plain object, and so no rule needs a cast.
 
+import type { TypedNode } from './ruleUtils.ts';
+
 // A JSX name in all three spellings: `View`, `Animated.Image`, `svg:path`. `name` is a string on a `JSXIdentifier`
 // and a nested name on a `JSXNamespacedName`, which is why it carries both.
 export interface JsxName {
@@ -67,11 +69,6 @@ export interface JsxElement {
   type?: string | undefined;
   openingElement?: JsxOpeningElement | undefined;
   children?: JsxChild[] | undefined;
-}
-
-// The one property every ESLint node carries, and all these helpers ask for before narrowing.
-export interface TypedNode {
-  type: string;
 }
 
 interface Attributed {

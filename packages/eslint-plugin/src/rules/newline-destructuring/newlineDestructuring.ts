@@ -8,9 +8,11 @@ import {
 } from '../../utils/layoutUtils.ts';
 import {
   type Fixer,
+  type ObjectPatternNode,
   optionsOf,
   rebuildLosesComments,
   type RuleNode,
+  type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
 import {
@@ -23,19 +25,15 @@ import {
 
 import type { Rule } from 'eslint';
 
-interface ObjectPatternMatch {
-  type: 'ObjectPattern';
-}
-
 // `typeAnnotation` is TypeScript-only, so it is optional here rather than asserted, letting the visitor skip a cast.
 interface PatternExtras {
   optional?: boolean;
   typeAnnotation?: RuleNode;
 }
 
-type ObjectPatternNode = Extract<RuleNode, ObjectPatternMatch> & PatternExtras;
+type DestructuredPattern = ObjectPatternNode & PatternExtras;
 
-// Same as `ObjectPatternNode`: ESLint 10 checks a selector's handler against `Rule.Node`, which carries neither list.
+// Same as `DestructuredPattern`: ESLint 10 checks a selector's handler against `Rule.Node`, which carries neither list.
 interface Bodied {
   body?: PropertyNode[];
 }
@@ -56,11 +54,7 @@ interface NewlineDestructuringOptions {
   maxPropertiesWithRest: number;
 }
 
-interface Typed {
-  type: string;
-}
-
-const isRestElement = (property: Typed): boolean => {
+const isRestElement = (property: TypedNode): boolean => {
   return property.type === 'RestElement';
 };
 
@@ -113,7 +107,7 @@ export const newlineDestructuring = createRule('newline-destructuring', {
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
-    const buildFix = (node: ObjectPatternNode, multiLine = true): ((fixer: Fixer) => Rule.Fix | null) => {
+    const buildFix = (node: DestructuredPattern, multiLine = true): ((fixer: Fixer) => Rule.Fix | null) => {
       return (fixer) => {
         if (rebuildLosesComments(sourceCode, node)) {
           return null;
@@ -266,7 +260,7 @@ export const newlineDestructuring = createRule('newline-destructuring', {
     };
 
     return {
-      ObjectPattern: (node: ObjectPatternNode) => {
+      ObjectPattern: (node: DestructuredPattern) => {
         const properties = node.properties as PropertyNode[];
 
         if (properties.length <= 1) {

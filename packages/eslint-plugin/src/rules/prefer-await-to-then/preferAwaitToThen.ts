@@ -5,17 +5,15 @@ import {
   scopeOf,
 } from '../../utils/compatUtils.ts';
 import { isAwaitedOrAsyncReturn } from '../../utils/promiseChainUtils.ts';
-import { optionsOf, type RuleNode } from '../../utils/ruleUtils.ts';
+import {
+  type MemberExpressionNode,
+  optionsOf,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 interface PreferAwaitToThenOptions {
   strict: boolean;
 }
-
-interface MemberExpressionMatch {
-  type: 'MemberExpression';
-}
-
-type MemberExpressionNode = Extract<RuleNode, MemberExpressionMatch>;
 
 const PROMISE_METHODS = new Set([
   'then',

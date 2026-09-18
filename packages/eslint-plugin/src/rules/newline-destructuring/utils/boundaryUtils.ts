@@ -2,20 +2,15 @@
 // about the block's layout. `index.ts` decides and fixes; nothing here reports.
 import { adjacentPairs, sameLine } from '../../../utils/layoutUtils.ts';
 
-import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
-
-interface LineRef {
-  line: number;
-}
-
-interface PropertyLocation {
-  start: LineRef;
-  end: LineRef;
-}
+import type {
+  NodeLocation,
+  RuleNode,
+  SourceCode,
+} from '../../../utils/ruleUtils.ts';
 
 interface Placed {
   type: string;
-  loc: PropertyLocation;
+  loc: NodeLocation;
 }
 
 // The location every reader needs; `loc` is optional on ESTree nodes, so stating it once avoids per-reader fallbacks.
