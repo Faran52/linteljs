@@ -1,4 +1,4 @@
-import type { NamingMap, TargetId } from '../answers/answers';
+import type { NamingMap, TargetId } from '../model/answers/answers';
 
 const KEBAB = '+([a-z0-9])*(-+([a-z0-9]))';
 

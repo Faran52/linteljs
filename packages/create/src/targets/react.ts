@@ -1,6 +1,6 @@
-import { ROUTERS } from '../answers/answers';
-import { FOLDER_NAMING, NAMING } from '../naming/naming';
+import { ROUTERS } from '../model/answers/answers';
 
+import { FOLDER_NAMING, NAMING } from './naming';
 import { REACT_VITE_PLUGIN } from './utils/frameworkUtils';
 import {
   COMMON_REACT_PLUGINS,

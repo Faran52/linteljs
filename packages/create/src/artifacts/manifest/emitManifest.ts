@@ -3,7 +3,7 @@ import {
   type Browser,
   hasSurface,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 
 // Emitted rather than templated: browser times surfaces would be twelve templates holding one shape. Birth only,
 // since a real manifest is its permissions and store metadata within a week.

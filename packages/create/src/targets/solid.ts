@@ -1,5 +1,4 @@
-import { FOLDER_NAMING, NAMING } from '../naming/naming';
-
+import { FOLDER_NAMING, NAMING } from './naming';
 import { OUTSIDE_TESTS } from './utils/frameworkUtils';
 import { viteScaffold } from './utils/targetUtils';
 

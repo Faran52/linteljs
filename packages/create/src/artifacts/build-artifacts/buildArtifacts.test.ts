@@ -28,8 +28,8 @@ import {
   type Testing,
   type TypeSafety,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
 import { ASSETS_ROOT, contentOf } from '../../run/shipped-assets/shippedAssets';
+import { targetFor } from '../../targets';
 import { type Artifact } from '../artifact/artifact';
 import { setupTestsPath } from '../banned-patterns/checkerArtifact';
 

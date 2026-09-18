@@ -1,6 +1,6 @@
 import { hasLibrary } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
-import { OUTSIDE_TESTS } from '../../model/targets/utils/frameworkUtils';
+import { targetFor } from '../../targets';
+import { OUTSIDE_TESTS } from '../../targets/utils/frameworkUtils';
 
 import type { Answers, HostedFramework } from '../../model/answers/answers';
 

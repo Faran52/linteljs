@@ -10,13 +10,13 @@ import {
 } from 'node:path';
 
 import { hasTests } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { safeProjectPath, writeProjectFile } from '../project-files/projectFiles';
 import { SOURCE_ROOT, sourceFiles } from '../rewrite/rewrite';
 import { entryExists, isAbsence } from '../utils/fsUtils';
 
 import type { Answers } from '../../model/answers/answers';
-import type { StarterRename } from '../../model/targets';
+import type { StarterRename } from '../../targets';
 
 // Fresh projects only; exact generator text turns upstream drift into a notice.
 const applyStarterFixes = async (

@@ -2,11 +2,10 @@ import {
   COMPONENT,
   FOLDER_NAMING,
   NAMING,
-} from '../naming/naming';
-
+} from './naming';
 import { partsFor } from './utils/frameworkUtils';
 
-import type { HostedFramework } from '../answers/answers';
+import type { HostedFramework } from '../model/answers/answers';
 import type { TargetBuilder } from './registry';
 
 // Templates on the server, optionally hydrating islands in a hosted framework. `vite: false` although Astro runs on

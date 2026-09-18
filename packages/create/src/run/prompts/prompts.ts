@@ -35,9 +35,9 @@ import {
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 
-import type { StoreSlot, TargetRecord } from '../../model/targets/record';
+import type { StoreSlot, TargetRecord } from '../../targets/record';
 
 /**
  * `@clack/prompts` is the one dependency this CLI carries: reading raw keypresses is not something `node:readline`

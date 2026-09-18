@@ -1,4 +1,4 @@
-import { FOLDER_NAMING, NAMING } from '../naming/naming';
+import { FOLDER_NAMING, NAMING } from './naming';
 
 import type { TargetRecord } from './record';
 

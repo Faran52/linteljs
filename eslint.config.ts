@@ -60,9 +60,9 @@ const config = [
       'import-x/no-restricted-paths': ['error', {
         zones: [
           {
-            target: 'packages/create/src/model',
+            target: ['packages/create/src/model', 'packages/create/src/targets'],
             from: ['packages/create/src/artifacts', 'packages/create/src/run'],
-            message: 'model/ is the answers and the target records. It reaches nothing outward.',
+            message: 'model/ is the answers, targets/ is what lintel knows. Neither reaches outward.',
           },
           {
             target: 'packages/create/src/artifacts',

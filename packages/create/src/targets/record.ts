@@ -7,7 +7,7 @@ import type {
   PackageManager,
   Router,
   TargetId,
-} from '../answers/answers';
+} from '../model/answers/answers';
 
 // `create` runs a create-shorthand (`pnpm create vite`); `dlx` runs a binary with no create alias.
 export type ScaffoldKind = 'create' | 'dlx';
@@ -155,7 +155,7 @@ export interface TargetRecord {
   hostsFramework?: true;
   ignores: string[];
   naming: NamingMap;
-  // A target whose routes are files needs `[slug]`/`(tabs)` admitted; both shapes live in `model/naming`.
+  // A target whose routes are files needs `[slug]`/`(tabs)` admitted; both shapes live in `targets/naming`.
   folderNaming: NamingMap;
   hooksAlias?: AliasMap;
   // Merged at the tail of the lib family.

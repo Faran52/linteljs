@@ -1,7 +1,7 @@
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 
 import type { Answers } from '../../model/answers/answers';
-import type { PluginSpec, TestPlatform } from '../../model/targets/record';
+import type { PluginSpec, TestPlatform } from '../../targets/record';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
 // on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.

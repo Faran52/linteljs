@@ -46,7 +46,7 @@ import {
   readLintelConfig,
 } from '../../model/config/lintelConfig';
 import { type Stage } from '../../model/stages/stages';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { applySync, planSync } from '../sync/sync';
 import {
   entryExists,

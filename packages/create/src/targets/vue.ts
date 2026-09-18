@@ -1,5 +1,6 @@
-import { hasTests } from '../answers/answers';
-import { FOLDER_NAMING, NAMING } from '../naming/naming';
+import { hasTests } from '../model/answers/answers';
+
+import { FOLDER_NAMING, NAMING } from './naming';
 
 import type { TargetRecord } from './record';
 

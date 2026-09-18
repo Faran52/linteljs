@@ -7,7 +7,7 @@ import {
   type Library,
   type Router,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { buildScripts } from '../build-scripts/buildScripts';
 
 import {
@@ -16,7 +16,7 @@ import {
   VERSIONS,
 } from './versions';
 
-import type { TargetRecord } from '../../model/targets/record';
+import type { TargetRecord } from '../../targets/record';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 

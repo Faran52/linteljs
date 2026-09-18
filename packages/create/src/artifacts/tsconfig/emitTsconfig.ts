@@ -1,4 +1,4 @@
-import { targetFor, type TsconfigPlugin } from '../../model/targets';
+import { targetFor, type TsconfigPlugin } from '../../targets';
 import { buildAliases } from '../build-aliases/buildAliases';
 
 import type { Answers } from '../../model/answers/answers';

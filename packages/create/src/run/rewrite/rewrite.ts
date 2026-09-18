@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { writeProjectFile } from '../project-files/projectFiles';
 import { isAbsence } from '../utils/fsUtils';
 

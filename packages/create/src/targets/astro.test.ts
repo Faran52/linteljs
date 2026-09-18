@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers/answers';
+import { DEFAULT_ANSWERS } from '../model/answers/answers';
 
 import { astro } from './astro';
 
@@ -12,7 +12,7 @@ import type {
   Answers,
   HostedFramework,
   Library,
-} from '../answers/answers';
+} from '../model/answers/answers';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   return {

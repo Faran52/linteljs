@@ -4,7 +4,7 @@ import {
   hasLibrary,
   LIBRARY_LAYERS,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { buildAliases } from '../build-aliases/buildAliases';
 
 // Keyed by `keyof DefineConfigOptions`, so a renamed option fails to compile here rather than in a project.

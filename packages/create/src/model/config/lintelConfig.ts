@@ -2,6 +2,7 @@ import { constants } from 'node:fs';
 import { lstat, open } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { targetFor } from '../../targets';
 import {
   AGENTS,
   type AliasMap,
@@ -21,7 +22,6 @@ import {
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
-import { targetFor } from '../targets';
 
 // `extends Answers`, so a config plans directly. This parser is the only list and refuses an unknown property by
 // name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project as a popup one.

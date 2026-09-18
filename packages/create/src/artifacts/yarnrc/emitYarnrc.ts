@@ -1,4 +1,4 @@
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { buildDependencies, buildDevDependencies } from '../package-json/emitPackageJson';
 
 import type { Answers } from '../../model/answers/answers';

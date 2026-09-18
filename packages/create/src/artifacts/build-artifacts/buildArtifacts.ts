@@ -3,7 +3,7 @@ import {
   hasLibrary,
   hasTests,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { agentArtifacts } from '../agent-files/agentArtifacts';
 import {
   type Artifact,
@@ -27,7 +27,7 @@ import { emitViteConfig } from '../vite-config/emitViteConfig';
 import { emitVitestConfig } from '../vitest-config/emitVitestConfig';
 import { emitYarnrc } from '../yarnrc/emitYarnrc';
 
-import type { TargetRecord } from '../../model/targets/record';
+import type { TargetRecord } from '../../targets/record';
 
 // Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {

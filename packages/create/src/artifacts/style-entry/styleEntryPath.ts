@@ -1,4 +1,4 @@
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { projectSpelling } from '../project-shape/projectShape';
 
 import type { Answers } from '../../model/answers/answers';

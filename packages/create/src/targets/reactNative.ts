@@ -1,5 +1,4 @@
-import { FOLDER_NAMING, NAMING } from '../naming/naming';
-
+import { FOLDER_NAMING, NAMING } from './naming';
 import { COMMON_REACT_PLUGINS, esmAssetImports } from './utils/targetUtils';
 
 import type { TargetRecord } from './record';

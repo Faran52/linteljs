@@ -1,5 +1,5 @@
 import { hasTests } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { buildScripts, RUN_PREFIX } from '../build-scripts/buildScripts';
 
 import type { Answers } from '../../model/answers/answers';

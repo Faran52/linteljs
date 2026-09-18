@@ -7,15 +7,15 @@ import {
   it,
 } from 'vitest';
 
-import { buildDevDependencies } from '../../artifacts/package-json/emitPackageJson';
-import { ASSETS_ROOT } from '../../run/shipped-assets/shippedAssets';
+import { buildDevDependencies } from '../artifacts/package-json/emitPackageJson';
 import {
   BROWSERS,
   DEFAULT_ANSWERS,
   HOSTED_FRAMEWORKS,
   SURFACES,
   TARGET_IDS,
-} from '../answers/answers';
+} from '../model/answers/answers';
+import { ASSETS_ROOT } from '../run/shipped-assets/shippedAssets';
 
 import { targetFor, TARGETS } from './registry';
 
@@ -26,7 +26,7 @@ import type {
   HostedFramework,
   Surface,
   TargetId,
-} from '../answers/answers';
+} from '../model/answers/answers';
 import type { TargetRecord } from './record';
 
 // Every reachable combination, labelled so a failure names the combination rather than only the target.

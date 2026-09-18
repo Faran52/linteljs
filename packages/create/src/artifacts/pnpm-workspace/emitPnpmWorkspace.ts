@@ -1,4 +1,4 @@
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { allowedBuildNames, buildDevDependencies } from '../package-json/emitPackageJson';
 import { ESLINT_RANGE } from '../package-json/versions';
 

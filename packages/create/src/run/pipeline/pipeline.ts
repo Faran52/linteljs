@@ -17,7 +17,7 @@ import {
   type ScaffoldKind,
   type ScaffoldSpec,
   targetFor,
-} from '../../model/targets';
+} from '../../targets';
 import { runFixPass } from '../fix-pass/fixPass';
 import { git } from '../git/git';
 import { applyArtifact, writeProjectFile } from '../project-files/projectFiles';

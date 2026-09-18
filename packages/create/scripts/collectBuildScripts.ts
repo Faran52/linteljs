@@ -40,8 +40,8 @@ import {
   TARGET_IDS,
   type TargetId,
 } from '../src/model/answers/answers';
-import { targetFor } from '../src/model/targets';
 import { startRegistry } from '../src/run/pipeline/e2e/registrySetup';
+import { targetFor } from '../src/targets';
 
 import type { E2eCase } from '../src/run/pipeline/e2e/cases';
 import type { E2eRegistry } from '../src/run/pipeline/e2e/registrySetup';

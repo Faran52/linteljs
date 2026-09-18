@@ -1,5 +1,5 @@
 import { hasTests } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 
 import type { Answers, PackageManager } from '../../model/answers/answers';
 

@@ -3,7 +3,7 @@ import {
   hasLibrary,
   hasTests,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 import { type Artifact } from '../artifact/artifact';
 
 export interface RuleSource {

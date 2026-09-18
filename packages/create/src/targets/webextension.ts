@@ -1,10 +1,10 @@
-import { hasSurface } from '../answers/answers';
-import { FOLDER_NAMING, NAMING } from '../naming/naming';
+import { hasSurface } from '../model/answers/answers';
 
+import { FOLDER_NAMING, NAMING } from './naming';
 import { hostedNaming, partsFor } from './utils/frameworkUtils';
 import { viteScaffold } from './utils/targetUtils';
 
-import type { Answers, Browser } from '../answers/answers';
+import type { Answers, Browser } from '../model/answers/answers';
 import type { PluginSpec, StarterFile } from './record';
 import type { TargetBuilder } from './registry';
 

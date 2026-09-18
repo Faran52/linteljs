@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers/answers';
+import { DEFAULT_ANSWERS } from '../model/answers/answers';
 
 import { webextension } from './webextension';
 
@@ -12,7 +12,7 @@ import type {
   Answers,
   Browser,
   HostedFramework,
-} from '../answers/answers';
+} from '../model/answers/answers';
 
 const extensionAnswers = (overrides: Partial<Answers> = {}): Answers => {
   return {

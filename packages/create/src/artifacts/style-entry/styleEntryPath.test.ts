@@ -10,7 +10,7 @@ import {
   TARGET_IDS,
   type TargetId,
 } from '../../model/answers/answers';
-import { targetFor } from '../../model/targets';
+import { targetFor } from '../../targets';
 
 import { STYLE_ENTRY_CANDIDATES, styleEntryPath } from './styleEntryPath';
 

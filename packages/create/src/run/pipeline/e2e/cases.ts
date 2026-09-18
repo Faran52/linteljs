@@ -21,9 +21,9 @@ import {
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../../../model/answers/answers';
-import { targetFor } from '../../../model/targets';
+import { targetFor } from '../../../targets';
 
-import type { TargetRecord } from '../../../model/targets/record';
+import type { TargetRecord } from '../../../targets/record';
 
 export interface E2eCase {
   label: string;
