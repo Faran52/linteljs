@@ -31,7 +31,13 @@ export default defineConfig({
      * suite rather than by a lock.
      */
     fileParallelism: false,
-    maxConcurrency: Number(env['E2E_CONCURRENCY'] ?? '4'),
+    /**
+     * Two, the same as `e2e.yml` gives a runner. Four was the earlier default and it starves the build leg: a case
+     * is an install and a full `check`, the builds are almost entirely I/O, and `ng build` measured 65s alone
+     * against over fifteen minutes with three siblings, each esbuild holding 1.4 to 1.7 GB. Raise it with
+     * `E2E_CONCURRENCY` on a machine that can feed it.
+     */
+    maxConcurrency: Number(env['E2E_CONCURRENCY'] ?? '2'),
     hookTimeout: 120_000,
   },
 });

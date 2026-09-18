@@ -60,9 +60,11 @@ describe.
   answered `ConnectionRefused` whenever a second port existed on the same machine.
 - **Parallelism is `maxConcurrency`, not more processes.** Files run one at a time and the cases in a
   file run together, which is why `run` spawns asynchronously: a `spawnSync` install blocks the event
-  loop and serialises the whole file. `E2E_CONCURRENCY` sets the width, four by default and two per
-  CI runner. Only `managerCases` is not pnpm and its four cases sit at the head of one file, so at
-  most one bun, one yarn and one npm install is ever in flight.
+  loop and serialises the whole file. `E2E_CONCURRENCY` sets the width, two by default and two per
+  CI runner. Four was the earlier default and starved the build leg, which is almost entirely I/O:
+  `ng build` alone is 65s and exceeds fifteen minutes with three siblings. Only `managerCases` is
+  not pnpm and its four cases sit at the head of one file, so at most one bun, one yarn and one npm
+  install is ever in flight.
 - **That suite installs the checkout, never npm.** `registrySetup.ts` starts a Verdaccio in front
   of npmjs, publishes the three workspace packages into it, and installs the CLI from it; every
   case then runs one `create-linteljs` command with answer flags, the way a user does, with the
