@@ -7,7 +7,12 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
-type ProgramEntry = Extract<RuleNode, { type: 'Program' }>['body'][number];
+// The matcher `Extract` reads, named because this workspace writes no object type inline.
+interface ProgramNode {
+  type: 'Program';
+}
+
+type ProgramEntry = Extract<RuleNode, ProgramNode>['body'][number];
 
 interface TypeCut {
   node: ProgramEntry;
@@ -15,13 +20,27 @@ interface TypeCut {
   removeRange: [number, number];
 }
 
-const readText = (entry: { text: string }): string => {
+interface Texted {
+  text: string;
+}
+
+interface LineStart {
+  line: number;
+}
+
+interface Located {
+  start: LineStart;
+}
+
+interface MaybeLocated {
+  loc?: Located | null | undefined;
+}
+
+const readText = (entry: Texted): string => {
   return entry.text;
 };
 
-const startLineOf = (node: { loc?: { start: { line: number } }
-  | null
-  | undefined; }): number => {
+const startLineOf = (node: MaybeLocated): number => {
   /* v8 ignore next 1 -- every parsed node and comment carries a location */
   return node.loc?.start.line ?? 0;
 };
@@ -52,9 +71,12 @@ const isDirective = (node: ProgramEntry): boolean => {
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
-  return body.findLastIndex((statement) => {
+  // Reversed and found rather than `findLastIndex`, which needs Node 18 and this package declares a floor of 12.
+  const fromEnd = [...body].reverse().findIndex((statement) => {
     return statement.type === 'ImportDeclaration' || isDirective(statement);
   });
+
+  return fromEnd === -1 ? -1 : body.length - 1 - fromEnd;
 };
 
 const findFirstRuntimeIndex = (body: ProgramEntry[], afterIndex: number): number => {
