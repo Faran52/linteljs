@@ -60,6 +60,7 @@
     "collect:builds": "jiti scripts/collectBuildScripts.ts",
     "prepack": "pnpm run build",
     "smoke": "node scripts/smoke.js",
+    "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "typecheck": "tsc --noEmit",
     "prepare": "pnpm run build"

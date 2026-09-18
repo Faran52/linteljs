@@ -595,9 +595,13 @@ describe('readLintelConfig', () => {
 
 describe('lintel config schemas', () => {
   it('keep the canonical and packaged schemas in sync with the answer vocabulary', async () => {
+    // Off this file rather than `process.cwd()`, which is the workspace root under `pnpm test` there and this
+    // package's own directory under `pnpm --filter @linteljs/create test`.
+    const packageRoot = join(import.meta.dirname, '../../..');
+    const workspaceRoot = join(packageRoot, '../..');
     const [canonical, packaged] = await Promise.all([
-      readFile(join(process.cwd(), 'schemas/lintel.config.v2.schema.json'), 'utf8'),
-      readFile(join(process.cwd(), 'packages/create/assets/schemas/lintel.config.v2.schema.json'), 'utf8'),
+      readFile(join(workspaceRoot, 'schemas/lintel.config.v2.schema.json'), 'utf8'),
+      readFile(join(packageRoot, 'assets/schemas/lintel.config.v2.schema.json'), 'utf8'),
     ]);
     const canonicalJson: unknown = JSON.parse(canonical);
     const packagedJson: unknown = JSON.parse(packaged);

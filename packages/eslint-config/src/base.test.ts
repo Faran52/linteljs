@@ -1,4 +1,9 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import {
+  mkdtemp,
+  realpath,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -108,9 +113,26 @@ describe('base: ignores', () => {
       .resolves.not.toContain('@stylistic/quotes');
   });
 
+  // Its own `.gitignore` in its own directory, not this repository's: `base()` reads `process.cwd()`, so a test
+  // asserting against the workspace root only passes when vitest happens to be launched there.
   it('reports nothing under a path only .gitignore covers', async () => {
-    await expect(ruleIdsFor(base(), doubleQuoted, 'dist/bundle.js'))
-      .resolves.not.toContain('@stylistic/quotes');
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'lintel-gitignore-')));
+
+    await writeFile(join(root, '.gitignore'), 'dist\n');
+
+    const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
+
+    try {
+      await expect(ruleIdsFor(base(), doubleQuoted, join(root, 'dist/bundle.js')))
+        .resolves.not.toContain('@stylistic/quotes');
+    }
+    finally {
+      spy.mockRestore();
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    }
   });
 
   it('still builds a config where there is no .gitignore to read', async () => {

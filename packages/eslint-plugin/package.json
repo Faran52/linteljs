@@ -34,6 +34,7 @@
   "scripts": {
     "build": "tsdown && node scripts/writeDistManifest.js && node scripts/writeRuleDocs.js",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "prepack": "pnpm run build",
     "smoke": "node scripts/smoke.js",
     "audit:ignores": "node scripts/auditIgnores.js",

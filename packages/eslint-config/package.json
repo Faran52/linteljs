@@ -30,6 +30,7 @@
     "build": "tsdown",
     "prepack": "pnpm run build",
     "smoke": "node scripts/smoke.js",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "exports": {
