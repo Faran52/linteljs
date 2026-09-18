@@ -8,6 +8,18 @@ import typescript from './packages/eslint-config/src/typescript';
 import vitest from './packages/eslint-config/src/vitest';
 
 const config = [
+  /**
+   * An escape hatch this workspace does not use should not be available. Every directive is inert under this, so an
+   * `eslint-disable` cannot suppress: the rule it names fires anyway and the comment is reported as having no effect.
+   * The one live directive in the repo was on `execFileSync('pnpm', ...)` in maintainer tooling and is now a named
+   * exemption in `@linteljs/workspace/scripts` instead, which is where this repo keeps the ones it means.
+   *
+   * Root, not `base`: a generated project is already held to this by `scripts/checkBannedPatterns.ts`, which refuses
+   * the directive at write time and on commit, and putting it in the layer would make every existing consumer's
+   * directives inert on upgrade. DESIGN.md: `noInlineConfig`
+   */
+  { linterOptions: { noInlineConfig: true } },
+
   ...base({
     // DESIGN.md: Ignores
     ignores: [
@@ -66,7 +78,10 @@ const config = [
   {
     name: '@linteljs/workspace/scripts',
     files: ['packages/*/scripts/**'],
-    rules: { 'no-console': 'off' },
+    rules: {
+      'no-console': 'off',
+      'sonarjs/no-os-command-from-path': 'off',
+    },
   },
 
   // The one file that has to be CommonJS. DESIGN.md: `@linteljs/workspace/old-node-runner`

@@ -43,7 +43,6 @@ const IGNORE = /^\s*\/\* v8 ignore next(?: \d+)? -- .*\*\/\s*$/;
 
 const coverageFor = (file) => {
   try {
-    // eslint-disable-next-line sonarjs/no-os-command-from-path -- maintainer tooling, never shipped
     execFileSync('pnpm', ['exec', 'vitest', 'run', '--coverage', '--coverage.reporter=json'], {
       cwd: root,
       stdio: 'ignore',

@@ -1011,6 +1011,24 @@ It lives in the workspace config rather than a layer because the ring names are 
 the standard's. It is scoped to source: a test arranges and asserts across rings by nature, and
 policing its imports protects nothing.
 
+### `noInlineConfig`
+
+`linterOptions: { noInlineConfig: true }` at the root, so no `eslint-disable` in this repo can
+suppress anything. A directive becomes inert and is reported as having no effect, which
+`--max-warnings 0` on the `lint` script turns into a failure; the rule the directive named fires
+regardless, so an *effective* disable surfaces as the error it was hiding. Measured both ways: a
+stray directive exits 1, and one over a real `console.log` reports the `no-console` error as well.
+
+The repo had exactly one, on `execFileSync('pnpm', ...)` in `auditIgnores.js`. It is a named
+exemption now rather than an inline comment, which is the whole point: this workspace keeps its
+exemptions in one file with a measurement each, and an inline directive is neither.
+
+Root rather than `base`, so it is not shipped. A generated project is already held to this by
+`scripts/checkBannedPatterns.ts`, which refuses the directive at write time through the `PostToolUse`
+hook and again on commit through lint-staged, so putting it in the layer would add nothing there and
+would make every existing consumer's directives inert on upgrade. That is a breaking change to buy
+enforcement the project already has.
+
 ### `@linteljs/workspace/scripts`
 
 `auditIgnores.js` prints every coverage ignore with its stated reason and `smoke.js` narrates a
@@ -1022,6 +1040,13 @@ Nothing `@linteljs/create` emits logs at all: the only `console` calls it ships 
 which `no-console` permits, so that block bought a generated project nothing while handing its
 `eslint.config.js`, `stylelint.config.js` and the two `*.config.js` files it copies a free
 `console.log`. Neither package publishes `scripts/`.
+
+`sonarjs/no-os-command-from-path` joins it for the same directory and the same reason. `auditIgnores.js`
+runs `execFileSync('pnpm', ['exec', 'vitest', ...])`, and the rule wants an absolute path because a
+writeable `PATH` entry could shadow the name. That is a real hazard for a program a user runs and not
+for one a maintainer invokes by hand in this checkout, where resolving `pnpm` to an absolute path
+would have to consult the same `PATH` to find it. It was an inline `eslint-disable` until
+`noInlineConfig` above went on; converting it is what that entry is for.
 
 ### `@linteljs/workspace/old-node-runner`
 
