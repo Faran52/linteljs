@@ -13,8 +13,8 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers/answers';
-import { buildAliases } from '../../utils/aliasUtils';
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
+import { buildAliases } from '../utils/aliasUtils';
 
 import { buildTsconfig, emitTsconfig } from './tsconfigEmitter';
 

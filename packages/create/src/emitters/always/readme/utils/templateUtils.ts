@@ -1,6 +1,7 @@
 import { hasTests } from '../../../../answers/answers';
+import { RUN_PREFIX } from '../../../../config/runPrefix';
 import { targetFor } from '../../../../targets';
-import { buildScripts, RUN_PREFIX } from '../../../utils/scriptUtils';
+import { buildScripts } from '../../utils/scriptUtils';
 
 import type { Answers } from '../../../../answers/answers';
 

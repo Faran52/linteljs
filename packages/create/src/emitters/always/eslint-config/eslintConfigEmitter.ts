@@ -6,7 +6,7 @@ import {
 } from '../../../answers/answers';
 import { targetFor } from '../../../targets';
 import { type Artifact, emitted } from '../../artifact';
-import { buildAliases } from '../../utils/aliasUtils';
+import { buildAliases } from '../utils/aliasUtils';
 
 // Keyed by `keyof DefineConfigOptions`, so a renamed option fails to compile here rather than in a project.
 type OptionRow = [keyof DefineConfigOptions, string];

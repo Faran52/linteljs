@@ -1,4 +1,5 @@
-import { RUN_PREFIX, styleGlob } from '../emitters/utils/scriptUtils';
+import { RUN_PREFIX } from '../config/runPrefix';
+import { styleGlob } from '../emitters/always/utils/scriptUtils';
 import { runLocalBinary } from '../process/localBinary';
 
 import type { Answers } from '../answers/answers';

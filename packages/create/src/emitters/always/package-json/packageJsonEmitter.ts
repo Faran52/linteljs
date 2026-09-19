@@ -10,7 +10,7 @@ import {
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/engines';
 import { targetFor } from '../../../targets';
 import { type Artifact, merged } from '../../artifact';
-import { buildScripts } from '../../utils/scriptUtils';
+import { buildScripts } from '../utils/scriptUtils';
 
 import { VERSIONS } from './constants';
 

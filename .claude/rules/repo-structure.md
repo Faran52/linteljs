@@ -76,11 +76,16 @@ aliases it duplicates instead of importing carry a comment saying so.
   it, or it is read from outside, and then it is not that subject's to hold.
 
   A module that writes no file is not an emitter: `artifact.ts`, `buildArtifacts.ts`,
-  `seedArtifacts.ts` and `projectShape.ts` sit at the root, helpers shared across groups under
-  `utils/`, and a group's own helpers under `<group>/utils/`. There is no `emitters/config/`: a
-  table belongs to the subject that writes it, so the dependency ranges are
-  `always/package-json/constants.ts` and the engines a project declares are `src/config/`, which
-  `process/` reads too.
+  `seedArtifacts.ts` and `projectShape.ts` sit at the root.
+
+  A helper sits at the level of its readers and no higher. One subject reads it, it is
+  `<group>/<subject>/utils/` and `meta.test.ts` holds it private there. Several subjects in one
+  group read it, it is `<group>/utils/`. There is no `emitters/utils/` and no `emitters/config/`,
+  not because a ring-wide helper is forbidden but because none turned out to be one: every
+  candidate was either a group's, or a subject's own table, or a fact no ring owns. The dependency
+  ranges are `always/package-json/constants.ts`, and `src/config/` holds what `emitters/`,
+  `terminal/`, `pipeline/` and `process/` all read: the engines a project declares, and how each
+  manager is asked to run a script.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.

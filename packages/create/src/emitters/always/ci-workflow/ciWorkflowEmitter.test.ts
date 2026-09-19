@@ -11,7 +11,7 @@ import {
   type TargetId,
 } from '../../../answers/answers';
 import { NODE_ENGINE } from '../../../config/engines';
-import { buildScripts } from '../../utils/scriptUtils';
+import { buildScripts } from '../utils/scriptUtils';
 
 import { emitCiWorkflow } from './ciWorkflowEmitter';
 

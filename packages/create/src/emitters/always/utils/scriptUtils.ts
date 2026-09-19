@@ -1,21 +1,14 @@
-import { hasTests } from '../../answers/answers';
-import { targetFor } from '../../targets';
+import { hasTests } from '../../../answers/answers';
+import { RUN_PREFIX } from '../../../config/runPrefix';
+import { targetFor } from '../../../targets';
 
-import type { Answers, PackageManager } from '../../answers/answers';
+import type { Answers } from '../../../answers/answers';
 
 // `check` is named in the return type so callers need no unreachable `?? ''`.
 // `check` is named so callers need no unreachable `?? ''`.
 interface CheckScript {
   check: string;
 }
-
-// Only npm and bun need `run` for a script that is not `test`.
-export const RUN_PREFIX: Record<PackageManager, string> = {
-  pnpm: 'pnpm',
-  npm: 'npm run',
-  yarn: 'yarn',
-  bun: 'bun run',
-};
 
 // Shared with the fix pass; SFC extensions included because `src/**/*.css` matches none of a Vue project's styles.
 export const styleGlob = (answers: Answers): string => {

@@ -1,6 +1,6 @@
 import { NODE_ENGINE } from '../../../config/engines';
+import { RUN_PREFIX } from '../../../config/runPrefix';
 import { type Artifact, emitted } from '../../artifact';
-import { RUN_PREFIX } from '../../utils/scriptUtils';
 
 import type { Answers, PackageManager } from '../../../answers/answers';
 
