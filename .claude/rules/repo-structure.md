@@ -77,7 +77,10 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   A module that writes no file is not an emitter: `artifact.ts`, `buildArtifacts.ts`,
   `seedArtifacts.ts` and `projectShape.ts` sit at the root, helpers shared across groups under
-  `utils/`, a group's own helpers under `<group>/utils/`, and the data tables under `config/`.
+  `utils/`, and a group's own helpers under `<group>/utils/`. There is no `emitters/config/`: a
+  table belongs to the subject that writes it, so the dependency ranges are
+  `always/package-json/constants.ts` and the engines a project declares are `src/config/`, which
+  `process/` reads too.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.

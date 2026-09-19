@@ -10,8 +10,9 @@ import {
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/engines';
 import { targetFor } from '../../../targets';
 import { type Artifact, merged } from '../../artifact';
-import { VERSIONS } from '../../config/versions';
 import { buildScripts } from '../../utils/scriptUtils';
+
+import { VERSIONS } from './constants';
 
 import type { TargetRecord } from '../../../targets/record';
 import type { ProjectShape } from '../../projectShape';

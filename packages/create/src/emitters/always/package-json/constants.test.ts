@@ -7,9 +7,8 @@ import {
   it,
 } from 'vitest';
 
-import { parsePackageJson } from '../always/package-json/packageJsonEmitter';
-
-import { VERSIONS } from './versions';
+import { VERSIONS } from './constants';
+import { parsePackageJson } from './packageJsonEmitter';
 
 interface Sibling {
   name: string;
@@ -21,7 +20,7 @@ interface Sibling {
 const WORKSPACE_PACKAGES = ['eslint-config', 'eslint-plugin'];
 
 const siblingIn = (directory: string): Sibling => {
-  const path = join(import.meta.dirname, '..', '..', '..', '..', directory, 'package.json');
+  const path = join(import.meta.dirname, '..', '..', '..', '..', '..', directory, 'package.json');
   const { name, version } = parsePackageJson(readFileSync(path, 'utf8'));
 
   if (name === undefined || version === undefined) {
@@ -51,7 +50,8 @@ describe('VERSIONS against the workspace', () => {
 // An entry in both places must not ship something older than the layers were built against. A line match, not a
 // YAML parser, for a flat block.
 const catalogEntries = (): [string, string][] => {
-  const yaml = readFileSync(join(import.meta.dirname, '..', '..', '..', '..', '..', 'pnpm-workspace.yaml'), 'utf8');
+  const workspaceRoot = join(import.meta.dirname, '..', '..', '..', '..', '..', '..');
+  const yaml = readFileSync(join(workspaceRoot, 'pnpm-workspace.yaml'), 'utf8');
   const lines = yaml.split('\n');
   const start = lines.indexOf('catalog:');
 
@@ -105,7 +105,7 @@ const atLeast = (range: string, minimum: string): boolean => {
 // A range older than what `@linteljs/eslint-config` declares hands a project a plugin its config never ran against;
 // five had drifted before anything checked. `catalog:` entries answer in the block above.
 const configDependencies = (): [string, string][] => {
-  const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
+  const path = join(import.meta.dirname, '..', '..', '..', '..', '..', 'eslint-config', 'package.json');
   const { devDependencies } = parsePackageJson(readFileSync(path, 'utf8'));
 
   return Object.entries(devDependencies ?? {}).filter(([, range]) => {
