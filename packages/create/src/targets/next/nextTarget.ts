@@ -1,11 +1,10 @@
-import { hasLibrary } from '../answers/utils/answerUtils';
+import { hasLibrary } from '../../answers/utils/answerUtils';
+import { FOLDER_NAMING, NAMING } from '../naming';
+import { COMMON_REACT_PLUGINS, HOOKS_ALIAS } from '../utils/targetUtils';
 
-import { FOLDER_NAMING, NAMING } from './naming';
-import { COMMON_REACT_PLUGINS, HOOKS_ALIAS } from './utils/targetUtils';
+import type { TargetRecord } from '../record';
 
-import type { TargetRecord } from './record';
-
-export const next: TargetRecord = {
+export const nextTarget: TargetRecord = {
   id: 'next',
   // `--src-dir` is load-bearing: every alias resolves under `./src/`. Only the tailwind flag follows an answer,
   // since Next wires Tailwind at generate time.

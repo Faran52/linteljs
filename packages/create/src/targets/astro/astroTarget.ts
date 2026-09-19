@@ -2,11 +2,11 @@ import {
   COMPONENT,
   FOLDER_NAMING,
   NAMING,
-} from './naming';
-import { partsFor } from './utils/frameworkUtils';
+} from '../naming';
+import { partsFor } from '../utils/frameworkUtils';
 
-import type { HostedFramework } from '../answers/target/hostedFramework';
-import type { TargetBuilder } from './registry';
+import type { HostedFramework } from '../../answers/target/hostedFramework';
+import type { TargetBuilder } from '../registry';
 
 // Templates on the server, optionally hydrating islands in a hosted framework. `vite: false` although Astro runs on
 // Vite: its Vite options live in `astro.config.mjs`, so the test run borrows them through `getViteConfig`.
@@ -19,7 +19,7 @@ const INTEGRATIONS: Record<HostedFramework, string> = {
   solid: '@astrojs/solid-js',
 };
 
-export const astro: TargetBuilder = (answers) => {
+export const astroTarget: TargetBuilder = (answers) => {
   const framework = answers.hostedFramework;
   const hosted = framework === undefined ? undefined : partsFor(framework);
 

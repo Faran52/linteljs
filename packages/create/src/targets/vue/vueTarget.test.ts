@@ -4,13 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers';
+import { DEFAULT_ANSWERS } from '../../answers';
 
-import { vue } from './vue';
+import { vueTarget } from './vueTarget';
 
 describe('scaffold', () => {
   it('writes the exact argv for the default answers', () => {
-    expect(vue.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
+    expect(vueTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'create',
       args: ['vue@latest', 'demo-app', '--ts', '--router', '--vitest'],
     });
@@ -18,19 +18,19 @@ describe('scaffold', () => {
 
   // The one scaffolder wired to the store answer: create-vue installs Pinia itself, so the flag is the whole mechanism.
   it('passes --pinia only when the store answer is yes', () => {
-    expect(vue.scaffold('demo-app', {
+    expect(vueTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
       store: true,
     }).args).toContain('--pinia');
-    expect(vue.scaffold('demo-app', DEFAULT_ANSWERS).args).not.toContain('--pinia');
+    expect(vueTarget.scaffold('demo-app', DEFAULT_ANSWERS).args).not.toContain('--pinia');
   });
 
   it('appends --vitest unless testing is declined', () => {
-    const withVitest = vue.scaffold('demo-app', {
+    const withVitest = vueTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
       testing: 'vitest',
     });
-    const withoutVitest = vue.scaffold('demo-app', {
+    const withoutVitest = vueTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
       testing: 'none',
     });

@@ -4,10 +4,10 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers';
+import { DEFAULT_ANSWERS } from '../../answers';
+import { esmAssetImports } from '../utils/targetUtils';
 
-import { reactNative } from './reactNative';
-import { esmAssetImports } from './utils/targetUtils';
+import { reactNativeTarget } from './reactNativeTarget';
 
 // The shapes `app.json` is read back as. Named because this workspace writes no object type inline, and because
 // three assertions share the first of them.
@@ -33,7 +33,7 @@ interface VersionedConfig {
 }
 
 const transformFor = (path: string): (source: string) => string => {
-  const fix = (reactNative.starterFixes ?? []).find((entry) => {
+  const fix = (reactNativeTarget.starterFixes ?? []).find((entry) => {
     return entry.path === path;
   });
 
@@ -47,7 +47,7 @@ const transformFor = (path: string): (source: string) => string => {
 describe('scaffold', () => {
   // `via` is the whole reason this target differs: every other one launches its scaffolder with the answered manager.
   it('writes the exact argv for the default answers, launched through npm', () => {
-    expect(reactNative.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
+    expect(reactNativeTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'create',
       args: ['expo-app@latest', 'demo-app', '--yes', '--no-install'],
       via: 'npm',

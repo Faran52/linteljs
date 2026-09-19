@@ -9,9 +9,9 @@ import {
   type Browser,
   DEFAULT_ANSWERS,
   type HostedFramework,
-} from '../answers';
+} from '../../answers';
 
-import { webextension } from './webextension';
+import { webextensionTarget } from './webextensionTarget';
 
 const extensionAnswers = (overrides: Partial<Answers> = {}): Answers => {
   return {
@@ -22,7 +22,7 @@ const extensionAnswers = (overrides: Partial<Answers> = {}): Answers => {
 };
 
 const recordFor = (overrides: Partial<Answers> = {}) => {
-  return webextension(extensionAnswers(overrides));
+  return webextensionTarget(extensionAnswers(overrides));
 };
 
 describe('scaffold', () => {

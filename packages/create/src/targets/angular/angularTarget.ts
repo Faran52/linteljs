@@ -1,8 +1,8 @@
-import { FOLDER_NAMING, NAMING } from './naming';
+import { FOLDER_NAMING, NAMING } from '../naming';
 
-import type { TargetRecord } from './record';
+import type { TargetRecord } from '../record';
 
-export const angular: TargetRecord = {
+export const angularTarget: TargetRecord = {
   id: 'angular',
   // `--style css` matches what `lint:css` assumes; `--skip-git` avoids a nested repo breaking the hooks.
   scaffold: (name, answers) => {

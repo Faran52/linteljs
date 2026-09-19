@@ -1,12 +1,11 @@
-import { hasLibrary } from '../answers/utils/answerUtils';
+import { hasLibrary } from '../../answers/utils/answerUtils';
+import { FOLDER_NAMING, NAMING } from '../naming';
+import { HOOKS_ALIAS, tabsToSpaces } from '../utils/targetUtils';
 
-import { FOLDER_NAMING, NAMING } from './naming';
-import { HOOKS_ALIAS, tabsToSpaces } from './utils/targetUtils';
-
-import type { TargetBuilder } from './registry';
+import type { TargetBuilder } from '../registry';
 
 // `sv create --template minimal` ships no stylesheet, so `styleEntry` is created here and the root layout imports it.
-export const svelte: TargetBuilder = (answers) => {
+export const svelteTarget: TargetBuilder = (answers) => {
   return {
     id: 'svelte',
     // `--no-add-ons`: every add-on is something linteljs emits or excludes, and a half-specified one prompts again.

@@ -1,13 +1,12 @@
-import { hasSurface } from '../answers/utils/answerUtils';
+import { hasSurface } from '../../answers/utils/answerUtils';
+import { FOLDER_NAMING, NAMING } from '../naming';
+import { hostedNaming, partsFor } from '../utils/frameworkUtils';
+import { viteScaffold } from '../utils/targetUtils';
 
-import { FOLDER_NAMING, NAMING } from './naming';
-import { hostedNaming, partsFor } from './utils/frameworkUtils';
-import { viteScaffold } from './utils/targetUtils';
-
-import type { Answers } from '../answers/registry';
-import type { Browser } from '../answers/target/browser';
-import type { PluginSpec, StarterFile } from './record';
-import type { TargetBuilder } from './registry';
+import type { Answers } from '../../answers/registry';
+import type { Browser } from '../../answers/target/browser';
+import type { PluginSpec, StarterFile } from '../record';
+import type { TargetBuilder } from '../registry';
 
 // Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
 // ambient types; the hosted framework decides what a component is and which plugin and layer handle it.
@@ -119,7 +118,7 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
   ];
 };
 
-export const webextension: TargetBuilder = (answers) => {
+export const webextensionTarget: TargetBuilder = (answers) => {
   const browser = BROWSERS[answers.browser];
   const hosted = answers.hostedFramework === undefined
     ? undefined

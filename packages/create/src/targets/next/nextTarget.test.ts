@@ -4,13 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers';
+import { DEFAULT_ANSWERS } from '../../answers';
 
-import { next } from './next';
+import { nextTarget } from './nextTarget';
 
 describe('scaffold', () => {
   it('writes the exact argv for the default answers', () => {
-    expect(next.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
+    expect(nextTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'create',
       args: [
         'next-app@latest', 'demo-app',
@@ -26,7 +26,7 @@ describe('scaffold', () => {
   });
 
   it('flags tailwind only when the library is chosen', () => {
-    const withTailwind = next.scaffold('demo-app', {
+    const withTailwind = nextTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
       libraries: ['tailwind'],
     });
@@ -36,7 +36,7 @@ describe('scaffold', () => {
   });
 
   it('names whichever package manager the answers carry', () => {
-    const spec = next.scaffold('demo-app', {
+    const spec = nextTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
       packageManager: 'yarn',
     });

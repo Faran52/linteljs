@@ -1,9 +1,8 @@
-import { isJsonObject } from '../utils/jsonUtils';
+import { isJsonObject } from '../../utils/jsonUtils';
+import { FOLDER_NAMING, NAMING } from '../naming';
+import { COMMON_REACT_PLUGINS, esmAssetImports } from '../utils/targetUtils';
 
-import { FOLDER_NAMING, NAMING } from './naming';
-import { COMMON_REACT_PLUGINS, esmAssetImports } from './utils/targetUtils';
-
-import type { TargetRecord } from './record';
+import type { TargetRecord } from '../record';
 
 interface ExpoExperiments {
   reactCompiler?: boolean;
@@ -23,7 +22,7 @@ const isAppConfig = (value: unknown): value is AppConfig => {
 
 // `framework: 'react'` rather than its own layer: `eslint-plugin-react-native` caps at `eslint ^9` and
 // `eslint-config-expo` bundles plugins that collide with `base()`.
-export const reactNative: TargetRecord = {
+export const reactNativeTarget: TargetRecord = {
   id: 'react-native',
   // No package-manager flag: Expo reads whichever one invoked it.
   scaffold: (name) => {

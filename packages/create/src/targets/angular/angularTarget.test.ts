@@ -4,13 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers';
+import { DEFAULT_ANSWERS } from '../../answers';
 
-import { angular } from './angular';
+import { angularTarget } from './angularTarget';
 
 describe('scaffold', () => {
   it('writes the exact argv for the default answers', () => {
-    expect(angular.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
+    expect(angularTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'dlx',
       args: [
         '@angular/cli@latest', 'new', 'demo-app',
@@ -23,7 +23,7 @@ describe('scaffold', () => {
   });
 
   it('names whichever package manager the answers carry', () => {
-    const spec = angular.scaffold('demo-app', {
+    const spec = angularTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
       packageManager: 'npm',
     });

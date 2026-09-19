@@ -4,13 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../answers';
+import { type Answers, DEFAULT_ANSWERS } from '../../answers';
+import { tabsToSpaces } from '../utils/targetUtils';
 
-import { svelte } from './svelte';
-import { tabsToSpaces } from './utils/targetUtils';
+import { svelteTarget } from './svelteTarget';
 
 const transformFor = (path: string, answers: Answers = DEFAULT_ANSWERS): (source: string) => string => {
-  const fix = (svelte(answers).starterFixes ?? []).find((entry) => {
+  const fix = (svelteTarget(answers).starterFixes ?? []).find((entry) => {
     return entry.path === path;
   });
 
@@ -23,7 +23,7 @@ const transformFor = (path: string, answers: Answers = DEFAULT_ANSWERS): (source
 
 describe('scaffold', () => {
   it('writes the exact argv for the default answers', () => {
-    expect(svelte(DEFAULT_ANSWERS).scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
+    expect(svelteTarget(DEFAULT_ANSWERS).scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'dlx',
       args: ['sv', 'create', 'demo-app', '--template', 'minimal', '--types', 'ts', '--no-add-ons', '--no-install'],
     });

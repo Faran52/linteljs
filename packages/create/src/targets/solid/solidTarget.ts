@@ -1,10 +1,10 @@
-import { FOLDER_NAMING, NAMING } from './naming';
-import { OUTSIDE_TESTS } from './utils/frameworkUtils';
-import { viteScaffold } from './utils/targetUtils';
+import { FOLDER_NAMING, NAMING } from '../naming';
+import { OUTSIDE_TESTS } from '../utils/frameworkUtils';
+import { viteScaffold } from '../utils/targetUtils';
 
-import type { TargetRecord } from './record';
+import type { TargetRecord } from '../record';
 
-export const solid: TargetRecord = {
+export const solidTarget: TargetRecord = {
   id: 'solid',
   scaffold: viteScaffold('solid'),
   framework: 'solid',

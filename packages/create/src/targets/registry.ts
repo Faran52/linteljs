@@ -1,12 +1,12 @@
-import { angular } from './angular';
-import { astro } from './astro';
-import { next } from './next';
-import { react } from './react';
-import { reactNative } from './reactNative';
-import { solid } from './solid';
-import { svelte } from './svelte';
-import { vue } from './vue';
-import { webextension } from './webextension';
+import { angularTarget } from './angular/angularTarget';
+import { astroTarget } from './astro/astroTarget';
+import { nextTarget } from './next/nextTarget';
+import { reactTarget } from './react/reactTarget';
+import { reactNativeTarget } from './react-native/reactNativeTarget';
+import { solidTarget } from './solid/solidTarget';
+import { svelteTarget } from './svelte/svelteTarget';
+import { vueTarget } from './vue/vueTarget';
+import { webextensionTarget } from './webextension/webextensionTarget';
 
 import type { Answers } from '../answers/registry';
 import type { TargetId } from '../answers/target/target';
@@ -18,25 +18,25 @@ export type TargetBuilder = (answers: Answers) => TargetRecord;
 
 export const TARGETS: Record<TargetId, TargetBuilder> = {
   'react': () => {
-    return react;
+    return reactTarget;
   },
   'next': () => {
-    return next;
+    return nextTarget;
   },
   'vue': () => {
-    return vue;
+    return vueTarget;
   },
-  'svelte': svelte,
+  'svelte': svelteTarget,
   'solid': () => {
-    return solid;
+    return solidTarget;
   },
   'angular': () => {
-    return angular;
+    return angularTarget;
   },
-  'astro': astro,
-  'webextension': webextension,
+  'astro': astroTarget,
+  'webextension': webextensionTarget,
   'react-native': () => {
-    return reactNative;
+    return reactNativeTarget;
   },
 };
 

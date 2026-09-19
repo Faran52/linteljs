@@ -1,10 +1,9 @@
-import { hasTests } from '../answers/utils/answerUtils';
+import { hasTests } from '../../answers/utils/answerUtils';
+import { FOLDER_NAMING, NAMING } from '../naming';
 
-import { FOLDER_NAMING, NAMING } from './naming';
+import type { TargetRecord } from '../record';
 
-import type { TargetRecord } from './record';
-
-export const vue: TargetRecord = {
+export const vueTarget: TargetRecord = {
   id: 'vue',
   // One feature flag makes `create-vue` treat every unnamed feature as declined, so this list is the whole shape.
   // `--eslint` is absent: it writes a config stage 2 shadows.

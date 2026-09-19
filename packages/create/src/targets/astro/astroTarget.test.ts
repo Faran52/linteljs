@@ -9,9 +9,9 @@ import {
   DEFAULT_ANSWERS,
   type HostedFramework,
   type Library,
-} from '../answers';
+} from '../../answers';
 
-import { astro } from './astro';
+import { astroTarget } from './astroTarget';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   return {
@@ -22,7 +22,7 @@ const answersFor = (overrides: Partial<Answers> = {}): Answers => {
 };
 
 const recordFor = (overrides: Partial<Answers> = {}) => {
-  return astro(answersFor(overrides));
+  return astroTarget(answersFor(overrides));
 };
 
 describe('scaffold', () => {
@@ -43,7 +43,7 @@ describe('scaffold', () => {
 });
 
 describe('the build it owns', () => {
-  // Astro's Vite options belong in `astro.config.mjs`; a `vite.config.ts` beside it would be read by nothing.
+  // Astro's Vite options belong in `astroTarget.config.mjs`; a `vite.config.ts` beside it would be read by nothing.
   it('owns no vite config and borrows the resolved one for tests', () => {
     const record = recordFor();
 
@@ -168,7 +168,7 @@ describe('the hosted framework axis', () => {
     expect(recordFor({ libraries }).devDependencies).not.toContain('@tailwindcss/postcss');
   });
 
-  // Nothing in an Astro scaffold typechecks against `@babel/core`: the wiring lives in `astro.config.mjs`.
+  // Nothing in an Astro scaffold typechecks against `@babel/core`: the wiring lives in `astroTarget.config.mjs`.
   it('ships no babel type stub even when react is hosted', () => {
     expect(recordFor({ hostedFramework: 'react' }).devDependencies).not.toContain('@types/babel__core');
     expect(recordFor({ hostedFramework: 'react' }).devDependencies).toContain('@babel/core');
