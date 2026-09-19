@@ -1,4 +1,5 @@
 import type { PackageManager } from '../answers/answers';
+import type { ProjectShape, Stage } from './types';
 
 /**
  * What a generated project declares it needs, and what the CLI refuses to run without. Read from `emitters/`,
@@ -35,3 +36,18 @@ export const RUN_PREFIX: Record<PackageManager, string> = {
  * it. This file is nobody's but linteljs's, so a sync may.
  */
 export const MANAGED_PATH = 'plugins/linteljs/managed.json';
+
+export const STAGES: Stage[] = [
+  'scaffold',
+  'lint',
+  'package',
+  'standard',
+  'install',
+  'fix',
+];
+
+// Birth, or planning without reading disk.
+export const EMPTY_PROJECT: ProjectShape = {
+  setupTests: [],
+  styleEntries: [],
+};

@@ -1,10 +1,9 @@
 import type { Answers } from '../answers/answers';
-import type { ProjectShape } from './projectShape';
 
 /**
- * The kind of thing this CLI writes, and the vocabulary every ring shares: `emitters/` builds one, `files/`
- * applies it, `pipeline/` sequences them by stage and `terminal/` names a stage on `--skip`. No ring owns it, so
- * it sits below all of them rather than inside the one that happens to construct it most often.
+ * The vocabulary every ring shares: `emitters/` builds an artifact, `files/` applies it, `pipeline/` sequences
+ * them by stage and `terminal/` names a stage on `--skip`. No ring owns any of it, so it sits below all of them
+ * rather than inside the one that happens to construct it most often.
  */
 
 // A stage is a property of an artifact, so it is declared beside one. Stage 4, `standard`, also
@@ -56,6 +55,13 @@ export interface Artifact {
   removable?: true;
 }
 
+// What a project already holds, per file this CLI has more than one spelling of; one record, so `sync` and
+// `create --skip-scaffold` discover the same files.
+export interface ProjectShape {
+  setupTests: readonly string[];
+  styleEntries: readonly string[];
+}
+
 /**
  * One per directory under `emitters/`, named for that directory, which is itself named for the file it writes.
  * Every emitter answers a list rather than a file, so the condition that decides whether it writes anything is
@@ -63,12 +69,3 @@ export interface Artifact {
  * Fewer parameters is fine, since most emitters read only the answers.
  */
 export type Emitter = (answers: Answers, project: ProjectShape, name: string) => Artifact[];
-
-export const STAGES: Stage[] = [
-  'scaffold',
-  'lint',
-  'package',
-  'standard',
-  'install',
-  'fix',
-];

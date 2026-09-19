@@ -1,4 +1,4 @@
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { copied } from '../../utils/artifactUtils';
 
 // Husky and Claude Code invoke these directly, so the mode bit is part of the artifact.

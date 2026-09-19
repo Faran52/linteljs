@@ -1,5 +1,9 @@
-import { MANAGED_PATH } from '../config/constants';
-import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
+import { EMPTY_PROJECT, MANAGED_PATH } from '../config/constants';
+import {
+  type Artifact,
+  type Emitter,
+  type ProjectShape,
+} from '../config/types';
 
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './agents/codex-marketplace/codexMarketplaceEmitter';
@@ -34,7 +38,6 @@ import { emitted } from './utils/artifactUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
 import type { Answers } from '../answers/answers';
-import type { Artifact, Emitter } from '../config/artifact';
 
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once

@@ -1,5 +1,5 @@
 import { hasLibrary } from '../../../answers/answers';
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { OUTSIDE_TESTS } from '../../../targets/utils/frameworkUtils';
 import { emitted } from '../../utils/artifactUtils';

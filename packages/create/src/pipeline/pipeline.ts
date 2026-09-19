@@ -1,6 +1,7 @@
 import { dirname } from 'node:path';
 
-import { type Stage, STAGES } from '../config/artifact';
+import { STAGES } from '../config/constants';
+import { type Stage } from '../config/types';
 import { type Artifact, buildArtifacts } from '../emitters';
 import { seedArtifacts } from '../emitters/registry';
 import { applyArtifact } from '../files/projectFiles';

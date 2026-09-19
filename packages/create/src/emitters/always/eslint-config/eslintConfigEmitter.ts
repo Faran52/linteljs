@@ -4,7 +4,7 @@ import {
   hasLibrary,
   LIBRARY_LAYERS,
 } from '../../../answers/answers';
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { emitted } from '../../utils/artifactUtils';
 import { buildAliases } from '../utils/aliasUtils';

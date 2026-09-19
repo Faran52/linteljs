@@ -1,4 +1,4 @@
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { targetFor, type TsconfigPlugin } from '../../../targets';
 import { emitted } from '../../utils/artifactUtils';
 import { buildAliases } from '../utils/aliasUtils';

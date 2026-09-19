@@ -1097,9 +1097,10 @@ alongside their data, and every reader of that behaviour was in one ring. `artif
 `managedRecord`, read by `emitters/registry.ts`. All five moved to `emitters/utils/`, and the
 constants they were sitting beside stayed: `Artifact` is read by three rings, `MANAGED_PATH` by
 three, `RUN_PREFIX` by three, `NODE_ENGINE` by two. So the split is along the line that was already
-there, between what every ring shares and what one ring does. What the three modules had left after
-the move was a constant apiece, so they are one `constants.ts` now; `artifact.ts` and
-`projectShape.ts` stay, each being a type with the one literal that type's absence is spelled as.
+there, between what every ring shares and what one ring does. What the five modules had left after
+the move was types and constants, so they are two files now: `types.ts` and `constants.ts`. Two
+rather than five because nothing read one of them without the others, and a name per export is a
+directory listing, not a structure.
 
 The gain is that `src/config/` now carries no suite at all. Its three test files moved with the
 functions they covered, and what is left is tables: asserting one equals itself proves nothing, and

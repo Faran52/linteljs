@@ -1,4 +1,4 @@
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { copied, emitted } from '../../utils/artifactUtils';
 import { adapterArtifact } from '../utils/adapterUtils';
 

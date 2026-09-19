@@ -1,5 +1,5 @@
 import { hasTests } from '../../../answers/answers';
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { projectSpelling } from '../../utils/shapeUtils';
 

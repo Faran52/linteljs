@@ -1,5 +1,5 @@
 export {
   type Artifact,
   type ArtifactContent,
-} from '../config/artifact';
+} from '../config/types';
 export { buildArtifacts } from './registry';

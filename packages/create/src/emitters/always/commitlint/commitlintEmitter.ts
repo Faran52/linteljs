@@ -1,4 +1,4 @@
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact } from '../../../config/types';
 import { copied } from '../../utils/artifactUtils';
 
 export const commitlintEmitter = (): Artifact[] => {

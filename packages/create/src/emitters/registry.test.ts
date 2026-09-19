@@ -29,7 +29,7 @@ import {
   type TypeSafety,
 } from '../answers/answers';
 import { CONFIG_PATH } from '../answers/linteljsConfig';
-import { type Artifact } from '../config/artifact';
+import { type Artifact } from '../config/types';
 import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
 

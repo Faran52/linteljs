@@ -14,7 +14,7 @@ import {
   type Testing,
   TESTING_CHOICES,
 } from '../../answers/answers';
-import { type Artifact } from '../../config/artifact';
+import { type Artifact } from '../../config/types';
 import { contentOf } from '../../files/shippedAssets';
 import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
 import { removableIn } from '../utils/managedUtils';

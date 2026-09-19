@@ -1,11 +1,10 @@
 import { hasLibrary, hasTests } from '../../../answers/answers';
-import { type Artifact } from '../../../config/artifact';
+import { type Artifact, type ProjectShape } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { copied } from '../../utils/artifactUtils';
 
 import type { Answers } from '../../../answers/answers';
-import type { ProjectShape } from '../../../config/projectShape';
 import type { TargetRecord } from '../../../targets/record';
 
 // Import-free fragments after the target setup, so Angular's imports stay first.
