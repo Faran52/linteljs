@@ -19,9 +19,9 @@ import {
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
 } from '../answers';
-import { valuesOf } from '../answers/record';
 import { type JsonValue, unaskedValueOf } from '../answers/utils/readUtils';
 import { targetFor } from '../targets';
+import { valuesOf } from '../utils/objectUtils';
 
 import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
 

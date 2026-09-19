@@ -10,9 +10,9 @@ import {
   DEFAULT_ANSWERS,
   type TargetId,
 } from '../../../../answers';
-import { valuesOf } from '../../../../answers/record';
 import { STYLE_ENTRY_CANDIDATES } from '../../../../files/readProjectShape';
 import { targetFor } from '../../../../targets';
+import { valuesOf } from '../../../../utils/objectUtils';
 
 import { styleEntryPath } from './pathUtils';
 

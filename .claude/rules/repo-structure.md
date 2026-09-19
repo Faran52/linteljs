@@ -96,10 +96,13 @@ aliases it duplicates instead of importing carry a comment saying so.
   itself proves nothing, and what is worth checking about one is a fact about the code that reads
   it.
 
-  `src/utils/` is the innermost ring and holds only what more than one ring reads. It is one module:
-  `jsonUtils.ts`, whose `isJsonObject` five guards in four rings had each written out. Each of those
-  still declares its own narrowed shape, since a `package.json` and a manifest are not the same
-  thing; what they share is the question of whether a parsed value is an object at all.
+  `src/utils/` is the innermost ring and holds only what more than one ring reads. `jsonUtils.ts`'s
+  `isJsonObject` is five guards in four rings that had each written it out; each still declares its
+  own narrowed shape, since a `package.json` and a manifest are not the same thing, and what they
+  share is the question of whether a parsed value is an object at all. `objectUtils.ts`'s `valuesOf`
+  is the same story: a record's own `values` needed it first, and it carries nothing record-shaped,
+  so every ring that reads a `Record`'s keys as a typed union reaches for it now instead of writing
+  its own `Object.keys(...) as V[]`.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.
@@ -119,23 +122,26 @@ aliases it duplicates instead of importing carry a comment saying so.
   `plugins` skip itself when `agents` comes back empty. Display text lives there too, in `values`,
   since a label is data the prompt and the schema both read rather than a terminal concern.
 
-  `registry.ts` holds `ANSWERS`, one line per record in ask order, and everything derived from it:
-  `Answers`, `DEFAULT_ANSWERS`, `LinteljsConfig` and `parseLinteljsConfig`, the same shape `538fa34`
-  gave `targets/registry.ts`. `constants.ts` holds the schema URLs and the config path, and
+  `registry.ts` holds `ANSWERS`, one line per record in ask order, and only what derives from the
+  list itself: `AnswerKey`, `Answers`, `LinteljsConfig` and `DEFAULT_ANSWERS`, the same shape
+  `538fa34` gave `targets/registry.ts`. `constants.ts` holds the schema URLs and the config path, and
   `index.ts` is the barrel the outer rings take the ring through. `meta.test.ts` holds the files to
   the registry in both directions: every key has exactly one file across the groups, that file
   exports a const named for itself, and the record's own `key` field names the same file, so a
   renamed file or a typo'd key fails rather than silently shadowing another answer's flag.
 
   `utils/` is where the ring's shared readers live: `readUtils.ts` turns a parsed JSON value into a
-  typed one, one function per kind, and carries the v1-to-v2 migration; `schemaUtils.ts` generates
-  the published JSON schema from the records themselves, so the schema cannot drift from what a
-  config actually accepts; `answerUtils.ts` is the small predicates more than one emitter reads,
-  `hasLibrary`, `hasSurface` and the rest.
+  typed one, one function per kind, and carries the v1-to-v2 migration; `recordUtils.ts` is
+  `onlyFor`, `registry.ts`'s one reader that needs a record's own `values` rather than a parsed one;
+  `configUtils.ts` is `parseLinteljsConfig` and everything under it, kept out of `registry.ts` so the
+  list and the parsing of a whole file stay two files rather than one that does both;
+  `schemaUtils.ts` generates the published JSON schema from the records themselves, so the schema
+  cannot drift from what a config actually accepts; `answerUtils.ts` is the small predicates more
+  than one emitter reads, `hasLibrary`, `hasSurface` and the rest.
 
-  `answers/registry.ts` value-imports `targetFor` from `targets/` for the `slot` and `only` checks,
-  which is the one edge `create-rings` allows: both are inner rings, and the rule only stops an inner
-  ring reaching an outer one.
+  `answers/utils/configUtils.ts` value-imports `targetFor` from `targets/` for the `slot` and `only`
+  checks its parser needs, which is the one edge `create-rings` allows: both are inner rings, and the
+  rule only stops an inner ring reaching an outer one.
 
 - **`eslint-plugin` groups by rule id, not by ring.** `src/rules/<kebab-rule-id>/` holds the rule
   file named for its single export, its test, and `README.md`. The directory name is the id, so the

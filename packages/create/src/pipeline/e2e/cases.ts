@@ -10,8 +10,8 @@ import {
   type Router,
   type TargetId,
 } from '../../answers';
-import { valuesOf } from '../../answers/record';
 import { targetFor } from '../../targets';
+import { valuesOf } from '../../utils/objectUtils';
 
 import type { Framework } from '../../config/types';
 import type { TargetRecord } from '../../targets/record';

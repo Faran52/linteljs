@@ -110,7 +110,7 @@ export const buildArtifacts = (
 };
 
 /**
- * What a project is seeded with and owns afterwards. Kept out of `buildArtifacts` because that list is what
+ * What a project is seeded with and owns afterward. Kept out of `buildArtifacts` because that list is what
  * `sync` re-applies and none of this is linteljs's to maintain once the project has it. Everything here still
  * reaches disk as an `Artifact`, so `applyArtifact` is the only writer either way.
  */

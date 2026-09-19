@@ -1,0 +1,499 @@
+import { emitLinteljsConfig } from '../../emitters/always/linteljs-config/linteljsConfigEmitter';
+import {
+  CONFIG_SCHEMA_URL,
+  CONFIG_SCHEMA_URL_V1,
+  CURRENT_SCHEMA_VERSION,
+} from '../constants';
+import { DEFAULT_ANSWERS } from '../registry';
+
+import { surfacesOf } from './answerUtils';
+import { parseLinteljsConfig } from './configUtils';
+
+import type { Answers } from '../registry';
+
+interface ConfigOverrides {
+  $schema?: string;
+  target?: string | undefined;
+  testing?: string;
+  packageManager?: string;
+  browser?: string;
+  hostedFramework?: string;
+  surfaces?: string[];
+  libraries?: string | string[];
+  form?: string;
+  router?: string;
+  store?: boolean | string;
+  typeSafety?: string;
+  agents?: string | string[];
+  plugins?: string | (string | number)[];
+  unexpected?: boolean | object;
+  // An answer this version does not have, which an older config still carries.
+  typescript?: boolean;
+}
+
+const config = (overrides: ConfigOverrides = {}): string => {
+  return JSON.stringify({
+    $schema: CONFIG_SCHEMA_URL,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    ...DEFAULT_ANSWERS,
+    ...overrides,
+  });
+};
+
+describe('parseLinteljsConfig', () => {
+  it('reads the current envelope and every answer', () => {
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS)))
+      .toEqual({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        ...DEFAULT_ANSWERS,
+      });
+  });
+
+  // All three arrived after the schema did, so a config written without them still parses.
+  it('defaults the extension axes when a config predates them', () => {
+    const withoutAxes = JSON.stringify({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      target: 'webextension',
+      testing: 'vitest',
+      packageManager: 'pnpm',
+      libraries: [],
+      store: false,
+      typeSafety: 'strict',
+      agents: ['claude-code'],
+      plugins: [],
+    });
+
+    const config = parseLinteljsConfig(withoutAxes);
+
+    expect(config.browser).toBe('chrome');
+    expect(config.hostedFramework).toBeUndefined();
+    // Left absent, so the file keeps saying what its author said.
+    expect(config.surfaces).toBeUndefined();
+    expect(surfacesOf(config)).toEqual(['popup', 'background']);
+  });
+
+  it('round-trips all three extension axes', () => {
+    // A readonly tuple is not assignable to the mutable list `Answers` declares.
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+      browser: 'firefox',
+      hostedFramework: 'solid',
+      surfaces: ['devtools-panel'],
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers)))
+      .toEqual({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        ...answers,
+      });
+  });
+
+  it.each([
+    ['browser', 'safari'],
+    ['hostedFramework', 'angular'],
+  ])('rejects an unknown %s', (field, value) => {
+    const config = {
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...DEFAULT_ANSWERS,
+      [field]: value,
+    };
+
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify(config));
+    }).toThrow(new RegExp(`${field} must be one of`));
+  });
+
+  it('round-trips the resolver conditions', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      resolveConditions: ['import', 'default'],
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...answers,
+    });
+  });
+
+  it.each([
+    [[], 'must be a non-empty array'],
+    [['import', ''], 'must contain only non-empty strings'],
+    [['import', 1], 'must contain only non-empty strings'],
+    [['import', 'import'], 'must not contain duplicate values'],
+    ['import', 'must be a non-empty array'],
+  ])('rejects resolveConditions of %j', (resolveConditions, message) => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        ...DEFAULT_ANSWERS,
+        resolveConditions,
+      }));
+    }).toThrow(new RegExp(message));
+  });
+
+  // Hand-edited into `eslint.config.js`, an alias is gone on the next sync.
+  it('round-trips a project\'s own aliases, in both shapes', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      aliases: {
+        '@engine': './src/lib/engine/index.ts',
+        '@workers/*': './src/workers/*',
+      },
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...answers,
+    });
+  });
+
+  // Only the sigil is checked: a bare `engine` sorts as a package.
+  it.each([
+    [{ engine: './src/lib/engine' }, 'must start with @ or \\$'],
+    [{ '@engine': '' }, 'must be a non-empty string'],
+    [{ '@engine': 3 }, 'must be a non-empty string'],
+    [['@engine'], 'aliases must be an object'],
+    ['@engine', 'aliases must be an object'],
+  ])('rejects aliases of %j', (aliases, message) => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        ...DEFAULT_ANSWERS,
+        aliases,
+      }));
+    }).toThrow(new RegExp(message));
+  });
+
+  it('round-trips the stores a project packages for', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      target: 'webextension',
+      browsers: ['chrome', 'firefox'],
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...answers,
+    });
+  });
+
+  it.each([
+    [[], 'must contain at least 1 value'],
+    [['chrome', 'chrome'], 'must not contain duplicate values'],
+    [['safari'], 'must be one of'],
+  ])('rejects browsers of %j', (browsers, message) => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        ...DEFAULT_ANSWERS,
+        browsers,
+      }));
+    }).toThrow(new RegExp(message));
+  });
+
+  // Not for build outputs, which `base()` covers through `.gitignore`: for a generated file the project commits.
+  it("round-trips a project's own ignores", () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      ignores: ['src/lib/compat-data/generatedRegistry.ts'],
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...answers,
+    });
+  });
+
+  it.each([
+    [[], 'must be a non-empty array'],
+    [['a', ''], 'must contain only non-empty strings'],
+    [['a', 2], 'must contain only non-empty strings'],
+    [['a', 'a'], 'must not contain duplicate values'],
+    ['a', 'must be a non-empty array'],
+  ])('rejects ignores of %j', (ignores, message) => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        ...DEFAULT_ANSWERS,
+        ignores,
+      }));
+    }).toThrow(new RegExp(message));
+  });
+
+  it('rejects malformed JSON', () => {
+    expect(() => {
+      return parseLinteljsConfig('{');
+    }).toThrow(/linteljs\.config\.json is not valid JSON/);
+  });
+
+  it('rejects a missing schema version', () => {
+    expect(() => {
+      return parseLinteljsConfig('{}');
+    }).toThrow(/schemaVersion/);
+  });
+
+  // A hand-edited string is malformed, not unsupported.
+  it('rejects a schema version that is not a number', () => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: '1',
+      }));
+    }).toThrow(/schemaVersion must be 1 or 2/);
+  });
+
+  it('rejects a future schema version before the fields it carries', () => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: 3,
+      }));
+    }).toThrow(/schema version 3.*update @linteljs\/create/);
+  });
+
+  it('rejects a future schema version before inspecting new object-valued fields', () => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        $schema: CONFIG_SCHEMA_URL,
+        schemaVersion: 3,
+        future: { nested: true },
+      }));
+    }).toThrow(/schema version 3.*update @linteljs\/create/);
+  });
+
+  it.each([
+    ['a non-object value', '[]', /linteljs\.config\.json must be a JSON object/],
+    ['an unexpected property', config({ unexpected: true }), /unexpected property: unexpected/],
+    // DESIGN.md's "No JavaScript output" rests on this refusal.
+    ['a project recorded as javascript', config({ typescript: false }), /unexpected property: typescript/],
+    ['a different schema URL', config({ $schema: 'https://example.com/schema.json' }), /\$schema must be/],
+    [
+      'a missing target',
+      config({ target: undefined }),
+      /target must be one of: react, next, vue, svelte, solid, angular, astro, webextension, react-native/,
+    ],
+    [
+      'an unknown target',
+      config({ target: 'ember' }),
+      /target must be one of: react, next, vue, svelte, solid, angular, astro, webextension, react-native/,
+    ],
+    ['an unknown testing choice', config({ testing: 'jest' }), /testing must be one of: vitest, none/],
+    [
+      'an unknown package manager',
+      config({ packageManager: 'deno' }),
+      /packageManager must be one of: pnpm, npm, yarn, bun/,
+    ],
+    ['a non-array library list', config({ libraries: 'zod' }), /libraries must be an array/],
+    [
+      'an unknown library',
+      config({ libraries: ['jquery'] }),
+      /libraries must be one of: zod, tanstack-query, tailwind/,
+    ],
+    ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
+    ['a non-boolean store', config({ store: 'false' }), /store must be a boolean/],
+    [
+      'an unknown type-safety choice',
+      config({ typeSafety: 'unchecked' }),
+      /typeSafety must be one of: strict, relaxed/,
+    ],
+    ['a non-array agent list', config({ agents: 'codex' }), /agents must be an array/],
+    [
+      'an unknown agent',
+      config({ agents: ['windsurf'] }),
+      /agents must be one of: claude-code, codex, copilot, cursor/,
+    ],
+    ['a duplicate agent', config({ agents: ['codex', 'codex'] }), /agents must not contain duplicate values/],
+    ['a non-array plugin list', config({ plugins: 'ponytail' }), /plugins must be an array/],
+    [
+      'a non-string plugin',
+      config({ plugins: [1] }),
+      /plugins must be one of: ponytail, context7, frontend-design/,
+    ],
+    [
+      'an unknown plugin',
+      config({ plugins: ['cursor'] }),
+      /plugins must be one of: ponytail, context7, frontend-design/,
+    ],
+    ['a duplicate plugin', config({ plugins: ['ponytail', 'ponytail'] }), /plugins must not contain duplicate values/],
+  ])('rejects %s', (_case, text, error) => {
+    expect(() => {
+      return parseLinteljsConfig(text);
+    }).toThrow(error);
+  });
+});
+
+describe('the router and the form libraries', () => {
+  it('round-trips a router', () => {
+    const answers = {
+      ...DEFAULT_ANSWERS,
+      router: 'tanstack-router' as const,
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toMatchObject({ router: 'tanstack-router' });
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('router');
+  });
+
+  it('rejects an unknown router', () => {
+    expect(() => {
+      return parseLinteljsConfig(config({ router: 'wouter' }));
+    }).toThrow(/router must be one of: react-router, tanstack-router/);
+  });
+
+  it('round-trips a form library, and keeps it out of libraries', () => {
+    const answers = {
+      ...DEFAULT_ANSWERS,
+      form: 'tanstack-form' as const,
+    };
+    const parsed = parseLinteljsConfig(emitLinteljsConfig(answers));
+
+    expect(parsed).toMatchObject({ form: 'tanstack-form' });
+    expect(parsed.libraries).not.toContain('tanstack-form');
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('form');
+  });
+
+  // The v1 spelling: the error names where the answer went rather than calling it an unknown library.
+  it('refuses a form library listed among the libraries', () => {
+    expect(() => {
+      return parseLinteljsConfig(config({ libraries: ['zod', 'react-hook-form'] }));
+    }).toThrow(/react-hook-form is a form library: name it in "form" rather than in "libraries"/);
+  });
+
+  it('rejects an unknown form', () => {
+    expect(() => {
+      return parseLinteljsConfig(config({ form: 'formik' }));
+    }).toThrow(/form must be one of: tanstack-form, react-hook-form/);
+  });
+});
+
+// v1 kept the form library inside `libraries`; a project written then still describes itself.
+describe('a version-one config', () => {
+  const v1 = (overrides: ConfigOverrides = {}): string => {
+    return JSON.stringify({
+      $schema: CONFIG_SCHEMA_URL_V1,
+      ...DEFAULT_ANSWERS,
+      ...overrides,
+      schemaVersion: 1,
+    });
+  };
+
+  it.each([
+    ['tanstack-form', 'vue'],
+    ['react-hook-form', 'react'],
+  ])('lifts %s out of libraries', (form, target) => {
+    const parsed = parseLinteljsConfig(v1({
+      target,
+      libraries: ['tailwind', form],
+    }));
+
+    expect(parsed.form).toBe(form);
+    expect(parsed.libraries).toEqual(['tailwind']);
+  });
+
+  // Migrated means migrated: what is written back is a v2 file.
+  it('reports the current version and schema', () => {
+    const parsed = parseLinteljsConfig(v1({ libraries: ['tanstack-form'] }));
+
+    expect(parsed.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(parsed.$schema).toBe(CONFIG_SCHEMA_URL);
+    expect(JSON.parse(emitLinteljsConfig(parsed))).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION });
+  });
+
+  it('leaves a config naming no form library alone', () => {
+    const parsed = parseLinteljsConfig(v1());
+
+    expect(parsed).not.toHaveProperty('form');
+    expect(parsed.libraries).toEqual(DEFAULT_ANSWERS.libraries);
+  });
+
+  // The one shape v1 itself refused, refused on the way through.
+  it('still rejects both form libraries at once', () => {
+    expect(() => {
+      return parseLinteljsConfig(v1({ libraries: ['tanstack-form', 'react-hook-form'] }));
+    }).toThrow(/libraries must contain at most one of: tanstack-form, react-hook-form/);
+  });
+
+  it('holds a version-one file to the version-one schema url', () => {
+    expect(() => {
+      return parseLinteljsConfig(JSON.stringify({
+        ...JSON.parse(v1()),
+        $schema: CONFIG_SCHEMA_URL,
+      }));
+    }).toThrow(/\$schema must be .*v1\.schema\.json/);
+  });
+});
+
+describe('answers a target never asks for', () => {
+  it.each([
+    ['a router on Vue', {
+      target: 'vue',
+      router: 'react-router',
+    }, 'router is not an answer for vue'],
+    ['a hosted framework on React', {
+      target: 'react',
+      hostedFramework: 'vue',
+    }, 'hostedFramework is not an answer for react'],
+    ['a browser on Svelte', {
+      target: 'svelte',
+      browser: 'firefox',
+    }, 'browser is not an answer for svelte'],
+    ['surfaces on Next', {
+      target: 'next',
+      surfaces: ['popup'],
+    }, 'surfaces is not an answer for next'],
+    ['a store on Svelte', {
+      target: 'svelte',
+      store: true,
+    }, 'store is not an answer for svelte'],
+    ['react-hook-form on Vue', {
+      target: 'vue',
+      form: 'react-hook-form',
+    }, 'react-hook-form is not an answer for vue'],
+  ])('refuses %s', (_case, overrides, message) => {
+    expect(() => {
+      return parseLinteljsConfig(config(overrides));
+    }).toThrow(message);
+  });
+
+  // Next and React Native are their own `framework` values, and both render with React.
+  it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
+    expect(parseLinteljsConfig(config({
+      target,
+      form: 'react-hook-form',
+    })).form).toBe('react-hook-form');
+  });
+
+  it.each(['vue', 'svelte', 'solid', 'angular'])('still refuses react-hook-form on %s', (target) => {
+    expect(() => {
+      return parseLinteljsConfig(config({
+        target,
+        form: 'react-hook-form',
+      }));
+    }).toThrow(`react-hook-form is not an answer for ${target}`);
+  });
+
+  it('accepts the same answers where the target asks for them', () => {
+    expect(parseLinteljsConfig(config({
+      target: 'astro',
+      hostedFramework: 'react',
+      form: 'react-hook-form',
+    })).form).toBe('react-hook-form');
+    expect(parseLinteljsConfig(config({
+      target: 'react',
+      router: 'tanstack-router',
+      store: true,
+    })).router).toBe('tanstack-router');
+  });
+});

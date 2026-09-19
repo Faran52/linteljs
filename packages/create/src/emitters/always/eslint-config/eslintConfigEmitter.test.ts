@@ -13,8 +13,8 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers';
-import { valuesOf } from '../../../answers/record';
 import { FOLDER_ROUTED } from '../../../targets/naming';
+import { valuesOf } from '../../../utils/objectUtils';
 
 import { emitEslintConfig } from './eslintConfigEmitter';
 

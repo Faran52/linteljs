@@ -1,5 +1,5 @@
 import { isJsonObject } from '../../utils/jsonUtils';
-import { valuesOf } from '../record';
+import { valuesOf } from '../../utils/objectUtils';
 
 import type { AliasMap } from '../../config/types';
 import type {

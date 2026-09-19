@@ -13,9 +13,9 @@ import {
   type TargetId,
   type Testing,
 } from '../../answers';
-import { valuesOf } from '../../answers/record';
 import { type Artifact } from '../../config/types';
 import { contentOf } from '../../files/shippedAssets';
+import { valuesOf } from '../../utils/objectUtils';
 import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
 import { removableIn } from '../utils/managedUtils';
 

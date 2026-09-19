@@ -11,7 +11,7 @@ import {
   type Library,
   type TargetId,
 } from '../../../answers';
-import { valuesOf } from '../../../answers/record';
+import { valuesOf } from '../../../utils/objectUtils';
 
 import { buildAliases } from './aliasUtils';
 

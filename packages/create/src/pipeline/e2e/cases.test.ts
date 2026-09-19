@@ -6,7 +6,7 @@ import {
 } from 'vitest';
 
 import { ANSWERS, type Answers } from '../../answers';
-import { valuesOf } from '../../answers/record';
+import { valuesOf } from '../../utils/objectUtils';
 
 import { optionCases } from './cases';
 

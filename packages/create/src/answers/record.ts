@@ -75,27 +75,3 @@ export type AnswerRecord
     | MultiRecord
     | OptionalChoiceRecord
     | OptionalMultiRecord;
-
-// The keys a record's own `values` carries, read off the object itself: a filter with a predicate rather than a
-// cast, so a record's vocabulary is never spelled a second time by its readers.
-export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
-  return Object.keys(values).filter((key): key is V => {
-    return key in values;
-  });
-};
-
-/**
- * `only`, for a record that carries `values` and a value chosen from them. `values` narrows to `Record<string,
- * ValueRecord>` on assignment: a closed key union is a legal source for a wider index signature of the same value
- * type, and every one of the four kinds with `values` shares this one.
- */
-export const onlyFor = (record: AnswerRecord, chosen: string): ((target: TargetRecord) => boolean)
-  | undefined => {
-  if (!('values' in record)) {
-    return undefined;
-  }
-
-  const values: Record<string, ValueRecord> = record.values;
-
-  return values[chosen]?.only;
-};

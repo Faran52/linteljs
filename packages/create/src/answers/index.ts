@@ -16,7 +16,6 @@ export {
   type Answers,
   DEFAULT_ANSWERS,
   type LinteljsConfig,
-  parseLinteljsConfig,
 } from './registry';
 export { type Browser } from './target/browser';
 export { type HostedFramework } from './target/hostedFramework';
@@ -33,3 +32,4 @@ export {
   rendersWithReact,
   surfacesOf,
 } from './utils/answerUtils';
+export { parseLinteljsConfig } from './utils/configUtils';

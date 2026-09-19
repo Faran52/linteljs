@@ -22,7 +22,6 @@ import {
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
 } from '../answers';
-import { valuesOf } from '../answers/record';
 import { RUN_PREFIX, STAGES } from '../config/constants';
 import { type Stage } from '../config/types';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';
@@ -30,6 +29,7 @@ import { entryExists } from '../files/utils/fsUtils';
 import { runPipeline } from '../pipeline/pipeline';
 import { applySync, planSync } from '../pipeline/sync';
 import { ensurePackageManager, nodeVersionRefusal } from '../process/packageManager';
+import { valuesOf } from '../utils/objectUtils';
 
 import {
   ask,

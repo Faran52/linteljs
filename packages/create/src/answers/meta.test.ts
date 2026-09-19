@@ -3,7 +3,8 @@ import { basename, join } from 'node:path';
 
 import { directoriesIn, sourcesUnder } from '@mocks/ringShape';
 
-import { valuesOf } from './record';
+import { valuesOf } from '../utils/objectUtils';
+
 import { ANSWERS } from './registry';
 
 import type { AnswerRecord } from './record';

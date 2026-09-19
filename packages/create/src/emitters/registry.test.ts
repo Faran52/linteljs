@@ -29,10 +29,10 @@ import {
   type Testing,
   type TypeSafety,
 } from '../answers';
-import { valuesOf } from '../answers/record';
 import { type Artifact } from '../config/types';
 import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
+import { valuesOf } from '../utils/objectUtils';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
 import { buildArtifacts, seedArtifacts } from './registry';

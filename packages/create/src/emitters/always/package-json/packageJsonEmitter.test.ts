@@ -19,8 +19,8 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers';
-import { valuesOf } from '../../../answers/record';
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
+import { valuesOf } from '../../../utils/objectUtils';
 
 import { VERSIONS } from './constants';
 import {

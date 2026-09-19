@@ -16,9 +16,9 @@ import {
   type Surface,
   type TargetId,
 } from '../answers';
-import { valuesOf } from '../answers/record';
 import { buildDevDependencies } from '../emitters/always/package-json/packageJsonEmitter';
 import { ASSETS_ROOT } from '../files/shippedAssets';
+import { valuesOf } from '../utils/objectUtils';
 
 import { targetFor, TARGETS } from './registry';
 

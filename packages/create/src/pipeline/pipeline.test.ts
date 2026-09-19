@@ -39,7 +39,6 @@ import {
   type TargetId,
   type Testing,
 } from '../answers';
-import { valuesOf } from '../answers/record';
 import { type Stage } from '../config/types';
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
@@ -50,6 +49,7 @@ import {
   exists,
   readIfPresent,
 } from '../files/utils/fsUtils';
+import { valuesOf } from '../utils/objectUtils';
 
 import { runPipeline } from './pipeline';
 import { applySync, planSync } from './sync';

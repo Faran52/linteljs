@@ -13,7 +13,7 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers';
-import { valuesOf } from '../../../answers/record';
+import { valuesOf } from '../../../utils/objectUtils';
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
 import { buildAliases } from '../utils/aliasUtils';
 

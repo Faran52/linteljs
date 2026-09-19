@@ -34,10 +34,10 @@ import {
   type HostedFramework,
   type TargetId,
 } from '../src/answers';
-import { valuesOf } from '../src/answers/record';
 import { parsePackageJson } from '../src/emitters/always/package-json/packageJsonEmitter';
 import { startRegistry } from '../src/pipeline/e2e/registrySetup';
 import { targetFor } from '../src/targets';
+import { valuesOf } from '../src/utils/objectUtils';
 
 import type { E2eCase } from '../src/pipeline/e2e/cases';
 import type { E2eRegistry } from '../src/pipeline/e2e/registrySetup';

@@ -13,8 +13,8 @@ import {
   type TargetId,
   type Testing,
 } from '../answers';
-import { valuesOf } from '../answers/record';
 import { targetFor } from '../targets';
+import { valuesOf } from '../utils/objectUtils';
 
 import { scaffoldCommand } from './scaffoldCommand';
 
