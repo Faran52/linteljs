@@ -38,13 +38,13 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../answers';
-import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
-import { exists } from '../files/utils/fsUtils';
+} from '../../answers';
+import { emitLinteljsConfig } from '../../emitters/always/linteljs-config/linteljsConfigEmitter';
+import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
+import { exists } from '../../files/utils/fsUtils';
+import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/prompts';
 
-import { main, parseCliArgs } from './cli';
-import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from './prompts';
+import { main } from './cli';
 
 interface Run {
   code: number;
@@ -129,47 +129,6 @@ const readOptional = async (path: string): Promise<string | null> => {
     throw error;
   }
 };
-
-describe('parseCliArgs', () => {
-  it('turns --skip-scaffold into a skipped scaffold stage', () => {
-    expect(parseCliArgs(['demo-app', '--skip-scaffold']).skip).toEqual(['scaffold']);
-  });
-
-  it('turns --no-install into skipping both the install and the fix that needs it', () => {
-    // `parseArgs` has no `--no-` negation; the flag is declared under its literal name.
-    expect(parseCliArgs(['demo-app', '--no-install']).skip).toEqual(['install', 'fix']);
-  });
-
-  it('carries --fresh through for a directory the CLI did not scaffold', () => {
-    expect(parseCliArgs(['--skip-scaffold', '--fresh']).fresh).toBe(true);
-    expect(parseCliArgs(['--skip-scaffold']).fresh).toBe(false);
-  });
-
-  it('reads sync as a command rather than a project name', () => {
-    const options = parseCliArgs(['sync', '--force']);
-
-    expect(options.command).toBe('sync');
-    expect(options.name).toBe('');
-    expect(options.force).toBe(true);
-  });
-
-  // Reported and stopped rather than dropped, so the run that happens is the one asked for.
-  it('keeps a stage name it does not know, rather than dropping it', () => {
-    const options = parseCliArgs(['demo-app', '--skip', 'standard', '--skip', 'nonsense']);
-
-    expect(options.skip).toEqual(['standard']);
-    expect(options.unknownSkips).toEqual(['nonsense']);
-  });
-
-  it('reports nothing unknown for a valid skip list', () => {
-    expect(parseCliArgs(['demo-app', '--skip', 'standard']).unknownSkips).toEqual([]);
-  });
-
-  it('keeps extra positional arguments for main to reject', () => {
-    expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(['extra']);
-    expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(['extra']);
-  });
-});
 
 // stdout, not stderr: `create --help | grep skip` would print nothing otherwise.
 describe('main: what it prints and what it returns', () => {
@@ -928,7 +887,7 @@ describe('main: an unexpected failure', () => {
 
 describe('main: the package manager', () => {
   it('is checked for before the pipeline runs', async () => {
-    const commands = await import('../process/packageManager');
+    const commands = await import('../../process/packageManager');
     const spy = vi.spyOn(commands, 'ensurePackageManager').mockImplementation(() => {
       throw new Error('bun is not installed.');
     });

@@ -18,12 +18,11 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../answers';
-import { type JsonValue, unaskedValueOf } from '../answers/utils/readUtils';
-import { targetFor } from '../targets';
-import { valuesOf } from '../utils/objectUtils';
-
-import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
+} from '../../answers';
+import { type JsonValue, unaskedValueOf } from '../../answers/utils/readUtils';
+import { targetFor } from '../../targets';
+import { valuesOf } from '../../utils/objectUtils';
+import { isValidProjectName, PROJECT_NAME_RULE } from '../utils/nameUtils';
 
 import type {
   AnswerRecord,
@@ -32,8 +31,8 @@ import type {
   OptionalChoiceRecord,
   OptionalMultiRecord,
   ValueRecord,
-} from '../answers/record';
-import type { StoreSlot, TargetRecord } from '../targets/record';
+} from '../../answers/record';
+import type { StoreSlot, TargetRecord } from '../../targets/record';
 
 /**
  * The four value-bearing kinds `askAnswer` dispatches on. `boolean` is `store` alone and is asked directly by the
