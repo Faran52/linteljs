@@ -4,7 +4,7 @@ import {
   allowBuildsBlock,
   emitPnpmWorkspace,
   peerRulesBlock,
-} from './emitPnpmWorkspace';
+} from './utils/emitUtils';
 
 import type { Answers } from '../../../answers/answers';
 

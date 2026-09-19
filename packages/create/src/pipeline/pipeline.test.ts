@@ -44,7 +44,7 @@ import {
 import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { type Stage } from '../emitters/artifact';
-import { STYLE_ENTRY_CANDIDATES } from '../emitters/libraries/style-entry/styleEntryPath';
+import { STYLE_ENTRY_CANDIDATES } from '../emitters/config/styleEntries';
 import { readLintelConfig } from '../files/readLintelConfig';
 import {
   entryExists,

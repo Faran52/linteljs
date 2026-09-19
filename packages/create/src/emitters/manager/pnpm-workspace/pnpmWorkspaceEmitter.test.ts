@@ -11,8 +11,8 @@ import {
   type TargetId,
 } from '../../../answers/answers';
 
-import { allowBuildsBlock, emitPnpmWorkspace } from './emitPnpmWorkspace';
 import { mergePnpmWorkspace } from './pnpmWorkspaceEmitter';
+import { allowBuildsBlock, emitPnpmWorkspace } from './utils/emitUtils';
 
 interface AnswerOverrides {
   target?: TargetId;

@@ -9,10 +9,11 @@ import {
   DEFAULT_ANSWERS,
   TARGET_IDS,
   type TargetId,
-} from '../../../answers/answers';
-import { targetFor } from '../../../targets';
+} from '../../../../answers/answers';
+import { targetFor } from '../../../../targets';
+import { STYLE_ENTRY_CANDIDATES } from '../../../config/styleEntries';
 
-import { STYLE_ENTRY_CANDIDATES, styleEntryPath } from './styleEntryPath';
+import { styleEntryPath } from './pathUtils';
 
 const answersFor = (target: TargetId): Answers => {
   return {

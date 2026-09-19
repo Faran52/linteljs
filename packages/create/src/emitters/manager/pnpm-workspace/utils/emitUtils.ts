@@ -1,8 +1,8 @@
-import { targetFor } from '../../../targets';
-import { allowedBuildNames, buildDevDependencies } from '../../always/package-json/packageJsonEmitter';
-import { ESLINT_RANGE } from '../../config/versions';
+import { targetFor } from '../../../../targets';
+import { allowedBuildNames, buildDevDependencies } from '../../../always/package-json/packageJsonEmitter';
+import { ESLINT_RANGE } from '../../../config/versions';
 
-import type { Answers } from '../../../answers/answers';
+import type { Answers } from '../../../../answers/answers';
 
 /**
  * No `packages:` key: the file exists for `allowBuilds` (a denied build fails with ERR_PNPM_IGNORED_BUILDS) and

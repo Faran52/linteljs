@@ -122,9 +122,16 @@ describe.each(subjects)('$group/$name', ({ name, path }) => {
     expect(entriesIn(path)).not.toContain('index.ts');
   });
 
-  it('holds nothing but its modules and a utils directory', () => {
+  /**
+   * One entry, its suites, a `constants.ts` for a table it alone reads, and a `utils/` for its private helpers.
+   * Nothing else: a second module loose beside the entry is either a helper, in which case `utils/` is where the
+   * `*Utils` suffix is enforced on it, or it is read from outside, in which case it is not this subject's.
+   */
+  it('holds nothing but its entry, its constants and a utils directory', () => {
+    const allowed = new RegExp(`^(${entry}(\\.[a-z]+)?\\.test\\.ts|${entry}\\.ts|constants(\\.test)?\\.ts)$`, 'u');
+
     expect(entriesIn(path).filter((file) => {
-      return !file.endsWith('.ts') && file !== 'utils';
+      return file !== 'utils' && !allowed.test(file);
     })).toEqual([]);
   });
 

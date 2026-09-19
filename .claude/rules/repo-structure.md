@@ -68,6 +68,11 @@ aliases it duplicates instead of importing carry a comment saying so.
   registry is keyed by subject directory and held against the directory listing in both directions,
   so a directory nobody registered fails and a key with no directory fails.
 
+  A subject directory holds its entry, its suites, a `constants.ts` for a table it alone reads, and
+  a `utils/` for its private helpers. Nothing else, which `meta.test.ts` enforces: a second module
+  loose beside the entry is either a helper, and `utils/` is where the `*Utils` suffix is enforced on
+  it, or it is read from outside, and then it is not that subject's to hold.
+
   A module that writes no file is not an emitter: `artifact.ts`, `buildArtifacts.ts`,
   `seedArtifacts.ts` and `projectShape.ts` sit at the root, helpers shared across groups under
   `utils/`, a group's own helpers under `<group>/utils/`, and the data tables under `config/`.

@@ -10,13 +10,13 @@ import {
   DEFAULT_ANSWERS,
   type HostedFramework,
   type TargetId,
-} from '../../../answers/answers';
+} from '../../../../answers/answers';
 
 import {
   allowBuildsBlock,
   emitPnpmWorkspace,
   peerRulesBlock,
-} from './emitPnpmWorkspace';
+} from './emitUtils';
 
 interface AnswerOverrides {
   target?: TargetId;

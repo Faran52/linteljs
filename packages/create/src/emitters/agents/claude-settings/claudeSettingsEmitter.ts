@@ -5,7 +5,7 @@ import {
 } from '../../artifact';
 import { adapterArtifact } from '../utils/adapterUtils';
 
-import { mergeClaudeSettings } from './mergeClaudeSettings';
+import { mergeClaudeSettings } from './utils/mergeUtils';
 
 import type { Answers, Plugin } from '../../../answers/answers';
 

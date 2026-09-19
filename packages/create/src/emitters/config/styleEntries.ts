@@ -1,8 +1,3 @@
-import { targetFor } from '../../../targets';
-import { projectSpelling } from '../../projectShape';
-
-import type { Answers } from '../../../answers/answers';
-
 // Discovered rather than asked: writing the target's default beside a project's own left a second entry nothing
 // imported.
 export const STYLE_ENTRY_CANDIDATES = [
@@ -19,8 +14,3 @@ export const STYLE_ENTRY_CANDIDATES = [
   'src/app.css',
   'src/style.css',
 ];
-
-// The target's own where present, the project's otherwise, and the target's default at birth.
-export const styleEntryPath = (answers: Answers, present: readonly string[]): string | undefined => {
-  return projectSpelling(targetFor(answers).styleEntry, present);
-};

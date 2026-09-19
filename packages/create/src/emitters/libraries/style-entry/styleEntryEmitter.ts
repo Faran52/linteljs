@@ -2,7 +2,7 @@ import { hasLibrary } from '../../../answers/answers';
 import { targetFor } from '../../../targets';
 import { type Artifact, merged } from '../../artifact';
 
-import { styleEntryPath } from './styleEntryPath';
+import { styleEntryPath } from './utils/pathUtils';
 
 import type { Answers } from '../../../answers/answers';
 import type { ProjectShape } from '../../projectShape';
