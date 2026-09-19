@@ -3,13 +3,15 @@ import { dirname } from 'node:path';
 import { STAGES } from '../../../config/constants';
 import { type Stage } from '../../../config/types';
 import {
+  artifactWriter,
+  mkdir,
+  projectShapeReader,
+} from '../../../disk';
+import {
   type Artifact,
   buildArtifacts,
   seedArtifacts,
 } from '../../../emitters';
-import { applyArtifact } from '../../../files/projectFiles';
-import { readProjectShape } from '../../../files/readProjectShape';
-import { mkdir } from '../../../files/utils/fsUtils';
 import { gitSpawn, runSpawn } from '../../../spawns';
 import { targetFor } from '../../../targets';
 import { fixPass } from '../../passes/fix/fixPass';
@@ -50,7 +52,7 @@ const writeArtifacts = async (
       continue;
     }
 
-    if (await applyArtifact(options.cwd, artifact, isFresh(options))) {
+    if (await artifactWriter(options.cwd, artifact, isFresh(options))) {
       options.onWrite?.(artifact.target);
     }
   }
@@ -147,7 +149,7 @@ export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
   // Seeded first, so `linteljs.config.json` precedes the `package.json` whose dependencies its answers imply.
   const artifacts = [
     ...seedArtifacts(options.answers, options.name),
-    ...buildArtifacts(options.answers, await readProjectShape(options.cwd), options.name),
+    ...buildArtifacts(options.answers, await projectShapeReader(options.cwd), options.name),
   ];
 
   for (const stage of STAGES) {

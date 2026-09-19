@@ -30,7 +30,7 @@ import {
   type TypeSafety,
 } from '../answers';
 import { type Artifact } from '../config/types';
-import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
+import { ASSETS_ROOT, shippedAssetsReader } from '../disk';
 import { targetFor } from '../targets';
 import { valuesOf } from '../utils/objectUtils';
 
@@ -80,7 +80,7 @@ const textFor = async (overrides: AnswerOverrides, target: string): Promise<stri
     return '';
   }
 
-  return await contentOf(artifact.content);
+  return await shippedAssetsReader(artifact.content);
 };
 
 describe('buildArtifacts', () => {
@@ -277,7 +277,7 @@ describe('the emitted checker against the emitted starter code', () => {
           : [{
               target: artifact.target,
               read: async () => {
-                return await contentOf(artifact.content);
+                return await shippedAssetsReader(artifact.content);
               },
             }];
       }),

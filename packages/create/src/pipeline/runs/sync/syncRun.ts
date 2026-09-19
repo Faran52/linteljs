@@ -2,17 +2,18 @@ import { dirname, join } from 'node:path';
 
 import { type Answers, LEGACY_CONFIG_PATH } from '../../../answers';
 import { MANAGED_PATH } from '../../../config/constants';
-import { buildArtifacts } from '../../../emitters';
-import { applyArtifact, safeProjectPath } from '../../../files/projectFiles';
-import { readManagedPaths } from '../../../files/readManagedPaths';
-import { readProjectShape } from '../../../files/readProjectShape';
-import { contentOf } from '../../../files/shippedAssets';
 import {
+  artifactWriter,
   entryExists,
+  managedPathsReader,
+  projectShapeReader,
   readIfPresent,
   rm,
   rmdir,
-} from '../../../files/utils/fsUtils';
+  safeProjectPath,
+  shippedAssetsReader,
+} from '../../../disk';
+import { buildArtifacts } from '../../../emitters';
 import { gitSpawn } from '../../../spawns';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
@@ -38,7 +39,7 @@ export interface SyncResult {
 // What the last run recorded as its own, plus the one name no run writes any more: versions through 1.6.0 kept the
 // answers in `lintel.config.json`, so an upgraded project carries a file this one replaced.
 const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
-  return [...await readManagedPaths(cwd), LEGACY_CONFIG_PATH];
+  return [...await managedPathsReader(cwd), LEGACY_CONFIG_PATH];
 };
 
 // `git diff --no-index` rather than a diff dependency; `git.ts` says why that is safe.
@@ -76,7 +77,7 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
   const entries: SyncEntry[] = [];
   const expected = new Set<string>();
 
-  const project = await readProjectShape(cwd);
+  const project = await projectShapeReader(cwd);
 
   for (const artifact of buildArtifacts(answers, project)) {
     expected.add(artifact.target);
@@ -108,7 +109,7 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
       continue;
     }
 
-    const shipped = await contentOf(artifact.content, current);
+    const shipped = await shippedAssetsReader(artifact.content, current);
 
     entries.push(
       current === shipped
@@ -171,7 +172,7 @@ export const applySync = async (
   const removed: string[] = [];
   const expected = new Set<string>();
 
-  const project = await readProjectShape(cwd);
+  const project = await projectShapeReader(cwd);
   // Read before anything is applied: the loop below rewrites the record, and what may be removed is what the
   // previous run recorded rather than what this one is about to.
   const candidates = await obsoleteCandidates(cwd);
@@ -182,7 +183,7 @@ export const applySync = async (
     // Rewritten whenever this run applies anything, and never reported: it is bookkeeping, not a file the caller
     // asked for, and a partial sync that left it stale would forget what it may remove next time.
     if (artifact.target === MANAGED_PATH) {
-      await applyArtifact(cwd, artifact);
+      await artifactWriter(cwd, artifact);
       continue;
     }
 
@@ -190,7 +191,7 @@ export const applySync = async (
       continue;
     }
 
-    if (await applyArtifact(cwd, artifact)) {
+    if (await artifactWriter(cwd, artifact)) {
       written.push(artifact.target);
     }
   }

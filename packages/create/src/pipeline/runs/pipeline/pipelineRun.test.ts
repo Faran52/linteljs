@@ -40,15 +40,15 @@ import {
   type Testing,
 } from '../../../answers';
 import { type Stage } from '../../../config/types';
-import { emitLinteljsConfig } from '../../../emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '../../../emitters/always/package-json/packageJsonEmitter';
-import { readLinteljsConfig } from '../../../files/readLinteljsConfig';
-import { STYLE_ENTRY_CANDIDATES } from '../../../files/readProjectShape';
 import {
   entryExists,
   exists,
+  linteljsConfigReader,
   readIfPresent,
-} from '../../../files/utils/fsUtils';
+  STYLE_ENTRY_CANDIDATES,
+} from '../../../disk';
+import { emitLinteljsConfig } from '../../../emitters/always/linteljs-config/linteljsConfigEmitter';
+import { parsePackageJson } from '../../../emitters/always/package-json/packageJsonEmitter';
 import { valuesOf } from '../../../utils/objectUtils';
 import { applySync, planSync } from '../sync/syncRun';
 
@@ -151,7 +151,7 @@ describe('runPipeline with --skip-scaffold', () => {
       return target === 'CLAUDE.md';
     })).toHaveLength(1);
 
-    expect(await readLinteljsConfig(cwd)).toEqual({
+    expect(await linteljsConfigReader(cwd)).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
@@ -894,7 +894,7 @@ describe('root config', () => {
 
     const written = await generate(answers);
 
-    expect(await readLinteljsConfig(cwd)).toEqual({
+    expect(await linteljsConfigReader(cwd)).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
@@ -918,16 +918,16 @@ describe('root config', () => {
 
 // Both stages run a name off `PATH` with `shell: false`, so a stand-in earlier on `PATH` is the whole seam.
 /**
- * One route to disk. Every file this CLI owns is an `Artifact` and reaches the project through `applyArtifact`,
+ * One route to disk. Every file this CLI owns is an `Artifact` and reaches the project through `artifactWriter`,
  * which is what lets `sync` see the same set and what stops this file growing a branch per artifact. `rewrite` and
  * `repair` still write directly, and are a different operation: they edit source a scaffolder already wrote.
  */
 describe('the pipeline as a writer', () => {
-  it('puts every file it owns on disk through applyArtifact and nothing else', async () => {
+  it('puts every file it owns on disk through artifactWriter and nothing else', async () => {
     const source = await readFile(join(import.meta.dirname, 'pipelineRun.ts'), 'utf8');
 
-    expect(source).toContain('applyArtifact(');
-    expect(source).not.toContain('writeProjectFile(');
+    expect(source).toContain('artifactWriter(');
+    expect(source).not.toContain('projectFileWriter(');
     expect(source).not.toMatch(/from 'node:fs/u);
   });
 

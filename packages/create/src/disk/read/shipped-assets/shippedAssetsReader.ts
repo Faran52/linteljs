@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { ArtifactContent } from '../emitters';
+import type { ArtifactContent } from '../../../emitters';
 
 // Walks up to `assets/`: this module sits at `src/files/` in the workspace and at `dist/` once published.
 const assetsRootFrom = (start: string): string => {
@@ -19,7 +19,7 @@ const assetsRootFrom = (start: string): string => {
 export const ASSETS_ROOT = assetsRootFrom(dirname(fileURLToPath(import.meta.url)));
 
 // `pipeline` writes this text and `sync` compares against it, so the two never compose differently.
-export const contentOf = async (
+export const shippedAssetsReader = async (
   content: ArtifactContent,
   current: string | null = null,
 ): Promise<string> => {

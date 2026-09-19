@@ -28,7 +28,7 @@ import {
   type TypeSafety,
 } from '../../../answers';
 import { type Artifact } from '../../../config/types';
-import { ASSETS_ROOT, contentOf } from '../../../files/shippedAssets';
+import { ASSETS_ROOT, shippedAssetsReader } from '../../../disk';
 
 import { referenceArtifacts } from './linteljsPluginEmitter';
 
@@ -157,7 +157,7 @@ describe('referenceArtifacts', () => {
       libraries: ['zod'],
     });
     const contents = await Promise.all(artifacts.map(async ({ content }) => {
-      return await contentOf(content);
+      return await shippedAssetsReader(content);
     }));
 
     for (const text of contents) {

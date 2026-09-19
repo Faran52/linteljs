@@ -16,7 +16,7 @@ import {
   it,
 } from 'vitest';
 
-import { ASSETS_ROOT } from '../../src/files/shippedAssets';
+import { ASSETS_ROOT } from '../../src/disk';
 
 // Spawned rather than imported: it reads `argv` and calls `exit`, which would take the runner down with it.
 const CHECKER = join(ASSETS_ROOT, 'scripts/checkBannedPatterns.ts');

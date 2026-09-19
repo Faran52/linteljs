@@ -15,11 +15,11 @@ import {
   it,
 } from 'vitest';
 
-import { ANSWERS, DEFAULT_ANSWERS } from '../answers';
-import { TARGETS } from '../targets/registry';
-import { valuesOf } from '../utils/objectUtils';
+import { ANSWERS, DEFAULT_ANSWERS } from '../../../answers';
+import { TARGETS } from '../../../targets/registry';
+import { valuesOf } from '../../../utils/objectUtils';
 
-import { readProjectShape, STYLE_ENTRY_CANDIDATES } from './readProjectShape';
+import { projectShapeReader, STYLE_ENTRY_CANDIDATES } from './projectShapeReader';
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
@@ -41,9 +41,9 @@ const plant = async (relative: string): Promise<void> => {
   await writeFile(join(cwd, relative), '', 'utf8');
 };
 
-describe('readProjectShape', () => {
+describe('projectShapeReader', () => {
   it('reads an empty directory as a project holding none of them', async () => {
-    expect(await readProjectShape(cwd)).toEqual({
+    expect(await projectShapeReader(cwd)).toEqual({
       setupTests: [],
       styleEntries: [],
     });
@@ -54,7 +54,7 @@ describe('readProjectShape', () => {
     await plant('src/style.css');
     await plant('src/styles/global.css');
 
-    expect(await readProjectShape(cwd)).toEqual({
+    expect(await projectShapeReader(cwd)).toEqual({
       setupTests: ['__mocks__/setupTests.ts'],
       styleEntries: ['src/styles/global.css', 'src/style.css'],
     });
@@ -81,7 +81,7 @@ describe('STYLE_ENTRY_CANDIDATES', () => {
     expect(targetDefaults().length).toBeGreaterThan(0);
   });
 
-  // Add a target whose stylesheet nobody added here and `readProjectShape` would never look for it.
+  // Add a target whose stylesheet nobody added here and `projectShapeReader` would never look for it.
   it('looks for every stylesheet a target writes', () => {
     expect(targetDefaults().filter((entry) => {
       return !STYLE_ENTRY_CANDIDATES.includes(entry);

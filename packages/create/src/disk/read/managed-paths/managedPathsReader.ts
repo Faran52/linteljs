@@ -1,9 +1,8 @@
 import { join } from 'node:path';
 
-import { MANAGED_PATH } from '../config/constants';
-import { isJsonObject } from '../utils/jsonUtils';
-
-import { readIfPresent } from './utils/fsUtils';
+import { MANAGED_PATH } from '../../../config/constants';
+import { isJsonObject } from '../../../utils/jsonUtils';
+import { readIfPresent } from '../../utils/fsUtils';
 
 type JsonValue = null | boolean | number | string | object;
 
@@ -20,7 +19,7 @@ const isManagedRecord = (value: unknown): value is ManagedRecord => {
  * safe direction to be wrong in: `sync` then adds what the answers ask for and removes none of what they no longer
  * do. A project written before this file existed reads that way once, and the same run writes the record.
  */
-export const readManagedPaths = async (cwd: string): Promise<string[]> => {
+export const managedPathsReader = async (cwd: string): Promise<string[]> => {
   const text = await readIfPresent(join(cwd, MANAGED_PATH));
 
   if (text === null) {

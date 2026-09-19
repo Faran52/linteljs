@@ -7,14 +7,15 @@ import {
 import { orderBy } from 'es-toolkit';
 
 import { type Answers, hasTests } from '../../../answers';
-import { safeProjectPath, writeProjectFile } from '../../../files/projectFiles';
 import {
   entryExists,
   isAbsence,
+  projectFileWriter,
   readFile,
   rename,
   rm,
-} from '../../../files/utils/fsUtils';
+  safeProjectPath,
+} from '../../../disk';
 import { targetFor } from '../../../targets';
 import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
@@ -50,7 +51,7 @@ const applyStarterFixes = async (
     const after = transform === undefined ? before : transform(before);
 
     if (moveTo !== undefined) {
-      await writeProjectFile(cwd, moveTo, after);
+      await projectFileWriter(cwd, moveTo, after);
       await rm(full);
       onWrite?.(moveTo);
       continue;
@@ -64,7 +65,7 @@ const applyStarterFixes = async (
       continue;
     }
 
-    await writeProjectFile(cwd, path, after);
+    await projectFileWriter(cwd, path, after);
     onWrite?.(path);
   }
 };
@@ -128,7 +129,7 @@ const renameStarterFiles = async (
     if (after !== before) {
       const target = path.slice(cwd.length + 1);
 
-      await writeProjectFile(cwd, target, after);
+      await projectFileWriter(cwd, target, after);
       onWrite?.(target);
     }
   }

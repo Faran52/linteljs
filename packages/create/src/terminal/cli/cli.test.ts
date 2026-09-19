@@ -39,9 +39,9 @@ import {
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
 } from '../../answers';
+import { exists } from '../../disk';
 import { emitLinteljsConfig } from '../../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
-import { exists } from '../../files/utils/fsUtils';
 import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/prompts';
 
 import { main } from './cli';

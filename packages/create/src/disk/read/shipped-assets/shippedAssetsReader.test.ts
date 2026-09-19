@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 
-import { ASSETS_ROOT, contentOf } from './shippedAssets';
+import { ASSETS_ROOT, shippedAssetsReader } from './shippedAssetsReader';
 
 const SKILL = 'linteljs-plugin/skills/linteljs/SKILL.md';
 
@@ -19,13 +19,13 @@ describe('ASSETS_ROOT', () => {
   });
 });
 
-describe('contentOf', () => {
+describe('shippedAssetsReader', () => {
   it('returns emitted text unchanged', async () => {
-    expect(await contentOf({ text: 'export default {};' })).toBe('export default {};');
+    expect(await shippedAssetsReader({ text: 'export default {};' })).toBe('export default {};');
   });
 
   it('reads and joins copied sources in the order they are listed', async () => {
-    const joined = await contentOf({
+    const joined = await shippedAssetsReader({
       sources: ['claude-rules/testing.react.md', 'claude-rules/testing.standard.md'],
     });
     const [head, standard] = await Promise.all([
@@ -39,7 +39,7 @@ describe('contentOf', () => {
   it('applies the transform to the joined text when one is given', async () => {
     const original = await readFile(join(ASSETS_ROOT, SKILL), 'utf8');
 
-    const transformed = await contentOf({
+    const transformed = await shippedAssetsReader({
       sources: [SKILL],
       transform: (source) => {
         return source.toUpperCase();
@@ -52,6 +52,6 @@ describe('contentOf', () => {
   it('returns the joined text as-is when no transform is given', async () => {
     const original = await readFile(join(ASSETS_ROOT, SKILL), 'utf8');
 
-    expect(await contentOf({ sources: [SKILL] })).toBe(original);
+    expect(await shippedAssetsReader({ sources: [SKILL] })).toBe(original);
   });
 });

@@ -20,8 +20,7 @@ import {
 } from '../../answers';
 import { RUN_PREFIX, STAGES } from '../../config/constants';
 import { type Stage } from '../../config/types';
-import { readLinteljsConfig } from '../../files/readLinteljsConfig';
-import { entryExists } from '../../files/utils/fsUtils';
+import { entryExists, linteljsConfigReader } from '../../disk';
 import {
   applySync,
   pipelineRun,
@@ -98,11 +97,11 @@ const askedFrom = async (
   };
 
   if (options.command === 'sync') {
-    return named(await readLinteljsConfig(options.cwd));
+    return named(await linteljsConfigReader(options.cwd));
   }
 
   if (options.skip.includes('scaffold') && await entryExists(join(options.cwd, CONFIG_PATH))) {
-    return named(await readLinteljsConfig(options.cwd));
+    return named(await linteljsConfigReader(options.cwd));
   }
 
   if (options.yes) {

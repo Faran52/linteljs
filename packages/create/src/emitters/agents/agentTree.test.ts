@@ -14,7 +14,7 @@ import {
   type Testing,
 } from '../../answers';
 import { type Artifact } from '../../config/types';
-import { contentOf } from '../../files/shippedAssets';
+import { shippedAssetsReader } from '../../disk';
 import { valuesOf } from '../../utils/objectUtils';
 import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
 import { removableIn } from '../utils/managedUtils';
@@ -208,7 +208,7 @@ const contentFor = async (
 
   expect(artifact).toBeDefined();
 
-  return artifact === undefined ? '' : await contentOf(artifact.content);
+  return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
 };
 
 const parseSkill = (text: string): SkillDocument => {
@@ -366,7 +366,7 @@ describe('agentArtifacts', () => {
 
     expect(artifact).toBeDefined();
 
-    const body = artifact === undefined ? '' : await contentOf(artifact.content);
+    const body = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
 
     expect(body).toContain('- Run `npm run check` before declaring implementation work complete.');
     expect(body).toContain('- Run `npm run lint:fix`, not lint without fixes.');

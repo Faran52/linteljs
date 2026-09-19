@@ -14,7 +14,7 @@ import {
   it,
 } from 'vitest';
 
-import { exists } from '../../files/utils/fsUtils';
+import { exists } from '../../disk';
 
 import { gitSpawn } from './gitSpawn';
 

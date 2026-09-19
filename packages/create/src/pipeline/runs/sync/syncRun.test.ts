@@ -20,7 +20,7 @@ import {
 
 import { type Answers, DEFAULT_ANSWERS } from '../../../answers';
 import { MANAGED_PATH } from '../../../config/constants';
-import { exists } from '../../../files/utils/fsUtils';
+import { exists } from '../../../disk';
 
 import {
   applySync,

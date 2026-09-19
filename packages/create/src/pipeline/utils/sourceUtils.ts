@@ -1,6 +1,6 @@
 import { extname, join } from 'node:path';
 
-import { isAbsence, readdir } from '../../files/utils/fsUtils';
+import { isAbsence, readdir } from '../../disk';
 
 // Non-compiling generator output is not a project decision.
 export const SOURCE_ROOT = 'src';

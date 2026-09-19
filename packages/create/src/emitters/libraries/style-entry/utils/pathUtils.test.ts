@@ -10,7 +10,7 @@ import {
   DEFAULT_ANSWERS,
   type TargetId,
 } from '../../../../answers';
-import { STYLE_ENTRY_CANDIDATES } from '../../../../files/readProjectShape';
+import { STYLE_ENTRY_CANDIDATES } from '../../../../disk';
 import { targetFor } from '../../../../targets';
 import { valuesOf } from '../../../../utils/objectUtils';
 

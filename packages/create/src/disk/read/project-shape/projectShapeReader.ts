@@ -1,7 +1,6 @@
-import { type ProjectShape } from '../config/types';
-import { SETUP_TESTS_CANDIDATES } from '../emitters/always/banned-patterns/bannedPatternsEmitter';
-
-import { allPresent } from './utils/fsUtils';
+import { type ProjectShape } from '../../../config/types';
+import { SETUP_TESTS_CANDIDATES } from '../../../emitters/always/banned-patterns/bannedPatternsEmitter';
+import { allPresent } from '../../utils/fsUtils';
 
 /**
  * The one place a directory is read for the files `artifacts/` has more than one spelling of.
@@ -23,7 +22,7 @@ export const STYLE_ENTRY_CANDIDATES = [
   'src/style.css',
 ];
 
-export const readProjectShape = async (cwd: string): Promise<ProjectShape> => {
+export const projectShapeReader = async (cwd: string): Promise<ProjectShape> => {
   const [setupTests, styleEntries] = await Promise.all([
     allPresent(cwd, SETUP_TESTS_CANDIDATES),
     allPresent(cwd, STYLE_ENTRY_CANDIDATES),

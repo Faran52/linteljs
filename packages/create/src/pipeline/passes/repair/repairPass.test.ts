@@ -23,7 +23,7 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers';
-import { exists } from '../../../files/utils/fsUtils';
+import { exists } from '../../../disk';
 
 import { repairPass } from './repairPass';
 

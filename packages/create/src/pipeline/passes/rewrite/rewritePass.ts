@@ -1,7 +1,6 @@
 import { join } from 'node:path';
 
-import { writeProjectFile } from '../../../files/projectFiles';
-import { readFile } from '../../../files/utils/fsUtils';
+import { projectFileWriter, readFile } from '../../../disk';
 import { targetFor } from '../../../targets';
 import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
@@ -134,7 +133,7 @@ export const rewritePass = async (
     if (after !== before) {
       const target = path.slice(cwd.length + 1);
 
-      await writeProjectFile(cwd, target, after);
+      await projectFileWriter(cwd, target, after);
       onWrite?.(target);
     }
   }

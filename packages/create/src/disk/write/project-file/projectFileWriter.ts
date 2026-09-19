@@ -1,0 +1,40 @@
+import { constants } from 'node:fs';
+import { mkdir, open } from 'node:fs/promises';
+import { dirname } from 'node:path';
+
+import { safeProjectPath } from '../../utils/pathUtils';
+
+export const projectFileWriter = async (
+  cwd: string,
+  target: string,
+  text: string,
+): Promise<void> => {
+  const path = await safeProjectPath(cwd, target);
+
+  await mkdir(dirname(path), { recursive: true });
+  // Walked again: the first walk stopped at the first parent that did not exist yet. Called for the refusal.
+  await safeProjectPath(cwd, target);
+
+  try {
+    // Never a symbolic link and whatever it points at.
+    const file = await open(
+      path,
+      constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW,
+      0o666,
+    );
+
+    try {
+      await file.writeFile(text, 'utf8');
+    }
+    finally {
+      await file.close();
+    }
+  }
+  catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ELOOP') {
+      throw new Error(`Refusing to write ${target}: target is a symbolic link`);
+    }
+
+    throw error;
+  }
+};

@@ -13,9 +13,9 @@ import {
   it,
 } from 'vitest';
 
-import { MANAGED_PATH } from '../config/constants';
+import { MANAGED_PATH } from '../../../config/constants';
 
-import { readManagedPaths } from './readManagedPaths';
+import { managedPathsReader } from './managedPathsReader';
 
 let cwd = '';
 
@@ -33,22 +33,22 @@ const record = async (text: string): Promise<void> => {
  * what the answers ask for and removes none of what they no longer do. Throwing would stop a sync over bookkeeping
  * the same run is about to rewrite.
  */
-describe('readManagedPaths', () => {
+describe('managedPathsReader', () => {
   it('reads the paths a previous run recorded', async () => {
     await record('{ "removable": [".claude/settings.json"] }');
 
-    await expect(readManagedPaths(cwd)).resolves.toEqual(['.claude/settings.json']);
+    await expect(managedPathsReader(cwd)).resolves.toEqual(['.claude/settings.json']);
   });
 
   // A project written before this file existed.
   it('answers nothing when there is no record', async () => {
-    await expect(readManagedPaths(cwd)).resolves.toEqual([]);
+    await expect(managedPathsReader(cwd)).resolves.toEqual([]);
   });
 
   it('answers nothing for a record that is not json', async () => {
     await record('{ not json');
 
-    await expect(readManagedPaths(cwd)).resolves.toEqual([]);
+    await expect(managedPathsReader(cwd)).resolves.toEqual([]);
   });
 
   it.each([
@@ -58,13 +58,13 @@ describe('readManagedPaths', () => {
   ])('answers nothing for a record that is %s', async (_case, text) => {
     await record(text);
 
-    await expect(readManagedPaths(cwd)).resolves.toEqual([]);
+    await expect(managedPathsReader(cwd)).resolves.toEqual([]);
   });
 
   // A hand-edited record keeps the entries that are still paths rather than failing whole.
   it('keeps only the entries that are strings', async () => {
     await record('{ "removable": ["a.js", 7, null, "b.js"] }');
 
-    await expect(readManagedPaths(cwd)).resolves.toEqual(['a.js', 'b.js']);
+    await expect(managedPathsReader(cwd)).resolves.toEqual(['a.js', 'b.js']);
   });
 });

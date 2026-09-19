@@ -15,7 +15,7 @@ import {
   type Testing,
   type TypeSafety,
 } from '../../../answers';
-import { ASSETS_ROOT } from '../../../files/shippedAssets';
+import { ASSETS_ROOT } from '../../../disk';
 
 import { checkerArtifact } from './bannedPatternsEmitter';
 
@@ -26,7 +26,7 @@ interface AnswerOverrides {
   testing?: Testing;
 }
 
-// The file the artifact copies from, read the way `contentOf` reads it.
+// The file the artifact copies from, read the way `shippedAssetsReader` reads it.
 const SHIPPED = join(ASSETS_ROOT, 'scripts/checkBannedPatterns.ts');
 
 const answersFor = (overrides: AnswerOverrides): Answers => {

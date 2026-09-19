@@ -7,9 +7,8 @@ import {
   LEGACY_CONFIG_PATH,
   type LinteljsConfig,
   parseLinteljsConfig,
-} from '../answers';
-
-import { entryExists } from './utils/fsUtils';
+} from '../../../answers';
+import { entryExists } from '../../utils/fsUtils';
 
 // `linteljs.config.json`, or the `linteljs.config.json` a version through 1.6.0 wrote. The older name is read and
 // never written, so the first `create` or `sync` after an upgrade records the new one and `sync` clears the old.
@@ -19,7 +18,7 @@ const configPath = async (cwd: string): Promise<string> => {
     : join(cwd, LEGACY_CONFIG_PATH);
 };
 
-export const readLinteljsConfig = async (cwd: string): Promise<LinteljsConfig> => {
+export const linteljsConfigReader = async (cwd: string): Promise<LinteljsConfig> => {
   const path = await configPath(cwd);
   let text: string;
 
