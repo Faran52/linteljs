@@ -1,3 +1,6 @@
+import type { Answers } from '../answers/answers';
+import type { ProjectShape } from './projectShape';
+
 // Separate from index.ts: importing the list back in trips import-x/no-cycle.
 
 // A stage is a property of an artifact, so it is declared beside one. Stage 4, `standard`, also
@@ -41,6 +44,14 @@ export interface Artifact {
   // Written only when this path is already there: a starter test covering source the scaffolder may not have written.
   requires?: string;
 }
+
+/**
+ * One per directory under `emitters/`, named for that directory, which is itself named for the file it writes.
+ * Every emitter answers a list rather than a file, so the condition that decides whether it writes anything is
+ * the emitter's own: a target that has no vite config answers `[]` and `buildArtifacts` holds no branch about it.
+ * Fewer parameters is fine, since most emitters read only the answers.
+ */
+export type Emitter = (answers: Answers, project: ProjectShape, name: string) => Artifact[];
 
 export const STAGES: Stage[] = [
   'scaffold',

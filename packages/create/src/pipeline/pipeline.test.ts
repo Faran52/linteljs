@@ -43,7 +43,7 @@ import {
 } from '../answers/lintelConfig';
 import { type Stage } from '../emitters/artifact';
 import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
-import { parsePackageJson } from '../emitters/package-json/emitPackageJson';
+import { parsePackageJson } from '../emitters/package-json/packageJsonEmitter';
 import { STYLE_ENTRY_CANDIDATES } from '../emitters/style-entry/styleEntryPath';
 import { readLintelConfig } from '../files/readLintelConfig';
 import {

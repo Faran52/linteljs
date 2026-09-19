@@ -39,7 +39,7 @@ import {
   parseLintelConfig,
 } from '../answers/lintelConfig';
 import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
-import { parsePackageJson } from '../emitters/package-json/emitPackageJson';
+import { parsePackageJson } from '../emitters/package-json/packageJsonEmitter';
 import { exists } from '../files/utils/fsUtils';
 
 import { main, parseCliArgs } from './cli';

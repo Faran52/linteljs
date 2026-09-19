@@ -14,7 +14,7 @@ import {
   SURFACES,
   TARGET_IDS,
 } from '../answers/answers';
-import { buildDevDependencies } from '../emitters/package-json/emitPackageJson';
+import { buildDevDependencies } from '../emitters/package-json/packageJsonEmitter';
 import { ASSETS_ROOT } from '../files/shippedAssets';
 
 import { targetFor, TARGETS } from './registry';

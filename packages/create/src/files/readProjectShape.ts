@@ -1,4 +1,4 @@
-import { SETUP_TESTS_CANDIDATES } from '../emitters/banned-patterns/checkerArtifact';
+import { SETUP_TESTS_CANDIDATES } from '../emitters/banned-patterns/bannedPatternsEmitter';
 import { type ProjectShape } from '../emitters/projectShape';
 import { STYLE_ENTRY_CANDIDATES } from '../emitters/style-entry/styleEntryPath';
 

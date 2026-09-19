@@ -1,6 +1,6 @@
 import { targetFor } from '../../targets';
 import { ESLINT_RANGE } from '../config/versions';
-import { allowedBuildNames, buildDevDependencies } from '../package-json/emitPackageJson';
+import { allowedBuildNames, buildDevDependencies } from '../package-json/packageJsonEmitter';
 
 import type { Answers } from '../../answers/answers';
 
