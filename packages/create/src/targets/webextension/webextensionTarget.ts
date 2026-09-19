@@ -32,10 +32,10 @@ const BROWSERS: Record<Browser, BrowserParts> = {
     types: ['chrome'],
     devDependencies: ['@types/chrome'],
     starter: {
-      entry: 'starter/webextension/background.ts',
-      handler: 'starter/webextension/onInstalled.ts',
-      test: 'starter/webextension/onInstalled.test.ts',
-      devtools: 'starter/webextension/devtools.ts',
+      entry: 'target/starter-source/webextension/background.ts',
+      handler: 'target/starter-source/webextension/onInstalled.ts',
+      test: 'target/starter-source/webextension/onInstalled.test.ts',
+      devtools: 'target/starter-source/webextension/devtools.ts',
     },
   },
   firefox: {
@@ -43,10 +43,10 @@ const BROWSERS: Record<Browser, BrowserParts> = {
     types: ['firefox-webext-browser'],
     devDependencies: ['@types/firefox-webext-browser'],
     starter: {
-      entry: 'starter/webextension/background.firefox.ts',
-      handler: 'starter/webextension/onInstalled.firefox.ts',
-      test: 'starter/webextension/onInstalled.firefox.test.ts',
-      devtools: 'starter/webextension/devtools.firefox.ts',
+      entry: 'target/starter-source/webextension/background.firefox.ts',
+      handler: 'target/starter-source/webextension/onInstalled.firefox.ts',
+      test: 'target/starter-source/webextension/onInstalled.firefox.test.ts',
+      devtools: 'target/starter-source/webextension/devtools.firefox.ts',
     },
   },
 };
@@ -83,7 +83,7 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
       // A folder each for the devtools page and the panel; the entry HTML stays at the root, where manifest paths
       // resolve.
       {
-        source: 'starter/webextension/devtools.html',
+        source: 'target/starter-source/webextension/devtools.html',
         target: 'devtools.html',
       },
       {
@@ -91,15 +91,15 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
         target: 'src/devtools/index.ts',
       },
       {
-        source: 'starter/webextension/panel.html',
+        source: 'target/starter-source/webextension/panel.html',
         target: 'panel.html',
       },
       {
-        source: 'starter/webextension/panelEntry.ts',
+        source: 'target/starter-source/webextension/panelEntry.ts',
         target: 'src/panel/index.ts',
       },
       {
-        source: 'starter/webextension/renderPanel.ts',
+        source: 'target/starter-source/webextension/renderPanel.ts',
         target: 'src/panel/renderPanel.ts',
       },
     );
@@ -157,7 +157,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     starterFiles: surfaceFiles(answers, browser),
     starterTests: [
       {
-        source: 'starter/webextension/counter.test.ts',
+        source: 'target/starter-source/webextension/counter.test.ts',
         target: 'src/counter.test.ts',
         covers: 'src/counter.ts',
       },
@@ -170,7 +170,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
         : [],
       ...hasSurface(answers, 'devtools-panel')
         ? [{
-            source: 'starter/webextension/renderPanel.test.ts',
+            source: 'target/starter-source/webextension/renderPanel.test.ts',
             target: 'src/panel/renderPanel.test.ts',
             covers: 'src/panel/renderPanel.ts',
           }]

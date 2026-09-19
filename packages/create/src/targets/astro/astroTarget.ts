@@ -85,13 +85,13 @@ export const astroTarget: TargetBuilder = (answers) => {
     // The minimal starter has no measurable source, so coverage fails on `0/0`; this pair is the smallest fix.
     starterFiles: [
       {
-        source: 'starter/astro/formatDate.ts',
+        source: 'target/starter-source/astro/formatDate.ts',
         target: 'src/lib/utils/formatDate.ts',
       },
     ],
     starterTests: [
       {
-        source: 'starter/astro/formatDate.test.ts',
+        source: 'target/starter-source/astro/formatDate.test.ts',
         target: 'src/lib/utils/formatDate.test.ts',
         covers: 'src/lib/utils/formatDate.ts',
       },

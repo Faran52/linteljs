@@ -39,34 +39,34 @@ export const reactTarget: TargetRecord = {
   starterFiles: [
     ...ROUTERS.map((router): StarterFile => {
       return {
-        source: `starter/react/${router}/main.tsx`,
+        source: `target/starter-source/react/${router}/main.tsx`,
         target: 'src/main.tsx',
         router,
       };
     }),
     {
-      source: 'starter/react/react-router/router.tsx',
+      source: 'target/starter-source/react/react-router/router.tsx',
       target: 'src/routes/router.tsx',
       router: 'react-router',
     },
     {
-      source: 'starter/react/tanstack-router/__root.tsx',
+      source: 'target/starter-source/react/tanstack-router/__root.tsx',
       target: 'src/routes/__root.tsx',
       router: 'tanstack-router',
     },
     {
-      source: 'starter/react/tanstack-router/index.tsx',
+      source: 'target/starter-source/react/tanstack-router/index.tsx',
       target: 'src/routes/index.tsx',
       router: 'tanstack-router',
     },
     {
-      source: 'starter/react/tanstack-router/routeTree.gen.ts',
+      source: 'target/starter-source/react/tanstack-router/routeTree.gen.ts',
       target: 'src/routeTree.gen.ts',
       router: 'tanstack-router',
     },
   ],
   starterTests: [{
-    source: 'starter/react/App.test.tsx',
+    source: 'target/starter-source/react/App.test.tsx',
     target: 'src/App.test.tsx',
     covers: 'src/App.tsx',
   }],

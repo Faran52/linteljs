@@ -27,7 +27,7 @@ interface AnswerOverrides {
 }
 
 // The file the artifact copies from, read the way `shippedAssetsReader` reads it.
-const SHIPPED = join(ASSETS_ROOT, 'scripts/checkBannedPatterns.ts');
+const SHIPPED = join(ASSETS_ROOT, 'always/banned-patterns/checkBannedPatterns.ts');
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {

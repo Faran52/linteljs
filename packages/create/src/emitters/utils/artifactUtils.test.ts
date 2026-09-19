@@ -26,8 +26,8 @@ describe('copied', () => {
   });
 
   it('names a single source, ready for a second to be spread in by the caller', () => {
-    expect(copied('README.md', 'readme/template.md').content).toEqual({
-      sources: ['readme/template.md'],
+    expect(copied('README.md', 'always/readme/template.md').content).toEqual({
+      sources: ['always/readme/template.md'],
     });
   });
 });

@@ -6,7 +6,7 @@ paths:
 
 # Repository Structure
 
-`packages/create/assets/claude-rules/repo-structure.library.md` is the standard. It is the file this
+`packages/create/assets/always/linteljs-plugin/claude-rules/repo-structure.library.md` is the standard. It is the file this
 workspace publishes, so it is the file this workspace is held to: read it, not a copy of it. A second
 copy here is the drift `DESIGN.md` exists to argue against.
 
@@ -193,7 +193,7 @@ Both are the standard's own stated exceptions; these are the files that take the
 
 - `__mocks__/` at package root, aliased `@mocks/*`. `eslint-config/__mocks__/fixtures/` holds the
   deliberately defective input its layer tests lint.
-- `packages/create/assets/scripts/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
+- `packages/create/assets/always/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
   beside the scripts they spawn. `package.json` excludes them from the packed tarball.
 
 Three files in `eslint-plugin` are named for what they cover rather than for one source file, which

@@ -55,11 +55,11 @@ const assetPathsOf = (target: TargetRecord): string[] => {
     }),
     ...(target.testSetup === undefined ? [] : [target.testSetup]),
     ...target.stateRules.map((rule) => {
-      return `claude-rules/${rule}`;
+      return `always/linteljs-plugin/claude-rules/${rule}`;
     }),
     // `ruleArtifacts` derives both from the id, so a target added without them emits a path to nothing.
-    `claude-rules/repo-structure.${target.id}.md`,
-    `claude-rules/testing.${target.id}.md`,
+    `always/linteljs-plugin/claude-rules/repo-structure.${target.id}.md`,
+    `always/linteljs-plugin/claude-rules/testing.${target.id}.md`,
   ];
 };
 

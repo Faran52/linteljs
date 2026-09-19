@@ -68,16 +68,16 @@ describe('the browser axis', () => {
 
     expect(record.starterFiles).toEqual([
       {
-        source: `starter/webextension/background${infix}.ts`,
+        source: `target/starter-source/webextension/background${infix}.ts`,
         target: 'src/background/index.ts',
       },
       {
-        source: `starter/webextension/onInstalled${infix}.ts`,
+        source: `target/starter-source/webextension/onInstalled${infix}.ts`,
         target: 'src/background/onInstalled.ts',
       },
     ]);
     expect(record.starterTests).toContainEqual({
-      source: `starter/webextension/onInstalled${infix}.test.ts`,
+      source: `target/starter-source/webextension/onInstalled${infix}.test.ts`,
       target: 'src/background/onInstalled.test.ts',
       covers: 'src/background/onInstalled.ts',
     });
@@ -119,15 +119,15 @@ describe('the surfaces axis', () => {
 
     expect(record.coverageExclude).toEqual(['src/devtools/index.ts', 'src/panel/index.ts']);
     expect(record.starterTests).toContainEqual({
-      source: 'starter/webextension/renderPanel.test.ts',
+      source: 'target/starter-source/webextension/renderPanel.test.ts',
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',
     });
   });
 
   it.each<[Browser, string]>([
-    ['chrome', 'starter/webextension/devtools.ts'],
-    ['firefox', 'starter/webextension/devtools.firefox.ts'],
+    ['chrome', 'target/starter-source/webextension/devtools.ts'],
+    ['firefox', 'target/starter-source/webextension/devtools.firefox.ts'],
   ])('gives %s the devtools registration in its own namespace', (browser, source) => {
     expect(recordFor({
       browser,

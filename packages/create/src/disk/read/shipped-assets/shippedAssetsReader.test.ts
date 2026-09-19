@@ -9,7 +9,7 @@ import {
 
 import { ASSETS_ROOT, shippedAssetsReader } from './shippedAssetsReader';
 
-const SKILL = 'linteljs-plugin/skills/linteljs/SKILL.md';
+const SKILL = 'always/linteljs-plugin/skills/linteljs/SKILL.md';
 
 describe('ASSETS_ROOT', () => {
   it('points at the assets directory the shipped files actually live in', async () => {
@@ -26,11 +26,14 @@ describe('shippedAssetsReader', () => {
 
   it('reads and joins copied sources in the order they are listed', async () => {
     const joined = await shippedAssetsReader({
-      sources: ['claude-rules/testing.react.md', 'claude-rules/testing.standard.md'],
+      sources: [
+        'always/linteljs-plugin/claude-rules/testing.react.md',
+        'always/linteljs-plugin/claude-rules/testing.standard.md',
+      ],
     });
     const [head, standard] = await Promise.all([
-      readFile(join(ASSETS_ROOT, 'claude-rules/testing.react.md'), 'utf8'),
-      readFile(join(ASSETS_ROOT, 'claude-rules/testing.standard.md'), 'utf8'),
+      readFile(join(ASSETS_ROOT, 'always/linteljs-plugin/claude-rules/testing.react.md'), 'utf8'),
+      readFile(join(ASSETS_ROOT, 'always/linteljs-plugin/claude-rules/testing.standard.md'), 'utf8'),
     ]);
 
     expect(joined).toBe(`${head}\n${standard}`);

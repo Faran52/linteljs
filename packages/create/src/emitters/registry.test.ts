@@ -341,7 +341,7 @@ describe('the emitted checker against the emitted starter code', () => {
 
 // The setup is composed from a target source plus per-answer fragments.
 describe('the shipped test setup', () => {
-  const FRAGMENTS = ['mocks/setupTests.router.ts', 'mocks/setupTests.tanstackQuery.ts'];
+  const FRAGMENTS = ['testing/test-setup/setupTests.router.ts', 'testing/test-setup/setupTests.tanstackQuery.ts'];
 
   const setupFor = async (overrides: AnswerOverrides): Promise<string> => {
     return await textFor(overrides, setupTestsPath({
@@ -517,7 +517,7 @@ describe('the README', () => {
   it('is filled from the shipped template rather than emitted whole', () => {
     const readme = find(seedFor(), 'README.md');
 
-    expect(readme.content).toHaveProperty('sources', ['readme/template.md']);
+    expect(readme.content).toHaveProperty('sources', ['always/readme/template.md']);
   });
 
   // `--skip-scaffold` adopts a project whose README describes the toolchain the later stages replaced.

@@ -5,7 +5,7 @@ import { copied } from '../../utils/artifactUtils';
 export const huskyEmitter = (): Artifact[] => {
   return ['pre-commit', 'commit-msg'].map((hook) => {
     return {
-      ...copied(`.husky/${hook}`, `husky/${hook}`),
+      ...copied(`.husky/${hook}`, `always/husky/${hook}`),
       executable: true,
     };
   });

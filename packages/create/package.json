@@ -47,7 +47,7 @@
     "bin",
     "dist",
     "assets",
-    "!assets/scripts/*.test.ts",
+    "!assets/always/*/*.test.ts",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"

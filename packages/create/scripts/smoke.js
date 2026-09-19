@@ -116,7 +116,7 @@ const packed = new Set(filesUnder(join(pkgDir, 'assets')).map((file) => {
   return relative(join(pkgDir, 'assets'), file);
 }));
 
-// The one deliberate exclusion. Both `assets/scripts/*.test.ts` sit beside the script they spawn, a shipped asset with
+// The one deliberate exclusion. Both `assets/**/*.test.ts` sit beside the script they spawn, a shipped asset with
 // no `src/` counterpart, and `files` negates them so a generated project inherits no test for a file it now owns.
 const excluded = /^scripts\/.*\.test\.ts$/;
 const missing = [];

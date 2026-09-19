@@ -133,7 +133,7 @@ A new category is one entry in `RULE_CATEGORIES` and the matching `configs.<cate
 
 ## 3b. Comments
 
-The testing standard this workspace ships (`packages/create/assets/claude-rules/testing.standard.md`)
+The testing standard this workspace ships (`packages/create/assets/always/linteljs-plugin/claude-rules/testing.standard.md`)
 bans comments in tests. That rule came from a private app and **does not apply here**. This repo is public and people will read it to learn how a rule is built, so:
 
 - Comment where the reason is not on the screen: why a fixture is shaped that way, why a branch

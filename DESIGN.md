@@ -327,6 +327,30 @@ One thing the restructure bought that was not the point of it. `vitest.config.ts
 seen, and the suites that followed them covered every branch with nothing added. The exclusion now
 hides only the entrypoint it was meant for.
 
+### `assets/` is classified by its consumer
+
+Ten directories named on three different axes: the tool (`husky/`, `npm/`, `schemas/`, `scripts/`),
+the role in the destination (`claude-rules/`, `readme/`, `starter/`, `mocks/`, `typings/`), and the
+product (`linteljs-plugin/`), with two config files loose at the root. Nothing said which axis was
+the real one, so a new asset had no obvious home.
+
+Every directory was traced to what reads it, and the answer was already the rule: each is read by
+exactly one emitter subject. So an asset sits under the group of the answer that decides whether it
+is copied and the subject of the emitter that copies it, and the emitter and the bytes it ships
+share a path. `mocks/` was the one split, because `setupTests.*` is read by `testing/test-setup`
+while `renderScreen.tsx` is a starter file on the React Native record.
+
+`schemas/` is the exception and stays at the root: it is a mirror of the repository's own
+`schemas/`, published under a raw GitHub URL rather than copied into any project, and
+`answers/utils/schemaUtils.test.ts` pins the two copies together.
+
+The move is only safe because every asset path is a string. The invariant was mechanical: collect
+every literal in `src/` that resolves to a file under `assets/`, move, rewrite, and collect again.
+79 before and 79 after. What that check could not see is the difference between a source and a
+target, and a blanket rewrite got it wrong once: `scripts/checkBannedPatterns.ts` is where the
+checker *lands* in a generated project and had to stay, while the `sources:` beside it had to move.
+The suite caught it, and a real `--skip-scaffold` run is what confirmed the fix.
+
 ## Project structure
 
 The shape every generated project gets, and the reasoning the per-target
@@ -1055,9 +1079,9 @@ cycle, an unawaited promise, and an SFC pair. Linting them at the workspace leve
 defect each one exists to trigger, and the `.vue` and `.svelte` pair cannot parse at all without
 the layers those tests compose and the workspace config does not.
 
-`assets/mocks/setupTests.angular.ts`, `assets/mocks/setupTests.reactNative.ts`,
-`assets/mocks/renderScreen.tsx` and `assets/starter/**` are shipped source, copied to disk by
-the CLI and never imported here. Each imports the framework it is written for, and none of those is
+`assets/testing/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts` beside it,
+`assets/target/starter-source/react-native/renderScreen.tsx` and `assets/target/starter-source/**`
+are shipped source, copied to disk by the CLI and never imported here. Each imports the framework it is written for, and none of those is
 installed in this workspace, so every import is unresolvable and every call through one untyped.
 They are data here and code only in a generated project, where that project's own `eslint .` judges
 them against the same standard. The end-to-end suite is what proves it.

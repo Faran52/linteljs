@@ -17,7 +17,7 @@ import {
   it,
 } from 'vitest';
 
-import { ASSETS_ROOT } from '../../src/disk';
+import { ASSETS_ROOT } from '../../../src/disk';
 
 interface RunResult {
   status: number | null;
@@ -25,7 +25,7 @@ interface RunResult {
 }
 
 // Spawned rather than imported: it reads `argv` and calls `exit`, which would take the runner down with it.
-const CHECKER = join(ASSETS_ROOT, 'scripts/typecheckStaged.ts');
+const CHECKER = join(ASSETS_ROOT, 'always/typecheck-staged/typecheckStaged.ts');
 
 // Repo-root tsc, not a fixture install: a tmpdir has no node_modules of its own to resolve.
 const TSC = join(ASSETS_ROOT, '../../../node_modules/.bin/tsc');

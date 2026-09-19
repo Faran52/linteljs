@@ -16,7 +16,7 @@ export const readmeEmitter = (answers: Answers, _project: ProjectShape, name: st
     stage: 'standard',
     target: 'README.md',
     content: {
-      sources: ['readme/template.md'],
+      sources: ['always/readme/template.md'],
       transform: (source: string) => {
         return emitReadme(source, name, answers);
       },

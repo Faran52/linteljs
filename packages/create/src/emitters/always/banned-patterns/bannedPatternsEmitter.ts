@@ -89,7 +89,7 @@ export const checkerArtifact = (answers: Answers): Artifact => {
     stage: 'standard',
     target: 'scripts/checkBannedPatterns.ts',
     content: {
-      sources: ['scripts/checkBannedPatterns.ts'],
+      sources: ['always/banned-patterns/checkBannedPatterns.ts'],
       transform: (source, current) => {
         return mergeChecker(withStarterSkips(withTypeSafety(source, answers), answers), current);
       },

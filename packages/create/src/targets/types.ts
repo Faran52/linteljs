@@ -210,7 +210,7 @@ export interface TargetRecord {
   peerAllowances?: Record<string, string>;
   // Peers yarn must see declared, as `dependent -> peer -> range`; the scaffolder's tree asks for them.
   peerExtensions?: Record<string, Record<string, string>>;
-  // Relative to `assets/claude-rules/`.
+  // Relative to `assets/always/linteljs-plugin/claude-rules/`.
   stateRules: string[];
   // Overridden only where a test environment is needed.
   testSetup?: string;

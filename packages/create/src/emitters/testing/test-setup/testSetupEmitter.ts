@@ -13,9 +13,9 @@ import type { TargetRecord } from '../../../targets/types';
 // Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {
   return [
-    target.testSetup ?? 'mocks/setupTests.ts',
-    ...(target.routerMocks === true ? ['mocks/setupTests.router.ts'] : []),
-    ...(hasLibrary(answers, 'tanstack-query') ? ['mocks/setupTests.tanstackQuery.ts'] : []),
+    target.testSetup ?? 'testing/test-setup/setupTests.ts',
+    ...(target.routerMocks === true ? ['testing/test-setup/setupTests.router.ts'] : []),
+    ...(hasLibrary(answers, 'tanstack-query') ? ['testing/test-setup/setupTests.tanstackQuery.ts'] : []),
   ];
 };
 

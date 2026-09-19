@@ -107,7 +107,7 @@ describe('referenceArtifacts', () => {
   it('names the repo structure source after the target', () => {
     const artifact = find({ target: 'svelte' }, reference('repo-structure.md'));
 
-    expect(sourcesOf(artifact)).toEqual(['claude-rules/repo-structure.svelte.md']);
+    expect(sourcesOf(artifact)).toEqual(['always/linteljs-plugin/claude-rules/repo-structure.svelte.md']);
   });
 
   it('carries the state references for the target and none of another framework', () => {
@@ -130,8 +130,8 @@ describe('referenceArtifacts', () => {
     }, reference('testing.md'));
 
     expect(sourcesOf(artifact)).toEqual([
-      'claude-rules/testing.vue.md',
-      'claude-rules/testing.standard.md',
+      'always/linteljs-plugin/claude-rules/testing.vue.md',
+      'always/linteljs-plugin/claude-rules/testing.standard.md',
     ]);
   });
 
@@ -143,10 +143,10 @@ describe('referenceArtifacts', () => {
     const strict = find({}, reference('type-standards.md'));
     const relaxed = find({ typeSafety: 'relaxed' }, reference('type-standards.md'));
 
-    expect(sourcesOf(strict)).toEqual(['claude-rules/type-standards.md']);
+    expect(sourcesOf(strict)).toEqual(['always/linteljs-plugin/claude-rules/type-standards.md']);
     expect(sourcesOf(relaxed)).toEqual([
-      'claude-rules/type-standards.md',
-      'claude-rules/type-standards.relaxed.md',
+      'always/linteljs-plugin/claude-rules/type-standards.md',
+      'always/linteljs-plugin/claude-rules/type-standards.relaxed.md',
     ]);
   });
 
@@ -166,7 +166,7 @@ describe('referenceArtifacts', () => {
   });
 });
 
-const HOOK_ASSETS = join(ASSETS_ROOT, 'linteljs-plugin/hooks');
+const HOOK_ASSETS = join(ASSETS_ROOT, 'always/linteljs-plugin/hooks');
 const COMMAND_PARSER = 'commandParser.js';
 const HOOK_SCRIPTS = [
   'eslint-fix-warning.sh',
@@ -632,7 +632,7 @@ const runHook = (
 ): string => {
   const env: typeof process.env = {
     ...process.env,
-    CLAUDE_PLUGIN_ROOT: join(ASSETS_ROOT, 'linteljs-plugin'),
+    CLAUDE_PLUGIN_ROOT: join(ASSETS_ROOT, 'always/linteljs-plugin'),
   };
 
   delete env['CLAUDE_PROJECT_DIR'];

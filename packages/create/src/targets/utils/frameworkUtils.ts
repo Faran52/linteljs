@@ -25,7 +25,7 @@ export interface FrameworkParts {
   jsxImportSource?: string;
   // Absent for the SFC frameworks; a host with no framework has no `jsx` either.
   jsx?: 'preserve' | 'react-jsx';
-  // Relative to `assets/claude-rules/`.
+  // Relative to `assets/always/linteljs-plugin/claude-rules/`.
   stateRules: string[];
 }
 

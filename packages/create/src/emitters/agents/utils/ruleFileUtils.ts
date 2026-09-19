@@ -28,8 +28,8 @@ const named = (name: string, suffix: string): string => {
 /**
  * Copilot reads one repository-wide file and any number of path-scoped ones, whose frontmatter key is `applyTo`.
  * Cursor reads `.mdc` rules alone, so the repository-wide half is a rule with `alwaysApply: true` rather than a file
- * of its own. Both are fed the same `claude-rules/` sources as the plugin skill references, with the shared `paths:`
- * list rewritten into the key that tool actually reads.
+ * of its own. Both are fed the same `always/linteljs-plugin/claude-rules/` sources as the plugin skill
+ * references, with the shared `paths:` list rewritten into the key that tool actually reads.
  */
 export const ruleArtifacts = (
   answers: Answers,
