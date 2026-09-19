@@ -6,20 +6,19 @@ import {
 
 import { orderBy } from 'es-toolkit';
 
-import { type Answers, hasTests } from '../answers';
-import { safeProjectPath, writeProjectFile } from '../files/projectFiles';
+import { type Answers, hasTests } from '../../../answers';
+import { safeProjectPath, writeProjectFile } from '../../../files/projectFiles';
 import {
   entryExists,
   isAbsence,
   readFile,
   rename,
   rm,
-} from '../files/utils/fsUtils';
-import { targetFor } from '../targets';
+} from '../../../files/utils/fsUtils';
+import { targetFor } from '../../../targets';
+import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
-import { SOURCE_ROOT, sourceFiles } from './rewrite';
-
-import type { StarterRename } from '../targets';
+import type { StarterRename } from '../../../targets';
 
 // Fresh projects only; exact generator text turns upstream drift into a notice.
 const applyStarterFixes = async (
@@ -186,7 +185,7 @@ const removeDeclinedTests = async (
   }
 };
 
-export const repairScaffoldedOutput = async (
+export const repairPass = async (
   cwd: string,
   answers: Answers,
   onWrite?: (path: string) => void,

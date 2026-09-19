@@ -1,8 +1,8 @@
-import { RUN_PREFIX } from '../config/constants';
-import { styleGlob } from '../emitters/always/utils/scriptUtils';
-import { runLocalBinary } from '../process/localBinary';
+import { RUN_PREFIX } from '../../../config/constants';
+import { styleGlob } from '../../../emitters/always/utils/scriptUtils';
+import { runLocalBinary } from '../../../process/localBinary';
 
-import type { Answers } from '../answers';
+import type { Answers } from '../../../answers';
 
 interface EslintFixResult {
   // Present exactly when the file was fixed.
@@ -42,7 +42,7 @@ const fixStyles = (cwd: string, answers: Answers, report: (message: string) => v
 };
 
 // Never fatal: exit 1 on remaining findings is normal, and a missing eslint reports a next step instead.
-export const runFixPass = (
+export const fixPass = (
   cwd: string,
   answers: Answers,
   onNotice?: (message: string) => void,

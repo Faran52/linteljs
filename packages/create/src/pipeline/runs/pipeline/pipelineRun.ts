@@ -1,25 +1,25 @@
 import { dirname } from 'node:path';
 
-import { STAGES } from '../config/constants';
-import { type Stage } from '../config/types';
+import { STAGES } from '../../../config/constants';
+import { type Stage } from '../../../config/types';
 import {
   type Artifact,
   buildArtifacts,
   seedArtifacts,
-} from '../emitters';
-import { applyArtifact } from '../files/projectFiles';
-import { readProjectShape } from '../files/readProjectShape';
-import { mkdir } from '../files/utils/fsUtils';
-import { git } from '../process/git';
-import { run } from '../process/run';
-import { scaffoldCommand } from '../process/scaffoldCommand';
-import { targetFor } from '../targets';
+} from '../../../emitters';
+import { applyArtifact } from '../../../files/projectFiles';
+import { readProjectShape } from '../../../files/readProjectShape';
+import { mkdir } from '../../../files/utils/fsUtils';
+import { git } from '../../../process/git';
+import { run } from '../../../process/run';
+import { targetFor } from '../../../targets';
+import { fixPass } from '../../passes/fix/fixPass';
+import { repairPass } from '../../passes/repair/repairPass';
+import { rewritePass } from '../../passes/rewrite/rewritePass';
 
-import { runFixPass } from './fixPass';
-import { repairScaffoldedOutput } from './repair';
-import { rewriteScaffoldedSource } from './rewrite';
+import { scaffoldCommand } from './utils/scaffoldUtils';
 
-import type { Answers } from '../answers';
+import type { Answers } from '../../../answers';
 
 export interface PipelineOptions {
   name: string;
@@ -80,11 +80,11 @@ const stagePackage = async (
   await writeArtifacts(options, artifacts, stage);
 
   // Rewrites the scaffolder's source to compile under the flags the tsconfig just set.
-  await rewriteScaffoldedSource(options.cwd, options.answers, options.onWrite);
+  await rewritePass(options.cwd, options.answers, options.onWrite);
 
   // Defects in the generator's output, so they gate on fresh alone.
   if (isFresh(options)) {
-    await repairScaffoldedOutput(
+    await repairPass(
       options.cwd,
       options.answers,
       options.onWrite,
@@ -139,11 +139,11 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
   standard: stageStandard,
   install: stageInstall,
   fix: (options) => {
-    runFixPass(options.cwd, options.answers, options.onNotice);
+    fixPass(options.cwd, options.answers, options.onNotice);
   },
 };
 
-export const runPipeline = async (options: PipelineOptions): Promise<void> => {
+export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
   // Read before the stages, so this is the directory as the user had it.
   // Seeded first, so `linteljs.config.json` precedes the `package.json` whose dependencies its answers imply.
   const artifacts = [

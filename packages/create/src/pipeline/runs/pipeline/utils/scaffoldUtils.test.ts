@@ -12,11 +12,11 @@ import {
   type PackageManager,
   type TargetId,
   type Testing,
-} from '../answers';
-import { targetFor } from '../targets';
-import { valuesOf } from '../utils/objectUtils';
+} from '../../../../answers';
+import { targetFor } from '../../../../targets';
+import { valuesOf } from '../../../../utils/objectUtils';
 
-import { scaffoldCommand } from './scaffoldCommand';
+import { scaffoldCommand } from './scaffoldUtils';
 
 // The answers a scaffolder command line reads, plus the two that change which template it asks for.
 interface ScaffoldOverrides {

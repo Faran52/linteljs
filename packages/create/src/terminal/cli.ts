@@ -26,8 +26,11 @@ import { RUN_PREFIX, STAGES } from '../config/constants';
 import { type Stage } from '../config/types';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';
 import { entryExists } from '../files/utils/fsUtils';
-import { runPipeline } from '../pipeline/pipeline';
-import { applySync, planSync } from '../pipeline/sync';
+import {
+  applySync,
+  pipelineRun,
+  planSync,
+} from '../pipeline';
 import { ensurePackageManager, nodeVersionRefusal } from '../process/packageManager';
 import { valuesOf } from '../utils/objectUtils';
 
@@ -484,7 +487,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
 
     ensurePackageManager(answers.packageManager, say);
 
-    await runPipeline({
+    await pipelineRun({
       // With --skip-scaffold the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
       // A scaffolder creates `<name>/` under cwd, so every later stage runs inside it.

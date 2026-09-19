@@ -1,19 +1,11 @@
-import { extname, join } from 'node:path';
+import { join } from 'node:path';
 
-import { writeProjectFile } from '../files/projectFiles';
-import {
-  isAbsence,
-  readdir,
-  readFile,
-} from '../files/utils/fsUtils';
-import { targetFor } from '../targets';
+import { writeProjectFile } from '../../../files/projectFiles';
+import { readFile } from '../../../files/utils/fsUtils';
+import { targetFor } from '../../../targets';
+import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
-import type { Answers } from '../answers';
-
-// Non-compiling generator output is not a project decision.
-export const SOURCE_ROOT = 'src';
-
-const SCRIPT_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts']);
+import type { Answers } from '../../../answers';
 
 // `.d.ts` extensions are part of their specifier.
 const RELATIVE_TS_IMPORT
@@ -116,31 +108,6 @@ export const guardMountLookups = (source: string): string => {
   }).join('\n');
 };
 
-export const sourceFiles = async (root: string): Promise<string[]> => {
-  try {
-    const entries = await readdir(root, {
-      withFileTypes: true,
-      recursive: true,
-    });
-
-    return entries
-      .filter((entry) => {
-        return entry.isFile() && SCRIPT_EXTENSIONS.has(extname(entry.name));
-      })
-      .map((entry) => {
-        return join(entry.parentPath, entry.name);
-      });
-  }
-  catch (error) {
-    // No `src/` is not an error under `--skip-scaffold`; other failures still are.
-    if (isAbsence(error)) {
-      return [];
-    }
-
-    throw error;
-  }
-};
-
 // The entry module only: the pattern is legitimate by hand, and `--skip-scaffold` points this at a long-lived repo.
 const isMountEntry = (path: string, root: string): boolean => {
   const relative = path.slice(root.length + 1);
@@ -148,7 +115,7 @@ const isMountEntry = (path: string, root: string): boolean => {
   return !relative.includes('/') && /^(?:main|index)\.[cm]?tsx?$/.test(relative);
 };
 
-export const rewriteScaffoldedSource = async (
+export const rewritePass = async (
   cwd: string,
   answers: Answers,
   onWrite?: (path: string) => void,

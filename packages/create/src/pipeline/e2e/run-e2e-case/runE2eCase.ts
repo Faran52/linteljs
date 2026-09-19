@@ -7,17 +7,16 @@ import {
   CONFIG_PATH,
   type PackageManager,
   parseLinteljsConfig,
-} from '../../answers';
-import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
-
+} from '../../../answers';
+import { parsePackageJson } from '../../../emitters/always/package-json/packageJsonEmitter';
 import {
   outcome,
   registry,
   runPm,
-} from './utils/processUtils';
-import { createProject, workspace } from './utils/workspaceUtils';
+} from '../utils/processUtils';
+import { createProject, workspace } from '../utils/workspaceUtils';
 
-import type { E2eCase } from './cases';
+import type { E2eCase } from '../cases/cases';
 
 /**
  * Never asserted on, for any manager. A deprecation notice reports that a third-party package reached end of life,

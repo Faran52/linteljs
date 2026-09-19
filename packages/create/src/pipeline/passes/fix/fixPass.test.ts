@@ -17,9 +17,9 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers';
+import { DEFAULT_ANSWERS } from '../../../answers';
 
-import { nextStep, runFixPass } from './fixPass';
+import { fixPass, nextStep } from './fixPass';
 
 let cwd = '';
 
@@ -64,11 +64,11 @@ describe('nextStep', () => {
   });
 });
 
-describe('runFixPass', () => {
+describe('fixPass', () => {
   it('reports the next step when there is no eslint binary in the project yet', () => {
     const notices: string[] = [];
 
-    runFixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -77,7 +77,7 @@ describe('runFixPass', () => {
 
   it('does nothing observable when no callback is given', () => {
     expect(() => {
-      runFixPass(cwd, DEFAULT_ANSWERS);
+      fixPass(cwd, DEFAULT_ANSWERS);
     }).not.toThrow();
   });
 
@@ -94,7 +94,7 @@ describe('runFixPass', () => {
 
     const notices: string[] = [];
 
-    runFixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -106,7 +106,7 @@ describe('runFixPass', () => {
 
     const notices: string[] = [];
 
-    runFixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -118,7 +118,7 @@ describe('runFixPass', () => {
 
     const notices: string[] = [];
 
-    runFixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -133,7 +133,7 @@ describe('runFixPass', () => {
       "require('node:fs').writeFileSync('stylelint-argv', process.argv.slice(2).join(' '));\n",
     );
 
-    runFixPass(cwd, DEFAULT_ANSWERS, () => {
+    fixPass(cwd, DEFAULT_ANSWERS, () => {
       return undefined;
     });
 
@@ -148,7 +148,7 @@ describe('runFixPass', () => {
 
     const notices: string[] = [];
 
-    runFixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -163,7 +163,7 @@ describe('runFixPass', () => {
 
     const notices: string[] = [];
 
-    runFixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 

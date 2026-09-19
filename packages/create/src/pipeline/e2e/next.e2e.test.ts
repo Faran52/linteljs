@@ -4,8 +4,8 @@ import {
   it,
 } from 'vitest';
 
-import { casesFor } from './cases';
-import { runE2eCase } from './runE2eCase';
+import { casesFor } from './cases/cases';
+import { runE2eCase } from './run-e2e-case/runE2eCase';
 import { afterAllCleanup } from './utils/workspaceUtils';
 
 describe('next end-to-end', () => {

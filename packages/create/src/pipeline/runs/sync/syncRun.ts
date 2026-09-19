@@ -1,19 +1,19 @@
 import { dirname, join } from 'node:path';
 
-import { type Answers, LEGACY_CONFIG_PATH } from '../answers';
-import { MANAGED_PATH } from '../config/constants';
-import { buildArtifacts } from '../emitters';
-import { applyArtifact, safeProjectPath } from '../files/projectFiles';
-import { readManagedPaths } from '../files/readManagedPaths';
-import { readProjectShape } from '../files/readProjectShape';
-import { contentOf } from '../files/shippedAssets';
+import { type Answers, LEGACY_CONFIG_PATH } from '../../../answers';
+import { MANAGED_PATH } from '../../../config/constants';
+import { buildArtifacts } from '../../../emitters';
+import { applyArtifact, safeProjectPath } from '../../../files/projectFiles';
+import { readManagedPaths } from '../../../files/readManagedPaths';
+import { readProjectShape } from '../../../files/readProjectShape';
+import { contentOf } from '../../../files/shippedAssets';
 import {
   entryExists,
   readIfPresent,
   rm,
   rmdir,
-} from '../files/utils/fsUtils';
-import { git } from '../process/git';
+} from '../../../files/utils/fsUtils';
+import { git } from '../../../process/git';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 

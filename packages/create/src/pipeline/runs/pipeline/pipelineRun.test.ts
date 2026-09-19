@@ -38,21 +38,21 @@ import {
   type Router,
   type TargetId,
   type Testing,
-} from '../answers';
-import { type Stage } from '../config/types';
-import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
-import { readLinteljsConfig } from '../files/readLinteljsConfig';
-import { STYLE_ENTRY_CANDIDATES } from '../files/readProjectShape';
+} from '../../../answers';
+import { type Stage } from '../../../config/types';
+import { emitLinteljsConfig } from '../../../emitters/always/linteljs-config/linteljsConfigEmitter';
+import { parsePackageJson } from '../../../emitters/always/package-json/packageJsonEmitter';
+import { readLinteljsConfig } from '../../../files/readLinteljsConfig';
+import { STYLE_ENTRY_CANDIDATES } from '../../../files/readProjectShape';
 import {
   entryExists,
   exists,
   readIfPresent,
-} from '../files/utils/fsUtils';
-import { valuesOf } from '../utils/objectUtils';
+} from '../../../files/utils/fsUtils';
+import { valuesOf } from '../../../utils/objectUtils';
+import { applySync, planSync } from '../sync/syncRun';
 
-import { runPipeline } from './pipeline';
-import { applySync, planSync } from './sync';
+import { pipelineRun } from './pipelineRun';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -103,7 +103,7 @@ afterEach(async () => {
 const generate = async (overrides: AnswerOverrides): Promise<string[]> => {
   const written: string[] = [];
 
-  await runPipeline({
+  await pipelineRun({
     name: 'demo-app',
     cwd,
     answers: answersFor(overrides),
@@ -351,7 +351,7 @@ describe('generated write safety', () => {
 describe('coverage surface', () => {
   // A birth run: `vitest.config.ts` is the project's once it exists.
   const vitestConfig = async (overrides: AnswerOverrides): Promise<string> => {
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor(overrides),
@@ -409,7 +409,7 @@ describe('coverage surface', () => {
   // Both transforms leave one branch no test can reach in every component.
   it('keeps the build-time transforms out of the test run', async () => {
     const viteConfig = async (overrides: AnswerOverrides): Promise<string> => {
-      await runPipeline({
+      await pipelineRun({
         name: 'demo-app',
         cwd,
         answers: answersFor(overrides),
@@ -448,7 +448,7 @@ describe('build configs a project already owns', () => {
   it('replaces the scaffolder default on a birth run', async () => {
     await writeFile(join(cwd, 'vite.config.ts'), '// vite scaffolder default\n', 'utf8');
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({}),
@@ -472,7 +472,7 @@ describe('build configs a project already owns', () => {
 const fresh = async (overrides: AnswerOverrides): Promise<string[]> => {
   const written: string[] = [];
 
-  await runPipeline({
+  await pipelineRun({
     name: 'demo-app',
     cwd,
     answers: answersFor(overrides),
@@ -529,7 +529,7 @@ describe('the webextension surfaces', () => {
   const fresh = async (): Promise<string[]> => {
     const written: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'webextension' }),
@@ -561,7 +561,7 @@ describe('the webextension surfaces', () => {
   it('writes a second manifest for a project packaged for two stores', async () => {
     const written: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({
@@ -601,7 +601,7 @@ describe('the webextension surfaces', () => {
   });
 
   it('writes the worker whether or not the project took a test runner', async () => {
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({
@@ -624,7 +624,7 @@ describe('the webextension surfaces', () => {
   });
 
   it('leaves the manifest to targets that have one', async () => {
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'react' }),
@@ -643,7 +643,7 @@ describe('starter repairs', () => {
     await mkdir(join(cwd, 'src'), { recursive: true });
     await writeFile(join(cwd, 'src/app.html'), SVELTE_DOCUMENT, 'utf8');
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'svelte' }),
@@ -924,7 +924,7 @@ describe('root config', () => {
  */
 describe('the pipeline as a writer', () => {
   it('puts every file it owns on disk through applyArtifact and nothing else', async () => {
-    const source = await readFile(join(import.meta.dirname, 'pipeline.ts'), 'utf8');
+    const source = await readFile(join(import.meta.dirname, 'pipelineRun.ts'), 'utf8');
 
     expect(source).toContain('applyArtifact(');
     expect(source).not.toContain('writeProjectFile(');
@@ -933,7 +933,7 @@ describe('the pipeline as a writer', () => {
 
   // The two lists are what `create` writes and what `sync` re-applies; the pipeline writes both.
   it('writes the seeded artifacts as well as the built ones', async () => {
-    const source = await readFile(join(import.meta.dirname, 'pipeline.ts'), 'utf8');
+    const source = await readFile(join(import.meta.dirname, 'pipelineRun.ts'), 'utf8');
 
     expect(source).toContain('seedArtifacts(');
     expect(source).toContain('buildArtifacts(');
@@ -970,7 +970,7 @@ describe('the stages that shell out', () => {
 
     const notices: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ packageManager: 'yarn' }),
@@ -988,7 +988,7 @@ describe('the stages that shell out', () => {
   it('stops on a failed install rather than carrying on to the fix pass', async () => {
     await planted('yarn', 3);
 
-    await expect(runPipeline({
+    await expect(pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ packageManager: 'yarn' }),
@@ -999,7 +999,7 @@ describe('the stages that shell out', () => {
   it('stops when the package manager is not installed at all', async () => {
     await planted('yarn', 0);
 
-    await expect(runPipeline({
+    await expect(pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ packageManager: 'bun' }),
@@ -1013,7 +1013,7 @@ describe('the stages that shell out', () => {
 
     const project = join(cwd, 'demo-app');
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd: project,
       answers: answersFor({}),
@@ -1037,7 +1037,7 @@ describe('the repository the hooks install into', () => {
   const noticesFromAgent = async (): Promise<string[]> => {
     const notices: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({}),
@@ -1079,7 +1079,7 @@ describe('the eslint --fix pass', () => {
   const noticesFrom = async (skip: Stage[]): Promise<string[]> => {
     const notices: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({}),
@@ -1105,7 +1105,7 @@ describe('the eslint --fix pass', () => {
   it('reports nothing about the package manager when install and fix were both skipped', async () => {
     const notices: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: {
@@ -1226,7 +1226,7 @@ describe('the eslint --fix pass', () => {
   it('names the SFC extension on a target whose styles live in its components', async () => {
     await plantedStylelint();
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'vue' }),
@@ -1278,7 +1278,7 @@ describe('what create and sync each discover about a project', () => {
   const generateWith = async (answers: Answers): Promise<string[]> => {
     const written: string[] = [];
 
-    await runPipeline({
+    await pipelineRun({
       name: 'demo-app',
       cwd,
       answers,

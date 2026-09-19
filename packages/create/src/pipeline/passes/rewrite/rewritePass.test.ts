@@ -20,15 +20,14 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type TargetId,
-} from '../answers';
+} from '../../../answers';
 
 import {
   guardMountLookups,
   markTypeOnlyImports,
-  rewriteScaffoldedSource,
-  sourceFiles,
+  rewritePass,
   stripTsExtensions,
-} from './rewrite';
+} from './rewritePass';
 
 let cwd = '';
 
@@ -43,14 +42,6 @@ afterEach(async () => {
   });
 });
 
-// The generator's own output, planted at the paths a generator would have written it to.
-const scaffold = async (files: Record<string, string>): Promise<void> => {
-  for (const [path, body] of Object.entries(files)) {
-    await mkdir(join(cwd, path, '..'), { recursive: true });
-    await writeFile(join(cwd, path), body, 'utf8');
-  }
-};
-
 // A record is built from answers now, so a test naming only a target still hands over a whole set.
 const answersFor = (target: TargetId): Answers => {
   return {
@@ -59,19 +50,6 @@ const answersFor = (target: TargetId): Answers => {
   };
 };
 
-describe('sourceFiles', () => {
-  it('reads a missing root as nothing to rewrite', async () => {
-    await expect(sourceFiles(join(cwd, 'src'))).resolves.toEqual([]);
-  });
-
-  // Only absence is data; anything else stays an error.
-  it('rethrows a failure that is not absence', async () => {
-    await scaffold({ src: '' });
-
-    await expect(sourceFiles(join(cwd, 'src'))).rejects.toThrow();
-  });
-});
-
 describe('stripTsExtensions', () => {
   it('drops the extension from the imports every vite template writes', () => {
     expect(stripTsExtensions("import App from './App.tsx'\n"))
@@ -79,8 +57,8 @@ describe('stripTsExtensions', () => {
     expect(stripTsExtensions("import { setupCounter } from './counter.ts';"))
       .toBe("import { setupCounter } from './counter';");
     expect(stripTsExtensions("import './register.ts';")).toBe("import './register';");
-    expect(stripTsExtensions("export { x } from '../lib/x.mts';"))
-      .toBe("export { x } from '../lib/x';");
+    expect(stripTsExtensions("export { x } from '../../lib/x.mts';"))
+      .toBe("export { x } from '../../lib/x';");
     expect(stripTsExtensions("await import('./late.tsx');")).toBe("await import('./late');");
   });
 
@@ -126,7 +104,7 @@ describe('markTypeOnlyImports', () => {
   });
 });
 
-describe('rewriteScaffoldedSource', () => {
+describe('rewritePass', () => {
   it('rewrites the scaffolder source and reports only what it changed', async () => {
     const written: string[] = [];
 
@@ -134,7 +112,7 @@ describe('rewriteScaffoldedSource', () => {
     await writeFile(join(cwd, 'src/main.tsx'), "import App from './App.tsx';\n", 'utf8');
     await writeFile(join(cwd, 'src/nested/keep.ts'), "import { z } from 'zod';\n", 'utf8');
 
-    await rewriteScaffoldedSource(cwd, answersFor('react'), (path) => {
+    await rewritePass(cwd, answersFor('react'), (path) => {
       written.push(path);
     });
 
@@ -150,14 +128,14 @@ describe('rewriteScaffoldedSource', () => {
       'utf8',
     );
 
-    await rewriteScaffoldedSource(cwd, answersFor('angular'));
+    await rewritePass(cwd, answersFor('angular'));
 
     expect(await readFile(join(cwd, 'src/app/app.routes.ts'), 'utf8'))
       .toBe("import { type Routes } from '@angular/router';\n\nimport './guards';\n");
   });
 
   it('treats a project with no src directory as nothing to do', async () => {
-    await expect(rewriteScaffoldedSource(cwd, answersFor('react'))).resolves.toBeUndefined();
+    await expect(rewritePass(cwd, answersFor('react'))).resolves.toBeUndefined();
   });
 });
 
@@ -278,7 +256,7 @@ describe('guardMountLookups', () => {
     await writeFile(join(source, 'main.ts'), PLAIN_ENTRY, 'utf8');
     await writeFile(join(nested, 'dom.ts'), "export const el = document.getElementById('x')!;\n", 'utf8');
 
-    await rewriteScaffoldedSource(cwd, answersFor('webextension'));
+    await rewritePass(cwd, answersFor('webextension'));
 
     expect(await readFile(join(source, 'main.ts'), 'utf8')).toContain('if (!app) {');
     expect(await readFile(join(nested, 'dom.ts'), 'utf8'))

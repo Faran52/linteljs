@@ -9,12 +9,14 @@ import {
   rendersWithReact,
   type Router,
   type TargetId,
-} from '../../answers';
-import { targetFor } from '../../targets';
-import { valuesOf } from '../../utils/objectUtils';
+} from '../../../answers';
+import { targetFor } from '../../../targets';
+import { valuesOf } from '../../../utils/objectUtils';
 
-import type { Framework } from '../../config/types';
-import type { TargetRecord } from '../../targets/record';
+import { coveringSubset } from './utils/pairwiseUtils';
+
+import type { Framework } from '../../../config/types';
+import type { TargetRecord } from '../../../targets/record';
 
 export interface E2eCase {
   label: string;
@@ -36,11 +38,6 @@ export interface E2eCase {
  * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
  */
 // The running best of the greedy: absent until some case gains a pair, which the first pass always does.
-interface Leader {
-  item?: E2eCase;
-  gain: number;
-}
-
 const AGENTS = valuesOf(ANSWERS.agents.values);
 const BROWSERS = valuesOf(ANSWERS.browser.values);
 const FORMS = valuesOf(ANSWERS.form.values);
@@ -228,65 +225,6 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
       packageManager: 'pnpm',
     });
   });
-};
-
-// The axes a case is a point in. A constant one costs a pair that any case covers, so they are all listed rather
-// than filtered per target: the arithmetic is the same and the list stays readable.
-const axesOf = (answers: Answers): string[] => {
-  return [
-    `host:${answers.hostedFramework ?? 'none'}`,
-    `browser:${answers.browser}`,
-    `form:${answers.form ?? 'none'}`,
-    `router:${answers.router ?? 'none'}`,
-    `store:${String(answers.store)}`,
-    `testing:${answers.testing}`,
-    `safety:${answers.typeSafety}`,
-  ];
-};
-
-const pairsOf = (answers: Answers): string[] => {
-  const axes = axesOf(answers);
-
-  return axes.flatMap((left, index) => {
-    return axes.slice(index + 1).map((right) => {
-      return `${left}|${right}`;
-    });
-  });
-};
-
-const coveringSubset = (cases: E2eCase[]): E2eCase[] => {
-  const uncovered = new Set(cases.flatMap((item) => {
-    return pairsOf(item.answers);
-  }));
-  const chosen: E2eCase[] = [];
-
-  while (uncovered.size > 0) {
-    const best = cases.reduce<Leader>((leader, item) => {
-      const gain = pairsOf(item.answers).filter((pair) => {
-        return uncovered.has(pair);
-      }).length;
-
-      return gain > leader.gain
-        ? {
-            item,
-            gain,
-          }
-        : leader;
-    }, { gain: 0 });
-
-    // Unreachable: every pair in `uncovered` came from a case, so some case always gains.
-    if (best.item === undefined) {
-      break;
-    }
-
-    for (const pair of pairsOf(best.item.answers)) {
-      uncovered.delete(pair);
-    }
-
-    chosen.push(best.item);
-  }
-
-  return chosen;
 };
 
 export const optionCases = (target: TargetId): E2eCase[] => {
