@@ -1,13 +1,15 @@
 import type {
-  AliasMap,
   Answers,
-  Framework,
   Library,
-  NamingMap,
   PackageManager,
   Router,
   TargetId,
 } from '../answers/answers';
+import type {
+  AliasMap,
+  Framework,
+  NamingMap,
+} from '../config/types';
 
 // `create` runs a create-shorthand (`pnpm create vite`); `dlx` runs a binary with no create alias.
 export type ScaffoldKind = 'create' | 'dlx';

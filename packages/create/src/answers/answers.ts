@@ -1,3 +1,5 @@
+import type { AliasMap, Framework } from '../config/types';
+
 export type TargetId = (typeof TARGET_IDS)[number];
 
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
@@ -54,53 +56,6 @@ export interface Answers {
   // file the project commits.
   ignores?: string[];
 }
-
-export type AliasMap = Record<string, string>;
-
-type NamingConvention
-  = 'PASCAL_CASE'
-    | 'CAMEL_CASE'
-    | 'KEBAB_CASE';
-
-// A case name or a raw glob; `check-file` micromatches the basename, so a folder rule can admit `[slug]`.
-type NamingRule = NamingConvention | (string & {});
-
-export type NamingMap = Record<string, NamingRule>;
-
-export type Framework
-  = 'react'
-    | 'next'
-    | 'react-native'
-    | 'vue'
-    | 'svelte'
-    | 'solid'
-    | 'angular';
-
-type LibraryLayer = (typeof LIBRARY_LAYERS)[number];
-
-interface ResolverOptions {
-  project?: string;
-  conditionNames?: string[];
-  noWarnOnMultipleProjects?: boolean;
-}
-
-export interface DefineConfigOptions {
-  framework?: Framework;
-  typescript?: boolean;
-  vitest?: boolean;
-  html?: boolean;
-  astro?: boolean;
-  libraries?: LibraryLayer[];
-  tailwindEntryPoint?: string;
-  ignores?: string[];
-  naming?: NamingMap;
-  folderNaming?: NamingMap;
-  aliases?: AliasMap;
-  resolver?: ResolverOptions;
-}
-
-// `AliasMap`, `NamingMap`, `Framework`, `LibraryLayer`, `ResolverOptions` and `DefineConfigOptions` mirror
-// `@linteljs/eslint-config/src/types.ts`, redeclared not imported so `@linteljs/create` installs before it.
 
 // Every answer is a list and the type of its members, in that order: the list is what `prompts/` enumerates and what
 // the parser checks against, and spelling the members twice is how the two drift.
@@ -175,10 +130,6 @@ export const DEFAULT_ANSWERS: Answers = {
 
 // What an older config means by saying nothing.
 const DEFAULT_SURFACES: Surface[] = ['popup', 'background'];
-
-// The libraries and routers with a layer behind them, in emit order so the written config is stable; the rest bring
-// no ESLint rules.
-export const LIBRARY_LAYERS = ['tanstack-query', 'tanstack-router', 'tailwind'] as const;
 
 /**
  * Next and React Native render with React, so a React-only answer belongs on all three. `framework` keeps them apart

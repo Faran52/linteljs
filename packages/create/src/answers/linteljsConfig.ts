@@ -1,9 +1,9 @@
+import { type AliasMap } from '../config/types';
 import { targetFor } from '../targets';
 import { isJsonObject } from '../utils/jsonUtils';
 
 import {
   AGENTS,
-  type AliasMap,
   type Answers,
   BROWSERS,
   type Form,

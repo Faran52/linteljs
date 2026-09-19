@@ -1,13 +1,10 @@
-import {
-  type Answers,
-  type DefineConfigOptions,
-  hasLibrary,
-  LIBRARY_LAYERS,
-} from '../../../answers/answers';
-import { type Artifact } from '../../../config/types';
+import { type Answers, hasLibrary } from '../../../answers/answers';
+import { type Artifact, type DefineConfigOptions } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { emitted } from '../../utils/artifactUtils';
 import { buildAliases } from '../utils/aliasUtils';
+
+import { LIBRARY_LAYERS } from './constants';
 
 // Keyed by `keyof DefineConfigOptions`, so a renamed option fails to compile here rather than in a project.
 type OptionRow = [keyof DefineConfigOptions, string];

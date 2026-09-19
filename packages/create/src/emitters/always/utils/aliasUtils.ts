@@ -1,11 +1,11 @@
 import { omit } from 'es-toolkit';
 
 import {
-  type AliasMap,
   type Answers,
   hasLibrary,
   hasTests,
 } from '../../../answers/answers';
+import { type AliasMap } from '../../../config/types';
 import { targetFor } from '../../../targets';
 
 // Read by tsconfig `paths`, `base({ aliases })` and the resolver; the order is the dependency direction, so a

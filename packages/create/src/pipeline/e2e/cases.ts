@@ -7,7 +7,6 @@ import {
   DEFAULT_ANSWERS,
   type Form,
   FORMS,
-  type Framework,
   HOSTED_FRAMEWORKS,
   type HostedFramework,
   LIBRARIES,
@@ -23,6 +22,7 @@ import {
 } from '../../answers/answers';
 import { targetFor } from '../../targets';
 
+import type { Framework } from '../../config/types';
 import type { TargetRecord } from '../../targets/record';
 
 export interface E2eCase {

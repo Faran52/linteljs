@@ -22,11 +22,11 @@ import { targetFor, TARGETS } from './registry';
 import type {
   Answers,
   Browser,
-  Framework,
   HostedFramework,
   Surface,
   TargetId,
 } from '../answers/answers';
+import type { Framework } from '../config/types';
 import type { TargetRecord } from './record';
 
 // Every reachable combination, labelled so a failure names the combination rather than only the target.

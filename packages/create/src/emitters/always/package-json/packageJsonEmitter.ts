@@ -3,14 +3,17 @@ import { compact, uniq } from 'es-toolkit';
 import {
   type Answers,
   type Form,
-  type Framework,
   hasLibrary,
   hasTests,
   type Library,
   type Router,
 } from '../../../answers/answers';
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
-import { type Artifact, type ProjectShape } from '../../../config/types';
+import {
+  type Artifact,
+  type Framework,
+  type ProjectShape,
+} from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { isJsonObject } from '../../../utils/jsonUtils';
 import { merged } from '../../utils/artifactUtils';

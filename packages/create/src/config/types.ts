@@ -69,3 +69,51 @@ export interface ProjectShape {
  * Fewer parameters is fine, since most emitters read only the answers.
  */
 export type Emitter = (answers: Answers, project: ProjectShape, name: string) => Artifact[];
+
+export type AliasMap = Record<string, string>;
+
+type NamingConvention
+  = 'PASCAL_CASE'
+    | 'CAMEL_CASE'
+    | 'KEBAB_CASE';
+
+// A case name or a raw glob; `check-file` micromatches the basename, so a folder rule can admit `[slug]`.
+type NamingRule = NamingConvention | (string & {});
+
+export type NamingMap = Record<string, NamingRule>;
+
+export type Framework
+  = 'react'
+    | 'next'
+    | 'react-native'
+    | 'vue'
+    | 'svelte'
+    | 'solid'
+    | 'angular';
+
+// The three with a layer behind them; `emitters/always/eslint-config/constants.ts` holds the emit-order table.
+export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind';
+
+interface ResolverOptions {
+  project?: string;
+  conditionNames?: string[];
+  noWarnOnMultipleProjects?: boolean;
+}
+
+export interface DefineConfigOptions {
+  framework?: Framework;
+  typescript?: boolean;
+  vitest?: boolean;
+  html?: boolean;
+  astro?: boolean;
+  libraries?: LibraryLayer[];
+  tailwindEntryPoint?: string;
+  ignores?: string[];
+  naming?: NamingMap;
+  folderNaming?: NamingMap;
+  aliases?: AliasMap;
+  resolver?: ResolverOptions;
+}
+
+// `AliasMap`, `NamingMap`, `Framework`, `LibraryLayer`, `ResolverOptions` and `DefineConfigOptions` mirror
+// `@linteljs/eslint-config/src/types.ts`, redeclared not imported so `@linteljs/create` installs before it.
