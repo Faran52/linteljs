@@ -6,7 +6,6 @@ import {
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
-import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
 import { EMPTY_PROJECT } from '../config/projectShape';
 
 import { BUILD_EMITTERS } from './registry';
@@ -87,7 +86,15 @@ const variations = (): Answers[] => {
  * - Merged. `pnpm-workspace.yaml` and the tailwind style entry carry the project's own lines beside linteljs's, so
  *   removing either would take content no one else wrote a copy of.
  */
+let cached: readonly string[] | undefined;
+
 export const removableTargets = (): readonly string[] => {
+  // Pure over a registry that cannot change while the process runs, and `sync` asks twice: once to plan, once to
+  // apply. Six thousand emitter calls is not a thing to do twice for the same answer.
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const emitters = Object.entries(BUILD_EMITTERS).filter(([key]) => {
     return !key.startsWith(PERMANENT_GROUP);
   }).map(([, emit]) => {
@@ -108,8 +115,7 @@ export const removableTargets = (): readonly string[] => {
     }
   }
 
-  // Not emitted by anything, so not derivable: a file older versions wrote under a name this one no longer uses.
-  targets.add(LEGACY_CONFIG_PATH);
+  cached = [...targets];
 
-  return [...targets];
+  return cached;
 };

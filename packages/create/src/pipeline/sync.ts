@@ -1,5 +1,6 @@
 import { dirname, join } from 'node:path';
 
+import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
 import { buildArtifacts, removableTargets } from '../emitters';
 import { applyArtifact, safeProjectPath } from '../files/projectFiles';
 import { readProjectShape } from '../files/readProjectShape';
@@ -13,8 +14,6 @@ import {
 import { git } from '../process/git';
 
 import type { Answers } from '../answers/answers';
-
-// Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 
@@ -34,6 +33,17 @@ export interface SyncResult {
   removed: string[];
 }
 
+// Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
+
+/**
+ * What an answer-gated emitter can write, plus the one name no emitter writes any more: versions through 1.6.0
+ * recorded the answers in `lintel.config.json`, so an upgraded project carries a file this one replaced. A
+ * migration is not a derivation, which is why it is unioned here rather than smuggled into the inventory.
+ */
+const obsoleteCandidates = (): readonly string[] => {
+  return [...removableTargets(), LEGACY_CONFIG_PATH];
+};
+
 // `git diff --no-index` rather than a diff dependency; `git.ts` says why that is safe.
 const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
   const result = git(
@@ -52,7 +62,7 @@ const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
 const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
   const entries: SyncEntry[] = [];
 
-  for (const target of removableTargets()) {
+  for (const target of obsoleteCandidates()) {
     if (!expected.has(target) && await entryExists(join(cwd, target))) {
       entries.push({
         target,
@@ -173,7 +183,7 @@ export const applySync = async (
     }
   }
 
-  for (const target of removableTargets()) {
+  for (const target of obsoleteCandidates()) {
     if (expected.has(target) || !targets.includes(target)) {
       continue;
     }
