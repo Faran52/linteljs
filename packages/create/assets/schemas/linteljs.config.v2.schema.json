@@ -42,14 +42,6 @@
         "firefox"
       ]
     },
-    "hostedFramework": {
-      "enum": [
-        "react",
-        "vue",
-        "svelte",
-        "solid"
-      ]
-    },
     "surfaces": {
       "type": "array",
       "items": {
@@ -60,6 +52,14 @@
         ]
       },
       "uniqueItems": true
+    },
+    "hostedFramework": {
+      "enum": [
+        "react",
+        "vue",
+        "svelte",
+        "solid"
+      ]
     },
     "testing": {
       "enum": [
@@ -122,15 +122,6 @@
       },
       "uniqueItems": true
     },
-    "resolveConditions": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "minItems": 1,
-      "uniqueItems": true
-    },
     "plugins": {
       "type": "array",
       "items": {
@@ -141,6 +132,26 @@
         ]
       },
       "uniqueItems": true
+    },
+    "resolveConditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "aliases": {
+      "type": "object",
+      "description": "Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a directory; one ending in a file names a barrel imported bare.",
+      "propertyNames": {
+        "pattern": "^[@$]"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "browsers": {
       "type": "array",
@@ -163,17 +174,6 @@
       },
       "minItems": 1,
       "uniqueItems": true
-    },
-    "aliases": {
-      "type": "object",
-      "description": "Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a directory; one ending in a file names a barrel imported bare.",
-      "propertyNames": {
-        "pattern": "^[@$]"
-      },
-      "additionalProperties": {
-        "type": "string",
-        "minLength": 1
-      }
     }
   }
 }
