@@ -113,10 +113,10 @@ const legacyConfig = JSON.stringify({
  * ESLint rather than in this plugin. The comparison exists to hold this plugin's fixers to one behaviour.
  */
 const flatConfig = [
-  "import lintel from '@linteljs/eslint-plugin';",
+  "import linteljs from '@linteljs/eslint-plugin';",
   '',
   'export default [',
-  "  ...lintel.configs['flat/recommended'],",
+  "  ...linteljs.configs['flat/recommended'],",
   "  { rules: { '@linteljs/prefer-destructured-props': 'error' } },",
   "  { linterOptions: { reportUnusedDisableDirectives: 'off' } },",
   '];',
@@ -271,13 +271,13 @@ const tsLegacyConfig = JSON.stringify({
 
 const tsFlatConfig = [
   "import parser from '@typescript-eslint/parser';",
-  "import lintel from '@linteljs/eslint-plugin';",
+  "import linteljs from '@linteljs/eslint-plugin';",
   '',
   'export default [',
   '  {',
   "    files: ['**/*.ts'],",
   '    languageOptions: { parser },',
-  "    plugins: { '@linteljs': lintel },",
+  "    plugins: { '@linteljs': linteljs },",
   '    rules: {',
   ...TS_EXPECTED.map((id) => {
     return `      ${JSON.stringify(id)}: 'error',`;

@@ -94,10 +94,10 @@ const expectedPresetNames = [
 // rules by hand, so they would pass with every preset key misspelled.
 const esmPresetConfig = (pluginPath) => {
   return [
-    `import lintel from ${JSON.stringify(pluginPath)};`,
+    `import linteljs from ${JSON.stringify(pluginPath)};`,
     '',
     'export default [',
-    '  ...lintel.configs[\'flat/recommended\'],',
+    '  ...linteljs.configs[\'flat/recommended\'],',
     '];',
     '',
   ].join('\n');
@@ -105,10 +105,10 @@ const esmPresetConfig = (pluginPath) => {
 
 const esmConfig = (pluginPath) => {
   return [
-    `import lintel from ${JSON.stringify(pluginPath)};`,
+    `import linteljs from ${JSON.stringify(pluginPath)};`,
     '',
     'export default [',
-    '  { plugins: { \'@linteljs\': lintel }, rules: {',
+    '  { plugins: { \'@linteljs\': linteljs }, rules: {',
     ...expectedRuleIds.map((id) => {
       return `    ${JSON.stringify(id)}: 'error',`;
     }),
@@ -120,10 +120,10 @@ const esmConfig = (pluginPath) => {
 
 const cjsConfig = (pluginPath) => {
   return [
-    `const lintel = require(${JSON.stringify(pluginPath)});`,
+    `const linteljs = require(${JSON.stringify(pluginPath)});`,
     '',
     'module.exports = [',
-    '  { plugins: { \'@linteljs\': lintel }, rules: {',
+    '  { plugins: { \'@linteljs\': linteljs }, rules: {',
     ...expectedRuleIds.map((id) => {
       return `    ${JSON.stringify(id)}: 'error',`;
     }),
@@ -199,7 +199,7 @@ checkFlavour(
 );
 
 // A `.cjs` flat config receives the module namespace from `require`, an ESM one the default export. Both have to
-// be a usable plugin on their own, or `plugins: { '@linteljs': lintel }` silently loses `meta` in one of them.
+// be a usable plugin on their own, or `plugins: { '@linteljs': linteljs }` silently loses `meta` in one of them.
 const cjsNamespace = (await import(pathToFileURL(join(pkgDir, 'dist', 'index.js')).href)).default;
 const esmDefault = (await import(pathToFileURL(join(pkgDir, 'dist', 'index.mjs')).href)).default;
 

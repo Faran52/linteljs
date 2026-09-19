@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@linteljs/create.svg)](https://www.npmjs.com/package/@linteljs/create)
 [![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
 
-Create a TypeScript project with the framework's own scaffolder, then layer in lintel's shared standard:
+Create a TypeScript project with the framework's own scaffolder, then layer in linteljs's shared standard:
 ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent rules.
 
 | Runner | Create alias | Direct run |
@@ -28,7 +28,7 @@ Node 26.8.2 or newer. A missing pnpm or Yarn is installed through corepack; Bun 
 
 ## What you get
 
-The CLI guides you through a project questionnaire, then runs the official generator and layers the lintel
+The CLI guides you through a project questionnaire, then runs the official generator and layers the linteljs
 standard on top. The result is a project that starts with a working gate and a consistent setup across
 frameworks.
 
@@ -69,7 +69,7 @@ not hard-coded into an npm, Yarn, or Bun project.
 React Native scaffolds through **npm**, whichever package manager you answered. `create-expo-app` shells
 out to npm whatever launched it, so npm is the only launcher it is tested against; under Yarn it dies before
 writing a file, handing a web `ReadableStream` to `fs.write`. That reproduces against the public registry, so
-it is not a lintel problem, and nothing about the generated project changes: the install and every later
+it is not a linteljs problem, and nothing about the generated project changes: the install and every later
 stage still use the manager you answered.
 
 An npm project is pinned to **npm 11**, in both `packageManager` and `engines`. `create-expo-app` shells out
@@ -88,7 +88,7 @@ the directory you are in.
 
 ## Questions and options
 
-Every answer is a question in the terminal, a flag on the command line, or a key in `lintel.config.json`.
+Every answer is a question in the terminal, a flag on the command line, or a key in `linteljs.config.json`.
 A question is asked only where the target has a slot for it.
 
 | Question | Flag | Choices | Default | Asked on |
@@ -177,10 +177,10 @@ how many files would change, then one diff per file.
 npx @linteljs/create --skip-scaffold
 ```
 
-If `lintel.config.json` already exists, the CLI uses it and asks nothing. Otherwise it asks the questionnaire.
+If `linteljs.config.json` already exists, the CLI uses it and asks nothing. Otherwise it asks the questionnaire.
 It does not guess a framework for an existing project. Pass `--yes` only when you want defaults.
 
-`lintel.config.json` records answers at the project root. Edit it, then use `sync` to review the output:
+`linteljs.config.json` records answers at the project root. Edit it, then use `sync` to review the output:
 
 ```bash
 npx @linteljs/create sync
@@ -190,7 +190,7 @@ npx @linteljs/create sync --force
 The first command shows one diff per file and writes nothing. `--force` applies the planned files. Sync
 updates the plugin, host declarations, and emitted ESLint, Stylelint, TypeScript, Vite, and Vitest config. It
 does not replace `package.json`, `.gitignore`, `pnpm-workspace.yaml`, your README, or your `CLAUDE.md` and
-`AGENTS.md` after their first write. It also leaves `lintel.config.json` untouched.
+`AGENTS.md` after their first write. It also leaves `linteljs.config.json` untouched.
 
 Removing an agent from the config can remove that agent's Lintel-owned declaration on the next `sync --force`.
 It only removes exact paths the CLI owns.

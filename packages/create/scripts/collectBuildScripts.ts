@@ -306,7 +306,7 @@ const report = (found: Map<string, Record<Collected, string[]>>): void => {
 
 const main = async (): Promise<void> => {
   const { registry, stop } = await startRegistry();
-  const workspace = mkdtempSync(join(tmpdir(), 'lintel-builds-'));
+  const workspace = mkdtempSync(join(tmpdir(), 'linteljs-builds-'));
   const found = new Map<string, Record<Collected, string[]>>();
 
   try {

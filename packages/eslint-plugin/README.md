@@ -17,20 +17,20 @@ npm install --save-dev @linteljs/eslint-plugin
 For flat config, spread the recommended preset:
 
 ```js
-import lintel from '@linteljs/eslint-plugin';
+import linteljs from '@linteljs/eslint-plugin';
 
 export default [
-  ...lintel.configs['flat/recommended'],
+  ...linteljs.configs['flat/recommended'],
 ];
 ```
 
 The same shape works in CommonJS:
 
 ```js
-const lintel = require('@linteljs/eslint-plugin');
+const linteljs = require('@linteljs/eslint-plugin');
 
 module.exports = [
-  ...lintel.configs['flat/recommended'],
+  ...linteljs.configs['flat/recommended'],
 ];
 ```
 
@@ -49,7 +49,7 @@ To enable a single rule:
 ```js
 export default [
   {
-    plugins: { '@linteljs': lintel },
+    plugins: { '@linteljs': linteljs },
     rules: { '@linteljs/import-newlines': 'error' },
   },
 ];
@@ -61,8 +61,8 @@ Category presets include every rule in that group, including rules outside `reco
 
 ```js
 export default [
-  ...lintel.configs['flat/layout'],
-  ...lintel.configs['flat/promises'],
+  ...linteljs.configs['flat/layout'],
+  ...linteljs.configs['flat/promises'],
 ];
 ```
 
@@ -79,7 +79,7 @@ TypeScript-only rules are scoped to `**/*.{ts,tsx,mts,cts}`. Add a TypeScript pa
 import tseslint from 'typescript-eslint';
 
 export default [
-  ...lintel.configs['flat/recommended'],
+  ...linteljs.configs['flat/recommended'],
   {
     files: ['**/*.{ts,tsx,mts,cts}'],
     languageOptions: { parser: tseslint.parser },

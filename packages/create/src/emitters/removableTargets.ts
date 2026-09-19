@@ -6,6 +6,7 @@ import {
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
+import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
 
 import { EMPTY_PROJECT } from './projectShape';
 import { BUILD_EMITTERS } from './registry';
@@ -79,11 +80,11 @@ const variations = (): Answers[] => {
  * manager or tightening the type-safety answer drops what the old answer left behind. Derived rather than listed,
  * because a list is a second place to remember a new file and the first place to forget one.
  *
- * Two kinds are held back, and both are files lintel does not own outright:
+ * Two kinds are held back, and both are files linteljs does not own outright:
  *
  * - Preserved. `CLAUDE.md` and `AGENTS.md` are the project's the moment it has them, so a deselected host leaves
  *   its adapter behind rather than having it deleted.
- * - Merged. `pnpm-workspace.yaml` and the tailwind style entry carry the project's own lines beside lintel's, so
+ * - Merged. `pnpm-workspace.yaml` and the tailwind style entry carry the project's own lines beside linteljs's, so
  *   removing either would take content no one else wrote a copy of.
  */
 export const removableTargets = (): readonly string[] => {
@@ -106,6 +107,9 @@ export const removableTargets = (): readonly string[] => {
       }
     }
   }
+
+  // Not emitted by anything, so not derivable: a file older versions wrote under a name this one no longer uses.
+  targets.add(LEGACY_CONFIG_PATH);
 
   return [...targets];
 };

@@ -21,7 +21,7 @@ import { git } from './git';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-git-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-git-'));
 });
 
 afterEach(async () => {

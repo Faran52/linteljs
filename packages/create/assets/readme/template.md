@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-{{TARGET_LABEL}}, scaffolded with [lintel](https://www.npmjs.com/package/@linteljs/create).
+{{TARGET_LABEL}}, scaffolded with [linteljs](https://www.npmjs.com/package/@linteljs/create).
 
 ## Commands
 

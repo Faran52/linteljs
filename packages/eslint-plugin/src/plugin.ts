@@ -149,6 +149,6 @@ const buildConfigs = (): LintelConfigs => {
 export const configs: LintelConfigs = buildConfigs();
 
 // The same object the presets register: ESLint compares plugins by identity ("Cannot redefine plugin").
-const lintel: ESLint.Plugin & WithConfigs = Object.assign(plugin, { configs });
+const linteljs: ESLint.Plugin & WithConfigs = Object.assign(plugin, { configs });
 
-export default lintel;
+export default linteljs;

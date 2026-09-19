@@ -35,7 +35,7 @@ describe('react', () => {
       .resolves.toContain('react-hooks/rules-of-hooks');
   });
 
-  it('reports an unsorted hook dependency array through the lintel rule it adds', async () => {
+  it('reports an unsorted hook dependency array through the linteljs rule it adds', async () => {
     const code = [
       "import { useEffect } from 'react';",
       '',
@@ -77,7 +77,7 @@ describe('react', () => {
       .resolves.not.toContain('@linteljs/prefer-destructured-props');
   });
 
-  // The cases above pin only `react-hooks` and two lintel rules; a renamed preset key would leave them green.
+  // The cases above pin only `react-hooks` and two linteljs rules; a renamed preset key would leave them green.
   it('reports through the eslint-react preset it composes', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...typescript(), ...react()], JSX_FIXTURE);
 

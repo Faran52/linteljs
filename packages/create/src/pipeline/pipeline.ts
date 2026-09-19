@@ -141,7 +141,7 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
 
 export const runPipeline = async (options: PipelineOptions): Promise<void> => {
   // Read before the stages, so this is the directory as the user had it.
-  // Seeded first, so `lintel.config.json` precedes the `package.json` whose dependencies its answers imply.
+  // Seeded first, so `linteljs.config.json` precedes the `package.json` whose dependencies its answers imply.
   const artifacts = [
     ...seedArtifacts(options.answers, options.name),
     ...buildArtifacts(options.answers, await readProjectShape(options.cwd), options.name),

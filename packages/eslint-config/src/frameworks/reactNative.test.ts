@@ -15,7 +15,7 @@ import react from './react';
 import reactNative, { reactNativeGroup } from './reactNative';
 
 describe('reactNative', () => {
-  it('keeps the lintel rules that have nothing to do with a DOM', async () => {
+  it('keeps the linteljs rules that have nothing to do with a DOM', async () => {
     const code = 'export const Note = (props) => {\n  return <Text>{props.a}</Text>;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Note.tsx');
 

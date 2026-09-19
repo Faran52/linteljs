@@ -26,7 +26,7 @@ import {
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-fs-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-fs-'));
 });
 
 afterEach(async () => {

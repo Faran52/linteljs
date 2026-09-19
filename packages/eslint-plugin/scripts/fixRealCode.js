@@ -22,10 +22,10 @@
  *     against the shape the rule claims to have found, derived from the AST rather than from the rule.
  *
  * Sources are directories given on the command line, or a default list of whatever real code is already on this
- * machine. For more volume, clone a few repositories into `<tmpdir>/lintel-real-code` first, which is on the
+ * machine. For more volume, clone a few repositories into `<tmpdir>/linteljs-real-code` first, which is on the
  * default list:
  *
- *   git clone --depth 1 https://github.com/colinhacks/zod "$TMPDIR/lintel-real-code/zod"
+ *   git clone --depth 1 https://github.com/colinhacks/zod "$TMPDIR/linteljs-real-code/zod"
  *
  * Two things are measured alongside the properties, because a published rule can be correct and still be a bug
  * report:
@@ -133,7 +133,7 @@ const sources = (given.length > 0
       // skips to keep directory cycles out, so it contributes nothing. Two levels up is the real third-party code.
       join(root, '..', '..', 'node_modules'),
       join(homedir(), 'Projects'),
-      join(tmpdir(), 'lintel-real-code'),
+      join(tmpdir(), 'linteljs-real-code'),
     ]).map((dir) => {
   return resolve(dir);
 }).filter(existsSync);

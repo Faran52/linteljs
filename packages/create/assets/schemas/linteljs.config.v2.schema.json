@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v2.schema.json",
+  "$id": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v2.schema.json",
   "title": "LintelJS configuration",
   "type": "object",
   "additionalProperties": false,
@@ -18,7 +18,7 @@
   ],
   "properties": {
     "$schema": {
-      "const": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v2.schema.json"
+      "const": "https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v2.schema.json"
     },
     "schemaVersion": {
       "const": 2

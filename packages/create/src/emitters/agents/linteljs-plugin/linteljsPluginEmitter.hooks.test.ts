@@ -216,7 +216,7 @@ const BANNED_GIT_COMMANDS: CommandProbe[] = [
   },
   {
     label: 'exec argv-zero wrapper',
-    command: 'exec -a lintel git reset --hard HEAD',
+    command: 'exec -a linteljs git reset --hard HEAD',
   },
   {
     label: 'nohup option terminator',
@@ -406,7 +406,7 @@ const ESLINT_WARNING_COMMANDS: CommandProbe[] = [
   },
   {
     label: 'exec argv-zero wrapper',
-    command: 'exec -a lintel eslint src',
+    command: 'exec -a linteljs eslint src',
   },
   {
     label: '--fix-dry-run only',
@@ -540,7 +540,7 @@ describe('portable hook assets', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'lintel-hook-assets-'));
+    cwd = mkdtempSync(join(tmpdir(), 'linteljs-hook-assets-'));
     checkerLog = join(cwd, 'checker.log');
     mkdirSync(join(cwd, 'scripts'));
     mkdirSync(join(cwd, 'src'));

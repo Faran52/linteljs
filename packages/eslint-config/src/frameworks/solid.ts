@@ -1,4 +1,4 @@
-import lintel from '@linteljs/eslint-plugin';
+import linteljs from '@linteljs/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import solidPlugin from 'eslint-plugin-solid';
 
@@ -20,7 +20,7 @@ export const solid = (): Layer => {
     {
       name: '@linteljs/solid',
       files: SOLID_FILES,
-      plugins: { '@linteljs': lintel },
+      plugins: { '@linteljs': linteljs },
       // Not the other two React rules: hooks do not exist here and destructured props break reactivity.
       rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
     },

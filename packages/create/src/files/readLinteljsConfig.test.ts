@@ -23,17 +23,18 @@ import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-} from '../answers/lintelConfig';
-import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
+  LEGACY_CONFIG_PATH,
+} from '../answers/linteljsConfig';
+import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 
-import { readLintelConfig } from './readLintelConfig';
+import { readLinteljsConfig } from './readLinteljsConfig';
 
 let cwd = '';
 let external = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-config-'));
-  external = await mkdtemp(join(tmpdir(), 'lintel-config-external-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-config-'));
+  external = await mkdtemp(join(tmpdir(), 'linteljs-config-external-'));
 });
 
 afterEach(async () => {
@@ -60,11 +61,11 @@ const readOptional = async (path: string): Promise<string | null> => {
   }
 };
 
-describe('readLintelConfig', () => {
+describe('readLinteljsConfig', () => {
   it('reads a valid config file', async () => {
-    await writeFile(join(cwd, CONFIG_PATH), emitLintelConfig(DEFAULT_ANSWERS), 'utf8');
+    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
 
-    await expect(readLintelConfig(cwd)).resolves.toEqual({
+    await expect(readLinteljsConfig(cwd)).resolves.toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
@@ -74,20 +75,20 @@ describe('readLintelConfig', () => {
   it('preserves the parse error for malformed JSON', async () => {
     await writeFile(join(cwd, CONFIG_PATH), '{', 'utf8');
 
-    await expect(readLintelConfig(cwd)).rejects.toThrow(/lintel\.config\.json is not valid JSON/);
+    await expect(readLinteljsConfig(cwd)).rejects.toThrow(/linteljs\.config\.json is not valid JSON/);
   });
 
   it('leaves the config file byte-for-byte unchanged', async () => {
-    const text = emitLintelConfig(DEFAULT_ANSWERS);
+    const text = emitLinteljsConfig(DEFAULT_ANSWERS);
 
     await writeFile(join(cwd, CONFIG_PATH), text, 'utf8');
-    await readLintelConfig(cwd);
+    await readLinteljsConfig(cwd);
 
     await expect(readFile(join(cwd, CONFIG_PATH), 'utf8')).resolves.toBe(text);
   });
 
   it.each([
-    ['live', emitLintelConfig(DEFAULT_ANSWERS)],
+    ['live', emitLinteljsConfig(DEFAULT_ANSWERS)],
     ['dangling', null],
   ])('rejects a %s symbolic-link config without touching its target', async (_case, original) => {
     const target = join(external, 'actual-config.json');
@@ -99,8 +100,8 @@ describe('readLintelConfig', () => {
 
     await symlink(target, path);
 
-    await expect(readLintelConfig(cwd)).rejects.toThrow(
-      'lintel.config.json must be a regular file; symbolic links are not allowed',
+    await expect(readLinteljsConfig(cwd)).rejects.toThrow(
+      'linteljs.config.json must be a regular file; symbolic links are not allowed',
     );
     await expect(readlink(path)).resolves.toBe(target);
     await expect(readOptional(target)).resolves.toBe(original);
@@ -109,12 +110,31 @@ describe('readLintelConfig', () => {
   it('rejects a non-regular config entry before trying to read it', async () => {
     await mkdir(join(cwd, CONFIG_PATH));
 
-    await expect(readLintelConfig(cwd))
-      .rejects.toThrow('lintel.config.json must be a regular file');
+    await expect(readLinteljsConfig(cwd))
+      .rejects.toThrow('linteljs.config.json must be a regular file');
+  });
+
+  // Every version through 1.6.0 wrote `linteljs.config.json`, so an upgraded project is still found.
+  it('reads the name older versions wrote when the current one is absent', async () => {
+    await writeFile(join(cwd, LEGACY_CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+
+    await expect(readLinteljsConfig(cwd)).resolves.toEqual({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...DEFAULT_ANSWERS,
+    });
+  });
+
+  // The current name wins, so a project part-way through an upgrade reads what this version wrote.
+  it('prefers the current name when both are on disk', async () => {
+    await writeFile(join(cwd, LEGACY_CONFIG_PATH), '{ not json', 'utf8');
+    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+
+    await expect(readLinteljsConfig(cwd)).resolves.toHaveProperty('target', DEFAULT_ANSWERS.target);
   });
 
   it('rejects a directory without a LintelJS config', async () => {
-    await expect(readLintelConfig(cwd))
-      .rejects.toThrow('lintel.config.json was not found; this is not a LintelJS-managed project');
+    await expect(readLinteljsConfig(cwd))
+      .rejects.toThrow('linteljs.config.json was not found; this is not a LintelJS-managed project');
   });
 });

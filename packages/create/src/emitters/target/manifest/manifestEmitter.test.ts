@@ -59,7 +59,7 @@ describe('emitManifest', () => {
 
   /**
    * The default is the popup and background pair, which is what this target wrote before surfaces existed, so an older
-   * `lintel.config.json` still describes the extension it generated.
+   * `linteljs.config.json` still describes the extension it generated.
    */
   it('defaults to a popup and a background entry', () => {
     const manifest = manifestFor();

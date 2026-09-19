@@ -47,7 +47,7 @@ const TSCONFIG = [
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-typecheck-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-typecheck-'));
   await writeFile(join(cwd, 'tsconfig.json'), TSCONFIG, 'utf8');
 });
 

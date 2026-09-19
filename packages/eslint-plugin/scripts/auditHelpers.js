@@ -83,7 +83,7 @@ for (const [fileName, file] of helpers) {
   const source = file.source;
   const lines = source.split('\n');
 
-  const parked = join(mkdtempSync(join(tmpdir(), 'lintel-audit-')), short);
+  const parked = join(mkdtempSync(join(tmpdir(), 'linteljs-audit-')), short);
   copyFileSync(absolute, parked);
 
   const offsetOf = (position) => {

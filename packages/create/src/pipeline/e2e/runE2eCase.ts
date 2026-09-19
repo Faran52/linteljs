@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { expect } from 'vitest';
 
-import { CONFIG_PATH, parseLintelConfig } from '../../answers/lintelConfig';
+import { CONFIG_PATH, parseLinteljsConfig } from '../../answers/linteljsConfig';
 import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
 
 import {
@@ -19,7 +19,7 @@ import type { E2eCase } from './cases';
 /**
  * Never asserted on, for any manager. A deprecation notice reports that a third-party package reached end of life,
  * which is true of trees this CLI does not choose: `expo` reaches a deprecated `uuid` through the Xcode writer, and
- * a scaffolder installs `expo`, not lintel. No emitted config makes it go away, and muting it in a generated project
+ * a scaffolder installs `expo`, not linteljs. No emitted config makes it go away, and muting it in a generated project
  * would hide a real fact from whoever does own the dependency.
  */
 const DEPRECATION = /deprecated/i;
@@ -93,17 +93,17 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
   expect(create.output).not.toContain('next: ');
-  // From the install stage on: what a scaffolder's own `npx` or `dlx` prints before lintel exists is not lintel's.
+  // From the install stage on: what a scaffolder's own `npx` or `dlx` prints before linteljs exists is not linteljs's.
   const installed = create.output.slice(create.output.indexOf('installing with '));
 
   expect(INSTALL_NOISE[answers.packageManager](installed)).toEqual([]);
   // `prepare` (`postinstall` on yarn) ran: husky writes its runner there.
   expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
-  expect(parseLintelConfig(readFileSync(join(project, CONFIG_PATH), 'utf8')))
+  expect(parseLinteljsConfig(readFileSync(join(project, CONFIG_PATH), 'utf8')))
     .toMatchObject(answers);
   expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
-    .not.toHaveProperty('lintel');
+    .not.toHaveProperty('linteljs');
 
   await verifyLintOutput(answers.packageManager, project);
 };

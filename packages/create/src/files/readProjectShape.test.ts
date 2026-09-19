@@ -20,7 +20,7 @@ import { readProjectShape } from './readProjectShape';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-shape-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-shape-'));
 });
 
 afterEach(async () => {

@@ -116,7 +116,7 @@ const sources = (given.length > 0
       // skips to keep directory cycles out, so it contributes nothing. Two levels up is the real third-party code.
       join(root, '..', '..', 'node_modules'),
       join(homedir(), 'Projects'),
-      join(tmpdir(), 'lintel-real-code'),
+      join(tmpdir(), 'linteljs-real-code'),
     ]).map((dir) => {
   return resolve(dir);
 }).filter(existsSync);
@@ -488,10 +488,10 @@ const pickFirst = (nodes, build) => {
 
 // Names this harness writes into a file. Any of them already present means the
 // file is not a clean slate and the case is passed over.
-const PROBE_ALIAS = 'lintelProbeAlias';
-const PROBE_BINDING = 'lintelNamespaceProbe';
-const PROBE_HANDLER = 'lintelRejectionProbe';
-const PROBE_PROPS = 'lintelProbeProps';
+const PROBE_ALIAS = 'linteljsProbeAlias';
+const PROBE_BINDING = 'linteljsNamespaceProbe';
+const PROBE_HANDLER = 'linteljsRejectionProbe';
+const PROBE_PROPS = 'linteljsProbeProps';
 
 // The defaults the rules ship, spelled out because these transformations have to produce input crossing them.
 const DEFAULT_MAX_ITEMS = 2;
@@ -876,7 +876,7 @@ const unionGenericCase = (state) => {
 
     // Four members, one over the default of three.
     return replaced(state, first.range[0], first.range[1],
-      `${textOf(state, first)} | 'lintelProbeB' | 'lintelProbeC' | 'lintelProbeD'`);
+      `${textOf(state, first)} | 'linteljsProbeB' | 'linteljsProbeC' | 'linteljsProbeD'`);
   });
 };
 
@@ -1898,11 +1898,11 @@ const SHAPES = {
       shape: 'rejection handler on an await',
     },
     {
-      build: awaitedHandlerCase(`.then(lintelFulfilProbe, ${PROBE_HANDLER})`),
+      build: awaitedHandlerCase(`.then(linteljsFulfilProbe, ${PROBE_HANDLER})`),
       shape: 'two-argument .then() on an await',
     },
     {
-      build: awaitedHandlerCase(`.catch(${PROBE_HANDLER}).then(lintelParseProbe)`),
+      build: awaitedHandlerCase(`.catch(${PROBE_HANDLER}).then(linteljsParseProbe)`),
       shape: 'rejection handler buried mid-chain',
     },
     {
@@ -1928,7 +1928,7 @@ const SHAPES = {
   ],
   'union-newline': [
     {
-      build: unionWithMemberCase('({ lintelProbeMember: string })'),
+      build: unionWithMemberCase('({ linteljsProbeMember: string })'),
       shape: 'union with an object member',
     },
     {

@@ -182,7 +182,7 @@ describe('ask', () => {
     });
   });
 
-  // What a person reads; none of these strings is the value written to `lintel.config.json`.
+  // What a person reads; none of these strings is the value written to `linteljs.config.json`.
   it('offers every option in the product\'s own name and casing', async () => {
     const { recorded } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined,

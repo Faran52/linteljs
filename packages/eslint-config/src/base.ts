@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import lintel from '@linteljs/eslint-plugin';
+import linteljs from '@linteljs/eslint-plugin';
 import stylistic from '@stylistic/eslint-plugin';
 import { includeIgnoreFile } from 'eslint/config';
 import checkFile from 'eslint-plugin-check-file';
@@ -84,7 +84,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', SCRIPT_FILES),
     ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', SCRIPT_FILES),
-    ...presetOf(lintel.configs['flat/recommended'], '@linteljs/flat/recommended', SCRIPT_FILES),
+    ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', SCRIPT_FILES),
 
     {
       name: '@linteljs/base',

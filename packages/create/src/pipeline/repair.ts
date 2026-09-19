@@ -130,7 +130,7 @@ const renameStarterFiles = async (
   }
 };
 
-// Removes what lintel's own files orphaned, per `staleScaffoldFiles`.
+// Removes what linteljs's own files orphaned, per `staleScaffoldFiles`.
 const removeStaleScaffoldFiles = async (
   cwd: string,
   answers: Answers,

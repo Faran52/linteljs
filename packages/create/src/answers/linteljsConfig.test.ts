@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 
-import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
+import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import {
   AGENTS,
@@ -27,8 +27,8 @@ import {
   CONFIG_SCHEMA_URL,
   CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
-  parseLintelConfig,
-} from './lintelConfig';
+  parseLinteljsConfig,
+} from './linteljsConfig';
 
 interface ConfigOverrides {
   $schema?: string;
@@ -69,7 +69,7 @@ interface SchemaProperties {
   surfaces: SchemaNode;
 }
 
-interface LintelConfigSchema {
+interface LinteljsConfigSchema {
   $id: string;
   properties: SchemaProperties;
 }
@@ -157,7 +157,7 @@ const choiceNode = (properties: SchemaFields, field: keyof SchemaFields): Schema
   return { choices: stringArrayField(objectField(properties, field), 'enum') };
 };
 
-const schemaFrom = (text: string): LintelConfigSchema => {
+const schemaFrom = (text: string): LinteljsConfigSchema => {
   const parsed: unknown = JSON.parse(text);
 
   if (!isSchemaObject(parsed)) {
@@ -184,9 +184,9 @@ const schemaFrom = (text: string): LintelConfigSchema => {
   };
 };
 
-describe('parseLintelConfig', () => {
+describe('parseLinteljsConfig', () => {
   it('reads the current envelope and every answer', () => {
-    expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS)))
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS)))
       .toEqual({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -209,7 +209,7 @@ describe('parseLintelConfig', () => {
       plugins: [],
     });
 
-    const config = parseLintelConfig(withoutAxes);
+    const config = parseLinteljsConfig(withoutAxes);
 
     expect(config.browser).toBe('chrome');
     expect(config.hostedFramework).toBeUndefined();
@@ -228,7 +228,7 @@ describe('parseLintelConfig', () => {
       surfaces: ['devtools-panel'],
     };
 
-    expect(parseLintelConfig(emitLintelConfig(answers)))
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers)))
       .toEqual({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -248,7 +248,7 @@ describe('parseLintelConfig', () => {
     };
 
     expect(() => {
-      return parseLintelConfig(JSON.stringify(config));
+      return parseLinteljsConfig(JSON.stringify(config));
     }).toThrow(new RegExp(`${field} must be one of`));
   });
 
@@ -258,7 +258,7 @@ describe('parseLintelConfig', () => {
       resolveConditions: ['import', 'default'],
     };
 
-    expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
@@ -273,7 +273,7 @@ describe('parseLintelConfig', () => {
     ['import', 'must be a non-empty array'],
   ])('rejects resolveConditions of %j', (resolveConditions, message) => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
@@ -292,7 +292,7 @@ describe('parseLintelConfig', () => {
       },
     };
 
-    expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
@@ -308,7 +308,7 @@ describe('parseLintelConfig', () => {
     ['@engine', 'aliases must be an object'],
   ])('rejects aliases of %j', (aliases, message) => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
@@ -324,7 +324,7 @@ describe('parseLintelConfig', () => {
       browsers: ['chrome', 'firefox'],
     };
 
-    expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
@@ -337,7 +337,7 @@ describe('parseLintelConfig', () => {
     [['safari'], 'must be one of'],
   ])('rejects browsers of %j', (browsers, message) => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
@@ -353,7 +353,7 @@ describe('parseLintelConfig', () => {
       ignores: ['src/lib/compat-data/generatedRegistry.ts'],
     };
 
-    expect(parseLintelConfig(emitLintelConfig(answers))).toEqual({
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
@@ -368,7 +368,7 @@ describe('parseLintelConfig', () => {
     ['a', 'must be a non-empty array'],
   ])('rejects ignores of %j', (ignores, message) => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
@@ -379,20 +379,20 @@ describe('parseLintelConfig', () => {
 
   it('rejects malformed JSON', () => {
     expect(() => {
-      return parseLintelConfig('{');
-    }).toThrow(/lintel\.config\.json is not valid JSON/);
+      return parseLinteljsConfig('{');
+    }).toThrow(/linteljs\.config\.json is not valid JSON/);
   });
 
   it('rejects a missing schema version', () => {
     expect(() => {
-      return parseLintelConfig('{}');
+      return parseLinteljsConfig('{}');
     }).toThrow(/schemaVersion/);
   });
 
   // A hand-edited string is malformed, not unsupported.
   it('rejects a schema version that is not a number', () => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: '1',
       }));
@@ -401,7 +401,7 @@ describe('parseLintelConfig', () => {
 
   it('rejects a future schema version before the fields it carries', () => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: 3,
       }));
@@ -410,7 +410,7 @@ describe('parseLintelConfig', () => {
 
   it('rejects a future schema version before inspecting new object-valued fields', () => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: 3,
         future: { nested: true },
@@ -419,7 +419,7 @@ describe('parseLintelConfig', () => {
   });
 
   it.each([
-    ['a non-object value', '[]', /lintel\.config\.json must be a JSON object/],
+    ['a non-object value', '[]', /linteljs\.config\.json must be a JSON object/],
     ['an unexpected property', config({ unexpected: true }), /unexpected property: unexpected/],
     // DESIGN.md's "No JavaScript output" rests on this refusal.
     ['a project recorded as javascript', config({ typescript: false }), /unexpected property: typescript/],
@@ -474,20 +474,20 @@ describe('parseLintelConfig', () => {
     ['a duplicate plugin', config({ plugins: ['ponytail', 'ponytail'] }), /plugins must not contain duplicate values/],
   ])('rejects %s', (_case, text, error) => {
     expect(() => {
-      return parseLintelConfig(text);
+      return parseLinteljsConfig(text);
     }).toThrow(error);
   });
 });
 
-describe('lintel config schemas', () => {
+describe('linteljs config schemas', () => {
   it('keep the canonical and packaged schemas in sync with the answer vocabulary', async () => {
     // Off this file rather than `process.cwd()`, which is the workspace root under `pnpm test` there and this
     // package's own directory under `pnpm --filter @linteljs/create test`.
     const packageRoot = join(import.meta.dirname, '../..');
     const workspaceRoot = join(packageRoot, '../..');
     const [canonical, packaged] = await Promise.all([
-      readFile(join(workspaceRoot, 'schemas/lintel.config.v2.schema.json'), 'utf8'),
-      readFile(join(packageRoot, 'assets/schemas/lintel.config.v2.schema.json'), 'utf8'),
+      readFile(join(workspaceRoot, 'schemas/linteljs.config.v2.schema.json'), 'utf8'),
+      readFile(join(packageRoot, 'assets/schemas/linteljs.config.v2.schema.json'), 'utf8'),
     ]);
     const canonicalJson: unknown = JSON.parse(canonical);
     const packagedJson: unknown = JSON.parse(packaged);
@@ -517,13 +517,13 @@ describe('the router and the form libraries', () => {
       router: 'tanstack-router' as const,
     };
 
-    expect(parseLintelConfig(emitLintelConfig(answers))).toMatchObject({ router: 'tanstack-router' });
-    expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS))).not.toHaveProperty('router');
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toMatchObject({ router: 'tanstack-router' });
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('router');
   });
 
   it('rejects an unknown router', () => {
     expect(() => {
-      return parseLintelConfig(config({ router: 'wouter' }));
+      return parseLinteljsConfig(config({ router: 'wouter' }));
     }).toThrow(/router must be one of: react-router, tanstack-router/);
   });
 
@@ -532,23 +532,23 @@ describe('the router and the form libraries', () => {
       ...DEFAULT_ANSWERS,
       form: 'tanstack-form' as const,
     };
-    const parsed = parseLintelConfig(emitLintelConfig(answers));
+    const parsed = parseLinteljsConfig(emitLinteljsConfig(answers));
 
     expect(parsed).toMatchObject({ form: 'tanstack-form' });
     expect(parsed.libraries).not.toContain('tanstack-form');
-    expect(parseLintelConfig(emitLintelConfig(DEFAULT_ANSWERS))).not.toHaveProperty('form');
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('form');
   });
 
   // The v1 spelling: the error names where the answer went rather than calling it an unknown library.
   it('refuses a form library listed among the libraries', () => {
     expect(() => {
-      return parseLintelConfig(config({ libraries: ['zod', 'react-hook-form'] }));
+      return parseLinteljsConfig(config({ libraries: ['zod', 'react-hook-form'] }));
     }).toThrow(/react-hook-form is a form library: name it in "form" rather than in "libraries"/);
   });
 
   it('rejects an unknown form', () => {
     expect(() => {
-      return parseLintelConfig(config({ form: 'formik' }));
+      return parseLinteljsConfig(config({ form: 'formik' }));
     }).toThrow(/form must be one of: tanstack-form, react-hook-form/);
   });
 });
@@ -568,7 +568,7 @@ describe('a version-one config', () => {
     ['tanstack-form', 'vue'],
     ['react-hook-form', 'react'],
   ])('lifts %s out of libraries', (form, target) => {
-    const parsed = parseLintelConfig(v1({
+    const parsed = parseLinteljsConfig(v1({
       target,
       libraries: ['tailwind', form],
     }));
@@ -579,15 +579,15 @@ describe('a version-one config', () => {
 
   // Migrated means migrated: what is written back is a v2 file.
   it('reports the current version and schema', () => {
-    const parsed = parseLintelConfig(v1({ libraries: ['tanstack-form'] }));
+    const parsed = parseLinteljsConfig(v1({ libraries: ['tanstack-form'] }));
 
     expect(parsed.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     expect(parsed.$schema).toBe(CONFIG_SCHEMA_URL);
-    expect(JSON.parse(emitLintelConfig(parsed))).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION });
+    expect(JSON.parse(emitLinteljsConfig(parsed))).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION });
   });
 
   it('leaves a config naming no form library alone', () => {
-    const parsed = parseLintelConfig(v1());
+    const parsed = parseLinteljsConfig(v1());
 
     expect(parsed).not.toHaveProperty('form');
     expect(parsed.libraries).toEqual(DEFAULT_ANSWERS.libraries);
@@ -596,13 +596,13 @@ describe('a version-one config', () => {
   // The one shape v1 itself refused, refused on the way through.
   it('still rejects both form libraries at once', () => {
     expect(() => {
-      return parseLintelConfig(v1({ libraries: ['tanstack-form', 'react-hook-form'] }));
+      return parseLinteljsConfig(v1({ libraries: ['tanstack-form', 'react-hook-form'] }));
     }).toThrow(/libraries must contain at most one of: tanstack-form, react-hook-form/);
   });
 
   it('holds a version-one file to the version-one schema url', () => {
     expect(() => {
-      return parseLintelConfig(JSON.stringify({
+      return parseLinteljsConfig(JSON.stringify({
         ...JSON.parse(v1()),
         $schema: CONFIG_SCHEMA_URL,
       }));
@@ -638,13 +638,13 @@ describe('answers a target never asks for', () => {
     }, 'react-hook-form is not an answer for vue'],
   ])('refuses %s', (_case, overrides, message) => {
     expect(() => {
-      return parseLintelConfig(config(overrides));
+      return parseLinteljsConfig(config(overrides));
     }).toThrow(message);
   });
 
   // Next and React Native are their own `framework` values, and both render with React.
   it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
-    expect(parseLintelConfig(config({
+    expect(parseLinteljsConfig(config({
       target,
       form: 'react-hook-form',
     })).form).toBe('react-hook-form');
@@ -652,7 +652,7 @@ describe('answers a target never asks for', () => {
 
   it.each(['vue', 'svelte', 'solid', 'angular'])('still refuses react-hook-form on %s', (target) => {
     expect(() => {
-      return parseLintelConfig(config({
+      return parseLinteljsConfig(config({
         target,
         form: 'react-hook-form',
       }));
@@ -660,12 +660,12 @@ describe('answers a target never asks for', () => {
   });
 
   it('accepts the same answers where the target asks for them', () => {
-    expect(parseLintelConfig(config({
+    expect(parseLinteljsConfig(config({
       target: 'astro',
       hostedFramework: 'react',
       form: 'react-hook-form',
     })).form).toBe('react-hook-form');
-    expect(parseLintelConfig(config({
+    expect(parseLinteljsConfig(config({
       target: 'react',
       router: 'tanstack-router',
       store: true,

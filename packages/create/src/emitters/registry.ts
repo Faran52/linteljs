@@ -10,7 +10,7 @@ import { eslintConfigEmitter } from './always/eslint-config/eslintConfigEmitter'
 import { gitignoreEmitter } from './always/gitignore/gitignoreEmitter';
 import { huskyEmitter } from './always/husky/huskyEmitter';
 import { lintStagedEmitter } from './always/lint-staged/lintStagedEmitter';
-import { lintelConfigEmitter } from './always/lintel-config/lintelConfigEmitter';
+import { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 import { packageJsonEmitter } from './always/package-json/packageJsonEmitter';
 import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
@@ -33,7 +33,7 @@ import type { Emitter } from './artifact';
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once
  * and `meta.test.ts` holds this listing against the directory listing in both directions. Insertion order is write
- * order within a stage, which is why `lintel-config` precedes `package-json` in the seeded list.
+ * order within a stage, which is why `linteljs-config` precedes `package-json` in the seeded list.
  *
  * What `create` and `sync` both write from. A condition belongs to the emitter that owns it, so there is nothing
  * to branch on here.
@@ -69,7 +69,7 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
 // What a `create` run plants and `sync` never touches. The split is not new: it is what the stage runners were
 // expressing by writing these outside the artifact list, said once.
 export const SEED_EMITTERS: Record<string, Emitter> = {
-  'always/lintel-config': lintelConfigEmitter,
+  'always/linteljs-config': linteljsConfigEmitter,
   'always/readme': readmeEmitter,
   'target/manifest': manifestEmitter,
   'target/starter-source': starterSourceEmitter,

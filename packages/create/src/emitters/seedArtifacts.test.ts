@@ -5,7 +5,7 @@ import {
 } from 'vitest';
 
 import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
-import { CONFIG_PATH } from '../answers/lintelConfig';
+import { CONFIG_PATH } from '../answers/linteljsConfig';
 
 import { seedArtifacts } from './seedArtifacts';
 

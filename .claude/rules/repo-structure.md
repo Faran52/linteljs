@@ -41,7 +41,7 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   ```
   answers/    what the user chose. Reaches nothing.
-  targets/    what lintel knows: the records, the registry, the naming policy. Reaches nothing.
+  targets/    what linteljs knows: the records, the registry, the naming policy. Reaches nothing.
   emitters/   answers + targets into file text. Reaches nothing.
   terminal/   argv and the terminal.
   files/      reading and writing files.

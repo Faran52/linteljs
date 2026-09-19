@@ -23,6 +23,8 @@ describe('removableTargets', () => {
       '.claude/settings.json',
       '.npmrc',
       '.yarnrc.yml',
+      // What versions through 1.6.0 wrote, cleared by the first sync after an upgrade.
+      'lintel.config.json',
       '.cursor/rules/hooks-order.mdc',
       '.cursor/rules/react-state.mdc',
       '.cursor/rules/repo-structure.mdc',

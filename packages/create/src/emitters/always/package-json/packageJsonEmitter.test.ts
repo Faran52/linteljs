@@ -114,21 +114,21 @@ describe('versioned', () => {
 });
 
 describe('patchPackageJson', () => {
-  it('removes recorded lintel metadata and preserves unrelated package properties', () => {
+  it('removes recorded linteljs metadata and preserves unrelated package properties', () => {
     const existing = {
       name: 'demo',
       description: 'kept',
-      lintel: { target: DEFAULT_ANSWERS.target },
+      linteljs: { target: DEFAULT_ANSWERS.target },
     };
     const patched = patchPackageJson(existing, DEFAULT_ANSWERS);
 
-    expect(patched).not.toHaveProperty('lintel');
+    expect(patched).not.toHaveProperty('linteljs');
     expect(patched).toHaveProperty('description', 'kept');
   });
 
-  it('never emits lintel metadata', () => {
+  it('never emits linteljs metadata', () => {
     expect(JSON.parse(emitPackageJson({ name: 'demo' }, DEFAULT_ANSWERS)))
-      .not.toHaveProperty('lintel');
+      .not.toHaveProperty('linteljs');
   });
 
   it('keeps the scaffolder dependencies and its own scripts', () => {
@@ -141,7 +141,7 @@ describe('patchPackageJson', () => {
     expect(patched.private).toBe(true);
   });
 
-  it('wins on the scripts lintel owns', () => {
+  it('wins on the scripts linteljs owns', () => {
     expect(patchPackageJson(SCAFFOLDED, answersFor({})).scripts?.['lint']).toBe('eslint .');
   });
 

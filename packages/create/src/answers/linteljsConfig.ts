@@ -22,7 +22,7 @@ import {
 
 // `extends Answers`, so a config plans directly. This parser is the only list and refuses an unknown property by
 // name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project as a popup one.
-export interface LintelConfig extends Answers {
+export interface LinteljsConfig extends Answers {
   $schema: typeof CONFIG_SCHEMA_URL;
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
 }
@@ -51,9 +51,11 @@ interface ConfigObject {
   ignores?: JsonValue;
 }
 
-export const CONFIG_PATH = 'lintel.config.json';
+export const CONFIG_PATH = 'linteljs.config.json';
+// What every version through 1.6.0 wrote. Read when the current name is absent, and removed by `sync` once it is not.
+export const LEGACY_CONFIG_PATH = 'lintel.config.json';
 export const CONFIG_SCHEMA_URL
-  = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v2.schema.json';
+  = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v2.schema.json';
 // Still published: a project written before v2 carries this in `$schema` and its editor resolves it.
 export const CONFIG_SCHEMA_URL_V1
   = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v1.schema.json';
@@ -270,13 +272,13 @@ const schemaVersionOf = (value: JsonValue | undefined): number => {
   }
 
   if (value !== 1 && value !== CURRENT_SCHEMA_VERSION) {
-    throw new Error(`lintel.config.json schema version ${String(value)} is unsupported; update @linteljs/create`);
+    throw new Error(`linteljs.config.json schema version ${String(value)} is unsupported; update @linteljs/create`);
   }
 
   return value;
 };
 
-const configFrom = (raw: ConfigObject): LintelConfig => {
+const configFrom = (raw: ConfigObject): LinteljsConfig => {
   const schemaVersion = schemaVersionOf(raw.schemaVersion);
   const parsed = migrateForm(raw, schemaVersion);
 
@@ -285,7 +287,7 @@ const configFrom = (raw: ConfigObject): LintelConfig => {
   });
 
   if (unexpected !== undefined) {
-    throw new Error(`lintel.config.json has unexpected property: ${unexpected}`);
+    throw new Error(`linteljs.config.json has unexpected property: ${unexpected}`);
   }
 
   const expectedSchema = schemaVersion === 1 ? CONFIG_SCHEMA_URL_V1 : CONFIG_SCHEMA_URL;
@@ -300,7 +302,7 @@ const configFrom = (raw: ConfigObject): LintelConfig => {
     throw new Error('store must be a boolean');
   }
 
-  const config: LintelConfig = {
+  const config: LinteljsConfig = {
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
     target: choice(parsed.target, 'target', TARGET_IDS),
@@ -336,19 +338,19 @@ const configFrom = (raw: ConfigObject): LintelConfig => {
   return config;
 };
 
-export const parseLintelConfig = (text: string): LintelConfig => {
+export const parseLinteljsConfig = (text: string): LinteljsConfig => {
   try {
     const parsed: unknown = JSON.parse(text);
 
     if (!isConfigObject(parsed)) {
-      throw new Error('lintel.config.json must be a JSON object');
+      throw new Error('linteljs.config.json must be a JSON object');
     }
 
     return configFrom(parsed);
   }
   catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error('lintel.config.json is not valid JSON');
+      throw new Error('linteljs.config.json is not valid JSON');
     }
 
     throw error;

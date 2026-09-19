@@ -29,7 +29,7 @@ const isUnpublishedYet = (pm: PackageManager, output: string): boolean => {
   });
 };
 
-export const workspace = mkdtempSync(join(tmpdir(), 'lintel-e2e-'));
+export const workspace = mkdtempSync(join(tmpdir(), 'linteljs-e2e-'));
 
 export const afterAllCleanup = (): void => {
   rmSync(workspace, {

@@ -1,4 +1,4 @@
-import lintel from '@linteljs/eslint-plugin';
+import linteljs from '@linteljs/eslint-plugin';
 
 import { presetOf } from '../utils/presetUtils';
 
@@ -23,7 +23,7 @@ export const reactNativeGroup: string[] = reactGroup;
 export const reactNative = (): Layer => {
   return [
     ...reactCore(),
-    ...presetOf(lintel.configs['flat/accessibility'][0], '@linteljs/accessibility', REACT_FILES),
+    ...presetOf(linteljs.configs['flat/accessibility'][0], '@linteljs/accessibility', REACT_FILES),
   ];
 };
 

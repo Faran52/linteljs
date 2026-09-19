@@ -58,7 +58,7 @@ export const emitCiWorkflow = (answers: Answers): string => {
     RUN_PREFIX[answers.packageManager]
   } check\`
 # runs locally, so a green commit here means the same checks passed. Add a second workflow file
-# beside this one for anything else; this one is replaced on every \`lintel sync\`.
+# beside this one for anything else; this one is replaced on every \`linteljs sync\`.
 name: ci
 
 on:

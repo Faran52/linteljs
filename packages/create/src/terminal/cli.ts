@@ -22,11 +22,11 @@ import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-  parseLintelConfig,
-} from '../answers/lintelConfig';
+  parseLinteljsConfig,
+} from '../answers/linteljsConfig';
 import { type Stage, STAGES } from '../emitters/artifact';
 import { RUN_PREFIX } from '../emitters/utils/scriptUtils';
-import { readLintelConfig } from '../files/readLintelConfig';
+import { readLinteljsConfig } from '../files/readLinteljsConfig';
 import { entryExists } from '../files/utils/fsUtils';
 import { runPipeline } from '../pipeline/pipeline';
 import { applySync, planSync } from '../pipeline/sync';
@@ -269,7 +269,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
 
 // Through the config parser rather than a second validator: every flag gets the same message a bad config does.
 const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
-  return parseLintelConfig(JSON.stringify({
+  return parseLinteljsConfig(JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
     ...DEFAULT_ANSWERS,
@@ -311,11 +311,11 @@ const askedFrom = async (
   };
 
   if (options.command === 'sync') {
-    return named(await readLintelConfig(options.cwd));
+    return named(await readLinteljsConfig(options.cwd));
   }
 
   if (options.skip.includes('scaffold') && await entryExists(join(options.cwd, CONFIG_PATH))) {
-    return named(await readLintelConfig(options.cwd));
+    return named(await readLinteljsConfig(options.cwd));
   }
 
   if (options.yes) {

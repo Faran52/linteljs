@@ -298,7 +298,7 @@ describe('the emitted checker against the emitted starter code', () => {
   };
 
   it.each(TARGET_IDS)('passes on everything %s is generated with', async (target) => {
-    const cwd = await mkdtemp(join(tmpdir(), 'lintel-floor-'));
+    const cwd = await mkdtemp(join(tmpdir(), 'linteljs-floor-'));
 
     try {
       const checker = await textFor({ target }, CHECKER);
@@ -361,7 +361,7 @@ describe('the shipped test setup', () => {
   });
 
   // A mock of a package the project never installed costs nothing: the factory runs only on import.
-  it('mocks all three bindings at once, since lintel installs none of them', async () => {
+  it('mocks all three bindings at once, since linteljs installs none of them', async () => {
     const setup = await setupFor({ target: 'react' });
 
     expect(setup).toContain("vi.mock('react-router'");

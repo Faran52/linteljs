@@ -10,7 +10,7 @@ export const svelte: TargetBuilder = (answers) => {
   return {
     id: 'svelte',
     label: 'Svelte',
-    // `--no-add-ons`: every add-on is something lintel emits or excludes, and a half-specified one prompts again.
+    // `--no-add-ons`: every add-on is something linteljs emits or excludes, and a half-specified one prompts again.
     scaffold: (name) => {
       return {
         kind: 'dlx',

@@ -20,7 +20,7 @@ export const next: TargetRecord = {
         hasLibrary(answers, 'tailwind') ? '--tailwind' : '--no-tailwind',
         '--import-alias', '@/*',
         `--use-${answers.packageManager}`,
-        // The install stage runs after lintel's dependencies land; the generator's install is the wrong tree.
+        // The install stage runs after linteljs's dependencies land; the generator's install is the wrong tree.
         '--skip-install',
         '--yes',
       ],

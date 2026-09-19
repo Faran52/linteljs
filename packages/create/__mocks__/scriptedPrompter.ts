@@ -13,7 +13,7 @@ export interface Recorded {
   calls: string[];
   /**
    * The option labels each `select`/`multiselect` offered, keyed by that prompt's message: what a person reads, which
-   * is deliberately not what gets written to `lintel.config.json`. Recorded because a label is the only half of a
+   * is deliberately not what gets written to `linteljs.config.json`. Recorded because a label is the only half of a
    * question with nothing else asserting it; the values are covered by the returned answers.
    */
   labels: Record<string, string[]>;

@@ -270,7 +270,7 @@ export const allowedBuildNames = (answers: Answers): string[] => {
 export const patchPackageJson = (existing: PackageJson, answers: Answers): PackageJson => {
   const packageJson = { ...existing };
 
-  Reflect.deleteProperty(packageJson, 'lintel');
+  Reflect.deleteProperty(packageJson, 'linteljs');
 
   const dependencies = {
     ...existing.dependencies,

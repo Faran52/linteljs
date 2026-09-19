@@ -116,7 +116,7 @@ describe('base: ignores', () => {
   // Its own `.gitignore` in its own directory, not this repository's: `base()` reads `process.cwd()`, so a test
   // asserting against the workspace root only passes when vitest happens to be launched there.
   it('reports nothing under a path only .gitignore covers', async () => {
-    const root = await realpath(await mkdtemp(join(tmpdir(), 'lintel-gitignore-')));
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'linteljs-gitignore-')));
 
     await writeFile(join(root, '.gitignore'), 'dist\n');
 
@@ -136,7 +136,7 @@ describe('base: ignores', () => {
   });
 
   it('still builds a config where there is no .gitignore to read', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'lintel-nogit-'));
+    const root = await mkdtemp(join(tmpdir(), 'linteljs-nogit-'));
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
 
     try {
@@ -208,7 +208,7 @@ describe('base: unused imports', () => {
   });
 });
 
-describe('base: lintel rules', () => {
+describe('base: linteljs rules', () => {
   it('reports union-newline', async () => {
     const code = 'export type Value = { a: string } | { b: string };\n';
 

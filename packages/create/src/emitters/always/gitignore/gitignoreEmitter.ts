@@ -3,7 +3,7 @@ import { type Artifact, merged } from '../../artifact';
 
 const LINTEL_IGNORED = ['coverage/', '*.tsbuildinfo'];
 
-const HEADING = '# lintel';
+const HEADING = '# linteljs';
 
 export const mergeGitignore = (existing: string | null): string => {
   const current = existing ?? '';

@@ -30,7 +30,7 @@ import { repairScaffoldedOutput } from './repair';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-rewrite-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-rewrite-'));
 });
 
 afterEach(async () => {

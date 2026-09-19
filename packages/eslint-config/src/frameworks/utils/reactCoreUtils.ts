@@ -1,5 +1,5 @@
 import eslintReact from '@eslint-react/eslint-plugin';
-import lintel from '@linteljs/eslint-plugin';
+import linteljs from '@linteljs/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 import { SCRIPT_EXTENSIONS } from '../../config/globs';
@@ -26,7 +26,7 @@ export const reactCore = (): Layer => {
     {
       name: '@linteljs/react',
       files: REACT_FILES,
-      plugins: { '@linteljs': lintel },
+      plugins: { '@linteljs': linteljs },
       rules: {
         '@linteljs/no-duplicate-jsx-props': 'error',
         '@linteljs/prefer-destructured-props': 'error',

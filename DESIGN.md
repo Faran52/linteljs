@@ -1,6 +1,6 @@
 # Design
 
-Why lintel exists, and the decisions that are not visible in the code.
+Why linteljs exists, and the decisions that are not visible in the code.
 
 Everything else lives with the thing it describes: the layers are documented in
 `packages/eslint-config/README.md`, the pipeline in `packages/create/README.md`, and each
@@ -9,7 +9,7 @@ restates code goes stale and then misleads.
 
 ## Contents
 
-For a consumer deciding whether to use lintel: The problem, The goal, Non-goals.
+For a consumer deciding whether to use linteljs: The problem, The goal, Non-goals.
 For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure; Libraries and routers; Package manager files; Comments.
 For work on this workspace itself: One version per shared dependency; Two artifact lists; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
 
@@ -55,7 +55,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   through the naming policy, the emitters, the prompts and the argv of four generators.
 
   A project that recorded `typescript: false` under an older version is refused, not converted:
-  `parseLintelConfig` rejects a property it does not know, naming it, so both routes that plan from a
+  `parseLinteljsConfig` rejects a property it does not know, naming it, so both routes that plan from a
   recorded block (`sync`, and `create --skip-scaffold`) stop before writing. Converting silently would
   rewrite that project's `eslint.config.js`, `tsconfig.json` and scripts as TypeScript over source that
   is not, which is not recoverable without git.
@@ -110,7 +110,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   answer drives four things at once: what the manifest names, which starter files exist, what the
   build needs an input for, and which entry shells coverage excludes. Absent means the popup and
   background pair, which is the only shape this CLI wrote before the answer existed, so a
-  `lintel.config.json` from then still describes its own project.
+  `linteljs.config.json` from then still describes its own project.
 
   It exists because `compatlens` could not be expressed without it. That extension is a devtools
   panel and nothing else: no background, no popup, `devtools_page` its only entry. The target assumed
@@ -465,8 +465,8 @@ nothing the CLI writes is a `pnpm add` and not a question.
   CI checkout without the file fails the typecheck. It is generated code with `as any` inside, so ESLint,
   coverage and the banned-pattern checker skip it by name. `src/routes/**` is out of coverage on both
   routers: a route table is configuration.
-- **Answer flags** go through `parseLintelConfig`, so `--target wat` fails with the same message a bad
-  `lintel.config.json` does and there is one validator, not two.
+- **Answer flags** go through `parseLinteljsConfig`, so `--target wat` fails with the same message a bad
+  `linteljs.config.json` does and there is one validator, not two.
 
 ## Package manager files
 
@@ -584,7 +584,7 @@ makes a drifting `ci.yml` a `sync` diff instead of a red build.
 
 **`aliases` and `browsers` are recorded answers, not questions.** Both follow `resolveConditions`:
 facts about a project rather than preferences, discovered after generation and edited into
-`lintel.config.json` by hand. `aliases` exists because `eslint.config.js` is emitted whole, so an
+`linteljs.config.json` by hand. `aliases` exists because `eslint.config.js` is emitted whole, so an
 alias added there was gone on the next sync, and the reference repo carrying nine of them could not
 adopt the standard at all. Recorded, one line reaches the ESLint config, the tsconfig paths and the
 resolver together, which is the coupling `emitTsconfig.test.ts` already pins. `browsers` is separate
@@ -890,19 +890,19 @@ loudly rather than quietly, because `verifyLintOutput` asserts the resolved vers
 Every file this CLI owns reaches disk as an `Artifact` through `applyArtifact`. There is no second
 route: `pipeline.ts` holds no `writeProjectFile` call, which `pipeline.test.ts` pins by reading its
 own source. Before this, the README, the manifest, the starter files, the starter tests and
-`lintel.config.json` were each written by hand inside a stage runner, so adding a file that needed a
+`linteljs.config.json` were each written by hand inside a stage runner, so adding a file that needed a
 condition meant editing the orchestrator: the coupling `switch (target)` is banned for in the
 emitters, one level up.
 
 The list is two, because `create` and `sync` do not own the same files.
 
-- `buildArtifacts` is the toolchain lintel maintains. Both commands write from it, which is what lets
+- `buildArtifacts` is the toolchain linteljs maintains. Both commands write from it, which is what lets
   `sync` re-apply a changed standard to an existing project.
-- `seedArtifacts` is what a `create` run plants and `sync` never touches: `lintel.config.json`, the
+- `seedArtifacts` is what a `create` run plants and `sync` never touches: `linteljs.config.json`, the
   README, the manifest and the starter source.
 
 That split is not new; it is what the stage runners were expressing by writing those files by hand,
-now said once. It is load-bearing in both directions. `sync` reads `lintel.config.json` rather than
+now said once. It is load-bearing in both directions. `sync` reads `linteljs.config.json` rather than
 writing it, so a project that reformatted its own config keeps those bytes through a `sync --force`,
 and `cli.test.ts` pins exactly that. `pipeline.test.ts` pins the other half: the config is not in the
 sync plan at all.
@@ -1027,7 +1027,7 @@ changes nothing in what `pnpm lint` reports.
 
 ### `@linteljs/workspace/create-rings`
 
-`answers/` is what the user chose and `targets/` is what lintel knows; neither reaches outward.
+`answers/` is what the user chose and `targets/` is what linteljs knows; neither reaches outward.
 `emitters/` turns the two into file text and may read them. `terminal/`, `files/`, `process/` and
 `pipeline/` are outside all three. The direction only ever points inward. That already held in the
 import graph before the rule existed: the emitters reached into `answers`, `targets`, `aliases` and

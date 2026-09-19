@@ -24,7 +24,7 @@ const CHECKER = join(ASSETS_ROOT, 'scripts/checkBannedPatterns.ts');
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-banned-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-banned-'));
 });
 
 afterEach(async () => {

@@ -24,7 +24,7 @@ import { nextStep, runFixPass } from './fixPass';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-fixpass-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-fixpass-'));
 });
 
 afterEach(async () => {

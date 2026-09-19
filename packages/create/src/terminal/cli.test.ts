@@ -36,9 +36,9 @@ import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-  parseLintelConfig,
-} from '../answers/lintelConfig';
-import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
+  parseLinteljsConfig,
+} from '../answers/linteljsConfig';
+import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { exists } from '../files/utils/fsUtils';
 
@@ -60,8 +60,8 @@ let external = '';
 // `parseCliArgs` reads `process.cwd()`.
 beforeEach(async () => {
   entered = processCwd();
-  project = await mkdtemp(join(tmpdir(), 'lintel-cli-'));
-  external = await mkdtemp(join(tmpdir(), 'lintel-cli-external-'));
+  project = await mkdtemp(join(tmpdir(), 'linteljs-cli-'));
+  external = await mkdtemp(join(tmpdir(), 'linteljs-cli-external-'));
   chdir(project);
 });
 
@@ -108,12 +108,12 @@ const generated = async (): Promise<Run> => {
   return await runMain(['--skip-scaffold', '--no-install', '--yes']);
 };
 
-const configAt = async (): Promise<ReturnType<typeof parseLintelConfig>> => {
-  return parseLintelConfig(await readFile(join(project, CONFIG_PATH), 'utf8'));
+const configAt = async (): Promise<ReturnType<typeof parseLinteljsConfig>> => {
+  return parseLinteljsConfig(await readFile(join(project, CONFIG_PATH), 'utf8'));
 };
 
 const writeConfig = async (answers: Answers): Promise<void> => {
-  await writeFile(join(project, CONFIG_PATH), emitLintelConfig(answers), 'utf8');
+  await writeFile(join(project, CONFIG_PATH), emitLinteljsConfig(answers), 'utf8');
 };
 
 const readOptional = async (path: string): Promise<string | null> => {
@@ -302,7 +302,7 @@ describe('main: create', () => {
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
 
-    expect(patched.name).toContain('lintel-cli-');
+    expect(patched.name).toContain('linteljs-cli-');
     expect(await readFile(join(project, 'CLAUDE.md'), 'utf8')).toContain('# LintelJS project');
   });
 
@@ -314,7 +314,7 @@ describe('main: create', () => {
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
 
-    expect(patched).not.toHaveProperty('lintel');
+    expect(patched).not.toHaveProperty('linteljs');
     expect(await configAt()).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -379,8 +379,8 @@ describe('main: create', () => {
       );
 
       expect(patched.name).toBe('demo-app');
-      expect(patched).not.toHaveProperty('lintel');
-      expect(parseLintelConfig(
+      expect(patched).not.toHaveProperty('linteljs');
+      expect(parseLinteljsConfig(
         await readFile(join(project, 'demo-app', CONFIG_PATH), 'utf8'),
       )).toMatchObject(DEFAULT_ANSWERS);
     }
@@ -443,7 +443,7 @@ describe('main: patching a project that already exists', () => {
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
 
-    expect(patched).not.toHaveProperty('lintel');
+    expect(patched).not.toHaveProperty('linteljs');
     expect((await configAt()).target).toBe('svelte');
     expect(await exists(join(
       project,
@@ -469,10 +469,10 @@ describe('main: patching a project that already exists', () => {
   });
 
   it.each([
-    ['malformed', '{', 'lintel.config.json is not valid JSON'],
+    ['malformed', '{', 'linteljs.config.json is not valid JSON'],
     [
       'invalid',
-      emitLintelConfig(DEFAULT_ANSWERS).replace('"target": "react"', '"target": "ember"'),
+      emitLinteljsConfig(DEFAULT_ANSWERS).replace('"target": "react"', '"target": "ember"'),
       'target must be one of:',
     ],
   ])('rejects a scaffold-skipped %s config before prompts or writes', async (_case, config, message) => {
@@ -529,9 +529,9 @@ describe('main: no prompter injected, so the real terminal decides', () => {
 
 describe('main: config entry safety', () => {
   it.each([
-    ['create', 'live', ['--skip-scaffold', '--no-install'], emitLintelConfig(DEFAULT_ANSWERS)],
+    ['create', 'live', ['--skip-scaffold', '--no-install'], emitLinteljsConfig(DEFAULT_ANSWERS)],
     ['create', 'dangling', ['--skip-scaffold', '--no-install'], null],
-    ['sync', 'live', ['sync', '--force'], emitLintelConfig(DEFAULT_ANSWERS)],
+    ['sync', 'live', ['sync', '--force'], emitLinteljsConfig(DEFAULT_ANSWERS)],
     ['sync', 'dangling', ['sync', '--force'], null],
   ])('%s rejects a %s config symlink before prompts or writes', async (
     _route,
@@ -560,7 +560,7 @@ describe('main: config entry safety', () => {
 
     expect(code).toBe(1);
     expect(errors).toEqual([
-      'Error: lintel.config.json must be a regular file; symbolic links are not allowed',
+      'Error: linteljs.config.json must be a regular file; symbolic links are not allowed',
     ]);
     expect(asked.calls).toEqual([]);
     expect(printed).not.toContain('wrote ');
@@ -672,17 +672,17 @@ describe('main: sync', () => {
   });
 
   it.each([
-    ['is absent', null, 'lintel.config.json was not found; this is not a LintelJS-managed project'],
-    ['is not JSON', '{', 'lintel.config.json is not valid JSON'],
+    ['is absent', null, 'linteljs.config.json was not found; this is not a LintelJS-managed project'],
+    ['is not JSON', '{', 'linteljs.config.json is not valid JSON'],
     [
       'names a field this build does not accept',
-      emitLintelConfig(DEFAULT_ANSWERS).replace('"typeSafety": "strict"', '"typeSafety": "loose"'),
+      emitLinteljsConfig(DEFAULT_ANSWERS).replace('"typeSafety": "strict"', '"typeSafety": "loose"'),
       'typeSafety must be one of: strict, relaxed',
     ],
     [
       'was written by a newer release',
-      emitLintelConfig(DEFAULT_ANSWERS).replace('"schemaVersion": 2', '"schemaVersion": 3'),
-      'lintel.config.json schema version 3 is unsupported; update @linteljs/create',
+      emitLinteljsConfig(DEFAULT_ANSWERS).replace('"schemaVersion": 2', '"schemaVersion": 3'),
+      'linteljs.config.json schema version 3 is unsupported; update @linteljs/create',
     ],
   ])('refuses to sync a config that %s, and writes nothing', async (_case, config, message) => {
     const asked = scripted([]);

@@ -76,7 +76,7 @@ export interface Answers {
   typeSafety: TypeSafety;
   agents: Agent[];
   plugins: Plugin[];
-  // Never asked: a fact about a project's dependencies, edited into `lintel.config.json` by hand when one needs it.
+  // Never asked: a fact about a project's dependencies, edited into `linteljs.config.json` by hand when one needs it.
   resolveConditions?: string[];
   // Never asked: the directories a project grew. Recorded here because `eslint.config.js` is emitted whole, so an
   // alias added there was lost on the next `sync`. A value ending in `/*` names a directory, otherwise a barrel.

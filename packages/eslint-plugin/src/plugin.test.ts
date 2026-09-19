@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import lintel, {
+import linteljs, {
   configs,
   meta,
   PLUGIN_NAME,
@@ -21,7 +21,7 @@ describe('meta', () => {
   });
 
   it('carries that same meta object on the default export, not a copy', () => {
-    expect(lintel.meta).toBe(meta);
+    expect(linteljs.meta).toBe(meta);
   });
 
   it('keeps the config prefix distinct from the published package name', () => {
@@ -32,12 +32,12 @@ describe('meta', () => {
 
 describe('rules', () => {
   it('exposes the same rules object the registry exports, not a copy', () => {
-    expect(lintel.rules).toBe(rules);
+    expect(linteljs.rules).toBe(rules);
   });
 
   // The registry's own keys are bare ids; a preset's `rules` record prefixes each with `@linteljs/`.
   it('registers every id unprefixed', () => {
-    const ids = Object.keys(lintel.rules ?? {});
+    const ids = Object.keys(linteljs.rules ?? {});
 
     expect(ids).toEqual(Object.keys(rules));
     expect(ids.some((id) => {
@@ -107,7 +107,7 @@ describe.each(PRESET_NAMES)('preset "%s"', (name) => {
   it('carries the plugin instance itself on the flat block, and nowhere else', () => {
     const [base, ...rest] = configs[`flat/${name}`];
 
-    expect(base?.plugins?.[PLUGIN_NAME]).toBe(lintel);
+    expect(base?.plugins?.[PLUGIN_NAME]).toBe(linteljs);
 
     for (const block of rest) {
       expect(block.plugins).toBeUndefined();

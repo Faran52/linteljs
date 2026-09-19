@@ -9,7 +9,7 @@ import {
 import type { Answers } from '../../../answers/answers';
 
 const SUPERSEDED_KEYS = [
-  // create-next-app opts out of exactly the builds lintel opts into; left in, pnpm refuses the install.
+  // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
   'ignoredBuiltDependencies',
 ];
 

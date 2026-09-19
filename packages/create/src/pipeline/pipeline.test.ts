@@ -40,12 +40,12 @@ import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-} from '../answers/lintelConfig';
-import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
+} from '../answers/linteljsConfig';
+import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { type Stage } from '../emitters/artifact';
 import { STYLE_ENTRY_CANDIDATES } from '../emitters/config/styleEntries';
-import { readLintelConfig } from '../files/readLintelConfig';
+import { readLinteljsConfig } from '../files/readLinteljsConfig';
 import {
   entryExists,
   exists,
@@ -83,8 +83,8 @@ let cwd = '';
 let external = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-'));
-  external = await mkdtemp(join(tmpdir(), 'lintel-external-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-'));
+  external = await mkdtemp(join(tmpdir(), 'linteljs-external-'));
   await writeFile(join(cwd, 'package.json'), SCAFFOLDED, 'utf8');
 });
 
@@ -150,22 +150,22 @@ describe('runPipeline with --skip-scaffold', () => {
       return target === 'CLAUDE.md';
     })).toHaveLength(1);
 
-    expect(await readLintelConfig(cwd)).toEqual({
+    expect(await readLinteljsConfig(cwd)).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
     });
-    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLintelConfig(DEFAULT_ANSWERS));
+    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLinteljsConfig(DEFAULT_ANSWERS));
 
     // Same stage, config first, so the recorded answers and the dependencies they imply agree.
     expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
 
     const packageJson = parsePackageJson(await readFile(join(cwd, 'package.json'), 'utf8'));
 
-    expect(packageJson).not.toHaveProperty('lintel');
+    expect(packageJson).not.toHaveProperty('linteljs');
   });
 
-  // Both are lintel's own output, so no generator ignores them.
+  // Both are linteljs's own output, so no generator ignores them.
   it('ignores what its own scripts produce, keeping what the generator listed', async () => {
     await writeFile(join(cwd, '.gitignore'), 'node_modules\n', 'utf8');
     await generate({});
@@ -523,7 +523,7 @@ describe('starter tests', () => {
   });
 });
 
-// The one target where lintel writes source: a manifest naming a missing service worker will not load.
+// The one target where linteljs writes source: a manifest naming a missing service worker will not load.
 describe('the webextension surfaces', () => {
   const fresh = async (): Promise<string[]> => {
     const written: string[] = [];
@@ -883,7 +883,7 @@ describe('sync', () => {
 });
 
 describe('root config', () => {
-  it('records every selected answer in lintel.config.json', async () => {
+  it('records every selected answer in linteljs.config.json', async () => {
     const answers = answersFor({
       target: 'svelte',
       libraries: ['zod'],
@@ -893,12 +893,12 @@ describe('root config', () => {
 
     const written = await generate(answers);
 
-    expect(await readLintelConfig(cwd)).toEqual({
+    expect(await readLinteljsConfig(cwd)).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
     });
-    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLintelConfig(answers));
+    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLinteljsConfig(answers));
 
     expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
   });

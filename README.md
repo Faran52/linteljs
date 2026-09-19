@@ -1,4 +1,4 @@
-# lintel
+# linteljs
 
 [![npm](https://img.shields.io/npm/v/@linteljs/create.svg)](https://www.npmjs.com/package/@linteljs/create)
 [![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
@@ -10,7 +10,7 @@ shared ESLint flat config, and the custom rules behind it.
 npm create @linteljs
 ```
 
-The scaffolder runs the framework's own generator first, then layers the lintel standard on top. The result
+The scaffolder runs the framework's own generator first, then layers the linteljs standard on top. The result
 is a project with ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent rules,
 ready for React, Next.js, Vue, Svelte, Solid, Angular, Astro, React Native through Expo, and Manifest V3 web
 extensions.
@@ -51,7 +51,7 @@ npx @linteljs/create sync
 ```
 
 `sync` diffs Lintel-owned files against the versions on disk and writes nothing until `--force` is passed.
-It plans from `lintel.config.json`, so it never guesses a framework or overrides recorded choices.
+It plans from `linteljs.config.json`, so it never guesses a framework or overrides recorded choices.
 
 ## Why
 

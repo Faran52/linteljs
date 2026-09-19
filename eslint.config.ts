@@ -68,7 +68,7 @@ const config = [
               'packages/create/src/process',
               'packages/create/src/terminal',
             ],
-            message: 'answers/ is what the user chose, targets/ what lintel knows. Neither reaches outward.',
+            message: 'answers/ is what the user chose, targets/ what linteljs knows. Neither reaches outward.',
           },
           {
             target: 'packages/create/src/emitters',

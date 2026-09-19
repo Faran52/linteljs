@@ -29,7 +29,7 @@ import type { Artifact } from '../emitters';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-project-files-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-project-files-'));
 });
 
 afterEach(async () => {

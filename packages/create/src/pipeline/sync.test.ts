@@ -44,7 +44,7 @@ const CODEX_ONLY: Answers = {
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'lintel-sync-'));
+  cwd = await mkdtemp(join(tmpdir(), 'linteljs-sync-'));
 });
 
 afterEach(async () => {
@@ -110,7 +110,7 @@ describe('planSync', () => {
     expect(plan.pending).toContainEqual(entry);
   });
 
-  // An edit is the project's; only absence is still lintel's to fix.
+  // An edit is the project's; only absence is still linteljs's to fix.
   it('calls an edited preserved artifact unchanged and its absence missing', async () => {
     await applySync(cwd, DEFAULT_ANSWERS, ['CLAUDE.md']);
     await writeFile(join(cwd, 'CLAUDE.md'), '# our own instructions\n', 'utf8');
