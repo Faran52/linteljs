@@ -42,6 +42,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   ```
   answers/    what the user chose. Reaches nothing.
   targets/    what linteljs knows: the records, the registry, the naming policy. Reaches nothing.
+  utils/      what every ring hand-rolled otherwise. Reaches nothing.
   emitters/   answers + targets into file text. Reaches nothing.
   terminal/   argv and the terminal.
   files/      reading and writing files.
@@ -94,6 +95,11 @@ aliases it duplicates instead of importing carry a comment saying so.
   beside the type it builds, so nothing in `src/config/` carries a suite: a table asserted equal to
   itself proves nothing, and what is worth checking about one is a fact about the code that reads
   it.
+
+  `src/utils/` is the innermost ring and holds only what more than one ring reads. It is one module:
+  `jsonUtils.ts`, whose `isJsonObject` five guards in four rings had each written out. Each of those
+  still declares its own narrowed shape, since a `package.json` and a manifest are not the same
+  thing; what they share is the question of whether a parsed value is an object at all.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.

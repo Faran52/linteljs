@@ -1,3 +1,5 @@
+import { isJsonObject } from '../utils/jsonUtils';
+
 import { FOLDER_NAMING, NAMING } from './naming';
 import { COMMON_REACT_PLUGINS, esmAssetImports } from './utils/targetUtils';
 
@@ -16,7 +18,7 @@ interface AppConfig {
 }
 
 const isAppConfig = (value: unknown): value is AppConfig => {
-  return typeof value === 'object' && value !== null;
+  return isJsonObject(value);
 };
 
 // `framework: 'react'` rather than its own layer: `eslint-plugin-react-native` caps at `eslint ^9` and

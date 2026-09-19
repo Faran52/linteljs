@@ -64,6 +64,7 @@ const config = [
               'packages/create/src/answers',
               'packages/create/src/config',
               'packages/create/src/targets',
+              'packages/create/src/utils',
             ],
             from: [
               'packages/create/src/emitters',
@@ -72,7 +73,7 @@ const config = [
               'packages/create/src/process',
               'packages/create/src/terminal',
             ],
-            message: 'answers/ is what the user chose, targets/ what linteljs knows. Neither reaches outward.',
+            message: 'answers/, config/, targets/ and utils/ are the innermost rings. None reaches outward.',
           },
           {
             target: 'packages/create/src/emitters',

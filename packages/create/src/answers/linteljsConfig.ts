@@ -1,4 +1,5 @@
 import { targetFor } from '../targets';
+import { isJsonObject } from '../utils/jsonUtils';
 
 import {
   AGENTS,
@@ -68,19 +69,18 @@ export const CONFIG_SCHEMA_URL_V1
 export const CURRENT_SCHEMA_VERSION = 2;
 const FORM_NAMES: readonly string[] = FORMS;
 
-const isPlainObject = (value: unknown): value is object => {
-  return typeof value === 'object'
-    && value !== null
-    && !Array.isArray(value)
-    && Object.getPrototypeOf(value) === Object.prototype;
-};
-
 const isConfigObject = (value: unknown): value is ConfigObject => {
-  return isPlainObject(value);
+  return isJsonObject(value);
 };
 
 const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] => {
   return Array.isArray(value);
+};
+
+const refuseDuplicates = (values: string[], field: string): void => {
+  if (new Set(values).size !== values.length) {
+    throw new Error(`${field} must not contain duplicate values`);
+  }
 };
 
 const choice = <T extends string>(
@@ -113,30 +113,27 @@ const arrayChoices = <T extends string>(
     throw new Error(`${field} must contain at least ${String(minimum)} value`);
   }
 
-  if (new Set(choices).size !== choices.length) {
-    throw new Error(`${field} must not contain duplicate values`);
-  }
+  refuseDuplicates(choices, field);
 
   return choices;
 };
 
-// An open vocabulary, so only the shape is checked.
-const conditionNames = (value: JsonValue | undefined): string[] => {
+// `resolveConditions` and `ignores` are both open vocabularies, so only the shape is checked, and it is the same
+// shape: a non-empty list of distinct non-empty strings.
+const stringList = (value: JsonValue | undefined, field: string): string[] => {
   if (!isJsonArray(value) || value.length === 0) {
-    throw new Error('resolveConditions must be a non-empty array');
+    throw new Error(`${field} must be a non-empty array`);
   }
 
   const names = value.map((item) => {
     if (typeof item !== 'string' || item === '') {
-      throw new Error('resolveConditions must contain only non-empty strings');
+      throw new Error(`${field} must contain only non-empty strings`);
     }
 
     return item;
   });
 
-  if (new Set(names).size !== names.length) {
-    throw new Error('resolveConditions must not contain duplicate values');
-  }
+  refuseDuplicates(names, field);
 
   return names;
 };
@@ -144,7 +141,7 @@ const conditionNames = (value: JsonValue | undefined): string[] => {
 // Names are the project's; the sigil is checked because `simple-import-sort` groups on it and a bare key sorts as a
 // package.
 const aliasMap = (value: JsonValue | undefined): AliasMap => {
-  if (!isPlainObject(value)) {
+  if (!isJsonObject(value)) {
     throw new Error('aliases must be an object');
   }
 
@@ -163,27 +160,6 @@ const aliasMap = (value: JsonValue | undefined): AliasMap => {
   return Object.fromEntries(entries.map(([alias, directory]) => {
     return [alias, String(directory)];
   }));
-};
-
-// An open vocabulary, so only the shape is checked.
-const globList = (value: JsonValue | undefined): string[] => {
-  if (!isJsonArray(value) || value.length === 0) {
-    throw new Error('ignores must be a non-empty array');
-  }
-
-  const globs = value.map((item) => {
-    if (typeof item !== 'string' || item === '') {
-      throw new Error('ignores must contain only non-empty strings');
-    }
-
-    return item;
-  });
-
-  if (new Set(globs).size !== globs.length) {
-    throw new Error('ignores must not contain duplicate values');
-  }
-
-  return globs;
 };
 
 // An answer the target never asks for is refused, so neither a flag nor a hand edit installs a router into a Vue app.
@@ -308,12 +284,12 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     agents: arrayChoices(parsed.agents, 'agents', AGENTS),
     ...(parsed.resolveConditions === undefined
       ? {}
-      : { resolveConditions: conditionNames(parsed.resolveConditions) }),
+      : { resolveConditions: stringList(parsed.resolveConditions, 'resolveConditions') }),
     ...(parsed.aliases === undefined ? {} : { aliases: aliasMap(parsed.aliases) }),
     ...(parsed.browsers === undefined
       ? {}
       : { browsers: arrayChoices(parsed.browsers, 'browsers', BROWSERS, 1) }),
-    ...(parsed.ignores === undefined ? {} : { ignores: globList(parsed.ignores) }),
+    ...(parsed.ignores === undefined ? {} : { ignores: stringList(parsed.ignores, 'ignores') }),
     plugins: arrayChoices(parsed.plugins, 'plugins', PLUGINS),
   };
 

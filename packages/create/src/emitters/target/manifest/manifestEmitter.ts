@@ -6,6 +6,7 @@ import {
 } from '../../../answers/answers';
 import { type Artifact, type ProjectShape } from '../../../config/types';
 import { targetFor } from '../../../targets';
+import { isJsonObject } from '../../../utils/jsonUtils';
 import { emitted } from '../../utils/artifactUtils';
 
 // Emitted rather than templated: browser times surfaces would be twelve templates holding one shape. Birth only,
@@ -50,7 +51,7 @@ export interface Manifest {
 }
 
 const isManifest = (value: unknown): value is Manifest => {
-  return typeof value === 'object' && value !== null && 'manifest_version' in value;
+  return isJsonObject(value) && 'manifest_version' in value;
 };
 
 // The read half; a guard beats a cast, and the throw names the file.

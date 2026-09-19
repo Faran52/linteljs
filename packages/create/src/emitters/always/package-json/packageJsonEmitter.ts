@@ -10,6 +10,7 @@ import {
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
 import { type Artifact, type ProjectShape } from '../../../config/types';
 import { targetFor } from '../../../targets';
+import { isJsonObject } from '../../../utils/jsonUtils';
 import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
@@ -150,7 +151,7 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
 };
 
 const isPackageJson = (value: unknown): value is PackageJson => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return isJsonObject(value);
 };
 
 export const parsePackageJson = (text: string): PackageJson => {

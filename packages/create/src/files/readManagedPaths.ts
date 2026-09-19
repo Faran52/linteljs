@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { MANAGED_PATH } from '../config/constants';
+import { isJsonObject } from '../utils/jsonUtils';
 
 import { readIfPresent } from './utils/fsUtils';
 
@@ -11,7 +12,7 @@ interface ManagedRecord {
 }
 
 const isManagedRecord = (value: unknown): value is ManagedRecord => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return isJsonObject(value);
 };
 
 /**

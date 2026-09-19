@@ -1,3 +1,5 @@
+import { isJsonObject } from '../../../../utils/jsonUtils';
+
 interface MarketplaceLocation {
   source: string;
   repo?: string;
@@ -17,7 +19,7 @@ export interface ClaudeSettings {
 }
 
 const isClaudeSettings = (value: unknown): value is ClaudeSettings => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return isJsonObject(value);
 };
 
 // Invalid project settings read as absent, so a sync is never blocked by an editable file.
