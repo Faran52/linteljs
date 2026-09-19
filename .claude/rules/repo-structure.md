@@ -40,7 +40,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   taste decides which one a module belongs to.
 
   ```
-  answers/    what the user chose. Reaches nothing.
+  answers/    what the user chose. Reaches targets/ for the slot check.
   targets/    what linteljs knows: the records, the registry, the naming policy. Reaches nothing.
   utils/      what every ring hand-rolled otherwise. Reaches nothing.
   emitters/   answers + targets into file text. Reaches nothing.
@@ -103,6 +103,39 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.
+
+  Inside `answers/` the path is `<group>/<key>.ts`, and the record itself is the whole of what a file
+  holds: nothing here gets its own subject directory, entry, suite or `constants.ts`, because there
+  is nothing about one answer that a second module would ever hold. A group is named for the emitter
+  group it gates rather than the other way round: `browsers`, `router` and `store` sit under
+  `target/` because a target's own slot decides each one, and `recorded/` holds the three answers no
+  prompt ever asks, `resolveConditions`, `aliases` and `ignores`, edited into `linteljs.config.json`
+  by hand.
+
+  Every record is one of seven kinds, `record.ts`'s own union: `choice`, `optionalChoice`, `multi`,
+  `optionalMulti`, `boolean`, `list` and `map`. Legality lives on the record rather than in a reader:
+  `slot` says whether a target asks the question at all, `only` on a value says whether this target
+  offers it, and `askedWhen` says whether the answers so far still ask it, which is what lets
+  `plugins` skip itself when `agents` comes back empty. Display text lives there too, in `values`,
+  since a label is data the prompt and the schema both read rather than a terminal concern.
+
+  `registry.ts` holds `ANSWERS`, one line per record in ask order, and everything derived from it:
+  `Answers`, `DEFAULT_ANSWERS`, `LinteljsConfig` and `parseLinteljsConfig`, the same shape `538fa34`
+  gave `targets/registry.ts`. `constants.ts` holds the schema URLs and the config path, and
+  `index.ts` is the barrel the outer rings take the ring through. `meta.test.ts` holds the files to
+  the registry in both directions: every key has exactly one file across the groups, that file
+  exports a const named for itself, and the record's own `key` field names the same file, so a
+  renamed file or a typo'd key fails rather than silently shadowing another answer's flag.
+
+  `utils/` is where the ring's shared readers live: `readUtils.ts` turns a parsed JSON value into a
+  typed one, one function per kind, and carries the v1-to-v2 migration; `schemaUtils.ts` generates
+  the published JSON schema from the records themselves, so the schema cannot drift from what a
+  config actually accepts; `answerUtils.ts` is the small predicates more than one emitter reads,
+  `hasLibrary`, `hasSurface` and the rest.
+
+  `answers/registry.ts` value-imports `targetFor` from `targets/` for the `slot` and `only` checks,
+  which is the one edge `create-rings` allows: both are inner rings, and the rule only stops an inner
+  ring reaching an outer one.
 
 - **`eslint-plugin` groups by rule id, not by ring.** `src/rules/<kebab-rule-id>/` holds the rule
   file named for its single export, its test, and `README.md`. The directory name is the id, so the

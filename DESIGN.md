@@ -1040,12 +1040,13 @@ changes nothing in what `pnpm lint` reports.
 
 ### `@linteljs/workspace/create-rings`
 
-`answers/` is what the user chose and `targets/` is what linteljs knows; neither reaches outward.
-`emitters/` turns the two into file text and may read them. `terminal/`, `files/`, `process/` and
-`pipeline/` are outside all three. The direction only ever points inward. That already held in the
-import graph before the rule existed: the emitters reached into `answers`, `targets`, `aliases` and
-`versions` twenty times and into `cli`, `pipeline`, `sync`, `prompts` and `rewrite` never. The rule
-is what stops it quietly stopping.
+`answers/` is what the user chose and `targets/` is what linteljs knows. `answers/registry.ts`
+reaches into `targets/` for the `slot` and `only` checks a record's own legality needs, and that is
+the only edge between the two: neither reaches `emitters/`, `terminal/`, `files/`, `process/` or
+`pipeline/`. `emitters/` turns the two into file text and may read them. The direction only ever
+points inward. That already held in the import graph before the rule existed: the emitters reached
+into `answers`, `targets`, `aliases` and `versions` twenty times and into `cli`, `pipeline`, `sync`,
+`prompts` and `rewrite` never. The rule is what stops it quietly stopping.
 
 Three folders where one ring used to be, because `model/` and `run/` were each several
 responsibilities under one name. `model/` held data that flows through a run beside a knowledge base
