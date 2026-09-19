@@ -69,7 +69,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   directory listing in both directions, so a directory nobody registered fails and a key with no
   directory fails.
 
-  A subject directory holds its entry, its suites, a `constants.ts` for a table it alone reads, and
+  A subject directory holds its entry, one suite, a `constants.ts` for a table it alone reads, and
   a `utils/` for its private helpers. Nothing else, which `meta.test.ts` enforces: a second module
   loose beside the entry is either a helper, and `utils/` is where the `*Utils` suffix is enforced on
   it, or it is read from outside, and then it is not that subject's to hold.

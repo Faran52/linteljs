@@ -179,9 +179,12 @@ describe.each(subjects)('$group/$name', ({ name, path }) => {
    *
    * A `constants.ts` carries no suite of its own. Asserting a table equals itself proves nothing, and what is
    * worth checking about one is always a fact about the code that reads it, which is where that assertion goes.
+   *
+   * One suite, too. A second file for part of a subject means a reader comparing the halves opens two, and the
+   * halves drift: two suites for this ring each carried a helper called `targetsOf` doing different things.
    */
   it('holds nothing but its entry, its constants and a utils directory', () => {
-    const allowed = new RegExp(`^(${entry}(\\.[a-z]+)?\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
+    const allowed = new RegExp(`^(${entry}\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
 
     expect(entriesIn(path).filter((file) => {
       return file !== 'utils' && !allowed.test(file);
