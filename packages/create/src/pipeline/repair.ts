@@ -32,6 +32,7 @@ const applyStarterFixes = async (
     path,
     transform,
     moveTo,
+    idempotent,
   } of targetFor(answers).starterFixes ?? []) {
     const full = await safeProjectPath(cwd, path);
     let before = '';
@@ -57,7 +58,10 @@ const applyStarterFixes = async (
     }
 
     if (after === before) {
-      onNotice?.(`  starter fix for ${path} matched nothing: the generator changed what it writes.`);
+      if (idempotent !== true) {
+        onNotice?.(`  starter fix for ${path} matched nothing: the generator changed what it writes.`);
+      }
+
       continue;
     }
 

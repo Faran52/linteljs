@@ -95,6 +95,36 @@ describe('starter fixes', () => {
     expect(await readFile(join(cwd, 'src/components/WebBadge.tsx'), 'utf8')).toBe(source);
   });
 
+  // Unlike the asset-import fix above, this one is not anchored to specific text: it can find nothing to change
+  // because the file was never in the state it corrects, not because the generator changed what it writes.
+  it('warns about a starter fix that matches nothing, unless it is marked idempotent', async () => {
+    const notices: string[] = [];
+
+    await scaffold({ 'src/components/web-badge.tsx': "export const nothing = require('node:path');\n" });
+
+    await repairScaffoldedOutput(cwd, answersFor('react-native'), undefined, (message) => {
+      notices.push(message);
+    });
+
+    expect(notices).toContain(
+      '  starter fix for src/components/web-badge.tsx matched nothing: the generator changed what it writes.',
+    );
+  });
+
+  it("says nothing when svelte's own template already ships +page.svelte flush left", async () => {
+    const source = '<h1>Welcome</h1>\n';
+    const notices: string[] = [];
+
+    await scaffold({ 'src/routes/+page.svelte': source });
+
+    await repairScaffoldedOutput(cwd, answersFor('svelte'), undefined, (message) => {
+      notices.push(message);
+    });
+
+    expect(await readFile(join(cwd, 'src/routes/+page.svelte'), 'utf8')).toBe(source);
+    expect(notices).toEqual([]);
+  });
+
   it("voids expo's floating splash screen call", async () => {
     await scaffold({ 'src/app/_layout.tsx': 'SplashScreen.preventAutoHideAsync();\n' });
 

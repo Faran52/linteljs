@@ -62,6 +62,9 @@ export interface StarterFix {
   transform?: (source: string) => string;
   // Destination for a misplaced file; the original is removed.
   moveTo?: string;
+  // This transform ensures a state rather than editing one anchor: a no-op means the generator already writes
+  // what it wants, not that the anchor it once matched is gone. `repair.ts` stays quiet rather than warning.
+  idempotent?: true;
 }
 
 // One vitest project; `include` matters as much as `extensions`, or a web variant resolves under a native test.

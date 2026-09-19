@@ -255,7 +255,8 @@ export const reactNative: TargetRecord = {
       },
     },
     {
-      // Expo reads `experiments.reactCompiler` from app.json; the template does not always write it.
+      // Expo reads `experiments.reactCompiler` from app.json; the template is not guaranteed to write it, though
+      // sdk-57's does, which is usually what makes this a no-op.
       path: 'app.json',
       transform: (source: string): string => {
         const config: unknown = JSON.parse(source);
@@ -271,6 +272,7 @@ export const reactNative: TargetRecord = {
 
         return `${JSON.stringify(config, null, 2)}\n`;
       },
+      idempotent: true,
     },
   ],
   // The one starter suite that cannot meet the strict floor; `record.ts` carries why.

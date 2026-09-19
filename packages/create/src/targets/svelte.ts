@@ -104,8 +104,10 @@ export const svelte: TargetBuilder = (answers) => {
         },
       },
       {
+        // `sv create`'s minimal template ships this file flush left today, so this is usually a no-op.
         path: 'src/routes/+page.svelte',
         transform: tabsToSpaces,
+        idempotent: true,
       },
     ],
     // Vite resolves `vite.config.js` first, so the scaffolder's would shadow stage 4's `.ts`.
