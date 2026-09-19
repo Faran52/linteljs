@@ -435,12 +435,7 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
   const name = input.name ?? await askName(prompter);
 
   const target = await askChoice(prompter, 'Framework', TARGET_IDS, DEFAULT_ANSWERS.target, (id) => {
-    return {
-      label: targetFor({
-        ...DEFAULT_ANSWERS,
-        target: id,
-      }).label,
-    };
+    return { label: ANSWERS.target.values[id].label };
   });
 
   const record = targetFor({

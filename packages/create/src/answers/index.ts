@@ -9,16 +9,14 @@ export {
 } from './constants';
 export { type Form } from './libraries/form';
 export { type Library } from './libraries/libraries';
-export {
-  type LinteljsConfig,
-  parseLinteljsConfig,
-} from './linteljsConfig';
 export { type PackageManager } from './manager/packageManager';
 export {
   type AnswerKey,
   ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
+  type LinteljsConfig,
+  parseLinteljsConfig,
 } from './registry';
 export { type Browser } from './target/browser';
 export { type HostedFramework } from './target/hostedFramework';

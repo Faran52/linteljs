@@ -6,7 +6,6 @@ import type { TargetRecord } from './record';
 
 export const vue: TargetRecord = {
   id: 'vue',
-  label: 'Vue',
   // One feature flag makes `create-vue` treat every unnamed feature as declined, so this list is the whole shape.
   // `--eslint` is absent: it writes a config stage 2 shadows.
   scaffold: (name, answers) => {

@@ -25,7 +25,6 @@ const isAppConfig = (value: unknown): value is AppConfig => {
 // `eslint-config-expo` bundles plugins that collide with `base()`.
 export const reactNative: TargetRecord = {
   id: 'react-native',
-  label: 'React Native (Expo)',
   // No package-manager flag: Expo reads whichever one invoked it.
   scaffold: (name) => {
     return {

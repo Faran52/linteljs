@@ -1,6 +1,9 @@
-import { type Answers, hasTests } from '../../../../answers';
+import {
+  ANSWERS,
+  type Answers,
+  hasTests,
+} from '../../../../answers';
 import { RUN_PREFIX } from '../../../../config/constants';
-import { targetFor } from '../../../../targets';
 import { buildScripts } from '../../utils/scriptUtils';
 
 // An unfilled slot throws: an intact `{{RUN}}` in a generated CLAUDE.md reads as documentation.
@@ -19,7 +22,7 @@ export const sharedSlots = (projectName: string, answers: Answers): Record<strin
 
   return {
     PROJECT_NAME: projectName,
-    TARGET_LABEL: targetFor(answers).label,
+    TARGET_LABEL: ANSWERS.target.values[answers.target].label,
     RUN: run,
     CHECK_CHAIN: buildScripts(answers).check,
     TEST_ROWS: testRows(answers, run),

@@ -25,7 +25,6 @@ export const astro: TargetBuilder = (answers) => {
 
   return {
     id: 'astro',
-    label: 'Astro',
     // `minimal`, like every target's smallest starter; `--no-ai` declines the assistant file this CLI writes itself.
     scaffold: (name) => {
       return {

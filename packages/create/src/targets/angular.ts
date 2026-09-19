@@ -4,7 +4,6 @@ import type { TargetRecord } from './record';
 
 export const angular: TargetRecord = {
   id: 'angular',
-  label: 'Angular',
   // `--style css` matches what `lint:css` assumes; `--skip-git` avoids a nested repo breaking the hooks.
   scaffold: (name, answers) => {
     return {

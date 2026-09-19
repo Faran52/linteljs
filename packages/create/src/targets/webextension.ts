@@ -127,7 +127,6 @@ export const webextension: TargetBuilder = (answers) => {
 
   return {
     id: 'webextension',
-    label: 'Web Extension (MV3)',
     scaffold: viteScaffold('vanilla'),
     hostsBrowser: true,
     hostsFramework: true,

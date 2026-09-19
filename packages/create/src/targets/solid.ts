@@ -6,7 +6,6 @@ import type { TargetRecord } from './record';
 
 export const solid: TargetRecord = {
   id: 'solid',
-  label: 'Solid',
   scaffold: viteScaffold('solid'),
   framework: 'solid',
   html: true,

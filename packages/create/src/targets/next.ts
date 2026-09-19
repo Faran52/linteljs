@@ -7,7 +7,6 @@ import type { TargetRecord } from './record';
 
 export const next: TargetRecord = {
   id: 'next',
-  label: 'Next.js',
   // `--src-dir` is load-bearing: every alias resolves under `./src/`. Only the tailwind flag follows an answer,
   // since Next wires Tailwind at generate time.
   scaffold: (name, answers) => {

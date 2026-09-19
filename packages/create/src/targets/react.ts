@@ -14,7 +14,6 @@ const ROUTERS: readonly Router[] = ['react-router', 'tanstack-router'];
 
 export const react: TargetRecord = {
   id: 'react',
-  label: 'React (Vite)',
   scaffold: viteScaffold('react', true),
   framework: 'react',
   html: true,

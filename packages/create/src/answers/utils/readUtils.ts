@@ -1,0 +1,207 @@
+import { isJsonObject } from '../../utils/jsonUtils';
+import { valuesOf } from '../record';
+
+import type { AliasMap } from '../../config/types';
+import type {
+  AnswerRecord,
+  BooleanRecord,
+  ChoiceRecord,
+  ListRecord,
+  MapRecord,
+  MultiRecord,
+  OptionalChoiceRecord,
+  OptionalMultiRecord,
+} from '../record';
+
+export type JsonValue = null | boolean | number | string | object;
+
+type ReadResult<R extends AnswerRecord>
+  = R extends BooleanRecord ? boolean
+    : R extends ListRecord ? string[] | undefined
+      : R extends MapRecord ? AliasMap | undefined
+        : R extends MultiRecord<infer V> ? V[]
+          : R extends OptionalMultiRecord<infer V> ? V[] | undefined
+            : R extends ChoiceRecord<infer V> ? V
+              : R extends OptionalChoiceRecord<infer V> ? V | undefined
+                : never;
+
+export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] => {
+  return Array.isArray(value);
+};
+
+export const refuseDuplicates = (values: string[], field: string): void => {
+  if (new Set(values).size !== values.length) {
+    throw new Error(`${field} must not contain duplicate values`);
+  }
+};
+
+const isValueOf = <V extends string>(value: string, values: Record<V, unknown>): value is V => {
+  return value in values;
+};
+
+const choiceValue = <V extends string>(
+  value: JsonValue | undefined,
+  key: string,
+  values: Record<V, unknown>,
+): V => {
+  if (typeof value !== 'string' || !isValueOf(value, values)) {
+    throw new Error(`${key} must be one of: ${valuesOf(values).join(', ')}`);
+  }
+
+  return value;
+};
+
+const arrayOfChoices = <V extends string>(
+  value: JsonValue | undefined,
+  key: string,
+  values: Record<V, unknown>,
+  minimum: number,
+): V[] => {
+  if (!isJsonArray(value)) {
+    throw new Error(`${key} must be an array`);
+  }
+
+  const choices = value.map((item) => {
+    return choiceValue(item, key, values);
+  });
+
+  if (choices.length < minimum) {
+    throw new Error(`${key} must contain at least ${String(minimum)} value`);
+  }
+
+  refuseDuplicates(choices, key);
+
+  return choices;
+};
+
+// `resolveConditions` and `ignores` are both open vocabularies, so only the shape is checked, and it is the same
+// shape: a non-empty list of distinct non-empty strings.
+const stringList = (value: JsonValue | undefined, key: string): string[] => {
+  if (!isJsonArray(value) || value.length === 0) {
+    throw new Error(`${key} must be a non-empty array`);
+  }
+
+  const names = value.map((item) => {
+    if (typeof item !== 'string' || item === '') {
+      throw new Error(`${key} must contain only non-empty strings`);
+    }
+
+    return item;
+  });
+
+  refuseDuplicates(names, key);
+
+  return names;
+};
+
+// Names are the project's; the sigil is checked because `simple-import-sort` groups on it and a bare key sorts as a
+// package.
+const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
+  if (!isJsonObject(value)) {
+    throw new Error(`${key} must be an object`);
+  }
+
+  const entries = Object.entries(value);
+
+  for (const [alias, directory] of entries) {
+    if (!alias.startsWith('@') && !alias.startsWith('$')) {
+      throw new Error(`${key} key must start with @ or $: ${alias}`);
+    }
+
+    if (typeof directory !== 'string' || directory === '') {
+      throw new Error(`${key}.${alias} must be a non-empty string`);
+    }
+  }
+
+  return Object.fromEntries(entries.map(([alias, directory]) => {
+    return [alias, String(directory)];
+  }));
+};
+
+/**
+ * One reader per kind, dispatched off `record.kind`: a `choice` or `multi` throws when the value is missing or
+ * illegal, since both are required in `Answers`; the rest answer `undefined` for an absent value, since both are
+ * optional there. `record.key` is the field name every message carries, so no caller spells it a second time.
+ */
+export const readAnswer = <R extends AnswerRecord>(record: R, value: JsonValue | undefined): ReadResult<R> => {
+  switch (record.kind) {
+    case 'boolean': {
+      if (typeof value !== 'boolean') {
+        throw new Error(`${record.key} must be a boolean`);
+      }
+
+      return value as ReadResult<R>;
+    }
+
+    case 'choice': {
+      return choiceValue(value, record.key, record.values) as ReadResult<R>;
+    }
+
+    case 'optionalChoice': {
+      return (value === undefined ? undefined : choiceValue(value, record.key, record.values)) as ReadResult<R>;
+    }
+
+    case 'multi': {
+      return arrayOfChoices(value, record.key, record.values, record.minimum ?? 0) as ReadResult<R>;
+    }
+
+    case 'optionalMulti': {
+      return (value === undefined
+        ? undefined
+        : arrayOfChoices(value, record.key, record.values, record.minimum ?? 0)) as ReadResult<R>;
+    }
+
+    case 'list': {
+      return (value === undefined ? undefined : stringList(value, record.key)) as ReadResult<R>;
+    }
+
+    case 'map': {
+      return (value === undefined ? undefined : aliasMap(value, record.key)) as ReadResult<R>;
+    }
+  }
+};
+
+/**
+ * v1 kept the form library inside `libraries`. Lift it before the members are checked against today's vocabulary,
+ * or a valid v1 file fails as an unknown library. Silent, the way an absent `surfaces` still describes its project.
+ * Generic over the caller's own parsed-object type, so migrating `form`/`libraries` leaves every other key's type
+ * exactly as the caller had it.
+ */
+export const migrateForm = <
+  F extends string,
+  P extends Partial<Record<'form' | 'libraries', JsonValue>>,
+>(
+  parsed: P,
+  schemaVersion: number,
+  formValues: Record<F, unknown>,
+): P => {
+  const listed = parsed.libraries;
+
+  if (schemaVersion !== 1 || !isJsonArray(listed)) {
+    return parsed;
+  }
+
+  const isForm = (item: JsonValue): item is F => {
+    return typeof item === 'string' && isValueOf(item, formValues);
+  };
+
+  const forms = listed.filter(isForm);
+
+  if (forms.length > 1) {
+    throw new Error(`libraries must contain at most one of: ${valuesOf(formValues).join(', ')}`);
+  }
+
+  const [form] = forms;
+
+  if (form === undefined) {
+    return parsed;
+  }
+
+  return {
+    ...parsed,
+    libraries: listed.filter((library) => {
+      return !isForm(library);
+    }),
+    form,
+  };
+};

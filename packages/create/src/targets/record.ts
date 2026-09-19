@@ -124,7 +124,6 @@ interface VitestFactory {
 
 export interface TargetRecord {
   id: TargetId;
-  label: string;
   // Answers included, so it cannot be a constant.
   scaffold: (name: string, answers: Answers) => ScaffoldSpec;
   // One value: the composer owns the order.
