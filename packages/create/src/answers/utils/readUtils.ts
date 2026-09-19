@@ -29,6 +29,19 @@ export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] 
   return Array.isArray(value);
 };
 
+/**
+ * What a record's own answer is worth when nothing asked for it: `false` for the one boolean kind, a record's
+ * `default` for the two kinds that are required in `Answers`, and `undefined` for the four kinds that are optional
+ * there. `refuseMisfit` compares an answer against this to tell an unasked value from a misfit one; the prompt
+ * writes it for a question a `slot` or an `askedWhen` skipped.
+ */
+export const unaskedValueOf = (record: AnswerRecord): JsonValue | undefined => {
+  const isRequired = record.kind === 'choice' || record.kind === 'multi';
+  const value: JsonValue | undefined = isRequired ? record.default : undefined;
+
+  return record.kind === 'boolean' ? false : value;
+};
+
 export const refuseDuplicates = (values: string[], field: string): void => {
   if (new Set(values).size !== values.length) {
     throw new Error(`${field} must not contain duplicate values`);

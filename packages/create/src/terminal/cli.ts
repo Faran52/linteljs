@@ -13,6 +13,8 @@ import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
 import packageJson from '../../package.json' with { type: 'json' };
 import {
+  type AnswerKey,
+  ANSWERS,
   type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -20,6 +22,7 @@ import {
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
 } from '../answers';
+import { valuesOf } from '../answers/record';
 import { RUN_PREFIX, STAGES } from '../config/constants';
 import { type Stage } from '../config/types';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';
@@ -37,22 +40,25 @@ import {
 } from './prompts';
 import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
 
-// Answers given as flags, validated by the config parser so a wrong value names its choices.
-export interface AnswerFlags {
-  target?: string;
-  browser?: string;
-  hostedFramework?: string;
-  surfaces?: string[];
-  testing?: string;
-  packageManager?: string;
-  libraries?: string[];
-  form?: string;
-  router?: string;
-  store?: boolean;
-  typeSafety?: string;
-  agents?: string[];
-  plugins?: string[];
+import type {
+  AnswerRecord,
+  ListRecord,
+  MapRecord,
+} from '../answers/record';
+import type { JsonValue } from '../answers/utils/readUtils';
+
+// `list` and `map` carry no `flag` on any of today's records, both being hand-edited only: `resolveConditions`,
+// `aliases` and `ignores` are recorded, never passed on the command line.
+type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord>;
+
+interface FlagField {
+  flag: string;
 }
+
+type FlaggedRecord = FlaggableRecord & FlagField;
+
+// Answers given as flags, validated by the config parser so a wrong value names its choices.
+export type AnswerFlags = Partial<Record<AnswerKey, JsonValue>>;
 
 export interface CliOptions {
   command: 'create' | 'sync';
@@ -71,26 +77,64 @@ export interface CliOptions {
   version: boolean;
 }
 
-// The answer flags as `parseArgs` hands them over, before the config parser checks the values.
-interface RawAnswerFlags {
-  'target'?: string;
-  'browser'?: string;
-  'hosted'?: string;
-  'surfaces'?: string[];
-  'testing'?: string;
-  'pm'?: string;
-  'libraries'?: string[];
-  'form'?: string;
-  'router'?: string;
-  'store'?: boolean;
-  'type-safety'?: string;
-  'agents'?: string[];
-  'plugins'?: string[];
+interface FlaggedAnswer {
+  key: AnswerKey;
+  record: FlaggableRecord;
+  flag: string;
 }
 
 // stdout for what the user asked to see; `console.error` for failures.
 const say = (message: string): void => {
   stdout.write(`${message}\n`);
+};
+
+// `list` and `map` carry no `flag` on any of today's records, both being hand-edited only: `resolveConditions`,
+// `aliases` and `ignores` are recorded, never passed on the command line.
+const isFlaggable = (record: AnswerRecord): record is FlaggedRecord => {
+  return record.flag !== undefined;
+};
+
+// Every record with a `flag`, in `ANSWERS`' own order, each already carrying the key that named it.
+const FLAGGED_ANSWERS: readonly FlaggedAnswer[] = valuesOf(ANSWERS).flatMap((key): FlaggedAnswer[] => {
+  const record: AnswerRecord = ANSWERS[key];
+
+  return isFlaggable(record)
+    ? [{
+        key,
+        record,
+        flag: record.flag,
+      }]
+    : [];
+});
+
+const isMultiKind = (record: AnswerRecord): boolean => {
+  return record.kind === 'multi' || record.kind === 'optionalMulti';
+};
+
+// `boolean` for the one boolean answer, `store`; `string`, `multiple` for the two kinds that ask for a list;
+// `string` alone otherwise. Spread after the fixed entries, so a `--target` or a `--pm` is one more record away.
+const ANSWER_OPTIONS = Object.fromEntries(FLAGGED_ANSWERS.map(({ flag, record }) => {
+  return [flag, {
+    type: record.kind === 'boolean' ? 'boolean' : 'string',
+    ...(isMultiKind(record) ? { multiple: true } : {}),
+  }];
+}));
+
+// `store` alone carries no `values` to list; its line is the one this cannot generate from the record.
+const STORE_USAGE = '  --store               install the target\'s state store';
+
+const noteOf = (record: AnswerRecord): string => {
+  return record.note === undefined ? '' : ` (${record.note})`;
+};
+
+const answerUsageOf = ({ flag, record }: FlaggedAnswer): string => {
+  if (record.kind === 'boolean') {
+    return STORE_USAGE;
+  }
+
+  const shape = isMultiKind(record) ? 'list' : 'value';
+
+  return `  --${flag} <${shape}>  ${valuesOf(record.values).join(', ')}${noteOf(record)}`;
 };
 
 const USAGE = `@linteljs/create [name] [options]
@@ -106,19 +150,7 @@ const USAGE = `@linteljs/create [name] [options]
   --help, -h
 
 Answers, for a run that asks nothing (unset ones take the defaults):
-  --target <id>         react, next, vue, svelte, solid, angular, astro, webextension, react-native
-  --pm <name>           pnpm, npm, yarn, bun
-  --testing <choice>    vitest, none
-  --type-safety <floor> strict, relaxed
-  --libraries <list>    zod, tanstack-query, tailwind, es-toolkit, ts-pattern, t3-env
-  --form <id>           tanstack-form, react-hook-form (react only)
-  --router <id>         react-router, tanstack-router (react only)
-  --store               install the target's state store
-  --agents <list>       claude-code, codex, copilot, cursor
-  --plugins <list>      ponytail, context7, frontend-design
-  --browser <name>      chrome, firefox (webextension only)
-  --hosted <framework>  react, vue, svelte, solid (webextension and astro only)
-  --surfaces <list>     popup, background, devtools-panel (webextension only)
+${FLAGGED_ANSWERS.map(answerUsageOf).join('\n')}
 A list is comma-separated or the flag repeated.
 
 A non-interactive create needs a project name, or --yes to take the directory's.
@@ -130,22 +162,30 @@ const list = (flag: string[]): string[] => {
   });
 };
 
-const answerFlagsFrom = (values: RawAnswerFlags): AnswerFlags => {
-  return {
-    ...(values.target === undefined ? {} : { target: values.target }),
-    ...(values.browser === undefined ? {} : { browser: values.browser }),
-    ...(values.hosted === undefined ? {} : { hostedFramework: values.hosted }),
-    ...(values.surfaces === undefined ? {} : { surfaces: list(values.surfaces) }),
-    ...(values.testing === undefined ? {} : { testing: values.testing }),
-    ...(values.pm === undefined ? {} : { packageManager: values.pm }),
-    ...(values.libraries === undefined ? {} : { libraries: list(values.libraries) }),
-    ...(values.form === undefined ? {} : { form: values.form }),
-    ...(values.router === undefined ? {} : { router: values.router }),
-    ...(values.store === true ? { store: true } : {}),
-    ...(values['type-safety'] === undefined ? {} : { typeSafety: values['type-safety'] }),
-    ...(values.agents === undefined ? {} : { agents: list(values.agents) }),
-    ...(values.plugins === undefined ? {} : { plugins: list(values.plugins) }),
-  };
+// `values[record.flag]` to `{ [record.key]: ... }`: a multi-kind flag is comma-split, a boolean flag is dropped
+// unless it was actually passed, and everything else passes through for the config parser to validate.
+const answerFlagsFrom = (values: Record<string, JsonValue | undefined>): AnswerFlags => {
+  const flags: AnswerFlags = {};
+
+  for (const {
+    key,
+    record,
+    flag,
+  } of FLAGGED_ANSWERS) {
+    const value = values[flag];
+
+    if (value === undefined || value === false) {
+      continue;
+    }
+
+    flags[key] = isMultiKind(record) && Array.isArray(value)
+      ? list(value.filter((item): item is string => {
+          return typeof item === 'string';
+        }))
+      : value;
+  }
+
+  return flags;
 };
 
 const isStage = (value: string): value is Stage => {
@@ -191,34 +231,7 @@ const CLI_OPTIONS = {
     short: 'v',
     default: false,
   },
-  'target': { type: 'string' },
-  'pm': { type: 'string' },
-  'testing': { type: 'string' },
-  'type-safety': { type: 'string' },
-  'libraries': {
-    type: 'string',
-    multiple: true,
-  },
-  'form': { type: 'string' },
-  'router': { type: 'string' },
-  'store': {
-    type: 'boolean',
-    default: false,
-  },
-  'agents': {
-    type: 'string',
-    multiple: true,
-  },
-  'plugins': {
-    type: 'string',
-    multiple: true,
-  },
-  'browser': { type: 'string' },
-  'hosted': { type: 'string' },
-  'surfaces': {
-    type: 'string',
-    multiple: true,
-  },
+  ...ANSWER_OPTIONS,
 } satisfies ParseArgsOptionsConfig;
 
 export const parseCliArgs = (argv: string[]): CliOptions => {

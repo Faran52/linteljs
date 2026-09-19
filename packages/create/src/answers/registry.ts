@@ -30,6 +30,7 @@ import {
   isJsonArray,
   migrateForm,
   readAnswer,
+  unaskedValueOf,
 } from './utils/readUtils';
 
 import type { AliasMap } from '../config/types';
@@ -60,10 +61,10 @@ export interface Answers {
   target: TargetId;
   // Asked only for the extension target.
   browser: Browser;
-  // Absent means the host's own plain-TypeScript shape.
-  hostedFramework?: HostedFramework;
   // Absent means `popup` and `background`, the only shape written before the answer existed.
   surfaces?: Surface[];
+  // Absent means the host's own plain-TypeScript shape.
+  hostedFramework?: HostedFramework;
   testing: Testing;
   packageManager: PackageManager;
   libraries: Library[];
@@ -103,8 +104,8 @@ type ConfigObject = Partial<Record<keyof typeof EXPECTED, JsonValue>>;
 export const ANSWERS = {
   target,
   browser,
-  hostedFramework,
   surfaces,
+  hostedFramework,
   testing,
   packageManager,
   libraries,
@@ -139,8 +140,8 @@ const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', true> = {
   schemaVersion: true,
   target: true,
   browser: true,
-  hostedFramework: true,
   surfaces: true,
+  hostedFramework: true,
   testing: true,
   packageManager: true,
   libraries: true,
@@ -188,18 +189,6 @@ const libraryChoices = (value: JsonValue | undefined): Library[] => {
   }
 
   return readAnswer(ANSWERS.libraries, value);
-};
-
-const unaskedValueOf = (record: AnswerRecord): unknown => {
-  if (record.kind === 'boolean') {
-    return false;
-  }
-
-  if (record.kind === 'choice' || record.kind === 'multi') {
-    return record.default;
-  }
-
-  return undefined;
 };
 
 /**
@@ -268,8 +257,8 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     throw new Error(`$schema must be ${expectedSchema}`);
   }
 
-  const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
   const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
+  const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
   const formValue = readAnswer(ANSWERS.form, parsed.form);
   const routerValue = readAnswer(ANSWERS.router, parsed.router);
   const resolveConditionsValue = readAnswer(ANSWERS.resolveConditions, parsed.resolveConditions);
@@ -283,8 +272,8 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     target: readAnswer(ANSWERS.target, parsed.target),
     // Defaults so a config written before the extension axes existed still parses.
     browser: parsed.browser === undefined ? ANSWERS.browser.default : readAnswer(ANSWERS.browser, parsed.browser),
-    ...(hostedFrameworkValue === undefined ? {} : { hostedFramework: hostedFrameworkValue }),
     ...(surfacesValue === undefined ? {} : { surfaces: surfacesValue }),
+    ...(hostedFrameworkValue === undefined ? {} : { hostedFramework: hostedFrameworkValue }),
     testing: readAnswer(ANSWERS.testing, parsed.testing),
     packageManager: readAnswer(ANSWERS.packageManager, parsed.packageManager),
     libraries: libraryChoices(parsed.libraries),

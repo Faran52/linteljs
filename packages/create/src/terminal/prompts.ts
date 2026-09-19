@@ -8,27 +8,43 @@ import {
   text,
   type TextOptions,
 } from '@clack/prompts';
+import { omit } from 'es-toolkit';
 
 import {
+  type AnswerKey,
   ANSWERS,
   type Answers,
-  type Browser,
+  CONFIG_SCHEMA_URL,
+  CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
-  type Form,
-  type HostedFramework,
-  type Library,
-  rendersWithReact,
-  type Router,
-  type Surface,
-  surfacesOf,
-  type TargetId,
+  parseLinteljsConfig,
 } from '../answers';
 import { valuesOf } from '../answers/record';
+import { type JsonValue, unaskedValueOf } from '../answers/utils/readUtils';
 import { targetFor } from '../targets';
 
 import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
 
+import type {
+  AnswerRecord,
+  ChoiceRecord,
+  MultiRecord,
+  OptionalChoiceRecord,
+  OptionalMultiRecord,
+  ValueRecord,
+} from '../answers/record';
 import type { StoreSlot, TargetRecord } from '../targets/record';
+
+/**
+ * The four value-bearing kinds `askAnswer` dispatches on. `boolean` is `store` alone and is asked directly by the
+ * loop, where `target.store`'s presence is proven by a type guard rather than assumed; `list` and `map` carry no
+ * `prompt` on any of today's records, both being hand-edited only, so neither reaches `askAnswer` either.
+ */
+type PromptableRecord
+  = ChoiceRecord
+    | MultiRecord
+    | OptionalChoiceRecord
+    | OptionalMultiRecord;
 
 /**
  * `@clack/prompts` is the one dependency this CLI carries: reading raw keypresses is not something `node:readline`
@@ -59,201 +75,9 @@ interface Described {
   hint?: string;
 }
 
-interface HostAnswers {
-  browser: Browser;
-  surfaces: Surface[] | undefined;
-  hosted: HostedFramework | 'none';
+interface TargetWithStore extends TargetRecord {
+  store: StoreSlot;
 }
-
-const AGENTS = valuesOf(ANSWERS.agents.values);
-const BROWSERS = valuesOf(ANSWERS.browser.values);
-const FORMS = valuesOf(ANSWERS.form.values);
-const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
-const LIBRARIES = valuesOf(ANSWERS.libraries.values);
-const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
-const PLUGINS = valuesOf(ANSWERS.plugins.values);
-const SURFACES = valuesOf(ANSWERS.surfaces.values);
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
-const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
-const TYPE_SAFETY_CHOICES = valuesOf(ANSWERS.typeSafety.values);
-
-const TESTING_DESCRIPTIONS: Record<Answers['testing'], Described> = {
-  vitest: {
-    label: 'Vitest',
-    hint: 'Test runner with built-in coverage',
-  },
-  none: {
-    label: 'None',
-    hint: 'No test suite',
-  },
-};
-
-const PACKAGE_MANAGER_DESCRIPTIONS: Record<Answers['packageManager'], Described> = {
-  pnpm: {
-    label: 'pnpm',
-    hint: 'Content-addressed store, strict by default',
-  },
-  npm: {
-    label: 'npm',
-    hint: 'Ships with Node',
-  },
-  yarn: {
-    label: 'Yarn',
-    hint: 'Yarn Berry with node_modules linking',
-  },
-  bun: {
-    label: 'Bun',
-    hint: 'Fast installs; runs scripts under Bun',
-  },
-};
-
-const FORM_DESCRIPTIONS: Record<Form, Described> = {
-  'tanstack-form': {
-    label: 'TanStack Form',
-    hint: 'Typed forms with Zod-ready validation',
-  },
-  'react-hook-form': {
-    label: 'React Hook Form',
-    hint: 'Uncontrolled React forms, React targets only',
-  },
-};
-
-const LIBRARY_DESCRIPTIONS: Record<Answers['libraries'][number], Described> = {
-  'zod': {
-    label: 'Zod',
-    hint: 'Schema validation and parsing',
-  },
-  'tanstack-query': {
-    label: 'TanStack Query',
-    hint: 'Async data fetching and caching',
-  },
-  'tailwind': {
-    label: 'Tailwind CSS',
-    hint: 'Utility-first styling; NativeWind on React Native',
-  },
-  'es-toolkit': {
-    label: 'es-toolkit',
-    hint: 'Typed utility functions, the modern lodash',
-  },
-  'ts-pattern': {
-    label: 'ts-pattern',
-    hint: 'Exhaustive pattern matching',
-  },
-  't3-env': {
-    label: 't3-env',
-    hint: 'Zod-validated environment variables',
-  },
-};
-
-const ROUTER_DESCRIPTIONS: Record<Router | 'none', Described> = {
-  'none': {
-    label: 'None',
-    hint: 'A single page, or a router added later',
-  },
-  'react-router': {
-    label: 'React Router',
-    hint: 'Declarative routes in src/routes/router.tsx',
-  },
-  'tanstack-router': {
-    label: 'TanStack Router',
-    hint: 'Type-safe file routes under src/routes/',
-  },
-};
-
-const BROWSER_DESCRIPTIONS: Record<Browser, Described> = {
-  chrome: {
-    label: 'Chrome',
-    hint: 'MV3 service worker',
-  },
-  firefox: {
-    label: 'Firefox',
-    hint: 'MV3 event page, loaded from about:debugging',
-  },
-};
-
-const SURFACE_DESCRIPTIONS: Record<Surface, Described> = {
-  'popup': {
-    label: 'Popup',
-    hint: 'The toolbar button\'s page',
-  },
-  'background': {
-    label: 'Background',
-    hint: 'The service worker or event page',
-  },
-  'devtools-panel': {
-    label: 'DevTools panel',
-    hint: 'A tab inside the browser\'s developer tools',
-  },
-};
-
-// `none` is not a `HostedFramework`, so it is spelled here rather than added to the vocabulary for one prompt.
-const HOSTED_FRAMEWORK_DESCRIPTIONS: Record<HostedFramework | 'none', Described> = {
-  none: {
-    label: 'None',
-    hint: 'Plain TypeScript and the DOM',
-  },
-  react: {
-    label: 'React',
-    hint: 'With the React Compiler',
-  },
-  vue: {
-    label: 'Vue',
-    hint: 'Single-file components',
-  },
-  svelte: {
-    label: 'Svelte',
-    hint: 'Svelte 5 runes',
-  },
-  solid: {
-    label: 'Solid',
-    hint: 'Fine-grained signals',
-  },
-};
-
-const TYPE_SAFETY_DESCRIPTIONS: Record<Answers['typeSafety'], Described> = {
-  strict: {
-    label: 'Strict',
-    hint: 'Bans casts, any and suppression directives',
-  },
-  relaxed: {
-    label: 'Relaxed',
-    hint: 'Only what the compiler itself catches',
-  },
-};
-
-const AGENT_DESCRIPTIONS: Record<Answers['agents'][number], Described> = {
-  'claude-code': {
-    label: 'Claude Code',
-    hint: "Anthropic's coding agent",
-  },
-  'codex': {
-    label: 'Codex',
-    hint: "OpenAI's coding agent",
-  },
-  'copilot': {
-    label: 'GitHub Copilot',
-    hint: 'Reads .github/copilot-instructions.md and .github/instructions/',
-  },
-  'cursor': {
-    label: 'Cursor',
-    hint: 'Reads .cursor/rules/',
-  },
-};
-
-const PLUGIN_DESCRIPTIONS: Record<Answers['plugins'][number], Described> = {
-  'ponytail': {
-    label: 'Ponytail',
-    hint: 'Keeps changes small and questions bloat',
-  },
-  'context7': {
-    label: 'Context7',
-    hint: 'Pulls current library docs into context',
-  },
-  'frontend-design': {
-    label: 'Frontend Design',
-    hint: 'Guidance on visual and UX choices',
-  },
-};
 
 // The real terminal; tests substitute their own.
 export const clackPrompter: Prompter = {
@@ -351,12 +175,6 @@ const askMulti = async <T extends string>(
   });
 };
 
-const askAgents = async (prompter: Prompter): Promise<Answers['agents']> => {
-  return askMulti(prompter, 'AI agents', AGENTS, DEFAULT_ANSWERS.agents, false, (agent) => {
-    return AGENT_DESCRIPTIONS[agent];
-  });
-};
-
 const askName = async (prompter: Prompter): Promise<string> => {
   const answer = await prompter.text({
     message: 'Project name',
@@ -369,142 +187,147 @@ const askName = async (prompter: Prompter): Promise<string> => {
   return unwrap(prompter, answer);
 };
 
-// The two host targets ask for what they render with; `none` is a real answer, so the question is not skipped.
-const askHost = async (prompter: Prompter, record: TargetRecord): Promise<HostAnswers> => {
-  const browser = record.hostsBrowser === true
-    ? await askChoice(prompter, 'Browser', BROWSERS, DEFAULT_ANSWERS.browser, (choice) => {
-        return BROWSER_DESCRIPTIONS[choice];
-      })
-    : DEFAULT_ANSWERS.browser;
+// Every key `ANSWERS` has, read off the object itself rather than a hand-kept list.
+const ANSWER_KEYS = valuesOf(ANSWERS);
 
-  // Required: an extension with no surface builds a manifest naming nothing.
-  const surfaces = record.hostsBrowser === true
-    ? await askMulti(prompter, 'Surfaces', SURFACES, surfacesOf(DEFAULT_ANSWERS), true, (choice) => {
-        return SURFACE_DESCRIPTIONS[choice];
-      })
-    : undefined;
+// The values a record offers here, narrowed by `only` for this target: what a target never asks for is never shown.
+const offeredValuesOf = <V extends string>(values: Record<V, ValueRecord>, target: TargetRecord): V[] => {
+  return valuesOf(values).filter((value) => {
+    return values[value].only === undefined || values[value].only(target);
+  });
+};
 
-  const hosted = record.hostsFramework === true
-    ? await askChoice(prompter, 'UI framework', ['none', ...HOSTED_FRAMEWORKS], 'none', (choice) => {
-        return HOSTED_FRAMEWORK_DESCRIPTIONS[choice];
-      })
-    : 'none';
-
-  return {
-    browser,
-    surfaces,
-    hosted,
+// A record's own values, described the way `askChoice`/`askMulti` want: both already carry `label` and `hint`.
+const describeFrom = <V extends string>(values: Record<V, ValueRecord>) => {
+  return (value: V): Described => {
+    return values[value];
   };
 };
 
-const askLibraries = async (prompter: Prompter): Promise<Library[]> => {
-  return askMulti(prompter, 'Libraries', LIBRARIES, DEFAULT_ANSWERS.libraries, false, (choice) => {
-    return LIBRARY_DESCRIPTIONS[choice];
-  });
-};
-
-// `react-hook-form` binds React, so a non-React target is offered the other one alone.
-const askForm = async (
+const askAnswer = async (
   prompter: Prompter,
-  target: TargetId,
-  hosted: HostedFramework | 'none',
-): Promise<Form | undefined> => {
-  const isReact = rendersWithReact(targetFor({
-    ...DEFAULT_ANSWERS,
-    target,
-    ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
-  }).framework);
-  const offered: ('none' | Form)[] = ['none', ...FORMS.filter((form) => {
-    return isReact || form !== 'react-hook-form';
-  })];
-  const picked = await askChoice(prompter, 'Form library', offered, 'none', (choice) => {
-    return choice === 'none'
-      ? {
-          label: 'None',
-          hint: 'Plain controlled inputs',
-        }
-      : FORM_DESCRIPTIONS[choice];
-  });
+  record: PromptableRecord,
+  // Already checked by the caller: only a record with a `prompt` reaches here.
+  message: string,
+  target: TargetRecord,
+): Promise<JsonValue | undefined> => {
+  switch (record.kind) {
+    case 'choice': {
+      const offered = offeredValuesOf(record.values, target);
 
-  return picked === 'none' ? undefined : picked;
-};
+      return await askChoice(prompter, message, offered, record.default, describeFrom(record.values));
+    }
 
-// In order: project name, framework, testing, package manager, libraries, form library, an optional router and store,
-// type safety, AI agents, AI plugins. A target with no `routers` or `store` slot skips that question.
-export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
-  const name = input.name ?? await askName(prompter);
-
-  const target = await askChoice(prompter, 'Framework', TARGET_IDS, DEFAULT_ANSWERS.target, (id) => {
-    return { label: ANSWERS.target.values[id].label };
-  });
-
-  const record = targetFor({
-    ...DEFAULT_ANSWERS,
-    target,
-  });
-
-  const {
-    browser,
-    surfaces,
-    hosted,
-  } = await askHost(prompter, record);
-
-  const testing = await askChoice(prompter, 'Testing', TESTING_CHOICES, DEFAULT_ANSWERS.testing, (choice) => {
-    return TESTING_DESCRIPTIONS[choice];
-  });
-  const packageManager = await askChoice(
-    prompter,
-    'Package manager',
-    PACKAGE_MANAGERS,
-    DEFAULT_ANSWERS.packageManager,
-    (choice) => {
-      return PACKAGE_MANAGER_DESCRIPTIONS[choice];
-    },
-  );
-  const libraries = await askLibraries(prompter);
-  const form = await askForm(prompter, target, hosted);
-
-  const router = record.routers === undefined
-    ? 'none'
-    : await askChoice(prompter, 'Router', ['none', ...record.routers], 'none', (choice) => {
-        return ROUTER_DESCRIPTIONS[choice];
+    case 'optionalChoice': {
+      const offered = ['none', ...offeredValuesOf(record.values, target)];
+      const describeValue = describeFrom(record.values);
+      const picked = await askChoice(prompter, message, offered, 'none', (choice) => {
+        return choice === 'none' ? record.none : describeValue(choice);
       });
 
-  // No slot, no question, and `store` stays false.
-  const store = record.store === undefined ? false : await askStore(prompter, record.store);
+      return picked === 'none' ? undefined : picked;
+    }
 
-  const typeSafety = await askChoice(
-    prompter,
-    'Type safety',
-    TYPE_SAFETY_CHOICES,
-    DEFAULT_ANSWERS.typeSafety,
-    (choice) => {
-      return TYPE_SAFETY_DESCRIPTIONS[choice];
-    },
-  );
-  const agents = await askAgents(prompter);
-  const plugins = agents.length > 0
-    ? await askMulti(prompter, 'AI plugins', PLUGINS, PLUGINS, false, (choice) => {
-        return PLUGIN_DESCRIPTIONS[choice];
-      })
-    : [];
+    case 'multi': {
+      const offered = offeredValuesOf(record.values, target);
 
+      return await askMulti(prompter, message, offered, record.default, false, describeFrom(record.values));
+    }
+
+    case 'optionalMulti': {
+      const offered = offeredValuesOf(record.values, target);
+
+      return await askMulti(prompter, message, offered, [], false, describeFrom(record.values));
+    }
+  }
+};
+
+// The `Answers` slot-and-askedWhen checks want, folding what has been answered so far over the defaults.
+const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers => {
+  return {
+    ...DEFAULT_ANSWERS,
+    ...answered,
+  } as Answers;
+};
+
+const hasStore = (target: TargetRecord): target is TargetWithStore => {
+  return target.store !== undefined;
+};
+
+/**
+ * One record's worth of the questionnaire: `undefined` when its own `prompt` is absent, the unasked value when a
+ * `slot` or an `askedWhen` refuses it for the target and the answers so far, and what was asked otherwise.
+ * `targetFor` is recomputed on every call, which is what lets `hostedFramework` reach the Astro and extension
+ * builders by the time `form` reads `target.framework`.
+ */
+const askIfNeeded = async (
+  prompter: Prompter,
+  answered: Partial<Record<AnswerKey, JsonValue>>,
+  key: AnswerKey,
+): Promise<JsonValue | undefined> => {
+  const record: AnswerRecord = ANSWERS[key];
+
+  if (record.prompt === undefined) {
+    return undefined;
+  }
+
+  const message = record.prompt;
+  const target = targetFor(soFarAnswered(answered));
+
+  if (record.kind === 'boolean') {
+    // The one boolean answer, `store`: a radio between the target's own slot and none, false where there is no
+    // slot. `hasStore` stands in for `record.slot` here, so `target.store` narrows with no cast.
+    return hasStore(target) ? await askStore(prompter, target.store) : false;
+  }
+
+  if (record.slot !== undefined && !record.slot(target)) {
+    return unaskedValueOf(record);
+  }
+
+  if (record.askedWhen !== undefined && !record.askedWhen(soFarAnswered(answered))) {
+    // Only `plugins` skips this way today: a multi, and a skip means none chosen, not the default three.
+    return [];
+  }
+
+  // `list` and `map` carry no `prompt`, which the check above already refused; neither reaches `askAnswer`.
+  return await askAnswer(prompter, record as PromptableRecord, message, target);
+};
+
+// `undefined` means omitted, not written: `exactOptionalPropertyTypes` bans setting an optional property to it.
+const writeIfPresent = (
+  answered: Partial<Record<AnswerKey, JsonValue>>,
+  key: AnswerKey,
+  value: JsonValue | undefined,
+): void => {
+  if (value !== undefined) {
+    answered[key] = value;
+  }
+};
+
+/**
+ * In insertion order: project name, then every record `askIfNeeded` has an answer for.
+ *
+ * Accumulates into a plain object and hands it to `parseLinteljsConfig`, the same gate a `--flag` answer passes
+ * through, so the questionnaire can offer nothing `refuseMisfit` would refuse and needs no cast onto `Answers`.
+ */
+export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
+  const name = input.name ?? await askName(prompter);
+  const answered: Partial<Record<AnswerKey, JsonValue>> = {};
+
+  for (const key of ANSWER_KEYS) {
+    writeIfPresent(answered, key, await askIfNeeded(prompter, answered, key));
+  }
+
+  const config = parseLinteljsConfig(JSON.stringify({
+    $schema: CONFIG_SCHEMA_URL,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    ...DEFAULT_ANSWERS,
+    ...answered,
+  }));
+
+  // The envelope belongs to the file, not the answers a caller asked for.
   return {
     name,
-    answers: {
-      target,
-      browser,
-      ...(hosted === 'none' ? {} : { hostedFramework: hosted }),
-      ...(surfaces === undefined ? {} : { surfaces }),
-      testing,
-      packageManager,
-      libraries,
-      ...(form === undefined ? {} : { form }),
-      ...(router === 'none' ? {} : { router }),
-      store,
-      typeSafety,
-      agents,
-      plugins,
-    },
+    answers: omit(config, ['$schema', 'schemaVersion']),
   };
 };
