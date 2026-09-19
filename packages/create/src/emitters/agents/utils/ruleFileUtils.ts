@@ -17,11 +17,6 @@ export const globsOf = (source: string): string => {
       }).join(',');
 };
 
-// The rule's own first heading, so neither tool needs a second description to drift from it.
-export const titleOf = (source: string): string => {
-  return /^# (.+)$/mu.exec(source)?.[1] ?? 'LintelJS project standard';
-};
-
 const withoutFrontmatter = (source: string): string => {
   return source.replace(PATHS, '').replace(/^\n+/u, '');
 };
