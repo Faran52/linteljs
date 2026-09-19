@@ -1,3 +1,5 @@
+import { omit } from 'es-toolkit';
+
 import {
   type AliasMap,
   type Answers,
@@ -31,10 +33,6 @@ export const buildAliases = (answers: Answers): AliasMap => {
     ...answers.aliases,
   };
 
-  // Filtered at the end, to keep the order above intact.
-  return Object.fromEntries(
-    Object.entries(all).filter(([alias]) => {
-      return !omitted.includes(alias);
-    }),
-  );
+  // Dropped at the end, to keep the order above intact.
+  return omit(all, omitted);
 };

@@ -1084,6 +1084,25 @@ direction is one way, since nothing in `files/` spawns. Sync on purpose, because
 `pipeline/e2e/` is exempt. It is the harness rather than the package, and spawning real package
 managers is the whole of what it does.
 
+### `@linteljs/workspace/no-compat`
+
+`es-toolkit/compat` is banned outright, in every package. The strict entry or the standard library.
+
+It is not a style preference. `/compat` is the lodash-compatibility build, and this workspace never
+had lodash to migrate from, so the only thing its looser signatures buy is a way to make a call
+typecheck that should not have been an es-toolkit call. Measured: the strict `sortBy` and `orderBy`
+are `<T extends object>`, so neither will take a `string[]`. Ten sorts here are over strings, and
+`/compat`'s `sortBy<T>(collection: ArrayLike<T>, ...)` accepts every one of them. Taking that route
+would have replaced ten `localeCompare(left, right, 'en')` comparators with a default comparison that
+orders mixed case differently, which moves the bytes of `plugins/linteljs/managed.json`, and nothing
+in the suite pins that file's order. The stdlib sort stays.
+
+The block sits before `create-worlds` and the same pattern is repeated inside it. Two config objects
+naming one rule do not merge their options, the later one replaces the earlier wholesale, so a single
+workspace-wide block placed after `create-worlds` silently switched the `node:fs` restriction off.
+That was caught by probing an emitter with a `node:fs` import and getting no error; both halves are
+checked that way now, in `emitters/`, `files/`, `terminal/` and `eslint-config/`.
+
 ### `@linteljs/workspace/create-config-data`
 
 `src/config/` is data and only data: the types, constants and tables no ring owns. A function that

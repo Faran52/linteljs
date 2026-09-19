@@ -91,6 +91,27 @@ const config = [
   },
 
   /**
+   * `es-toolkit/compat` is the lodash-compatibility build, and this workspace never migrated from lodash. Its looser
+   * signatures are the whole temptation: `sortBy` there takes an `ArrayLike<T>` where the strict one is
+   * `T extends object`, so it is what a `string[]` sort reaches for when the real answer is the standard library.
+   * Repeated inside `create-worlds` below, because two blocks naming one rule do not merge their options.
+   * DESIGN.md: `@linteljs/workspace/no-compat`
+   */
+  {
+    name: '@linteljs/workspace/no-compat',
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
+            message: 'The strict entry or the standard library. /compat is the lodash build.',
+          },
+        ],
+      }],
+    },
+  },
+
+  /**
    * One folder per responsibility, and which one a module belongs to is decided by the world it reaches into rather
    * than by judgement: `node:fs` means `files/`, `node:child_process` means `process/`, argv and the terminal mean
    * `terminal/`. Everything else goes through them, which is what makes the inner rings testable without a disk.
@@ -110,6 +131,10 @@ const config = [
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
+          {
+            group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
+            message: 'The strict entry or the standard library. /compat is the lodash build.',
+          },
           {
             group: ['node:fs', 'node:fs/*'],
             message: 'The filesystem lives in files/. Reach it through files/utils/fsUtils.',

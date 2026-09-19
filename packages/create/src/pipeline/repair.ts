@@ -4,6 +4,8 @@ import {
   relative,
 } from 'node:path';
 
+import { orderBy } from 'es-toolkit';
+
 import { hasTests } from '../answers/answers';
 import { safeProjectPath, writeProjectFile } from '../files/projectFiles';
 import {
@@ -72,11 +74,11 @@ const specifierFor = (path: string): string => {
 
 // Longest first, so a rename never matches part of a longer path.
 const specifierEdits = (renames: StarterRename[]): [string, string][] => {
-  return renames.map(({ from, to }): [string, string] => {
+  return orderBy(renames.map(({ from, to }): [string, string] => {
     return [`/${basename(specifierFor(from))}`, `/${basename(specifierFor(to))}`];
-  }).sort(([left], [right]) => {
-    return right.length - left.length;
-  });
+  }), [([from]) => {
+    return from.length;
+  }], ['desc']);
 };
 
 const repointSpecifiers = (source: string, edits: [string, string][]): string => {

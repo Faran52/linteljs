@@ -1,3 +1,5 @@
+import { mapValues } from 'es-toolkit';
+
 import { type Artifact } from '../../../config/types';
 import { targetFor, type TsconfigPlugin } from '../../../targets';
 import { emitted } from '../../utils/artifactUtils';
@@ -66,11 +68,9 @@ const typesFor = (answers: Answers): string[] => {
 };
 
 const pathsFrom = (answers: Answers): Record<string, string[]> => {
-  return Object.fromEntries(
-    Object.entries(buildAliases(answers)).map(([alias, directory]) => {
-      return [alias, [directory]];
-    }),
-  );
+  return mapValues(buildAliases(answers), (directory) => {
+    return [directory];
+  });
 };
 
 export const buildTsconfig = (answers: Answers): TsconfigFile => {

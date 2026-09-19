@@ -241,6 +241,9 @@ importers:
       '@clack/prompts':
         specifier: ^1.8.0
         version: 1.8.0
+      es-toolkit:
+        specifier: ^1.52.0
+        version: 1.52.0
     devDependencies:
       jiti:
         specifier: 'catalog:'

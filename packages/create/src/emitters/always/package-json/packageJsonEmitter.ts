@@ -1,3 +1,5 @@
+import { compact, uniq } from 'es-toolkit';
+
 import {
   type Answers,
   type Form,
@@ -169,7 +171,7 @@ export const parsePackageJson = (text: string): PackageJson => {
 export const versioned = (names: string[]): Record<string, string> => {
   const result: Record<string, string> = {};
 
-  const sorted = [...new Set(names.filter(Boolean))].sort((left, right) => {
+  const sorted = uniq(compact(names)).sort((left, right) => {
     return left.localeCompare(right, 'en');
   });
 
@@ -261,7 +263,7 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
 const ALLOWED_BUILDS = ['@swc/core', 'fsevents', 'sharp', 'unrs-resolver'];
 
 export const allowedBuildNames = (answers: Answers): string[] => {
-  return [...new Set([...ALLOWED_BUILDS, ...targetFor(answers).allowBuilds])].sort((left, right) => {
+  return uniq([...ALLOWED_BUILDS, ...targetFor(answers).allowBuilds]).sort((left, right) => {
     return left.localeCompare(right, 'en');
   });
 };

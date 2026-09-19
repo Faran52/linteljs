@@ -1,3 +1,5 @@
+import { partition } from 'es-toolkit';
+
 import { type Answers, hasLibrary } from '../../../answers/answers';
 import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
@@ -15,12 +17,12 @@ const sortedImports = (lines: string[]): string => {
   const bySpecifier = (left: string, right: string): number => {
     return specifierOf(left).localeCompare(specifierOf(right), 'en');
   };
-  const packages = lines.filter((line) => {
-    return !specifierOf(line).startsWith("'.");
-  }).sort(bySpecifier);
-  const own = lines.filter((line) => {
+  const [own, packages] = partition(lines, (line) => {
     return specifierOf(line).startsWith("'.");
-  }).sort(bySpecifier);
+  });
+
+  own.sort(bySpecifier);
+  packages.sort(bySpecifier);
 
   return [packages.join('\n'), ...(own.length === 0 ? [] : [own.join('\n')])].join('\n\n');
 };

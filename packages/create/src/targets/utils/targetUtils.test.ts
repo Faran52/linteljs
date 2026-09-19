@@ -74,12 +74,12 @@ describe('esmAssetImports', () => {
 
   it('drops the characters an identifier cannot carry', () => {
     // `@2x` is how a density variant is spelled, and a second dot is an ordinary naming habit.
-    expect(bindingsIn("require('./icon@2x.png');")).toEqual(['icon2xAsset <- ./icon@2x.png']);
-    expect(bindingsIn("require('./logo.dark.png');")).toEqual(['logodarkAsset <- ./logo.dark.png']);
+    expect(bindingsIn("require('./icon@2x.png');")).toEqual(['icon2XAsset <- ./icon@2x.png']);
+    expect(bindingsIn("require('./logo.dark.png');")).toEqual(['logoDarkAsset <- ./logo.dark.png']);
   });
 
   it('prefixes a name that would otherwise open with a digit', () => {
-    expect(bindingsIn("require('./2x.png');")).toEqual(['asset2xAsset <- ./2x.png']);
+    expect(bindingsIn("require('./2x.png');")).toEqual(['asset2XAsset <- ./2x.png']);
   });
 });
 

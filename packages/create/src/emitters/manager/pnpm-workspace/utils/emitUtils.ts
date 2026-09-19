@@ -1,3 +1,5 @@
+import { uniq } from 'es-toolkit';
+
 import { targetFor } from '../../../../targets';
 import { ESLINT_RANGE } from '../../../always/package-json/constants';
 import { allowedBuildNames, buildDevDependencies } from '../../../always/package-json/packageJsonEmitter';
@@ -37,11 +39,9 @@ const eslintMajor = (): string => {
 export const peerRangeAllowances = (answers: Answers): string[] => {
   const installed = Object.keys(buildDevDependencies(answers));
 
-  return [...new Set(
-    installed.flatMap((name) => {
-      return PEER_RANGE_GAPS[name] ?? [];
-    }),
-  )].sort((left, right) => {
+  return uniq(installed.flatMap((name) => {
+    return PEER_RANGE_GAPS[name] ?? [];
+  })).sort((left, right) => {
     return left.localeCompare(right, 'en');
   });
 };

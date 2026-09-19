@@ -1,3 +1,5 @@
+import { camelCase } from 'es-toolkit';
+
 import type { AliasMap } from '../../answers/answers';
 import type { ScaffoldSpec } from '../record';
 
@@ -40,10 +42,7 @@ const ASSET_REQUIRE = /require\('([^']+\.(?:png|jpe?g|gif|webp|avif|svg))'\)/g;
 // A legal identifier off the filename: `-` marks a hump, other illegal characters drop, a leading digit takes a prefix.
 const bindingFor = (path: string): string => {
   const base = path.slice(path.lastIndexOf('/') + 1).replace(/\.\w+$/, '');
-  const camel = base.replaceAll(/-(\w)/g, (_match, letter: string) => {
-    return letter.toUpperCase();
-  });
-  const name = `${camel.replaceAll(/\W/g, '')}Asset`;
+  const name = `${camelCase(base)}Asset`;
 
   return /^\d/.test(name) ? `asset${name}` : name;
 };
