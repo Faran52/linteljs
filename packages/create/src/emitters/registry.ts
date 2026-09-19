@@ -1,10 +1,15 @@
+import { emitted } from '../config/artifact';
+import {
+  MANAGED_PATH,
+  managedRecord,
+  removableIn,
+} from '../config/managed';
 import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
 
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './agents/codex-marketplace/codexMarketplaceEmitter';
 import { copilotInstructionsEmitter } from './agents/copilot-instructions/copilotInstructionsEmitter';
 import { cursorRulesEmitter } from './agents/cursor-rules/cursorRulesEmitter';
-import { linteljsPluginEmitter } from './agents/linteljs-plugin/linteljsPluginEmitter';
 import { bannedPatternsEmitter } from './always/banned-patterns/bannedPatternsEmitter';
 import { ciWorkflowEmitter } from './always/ci-workflow/ciWorkflowEmitter';
 import { commitlintEmitter } from './always/commitlint/commitlintEmitter';
@@ -13,6 +18,7 @@ import { gitignoreEmitter } from './always/gitignore/gitignoreEmitter';
 import { huskyEmitter } from './always/husky/huskyEmitter';
 import { lintStagedEmitter } from './always/lint-staged/lintStagedEmitter';
 import { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
+import { linteljsPluginEmitter } from './always/linteljs-plugin/linteljsPluginEmitter';
 import { packageJsonEmitter } from './always/package-json/packageJsonEmitter';
 import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
@@ -44,7 +50,7 @@ import type { Artifact, Emitter } from '../config/artifact';
 export const BUILD_EMITTERS: Record<string, Emitter> = {
   'always/eslint-config': eslintConfigEmitter,
   'always/stylelint-config': stylelintConfigEmitter,
-  'agents/linteljs-plugin': linteljsPluginEmitter,
+  'always/linteljs-plugin': linteljsPluginEmitter,
   'agents/claude-settings': claudeSettingsEmitter,
   'agents/codex-marketplace': codexMarketplaceEmitter,
   'agents/copilot-instructions': copilotInstructionsEmitter,
@@ -88,9 +94,19 @@ export const buildArtifacts = (
   project: ProjectShape = EMPTY_PROJECT,
   name = '',
 ): Artifact[] => {
-  return Object.values(BUILD_EMITTERS).flatMap((emit) => {
+  const artifacts = Object.values(BUILD_EMITTERS).flatMap((emit) => {
     return emit(answers, project, name);
   });
+
+  /**
+   * The record last, because it is a fact about the list rather than a member of it: every path above that this CLI
+   * owns outright, which is what a later `sync` may remove once an answer stops asking for it. Computed here rather
+   * than by an emitter, since an emitter would have to leave itself out of its own input.
+   */
+  return [...artifacts, {
+    ...emitted('standard', MANAGED_PATH, managedRecord(removableIn(artifacts))),
+    removable: true,
+  }];
 };
 
 /**

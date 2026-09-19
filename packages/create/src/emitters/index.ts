@@ -3,4 +3,3 @@ export {
   type ArtifactContent,
 } from '../config/artifact';
 export { buildArtifacts } from './registry';
-export { removableTargets } from './removableTargets';

@@ -15,14 +15,14 @@ import {
   TESTING_CHOICES,
 } from '../../answers/answers';
 import { type Artifact } from '../../config/artifact';
+import { removableIn } from '../../config/managed';
 import { contentOf } from '../../files/shippedAssets';
-import { removableTargets } from '../removableTargets';
+import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
 
 import { claudeSettingsEmitter } from './claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './codex-marketplace/codexMarketplaceEmitter';
 import { copilotInstructionsEmitter } from './copilot-instructions/copilotInstructionsEmitter';
 import { cursorRulesEmitter } from './cursor-rules/cursorRulesEmitter';
-import { linteljsPluginEmitter } from './linteljs-plugin/linteljsPluginEmitter';
 
 interface HostCase {
   label: string;
@@ -46,8 +46,6 @@ interface SkillExpectation {
 }
 
 // The agent tree as a whole, which is what this file covers: five emitters, each owning one agent's answer.
-const REMOVABLE = removableTargets();
-
 const agentArtifacts = (answers: Answers): Artifact[] => {
   return [
     ...linteljsPluginEmitter(answers),
@@ -464,38 +462,18 @@ describe('SKILL.md', () => {
   });
 });
 
-describe('REMOVABLE', () => {
+describe('the agent tree against what a run records as its own', () => {
   it.each(ARTIFACT_MATRIX)(
     'contains every non-preserved $label/$target/zod=$zod/testing=$testing artifact',
     (entry) => {
       const generated = nonPreservedTargetsFor(entry);
 
       expect(generated.filter((target) => {
-        return !REMOVABLE.includes(target);
+        return !removableIn(agentArtifacts(answersForMatrix(entry))).includes(target);
       })).toEqual([]);
       expect(generated.filter((target) => {
         return HOOK_TARGETS.includes(target);
       })).toEqual(HOOK_TARGETS);
     },
   );
-
-  /**
-   * Every agent path, and only those: the inventory also carries what the package manager and type-safety answers
-   * write, which no agent emitter reaches. `removableTargets.test.ts` holds the whole of it against its golden list.
-   */
-  it('accounts for every agent path the inventory carries', () => {
-    const emitted = new Set(ARTIFACT_MATRIX.flatMap(nonPreservedTargetsFor));
-    const agentPaths = REMOVABLE.filter((target) => {
-      return target.startsWith('plugins/linteljs/')
-        || target.startsWith('.claude/')
-        || target.startsWith('.agents/')
-        || target.startsWith('.github/instructions/')
-        || target.startsWith('.cursor/rules/');
-    });
-
-    expect(agentPaths.filter((target) => {
-      return !emitted.has(target);
-    })).toEqual([]);
-    expect(agentPaths).toHaveLength(38);
-  });
 });

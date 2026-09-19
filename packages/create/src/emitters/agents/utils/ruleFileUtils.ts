@@ -1,4 +1,4 @@
-import { ruleSources } from '../linteljs-plugin/linteljsPluginEmitter';
+import { ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
 
 import type { Answers } from '../../../answers/answers';
 import type { Artifact } from '../../../config/artifact';

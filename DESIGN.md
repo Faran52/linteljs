@@ -631,17 +631,29 @@ not a function body, and `runInThisContext` evaluates it as one. Only the hotspo
 only inside `__mocks__/`, which is where this standard already puts fakes. `no-implied-eval` stays on
 everywhere including there, because `setTimeout('...')` is a defect and no fixture needs it.
 
-## Renaming a generated agent file, and the orphan it leaves
+## What `sync` may delete, and why the project holds the list
 
-`GENERATED_AGENT_TARGETS` is the closed list of exact paths `sync --force` may delete, and it is
-also the only thing standing between a rename and a file nobody can remove. A path that leaves the
-list stops being removable: it is no longer expected, so it is never written, and it is no longer
-in the inventory, so it is never obsolete either. `sync` goes quiet about it and the project keeps
-a file this CLI wrote and then forgot.
+A project records what this CLI wrote in `plugins/linteljs/managed.json`, and `sync --force` deletes
+what is in that record and no longer expected. It is written on every run that applies anything, and
+it lives in linteljs's own tree rather than in `linteljs.config.json`, which is the project's to
+reformat and which `sync` never rewrites.
 
-So a rename inside that inventory is two edits, not one: the new path replaces the old, and the old
-path stays behind as a removable entry until every project that could hold it has synced. Renaming
+The record exists because there is no other way to know. Answers change by hand editing the config,
+so by the time `sync` reads it the previous answers are gone; nothing on disk says which files an
+answer used to ask for. Three designs came before this one and each was a guess at the past. A
+closed list of paths written out by hand drifted the moment a rule file was added. Deriving that
+list by running every emitter over every combination of answers replaced thirty-eight paths to
+remember with five answer axes to remember, which is the same bet one level up: an answer that gates
+a file and has no axis leaves a file nobody can remove.
+
+Renaming a recorded path is still two edits rather than one. The new path replaces the old, and the
+old stays removable until every project that could hold it has synced, since a path that leaves the
+record without being deleted first is a file this CLI wrote and then forgot. Renaming
 `command-parser.js` to `commandParser.js` needed only the first, because it had never shipped.
+
+A project written before the record existed has none, and reads as an empty one: `sync` adds what
+the answers ask for and removes nothing until its own run writes the record. That is the safe
+direction to be wrong in.
 
 ## React Native `build`: `expo export --platform web`, and why it took a layout rule
 

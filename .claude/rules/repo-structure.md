@@ -67,8 +67,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   over `registry.ts` with no branch in it, which `meta.test.ts` asserts by reading its source. The
   registry is keyed by `<group>/<subject>`, which is the directory path, and held against the
   directory listing in both directions, so a directory nobody registered fails and a key with no
-  directory fails. The key carrying the group is what lets `removableTargets` ask the registry which
-  emitters an answer can deselect rather than being told.
+  directory fails.
 
   A subject directory holds its entry, its suites, a `constants.ts` for a table it alone reads, and
   a `utils/` for its private helpers. Nothing else, which `meta.test.ts` enforces: a second module
@@ -76,8 +75,10 @@ aliases it duplicates instead of importing carry a comment saying so.
   it, or it is read from outside, and then it is not that subject's to hold.
 
   A module that writes no file is not an emitter. `registry.ts` holds the two lists and the reading
-  of each, `removableTargets.ts` the third derivation of them, and `index.ts` is the barrel the outer
-  rings take the ring through; nothing else sits at that root. The artifact kind and the project
+  of each, and `index.ts` is the barrel the outer rings take the ring through; nothing else sits at
+  that root. `buildArtifacts` appends one artifact of its own, the record of what it owns that
+  `plugins/linteljs/managed.json` carries, because that is a fact about the list rather than a
+  member of it and an emitter would have to leave itself out of its own input. The artifact kind and the project
   shape are every ring's, so they are in `src/config/` with the engines and the run prefixes.
 
   A helper sits at the level of its readers and no higher. One subject reads it, it is

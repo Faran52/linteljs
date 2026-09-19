@@ -19,6 +19,7 @@ import {
 } from 'vitest';
 
 import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
+import { MANAGED_PATH } from '../config/managed';
 import { exists } from '../files/utils/fsUtils';
 
 import {
@@ -30,10 +31,11 @@ import {
 const CLAUDE_HOOK = 'plugins/linteljs/hooks/git-safety-guard.sh';
 
 // The three files only a Claude Code project gets, and the whole of what removal may touch here.
+// Sorted, because the record a run leaves behind is sorted and what `sync` finds obsolete follows it.
 const CLAUDE_ONLY = [
   '.claude/settings.json',
-  'plugins/linteljs/.claude-plugin/plugin.json',
   'plugins/linteljs/.claude-plugin/marketplace.json',
+  'plugins/linteljs/.claude-plugin/plugin.json',
 ];
 
 const CODEX_ONLY: Answers = {
@@ -203,6 +205,13 @@ describe('applySync', () => {
   it('refuses to remove an obsolete file through a symbolic-link parent', async () => {
     const external = join(cwd, 'external-claude');
 
+    // A path is only ever removed because a previous run recorded it as its own.
+    await mkdir(join(cwd, 'plugins', 'linteljs'), { recursive: true });
+    await writeFile(
+      join(cwd, MANAGED_PATH),
+      `${JSON.stringify({ removable: ['.claude/settings.json'] })}\n`,
+      'utf8',
+    );
     await mkdir(external);
     await writeFile(join(external, 'settings.json'), '{"external":true}\n', 'utf8');
     await symlink(external, join(cwd, '.claude'));

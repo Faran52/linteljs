@@ -1,8 +1,10 @@
 import { dirname, join } from 'node:path';
 
 import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
-import { buildArtifacts, removableTargets } from '../emitters';
+import { MANAGED_PATH } from '../config/managed';
+import { buildArtifacts } from '../emitters';
 import { applyArtifact, safeProjectPath } from '../files/projectFiles';
+import { readManagedPaths } from '../files/readManagedPaths';
 import { readProjectShape } from '../files/readProjectShape';
 import { contentOf } from '../files/shippedAssets';
 import {
@@ -35,13 +37,10 @@ export interface SyncResult {
 
 // Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
 
-/**
- * What an answer-gated emitter can write, plus the one name no emitter writes any more: versions through 1.6.0
- * recorded the answers in `lintel.config.json`, so an upgraded project carries a file this one replaced. A
- * migration is not a derivation, which is why it is unioned here rather than smuggled into the inventory.
- */
-const obsoleteCandidates = (): readonly string[] => {
-  return [...removableTargets(), LEGACY_CONFIG_PATH];
+// What the last run recorded as its own, plus the one name no run writes any more: versions through 1.6.0 kept the
+// answers in `lintel.config.json`, so an upgraded project carries a file this one replaced.
+const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
+  return [...await readManagedPaths(cwd), LEGACY_CONFIG_PATH];
 };
 
 // `git diff --no-index` rather than a diff dependency; `git.ts` says why that is safe.
@@ -62,7 +61,7 @@ const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
 const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
   const entries: SyncEntry[] = [];
 
-  for (const target of obsoleteCandidates()) {
+  for (const target of await obsoleteCandidates(cwd)) {
     if (!expected.has(target) && await entryExists(join(cwd, target))) {
       entries.push({
         target,
@@ -83,6 +82,11 @@ export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan>
 
   for (const artifact of buildArtifacts(answers, project)) {
     expected.add(artifact.target);
+
+    // This run's own bookkeeping, rewritten whenever it applies anything, so it is not a file to report or choose.
+    if (artifact.target === MANAGED_PATH) {
+      continue;
+    }
 
     const path = join(cwd, artifact.target);
     const current = await readIfPresent(path);
@@ -170,9 +174,19 @@ export const applySync = async (
   const expected = new Set<string>();
 
   const project = await readProjectShape(cwd);
+  // Read before anything is applied: the loop below rewrites the record, and what may be removed is what the
+  // previous run recorded rather than what this one is about to.
+  const candidates = await obsoleteCandidates(cwd);
 
   for (const artifact of buildArtifacts(answers, project)) {
     expected.add(artifact.target);
+
+    // Rewritten whenever this run applies anything, and never reported: it is bookkeeping, not a file the caller
+    // asked for, and a partial sync that left it stale would forget what it may remove next time.
+    if (artifact.target === MANAGED_PATH) {
+      await applyArtifact(cwd, artifact);
+      continue;
+    }
 
     if (!targets.includes(artifact.target)) {
       continue;
@@ -183,7 +197,7 @@ export const applySync = async (
     }
   }
 
-  for (const target of obsoleteCandidates()) {
+  for (const target of candidates) {
     if (expected.has(target) || !targets.includes(target)) {
       continue;
     }
