@@ -2,6 +2,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import {
+  directoriesIn,
+  sourcesUnder,
+  takenFromBarrel,
+} from '@mocks/ringShape';
+import {
   describe,
   expect,
   it,
@@ -11,17 +16,9 @@ import { BUILD_EMITTERS, SEED_EMITTERS } from './registry';
 
 const emittersDir = join(import.meta.dirname);
 
-// `config/` holds the data tables and `utils/` the helpers every emitter shares. Neither writes a file, so neither
-// is a group and neither is held to the shape below.
-const SHARED = new Set(['config', 'utils']);
-
-const directoriesIn = (path: string): string[] => {
-  return readdirSync(path, { withFileTypes: true }).filter((entry) => {
-    return entry.isDirectory();
-  }).map((entry) => {
-    return entry.name;
-  });
-};
+// `utils/` holds the helpers every emitter shares. It writes no file, so it is not a group and is not held to the
+// shape below.
+const SHARED = new Set(['utils']);
 
 // A group is named for the answer that decides whether its emitters write anything; `always` is the null one.
 const groups = directoriesIn(emittersDir).filter((name) => {
@@ -53,17 +50,6 @@ const modulesIn = (path: string): string[] => {
     return entry.isFile();
   }).map((entry) => {
     return relative(path, join(entry.parentPath, entry.name));
-  });
-};
-
-const sourcesUnder = (path: string): string[] => {
-  return readdirSync(path, {
-    withFileTypes: true,
-    recursive: true,
-  }).filter((entry) => {
-    return entry.isFile() && entry.name.endsWith('.ts');
-  }).map((entry) => {
-    return join(entry.parentPath, entry.name);
   });
 };
 
@@ -121,34 +107,12 @@ describe('the barrel', () => {
     return name !== '';
   });
 
-  // What the rings outside actually take from it, rather than what they mention: a name they reach for by its own
-  // path is not a reason to carry it here.
-  const takenFromBarrel = (): Set<string> => {
-    const taken = new Set<string>();
-
-    for (const source of sourcesUnder(join(emittersDir, '..'))) {
-      if (source.startsWith(emittersDir)) {
-        continue;
-      }
-
-      const text = readFileSync(source, 'utf8');
-
-      for (const [, names] of text.matchAll(/import (?:type )?\{([^}]*)\} from '(?:\.\.\/)+emitters';/gu)) {
-        for (const name of (names ?? '').split(',')) {
-          taken.add(name.replace('type ', '').trim());
-        }
-      }
-    }
-
-    return taken;
-  };
-
   it('reads a barrel with exports in it, so the assertion below is not vacuous', () => {
     expect(exported.length).toBeGreaterThan(0);
   });
 
   it('exports nothing the rings outside it never take from it', () => {
-    const taken = takenFromBarrel();
+    const taken = takenFromBarrel(emittersDir, 'emitters');
 
     expect(exported.filter((name) => {
       return !taken.has(name);

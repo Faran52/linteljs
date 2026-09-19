@@ -2,8 +2,11 @@ import { dirname } from 'node:path';
 
 import { STAGES } from '../config/constants';
 import { type Stage } from '../config/types';
-import { type Artifact, buildArtifacts } from '../emitters';
-import { seedArtifacts } from '../emitters/registry';
+import {
+  type Artifact,
+  buildArtifacts,
+  seedArtifacts,
+} from '../emitters';
 import { applyArtifact } from '../files/projectFiles';
 import { readProjectShape } from '../files/readProjectShape';
 import { mkdir } from '../files/utils/fsUtils';
