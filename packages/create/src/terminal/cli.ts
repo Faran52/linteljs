@@ -12,12 +12,7 @@ import {
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
 import packageJson from '../../package.json' with { type: 'json' };
-import {
-  type Answers,
-  DEFAULT_ANSWERS,
-  isValidProjectName,
-  PROJECT_NAME_RULE,
-} from '../answers/answers';
+import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -39,6 +34,7 @@ import {
   NOTHING_ANSWERED_MESSAGE,
   type Prompter,
 } from './prompts';
+import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
 
 // Answers given as flags, validated by the config parser so a wrong value names its choices.
 export interface AnswerFlags {

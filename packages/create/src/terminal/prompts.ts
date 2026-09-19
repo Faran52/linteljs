@@ -19,12 +19,10 @@ import {
   FORMS,
   HOSTED_FRAMEWORKS,
   type HostedFramework,
-  isValidProjectName,
   LIBRARIES,
   type Library,
   PACKAGE_MANAGERS,
   PLUGINS,
-  PROJECT_NAME_RULE,
   rendersWithReact,
   type Router,
   type Surface,
@@ -36,6 +34,8 @@ import {
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
 import { targetFor } from '../targets';
+
+import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
 
 import type { StoreSlot, TargetRecord } from '../targets/record';
 

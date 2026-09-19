@@ -91,13 +91,13 @@ export interface Answers {
 
 export type AliasMap = Record<string, string>;
 
-export type NamingConvention
+type NamingConvention
   = 'PASCAL_CASE'
     | 'CAMEL_CASE'
     | 'KEBAB_CASE';
 
 // A case name or a raw glob; `check-file` micromatches the basename, so a folder rule can admit `[slug]`.
-export type NamingRule = NamingConvention | (string & {});
+type NamingRule = NamingConvention | (string & {});
 
 export type NamingMap = Record<string, NamingRule>;
 
@@ -111,9 +111,9 @@ export type Framework
     | 'angular';
 
 // The libraries and routers with a layer behind them; the rest bring no ESLint rules.
-export type LibraryLayer = 'tanstack-query' | 'tailwind' | 'tanstack-router';
+type LibraryLayer = 'tanstack-query' | 'tailwind' | 'tanstack-router';
 
-export interface ResolverOptions {
+interface ResolverOptions {
   project?: string;
   conditionNames?: string[];
   noWarnOnMultipleProjects?: boolean;
@@ -236,17 +236,3 @@ export const hasTests = (answers: Answers): boolean => {
 export const TESTING_CHOICES: Testing[] = ['vitest', 'none'];
 
 export const TYPE_SAFETY_CHOICES: TypeSafety[] = ['strict', 'relaxed'];
-
-// npm's own floor is the stricter of directory name and package name, so meeting it meets both.
-export const PROJECT_NAME_RULE
-  = "a valid npm package name: lowercase letters, digits, '.', '-' and '_' only, starting with a letter or digit, "
-    + 'at most 214 characters, and not a reserved npm name';
-
-const PROJECT_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
-const RESERVED_PROJECT_NAMES = new Set(['favicon.ico', 'node_modules']);
-
-export const isValidProjectName = (name: string): boolean => {
-  return name.length <= 214
-    && PROJECT_NAME_PATTERN.test(name)
-    && !RESERVED_PROJECT_NAMES.has(name);
-};
