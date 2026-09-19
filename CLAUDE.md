@@ -63,6 +63,11 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
 - `packages/create/src/emitters/`: one directory per file lintel puts on disk, named for that file,
   exactly as a rule directory is named for its rule id. A module that writes no file is not an
   emitter: the kernel sits at the root, shared helpers under `utils/`, data tables under `config/`.
+  Two lists come out of it and every file reaches disk through `applyArtifact` from one of them.
+  `buildArtifacts` is what `create` and `sync` both write from. `seedArtifacts` is what a `create`
+  run plants and `sync` never touches: the recorded config, the README, the manifest and the starter
+  source. `rewrite/` and `repair/` are the one exception and a different operation, editing source a
+  scaffolder already wrote.
 - `packages/create/assets/`: files copied onto disk in a generated project, not imported. The
   standard this repo publishes lives here.
 - `packages/eslint-config/src/`: the layers, flat because each file is a tsdown entry backing a

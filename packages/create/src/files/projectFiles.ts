@@ -19,6 +19,7 @@ import { type Artifact } from '../emitters';
 import { contentOf } from './shippedAssets';
 import {
   entryExists,
+  exists,
   isAbsence,
   readIfPresent,
 } from './utils/fsUtils';
@@ -105,6 +106,15 @@ export const applyArtifact = async (
   artifact: Artifact,
   fresh = false,
 ): Promise<boolean> => {
+  if (artifact.fresh === true && !fresh) {
+    return false;
+  }
+
+  // Skipped rather than failed: the example it covers is worth losing when a rearranged starter moved it.
+  if (artifact.requires !== undefined && !await exists(join(cwd, artifact.requires))) {
+    return false;
+  }
+
   const path = await safeProjectPath(cwd, artifact.target);
 
   if (!fresh && artifact.preserve === true && await entryExists(path)) {

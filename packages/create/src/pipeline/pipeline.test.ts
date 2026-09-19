@@ -916,6 +916,29 @@ describe('root config', () => {
 });
 
 // Both stages run a name off `PATH` with `shell: false`, so a stand-in earlier on `PATH` is the whole seam.
+/**
+ * One route to disk. Every file this CLI owns is an `Artifact` and reaches the project through `applyArtifact`,
+ * which is what lets `sync` see the same set and what stops this file growing a branch per artifact. `rewrite` and
+ * `repair` still write directly, and are a different operation: they edit source a scaffolder already wrote.
+ */
+describe('the pipeline as a writer', () => {
+  it('puts every file it owns on disk through applyArtifact and nothing else', async () => {
+    const source = await readFile(join(import.meta.dirname, 'pipeline.ts'), 'utf8');
+
+    expect(source).toContain('applyArtifact(');
+    expect(source).not.toContain('writeProjectFile(');
+    expect(source).not.toMatch(/from 'node:fs/u);
+  });
+
+  // The two lists are what `create` writes and what `sync` re-applies; the pipeline writes both.
+  it('writes the seeded artifacts as well as the built ones', async () => {
+    const source = await readFile(join(import.meta.dirname, 'pipeline.ts'), 'utf8');
+
+    expect(source).toContain('seedArtifacts(');
+    expect(source).toContain('buildArtifacts(');
+  });
+});
+
 describe('the stages that shell out', () => {
   const MARKER = 'invocation.txt';
 

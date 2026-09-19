@@ -1,24 +1,11 @@
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 
-import {
-  browsersOf,
-  hasLibrary,
-  hasTests,
-} from '../answers/answers';
-import { CONFIG_PATH } from '../answers/lintelConfig';
 import { type Artifact, buildArtifacts } from '../emitters';
 import { type Stage, STAGES } from '../emitters/artifact';
-import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
-import { emitManifest } from '../emitters/manifest/emitManifest';
-import { emitReadme } from '../emitters/readme/emitReadme';
-import { applyArtifact, writeProjectFile } from '../files/projectFiles';
+import { seedArtifacts } from '../emitters/seedArtifacts';
+import { applyArtifact } from '../files/projectFiles';
 import { readProjectShape } from '../files/readProjectShape';
-import { ASSETS_ROOT } from '../files/shippedAssets';
-import {
-  exists,
-  mkdir,
-  readFile,
-} from '../files/utils/fsUtils';
+import { mkdir } from '../files/utils/fsUtils';
 import { git } from '../process/git';
 import { run } from '../process/run';
 import { scaffoldCommand } from '../process/scaffoldCommand';
@@ -49,12 +36,6 @@ type StageRunner = (
   artifacts: Artifact[],
   stage: Stage,
 ) => Promise<void> | void;
-
-const write = async (options: PipelineOptions, relative: string, text: string): Promise<void> => {
-  await writeProjectFile(options.cwd, relative, text);
-
-  options.onWrite?.(relative);
-};
 
 const writeArtifacts = async (
   options: PipelineOptions,
@@ -92,7 +73,6 @@ const stagePackage = async (
   artifacts: Artifact[],
   stage: Stage,
 ): Promise<void> => {
-  await write(options, CONFIG_PATH, emitLintelConfig(options.answers));
   await writeArtifacts(options, artifacts, stage);
 
   // Rewrites the scaffolder's source to compile under the flags the tsconfig just set.
@@ -106,41 +86,6 @@ const stagePackage = async (
       options.onWrite,
       options.onNotice,
     );
-  }
-};
-
-// Source no scaffolder wrote; fresh output only, and never a test helper the testing answer declined.
-const writeStarterFiles = async (options: PipelineOptions): Promise<void> => {
-  const { starterFiles } = targetFor(options.answers);
-
-  if (starterFiles === undefined || !isFresh(options)) {
-    return;
-  }
-
-  const { answers } = options;
-  const wanted = starterFiles.filter((file) => {
-    return (file.library === undefined || hasLibrary(answers, file.library))
-      && (file.router === undefined || answers.router === file.router)
-      && (file.tests === undefined || hasTests(answers));
-  });
-
-  for (const file of wanted) {
-    await write(options, file.target, await readFile(join(ASSETS_ROOT, file.source), 'utf8'));
-  }
-};
-
-// Skipped when the covered file is absent: a rearranged starter costs the example, not a broken import.
-const writeStarterTests = async (options: PipelineOptions): Promise<void> => {
-  const { starterTests } = targetFor(options.answers);
-
-  if (starterTests === undefined || !hasTests(options.answers) || !isFresh(options)) {
-    return;
-  }
-
-  for (const test of starterTests) {
-    if (await exists(join(options.cwd, test.covers))) {
-      await write(options, test.target, await readFile(join(ASSETS_ROOT, test.source), 'utf8'));
-    }
   }
 };
 
@@ -174,29 +119,6 @@ const stageStandard = async (
   ensureRepository(options);
 
   await writeArtifacts(options, artifacts, stage);
-
-  // Every scaffolder's README describes a toolchain the stages above replaced; see `emitReadme`.
-  const readme = await readFile(join(ASSETS_ROOT, 'readme/template.md'), 'utf8');
-  await write(options, 'README.md', emitReadme(readme, options.name, options.answers));
-
-  // Birth only: a manifest's permissions and store metadata are the project's to keep.
-  if (isFresh(options)) {
-    // One per packaged browser; the second is named for its browser since Chrome rejects `browser_specific_settings`
-    // and AMO requires it.
-    for (const browser of browsersOf(options.answers)) {
-      const manifest = emitManifest(options.answers, options.name, browser);
-      const target = browser === options.answers.browser
-        ? 'manifest.json'
-        : `manifest.${browser}.json`;
-
-      if (manifest !== null) {
-        await write(options, target, manifest);
-      }
-    }
-  }
-
-  await writeStarterFiles(options);
-  await writeStarterTests(options);
 };
 
 // Fatal on purpose: every later step reads `node_modules`.
@@ -219,11 +141,11 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
 
 export const runPipeline = async (options: PipelineOptions): Promise<void> => {
   // Read before the stages, so this is the directory as the user had it.
-  const artifacts = buildArtifacts(
-    options.answers,
-    await readProjectShape(options.cwd),
-    options.name,
-  );
+  // Seeded first, so `lintel.config.json` precedes the `package.json` whose dependencies its answers imply.
+  const artifacts = [
+    ...seedArtifacts(options.answers, options.name),
+    ...buildArtifacts(options.answers, await readProjectShape(options.cwd), options.name),
+  ];
 
   for (const stage of STAGES) {
     // `--skip lint` means somebody else's rules, and fixing against those is an unasked-for edit.

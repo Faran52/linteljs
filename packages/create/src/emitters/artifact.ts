@@ -36,6 +36,10 @@ export interface Artifact {
   executable?: boolean;
   // Installed when missing, never overwritten, not even under --force.
   preserve?: true;
+  // Fresh scaffolder output only. A project owns these from its first run, so a later one leaves them where they are.
+  fresh?: true;
+  // Written only when this path is already there: a starter test covering source the scaffolder may not have written.
+  requires?: string;
 }
 
 export const STAGES: Stage[] = [

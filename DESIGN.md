@@ -11,7 +11,7 @@ restates code goes stale and then misleads.
 
 For a consumer deciding whether to use lintel: The problem, The goal, Non-goals.
 For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure; Libraries and routers; Package manager files; Comments.
-For work on this workspace itself: One version per shared dependency; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
+For work on this workspace itself: One version per shared dependency; Two artifact lists; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
 
 ## The problem
 
@@ -884,6 +884,35 @@ does not list it.
 Only `@linteljs/*` is republished, so only `@linteljs/*` has to go. `pruneBunCache` deletes the
 entries carrying that scope and the rest of the cache persists. Anything the prune misses fails
 loudly rather than quietly, because `verifyLintOutput` asserts the resolved version is this run's.
+
+## Two artifact lists, and why `sync` sees only one
+
+Every file this CLI owns reaches disk as an `Artifact` through `applyArtifact`. There is no second
+route: `pipeline.ts` holds no `writeProjectFile` call, which `pipeline.test.ts` pins by reading its
+own source. Before this, the README, the manifest, the starter files, the starter tests and
+`lintel.config.json` were each written by hand inside a stage runner, so adding a file that needed a
+condition meant editing the orchestrator: the coupling `switch (target)` is banned for in the
+emitters, one level up.
+
+The list is two, because `create` and `sync` do not own the same files.
+
+- `buildArtifacts` is the toolchain lintel maintains. Both commands write from it, which is what lets
+  `sync` re-apply a changed standard to an existing project.
+- `seedArtifacts` is what a `create` run plants and `sync` never touches: `lintel.config.json`, the
+  README, the manifest and the starter source.
+
+That split is not new; it is what the stage runners were expressing by writing those files by hand,
+now said once. It is load-bearing in both directions. `sync` reads `lintel.config.json` rather than
+writing it, so a project that reformatted its own config keeps those bytes through a `sync --force`,
+and `cli.test.ts` pins exactly that. `pipeline.test.ts` pins the other half: the config is not in the
+sync plan at all.
+
+Two properties carry what the stage runners used to decide in code. `fresh: true` is birth only, for
+the manifest and the starter source, which a project owns from its first run; `applyArtifact` already
+received `fresh` for the `preserve` decision and now answers `false` outright. `requires` names a path
+that has to exist, which is how a starter test is skipped when a rearranged starter moved the file it
+covers. Both are data on the artifact rather than a branch in the pipeline, so a new one of either
+costs no orchestrator change.
 
 ## Releasing
 
