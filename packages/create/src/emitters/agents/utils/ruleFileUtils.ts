@@ -1,7 +1,7 @@
 import { ruleSources } from '../linteljs-plugin/linteljsPluginEmitter';
 
 import type { Answers } from '../../../answers/answers';
-import type { Artifact } from '../../artifact';
+import type { Artifact } from '../../../config/artifact';
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
 

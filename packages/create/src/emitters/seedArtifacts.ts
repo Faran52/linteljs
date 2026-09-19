@@ -1,8 +1,9 @@
-import { EMPTY_PROJECT, type ProjectShape } from './projectShape';
+import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
+
 import { SEED_EMITTERS } from './registry';
 
 import type { Answers } from '../answers/answers';
-import type { Artifact } from './artifact';
+import type { Artifact } from '../config/artifact';
 
 /**
  * What a project is seeded with and owns afterwards. Kept out of `buildArtifacts` because that list is what

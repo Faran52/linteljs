@@ -3,7 +3,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
 } from '../../../answers/linteljsConfig';
-import { type Artifact, emitted } from '../../artifact';
+import { type Artifact, emitted } from '../../../config/artifact';
 
 import type { Answers } from '../../../answers/answers';
 

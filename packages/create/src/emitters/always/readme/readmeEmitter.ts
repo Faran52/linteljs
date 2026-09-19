@@ -1,8 +1,8 @@
 import { fillSlots, sharedSlots } from './utils/templateUtils';
 
 import type { Answers } from '../../../answers/answers';
-import type { Artifact } from '../../artifact';
-import type { ProjectShape } from '../../projectShape';
+import type { Artifact } from '../../../config/artifact';
+import type { ProjectShape } from '../../../config/projectShape';
 
 // Replaced outright: the scaffolder's advice is wrong in a way someone acts on (Solid's port 5173 against the
 // emitted 3000). Never touched by `sync`.

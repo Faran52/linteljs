@@ -41,9 +41,9 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
 } from '../answers/linteljsConfig';
+import { type Stage } from '../config/artifact';
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
-import { type Stage } from '../emitters/artifact';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';
 import { STYLE_ENTRY_CANDIDATES } from '../files/readProjectShape';
 import {

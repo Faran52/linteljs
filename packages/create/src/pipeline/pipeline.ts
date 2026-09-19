@@ -1,7 +1,7 @@
 import { dirname } from 'node:path';
 
+import { type Stage, STAGES } from '../config/artifact';
 import { type Artifact, buildArtifacts } from '../emitters';
-import { type Stage, STAGES } from '../emitters/artifact';
 import { seedArtifacts } from '../emitters/seedArtifacts';
 import { applyArtifact } from '../files/projectFiles';
 import { readProjectShape } from '../files/readProjectShape';

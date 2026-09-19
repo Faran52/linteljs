@@ -1,7 +1,11 @@
 import type { Answers } from '../answers/answers';
 import type { ProjectShape } from './projectShape';
 
-// Separate from index.ts: importing the list back in trips import-x/no-cycle.
+/**
+ * The kind of thing this CLI writes, and the vocabulary every ring shares: `emitters/` builds one, `files/`
+ * applies it, `pipeline/` sequences them by stage and `terminal/` names a stage on `--skip`. No ring owns it, so
+ * it sits below all of them rather than inside the one that happens to construct it most often.
+ */
 
 // A stage is a property of an artifact, so it is declared beside one. Stage 4, `standard`, also
 // writes the hooks, the checker, the test setup and the build configs.

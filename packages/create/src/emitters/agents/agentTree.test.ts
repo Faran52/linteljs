@@ -14,8 +14,8 @@ import {
   type Testing,
   TESTING_CHOICES,
 } from '../../answers/answers';
+import { type Artifact } from '../../config/artifact';
 import { contentOf } from '../../files/shippedAssets';
-import { type Artifact } from '../artifact';
 import { removableTargets } from '../removableTargets';
 
 import { claudeSettingsEmitter } from './claude-settings/claudeSettingsEmitter';

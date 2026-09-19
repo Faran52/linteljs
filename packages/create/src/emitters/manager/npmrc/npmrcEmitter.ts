@@ -1,4 +1,4 @@
-import { type Artifact, copied } from '../../artifact';
+import { type Artifact, copied } from '../../../config/artifact';
 
 import type { Answers } from '../../../answers/answers';
 

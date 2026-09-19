@@ -1,4 +1,4 @@
-import { type Artifact, merged } from '../../artifact';
+import { type Artifact, merged } from '../../../config/artifact';
 // Appended rather than written: the scaffolder's list knows about `.next/` and `.svelte-kit/`.
 
 const LINTEL_IGNORED = ['coverage/', '*.tsbuildinfo'];

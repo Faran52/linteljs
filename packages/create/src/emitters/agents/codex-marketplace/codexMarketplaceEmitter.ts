@@ -2,7 +2,7 @@ import {
   type Artifact,
   copied,
   emitted,
-} from '../../artifact';
+} from '../../../config/artifact';
 import { adapterArtifact } from '../utils/adapterUtils';
 
 import type { Answers, Plugin } from '../../../answers/answers';

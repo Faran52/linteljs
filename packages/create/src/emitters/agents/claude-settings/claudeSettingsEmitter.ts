@@ -2,7 +2,7 @@ import {
   type Artifact,
   copied,
   merged,
-} from '../../artifact';
+} from '../../../config/artifact';
 import { adapterArtifact } from '../utils/adapterUtils';
 
 import { mergeClaudeSettings } from './utils/mergeUtils';

@@ -1,6 +1,6 @@
 import { type Answers, hasLibrary } from '../../../answers/answers';
+import { type Artifact, emitted } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
-import { type Artifact, emitted } from '../../artifact';
 
 // `stylelint-config-tailwindcss` teaches it Tailwind's at-rules; without it every `@apply` is unknown.
 

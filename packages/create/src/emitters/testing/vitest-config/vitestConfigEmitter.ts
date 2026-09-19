@@ -1,10 +1,10 @@
+import { type Artifact, emitted } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
-import { type Artifact, emitted } from '../../artifact';
 
 import type { Answers } from '../../../answers/answers';
+import type { ProjectShape } from '../../../config/projectShape';
 import type { PluginSpec, TestPlatform } from '../../../targets/record';
-import type { ProjectShape } from '../../projectShape';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
 // on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.

@@ -19,7 +19,7 @@ import {
   it,
 } from 'vitest';
 
-import { emitted, merged } from '../emitters/artifact';
+import { emitted, merged } from '../config/artifact';
 
 import { applyArtifact, writeProjectFile } from './projectFiles';
 import { readIfPresent } from './utils/fsUtils';

@@ -1,8 +1,9 @@
-import { EMPTY_PROJECT, type ProjectShape } from './projectShape';
+import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
+
 import { BUILD_EMITTERS } from './registry';
 
 import type { Answers } from '../answers/answers';
-import type { Artifact } from './artifact';
+import type { Artifact } from '../config/artifact';
 
 /**
  * Every file this CLI owns some or all of, which both `create` and `sync` write from. A merge belongs here, not in

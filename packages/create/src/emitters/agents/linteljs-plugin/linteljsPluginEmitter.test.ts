@@ -12,8 +12,8 @@ import {
   type Testing,
   type TypeSafety,
 } from '../../../answers/answers';
+import { type Artifact } from '../../../config/artifact';
 import { contentOf } from '../../../files/shippedAssets';
-import { type Artifact } from '../../artifact';
 
 import { referenceArtifacts } from './linteljsPluginEmitter';
 

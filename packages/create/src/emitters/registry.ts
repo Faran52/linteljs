@@ -28,7 +28,7 @@ import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
 
-import type { Emitter } from './artifact';
+import type { Emitter } from '../config/artifact';
 
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once

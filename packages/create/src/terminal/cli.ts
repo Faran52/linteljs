@@ -24,8 +24,8 @@ import {
   CURRENT_SCHEMA_VERSION,
   parseLinteljsConfig,
 } from '../answers/linteljsConfig';
+import { type Stage, STAGES } from '../config/artifact';
 import { RUN_PREFIX } from '../config/runPrefix';
-import { type Stage, STAGES } from '../emitters/artifact';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';
 import { entryExists } from '../files/utils/fsUtils';
 import { runPipeline } from '../pipeline/pipeline';

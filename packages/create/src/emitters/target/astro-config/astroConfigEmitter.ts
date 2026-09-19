@@ -1,7 +1,7 @@
 import { hasLibrary } from '../../../answers/answers';
+import { type Artifact, emitted } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
 import { OUTSIDE_TESTS } from '../../../targets/utils/frameworkUtils';
-import { type Artifact, emitted } from '../../artifact';
 
 import type { Answers, HostedFramework } from '../../../answers/answers';
 

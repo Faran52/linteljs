@@ -1,4 +1,4 @@
-import { type Artifact, emitted } from '../../artifact';
+import { type Artifact, emitted } from '../../../config/artifact';
 import { emitAgentAdapter } from '../utils/adapterUtils';
 import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 

@@ -1,6 +1,6 @@
 export {
   type Artifact,
   type ArtifactContent,
-} from './artifact';
+} from '../config/artifact';
 export { buildArtifacts } from './buildArtifacts';
 export { removableTargets } from './removableTargets';

@@ -7,8 +7,8 @@ import {
   TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
 import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
+import { EMPTY_PROJECT } from '../config/projectShape';
 
-import { EMPTY_PROJECT } from './projectShape';
 import { BUILD_EMITTERS } from './registry';
 
 import type { Answers } from '../answers/answers';

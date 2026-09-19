@@ -9,7 +9,7 @@ import { CONFIG_PATH } from '../answers/linteljsConfig';
 
 import { seedArtifacts } from './seedArtifacts';
 
-import type { Artifact } from './artifact';
+import type { Artifact } from '../config/artifact';
 
 const seedFor = (overrides: Partial<Answers> = {}): Artifact[] => {
   return seedArtifacts({

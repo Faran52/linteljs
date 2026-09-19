@@ -28,11 +28,11 @@ import {
   type Testing,
   type TypeSafety,
 } from '../answers/answers';
+import { type Artifact } from '../config/artifact';
 import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
-import { type Artifact } from './artifact';
 import { buildArtifacts } from './buildArtifacts';
 
 interface AnswerOverrides {

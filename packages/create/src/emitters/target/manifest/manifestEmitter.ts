@@ -4,10 +4,10 @@ import {
   type Browser,
   hasSurface,
 } from '../../../answers/answers';
+import { type Artifact, emitted } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
-import { type Artifact, emitted } from '../../artifact';
 
-import type { ProjectShape } from '../../projectShape';
+import type { ProjectShape } from '../../../config/projectShape';
 
 // Emitted rather than templated: browser times surfaces would be twelve templates holding one shape. Birth only,
 // since a real manifest is its permissions and store metadata within a week.

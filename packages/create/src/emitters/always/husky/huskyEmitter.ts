@@ -1,4 +1,4 @@
-import { type Artifact, copied } from '../../artifact';
+import { type Artifact, copied } from '../../../config/artifact';
 
 // Husky and Claude Code invoke these directly, so the mode bit is part of the artifact.
 export const huskyEmitter = (): Artifact[] => {

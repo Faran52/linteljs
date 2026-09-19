@@ -1,6 +1,6 @@
 import { hasLibrary, hasTests } from '../../../answers/answers';
+import { type Artifact, copied } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
-import { type Artifact, copied } from '../../artifact';
 
 import type { Answers } from '../../../answers/answers';
 

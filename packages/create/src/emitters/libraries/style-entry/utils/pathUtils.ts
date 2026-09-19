@@ -1,5 +1,5 @@
+import { projectSpelling } from '../../../../config/projectShape';
 import { targetFor } from '../../../../targets';
-import { projectSpelling } from '../../../projectShape';
 
 import type { Answers } from '../../../../answers/answers';
 
