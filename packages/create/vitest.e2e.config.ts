@@ -10,9 +10,9 @@ import { defineConfig } from 'vitest/config';
  * No `testTimeout` here: the suite sets its own per-case timeout, because the number that
  * matters is per target rather than per file.
  *
- * Sharding is `E2E_SHARD`/`E2E_SHARDS`, read in `cases.ts`, not vitest's own `--shard`. Vitest
+ * Sharding is `E2E_SHARD`/`E2E_SHARDS`, read in `matrix.ts`, not vitest's own `--shard`. Vitest
  * splits by file, and the nine files hold 11 to 91 cases each, so a file split cannot balance
- * them; the stride in `cases.ts` gives every shard an even share of every target. `e2e.yml` runs
+ * them; the stride in `matrix.ts` gives every shard an even share of every target. `e2e.yml` runs
  * four, one machine each.
  */
 export default defineConfig({
@@ -23,7 +23,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.e2e.test.ts'],
     // Starts the one registry holding the workspace versions; every case installs through it.
-    globalSetup: ['src/pipeline/e2e/registrySetup.ts'],
+    globalSetup: ['src/pipeline/e2e/registry/registry.ts'],
     /**
      * Files run one at a time and the cases inside a file run together. Every case but the four in `managerCases`
      * is pnpm, and those four sit at the head of one file, so at most one bun, one yarn and one npm install is ever

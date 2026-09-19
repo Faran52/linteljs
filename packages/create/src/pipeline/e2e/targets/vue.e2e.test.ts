@@ -4,9 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import { casesFor } from './cases/cases';
-import { runE2eCase } from './run-e2e-case/runE2eCase';
-import { afterAllCleanup } from './utils/workspaceUtils';
+import { casesFor } from '../matrix/matrix';
+import { runE2eCase } from '../runner/runner';
+import { afterAllCleanup } from '../utils/workspaceUtils';
 
 describe('vue end-to-end', () => {
   afterAll(afterAllCleanup);

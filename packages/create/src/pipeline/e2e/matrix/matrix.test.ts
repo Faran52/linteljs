@@ -8,7 +8,7 @@ import {
 import { ANSWERS, type Answers } from '../../../answers';
 import { valuesOf } from '../../../utils/objectUtils';
 
-import { optionCases } from './cases';
+import { optionCases } from './matrix';
 
 // Only the answers are read, so the cases arrive as the narrowest thing that carries them.
 interface Answered {

@@ -35,12 +35,12 @@ import {
   type TargetId,
 } from '../src/answers';
 import { parsePackageJson } from '../src/emitters/always/package-json/packageJsonEmitter';
-import { startRegistry } from '../src/pipeline/e2e/registry-setup/registrySetup';
+import { startRegistry } from '../src/pipeline/e2e/registry/registry';
 import { targetFor } from '../src/targets';
 import { valuesOf } from '../src/utils/objectUtils';
 
-import type { E2eCase } from '../src/pipeline/e2e/cases/cases';
-import type { E2eRegistry } from '../src/pipeline/e2e/registry-setup/registrySetup';
+import type { E2eCase } from '../src/pipeline/e2e/matrix/matrix';
+import type { E2eRegistry } from '../src/pipeline/e2e/registry/registry';
 
 /**
  * Both managers, because they do not block the same set. npm blocks a *superset*: every install script it has not

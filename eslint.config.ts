@@ -216,7 +216,7 @@ const config = [
   // The e2e files pass `runE2eCase` by reference, out of the rule's reach. DESIGN.md: `@linteljs/workspace/e2e-test`
   {
     name: '@linteljs/workspace/e2e-test',
-    files: ['packages/create/src/pipeline/e2e/*.e2e.test.ts'],
+    files: ['packages/create/src/pipeline/e2e/targets/*.e2e.test.ts'],
     rules: { 'vitest/expect-expect': 'off' },
   },
 ];

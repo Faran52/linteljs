@@ -4,6 +4,7 @@ import {
   spawnSync,
 } from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -11,7 +12,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createServer } from 'node:net';
-import { join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { parsePackageJson } from '../../../emitters/always/package-json/packageJsonEmitter';
@@ -40,7 +41,28 @@ declare module 'vitest' {
   }
 }
 
-const ROOT = resolve(import.meta.dirname, '../../../../..');
+/**
+ * Walked up to `pnpm-workspace.yaml` rather than counted in `..`. A fixed depth was silently wrong the moment this
+ * file moved one directory, and nothing caught it: the end-to-end suite is the only thing that reads `ROOT` and it
+ * is excluded from `pnpm check`, so the next gate to run it was CI.
+ */
+const workspaceRootFrom = (from: string): string => {
+  let directory = from;
+
+  while (!existsSync(join(directory, 'pnpm-workspace.yaml'))) {
+    const parent = dirname(directory);
+
+    if (parent === directory) {
+      throw new Error(`No pnpm-workspace.yaml above ${from}`);
+    }
+
+    directory = parent;
+  }
+
+  return directory;
+};
+
+const ROOT = workspaceRootFrom(import.meta.dirname);
 
 /**
  * One registry for a run, on a fixed port. Sharding is a stride over the cases inside one process (`cases.ts`), and

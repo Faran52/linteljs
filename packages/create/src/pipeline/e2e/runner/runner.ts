@@ -16,7 +16,7 @@ import {
 } from '../utils/processUtils';
 import { createProject, workspace } from '../utils/workspaceUtils';
 
-import type { E2eCase } from '../cases/cases';
+import type { E2eCase } from '../matrix/matrix';
 
 /**
  * Never asserted on, for any manager. A deprecation notice reports that a third-party package reached end of life,
