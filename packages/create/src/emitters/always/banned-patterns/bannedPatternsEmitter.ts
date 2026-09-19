@@ -1,7 +1,7 @@
 import { hasTests } from '../../../answers/answers';
 import { type Artifact } from '../../../config/artifact';
-import { projectSpelling } from '../../../config/projectShape';
 import { targetFor } from '../../../targets';
+import { projectSpelling } from '../../utils/shapeUtils';
 
 import { mergeChecker } from './utils/mergeUtils';
 

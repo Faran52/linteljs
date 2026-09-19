@@ -1,6 +1,7 @@
 import { hasLibrary } from '../../../answers/answers';
-import { type Artifact, merged } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
+import { merged } from '../../utils/artifactUtils';
 
 import { styleEntryPath } from './utils/pathUtils';
 

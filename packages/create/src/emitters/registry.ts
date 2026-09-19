@@ -1,9 +1,4 @@
-import { emitted } from '../config/artifact';
-import {
-  MANAGED_PATH,
-  managedRecord,
-  removableIn,
-} from '../config/managed';
+import { MANAGED_PATH } from '../config/managed';
 import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
 
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';
@@ -35,6 +30,8 @@ import { viteConfigEmitter } from './target/vite-config/viteConfigEmitter';
 import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
+import { emitted } from './utils/artifactUtils';
+import { managedRecord, removableIn } from './utils/managedUtils';
 
 import type { Answers } from '../answers/answers';
 import type { Artifact, Emitter } from '../config/artifact';

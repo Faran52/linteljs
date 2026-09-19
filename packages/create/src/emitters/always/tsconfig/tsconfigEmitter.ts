@@ -1,5 +1,6 @@
-import { type Artifact, emitted } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
 import { targetFor, type TsconfigPlugin } from '../../../targets';
+import { emitted } from '../../utils/artifactUtils';
 import { buildAliases } from '../utils/aliasUtils';
 
 import type { Answers } from '../../../answers/answers';

@@ -78,17 +78,21 @@ aliases it duplicates instead of importing carry a comment saying so.
   of each, and `index.ts` is the barrel the outer rings take the ring through; nothing else sits at
   that root. `buildArtifacts` appends one artifact of its own, the record of what it owns that
   `plugins/linteljs/managed.json` carries, because that is a fact about the list rather than a
-  member of it and an emitter would have to leave itself out of its own input. The artifact kind and the project
-  shape are every ring's, so they are in `src/config/` with the engines and the run prefixes.
+  member of it and an emitter would have to leave itself out of its own input.
 
   A helper sits at the level of its readers and no higher. One subject reads it, it is
   `<group>/<subject>/utils/` and `meta.test.ts` holds it private there. Several subjects in one
-  group read it, it is `<group>/utils/`. There is no `emitters/utils/` and no `emitters/config/`,
-  not because a ring-wide helper is forbidden but because none turned out to be one: every
-  candidate was either a group's, or a subject's own table, or a fact no ring owns. The dependency
-  ranges are `always/package-json/constants.ts`, and `src/config/` holds what `emitters/`,
-  `terminal/`, `pipeline/` and `process/` all read: the engines a project declares, and how each
-  manager is asked to run a script.
+  group read it, it is `<group>/utils/`. Every subject in the ring reads it, it is
+  `emitters/utils/`: `artifactUtils.ts` builds the three content shapes, `managedUtils.ts` derives
+  the record `registry.ts` appends, and `shapeUtils.ts` picks a project's own spelling of a file.
+  The dependency ranges are `always/package-json/constants.ts`, a table one subject owns.
+
+  `src/config/` is data, and only data: types, constants, tables. The artifact kind, the stages,
+  the project shape, the managed path, the engines a project declares and how each manager is asked
+  to run a script. A function goes to a `utils/` at the level of its readers rather than sitting
+  beside the type it builds, so nothing in `src/config/` carries a suite: a table asserted equal to
+  itself proves nothing, and what is worth checking about one is a fact about the code that reads
+  it.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.

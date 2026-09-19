@@ -983,9 +983,10 @@ finding a config whose plugin is not there yet.
 
 **A version bump touches five files, not three.** The three `package.json`s, plus
 `packages/eslint-plugin/src/plugin.ts`, which hand-writes `meta.version` because ESLint reads it off
-the plugin object, and `packages/create/src/emitters/config/versions.ts`, which pins the range
-generated projects get for `@linteljs/eslint-config`. Both are held against `package.json` by a test
-(`meta.test.ts`, `versions.test.ts`), so a missed one fails `pnpm check` rather than shipping wrong.
+the plugin object, and `packages/create/src/emitters/always/package-json/constants.ts`, which pins
+the range generated projects get for `@linteljs/eslint-config`. Both are held against `package.json`
+by a test (`meta.test.ts`, `packageJsonEmitter.test.ts`), so a missed one fails `pnpm check` rather
+than shipping wrong.
 Neither is derived today, and nothing has been measured about whether it could be; the tests are why
 that has stayed a papercut instead of a defect. Three `CHANGELOG.md` files change too, by hand.
 
@@ -1082,6 +1083,31 @@ direction is one way, since nothing in `files/` spawns. Sync on purpose, because
 
 `pipeline/e2e/` is exempt. It is the harness rather than the package, and spawning real package
 managers is the whole of what it does.
+
+### `@linteljs/workspace/create-config-data`
+
+`src/config/` is data and only data: the types, constants and tables no ring owns. A function that
+builds one of them goes to a `utils/` at the level of its readers instead, which is the same rule
+that decides where a helper sits anywhere else in the package.
+
+Measured, not asserted. Before the rule went in, three of the five modules there carried behaviour
+alongside their data, and every reader of that behaviour was in one ring. `artifact.ts` held
+`emitted`, `copied` and `merged`, read by sixteen emitters across six groups and by nobody else;
+`projectShape.ts` held `projectSpelling`, read by two emitters; `managed.ts` held `removableIn` and
+`managedRecord`, read by `emitters/registry.ts`. All five moved to `emitters/utils/`, and the
+constants they were sitting beside stayed: `Artifact` is read by three rings, `MANAGED_PATH` by
+three, `RUN_PREFIX` by three, `NODE_ENGINE` by two. So the split is along the line that was already
+there, between what every ring shares and what one ring does.
+
+The gain is that `src/config/` now carries no suite at all. Its three test files moved with the
+functions they covered, and what is left is tables: asserting one equals itself proves nothing, and
+what is worth checking about a table is a fact about the code that reads it, which is where that
+assertion already lives.
+
+`ArrowFunctionExpression`, `FunctionDeclaration` and `FunctionExpression`, not `TSFunctionType`. A
+function *type* is part of the vocabulary and stays: `Emitter`, `MergedText.merge` and
+`CopiedAssets.transform` all describe a shape a ring implements rather than behaviour this folder
+owns.
 
 ### `noInlineConfig`
 

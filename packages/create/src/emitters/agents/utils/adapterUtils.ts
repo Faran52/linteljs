@@ -1,4 +1,5 @@
-import { type Artifact, emitted } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
+import { emitted } from '../../utils/artifactUtils';
 
 import type { Answers } from '../../../answers/answers';
 

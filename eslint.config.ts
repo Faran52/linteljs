@@ -126,6 +126,22 @@ const config = [
     },
   },
 
+  /**
+   * `config/` is data and only data: the types, constants and tables no ring owns. A function belongs to a `utils/`
+   * at the level of its readers, which is what keeps this folder free of a suite and free of coverage.
+   * DESIGN.md: `@linteljs/workspace/create-config-data`
+   */
+  {
+    name: '@linteljs/workspace/create-config-data',
+    files: ['packages/create/src/config/**'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: 'ArrowFunctionExpression, FunctionDeclaration, FunctionExpression',
+        message: 'config/ holds data. A function goes to a utils/ beside the ring that reads it.',
+      }],
+    },
+  },
+
   // The audit and smoke scripts, whose stdout is their output. DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts',

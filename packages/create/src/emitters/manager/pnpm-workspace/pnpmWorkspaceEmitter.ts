@@ -1,4 +1,5 @@
-import { type Artifact, merged } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
+import { merged } from '../../utils/artifactUtils';
 
 import {
   allowBuildsBlock,

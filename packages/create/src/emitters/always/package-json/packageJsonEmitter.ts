@@ -7,9 +7,10 @@ import {
   type Library,
   type Router,
 } from '../../../answers/answers';
-import { type Artifact, merged } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/engines';
 import { targetFor } from '../../../targets';
+import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
 import { VERSIONS } from './constants';

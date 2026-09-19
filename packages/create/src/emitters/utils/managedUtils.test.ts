@@ -4,13 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import {
-  MANAGED_PATH,
-  managedRecord,
-  removableIn,
-} from './managed';
+import { managedRecord, removableIn } from './managedUtils';
 
-import type { Artifact } from './artifact';
+import type { Artifact } from '../../config/artifact';
 
 const emittedAt = (target: string): Artifact => {
   return {
@@ -70,9 +66,5 @@ describe('managedRecord', () => {
   it('is stable across two runs of the same set', () => {
     expect(managedRecord(['b.js', 'a.js'])).toBe(managedRecord(['a.js', 'b.js']));
     expect(managedRecord(['a.js'])).toMatch(/\n$/u);
-  });
-
-  it('is kept where this CLI may rewrite it rather than beside the answers', () => {
-    expect(MANAGED_PATH).toBe('plugins/linteljs/managed.json');
   });
 });

@@ -3,9 +3,9 @@ import {
   hasLibrary,
   hasTests,
 } from '../../../answers/answers';
-import { copied } from '../../../config/artifact';
 import { type Artifact } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
+import { copied } from '../../utils/artifactUtils';
 
 export interface RuleSource {
   // `type-standards.md`, the name every agent's copy is filed under.

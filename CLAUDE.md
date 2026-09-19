@@ -53,8 +53,8 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
 ## Structure
 
 - `packages/create/src/`: the CLI, one folder per responsibility. `answers/` is what the user chose,
-  `config/` is the engines a project declares and the CLI refuses without, `targets/` is what linteljs
-  knows (one record per target, the registry, the naming policy),
+  `config/` is data and only data, the types, constants and tables no ring owns, `targets/` is what
+  linteljs knows (one record per target, the registry, the naming policy),
   `emitters/` turns the two into file text, `terminal/` reads argv and the terminal, `files/` reads
   and writes files, `process/` spawns, `pipeline/` sequences them. The direction points inward only,
   enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`, and which folder a
@@ -67,8 +67,9 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
   `agents/`, `manager/`, `target/`, `testing/`, `libraries/`, `typesafety/`, and `always/` for the
   null one. Every entry answers `Artifact[]`, so a target with no vite config answers `[]` and
   `buildArtifacts` holds no branch: `registry.ts` is the list and `meta.test.ts` holds it against the
-  directory listing both ways. A module that writes no file is not an emitter: the kernel sits at the
-  root, shared helpers under `utils/`, data tables under `config/`.
+  directory listing both ways. A module that writes no file is not an emitter: `registry.ts` and the
+  barrel sit at the root, a helper every subject reads under `emitters/utils/`, a table one subject
+  owns in that subject's `constants.ts`.
   Two lists come out of `registry.ts` and every file reaches disk through `applyArtifact` from one
   of them. `buildArtifacts` is what `create` and `sync` both write from. `seedArtifacts` is what a
   `create` run plants and `sync` never touches: the recorded config, the README, the manifest and

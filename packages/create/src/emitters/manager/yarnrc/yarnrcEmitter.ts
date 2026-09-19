@@ -1,6 +1,7 @@
-import { type Artifact, emitted } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
 import { buildDependencies, buildDevDependencies } from '../../always/package-json/packageJsonEmitter';
+import { emitted } from '../../utils/artifactUtils';
 
 import type { Answers } from '../../../answers/answers';
 

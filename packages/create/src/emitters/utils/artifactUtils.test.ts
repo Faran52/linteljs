@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { copied, emitted } from './artifact';
+import { copied, emitted } from './artifactUtils';
 
 describe('emitted', () => {
   it('carries the given stage and target with the text as its content', () => {

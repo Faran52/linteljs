@@ -1,8 +1,5 @@
-import {
-  type Artifact,
-  copied,
-  emitted,
-} from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
+import { copied, emitted } from '../../utils/artifactUtils';
 import { adapterArtifact } from '../utils/adapterUtils';
 
 import type { Answers, Plugin } from '../../../answers/answers';

@@ -15,9 +15,9 @@ import {
   TESTING_CHOICES,
 } from '../../answers/answers';
 import { type Artifact } from '../../config/artifact';
-import { removableIn } from '../../config/managed';
 import { contentOf } from '../../files/shippedAssets';
 import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
+import { removableIn } from '../utils/managedUtils';
 
 import { claudeSettingsEmitter } from './claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './codex-marketplace/codexMarketplaceEmitter';

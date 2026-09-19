@@ -72,32 +72,3 @@ export const STAGES: Stage[] = [
   'install',
   'fix',
 ];
-
-export const emitted = (stage: Stage, target: string, text: string): Artifact => {
-  return {
-    stage,
-    target,
-    content: { text },
-  };
-};
-
-// A shipped file that lands unchanged. Every one is stage 4.
-export const copied = (target: string, ...sources: string[]): Artifact => {
-  return {
-    stage: 'standard',
-    target,
-    content: { sources },
-  };
-};
-
-export const merged = (
-  stage: Stage,
-  target: string,
-  merge: (current: string | null) => string,
-): Artifact => {
-  return {
-    stage,
-    target,
-    content: { merge },
-  };
-};

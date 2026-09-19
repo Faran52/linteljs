@@ -1,7 +1,8 @@
 import { hasLibrary, hasTests } from '../../../answers/answers';
-import { type Artifact, copied } from '../../../config/artifact';
+import { type Artifact } from '../../../config/artifact';
 import { targetFor } from '../../../targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
+import { copied } from '../../utils/artifactUtils';
 
 import type { Answers } from '../../../answers/answers';
 import type { ProjectShape } from '../../../config/projectShape';

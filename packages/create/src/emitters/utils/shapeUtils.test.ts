@@ -4,7 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import { EMPTY_PROJECT, projectSpelling } from './projectShape';
+import { EMPTY_PROJECT } from '../../config/projectShape';
+
+import { projectSpelling } from './shapeUtils';
 
 describe('projectSpelling', () => {
   const CANDIDATES = ['src/styles/global.css', 'src/style.css'];
