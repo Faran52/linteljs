@@ -9,7 +9,6 @@ export {
   shippedAssetsReader,
 } from './read/shipped-assets/shippedAssetsReader';
 export {
-  allPresent,
   entryExists,
   exists,
   isAbsence,

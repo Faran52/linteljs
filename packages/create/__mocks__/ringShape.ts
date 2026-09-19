@@ -23,15 +23,22 @@ export const sourcesUnder = (path: string): string[] => {
 };
 
 /**
- * What the rings outside `ringDir` actually take from its barrel, rather than what they mention: a name reached
- * for by its own path is not a reason to carry it there. `ringName` is the barrel's own import specifier, read
- * off a relative path of any depth (`../emitters`, `../../emitters`, ...).
+ * What everything outside `ringDir` actually takes from its barrel, rather than what it mentions: a name reached
+ * for by its own path is not a reason to carry it there. `ringName` is the barrel's own import specifier, read off
+ * a relative path of any depth (`./terminal`, `../emitters`, `../../src/terminal`, ...). A re-export counts
+ * as a take: `src/index.ts` carrying `main` onward is the package surface asking for it.
+ *
+ * Scanned from the package rather than from `src/`, because the barrel's readers are not all rings: `__mocks__/`
+ * takes the prompter through `terminal/`, and a barrel trimmed on `src/` alone would drop it.
  */
 export const takenFromBarrel = (ringDir: string, ringName: string): Set<string> => {
   const taken = new Set<string>();
-  const pattern = new RegExp(`import (?:type )?\\{([^}]*)\\} from '(?:\\.\\./)+${ringName}';`, 'gu');
+  const pattern = new RegExp(
+    `(?:import|export) (?:type )?\\{([^}]*)\\} from '(?:\\.{1,2}/)+(?:src/)?${ringName}';`,
+    'gu',
+  );
 
-  for (const source of sourcesUnder(join(ringDir, '..'))) {
+  for (const source of sourcesUnder(join(ringDir, '../..'))) {
     if (source.startsWith(ringDir)) {
       continue;
     }
