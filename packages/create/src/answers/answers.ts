@@ -1,60 +1,26 @@
-// `AliasMap`, `NamingMap`, `Framework`, `LibraryLayer`, `ResolverOptions` and `DefineConfigOptions` mirror
-// `@linteljs/eslint-config/src/types.ts`, redeclared not imported so `@linteljs/create` installs before it.
+export type TargetId = (typeof TARGET_IDS)[number];
 
-export type TargetId
-  = 'react'
-    | 'next'
-    | 'vue'
-    | 'svelte'
-    | 'solid'
-    | 'angular'
-    | 'astro'
-    | 'webextension'
-    | 'react-native';
+export type PackageManager = (typeof PACKAGE_MANAGERS)[number];
 
-export type PackageManager
-  = 'pnpm'
-    | 'npm'
-    | 'yarn'
-    | 'bun';
+export type Testing = (typeof TESTING_CHOICES)[number];
 
-export type Testing = 'vitest' | 'none';
+export type TypeSafety = (typeof TYPE_SAFETY_CHOICES)[number];
 
-// `strict` bans casts, `unknown` outside a guard, index signatures and suppression directives.
-export type TypeSafety = 'strict' | 'relaxed';
+export type Library = (typeof LIBRARIES)[number];
 
-export type Library
-  = 'zod'
-    | 'tanstack-query'
-    | 'tailwind'
-    | 'es-toolkit'
-    | 'ts-pattern'
-    | 't3-env';
+export type Form = (typeof FORMS)[number];
 
-// One choice, not two libraries: a project binds one form library or none. `react-hook-form` binds React only.
-export type Form = 'tanstack-form' | 'react-hook-form';
+export type Router = (typeof ROUTERS)[number];
 
-export type Router = 'react-router' | 'tanstack-router';
+export type Browser = (typeof BROWSERS)[number];
 
-// Decides the manifest shape and the ambient types; `crx` builds for both.
-export type Browser = 'chrome' | 'firefox';
+export type HostedFramework = (typeof HOSTED_FRAMEWORKS)[number];
 
-// The four with both a Vite plugin and an Astro integration; Angular and Next are not hostable.
-export type HostedFramework
-  = 'react'
-    | 'vue'
-    | 'svelte'
-    | 'solid';
+export type Surface = (typeof SURFACES)[number];
 
-// A surface decides what the manifest names, which starter files exist, and what the build needs an entry for.
-export type Surface
-  = 'popup'
-    | 'background'
-    | 'devtools-panel';
+export type Agent = (typeof AGENTS)[number];
 
-export type Agent = 'claude-code' | 'codex' | 'copilot' | 'cursor';
-
-export type Plugin = 'ponytail' | 'context7' | 'frontend-design';
+export type Plugin = (typeof PLUGINS)[number];
 
 export interface Answers {
   target: TargetId;
@@ -110,8 +76,7 @@ export type Framework
     | 'solid'
     | 'angular';
 
-// The libraries and routers with a layer behind them; the rest bring no ESLint rules.
-type LibraryLayer = 'tanstack-query' | 'tailwind' | 'tanstack-router';
+type LibraryLayer = (typeof LIBRARY_LAYERS)[number];
 
 interface ResolverOptions {
   project?: string;
@@ -134,19 +99,13 @@ export interface DefineConfigOptions {
   resolver?: ResolverOptions;
 }
 
-/**
- * Next and React Native render with React, so a React-only answer belongs on all three. `framework` keeps them apart
- * because each takes its own ESLint layer; asking `=== 'react'` instead refused React Hook Form on the two of them,
- * while the TanStack binding map in `emitPackageJson` had always handed all three `@tanstack/react-form`.
- */
-export const rendersWithReact = (framework: Framework | undefined): boolean => {
-  return framework === 'react' || framework === 'next' || framework === 'react-native';
-};
+// `AliasMap`, `NamingMap`, `Framework`, `LibraryLayer`, `ResolverOptions` and `DefineConfigOptions` mirror
+// `@linteljs/eslint-config/src/types.ts`, redeclared not imported so `@linteljs/create` installs before it.
 
-// Emit order, so the written config is stable.
-export const LIBRARY_LAYERS: LibraryLayer[] = ['tanstack-query', 'tanstack-router', 'tailwind'];
+// Every answer is a list and the type of its members, in that order: the list is what `prompts/` enumerates and what
+// the parser checks against, and spelling the members twice is how the two drift.
 
-export const TARGET_IDS: TargetId[] = [
+export const TARGET_IDS = [
   'react',
   'next',
   'vue',
@@ -156,45 +115,51 @@ export const TARGET_IDS: TargetId[] = [
   'astro',
   'webextension',
   'react-native',
-];
+] as const;
 
-export const PACKAGE_MANAGERS: PackageManager[] = [
+export const PACKAGE_MANAGERS = [
   'pnpm',
   'npm',
   'yarn',
   'bun',
-];
+] as const;
 
-export const LIBRARIES: Library[] = [
+export const TESTING_CHOICES = ['vitest', 'none'] as const;
+
+// `strict` bans casts, `unknown` outside a guard, index signatures and suppression directives.
+export const TYPE_SAFETY_CHOICES = ['strict', 'relaxed'] as const;
+
+export const LIBRARIES = [
   'zod',
   'tanstack-query',
   'tailwind',
   'es-toolkit',
   'ts-pattern',
   't3-env',
-];
+] as const;
 
-export const FORMS: Form[] = ['tanstack-form', 'react-hook-form'];
+// One choice, not two libraries: a project binds one form library or none. `react-hook-form` binds React only.
+export const FORMS = ['tanstack-form', 'react-hook-form'] as const;
 
-export const ROUTERS: Router[] = ['react-router', 'tanstack-router'];
+export const ROUTERS = ['react-router', 'tanstack-router'] as const;
 
-export const BROWSERS: Browser[] = ['chrome', 'firefox'];
+// Decides the manifest shape and the ambient types; `crx` builds for both.
+export const BROWSERS = ['chrome', 'firefox'] as const;
 
-export const SURFACES: Surface[] = ['popup', 'background', 'devtools-panel'];
-
-// What an older config means by saying nothing.
-const DEFAULT_SURFACES: Surface[] = ['popup', 'background'];
-
-export const HOSTED_FRAMEWORKS: HostedFramework[] = [
+// The four with both a Vite plugin and an Astro integration; Angular and Next are not hostable.
+export const HOSTED_FRAMEWORKS = [
   'react',
   'vue',
   'svelte',
   'solid',
-];
+] as const;
 
-export const AGENTS: Agent[] = ['claude-code', 'codex', 'copilot', 'cursor'];
+// A surface decides what the manifest names, which starter files exist, and what the build needs an entry for.
+export const SURFACES = ['popup', 'background', 'devtools-panel'] as const;
 
-export const PLUGINS: Plugin[] = ['ponytail', 'context7', 'frontend-design'];
+export const AGENTS = ['claude-code', 'codex', 'copilot', 'cursor'] as const;
+
+export const PLUGINS = ['ponytail', 'context7', 'frontend-design'] as const;
 
 export const DEFAULT_ANSWERS: Answers = {
   target: 'react',
@@ -206,6 +171,22 @@ export const DEFAULT_ANSWERS: Answers = {
   typeSafety: 'strict',
   agents: ['claude-code'],
   plugins: [...PLUGINS],
+};
+
+// What an older config means by saying nothing.
+const DEFAULT_SURFACES: Surface[] = ['popup', 'background'];
+
+// The libraries and routers with a layer behind them, in emit order so the written config is stable; the rest bring
+// no ESLint rules.
+export const LIBRARY_LAYERS = ['tanstack-query', 'tanstack-router', 'tailwind'] as const;
+
+/**
+ * Next and React Native render with React, so a React-only answer belongs on all three. `framework` keeps them apart
+ * because each takes its own ESLint layer; asking `=== 'react'` instead refused React Hook Form on the two of them,
+ * while the TanStack binding map in `emitPackageJson` had always handed all three `@tanstack/react-form`.
+ */
+export const rendersWithReact = (framework: Framework | undefined): boolean => {
+  return framework === 'react' || framework === 'next' || framework === 'react-native';
 };
 
 export const hasLibrary = (answers: Answers, library: Library): boolean => {
@@ -232,7 +213,3 @@ export const browsersOf = (answers: Answers): Browser[] => {
 export const hasTests = (answers: Answers): boolean => {
   return answers.testing !== 'none';
 };
-
-export const TESTING_CHOICES: Testing[] = ['vitest', 'none'];
-
-export const TYPE_SAFETY_CHOICES: TypeSafety[] = ['strict', 'relaxed'];

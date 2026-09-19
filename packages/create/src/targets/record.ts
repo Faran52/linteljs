@@ -146,7 +146,7 @@ export interface TargetRecord {
   // Absent, the question is not asked.
   store?: StoreSlot;
   // Absent, the question is not asked.
-  routers?: Router[];
+  routers?: readonly Router[];
   // For a target with no Vite or PostCSS pipeline; React Native takes NativeWind.
   tailwind?: TailwindSlot;
   // Only the extension target asks.

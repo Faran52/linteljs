@@ -29,27 +29,33 @@ export interface LinteljsConfig extends Answers {
 
 type JsonValue = null | boolean | number | string | object;
 
-interface ConfigObject {
-  $schema?: JsonValue;
-  schemaVersion?: JsonValue;
-  target?: JsonValue;
-  browser?: JsonValue;
-  hostedFramework?: JsonValue;
-  surfaces?: JsonValue;
-  testing?: JsonValue;
-  packageManager?: JsonValue;
-  libraries?: JsonValue;
-  form?: JsonValue;
-  router?: JsonValue;
-  store?: JsonValue;
-  typeSafety?: JsonValue;
-  agents?: JsonValue;
-  plugins?: JsonValue;
-  resolveConditions?: JsonValue;
-  aliases?: JsonValue;
-  browsers?: JsonValue;
-  ignores?: JsonValue;
-}
+type ConfigObject = Partial<Record<keyof typeof EXPECTED, JsonValue>>;
+
+// Every property a config may carry, spelled once. A `Record` rather than a list, so `Answers` gaining a field
+// fails here until it is named: the shape below and the refusal of an unexpected key both read off this.
+const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', true> = {
+  $schema: true,
+  schemaVersion: true,
+  target: true,
+  browser: true,
+  hostedFramework: true,
+  surfaces: true,
+  testing: true,
+  packageManager: true,
+  libraries: true,
+  form: true,
+  router: true,
+  store: true,
+  typeSafety: true,
+  agents: true,
+  plugins: true,
+  resolveConditions: true,
+  aliases: true,
+  browsers: true,
+  ignores: true,
+};
+
+const expectedKeys = Object.keys(EXPECTED);
 
 export const CONFIG_PATH = 'linteljs.config.json';
 // What every version through 1.6.0 wrote. Read when the current name is absent, and removed by `sync` once it is not.
@@ -60,7 +66,7 @@ export const CONFIG_SCHEMA_URL
 export const CONFIG_SCHEMA_URL_V1
   = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v1.schema.json';
 export const CURRENT_SCHEMA_VERSION = 2;
-const FORM_NAMES: string[] = FORMS;
+const FORM_NAMES: readonly string[] = FORMS;
 
 const isPlainObject = (value: unknown): value is object => {
   return typeof value === 'object'
@@ -197,28 +203,6 @@ const refuseMisfit = (answers: Answers): void => {
   misfit(answers.store && record.store === undefined, 'store');
   misfit(answers.form === 'react-hook-form' && !rendersWithReact(record.framework), 'react-hook-form');
 };
-
-const expectedKeys = [
-  '$schema',
-  'schemaVersion',
-  'target',
-  'aliases',
-  'browsers',
-  'ignores',
-  'browser',
-  'hostedFramework',
-  'surfaces',
-  'testing',
-  'packageManager',
-  'libraries',
-  'form',
-  'router',
-  'store',
-  'typeSafety',
-  'agents',
-  'plugins',
-  'resolveConditions',
-];
 
 const isForm = (value: unknown): value is Form => {
   return typeof value === 'string' && FORM_NAMES.includes(value);

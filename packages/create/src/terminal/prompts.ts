@@ -278,7 +278,7 @@ const unwrap = <T extends string | readonly string[]>(prompter: Prompter, value:
 const askChoice = async <T extends string>(
   prompter: Prompter,
   message: string,
-  choices: T[],
+  choices: readonly T[],
   initialValue: T,
   describe: (choice: T) => Described,
 ): Promise<T> => {

@@ -85,7 +85,7 @@ const axesOf = (base: Answers): Axes => {
   const { hostsBrowser, hostsFramework } = targetFor(base);
 
   return {
-    browsers: hostsBrowser === true ? BROWSERS : [undefined],
+    browsers: hostsBrowser === true ? [...BROWSERS] : [undefined],
     hosted: hostsFramework === true ? [undefined, ...HOSTED_FRAMEWORKS] : [undefined],
     surfaces: hostsBrowser === true ? [undefined, ...SURFACES] : [undefined],
   };

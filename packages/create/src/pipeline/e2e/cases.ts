@@ -65,11 +65,11 @@ interface Leader {
 // A multi-select is never combined: it is always every value it has, so one case carries the whole set.
 const everyMultiSelect = (target: TargetId): Partial<Answers> => {
   return {
-    libraries: LIBRARIES,
-    agents: AGENTS,
-    plugins: PLUGINS,
+    libraries: [...LIBRARIES],
+    agents: [...AGENTS],
+    plugins: [...PLUGINS],
     // Refused on a target that has no surfaces to name.
-    ...(target === 'webextension' ? { surfaces: SURFACES } : {}),
+    ...(target === 'webextension' ? { surfaces: [...SURFACES] } : {}),
   };
 };
 
@@ -165,7 +165,7 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
   });
 
   const browsers = across(hosted, (variant) => {
-    return recordOf(variant).hostsBrowser === true ? BROWSERS : [DEFAULT_ANSWERS.browser];
+    return recordOf(variant).hostsBrowser === true ? [...BROWSERS] : [DEFAULT_ANSWERS.browser];
   }, (variant, browser) => {
     return {
       ...variant,
@@ -201,7 +201,7 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
   });
 
   const testings = across(stores, () => {
-    return TESTING_CHOICES;
+    return [...TESTING_CHOICES];
   }, (variant, testing) => {
     return {
       ...variant,
@@ -210,7 +210,7 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
   });
 
   return across(testings, () => {
-    return TYPE_SAFETY_CHOICES;
+    return [...TYPE_SAFETY_CHOICES];
   }, (variant, typeSafety) => {
     return {
       ...variant,
