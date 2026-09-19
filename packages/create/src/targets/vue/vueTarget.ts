@@ -1,7 +1,7 @@
 import { hasTests } from '../../answers/utils/answerUtils';
 import { FOLDER_NAMING, NAMING } from '../naming';
 
-import type { TargetRecord } from '../record';
+import type { TargetRecord } from '../types';
 
 export const vueTarget: TargetRecord = {
   id: 'vue',

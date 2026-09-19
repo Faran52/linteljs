@@ -31,8 +31,8 @@ import type {
   OptionalChoiceRecord,
   OptionalMultiRecord,
   ValueRecord,
-} from '../../answers/record';
-import type { StoreSlot, TargetRecord } from '../../targets/record';
+} from '../../answers/types';
+import type { StoreSlot, TargetRecord } from '../../targets/types';
 
 /**
  * The four value-bearing kinds `askAnswer` dispatches on. `boolean` is `store` alone and is asked directly by the

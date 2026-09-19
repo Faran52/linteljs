@@ -4,7 +4,7 @@ import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitt
 import { emitted } from '../../utils/artifactUtils';
 
 import type { Answers } from '../../../answers';
-import type { PluginSpec, TestPlatform } from '../../../targets/record';
+import type { PluginSpec, TestPlatform } from '../../../targets/types';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
 // on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.

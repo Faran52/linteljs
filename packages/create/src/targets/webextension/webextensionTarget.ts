@@ -5,8 +5,8 @@ import { viteScaffold } from '../utils/targetUtils';
 
 import type { Answers } from '../../answers/registry';
 import type { Browser } from '../../answers/target/browser';
-import type { PluginSpec, StarterFile } from '../record';
 import type { TargetBuilder } from '../registry';
+import type { PluginSpec, StarterFile } from '../types';
 
 // Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
 // ambient types; the hosted framework decides what a component is and which plugin and layer handle it.

@@ -10,7 +10,7 @@ import type {
   AnswerRecord,
   ListRecord,
   MapRecord,
-} from '../../../answers/record';
+} from '../../../answers/types';
 import type { JsonValue } from '../../../answers/utils/readUtils';
 
 type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord>;

@@ -1,4 +1,4 @@
-import type { AnswerRecord } from '../record';
+import type { AnswerRecord } from '../types';
 
 // Never asked: the directories a project grew. Recorded here because `eslint.config.js` is emitted whole, so an
 // alias added there was lost on the next `sync`.

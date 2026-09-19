@@ -1,5 +1,5 @@
-import type { TargetRecord } from '../../targets/record';
-import type { AnswerRecord, ValueRecord } from '../record';
+import type { TargetRecord } from '../../targets/types';
+import type { AnswerRecord, ValueRecord } from '../types';
 
 /**
  * `only`, for a record that carries `values` and a value chosen from them. `values` narrows to `Record<string,

@@ -1,8 +1,7 @@
 import { isEqual } from 'es-toolkit';
 
 import { targetFor } from '../../targets';
-import { isJsonObject } from '../../utils/jsonUtils';
-import { valuesOf } from '../../utils/objectUtils';
+import { isJsonObject, valuesOf } from '../../utils/objectUtils';
 import {
   CONFIG_SCHEMA_URL,
   CONFIG_SCHEMA_URL_V1,
@@ -18,14 +17,14 @@ import {
 } from './readUtils';
 import { onlyFor } from './recordUtils';
 
-import type { TargetRecord } from '../../targets/record';
+import type { TargetRecord } from '../../targets/types';
 import type { Library } from '../libraries/libraries';
-import type { AnswerRecord } from '../record';
 import type {
   AnswerKey,
   Answers,
   LinteljsConfig,
 } from '../registry';
+import type { AnswerRecord } from '../types';
 import type { JsonValue } from './readUtils';
 
 type ConfigObject = Partial<Record<keyof typeof EXPECTED, JsonValue>>;

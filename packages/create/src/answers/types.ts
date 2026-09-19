@@ -1,4 +1,4 @@
-import type { TargetRecord } from '../targets/record';
+import type { TargetRecord } from '../targets/types';
 import type { Answers } from './registry';
 
 // Display only: the persisted value is never the label or the hint.

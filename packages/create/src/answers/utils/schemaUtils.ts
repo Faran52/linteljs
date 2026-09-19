@@ -1,14 +1,14 @@
 import { valuesOf } from '../../utils/objectUtils';
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from '../constants';
 
+import type { AnswerKey } from '../registry';
 import type {
   AnswerRecord,
   ChoiceRecord,
   MultiRecord,
   OptionalChoiceRecord,
   OptionalMultiRecord,
-} from '../record';
-import type { AnswerKey } from '../registry';
+} from '../types';
 
 interface SchemaPropertyNames {
   pattern: string;

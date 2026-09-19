@@ -2,7 +2,7 @@ import { targetFor } from '../targets';
 
 import { ANSWERS, DEFAULT_ANSWERS } from './registry';
 
-import type { TargetRecord } from '../targets/record';
+import type { TargetRecord } from '../targets/types';
 import type { TargetId } from './target/target';
 
 const recordFor = (target: TargetId): TargetRecord => {

@@ -1,4 +1,4 @@
-import { isJsonObject } from '../../../../utils/jsonUtils';
+import { isJsonObject } from '../../../../utils/objectUtils';
 
 interface MarketplaceLocation {
   source: string;

@@ -1,6 +1,6 @@
 import { FOLDER_NAMING, NAMING } from '../naming';
 
-import type { TargetRecord } from '../record';
+import type { TargetRecord } from '../types';
 
 export const angularTarget: TargetRecord = {
   id: 'angular',

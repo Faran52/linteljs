@@ -1,5 +1,4 @@
-import { isJsonObject } from '../../utils/jsonUtils';
-import { valuesOf } from '../../utils/objectUtils';
+import { isJsonObject, valuesOf } from '../../utils/objectUtils';
 
 import type { AliasMap } from '../../config/types';
 import type {
@@ -11,7 +10,7 @@ import type {
   MultiRecord,
   OptionalChoiceRecord,
   OptionalMultiRecord,
-} from '../record';
+} from '../types';
 
 export type JsonValue = null | boolean | number | string | object;
 

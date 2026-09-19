@@ -1,8 +1,8 @@
-import { COMPONENT, DECLARATION } from '../naming';
+import { COMPONENT, DECLARATION } from './namingUtils';
 
 import type { HostedFramework } from '../../answers/target/hostedFramework';
 import type { NamingMap } from '../../config/types';
-import type { PluginSpec } from '../record';
+import type { PluginSpec } from '../types';
 
 export interface FrameworkParts {
   // The layer name, the same string as the framework id.

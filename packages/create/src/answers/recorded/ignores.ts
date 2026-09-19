@@ -1,4 +1,4 @@
-import type { AnswerRecord } from '../record';
+import type { AnswerRecord } from '../types';
 
 // Never asked: paths this project lints nothing in. Not for build outputs, which `.gitignore` already covers: for
 // a generated file the project commits.

@@ -16,7 +16,7 @@ import { valuesOf } from '../../../utils/objectUtils';
 import { coveringSubset } from './utils/pairwiseUtils';
 
 import type { Framework } from '../../../config/types';
-import type { TargetRecord } from '../../../targets/record';
+import type { TargetRecord } from '../../../targets/types';
 
 export interface E2eCase {
   label: string;

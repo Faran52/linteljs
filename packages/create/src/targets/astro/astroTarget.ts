@@ -1,9 +1,6 @@
-import {
-  COMPONENT,
-  FOLDER_NAMING,
-  NAMING,
-} from '../naming';
+import { FOLDER_NAMING, NAMING } from '../naming';
 import { partsFor } from '../utils/frameworkUtils';
+import { COMPONENT } from '../utils/namingUtils';
 
 import type { HostedFramework } from '../../answers/target/hostedFramework';
 import type { TargetBuilder } from '../registry';

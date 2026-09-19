@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { isJsonObject } from './jsonUtils';
+import { isJsonObject } from './objectUtils';
 
 /**
  * Five guards in four rings read off this one, and each declares its own narrowed shape, so none of their suites

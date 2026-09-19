@@ -23,7 +23,7 @@ import { valuesOf } from '../utils/objectUtils';
 import { targetFor, TARGETS } from './registry';
 
 import type { Framework } from '../config/types';
-import type { TargetRecord } from './record';
+import type { TargetRecord } from './types';
 
 // Every reachable combination, labelled so a failure names the combination rather than only the target.
 interface Axes {

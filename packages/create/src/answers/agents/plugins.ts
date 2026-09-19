@@ -1,4 +1,4 @@
-import type { AnswerRecord } from '../record';
+import type { AnswerRecord } from '../types';
 
 export type Plugin = keyof typeof plugins.values;
 

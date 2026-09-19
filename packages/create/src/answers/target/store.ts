@@ -1,4 +1,4 @@
-import type { AnswerRecord } from '../record';
+import type { AnswerRecord } from '../types';
 
 // Asked as a radio between `none` and the target's own `StoreSlot`, which is why it carries no `values`: the prompt
 // reads the label and hint off `TargetRecord.store` itself.

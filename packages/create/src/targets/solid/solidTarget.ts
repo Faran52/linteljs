@@ -2,7 +2,7 @@ import { FOLDER_NAMING, NAMING } from '../naming';
 import { OUTSIDE_TESTS } from '../utils/frameworkUtils';
 import { viteScaffold } from '../utils/targetUtils';
 
-import type { TargetRecord } from '../record';
+import type { TargetRecord } from '../types';
 
 export const solidTarget: TargetRecord = {
   id: 'solid',

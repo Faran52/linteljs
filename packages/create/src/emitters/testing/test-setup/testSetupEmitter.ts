@@ -8,7 +8,7 @@ import { targetFor } from '../../../targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { copied } from '../../utils/artifactUtils';
 
-import type { TargetRecord } from '../../../targets/record';
+import type { TargetRecord } from '../../../targets/types';
 
 // Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {

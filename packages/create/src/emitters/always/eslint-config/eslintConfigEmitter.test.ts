@@ -13,7 +13,7 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers';
-import { FOLDER_ROUTED } from '../../../targets/naming';
+import { FOLDER_ROUTED } from '../../../targets/utils/namingUtils';
 import { valuesOf } from '../../../utils/objectUtils';
 
 import { emitEslintConfig } from './eslintConfigEmitter';

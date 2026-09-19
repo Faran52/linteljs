@@ -2,7 +2,7 @@ import { hasLibrary } from '../../answers/utils/answerUtils';
 import { FOLDER_NAMING, NAMING } from '../naming';
 import { COMMON_REACT_PLUGINS, HOOKS_ALIAS } from '../utils/targetUtils';
 
-import type { TargetRecord } from '../record';
+import type { TargetRecord } from '../types';
 
 export const nextTarget: TargetRecord = {
   id: 'next',

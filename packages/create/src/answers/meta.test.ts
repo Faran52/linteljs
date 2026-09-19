@@ -7,8 +7,8 @@ import { valuesOf } from '../utils/objectUtils';
 
 import { ANSWERS } from './registry';
 
-import type { AnswerRecord } from './record';
 import type { AnswerKey } from './registry';
+import type { AnswerRecord } from './types';
 
 interface RecordFile {
   key: string;

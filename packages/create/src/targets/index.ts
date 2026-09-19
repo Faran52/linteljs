@@ -1,3 +1,7 @@
+export {
+  targetFor,
+  TARGETS,
+} from './registry';
 export type {
   HooksSlot,
   PluginSpec,
@@ -11,8 +15,4 @@ export type {
   TargetRecord,
   TsconfigDelta,
   TsconfigPlugin,
-} from './record';
-export {
-  targetFor,
-  TARGETS,
-} from './registry';
+} from './types';

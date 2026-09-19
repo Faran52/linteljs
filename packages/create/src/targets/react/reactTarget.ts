@@ -7,7 +7,7 @@ import {
 } from '../utils/targetUtils';
 
 import type { Router } from '../../answers/target/router';
-import type { StarterFile, TargetRecord } from '../record';
+import type { StarterFile, TargetRecord } from '../types';
 
 // The only target with a `routers` slot, so it supports every router the vocabulary has.
 const ROUTERS: readonly Router[] = ['react-router', 'tanstack-router'];

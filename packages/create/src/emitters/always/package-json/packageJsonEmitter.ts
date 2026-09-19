@@ -15,13 +15,13 @@ import {
   type ProjectShape,
 } from '../../../config/types';
 import { targetFor } from '../../../targets';
-import { isJsonObject } from '../../../utils/jsonUtils';
+import { isJsonObject } from '../../../utils/objectUtils';
 import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
 import { VERSIONS } from './constants';
 
-import type { TargetRecord } from '../../../targets/record';
+import type { TargetRecord } from '../../../targets/types';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 

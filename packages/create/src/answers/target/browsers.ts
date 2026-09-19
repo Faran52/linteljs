@@ -1,4 +1,4 @@
-import type { AnswerRecord } from '../record';
+import type { AnswerRecord } from '../types';
 
 // Never asked: a fixed pair, packaged into a manifest each, so there is nothing to prompt beyond the primary
 // `browser`. Hand-edited into `linteljs.config.json` when a project needs the second one.

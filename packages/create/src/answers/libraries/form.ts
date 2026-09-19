@@ -1,6 +1,6 @@
 import { rendersWithReact } from '../utils/answerUtils';
 
-import type { AnswerRecord } from '../record';
+import type { AnswerRecord } from '../types';
 
 export type Form = keyof typeof form.values;
 
