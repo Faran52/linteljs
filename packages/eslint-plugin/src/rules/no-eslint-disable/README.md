@@ -1,6 +1,11 @@
-# no-eslint-disable
+# @linteljs/no-eslint-disable
 
 Fix what a rule reports, or name the exemption in the config. Do not disable it inline.
+
+- Category: `suppression`
+- Applies to: JavaScript and TypeScript
+- Fixable: no
+- In `recommended`: yes
 
 A disable comment is an exemption nobody can find. It sits in the file it excuses, it outlives the
 reason it was written for, and no one reviewing the config ever learns it exists. An exemption in

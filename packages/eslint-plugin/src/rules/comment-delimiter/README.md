@@ -4,7 +4,7 @@ Use `//` for short comments and JSDoc blocks for longer prose.
 
 - Category: `layout`
 - Applies to: JavaScript and TypeScript
-- Fixable: yes
+- Fixable: yes (code)
 - In `recommended`: yes
 
 The standard this workspace publishes says `//` for one or two lines and `/** */` at three or

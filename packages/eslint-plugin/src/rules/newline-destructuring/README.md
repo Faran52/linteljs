@@ -4,7 +4,7 @@ Keep crowded destructuring patterns, interfaces, and type literals on separate l
 
 - Category: `layout`
 - Applies to: JavaScript and TypeScript
-- Fixable: yes (whitespace)
+- Fixable: yes (code)
 - In `recommended`: yes
 
 More than two properties go one per line. A pattern containing a rest element drops that threshold

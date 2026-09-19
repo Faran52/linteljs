@@ -574,6 +574,30 @@ describe('documentation', () => {
     expect(undocumented.filter(Boolean)).toEqual([]);
   });
 
+  // The bullet block under each title is prose restating `meta`, and nothing compared the two: `newline-destructuring`
+  // shipped `- Fixable: yes (whitespace)` against a `code` fixer while every other check passed. A bullet may carry a
+  // qualifier after its value, as `yes (code), except the hoisted case` does, so each is matched as a prefix.
+  it.each(ruleCases)('restates "%s" metadata the way meta declares it', (name, rule) => {
+    const doc = readFileSync(join(rulesDir, name, 'README.md'), 'utf8');
+    const {
+      category,
+      language,
+      recommended,
+    } = rule.meta.docs;
+    const fixable = rule.meta.fixable === undefined ? 'no' : `yes (${rule.meta.fixable})`;
+    const bullets = [
+      `- Category: \`${category}\``,
+      `- Applies to: ${language === 'typescript' ? 'TypeScript only' : 'JavaScript and TypeScript'}`,
+      `- Fixable: ${fixable}`,
+      `- In \`recommended\`: ${recommended ? 'yes' : 'no'}`,
+    ];
+
+    expect(doc.split('\n')[0]).toBe(`# ${PLUGIN_NAME}/${name}`);
+    expect(bullets.filter((bullet) => {
+      return !doc.includes(bullet);
+    })).toEqual([]);
+  });
+
   it('lists every rule in the README table', () => {
     const readme = readFileSync(join(root, 'README.md'), 'utf8');
 

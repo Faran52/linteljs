@@ -1,6 +1,11 @@
-# no-inline-object-types
+# @linteljs/no-inline-object-types
 
 Give an object type a name instead of writing its shape inline.
+
+- Category: `types`
+- Applies to: TypeScript only
+- Fixable: no
+- In `recommended`: yes
 
 An inline shape is a type nothing else can say. It cannot be imported, extended, narrowed by a
 guard, or documented above its own declaration, so the second place that needs it either repeats it
