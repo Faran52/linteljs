@@ -123,12 +123,15 @@ describe.each(subjects)('$group/$name', ({ name, path }) => {
   });
 
   /**
-   * One entry, its suites, a `constants.ts` for a table it alone reads, and a `utils/` for its private helpers.
+   * One entry, its suites, a `constants.ts` for a table it alone owns, and a `utils/` for its private helpers.
    * Nothing else: a second module loose beside the entry is either a helper, in which case `utils/` is where the
    * `*Utils` suffix is enforced on it, or it is read from outside, in which case it is not this subject's.
+   *
+   * A `constants.ts` carries no suite of its own. Asserting a table equals itself proves nothing, and what is
+   * worth checking about one is always a fact about the code that reads it, which is where that assertion goes.
    */
   it('holds nothing but its entry, its constants and a utils directory', () => {
-    const allowed = new RegExp(`^(${entry}(\\.[a-z]+)?\\.test\\.ts|${entry}\\.ts|constants(\\.test)?\\.ts)$`, 'u');
+    const allowed = new RegExp(`^(${entry}(\\.[a-z]+)?\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
 
     expect(entriesIn(path).filter((file) => {
       return file !== 'utils' && !allowed.test(file);
