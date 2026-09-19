@@ -70,7 +70,7 @@ const config = [
               'packages/create/src/emitters',
               'packages/create/src/files',
               'packages/create/src/pipeline',
-              'packages/create/src/process',
+              'packages/create/src/spawns',
               'packages/create/src/terminal',
             ],
             message: 'answers/, config/, targets/ and utils/ are the innermost rings. None reaches outward.',
@@ -80,7 +80,7 @@ const config = [
             from: [
               'packages/create/src/files',
               'packages/create/src/pipeline',
-              'packages/create/src/process',
+              'packages/create/src/spawns',
               'packages/create/src/terminal',
             ],
             message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
@@ -113,7 +113,7 @@ const config = [
 
   /**
    * One folder per responsibility, and which one a module belongs to is decided by the world it reaches into rather
-   * than by judgement: `node:fs` means `files/`, `node:child_process` means `process/`, argv and the terminal mean
+   * than by judgement: `node:fs` means `files/`, `node:child_process` means `spawns/`, argv and the terminal mean
    * `terminal/`. Everything else goes through them, which is what makes the inner rings testable without a disk.
    * `e2e/` is the harness rather than the package, and it spawns real managers on purpose.
    * DESIGN.md: `@linteljs/workspace/create-worlds`
@@ -124,7 +124,7 @@ const config = [
     ignores: [
       'packages/create/src/terminal/**',
       'packages/create/src/files/**',
-      'packages/create/src/process/**',
+      'packages/create/src/spawns/**',
       'packages/create/src/pipeline/e2e/**',
       '**/*.test.ts',
     ],
@@ -141,7 +141,7 @@ const config = [
           },
           {
             group: ['node:child_process'],
-            message: 'Spawning lives in process/.',
+            message: 'Spawning lives in spawns/.',
           },
           {
             group: ['node:process', '@clack/*'],

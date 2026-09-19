@@ -8,7 +8,7 @@ import {
   vi,
 } from 'vitest';
 
-import { ensurePackageManager, isCommandAvailable } from './packageManager';
+import { isCommandAvailable, packageManagerSpawn } from './packageManagerSpawn';
 
 vi.mock('node:child_process', () => {
   return { spawnSync: vi.fn() };
@@ -48,7 +48,7 @@ describe('isCommandAvailable', () => {
   });
 });
 
-describe('ensurePackageManager', () => {
+describe('packageManagerSpawn', () => {
   const notices: string[] = [];
   const notice = (message: string): void => {
     notices.push(message);
@@ -57,7 +57,7 @@ describe('ensurePackageManager', () => {
   it('does nothing when the manager on PATH is new enough', () => {
     spawn.mockReturnValueOnce(exit(0, '12.4.1\n'));
 
-    ensurePackageManager('pnpm', notice);
+    packageManagerSpawn('pnpm', notice);
 
     expect(calls()).toEqual(['pnpm --version']);
   });
@@ -71,7 +71,7 @@ describe('ensurePackageManager', () => {
     spawn.mockReturnValueOnce(exit(0, '1.22.22\n'));
 
     expect(() => {
-      ensurePackageManager('yarn', notice);
+      packageManagerSpawn('yarn', notice);
     }).toThrow('yarn 1.22.22 is on PATH, and a project this CLI writes declares yarn 4.18.0');
     expect(calls()).toEqual(['yarn --version']);
   });
@@ -80,7 +80,7 @@ describe('ensurePackageManager', () => {
     spawn.mockReturnValueOnce(exit(0, '8.15.9\n'));
 
     expect(() => {
-      ensurePackageManager('pnpm', notice);
+      packageManagerSpawn('pnpm', notice);
     }).toThrow('corepack install -g pnpm@12.4.1');
   });
 
@@ -89,14 +89,14 @@ describe('ensurePackageManager', () => {
     spawn.mockReturnValueOnce(exit(0, '0.8.1\n'));
 
     expect(() => {
-      ensurePackageManager('bun', notice);
+      packageManagerSpawn('bun', notice);
     }).toThrow('https://bun.sh');
   });
 
   it('accepts a newer major than the one declared', () => {
     spawn.mockReturnValueOnce(exit(0, '13.0.0\n'));
 
-    ensurePackageManager('pnpm', notice);
+    packageManagerSpawn('pnpm', notice);
 
     expect(calls()).toEqual(['pnpm --version']);
   });
@@ -107,7 +107,7 @@ describe('ensurePackageManager', () => {
       .mockReturnValueOnce(exit(1))
       .mockReturnValue(exit(0));
 
-    ensurePackageManager('yarn', notice);
+    packageManagerSpawn('yarn', notice);
 
     expect(calls()).toEqual([
       'yarn --version',
@@ -130,7 +130,7 @@ describe('ensurePackageManager', () => {
       });
 
     expect(() => {
-      ensurePackageManager('pnpm', notice);
+      packageManagerSpawn('pnpm', notice);
     }).toThrow('corepack install -g pnpm failed: denied');
   });
 
@@ -139,7 +139,7 @@ describe('ensurePackageManager', () => {
     spawn.mockReturnValueOnce(exit(1));
 
     expect(() => {
-      ensurePackageManager('bun', notice);
+      packageManagerSpawn('bun', notice);
     }).toThrow('https://bun.sh');
     expect(calls()).toEqual(['bun --version']);
   });

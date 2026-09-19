@@ -3,7 +3,7 @@ import type { ProjectShape, Stage } from './types';
 
 /**
  * What a generated project declares it needs, and what the CLI refuses to run without. Read from `emitters/`,
- * which writes both into `package.json`, and from `process/`, which refuses a manager or a Node older than these
+ * which writes both into `package.json`, and from `spawns/`, which refuses a manager or a Node older than these
  * rather than letting a downstream tool fail three stages later. Neither ring owns it, so it sits below both.
  */
 // An exact version: corepack rejects a range in `packageManager`.

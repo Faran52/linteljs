@@ -10,8 +10,7 @@ import {
 import { applyArtifact } from '../../../files/projectFiles';
 import { readProjectShape } from '../../../files/readProjectShape';
 import { mkdir } from '../../../files/utils/fsUtils';
-import { git } from '../../../process/git';
-import { run } from '../../../process/run';
+import { gitSpawn, runSpawn } from '../../../spawns';
 import { targetFor } from '../../../targets';
 import { fixPass } from '../../passes/fix/fixPass';
 import { repairPass } from '../../passes/repair/repairPass';
@@ -65,7 +64,7 @@ const stageScaffold = async (options: PipelineOptions): Promise<void> => {
   const parent = dirname(options.cwd);
 
   await mkdir(parent, { recursive: true });
-  await run(command, args, parent);
+  await runSpawn(command, args, parent);
 };
 
 const isFresh = (options: PipelineOptions): boolean => {
@@ -95,7 +94,7 @@ const stagePackage = async (
 
 // `git rev-parse`, not `existsSync('.git')`: a subdirectory of an existing repo must not get a nested one.
 const ensureRepository = (options: PipelineOptions): void => {
-  const inside = git(['rev-parse', '--is-inside-work-tree'], { cwd: options.cwd });
+  const inside = gitSpawn(['rev-parse', '--is-inside-work-tree'], { cwd: options.cwd });
 
   // Said out loud: without git there are no hooks, which is a different project than promised.
   if (inside.error !== undefined) {
@@ -108,7 +107,7 @@ const ensureRepository = (options: PipelineOptions): void => {
     return;
   }
 
-  const created = git(['init', '--quiet'], { cwd: options.cwd });
+  const created = gitSpawn(['init', '--quiet'], { cwd: options.cwd });
 
   options.onNotice?.(created.status === 0
     ? 'git init: the husky hooks install on the next install'
@@ -129,7 +128,7 @@ const stageStandard = async (
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
   options.onNotice?.(`installing with ${options.answers.packageManager}`);
 
-  await run(options.answers.packageManager, ['install'], options.cwd);
+  await runSpawn(options.answers.packageManager, ['install'], options.cwd);
 };
 
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {

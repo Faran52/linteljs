@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
 
-import { PACKAGE_MANAGER_VERSIONS } from '../config/constants';
+import { PACKAGE_MANAGER_VERSIONS } from '../../config/constants';
 
-import type { PackageManager } from '../answers';
+import type { PackageManager } from '../../answers';
 
 export const isCommandAvailable = (command: string): boolean => {
   return spawnSync(command, ['--version'], { stdio: 'ignore' }).status === 0;
@@ -50,7 +50,7 @@ const installHint = (pm: PackageManager, version: string): string => {
  * real: it is still on a great many machines, `yarn create` means something different there, and the only symptom
  * was `exited with 127` several stages later.
  */
-export const ensurePackageManager = (pm: PackageManager, notice: (message: string) => void): void => {
+export const packageManagerSpawn = (pm: PackageManager, notice: (message: string) => void): void => {
   const installed = installedVersion(pm);
   const required = PACKAGE_MANAGER_VERSIONS[pm];
 

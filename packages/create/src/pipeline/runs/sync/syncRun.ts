@@ -13,7 +13,7 @@ import {
   rm,
   rmdir,
 } from '../../../files/utils/fsUtils';
-import { git } from '../../../process/git';
+import { gitSpawn } from '../../../spawns';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 
@@ -43,7 +43,7 @@ const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
 
 // `git diff --no-index` rather than a diff dependency; `git.ts` says why that is safe.
 const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
-  const result = git(
+  const result = gitSpawn(
     ['diff', '--no-index', '--no-color', '--', currentPath, '-'],
     {
       cwd,

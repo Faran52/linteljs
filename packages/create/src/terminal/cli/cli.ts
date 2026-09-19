@@ -27,7 +27,7 @@ import {
   pipelineRun,
   planSync,
 } from '../../pipeline';
-import { ensurePackageManager } from '../../process/packageManager';
+import { packageManagerSpawn } from '../../spawns';
 import {
   ask,
   type Asked,
@@ -247,7 +247,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       return 0;
     }
 
-    ensurePackageManager(answers.packageManager, say);
+    packageManagerSpawn(answers.packageManager, say);
 
     await pipelineRun({
       // With --skip-scaffold the directory's existing name is the project's.

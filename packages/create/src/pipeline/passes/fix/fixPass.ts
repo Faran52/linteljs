@@ -1,6 +1,6 @@
 import { RUN_PREFIX } from '../../../config/constants';
 import { styleGlob } from '../../../emitters/always/utils/scriptUtils';
-import { runLocalBinary } from '../../../process/localBinary';
+import { localBinarySpawn } from '../../../spawns';
 
 import type { Answers } from '../../../answers';
 
@@ -34,7 +34,7 @@ const parseFixReport = (stdout: string): number => {
 
 // Silent about its count: stylelint's JSON report names files, not which it rewrote.
 const fixStyles = (cwd: string, answers: Answers, report: (message: string) => void): void => {
-  const result = runLocalBinary(cwd, 'stylelint', [styleGlob(answers), '--fix', '--allow-empty-input']);
+  const result = localBinarySpawn(cwd, 'stylelint', [styleGlob(answers), '--fix', '--allow-empty-input']);
 
   if (result?.failed === true) {
     report('stylelint --fix could not run; run it yourself once dependencies are installed');
@@ -50,7 +50,7 @@ export const fixPass = (
   const report = onNotice ?? (() => {
     return undefined;
   });
-  const result = runLocalBinary(cwd, 'eslint', ['.', '--fix', '--format', 'json']);
+  const result = localBinarySpawn(cwd, 'eslint', ['.', '--fix', '--format', 'json']);
 
   if (result === null) {
     report(nextStep(answers));

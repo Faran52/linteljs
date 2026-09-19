@@ -3,7 +3,7 @@ import { env } from 'node:process';
 
 // Asynchronous on purpose: a `spawnSync` install blocks the event loop, which serialises a whole
 // end-to-end file however wide its concurrency is set.
-export const run = async (command: string, args: string[], cwd: string): Promise<void> => {
+export const runSpawn = async (command: string, args: string[], cwd: string): Promise<void> => {
   await new Promise<void>((settle, fail) => {
     const child = spawn(command, args, {
       cwd,

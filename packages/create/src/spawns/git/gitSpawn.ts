@@ -6,7 +6,7 @@ import {
 } from 'node:path';
 import { env } from 'node:process';
 
-import { isExecutableFile } from '../files/utils/fsUtils';
+import { isExecutableFile } from '../../files/utils/fsUtils';
 
 export interface GitOptions {
   cwd: string;
@@ -31,7 +31,7 @@ const resolvedGit = (): string | undefined => {
   return undefined;
 };
 
-export const git = (args: string[], options: GitOptions): SpawnSyncReturns<string> => {
+export const gitSpawn = (args: string[], options: GitOptions): SpawnSyncReturns<string> => {
   const binary = resolvedGit();
 
   if (binary === undefined) {

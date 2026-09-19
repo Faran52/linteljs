@@ -14,9 +14,9 @@ import {
   it,
 } from 'vitest';
 
-import { exists } from '../files/utils/fsUtils';
+import { exists } from '../../files/utils/fsUtils';
 
-import { git } from './git';
+import { gitSpawn } from './gitSpawn';
 
 let cwd = '';
 
@@ -31,9 +31,9 @@ afterEach(async () => {
   });
 });
 
-describe('git', () => {
+describe('gitSpawn', () => {
   it('runs the command in the given working directory', async () => {
-    const result = git(['init'], { cwd });
+    const result = gitSpawn(['init'], { cwd });
 
     expect(result.status).toBe(0);
     expect(await exists(join(cwd, '.git'))).toBe(true);
@@ -42,7 +42,7 @@ describe('git', () => {
   it('feeds the input option to the command on stdin', async () => {
     await writeFile(join(cwd, 'a.txt'), 'one\n', 'utf8');
 
-    const result = git(
+    const result = gitSpawn(
       ['diff', '--no-index', '--no-color', '--', 'a.txt', '-'],
       {
         cwd,
@@ -56,10 +56,10 @@ describe('git', () => {
 
   it('reports a failing command through its exit status rather than throwing', () => {
     expect(() => {
-      return git(['not-a-real-subcommand'], { cwd });
+      return gitSpawn(['not-a-real-subcommand'], { cwd });
     }).not.toThrow();
 
-    const result = git(['not-a-real-subcommand'], { cwd });
+    const result = gitSpawn(['not-a-real-subcommand'], { cwd });
 
     expect(result.error).toBeUndefined();
     expect(result.status).not.toBe(0);
@@ -71,7 +71,7 @@ describe('git', () => {
     vi.stubEnv('PATH', cwd);
 
     try {
-      const result = git(['init'], { cwd });
+      const result = gitSpawn(['init'], { cwd });
 
       expect(result.error?.message).toContain('git was not found on PATH');
       expect(result.status).toBeNull();
@@ -86,7 +86,7 @@ describe('git', () => {
     vi.stubEnv('PATH', undefined);
 
     try {
-      expect(git(['init'], { cwd }).error?.message).toContain('git was not found on PATH');
+      expect(gitSpawn(['init'], { cwd }).error?.message).toContain('git was not found on PATH');
     }
     finally {
       vi.unstubAllEnvs();

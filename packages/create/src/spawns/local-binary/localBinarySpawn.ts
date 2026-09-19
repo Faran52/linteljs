@@ -13,7 +13,7 @@ export interface LocalBinaryRun {
  * because before `install` has run there is nothing there to fix and that is not an error. `spawnSync` reports it
  * as ENOENT, so no separate presence check is needed.
  */
-export const runLocalBinary = (cwd: string, name: string, args: string[]): LocalBinaryRun | null => {
+export const localBinarySpawn = (cwd: string, name: string, args: string[]): LocalBinaryRun | null => {
   const result = spawnSync(join(cwd, 'node_modules', '.bin', name), args, {
     cwd,
     encoding: 'utf8',

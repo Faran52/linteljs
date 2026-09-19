@@ -29,7 +29,7 @@ export {
   rmdir,
 } from 'node:fs/promises';
 
-// Sync because its answer feeds a `spawnSync`: `process/` resolves a binary with no asynchronous point to wait at.
+// Sync because its answer feeds a `spawnSync`: `spawns/` resolves a binary with no asynchronous point to wait at.
 export const isExecutableFile = (path: string): boolean => {
   try {
     accessSync(path, constants.X_OK);
