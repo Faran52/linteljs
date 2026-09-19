@@ -10,7 +10,7 @@ import {
   type Form,
   type Library,
   type TargetId,
-} from '../../../answers/answers';
+} from '../../../answers';
 
 import { emitYarnrc } from './yarnrcEmitter';
 

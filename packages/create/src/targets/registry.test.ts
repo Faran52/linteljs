@@ -8,24 +8,20 @@ import {
 } from 'vitest';
 
 import {
-  BROWSERS,
+  ANSWERS,
+  type Answers,
+  type Browser,
   DEFAULT_ANSWERS,
-  HOSTED_FRAMEWORKS,
-  SURFACES,
-  TARGET_IDS,
-} from '../answers/answers';
+  type HostedFramework,
+  type Surface,
+  type TargetId,
+} from '../answers';
+import { valuesOf } from '../answers/record';
 import { buildDevDependencies } from '../emitters/always/package-json/packageJsonEmitter';
 import { ASSETS_ROOT } from '../files/shippedAssets';
 
 import { targetFor, TARGETS } from './registry';
 
-import type {
-  Answers,
-  Browser,
-  HostedFramework,
-  Surface,
-  TargetId,
-} from '../answers/answers';
 import type { Framework } from '../config/types';
 import type { TargetRecord } from './record';
 
@@ -35,6 +31,11 @@ interface Axes {
   hosted: (HostedFramework | undefined)[];
   surfaces: (Surface | undefined)[];
 }
+
+const BROWSERS = valuesOf(ANSWERS.browser.values);
+const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
+const SURFACES = valuesOf(ANSWERS.surfaces.values);
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const recordFor = (target: TargetId): TargetRecord => {
   return targetFor({

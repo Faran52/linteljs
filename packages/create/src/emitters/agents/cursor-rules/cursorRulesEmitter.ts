@@ -3,7 +3,7 @@ import { emitted } from '../../utils/artifactUtils';
 import { emitAgentAdapter } from '../utils/adapterUtils';
 import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 
-import type { Answers } from '../../../answers/answers';
+import type { Answers } from '../../../answers';
 
 // Cursor's own `description` key, taken from the rule's first heading so no second wording exists to drift.
 const titleOf = (source: string): string => {

@@ -1,11 +1,10 @@
-import { hasLibrary } from '../../../answers/answers';
+import { type Answers, hasLibrary } from '../../../answers';
 import { type Artifact, type ProjectShape } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { merged } from '../../utils/artifactUtils';
 
 import { styleEntryPath } from './utils/pathUtils';
 
-import type { Answers } from '../../../answers/answers';
 // A utility class only exists because a stylesheet imported the framework, and only `create-next-app --tailwind`
 // writes that line itself. Merged, because the rest of the file is the project's theme.
 

@@ -28,17 +28,13 @@ import { join } from 'node:path';
 import process, { env } from 'node:process';
 
 import {
-  AGENTS,
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
-  HOSTED_FRAMEWORKS,
   type HostedFramework,
-  LIBRARIES,
-  PLUGINS,
-  SURFACES,
-  TARGET_IDS,
   type TargetId,
-} from '../src/answers/answers';
+} from '../src/answers';
+import { valuesOf } from '../src/answers/record';
 import { parsePackageJson } from '../src/emitters/always/package-json/packageJsonEmitter';
 import { startRegistry } from '../src/pipeline/e2e/registrySetup';
 import { targetFor } from '../src/targets';
@@ -69,6 +65,13 @@ interface ScriptEntry {
 interface ScriptListing {
   allowScripts: ScriptEntry[];
 }
+
+const AGENTS = valuesOf(ANSWERS.agents.values);
+const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
+const LIBRARIES = valuesOf(ANSWERS.libraries.values);
+const PLUGINS = valuesOf(ANSWERS.plugins.values);
+const SURFACES = valuesOf(ANSWERS.surfaces.values);
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 /**
  * Which npm the npm pass runs. A generated project declares npm 11, which *warns* about an uncovered install script

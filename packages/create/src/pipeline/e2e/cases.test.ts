@@ -5,7 +5,8 @@ import {
   vi,
 } from 'vitest';
 
-import { type Answers, TARGET_IDS } from '../../answers/answers';
+import { ANSWERS, type Answers } from '../../answers';
+import { valuesOf } from '../../answers/record';
 
 import { optionCases } from './cases';
 
@@ -13,6 +14,8 @@ import { optionCases } from './cases';
 interface Answered {
   answers: Answers;
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 /**
  * Derived here rather than imported, so this is a second opinion on what a pair is instead of a restatement of the

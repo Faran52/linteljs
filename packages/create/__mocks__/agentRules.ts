@@ -2,7 +2,7 @@ import {
   type Agent,
   type Answers,
   DEFAULT_ANSWERS,
-} from '../src/answers/answers';
+} from '../src/answers';
 
 import type { Artifact } from '../src/config/types';
 

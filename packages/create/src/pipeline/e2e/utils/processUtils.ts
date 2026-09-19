@@ -4,7 +4,7 @@ import { env } from 'node:process';
 
 import { inject } from 'vitest';
 
-import type { PackageManager } from '../../../answers/answers';
+import type { PackageManager } from '../../../answers';
 
 export interface RunResult {
   status: number;

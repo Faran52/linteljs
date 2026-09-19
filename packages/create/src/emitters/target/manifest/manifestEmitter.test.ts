@@ -8,7 +8,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type Surface,
-} from '../../../answers/answers';
+} from '../../../answers';
 
 import {
   emitManifest,

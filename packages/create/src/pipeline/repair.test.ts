@@ -22,7 +22,7 @@ import {
   DEFAULT_ANSWERS,
   type TargetId,
   type Testing,
-} from '../answers/answers';
+} from '../answers';
 import { exists } from '../files/utils/fsUtils';
 
 import { repairScaffoldedOutput } from './repair';

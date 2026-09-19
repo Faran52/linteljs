@@ -19,16 +19,17 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Answers,
+  CONFIG_PATH,
   DEFAULT_ANSWERS,
   type Library,
   type PackageManager,
-  TARGET_IDS,
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '../answers/answers';
-import { CONFIG_PATH } from '../answers/linteljsConfig';
+} from '../answers';
+import { valuesOf } from '../answers/record';
 import { type Artifact } from '../config/types';
 import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
@@ -49,6 +50,8 @@ interface ScannedArtifact {
   target: string;
   text: string;
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {

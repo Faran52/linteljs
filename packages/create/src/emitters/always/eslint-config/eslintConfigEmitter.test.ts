@@ -5,14 +5,15 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Library,
   type Router,
-  TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../../../answers/answers';
+} from '../../../answers';
+import { valuesOf } from '../../../answers/record';
 import { FOLDER_ROUTED } from '../../../targets/naming';
 
 import { emitEslintConfig } from './eslintConfigEmitter';
@@ -23,6 +24,8 @@ interface AnswerOverrides {
   libraries?: Library[];
   router?: Router;
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {

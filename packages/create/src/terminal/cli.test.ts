@@ -31,13 +31,14 @@ import {
   vi,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
 import {
+  type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
+  DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../answers/linteljsConfig';
+} from '../answers';
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { exists } from '../files/utils/fsUtils';

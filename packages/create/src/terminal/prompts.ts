@@ -10,29 +10,20 @@ import {
 } from '@clack/prompts';
 
 import {
-  AGENTS,
+  ANSWERS,
   type Answers,
   type Browser,
-  BROWSERS,
   DEFAULT_ANSWERS,
   type Form,
-  FORMS,
-  HOSTED_FRAMEWORKS,
   type HostedFramework,
-  LIBRARIES,
   type Library,
-  PACKAGE_MANAGERS,
-  PLUGINS,
   rendersWithReact,
   type Router,
   type Surface,
-  SURFACES,
   surfacesOf,
-  TARGET_IDS,
   type TargetId,
-  TESTING_CHOICES,
-  TYPE_SAFETY_CHOICES,
-} from '../answers/answers';
+} from '../answers';
+import { valuesOf } from '../answers/record';
 import { targetFor } from '../targets';
 
 import { isValidProjectName, PROJECT_NAME_RULE } from './utils/nameUtils';
@@ -73,6 +64,18 @@ interface HostAnswers {
   surfaces: Surface[] | undefined;
   hosted: HostedFramework | 'none';
 }
+
+const AGENTS = valuesOf(ANSWERS.agents.values);
+const BROWSERS = valuesOf(ANSWERS.browser.values);
+const FORMS = valuesOf(ANSWERS.form.values);
+const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
+const LIBRARIES = valuesOf(ANSWERS.libraries.values);
+const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
+const PLUGINS = valuesOf(ANSWERS.plugins.values);
+const SURFACES = valuesOf(ANSWERS.surfaces.values);
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
+const TYPE_SAFETY_CHOICES = valuesOf(ANSWERS.typeSafety.values);
 
 const TESTING_DESCRIPTIONS: Record<Answers['testing'], Described> = {
   vitest: {

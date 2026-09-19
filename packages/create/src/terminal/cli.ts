@@ -12,13 +12,14 @@ import {
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
 import packageJson from '../../package.json' with { type: 'json' };
-import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
 import {
+  type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
+  DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../answers/linteljsConfig';
+} from '../answers';
 import { RUN_PREFIX, STAGES } from '../config/constants';
 import { type Stage } from '../config/types';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';

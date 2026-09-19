@@ -7,7 +7,7 @@ import {
   peerRulesBlock,
 } from './utils/emitUtils';
 
-import type { Answers } from '../../../answers/answers';
+import type { Answers } from '../../../answers';
 
 const SUPERSEDED_KEYS = [
   // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.

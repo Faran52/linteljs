@@ -1,10 +1,12 @@
-import { hasLibrary } from '../../../answers/answers';
+import {
+  type Answers,
+  hasLibrary,
+  type HostedFramework,
+} from '../../../answers';
 import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { OUTSIDE_TESTS } from '../../../targets/utils/frameworkUtils';
 import { emitted } from '../../utils/artifactUtils';
-
-import type { Answers, HostedFramework } from '../../../answers/answers';
 
 // Astro's Vite options live here, so there is no `vite.config.ts`. `.mjs` is the name `astro check` looks for first.
 // Null for every other target.

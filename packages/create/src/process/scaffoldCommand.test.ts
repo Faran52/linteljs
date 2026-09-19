@@ -5,14 +5,15 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Library,
   type PackageManager,
-  TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../answers/answers';
+} from '../answers';
+import { valuesOf } from '../answers/record';
 import { targetFor } from '../targets';
 
 import { scaffoldCommand } from './scaffoldCommand';
@@ -24,6 +25,8 @@ interface ScaffoldOverrides {
   testing?: Testing;
   libraries?: Library[];
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: ScaffoldOverrides): Answers => {
   return {

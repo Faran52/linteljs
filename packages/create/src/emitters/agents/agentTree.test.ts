@@ -6,14 +6,14 @@ import {
 
 import {
   type Agent,
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Plugin,
-  TARGET_IDS,
   type TargetId,
   type Testing,
-  TESTING_CHOICES,
-} from '../../answers/answers';
+} from '../../answers';
+import { valuesOf } from '../../answers/record';
 import { type Artifact } from '../../config/types';
 import { contentOf } from '../../files/shippedAssets';
 import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
@@ -44,6 +44,9 @@ interface SkillExpectation {
   label: string;
   text: string;
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
 
 // The agent tree as a whole, which is what this file covers: five emitters, each owning one agent's answer.
 const agentArtifacts = (answers: Answers): Artifact[] => {

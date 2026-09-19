@@ -18,7 +18,7 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../answers/answers';
+import { type Answers, DEFAULT_ANSWERS } from '../answers';
 import { MANAGED_PATH } from '../config/constants';
 import { exists } from '../files/utils/fsUtils';
 

@@ -1,9 +1,11 @@
-import { hasLibrary, hasTests } from '../../../answers/answers';
+import {
+  type Answers,
+  hasLibrary,
+  hasTests,
+} from '../../../answers';
 import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { copied } from '../../utils/artifactUtils';
-
-import type { Answers } from '../../../answers/answers';
 
 // Source no scaffolder wrote, and the tests that cover it. Birth only: a project owns its own source from its
 // first run. The tests come after the files, since one of them is what a starter test covers.

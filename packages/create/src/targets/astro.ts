@@ -5,7 +5,7 @@ import {
 } from './naming';
 import { partsFor } from './utils/frameworkUtils';
 
-import type { HostedFramework } from '../answers/answers';
+import type { HostedFramework } from '../answers/target/hostedFramework';
 import type { TargetBuilder } from './registry';
 
 // Templates on the server, optionally hydrating islands in a hosted framework. `vite: false` although Astro runs on

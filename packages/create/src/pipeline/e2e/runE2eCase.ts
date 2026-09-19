@@ -3,7 +3,11 @@ import { join } from 'node:path';
 
 import { expect } from 'vitest';
 
-import { CONFIG_PATH, parseLinteljsConfig } from '../../answers/linteljsConfig';
+import {
+  CONFIG_PATH,
+  type PackageManager,
+  parseLinteljsConfig,
+} from '../../answers';
 import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
 
 import {
@@ -13,7 +17,6 @@ import {
 } from './utils/processUtils';
 import { createProject, workspace } from './utils/workspaceUtils';
 
-import type { PackageManager } from '../../answers/answers';
 import type { E2eCase } from './cases';
 
 /**

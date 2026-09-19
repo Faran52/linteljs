@@ -1,12 +1,11 @@
 import {
+  type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-} from '../../../answers/linteljsConfig';
+} from '../../../answers';
 import { type Artifact } from '../../../config/types';
 import { emitted } from '../../utils/artifactUtils';
-
-import type { Answers } from '../../../answers/answers';
 
 // The envelope every recorded project carries, so `sync` and `create --skip-scaffold` replan from what it says.
 export const emitLinteljsConfig = (answers: Answers): string => {

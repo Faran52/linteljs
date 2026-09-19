@@ -4,15 +4,14 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers/answers';
+import {
+  type Answers,
+  DEFAULT_ANSWERS,
+  type HostedFramework,
+  type Library,
+} from '../answers';
 
 import { astro } from './astro';
-
-import type {
-  Answers,
-  HostedFramework,
-  Library,
-} from '../answers/answers';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   return {

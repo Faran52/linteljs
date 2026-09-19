@@ -16,7 +16,7 @@ import { runFixPass } from './fixPass';
 import { repairScaffoldedOutput } from './repair';
 import { rewriteScaffoldedSource } from './rewrite';
 
-import type { Answers } from '../answers/answers';
+import type { Answers } from '../answers';
 
 export interface PipelineOptions {
   name: string;

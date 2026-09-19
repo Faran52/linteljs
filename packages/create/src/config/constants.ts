@@ -1,4 +1,4 @@
-import type { PackageManager } from '../answers/answers';
+import type { PackageManager } from '../answers/manager/packageManager';
 import type { ProjectShape, Stage } from './types';
 
 /**

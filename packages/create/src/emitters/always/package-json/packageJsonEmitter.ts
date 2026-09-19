@@ -7,7 +7,7 @@ import {
   hasTests,
   type Library,
   type Router,
-} from '../../../answers/answers';
+} from '../../../answers';
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
 import {
   type Artifact,

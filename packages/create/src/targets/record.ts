@@ -1,10 +1,8 @@
-import type {
-  Answers,
-  Library,
-  PackageManager,
-  Router,
-  TargetId,
-} from '../answers/answers';
+import type { Library } from '../answers/libraries/libraries';
+import type { PackageManager } from '../answers/manager/packageManager';
+import type { Answers } from '../answers/registry';
+import type { Router } from '../answers/target/router';
+import type { TargetId } from '../answers/target/target';
 import type {
   AliasMap,
   Framework,

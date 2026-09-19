@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../config/constants';
 
-import type { PackageManager } from '../answers/answers';
+import type { PackageManager } from '../answers';
 
 export const isCommandAvailable = (command: string): boolean => {
   return spawnSync(command, ['--version'], { stdio: 'ignore' }).status === 0;

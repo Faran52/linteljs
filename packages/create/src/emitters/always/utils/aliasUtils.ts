@@ -4,7 +4,7 @@ import {
   type Answers,
   hasLibrary,
   hasTests,
-} from '../../../answers/answers';
+} from '../../../answers';
 import { type AliasMap } from '../../../config/types';
 import { targetFor } from '../../../targets';
 

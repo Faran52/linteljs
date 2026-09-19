@@ -4,16 +4,15 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../../../answers/answers';
+import {
+  DEFAULT_ANSWERS,
+  type Router,
+  type TargetId,
+  type Testing,
+} from '../../../answers';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 
 import { emitVitestConfig } from './vitestConfigEmitter';
-
-import type {
-  Router,
-  TargetId,
-  Testing,
-} from '../../../answers/answers';
 
 interface AnswerOverrides {
   target?: TargetId;

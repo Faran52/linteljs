@@ -1,9 +1,9 @@
-import { browsersOf } from '../../../answers/answers';
 import {
   type Answers,
   type Browser,
+  browsersOf,
   hasSurface,
-} from '../../../answers/answers';
+} from '../../../answers';
 import { type Artifact, type ProjectShape } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { isJsonObject } from '../../../utils/jsonUtils';

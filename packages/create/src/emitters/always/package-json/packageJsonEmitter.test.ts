@@ -8,19 +8,18 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Form,
-  FORMS,
   type HostedFramework,
-  LIBRARIES,
   type Library,
   type PackageManager,
   type Router,
-  TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../../../answers/answers';
+} from '../../../answers';
+import { valuesOf } from '../../../answers/record';
 import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
 
 import { VERSIONS } from './constants';
@@ -48,6 +47,10 @@ interface Sibling {
   name: string;
   version: string;
 }
+
+const FORMS = valuesOf(ANSWERS.form.values);
+const LIBRARIES = valuesOf(ANSWERS.libraries.values);
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {

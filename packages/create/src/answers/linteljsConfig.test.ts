@@ -10,25 +10,18 @@ import {
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import {
-  AGENTS,
-  type Answers,
-  DEFAULT_ANSWERS,
-  FORMS,
-  LIBRARIES,
-  PACKAGE_MANAGERS,
-  PLUGINS,
-  SURFACES,
-  surfacesOf,
-  TARGET_IDS,
-  TESTING_CHOICES,
-  TYPE_SAFETY_CHOICES,
-} from './answers';
-import {
   CONFIG_SCHEMA_URL,
   CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
-  parseLinteljsConfig,
-} from './linteljsConfig';
+} from './constants';
+import { parseLinteljsConfig } from './linteljsConfig';
+import { valuesOf } from './record';
+import {
+  ANSWERS,
+  type Answers,
+  DEFAULT_ANSWERS,
+} from './registry';
+import { surfacesOf } from './utils/answerUtils';
 
 interface ConfigOverrides {
   $schema?: string;
@@ -93,6 +86,16 @@ interface SchemaFields {
   enum?: SchemaValue;
   items?: SchemaValue;
 }
+
+const AGENTS = valuesOf(ANSWERS.agents.values);
+const FORMS = valuesOf(ANSWERS.form.values);
+const LIBRARIES = valuesOf(ANSWERS.libraries.values);
+const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
+const PLUGINS = valuesOf(ANSWERS.plugins.values);
+const SURFACES = valuesOf(ANSWERS.surfaces.values);
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
+const TYPE_SAFETY_CHOICES = valuesOf(ANSWERS.typeSafety.values);
 
 const config = (overrides: ConfigOverrides = {}): string => {
   return JSON.stringify({

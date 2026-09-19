@@ -1,4 +1,4 @@
-import { hasLibrary } from '../answers/answers';
+import { hasLibrary } from '../answers/utils/answerUtils';
 
 import { FOLDER_NAMING, NAMING } from './naming';
 import { COMMON_REACT_PLUGINS, HOOKS_ALIAS } from './utils/targetUtils';

@@ -15,10 +15,13 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS, TARGET_IDS } from '../answers/answers';
+import { ANSWERS, DEFAULT_ANSWERS } from '../answers';
+import { valuesOf } from '../answers/record';
 import { TARGETS } from '../targets/registry';
 
 import { readProjectShape, STYLE_ENTRY_CANDIDATES } from './readProjectShape';
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 let cwd = '';
 

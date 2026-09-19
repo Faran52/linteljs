@@ -12,7 +12,7 @@ import {
   type RunResult,
 } from './processUtils';
 
-import type { Answers, PackageManager } from '../../../answers/answers';
+import type { Answers, PackageManager } from '../../../answers';
 
 // The one failure worth retrying: a scaffolder pins the version it just saw, and `create astro` once asked for a
 // version 33 seconds before it was published. Matched on the error code, since any other failure is real.

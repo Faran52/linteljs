@@ -1,0 +1,85 @@
+import type { TargetRecord } from '../targets/record';
+import type { Answers } from './registry';
+
+// Display only: the persisted value is never the label or the hint.
+export interface ValueRecord {
+  label: string;
+  hint?: string;
+  // Narrows the offered values within a legal slot; absent means every value in `values` is legal.
+  only?: (target: TargetRecord) => boolean;
+}
+
+interface Base {
+  key: string;
+  // `--pm`, `--type-safety`; absent with `prompt` on a never-asked answer.
+  flag?: string;
+  // 'Package manager'; absent means never asked and no flag.
+  prompt?: string;
+  // In `--help` after the choices: 'react only', 'webextension only'.
+  note?: string;
+  // In the published schema.
+  description?: string;
+  // Asked and accepted only where this holds; absent means every target.
+  slot?: (target: TargetRecord) => boolean;
+  // Prompt only: plugins after a non-empty agents.
+  askedWhen?: (answered: Answers) => boolean;
+}
+
+export interface ChoiceRecord<V extends string = string> extends Base {
+  kind: 'choice';
+  values: Record<V, ValueRecord>;
+  default: V;
+}
+
+export interface OptionalChoiceRecord<V extends string = string> extends Base {
+  kind: 'optionalChoice';
+  values: Record<V, ValueRecord>;
+  // A label and a hint only: `only` would have nothing to narrow, since this value is not in `values`.
+  none: Omit<ValueRecord, 'only'>;
+}
+
+export interface MultiRecord<V extends string = string> extends Base {
+  kind: 'multi';
+  values: Record<V, ValueRecord>;
+  default: V[];
+  minimum?: number;
+}
+
+export interface OptionalMultiRecord<V extends string = string> extends Base {
+  kind: 'optionalMulti';
+  values: Record<V, ValueRecord>;
+  minimum?: number;
+}
+
+// The one boolean answer, `store`: asked as a radio between `none` and the target's own `StoreSlot`, so it carries
+// no `values` of its own.
+export interface BooleanRecord extends Base {
+  kind: 'boolean';
+}
+
+// Open strings: `minItems` is 1, always, and there is nothing to enumerate.
+export interface ListRecord extends Base {
+  kind: 'list';
+}
+
+// `aliases`: `^[@$]` keys, non-empty string values.
+export interface MapRecord extends Base {
+  kind: 'map';
+}
+
+export type AnswerRecord
+  = BooleanRecord
+    | ChoiceRecord
+    | ListRecord
+    | MapRecord
+    | MultiRecord
+    | OptionalChoiceRecord
+    | OptionalMultiRecord;
+
+// The keys a record's own `values` carries, read off the object itself: a filter with a predicate rather than a
+// cast, so a record's vocabulary is never spelled a second time by its readers.
+export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
+  return Object.keys(values).filter((key): key is V => {
+    return key in values;
+  });
+};

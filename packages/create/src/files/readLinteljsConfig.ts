@@ -7,7 +7,7 @@ import {
   LEGACY_CONFIG_PATH,
   type LinteljsConfig,
   parseLinteljsConfig,
-} from '../answers/linteljsConfig';
+} from '../answers';
 
 import { entryExists } from './utils/fsUtils';
 

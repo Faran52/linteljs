@@ -4,9 +4,12 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS, TARGET_IDS } from '../../../answers/answers';
+import { ANSWERS, DEFAULT_ANSWERS } from '../../../answers';
+import { valuesOf } from '../../../answers/record';
 
 import { emitStylelintConfig } from './stylelintConfigEmitter';
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 describe('emitStylelintConfig', () => {
   it('extends the standard and the property order', () => {

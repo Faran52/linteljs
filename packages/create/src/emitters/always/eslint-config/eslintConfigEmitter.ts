@@ -1,4 +1,4 @@
-import { type Answers, hasLibrary } from '../../../answers/answers';
+import { type Answers, hasLibrary } from '../../../answers';
 import { type Artifact, type DefineConfigOptions } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { emitted } from '../../utils/artifactUtils';

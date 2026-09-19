@@ -5,12 +5,13 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Library,
-  TARGET_IDS,
   type TargetId,
-} from '../../../answers/answers';
+} from '../../../answers';
+import { valuesOf } from '../../../answers/record';
 
 import { buildAliases } from './aliasUtils';
 
@@ -18,6 +19,8 @@ interface AnswerOverrides {
   target?: TargetId;
   libraries?: Library[];
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {

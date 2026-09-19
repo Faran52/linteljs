@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 
-import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
+import { type Answers, LEGACY_CONFIG_PATH } from '../answers';
 import { MANAGED_PATH } from '../config/constants';
 import { buildArtifacts } from '../emitters';
 import { applyArtifact, safeProjectPath } from '../files/projectFiles';
@@ -14,8 +14,6 @@ import {
   rmdir,
 } from '../files/utils/fsUtils';
 import { git } from '../process/git';
-
-import type { Answers } from '../answers/answers';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 

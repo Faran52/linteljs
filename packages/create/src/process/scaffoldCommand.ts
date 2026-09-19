@@ -1,4 +1,4 @@
-import type { PackageManager } from '../answers/answers';
+import type { PackageManager } from '../answers';
 import type { ScaffoldKind, ScaffoldSpec } from '../targets';
 
 // A tuple, so the first element is a command with no `undefined` guard.

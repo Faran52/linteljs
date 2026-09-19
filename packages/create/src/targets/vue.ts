@@ -1,4 +1,4 @@
-import { hasTests } from '../answers/answers';
+import { hasTests } from '../answers/utils/answerUtils';
 
 import { FOLDER_NAMING, NAMING } from './naming';
 

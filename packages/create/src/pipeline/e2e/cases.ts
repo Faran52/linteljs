@@ -1,25 +1,16 @@
 import { env } from 'node:process';
 
 import {
-  AGENTS,
+  ANSWERS,
   type Answers,
-  BROWSERS,
   DEFAULT_ANSWERS,
   type Form,
-  FORMS,
-  HOSTED_FRAMEWORKS,
   type HostedFramework,
-  LIBRARIES,
-  PACKAGE_MANAGERS,
-  PLUGINS,
   rendersWithReact,
   type Router,
-  SURFACES,
-  TARGET_IDS,
   type TargetId,
-  TESTING_CHOICES,
-  TYPE_SAFETY_CHOICES,
-} from '../../answers/answers';
+} from '../../answers';
+import { valuesOf } from '../../answers/record';
 import { targetFor } from '../../targets';
 
 import type { Framework } from '../../config/types';
@@ -49,6 +40,18 @@ interface Leader {
   item?: E2eCase;
   gain: number;
 }
+
+const AGENTS = valuesOf(ANSWERS.agents.values);
+const BROWSERS = valuesOf(ANSWERS.browser.values);
+const FORMS = valuesOf(ANSWERS.form.values);
+const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
+const LIBRARIES = valuesOf(ANSWERS.libraries.values);
+const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
+const PLUGINS = valuesOf(ANSWERS.plugins.values);
+const SURFACES = valuesOf(ANSWERS.surfaces.values);
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
+const TYPE_SAFETY_CHOICES = valuesOf(ANSWERS.typeSafety.values);
 
 /**
  * Two families, and between them every answer this CLI can be given.

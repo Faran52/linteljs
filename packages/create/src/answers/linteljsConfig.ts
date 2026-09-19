@@ -1,25 +1,18 @@
-import { type AliasMap } from '../config/types';
 import { targetFor } from '../targets';
 import { isJsonObject } from '../utils/jsonUtils';
 
 import {
-  AGENTS,
-  type Answers,
-  BROWSERS,
-  type Form,
-  FORMS,
-  HOSTED_FRAMEWORKS,
-  LIBRARIES,
-  type Library,
-  PACKAGE_MANAGERS,
-  PLUGINS,
-  rendersWithReact,
-  ROUTERS,
-  SURFACES,
-  TARGET_IDS,
-  TESTING_CHOICES,
-  TYPE_SAFETY_CHOICES,
-} from './answers';
+  CONFIG_SCHEMA_URL,
+  CONFIG_SCHEMA_URL_V1,
+  CURRENT_SCHEMA_VERSION,
+} from './constants';
+import { valuesOf } from './record';
+import { ANSWERS, type Answers } from './registry';
+import { rendersWithReact } from './utils/answerUtils';
+
+import type { AliasMap } from '../config/types';
+import type { Form } from './libraries/form';
+import type { Library } from './libraries/libraries';
 
 // `extends Answers`, so a config plans directly. This parser is the only list and refuses an unknown property by
 // name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project as a popup one.
@@ -58,15 +51,20 @@ const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', true> = {
 
 const expectedKeys = Object.keys(EXPECTED);
 
-export const CONFIG_PATH = 'linteljs.config.json';
-// What every version through 1.6.0 wrote. Read when the current name is absent, and removed by `sync` once it is not.
-export const LEGACY_CONFIG_PATH = 'lintel.config.json';
-export const CONFIG_SCHEMA_URL
-  = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/linteljs.config.v2.schema.json';
-// Still published: a project written before v2 carries this in `$schema` and its editor resolves it.
-export const CONFIG_SCHEMA_URL_V1
-  = 'https://raw.githubusercontent.com/Faran52/linteljs/main/schemas/lintel.config.v1.schema.json';
-export const CURRENT_SCHEMA_VERSION = 2;
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
+const BROWSERS = valuesOf(ANSWERS.browser.values);
+const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
+const SURFACES = valuesOf(ANSWERS.surfaces.values);
+const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
+const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
+const LIBRARIES = valuesOf(ANSWERS.libraries.values);
+const FORMS = valuesOf(ANSWERS.form.values);
+const ROUTERS = valuesOf(ANSWERS.router.values);
+const TYPE_SAFETY_CHOICES = valuesOf(ANSWERS.typeSafety.values);
+const AGENTS = valuesOf(ANSWERS.agents.values);
+const PLUGINS = valuesOf(ANSWERS.plugins.values);
+
+// Widened so `isForm` can search it with a plain `string`, once `value` is narrowed that far and no further.
 const FORM_NAMES: readonly string[] = FORMS;
 
 const isConfigObject = (value: unknown): value is ConfigObject => {

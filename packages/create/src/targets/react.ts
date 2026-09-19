@@ -1,5 +1,3 @@
-import { ROUTERS } from '../answers/answers';
-
 import { FOLDER_NAMING, NAMING } from './naming';
 import { REACT_VITE_PLUGIN } from './utils/frameworkUtils';
 import {
@@ -8,7 +6,11 @@ import {
   viteScaffold,
 } from './utils/targetUtils';
 
+import type { Router } from '../answers/target/router';
 import type { StarterFile, TargetRecord } from './record';
+
+// The only target with a `routers` slot, so it supports every router the vocabulary has.
+const ROUTERS: readonly Router[] = ['react-router', 'tanstack-router'];
 
 export const react: TargetRecord = {
   id: 'react',

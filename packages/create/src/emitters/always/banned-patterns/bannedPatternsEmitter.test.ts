@@ -14,7 +14,7 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '../../../answers/answers';
+} from '../../../answers';
 import { ASSETS_ROOT } from '../../../files/shippedAssets';
 
 import { checkerArtifact } from './bannedPatternsEmitter';

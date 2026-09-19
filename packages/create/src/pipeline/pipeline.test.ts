@@ -25,22 +25,21 @@ import {
 
 import {
   type Agent,
+  ANSWERS,
   type Answers,
   type Browser,
+  CONFIG_PATH,
+  CONFIG_SCHEMA_URL,
+  CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   type Library,
   type PackageManager,
   type Plugin,
   type Router,
-  TARGET_IDS,
   type TargetId,
   type Testing,
-} from '../answers/answers';
-import {
-  CONFIG_PATH,
-  CONFIG_SCHEMA_URL,
-  CURRENT_SCHEMA_VERSION,
-} from '../answers/linteljsConfig';
+} from '../answers';
+import { valuesOf } from '../answers/record';
 import { type Stage } from '../config/types';
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
@@ -65,6 +64,8 @@ interface AnswerOverrides {
   browsers?: Browser[];
   router?: Router;
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {

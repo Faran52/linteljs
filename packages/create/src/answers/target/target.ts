@@ -1,0 +1,24 @@
+import type { AnswerRecord } from '../record';
+
+export type TargetId = keyof typeof target.values;
+
+// Mirrors each target's own `TargetRecord.label` for now; commit 3 deletes that field and repoints its two readers
+// here, which is when this stops being a second spelling.
+export const target = {
+  key: 'target',
+  flag: 'target',
+  prompt: 'Framework',
+  kind: 'choice',
+  values: {
+    'react': { label: 'React (Vite)' },
+    'next': { label: 'Next.js' },
+    'vue': { label: 'Vue' },
+    'svelte': { label: 'Svelte' },
+    'solid': { label: 'Solid' },
+    'angular': { label: 'Angular' },
+    'astro': { label: 'Astro' },
+    'webextension': { label: 'Web Extension (MV3)' },
+    'react-native': { label: 'React Native (Expo)' },
+  },
+  default: 'react',
+} as const satisfies AnswerRecord;

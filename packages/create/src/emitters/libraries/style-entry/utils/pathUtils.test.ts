@@ -5,15 +5,18 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
-  TARGET_IDS,
   type TargetId,
-} from '../../../../answers/answers';
+} from '../../../../answers';
+import { valuesOf } from '../../../../answers/record';
 import { STYLE_ENTRY_CANDIDATES } from '../../../../files/readProjectShape';
 import { targetFor } from '../../../../targets';
 
 import { styleEntryPath } from './pathUtils';
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (target: TargetId): Answers => {
   return {

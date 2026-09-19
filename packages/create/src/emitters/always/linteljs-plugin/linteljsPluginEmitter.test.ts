@@ -26,7 +26,7 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '../../../answers/answers';
+} from '../../../answers';
 import { type Artifact } from '../../../config/types';
 import { ASSETS_ROOT, contentOf } from '../../../files/shippedAssets';
 

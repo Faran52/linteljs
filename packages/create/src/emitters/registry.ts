@@ -37,7 +37,7 @@ import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter
 import { emitted } from './utils/artifactUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
-import type { Answers } from '../answers/answers';
+import type { Answers } from '../answers';
 
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once

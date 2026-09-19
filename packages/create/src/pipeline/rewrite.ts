@@ -8,7 +8,7 @@ import {
 } from '../files/utils/fsUtils';
 import { targetFor } from '../targets';
 
-import type { Answers } from '../answers/answers';
+import type { Answers } from '../answers';
 
 // Non-compiling generator output is not a project decision.
 export const SOURCE_ROOT = 'src';

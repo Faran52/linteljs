@@ -3,7 +3,7 @@ import { targetFor } from '../../../targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers } from '../../../answers/answers';
+import type { Answers } from '../../../answers';
 import type { PluginSpec, TestPlatform } from '../../../targets/record';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`

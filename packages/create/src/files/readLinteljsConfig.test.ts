@@ -18,13 +18,13 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../answers/answers';
 import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
+  DEFAULT_ANSWERS,
   LEGACY_CONFIG_PATH,
-} from '../answers/linteljsConfig';
+} from '../answers';
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import { readLinteljsConfig } from './readLinteljsConfig';

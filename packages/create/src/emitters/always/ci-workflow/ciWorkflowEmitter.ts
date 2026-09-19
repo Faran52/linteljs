@@ -2,7 +2,7 @@ import { NODE_ENGINE, RUN_PREFIX } from '../../../config/constants';
 import { type Artifact } from '../../../config/types';
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers, PackageManager } from '../../../answers/answers';
+import type { Answers, PackageManager } from '../../../answers';
 
 // The one workflow this standard owns, emitted rather than preserved because it is the gate: a reference repo renamed
 // `check` and its workflow called the old name for two days while `sync` reported it up to date.

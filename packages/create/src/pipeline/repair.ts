@@ -6,7 +6,7 @@ import {
 
 import { orderBy } from 'es-toolkit';
 
-import { hasTests } from '../answers/answers';
+import { type Answers, hasTests } from '../answers';
 import { safeProjectPath, writeProjectFile } from '../files/projectFiles';
 import {
   entryExists,
@@ -19,7 +19,6 @@ import { targetFor } from '../targets';
 
 import { SOURCE_ROOT, sourceFiles } from './rewrite';
 
-import type { Answers } from '../answers/answers';
 import type { StarterRename } from '../targets';
 
 // Fresh projects only; exact generator text turns upstream drift into a notice.

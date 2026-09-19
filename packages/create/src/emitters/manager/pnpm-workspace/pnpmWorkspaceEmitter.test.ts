@@ -9,7 +9,7 @@ import {
   type Browser,
   DEFAULT_ANSWERS,
   type TargetId,
-} from '../../../answers/answers';
+} from '../../../answers';
 
 import { mergePnpmWorkspace } from './pnpmWorkspaceEmitter';
 import { allowBuildsBlock, emitPnpmWorkspace } from './utils/emitUtils';
