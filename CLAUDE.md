@@ -55,12 +55,22 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
 - `packages/create/src/`: the CLI, one folder per responsibility. `answers/` is what the user chose,
   `config/` is data and only data, the types, constants and tables no ring owns, `targets/` is what
   linteljs knows (one record per target, the registry, the naming policy),
-  `emitters/` turns the two into file text, `terminal/` reads argv and the terminal, `files/` reads
-  and writes files, `process/` spawns, `pipeline/` sequences them. The direction points inward only,
-  enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`, and which folder a
+  `emitters/` turns the two into file text, `terminal/` reads argv and the terminal, `disk/` reads
+  and writes files, `spawns/` runs binaries, `pipeline/` sequences them. The direction points inward
+  only, enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`, and which folder a
   module belongs to is decided by the world it reaches into rather than by judgement: `node:fs`
-  means `files/`, `node:child_process` means `process/`, argv and the terminal mean `terminal/`,
+  means `disk/`, `node:child_process` means `spawns/`, argv and the terminal mean `terminal/`,
   enforced by `no-restricted-imports` in the same file. The emitters stay free of `switch (target)`.
+- **Every ring has the same shape, and `src/meta.test.ts` holds the five that carry no registry.** A
+  ring is named for what its members are, or for the world it reaches when the world is the
+  membership test. A subject is a kebab-case directory holding one entry named for it in camelCase,
+  its suite, a `constants.ts` for a table it alone owns, and a `utils/` for helpers only it reads.
+  The entry takes the singular of whatever names the kind: the ring where the ring has one
+  (`targets/` gives `reactTarget`, `spawns/` gives `gitSpawn`), the group where a group changes it
+  (`disk/read/` gives `projectShapeReader`, `pipeline/passes/` gives `fixPass`). A ring with no one
+  kind has nothing to suffix, so `terminal/` holds `cli/cli.ts` and `prompts/prompts.ts`. Every ring
+  carries a barrel and the outer rings take it rather than reaching a file inside, which the same
+  suite pins by refusing an export nothing outside the ring takes.
 - `packages/create/src/emitters/`: `<group>/<subject>/<subjectEmitter>.ts`, three derivations of one
   spelling. The subject directory is named for the file it writes, the entry is named for the
   directory, and the group is named for the answer that decides whether its emitters write anything:
@@ -70,10 +80,10 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
   directory listing both ways. A module that writes no file is not an emitter: `registry.ts` and the
   barrel sit at the root, a helper every subject reads under `emitters/utils/`, a table one subject
   owns in that subject's `constants.ts`.
-  Two lists come out of `registry.ts` and every file reaches disk through `applyArtifact` from one
+  Two lists come out of `registry.ts` and every file reaches disk through `artifactWriter` from one
   of them. `buildArtifacts` is what `create` and `sync` both write from. `seedArtifacts` is what a
   `create` run plants and `sync` never touches: the recorded config, the README, the manifest and
-  the starter source. `rewrite/` and `repair/` are the one exception and a different operation, editing source a
+  the starter source. `pipeline/passes/` is the one exception and a different operation, editing source a
   scaffolder already wrote.
 - `packages/create/assets/`: files copied onto disk in a generated project, not imported. The
   standard this repo publishes lives here.

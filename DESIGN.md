@@ -11,7 +11,7 @@ restates code goes stale and then misleads.
 
 For a consumer deciding whether to use linteljs: The problem, The goal, Non-goals.
 For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure; Libraries and routers; Package manager files; Comments.
-For work on this workspace itself: One version per shared dependency; Two artifact lists; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
+For work on this workspace itself: One shape for every ring; One version per shared dependency; Two artifact lists; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
 
 ## The problem
 
@@ -279,6 +279,53 @@ Two of the nine host a UI framework rather than being one. Astro renders `.astro
 hydrates islands; the extension target renders whatever its surfaces are written in. Both take the
 same `hostedFramework` answer, from the same `targets/utils/frameworkUtils.ts`, so adding a framework
 to one adds it to both.
+
+## One shape for every ring, and two renamed for it
+
+`emitters/` was the only ring with a shape anyone could state: a directory per subject, an entry
+named for the directory, a `constants.ts` for a table one subject owns, a `utils/` for its private
+helpers, and a `meta.test.ts` holding all of it. The other rings were flat listings, four had no
+barrel at all, and nothing held any of them, which is how `cli.ts` reached 523 lines carrying three
+separate things and how `repair.ts` came to borrow a directory walk from `rewrite.ts`.
+
+The rule generalised rather than copied. A ring is named for what its members are, or for the world
+it reaches where the world is the membership test. The entry takes the singular of whatever names
+the kind: the ring where the ring has one, the group where a group changes it, and nothing where a
+ring genuinely has no one kind.
+
+Derived rather than invented, and the tree proved it before the rule was written. `fixPass.ts` and
+`localBinary.ts` already carried the noun their ring would have given them, which is why `passes/`
+and `spawns/` are the names they are rather than something chosen to sound uniform.
+
+Two rings were renamed because their old names said what they touched and not what they held.
+`files/` became `disk/`, split into `read/` and `write/` so the group supplies `Reader` and
+`Writer`; four of its five members read. `process/` became `spawns/`: it was singular where every
+other ring is a plural of its members, and every member runs a binary and waits. Both renames moved
+`no-restricted-imports` and `import-x/no-restricted-paths` with them, and both were probed rather
+than assumed, by giving an emitter the forbidden import and reading the message back.
+
+Two modules left `process/` in the process, because neither spawned anything and that ring's whole
+membership test is that it does. `scaffoldCommand.ts` is a table and an argv builder, so it is the
+scaffold stage's own `utils/`. `nodeVersionRefusal` is about Node rather than a package manager, so
+it sits beside `main`, next to `nameUtils.ts`, which is the same shape: a validation and the message
+it answers.
+
+`src/meta.test.ts` holds the five rings that carry no registry. One table rather than five files,
+because the assertions are identical and only the groups and the suffix differ, so the rule reads as
+data and a sixth ring is one entry. The barrel half earned itself immediately: it found four
+exports nothing outside their ring took, `TARGETS` among them, sitting in a barrel while its one
+reader went in by path.
+
+That check needed a wider `takenFromBarrel` than `emitters/` had needed. A barrel is also reached as
+`./terminal` by a sibling and as `../src/terminal` from `__mocks__/`, and a re-export is a take:
+`src/index.ts` carrying `main` onward is the package surface asking for it. Matching `import` alone,
+scanned from `src/` alone, the trim would have deleted three names that are read.
+
+One thing the restructure bought that was not the point of it. `vitest.config.ts` excludes
+`**/cli.ts` from coverage, for `main`'s process-level wiring. Splitting the flag table, `USAGE` and
+`parseCliArgs` out of that file moved them inside the 100% gate, 52 statements the gate had never
+seen, and the suites that followed them covered every branch with nothing added. The exclusion now
+hides only the entrypoint it was meant for.
 
 ## Project structure
 
@@ -568,7 +615,7 @@ points it actually has. Re-emitting flattens that, and reporting it as `changed`
 
 `preserve` alone was not enough, and the first attempt was wrong in a way the pipeline tests caught:
 a scaffolder writes its own `vite.config.ts` moments before stage 4 runs, so preserving at birth
-handed a new project Vite's defaults instead of this standard's. `applyArtifact` therefore takes the
+handed a new project Vite's defaults instead of this standard's. `artifactWriter` therefore takes the
 `fresh` flag the pipeline already computes, which is exactly the question "is this directory
 scaffolder output". Nothing else changes behaviour, because no other preserved file exists yet at
 birth.
@@ -899,8 +946,8 @@ loudly rather than quietly, because `verifyLintOutput` asserts the resolved vers
 
 ## Two artifact lists, and why `sync` sees only one
 
-Every file this CLI owns reaches disk as an `Artifact` through `applyArtifact`. There is no second
-route: `pipeline.ts` holds no `writeProjectFile` call, which `pipeline.test.ts` pins by reading its
+Every file this CLI owns reaches disk as an `Artifact` through `artifactWriter`. There is no second
+route: `pipelineRun.ts` holds no `projectFileWriter` call, which `pipelineRun.test.ts` pins by reading its
 own source. Before this, the README, the manifest, the starter files, the starter tests and
 `linteljs.config.json` were each written by hand inside a stage runner, so adding a file that needed a
 condition meant editing the orchestrator: the coupling `switch (target)` is banned for in the
@@ -920,7 +967,7 @@ and `cli.test.ts` pins exactly that. `pipeline.test.ts` pins the other half: the
 sync plan at all.
 
 Two properties carry what the stage runners used to decide in code. `fresh: true` is birth only, for
-the manifest and the starter source, which a project owns from its first run; `applyArtifact` already
+the manifest and the starter source, which a project owns from its first run; `artifactWriter` already
 received `fresh` for the `preserve` decision and now answers `false` outright. `requires` names a path
 that has to exist, which is how a starter test is skipped when a rearranged starter moved the file it
 covers. Both are data on the artifact rather than a branch in the pipeline, so a new one of either
@@ -1222,3 +1269,12 @@ comes through `projects`.
 One key per package rather than a single global block, because a glob key takes its files out of the
 global thresholds, so a package dropped from the list would stop being gated without failing
 anything. Named one by one, it has to be removed on purpose.
+
+`**/cli.ts` is excluded, and `**/e2e/**` with it. The entrypoint is `process.argv` in and an exit
+code out, wired to `stdout`, and covering it means asserting against a harness rather than against
+behaviour; the end-to-end directory runs nothing under the default gate, so a helper there would
+land as a 0% file against a 100% threshold. The exclusion is narrower than it looks now: the flag
+table, `USAGE` and `parseCliArgs` used to sit in `cli.ts` and moved to `cli/utils/argvUtils.ts` when
+the ring took its shape, so 52 statements that had never been gated are, and were already covered.
+Anything else that leaves that file leaves the exclusion with it, which is the direction this should
+keep going.

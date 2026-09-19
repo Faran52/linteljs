@@ -101,6 +101,6 @@ The file is `preserve: true`, so a project owns the list and an entry goes the d
 starter behind it. Without that, a project answering `typeSafety: strict` was blocked at its first
 commit by twelve files it did not write.
 
-`buildArtifacts.test.ts` runs the emitted checker over the emitted starter code for every target,
+`emitters/registry.test.ts` runs the emitted checker over the emitted starter code for every target,
 which is the only thing anywhere that does: `pnpm check` never invokes the checker, and the
 end-to-end suite never commits.

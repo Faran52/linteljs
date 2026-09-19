@@ -36,33 +36,61 @@ aliases it duplicates instead of importing carry a comment saying so.
   carries that as a non-goal, which is why it is absent from the published standard.
 
 - **`create` is one folder per responsibility, and membership is decided rather than chosen.** The
-  standard leaves the ring count open; this package has seven folders, and a lint rule rather than
+  standard leaves the ring count open; this package has nine folders, and a lint rule rather than
   taste decides which one a module belongs to.
 
   ```
   answers/    what the user chose. Reaches targets/ for the slot check.
   targets/    what linteljs knows: the records, the registry, the naming policy. Reaches nothing.
+  config/     data and only data: the types, constants and tables no ring owns.
   utils/      what every ring hand-rolled otherwise. Reaches nothing.
   emitters/   answers + targets into file text. Reaches nothing.
   terminal/   argv and the terminal.
-  files/      reading and writing files.
-  process/    spawning.
+  disk/       reading and writing files.
+  spawns/     running a binary and waiting.
   pipeline/   the stage machine, sync, and the passes over generator output.
   ```
 
   The outer three are named for the world they reach into, which is readable off an import line:
-  `node:fs` means `files/`, `node:child_process` means `process/`, `node:process` and
+  `node:fs` means `disk/`, `node:child_process` means `spawns/`, `node:process` and
   `@clack/prompts` mean `terminal/`. Nothing outside those three may reach a world, so the inner
-  three are provably pure and substitutable without touching a disk. `no-restricted-imports` in the
+  ones are provably pure and substitutable without touching a disk. `no-restricted-imports` in the
   root `eslint.config.ts` enforces it, with `pipeline/e2e/` exempt because the harness spawns real
-  package managers on purpose. `process/` reaches `files/` for `isExecutableFile` and never the
+  package managers on purpose. `spawns/` reaches `disk/` for `isExecutableFile` and never the
   reverse: finding a binary on `PATH` is a filesystem fact only a spawner asks for.
 
-  Inside `emitters/` the path is `<group>/<subject>/<subjectEmitter>.ts` and each half is derived
-  from the one before it. The subject directory is named for the file it writes, exactly as a rule
-  directory in `eslint-plugin` is named for its rule id; the entry is named for the directory, so
-  `meta.test.ts` computes it rather than probing for it; and the group is named for the answer that
-  decides whether its emitters write anything, with `always/` for the files no answer gates.
+- **Every ring has the same shape, and a suite holds it.** `emitters/` and `answers/` each carry
+  their own `meta.test.ts` because each also holds a registry against the same listing; the other
+  five are held by `src/meta.test.ts`, one table stating the rule once so a sixth ring is one entry.
+
+  A ring is named for what its members are, or for the world it reaches where the world is the
+  membership test. A subject is a kebab-case directory holding one entry named for it in camelCase,
+  its suite, a `constants.ts` for a table it alone reads, and a `utils/` for helpers only it reads.
+
+  The entry takes the singular of whatever names the kind. Where the ring has one kind that is the
+  ring: `targets/react/reactTarget.ts`, `spawns/git/gitSpawn.ts`. Where a group changes the kind it
+  is the group: `disk/read/project-shape/projectShapeReader.ts`,
+  `pipeline/passes/fix/fixPass.ts`. Where a ring genuinely has no one kind there is nothing to
+  suffix, and the entry is named for its directory alone, which is the `eslint-plugin/src/rules/`
+  spelling: `terminal/cli/cli.ts` and `terminal/prompts/prompts.ts`.
+
+  This is derived rather than invented, and two names in the tree predate the rule and agree with
+  it: `fixPass.ts` and `localBinary.ts` were already spelled that way.
+
+  Every ring carries an `index.ts` and the rings outside it take that rather than a file inside.
+  The same suite refuses an export nothing outside the ring takes, which caught four leftovers the
+  hour it was written, `TARGETS` among them: it sat in a barrel while its one reader went in by path.
+
+  A helper sits at the level of its readers and no higher, in every ring. One subject reads it, it
+  is `<subject>/utils/` and the suite holds it private there. Several subjects read it, it is the
+  group's or the ring's `utils/`: `pipeline/utils/sourceUtils.ts` is there because both the rewrite
+  and the repair pass walk the same tree, and `terminal/utils/nameUtils.ts` because `cli/` and
+  `prompts/` both validate a project name.
+
+  Inside `emitters/` the group is the answer that decides whether its emitters write anything, with
+  `always/` for the files no answer gates, and the subject directory is named for the file it
+  writes. The ring is `emitters/`, so the entry is `<subject>Emitter.ts`, which is the general rule
+  above at its two-group depth.
 
   Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a `flatMap`
   over `registry.ts` with no branch in it, which `meta.test.ts` asserts by reading its source. The
@@ -70,23 +98,16 @@ aliases it duplicates instead of importing carry a comment saying so.
   directory listing in both directions, so a directory nobody registered fails and a key with no
   directory fails.
 
-  A subject directory holds its entry, one suite, a `constants.ts` for a table it alone reads, and
-  a `utils/` for its private helpers. Nothing else, which `meta.test.ts` enforces: a second module
-  loose beside the entry is either a helper, and `utils/` is where the `*Utils` suffix is enforced on
-  it, or it is read from outside, and then it is not that subject's to hold.
-
   A module that writes no file is not an emitter. `registry.ts` holds the two lists and the reading
   of each, and `index.ts` is the barrel the outer rings take the ring through; nothing else sits at
   that root. `buildArtifacts` appends one artifact of its own, the record of what it owns that
   `plugins/linteljs/managed.json` carries, because that is a fact about the list rather than a
   member of it and an emitter would have to leave itself out of its own input.
 
-  A helper sits at the level of its readers and no higher. One subject reads it, it is
-  `<group>/<subject>/utils/` and `meta.test.ts` holds it private there. Several subjects in one
-  group read it, it is `<group>/utils/`. Every subject in the ring reads it, it is
-  `emitters/utils/`: `artifactUtils.ts` builds the three content shapes, `managedUtils.ts` derives
-  the record `registry.ts` appends, and `shapeUtils.ts` picks a project's own spelling of a file.
-  The dependency ranges are `always/package-json/constants.ts`, a table one subject owns.
+  `emitters/utils/` is what every subject in that ring reads: `artifactUtils.ts` builds the three
+  content shapes, `managedUtils.ts` derives the record `registry.ts` appends, and `shapeUtils.ts`
+  picks a project's own spelling of a file. The dependency ranges are
+  `always/package-json/constants.ts`, a table one subject owns.
 
   `src/config/` is data, and only data, in two files: `types.ts` is the vocabulary every ring
   shares, being the artifact and its stages, the emitter signature and the shape of a project on
