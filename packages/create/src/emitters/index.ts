@@ -7,4 +7,4 @@ export {
   type MergedText,
 } from './artifact';
 export { buildArtifacts } from './buildArtifacts';
-export { GENERATED_AGENT_TARGETS } from './config/ruleFiles';
+export { removableTargets } from './removableTargets';

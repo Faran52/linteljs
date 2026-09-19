@@ -16,7 +16,7 @@ import {
 } from '../../answers/answers';
 import { contentOf } from '../../files/shippedAssets';
 import { type Artifact } from '../artifact';
-import { GENERATED_AGENT_TARGETS } from '../config/ruleFiles';
+import { removableTargets } from '../removableTargets';
 
 import { claudeSettingsEmitter } from './claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './codex-marketplace/codexMarketplaceEmitter';
@@ -46,6 +46,8 @@ interface SkillExpectation {
 }
 
 // The agent tree as a whole, which is what this file covers: five emitters, each owning one agent's answer.
+const REMOVABLE = removableTargets();
+
 const agentArtifacts = (answers: Answers): Artifact[] => {
   return [
     ...linteljsPluginEmitter(answers),
@@ -462,14 +464,14 @@ describe('SKILL.md', () => {
   });
 });
 
-describe('GENERATED_AGENT_TARGETS', () => {
+describe('REMOVABLE', () => {
   it.each(ARTIFACT_MATRIX)(
     'contains every non-preserved $label/$target/zod=$zod/testing=$testing artifact',
     (entry) => {
       const generated = nonPreservedTargetsFor(entry);
 
       expect(generated.filter((target) => {
-        return !GENERATED_AGENT_TARGETS.includes(target);
+        return !REMOVABLE.includes(target);
       })).toEqual([]);
       expect(generated.filter((target) => {
         return HOOK_TARGETS.includes(target);
@@ -480,7 +482,7 @@ describe('GENERATED_AGENT_TARGETS', () => {
   it('emits every target in the closed removable inventory', () => {
     const emitted = new Set(ARTIFACT_MATRIX.flatMap(nonPreservedTargetsFor));
 
-    expect(GENERATED_AGENT_TARGETS.filter((target) => {
+    expect(REMOVABLE.filter((target) => {
       return !emitted.has(target);
     })).toEqual([]);
   });

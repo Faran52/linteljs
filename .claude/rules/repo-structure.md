@@ -65,8 +65,10 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a `flatMap`
   over `registry.ts` with no branch in it, which `meta.test.ts` asserts by reading its source. The
-  registry is keyed by subject directory and held against the directory listing in both directions,
-  so a directory nobody registered fails and a key with no directory fails.
+  registry is keyed by `<group>/<subject>`, which is the directory path, and held against the
+  directory listing in both directions, so a directory nobody registered fails and a key with no
+  directory fails. The key carrying the group is what lets `removableTargets` ask the registry which
+  emitters an answer can deselect rather than being told.
 
   A subject directory holds its entry, its suites, a `constants.ts` for a table it alone reads, and
   a `utils/` for its private helpers. Nothing else, which `meta.test.ts` enforces: a second module

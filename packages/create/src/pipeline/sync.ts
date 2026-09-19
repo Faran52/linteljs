@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
 
-import { buildArtifacts, GENERATED_AGENT_TARGETS } from '../emitters';
+import { buildArtifacts, removableTargets } from '../emitters';
 import { applyArtifact, safeProjectPath } from '../files/projectFiles';
 import { readProjectShape } from '../files/readProjectShape';
 import { contentOf } from '../files/shippedAssets';
@@ -52,7 +52,7 @@ const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
 const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
   const entries: SyncEntry[] = [];
 
-  for (const target of GENERATED_AGENT_TARGETS) {
+  for (const target of removableTargets()) {
     if (!expected.has(target) && await entryExists(join(cwd, target))) {
       entries.push({
         target,
@@ -173,7 +173,7 @@ export const applySync = async (
     }
   }
 
-  for (const target of GENERATED_AGENT_TARGETS) {
+  for (const target of removableTargets()) {
     if (expected.has(target) || !targets.includes(target)) {
       continue;
     }

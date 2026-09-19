@@ -82,7 +82,7 @@ describe('the registry', () => {
   // Read off disk rather than probed, so a directory nobody registered is caught as well as the reverse.
   it('names every subject directory', () => {
     expect(subjects.filter((subject) => {
-      return !registered.has(subject.name);
+      return !registered.has(`${subject.group}/${subject.name}`);
     }).map((subject) => {
       return `${subject.group}/${subject.name}`;
     })).toEqual([]);
@@ -90,7 +90,7 @@ describe('the registry', () => {
 
   it('names nothing that is not a subject directory', () => {
     const present = new Set(subjects.map((subject) => {
-      return subject.name;
+      return `${subject.group}/${subject.name}`;
     }));
 
     expect([...registered].filter((key) => {
