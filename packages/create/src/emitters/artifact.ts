@@ -13,19 +13,19 @@ export type Stage
     | 'install'
     | 'fix';
 
-export interface EmittedText {
+interface EmittedText {
   text: string;
 }
 
 // Files under `assets/`, concatenated in order.
-export interface CopiedAssets {
+interface CopiedAssets {
   sources: string[];
   // Depends on answers, not the file, and takes the project's own text (or `null`) for the checker.
   transform?: (source: string, current: string | null) => string;
 }
 
 // Half this CLI's, half the project's: `merge` takes what is on disk, or `null`, and answers the whole file.
-export interface MergedText {
+interface MergedText {
   merge: (current: string | null) => string;
 }
 

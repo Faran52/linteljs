@@ -106,6 +106,56 @@ describe('the registry', () => {
   });
 });
 
+/**
+ * `index.ts` is the ring's public surface: `pipeline/` and `files/` reach the emitters through it rather than into
+ * a file. An export nothing out there reads is not a surface, it is a leftover, and four had accumulated.
+ */
+describe('the barrel', () => {
+  const barrel = readFileSync(join(emittersDir, 'index.ts'), 'utf8');
+
+  const exported = [...barrel.matchAll(/export \{([^}]*)\} from/gu)].flatMap(([, names]) => {
+    return (names ?? '').split(',');
+  }).map((name) => {
+    return name.replace('type ', '').trim();
+  }).filter((name) => {
+    return name !== '';
+  });
+
+  // What the rings outside actually take from it, rather than what they mention: a name they reach for by its own
+  // path is not a reason to carry it here.
+  const takenFromBarrel = (): Set<string> => {
+    const taken = new Set<string>();
+
+    for (const source of sourcesUnder(join(emittersDir, '..'))) {
+      if (source.startsWith(emittersDir)) {
+        continue;
+      }
+
+      const text = readFileSync(source, 'utf8');
+
+      for (const [, names] of text.matchAll(/import (?:type )?\{([^}]*)\} from '(?:\.\.\/)+emitters';/gu)) {
+        for (const name of (names ?? '').split(',')) {
+          taken.add(name.replace('type ', '').trim());
+        }
+      }
+    }
+
+    return taken;
+  };
+
+  it('reads a barrel with exports in it, so the assertion below is not vacuous', () => {
+    expect(exported.length).toBeGreaterThan(0);
+  });
+
+  it('exports nothing the rings outside it never take from it', () => {
+    const taken = takenFromBarrel();
+
+    expect(exported.filter((name) => {
+      return !taken.has(name);
+    })).toEqual([]);
+  });
+});
+
 describe.each(subjects)('$group/$name', ({ name, path }) => {
   const entry = entryNameOf(name);
 
