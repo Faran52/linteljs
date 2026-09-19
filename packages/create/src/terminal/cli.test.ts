@@ -180,6 +180,30 @@ describe('main: what it prints and what it returns', () => {
     expect(printed).toContain('--skip-scaffold');
   });
 
+  // `form` carries no `slot`: every target asks it. Only `react-hook-form`, one of its two values, is react-only.
+  it('does not scope --form to react, since only one of its values is', async () => {
+    const { printed } = await runMain(['--help']);
+    const formLine = printed.split('\n').find((line) => {
+      return line.includes('--form ');
+    });
+
+    expect(formLine).toContain('react-hook-form');
+    expect(formLine).not.toContain('react only');
+  });
+
+  it('lines up every answer description on one column, store included', async () => {
+    const { printed } = await runMain(['--help']);
+    const lines = printed.split('\n');
+    const storeLine = lines.find((line) => {
+      return line.startsWith('  --store');
+    });
+    const typeSafetyLine = lines.find((line) => {
+      return line.startsWith('  --type-safety');
+    });
+
+    expect(storeLine?.indexOf('install')).toBe(typeSafetyLine?.indexOf('strict'));
+  });
+
   it('fails on a stage name it does not know, before writing anything', async () => {
     const { code, errors } = await runMain(['demo-app', '--skip', 'lnt']);
 

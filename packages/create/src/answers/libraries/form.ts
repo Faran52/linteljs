@@ -8,7 +8,6 @@ export const form = {
   key: 'form',
   flag: 'form',
   prompt: 'Form library',
-  note: 'react only',
   kind: 'optionalChoice',
   none: {
     label: 'None',

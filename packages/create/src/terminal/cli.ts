@@ -120,21 +120,33 @@ const ANSWER_OPTIONS = Object.fromEntries(FLAGGED_ANSWERS.map(({ flag, record })
   }];
 }));
 
-// `store` alone carries no `values` to list; its line is the one this cannot generate from the record.
-const STORE_USAGE = '  --store               install the target\'s state store';
+const labelOf = ({ flag, record }: FlaggedAnswer): string => {
+  if (record.kind === 'boolean') {
+    return `--${flag}`;
+  }
+
+  const shape = isMultiKind(record) ? 'list' : 'value';
+
+  return `--${flag} <${shape}>`;
+};
+
+// Every answer line lines up on this column, `store` included, rather than each carrying its own two-space gap.
+const LABEL_WIDTH = Math.max(...FLAGGED_ANSWERS.map((answer) => {
+  return labelOf(answer).length;
+}));
 
 const noteOf = (record: AnswerRecord): string => {
   return record.note === undefined ? '' : ` (${record.note})`;
 };
 
-const answerUsageOf = ({ flag, record }: FlaggedAnswer): string => {
-  if (record.kind === 'boolean') {
-    return STORE_USAGE;
-  }
+const answerUsageOf = (answer: FlaggedAnswer): string => {
+  const { record } = answer;
+  // `store` alone carries no `values` to list; its description is the one this cannot generate from the record.
+  const description = record.kind === 'boolean'
+    ? 'install the target\'s state store'
+    : `${valuesOf(record.values).join(', ')}${noteOf(record)}`;
 
-  const shape = isMultiKind(record) ? 'list' : 'value';
-
-  return `  --${flag} <${shape}>  ${valuesOf(record.values).join(', ')}${noteOf(record)}`;
+  return `  ${labelOf(answer).padEnd(LABEL_WIDTH)}  ${description}`;
 };
 
 const USAGE = `@linteljs/create [name] [options]
