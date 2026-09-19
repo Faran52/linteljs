@@ -53,7 +53,8 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
 ## Structure
 
 - `packages/create/src/`: the CLI, one folder per responsibility. `answers/` is what the user chose,
-  `targets/` is what linteljs knows (one record per target, the registry, the naming policy),
+  `config/` is the engines a project declares and the CLI refuses without, `targets/` is what linteljs
+  knows (one record per target, the registry, the naming policy),
   `emitters/` turns the two into file text, `terminal/` reads argv and the terminal, `files/` reads
   and writes files, `process/` spawns, `pipeline/` sequences them. The direction points inward only,
   enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`, and which folder a

@@ -44,8 +44,8 @@ import {
 import { emitLinteljsConfig } from '../emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { type Stage } from '../emitters/artifact';
-import { STYLE_ENTRY_CANDIDATES } from '../emitters/config/styleEntries';
 import { readLinteljsConfig } from '../files/readLinteljsConfig';
+import { STYLE_ENTRY_CANDIDATES } from '../files/readProjectShape';
 import {
   entryExists,
   exists,

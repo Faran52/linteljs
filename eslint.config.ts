@@ -60,7 +60,11 @@ const config = [
       'import-x/no-restricted-paths': ['error', {
         zones: [
           {
-            target: ['packages/create/src/answers', 'packages/create/src/targets'],
+            target: [
+              'packages/create/src/answers',
+              'packages/create/src/config',
+              'packages/create/src/targets',
+            ],
             from: [
               'packages/create/src/emitters',
               'packages/create/src/files',

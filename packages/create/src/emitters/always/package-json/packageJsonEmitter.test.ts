@@ -18,7 +18,7 @@ import {
   type TargetId,
   type Testing,
 } from '../../../answers/answers';
-import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../config/versions';
+import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/engines';
 
 import {
   buildDevDependencies,

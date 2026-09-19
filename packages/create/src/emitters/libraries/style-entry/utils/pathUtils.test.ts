@@ -10,8 +10,8 @@ import {
   TARGET_IDS,
   type TargetId,
 } from '../../../../answers/answers';
+import { STYLE_ENTRY_CANDIDATES } from '../../../../files/readProjectShape';
 import { targetFor } from '../../../../targets';
-import { STYLE_ENTRY_CANDIDATES } from '../../../config/styleEntries';
 
 import { styleEntryPath } from './pathUtils';
 

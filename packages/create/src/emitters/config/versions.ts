@@ -1,5 +1,3 @@
-import type { PackageManager } from '../../answers/answers';
-
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
 // `catalog:` version in `pnpm-workspace.yaml`; `versions.test.ts` gates it.
 
@@ -130,15 +128,3 @@ export const VERSIONS: Record<string, string> = {
   'ts-pattern': '^5.9.0',
   'zustand': '^5.0.14',
 };
-
-// An exact version: corepack rejects a range in `packageManager`.
-export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
-  pnpm: '12.4.1',
-  // 11, not 12: `create-expo-app` cannot read npm 12's `npm pack --dry-run --json`, so React Native needs npm 11
-  // on PATH, and a project declaring a 12 floor then warns EBADENGINE on every install. expo/expo#48091.
-  npm: '11.19.1',
-  yarn: '4.18.0',
-  bun: '1.3.14',
-};
-
-export const NODE_ENGINE = '>=26.8.2';

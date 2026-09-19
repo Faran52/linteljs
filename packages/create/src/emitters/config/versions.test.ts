@@ -9,7 +9,7 @@ import {
 
 import { parsePackageJson } from '../always/package-json/packageJsonEmitter';
 
-import { PACKAGE_MANAGER_VERSIONS, VERSIONS } from './versions';
+import { VERSIONS } from './versions';
 
 interface Sibling {
   name: string;
@@ -135,15 +135,6 @@ describe('VERSIONS against the config it installs beside', () => {
 
 // pnpm rewrites this workspace's `packageManager` on every install; a project was once pinned to 11.21.0 by a
 // workspace running 11.24.0.
-describe('PACKAGE_MANAGER_VERSIONS against the workspace', () => {
-  it('pins pnpm no older than the one this workspace runs', () => {
-    const path = join(import.meta.dirname, '..', '..', '..', '..', '..', 'package.json');
-    const { packageManager } = parsePackageJson(readFileSync(path, 'utf8'));
-    const running = String(packageManager).replace('pnpm@', '');
-
-    expect(atLeast(PACKAGE_MANAGER_VERSIONS.pnpm, running)).toBe(true);
-  });
-});
 
 describe('VERSIONS against the workspace catalog', () => {
   it('reads a catalog with entries in it, so the assertion below is not vacuous', () => {

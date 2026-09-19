@@ -7,13 +7,10 @@ import {
   type Library,
   type Router,
 } from '../../../answers/answers';
+import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/engines';
 import { targetFor } from '../../../targets';
 import { type Artifact, merged } from '../../artifact';
-import {
-  NODE_ENGINE,
-  PACKAGE_MANAGER_VERSIONS,
-  VERSIONS,
-} from '../../config/versions';
+import { VERSIONS } from '../../config/versions';
 import { buildScripts } from '../../utils/scriptUtils';
 
 import type { TargetRecord } from '../../../targets/record';
