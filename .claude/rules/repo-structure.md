@@ -87,9 +87,9 @@ aliases it duplicates instead of importing carry a comment saying so.
   the record `registry.ts` appends, and `shapeUtils.ts` picks a project's own spelling of a file.
   The dependency ranges are `always/package-json/constants.ts`, a table one subject owns.
 
-  `src/config/` is data, and only data: types, constants, tables. The artifact kind, the stages,
-  the project shape, the managed path, the engines a project declares and how each manager is asked
-  to run a script. A function goes to a `utils/` at the level of its readers rather than sitting
+  `src/config/` is data, and only data: types, constants, tables. `artifact.ts` is the artifact kind
+  and its stages, `projectShape.ts` what a project already holds, and `constants.ts` the rest, being
+  the managed path, the engines a project declares and how each manager is asked to run a script. A function goes to a `utils/` at the level of its readers rather than sitting
   beside the type it builds, so nothing in `src/config/` carries a suite: a table asserted equal to
   itself proves nothing, and what is worth checking about one is a fact about the code that reads
   it.

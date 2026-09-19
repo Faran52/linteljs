@@ -1,5 +1,5 @@
 import { hasTests } from '../../../../answers/answers';
-import { RUN_PREFIX } from '../../../../config/runPrefix';
+import { RUN_PREFIX } from '../../../../config/constants';
 import { targetFor } from '../../../../targets';
 import { buildScripts } from '../../utils/scriptUtils';
 

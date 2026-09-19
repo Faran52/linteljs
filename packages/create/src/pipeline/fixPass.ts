@@ -1,4 +1,4 @@
-import { RUN_PREFIX } from '../config/runPrefix';
+import { RUN_PREFIX } from '../config/constants';
 import { styleGlob } from '../emitters/always/utils/scriptUtils';
 import { runLocalBinary } from '../process/localBinary';
 

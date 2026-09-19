@@ -8,7 +8,7 @@ import {
   type Router,
 } from '../../../answers/answers';
 import { type Artifact } from '../../../config/artifact';
-import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/engines';
+import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
 import { targetFor } from '../../../targets';
 import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';

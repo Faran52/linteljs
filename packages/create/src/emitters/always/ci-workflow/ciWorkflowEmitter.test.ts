@@ -10,7 +10,7 @@ import {
   type PackageManager,
   type TargetId,
 } from '../../../answers/answers';
-import { NODE_ENGINE } from '../../../config/engines';
+import { NODE_ENGINE } from '../../../config/constants';
 import { buildScripts } from '../utils/scriptUtils';
 
 import { emitCiWorkflow } from './ciWorkflowEmitter';

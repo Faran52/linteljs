@@ -1,4 +1,4 @@
-import { MANAGED_PATH } from '../config/managed';
+import { MANAGED_PATH } from '../config/constants';
 import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
 
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';

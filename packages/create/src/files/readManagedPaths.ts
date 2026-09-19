@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { MANAGED_PATH } from '../config/managed';
+import { MANAGED_PATH } from '../config/constants';
 
 import { readIfPresent } from './utils/fsUtils';
 

@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path';
 
 import { LEGACY_CONFIG_PATH } from '../answers/linteljsConfig';
-import { MANAGED_PATH } from '../config/managed';
+import { MANAGED_PATH } from '../config/constants';
 import { buildArtifacts } from '../emitters';
 import { applyArtifact, safeProjectPath } from '../files/projectFiles';
 import { readManagedPaths } from '../files/readManagedPaths';
