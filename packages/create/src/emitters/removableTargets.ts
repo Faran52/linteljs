@@ -1,8 +1,10 @@
 import {
   AGENTS,
   DEFAULT_ANSWERS,
+  PACKAGE_MANAGERS,
   TARGET_IDS,
   TESTING_CHOICES,
+  TYPE_SAFETY_CHOICES,
 } from '../answers/answers';
 
 import { EMPTY_PROJECT } from './projectShape';
@@ -10,38 +12,83 @@ import { BUILD_EMITTERS } from './registry';
 
 import type { Answers } from '../answers/answers';
 
-// The group is named for the answer that decides its emitters, so membership is read off the registry key.
-const AGENT_GROUP = 'agents/';
+// `always/` is what no answer gates, so nothing it writes can ever become obsolete. Every other group is named for
+// an answer that can be deselected, which is exactly what makes its files removable.
+const PERMANENT_GROUP = 'always/';
 
-// Every answer that changes which agent files are written, with all four hosts selected so every emitter fires.
-// The target decides which state rule a project is given, zod and the testing answer each add one of their own.
-const variations = (): Answers[] => {
-  return TARGET_IDS.flatMap((target) => {
-    return [true, false].flatMap((zod) => {
-      return TESTING_CHOICES.map((testing) => {
-        return {
-          ...DEFAULT_ANSWERS,
-          target,
-          agents: AGENTS,
-          libraries: zod ? ['zod' as const] : [],
-          testing,
-        } satisfies Answers;
-      });
+/**
+ * One axis per answer that changes which of those files are written. Folded rather than nested: the cross product
+ * is what makes this safe, since varying one answer at a time would assume they act independently, and a table of
+ * axes says that in one line each rather than in five levels of loop.
+ */
+const AXES: ((answers: Answers) => Answers[])[] = [
+  (answers) => {
+    return TARGET_IDS.map((target) => {
+      return {
+        ...answers,
+        target,
+      };
     });
-  });
+  },
+  (answers) => {
+    return PACKAGE_MANAGERS.map((packageManager) => {
+      return {
+        ...answers,
+        packageManager,
+      };
+    });
+  },
+  (answers) => {
+    return TYPE_SAFETY_CHOICES.map((typeSafety) => {
+      return {
+        ...answers,
+        typeSafety,
+      };
+    });
+  },
+  (answers) => {
+    return [['zod' as const], []].map((libraries) => {
+      return {
+        ...answers,
+        libraries,
+      };
+    });
+  },
+  (answers) => {
+    return TESTING_CHOICES.map((testing) => {
+      return {
+        ...answers,
+        testing,
+      };
+    });
+  },
+];
+
+// All four hosts throughout, so every agent emitter fires on every pass.
+const variations = (): Answers[] => {
+  return AXES.reduce((combinations, spread) => {
+    return combinations.flatMap(spread);
+  }, [{
+    ...DEFAULT_ANSWERS,
+    agents: AGENTS,
+  }]);
 };
 
 /**
- * What `sync` may remove: every path an agent emitter can write under any answer, so deselecting a host drops the
- * files it left behind and reaches nothing the project put beside them. Derived rather than listed, because a list
- * is a second place to remember a new rule file.
+ * What `sync` may remove: every path an answer-gated emitter can write, so deselecting a host, switching package
+ * manager or tightening the type-safety answer drops what the old answer left behind. Derived rather than listed,
+ * because a list is a second place to remember a new file and the first place to forget one.
  *
- * Preserved artifacts are absent on purpose. `CLAUDE.md` and `AGENTS.md` are the project's the moment it has them,
- * so a deselected host leaves its adapter behind rather than having it deleted.
+ * Two kinds are held back, and both are files lintel does not own outright:
+ *
+ * - Preserved. `CLAUDE.md` and `AGENTS.md` are the project's the moment it has them, so a deselected host leaves
+ *   its adapter behind rather than having it deleted.
+ * - Merged. `pnpm-workspace.yaml` and the tailwind style entry carry the project's own lines beside lintel's, so
+ *   removing either would take content no one else wrote a copy of.
  */
 export const removableTargets = (): readonly string[] => {
   const emitters = Object.entries(BUILD_EMITTERS).filter(([key]) => {
-    return key.startsWith(AGENT_GROUP);
+    return !key.startsWith(PERMANENT_GROUP);
   }).map(([, emit]) => {
     return emit;
   });
@@ -51,7 +98,9 @@ export const removableTargets = (): readonly string[] => {
   for (const answers of variations()) {
     for (const emit of emitters) {
       for (const artifact of emit(answers, EMPTY_PROJECT, '')) {
-        if (artifact.preserve !== true) {
+        const owned = !('merge' in artifact.content) || artifact.removable === true;
+
+        if (artifact.preserve !== true && owned) {
           targets.add(artifact.target);
         }
       }

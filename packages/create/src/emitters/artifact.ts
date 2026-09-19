@@ -43,6 +43,13 @@ export interface Artifact {
   fresh?: true;
   // Written only when this path is already there: a starter test covering source the scaffolder may not have written.
   requires?: string;
+  /**
+   * A merge `sync` may still delete, because the whole file exists only for the answer that asked for it.
+   * `.claude/settings.json` is the case: it carries the project's own keys, and deselecting the host leaves a file
+   * with no reason to be there. A merge without this stays, since `pnpm-workspace.yaml` and a tailwind style entry
+   * are the project's file with lintel's lines folded in, not the other way round.
+   */
+  removable?: true;
 }
 
 /**

@@ -479,11 +479,23 @@ describe('REMOVABLE', () => {
     },
   );
 
-  it('emits every target in the closed removable inventory', () => {
+  /**
+   * Every agent path, and only those: the inventory also carries what the package manager and type-safety answers
+   * write, which no agent emitter reaches. `removableTargets.test.ts` holds the whole of it against its golden list.
+   */
+  it('accounts for every agent path the inventory carries', () => {
     const emitted = new Set(ARTIFACT_MATRIX.flatMap(nonPreservedTargetsFor));
+    const agentPaths = REMOVABLE.filter((target) => {
+      return target.startsWith('plugins/linteljs/')
+        || target.startsWith('.claude/')
+        || target.startsWith('.agents/')
+        || target.startsWith('.github/instructions/')
+        || target.startsWith('.cursor/rules/');
+    });
 
-    expect(REMOVABLE.filter((target) => {
+    expect(agentPaths.filter((target) => {
       return !emitted.has(target);
     })).toEqual([]);
+    expect(agentPaths).toHaveLength(38);
   });
 });

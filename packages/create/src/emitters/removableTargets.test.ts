@@ -21,6 +21,8 @@ describe('removableTargets', () => {
     expect(GENERATED_AGENT_TARGETS).toEqual([
       '.agents/plugins/marketplace.json',
       '.claude/settings.json',
+      '.npmrc',
+      '.yarnrc.yml',
       '.cursor/rules/hooks-order.mdc',
       '.cursor/rules/react-state.mdc',
       '.cursor/rules/repo-structure.mdc',
@@ -48,6 +50,7 @@ describe('removableTargets', () => {
       'plugins/linteljs/hooks/git-safety-guard.sh',
       'plugins/linteljs/hooks/hooks.json',
       'plugins/linteljs/skills/linteljs/SKILL.md',
+      'src/typings/customTypes.d.ts',
       'plugins/linteljs/skills/linteljs/references/hooks-order.md',
       'plugins/linteljs/skills/linteljs/references/react-state.md',
       'plugins/linteljs/skills/linteljs/references/repo-structure.md',

@@ -66,9 +66,12 @@ export const claudeSettingsEmitter = (answers: Answers): Artifact[] => {
 
   return [
     adapterArtifact('CLAUDE.md', answers),
-    merged('standard', '.claude/settings.json', (current) => {
-      return mergeClaudeSettings(emitClaudeSettings(answers.plugins), current);
-    }),
+    {
+      ...merged('standard', '.claude/settings.json', (current) => {
+        return mergeClaudeSettings(emitClaudeSettings(answers.plugins), current);
+      }),
+      removable: true,
+    },
     copied('plugins/linteljs/.claude-plugin/plugin.json', 'linteljs-plugin/.claude-plugin/plugin.json'),
     copied(
       'plugins/linteljs/.claude-plugin/marketplace.json',
