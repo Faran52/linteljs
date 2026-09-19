@@ -62,7 +62,7 @@ jobs:
         run: |
           # Exported here rather than in a job-level `env`, which cannot read
           # the runner context.
-          CORPUS="$RUNNER_TEMP/lintel-real-code"
+          CORPUS="$RUNNER_TEMP/linteljs-real-code"
           echo "CORPUS=$CORPUS" >> "$GITHUB_ENV"
           mkdir -p "$CORPUS"
           # React and hook-heavy libraries so sort-hook-dependencies and
