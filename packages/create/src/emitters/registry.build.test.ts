@@ -33,7 +33,7 @@ import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
-import { buildArtifacts } from './buildArtifacts';
+import { buildArtifacts } from './registry';
 
 interface AnswerOverrides {
   target?: TargetId;

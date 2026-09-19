@@ -75,8 +75,10 @@ aliases it duplicates instead of importing carry a comment saying so.
   loose beside the entry is either a helper, and `utils/` is where the `*Utils` suffix is enforced on
   it, or it is read from outside, and then it is not that subject's to hold.
 
-  A module that writes no file is not an emitter: `artifact.ts`, `buildArtifacts.ts`,
-  `seedArtifacts.ts` and `projectShape.ts` sit at the root.
+  A module that writes no file is not an emitter. `registry.ts` holds the two lists and the reading
+  of each, `removableTargets.ts` the third derivation of them, and `index.ts` is the barrel the outer
+  rings take the ring through; nothing else sits at that root. The artifact kind and the project
+  shape are every ring's, so they are in `src/config/` with the engines and the run prefixes.
 
   A helper sits at the level of its readers and no higher. One subject reads it, it is
   `<group>/<subject>/utils/` and `meta.test.ts` holds it private there. Several subjects in one

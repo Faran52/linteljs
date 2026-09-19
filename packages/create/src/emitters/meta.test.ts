@@ -100,7 +100,7 @@ describe('the registry', () => {
 
   // A file is written because its own emitter said so, so the assembler has no condition left to hold.
   it('leaves the assembler nothing to branch on', () => {
-    const assembler = readFileSync(join(emittersDir, 'buildArtifacts.ts'), 'utf8');
+    const assembler = readFileSync(join(emittersDir, 'registry.ts'), 'utf8');
 
     expect(assembler).not.toMatch(/\bif\s*\(/u);
   });

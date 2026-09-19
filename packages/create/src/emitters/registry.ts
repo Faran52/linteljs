@@ -1,3 +1,5 @@
+import { EMPTY_PROJECT, type ProjectShape } from '../config/projectShape';
+
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './agents/codex-marketplace/codexMarketplaceEmitter';
 import { copilotInstructionsEmitter } from './agents/copilot-instructions/copilotInstructionsEmitter';
@@ -28,7 +30,8 @@ import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
 import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter';
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
 
-import type { Emitter } from '../config/artifact';
+import type { Answers } from '../answers/answers';
+import type { Artifact, Emitter } from '../config/artifact';
 
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once
@@ -73,4 +76,34 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
   'always/readme': readmeEmitter,
   'target/manifest': manifestEmitter,
   'target/starter-source': starterSourceEmitter,
+};
+
+/**
+ * Every file this CLI owns some or all of, which both `create` and `sync` write from. A merge belongs here, not in
+ * a stage: the `peerDependencyRules` allowance of 1.2.0 reached new projects and no old one while it was
+ * stage-only. One line per emitter and no branch: whether a file is written is the emitter's own question.
+ */
+export const buildArtifacts = (
+  answers: Answers,
+  project: ProjectShape = EMPTY_PROJECT,
+  name = '',
+): Artifact[] => {
+  return Object.values(BUILD_EMITTERS).flatMap((emit) => {
+    return emit(answers, project, name);
+  });
+};
+
+/**
+ * What a project is seeded with and owns afterwards. Kept out of `buildArtifacts` because that list is what
+ * `sync` re-applies and none of this is linteljs's to maintain once the project has it. Everything here still
+ * reaches disk as an `Artifact`, so `applyArtifact` is the only writer either way.
+ */
+export const seedArtifacts = (
+  answers: Answers,
+  name: string,
+  project: ProjectShape = EMPTY_PROJECT,
+): Artifact[] => {
+  return Object.values(SEED_EMITTERS).flatMap((emit) => {
+    return emit(answers, project, name);
+  });
 };

@@ -2,5 +2,5 @@ export {
   type Artifact,
   type ArtifactContent,
 } from '../config/artifact';
-export { buildArtifacts } from './buildArtifacts';
+export { buildArtifacts } from './registry';
 export { removableTargets } from './removableTargets';
