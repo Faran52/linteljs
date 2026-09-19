@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { expect } from 'vitest';
 
 import { CONFIG_PATH, parseLintelConfig } from '../../answers/lintelConfig';
-import { parsePackageJson } from '../../emitters/package-json/packageJsonEmitter';
+import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
 
 import {
   outcome,

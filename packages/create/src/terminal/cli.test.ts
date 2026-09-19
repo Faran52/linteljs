@@ -38,8 +38,8 @@ import {
   CURRENT_SCHEMA_VERSION,
   parseLintelConfig,
 } from '../answers/lintelConfig';
-import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
-import { parsePackageJson } from '../emitters/package-json/packageJsonEmitter';
+import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
+import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { exists } from '../files/utils/fsUtils';
 
 import { main, parseCliArgs } from './cli';

@@ -60,9 +60,14 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
   module belongs to is decided by the world it reaches into rather than by judgement: `node:fs`
   means `files/`, `node:child_process` means `process/`, argv and the terminal mean `terminal/`,
   enforced by `no-restricted-imports` in the same file. The emitters stay free of `switch (target)`.
-- `packages/create/src/emitters/`: one directory per file lintel puts on disk, named for that file,
-  exactly as a rule directory is named for its rule id. A module that writes no file is not an
-  emitter: the kernel sits at the root, shared helpers under `utils/`, data tables under `config/`.
+- `packages/create/src/emitters/`: `<group>/<subject>/<subjectEmitter>.ts`, three derivations of one
+  spelling. The subject directory is named for the file it writes, the entry is named for the
+  directory, and the group is named for the answer that decides whether its emitters write anything:
+  `agents/`, `manager/`, `target/`, `testing/`, `libraries/`, `typesafety/`, and `always/` for the
+  null one. Every entry answers `Artifact[]`, so a target with no vite config answers `[]` and
+  `buildArtifacts` holds no branch: `registry.ts` is the list and `meta.test.ts` holds it against the
+  directory listing both ways. A module that writes no file is not an emitter: the kernel sits at the
+  root, shared helpers under `utils/`, data tables under `config/`.
   Two lists come out of it and every file reaches disk through `applyArtifact` from one of them.
   `buildArtifacts` is what `create` and `sync` both write from. `seedArtifacts` is what a `create`
   run plants and `sync` never touches: the recorded config, the README, the manifest and the starter

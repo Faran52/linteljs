@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 
-import { parsePackageJson } from '../package-json/packageJsonEmitter';
+import { parsePackageJson } from '../always/package-json/packageJsonEmitter';
 
 import { PACKAGE_MANAGER_VERSIONS, VERSIONS } from './versions';
 

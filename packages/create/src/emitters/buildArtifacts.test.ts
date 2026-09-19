@@ -31,8 +31,8 @@ import {
 import { ASSETS_ROOT, contentOf } from '../files/shippedAssets';
 import { targetFor } from '../targets';
 
+import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
 import { type Artifact } from './artifact';
-import { setupTestsPath } from './banned-patterns/bannedPatternsEmitter';
 import { buildArtifacts } from './buildArtifacts';
 
 interface AnswerOverrides {

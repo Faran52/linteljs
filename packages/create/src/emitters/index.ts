@@ -1,4 +1,4 @@
-export { agentArtifacts } from './agentArtifacts';
+export { referenceArtifacts } from './agents/linteljs-plugin/linteljsPluginEmitter';
 export {
   type Artifact,
   type ArtifactContent,
@@ -8,4 +8,3 @@ export {
 } from './artifact';
 export { buildArtifacts } from './buildArtifacts';
 export { GENERATED_AGENT_TARGETS } from './config/ruleFiles';
-export { referenceArtifacts } from './lintel-plugin/referenceArtifacts';

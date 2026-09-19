@@ -24,7 +24,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
 } from '../answers/lintelConfig';
-import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
+import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
 
 import { readLintelConfig } from './readLintelConfig';
 

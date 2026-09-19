@@ -57,10 +57,20 @@ aliases it duplicates instead of importing carry a comment saying so.
   package managers on purpose. `process/` reaches `files/` for `isExecutableFile` and never the
   reverse: finding a binary on `PATH` is a filesystem fact only a spawner asks for.
 
-  Inside `emitters/`, a directory is named for the file it writes, so that path is spelled once,
-  exactly as a rule directory in `eslint-plugin` is named for its rule id. A module that writes no
-  file is not an emitter: `artifact.ts`, `buildArtifacts.ts` and `projectShape.ts` sit at the root,
-  helpers with more than one consumer under `utils/`, and the two data tables under `config/`.
+  Inside `emitters/` the path is `<group>/<subject>/<subjectEmitter>.ts` and each half is derived
+  from the one before it. The subject directory is named for the file it writes, exactly as a rule
+  directory in `eslint-plugin` is named for its rule id; the entry is named for the directory, so
+  `meta.test.ts` computes it rather than probing for it; and the group is named for the answer that
+  decides whether its emitters write anything, with `always/` for the files no answer gates.
+
+  Every entry answers `Artifact[]` and owns its own condition, so `buildArtifacts` is a `flatMap`
+  over `registry.ts` with no branch in it, which `meta.test.ts` asserts by reading its source. The
+  registry is keyed by subject directory and held against the directory listing in both directions,
+  so a directory nobody registered fails and a key with no directory fails.
+
+  A module that writes no file is not an emitter: `artifact.ts`, `buildArtifacts.ts`,
+  `seedArtifacts.ts` and `projectShape.ts` sit at the root, helpers shared across groups under
+  `utils/`, a group's own helpers under `<group>/utils/`, and the data tables under `config/`.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `record.ts` is the file that grows.

@@ -41,10 +41,10 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
 } from '../answers/lintelConfig';
+import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
+import { parsePackageJson } from '../emitters/always/package-json/packageJsonEmitter';
 import { type Stage } from '../emitters/artifact';
-import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
-import { parsePackageJson } from '../emitters/package-json/packageJsonEmitter';
-import { STYLE_ENTRY_CANDIDATES } from '../emitters/style-entry/styleEntryPath';
+import { STYLE_ENTRY_CANDIDATES } from '../emitters/libraries/style-entry/styleEntryPath';
 import { readLintelConfig } from '../files/readLintelConfig';
 import {
   entryExists,

@@ -1,6 +1,6 @@
-import { SETUP_TESTS_CANDIDATES } from '../emitters/banned-patterns/bannedPatternsEmitter';
+import { SETUP_TESTS_CANDIDATES } from '../emitters/always/banned-patterns/bannedPatternsEmitter';
+import { STYLE_ENTRY_CANDIDATES } from '../emitters/libraries/style-entry/styleEntryPath';
 import { type ProjectShape } from '../emitters/projectShape';
-import { STYLE_ENTRY_CANDIDATES } from '../emitters/style-entry/styleEntryPath';
 
 import { allPresent } from './utils/fsUtils';
 

@@ -39,7 +39,7 @@ import {
   TARGET_IDS,
   type TargetId,
 } from '../src/answers/answers';
-import { parsePackageJson } from '../src/emitters/package-json/packageJsonEmitter';
+import { parsePackageJson } from '../src/emitters/always/package-json/packageJsonEmitter';
 import { startRegistry } from '../src/pipeline/e2e/registrySetup';
 import { targetFor } from '../src/targets';
 

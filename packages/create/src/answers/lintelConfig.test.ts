@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 
-import { emitLintelConfig } from '../emitters/lintel-config/emitLintelConfig';
+import { emitLintelConfig } from '../emitters/always/lintel-config/lintelConfigEmitter';
 
 import {
   AGENTS,
