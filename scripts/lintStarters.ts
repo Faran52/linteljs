@@ -4,7 +4,11 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { extname, join } from 'node:path';
+import {
+  dirname,
+  extname,
+  join,
+} from 'node:path';
 import process, { argv } from 'node:process';
 
 import { ESLint } from 'eslint';
@@ -45,22 +49,102 @@ const GLOBALS = 'scripts/starters/globals.dts';
 const VIRTUAL_GLOBALS = 'starterGlobals.d.ts';
 
 /**
- * The one question a program answers and ESLint cannot: is every name either imported or a global the destination
- * has? `no-undef` would be the cheaper lever and is the wrong one, because typescript-eslint turns it off on the
- * grounds that `tsc` does this job, and for this tree no `tsc` ever runs.
+ * The one question a program answers and ESLint cannot: does every name and every relative import resolve?
+ * `no-undef` would be the cheaper lever and is the wrong one, because typescript-eslint turns it off on the grounds
+ * that `tsc` does this job, and for this tree no `tsc` runs.
  *
- * Only these codes. `globals.d.ts` declares every import `any`, since the dependencies are not installed, so every
- * other diagnostic is an artefact of that rather than a fact about the file. This is what caught
- * `children?: React.ReactNode` against no React import, which shipped for as long as it took to look.
+ * A bare specifier this workspace does not install is the one thing waved through, and it is waved through by name
+ * rather than by a `declare module '*'`. That wildcard matches every specifier that fails to resolve, so a
+ * misspelled relative import inside the starter tree passed silently, which is the defect this is most for.
  */
-const UNRESOLVED_NAME = new Set([
+const UNRESOLVED = new Set([
   2304, // Cannot find name
+  2307, // Cannot find module, kept for a relative specifier and discarded for a bare one
+  2339, // Property does not exist on type
   2503, // Cannot find namespace
   2552, // Cannot find name, did you mean
+  2593, // Cannot find name, do you need the test runner's types
   2686, // refers to a UMD global, but the current file is a module
+  2694, // Namespace has no exported member
 ]);
 
-const unresolvedNames = (files: string[]): string[] => {
+/**
+ * Which ambient packages a program gets, which is what a generated project's own `tsconfig` decides. The two
+ * extension type packages are mutually exclusive, so the tree is checked as three programs rather than one: the
+ * browser each half is written for, and everything else.
+ */
+const SCOPES: [string, string[]][] = [
+  [`${STARTERS}/webextension/chrome`, ['chrome']],
+  [`${STARTERS}/webextension/firefox`, ['firefox-webext-browser']],
+  ['', ['react']],
+];
+
+const scopeOf = (file: string): string => {
+  return SCOPES.find(([prefix]) => {
+    return prefix !== '' && file.startsWith(prefix);
+  })?.[0] ?? '';
+};
+
+// The text at the diagnostic, which for an unresolved module is the specifier with its quotes.
+const specifierAt = (diagnostic: ts.Diagnostic): string => {
+  return diagnostic.file?.text.slice(diagnostic.start ?? 0, (diagnostic.start ?? 0) + (diagnostic.length ?? 0)) ?? '';
+};
+
+/**
+ * A starter referencing scaffolder output the record has no word for. `covers` names the one module a starter test
+ * is about; these three reach a second one, so they are listed rather than inferred. A fourth has to be added on
+ * purpose, which is the point: the alternative was a `declare module '*'` that swallowed every typo in the tree.
+ */
+const SCAFFOLDER_WRITES = new Set([
+  // `create-vite` writes `src/App.tsx`; both routers import it into the route they add.
+  'target/starter-source/react/react-router/src/routes/router.tsx:../App',
+  'target/starter-source/react/tanstack-router/src/routes/index.tsx:../App',
+  // `create-vue` writes `src/router/index.ts`; the App suite mounts through it, and covers `src/App.vue`.
+  'target/starter-source/vue/src/App.test.ts:./router',
+]);
+
+const withoutExtension = (path: string): string => {
+  return path.replace(/\.[cm]?[jt]sx?$/, '');
+};
+
+/**
+ * A bare specifier names a package this workspace does not install and says nothing about the file. A relative one
+ * names a path, and the only path allowed not to exist is the module the starter test covers, which the official
+ * scaffolder writes. `requires` on the artifact is the record's own word for that, so a typo in any other relative
+ * import is a finding rather than something a `declare module '*'` swallows.
+ */
+const resolvesElsewhere = (diagnostic: ts.Diagnostic): boolean => {
+  const specifier = specifierAt(diagnostic).slice(1, -1);
+
+  if (!specifier.startsWith('.')) {
+    return true;
+  }
+
+  const asset = (diagnostic.file?.fileName ?? '').split('assets/')[1] ?? '';
+
+  if (SCAFFOLDER_WRITES.has(`${asset}:${specifier}`)) {
+    return true;
+  }
+
+  const destination = placed.get(asset);
+  const requires = covered.get(asset);
+
+  if (destination === undefined || requires === undefined) {
+    return false;
+  }
+
+  return withoutExtension(join(dirname(destination), specifier)) === withoutExtension(requires);
+};
+
+const reportable = (diagnostic: ts.Diagnostic): boolean => {
+  if (!UNRESOLVED.has(diagnostic.code) || diagnostic.file === undefined) {
+    return false;
+  }
+
+  return diagnostic.code !== 2307 || !resolvesElsewhere(diagnostic);
+};
+
+const diagnose = (files: string[], types: string[]): string[] => {
   const options: ts.CompilerOptions = {
     noEmit: true,
     strict: true,
@@ -70,7 +154,7 @@ const unresolvedNames = (files: string[]): string[] => {
     target: ts.ScriptTarget.ESNext,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
-    types: [],
+    types,
     lib: ['lib.esnext.d.ts', 'lib.dom.d.ts'],
   };
 
@@ -90,14 +174,22 @@ const unresolvedNames = (files: string[]): string[] => {
 
   const program = ts.createProgram([...files, VIRTUAL_GLOBALS], options, host);
 
-  return ts.getPreEmitDiagnostics(program).filter((diagnostic) => {
-    return UNRESOLVED_NAME.has(diagnostic.code) && diagnostic.file !== undefined;
-  }).map((diagnostic) => {
+  return ts.getPreEmitDiagnostics(program).filter(reportable).map((diagnostic) => {
     const file = diagnostic.file?.fileName ?? '';
     const line = diagnostic.file?.getLineAndCharacterOfPosition(diagnostic.start ?? 0).line ?? 0;
     const where = `${file.split('assets/')[1] ?? file}:${String(line + 1)}`;
 
     return `${where} TS${String(diagnostic.code)}  ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`;
+  });
+};
+
+const unresolvedNames = (files: string[]): string[] => {
+  return SCOPES.flatMap(([prefix, types]) => {
+    const own = files.filter((file) => {
+      return scopeOf(file) === prefix;
+    });
+
+    return own.length === 0 ? [] : diagnose(own, types);
   });
 };
 
@@ -158,6 +250,27 @@ const destinationsFor = (every: Answers[]): Map<string, string> => {
   return found;
 };
 
+/**
+ * The module a starter test covers, which the official scaffolder writes and this repo deliberately does not own.
+ * Keyed by the asset doing the importing, so an unresolved relative import is waved through for exactly the one path
+ * the record says is not ours, and is a finding for every other. `requires` on the artifact is that path.
+ */
+const scaffolded = (every: Answers[]): Map<string, string> => {
+  const found = new Map<string, string>();
+
+  for (const answers of every) {
+    for (const artifact of starterSourceEmitter(answers)) {
+      if ('sources' in artifact.content && artifact.requires !== undefined) {
+        for (const source of artifact.content.sources) {
+          found.set(source, artifact.requires);
+        }
+      }
+    }
+  }
+
+  return found;
+};
+
 const filesIn = (dir: string): string[] => {
   return readdirSync(dir, {
     recursive: true,
@@ -184,10 +297,23 @@ let fixable = 0;
 let checked = 0;
 const unplaced: string[] = [];
 
+// `<asset> -> <destination>` and `<asset> -> <the module the scaffolder writes>`, over every target at once.
+const placed = new Map<string, string>();
+const covered = new Map<string, string>();
+
+for (const target of targets) {
+  for (const [source, destination] of destinationsFor(widestFor(target))) {
+    placed.set(source, destination);
+  }
+
+  for (const [source, requires] of scaffolded(widestFor(target))) {
+    covered.set(source, requires);
+  }
+}
+
 for (const target of targets) {
   const every = widestFor(target);
   const record = targetFor(every[0] ?? DEFAULT_ANSWERS);
-  const destinations = destinationsFor(every);
   const config = await defineConfig({
     framework: record.framework,
     vitest: true,
@@ -202,6 +328,22 @@ for (const target of targets) {
     name: '@linteljs/starters/no-page-tree',
     rules: { '@next/next/no-html-link-for-pages': 'off' },
   });
+  /**
+   * Reaching React's types through the global namespace rather than importing them. Legal TypeScript, because
+   * `@types/react` declares `React` globally for JSX, so no program refuses it: `children?: React.ReactNode` shipped
+   * against no React import and every type check available here passed it. A rule, because it is a style the
+   * standard holds and not an error the compiler has.
+   */
+  config.push({
+    name: '@linteljs/starters/react-by-import',
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: "TSQualifiedName[left.name='React'], MemberExpression[object.name='React']",
+        message: "Import React's types rather than reaching them through the global namespace.",
+      }],
+    },
+  });
+
   const eslint = new ESLint({
     overrideConfigFile: true,
     overrideConfig: config,
@@ -210,7 +352,7 @@ for (const target of targets) {
 
   for (const path of filesIn(join(STARTERS, target))) {
     const source = path.slice('packages/create/assets/'.length);
-    const destination = destinations.get(source);
+    const destination = placed.get(source);
 
     if (destination === undefined) {
       unplaced.push(source);
