@@ -8,12 +8,13 @@ import {
   CONFIG_SCHEMA_URL,
   CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
+  EXPECTED,
 } from '../constants';
 import { ANSWERS } from '../registry';
 
+import { migrateForm } from './migrationUtils';
 import {
   isJsonArray,
-  migrateForm,
   readAnswer,
   unaskedValueOf,
 } from './readUtils';
@@ -30,30 +31,6 @@ import type { AnswerRecord } from '../types';
 import type { JsonValue } from './readUtils';
 
 type ConfigObject = Partial<Record<keyof typeof EXPECTED, JsonValue>>;
-
-// Every property a config may carry, spelled once. A `Record` rather than a list, so `Answers` gaining a field
-// fails here until it is named: the shape below and the refusal of an unexpected key both read off this.
-const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', true> = {
-  $schema: true,
-  schemaVersion: true,
-  target: true,
-  browser: true,
-  surfaces: true,
-  hostedFramework: true,
-  testing: true,
-  packageManager: true,
-  libraries: true,
-  form: true,
-  router: true,
-  store: true,
-  typeSafety: true,
-  agents: true,
-  plugins: true,
-  resolveConditions: true,
-  aliases: true,
-  browsers: true,
-  ignores: true,
-};
 
 const expectedKeys = Object.keys(EXPECTED);
 
