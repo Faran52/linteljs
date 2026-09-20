@@ -10,9 +10,10 @@ import {
   type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
+import { globalNamespaceTags } from './utils/elementUtils.ts';
 import { nameOf } from './utils/nameUtils.ts';
 
-import type { Scope } from 'eslint';
+import type { AST, Scope } from 'eslint';
 
 // `TSQualifiedName` is absent from ESLint's ESTree types, so the two fields this rule reads are described
 // structurally and narrowed by a predicate. A real parsed node satisfies it, and no cast is needed to say so.
@@ -111,7 +112,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
      * same global, so both land here. `member` is what the fix replaces; `isType` decides whether the specifier it
      * adds carries `type`.
      */
-    const report = (member: RuleNode, name: string, isType: boolean): void => {
+    const report = (member: RuleNode, name: string, isType: boolean, targets: AST.Range[]): void => {
       const scope = scopeOf(context, member);
 
       // A local `React` is the file's own binding, so reaching through it is a namespace this file owns.
@@ -134,10 +135,14 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
       const rewrite = (fixer: Fixer): ReturnType<Fixer['replaceText']>[] => {
         const specifier = isType ? `type ${name}` : name;
-        const replaced = fixer.replaceText(member, name);
+
+        // A range each, because a JSX element carries the reach twice and both tags have to move together.
+        const replaced = targets.map((target) => {
+          return fixer.replaceTextRange(target, name);
+        });
 
         if (alreadyImported) {
-          return [replaced];
+          return replaced;
         }
 
         // No import to join: none from `react` at all, a type-only one, or one carrying no named list. A second
@@ -148,7 +153,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
           return [
             fixer.insertTextBefore(statement, `import { ${specifier} } from '${MODULE}';\n\n`),
-            replaced,
+            ...replaced,
           ];
         }
 
@@ -159,7 +164,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
          */
         return [
           fixer.insertTextBeforeRange(rangeOf(mergeable), `${specifier}, `),
-          replaced,
+          ...replaced,
         ];
       };
 
@@ -175,8 +180,24 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       // `React.ReactNode`, in a type.
       TSQualifiedName: (node: RuleNode) => {
         if (isQualified(node) && node.left.name === NAMESPACE) {
-          report(node, node.right.name, true);
+          report(node, node.right.name, true, [rangeOf(node)]);
         }
+      },
+
+      /**
+       * `<React.Fragment>`, in markup. A JSX tag name is not a member expression, so the visitor below never sees
+       * one, and both tags are rewritten by a single fix: half of that rename does not parse, and ESLint writes
+       * whatever the last pass produced.
+       */
+      JSXElement: (node: RuleNode) => {
+        const tags = globalNamespaceTags(node, NAMESPACE);
+        const [opening] = tags;
+
+        if (opening === undefined) {
+          return;
+        }
+
+        report(node, mustFind(opening.property?.name), false, tags.map(rangeOf));
       },
 
       // `React.createElement`, in a value. A computed access names nothing a fix could import, and is the only way
@@ -186,7 +207,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        report(node, mustFind(nameOf(node.property)), false);
+        report(node, mustFind(nameOf(node.property)), false, [rangeOf(node)]);
       },
     };
   },

@@ -1,4 +1,8 @@
-import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
+import {
+  jsRuleTester,
+  tsRuleTester,
+  tsxRuleTester,
+} from '@mocks/ruleTesters';
 
 import { reactNoGlobalNamespace } from './reactNoGlobalNamespace.ts';
 
@@ -124,6 +128,44 @@ function build() {
     {
       code: 'interface ReactNode { own: true }\nlet value: React.ReactNode;',
       output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+  ],
+});
+
+tsxRuleTester.run('react-no-global-namespace: markup', reactNoGlobalNamespace, {
+  valid: [
+    "import React from 'react';\nconst el = <React.Fragment />;",
+    'const el = <div />;',
+    'const el = <Other.Thing />;',
+
+    // A deeper member has no name of its own on the object, so nothing claims it reaches the global.
+    'const el = <React.JSX.Foo />;',
+  ],
+  invalid: [
+    {
+      code: 'const el = <React.Fragment />;',
+      output: "import { Fragment } from 'react';\n\nconst el = <Fragment />;",
+      errors: [{
+        messageId: 'globalNamespace',
+        data: { name: 'Fragment' },
+      }],
+    },
+
+    /**
+     * Both tags in one fix. A pass that rewrote the opening tag alone would leave `<Fragment>` against
+     * `</React.Fragment>`, which does not parse, and ESLint writes whatever the last pass produced.
+     */
+    {
+      code: 'const el = <React.Fragment>text</React.Fragment>;',
+      output: "import { Fragment } from 'react';\n\nconst el = <Fragment>text</Fragment>;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    // A value, so the specifier carries no `type`, and it joins the list already there.
+    {
+      code: "import { useState } from 'react';\nconst el = <React.Fragment>t</React.Fragment>;",
+      output: "import { Fragment, useState } from 'react';\nconst el = <Fragment>t</Fragment>;",
       errors: [{ messageId: 'globalNamespace' }],
     },
   ],

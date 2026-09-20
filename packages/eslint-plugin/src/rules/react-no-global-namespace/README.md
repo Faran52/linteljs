@@ -30,6 +30,11 @@ interface Props {
 React.createElement('div');
 ```
 
+```jsx
+// incorrect: and again in markup, where the tag name is not a member expression
+const el = <React.Fragment>text</React.Fragment>;
+```
+
 ## Examples of correct code for this rule
 
 ```tsx
@@ -51,6 +56,9 @@ React.createElement('div');
 
 The name is imported from `react` and the member access is replaced with it. A type position takes a
 `type` specifier.
+
+A JSX element is rewritten at both tags by one fix, since `<Fragment>` against `</React.Fragment>`
+would not parse and ESLint keeps whatever the last pass produced.
 
 Where the file already imports a named list from `react`, the name joins that list. Where it does
 not, the fix writes a second `import { ... } from 'react'` rather than rewriting what is there: a
