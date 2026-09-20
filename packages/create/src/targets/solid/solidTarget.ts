@@ -31,7 +31,6 @@ export const solidTarget: TargetRecord = {
   // Without these, vitest resolves the server build and a rendered component has no reactive owner.
   testConditions: ['development', 'browser'],
   starterTests: [{
-    source: 'target/starter-source/solid/src/App.test.tsx',
     target: 'src/App.test.tsx',
     covers: 'src/App.tsx',
   }],

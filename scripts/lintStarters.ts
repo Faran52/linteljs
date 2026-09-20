@@ -9,11 +9,11 @@ import process, { argv } from 'node:process';
 import { ESLint } from 'eslint';
 
 import { DEFAULT_ANSWERS } from '../packages/create/src/answers';
+import { starterSourceEmitter } from '../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
 import { targetFor } from '../packages/create/src/targets';
 import { defineConfig } from '../packages/eslint-config/src/defineConfig';
 
 import type { Answers, TargetId } from '../packages/create/src/answers';
-import type { StarterFile, TargetRecord } from '../packages/create/src/targets';
 
 /**
  * The shipped starter source is the one tree nothing in `pnpm check` reads. It is not in any `tsconfig` include, the
@@ -41,21 +41,16 @@ const UNRESOLVABLE = 'import-x/no-unresolved';
 
 /**
  * Every answer that opens a starter file, so each target's whole tree is reached rather than the default slice. More
- * than one set per target where one cannot reach everything: a browser decides which of the extension's two spellings
- * of a background script is placed, so both are asked for.
+ * than one set per target where one cannot reach everything: a browser picks one of the extension's two spellings of
+ * a background script and a router one of react's two entries, so each is asked for in turn.
  */
 const widestFor = (target: TargetId): Answers[] => {
-  const widest = {
+  const widest: Answers = {
     ...DEFAULT_ANSWERS,
     target,
     surfaces: ['popup', 'background', 'devtools-panel'],
     libraries: ['tailwind', 'tanstack-query', 'zod'],
-    ...(target === 'react' ? { router: 'react-router' } : {}),
-  } as Answers;
-
-  if (target !== 'webextension') {
-    return [widest];
-  }
+  };
 
   return [
     widest,
@@ -63,18 +58,36 @@ const widestFor = (target: TargetId): Answers[] => {
       ...widest,
       browser: 'firefox',
     },
+    {
+      ...widest,
+      router: 'react-router',
+    },
+    {
+      ...widest,
+      router: 'tanstack-router',
+    },
   ];
 };
 
-// `<source> -> <target>`, the records' own tables, so this reads the mapping rather than restating it.
-const destinationsFor = (records: TargetRecord[]): Map<string, string> => {
-  const entries: StarterFile[] = records.flatMap((record) => {
-    return [...record.starterFiles ?? [], ...record.starterTests ?? []];
-  });
+/**
+ * `<asset> -> <destination>`, read through the emitter rather than off the record. A record names the destination
+ * and `starterSourceEmitter` derives the asset from it, so this is the same derivation the pipeline runs and a
+ * mirror that drifts from it shows up here as a file no answer places.
+ */
+const destinationsFor = (every: Answers[]): Map<string, string> => {
+  const found = new Map<string, string>();
 
-  return new Map(entries.map((entry) => {
-    return [entry.source, entry.target];
-  }));
+  for (const answers of every) {
+    for (const artifact of starterSourceEmitter(answers)) {
+      if ('sources' in artifact.content) {
+        for (const source of artifact.content.sources) {
+          found.set(source, artifact.target);
+        }
+      }
+    }
+  }
+
+  return found;
 };
 
 const filesIn = (dir: string): string[] => {
@@ -104,11 +117,11 @@ let checked = 0;
 const unplaced: string[] = [];
 
 for (const target of targets) {
-  const records = widestFor(target).map(targetFor);
-  const [record] = records;
-  const destinations = destinationsFor(records);
+  const every = widestFor(target);
+  const record = targetFor(every[0] ?? DEFAULT_ANSWERS);
+  const destinations = destinationsFor(every);
   const config = await defineConfig({
-    framework: record?.framework,
+    framework: record.framework,
     vitest: true,
   });
 

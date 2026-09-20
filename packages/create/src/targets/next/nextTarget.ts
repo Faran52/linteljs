@@ -59,7 +59,6 @@ export const nextTarget: TargetRecord = {
   // The root layout renders the document and loads fonts through a bundler loader with no runtime outside the build.
   coverageExclude: ['src/app/layout.tsx'],
   starterTests: [{
-    source: 'target/starter-source/next/src/app/page.test.tsx',
     target: 'src/app/page.test.tsx',
     covers: 'src/app/page.tsx',
   }],

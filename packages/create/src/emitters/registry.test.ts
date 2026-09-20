@@ -31,7 +31,6 @@ import {
 } from '../answers';
 import { type Artifact } from '../config/types';
 import { ASSETS_ROOT, shippedAssetsReader } from '../disk';
-import { targetFor } from '../targets';
 import { valuesOf } from '../utils/objectUtils';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
@@ -217,6 +216,48 @@ describe('buildArtifacts', () => {
 
       expect(artifacts.length).toBeGreaterThan(0);
     });
+
+    /**
+     * What replaced the `source` a record used to carry beside each `target`: the asset is derived from the
+     * destination now, so the derivation is what has to be held against disk. Every answer that opens a starter file
+     * is asked for, since a browser and a router each pick a different asset for one destination.
+     */
+    it(`resolves every seeded starter for ${target}`, async () => {
+      const cases: Answers[] = [
+        answersFor({ target }),
+        {
+          ...answersFor({ target }),
+          browser: 'firefox',
+        },
+        {
+          ...answersFor({ target }),
+          router: 'react-router',
+        },
+        {
+          ...answersFor({ target }),
+          router: 'tanstack-router',
+        },
+        {
+          ...answersFor({
+            target,
+            libraries: ['tailwind'],
+          }),
+          surfaces: ['popup', 'background', 'devtools-panel'],
+        },
+      ];
+
+      const sources = cases.flatMap((answers) => {
+        return seedArtifacts(answers, 'demo-app').flatMap((artifact) => {
+          return 'sources' in artifact.content ? artifact.content.sources : [];
+        });
+      });
+
+      await Promise.all([...new Set(sources)].map(async (source) => {
+        await access(join(ASSETS_ROOT, source), constants.R_OK);
+      }));
+
+      expect(sources.length).toBeGreaterThan(0);
+    });
   }
 });
 
@@ -265,8 +306,6 @@ describe('the emitted checker against the emitted starter code', () => {
 
   // A composed artifact is only scannable once composed.
   const scannedFor = async (target: TargetId): Promise<ScannedArtifact[]> => {
-    const record = targetFor(answersFor({ target }));
-
     const files = [
       ...buildArtifacts(answersFor({
         target,
@@ -281,13 +320,19 @@ describe('the emitted checker against the emitted starter code', () => {
               },
             }];
       }),
-      ...[...record.starterFiles ?? [], ...record.starterTests ?? []].map(({ source, target: path }) => {
-        return {
-          target: path,
-          read: async () => {
-            return await readFile(join(ASSETS_ROOT, source), 'utf8');
-          },
-        };
+      // Through `seedArtifacts` rather than off the record: the record names the destination and the emitter derives
+      // the asset from it, so reading the record directly would scan a path nothing writes.
+      ...seedArtifacts(answersFor({ target }), 'demo-app').flatMap((artifact) => {
+        return 'sources' in artifact.content
+          ? artifact.content.sources.map((source) => {
+              return {
+                target: artifact.target,
+                read: async () => {
+                  return await readFile(join(ASSETS_ROOT, source), 'utf8');
+                },
+              };
+            })
+          : [];
       }),
     ].filter(({ target: path }) => {
       return /\.[cm]?tsx?$/.test(path);

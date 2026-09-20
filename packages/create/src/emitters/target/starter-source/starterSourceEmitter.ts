@@ -2,10 +2,26 @@ import {
   type Answers,
   hasLibrary,
   hasTests,
+  type TargetId,
 } from '../../../answers';
 import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { copied } from '../../utils/artifactUtils';
+
+import type { StarterFile, StarterTest } from '../../../targets';
+
+/**
+ * The asset sits at the path it lands on, under this target's tree and below the answer that gates it. One string
+ * rather than two that can disagree: the extension's two spellings of a background entry differ only by the browser
+ * directory above them, and a file no answer gates has nothing between the target and its own path.
+ */
+const sourceOf = (id: TargetId, file: StarterFile | StarterTest): string => {
+  const gate = ('router' in file ? file.router : undefined)
+    ?? ('library' in file ? file.library : undefined)
+    ?? file.variant;
+
+  return ['target/starter-source', id, gate, file.target].filter(Boolean).join('/');
+};
 
 // Source no scaffolder wrote, and the tests that cover it. Birth only: a project owns its own source from its
 // first run. The tests come after the files, since one of them is what a starter test covers.
@@ -19,7 +35,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       && (file.router === undefined || answers.router === file.router)
       && (file.tests === undefined || hasTests(answers))) {
       artifacts.push({
-        ...copied(file.target, file.source),
+        ...copied(file.target, sourceOf(target.id, file)),
         fresh: true,
       });
     }
@@ -29,7 +45,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   if (hasTests(answers)) {
     for (const test of target.starterTests ?? []) {
       artifacts.push({
-        ...copied(test.target, test.source),
+        ...copied(test.target, sourceOf(target.id, test)),
         fresh: true,
         requires: test.covers,
       });

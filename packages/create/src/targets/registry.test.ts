@@ -44,15 +44,13 @@ const recordFor = (target: TargetId): TargetRecord => {
   });
 };
 
-// `pipeline.ts` reads each straight off the record with `readFile`, so a typo is an ENOENT mid-generate.
+/**
+ * Every asset a record still names by hand. The starter is not among them any more: a record names the destination
+ * and `starterSourceEmitter` derives the asset from it, so `emitters/registry.test.ts` holds that half against disk
+ * through the emitter rather than through the record.
+ */
 const assetPathsOf = (target: TargetRecord): string[] => {
   return [
-    ...(target.starterFiles ?? []).map((file) => {
-      return file.source;
-    }),
-    ...(target.starterTests ?? []).map((test) => {
-      return test.source;
-    }),
     ...(target.testSetup === undefined ? [] : [target.testSetup]),
     ...target.stateRules.map((rule) => {
       return `always/linteljs-plugin/claude-rules/${rule}`;

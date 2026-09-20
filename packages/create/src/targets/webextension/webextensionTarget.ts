@@ -11,19 +11,16 @@ import type { PluginSpec, StarterFile } from '../types';
 // Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
 // ambient types; the hosted framework decides what a component is and which plugin and layer handle it.
 
-// Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
-// both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
-interface BrowserStarter {
-  entry: string;
-  handler: string;
-  test: string;
-  devtools: string;
-}
-
+/**
+ * Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
+ * both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
+ *
+ * Which four files those are is not listed here. Both browsers fill the same four destinations and the asset for
+ * each sits under a directory named for the browser, so `variant` on the entry is the whole of the difference.
+ */
 interface BrowserParts {
   types: string[];
   devDependencies: string[];
-  starter: BrowserStarter;
 }
 
 const BROWSERS: Record<Browser, BrowserParts> = {
@@ -31,23 +28,11 @@ const BROWSERS: Record<Browser, BrowserParts> = {
     // Without the types the first line of extension code fails `typecheck`; once listed, `types` is an allow-list.
     types: ['chrome'],
     devDependencies: ['@types/chrome'],
-    starter: {
-      entry: 'target/starter-source/webextension/chrome/src/background/index.ts',
-      handler: 'target/starter-source/webextension/chrome/src/background/onInstalled.ts',
-      test: 'target/starter-source/webextension/chrome/src/background/onInstalled.test.ts',
-      devtools: 'target/starter-source/webextension/chrome/src/devtools/index.ts',
-    },
   },
   firefox: {
     // `browser.*`, promise-returning; these types carry no `chrome`, so Chrome's starter does not typecheck here.
     types: ['firefox-webext-browser'],
     devDependencies: ['@types/firefox-webext-browser'],
-    starter: {
-      entry: 'target/starter-source/webextension/firefox/src/background/index.ts',
-      handler: 'target/starter-source/webextension/firefox/src/background/onInstalled.ts',
-      test: 'target/starter-source/webextension/firefox/src/background/onInstalled.test.ts',
-      devtools: 'target/starter-source/webextension/firefox/src/devtools/index.ts',
-    },
   },
 };
 
@@ -61,19 +46,19 @@ const CRX: PluginSpec = {
 
 // A surface decides what the manifest names and whether the build needs an input the manifest does not give it.
 // `popup` contributes nothing: the Vite scaffold already wrote `index.html` and `src/main.ts`.
-const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] => {
+const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [];
 
   if (hasSurface(answers, 'background')) {
     // `manifest.json` names the entry, so it must exist before the first `vite build`.
     files.push(
       {
-        source: browser.starter.entry,
         target: 'src/background/index.ts',
+        variant,
       },
       {
-        source: browser.starter.handler,
         target: 'src/background/onInstalled.ts',
+        variant,
       },
     );
   }
@@ -83,23 +68,19 @@ const surfaceFiles = (answers: Answers, browser: BrowserParts): StarterFile[] =>
       // A folder each for the devtools page and the panel; the entry HTML stays at the root, where manifest paths
       // resolve.
       {
-        source: 'target/starter-source/webextension/devtools.html',
         target: 'devtools.html',
       },
       {
-        source: browser.starter.devtools,
         target: 'src/devtools/index.ts',
+        variant,
       },
       {
-        source: 'target/starter-source/webextension/panel.html',
         target: 'panel.html',
       },
       {
-        source: 'target/starter-source/webextension/src/panel/index.ts',
         target: 'src/panel/index.ts',
       },
       {
-        source: 'target/starter-source/webextension/src/panel/renderPanel.ts',
         target: 'src/panel/renderPanel.ts',
       },
     );
@@ -154,23 +135,21 @@ export const webextensionTarget: TargetBuilder = (answers) => {
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    starterFiles: surfaceFiles(answers, browser),
+    starterFiles: surfaceFiles(answers, answers.browser),
     starterTests: [
       {
-        source: 'target/starter-source/webextension/src/counter.test.ts',
         target: 'src/counter.test.ts',
         covers: 'src/counter.ts',
       },
       ...hasSurface(answers, 'background')
         ? [{
-            source: browser.starter.test,
+            variant: answers.browser,
             target: 'src/background/onInstalled.test.ts',
             covers: 'src/background/onInstalled.ts',
           }]
         : [],
       ...hasSurface(answers, 'devtools-panel')
         ? [{
-            source: 'target/starter-source/webextension/src/panel/renderPanel.test.ts',
             target: 'src/panel/renderPanel.test.ts',
             covers: 'src/panel/renderPanel.ts',
           }]

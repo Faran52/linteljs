@@ -1,6 +1,7 @@
 import type { Library } from '../answers/libraries/libraries';
 import type { PackageManager } from '../answers/manager/packageManager';
 import type { Answers } from '../answers/registry';
+import type { Browser } from '../answers/target/browser';
 import type { Router } from '../answers/target/router';
 import type { TargetId } from '../answers/target/target';
 import type {
@@ -27,11 +28,12 @@ export interface TsconfigPlugin {
 
 // A test shipped with the project, covering code its scaffolder wrote.
 export interface StarterTest {
-  // Relative to `assets/`.
-  source: string;
+  // The path in the project, and the asset's own path under this target's starter tree. See `StarterFile`.
   target: string;
   // Written only when this file exists.
   covers: string;
+  // The browser whose spelling this is, where two of them fill one destination.
+  variant?: Browser;
 }
 
 // A file the generator named against convention, moved by `run/repair` with every specifier repointed.
@@ -41,17 +43,24 @@ export interface StarterRename {
   to: string;
 }
 
-// Copied once at birth; the project owns it from then on.
+/**
+ * Copied once at birth; the project owns it from then on.
+ *
+ * `target` is the whole of it. The asset sits at that same path under
+ * `assets/target/starter-source/<target id>/`, below the answer that gates it where one does, so the pairing is the
+ * path rather than a second string that can disagree with it. `starterSourceEmitter` does the derivation and
+ * `registry.test.ts` holds every derived path against what is on disk.
+ */
 export interface StarterFile {
-  // Relative to `assets/`.
-  source: string;
   target: string;
-  // Written only when this library was chosen.
+  // Written only when this library was chosen, and the directory the asset sits in.
   library?: Library;
-  // Written only when this router was chosen.
+  // Written only when this router was chosen, and the directory the asset sits in.
   router?: Router;
   // Written only with a suite: a test helper is a test artifact, and `testing: none` declines it.
   tests?: true;
+  // The browser whose spelling this is, where two of them fill one destination.
+  variant?: Browser;
 }
 
 // One repair to a generator's starter code; `run/repair` owns when these run.

@@ -46,12 +46,10 @@ export const vueTarget: TargetRecord = {
   // Mounting `App` with the real router walks the welcome tree; the store test covers the one module never rendered.
   starterTests: [
     {
-      source: 'target/starter-source/vue/src/App.test.ts',
       target: 'src/App.test.ts',
       covers: 'src/App.vue',
     },
     {
-      source: 'target/starter-source/vue/src/lib/store/counter.test.ts',
       target: 'src/lib/store/counter.test.ts',
       covers: 'src/lib/store/counter.ts',
     },

@@ -346,6 +346,19 @@ The gate above is what makes this safe to have done: each file is linted at the 
 places it on, so a mirror that drifts from the record is a starter linted at the wrong path, and a
 file no record places is reported rather than guessed at. Both halves ran clean through the move.
 
+With the mirror in place a record no longer names the asset at all. `StarterFile` and `StarterTest`
+carry the destination and the answer that gates the file; `starterSourceEmitter` derives the asset
+from the two. Forty-four `source` lines went, and with them the four-field `BrowserStarter` table
+that existed only to spell out which of the extension's two background entries a browser wanted:
+both fill the same destinations, so `variant` on the entry is the whole of the difference now.
+
+Two strings that can disagree became one that cannot, which moves the failure. It used to be a typo
+in a path, caught by a test reading the record. It is now a mirror that drifts from the record,
+caught two ways: `registry.test.ts` resolves every derived asset against disk across every answer
+that opens one, and `starterSourceEmitter.test.ts` pins which asset each answer derives.
+`lint:starters` reads the same emitter, so the gate and the pipeline cannot disagree about where a
+file lives.
+
 ### `assets/` is classified by its consumer
 
 Ten directories named on three different axes: the tool (`husky/`, `npm/`, `schemas/`, `scripts/`),
