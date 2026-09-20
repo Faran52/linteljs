@@ -1,6 +1,10 @@
-import { FOLDER_NAMING, NAMING } from '../naming';
+import {
+  COMPONENT,
+  DECLARATION_KEY,
+  FOLDER_ROUTED,
+} from '../constants';
 import { partsFor } from '../utils/frameworkUtils';
-import { COMPONENT } from '../utils/namingUtils';
+import { scriptKeys } from '../utils/namingUtils';
 
 import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
 import type { TargetBuilder } from '../registry';
@@ -45,11 +49,16 @@ export const astroTarget: TargetBuilder = (answers) => {
     routeUnit: 'src/pages/, whose files are the routes',
     // `.astro/` is the generated types and content cache.
     ignores: ['.astro/**'],
+    // `COMPONENT` admits both `Card.astro` and the lowercase `index.astro` a route has to be; `pages` is the route
+    // directory.
     naming: {
-      ...NAMING.astro,
+      'src/**/*.astro': COMPONENT,
+      ...scriptKeys('pages'),
+      ...DECLARATION_KEY,
       ...(hosted === undefined ? {} : { [hosted.componentGlob]: COMPONENT }),
     },
-    folderNaming: FOLDER_NAMING.astro,
+    // A dynamic route is `[slug].astro`, so a directory may be one too.
+    folderNaming: { 'src/**/': FOLDER_ROUTED },
     styleEntry: 'src/styles/global.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     /**

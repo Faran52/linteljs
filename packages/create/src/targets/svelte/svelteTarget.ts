@@ -1,7 +1,8 @@
 import { hasLibrary } from '@answers/utils/answerUtils';
 
-import { FOLDER_NAMING, NAMING } from '../naming';
-import { HOOKS_ALIAS, tabsToSpaces } from '../utils/targetUtils';
+import { FOLDER_ROUTED, HOOKS_ALIAS } from '../constants';
+import { sfcNaming } from '../utils/namingUtils';
+import { tabsToSpaces } from '../utils/targetUtils';
 
 import type { TargetBuilder } from '../registry';
 
@@ -32,8 +33,8 @@ export const svelteTarget: TargetBuilder = (answers) => {
       path: 'src/lib/hooks/',
     },
     ignores: ['.svelte-kit/**'],
-    naming: NAMING.svelte,
-    folderNaming: FOLDER_NAMING.svelte,
+    naming: sfcNaming('svelte', 'routes'),
+    folderNaming: { 'src/**/': FOLDER_ROUTED },
     hooksAlias: HOOKS_ALIAS,
     // Re-declared: an extending config replaces `paths` rather than merging `.svelte-kit/tsconfig.json`'s.
     extraAliases: {

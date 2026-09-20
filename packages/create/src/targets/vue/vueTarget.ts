@@ -1,6 +1,7 @@
 import { hasTests } from '@answers/utils/answerUtils';
 
-import { FOLDER_NAMING, NAMING } from '../naming';
+import { FOLDER } from '../constants';
+import { sfcNaming } from '../utils/namingUtils';
 
 import type { TargetRecord } from '../types';
 
@@ -32,8 +33,8 @@ export const vueTarget: TargetRecord = {
   // No dependency: create-vue installs Pinia itself.
   store: { label: 'Pinia' },
   ignores: [],
-  naming: NAMING.vue,
-  folderNaming: FOLDER_NAMING.vue,
+  naming: sfcNaming('vue'),
+  folderNaming: { 'src/**/': FOLDER },
   hooksAlias: { '@composables/*': './src/lib/composables/*' },
   styleEntry: 'src/assets/main.css',
   vitePlugin: {

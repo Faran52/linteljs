@@ -1,5 +1,5 @@
-import { FOLDER_NAMING, NAMING } from '../naming';
-import { OUTSIDE_TESTS } from '../utils/frameworkUtils';
+import { FOLDER_ROUTED, OUTSIDE_TESTS } from '../constants';
+import { componentNaming } from '../utils/namingUtils';
 import { viteScaffold } from '../utils/targetUtils';
 
 import type { TargetRecord } from '../types';
@@ -16,8 +16,8 @@ export const solidTarget: TargetRecord = {
     path: 'src/lib/primitives/ (create*)',
   },
   ignores: [],
-  naming: NAMING.solid,
-  folderNaming: FOLDER_NAMING.solid,
+  naming: componentNaming(),
+  folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: { '@primitives/*': './src/lib/primitives/*' },
   styleEntry: 'src/index.css',
   vitePlugin: {

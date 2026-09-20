@@ -1,7 +1,8 @@
 import { hasSurface } from '@answers/utils/answerUtils';
 
-import { FOLDER_NAMING, NAMING } from '../naming';
+import { DECLARATION_KEY, FOLDER } from '../constants';
 import { hostedNaming, partsFor } from '../utils/frameworkUtils';
+import { scriptKeys } from '../utils/namingUtils';
 import { viteScaffold } from '../utils/targetUtils';
 
 import type { Answers } from '@answers/registry';
@@ -115,9 +116,16 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     vite: true,
     routeUnit: 'manifest.json, whose entries name every surface',
     ignores: [],
-    // With a framework the component is marked by its extension; without one, by living under `components/`.
-    naming: hosted === undefined ? NAMING.webextension : hostedNaming(hosted.framework),
-    folderNaming: FOLDER_NAMING.webextension,
+    // With a framework the component is marked by its extension; without one, by living under `components/`: a
+    // component is marked by directory rather than by a `.tsx` extension.
+    naming: hosted === undefined
+      ? {
+          'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',
+          ...scriptKeys('components'),
+          ...DECLARATION_KEY,
+        }
+      : hostedNaming(hosted.framework),
+    folderNaming: { 'src/**/': FOLDER },
     // `lib/model/` has no alias, and `@store/*` would name a directory this layout lacks.
     extraAliases: { '@model/*': './src/lib/model/*' },
     omitAliases: ['@store/*'],

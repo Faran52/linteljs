@@ -1,7 +1,11 @@
 import { hasLibrary } from '@answers/utils/answerUtils';
 
-import { FOLDER_NAMING, NAMING } from '../naming';
-import { COMMON_REACT_PLUGINS, HOOKS_ALIAS } from '../utils/targetUtils';
+import {
+  COMMON_REACT_PLUGINS,
+  FOLDER_ROUTED,
+  HOOKS_ALIAS,
+} from '../constants';
+import { componentNaming } from '../utils/namingUtils';
 
 import type { TargetRecord } from '../types';
 
@@ -39,8 +43,8 @@ export const nextTarget: TargetRecord = {
     dependency: 'zustand',
   },
   ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
-  naming: NAMING.next,
-  folderNaming: FOLDER_NAMING.next,
+  naming: componentNaming('app'),
+  folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: HOOKS_ALIAS,
   extraAliases: {
     '@server/*': './src/lib/server/*',

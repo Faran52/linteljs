@@ -1,4 +1,4 @@
-import { FOLDER_NAMING, NAMING } from '../naming';
+import { DECLARATION_KEY, FOLDER } from '../constants';
 
 import type { TargetRecord } from '../types';
 
@@ -27,10 +27,17 @@ export const angularTarget: TargetRecord = {
     dependency: '@ngrx/signals',
   },
   ignores: ['.angular/**'],
-  // No `--file-name-style-guide`: pinning affects initial files only, and later `ng generate` writes the current
-  // default anyway (measured with `2016`).
-  naming: NAMING.angular,
-  folderNaming: FOLDER_NAMING.angular,
+  /**
+   * No `--file-name-style-guide`: pinning affects initial files only, and later `ng generate` writes the current
+   * default anyway (measured with `2016`).
+   * `ng generate`'s own spelling; `ignoreMiddleExtensions` already reduces `app.spec.ts` to `app`. The declaration
+   * key is not optional here either: `customTypes.d.ts` ships with `typeSafety: relaxed` and is not kebab.
+   */
+  naming: {
+    'src/**/*.ts': 'KEBAB_CASE',
+    ...DECLARATION_KEY,
+  },
+  folderNaming: { 'src/**/': FOLDER },
   styleEntry: 'src/styles.css',
   vitePlugin: {
     imports: [],

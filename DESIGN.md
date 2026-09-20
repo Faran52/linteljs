@@ -513,9 +513,11 @@ Measured 2026-08-06 to 2026-08-08:
 
 ### File naming
 
-The policy is `packages/create/src/targets/naming.ts`, one entry per target. Every glob was
+The policy is a `naming` and `folderNaming` pair on each record under
+`packages/create/src/targets/`, composed from the globs in `targets/constants.ts`. Every glob was
 measured at authoring time against `micromatch@4.0.8`, which is what `check-file` matches with;
-`naming.test.ts` pins the exact strings, and the end-to-end suite is what re-verifies match
+`targets/utils/namingUtils.test.ts` pins the exact strings through the three functions that compose
+them, and the end-to-end suite is what re-verifies match
 behaviour against real scaffolds, so an edited glob needs a fresh probe before it lands. What
 the globs cannot say for themselves:
 

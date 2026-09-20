@@ -1,10 +1,11 @@
-import { FOLDER_NAMING, NAMING } from '../naming';
-import { REACT_VITE_PLUGIN } from '../utils/frameworkUtils';
 import {
   COMMON_REACT_PLUGINS,
+  FOLDER_ROUTED,
   HOOKS_ALIAS,
-  viteScaffold,
-} from '../utils/targetUtils';
+  REACT_VITE_PLUGIN,
+} from '../constants';
+import { componentNaming } from '../utils/namingUtils';
+import { viteScaffold } from '../utils/targetUtils';
 
 import type { Router } from '@answers/target/router/routerAnswer';
 import type { StarterFile, TargetRecord } from '../types';
@@ -29,8 +30,8 @@ export const reactTarget: TargetRecord = {
   },
   routers: ROUTERS,
   ignores: [],
-  naming: NAMING.react,
-  folderNaming: FOLDER_NAMING.react,
+  naming: componentNaming(),
+  folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: HOOKS_ALIAS,
   styleEntry: 'src/index.css',
   vitePlugin: REACT_VITE_PLUGIN,
