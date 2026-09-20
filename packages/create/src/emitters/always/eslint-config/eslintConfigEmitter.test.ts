@@ -15,7 +15,7 @@ import {
   type TargetId,
   type Testing,
 } from '@answers';
-import { FOLDER_ROUTED } from '@targets/utils/namingUtils';
+import { FOLDER_ROUTED } from '@targets/constants';
 
 import { emitEslintConfig } from './eslintConfigEmitter';
 

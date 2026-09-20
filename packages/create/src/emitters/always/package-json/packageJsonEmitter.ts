@@ -15,14 +15,24 @@ import {
   hasLibrary,
   hasTests,
   type Library,
-  type Router,
 } from '@answers';
 import { targetFor } from '@targets';
 
 import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
-import { VERSIONS } from './constants';
+import {
+  ALLOWED_BUILDS,
+  HTML_DEV_DEPENDENCIES,
+  ROUTER_DEPENDENCIES,
+  ROUTER_DEV_DEPENDENCIES,
+  RUNNER_DEV_DEPENDENCIES,
+  SHARED_DEV_DEPENDENCIES,
+  SUPERSEDED,
+  TANSTACK_FORM_BINDINGS,
+  TANSTACK_QUERY_BINDINGS,
+  VERSIONS,
+} from './constants';
 
 import type { TargetRecord } from '@targets/types';
 
@@ -44,48 +54,6 @@ export interface PackageJson {
   allowScripts?: Record<string, boolean | string>;
 }
 
-// Superseded by @linteljs/eslint-config.
-const SUPERSEDED = [
-  'prettier',
-  'eslint-config-prettier',
-  'eslint-plugin-prettier',
-  '@eslint/js',
-  'globals',
-  'typescript-eslint',
-  'eslint-plugin-react-refresh',
-  'oxlint',
-  // create-vue's two: one is only called from the replaced vite.config.ts, jsdom is not the chosen environment.
-  'vite-plugin-vue-devtools',
-  'jsdom',
-];
-
-const SHARED_DEV_DEPENDENCIES = [
-  '@commitlint/cli',
-  '@commitlint/config-conventional',
-  // Declared: a scaffolder without its own copy fails tsc on "Cannot find type definition file for 'node'".
-  '@types/node',
-  'eslint',
-  '@linteljs/eslint-config',
-  'husky',
-  'lint-staged',
-  'stylelint',
-  'stylelint-config-recess-order',
-  'stylelint-config-standard',
-  'stylelint-order',
-];
-
-// Omitting @vitest/eslint-plugin fails the first `eslint .`, not the install.
-// `vite` is vitest's required peer; npm under `legacy-peer-deps` installs no peers, so it is named outright.
-const RUNNER_DEV_DEPENDENCIES = [
-  '@vitest/coverage-v8',
-  '@vitest/eslint-plugin',
-  'happy-dom',
-  'vite',
-  'vitest',
-];
-
-const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
-
 // Astro calls `@tailwindcss/vite` from `astro.config.mjs` while owning no vite config, so this reads the record
 // rather than `vite`. Next, Angular and React Native take PostCSS.
 const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
@@ -99,37 +67,6 @@ const tailwindDevDependencies = (target: TargetRecord): string[] => {
     'tailwindcss',
     ...target.tailwind?.devDependencies ?? [],
   ];
-};
-
-// A host with no framework installs nothing at runtime.
-const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
-  'react': '@tanstack/react-query',
-  'next': '@tanstack/react-query',
-  'react-native': '@tanstack/react-query',
-  'vue': '@tanstack/vue-query',
-  'svelte': '@tanstack/svelte-query',
-  'solid': '@tanstack/solid-query',
-  'angular': '@tanstack/angular-query-experimental',
-};
-
-const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
-  'react': '@tanstack/react-form',
-  'next': '@tanstack/react-form',
-  'react-native': '@tanstack/react-form',
-  'vue': '@tanstack/vue-form',
-  'svelte': '@tanstack/svelte-form',
-  'solid': '@tanstack/solid-form',
-  'angular': '@tanstack/angular-form',
-};
-
-const ROUTER_DEPENDENCIES: Record<Router, string[]> = {
-  'react-router': ['react-router'],
-  'tanstack-router': ['@tanstack/react-router'],
-};
-
-const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
-  'react-router': [],
-  'tanstack-router': ['@tanstack/router-plugin', '@tanstack/eslint-plugin-router'],
 };
 
 const libraryDependencies = (answers: Answers, target: TargetRecord): string[] => {
@@ -185,7 +122,7 @@ export const versioned = (names: string[]): Record<string, string> => {
     const version = VERSIONS[name];
 
     if (version === undefined) {
-      throw new Error(`No version in VERSIONS for ${name}; add one to src/emitters/config/versions.ts`);
+      throw new Error(`No version in VERSIONS for ${name}; add one to src/emitters/always/package-json/constants.ts`);
     }
 
     result[name] = version;
@@ -246,27 +183,6 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
     }),
   );
 };
-
-/**
- * Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`,
- * npm reads `allowScripts`. Yarn is absent because it runs install scripts by default and has nothing to approve.
- *
- * One list for all three, not a shared pair plus an npm-only pair. Measured with
- * `pnpm --filter @linteljs/create collect:builds`, which installs the maximal dependency set of all seventeen target
- * and hosted-framework combinations against pnpm and npm and reports what each would refuse to build:
- *
- * - `unrs-resolver` every target reaches, through `eslint-import-resolver-typescript`.
- * - `fsevents` npm 12 refuses on eleven of the seventeen, as an optional dependency of the watchers in each tree.
- *   npm 11 only warns, so it reports nothing and this entry looks dead on the version a project declares.
- * - `sharp` and `@swc/core` no combination reaches, on either manager, and both stay. Measured: an allowance for a
- *   package that is not installed is silent on pnpm and on npm 12, down to a name no registry has, so each costs a
- *   line. Without them, the day something pulls one, a user's first install stops; with them, the next
- *   `collect:builds` reports the change and nobody is interrupted. `create-next-app` writes
- *   `ignoredBuiltDependencies: - sharp` into its own scaffold, which is the ecosystem saying a Next tree meets it.
- *
- * Add a name because that script reported it, or because it is obviously of this kind. Removing one buys nothing.
- */
-const ALLOWED_BUILDS = ['@swc/core', 'fsevents', 'sharp', 'unrs-resolver'];
 
 export const allowedBuildNames = (answers: Answers): string[] => {
   return uniq([...ALLOWED_BUILDS, ...targetFor(answers).allowBuilds]).sort((left, right) => {

@@ -6,7 +6,7 @@ import {
   type HostedFramework,
 } from '@answers';
 import { targetFor } from '@targets';
-import { OUTSIDE_TESTS } from '@targets/utils/frameworkUtils';
+import { OUTSIDE_TESTS } from '@targets/constants';
 
 import { emitted } from '../../utils/artifactUtils';
 

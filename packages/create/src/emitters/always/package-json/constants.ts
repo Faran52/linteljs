@@ -1,3 +1,6 @@
+import type { Router } from '@answers';
+import type { Framework } from '@config/types';
+
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
 // `catalog:` version in `pnpm-workspace.yaml`; `versions.test.ts` gates it.
 
@@ -128,3 +131,97 @@ export const VERSIONS: Record<string, string> = {
   'ts-pattern': '^5.9.0',
   'zustand': '^5.0.14',
 };
+
+// Superseded by @linteljs/eslint-config.
+export const SUPERSEDED = [
+  'prettier',
+  'eslint-config-prettier',
+  'eslint-plugin-prettier',
+  '@eslint/js',
+  'globals',
+  'typescript-eslint',
+  'eslint-plugin-react-refresh',
+  'oxlint',
+  // create-vue's two: one is only called from the replaced vite.config.ts, jsdom is not the chosen environment.
+  'vite-plugin-vue-devtools',
+  'jsdom',
+];
+
+export const SHARED_DEV_DEPENDENCIES = [
+  '@commitlint/cli',
+  '@commitlint/config-conventional',
+  // Declared: a scaffolder without its own copy fails tsc on "Cannot find type definition file for 'node'".
+  '@types/node',
+  'eslint',
+  '@linteljs/eslint-config',
+  'husky',
+  'lint-staged',
+  'stylelint',
+  'stylelint-config-recess-order',
+  'stylelint-config-standard',
+  'stylelint-order',
+];
+
+// Omitting @vitest/eslint-plugin fails the first `eslint .`, not the install.
+// `vite` is vitest's required peer; npm under `legacy-peer-deps` installs no peers, so it is named outright.
+export const RUNNER_DEV_DEPENDENCIES = [
+  '@vitest/coverage-v8',
+  '@vitest/eslint-plugin',
+  'happy-dom',
+  'vite',
+  'vitest',
+];
+
+export const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
+
+// A host with no framework installs nothing at runtime.
+export const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
+  'react': '@tanstack/react-query',
+  'next': '@tanstack/react-query',
+  'react-native': '@tanstack/react-query',
+  'vue': '@tanstack/vue-query',
+  'svelte': '@tanstack/svelte-query',
+  'solid': '@tanstack/solid-query',
+  'angular': '@tanstack/angular-query-experimental',
+};
+
+export const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
+  'react': '@tanstack/react-form',
+  'next': '@tanstack/react-form',
+  'react-native': '@tanstack/react-form',
+  'vue': '@tanstack/vue-form',
+  'svelte': '@tanstack/svelte-form',
+  'solid': '@tanstack/solid-form',
+  'angular': '@tanstack/angular-form',
+};
+
+export const ROUTER_DEPENDENCIES: Record<Router, string[]> = {
+  'react-router': ['react-router'],
+  'tanstack-router': ['@tanstack/react-router'],
+};
+
+export const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
+  'react-router': [],
+  'tanstack-router': ['@tanstack/router-plugin', '@tanstack/eslint-plugin-router'],
+};
+
+/**
+ * Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`,
+ * npm reads `allowScripts`. Yarn is absent because it runs install scripts by default and has nothing to approve.
+ *
+ * One list for all three, not a shared pair plus an npm-only pair. Measured with
+ * `pnpm --filter @linteljs/create collect:builds`, which installs the maximal dependency set of all seventeen target
+ * and hosted-framework combinations against pnpm and npm and reports what each would refuse to build:
+ *
+ * - `unrs-resolver` every target reaches, through `eslint-import-resolver-typescript`.
+ * - `fsevents` npm 12 refuses on eleven of the seventeen, as an optional dependency of the watchers in each tree.
+ *   npm 11 only warns, so it reports nothing and this entry looks dead on the version a project declares.
+ * - `sharp` and `@swc/core` no combination reaches, on either manager, and both stay. Measured: an allowance for a
+ *   package that is not installed is silent on pnpm and on npm 12, down to a name no registry has, so each costs a
+ *   line. Without them, the day something pulls one, a user's first install stops; with them, the next
+ *   `collect:builds` reports the change and nobody is interrupted. `create-next-app` writes
+ *   `ignoredBuiltDependencies: - sharp` into its own scaffold, which is the ecosystem saying a Next tree meets it.
+ *
+ * Add a name because that script reported it, or because it is obviously of this kind. Removing one buys nothing.
+ */
+export const ALLOWED_BUILDS = ['@swc/core', 'fsevents', 'sharp', 'unrs-resolver'];
