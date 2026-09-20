@@ -83,17 +83,6 @@ const specifierAt = (diagnostic: ts.Diagnostic): string => {
   return diagnostic.file?.text.slice(diagnostic.start ?? 0, (diagnostic.start ?? 0) + (diagnostic.length ?? 0)) ?? '';
 };
 
-/**
- * A starter referencing scaffolder output no `covers` names, which is the only case the record cannot answer. One
- * entry, and a second has to be added on purpose, which is the point: the alternative was a `declare module '*'`
- * that swallowed every typo in the tree.
- */
-const SCAFFOLDER_WRITES = new Set([
-  // `create-vue` writes `src/router/index.ts`, which no starter test covers, so no record field names it. The vue
-  // record says so in prose on `routeUnit`, and parsing that would be worse than this line.
-  'target/starter-source/vue/src/App.test.ts:./router',
-]);
-
 const withoutExtension = (path: string): string => {
   return path.replace(/\.[cm]?[jt]sx?$/, '');
 };
@@ -113,10 +102,6 @@ const resolvesElsewhere = (diagnostic: ts.Diagnostic): boolean => {
 
   const asset = (diagnostic.file?.fileName ?? '').split('assets/')[1] ?? '';
 
-  if (SCAFFOLDER_WRITES.has(`${asset}:${specifier}`)) {
-    return true;
-  }
-
   const destination = placed.get(asset);
   const target = asset.split('/')[2] ?? '';
 
@@ -126,8 +111,11 @@ const resolvesElsewhere = (diagnostic: ts.Diagnostic): boolean => {
 
   const wanted = withoutExtension(join(dirname(destination), specifier));
 
+  // A specifier naming a directory resolves to its `index`, which is how vue's suite reaches `src/router/`.
   return [...covered.get(target) ?? []].some((path) => {
-    return withoutExtension(path) === wanted;
+    const declared = withoutExtension(path);
+
+    return declared === wanted || declared === join(wanted, 'index');
   });
 };
 
@@ -232,18 +220,18 @@ const destinationsFor = (every: Answers[]): Map<string, string> => {
 };
 
 /**
- * Every module the official scaffolder writes that this record knows about, which is each starter test's `covers`.
- * A set per target rather than per asset: `src/App.tsx` is what `App.test.tsx` covers, and it is also what both of
- * react's routers import, so the question a relative import asks is whether the target writes it, not whether this
- * one file covers it.
+ * Every module the official scaffolder writes that this record knows about: each starter test's `covers`, and the
+ * `needs` beside it for anything else the suite imports. A set per target rather than per asset, because the
+ * question a relative import asks is whether the target writes that path, not whether this one file covers it:
+ * `src/App.tsx` is what `App.test.tsx` covers and also what both of react's routers import.
  */
 const scaffolded = (every: Answers[]): Set<string> => {
   const found = new Set<string>();
 
   for (const answers of every) {
     for (const artifact of starterSourceEmitter(answers)) {
-      if (artifact.requires !== undefined) {
-        found.add(artifact.requires);
+      for (const path of artifact.requires ?? []) {
+        found.add(path);
       }
     }
   }

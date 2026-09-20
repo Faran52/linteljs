@@ -30,8 +30,14 @@ export interface TsconfigPlugin {
 export interface StarterTest {
   // The path in the project, and the asset's own path under this target's starter tree. See `StarterFile`.
   target: string;
-  // Written only when this file exists.
+  // The module under test. Written only when this file exists.
   covers: string;
+  /**
+   * Anything else the suite imports that the official scaffolder writes, so it is skipped without those too. Vue's
+   * `App` suite is the case: it mounts through the real router rather than a stub, so `src/router/index.ts` has to
+   * be there even though the suite is not about it.
+   */
+  needs?: string[];
   // The browser whose spelling this is, where two of them fill one destination.
   variant?: Browser;
 }

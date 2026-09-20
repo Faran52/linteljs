@@ -23,7 +23,10 @@ export const artifactWriter = async (
   }
 
   // Skipped rather than failed: the example it covers is worth losing when a rearranged starter moved it.
-  if (artifact.requires !== undefined && !await exists(join(cwd, artifact.requires))) {
+  if (artifact.requires !== undefined
+    && !(await Promise.all(artifact.requires.map(async (path) => {
+      return await exists(join(cwd, path));
+    }))).every(Boolean)) {
     return false;
   }
 

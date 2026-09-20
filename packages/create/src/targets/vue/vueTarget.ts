@@ -48,6 +48,8 @@ export const vueTarget: TargetRecord = {
     {
       target: 'src/App.test.ts',
       covers: 'src/App.vue',
+      // `--router` is unconditional above, so `create-vue` always writes this; the suite imports it to mount for real.
+      needs: ['src/router/index.ts'],
     },
     {
       target: 'src/lib/store/counter.test.ts',

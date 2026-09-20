@@ -47,7 +47,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       artifacts.push({
         ...copied(test.target, sourceOf(target.id, test)),
         fresh: true,
-        requires: test.covers,
+        requires: [test.covers, ...test.needs ?? []],
       });
     }
   }

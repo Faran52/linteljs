@@ -45,7 +45,7 @@ export interface Artifact {
   // Fresh scaffolder output only. A project owns these from its first run, so a later one leaves them where they are.
   fresh?: true;
   // Written only when this path is already there: a starter test covering source the scaffolder may not have written.
-  requires?: string;
+  requires?: string[];
   /**
    * A merge `sync` may still delete, because the whole file exists only for the answer that asked for it.
    * `.claude/settings.json` is the case: it carries the project's own keys, and deselecting the host leaves a file

@@ -644,6 +644,6 @@ describe('the starter source', () => {
   it('names the file a starter test covers, so an absent one is skipped', () => {
     const test = find(seedFor({ target: 'webextension' }), 'src/counter.test.ts');
 
-    expect(test.requires).toBe('src/counter.ts');
+    expect(test.requires).toEqual(['src/counter.ts']);
   });
 });
