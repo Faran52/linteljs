@@ -3,7 +3,6 @@ export { type Plugin } from './agents/plugins/pluginsAnswer';
 export {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
-  CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
   LEGACY_CONFIG_PATH,
 } from './constants';
@@ -30,6 +29,5 @@ export {
   hasSurface,
   hasTests,
   rendersWithReact,
-  surfacesOf,
 } from './utils/answerUtils';
 export { parseLinteljsConfig } from './utils/configUtils';

@@ -1,8 +1,11 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import {
   directoriesIn,
+  entriesIn,
+  entryNameOf,
+  modulesIn,
   sourcesUnder,
   takenFromBarrel,
 } from '@mocks/ringShape';
@@ -12,38 +15,101 @@ import {
   it,
 } from 'vitest';
 
-interface Ring {
-  name: string;
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS } from '@answers';
+import { BUILD_EMITTERS, SEED_EMITTERS } from '@emitters/registry';
+import { TARGETS } from '@targets/registry';
+
+import { RINGS } from './rings';
+
+import type { AnswerRecord } from '@answers/types';
+import type { Ring } from './rings';
+
+interface RingShape {
+  name: Ring;
   /**
    * The suffix a subject's entry carries, keyed by the group that decides it. One `''` key is a ring with no group,
    * and an empty string is a ring with no one kind: `terminal/` holds an entrypoint and a questionnaire, so there is
    * nothing to suffix and the entry is named for its directory alone.
    */
   suffixes: Record<string, string>;
+  // The keys the subject listing is held against: `<group>/<name>` where those keys carry a group, else `<name>`.
+  registry?: () => string[];
+  // A ring read by path rather than by subject. It carries a barrel rule only where a barrel exists, which is neither.
+  files?: true;
 }
 
 interface Subject {
   ring: string;
+  group: string;
   name: string;
   path: string;
   entry: string;
+  // A registered subject is a value the registry names, so its entry exports it. An unregistered one is a module
+  // named for its directory and may export more than one thing: `pipeline/runs/sync/` plans and applies.
+  registered: boolean;
 }
 
+const srcDir = join(import.meta.dirname);
+
+// `utils/` holds what the ring shares and `e2e/` is the harness rather than the package. Neither is a group or a
+// subject, and neither is held to the shape below.
+const SHARED = new Set(['utils', 'e2e']);
+
+const kebab = (key: string): string => {
+  return key.replace(/([a-z])([A-Z])/gu, '$1-$2').toLowerCase();
+};
+
 /**
- * Every ring whose members are directories, and the suffix each one's entry takes. `emitters/` and `answers/` carry
- * their own `meta.test.ts` because each holds its registry against the same listing; these five have no registry to
- * hold, so the shape is all there is to check and one table states it once.
+ * Every ring, the suffix each one's entry takes, and the registry that has to name the same subjects. One table
+ * states the rule once, so a tenth ring is one row. `rings.ts` is the list it is held against.
  *
  * A ring is named for what its members are, or for the world it reaches when the world is the membership test. The
  * entry takes the singular of whatever names the kind, which is the ring where the ring has one and the group where
  * a group changes it.
  */
-const RINGS: Ring[] = [
+const SHAPES: RingShape[] = [
+  {
+    name: 'answers',
+    suffixes: {
+      agents: 'Answer',
+      libraries: 'Answer',
+      manager: 'Answer',
+      recorded: 'Answer',
+      target: 'Answer',
+      testing: 'Answer',
+      typesafety: 'Answer',
+    },
+    registry: () => {
+      return Object.keys(ANSWERS).map(kebab);
+    },
+  },
+  {
+    name: 'config',
+    suffixes: {},
+    files: true,
+  },
   {
     name: 'disk',
     suffixes: {
       read: 'Reader',
       write: 'Writer',
+    },
+  },
+  {
+    name: 'emitters',
+    suffixes: {
+      agents: 'Emitter',
+      always: 'Emitter',
+      libraries: 'Emitter',
+      manager: 'Emitter',
+      target: 'Emitter',
+      testing: 'Emitter',
+      typesafety: 'Emitter',
+    },
+    registry: () => {
+      return [...Object.keys(BUILD_EMITTERS), ...Object.keys(SEED_EMITTERS)];
     },
   },
   {
@@ -60,26 +126,22 @@ const RINGS: Ring[] = [
   {
     name: 'targets',
     suffixes: { '': 'Target' },
+    registry: () => {
+      return Object.keys(TARGETS);
+    },
   },
   {
     name: 'terminal',
     suffixes: { '': '' },
   },
+  {
+    name: 'utils',
+    suffixes: {},
+    files: true,
+  },
 ];
 
-const srcDir = join(import.meta.dirname);
-
-// `utils/` holds what the ring shares and `e2e/` is the harness rather than the package. Neither is a group or a
-// subject, and neither is held to the shape below.
-const SHARED = new Set(['utils', 'e2e']);
-
-const entryNameOf = (name: string, suffix: string): string => {
-  return `${name.replace(/-([a-z])/gu, (_match, letter: string) => {
-    return letter.toUpperCase();
-  })}${suffix}`;
-};
-
-const subjectsIn = (ring: Ring): Subject[] => {
+const subjectsIn = (ring: RingShape): Subject[] => {
   const ringDir = join(srcDir, ring.name);
 
   return Object.entries(ring.suffixes).flatMap(([group, suffix]) => {
@@ -90,32 +152,49 @@ const subjectsIn = (ring: Ring): Subject[] => {
     }).map((name) => {
       return {
         ring: ring.name,
+        group,
         name,
         path: join(groupDir, name),
         entry: entryNameOf(name, suffix),
+        registered: ring.registry !== undefined,
       };
     });
   });
 };
 
-const entriesIn = (path: string): string[] => {
-  return readdirSync(path);
+// A registry keyed by `<group>/<name>` says so in its own keys, so nothing has to declare which spelling it uses.
+const keyOf = (subject: Subject, registered: string[]): string => {
+  return registered.some((key) => {
+    return key.includes('/');
+  })
+    ? `${subject.group}/${subject.name}`
+    : subject.name;
 };
 
-const modulesIn = (path: string): string[] => {
-  return readdirSync(path, {
-    withFileTypes: true,
-    recursive: true,
-  }).filter((entry) => {
-    return entry.isFile();
-  }).map((entry) => {
-    return relative(path, join(entry.parentPath, entry.name));
-  });
-};
+const RINGED = SHAPES.filter((ring) => {
+  return ring.files === undefined;
+});
 
 const packageSources = sourcesUnder(srcDir);
 
-describe.each(RINGS)('$name', (ring) => {
+it('holds the same rings as rings.ts', () => {
+  expect(SHAPES.map((ring) => {
+    return ring.name;
+  })).toEqual([...RINGS].toSorted((left, right) => {
+    return left.localeCompare(right, 'en');
+  }));
+});
+
+describe.each(SHAPES.filter((ring) => {
+  return ring.files === true;
+}))('$name', (ring) => {
+  // Two files and one file, read by path. A directory here would be a subject, and a subject would need a registry.
+  it('holds no subject', () => {
+    expect(directoriesIn(join(srcDir, ring.name))).toEqual([]);
+  });
+});
+
+describe.each(RINGED)('$name', (ring) => {
   const ringDir = join(srcDir, ring.name);
 
   it('holds a subject somewhere, so the assertions below are not vacuous', () => {
@@ -124,7 +203,7 @@ describe.each(RINGS)('$name', (ring) => {
 
   /**
    * `index.ts` is the ring's public surface: the rings outside it reach it through the barrel rather than into a
-   * file. An export nothing out there reads is not a surface, it is a leftover.
+   * file. An export nothing out there reads is not a surface, it is a leftover, and four had accumulated.
    */
   it('exports nothing the rings outside it never take from it', () => {
     const barrel = readFileSync(join(ringDir, 'index.ts'), 'utf8');
@@ -136,6 +215,8 @@ describe.each(RINGS)('$name', (ring) => {
       return name !== '';
     });
 
+    expect(exported.length).toBeGreaterThan(0);
+
     const taken = takenFromBarrel(ringDir, ring.name);
 
     expect(exported.filter((name) => {
@@ -144,7 +225,35 @@ describe.each(RINGS)('$name', (ring) => {
   });
 });
 
-describe.each(RINGS.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
+describe.each(RINGED.filter((ring) => {
+  return ring.registry !== undefined;
+}))('$name registry', (ring) => {
+  const registered = ring.registry?.() ?? [];
+  const keys = subjectsIn(ring).map((subject) => {
+    return keyOf(subject, registered);
+  });
+
+  // Read off disk rather than probed, so a directory nobody registered is caught as well as the reverse.
+  it('names every subject directory', () => {
+    expect(keys.filter((key) => {
+      return !registered.includes(key);
+    })).toEqual([]);
+  });
+
+  it('names nothing that is not a subject directory', () => {
+    expect(registered.filter((key) => {
+      return !keys.includes(key);
+    })).toEqual([]);
+  });
+
+  it('holds exactly one subject per key', () => {
+    expect(keys.filter((key, index) => {
+      return keys.indexOf(key) !== index;
+    })).toEqual([]);
+  });
+});
+
+describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
   it('holds one entry, named for the directory', () => {
     expect(entriesIn(path)).toContain(`${entry}.ts`);
   });
@@ -158,6 +267,12 @@ describe.each(RINGS.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
    * One entry, its suite, a `constants.ts` for a table it alone owns, and a `utils/` for its private helpers.
    * Nothing else: a second module loose beside the entry is either a helper, in which case `utils/` is where the
    * `*Utils` suffix is enforced on it, or it is read from outside, in which case it is not this subject's.
+   *
+   * A `constants.ts` carries no suite of its own. Asserting a table equals itself proves nothing, and what is
+   * worth checking about one is always a fact about the code that reads it, which is where that assertion goes.
+   *
+   * One suite, too. A second file for part of a subject means a reader comparing the halves opens two, and the
+   * halves drift: two suites for `emitters/` each carried a helper called `targetsOf` doing different things.
    */
   it('holds nothing but its entry, its constants and a utils directory', () => {
     const allowed = new RegExp(`^(${entry}\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
@@ -189,6 +304,50 @@ describe.each(RINGS.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
       return packageSources.some((source) => {
         return !source.startsWith(path) && readFileSync(source, 'utf8').includes(specifier);
       });
+    })).toEqual([]);
+  });
+});
+
+/**
+ * A registered subject is a value its registry names, so the entry exports it under the entry's own name; a record
+ * annotates its type, so the character after the name is a colon as often as a space. An unregistered subject is a
+ * module named for its directory and may export more than one thing: `pipeline/runs/sync/` plans and applies.
+ */
+describe.each(RINGED.flatMap(subjectsIn).filter((subject) => {
+  return subject.registered;
+}))('$ring/$name', ({ path, entry }) => {
+  it('exports that entry under the same name', () => {
+    expect(readFileSync(join(path, `${entry}.ts`), 'utf8')).toMatch(new RegExp(`export const ${entry}[ :]`, 'u'));
+  });
+});
+
+// A file is written because its own emitter said so, so the assembler has no condition left to hold.
+it('leaves the emitter assembler nothing to branch on', () => {
+  expect(readFileSync(join(srcDir, 'emitters/registry.ts'), 'utf8')).not.toMatch(/\bif\s*\(/u);
+});
+
+describe('answers records', () => {
+  const keys = valuesOf(ANSWERS);
+  // Widened once: `flag` is optional on the base record, and reading it off the union of the seventeen is not.
+  const records: readonly AnswerRecord[] = keys.map((key) => {
+    return ANSWERS[key];
+  });
+
+  it('carries the registry key on the record itself', () => {
+    expect(keys.filter((key) => {
+      return ANSWERS[key].key !== key;
+    })).toEqual([]);
+  });
+
+  it('names each flag once', () => {
+    const flags = records.map((record) => {
+      return record.flag;
+    }).filter((flag): flag is string => {
+      return flag !== undefined;
+    });
+
+    expect(flags.filter((flag, index) => {
+      return flags.indexOf(flag) !== index;
     })).toEqual([]);
   });
 });
