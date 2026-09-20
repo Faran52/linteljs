@@ -5,22 +5,48 @@ import {
 } from 'vitest';
 
 import {
-  COMPONENT,
-  DECLARATION,
-  FOLDER,
-  FOLDER_ROUTED,
+  componentNaming,
+  scriptKeys,
+  sfcNaming,
 } from './namingUtils';
 
-// Globs are pinned character for character, measured against `micromatch@4.0.8` (what `check-file` matches with), so an
-// edit here is a policy change, not a refactor.
-describe('the measured globs', () => {
-  it('holds the component rule as the negative of camelCase', () => {
-    expect(COMPONENT).toBe('!([a-z]*[A-Z]*)');
+// The globs these compose are pinned character for character, measured against `micromatch@4.0.8`, which is what
+// `check-file` matches with, so an edit here is a policy change rather than a refactor.
+describe('scriptKeys', () => {
+  it('reaches every script under src/ where no route directory is named', () => {
+    expect(scriptKeys()).toStrictEqual({ 'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE' });
   });
 
-  it('holds declaration and folder rules', () => {
-    expect(DECLARATION).toBe('@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))');
-    expect(FOLDER).toBe('@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)');
-    expect(FOLDER_ROUTED).toBe(String.raw`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\[*\]|\(*\)|{*})`);
+  it('takes a second key for the file sitting directly in src/ where one is', () => {
+    expect(scriptKeys('app')).toStrictEqual({
+      'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    });
+  });
+});
+
+describe('componentNaming', () => {
+  it('names every tsx a component, every other script camelCase and every declaration file', () => {
+    expect(componentNaming()).toStrictEqual({
+      'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+    });
+  });
+
+  it('routes the script keys around the route directory it is given', () => {
+    expect(componentNaming('app')).toHaveProperty(['src/!(app)/**/!(*.d|*.test|*.spec).ts'], 'CAMEL_CASE');
+  });
+});
+
+describe('sfcNaming', () => {
+  it('marks the component by the framework extension it is given', () => {
+    expect(sfcNaming('vue')).toStrictEqual({
+      'src/**/*.vue': '!([a-z]*[A-Z]*)',
+      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+    });
+
+    expect(sfcNaming('svelte', 'routes')).toHaveProperty(['src/**/*.svelte'], '!([a-z]*[A-Z]*)');
   });
 });

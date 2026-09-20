@@ -2,6 +2,7 @@ import type { Library } from '@answers/libraries/libraries/librariesAnswer';
 import type { PackageManager } from '@answers/manager/package-manager/packageManagerAnswer';
 import type { Answers } from '@answers/registry';
 import type { Browser } from '@answers/target/browser/browserAnswer';
+import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
 import type { Router } from '@answers/target/router/routerAnswer';
 import type { TargetId } from '@answers/target/target/targetAnswer';
 import type {
@@ -96,6 +97,33 @@ export interface PluginSpec {
   calls: string[];
 }
 
+// What a host (the extension target, Astro) takes from a framework: the framework's own record is app-shaped, so
+// only the narrow set here is composed.
+export interface FrameworkParts {
+  // The layer name, the same string as the framework id.
+  framework: HostedFramework;
+  sfcExtension?: 'vue' | 'svelte';
+  // So a host's naming map marks components by extension rather than by directory.
+  componentGlob: string;
+  vitePlugin: PluginSpec;
+  // Not installed by a vanilla or Astro scaffold.
+  dependencies: string[];
+  // The layer's peers, plus the Vite plugin.
+  devDependencies: string[];
+  // Installed only with a suite.
+  testDevDependencies: string[];
+  // Svelte and Solid ship a server build that `mount()` cannot use.
+  testConditions?: string[];
+  // A build script the framework's own tree needs approved; a denied one fails with ERR_PNPM_IGNORED_BUILDS.
+  allowBuilds?: string[];
+  // Only Solid: `@types/react` already answers for React, and the SFC frameworks have no JSX to type.
+  jsxImportSource?: string;
+  // Absent for the SFC frameworks; a host with no framework has no `jsx` either.
+  jsx?: 'preserve' | 'react-jsx';
+  // Relative to `templates/fragments/claude-rules/`.
+  stateRules: string[];
+}
+
 // `label` lets Solid say "primitives" rather than "Hooks". Absent on Angular and the extension target.
 export interface HooksSlot {
   label: string;
@@ -172,7 +200,7 @@ export interface TargetRecord {
   hostsFramework?: true;
   ignores: string[];
   naming: NamingMap;
-  // A target whose routes are files needs `[slug]`/`(tabs)` admitted; both shapes live in `targets/naming`.
+  // A target whose routes are files needs `[slug]`/`(tabs)` admitted; both shapes live in `targets/constants`.
   folderNaming: NamingMap;
   hooksAlias?: AliasMap;
   // Merged at the tail of the lib family.

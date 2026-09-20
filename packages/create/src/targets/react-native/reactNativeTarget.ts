@@ -1,25 +1,9 @@
-import { isJsonObject } from '@utils/objectUtils';
+import { COMMON_REACT_PLUGINS, FOLDER_ROUTED } from '../constants';
+import { componentNaming } from '../utils/namingUtils';
 
-import { FOLDER_NAMING, NAMING } from '../naming';
-import { COMMON_REACT_PLUGINS, esmAssetImports } from '../utils/targetUtils';
+import { STARTER_FIXES, STARTER_RENAMES } from './constants';
 
 import type { TargetRecord } from '../types';
-
-interface ExpoExperiments {
-  reactCompiler?: boolean;
-}
-
-interface ExpoSection {
-  experiments?: ExpoExperiments;
-}
-
-interface AppConfig {
-  expo?: ExpoSection;
-}
-
-const isAppConfig = (value: unknown): value is AppConfig => {
-  return isJsonObject(value);
-};
 
 // `framework: 'react'` rather than its own layer: `eslint-plugin-react-native` caps at `eslint ^9` and
 // `eslint-config-expo` bundles plugins that collide with `base()`.
@@ -65,8 +49,8 @@ export const reactNativeTarget: TargetRecord = {
     'scripts/reset-project.js',
   ],
   // `src/app` stays exempt: expo-router resolves a route by its filename.
-  naming: NAMING['react-native'],
-  folderNaming: FOLDER_NAMING['react-native'],
+  naming: componentNaming('app'),
+  folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: { '@hooks/*': './src/hooks/*' },
   // Expo's starter imports through these in seventeen files; measured, dropping them costs thirty `no-unresolved`
   // findings. `@/assets/*` is separate because the assets sit outside `src/`.
@@ -140,197 +124,10 @@ export const reactNativeTarget: TargetRecord = {
       library: 'tailwind',
     },
   ],
-  // Nineteen findings survived Expo's template against the `--fix` pass; each is repaired below.
-  starterFixes: [
-    {
-      path: 'src/app/explore.tsx',
-      transform: esmAssetImports,
-    },
-    {
-      path: 'src/components/animated-icon.web.tsx',
-      transform: esmAssetImports,
-    },
-    {
-      path: 'src/components/app-tabs.tsx',
-      transform: esmAssetImports,
-    },
-    {
-      path: 'src/components/web-badge.tsx',
-      transform: esmAssetImports,
-    },
-    {
-      path: 'src/components/animated-icon.tsx',
-      // Keeps `finally`'s guarantee that the app reveals whether or not the splash screen hid.
-      transform: (source) => {
-        return esmAssetImports(source).replace(
-          `        SplashScreen.hideAsync().finally(() => {
-          setAnimate(true);
-        });`,
-          `        const reveal = async (): Promise<void> => {
-          try {
-            await SplashScreen.hideAsync();
-          }
-          finally {
-            setAnimate(true);
-          }
-        };
-
-        void reveal();`,
-        );
-      },
-    },
-    {
-      path: 'src/app/_layout.tsx',
-      transform: (source) => {
-        return source.replace(
-          'SplashScreen.preventAutoHideAsync();',
-          'void SplashScreen.preventAutoHideAsync();',
-        );
-      },
-    },
-    {
-      // `onPress` wants void back; nothing after the browser call needs its result.
-      path: 'src/components/external-link.tsx',
-      transform: (source) => {
-        return source
-          .replace('onPress={async (event) => {', 'onPress={(event) => {')
-          .replace(
-            `          await openBrowserAsync(href, {
-            presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
-          });`,
-            `          void openBrowserAsync(href, {
-            presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
-          });`,
-          );
-      },
-    },
-    {
-      // Vestigial: the component reads colours from `useTheme()`.
-      path: 'src/components/themed-view.tsx',
-      transform: (source) => {
-        return source
-          .replace(`  lightColor?: string;
-  darkColor?: string;
-`, '')
-          .replace(
-            'export function ThemedView({ style, lightColor, darkColor, type, ...otherProps }: ThemedViewProps) {',
-            'export function ThemedView({ style, type, ...otherProps }: ThemedViewProps) {',
-          );
-      },
-    },
-    {
-      // Hydration is an external system, so `useSyncExternalStore` answers it without a throwaway render.
-      path: 'src/hooks/use-color-scheme.web.ts',
-      transform: (source) => {
-        return source
-          .replace(
-            "import { useEffect, useState } from 'react';",
-            "import { useSyncExternalStore } from 'react';",
-          )
-          .replace(
-            `  const [hasHydrated, setHasHydrated] = useState(false);
-
-  useEffect(() => {
-    setHasHydrated(true);
-  }, []);`,
-            `  const hasHydrated = useSyncExternalStore(
-    () => {
-      return () => {
-        // Hydration happens once and never reverts, so there is nothing to unsubscribe from.
-      };
-    },
-    () => {
-      return true;
-    },
-    () => {
-      return false;
-    },
-  );`,
-          );
-      },
-    },
-    {
-      // Expo reads `experiments.reactCompiler` from app.json; the template is not guaranteed to write it, though
-      // sdk-57's does, which is usually what makes this a no-op.
-      path: 'app.json',
-      transform: (source: string): string => {
-        const config: unknown = JSON.parse(source);
-
-        if (!isAppConfig(config) || config.expo === undefined) {
-          return source;
-        }
-
-        config.expo.experiments = {
-          ...config.expo.experiments,
-          reactCompiler: true,
-        };
-
-        return `${JSON.stringify(config, null, 2)}\n`;
-      },
-      idempotent: true,
-    },
-  ],
+  starterFixes: STARTER_FIXES,
   // The one starter suite that cannot meet the strict floor; `record.ts` carries why.
   exemptsStarterTests: true,
-  // `src/app` is absent on purpose: renaming a route file renames the route.
-  starterRenames: [
-    {
-      from: 'src/components/animated-icon.tsx',
-      to: 'src/components/AnimatedIcon.tsx',
-    },
-    {
-      from: 'src/components/animated-icon.web.tsx',
-      to: 'src/components/AnimatedIcon.web.tsx',
-    },
-    {
-      from: 'src/components/animated-icon.module.css',
-      to: 'src/components/AnimatedIcon.module.css',
-    },
-    {
-      from: 'src/components/app-tabs.tsx',
-      to: 'src/components/AppTabs.tsx',
-    },
-    {
-      from: 'src/components/app-tabs.web.tsx',
-      to: 'src/components/AppTabs.web.tsx',
-    },
-    {
-      from: 'src/components/external-link.tsx',
-      to: 'src/components/ExternalLink.tsx',
-    },
-    {
-      from: 'src/components/hint-row.tsx',
-      to: 'src/components/HintRow.tsx',
-    },
-    {
-      from: 'src/components/themed-text.tsx',
-      to: 'src/components/ThemedText.tsx',
-    },
-    {
-      from: 'src/components/themed-view.tsx',
-      to: 'src/components/ThemedView.tsx',
-    },
-    {
-      from: 'src/components/web-badge.tsx',
-      to: 'src/components/WebBadge.tsx',
-    },
-    {
-      from: 'src/components/ui/collapsible.tsx',
-      to: 'src/components/ui/Collapsible.tsx',
-    },
-    {
-      from: 'src/hooks/use-color-scheme.ts',
-      to: 'src/hooks/useColorScheme.ts',
-    },
-    {
-      from: 'src/hooks/use-color-scheme.web.ts',
-      to: 'src/hooks/useColorScheme.web.ts',
-    },
-    {
-      from: 'src/hooks/use-theme.ts',
-      to: 'src/hooks/useTheme.ts',
-    },
-  ],
+  starterRenames: STARTER_RENAMES,
   /**
    * One suite per template module, since the gate is 100%; `.web` modules get their own suites because the web
    * variant resolves over the native one. Route suites sit beside `src/app/`, not inside it: expo-router treats every

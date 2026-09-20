@@ -1,6 +1,7 @@
 import { camelCase } from 'es-toolkit';
 
-import type { AliasMap } from '@config/types';
+import { ASSET_REQUIRE } from '../constants';
+
 import type { ScaffoldSpec } from '../types';
 
 // `--no-interactive` forces the piped behaviour; `--eslint` is React-only, since the default writes `.oxlintrc.json`.
@@ -27,17 +28,6 @@ export const tabsToSpaces = (source: string): string => {
     return indent.replaceAll('\t', '  ');
   });
 };
-
-export const HOOKS_ALIAS: AliasMap = { '@hooks/*': './src/lib/hooks/*' };
-
-// `jsx-a11y-x` is here because `react()` loads it, so every target composing that layer installs it.
-export const COMMON_REACT_PLUGINS = [
-  '@eslint-react/eslint-plugin',
-  'eslint-plugin-jsx-a11y-x',
-  'eslint-plugin-react-hooks',
-];
-
-const ASSET_REQUIRE = /require\('([^']+\.(?:png|jpe?g|gif|webp|avif|svg))'\)/g;
 
 // A legal identifier off the filename: `-` marks a hump, other illegal characters drop, a leading digit takes a prefix.
 const bindingFor = (path: string): string => {
