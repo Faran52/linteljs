@@ -69,10 +69,7 @@ export const claudeSettingsEmitter = (answers: Answers): Artifact[] => {
       }),
       removable: true,
     },
-    copied('plugins/linteljs/.claude-plugin/plugin.json', 'always/linteljs-plugin/.claude-plugin/plugin.json'),
-    copied(
-      'plugins/linteljs/.claude-plugin/marketplace.json',
-      'always/linteljs-plugin/.claude-plugin/marketplace.json',
-    ),
+    copied('plugins/linteljs/.claude-plugin/plugin.json'),
+    copied('plugins/linteljs/.claude-plugin/marketplace.json'),
   ];
 };

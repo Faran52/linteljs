@@ -5,7 +5,7 @@ paths:
 
 # Type and Code Standards
 
-`packages/create/assets/always/linteljs-plugin/claude-rules/type-standards.md` is the standard. It is the file this
+`packages/create/templates/fragments/claude-rules/type-standards.md` is the standard. It is the file this
 workspace publishes, so it is the file this workspace is held to: read it, not a copy of it. A
 second copy here is the drift `DESIGN.md` exists to argue against.
 
@@ -40,9 +40,9 @@ What follows is only where this repository differs, and why.
 
 `scripts/checkBannedPatterns.ts` is this repository's own copy of the floor it publishes, and it
 now runs here the same two ways it runs in a generated project: `lint-staged` on commit, and the
-`PostToolUse(Edit|Write)` hook at write time. `packages/create/assets/always/` holds the shipped
-original; the root copy governs this workspace, and its `PROJECT_SKIPPED` list is where this
-repository's exemptions live.
+`PostToolUse(Edit|Write)` hook at write time. `packages/create/templates/project/scripts/` holds
+the shipped original; the root copy governs this workspace, and its `PROJECT_SKIPPED` list is where
+this repository's exemptions live.
 
 It is a floor, not the standard. The rule file is the standard.
 
@@ -56,8 +56,8 @@ it is the upstream contract.
 | --- | --- |
 | `eslint-config/src/utils/presetUtils.ts` | `Extract<PluginConfig, { rules?: unknown }>` is a type-level wildcard picking the flat arm out of a union. No value is typed `unknown`, so there is nothing to narrow. |
 | `eslint-plugin/src/meta.test.ts` | `readJson` answers `Record<string, unknown>`, which is what a JSON file read back for comparison is, and `ruleIdsIn` narrows the `any` that `ESLint.calculateConfigForFile` returns. Both are the prose grant, and neither is a shape a regex can confirm. |
-| `create/assets/always/checkBannedPatterns.test.ts` | Holds banned directives as fixture strings. Directive patterns are `raw: true` by design, so a fixture cannot be told from a violation. Covered by `BASE_SKIPPED`, not listed. |
-| `create/assets/typesafety/custom-types/`, `create/assets/testing/test-setup/`, `create/assets/target/starter-source/` | Shipped template text, the same tree `eslint.config.ts` ignores. `typings/` is written against the relaxed floor on purpose; the React Native half is the tracked debt below. |
+| `create/templates/project/scripts/checkBannedPatterns.test.ts` | Holds banned directives as fixture strings. Directive patterns are `raw: true` by design, so a fixture cannot be told from a violation. Covered by `BASE_SKIPPED`, not listed. |
+| `create/templates/project/src/typings/`, `create/templates/fragments/test-setup/`, `create/templates/starter-source/` | Shipped template text, the same tree `eslint.config.ts` ignores. `typings/` is written against the relaxed floor on purpose; the React Native half is the tracked debt below. |
 
 A whole-file skip is coarser than these cases deserve, and it is the only granularity the checker
 offers. Adding a file here hides every future violation in it, so the list is worth re-reading
@@ -88,7 +88,7 @@ An earlier version of this section called all three shapes checker bugs. One was
 
 ### The React Native starter assets, and why they are exempted rather than rewritten
 
-`assets/testing/test-setup/setupTests.reactNative.ts` and twelve files under `assets/target/starter-source/react-native/` carry
+`templates/fragments/test-setup/setupTests.reactNative.ts` and twelve files under `templates/starter-source/react-native/` carry
 `: unknown` on a `ProxyHandler.get`, `Record<string, unknown>` on a `Platform.select` stand-in, and
 casts the standard bans outright. They are not sloppy: `ReactTestInstance.props` is an index
 signature of `any` and `Reflect.get` on a module namespace answers `any`, so those annotations are

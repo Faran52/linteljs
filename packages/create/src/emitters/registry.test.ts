@@ -30,7 +30,7 @@ import {
   type TypeSafety,
 } from '../answers';
 import { type Artifact } from '../config/types';
-import { ASSETS_ROOT, shippedAssetsReader } from '../disk';
+import { shippedAssetsReader, TEMPLATES_ROOT } from '../disk';
 import { valuesOf } from '../utils/objectUtils';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
@@ -209,7 +209,7 @@ describe('buildArtifacts', () => {
         // Only a copied artifact names files on disk.
         return 'sources' in artifact.content
           ? artifact.content.sources.map((source) => {
-              return access(join(ASSETS_ROOT, source), constants.R_OK);
+              return access(join(TEMPLATES_ROOT, source), constants.R_OK);
             })
           : [];
       }));
@@ -253,7 +253,7 @@ describe('buildArtifacts', () => {
       });
 
       await Promise.all([...new Set(sources)].map(async (source) => {
-        await access(join(ASSETS_ROOT, source), constants.R_OK);
+        await access(join(TEMPLATES_ROOT, source), constants.R_OK);
       }));
 
       expect(sources.length).toBeGreaterThan(0);
@@ -328,7 +328,7 @@ describe('the emitted checker against the emitted starter code', () => {
               return {
                 target: artifact.target,
                 read: async () => {
-                  return await readFile(join(ASSETS_ROOT, source), 'utf8');
+                  return await readFile(join(TEMPLATES_ROOT, source), 'utf8');
                 },
               };
             })
@@ -386,7 +386,7 @@ describe('the emitted checker against the emitted starter code', () => {
 
 // The setup is composed from a target source plus per-answer fragments.
 describe('the shipped test setup', () => {
-  const FRAGMENTS = ['testing/test-setup/setupTests.router.ts', 'testing/test-setup/setupTests.tanstackQuery.ts'];
+  const FRAGMENTS = ['fragments/test-setup/setupTests.router.ts', 'fragments/test-setup/setupTests.tanstackQuery.ts'];
 
   const setupFor = async (overrides: AnswerOverrides): Promise<string> => {
     return await textFor(overrides, setupTestsPath({
@@ -447,7 +447,7 @@ describe('the shipped test setup', () => {
 
   // An import in a fragment lands after the statements of the setup it follows.
   it.each(FRAGMENTS)('keeps %s import-free', async (fragment) => {
-    const text = await readFile(join(ASSETS_ROOT, fragment), 'utf8');
+    const text = await readFile(join(TEMPLATES_ROOT, fragment), 'utf8');
 
     expect(text).not.toMatch(/^import\s/mu);
   });
@@ -562,7 +562,7 @@ describe('the README', () => {
   it('is filled from the shipped template rather than emitted whole', () => {
     const readme = find(seedFor(), 'README.md');
 
-    expect(readme.content).toHaveProperty('sources', ['always/readme/template.md']);
+    expect(readme.content).toHaveProperty('sources', ['fragments/readme/template.md']);
   });
 
   // `--skip-scaffold` adopts a project whose README describes the toolchain the later stages replaced.

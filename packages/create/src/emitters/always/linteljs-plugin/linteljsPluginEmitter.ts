@@ -28,18 +28,18 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
     {
       name: 'type-standards.md',
       sources: [
-        'always/linteljs-plugin/claude-rules/type-standards.md',
-        ...(answers.typeSafety === 'relaxed' ? ['always/linteljs-plugin/claude-rules/type-standards.relaxed.md'] : []),
+        'fragments/claude-rules/type-standards.md',
+        ...(answers.typeSafety === 'relaxed' ? ['fragments/claude-rules/type-standards.relaxed.md'] : []),
       ],
     },
     {
       name: 'repo-structure.md',
-      sources: [`always/linteljs-plugin/claude-rules/repo-structure.${target.id}.md`],
+      sources: [`fragments/claude-rules/repo-structure.${target.id}.md`],
     },
     ...target.stateRules.map((rule) => {
       return {
         name: rule,
-        sources: [`always/linteljs-plugin/claude-rules/${rule}`],
+        sources: [`fragments/claude-rules/${rule}`],
       };
     }),
   ];
@@ -47,7 +47,7 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
   if (hasLibrary(answers, 'zod')) {
     rules.push({
       name: 'type-standards-zod.md',
-      sources: ['always/linteljs-plugin/claude-rules/type-standards-zod.md'],
+      sources: ['fragments/claude-rules/type-standards-zod.md'],
     });
   }
 
@@ -55,8 +55,8 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
     rules.push({
       name: 'testing.md',
       sources: [
-        `always/linteljs-plugin/claude-rules/testing.${target.id}.md`,
-        'always/linteljs-plugin/claude-rules/testing.standard.md',
+        `fragments/claude-rules/testing.${target.id}.md`,
+        'fragments/claude-rules/testing.standard.md',
       ],
     });
   }
@@ -82,16 +82,16 @@ export const referenceArtifacts = (answers: Answers): Artifact[] => {
 export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
   const hook = (name: string): Artifact => {
     return {
-      ...copied(`plugins/linteljs/hooks/${name}`, `always/linteljs-plugin/hooks/${name}`),
+      ...copied(`plugins/linteljs/hooks/${name}`),
       executable: true,
     };
   };
 
   return [
-    copied('plugins/linteljs/skills/linteljs/SKILL.md', 'always/linteljs-plugin/skills/linteljs/SKILL.md'),
+    copied('plugins/linteljs/skills/linteljs/SKILL.md'),
     ...referenceArtifacts(answers),
-    copied('plugins/linteljs/hooks/hooks.json', 'always/linteljs-plugin/hooks/hooks.json'),
-    copied('plugins/linteljs/hooks/commandParser.js', 'always/linteljs-plugin/hooks/commandParser.js'),
+    copied('plugins/linteljs/hooks/hooks.json'),
+    copied('plugins/linteljs/hooks/commandParser.js'),
     hook('eslint-fix-warning.sh'),
     hook('git-safety-guard.sh'),
     hook('banned-pattern-guard.sh'),

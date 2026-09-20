@@ -6,7 +6,7 @@
  * `files` list, a `bin` entry or an `exports` map that is wrong only once the tarball exists.
  *
  * The failure it exists for: `buildArtifacts` names every shipped file by string, and
- * `buildArtifacts.test.ts` resolves those names against the *workspace* `assets/`. What reaches a
+ * `buildArtifacts.test.ts` resolves those names against the *workspace* `templates/`. What reaches a
  * user is whatever `files` packed. An asset present in the repo and absent from the tarball passes
  * every test in this package and then dies in a generated project on "no such file or directory".
  */
@@ -103,26 +103,29 @@ assert.match(help, /@linteljs\/create sync/, '--help does not mention the sync c
 
 console.log('  ✓ binary runs from the tarball and documents its flags');
 
-// `assets/` beside `dist/`, which is what `assetsRootFrom` walks up to find. In the workspace it starts from
-// `src/files/` and here from the flattened `dist/`, so the published depth is only exercised by the packed layout.
+// `templates/` beside `dist/`, which is what `templatesRootFrom` walks up to find. In the workspace it starts from
+// `src/disk/` and here from the flattened `dist/`, so the published depth is only exercised by the packed layout.
 assert.ok(existsSync(join(pkgDir, 'dist', 'index.mjs')), 'no dist/index.mjs in the tarball');
-assert.ok(existsSync(join(pkgDir, 'assets')), 'no assets/ beside dist/ for the walk-up to find');
+assert.ok(existsSync(join(pkgDir, 'templates')), 'no templates/ beside dist/ for the walk-up to find');
 
 // The whole shipped tree, workspace against tarball. Stricter than enumerating targets: it needs
 // no answers to be right, and an asset added for a future target is covered the day it lands.
 console.log('• comparing the shipped asset tree against the tarball');
 
-const packed = new Set(filesUnder(join(pkgDir, 'assets')).map((file) => {
-  return relative(join(pkgDir, 'assets'), file);
+const packed = new Set(filesUnder(join(pkgDir, 'templates')).map((file) => {
+  return relative(join(pkgDir, 'templates'), file);
 }));
 
-// The one deliberate exclusion. Both `assets/**/*.test.ts` sit beside the script they spawn, a shipped asset with
-// no `src/` counterpart, and `files` negates them so a generated project inherits no test for a file it now owns.
-const excluded = /^scripts\/.*\.test\.ts$/;
+/**
+ * The one deliberate exclusion. Both `templates/project/scripts/*.test.ts` sit beside the script they spawn, a
+ * shipped asset with no `src/` counterpart, and `files` negates them so a generated project inherits no test for a
+ * file it now owns.
+ */
+const excluded = /^project\/scripts\/.*\.test\.ts$/;
 const missing = [];
 
-for (const file of filesUnder(join(root, 'assets'))) {
-  const name = relative(join(root, 'assets'), file);
+for (const file of filesUnder(join(root, 'templates'))) {
+  const name = relative(join(root, 'templates'), file);
 
   if (excluded.test(name)) {
     assert.ok(!packed.has(name), `${name} is excluded by \`files\` but reached the tarball`);

@@ -77,5 +77,5 @@ export const angularTarget: TargetRecord = {
   // `@angular/build` peers on vitest 4 while the gate runs vitest 5.
   peerAllowances: { '@angular/build>vitest': '5' },
   stateRules: [],
-  testSetup: 'testing/test-setup/setupTests.angular.ts',
+  testSetup: 'fragments/test-setup/setupTests.angular.ts',
 };

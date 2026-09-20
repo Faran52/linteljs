@@ -101,7 +101,7 @@ export const reactNativeTarget: TargetRecord = {
     'expo-router/ui': ['TabListProps', 'TabTriggerSlotProps'],
     '@/constants/theme': ['ThemeColor'],
   },
-  testSetup: 'testing/test-setup/setupTests.reactNative.ts',
+  testSetup: 'fragments/test-setup/setupTests.reactNative.ts',
   // Three modules exist only as `.web` variants; the extension lists mirror Metro's resolution order.
   testPlatforms: [
     {

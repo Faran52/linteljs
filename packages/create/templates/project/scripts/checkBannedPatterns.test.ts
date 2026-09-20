@@ -16,10 +16,10 @@ import {
   it,
 } from 'vitest';
 
-import { ASSETS_ROOT } from '../../../src/disk';
+import { TEMPLATES_ROOT } from '../../../src/disk';
 
 // Spawned rather than imported: it reads `argv` and calls `exit`, which would take the runner down with it.
-const CHECKER = join(ASSETS_ROOT, 'always/banned-patterns/checkBannedPatterns.ts');
+const CHECKER = join(TEMPLATES_ROOT, 'project/scripts/checkBannedPatterns.ts');
 
 let cwd = '';
 

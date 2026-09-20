@@ -17,7 +17,7 @@ describe('schemaFor', () => {
     const workspaceRoot = join(packageRoot, '../..');
     const [canonical, packaged] = await Promise.all([
       readFile(join(workspaceRoot, 'schemas/linteljs.config.v2.schema.json'), 'utf8'),
-      readFile(join(packageRoot, 'assets/schemas/linteljs.config.v2.schema.json'), 'utf8'),
+      readFile(join(packageRoot, 'templates/schemas/linteljs.config.v2.schema.json'), 'utf8'),
     ]);
 
     const generated = schemaFor(ANSWERS);

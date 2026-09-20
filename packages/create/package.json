@@ -46,8 +46,8 @@
   "files": [
     "bin",
     "dist",
-    "assets",
-    "!assets/always/*/*.test.ts",
+    "templates",
+    "!templates/project/scripts/*.test.ts",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"

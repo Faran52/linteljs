@@ -38,7 +38,7 @@ const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> =>
 describe('the asset a destination derives', () => {
   it('reads it straight off the destination where no answer gates the file', () => {
     expect(sourcesByTarget({ target: 'astro' })['src/lib/utils/formatDate.ts'])
-      .toBe('target/starter-source/astro/src/lib/utils/formatDate.ts');
+      .toBe('starter-source/astro/src/lib/utils/formatDate.ts');
   });
 
   // Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone.
@@ -51,7 +51,7 @@ describe('the asset a destination derives', () => {
       browser: browser as 'chrome' | 'firefox',
       surfaces: ['background'],
     })['src/background/index.ts'])
-      .toBe(`target/starter-source/webextension/${browser}/src/background/index.ts`);
+      .toBe(`starter-source/webextension/${browser}/src/background/index.ts`);
   });
 
   // Both routers replace the scaffolder's `main.tsx`, so the destination alone cannot say which file to copy.
@@ -63,7 +63,7 @@ describe('the asset a destination derives', () => {
       target: 'react',
       router: router as 'react-router' | 'tanstack-router',
     })['src/main.tsx'])
-      .toBe(`target/starter-source/react/${router}/src/main.tsx`);
+      .toBe(`starter-source/react/${router}/src/main.tsx`);
   });
 
   // A file a library gates ships only with it, and sits under that library's own directory.
@@ -72,7 +72,7 @@ describe('the asset a destination derives', () => {
       target: 'react-native',
       libraries: ['tailwind'],
     })['metro.config.js'])
-      .toBe('target/starter-source/react-native/tailwind/metro.config.js');
+      .toBe('starter-source/react-native/tailwind/metro.config.js');
   });
 
   it('writes nothing for a library that was not chosen', () => {

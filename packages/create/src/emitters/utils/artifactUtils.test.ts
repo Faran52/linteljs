@@ -4,7 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import { copied, emitted } from './artifactUtils';
+import {
+  copied,
+  emitted,
+  joined,
+} from './artifactUtils';
 
 describe('emitted', () => {
   it('carries the given stage and target with the text as its content', () => {
@@ -18,16 +22,34 @@ describe('emitted', () => {
 
 describe('copied', () => {
   it('always tags the artifact stage standard, regardless of what the caller runs at', () => {
-    expect(copied('.claude/settings.json', 'claude/settings.json')).toEqual({
+    expect(copied('.claude/settings.json')).toEqual({
       stage: 'standard',
       target: '.claude/settings.json',
-      content: { sources: ['claude/settings.json'] },
+      content: { sources: ['project/.claude/settings.json'] },
     });
   });
 
-  it('names a single source, ready for a second to be spread in by the caller', () => {
-    expect(copied('README.md', 'always/readme/template.md').content).toEqual({
-      sources: ['always/readme/template.md'],
+  it('reads a nested file from the same path under `project/` that it lands on', () => {
+    expect(copied('scripts/typecheckStaged.ts').content).toEqual({
+      sources: ['project/scripts/typecheckStaged.ts'],
+    });
+  });
+});
+
+describe('joined', () => {
+  it('keeps the given sources in the order it was handed them', () => {
+    expect(joined('src/setupTests.ts', [
+      'fragments/test-setup/setupTests.ts',
+      'fragments/test-setup/setupTests.router.ts',
+    ])).toEqual({
+      stage: 'standard',
+      target: 'src/setupTests.ts',
+      content: {
+        sources: [
+          'fragments/test-setup/setupTests.ts',
+          'fragments/test-setup/setupTests.router.ts',
+        ],
+      },
     });
   });
 });

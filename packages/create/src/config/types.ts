@@ -20,7 +20,7 @@ interface EmittedText {
   text: string;
 }
 
-// Files under `assets/`, concatenated in order.
+// Files under `templates/`, concatenated in order.
 interface CopiedAssets {
   sources: string[];
   // Depends on answers, not the file, and takes the project's own text (or `null`) for the checker.

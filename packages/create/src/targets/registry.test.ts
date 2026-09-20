@@ -16,7 +16,7 @@ import {
   type Surface,
   type TargetId,
 } from '../answers';
-import { ASSETS_ROOT } from '../disk';
+import { TEMPLATES_ROOT } from '../disk';
 import { buildDevDependencies } from '../emitters/always/package-json/packageJsonEmitter';
 import { valuesOf } from '../utils/objectUtils';
 
@@ -53,11 +53,11 @@ const assetPathsOf = (target: TargetRecord): string[] => {
   return [
     ...(target.testSetup === undefined ? [] : [target.testSetup]),
     ...target.stateRules.map((rule) => {
-      return `always/linteljs-plugin/claude-rules/${rule}`;
+      return `fragments/claude-rules/${rule}`;
     }),
     // `ruleArtifacts` derives both from the id, so a target added without them emits a path to nothing.
-    `always/linteljs-plugin/claude-rules/repo-structure.${target.id}.md`,
-    `always/linteljs-plugin/claude-rules/testing.${target.id}.md`,
+    `fragments/claude-rules/repo-structure.${target.id}.md`,
+    `fragments/claude-rules/testing.${target.id}.md`,
   ];
 };
 
@@ -138,7 +138,7 @@ describe('TARGETS', () => {
     // The whole list, so a run names every missing file at once.
     const missing = await Promise.all(paths.map(async (path) => {
       try {
-        await access(join(ASSETS_ROOT, path), constants.R_OK);
+        await access(join(TEMPLATES_ROOT, path), constants.R_OK);
 
         return '';
       }

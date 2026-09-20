@@ -6,7 +6,7 @@ import {
 } from '../../../answers';
 import { type Artifact } from '../../../config/types';
 import { targetFor } from '../../../targets';
-import { copied } from '../../utils/artifactUtils';
+import { joined } from '../../utils/artifactUtils';
 
 import type { StarterFile, StarterTest } from '../../../targets';
 
@@ -20,7 +20,7 @@ const sourceOf = (id: TargetId, file: StarterFile | StarterTest): string => {
     ?? ('library' in file ? file.library : undefined)
     ?? file.variant;
 
-  return ['target/starter-source', id, gate, file.target].filter(Boolean).join('/');
+  return ['starter-source', id, gate, file.target].filter(Boolean).join('/');
 };
 
 // Source no scaffolder wrote, and the tests that cover it. Birth only: a project owns its own source from its
@@ -35,7 +35,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       && (file.router === undefined || answers.router === file.router)
       && (file.tests === undefined || hasTests(answers))) {
       artifacts.push({
-        ...copied(file.target, sourceOf(target.id, file)),
+        ...joined(file.target, [sourceOf(target.id, file)]),
         fresh: true,
       });
     }
@@ -45,7 +45,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   if (hasTests(answers)) {
     for (const test of target.starterTests ?? []) {
       artifacts.push({
-        ...copied(test.target, sourceOf(target.id, test)),
+        ...joined(test.target, [sourceOf(target.id, test)]),
         fresh: true,
         requires: [test.covers, ...test.needs ?? []],
       });

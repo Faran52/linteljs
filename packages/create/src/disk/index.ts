@@ -5,8 +5,8 @@ export {
   STYLE_ENTRY_CANDIDATES,
 } from './read/project-shape/projectShapeReader';
 export {
-  ASSETS_ROOT,
   shippedAssetsReader,
+  TEMPLATES_ROOT,
 } from './read/shipped-assets/shippedAssetsReader';
 export {
   entryExists,

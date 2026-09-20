@@ -36,7 +36,7 @@ import type { Answers, TargetId } from '../packages/create/src/answers';
  * rules, so nothing reported here is an artefact of the omission; what is missed is missed silently, and the
  * end-to-end suite is still the only thing that runs the real gate.
  */
-const STARTERS = 'packages/create/assets/target/starter-source';
+const STARTERS = 'packages/create/templates/starter-source';
 
 /**
  * The one question a program answers and ESLint cannot: does every name and every relative import resolve?
@@ -100,10 +100,10 @@ const resolvesElsewhere = (diagnostic: ts.Diagnostic): boolean => {
     return true;
   }
 
-  const asset = (diagnostic.file?.fileName ?? '').split('assets/')[1] ?? '';
+  const asset = (diagnostic.file?.fileName ?? '').split('templates/')[1] ?? '';
 
   const destination = placed.get(asset);
-  const target = asset.split('/')[2] ?? '';
+  const target = asset.split('/')[1] ?? '';
 
   if (destination === undefined) {
     return false;
@@ -146,7 +146,7 @@ const diagnose = (files: string[], types: string[]): string[] => {
   return ts.getPreEmitDiagnostics(program).filter(reportable).map((diagnostic) => {
     const file = diagnostic.file?.fileName ?? '';
     const line = diagnostic.file?.getLineAndCharacterOfPosition(diagnostic.start ?? 0).line ?? 0;
-    const where = `${file.split('assets/')[1] ?? file}:${String(line + 1)}`;
+    const where = `${file.split('templates/')[1] ?? file}:${String(line + 1)}`;
 
     return `${where} TS${String(diagnostic.code)}  ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`;
   });
@@ -301,7 +301,7 @@ for (const target of targets) {
   });
 
   for (const path of filesIn(join(STARTERS, target))) {
-    const source = path.slice('packages/create/assets/'.length);
+    const source = path.slice('packages/create/templates/'.length);
     const destination = placed.get(source);
 
     if (destination === undefined) {

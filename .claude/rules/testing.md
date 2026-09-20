@@ -7,7 +7,7 @@ paths:
 
 # Testing Rules
 
-`packages/create/assets/always/linteljs-plugin/claude-rules/testing.standard.md` is the standard. Read it there rather
+`packages/create/templates/fragments/claude-rules/testing.standard.md` is the standard. Read it there rather
 than in a copy. The eight per-target `testing.*.md` heads do not apply: this workspace has no
 component framework and no DOM.
 

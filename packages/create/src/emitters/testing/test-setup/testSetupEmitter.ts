@@ -6,16 +6,16 @@ import {
 import { type Artifact, type ProjectShape } from '../../../config/types';
 import { targetFor } from '../../../targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
-import { copied } from '../../utils/artifactUtils';
+import { joined } from '../../utils/artifactUtils';
 
 import type { TargetRecord } from '../../../targets/types';
 
 // Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {
   return [
-    target.testSetup ?? 'testing/test-setup/setupTests.ts',
-    ...(target.routerMocks === true ? ['testing/test-setup/setupTests.router.ts'] : []),
-    ...(hasLibrary(answers, 'tanstack-query') ? ['testing/test-setup/setupTests.tanstackQuery.ts'] : []),
+    target.testSetup ?? 'fragments/test-setup/setupTests.ts',
+    ...(target.routerMocks === true ? ['fragments/test-setup/setupTests.router.ts'] : []),
+    ...(hasLibrary(answers, 'tanstack-query') ? ['fragments/test-setup/setupTests.tanstackQuery.ts'] : []),
   ];
 };
 
@@ -28,7 +28,7 @@ export const testSetupEmitter = (answers: Answers, project: ProjectShape): Artif
   const target = targetFor(answers);
 
   return [{
-    ...copied(setupTestsPath(answers, project.setupTests), ...setupSources(answers, target)),
+    ...joined(setupTestsPath(answers, project.setupTests), setupSources(answers, target)),
     preserve: true,
   }];
 };

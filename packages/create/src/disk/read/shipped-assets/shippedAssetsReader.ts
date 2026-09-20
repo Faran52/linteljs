@@ -5,18 +5,18 @@ import { fileURLToPath } from 'node:url';
 
 import type { ArtifactContent } from '../../../emitters';
 
-// Walks up to `assets/`: this module sits at `src/files/` in the workspace and at `dist/` once published.
-const assetsRootFrom = (start: string): string => {
+// Walks up to `templates/`: this module sits at `src/disk/` in the workspace and at `dist/` once published.
+const templatesRootFrom = (start: string): string => {
   let dir = start;
 
-  while (!existsSync(join(dir, 'assets')) && dir !== dirname(dir)) {
+  while (!existsSync(join(dir, 'templates')) && dir !== dirname(dir)) {
     dir = dirname(dir);
   }
 
-  return join(dir, 'assets');
+  return join(dir, 'templates');
 };
 
-export const ASSETS_ROOT = assetsRootFrom(dirname(fileURLToPath(import.meta.url)));
+export const TEMPLATES_ROOT = templatesRootFrom(dirname(fileURLToPath(import.meta.url)));
 
 // `pipeline` writes this text and `sync` compares against it, so the two never compose differently.
 export const shippedAssetsReader = async (
@@ -32,7 +32,7 @@ export const shippedAssetsReader = async (
   }
 
   const parts = await Promise.all(content.sources.map((source) => {
-    return readFile(join(ASSETS_ROOT, source), 'utf8');
+    return readFile(join(TEMPLATES_ROOT, source), 'utf8');
   }));
 
   const joined = parts.join('\n');

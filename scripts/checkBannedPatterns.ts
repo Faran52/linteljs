@@ -114,12 +114,12 @@ const PROJECT_SKIPPED: string[] = [
 
   // Shipped template text written against this floor, not to it: emitted for a `typeSafety: relaxed` project, where an
   // index signature and `=> unknown` are the point.
-  'packages/create/assets/typesafety/custom-types/',
+  'packages/create/templates/project/src/typings/',
 
   // React Native's mocks/starter tests carry `: unknown`/`Record<string, unknown>` a strict project's own checker would
   // block; tracked debt in type-standards.md, not a grant.
-  'packages/create/assets/testing/test-setup/',
-  'packages/create/assets/target/starter-source/',
+  'packages/create/templates/fragments/test-setup/',
+  'packages/create/templates/starter-source/',
 ];
 
 const patterns: BannedPattern[] = [...BANNED, ...PROJECT_BANNED];

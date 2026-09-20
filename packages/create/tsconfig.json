@@ -10,7 +10,7 @@
   "include": [
     "src/**/*.ts",
     "__mocks__/**/*.ts",
-    "assets/always/*/*.ts",
+    "templates/project/scripts/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts",
     "vitest.e2e.config.ts"
