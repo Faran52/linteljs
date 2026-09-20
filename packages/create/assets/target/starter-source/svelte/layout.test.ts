@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
+
+import { render, screen } from '@testing-library/svelte';
 
 import Layout from './+layout.svelte';
 

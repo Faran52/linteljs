@@ -1,9 +1,10 @@
+import { Text } from 'react-native';
+
 import {
   render,
   screen,
   userEvent,
 } from '@testing-library/react-native';
-import { Text } from 'react-native';
 import { openBrowserAsync } from 'expo-web-browser';
 
 import { ExternalLink } from './ExternalLink';

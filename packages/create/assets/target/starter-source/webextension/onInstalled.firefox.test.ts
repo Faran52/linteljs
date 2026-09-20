@@ -6,7 +6,10 @@ describe('onInstalled', () => {
       return undefined;
     });
 
-    onInstalled({ reason: 'install', temporary: false });
+    onInstalled({
+      reason: 'install',
+      temporary: false,
+    });
 
     expect(warn).toHaveBeenCalledWith('Extension installed.');
 
@@ -18,7 +21,11 @@ describe('onInstalled', () => {
       return undefined;
     });
 
-    onInstalled({ reason: 'update', previousVersion: '0.1.0', temporary: false });
+    onInstalled({
+      reason: 'update',
+      previousVersion: '0.1.0',
+      temporary: false,
+    });
 
     expect(warn).not.toHaveBeenCalled();
 
@@ -30,7 +37,10 @@ describe('onInstalled', () => {
       return undefined;
     });
 
-    onInstalled({ reason: 'install', temporary: true });
+    onInstalled({
+      reason: 'install',
+      temporary: true,
+    });
 
     expect(warn).toHaveBeenCalledWith('Extension installed.');
 

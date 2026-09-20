@@ -1,9 +1,15 @@
-import { render, screen } from '@testing-library/react-native';
 import { type ReactNode } from 'react';
+
+import { render, screen } from '@testing-library/react-native';
+
+import AppTabs from './AppTabs';
 
 import { Colors } from '@/constants/theme';
 
-import AppTabs from './AppTabs';
+// Named because the standard this project is held to has no inline object types, mock components included.
+interface ChildrenProps {
+  children?: ReactNode;
+}
 
 const { mockScheme } = vi.hoisted(() => {
   return { mockScheme: vi.fn() };
@@ -21,16 +27,19 @@ vi.mock('react-native', async () => {
 
 vi.mock('expo-router/unstable-native-tabs', async () => {
   const { View, Text } = await vi.importActual<typeof import('react-native')>('react-native');
-  const NativeTabs = ({ children, ...rest }: { children?: ReactNode }) => {
+  const NativeTabs = ({
+    children,
+    ...rest
+  }: ChildrenProps) => {
     return <View testID="native-tabs" {...rest}>{children}</View>;
   };
 
   NativeTabs.Trigger = Object.assign(
-    ({ children }: { children?: ReactNode }) => {
+    ({ children }: ChildrenProps) => {
       return <View>{children}</View>;
     },
     {
-      Label: ({ children }: { children?: ReactNode }) => {
+      Label: ({ children }: ChildrenProps) => {
         return <Text>{children}</Text>;
       },
       Icon: () => {

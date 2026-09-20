@@ -1,18 +1,21 @@
-import type { PressableProps, PressableStateCallbackType } from 'react-native';
-
 import {
   render,
   screen,
   userEvent,
 } from '@testing-library/react-native';
 
-import { ThemedText } from '@/components/ThemedText';
-
 import { Collapsible } from './Collapsible';
+
+import type { PressableProps, PressableStateCallbackType } from 'react-native';
+
+import { ThemedText } from '@/components/ThemedText';
 
 vi.mock('react-native', async () => {
   const actual = await vi.importActual<typeof import('react-native')>('react-native');
-  const held: PressableStateCallbackType = { pressed: true, hovered: false };
+  const held: PressableStateCallbackType = {
+    pressed: true,
+    hovered: false,
+  };
   const Pressable = (props: PressableProps) => {
     if (typeof props.style === 'function') {
       props.style(held);

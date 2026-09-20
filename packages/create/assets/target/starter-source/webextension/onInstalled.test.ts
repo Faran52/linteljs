@@ -18,7 +18,10 @@ describe('onInstalled', () => {
       return undefined;
     });
 
-    onInstalled({ reason: 'update', previousVersion: '0.1.0' });
+    onInstalled({
+      reason: 'update',
+      previousVersion: '0.1.0',
+    });
 
     expect(warn).not.toHaveBeenCalled();
 

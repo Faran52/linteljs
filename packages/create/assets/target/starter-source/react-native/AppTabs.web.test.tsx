@@ -1,17 +1,31 @@
-import type { PressableProps, PressableStateCallbackType } from 'react-native';
+import { type ReactNode } from 'react';
 
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 
 import AppTabs, { CustomTabList, TabButton } from './AppTabs.web';
 
+import type { PressableProps, PressableStateCallbackType } from 'react-native';
+
+// Named because the standard this project is held to has no inline object types, mock components included.
+interface ChildrenProps {
+  children?: ReactNode;
+}
+
 const { mockScheme } = vi.hoisted(() => {
-  return { mockScheme: vi.fn(() => 'light') };
+  return {
+    mockScheme: vi.fn(() => {
+      return 'light';
+    }),
+  };
 });
 
 vi.mock('react-native', async () => {
   const actual = await vi.importActual<typeof import('react-native')>('react-native');
 
-  const held: PressableStateCallbackType = { pressed: true, hovered: false };
+  const held: PressableStateCallbackType = {
+    pressed: true,
+    hovered: false,
+  };
   const Pressable = (props: PressableProps) => {
     if (typeof props.style === 'function') {
       props.style(held);
@@ -33,7 +47,7 @@ vi.mock('react-native', async () => {
 
 vi.mock('expo-router/ui', async () => {
   const { View } = await vi.importActual<typeof import('react-native')>('react-native');
-  const passthrough = ({ children }: { children?: React.ReactNode }) => {
+  const passthrough = ({ children }: ChildrenProps) => {
     return <View>{children}</View>;
   };
 
@@ -50,7 +64,11 @@ vi.mock('expo-router/ui', async () => {
 vi.mock('./ExternalLink', async () => {
   const { Text } = await vi.importActual<typeof import('react-native')>('react-native');
 
-  return { ExternalLink: ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text> };
+  return {
+    ExternalLink: ({ children }: ChildrenProps) => {
+      return <Text>{children}</Text>;
+    },
+  };
 });
 
 describe('AppTabs (web)', () => {

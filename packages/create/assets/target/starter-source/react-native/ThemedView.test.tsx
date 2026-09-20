@@ -1,9 +1,16 @@
-import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+
+import { render, screen } from '@testing-library/react-native';
+
+import { ThemedView } from './ThemedView';
 
 import { Colors } from '@/constants/theme';
 
-import { ThemedView } from './ThemedView';
+// Named because the standard this project is held to has no inline object types. `props` is an index signature of
+// `any`, so the cast stays; only its shape gets a name.
+interface StyledProps {
+  style: unknown;
+}
 
 vi.mock('@/hooks/useTheme', async () => {
   const { Colors } = await vi.importActual<typeof import('@/constants/theme')>('@/constants/theme');
@@ -16,7 +23,7 @@ vi.mock('@/hooks/useTheme', async () => {
 });
 
 const styleOf = (testID: string): Record<string, unknown> => {
-  const { style } = screen.getByTestId(testID).props as { style: unknown };
+  const { style } = screen.getByTestId(testID).props as StyledProps;
 
   return StyleSheet.flatten(style) as Record<string, unknown>;
 };

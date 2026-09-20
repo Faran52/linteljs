@@ -3,6 +3,12 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedIcon, AnimatedSplashOverlay } from './AnimatedIcon';
 
+// Named because the standard this project is held to has no inline object types. `props` is an index signature of
+// `any`, so the cast stays; only its shape gets a name.
+interface LaidOutProps {
+  onLayout: () => Promise<void>;
+}
+
 describe('AnimatedIcon', () => {
   it('renders the logo, its glow and the backdrop', async () => {
     const view = await render(<AnimatedIcon />);
@@ -23,7 +29,7 @@ describe('AnimatedSplashOverlay', () => {
         throw new Error('the overlay rendered nothing to lay out');
       }
 
-      const { onLayout } = root.props as { onLayout: () => Promise<void> };
+      const { onLayout } = root.props as LaidOutProps;
 
       await onLayout();
     });

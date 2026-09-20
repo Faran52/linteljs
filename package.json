@@ -12,12 +12,14 @@
     "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"packages/*/src/**/*.css\" --allow-empty-input",
     "lint:types": "node scripts/lintTypes.ts",
+    "lint:starters": "jiti scripts/lintStarters.ts",
+    "lint:starters:fix": "jiti scripts/lintStarters.ts --fix",
     "typecheck": "tsc --noEmit -p tsconfig.root.json && pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "build": "pnpm -r build",
-    "check": "pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build",
+    "check": "pnpm lint && pnpm lint:types && pnpm lint:starters && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build",
     "prepare": "husky"
   },
   "devDependencies": {

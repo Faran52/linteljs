@@ -1,7 +1,18 @@
-import { render, screen } from '@testing-library/react-native';
 import { type ReactNode } from 'react';
 
+import { render, screen } from '@testing-library/react-native';
+
 import TabLayout from './app/_layout';
+
+// Named because the standard this project is held to has no inline object types, mock components included.
+interface ThemeValue {
+  dark: boolean;
+}
+
+interface ThemeProviderProps {
+  children?: ReactNode;
+  value: ThemeValue;
+}
 
 const { mockScheme } = vi.hoisted(() => {
   return { mockScheme: vi.fn() };
@@ -23,7 +34,7 @@ vi.mock('expo-router', async () => {
   return {
     DarkTheme: { dark: true },
     DefaultTheme: { dark: false },
-    ThemeProvider: ({ children, value }: { children?: ReactNode; value: { dark: boolean } }) => {
+    ThemeProvider: ({ children, value }: ThemeProviderProps) => {
       return <View testID="theme" accessibilityLabel={value.dark ? 'dark' : 'light'}>{children}</View>;
     },
   };
@@ -32,13 +43,22 @@ vi.mock('expo-router', async () => {
 vi.mock('@/components/AppTabs', async () => {
   const { Text } = await vi.importActual<typeof import('react-native')>('react-native');
 
-  return { __esModule: true, default: () => <Text>tabs</Text> };
+  return {
+    __esModule: true,
+    default: () => {
+      return <Text>tabs</Text>;
+    },
+  };
 });
 
 vi.mock('@/components/AnimatedIcon', async () => {
   const { Text } = await vi.importActual<typeof import('react-native')>('react-native');
 
-  return { AnimatedSplashOverlay: () => <Text>splash</Text> };
+  return {
+    AnimatedSplashOverlay: () => {
+      return <Text>splash</Text>;
+    },
+  };
 });
 
 describe('TabLayout', () => {

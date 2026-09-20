@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react-native';
 
+import { useTheme } from './useTheme';
+
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-import { useTheme } from './useTheme';
 
 vi.mock('@/hooks/useColorScheme', () => {
   return { useColorScheme: vi.fn() };
