@@ -46,6 +46,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
   const chosen: T[] = [];
 
   while (uncovered.size > 0) {
+    // The running best of the greedy: absent until some case gains a pair, which the first pass always does.
     const best = cases.reduce<Leader<T>>((leader, item) => {
       const gain = pairsOf(item.answers).filter((pair) => {
         return uncovered.has(pair);

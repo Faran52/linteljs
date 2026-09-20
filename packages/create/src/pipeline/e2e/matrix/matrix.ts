@@ -1,9 +1,6 @@
 import { env } from 'node:process';
 
-import { valuesOf } from '@utils/objectUtils';
-
 import {
-  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Form,
@@ -14,6 +11,21 @@ import {
 } from '@answers';
 import { targetFor } from '@targets';
 
+import {
+  AGENTS,
+  BROWSERS,
+  FORMS,
+  HOSTED_FRAMEWORKS,
+  LIBRARIES,
+  PACKAGE_MANAGERS,
+  PLUGINS,
+  SHARD,
+  SHARDS,
+  SURFACES,
+  TARGET_IDS,
+  TESTING_CHOICES,
+  TYPE_SAFETY_CHOICES,
+} from './constants';
 import { coveringSubset } from './utils/pairwiseUtils';
 
 import type { Framework } from '@config/types';
@@ -38,18 +50,6 @@ export interface E2eCase {
  *
  * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
  */
-// The running best of the greedy: absent until some case gains a pair, which the first pass always does.
-const AGENTS = valuesOf(ANSWERS.agents.values);
-const BROWSERS = valuesOf(ANSWERS.browser.values);
-const FORMS = valuesOf(ANSWERS.form.values);
-const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
-const LIBRARIES = valuesOf(ANSWERS.libraries.values);
-const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
-const PLUGINS = valuesOf(ANSWERS.plugins.values);
-const SURFACES = valuesOf(ANSWERS.surfaces.values);
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
-const TESTING_CHOICES = valuesOf(ANSWERS.testing.values);
-const TYPE_SAFETY_CHOICES = valuesOf(ANSWERS.typeSafety.values);
 
 /**
  * Two families, and between them every answer this CLI can be given.
@@ -246,18 +246,6 @@ const ALL_CASES: E2eCase[] = TARGET_IDS.flatMap((target) => {
     return fresh;
   });
 });
-
-/**
- * A stride rather than a slice, and over every target's cases rather than over the files: each shard then holds an
- * even share of every target, so a shard is never the one that drew React Native and Angular. Vitest's own `--shard`
- * splits by file, which cannot balance nine files holding 12 to 92 cases each.
- *
- * Every shard is its own machine in `e2e.yml`, so every shard starts its own registry on the same port. Two on one
- * machine would collide, which `requireFreePort` refuses by design: local parallelism is `maxConcurrency` inside one
- * process against one registry, not several processes against several.
- */
-const SHARD = Number(env['E2E_SHARD'] ?? '1');
-const SHARDS = Number(env['E2E_SHARDS'] ?? '1');
 
 /**
  * The ceiling is the smallest target's case count, below which a shard could draw nothing from that file at all and

@@ -4,6 +4,8 @@ import { env } from 'node:process';
 
 import { inject } from 'vitest';
 
+import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
+
 import type { PackageManager } from '@answers';
 
 export interface RunResult {
@@ -13,9 +15,6 @@ export interface RunResult {
 
 // The registry every case installs through, published by `registrySetup` before any of them run.
 export const registry = inject('registry');
-
-// Every manager, and every scaffolder and install the CLI spawns, reads the workspace registry from its environment.
-const LAUNCHER_KEYS = new Set(['npm_execpath', 'npm_node_execpath', 'npm_config_user_agent']);
 
 export const run = async (command: string, args: string[], cwd: string): Promise<RunResult> => {
   /**
@@ -110,18 +109,6 @@ export const run = async (command: string, args: string[], cwd: string): Promise
 // Folds the exit status into the asserted value, so a failure prints the process output.
 export const outcome = (result: RunResult, label: string): string => {
   return result.status === 0 ? `${label}: ok` : `${label}: exit ${String(result.status)}\n${result.output}`;
-};
-
-// `why` and a script name, spelled the way each manager wants them.
-const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
-  pnpm: {},
-  yarn: {},
-  npm: {
-    why: ['ls'],
-    lint: ['run', 'lint'],
-    check: ['run', 'check'],
-  },
-  bun: { why: ['pm', 'ls', '--all'] },
 };
 
 export const runPm = async (pm: PackageManager, args: string[], project: string): Promise<RunResult> => {

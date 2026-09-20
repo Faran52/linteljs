@@ -4,7 +4,6 @@ import {
   spawnSync,
 } from 'node:child_process';
 import {
-  existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -12,10 +11,18 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createServer } from 'node:net';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
+
+import {
+  CACHE_DIR,
+  PORT,
+  ROOT,
+  RUN_DIR,
+  WORKSPACE_MANIFESTS,
+} from './constants';
 
 import type { TestProject } from 'vitest/node';
 
@@ -40,48 +47,6 @@ declare module 'vitest' {
     registry: E2eRegistry;
   }
 }
-
-/**
- * Walked up to `pnpm-workspace.yaml` rather than counted in `..`. A fixed depth was silently wrong the moment this
- * file moved one directory, and nothing caught it: the end-to-end suite is the only thing that reads `ROOT` and it
- * is excluded from `pnpm check`, so the next gate to run it was CI.
- */
-const workspaceRootFrom = (from: string): string => {
-  let directory = from;
-
-  while (!existsSync(join(directory, 'pnpm-workspace.yaml'))) {
-    const parent = dirname(directory);
-
-    if (parent === directory) {
-      throw new Error(`No pnpm-workspace.yaml above ${from}`);
-    }
-
-    directory = parent;
-  }
-
-  return directory;
-};
-
-const ROOT = workspaceRootFrom(import.meta.dirname);
-
-/**
- * One registry for a run, on a fixed port. Sharding is a stride over the cases inside one process (`cases.ts`), and
- * every shard in `e2e.yml` is its own machine, so two registries never want the same machine at once. Fixed rather
- * than chosen freshly because Yarn caches package metadata globally, tarball URLs included, and Verdaccio answers its
- * conditional request with 304 whenever upstream is unchanged: a port that moved between runs is a dead tarball host.
- *
- * This is also what makes bun usable. `bunx` and `bun create` resolve a scaffolder against whatever registry they
- * find and got `ConnectionRefused` whenever a second port existed on the same machine, which is the only reason the
- * suite was ever documented as CI-shards-only.
- */
-const PORT = 48730;
-
-// Wiped at the start of every run: anything recording which versions exist rather than what bytes they hold.
-const RUN_DIR = join(ROOT, '.e2e');
-
-// Never wiped, and outside `RUN_DIR`. A package manager's cache records the registry a tarball came from, which the
-// fixed port above keeps valid between runs, so every download survives to the next one.
-const CACHE_DIR = join(ROOT, '.e2e-cache');
 
 /**
  * bun's cache is the one that cannot tell "these bytes" from "these versions exist", so the suite used to throw the
@@ -156,10 +121,6 @@ const check = (command: string, args: string[], cwd: string): void => {
     throw new Error(`${command} ${args.join(' ')} exited ${String(result.status)}\n${result.stdout}${result.stderr}`);
   }
 };
-
-const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin'].map((name) => {
-  return join(ROOT, 'packages', name, 'package.json');
-});
 
 const createVersion = (): string => {
   const { version } = parsePackageJson(readFileSync(join(ROOT, 'packages/create/package.json'), 'utf8'));

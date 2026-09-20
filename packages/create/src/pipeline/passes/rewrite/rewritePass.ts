@@ -5,13 +5,14 @@ import { targetFor } from '@targets';
 
 import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
+import {
+  DOM_LOOKUP_ASSERTION,
+  HOISTED_LOOKUP,
+  IMPORT_CLAUSE,
+  RELATIVE_TS_IMPORT,
+} from './constants';
+
 import type { Answers } from '@answers';
-
-// `.d.ts` extensions are part of their specifier.
-const RELATIVE_TS_IMPORT
-  = /(\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(['"])(\.{1,2}\/[^'"\n]*?)(?<!\.d)\.[cm]?tsx?\2/g;
-
-const IMPORT_CLAUSE = /import\s+\{([^}]*)\}\s+from\s+(['"])([^'"]+)\2/g;
 
 // Rather than enabling the bundler-only tsconfig escape hatch.
 export const stripTsExtensions = (source: string): string => {
@@ -38,18 +39,6 @@ export const markTypeOnlyImports = (
     return `import {${rewritten.join(',')}} from ${quote}${module}${quote}`;
   });
 };
-
-// Literal `document` lookups only.
-const DOM_LOOKUP_ASSERTION
-  = /document\.(getElementById|querySelector)(<[^>]+>)?\((['"])([^'"]+)\3\)!/g;
-
-const HOISTED_LOOKUP = new RegExp(
-  [
-    '^([ \\t]*)const\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*',
-    'document\\.(?:getElementById|querySelector)\\(([\'"])([^\'"]+)\\3\\);?[ \\t]*$',
-  ].join(''),
-  'm',
-);
 
 const asSelector = (method: string, argument: string): string => {
   return method === 'getElementById' ? `#${argument}` : argument;
