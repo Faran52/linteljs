@@ -71,6 +71,7 @@
     "es-toolkit": "^1.52.0"
   },
   "devDependencies": {
+    "@linteljs/eslint-config": "workspace:*",
     "jiti": "catalog:"
   }
 }

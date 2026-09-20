@@ -254,6 +254,9 @@ importers:
         specifier: ^1.52.0
         version: 1.52.0
     devDependencies:
+      '@linteljs/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       jiti:
         specifier: 'catalog:'
         version: 2.7.0

@@ -1272,7 +1272,9 @@ directory listing, not a structure.
 The gain is that `src/config/` now carries no suite at all. Its three test files moved with the
 functions they covered, and what is left is tables: asserting one equals itself proves nothing, and
 what is worth checking about a table is a fact about the code that reads it, which is where that
-assertion already lives.
+assertion already lives. `src/types.test.ts` pins the types this package redeclares from
+`@linteljs/eslint-config` equal to that package's own, and sits at the package root rather than here
+because it is a fact about two packages rather than about this folder's data.
 
 `ArrowFunctionExpression`, `FunctionDeclaration` and `FunctionExpression`, not `TSFunctionType`. A
 function *type* is part of the vocabulary and stays: `Emitter`, `MergedText.merge` and

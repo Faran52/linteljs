@@ -115,5 +115,4 @@ export interface DefineConfigOptions {
   resolver?: ResolverOptions;
 }
 
-// `AliasMap`, `NamingMap`, `Framework`, `LibraryLayer`, `ResolverOptions` and `DefineConfigOptions` mirror
-// `@linteljs/eslint-config/src/types.ts`, redeclared not imported so `@linteljs/create` installs before it.
+// Redeclared, not imported: this package installs before eslint-config publishes. `src/types.test.ts` pins them equal.
