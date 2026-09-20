@@ -11,7 +11,7 @@ import { defineConfig } from 'vitest/config';
  * matters is per target rather than per file.
  *
  * Sharding is `E2E_SHARD`/`E2E_SHARDS`, read in `matrix.ts`, not vitest's own `--shard`. Vitest
- * splits by file, and the nine files hold 11 to 91 cases each, so a file split cannot balance
+ * splits by file, and one file holds every target, so a file split cannot balance
  * them; the stride in `matrix.ts` gives every shard an even share of every target. `e2e.yml` runs
  * four, one machine each.
  */

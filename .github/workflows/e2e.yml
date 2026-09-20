@@ -18,8 +18,8 @@ concurrency:
 
 jobs:
   generate:
-    # Four shards, one runner each, and the split is `cases.ts`'s stride rather than vitest's own
-    # `--shard`. Vitest splits by file, and the nine files hold 11 to 91 cases; a stride over the
+    # Four shards, one runner each, and the split is `matrix.ts`'s stride rather than vitest's own
+    # `--shard`. Vitest splits by file, and one file holds every target; a stride over the
     # ordered case list hands every shard an even share of every target, so no shard is the one
     # that drew React Native and Angular. Measured even: 82/82/82/81.
     #

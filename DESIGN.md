@@ -920,7 +920,7 @@ an extension is submitted to addons.mozilla.org, which is not a reason to instal
 
 ## The end-to-end matrix: two families, not one cross product
 
-Every answer this CLI can be given is covered, and it costs 98 cases rather than 1200. `cases.ts`
+Every answer this CLI can be given is covered, and it costs 98 cases rather than 1200. `matrix.ts`
 enumerates them; nothing is listed by hand. Two families get it to 327, and covering every *pair* of
 answers rather than every combination gets it to 98.
 
@@ -985,7 +985,7 @@ stride over the result and a case that moved between runs would move between sha
 
 What this gives up is three-way interactions, the kind that only appear when a hosted framework, a
 testing answer and a type floor coincide. `E2E_FULL=1` runs the cross product for a pre-release
-sweep, which is one branch rather than a second generator. `cases.test.ts` pins both halves: that no
+sweep, which is one branch rather than a second generator. `matrix.test.ts` pins both halves: that no
 reachable pair is lost, and that the combination behind each defect above still appears.
 
 ### One registry on a fixed port, and the bun failure that made it necessary
@@ -1007,7 +1007,7 @@ a dead host.
 
 ### Sharding is a stride over the cases, not vitest's `--shard`
 
-Vitest splits by file. The nine files hold 11 to 91 cases each, so a file split cannot balance them.
+Vitest splits by file, and one file holds every target, so a file split cannot balance anything.
 `E2E_SHARD`/`E2E_SHARDS` take every Nth case from the ordered list instead, which hands each shard an
 even share of every target: no shard is the one that drew React Native and Angular together. Measured
 at four shards: 82, 82, 82, 81.
