@@ -1,5 +1,4 @@
 import {
-  existsSync,
   readdirSync,
   readFileSync,
   writeFileSync,
@@ -40,15 +39,6 @@ import type { Answers, TargetId } from '../packages/create/src/answers';
 const STARTERS = 'packages/create/assets/target/starter-source';
 
 /**
- * What a generated project gives a starter that the starter does not import. Read off disk and handed to the program
- * under a virtual path: as a real `.d.ts` it was picked up by typescript-eslint's project service for files outside
- * every tsconfig and broke their resolution, so it exists nowhere any other tool can find it.
- */
-const GLOBALS = 'scripts/starters/globals.dts';
-
-const VIRTUAL_GLOBALS = 'starterGlobals.d.ts';
-
-/**
  * The one question a program answers and ESLint cannot: does every name and every relative import resolve?
  * `no-undef` would be the cheaper lever and is the wrong one, because typescript-eslint turns it off on the grounds
  * that `tsc` does this job, and for this tree no `tsc` runs.
@@ -69,14 +59,17 @@ const UNRESOLVED = new Set([
 ]);
 
 /**
- * Which ambient packages a program gets, which is what a generated project's own `tsconfig` decides. The two
- * extension type packages are mutually exclusive, so the tree is checked as three programs rather than one: the
- * browser each half is written for, and everything else.
+ * Which ambient packages a program gets, which is what a generated project's own `tsconfig` decides. Every one is
+ * the real package, installed as gate machinery, so nothing about a global is declared by hand here: `vitest/globals`
+ * is what `globals: true` gives a project, and the two extension packages are what its `types` names.
+ *
+ * Three programs rather than one because `@types/chrome` and `@types/firefox-webext-browser` are mutually exclusive,
+ * which is the same reason a project only ever installs one of them.
  */
 const SCOPES: [string, string[]][] = [
-  [`${STARTERS}/webextension/chrome`, ['chrome']],
-  [`${STARTERS}/webextension/firefox`, ['firefox-webext-browser']],
-  ['', ['react']],
+  [`${STARTERS}/webextension/chrome`, ['chrome', 'vitest/globals']],
+  [`${STARTERS}/webextension/firefox`, ['firefox-webext-browser', 'vitest/globals']],
+  ['', ['react', 'vitest/globals']],
 ];
 
 const scopeOf = (file: string): string => {
@@ -91,15 +84,13 @@ const specifierAt = (diagnostic: ts.Diagnostic): string => {
 };
 
 /**
- * A starter referencing scaffolder output the record has no word for. `covers` names the one module a starter test
- * is about; these three reach a second one, so they are listed rather than inferred. A fourth has to be added on
- * purpose, which is the point: the alternative was a `declare module '*'` that swallowed every typo in the tree.
+ * A starter referencing scaffolder output no `covers` names, which is the only case the record cannot answer. One
+ * entry, and a second has to be added on purpose, which is the point: the alternative was a `declare module '*'`
+ * that swallowed every typo in the tree.
  */
 const SCAFFOLDER_WRITES = new Set([
-  // `create-vite` writes `src/App.tsx`; both routers import it into the route they add.
-  'target/starter-source/react/react-router/src/routes/router.tsx:../App',
-  'target/starter-source/react/tanstack-router/src/routes/index.tsx:../App',
-  // `create-vue` writes `src/router/index.ts`; the App suite mounts through it, and covers `src/App.vue`.
+  // `create-vue` writes `src/router/index.ts`, which no starter test covers, so no record field names it. The vue
+  // record says so in prose on `routeUnit`, and parsing that would be worse than this line.
   'target/starter-source/vue/src/App.test.ts:./router',
 ]);
 
@@ -127,13 +118,17 @@ const resolvesElsewhere = (diagnostic: ts.Diagnostic): boolean => {
   }
 
   const destination = placed.get(asset);
-  const requires = covered.get(asset);
+  const target = asset.split('/')[2] ?? '';
 
-  if (destination === undefined || requires === undefined) {
+  if (destination === undefined) {
     return false;
   }
 
-  return withoutExtension(join(dirname(destination), specifier)) === withoutExtension(requires);
+  const wanted = withoutExtension(join(dirname(destination), specifier));
+
+  return [...covered.get(target) ?? []].some((path) => {
+    return withoutExtension(path) === wanted;
+  });
 };
 
 const reportable = (diagnostic: ts.Diagnostic): boolean => {
@@ -158,21 +153,7 @@ const diagnose = (files: string[], types: string[]): string[] => {
     lib: ['lib.esnext.d.ts', 'lib.dom.d.ts'],
   };
 
-  const host = ts.createCompilerHost(options, true);
-  const readDirectly = host.getSourceFile.bind(host);
-  const globals = readFileSync(GLOBALS, 'utf8');
-
-  host.fileExists = (path) => {
-    return path === VIRTUAL_GLOBALS || existsSync(path);
-  };
-
-  host.getSourceFile = (path, language, onError, shouldCreate) => {
-    return path === VIRTUAL_GLOBALS
-      ? ts.createSourceFile(path, globals, language, true, ts.ScriptKind.TS)
-      : readDirectly(path, language, onError, shouldCreate);
-  };
-
-  const program = ts.createProgram([...files, VIRTUAL_GLOBALS], options, host);
+  const program = ts.createProgram(files, options);
 
   return ts.getPreEmitDiagnostics(program).filter(reportable).map((diagnostic) => {
     const file = diagnostic.file?.fileName ?? '';
@@ -251,19 +232,18 @@ const destinationsFor = (every: Answers[]): Map<string, string> => {
 };
 
 /**
- * The module a starter test covers, which the official scaffolder writes and this repo deliberately does not own.
- * Keyed by the asset doing the importing, so an unresolved relative import is waved through for exactly the one path
- * the record says is not ours, and is a finding for every other. `requires` on the artifact is that path.
+ * Every module the official scaffolder writes that this record knows about, which is each starter test's `covers`.
+ * A set per target rather than per asset: `src/App.tsx` is what `App.test.tsx` covers, and it is also what both of
+ * react's routers import, so the question a relative import asks is whether the target writes it, not whether this
+ * one file covers it.
  */
-const scaffolded = (every: Answers[]): Map<string, string> => {
-  const found = new Map<string, string>();
+const scaffolded = (every: Answers[]): Set<string> => {
+  const found = new Set<string>();
 
   for (const answers of every) {
     for (const artifact of starterSourceEmitter(answers)) {
-      if ('sources' in artifact.content && artifact.requires !== undefined) {
-        for (const source of artifact.content.sources) {
-          found.set(source, artifact.requires);
-        }
+      if (artifact.requires !== undefined) {
+        found.add(artifact.requires);
       }
     }
   }
@@ -299,16 +279,14 @@ const unplaced: string[] = [];
 
 // `<asset> -> <destination>` and `<asset> -> <the module the scaffolder writes>`, over every target at once.
 const placed = new Map<string, string>();
-const covered = new Map<string, string>();
+const covered = new Map<string, Set<string>>();
 
 for (const target of targets) {
   for (const [source, destination] of destinationsFor(widestFor(target))) {
     placed.set(source, destination);
   }
 
-  for (const [source, requires] of scaffolded(widestFor(target))) {
-    covered.set(source, requires);
-  }
+  covered.set(target, scaffolded(widestFor(target)));
 }
 
 for (const target of targets) {
