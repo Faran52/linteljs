@@ -361,7 +361,7 @@ file lives.
 
 ### The shipped starter source, and the one gate that reads it
 
-`assets/target/starter-source/**` was the one tree nothing in `pnpm check` touched: outside every
+`templates/starter-source/**` was the one tree nothing in `pnpm check` touched: outside every
 `tsconfig` include, ignored by the root `eslint.config.ts`, and outside the vitest include, so its
 suites never ran here. Fifty-one script files shipped to every generated project with no gate but
 the end-to-end suite, which `check` excludes because every case hits the network.
@@ -407,29 +407,19 @@ project receives.
 What is still missed is anything needing the real framework types, a wrong argument or a bad return.
 The end-to-end suite remains the only thing that runs that gate.
 
-### `assets/` is classified by its consumer
+### `templates/` is laid out as the destination
 
-Ten directories named on three different axes: the tool (`husky/`, `npm/`, `schemas/`, `scripts/`),
-the role in the destination (`claude-rules/`, `readme/`, `starter/`, `mocks/`, `typings/`), and the
-product (`linteljs-plugin/`), with two config files loose at the root. Nothing said which axis was
-the real one, so a new asset had no obvious home.
+Four siblings: `project/` is the tree a generated project receives, `starter-source/` the per-target
+starters, `fragments/` the pieces joined into one file, and `schemas/` the mirror of the repository's
+own, published under a raw GitHub URL rather than copied into any project and pinned to it by
+`answers/utils/schemaUtils.test.ts`. `copied(target)` derives the source from where the file lands,
+so a shipped file is spelled once instead of twice; a fragment has no destination of its own, so it
+keeps an explicit list. The layout before this classified an asset by the emitter that read it,
+which meant reading `emitters/` to learn what the path could have said.
 
-Every directory was traced to what reads it, and the answer was already the rule: each is read by
-exactly one emitter subject. So an asset sits under the group of the answer that decides whether it
-is copied and the subject of the emitter that copies it, and the emitter and the bytes it ships
-share a path. `mocks/` was the one split, because `setupTests.*` is read by `testing/test-setup`
-while `renderScreen.tsx` is a starter file on the React Native record.
-
-`schemas/` is the exception and stays at the root: it is a mirror of the repository's own
-`schemas/`, published under a raw GitHub URL rather than copied into any project, and
-`answers/utils/schemaUtils.test.ts` pins the two copies together.
-
-The move is only safe because every asset path is a string. The invariant was mechanical: collect
-every literal in `src/` that resolves to a file under `assets/`, move, rewrite, and collect again.
-79 before and 79 after. What that check could not see is the difference between a source and a
-target, and a blanket rewrite got it wrong once: `scripts/checkBannedPatterns.ts` is where the
-checker *lands* in a generated project and had to stay, while the `sources:` beside it had to move.
-The suite caught it, and a real `--skip-scaffold` run is what confirmed the fix.
+The move was safe because every asset path is a string and because it was measured: a hash of the
+content and flags of every artifact of every end-to-end case, 5220 of them across 98 cases, taken
+before and after. It did not move.
 
 ## Project structure
 
@@ -1159,8 +1149,8 @@ cycle, an unawaited promise, and an SFC pair. Linting them at the workspace leve
 defect each one exists to trigger, and the `.vue` and `.svelte` pair cannot parse at all without
 the layers those tests compose and the workspace config does not.
 
-`assets/testing/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts` beside it,
-`assets/target/starter-source/react-native/renderScreen.tsx` and `assets/target/starter-source/**`
+`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts` beside it,
+`templates/starter-source/react-native/__mocks__/renderScreen.tsx` and `templates/starter-source/**`
 are shipped source, copied to disk by the CLI and never imported here. Each imports the framework it is written for, and none of those is
 installed in this workspace, so every import is unresolvable and every call through one untyped.
 They are data here and code only in a generated project, where that project's own `eslint .` judges
@@ -1210,7 +1200,8 @@ an inner ring importing it is a cycle, which `import-x/no-cycle` in `base` alrea
 
 It lives in the workspace config rather than a layer because the ring names are this package's, not
 the standard's. It is scoped to source: a test arranges and asserts across rings by nature, and
-policing its imports protects nothing.
+policing its imports protects nothing. The zones are built from `packages/create/src/rings.ts`, the
+one list of the rings and their direction, so a tenth ring is a line there rather than an edit here.
 
 ### `@linteljs/workspace/create-worlds`
 
@@ -1236,6 +1227,10 @@ direction is one way, since nothing in `files/` spawns. Sync on purpose, because
 
 `pipeline/e2e/` is exempt. It is the harness rather than the package, and spawning real package
 managers is the whole of what it does.
+
+The patterns and the exemptions are built from `WORLDS` in `packages/create/src/rings.ts`: a ring is
+exempt from the world it owns, which is three of them, and `pipeline/e2e/` besides. `pipeline/` owns
+no world, so only its harness is exempt and the rest of the ring is held like any inner ring.
 
 ### `@linteljs/workspace/no-compat`
 

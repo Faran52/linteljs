@@ -3,9 +3,19 @@
  * needs a build first; jiti loads this TypeScript config. Every exemption below names its DESIGN.md heading
  * under "Workspace lint exemptions", which holds the measurement that earned it; one without is one to delete.
  */
+import {
+  INNER_RINGS,
+  MIDDLE_RINGS,
+  OUTER_RINGS,
+  WORLDS,
+} from './packages/create/src/rings';
 import base from './packages/eslint-config/src/base';
 import typescript from './packages/eslint-config/src/typescript';
 import vitest from './packages/eslint-config/src/vitest';
+
+const ring = (name: string): string => {
+  return `packages/create/src/${name}`;
+};
 
 const config = [
   /**
@@ -60,29 +70,13 @@ const config = [
       'import-x/no-restricted-paths': ['error', {
         zones: [
           {
-            target: [
-              'packages/create/src/answers',
-              'packages/create/src/config',
-              'packages/create/src/targets',
-              'packages/create/src/utils',
-            ],
-            from: [
-              'packages/create/src/emitters',
-              'packages/create/src/disk',
-              'packages/create/src/pipeline',
-              'packages/create/src/spawns',
-              'packages/create/src/terminal',
-            ],
+            target: INNER_RINGS.map(ring),
+            from: [...MIDDLE_RINGS, ...OUTER_RINGS].map(ring),
             message: 'answers/, config/, targets/ and utils/ are the innermost rings. None reaches outward.',
           },
           {
-            target: 'packages/create/src/emitters',
-            from: [
-              'packages/create/src/disk',
-              'packages/create/src/pipeline',
-              'packages/create/src/spawns',
-              'packages/create/src/terminal',
-            ],
+            target: MIDDLE_RINGS.map(ring),
+            from: OUTER_RINGS.map(ring),
             message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
           },
         ],
@@ -122,9 +116,10 @@ const config = [
     name: '@linteljs/workspace/create-worlds',
     files: ['packages/create/src/**'],
     ignores: [
-      'packages/create/src/terminal/**',
-      'packages/create/src/disk/**',
-      'packages/create/src/spawns/**',
+      // The three rings that own a world, and nothing else: `pipeline/` owns none, so only its harness is exempt.
+      ...Object.keys(WORLDS).map((name) => {
+        return `${ring(name)}/**`;
+      }),
       'packages/create/src/pipeline/e2e/**',
       '**/*.test.ts',
     ],
@@ -135,18 +130,7 @@ const config = [
             group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
             message: 'The strict entry or the standard library. /compat is the lodash build.',
           },
-          {
-            group: ['node:fs', 'node:fs/*'],
-            message: 'The filesystem lives in disk/. Reach it through the disk/ barrel.',
-          },
-          {
-            group: ['node:child_process'],
-            message: 'Spawning lives in spawns/.',
-          },
-          {
-            group: ['node:process', '@clack/*'],
-            message: 'argv and the terminal live in terminal/.',
-          },
+          ...Object.values(WORLDS),
         ],
       }],
     },

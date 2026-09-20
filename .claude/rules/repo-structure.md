@@ -6,7 +6,7 @@ paths:
 
 # Repository Structure
 
-`packages/create/assets/always/linteljs-plugin/claude-rules/repo-structure.library.md` is the standard. It is the file this
+`packages/create/templates/fragments/claude-rules/repo-structure.library.md` is the standard. It is the file this
 workspace publishes, so it is the file this workspace is held to: read it, not a copy of it. A second
 copy here is the drift `DESIGN.md` exists to argue against.
 
@@ -58,6 +58,8 @@ aliases it duplicates instead of importing carry a comment saying so.
   root `eslint.config.ts` enforces it, with `pipeline/e2e/` exempt because the harness spawns real
   package managers on purpose. `spawns/` reaches `disk/` for `isExecutableFile` and never the
   reverse: finding a binary on `PATH` is a filesystem fact only a spawner asks for.
+  `packages/create/src/rings.ts` is the one list of the rings and their direction; the root
+  `eslint.config.ts` builds its zones from it and `src/meta.test.ts` holds the tree to it.
 
 - **Every ring has the same shape, and a suite holds it.** `emitters/` and `answers/` each carry
   their own `meta.test.ts` because each also holds a registry against the same listing; the other
@@ -177,8 +179,10 @@ aliases it duplicates instead of importing carry a comment saying so.
   `scripts/smoke.js` resolves against the packed tarball. `config/globs.ts` holds the extension
   tables six of them read: a table several modules share is not a helper, so it is not in `utils/`.
 
-- **`create/assets/` sits outside `src/`** and mirrors the artifact folder names. The standard puts
-  only `typings/` outside. The shipped templates cannot live under `src/`: twelve are TypeScript, one
+- **`create/templates/` sits outside `src/`** and is laid out as the project it lands in:
+  `project/` is the tree a generated project receives, `starter-source/` the per-target starters,
+  `fragments/` the pieces joined into one file, and `schemas/` the published mirror of the
+  repository's own. The standard puts only `typings/` outside. The shipped templates cannot live under `src/`: twelve are TypeScript, one
   imports `@angular/*` this workspace does not install, and eight are named `*.test.ts`, so tsconfig,
   vitest, coverage and eslint would each need telling that source is not source.
 
@@ -193,7 +197,7 @@ Both are the standard's own stated exceptions; these are the files that take the
 
 - `__mocks__/` at package root, aliased `@mocks/*`. `eslint-config/__mocks__/fixtures/` holds the
   deliberately defective input its layer tests lint.
-- `packages/create/assets/always/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
+- `packages/create/templates/project/scripts/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
   beside the scripts they spawn. `package.json` excludes them from the packed tarball.
 
 Three files in `eslint-plugin` are named for what they cover rather than for one source file, which

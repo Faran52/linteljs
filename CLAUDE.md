@@ -61,6 +61,8 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
   module belongs to is decided by the world it reaches into rather than by judgement: `node:fs`
   means `disk/`, `node:child_process` means `spawns/`, argv and the terminal mean `terminal/`,
   enforced by `no-restricted-imports` in the same file. The emitters stay free of `switch (target)`.
+  `packages/create/src/rings.ts` is the one list of the rings and their direction; the root
+  `eslint.config.ts` builds its zones from it and `src/meta.test.ts` holds the tree to it.
 - **Every ring has the same shape, and `src/meta.test.ts` holds the five that carry no registry.** A
   ring is named for what its members are, or for the world it reaches when the world is the
   membership test. A subject is a kebab-case directory holding one entry named for it in camelCase,
@@ -85,13 +87,13 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
   `create` run plants and `sync` never touches: the recorded config, the README, the manifest and
   the starter source. `pipeline/passes/` is the one exception and a different operation, editing source a
   scaffolder already wrote.
-- `packages/create/assets/`: files copied onto disk in a generated project, not imported. The
-  standard this repo publishes lives here. Classified the way `emitters/` is and for the same
-  reason: an asset sits under the group of the answer that decides whether it is copied, and under
-  the subject of the emitter that copies it, so `always/husky/pre-commit` is what
-  `emitters/always/husky/` writes. `schemas/` is the one exception, a mirror of the repository's own
-  `schemas/` published under a raw URL rather than copied anywhere, which
-  `answers/utils/schemaUtils.test.ts` holds against it.
+- `packages/create/templates/`: files copied onto disk in a generated project, not imported. The
+  standard this repo publishes lives here. Laid out as the destination rather than by consumer, in
+  four siblings: `project/` is the tree a project receives, so `copied('lint-staged.config.js')`
+  derives its source from where the file lands; `starter-source/` holds the per-target starters;
+  `fragments/` holds the pieces joined into one file, which have no destination of their own and so
+  keep an explicit list; `schemas/` is a mirror of the repository's own `schemas/` published under a
+  raw URL rather than copied anywhere, which `answers/utils/schemaUtils.test.ts` holds against it.
 - `packages/eslint-config/src/`: the layers, flat because each file is a tsdown entry backing a
   published `exports` subpath. `base` is shared, `typescript` turns the program on, `frameworks/`
   and `libraries/` add their own, `config/` holds the glob tables several layers read.
@@ -110,7 +112,7 @@ cross product with `E2E_FULL=1`; `DESIGN.md` carries why those exist rather than
 
 ## The standard this repo holds itself to
 
-The rule files under `packages/create/assets/always/linteljs-plugin/claude-rules/` are the published standard.
+The rule files under `packages/create/templates/fragments/claude-rules/` are the published standard.
 `.claude/rules/` adopts the three that apply to a workspace of libraries and records where this
 repo differs: `type-standards.md`, `testing.md` and `repo-structure.md`. Read them before writing
 code here. The per-target rule files do not apply, because this is not one of the nine targets: a
