@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type HostedFramework = keyof typeof hostedFramework.values;
+export type HostedFramework = keyof typeof hostedFrameworkAnswer.values;
 
-export const hostedFramework = {
+export const hostedFrameworkAnswer = {
   key: 'hostedFramework',
   flag: 'hosted',
   prompt: 'UI framework',

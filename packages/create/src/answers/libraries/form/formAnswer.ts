@@ -1,10 +1,10 @@
-import { rendersWithReact } from '../utils/answerUtils';
+import { rendersWithReact } from '../../utils/answerUtils';
 
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type Form = keyof typeof form.values;
+export type Form = keyof typeof formAnswer.values;
 
-export const form = {
+export const formAnswer = {
   key: 'form',
   flag: 'form',
   prompt: 'Form library',

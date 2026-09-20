@@ -1,5 +1,5 @@
-export { type Agent } from './agents/agents';
-export { type Plugin } from './agents/plugins';
+export { type Agent } from './agents/agents/agentsAnswer';
+export { type Plugin } from './agents/plugins/pluginsAnswer';
 export {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -7,9 +7,9 @@ export {
   CURRENT_SCHEMA_VERSION,
   LEGACY_CONFIG_PATH,
 } from './constants';
-export { type Form } from './libraries/form';
-export { type Library } from './libraries/libraries';
-export { type PackageManager } from './manager/packageManager';
+export { type Form } from './libraries/form/formAnswer';
+export { type Library } from './libraries/libraries/librariesAnswer';
+export { type PackageManager } from './manager/package-manager/packageManagerAnswer';
 export {
   type AnswerKey,
   ANSWERS,
@@ -17,13 +17,13 @@ export {
   DEFAULT_ANSWERS,
   type LinteljsConfig,
 } from './registry';
-export { type Browser } from './target/browser';
-export { type HostedFramework } from './target/hostedFramework';
-export { type Router } from './target/router';
-export { type Surface } from './target/surfaces';
-export { type TargetId } from './target/target';
-export { type Testing } from './testing/testing';
-export { type TypeSafety } from './typesafety/typeSafety';
+export { type Browser } from './target/browser/browserAnswer';
+export { type HostedFramework } from './target/hosted-framework/hostedFrameworkAnswer';
+export { type Router } from './target/router/routerAnswer';
+export { type Surface } from './target/surfaces/surfacesAnswer';
+export { type TargetId } from './target/target/targetAnswer';
+export { type Testing } from './testing/testing/testingAnswer';
+export { type TypeSafety } from './typesafety/type-safety/typeSafetyAnswer';
 export {
   browsersOf,
   hasLibrary,

@@ -9,7 +9,7 @@ import { vueTarget } from './vue/vueTarget';
 import { webextensionTarget } from './webextension/webextensionTarget';
 
 import type { Answers } from '../answers/registry';
-import type { TargetId } from '../answers/target/target';
+import type { TargetId } from '../answers/target/target/targetAnswer';
 import type { TargetRecord } from './types';
 
 // Built from the answers: an extension composes a browser and a framework, which move most of its fields. The

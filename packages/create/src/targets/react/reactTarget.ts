@@ -6,7 +6,7 @@ import {
   viteScaffold,
 } from '../utils/targetUtils';
 
-import type { Router } from '../../answers/target/router';
+import type { Router } from '../../answers/target/router/routerAnswer';
 import type { StarterFile, TargetRecord } from '../types';
 
 // The only target with a `routers` slot, so it supports every router the vocabulary has.

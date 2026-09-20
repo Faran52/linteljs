@@ -1,35 +1,35 @@
-import { agents } from './agents/agents';
-import { plugins } from './agents/plugins';
+import { agentsAnswer } from './agents/agents/agentsAnswer';
+import { pluginsAnswer } from './agents/plugins/pluginsAnswer';
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from './constants';
-import { form } from './libraries/form';
-import { libraries } from './libraries/libraries';
-import { packageManager } from './manager/packageManager';
-import { aliases } from './recorded/aliases';
-import { ignores } from './recorded/ignores';
-import { resolveConditions } from './recorded/resolveConditions';
-import { browser } from './target/browser';
-import { browsers } from './target/browsers';
-import { hostedFramework } from './target/hostedFramework';
-import { router } from './target/router';
-import { store } from './target/store';
-import { surfaces } from './target/surfaces';
-import { target } from './target/target';
-import { testing } from './testing/testing';
-import { typeSafety } from './typesafety/typeSafety';
+import { formAnswer } from './libraries/form/formAnswer';
+import { librariesAnswer } from './libraries/libraries/librariesAnswer';
+import { packageManagerAnswer } from './manager/package-manager/packageManagerAnswer';
+import { aliasesAnswer } from './recorded/aliases/aliasesAnswer';
+import { ignoresAnswer } from './recorded/ignores/ignoresAnswer';
+import { resolveConditionsAnswer } from './recorded/resolve-conditions/resolveConditionsAnswer';
+import { browserAnswer } from './target/browser/browserAnswer';
+import { browsersAnswer } from './target/browsers/browsersAnswer';
+import { hostedFrameworkAnswer } from './target/hosted-framework/hostedFrameworkAnswer';
+import { routerAnswer } from './target/router/routerAnswer';
+import { storeAnswer } from './target/store/storeAnswer';
+import { surfacesAnswer } from './target/surfaces/surfacesAnswer';
+import { targetAnswer } from './target/target/targetAnswer';
+import { testingAnswer } from './testing/testing/testingAnswer';
+import { typeSafetyAnswer } from './typesafety/type-safety/typeSafetyAnswer';
 
 import type { AliasMap } from '../config/types';
-import type { Agent } from './agents/agents';
-import type { Plugin } from './agents/plugins';
-import type { Form } from './libraries/form';
-import type { Library } from './libraries/libraries';
-import type { PackageManager } from './manager/packageManager';
-import type { Browser } from './target/browser';
-import type { HostedFramework } from './target/hostedFramework';
-import type { Router } from './target/router';
-import type { Surface } from './target/surfaces';
-import type { TargetId } from './target/target';
-import type { Testing } from './testing/testing';
-import type { TypeSafety } from './typesafety/typeSafety';
+import type { Agent } from './agents/agents/agentsAnswer';
+import type { Plugin } from './agents/plugins/pluginsAnswer';
+import type { Form } from './libraries/form/formAnswer';
+import type { Library } from './libraries/libraries/librariesAnswer';
+import type { PackageManager } from './manager/package-manager/packageManagerAnswer';
+import type { Browser } from './target/browser/browserAnswer';
+import type { HostedFramework } from './target/hosted-framework/hostedFrameworkAnswer';
+import type { Router } from './target/router/routerAnswer';
+import type { Surface } from './target/surfaces/surfacesAnswer';
+import type { TargetId } from './target/target/targetAnswer';
+import type { Testing } from './testing/testing/testingAnswer';
+import type { TypeSafety } from './typesafety/type-safety/typeSafetyAnswer';
 
 export type AnswerKey = keyof typeof ANSWERS;
 
@@ -84,23 +84,23 @@ export interface LinteljsConfig extends Answers {
 // One line per record, insertion order the ask order and the order a config's keys are written in. `plugins` sits
 // beside `agents` rather than with the never-asked tail, which is where today's hand-written config writer left it.
 export const ANSWERS = {
-  target,
-  browser,
-  surfaces,
-  hostedFramework,
-  testing,
-  packageManager,
-  libraries,
-  form,
-  router,
-  store,
-  typeSafety,
-  agents,
-  plugins,
-  resolveConditions,
-  aliases,
-  browsers,
-  ignores,
+  target: targetAnswer,
+  browser: browserAnswer,
+  surfaces: surfacesAnswer,
+  hostedFramework: hostedFrameworkAnswer,
+  testing: testingAnswer,
+  packageManager: packageManagerAnswer,
+  libraries: librariesAnswer,
+  form: formAnswer,
+  router: routerAnswer,
+  store: storeAnswer,
+  typeSafety: typeSafetyAnswer,
+  agents: agentsAnswer,
+  plugins: pluginsAnswer,
+  resolveConditions: resolveConditionsAnswer,
+  aliases: aliasesAnswer,
+  browsers: browsersAnswer,
+  ignores: ignoresAnswer,
 } as const;
 
 export const DEFAULT_ANSWERS: Answers = {

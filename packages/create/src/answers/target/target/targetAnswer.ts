@@ -1,10 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type TargetId = keyof typeof target.values;
+export type TargetId = keyof typeof targetAnswer.values;
 
-// Mirrors each target's own `TargetRecord.label` for now; commit 3 deletes that field and repoints its two readers
-// here, which is when this stops being a second spelling.
-export const target = {
+export const targetAnswer = {
   key: 'target',
   flag: 'target',
   prompt: 'Framework',

@@ -28,12 +28,11 @@ const groups = directoriesIn(answersDir).filter((name) => {
   return !SHARED.has(name);
 });
 
-// `<group>/<key>.ts`, one file per answer: unlike `emitters/`, a record is the whole of what a file holds, so the
-// file itself is the unit rather than a directory around an entry.
+// `<group>/<subject>/<key>Answer.ts`, one subject per answer, its entry named for the directory.
 const found: RecordFile[] = groups.flatMap((group) => {
   return sourcesUnder(join(answersDir, group)).map((path) => {
     return {
-      key: basename(path, '.ts'),
+      key: basename(path, 'Answer.ts'),
       path,
     };
   });
@@ -78,7 +77,7 @@ describe('the registry', () => {
 
 describe.each(found.filter(isAnswerKey))('$key', ({ key, path }) => {
   it('exports a const named for the file', () => {
-    expect(readFileSync(path, 'utf8')).toContain(`export const ${key} = `);
+    expect(readFileSync(path, 'utf8')).toContain(`export const ${key}Answer = `);
   });
 
   it("carries that same name as its own record's key", () => {

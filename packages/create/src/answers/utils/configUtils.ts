@@ -18,7 +18,7 @@ import {
 import { onlyFor } from './recordUtils';
 
 import type { TargetRecord } from '../../targets/types';
-import type { Library } from '../libraries/libraries';
+import type { Library } from '../libraries/libraries/librariesAnswer';
 import type {
   AnswerKey,
   Answers,

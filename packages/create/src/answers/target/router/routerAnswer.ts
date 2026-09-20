@@ -1,10 +1,10 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
 // Named ahead of the record rather than derived from `values` below: `TargetRecord.routers` is typed with this,
 // and a value's own `only` reads `target.routers`, which would otherwise need this file's own export to resolve.
 export type Router = 'react-router' | 'tanstack-router';
 
-export const router = {
+export const routerAnswer = {
   key: 'router',
   flag: 'router',
   prompt: 'Router',

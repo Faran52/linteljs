@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type Browser = keyof typeof browser.values;
+export type Browser = keyof typeof browserAnswer.values;
 
-export const browser = {
+export const browserAnswer = {
   key: 'browser',
   flag: 'browser',
   prompt: 'Browser',

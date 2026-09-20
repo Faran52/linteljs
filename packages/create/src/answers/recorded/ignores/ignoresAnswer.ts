@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
 // Never asked: paths this project lints nothing in. Not for build outputs, which `.gitignore` already covers: for
 // a generated file the project commits.
-export const ignores = {
+export const ignoresAnswer = {
   key: 'ignores',
   description: 'Paths this project lints nothing in, beyond the standard list. Not for build outputs: base() '
     + 'already ignores whatever .gitignore does. This is for what that file cannot name, such as a generated file '

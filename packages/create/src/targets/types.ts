@@ -1,9 +1,9 @@
-import type { Library } from '../answers/libraries/libraries';
-import type { PackageManager } from '../answers/manager/packageManager';
+import type { Library } from '../answers/libraries/libraries/librariesAnswer';
+import type { PackageManager } from '../answers/manager/package-manager/packageManagerAnswer';
 import type { Answers } from '../answers/registry';
-import type { Browser } from '../answers/target/browser';
-import type { Router } from '../answers/target/router';
-import type { TargetId } from '../answers/target/target';
+import type { Browser } from '../answers/target/browser/browserAnswer';
+import type { Router } from '../answers/target/router/routerAnswer';
+import type { TargetId } from '../answers/target/target/targetAnswer';
 import type {
   AliasMap,
   Framework,
@@ -53,7 +53,7 @@ export interface StarterRename {
  * Copied once at birth; the project owns it from then on.
  *
  * `target` is the whole of it. The asset sits at that same path under
- * `assets/target/starter-source/<target id>/`, below the answer that gates it where one does, so the pairing is the
+ * `templates/starter-source/<target id>/`, below the answer that gates it where one does, so the pairing is the
  * path rather than a second string that can disagree with it. `starterSourceEmitter` does the derivation and
  * `registry.test.ts` holds every derived path against what is on disk.
  */
@@ -206,7 +206,7 @@ export interface TargetRecord {
   staleScaffoldFiles?: string[];
   // One project per platform, or one `.web` variant never executes and the coverage gate lies.
   testPlatforms?: TestPlatform[];
-  // A birth-only template filled with the project name, relative to `assets/`.
+  // The typecheck script a generated package.json runs.
   typecheck: string;
   // For a scaffolder that writes no `build`; React Native only.
   build?: string;
@@ -225,7 +225,7 @@ export interface TargetRecord {
   peerAllowances?: Record<string, string>;
   // Peers yarn must see declared, as `dependent -> peer -> range`; the scaffolder's tree asks for them.
   peerExtensions?: Record<string, Record<string, string>>;
-  // Relative to `assets/always/linteljs-plugin/claude-rules/`.
+  // Relative to `templates/fragments/claude-rules/`.
   stateRules: string[];
   // Overridden only where a test environment is needed.
   testSetup?: string;

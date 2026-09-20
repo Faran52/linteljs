@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type TypeSafety = keyof typeof typeSafety.values;
+export type TypeSafety = keyof typeof typeSafetyAnswer.values;
 
-export const typeSafety = {
+export const typeSafetyAnswer = {
   key: 'typeSafety',
   flag: 'type-safety',
   prompt: 'Type safety',

@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type PackageManager = keyof typeof packageManager.values;
+export type PackageManager = keyof typeof packageManagerAnswer.values;
 
-export const packageManager = {
+export const packageManagerAnswer = {
   key: 'packageManager',
   flag: 'pm',
   prompt: 'Package manager',

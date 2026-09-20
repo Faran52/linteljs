@@ -1,10 +1,10 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type Surface = keyof typeof surfaces.values;
+export type Surface = keyof typeof surfacesAnswer.values;
 
 // `minimum` stays unset: the interactive prompt requires one pick on its own, but a config or flag may still say
 // `surfaces: []`, which is what an older config means by having none of this at all.
-export const surfaces = {
+export const surfacesAnswer = {
   key: 'surfaces',
   flag: 'surfaces',
   prompt: 'Surfaces',

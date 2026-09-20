@@ -1,6 +1,6 @@
 import { COMPONENT, DECLARATION } from './namingUtils';
 
-import type { HostedFramework } from '../../answers/target/hostedFramework';
+import type { HostedFramework } from '../../answers/target/hosted-framework/hostedFrameworkAnswer';
 import type { NamingMap } from '../../config/types';
 import type { PluginSpec } from '../types';
 
@@ -25,7 +25,7 @@ export interface FrameworkParts {
   jsxImportSource?: string;
   // Absent for the SFC frameworks; a host with no framework has no `jsx` either.
   jsx?: 'preserve' | 'react-jsx';
-  // Relative to `assets/always/linteljs-plugin/claude-rules/`.
+  // Relative to `templates/fragments/claude-rules/`.
   stateRules: string[];
 }
 

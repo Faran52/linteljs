@@ -4,7 +4,7 @@ import { hostedNaming, partsFor } from '../utils/frameworkUtils';
 import { viteScaffold } from '../utils/targetUtils';
 
 import type { Answers } from '../../answers/registry';
-import type { Browser } from '../../answers/target/browser';
+import type { Browser } from '../../answers/target/browser/browserAnswer';
 import type { TargetBuilder } from '../registry';
 import type { PluginSpec, StarterFile } from '../types';
 

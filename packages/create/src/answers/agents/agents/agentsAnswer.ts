@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type Agent = keyof typeof agents.values;
+export type Agent = keyof typeof agentsAnswer.values;
 
-export const agents = {
+export const agentsAnswer = {
   key: 'agents',
   flag: 'agents',
   prompt: 'AI agents',

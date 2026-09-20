@@ -1,8 +1,8 @@
-import type { AnswerRecord } from '../types';
+import type { AnswerRecord } from '../../types';
 
-export type Plugin = keyof typeof plugins.values;
+export type Plugin = keyof typeof pluginsAnswer.values;
 
-export const plugins = {
+export const pluginsAnswer = {
   key: 'plugins',
   flag: 'plugins',
   prompt: 'AI plugins',
