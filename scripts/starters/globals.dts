@@ -24,17 +24,12 @@ declare const it: unknown;
 declare const vi: unknown;
 
 /**
- * The extension namespaces, which come from `@types/chrome` and `@types/firefox-webext-browser`. A starter reaches
- * them as a value and as a type, and the two packages are mutually exclusive, so both are declared here where no
- * project ever sees both.
+ * The extension namespaces, which a project gets from `@types/chrome` and `@types/firefox-webext-browser`. Empty on
+ * purpose: only the root name is checked, so members declared here would be decoration, and inventing an API surface
+ * that drifts from the real packages is worse than declaring none. The cost is the limit named on `UNRESOLVED_NAME`:
+ * `chrome.totalNonsense` passes.
  */
-declare namespace chrome {
-  const runtime: unknown;
-  type Runtime = unknown;
-}
+declare namespace chrome {}
 
-declare namespace browser {
-  const runtime: unknown;
-  type Runtime = unknown;
-}
+declare namespace browser {}
 
