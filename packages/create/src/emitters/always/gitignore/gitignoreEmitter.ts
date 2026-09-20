@@ -1,4 +1,5 @@
-import { type Artifact } from '../../../config/types';
+import { type Artifact } from '@config/types';
+
 import { merged } from '../../utils/artifactUtils';
 // Appended rather than written: the scaffolder's list knows about `.next/` and `.svelte-kit/`.
 

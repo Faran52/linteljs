@@ -1,8 +1,10 @@
 import { partition } from 'es-toolkit';
 
-import { type Answers, hasLibrary } from '../../../answers';
-import { type Artifact } from '../../../config/types';
-import { targetFor } from '../../../targets';
+import { type Artifact } from '@config/types';
+
+import { type Answers, hasLibrary } from '@answers';
+import { targetFor } from '@targets';
+
 import { emitted } from '../../utils/artifactUtils';
 
 // For the five Vite targets. `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.

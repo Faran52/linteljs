@@ -9,7 +9,7 @@ import {
   DEFAULT_ANSWERS,
   type TargetId,
   type Testing,
-} from '../../../../answers';
+} from '@answers';
 
 import { fillSlots, sharedSlots } from './templateUtils';
 

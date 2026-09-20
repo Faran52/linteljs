@@ -1,14 +1,16 @@
+import { type Artifact } from '@config/types';
+
 import {
   type Answers,
   hasLibrary,
   hasTests,
   type TargetId,
-} from '../../../answers';
-import { type Artifact } from '../../../config/types';
-import { targetFor } from '../../../targets';
+} from '@answers';
+import { targetFor } from '@targets';
+
 import { joined } from '../../utils/artifactUtils';
 
-import type { StarterFile, StarterTest } from '../../../targets';
+import type { StarterFile, StarterTest } from '@targets';
 
 /**
  * The asset sits at the path it lands on, under this target's tree and below the answer that gates it. One string

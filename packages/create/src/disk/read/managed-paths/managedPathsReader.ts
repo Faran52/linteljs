@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 
-import { MANAGED_PATH } from '../../../config/constants';
-import { isJsonObject } from '../../../utils/objectUtils';
+import { MANAGED_PATH } from '@config/constants';
+
+import { isJsonObject } from '@utils/objectUtils';
+
 import { readIfPresent } from '../../utils/fsUtils';
 
 type JsonValue = null | boolean | number | string | object;

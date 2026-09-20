@@ -23,6 +23,10 @@ import {
   vi,
 } from 'vitest';
 
+import { type Stage } from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   type Agent,
   ANSWERS,
@@ -38,18 +42,17 @@ import {
   type Router,
   type TargetId,
   type Testing,
-} from '../../../answers';
-import { type Stage } from '../../../config/types';
+} from '@answers';
 import {
   entryExists,
   exists,
   linteljsConfigReader,
   readIfPresent,
   STYLE_ENTRY_CANDIDATES,
-} from '../../../disk';
-import { emitLinteljsConfig } from '../../../emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '../../../emitters/always/package-json/packageJsonEmitter';
-import { valuesOf } from '../../../utils/objectUtils';
+} from '@disk';
+import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
+import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
+
 import { applySync, planSync } from '../sync/syncRun';
 
 import { pipelineRun } from './pipelineRun';

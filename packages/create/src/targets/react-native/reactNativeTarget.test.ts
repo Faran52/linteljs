@@ -4,7 +4,8 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../../answers';
+import { DEFAULT_ANSWERS } from '@answers';
+
 import { esmAssetImports } from '../utils/targetUtils';
 
 import { reactNativeTarget } from './reactNativeTarget';

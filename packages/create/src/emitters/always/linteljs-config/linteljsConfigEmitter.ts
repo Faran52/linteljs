@@ -1,10 +1,12 @@
+import { type Artifact } from '@config/types';
+
 import {
   type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-} from '../../../answers';
-import { type Artifact } from '../../../config/types';
+} from '@answers';
+
 import { emitted } from '../../utils/artifactUtils';
 
 // The envelope every recorded project carries, so `sync` and `create --skip-scaffold` replan from what it says.

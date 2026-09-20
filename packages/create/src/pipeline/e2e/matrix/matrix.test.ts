@@ -5,8 +5,9 @@ import {
   vi,
 } from 'vitest';
 
-import { ANSWERS, type Answers } from '../../../answers';
-import { valuesOf } from '../../../utils/objectUtils';
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS, type Answers } from '@answers';
 
 import { optionCases } from './matrix';
 

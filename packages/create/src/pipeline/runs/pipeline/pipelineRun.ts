@@ -1,26 +1,28 @@
 import { dirname } from 'node:path';
 
-import { STAGES } from '../../../config/constants';
-import { type Stage } from '../../../config/types';
+import { STAGES } from '@config/constants';
+import { type Stage } from '@config/types';
+
 import {
   artifactWriter,
   mkdir,
   projectShapeReader,
-} from '../../../disk';
+} from '@disk';
 import {
   type Artifact,
   buildArtifacts,
   seedArtifacts,
-} from '../../../emitters';
-import { gitSpawn, runSpawn } from '../../../spawns';
-import { targetFor } from '../../../targets';
+} from '@emitters';
+import { gitSpawn, runSpawn } from '@spawns';
+import { targetFor } from '@targets';
+
 import { fixPass } from '../../passes/fix/fixPass';
 import { repairPass } from '../../passes/repair/repairPass';
 import { rewritePass } from '../../passes/rewrite/rewritePass';
 
 import { scaffoldCommand } from './utils/scaffoldUtils';
 
-import type { Answers } from '../../../answers';
+import type { Answers } from '@answers';
 
 export interface PipelineOptions {
   name: string;

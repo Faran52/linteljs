@@ -6,7 +6,7 @@ import {
 } from 'node:path';
 import { env } from 'node:process';
 
-import { isExecutableFile } from '../../disk';
+import { isExecutableFile } from '@disk';
 
 export interface GitOptions {
   cwd: string;

@@ -1,4 +1,4 @@
-import { NODE_ENGINE } from '../../../config/constants';
+import { NODE_ENGINE } from '@config/constants';
 
 // `26.9.0` becomes 26_009_000, so one comparison answers it. No field of a Node version comes near a thousand, and
 // this is the whole of the semver support a floor of `>=x.y.z` needs; a range with an upper bound would not be.

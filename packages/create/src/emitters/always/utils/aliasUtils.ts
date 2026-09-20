@@ -1,12 +1,13 @@
 import { omit } from 'es-toolkit';
 
+import { type AliasMap } from '@config/types';
+
 import {
   type Answers,
   hasLibrary,
   hasTests,
-} from '../../../answers';
-import { type AliasMap } from '../../../config/types';
-import { targetFor } from '../../../targets';
+} from '@answers';
+import { targetFor } from '@targets';
 
 // Read by tsconfig `paths`, `base({ aliases })` and the resolver; the order is the dependency direction, so a
 // sorted import block reads as the architecture.

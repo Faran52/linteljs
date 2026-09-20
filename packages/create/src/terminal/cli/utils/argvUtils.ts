@@ -1,17 +1,19 @@
 import { cwd as processCwd } from 'node:process';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 
-import { type AnswerKey, ANSWERS } from '../../../answers';
-import { STAGES } from '../../../config/constants';
-import { type Stage } from '../../../config/types';
-import { valuesOf } from '../../../utils/objectUtils';
+import { STAGES } from '@config/constants';
+import { type Stage } from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { type AnswerKey, ANSWERS } from '@answers';
 
 import type {
   AnswerRecord,
   ListRecord,
   MapRecord,
-} from '../../../answers/types';
-import type { JsonValue } from '../../../answers/utils/readUtils';
+} from '@answers/types';
+import type { JsonValue } from '@answers/utils/readUtils';
 
 type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord>;
 

@@ -13,7 +13,7 @@ import {
   it,
 } from 'vitest';
 
-import { MANAGED_PATH } from '../../../config/constants';
+import { MANAGED_PATH } from '@config/constants';
 
 import { managedPathsReader } from './managedPathsReader';
 

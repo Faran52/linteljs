@@ -1,6 +1,8 @@
-import { type Answers, hasTests } from '../../../answers';
-import { type Artifact } from '../../../config/types';
-import { targetFor } from '../../../targets';
+import { type Artifact } from '@config/types';
+
+import { type Answers, hasTests } from '@answers';
+import { targetFor } from '@targets';
+
 import { projectSpelling } from '../../utils/shapeUtils';
 
 import { mergeChecker } from './utils/mergeUtils';

@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '../../../../answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import {
   coveringSubset,
@@ -12,7 +12,7 @@ import {
   type PairwiseCase,
 } from './pairwiseUtils';
 
-import type { Answers } from '../../../../answers';
+import type { Answers } from '@answers';
 
 const caseFor = (overrides: Partial<Answers>): PairwiseCase => {
   return {

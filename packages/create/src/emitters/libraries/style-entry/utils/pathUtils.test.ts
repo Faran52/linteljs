@@ -4,15 +4,16 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type TargetId,
-} from '../../../../answers';
-import { STYLE_ENTRY_CANDIDATES } from '../../../../disk';
-import { targetFor } from '../../../../targets';
-import { valuesOf } from '../../../../utils/objectUtils';
+} from '@answers';
+import { STYLE_ENTRY_CANDIDATES } from '@disk';
+import { targetFor } from '@targets';
 
 import { styleEntryPath } from './pathUtils';
 

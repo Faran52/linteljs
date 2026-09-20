@@ -7,6 +7,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -15,14 +17,13 @@ import {
   type HostedFramework,
   type Surface,
   type TargetId,
-} from '../answers';
-import { TEMPLATES_ROOT } from '../disk';
-import { buildDevDependencies } from '../emitters/always/package-json/packageJsonEmitter';
-import { valuesOf } from '../utils/objectUtils';
+} from '@answers';
+import { TEMPLATES_ROOT } from '@disk';
+import { buildDevDependencies } from '@emitters/always/package-json/packageJsonEmitter';
 
 import { targetFor, TARGETS } from './registry';
 
-import type { Framework } from '../config/types';
+import type { Framework } from '@config/types';
 import type { TargetRecord } from './types';
 
 // Every reachable combination, labelled so a failure names the combination rather than only the target.

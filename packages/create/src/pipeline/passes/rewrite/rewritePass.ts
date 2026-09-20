@@ -1,10 +1,11 @@
 import { join } from 'node:path';
 
-import { projectFileWriter, readFile } from '../../../disk';
-import { targetFor } from '../../../targets';
+import { projectFileWriter, readFile } from '@disk';
+import { targetFor } from '@targets';
+
 import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
-import type { Answers } from '../../../answers';
+import type { Answers } from '@answers';
 
 // `.d.ts` extensions are part of their specifier.
 const RELATIVE_TS_IMPORT

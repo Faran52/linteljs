@@ -1,4 +1,5 @@
-import { hasTests } from '../../answers/utils/answerUtils';
+import { hasTests } from '@answers/utils/answerUtils';
+
 import { FOLDER_NAMING, NAMING } from '../naming';
 
 import type { TargetRecord } from '../types';

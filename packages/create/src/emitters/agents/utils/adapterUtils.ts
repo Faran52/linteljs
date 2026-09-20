@@ -1,7 +1,8 @@
-import { type Artifact } from '../../../config/types';
+import { type Artifact } from '@config/types';
+
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers } from '../../../answers';
+import type { Answers } from '@answers';
 
 export const emitAgentAdapter = (answers: Answers): string => {
   const run = answers.packageManager === 'npm' ? 'npm run' : answers.packageManager;

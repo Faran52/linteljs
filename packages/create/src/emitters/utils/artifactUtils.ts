@@ -1,4 +1,4 @@
-import type { Artifact, Stage } from '../../config/types';
+import type { Artifact, Stage } from '@config/types';
 
 // The three ways an artifact is built, one per content shape. Every emitter in the ring reaches for one of them,
 // so they sit here rather than beside the type: `config/` is the vocabulary, this is the construction of it.

@@ -1,6 +1,6 @@
 import { camelCase } from 'es-toolkit';
 
-import type { AliasMap } from '../../config/types';
+import type { AliasMap } from '@config/types';
 import type { ScaffoldSpec } from '../types';
 
 // `--no-interactive` forces the piped behaviour; `--eslint` is React-only, since the default writes `.oxlintrc.json`.

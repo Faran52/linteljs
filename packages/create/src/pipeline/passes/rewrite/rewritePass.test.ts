@@ -20,7 +20,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type TargetId,
-} from '../../../answers';
+} from '@answers';
 
 import {
   guardMountLookups,

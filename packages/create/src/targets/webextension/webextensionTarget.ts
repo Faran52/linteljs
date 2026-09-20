@@ -1,10 +1,11 @@
-import { hasSurface } from '../../answers/utils/answerUtils';
+import { hasSurface } from '@answers/utils/answerUtils';
+
 import { FOLDER_NAMING, NAMING } from '../naming';
 import { hostedNaming, partsFor } from '../utils/frameworkUtils';
 import { viteScaffold } from '../utils/targetUtils';
 
-import type { Answers } from '../../answers/registry';
-import type { Browser } from '../../answers/target/browser/browserAnswer';
+import type { Answers } from '@answers/registry';
+import type { Browser } from '@answers/target/browser/browserAnswer';
 import type { TargetBuilder } from '../registry';
 import type { PluginSpec, StarterFile } from '../types';
 

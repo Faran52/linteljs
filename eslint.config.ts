@@ -7,6 +7,7 @@ import {
   INNER_RINGS,
   MIDDLE_RINGS,
   OUTER_RINGS,
+  RINGS,
   WORLDS,
 } from './packages/create/src/rings';
 import base from './packages/eslint-config/src/base';
@@ -16,6 +17,14 @@ import vitest from './packages/eslint-config/src/vitest';
 const ring = (name: string): string => {
   return `packages/create/src/${name}`;
 };
+
+// What `packages/create/tsconfig.json` declares, so `simple-import-sort` gives the aliases a group of their own.
+// `buildGroups` reads the keys and never the values. `config/` and `utils/` have no barrel, so no bare form.
+const aliases = Object.fromEntries(RINGS.flatMap((name) => {
+  const subpath: [string, string] = [`@${name}/*`, `${ring(name)}/*`];
+
+  return name === 'config' || name === 'utils' ? [subpath] : [[`@${name}`, ring(name)], subpath];
+}));
 
 const config = [
   /**
@@ -52,6 +61,7 @@ const config = [
     folderNaming: {
       'packages/*/src/**/': 'KEBAB_CASE',
     },
+    aliases,
     // DESIGN.md: `resolver: { project: 'packages/*/tsconfig.json' }`
     resolver: {
       project: 'packages/*/tsconfig.json',

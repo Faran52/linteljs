@@ -10,7 +10,7 @@ import {
   type HostedFramework,
   type Library,
   type TargetId,
-} from '../../../answers';
+} from '@answers';
 
 import { emitAstroConfig } from './astroConfigEmitter';
 

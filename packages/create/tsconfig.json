@@ -4,12 +4,29 @@
     "rootDir": ".",
 
     "paths": {
-      "@mocks/*": ["./__mocks__/*"]
+      "@mocks/*": ["./__mocks__/*"],
+      "@answers": ["./src/answers/index.ts"],
+      "@answers/*": ["./src/answers/*"],
+      "@config/*": ["./src/config/*"],
+      "@disk": ["./src/disk/index.ts"],
+      "@disk/*": ["./src/disk/*"],
+      "@emitters": ["./src/emitters/index.ts"],
+      "@emitters/*": ["./src/emitters/*"],
+      "@pipeline": ["./src/pipeline/index.ts"],
+      "@pipeline/*": ["./src/pipeline/*"],
+      "@spawns": ["./src/spawns/index.ts"],
+      "@spawns/*": ["./src/spawns/*"],
+      "@targets": ["./src/targets/index.ts"],
+      "@targets/*": ["./src/targets/*"],
+      "@terminal": ["./src/terminal/index.ts"],
+      "@terminal/*": ["./src/terminal/*"],
+      "@utils/*": ["./src/utils/*"]
     }
   },
   "include": [
     "src/**/*.ts",
     "__mocks__/**/*.ts",
+    "scripts/*.ts",
     "templates/project/scripts/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts",

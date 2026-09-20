@@ -1,7 +1,7 @@
 import { COMPONENT, DECLARATION } from './namingUtils';
 
-import type { HostedFramework } from '../../answers/target/hosted-framework/hostedFrameworkAnswer';
-import type { NamingMap } from '../../config/types';
+import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
+import type { NamingMap } from '@config/types';
 import type { PluginSpec } from '../types';
 
 export interface FrameworkParts {

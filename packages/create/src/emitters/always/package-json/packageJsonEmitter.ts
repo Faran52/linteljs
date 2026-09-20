@@ -1,5 +1,14 @@
 import { compact, uniq } from 'es-toolkit';
 
+import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '@config/constants';
+import {
+  type Artifact,
+  type Framework,
+  type ProjectShape,
+} from '@config/types';
+
+import { isJsonObject } from '@utils/objectUtils';
+
 import {
   type Answers,
   type Form,
@@ -7,21 +16,15 @@ import {
   hasTests,
   type Library,
   type Router,
-} from '../../../answers';
-import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
-import {
-  type Artifact,
-  type Framework,
-  type ProjectShape,
-} from '../../../config/types';
-import { targetFor } from '../../../targets';
-import { isJsonObject } from '../../../utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
+
 import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';
 
 import { VERSIONS } from './constants';
 
-import type { TargetRecord } from '../../../targets/types';
+import type { TargetRecord } from '@targets/types';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 

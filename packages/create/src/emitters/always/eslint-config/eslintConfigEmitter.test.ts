@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -12,9 +14,8 @@ import {
   type Router,
   type TargetId,
   type Testing,
-} from '../../../answers';
-import { FOLDER_ROUTED } from '../../../targets/utils/namingUtils';
-import { valuesOf } from '../../../utils/objectUtils';
+} from '@answers';
+import { FOLDER_ROUTED } from '@targets/utils/namingUtils';
 
 import { emitEslintConfig } from './eslintConfigEmitter';
 

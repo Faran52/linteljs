@@ -1,5 +1,7 @@
 import { env } from 'node:process';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -9,14 +11,13 @@ import {
   rendersWithReact,
   type Router,
   type TargetId,
-} from '../../../answers';
-import { targetFor } from '../../../targets';
-import { valuesOf } from '../../../utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
 
 import { coveringSubset } from './utils/pairwiseUtils';
 
-import type { Framework } from '../../../config/types';
-import type { TargetRecord } from '../../../targets/types';
+import type { Framework } from '@config/types';
+import type { TargetRecord } from '@targets/types';
 
 export interface E2eCase {
   label: string;

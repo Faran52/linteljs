@@ -1,8 +1,8 @@
-import { targetFor } from '../targets';
+import { targetFor } from '@targets';
 
 import { ANSWERS, DEFAULT_ANSWERS } from './registry';
 
-import type { TargetRecord } from '../targets/types';
+import type { TargetRecord } from '@targets/types';
 import type { TargetId } from './target/target/targetAnswer';
 
 const recordFor = (target: TargetId): TargetRecord => {

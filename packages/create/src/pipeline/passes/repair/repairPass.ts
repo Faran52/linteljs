@@ -6,7 +6,7 @@ import {
 
 import { orderBy } from 'es-toolkit';
 
-import { type Answers, hasTests } from '../../../answers';
+import { type Answers, hasTests } from '@answers';
 import {
   entryExists,
   isAbsence,
@@ -15,11 +15,12 @@ import {
   rename,
   rm,
   safeProjectPath,
-} from '../../../disk';
-import { targetFor } from '../../../targets';
+} from '@disk';
+import { targetFor } from '@targets';
+
 import { SOURCE_ROOT, sourceFiles } from '../../utils/sourceUtils';
 
-import type { StarterRename } from '../../../targets';
+import type { StarterRename } from '@targets';
 
 // Fresh projects only; exact generator text turns upstream drift into a notice.
 const applyStarterFixes = async (

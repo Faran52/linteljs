@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -12,9 +14,8 @@ import {
   type PackageManager,
   type TargetId,
   type Testing,
-} from '../../../../answers';
-import { targetFor } from '../../../../targets';
-import { valuesOf } from '../../../../utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
 
 import { scaffoldCommand } from './scaffoldUtils';
 

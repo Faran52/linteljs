@@ -18,6 +18,10 @@ import {
   it,
 } from 'vitest';
 
+import { type Artifact } from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -28,10 +32,8 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '../answers';
-import { type Artifact } from '../config/types';
-import { shippedAssetsReader, TEMPLATES_ROOT } from '../disk';
-import { valuesOf } from '../utils/objectUtils';
+} from '@answers';
+import { shippedAssetsReader, TEMPLATES_ROOT } from '@disk';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
 import { buildArtifacts, seedArtifacts } from './registry';

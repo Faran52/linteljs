@@ -2,9 +2,9 @@ import {
   type Agent,
   type Answers,
   DEFAULT_ANSWERS,
-} from '../src/answers';
+} from '@answers';
 
-import type { Artifact } from '../src/config/types';
+import type { Artifact } from '@config/types';
 
 // The `claude-rules/` source every agent is fed, frontmatter and all.
 export const RULE

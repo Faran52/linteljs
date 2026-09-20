@@ -1,4 +1,4 @@
-import { NOTHING_ANSWERED_MESSAGE, type Prompter } from '../src/terminal';
+import { NOTHING_ANSWERED_MESSAGE, type Prompter } from '@terminal';
 
 /**
  * Every shape a scripted answer can take: a `select` or `text` answer is a string, a `multiselect` answer is a list of

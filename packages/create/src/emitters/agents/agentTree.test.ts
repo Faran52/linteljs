@@ -4,6 +4,10 @@ import {
   it,
 } from 'vitest';
 
+import { type Artifact } from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   type Agent,
   ANSWERS,
@@ -12,10 +16,9 @@ import {
   type Plugin,
   type TargetId,
   type Testing,
-} from '../../answers';
-import { type Artifact } from '../../config/types';
-import { shippedAssetsReader } from '../../disk';
-import { valuesOf } from '../../utils/objectUtils';
+} from '@answers';
+import { shippedAssetsReader } from '@disk';
+
 import { linteljsPluginEmitter } from '../always/linteljs-plugin/linteljsPluginEmitter';
 import { removableIn } from '../utils/managedUtils';
 

@@ -1,9 +1,11 @@
-import { type Artifact } from '../../../config/types';
-import { targetFor } from '../../../targets';
+import { type Artifact } from '@config/types';
+
+import { targetFor } from '@targets';
+
 import { buildDependencies, buildDevDependencies } from '../../always/package-json/packageJsonEmitter';
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers } from '../../../answers';
+import type { Answers } from '@answers';
 
 const HEAD = `enableScripts: true
 enableGlobalCache: true

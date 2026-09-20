@@ -38,10 +38,11 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../../answers';
-import { exists } from '../../disk';
-import { emitLinteljsConfig } from '../../emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '../../emitters/always/package-json/packageJsonEmitter';
+} from '@answers';
+import { exists } from '@disk';
+import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
+import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
+
 import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/prompts';
 
 import { main } from './cli';
@@ -887,7 +888,7 @@ describe('main: an unexpected failure', () => {
 
 describe('main: the package manager', () => {
   it('is checked for before the pipeline runs', async () => {
-    const commands = await import('../../spawns');
+    const commands = await import('@spawns');
     const spy = vi.spyOn(commands, 'packageManagerSpawn').mockImplementation(() => {
       throw new Error('bun is not installed.');
     });

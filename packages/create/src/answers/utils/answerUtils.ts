@@ -1,4 +1,4 @@
-import type { Framework } from '../../config/types';
+import type { Framework } from '@config/types';
 import type { Library } from '../libraries/libraries/librariesAnswer';
 import type { Answers } from '../registry';
 import type { Browser } from '../target/browser/browserAnswer';

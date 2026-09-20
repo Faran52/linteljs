@@ -1,14 +1,14 @@
-import type { Library } from '../answers/libraries/libraries/librariesAnswer';
-import type { PackageManager } from '../answers/manager/package-manager/packageManagerAnswer';
-import type { Answers } from '../answers/registry';
-import type { Browser } from '../answers/target/browser/browserAnswer';
-import type { Router } from '../answers/target/router/routerAnswer';
-import type { TargetId } from '../answers/target/target/targetAnswer';
+import type { Library } from '@answers/libraries/libraries/librariesAnswer';
+import type { PackageManager } from '@answers/manager/package-manager/packageManagerAnswer';
+import type { Answers } from '@answers/registry';
+import type { Browser } from '@answers/target/browser/browserAnswer';
+import type { Router } from '@answers/target/router/routerAnswer';
+import type { TargetId } from '@answers/target/target/targetAnswer';
 import type {
   AliasMap,
   Framework,
   NamingMap,
-} from '../config/types';
+} from '@config/types';
 
 // `create` runs a create-shorthand (`pnpm create vite`); `dlx` runs a binary with no create alias.
 export type ScaffoldKind = 'create' | 'dlx';

@@ -18,9 +18,10 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '../../../answers';
-import { MANAGED_PATH } from '../../../config/constants';
-import { exists } from '../../../disk';
+import { MANAGED_PATH } from '@config/constants';
+
+import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { exists } from '@disk';
 
 import {
   applySync,

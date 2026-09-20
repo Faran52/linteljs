@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { ArtifactContent } from '../../../emitters';
+import type { ArtifactContent } from '@emitters';
 
 // Walks up to `templates/`: this module sits at `src/disk/` in the workspace and at `dist/` once published.
 const templatesRootFrom = (start: string): string => {

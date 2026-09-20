@@ -9,7 +9,8 @@ import {
   type Router,
   type TargetId,
   type Testing,
-} from '../../../answers';
+} from '@answers';
+
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 
 import { emitVitestConfig } from './vitestConfigEmitter';

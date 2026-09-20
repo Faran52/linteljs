@@ -15,9 +15,10 @@ import {
   it,
 } from 'vitest';
 
-import { ANSWERS, DEFAULT_ANSWERS } from '../../../answers';
-import { TARGETS } from '../../../targets';
-import { valuesOf } from '../../../utils/objectUtils';
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
+import { TARGETS } from '@targets';
 
 import { projectShapeReader, STYLE_ENTRY_CANDIDATES } from './projectShapeReader';
 

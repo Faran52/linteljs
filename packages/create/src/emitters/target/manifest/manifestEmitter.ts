@@ -1,12 +1,15 @@
+import { type Artifact, type ProjectShape } from '@config/types';
+
+import { isJsonObject } from '@utils/objectUtils';
+
 import {
   type Answers,
   type Browser,
   browsersOf,
   hasSurface,
-} from '../../../answers';
-import { type Artifact, type ProjectShape } from '../../../config/types';
-import { targetFor } from '../../../targets';
-import { isJsonObject } from '../../../utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
+
 import { emitted } from '../../utils/artifactUtils';
 
 // Emitted rather than templated: browser times surfaces would be twelve templates holding one shape. Birth only,

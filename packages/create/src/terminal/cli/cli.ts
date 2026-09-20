@@ -9,7 +9,9 @@ import {
   versions,
 } from 'node:process';
 
-import packageJson from '../../../package.json' with { type: 'json' };
+import { RUN_PREFIX, STAGES } from '@config/constants';
+import { type Stage } from '@config/types';
+
 import {
   type Answers,
   CONFIG_PATH,
@@ -17,16 +19,16 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../../answers';
-import { RUN_PREFIX, STAGES } from '../../config/constants';
-import { type Stage } from '../../config/types';
-import { entryExists, linteljsConfigReader } from '../../disk';
+} from '@answers';
+import { entryExists, linteljsConfigReader } from '@disk';
 import {
   applySync,
   pipelineRun,
   planSync,
-} from '../../pipeline';
-import { packageManagerSpawn } from '../../spawns';
+} from '@pipeline';
+import { packageManagerSpawn } from '@spawns';
+
+import packageJson from '../../../package.json' with { type: 'json' };
 import {
   ask,
   type Asked,

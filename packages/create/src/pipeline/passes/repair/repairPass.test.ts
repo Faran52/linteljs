@@ -22,8 +22,8 @@ import {
   DEFAULT_ANSWERS,
   type TargetId,
   type Testing,
-} from '../../../answers';
-import { exists } from '../../../disk';
+} from '@answers';
+import { exists } from '@disk';
 
 import { repairPass } from './repairPass';
 

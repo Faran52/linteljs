@@ -57,9 +57,9 @@
   },
   "scripts": {
     "build": "tsdown",
-    "collect:builds": "jiti scripts/collectBuildScripts.ts",
+    "collect:builds": "JITI_TSCONFIG_PATHS=1 jiti scripts/collectBuildScripts.ts",
     "prepack": "pnpm run build",
-    "schema": "jiti scripts/writeSchemas.ts",
+    "schema": "JITI_TSCONFIG_PATHS=1 jiti scripts/writeSchemas.ts",
     "smoke": "node scripts/smoke.js",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",

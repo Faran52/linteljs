@@ -9,7 +9,7 @@ import {
   DEFAULT_ANSWERS,
   type HostedFramework,
   type Library,
-} from '../../answers';
+} from '@answers';
 
 import { astroTarget } from './astroTarget';
 

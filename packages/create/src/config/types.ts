@@ -1,4 +1,4 @@
-import type { Answers } from '../answers/registry';
+import type { Answers } from '@answers/registry';
 
 /**
  * The vocabulary every ring shares: `emitters/` builds an artifact, `files/` applies it, `pipeline/` sequences

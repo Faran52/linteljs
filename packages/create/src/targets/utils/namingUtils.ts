@@ -1,4 +1,4 @@
-import type { NamingMap } from '../../config/types';
+import type { NamingMap } from '@config/types';
 
 // The glob vocabulary `check-file` is given, and the three shapes the tables in `naming.ts` compose out of it.
 const KEBAB = '+([a-z0-9])*(-+([a-z0-9]))';

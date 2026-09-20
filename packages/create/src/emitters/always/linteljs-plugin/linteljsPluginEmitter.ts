@@ -1,10 +1,12 @@
+import { type Artifact } from '@config/types';
+
 import {
   type Answers,
   hasLibrary,
   hasTests,
-} from '../../../answers';
-import { type Artifact } from '../../../config/types';
-import { targetFor } from '../../../targets';
+} from '@answers';
+import { targetFor } from '@targets';
+
 import { copied } from '../../utils/artifactUtils';
 
 export interface RuleSource {

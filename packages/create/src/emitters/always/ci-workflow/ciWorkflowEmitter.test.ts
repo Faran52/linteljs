@@ -4,13 +4,15 @@ import {
   it,
 } from 'vitest';
 
+import { NODE_ENGINE } from '@config/constants';
+
 import {
   type Answers,
   DEFAULT_ANSWERS,
   type PackageManager,
   type TargetId,
-} from '../../../answers';
-import { NODE_ENGINE } from '../../../config/constants';
+} from '@answers';
+
 import { buildScripts } from '../utils/scriptUtils';
 
 import { emitCiWorkflow } from './ciWorkflowEmitter';

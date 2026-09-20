@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -12,8 +14,8 @@ import {
   type Library,
   type TargetId,
   type Testing,
-} from '../../../answers';
-import { valuesOf } from '../../../utils/objectUtils';
+} from '@answers';
+
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
 import { buildAliases } from '../utils/aliasUtils';
 

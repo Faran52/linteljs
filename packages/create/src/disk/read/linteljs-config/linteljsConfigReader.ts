@@ -7,7 +7,8 @@ import {
   LEGACY_CONFIG_PATH,
   type LinteljsConfig,
   parseLinteljsConfig,
-} from '../../../answers';
+} from '@answers';
+
 import { entryExists } from '../../utils/fsUtils';
 
 // `linteljs.config.json`, or the `linteljs.config.json` a version through 1.6.0 wrote. The older name is read and

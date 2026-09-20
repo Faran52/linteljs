@@ -8,8 +8,8 @@ import {
   sfcNaming,
 } from './utils/namingUtils';
 
-import type { TargetId } from '../answers/target/target/targetAnswer';
-import type { NamingMap } from '../config/types';
+import type { TargetId } from '@answers/target/target/targetAnswer';
+import type { NamingMap } from '@config/types';
 
 // Keyed by target: the policy must be total and `webextension` has no framework.
 export const NAMING: Record<TargetId, NamingMap> = {

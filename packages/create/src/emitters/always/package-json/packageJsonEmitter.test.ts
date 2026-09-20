@@ -7,6 +7,10 @@ import {
   it,
 } from 'vitest';
 
+import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -18,9 +22,7 @@ import {
   type Router,
   type TargetId,
   type Testing,
-} from '../../../answers';
-import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '../../../config/constants';
-import { valuesOf } from '../../../utils/objectUtils';
+} from '@answers';
 
 import { VERSIONS } from './constants';
 import {

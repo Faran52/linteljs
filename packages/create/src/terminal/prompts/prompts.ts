@@ -10,6 +10,8 @@ import {
 } from '@clack/prompts';
 import { omit } from 'es-toolkit';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   type AnswerKey,
   ANSWERS,
@@ -18,10 +20,10 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '../../answers';
-import { type JsonValue, unaskedValueOf } from '../../answers/utils/readUtils';
-import { targetFor } from '../../targets';
-import { valuesOf } from '../../utils/objectUtils';
+} from '@answers';
+import { type JsonValue, unaskedValueOf } from '@answers/utils/readUtils';
+import { targetFor } from '@targets';
+
 import { isValidProjectName, PROJECT_NAME_RULE } from '../utils/nameUtils';
 
 import type {
@@ -31,8 +33,8 @@ import type {
   OptionalChoiceRecord,
   OptionalMultiRecord,
   ValueRecord,
-} from '../../answers/types';
-import type { StoreSlot, TargetRecord } from '../../targets/types';
+} from '@answers/types';
+import type { StoreSlot, TargetRecord } from '@targets/types';
 
 /**
  * The four value-bearing kinds `askAnswer` dispatches on. `boolean` is `store` alone and is asked directly by the
