@@ -1,4 +1,5 @@
 import {
+  existsSync,
   readdirSync,
   readFileSync,
   writeFileSync,
@@ -7,6 +8,7 @@ import { extname, join } from 'node:path';
 import process, { argv } from 'node:process';
 
 import { ESLint } from 'eslint';
+import ts from 'typescript';
 
 import { DEFAULT_ANSWERS } from '../packages/create/src/answers';
 import { starterSourceEmitter } from '../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
@@ -32,6 +34,72 @@ import type { Answers, TargetId } from '../packages/create/src/answers';
  * end-to-end suite is still the only thing that runs the real gate.
  */
 const STARTERS = 'packages/create/assets/target/starter-source';
+
+/**
+ * What a generated project gives a starter that the starter does not import. Read off disk and handed to the program
+ * under a virtual path: as a real `.d.ts` it was picked up by typescript-eslint's project service for files outside
+ * every tsconfig and broke their resolution, so it exists nowhere any other tool can find it.
+ */
+const GLOBALS = 'scripts/starters/globals.dts';
+
+const VIRTUAL_GLOBALS = 'starterGlobals.d.ts';
+
+/**
+ * The one question a program answers and ESLint cannot: is every name either imported or a global the destination
+ * has? `no-undef` would be the cheaper lever and is the wrong one, because typescript-eslint turns it off on the
+ * grounds that `tsc` does this job, and for this tree no `tsc` ever runs.
+ *
+ * Only these codes. `globals.d.ts` declares every import `any`, since the dependencies are not installed, so every
+ * other diagnostic is an artefact of that rather than a fact about the file. This is what caught
+ * `children?: React.ReactNode` against no React import, which shipped for as long as it took to look.
+ */
+const UNRESOLVED_NAME = new Set([
+  2304, // Cannot find name
+  2503, // Cannot find namespace
+  2552, // Cannot find name, did you mean
+  2686, // refers to a UMD global, but the current file is a module
+]);
+
+const unresolvedNames = (files: string[]): string[] => {
+  const options: ts.CompilerOptions = {
+    noEmit: true,
+    strict: true,
+    skipLibCheck: true,
+    allowJs: true,
+    jsx: ts.JsxEmit.ReactJSX,
+    target: ts.ScriptTarget.ESNext,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    types: [],
+    lib: ['lib.esnext.d.ts', 'lib.dom.d.ts'],
+  };
+
+  const host = ts.createCompilerHost(options, true);
+  const readDirectly = host.getSourceFile.bind(host);
+  const globals = readFileSync(GLOBALS, 'utf8');
+
+  host.fileExists = (path) => {
+    return path === VIRTUAL_GLOBALS || existsSync(path);
+  };
+
+  host.getSourceFile = (path, language, onError, shouldCreate) => {
+    return path === VIRTUAL_GLOBALS
+      ? ts.createSourceFile(path, globals, language, true, ts.ScriptKind.TS)
+      : readDirectly(path, language, onError, shouldCreate);
+  };
+
+  const program = ts.createProgram([...files, VIRTUAL_GLOBALS], options, host);
+
+  return ts.getPreEmitDiagnostics(program).filter((diagnostic) => {
+    return UNRESOLVED_NAME.has(diagnostic.code) && diagnostic.file !== undefined;
+  }).map((diagnostic) => {
+    const file = diagnostic.file?.fileName ?? '';
+    const line = diagnostic.file?.getLineAndCharacterOfPosition(diagnostic.start ?? 0).line ?? 0;
+    const where = `${file.split('assets/')[1] ?? file}:${String(line + 1)}`;
+
+    return `${where} TS${String(diagnostic.code)}  ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`;
+  });
+};
 
 const SCRIPTS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx']);
 
@@ -170,9 +238,18 @@ for (const target of targets) {
   }
 }
 
+const unresolved = unresolvedNames(targets.flatMap((target) => {
+  return filesIn(join(STARTERS, target));
+}));
+
+for (const message of unresolved) {
+  console.error(message);
+}
+
 console.error(
   `${String(checked)} starter files linted through their own target's layers, `
-  + `${String(findings)} findings, ${String(findings - fixable)} of them not autofixable`,
+  + `${String(findings)} findings, ${String(findings - fixable)} of them not autofixable, `
+  + `${String(unresolved.length)} names neither imported nor global`,
 );
 
 // A file no record places is a file no project receives. Reported rather than skipped, because the alternative is a
@@ -185,4 +262,4 @@ if (unplaced.length > 0) {
   }
 }
 
-process.exitCode = findings > 0 ? 1 : 0;
+process.exitCode = findings > 0 || unresolved.length > 0 ? 1 : 0;

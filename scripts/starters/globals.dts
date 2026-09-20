@@ -1,0 +1,40 @@
+/**
+ * What a generated project gives a starter file that the file does not import: the globals its own `tsconfig` and
+ * `types` bring in. Nothing here is shipped. It exists so `lintStarters.ts` can ask one question of the starter tree
+ * that ESLint cannot answer without a program: is every name either imported or a global the destination has?
+ *
+ * Not a `.d.ts` on disk, and deliberately so. Left as one, typescript-eslint's project service picked it up for
+ * files outside every tsconfig and broke their resolution: `assets/testing/test-setup/setupTests.router.ts` went
+ * from clean to sixteen unsafe-any findings by nothing but this file existing. `lintStarters.ts` reads the text and
+ * serves it to its own program under a virtual path, so no other tool can see it at all.
+ *
+ * `declare module '*'` is what stands in for the dependencies this workspace does not install. It costs the answer to
+ * every other question, which is why the caller keeps only the diagnostics about a name it could not find.
+ */
+declare module '*';
+
+// `globals: true` in the vitest config a project receives, which is why no starter imports these.
+declare const afterAll: unknown;
+declare const afterEach: unknown;
+declare const beforeAll: unknown;
+declare const beforeEach: unknown;
+declare const describe: unknown;
+declare const expect: unknown;
+declare const it: unknown;
+declare const vi: unknown;
+
+/**
+ * The extension namespaces, which come from `@types/chrome` and `@types/firefox-webext-browser`. A starter reaches
+ * them as a value and as a type, and the two packages are mutually exclusive, so both are declared here where no
+ * project ever sees both.
+ */
+declare namespace chrome {
+  const runtime: unknown;
+  type Runtime = unknown;
+}
+
+declare namespace browser {
+  const runtime: unknown;
+  type Runtime = unknown;
+}
+
