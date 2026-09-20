@@ -327,6 +327,25 @@ One thing the restructure bought that was not the point of it. `vitest.config.ts
 seen, and the suites that followed them covered every branch with nothing added. The exclusion now
 hides only the entrypoint it was meant for.
 
+### The starter tree mirrors the project it seeds
+
+Fifty-three files sat flat under each target, with the structure that matters encoded in filenames
+and recovered only by a table. `AnimatedIcon.test.tsx` went to `src/components/` and
+`Collapsible.test.tsx` to `src/components/ui/`, and nothing but a hundred lines of
+`reactNativeTarget.ts` said so. The extension carried two axes in its filenames at once, a surface
+(`background`, `devtools`, `panel`) and a browser (a `.firefox` infix), against a destination that
+spells both as directories.
+
+The asset path is the destination path now, verbatim, under the answer that gates the file where one
+does. `webextension/chrome/src/background/index.ts` and `webextension/firefox/src/background/index.ts`
+both land at `src/background/index.ts`, which is why the browser is a directory above it rather than
+an infix inside it. `react-native/tailwind/metro.config.js` is there because that file ships only
+when tailwind is chosen, which nothing previously showed.
+
+The gate above is what makes this safe to have done: each file is linted at the path its record
+places it on, so a mirror that drifts from the record is a starter linted at the wrong path, and a
+file no record places is reported rather than guessed at. Both halves ran clean through the move.
+
 ### `assets/` is classified by its consumer
 
 Ten directories named on three different axes: the tool (`husky/`, `npm/`, `schemas/`, `scripts/`),

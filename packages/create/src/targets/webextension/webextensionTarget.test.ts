@@ -59,25 +59,29 @@ describe('the browser axis', () => {
     expect(firefox).toHaveLength(chrome.length);
   });
 
-  // Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone.
-  it.each<[Browser, string]>([
-    ['chrome', ''],
-    ['firefox', '.firefox'],
-  ])('gives %s the background starter written in its own namespace', (browser, infix) => {
+  /**
+   * Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone. The
+   * browser is a directory in the asset tree rather than an infix on the filename, so both spellings sit at the
+   * path they land on and only the directory above them differs.
+   */
+  it.each<[Browser]>([
+    ['chrome'],
+    ['firefox'],
+  ])('gives %s the background starter written in its own namespace', (browser) => {
     const record = recordFor({ browser });
 
     expect(record.starterFiles).toEqual([
       {
-        source: `target/starter-source/webextension/background${infix}.ts`,
+        source: `target/starter-source/webextension/${browser}/src/background/index.ts`,
         target: 'src/background/index.ts',
       },
       {
-        source: `target/starter-source/webextension/onInstalled${infix}.ts`,
+        source: `target/starter-source/webextension/${browser}/src/background/onInstalled.ts`,
         target: 'src/background/onInstalled.ts',
       },
     ]);
     expect(record.starterTests).toContainEqual({
-      source: `target/starter-source/webextension/onInstalled${infix}.test.ts`,
+      source: `target/starter-source/webextension/${browser}/src/background/onInstalled.test.ts`,
       target: 'src/background/onInstalled.test.ts',
       covers: 'src/background/onInstalled.ts',
     });
@@ -119,15 +123,15 @@ describe('the surfaces axis', () => {
 
     expect(record.coverageExclude).toEqual(['src/devtools/index.ts', 'src/panel/index.ts']);
     expect(record.starterTests).toContainEqual({
-      source: 'target/starter-source/webextension/renderPanel.test.ts',
+      source: 'target/starter-source/webextension/src/panel/renderPanel.test.ts',
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',
     });
   });
 
   it.each<[Browser, string]>([
-    ['chrome', 'target/starter-source/webextension/devtools.ts'],
-    ['firefox', 'target/starter-source/webextension/devtools.firefox.ts'],
+    ['chrome', 'target/starter-source/webextension/chrome/src/devtools/index.ts'],
+    ['firefox', 'target/starter-source/webextension/firefox/src/devtools/index.ts'],
   ])('gives %s the devtools registration in its own namespace', (browser, source) => {
     expect(recordFor({
       browser,

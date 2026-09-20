@@ -123,23 +123,23 @@ export const reactNativeTarget: TargetRecord = {
       target: 'expo-env.d.ts',
     },
     {
-      source: 'target/starter-source/react-native/assets.d.ts',
+      source: 'target/starter-source/react-native/src/typings/assets.d.ts',
       target: 'src/typings/assets.d.ts',
     },
     {
-      source: 'target/starter-source/react-native/renderScreen.tsx',
+      source: 'target/starter-source/react-native/__mocks__/renderScreen.tsx',
       target: '__mocks__/renderScreen.tsx',
       // It imports `@testing-library/react-native`, which `testing: none` never installs, and the `@mocks/*` alias
       // it sits behind is not written either.
       tests: true,
     },
     {
-      source: 'target/starter-source/react-native/metro.config.js',
+      source: 'target/starter-source/react-native/tailwind/metro.config.js',
       target: 'metro.config.js',
       library: 'tailwind',
     },
     {
-      source: 'target/starter-source/react-native/nativewind-env.d.ts',
+      source: 'target/starter-source/react-native/tailwind/nativewind-env.d.ts',
       target: 'nativewind-env.d.ts',
       library: 'tailwind',
     },
@@ -342,97 +342,97 @@ export const reactNativeTarget: TargetRecord = {
    */
   starterTests: [
     {
-      source: 'target/starter-source/react-native/app-index.test.tsx',
+      source: 'target/starter-source/react-native/src/app-index.test.tsx',
       target: 'src/app-index.test.tsx',
       covers: 'src/app/index.tsx',
     },
     {
-      source: 'target/starter-source/react-native/app-layout.test.tsx',
+      source: 'target/starter-source/react-native/src/app-layout.test.tsx',
       target: 'src/app-layout.test.tsx',
       covers: 'src/app/_layout.tsx',
     },
     {
-      source: 'target/starter-source/react-native/app-explore.test.tsx',
+      source: 'target/starter-source/react-native/src/app-explore.test.tsx',
       target: 'src/app-explore.test.tsx',
       covers: 'src/app/explore.tsx',
     },
     {
-      source: 'target/starter-source/react-native/AnimatedIcon.test.tsx',
+      source: 'target/starter-source/react-native/src/components/AnimatedIcon.test.tsx',
       target: 'src/components/AnimatedIcon.test.tsx',
       covers: 'src/components/AnimatedIcon.tsx',
     },
     {
-      source: 'target/starter-source/react-native/AppTabs.test.tsx',
+      source: 'target/starter-source/react-native/src/components/AppTabs.test.tsx',
       target: 'src/components/AppTabs.test.tsx',
       covers: 'src/components/AppTabs.tsx',
     },
     {
-      source: 'target/starter-source/react-native/ExternalLink.test.tsx',
+      source: 'target/starter-source/react-native/src/components/ExternalLink.test.tsx',
       target: 'src/components/ExternalLink.test.tsx',
       covers: 'src/components/ExternalLink.tsx',
     },
     {
-      source: 'target/starter-source/react-native/HintRow.test.tsx',
+      source: 'target/starter-source/react-native/src/components/HintRow.test.tsx',
       target: 'src/components/HintRow.test.tsx',
       covers: 'src/components/HintRow.tsx',
     },
     {
-      source: 'target/starter-source/react-native/ThemedText.test.tsx',
+      source: 'target/starter-source/react-native/src/components/ThemedText.test.tsx',
       target: 'src/components/ThemedText.test.tsx',
       covers: 'src/components/ThemedText.tsx',
     },
     {
-      source: 'target/starter-source/react-native/ThemedView.test.tsx',
+      source: 'target/starter-source/react-native/src/components/ThemedView.test.tsx',
       target: 'src/components/ThemedView.test.tsx',
       covers: 'src/components/ThemedView.tsx',
     },
     {
-      source: 'target/starter-source/react-native/WebBadge.test.tsx',
+      source: 'target/starter-source/react-native/src/components/WebBadge.test.tsx',
       target: 'src/components/WebBadge.test.tsx',
       covers: 'src/components/WebBadge.tsx',
     },
     {
-      source: 'target/starter-source/react-native/Collapsible.test.tsx',
+      source: 'target/starter-source/react-native/src/components/ui/Collapsible.test.tsx',
       target: 'src/components/ui/Collapsible.test.tsx',
       covers: 'src/components/ui/Collapsible.tsx',
     },
     {
-      source: 'target/starter-source/react-native/theme.test.ts',
+      source: 'target/starter-source/react-native/src/constants/theme.test.ts',
       target: 'src/constants/theme.test.ts',
       covers: 'src/constants/theme.ts',
     },
     {
-      source: 'target/starter-source/react-native/useColorScheme.web.test.ts',
+      source: 'target/starter-source/react-native/src/hooks/useColorScheme.web.test.ts',
       target: 'src/hooks/useColorScheme.web.test.ts',
       covers: 'src/hooks/useColorScheme.web.ts',
     },
     {
-      source: 'target/starter-source/react-native/app-index.web.test.tsx',
+      source: 'target/starter-source/react-native/src/app-index.web.test.tsx',
       target: 'src/app-index.web.test.tsx',
       covers: 'src/app/index.tsx',
     },
     {
-      source: 'target/starter-source/react-native/app-index.android.test.tsx',
+      source: 'target/starter-source/react-native/src/app-index.android.test.tsx',
       target: 'src/app-index.android.test.tsx',
       covers: 'src/app/index.tsx',
     },
     {
-      source: 'target/starter-source/react-native/app-explore.web.test.tsx',
+      source: 'target/starter-source/react-native/src/app-explore.web.test.tsx',
       target: 'src/app-explore.web.test.tsx',
       covers: 'src/app/explore.tsx',
     },
     {
-      source: 'target/starter-source/react-native/AnimatedIcon.web.test.tsx',
+      source: 'target/starter-source/react-native/src/components/AnimatedIcon.web.test.tsx',
       target: 'src/components/AnimatedIcon.web.test.tsx',
       covers: 'src/components/AnimatedIcon.web.tsx',
     },
     {
-      source: 'target/starter-source/react-native/AppTabs.web.test.tsx',
+      source: 'target/starter-source/react-native/src/components/AppTabs.web.test.tsx',
       target: 'src/components/AppTabs.web.test.tsx',
       covers: 'src/components/AppTabs.web.tsx',
     },
     {
-      source: 'target/starter-source/react-native/useTheme.test.ts',
+      source: 'target/starter-source/react-native/src/hooks/useTheme.test.ts',
       target: 'src/hooks/useTheme.test.ts',
       covers: 'src/hooks/useTheme.ts',
     },

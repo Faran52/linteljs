@@ -58,12 +58,12 @@ export const svelteTarget: TargetBuilder = (answers) => {
     // excluding it reported `100% ( 0/0 )`.
     starterTests: [
       {
-        source: 'target/starter-source/svelte/page.test.ts',
+        source: 'target/starter-source/svelte/src/routes/page.test.ts',
         target: 'src/routes/page.test.ts',
         covers: 'src/routes/+page.svelte',
       },
       {
-        source: 'target/starter-source/svelte/layout.test.ts',
+        source: 'target/starter-source/svelte/src/routes/layout.test.ts',
         target: 'src/routes/layout.test.ts',
         covers: 'src/routes/+layout.svelte',
       },
