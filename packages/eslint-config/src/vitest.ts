@@ -17,6 +17,8 @@ export const vitest = (): Layer => {
       name: '@linteljs/vitest',
       files: TEST_FILES,
       rules: {
+        // `expectTypeOf` and `assertType` are vitest's assertions over types; the rule counts only `expect`.
+        'vitest/expect-expect': ['error', { assertFunctionNames: ['expect', 'expectTypeOf', 'assertType'] }],
         // Vitest's `expect(actual, message)` takes two arguments; the rule defaults to Jest's one.
         'vitest/valid-expect': ['error', { maxArgs: 2 }],
       },

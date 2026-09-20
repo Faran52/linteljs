@@ -6,6 +6,11 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## Unreleased
+
+- `vitest/expect-expect` counts `expectTypeOf` and `assertType`. A suite that asserts only over types
+  has no `expect` call in it and was reported as having no assertions.
+
 ## 1.6.0
 
 1.5.4 was cut and never published; its notes are folded in here.
