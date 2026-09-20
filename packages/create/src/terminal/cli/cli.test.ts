@@ -43,7 +43,7 @@ import { exists } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 
-import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/prompts';
+import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
 

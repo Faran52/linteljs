@@ -11,13 +11,12 @@ import {
 
 import { DEFAULT_ANSWERS } from '@answers';
 
+import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from './constants';
 import {
   ask,
   type Asked,
   type AskInput,
-  NOTHING_ANSWERED_MESSAGE,
   type Prompter,
-  RUN_CANCELLED_MESSAGE,
 } from './prompts';
 
 interface AskOutcome {

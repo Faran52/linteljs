@@ -24,7 +24,14 @@ import {
 import { type JsonValue, unaskedValueOf } from '@answers/utils/readUtils';
 import { targetFor } from '@targets';
 
-import { isValidProjectName, PROJECT_NAME_RULE } from '../utils/nameUtils';
+import { PROJECT_NAME_RULE } from '../constants';
+import { isValidProjectName } from '../utils/nameUtils';
+
+import {
+  ANSWER_KEYS,
+  RUN_CANCELLED_MESSAGE,
+  STORE_CHOICES,
+} from './constants';
 
 import type {
   AnswerRecord,
@@ -88,13 +95,6 @@ export const clackPrompter: Prompter = {
   isCancel,
 };
 
-// Thrown by `cli.ts` before `ask`: nothing here can tell "no terminal" from a person who cancelled one.
-export const NOTHING_ANSWERED_MESSAGE
-  = 'Nothing was written: answer every question, or pass --yes to accept the defaults.';
-
-// Ctrl+C on purpose, told apart by `error.code` the way a filesystem error already is.
-export const RUN_CANCELLED_MESSAGE = 'Cancelled: nothing was written.';
-
 const unwrap = <T extends string | readonly string[]>(prompter: Prompter, value: T | symbol): T => {
   if (prompter.isCancel(value)) {
     throw Object.assign(new Error(RUN_CANCELLED_MESSAGE), { code: 'CANCELLED' });
@@ -126,9 +126,6 @@ const askChoice = async <T extends string>(
   // `Prompter` erases every choice to `string`; a cast onto the bare generic parameter is the one the standard grants.
   return unwrap(prompter, answer) as T;
 };
-
-// A radio, not a yes/no: a target that comes to offer two stores names both here. The persisted answer stays boolean.
-const STORE_CHOICES = ['store', 'none'] as const;
 
 const askStore = async (prompter: Prompter, slot: StoreSlot): Promise<boolean> => {
   const chosen = await askChoice(prompter, 'State store', [...STORE_CHOICES], 'none', (choice) => {
@@ -187,9 +184,6 @@ const askName = async (prompter: Prompter): Promise<string> => {
 
   return unwrap(prompter, answer);
 };
-
-// Every key `ANSWERS` has, read off the object itself rather than a hand-kept list.
-const ANSWER_KEYS = valuesOf(ANSWERS);
 
 // The values a record offers here, narrowed by `only` for this target: what a target never asks for is never shown.
 const offeredValuesOf = <V extends string>(values: Record<V, ValueRecord>, target: TargetRecord): V[] => {

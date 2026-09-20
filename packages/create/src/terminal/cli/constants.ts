@@ -1,0 +1,157 @@
+import { type ParseArgsOptionsConfig } from 'node:util';
+
+import { type Stage } from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { type AnswerKey, ANSWERS } from '@answers';
+
+import type {
+  AnswerRecord,
+  ListRecord,
+  MapRecord,
+} from '@answers/types';
+
+type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord>;
+
+interface FlagField {
+  flag: string;
+}
+
+type FlaggedRecord = FlaggableRecord & FlagField;
+
+interface FlaggedAnswer {
+  key: AnswerKey;
+  record: FlaggableRecord;
+  flag: string;
+}
+
+// `list` and `map` carry no `flag` on any of today's records, both being hand-edited only: `resolveConditions`,
+// `aliases` and `ignores` are recorded, never passed on the command line.
+const isFlaggable = (record: AnswerRecord): record is FlaggedRecord => {
+  return record.flag !== undefined;
+};
+
+// Every record with a `flag`, in `ANSWERS`' own order, each already carrying the key that named it.
+export const FLAGGED_ANSWERS: readonly FlaggedAnswer[] = valuesOf(ANSWERS).flatMap((key): FlaggedAnswer[] => {
+  const record: AnswerRecord = ANSWERS[key];
+
+  return isFlaggable(record)
+    ? [{
+        key,
+        record,
+        flag: record.flag,
+      }]
+    : [];
+});
+
+export const isMultiKind = (record: AnswerRecord): boolean => {
+  return record.kind === 'multi' || record.kind === 'optionalMulti';
+};
+
+// `boolean` for the one boolean answer, `store`; `string`, `multiple` for the two kinds that ask for a list;
+// `string` alone otherwise. Spread after the fixed entries, so a `--target` or a `--pm` is one more record away.
+const ANSWER_OPTIONS = Object.fromEntries(FLAGGED_ANSWERS.map(({ flag, record }) => {
+  return [flag, {
+    type: record.kind === 'boolean' ? 'boolean' : 'string',
+    ...(isMultiKind(record) ? { multiple: true } : {}),
+  }];
+}));
+
+const labelOf = ({ flag, record }: FlaggedAnswer): string => {
+  if (record.kind === 'boolean') {
+    return `--${flag}`;
+  }
+
+  const shape = isMultiKind(record) ? 'list' : 'value';
+
+  return `--${flag} <${shape}>`;
+};
+
+// Every answer line lines up on this column, `store` included, rather than each carrying its own two-space gap.
+const LABEL_WIDTH = Math.max(...FLAGGED_ANSWERS.map((answer) => {
+  return labelOf(answer).length;
+}));
+
+const noteOf = (record: AnswerRecord): string => {
+  return record.note === undefined ? '' : ` (${record.note})`;
+};
+
+const answerUsageOf = (answer: FlaggedAnswer): string => {
+  const { record } = answer;
+  // `store` alone carries no `values` to list; its description is the one this cannot generate from the record.
+  const description = record.kind === 'boolean'
+    ? 'install the target\'s state store'
+    : `${valuesOf(record.values).join(', ')}${noteOf(record)}`;
+
+  return `  ${labelOf(answer).padEnd(LABEL_WIDTH)}  ${description}`;
+};
+
+export const USAGE = `@linteljs/create [name] [options]
+@linteljs/create sync [options]
+
+  --skip-scaffold   run stages 2-6 against an existing repository
+  --no-install      skip the install and the eslint --fix pass that needs it
+  --fresh           with --skip-scaffold, treat the directory as new scaffolder output
+  --skip <stage>    skip a stage: scaffold, lint, package, standard, install, fix (repeatable)
+  --yes, -y         accept the defaults, ask nothing
+  --force           sync: overwrite without asking
+  --version, -v
+  --help, -h
+
+Answers, for a run that asks nothing (unset ones take the defaults):
+${FLAGGED_ANSWERS.map(answerUsageOf).join('\n')}
+A list is comma-separated or the flag repeated.
+
+A non-interactive create needs a project name, or --yes to take the directory's.
+`;
+
+export const CLI_OPTIONS = {
+  'skip-scaffold': {
+    type: 'boolean',
+    default: false,
+  },
+  'no-install': {
+    type: 'boolean',
+    default: false,
+  },
+  'fresh': {
+    type: 'boolean',
+    default: false,
+  },
+  'skip': {
+    type: 'string',
+    multiple: true,
+    default: [],
+  },
+  'yes': {
+    type: 'boolean',
+    short: 'y',
+    default: false,
+  },
+  'force': {
+    type: 'boolean',
+    default: false,
+  },
+  'help': {
+    type: 'boolean',
+    short: 'h',
+    default: false,
+  },
+  'version': {
+    type: 'boolean',
+    short: 'v',
+    default: false,
+  },
+  ...ANSWER_OPTIONS,
+} satisfies ParseArgsOptionsConfig;
+
+// What each stage does, on the line that announces it.
+export const STAGE_LABELS: Record<Stage, string> = {
+  scaffold: 'scaffold: the official generator',
+  lint: 'lint: eslint and stylelint config',
+  package: 'package: package.json, tsconfig and the manager files',
+  standard: 'standard: hooks, agent files, test setup and starter tests',
+  install: 'install',
+  fix: 'fix: eslint and stylelint --fix',
+};

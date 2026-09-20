@@ -10,7 +10,6 @@ import {
 } from 'node:process';
 
 import { RUN_PREFIX, STAGES } from '@config/constants';
-import { type Stage } from '@config/types';
 
 import {
   type Answers,
@@ -29,20 +28,21 @@ import {
 import { packageManagerSpawn } from '@spawns';
 
 import packageJson from '../../../package.json' with { type: 'json' };
+import { PROJECT_NAME_RULE } from '../constants';
+import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
   type Asked,
   clackPrompter,
-  NOTHING_ANSWERED_MESSAGE,
   type Prompter,
 } from '../prompts/prompts';
-import { isValidProjectName, PROJECT_NAME_RULE } from '../utils/nameUtils';
+import { isValidProjectName } from '../utils/nameUtils';
 
+import { STAGE_LABELS, USAGE } from './constants';
 import {
   type AnswerFlags,
   type CliOptions,
   parseCliArgs,
-  USAGE,
 } from './utils/argvUtils';
 import { nodeVersionRefusal } from './utils/nodeUtils';
 
@@ -63,16 +63,6 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
 // stdout for what the user asked to see; `console.error` for failures.
 const say = (message: string): void => {
   stdout.write(`${message}\n`);
-};
-
-// What each stage does, on the line that announces it.
-const STAGE_LABELS: Record<Stage, string> = {
-  scaffold: 'scaffold: the official generator',
-  lint: 'lint: eslint and stylelint config',
-  package: 'package: package.json, tsconfig and the manager files',
-  standard: 'standard: hooks, agent files, test setup and starter tests',
-  install: 'install',
-  fix: 'fix: eslint and stylelint --fix',
 };
 
 // What to do next, once every stage has run: enter the directory, install what was skipped, run the gate.
