@@ -31,9 +31,9 @@ export const importNewlines = createRule('import-newlines', {
   meta: {
     type: 'layout',
     docs: {
-      category: 'layout',
       language: 'universal',
       recommended: true,
+      fixShape: 'whitespace',
       description: 'Split import lists when they get crowded or too long.',
     },
     // `code`, not `whitespace`: rebuilding the clause can drop a redundant `as alpha` or a trailing comma.

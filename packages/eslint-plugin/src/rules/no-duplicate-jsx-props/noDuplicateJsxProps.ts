@@ -59,7 +59,6 @@ export const noDuplicateJsxProps = createRule('no-duplicate-jsx-props', {
   meta: {
     type: 'problem',
     docs: {
-      category: 'functions',
       language: 'universal',
       recommended: false,
       description: 'Report duplicate JSX props on the same element.',

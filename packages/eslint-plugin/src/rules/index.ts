@@ -23,6 +23,7 @@ import {
 import {
   reactNativeValidAccessibilityState,
 } from './react-native-valid-accessibility-state/reactNativeValidAccessibilityState.ts';
+import { reactNoGlobalNamespace } from './react-no-global-namespace/reactNoGlobalNamespace.ts';
 import { sortHookDependencies } from './sort-hook-dependencies/sortHookDependencies.ts';
 import { unionNewline } from './union-newline/unionNewline.ts';
 
@@ -52,6 +53,7 @@ export const rules = {
   'react-native-valid-accessibility-actions': reactNativeValidAccessibilityActions,
   'react-native-valid-accessibility-role': reactNativeValidAccessibilityRole,
   'react-native-valid-accessibility-state': reactNativeValidAccessibilityState,
+  'react-no-global-namespace': reactNoGlobalNamespace,
   'sort-hook-dependencies': sortHookDependencies,
   'union-newline': unionNewline,
 } satisfies Record<string, LintelRuleModule>;

@@ -8,7 +8,7 @@
     "type": "layout",
     "fixable": "code",
     "docs": {
-      "category": "layout",
+      "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
       "description": "Use `//` for short comments and JSDoc blocks for longer prose."
@@ -22,7 +22,7 @@
     "type": "layout",
     "fixable": "whitespace",
     "docs": {
-      "category": "layout",
+      "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
       "description": "Keep destructuring patterns either compact or fully expanded, never half-split."
@@ -36,7 +36,7 @@
     "type": "layout",
     "fixable": "whitespace",
     "docs": {
-      "category": "layout",
+      "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
       "description": "Put each export specifier on its own line."
@@ -71,7 +71,7 @@
     "type": "layout",
     "fixable": "code",
     "docs": {
-      "category": "layout",
+      "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
       "description": "Split import lists when they get crowded or too long."
@@ -85,7 +85,7 @@
     "type": "layout",
     "fixable": "code",
     "docs": {
-      "category": "ordering",
+      "fixShape": "reorder",
       "language": "typescript",
       "recommended": false,
       "description": "Keep top-level interfaces and type aliases together, after imports and before runtime code."
@@ -119,7 +119,7 @@
     "type": "layout",
     "fixable": "code",
     "docs": {
-      "category": "layout",
+      "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
       "description": "Keep crowded destructuring patterns, interfaces, and type literals on separate lines."
@@ -133,7 +133,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "functions",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Report duplicate JSX props on the same element."
@@ -161,7 +161,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "suppression",
+      "fixShape": null,
       "language": "universal",
       "recommended": true,
       "description": "Fix what a rule reports, or name the exemption in the config. Do not disable it inline."
@@ -175,7 +175,7 @@
     "type": "suggestion",
     "fixable": null,
     "docs": {
-      "category": "imports",
+      "fixShape": null,
       "language": "universal",
       "recommended": true,
       "description": "Avoid destructuring namespace imports when a named import is enough."
@@ -203,7 +203,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "types",
+      "fixShape": null,
       "language": "typescript",
       "recommended": true,
       "description": "Give an object type a name instead of writing its shape inline."
@@ -230,7 +230,7 @@
     "type": "suggestion",
     "fixable": "code",
     "docs": {
-      "category": "functions",
+      "fixShape": null,
       "language": "universal",
       "recommended": true,
       "description": "Prefer arrow functions when the conversion keeps behaviour the same."
@@ -255,7 +255,7 @@
     "type": "suggestion",
     "fixable": null,
     "docs": {
-      "category": "promises",
+      "fixShape": null,
       "language": "universal",
       "recommended": true,
       "description": "Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values."
@@ -269,7 +269,7 @@
     "type": "suggestion",
     "fixable": null,
     "docs": {
-      "category": "functions",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Destructure component props in the function signature instead of reading them one field at a time."
@@ -284,7 +284,7 @@
     "type": "suggestion",
     "fixable": null,
     "docs": {
-      "category": "promises",
+      "fixShape": null,
       "language": "universal",
       "recommended": true,
       "description": "Prefer `try`/`catch` around an awaited rejection path instead of a promise callback."
@@ -314,7 +314,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "accessibility",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Require an accessible name on React Native elements that are announced."
@@ -342,7 +342,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "accessibility",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Disallow controls inside a container marked accessible."
@@ -362,7 +362,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "accessibility",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Require accessibilityActions and onAccessibilityAction to be declared together and well formed."
@@ -376,7 +376,7 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "accessibility",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Require accessibilityRole and role values React Native understands."
@@ -393,10 +393,24 @@
     "type": "problem",
     "fixable": null,
     "docs": {
-      "category": "accessibility",
+      "fixShape": null,
       "language": "universal",
       "recommended": false,
       "description": "Require accessibilityState to be an object of the keys React Native reads."
+    }
+  },
+  "react-no-global-namespace": {
+    "messages": {
+      "globalNamespace": "Import `{{name}}` from `react` rather than reaching it through the `React` global."
+    },
+    "schema": [],
+    "type": "suggestion",
+    "fixable": "code",
+    "docs": {
+      "fixShape": null,
+      "language": "universal",
+      "recommended": false,
+      "description": "Import the React names a file uses instead of reaching them through the global namespace."
     }
   },
   "sort-hook-dependencies": {
@@ -435,7 +449,7 @@
     "type": "suggestion",
     "fixable": "code",
     "docs": {
-      "category": "ordering",
+      "fixShape": "reorder",
       "language": "universal",
       "recommended": false,
       "description": "Keep hook dependency arrays in a consistent order."
@@ -462,7 +476,7 @@
     "type": "layout",
     "fixable": "whitespace",
     "docs": {
-      "category": "layout",
+      "fixShape": "whitespace",
       "language": "typescript",
       "recommended": true,
       "description": "Split union types when object or function members make them hard to read."

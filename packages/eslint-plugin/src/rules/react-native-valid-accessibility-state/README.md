@@ -2,7 +2,6 @@
 
 Require accessibilityState to be an object of the keys React Native reads.
 
-- Category: `accessibility`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

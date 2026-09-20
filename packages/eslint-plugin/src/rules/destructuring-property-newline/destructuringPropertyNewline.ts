@@ -22,9 +22,9 @@ export const destructuringPropertyNewline = createRule('destructuring-property-n
   meta: {
     type: 'layout',
     docs: {
-      category: 'layout',
       language: 'universal',
       recommended: true,
+      fixShape: 'whitespace',
       description: 'Keep destructuring patterns either compact or fully expanded, never half-split.',
     },
     fixable: 'whitespace',

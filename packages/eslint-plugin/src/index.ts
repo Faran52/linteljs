@@ -12,12 +12,12 @@ export {
 export type { RuleName } from './rules/index.ts';
 export { rules } from './rules/index.ts';
 export type {
+  FixShape,
   LintelRuleModule,
-  RuleCategory,
   RuleLanguage,
 } from './types.ts';
 export {
-  RULE_CATEGORIES,
+  FIX_SHAPES,
   RULE_LANGUAGES,
   TYPESCRIPT_FILES,
 } from './types.ts';

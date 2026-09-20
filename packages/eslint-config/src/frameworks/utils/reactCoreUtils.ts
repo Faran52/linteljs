@@ -30,6 +30,7 @@ export const reactCore = (): Layer => {
       rules: {
         '@linteljs/no-duplicate-jsx-props': 'error',
         '@linteljs/prefer-destructured-props': 'error',
+        '@linteljs/react-no-global-namespace': 'error',
         '@linteljs/sort-hook-dependencies': 'error',
       },
     },

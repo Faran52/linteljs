@@ -41,7 +41,6 @@ export const reactNativeValidAccessibilityRole = createRule('react-native-valid-
   meta: {
     type: 'problem',
     docs: {
-      category: 'accessibility',
       language: 'universal',
       recommended: false,
       description: 'Require accessibilityRole and role values React Native understands.',

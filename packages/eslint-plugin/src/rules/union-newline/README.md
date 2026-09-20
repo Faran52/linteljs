@@ -2,7 +2,6 @@
 
 Split union types when object or function members make them hard to read.
 
-- Category: `layout`
 - Applies to: TypeScript only
 - Fixable: yes (whitespace)
 - In `recommended`: yes

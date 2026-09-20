@@ -23,6 +23,14 @@ export interface FixerSample {
 
 export const FIXER_SAMPLES: FixerSample[] = [
   {
+    // `react-no-global-namespace` writes an import where there was none, so the corpus carries the shape it
+    // inserts before: a file whose first statement is not an import at all.
+    name: 'React global ahead of any import',
+    code: 'const node: React.ReactNode = null;\nexport { node };',
+    typescript: true,
+    filename: 'widget.ts',
+  },
+  {
     name: 'empty named import',
     code: "import {\n} from 'mod';",
   },

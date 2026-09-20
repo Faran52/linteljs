@@ -59,7 +59,6 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
   meta: {
     type: 'suggestion',
     docs: {
-      category: 'functions',
       language: 'universal',
       // Uppercase implies a component only in rendering frameworks.
       recommended: false,

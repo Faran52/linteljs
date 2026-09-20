@@ -2,7 +2,6 @@
 
 Split import lists when they get crowded or too long.
 
-- Category: `layout`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (code)
 - In `recommended`: yes

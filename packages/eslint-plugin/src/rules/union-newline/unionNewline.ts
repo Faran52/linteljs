@@ -39,9 +39,9 @@ export const unionNewline = createRule('union-newline', {
   meta: {
     type: 'layout',
     docs: {
-      category: 'layout',
       language: 'typescript',
       recommended: true,
+      fixShape: 'whitespace',
       description: 'Split union types when object or function members make them hard to read.',
     },
     fixable: 'whitespace',

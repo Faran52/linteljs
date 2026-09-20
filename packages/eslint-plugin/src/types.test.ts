@@ -24,7 +24,6 @@ describe('createRule', () => {
       type: 'suggestion',
       docs: {
         description: 'A rule for exercising createRule.',
-        category: 'layout',
         language: 'universal',
         recommended: true,
       },
@@ -47,7 +46,7 @@ describe('createRule', () => {
     const rule = createRule('example-rule', definition);
 
     expect(rule.meta.docs.description).toBe('A rule for exercising createRule.');
-    expect(rule.meta.docs.category).toBe('layout');
+    expect(rule.meta.docs.language).toBe('universal');
     expect(rule.meta.docs.language).toBe('universal');
     expect(rule.meta.docs.recommended).toBe(true);
   });

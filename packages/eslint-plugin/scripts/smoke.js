@@ -70,24 +70,10 @@ const expectedRuleIds = [
  * the source under test, so a rename fails here rather than in somebody's config.
  */
 const expectedPresetNames = [
-  'accessibility',
-  'flat/accessibility',
-  'flat/functions',
-  'flat/imports',
-  'flat/layout',
-  'flat/ordering',
-  'flat/promises',
+  'all',
+  'flat/all',
   'flat/recommended',
-  'flat/suppression',
-  'flat/types',
-  'functions',
-  'imports',
-  'layout',
-  'ordering',
-  'promises',
   'recommended',
-  'suppression',
-  'types',
 ];
 
 // The preset spread a consumer actually writes. The configs below name their

@@ -2,7 +2,6 @@
 
 Disallow controls inside a container marked accessible.
 
-- Category: `accessibility`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

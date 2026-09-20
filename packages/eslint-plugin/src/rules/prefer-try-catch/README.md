@@ -2,7 +2,6 @@
 
 Prefer `try`/`catch` around an awaited rejection path instead of a promise callback.
 
-- Category: `promises`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: yes

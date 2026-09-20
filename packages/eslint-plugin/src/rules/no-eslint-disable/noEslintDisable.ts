@@ -33,7 +33,6 @@ export const noEslintDisable = createRule('no-eslint-disable', {
   meta: {
     type: 'problem',
     docs: {
-      category: 'suppression',
       language: 'universal',
       recommended: true,
       description: 'Fix what a rule reports, or name the exemption in the config. Do not disable it inline.',

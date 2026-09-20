@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-`@linteljs/eslint-plugin`. A published ESLint plugin: 19 rules for vertical layout, comment shape,
+`@linteljs/eslint-plugin`. A published ESLint plugin: 22 rules for vertical layout, comment shape,
 import hygiene, modern idioms in TypeScript and React, and React Native accessibility. Public repo,
 published to npm, so everything in it is outward-facing.
 
@@ -66,13 +66,14 @@ Six steps. The type system catches a missed one in the first two, and `src/meta.
 the rest.
 
 1. `src/rules/<kebab-case>/<camelCaseExport>.ts`, built with `createRule('<kebab-case>', { ... })` from
-   `src/types.ts`. `category`, `language` and `recommended` are compulsory, so the presets cannot
-   be forgotten.
+   `src/types.ts`. `language` and `recommended` are compulsory. `fixShape` is optional and only for
+   a rule with a fixer: it says what that fixer may do to the token stream, and `fixerSafety.test.ts`
+   is what holds it to the claim.
 2. One line in the `rules` object in `src/rules/index.ts`.
 3. `src/rules/<kebab-case>/<camelCaseExport>.test.ts`.
 4. `src/rules/<kebab-case>/README.md`.
 5. An entry in `__mocks__/ruleMetadata.json`. It is a golden file of every rule's public surface:
-   messages, schema, type, fixable and the four `docs` fields. `meta.test.ts` asserts it covers
+   messages, schema, type, fixable and the four `docs` fields, `fixShape` among them. `meta.test.ts` asserts it covers
    exactly the registered rules, so a new rule without one fails, and an accidental change to an
    existing message or schema fails too.
 6. The rule id in `RULE_MODULES` in `src/ruleModules.test.ts`. That file imports no rule
@@ -129,7 +130,11 @@ README rule table is **not** derived: no script writes it. `meta.test.ts` only c
 rule id appears somewhere in `README.md`, so a wrong description or a missing options column
 passes. Edit it by hand and read it back.
 
-A new category is one entry in `RULE_CATEGORIES` and the matching `configs.<category>` appears.
+There are two presets and there is no third. `recommended` carries the rules with
+`meta.docs.recommended`, `all` carries every rule, and a rule's subject lives in its id rather than
+in a preset name: `react-native-*` is React Native accessibility and `react-*` is React. A group of
+rules a layer wants is named by that layer, which is what `frameworks/reactNative.ts` does with the
+five accessibility rules and `frameworks/utils/reactCoreUtils.ts` with the three React ones.
 
 ## 3b. Comments
 

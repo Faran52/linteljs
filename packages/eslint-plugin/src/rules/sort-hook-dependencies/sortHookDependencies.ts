@@ -28,10 +28,10 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
   meta: {
     type: 'suggestion',
     docs: {
-      category: 'ordering',
       language: 'universal',
       // Off by default: matches on bare call names, so opting in should be a decision, not inherited from a preset.
       recommended: false,
+      fixShape: 'reorder',
       description: 'Keep hook dependency arrays in a consistent order.',
     },
     fixable: 'code',

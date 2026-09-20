@@ -2,7 +2,6 @@
 
 Require accessibilityActions and onAccessibilityAction to be declared together and well formed.
 
-- Category: `accessibility`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

@@ -2,7 +2,6 @@
 
 Require accessibilityRole and role values React Native understands.
 
-- Category: `accessibility`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

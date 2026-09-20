@@ -70,7 +70,6 @@ export const noInlineObjectTypes = createRule('no-inline-object-types', {
   meta: {
     type: 'problem',
     docs: {
-      category: 'types',
       language: 'typescript',
       recommended: true,
       description: 'Give an object type a name instead of writing its shape inline.',

@@ -11,7 +11,7 @@ restates code goes stale and then misleads.
 
 For a consumer deciding whether to use linteljs: The problem, The goal, Non-goals.
 For a rule or target designer: One item per line, object literals included; Duplicate JSX props; Targets; Project structure; Libraries and routers; Package manager files; Comments.
-For work on this workspace itself: One shape for every ring; One version per shared dependency; Two artifact lists; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
+For work on this workspace itself: One shape for every ring; The shipped starter source; One version per shared dependency; Two artifact lists; What a project owns; Renaming a generated agent file; React Native build; The end-to-end matrix; Releasing; Workspace lint exemptions.
 
 ## The problem
 
@@ -358,6 +358,54 @@ caught two ways: `registry.test.ts` resolves every derived asset against disk ac
 that opens one, and `starterSourceEmitter.test.ts` pins which asset each answer derives.
 `lint:starters` reads the same emitter, so the gate and the pipeline cannot disagree about where a
 file lives.
+
+### The shipped starter source, and the one gate that reads it
+
+`assets/target/starter-source/**` was the one tree nothing in `pnpm check` touched: outside every
+`tsconfig` include, ignored by the root `eslint.config.ts`, and outside the vitest include, so its
+suites never ran here. Fifty-one script files shipped to every generated project with no gate but
+the end-to-end suite, which `check` excludes because every case hits the network.
+
+Making them ordinary source is not available. Twenty-seven of the thirty-one suites there test a
+module the official scaffolder writes: `@/constants/theme` comes from `create-expo-app`, `./page`
+from `create-next-app`, `./App.vue` from `create-vite`. Owning those means forking the templates,
+which is the first non-goal in this document.
+
+So `scripts/lintStarters.ts` lints each file the way the project receiving it will. `defineConfig`
+is the same function a generated `eslint.config.js` calls, handed that target's own framework, and
+each file is judged at the path its target record places it on rather than the path it is stored at,
+which is what makes the naming rules mean anything. The answers widen per target until every file is
+placed, so a starter nothing ships is reported rather than linted at a guess.
+
+It found fifty-four findings the hour it was written. Forty-two were autofixable and `--fix` runs the
+same config to repair them, which matters because the `fix` stage of a `create` run is skippable and
+a project that skips it got the unsorted bytes. The other twelve were
+`@linteljs/no-inline-object-types` in React Native starter tests, not autofixable, and they would
+have failed a generated project's own `pnpm check`. Those shapes are named types now.
+
+What a rule cannot see is a name that resolves to nothing, so the script builds a program too, with
+`@types/chrome`, `@types/firefox-webext-browser`, `@types/react` and `vitest/globals` installed as
+gate machinery. The two extension packages are mutually exclusive, so the tree is three programs: the
+browser each half is written for, and everything else. Only the diagnostics naming a name or a module
+that could not be found are kept, since the frameworks themselves are not installed.
+
+There is no `declare module '*'`, and the phrase that justified one was wrong. A wildcard does not
+cover "only the packages that cannot be installed": it matches every specifier that fails to resolve,
+relative ones included, so a misspelled import inside the tree passed silently, which is the defect
+this gate is most for. A bare specifier is discarded by its shape instead. A relative one is a
+finding unless the record says the scaffolder writes it, which is every `covers` and `needs` in that
+target, and a specifier naming a directory is matched against that directory's `index`.
+
+One rule came out of it. `children?: React.ReactNode` against no React import was caught at first
+only because React was not installed, so the name resolved to nothing. With the real types it is
+legal TypeScript: `@types/react` declares `React` globally for JSX and no program refuses it. It was
+never a type error, only a style this standard holds, so it became
+`@linteljs/react-no-global-namespace`: published, fixable, outside `recommended`, enabled by the
+React layer. The gate carries no copy, which is the point of a gate that composes the layers a
+project receives.
+
+What is still missed is anything needing the real framework types, a wrong argument or a bad return.
+The end-to-end suite remains the only thing that runs that gate.
 
 ### `assets/` is classified by its consumer
 

@@ -175,9 +175,9 @@ export const commentDelimiter = createRule('comment-delimiter', {
   meta: {
     type: 'layout',
     docs: {
-      category: 'layout',
       language: 'universal',
       recommended: true,
+      fixShape: 'whitespace',
       description: 'Use `//` for short comments and JSDoc blocks for longer prose.',
     },
     fixable: 'code',

@@ -29,7 +29,6 @@ export const reactNativeValidAccessibilityActions = createRule('react-native-val
   meta: {
     type: 'problem',
     docs: {
-      category: 'accessibility',
       language: 'universal',
       recommended: false,
       description: 'Require accessibilityActions and onAccessibilityAction to be declared together and well formed.',

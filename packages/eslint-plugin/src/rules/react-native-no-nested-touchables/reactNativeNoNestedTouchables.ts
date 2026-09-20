@@ -22,7 +22,6 @@ export const reactNativeNoNestedTouchables = createRule('react-native-no-nested-
   meta: {
     type: 'problem',
     docs: {
-      category: 'accessibility',
       language: 'universal',
       recommended: false,
       description: 'Disallow controls inside a container marked accessible.',

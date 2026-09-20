@@ -2,7 +2,6 @@
 
 Avoid destructuring namespace imports when a named import is enough.
 
-- Category: `imports`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: yes

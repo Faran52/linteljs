@@ -2,7 +2,6 @@
 
 Destructure component props in the function signature instead of reading them one field at a time.
 
-- Category: `functions`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

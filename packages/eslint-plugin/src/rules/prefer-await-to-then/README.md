@@ -2,7 +2,6 @@
 
 Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values.
 
-- Category: `promises`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: yes

@@ -27,7 +27,6 @@ export const reactNativeValidAccessibilityState = createRule('react-native-valid
   meta: {
     type: 'problem',
     docs: {
-      category: 'accessibility',
       language: 'universal',
       recommended: false,
       description: 'Require accessibilityState to be an object of the keys React Native reads.',

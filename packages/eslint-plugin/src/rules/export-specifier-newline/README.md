@@ -2,7 +2,6 @@
 
 Put each export specifier on its own line.
 
-- Category: `layout`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (whitespace)
 - In `recommended`: yes

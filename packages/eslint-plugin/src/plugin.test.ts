@@ -10,9 +10,8 @@ import linteljs, {
   PLUGIN_NAME,
 } from './plugin.ts';
 import { rules } from './rules/index.ts';
-import { RULE_CATEGORIES } from './types.ts';
 
-const PRESET_NAMES = ['recommended', ...RULE_CATEGORIES] as const;
+const PRESET_NAMES = ['recommended', 'all'] as const;
 
 describe('meta', () => {
   it('declares its published name and a semver version', () => {

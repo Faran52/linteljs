@@ -2,7 +2,6 @@
 
 Keep top-level interfaces and type aliases together, after imports and before runtime code.
 
-- Category: `ordering`
 - Applies to: TypeScript only
 - Fixable: yes (code)
 - In `recommended`: no

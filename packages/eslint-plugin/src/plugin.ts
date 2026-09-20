@@ -1,15 +1,15 @@
 import { type RuleName, rules } from './rules/index.ts';
 import {
   type LintelRuleModule,
-  RULE_CATEGORIES,
-  type RuleCategory,
   type RuleLanguage,
   TYPESCRIPT_FILES,
 } from './types.ts';
 
 import type { ESLint, Linter } from 'eslint';
 
-export type PresetName = 'recommended' | RuleCategory;
+// Two, and the level is the only axis. A rule's domain is carried by its id, the way `react-native-*` already did
+// and `@stylistic`'s `jsx-*` does, rather than by a field generating a preset per value.
+export type PresetName = 'recommended' | 'all';
 
 // A `files`-scoped block inside an eslintrc preset, which is where the TypeScript-only rules go.
 export interface LegacyOverride {
@@ -50,12 +50,6 @@ const plugin = {
 
 const ruleEntries = Object.entries(rules) as [RuleName, LintelRuleModule][];
 
-const selectByCategory = (category: RuleCategory): [RuleName, LintelRuleModule][] => {
-  return ruleEntries.filter(([, rule]) => {
-    return rule.meta.docs.category === category;
-  });
-};
-
 const byLanguage = (
   selected: [RuleName, LintelRuleModule][],
   language: RuleLanguage,
@@ -77,59 +71,51 @@ const toRuleRecord = (
   return record;
 };
 
-// TypeScript-only rules go in a second block behind a `files` glob, so none is listed as enabled on a `.js` file.
+/**
+ * TypeScript-only rules go in a second block behind a `files` glob, so none is listed as enabled on a `.js` file.
+ * Both presets always carry some, which is why there is no branch here: `recommended` and `all` are the two, and
+ * `meta.test.ts` holds each to a second block rather than leaving that to read as an accident.
+ */
 const definePreset = (
   name: string,
   selected: [RuleName, LintelRuleModule][],
 ): Linter.Config[] => {
-  const typescriptOnly = byLanguage(selected, 'typescript');
-
-  const preset: Linter.Config[] = [
+  return [
     {
       name: `${PLUGIN_NAME}/${name}`,
       plugins: { [PLUGIN_NAME]: plugin },
       rules: toRuleRecord(byLanguage(selected, 'universal')),
     },
-  ];
-
-  if (typescriptOnly.length > 0) {
-    preset.push({
+    {
       name: `${PLUGIN_NAME}/${name}/typescript`,
       files: [...TYPESCRIPT_FILES],
-      rules: toRuleRecord(typescriptOnly),
-    });
-  }
-
-  return preset;
+      rules: toRuleRecord(byLanguage(selected, 'typescript')),
+    },
+  ];
 };
 
-// `recommended` carries only rules with `meta.docs.recommended` set; a category preset carries its whole category.
+// `recommended` carries only rules with `meta.docs.recommended` set; `all` is every rule, which is the one way in
+// for a rule that ships off by default.
 const recommendedEntries = ruleEntries.filter(([, rule]) => {
   return rule.meta.docs.recommended;
 });
 
 const presets: [PresetName, [RuleName, LintelRuleModule][]][] = [
   ['recommended', recommendedEntries],
-  ...RULE_CATEGORIES.map((category): [PresetName, [RuleName, LintelRuleModule][]] => {
-    return [category, selectByCategory(category)];
-  }),
+  ['all', ruleEntries],
 ];
 
 // The same selection as an eslintrc object: `plugins` is a name list and the TS-only block an `overrides` entry.
 const defineLegacyPreset = (
   selected: [RuleName, LintelRuleModule][],
 ): LegacyPreset => {
-  const typescriptOnly = byLanguage(selected, 'typescript');
-
   return {
     plugins: [PLUGIN_NAME],
     rules: toRuleRecord(byLanguage(selected, 'universal')),
-    overrides: typescriptOnly.length === 0
-      ? []
-      : [{
-          files: [...TYPESCRIPT_FILES],
-          rules: toRuleRecord(typescriptOnly),
-        }],
+    overrides: [{
+      files: [...TYPESCRIPT_FILES],
+      rules: toRuleRecord(byLanguage(selected, 'typescript')),
+    }],
   };
 };
 

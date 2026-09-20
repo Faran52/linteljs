@@ -15,10 +15,9 @@ import plugin, {
 } from './index';
 import {
   docsUrl,
+  FIX_SHAPES,
   type LintelRuleModule,
-  RULE_CATEGORIES,
   RULE_LANGUAGES,
-  type RuleCategory,
   type RuleLanguage,
   TYPESCRIPT_FILES,
 } from './types';
@@ -101,7 +100,7 @@ const enabledIn = (preset: Linter.Config[]): string[] => {
   }));
 };
 
-const PRESET_NAMES = ['recommended', ...RULE_CATEGORIES] as const;
+const PRESET_NAMES = ['recommended', 'all'] as const;
 
 const recommendedNames = Object.entries(rules).filter(([, rule]) => {
   return rule.meta.docs.recommended;
@@ -168,8 +167,16 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
     expect(meta.docs.description).toMatch(/\.$/);
   });
 
-  it('declares a known category', () => {
-    expect(RULE_CATEGORIES).toContain(meta.docs.category);
+  /**
+   * Only a rule with a fixer may say what its fixer does, and `fixerSafety.test.ts` is what holds it to the claim.
+   * A rule declaring nothing may rewrite code, which is what `prefer-arrow-functions` does.
+   */
+  it('declares a fix shape only where there is a fixer to shape', () => {
+    const { fixShape } = meta.docs;
+
+    // Absent is legal for every rule; a value is legal only where there is a fixer for it to describe.
+    expect([...FIX_SHAPES, undefined]).toContain(fixShape);
+    expect(fixShape === undefined || meta.fixable !== undefined).toBe(true);
   });
 
   it('declares a known language', () => {
@@ -303,7 +310,7 @@ describe('rule metadata', () => {
       type: rule.meta.type,
       fixable: rule.meta.fixable ?? null,
       docs: {
-        category: rule.meta.docs.category,
+        fixShape: rule.meta.docs.fixShape ?? null,
         language: rule.meta.docs.language,
         recommended: rule.meta.docs.recommended,
         description: rule.meta.docs.description,
@@ -343,8 +350,8 @@ describe('configs', () => {
       expect(preset.plugins).toEqual([PLUGIN_NAME]);
 
       /**
-       * Both halves, because a category can be entirely TypeScript-only and then carries nothing in `rules`:
-       * `types` is the first one that is. The property under test is that a preset enables something, not where.
+       * Both halves, because a preset can be entirely TypeScript-only and then carries nothing in `rules`. The
+       * property under test is that a preset enables something, not where it enables it.
        */
       const enabled = Object.keys(preset.rules).length + preset.overrides.reduce((total, override) => {
         return total + Object.keys(override.rules).length;
@@ -377,9 +384,9 @@ describe('configs', () => {
   // `overrides` exists only when a preset has a TypeScript-only rule to scope; the empty arm matters too, an override
   // enabling nothing is unexplainable. Keyed off the flat twin's block count, not a second list naming them.
   it('carries an eslintrc override exactly where the flat preset carries a second block', () => {
-    // Guards against the loop below passing vacuously for a reason unrelated to overrides.
+    // Guards against the loop below passing vacuously: some preset has to carry a TypeScript-only block at all.
     expect(PRESET_NAMES.some((name) => {
-      return configs[`flat/${name}`].length === 1;
+      return configs[`flat/${name}`].length === 2;
     })).toBe(true);
 
     for (const name of PRESET_NAMES) {
@@ -399,38 +406,20 @@ describe('configs', () => {
   });
 
   // An opt-out rule still needs a path in, or excluding it from `recommended` ships it permanently off.
-  it('keeps every opt-out rule reachable through its category preset', () => {
+  it('keeps every opt-out rule reachable through all', () => {
     const optOut = ruleCases.filter(([, rule]) => {
       return !rule.meta.docs.recommended;
     });
 
     expect(optOut.length).toBeGreaterThan(0);
 
-    for (const [name, rule] of optOut) {
-      expect(enabledIn(configs[`flat/${rule.meta.docs.category}`])).toContain(`${PLUGIN_NAME}/${name}`);
+    for (const [name] of optOut) {
+      expect(enabledIn(configs['flat/all'])).toContain(`${PLUGIN_NAME}/${name}`);
     }
   });
 
-  it.each(RULE_CATEGORIES)('scopes %s to its category', (category: RuleCategory) => {
-    const expected = prefixed(
-      ruleCases.filter(([, rule]) => {
-        return rule.meta.docs.category === category;
-      }).map(([name]) => {
-        return name;
-      }),
-    );
-
-    expect(enabledIn(configs[`flat/${category}`])).toEqual(expected);
-    expect(expected.length).toBeGreaterThan(0);
-  });
-
-  it('covers every rule across the category presets exactly once', () => {
-    const seen = RULE_CATEGORIES.flatMap((category) => {
-      return enabledIn(configs[`flat/${category}`]);
-    });
-
-    expect(alphabetically(seen)).toEqual(alphabetically([...new Set(seen)]));
-    expect(seen).toHaveLength(ruleNames.length);
+  it('carries every rule in all', () => {
+    expect(alphabetically(enabledIn(configs['flat/all']))).toEqual(alphabetically(prefixed(ruleNames)));
   });
 
   it('registers the plugin once per preset, on the unscoped block', () => {
@@ -579,14 +568,9 @@ describe('documentation', () => {
   // qualifier after its value, as `yes (code), except the hoisted case` does, so each is matched as a prefix.
   it.each(ruleCases)('restates "%s" metadata the way meta declares it', (name, rule) => {
     const doc = readFileSync(join(rulesDir, name, 'README.md'), 'utf8');
-    const {
-      category,
-      language,
-      recommended,
-    } = rule.meta.docs;
+    const { language, recommended } = rule.meta.docs;
     const fixable = rule.meta.fixable === undefined ? 'no' : `yes (${rule.meta.fixable})`;
     const bullets = [
-      `- Category: \`${category}\``,
       `- Applies to: ${language === 'typescript' ? 'TypeScript only' : 'JavaScript and TypeScript'}`,
       `- Fixable: ${fixable}`,
       `- In \`recommended\`: ${recommended ? 'yes' : 'no'}`,

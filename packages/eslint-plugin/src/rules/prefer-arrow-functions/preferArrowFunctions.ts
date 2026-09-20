@@ -68,7 +68,6 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
   meta: {
     type: 'suggestion',
     docs: {
-      category: 'functions',
       language: 'universal',
       recommended: true,
       description: 'Prefer arrow functions when the conversion keeps behaviour the same.',

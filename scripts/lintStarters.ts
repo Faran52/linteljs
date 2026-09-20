@@ -294,22 +294,6 @@ for (const target of targets) {
     name: '@linteljs/starters/no-page-tree',
     rules: { '@next/next/no-html-link-for-pages': 'off' },
   });
-  /**
-   * Reaching React's types through the global namespace rather than importing them. Legal TypeScript, because
-   * `@types/react` declares `React` globally for JSX, so no program refuses it: `children?: React.ReactNode` shipped
-   * against no React import and every type check available here passed it. A rule, because it is a style the
-   * standard holds and not an error the compiler has.
-   */
-  config.push({
-    name: '@linteljs/starters/react-by-import',
-    rules: {
-      'no-restricted-syntax': ['error', {
-        selector: "TSQualifiedName[left.name='React'], MemberExpression[object.name='React']",
-        message: "Import React's types rather than reaching them through the global namespace.",
-      }],
-    },
-  });
-
   const eslint = new ESLint({
     overrideConfigFile: true,
     overrideConfig: config,

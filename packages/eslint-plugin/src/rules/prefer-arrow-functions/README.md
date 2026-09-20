@@ -2,7 +2,6 @@
 
 Prefer arrow functions when the conversion keeps behaviour the same.
 
-- Category: `functions`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (code), except the hoisted case
 - In `recommended`: yes

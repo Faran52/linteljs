@@ -2,7 +2,6 @@
 
 Give an object type a name instead of writing its shape inline.
 
-- Category: `types`
 - Applies to: TypeScript only
 - Fixable: no
 - In `recommended`: yes

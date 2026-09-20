@@ -6,7 +6,6 @@ export const preferTryCatch = createRule('prefer-try-catch', {
   meta: {
     type: 'suggestion',
     docs: {
-      category: 'promises',
       language: 'universal',
       recommended: true,
       description: 'Prefer `try`/`catch` around an awaited rejection path instead of a promise callback.',

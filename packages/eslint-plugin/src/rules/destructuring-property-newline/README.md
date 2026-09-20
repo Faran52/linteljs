@@ -2,7 +2,6 @@
 
 Keep destructuring patterns either compact or fully expanded, never half-split.
 
-- Category: `layout`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (whitespace)
 - In `recommended`: yes

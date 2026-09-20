@@ -2,7 +2,6 @@
 
 Require an accessible name on React Native elements that are announced.
 
-- Category: `accessibility`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

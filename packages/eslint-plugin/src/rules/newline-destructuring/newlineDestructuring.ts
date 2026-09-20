@@ -65,9 +65,9 @@ export const newlineDestructuring = createRule('newline-destructuring', {
   meta: {
     type: 'layout',
     docs: {
-      category: 'layout',
       language: 'universal',
       recommended: true,
+      fixShape: 'whitespace',
       description: 'Keep crowded destructuring patterns, interfaces, and type literals on separate lines.',
     },
     // `code`, not `whitespace`: the `ObjectPattern` branch rebuilds the pattern and drops a

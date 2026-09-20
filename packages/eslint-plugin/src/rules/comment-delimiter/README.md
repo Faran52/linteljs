@@ -2,7 +2,6 @@
 
 Use `//` for short comments and JSDoc blocks for longer prose.
 
-- Category: `layout`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (code)
 - In `recommended`: yes

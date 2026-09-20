@@ -1,7 +1,5 @@
 import linteljs from '@linteljs/eslint-plugin';
 
-import { presetOf } from '../utils/presetUtils';
-
 import {
   REACT_FILES,
   reactCore,
@@ -23,7 +21,23 @@ export const reactNativeGroup: string[] = reactGroup;
 export const reactNative = (): Layer => {
   return [
     ...reactCore(),
-    ...presetOf(linteljs.configs['flat/accessibility'][0], '@linteljs/accessibility', REACT_FILES),
+    {
+      name: '@linteljs/react-native/accessibility',
+      files: REACT_FILES,
+      plugins: { '@linteljs': linteljs },
+      /**
+       * Named rather than taken as a preset. Each is an opt-out, so `recommended` does not carry them, and the
+       * subject lives in the id now rather than in a preset name. This layer is the only thing that ever wanted
+       * the group, which is what made a published preset for it hard to justify.
+       */
+      rules: {
+        '@linteljs/react-native-accessible-name': 'error',
+        '@linteljs/react-native-no-nested-touchables': 'error',
+        '@linteljs/react-native-valid-accessibility-actions': 'error',
+        '@linteljs/react-native-valid-accessibility-role': 'error',
+        '@linteljs/react-native-valid-accessibility-state': 'error',
+      },
+    },
   ];
 };
 

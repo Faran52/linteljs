@@ -2,7 +2,6 @@
 
 Keep hook dependency arrays in a consistent order.
 
-- Category: `ordering`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (code)
 - In `recommended`: no, opt in explicitly

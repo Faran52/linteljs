@@ -2,7 +2,6 @@
 
 Report duplicate JSX props on the same element.
 
-- Category: `functions`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: no, opt in explicitly

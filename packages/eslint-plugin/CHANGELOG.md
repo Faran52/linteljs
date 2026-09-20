@@ -8,8 +8,26 @@ when a version's change lives in a sibling it is described there instead:
 
 ## 1.6.0
 
-No rule changes. The three versions move together; the change is in `@linteljs/create` and
-`@linteljs/eslint-config`. 1.5.4 was cut and never published.
+New rule, `react-no-global-namespace`. `@types/react` declares `React` as a global namespace so JSX
+resolves without an import, which makes `children?: React.ReactNode` compile in a file that never
+imports React. It is not a type error and nothing else reports it, so a file stops saying where its
+types come from and nobody finds out. Fixable: the name is imported from `react` and the member
+access replaced, merging into an existing import rather than duplicating it. Outside `recommended`
+and enabled by the React layer in `@linteljs/eslint-config`.
+
+**Breaking: the category presets are gone.** `meta.docs.category` had eight values and each one
+published a preset, so `imports`, `types` and `suppression` were one-rule presets and
+`accessibility` was exactly the rules whose id begins `react-native-`, both directions. A rule's
+subject is in its id now, the way `@stylistic` carries `jsx-*`, and the presets carry the level
+alone. `configs.recommended` is unchanged; `configs.all` replaces the eight, carrying every rule
+including the opt-outs. Name the rules you want, or take `all` and turn off what you do not.
+
+`meta.docs.category` is replaced by `meta.docs.fixShape`, which says what a fixer may do to the
+token stream rather than what a rule is about: `whitespace` leaves the tokens identical, `reorder`
+keeps the same tokens in a different order, and absent means it may rewrite code. It has one reader,
+the fixer-safety suite, which is what the category was doing for it before.
+
+1.5.4 was cut and never published.
 
 ## 1.5.3
 

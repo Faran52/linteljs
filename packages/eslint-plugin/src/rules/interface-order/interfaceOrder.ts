@@ -148,11 +148,11 @@ export const interfaceOrder = createRule('interface-order', {
   meta: {
     type: 'layout',
     docs: {
-      category: 'ordering',
       language: 'typescript',
       // Off by default: the only rule that relocates declarations, and comment placement is a judgement call no rule
       // can make reliably.
       recommended: false,
+      fixShape: 'reorder',
       description: 'Keep top-level interfaces and type aliases together, after imports and before runtime code.',
     },
     fixable: 'code',

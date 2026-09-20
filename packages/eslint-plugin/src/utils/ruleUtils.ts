@@ -79,7 +79,8 @@ export const FUNCTION_TYPES = new Set([
 ]);
 
 // A lookup the parse guarantees will hit, so a throw here beats a silent `continue` scattered across every rule.
-export const mustFind = <Found>(found: Found | null): Found => {
+// `undefined` as well as `null`, because an index into a body the parse guarantees is the same promise.
+export const mustFind = <Found>(found: Found | null | undefined): Found => {
   if (!found) {
     throw new Error('@linteljs/eslint-plugin: a lookup the parse guarantees came back empty. Please open an issue.');
   }

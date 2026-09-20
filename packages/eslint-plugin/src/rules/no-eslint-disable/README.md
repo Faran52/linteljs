@@ -2,7 +2,6 @@
 
 Fix what a rule reports, or name the exemption in the config. Do not disable it inline.
 
-- Category: `suppression`
 - Applies to: JavaScript and TypeScript
 - Fixable: no
 - In `recommended`: yes

@@ -1,15 +1,17 @@
 import type { Rule } from 'eslint';
 
-export type RuleCategory = (typeof RULE_CATEGORIES)[number];
+export type FixShape = (typeof FIX_SHAPES)[number];
 
 export type RuleLanguage = (typeof RULE_LANGUAGES)[number];
 
 export interface LintelRuleDocs {
   description: string;
-  category: RuleCategory;
   language: RuleLanguage;
-  // Whether `configs.recommended` enables it. Category presets carry it either way.
+  // Whether `configs.recommended` enables it. `configs.all` carries it either way.
   recommended: boolean;
+  // What this rule's fixer is allowed to do to the token stream, which `fixerSafety.test.ts` holds it to. Absent
+  // means it may rewrite code, which is what `prefer-arrow-functions` does. A rule with no fixer declares nothing.
+  fixShape?: FixShape;
   url: string;
 }
 
@@ -34,17 +36,15 @@ interface LintelRuleDefinition {
   create: Rule.RuleModule['create'];
 }
 
-// One per rule. The `configs.<category>` presets are generated from this list.
-export const RULE_CATEGORIES = [
-  'layout',
-  'ordering',
-  'imports',
-  'functions',
-  'promises',
-  'accessibility',
-  'suppression',
-  'types',
-] as const;
+/**
+ * How far a fixer may move the tokens it touches, and the whole of what this says. A domain taxonomy used to live
+ * here as `category`, generating one published preset per value, until `accessibility` turned out to be exactly the
+ * rules whose id begins `react-native-`. The id carries the domain now and the presets carry the level.
+ *
+ * `whitespace`: the token stream is identical afterwards.
+ * `reorder`: the same tokens in a different order.
+ */
+export const FIX_SHAPES = ['whitespace', 'reorder'] as const;
 
 // Which files a rule can meaningfully run against; a typescript rule wastes a traversal on a .js file.
 export const RULE_LANGUAGES = ['universal', 'typescript'] as const;
@@ -59,7 +59,7 @@ export const docsUrl = (ruleName: string): string => {
   return `${DOCS_BASE}/${ruleName}`;
 };
 
-// The only supported way to declare a rule: derives the docs URL and makes category/language compulsory.
+// The only supported way to declare a rule: derives the docs URL and makes language and recommended compulsory.
 export const createRule = (
   name: string,
   definition: LintelRuleDefinition,

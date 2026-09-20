@@ -23,7 +23,6 @@ export const noImportNamespaceDestructure = createRule('no-import-namespace-dest
   meta: {
     type: 'suggestion',
     docs: {
-      category: 'imports',
       language: 'universal',
       recommended: true,
       description:

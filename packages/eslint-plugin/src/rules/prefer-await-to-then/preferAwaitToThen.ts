@@ -25,7 +25,6 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
   meta: {
     type: 'suggestion',
     docs: {
-      category: 'promises',
       language: 'universal',
       recommended: true,
       description: 'Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values.',

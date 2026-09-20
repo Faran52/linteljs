@@ -15,7 +15,7 @@ import {
 
 import { rules } from './rules/index.ts';
 
-import type { RuleCategory } from './types.ts';
+import type { FixShape } from './types.ts';
 
 const ruleNames = Object.keys(rules);
 const samples = parseableSamples().map((sample) => {
@@ -94,16 +94,17 @@ describe.each(ruleNames)('%s indentation', (name) => {
   });
 });
 
-const namesIn = (category: RuleCategory): string[] => {
+// Read off the rule rather than off a domain taxonomy: what a fixer may do to the tokens is the fixer's own property.
+const namesIn = (shape: FixShape): string[] => {
   return Object.entries(rules).filter(([, rule]) => {
-    return rule.meta.docs.category === category;
+    return rule.meta.docs.fixShape === shape;
   }).map(([name]) => {
     return name;
   });
 };
 
 // Only the token stream, not the text, can tell a code change from a whitespace one.
-describe.each(namesIn('layout'))('%s tokens', (name) => {
+describe.each(namesIn('whitespace'))('%s tokens', (name) => {
   it.each(samples)('rewrites no code in %s', (_label, sample: FixerSample) => {
     expect(tokensIn(fixWith(sample, name), sample.typescript, sample.filename))
       .toEqual(tokensIn(sample.code, sample.typescript, sample.filename));
@@ -111,7 +112,7 @@ describe.each(namesIn('layout'))('%s tokens', (name) => {
 });
 
 // Ordering rules move tokens on purpose, so only the multiset has to match, not the order.
-describe.each(namesIn('ordering'))('%s tokens', (name) => {
+describe.each(namesIn('reorder'))('%s tokens', (name) => {
   it.each(samples)('keeps every token in %s', (_label, sample: FixerSample) => {
     expect(tokensIn(fixWith(sample, name), sample.typescript, sample.filename).sort(alphabetically))
       .toEqual(tokensIn(sample.code, sample.typescript, sample.filename).sort(alphabetically));

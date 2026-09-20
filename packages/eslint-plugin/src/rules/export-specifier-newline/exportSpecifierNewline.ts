@@ -22,9 +22,9 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
   meta: {
     type: 'layout',
     docs: {
-      category: 'layout',
       language: 'universal',
       recommended: true,
+      fixShape: 'whitespace',
       description: 'Put each export specifier on its own line.',
     },
     fixable: 'whitespace',

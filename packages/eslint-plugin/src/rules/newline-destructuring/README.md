@@ -2,7 +2,6 @@
 
 Keep crowded destructuring patterns, interfaces, and type literals on separate lines.
 
-- Category: `layout`
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (code)
 - In `recommended`: yes

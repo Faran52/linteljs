@@ -31,7 +31,6 @@ export const reactNativeAccessibleName = createRule('react-native-accessible-nam
   meta: {
     type: 'problem',
     docs: {
-      category: 'accessibility',
       language: 'universal',
       recommended: false,
       description: 'Require an accessible name on React Native elements that are announced.',

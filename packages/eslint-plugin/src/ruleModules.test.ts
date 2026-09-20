@@ -10,7 +10,6 @@ import type { Rule } from 'eslint';
 // ESLint's own rule module rather than `unknown`, since the test reads it back.
 interface LoadedDocs {
   description?: string;
-  category?: string;
   language?: string;
   recommended?: boolean;
 }
@@ -61,6 +60,7 @@ const RULE_MODULES = [
   'react-native-valid-accessibility-actions',
   'react-native-valid-accessibility-role',
   'react-native-valid-accessibility-state',
+  'react-no-global-namespace',
   'sort-hook-dependencies',
   'union-newline',
 ];
@@ -81,7 +81,7 @@ describe.each(RULE_MODULES)('%s', (moduleName) => {
     // fails here rather than downstream.
     expect(typeof rule.create).toBe('function');
     expect(rule.meta?.docs?.description).toBeTruthy();
-    expect(rule.meta?.docs?.category).toBeTruthy();
+    expect(rule.meta?.docs?.language).toBeTruthy();
     expect(rule.meta?.docs?.language).toBeTruthy();
     expect(typeof rule.meta?.docs?.recommended).toBe('boolean');
     expect(Object.keys(rule.meta?.messages ?? {}).length).toBeGreaterThan(0);
