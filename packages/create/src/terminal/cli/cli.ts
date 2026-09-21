@@ -6,7 +6,6 @@ import {
 import {
   env,
   stdin,
-  stdout,
   versions,
 } from 'node:process';
 
@@ -44,11 +43,7 @@ import {
 } from '../prompts/prompts';
 import { isValidProjectName } from '../utils/nameUtils';
 
-import {
-  LOCKFILES,
-  STAGE_LABELS,
-  USAGE,
-} from './constants';
+import { LOCKFILES, USAGE } from './constants';
 import {
   type AnswerFlags,
   type CliOptions,
@@ -60,6 +55,7 @@ import {
   managerRefusal,
   nodeRefusal,
 } from './utils/hostUtils';
+import { say, stageReport } from './utils/reportUtils';
 
 interface Host {
   packageManager: PackageManager;
@@ -67,11 +63,6 @@ interface Host {
   nodeVersion: string;
 }
 
-/**
- * `list` and `map` carry no `flag` on any of today's records, both being hand-edited only: `resolveConditions`,
- * `aliases` and `ignores` are recorded, never passed on the command line.
- * Through the config parser rather than a second validator: every flag gets the same message a bad config does.
- */
 const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
   return parseLinteljsConfig(JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
@@ -79,11 +70,6 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
     ...DEFAULT_ANSWERS,
     ...flags,
   }));
-};
-
-// stdout for what the user asked to see; `console.error` for failures.
-const say = (message: string): void => {
-  stdout.write(`${message}\n`);
 };
 
 // What to do next, once every stage has run: enter the directory, install what was skipped, run the gate.
@@ -94,19 +80,6 @@ const summary = (name: string, options: CliOptions, answers: Answers): string =>
   const install = options.skip.includes('install') ? [`  ${packageManager} install`, `  ${run} lint:fix`] : [];
 
   return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
-};
-
-// The stages this run will execute, before the first one starts: a stage that is skipped is easier to read here
-// than to notice missing from the numbered lines underneath.
-const stepsPlan = (options: CliOptions): string => {
-  const lines = STAGES.map((stage, index) => {
-    // The rule `pipelineRun` applies: with lint skipped there is nothing of ours to fix against.
-    const skipped = options.skip.includes(stage) || (stage === 'fix' && options.skip.includes('lint'));
-
-    return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;
-  });
-
-  return ['', 'Steps:', ...lines].join('\n');
 };
 
 // The manager that invoked this CLI, which is the one a generated project keeps: the user agent every scaffolder
@@ -362,8 +335,6 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       return 0;
     }
 
-    say(stepsPlan(options));
-
     await pipelineRun({
       // With --skip-scaffold the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
@@ -372,19 +343,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       answers,
       skip: options.skip,
       fresh: options.fresh,
-      onWrite: (path) => {
-        say(`  wrote ${path}`);
-      },
-      onNotice: (message) => {
-        say(`  ${message}`);
-      },
-      onStage: (stage, index, count) => {
-        say(`[${String(index)}/${String(count)}] ${STAGE_LABELS[stage]}`);
-      },
-      // Six spaces, so it sits under the label rather than under the counter.
-      onStageDone: (_stage, milliseconds) => {
-        say(`      done in ${(milliseconds / 1000).toFixed(1)}s`);
-      },
+      ...stageReport(options),
     });
 
     say(summary(name, options, answers));

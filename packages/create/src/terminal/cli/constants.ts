@@ -1,5 +1,6 @@
 import { type ParseArgsOptionsConfig } from 'node:util';
 
+import { STAGES } from '@config/constants';
 import { type Stage } from '@config/types';
 
 import { valuesOf } from '@utils/objectUtils';
@@ -173,3 +174,15 @@ export const STAGE_LABELS: Record<Stage, string> = {
   install: 'install',
   fix: 'fix: eslint and stylelint --fix',
 };
+
+/**
+ * The two stages that hand the terminal to a binary. The scaffolder and the install print their own progress, which
+ * is the progress worth reading, so neither gets a spinner to fight it for the line: their summary is printed when
+ * they finish, under the output they made.
+ */
+export const INHERITED_STAGES = new Set<Stage>(['scaffold', 'install']);
+
+// Every stage summary lines up on one column, so a run reads down rather than ragged.
+export const STAGE_WIDTH = Math.max(...STAGES.map((stage) => {
+  return stage.length;
+}));

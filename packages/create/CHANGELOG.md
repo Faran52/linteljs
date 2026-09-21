@@ -24,8 +24,11 @@ when a version's change lives in a sibling it is described there instead:
   npm, and npm is no longer pinned to 11 for every target. Four of that template's components declare their
   props as an unnamed shape, which the standard's own `no-inline-object-types` refuses, so the starter fixes
   name them: `ThemedView`, `ThemedText`, `ExternalLink` and `Collapsible`.
-- A run names the scaffolder it is about to fetch, lists its six steps before the first one starts with the
-  skipped ones marked, and closes each stage with what it took.
+- **A run on a terminal is one line per stage**, named for the stage and carrying what it did: a spinner while it
+  works, replaced by the files it wrote or the last thing it said, and what it took. The scaffolder and the install
+  get no spinner over their own output, which is the progress worth reading. Behind a pipe nothing changed: the plan
+  of six steps with the skipped ones marked, a line per file and a line per stage, which is what a CI log carries.
+- A run names the scaffolder it is about to fetch, and the manager that will fetch it.
 - `assets/` is now `templates/` in the published tarball, laid out as the project it lands in rather than by
   the emitter that reads it. No emitted file changed: a hash of every artifact of all 98 end-to-end cases,
   5220 of them, is identical before and after.
