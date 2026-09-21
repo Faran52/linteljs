@@ -92,7 +92,7 @@ export const verifyLintOutput = async (pm: PackageManager, project: string): Pro
 
 export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => {
   const root = join(workspace, label.replaceAll(' ', '-'));
-  // `create-expo-app` rejects a name matching one of its own dependencies.
+  // `create-expo` rejects a name matching one of its own dependencies.
   const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
   const project = join(root, name);
 
