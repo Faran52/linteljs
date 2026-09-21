@@ -1,6 +1,6 @@
 import { compact, uniq } from 'es-toolkit';
 
-import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '@config/constants';
+import { MANAGER_FLOORS, NODE_ENGINE } from '@config/constants';
 import {
   type Artifact,
   type Framework,
@@ -38,6 +38,13 @@ import type { TargetRecord } from '@targets/types';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 
+// npm's `devEngines` entry: `runtime` is the one a scaffolder writes, `packageManager` the one written here.
+export interface DevEngine {
+  name: string;
+  version?: string;
+  onFail?: string;
+}
+
 export interface PackageJson {
   name?: string;
   version?: string;
@@ -45,6 +52,7 @@ export interface PackageJson {
   type?: string;
   packageManager?: string;
   engines?: Record<string, string>;
+  devEngines?: Record<string, DevEngine>;
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -204,15 +212,28 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...withoutSuperseded(existing.devDependencies ?? {}),
     ...buildDevDependencies(answers),
   };
-  const managerVersion = PACKAGE_MANAGER_VERSIONS[answers.packageManager];
+  const pm = answers.packageManager;
+  // The manager that invoked the CLI, or the floor where a config predates the recording of it.
+  const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];
 
   return {
     ...packageJson,
     type: 'module',
-    packageManager: `${answers.packageManager}@${managerVersion}`,
+    // No bun field: neither corepack nor pnpm's switch knows bun, and `engines.bun` says what this would have.
+    ...(pm === 'bun' ? {} : { packageManager: `${pm}@${version}` }),
     engines: {
       node: NODE_ENGINE,
-      [answers.packageManager]: `>=${managerVersion}`,
+      // The floor rather than the executor's version: the exact one is in `packageManager`, and the floor is what
+      // was tested.
+      [pm]: `>=${MANAGER_FLOORS[pm]}`,
+    },
+    devEngines: {
+      // Spread first, so a scaffolder's own `runtime` entry survives.
+      ...existing.devEngines,
+      packageManager: {
+        name: pm,
+        onFail: 'error',
+      },
     },
     scripts: {
       ...existing.scripts,

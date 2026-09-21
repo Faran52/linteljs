@@ -4,12 +4,17 @@ import {
   resolve,
 } from 'node:path';
 import {
+  env,
   stdin,
   stdout,
   versions,
 } from 'node:process';
 
-import { RUN_PREFIX, STAGES } from '@config/constants';
+import {
+  NODE_FLOOR,
+  RUN_PREFIX,
+  STAGES,
+} from '@config/constants';
 
 import {
   type Answers,
@@ -17,6 +22,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
+  type PackageManager,
   parseLinteljsConfig,
 } from '@answers';
 import { entryExists, linteljsConfigReader } from '@disk';
@@ -25,7 +31,7 @@ import {
   pipelineRun,
   planSync,
 } from '@pipeline';
-import { packageManagerSpawn } from '@spawns';
+import { nodeSpawn, packageManagerSpawn } from '@spawns';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import { PROJECT_NAME_RULE } from '../constants';
@@ -38,13 +44,28 @@ import {
 } from '../prompts/prompts';
 import { isValidProjectName } from '../utils/nameUtils';
 
-import { STAGE_LABELS, USAGE } from './constants';
+import {
+  LOCKFILES,
+  STAGE_LABELS,
+  USAGE,
+} from './constants';
 import {
   type AnswerFlags,
   type CliOptions,
   parseCliArgs,
 } from './utils/argvUtils';
-import { nodeVersionRefusal } from './utils/nodeUtils';
+import {
+  type DetectedManager,
+  managerFromUserAgent,
+  managerRefusal,
+  nodeRefusal,
+} from './utils/hostUtils';
+
+interface Host {
+  packageManager: PackageManager;
+  packageManagerVersion: string | undefined;
+  nodeVersion: string;
+}
 
 /**
  * `list` and `map` carry no `flag` on any of today's records, both being hand-edited only: `resolveConditions`,
@@ -88,25 +109,105 @@ const stepsPlan = (options: CliOptions): string => {
   return ['', 'Steps:', ...lines].join('\n');
 };
 
+// The manager that invoked this CLI, which is the one a generated project keeps: the user agent every scaffolder
+// reads, else the lockfile the directory already has, else npm, which is what a bare `node .../create` is.
+const detectedManager = async (cwd: string): Promise<DetectedManager> => {
+  const fromAgent = managerFromUserAgent(env['npm_config_user_agent']);
+
+  if (fromAgent !== undefined) {
+    return fromAgent;
+  }
+
+  const present = await Promise.all(LOCKFILES.map(async ([lockfile, name]) => {
+    return await entryExists(join(cwd, lockfile)) ? name : undefined;
+  }));
+
+  return {
+    name: present.find((name) => {
+      return name !== undefined;
+    }) ?? 'npm',
+    version: undefined,
+  };
+};
+
+// A fresh run records the host: the manager question is gone, so `packageManager` on the answers is a placeholder
+// until here. `exactOptionalPropertyTypes` is on, so an absent version is an absent key rather than an undefined one.
+const hosted = (answers: Answers, host: Host): Answers => {
+  return {
+    ...answers,
+    packageManager: host.packageManager,
+    ...host.packageManagerVersion === undefined ? {} : { packageManagerVersion: host.packageManagerVersion },
+    nodeVersion: host.nodeVersion,
+  };
+};
+
+// A config already recorded a manager, so it wins and the host fills only what a config written before this lacks.
+const filled = (answers: Answers, host: Host): Answers => {
+  return {
+    ...answers,
+    ...answers.packageManagerVersion === undefined && host.packageManagerVersion !== undefined
+      ? { packageManagerVersion: host.packageManagerVersion }
+      : {},
+    ...answers.nodeVersion === undefined ? { nodeVersion: host.nodeVersion } : {},
+  };
+};
+
+/**
+ * The machine this run records, or the one sentence that stops it: the manager that invoked the CLI has to be one a
+ * project of ours can be installed by, and the Node a generated project will run on has to be one this CLI can write
+ * for. Answered rather than thrown, like `argumentError` above, and asked before the questionnaire.
+ */
+const hostOf = async (cwd: string): Promise<Host | string> => {
+  const manager = await detectedManager(cwd);
+  const packageManagerVersion = manager.version ?? packageManagerSpawn(manager.name);
+  const wrongManager = managerRefusal(manager.name, packageManagerVersion);
+
+  if (wrongManager !== undefined) {
+    return wrongManager;
+  }
+
+  // bun runs this CLI itself, so `versions.node` there is the Node bun bundles rather than the one a project runs on.
+  const nodeVersion = versions['bun'] === undefined ? versions.node : nodeSpawn();
+
+  if (nodeVersion === undefined) {
+    return 'bun ran this, and the project it writes runs on Node. '
+      + `Install Node ${NODE_FLOOR} or newer and run this again.`;
+  }
+
+  return nodeRefusal(nodeVersion) ?? {
+    packageManager: manager.name,
+    packageManagerVersion,
+    nodeVersion,
+  };
+};
+
 // Only the questionnaire can supply a missing name; every route that skips it already knows the name.
 const askedFrom = async (
   options: CliOptions,
   prompter: Prompter,
   hasTerminal: boolean,
+  host: Host,
 ): Promise<Asked> => {
   const named = (answers: Answers): Asked => {
     return {
       name: options.name,
-      answers,
+      answers: hosted(answers, host),
+    };
+  };
+
+  const fromConfig = (answers: Answers): Asked => {
+    return {
+      name: options.name,
+      answers: filled(answers, host),
     };
   };
 
   if (options.command === 'sync') {
-    return named(await linteljsConfigReader(options.cwd));
+    return fromConfig(await linteljsConfigReader(options.cwd));
   }
 
   if (options.skip.includes('scaffold') && await entryExists(join(options.cwd, CONFIG_PATH))) {
-    return named(await linteljsConfigReader(options.cwd));
+    return fromConfig(await linteljsConfigReader(options.cwd));
   }
 
   if (options.yes) {
@@ -120,8 +221,12 @@ const askedFrom = async (
 
   // With `--skip-scaffold` the directory is already named.
   const known = options.skip.includes('scaffold') ? basename(options.cwd) : options.name;
+  const asked = await ask(prompter, known === '' ? {} : { name: known });
 
-  return await ask(prompter, known === '' ? {} : { name: known });
+  return {
+    name: asked.name,
+    answers: hosted(asked.answers, host),
+  };
 };
 
 const runSync = async (options: CliOptions, answers: Answers): Promise<void> => {
@@ -226,11 +331,11 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     return 1;
   }
 
-  // After `--help` and `--version`, which owe an answer on any Node, and before the questionnaire, which does not.
-  const tooOld = nodeVersionRefusal(versions.node);
+  // After `--help` and `--version`, which owe an answer on any machine, and before the questionnaire, which does not.
+  const host = await hostOf(options.cwd);
 
-  if (tooOld !== undefined) {
-    console.error(tooOld);
+  if (typeof host === 'string') {
+    console.error(host);
 
     return 1;
   }
@@ -243,15 +348,13 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
   }
 
   try {
-    const { name, answers } = await askedFrom(options, prompter ?? clackPrompter, hasTerminal);
+    const { name, answers } = await askedFrom(options, prompter ?? clackPrompter, hasTerminal, host);
 
     if (options.command === 'sync') {
       await runSync(options, answers);
 
       return 0;
     }
-
-    packageManagerSpawn(answers.packageManager, say);
 
     say(stepsPlan(options));
 

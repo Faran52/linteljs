@@ -1,4 +1,4 @@
-import type { PackageManager } from '@answers/manager/package-manager/packageManagerAnswer';
+import type { PackageManager } from '@answers/recorded/package-manager/packageManagerAnswer';
 import type { ProjectShape, Stage } from './types';
 
 /**
@@ -6,17 +6,27 @@ import type { ProjectShape, Stage } from './types';
  * which writes both into `package.json`, and from `spawns/`, which refuses a manager or a Node older than these
  * rather than letting a downstream tool fail three stages later. Neither ring owns it, so it sits below both.
  */
-// An exact version: corepack rejects a range in `packageManager`.
-export const PACKAGE_MANAGER_VERSIONS: Record<PackageManager, string> = {
-  pnpm: '12.4.1',
-  // 11, not 12: `create-expo-app` cannot read npm 12's `npm pack --dry-run --json`, so React Native needs npm 11
-  // on PATH, and a project declaring a 12 floor then warns EBADENGINE on every install. expo/expo#48091.
-  npm: '11.19.1',
-  yarn: '4.18.0',
-  bun: '1.3.14',
+/**
+ * The floors a generated project's own files need, refused below rather than installed: pnpm 10.26 reads
+ * `allowBuilds`, npm 9.6.5 is what Astro asks, yarn 4 reads the `.yarnrc.yml` written here (yarn 1 forwards to it
+ * through `dlx` and the `packageManager` field, so it never runs a project of ours), bun 1.2 writes the text lockfile.
+ */
+export const MANAGER_FLOORS: Record<PackageManager, string> = {
+  pnpm: '10.26.0',
+  npm: '9.6.5',
+  yarn: '4.0.0',
+  bun: '1.2.0',
 };
 
-export const NODE_ENGINE = '>=26.8.2';
+/**
+ * A generated project declares `>=22`. The CLI refuses below 22.6.0, where `--experimental-strip-types` first exists:
+ * the shipped `scripts/*.ts` run under that flag so they run on every 22, and the flag is still accepted on 26. The
+ * pinned tools ask for more (`@angular/create` and lint-staged 17.3 want 22.22), and say so themselves as EBADENGINE
+ * warnings; that is theirs to declare, not ours to copy.
+ */
+export const NODE_ENGINE = '>=22';
+
+export const NODE_FLOOR = '22.6.0';
 
 // How each manager is asked to run a script, which the emitters write into a generated `package.json` and its CI
 // workflow, and which `terminal/` and `pipeline/` print and spawn. No ring owns it, so it sits below all of them.

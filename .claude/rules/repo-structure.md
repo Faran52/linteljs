@@ -61,9 +61,9 @@ aliases it duplicates instead of importing carry a comment saying so.
   `packages/create/src/rings.ts` is the one list of the rings and their direction; the root
   `eslint.config.ts` builds its zones from it and `src/meta.test.ts` holds the tree to it.
 
-- **Every ring has the same shape, and a suite holds it.** `emitters/` and `answers/` each carry
-  their own `meta.test.ts` because each also holds a registry against the same listing; the other
-  five are held by `src/meta.test.ts`, one table stating the rule once so a sixth ring is one entry.
+- **Every ring has the same shape, and one suite holds it.** `src/meta.test.ts` carries a row per ring
+  and states the rule once, so a tenth ring is one entry; a ring with a registry names that registry
+  in its row and the suite holds the two against each other, in both directions.
 
   A ring is named for what its members are, or for the world it reaches where the world is the
   membership test. A subject is a kebab-case directory holding one entry named for it in camelCase,
@@ -128,18 +128,17 @@ aliases it duplicates instead of importing carry a comment saying so.
   its own `Object.keys(...) as V[]`.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
-  record carries the difference, which is why `record.ts` is the file that grows.
+  record carries the difference, which is why `targets/<id>/<id>Target.ts` is the file that grows.
 
-  Inside `answers/` the path is `<group>/<key>.ts`, and the record itself is the whole of what a file
-  holds: nothing here gets its own subject directory, entry, suite or `constants.ts`, because there
-  is nothing about one answer that a second module would ever hold. A group is named for the emitter
-  group it gates rather than the other way round: `browsers`, `router` and `store` sit under
-  `target/` because a target's own slot decides each one, and `recorded/` holds the three answers no
-  prompt ever asks, `resolveConditions`, `aliases` and `ignores`, edited into `linteljs.config.json`
-  by hand.
+  Inside `answers/` an answer is a subject like anywhere else: `<group>/<kebab>/<key>Answer.ts`, with
+  its own suite beside it. A group is named for the emitter group it gates rather than the other way
+  round: `browsers`, `router` and `store` sit under `target/` because a target's own slot decides each
+  one, and `recorded/` holds the six answers no prompt ever asks, `resolveConditions`, `aliases`,
+  `ignores`, and the `packageManager`, `packageManagerVersion` and `nodeVersion` the run records off
+  the machine that started it.
 
-  Every record is one of seven kinds, `record.ts`'s own union: `choice`, `optionalChoice`, `multi`,
-  `optionalMulti`, `boolean`, `list` and `map`. Legality lives on the record rather than in a reader:
+  Every record is one of eight kinds, `types.ts`'s own union: `choice`, `optionalChoice`, `multi`,
+  `optionalMulti`, `boolean`, `list`, `map` and `text`. Legality lives on the record rather than in a reader:
   `slot` says whether a target asks the question at all, `only` on a value says whether this target
   offers it, and `askedWhen` says whether the answers so far still ask it, which is what lets
   `plugins` skip itself when `agents` comes back empty. Display text lives there too, in `values`,

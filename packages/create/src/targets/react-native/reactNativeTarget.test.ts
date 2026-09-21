@@ -46,12 +46,11 @@ const transformFor = (path: string): (source: string) => string => {
 };
 
 describe('scaffold', () => {
-  // `via` is the whole reason this target differs: every other one launches its scaffolder with the answered manager.
-  it('writes the exact argv for the default answers, launched through npm', () => {
+  // `--no-agents-md` is load-bearing: create-expo 5 otherwise writes the three agent files the emitters own.
+  it('writes the exact argv for the default answers', () => {
     expect(reactNativeTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
       kind: 'create',
-      args: ['expo-app@latest', 'demo-app', '--yes', '--no-install'],
-      via: 'npm',
+      args: ['expo@latest', 'demo-app', '--yes', '--no-install', '--no-agents-md'],
     });
   });
 });

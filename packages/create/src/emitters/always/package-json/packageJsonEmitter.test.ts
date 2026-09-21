@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 
-import { NODE_ENGINE, PACKAGE_MANAGER_VERSIONS } from '@config/constants';
+import { MANAGER_FLOORS, NODE_ENGINE } from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
 
@@ -39,6 +39,7 @@ interface AnswerOverrides {
   hostedFramework?: HostedFramework;
   testing?: Testing;
   packageManager?: PackageManager;
+  packageManagerVersion?: string;
   libraries?: Library[];
   form?: Form;
   store?: boolean;
@@ -182,16 +183,73 @@ describe('patchPackageJson', () => {
       .toHaveProperty('@vitejs/plugin-react');
   });
 
-  it('sets type, packageManager and engines', () => {
-    const patched = patchPackageJson(SCAFFOLDED, answersFor({ packageManager: 'bun' }));
-    const bun = PACKAGE_MANAGER_VERSIONS.bun;
+  // Three declarations of one fact: the exact version corepack and pnpm switch to, the floor that was tested, and
+  // the field npm and pnpm refuse the install over.
+  it('sets type, and declares the recorded manager version three ways', () => {
+    const patched = patchPackageJson(SCAFFOLDED, answersFor({
+      packageManager: 'pnpm',
+      packageManagerVersion: '12.5.1',
+    }));
 
     expect(patched.type).toBe('module');
-    expect(patched.packageManager).toBe(`bun@${bun}`);
+    expect(patched.packageManager).toBe('pnpm@12.5.1');
     expect(patched.engines).toEqual({
       node: NODE_ENGINE,
-      bun: `>=${bun}`,
+      pnpm: `>=${MANAGER_FLOORS.pnpm}`,
     });
+    expect(patched.devEngines).toEqual({
+      packageManager: {
+        name: 'pnpm',
+        onFail: 'error',
+      },
+    });
+  });
+
+  // A `packageManager: bun@x` is a field corepack would act on and cannot, so bun is told through `engines` alone.
+  it('writes no packageManager field for bun', () => {
+    const patched = patchPackageJson(SCAFFOLDED, answersFor({
+      packageManager: 'bun',
+      packageManagerVersion: '1.3.4',
+    }));
+
+    expect(patched).not.toHaveProperty('packageManager');
+    expect(patched.engines).toEqual({
+      node: NODE_ENGINE,
+      bun: `>=${MANAGER_FLOORS.bun}`,
+    });
+    expect(patched.devEngines?.['packageManager']).toEqual({
+      name: 'bun',
+      onFail: 'error',
+    });
+  });
+
+  // A config written before the version was recorded, which is every project generated before this.
+  it('falls back to the floor where the config carries no version', () => {
+    const patched = patchPackageJson(SCAFFOLDED, answersFor({ packageManager: 'npm' }));
+
+    expect(patched.packageManager).toBe(`npm@${MANAGER_FLOORS.npm}`);
+    expect(patched.engines?.['npm']).toBe(`>=${MANAGER_FLOORS.npm}`);
+  });
+
+  // What Node a project runs on is the scaffolder's to declare and not linteljs's to overwrite.
+  it('keeps a devEngines entry the scaffolder wrote', () => {
+    const patched = patchPackageJson(
+      {
+        devEngines: {
+          runtime: {
+            name: 'node',
+            onFail: 'warn',
+          },
+        },
+      },
+      answersFor({}),
+    );
+
+    expect(patched.devEngines?.['runtime']).toEqual({
+      name: 'node',
+      onFail: 'warn',
+    });
+    expect(patched.devEngines?.['packageManager']).toBeDefined();
   });
 
   // React Native's `eas build` needs an account; `expo export` is the local bundle (measurements in DESIGN.md).
@@ -637,9 +695,6 @@ describe('VERSIONS against the config it installs beside', () => {
   });
 });
 
-// pnpm rewrites this workspace's `packageManager` on every install; a project was once pinned to 11.21.0 by a
-// workspace running 11.24.0.
-
 describe('VERSIONS against the workspace catalog', () => {
   it('reads a catalog with entries in it, so the assertion below is not vacuous', () => {
     expect(catalogEntries().length).toBeGreaterThan(0);
@@ -660,14 +715,17 @@ describe('VERSIONS against the workspace catalog', () => {
   });
 });
 
-describe('PACKAGE_MANAGER_VERSIONS against the workspace', () => {
-  // A project told to use a pnpm older than the one this repository develops on is a project this repository
-  // has never run its own gate against.
-  it('pins pnpm no older than the one this workspace runs', () => {
+describe('MANAGER_FLOORS against the workspace', () => {
+  /**
+   * The direction the floor reads: a project is refused below this and pinned to its own executor's version above
+   * it, so what matters is that the floor is one this repository has run. A floor above the pnpm this workspace
+   * develops on would be a floor nothing here has ever gated at.
+   */
+  it('floors pnpm no higher than the one this workspace runs', () => {
     const path = join(import.meta.dirname, '..', '..', '..', '..', '..', '..', 'package.json');
     const { packageManager } = parsePackageJson(readFileSync(path, 'utf8'));
     const running = String(packageManager).replace('pnpm@', '');
 
-    expect(atLeast(PACKAGE_MANAGER_VERSIONS.pnpm, running)).toBe(true);
+    expect(atLeast(running, MANAGER_FLOORS.pnpm)).toBe(true);
   });
 });

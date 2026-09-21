@@ -4,15 +4,20 @@ import { type Stage } from '@config/types';
 
 import { valuesOf } from '@utils/objectUtils';
 
-import { type AnswerKey, ANSWERS } from '@answers';
+import {
+  type AnswerKey,
+  ANSWERS,
+  type PackageManager,
+} from '@answers';
 
 import type {
   AnswerRecord,
   ListRecord,
   MapRecord,
+  TextRecord,
 } from '@answers/types';
 
-type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord>;
+type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord | TextRecord>;
 
 interface FlagField {
   flag: string;
@@ -26,8 +31,8 @@ interface FlaggedAnswer {
   flag: string;
 }
 
-// `list` and `map` carry no `flag` on any of today's records, both being hand-edited only: `resolveConditions`,
-// `aliases` and `ignores` are recorded, never passed on the command line.
+// Nothing under `recorded/` carries a `flag`: `resolveConditions`, `aliases` and `ignores` are hand-edited, and the
+// manager and the two versions are read off the machine that ran this, never passed on the command line.
 const isFlaggable = (record: AnswerRecord): record is FlaggedRecord => {
   return record.flag !== undefined;
 };
@@ -146,7 +151,20 @@ export const CLI_OPTIONS = {
   ...ANSWER_OPTIONS,
 } satisfies ParseArgsOptionsConfig;
 
-// What each stage does, on the line that announces it.
+/**
+ * What each stage does, on the line that announces it.
+ * The lockfile a directory already has, for a run with no user agent: `--skip-scaffold` and `sync` on a project
+ * that carries one. In the order `package-manager-detector` checks them.
+ */
+export const LOCKFILES: readonly (readonly [string, PackageManager])[] = [
+  ['pnpm-lock.yaml', 'pnpm'],
+  ['yarn.lock', 'yarn'],
+  ['bun.lock', 'bun'],
+  ['bun.lockb', 'bun'],
+  ['package-lock.json', 'npm'],
+  ['npm-shrinkwrap.json', 'npm'],
+];
+
 export const STAGE_LABELS: Record<Stage, string> = {
   scaffold: 'scaffold: the official generator',
   lint: 'lint: eslint and stylelint config',

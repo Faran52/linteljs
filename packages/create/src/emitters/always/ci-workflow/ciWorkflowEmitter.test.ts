@@ -4,7 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import { NODE_ENGINE } from '@config/constants';
+import { NODE_FLOOR } from '@config/constants';
+
+import { majorOf } from '@utils/versionUtils';
 
 import {
   type Answers,
@@ -20,6 +22,7 @@ import { emitCiWorkflow } from './ciWorkflowEmitter';
 interface AnswerOverrides {
   packageManager?: PackageManager;
   target?: TargetId;
+  nodeVersion?: string;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -50,11 +53,15 @@ describe('emitCiWorkflow', () => {
     }
   });
 
-  // A runner resolving a floating `24` to something under the declared floor would install a Node the project says
-  // it does not support, so the workflow names the version `engines.node` resolves to.
-  it('pins the node version to what engines declares', () => {
-    expect(emitCiWorkflow(answersFor({}))).toContain(`node-version: ${NODE_ENGINE.replace('>=', '')}`);
-    expect(emitCiWorkflow(answersFor({}))).not.toContain('node-version: 24\n');
+  // A project made on 26 and gated on the floor is a project CI has never run the way anyone develops it.
+  it('runs CI on the major of the node that made the project', () => {
+    expect(emitCiWorkflow(answersFor({ nodeVersion: '26.9.0' }))).toContain('node-version: 26\n');
+  });
+
+  // A config written before the version was recorded, which is every project generated before this.
+  it('falls back to the floor major where the config carries no node version', () => {
+    expect(emitCiWorkflow(answersFor({})))
+      .toContain(`node-version: ${String(majorOf(NODE_FLOOR))}\n`);
   });
 
   it('installs without letting the manager edit the lockfile', () => {

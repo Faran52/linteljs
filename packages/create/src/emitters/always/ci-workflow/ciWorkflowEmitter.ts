@@ -1,5 +1,7 @@
-import { NODE_ENGINE, RUN_PREFIX } from '@config/constants';
+import { NODE_FLOOR, RUN_PREFIX } from '@config/constants';
 import { type Artifact } from '@config/types';
+
+import { majorOf } from '@utils/versionUtils';
 
 import { emitted } from '../../utils/artifactUtils';
 
@@ -16,9 +18,10 @@ interface ManagerSetup {
   install: string;
 }
 
-// Pinned: a runner resolving a floating major below `engines.node` installs a Node the project rejects.
-const nodeVersion = (): string => {
-  return NODE_ENGINE.replace(/^[>=~^]+/, '');
+// The major of the Node that made the project, so CI runs what it was built on, and the floor's major where a
+// config predates the recording of it. A bare major cannot resolve below `engines.node`, which is a major too.
+const nodeVersion = (answers: Answers): string => {
+  return String(majorOf(answers.nodeVersion ?? NODE_FLOOR));
 };
 
 // Third-party actions are pinned to a commit, since a tag can move; GitHub's own go by major tag.
@@ -77,7 +80,7 @@ jobs:
 
 ${before}      - uses: actions/setup-node@v7
         with:
-          node-version: ${nodeVersion()}${cache}
+          node-version: ${nodeVersion(answers)}${cache}
 
       - run: ${setup.install}
 

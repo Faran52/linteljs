@@ -58,8 +58,8 @@ describe('scaffoldCommand', () => {
     expect(scaffoldCommand('bun', svelte)[0]).toBe('bunx');
   });
 
-  // React Native alone: `create-expo-app` shells out to npm whatever launched it, and dies under yarn.
-  it('launches through the manager a spec names, not the answered one', () => {
+  // create-expo 5 normalises npm 12's pack output, so React Native runs under whichever manager ran create.
+  it('launches every scaffolder through the manager that ran this', () => {
     const answers = answersFor({
       target: 'react-native',
       packageManager: 'yarn',
@@ -67,10 +67,11 @@ describe('scaffoldCommand', () => {
     const spec = targetFor(answers).scaffold('demo-app', answers);
 
     expect(scaffoldCommand('yarn', spec)).toEqual([
-      'npm', 'create', 'expo-app@latest', 'demo-app', '--', '--yes', '--no-install',
+      'yarn', 'create', 'expo@latest', 'demo-app', '--yes', '--no-install', '--no-agents-md',
     ]);
-    // The separator follows the launcher too, or npm keeps the flags for itself.
-    expect(scaffoldCommand('bun', spec)).toContain('--');
+    // The separator follows npm and nothing else, or npm keeps the flags for itself.
+    expect(scaffoldCommand('npm', spec)).toContain('--');
+    expect(scaffoldCommand('bun', spec)).not.toContain('--');
   });
 
   it('inserts -- separator for npm create to forward flags', () => {
@@ -172,16 +173,16 @@ describe('scaffoldNotice', () => {
     })).toBe('running sv through npm');
   });
 
-  it('names the launcher a spec chooses over the answered manager', () => {
+  it('names the manager that will run the scaffolder', () => {
     expect(noticeFor({
       target: 'react-native',
       packageManager: 'yarn',
-    })).toBe('installing create-expo-app through npm');
+    })).toBe('installing create-expo through yarn');
   });
 
   // `expo-app@latest` carries a version and `@angular/cli@latest` carries a scope as well.
   it('drops a version suffix and keeps a scope', () => {
-    expect(noticeFor({ target: 'react-native' })).toContain('create-expo-app ');
+    expect(noticeFor({ target: 'react-native' })).toContain('create-expo ');
     expect(noticeFor({ target: 'angular' })).toBe('running @angular/cli through pnpm');
     // A scope is a leading `@` and not a version, so an untagged scoped package keeps all of its name.
     expect(scaffoldNotice('pnpm', {

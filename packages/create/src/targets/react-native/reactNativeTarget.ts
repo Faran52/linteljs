@@ -9,17 +9,11 @@ import type { TargetRecord } from '../types';
 // `eslint-config-expo` bundles plugins that collide with `base()`.
 export const reactNativeTarget: TargetRecord = {
   id: 'react-native',
-  // No package-manager flag: Expo reads whichever one invoked it.
+  // create-expo 5 normalises npm 12's pack output, so it runs under whichever manager ran create.
   scaffold: (name) => {
     return {
       kind: 'create',
-      args: ['expo-app@latest', name, '--yes', '--no-install'],
-      /**
-       * `create-expo-app` shells out to `npm pack` whatever launched it, so npm is the only launcher it is tested
-       * against. Under yarn it dies before writing a file, passing a web ReadableStream to `fs.write` and then an
-       * error code where `process.exitCode` wants a number. Measured against the public registry, so not ours.
-       */
-      via: 'npm',
+      args: ['expo@latest', name, '--yes', '--no-install', '--no-agents-md'],
     };
   },
   framework: 'react-native',

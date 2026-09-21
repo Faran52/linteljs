@@ -1,12 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
-import {
-  delimiter,
-  join,
-  resolve,
-} from 'node:path';
-import { env } from 'node:process';
 
-import { isExecutableFile } from '@disk';
+import { resolvedBinary } from '../utils/binaryUtils';
 
 export interface GitOptions {
   cwd: string;
@@ -14,25 +8,8 @@ export interface GitOptions {
   input?: string;
 }
 
-// Resolved from PATH so `sync` can run it from another cwd; executable directories are rejected.
-const resolvedGit = (): string | undefined => {
-  for (const directory of (env['PATH'] ?? '').split(delimiter)) {
-    if (directory === '') {
-      continue;
-    }
-
-    const candidate = resolve(join(directory, 'git'));
-
-    if (isExecutableFile(candidate)) {
-      return candidate;
-    }
-  }
-
-  return undefined;
-};
-
 export const gitSpawn = (args: string[], options: GitOptions): SpawnSyncReturns<string> => {
-  const binary = resolvedGit();
+  const binary = resolvedBinary('git');
 
   if (binary === undefined) {
     return {

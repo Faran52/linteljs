@@ -9,6 +9,7 @@ import type {
   MultiRecord,
   OptionalChoiceRecord,
   OptionalMultiRecord,
+  TextRecord,
 } from '../types';
 
 interface SchemaPropertyNames {
@@ -23,6 +24,7 @@ interface SchemaProperty {
   items?: SchemaProperty;
   minLength?: number;
   minItems?: number;
+  pattern?: string;
   uniqueItems?: boolean;
   propertyNames?: SchemaPropertyNames;
   additionalProperties?: SchemaProperty;
@@ -87,10 +89,23 @@ const mapProperty = (record: AnswerRecord): SchemaProperty => {
   };
 };
 
+// `packageManagerVersion` and `nodeVersion`: one string each, `pattern` the whole of what the schema can say.
+const textProperty = (record: TextRecord): SchemaProperty => {
+  return {
+    type: 'string',
+    ...withDescription(record),
+    pattern: record.pattern,
+  };
+};
+
 const propertyFor = (record: AnswerRecord): SchemaProperty => {
   switch (record.kind) {
     case 'boolean': {
       return { type: 'boolean' };
+    }
+
+    case 'text': {
+      return textProperty(record);
     }
 
     case 'list': {

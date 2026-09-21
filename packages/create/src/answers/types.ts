@@ -67,6 +67,12 @@ export interface MapRecord extends Base {
   kind: 'map';
 }
 
+// One string, its shape its whole vocabulary: the two recorded versions, neither asked nor flagged.
+export interface TextRecord extends Base {
+  kind: 'text';
+  pattern: string;
+}
+
 export type AnswerRecord
   = BooleanRecord
     | ChoiceRecord
@@ -74,4 +80,5 @@ export type AnswerRecord
     | MapRecord
     | MultiRecord
     | OptionalChoiceRecord
-    | OptionalMultiRecord;
+    | OptionalMultiRecord
+    | TextRecord;

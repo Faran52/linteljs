@@ -54,6 +54,17 @@ describe('readAnswer', () => {
     }).toThrow('ignores must be a non-empty array');
   });
 
+  it('reads a text', () => {
+    expect(readAnswer(ANSWERS.packageManagerVersion, '12.5.1')).toBe('12.5.1');
+    expect(readAnswer(ANSWERS.packageManagerVersion, undefined)).toBeUndefined();
+    expect(() => {
+      return readAnswer(ANSWERS.packageManagerVersion, 12);
+    }).toThrow('packageManagerVersion must be a string');
+    expect(() => {
+      return readAnswer(ANSWERS.nodeVersion, '26');
+    }).toThrow('nodeVersion must be a string');
+  });
+
   it('reads a map', () => {
     expect(readAnswer(ANSWERS.aliases, { '@app/*': 'src/*' })).toEqual({ '@app/*': 'src/*' });
     expect(readAnswer(ANSWERS.aliases, undefined)).toBeUndefined();
@@ -73,11 +84,12 @@ describe('unaskedValueOf', () => {
     expect(unaskedValueOf(ANSWERS.agents)).toEqual(['claude-code']);
   });
 
-  it('answers undefined for the four kinds optional in Answers', () => {
+  it('answers undefined for the five kinds optional in Answers', () => {
     expect(unaskedValueOf(ANSWERS.form)).toBeUndefined();
     expect(unaskedValueOf(ANSWERS.surfaces)).toBeUndefined();
     expect(unaskedValueOf(ANSWERS.ignores)).toBeUndefined();
     expect(unaskedValueOf(ANSWERS.aliases)).toBeUndefined();
+    expect(unaskedValueOf(ANSWERS.nodeVersion)).toBeUndefined();
   });
 });
 

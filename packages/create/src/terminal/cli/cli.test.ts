@@ -14,6 +14,7 @@ import {
   cwd as processCwd,
   stdin,
   stdout,
+  versions,
 } from 'node:process';
 
 import { plantBinary } from '@mocks/plantBinary';
@@ -59,8 +60,13 @@ let project = '';
 let entered = '';
 let external = '';
 
-// `parseCliArgs` reads `process.cwd()`.
+const PNPM_AGENT = 'pnpm/12.5.1 npm/? node/? darwin arm64';
+const NPM_AGENT = 'npm/11.19.1 node/v26.9.0 darwin arm64 workspaces/false';
+
+// `parseCliArgs` reads `process.cwd()`. The agent is stubbed rather than inherited: the manager is no longer asked
+// or flagged, so what the suite runs under would otherwise decide what every case records.
 beforeEach(async () => {
+  vi.stubEnv('npm_config_user_agent', PNPM_AGENT);
   entered = processCwd();
   project = await mkdtemp(join(tmpdir(), 'linteljs-cli-'));
   external = await mkdtemp(join(tmpdir(), 'linteljs-cli-external-'));
@@ -68,6 +74,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   chdir(entered);
   await rm(project, {
     recursive: true,
@@ -278,6 +285,9 @@ describe('main: create', () => {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
+      // Recorded from the host rather than answered, so `sync` runs the manager the project was made with.
+      packageManagerVersion: '12.5.1',
+      nodeVersion: versions.node,
     });
   });
 
@@ -294,7 +304,7 @@ describe('main: create', () => {
   it('runs the questionnaire and writes both selected adapters when --yes was not passed', async () => {
     const { printed } = await runMain(
       ['--skip-scaffold', '--no-install'],
-      scripted(['svelte', undefined, undefined, ['zod'], undefined, undefined, ['claude-code', 'codex'], []]),
+      scripted(['svelte', undefined, ['zod'], undefined, undefined, ['claude-code', 'codex'], []]),
     );
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
@@ -304,6 +314,8 @@ describe('main: create', () => {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
+      packageManagerVersion: '12.5.1',
+      nodeVersion: versions.node,
       target: 'svelte',
       libraries: ['zod'],
       agents: ['claude-code', 'codex'],
@@ -888,23 +900,66 @@ describe('main: an unexpected failure', () => {
   });
 });
 
-describe('main: the package manager', () => {
-  it('is checked for before the pipeline runs', async () => {
-    const commands = await import('@spawns');
-    const spy = vi.spyOn(commands, 'packageManagerSpawn').mockImplementation(() => {
-      throw new Error('bun is not installed.');
-    });
+describe('main: the manager that ran it', () => {
+  it('records the manager and the version its user agent named', async () => {
+    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
-    await writeConfig({
-      ...DEFAULT_ANSWERS,
-      packageManager: 'bun',
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({
+      packageManager: 'pnpm',
+      packageManagerVersion: '12.5.1',
     });
+  });
 
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install']);
+  // `--skip-scaffold` and `sync` run in a directory somebody already has, and a lockfile there is the same answer.
+  it('reads the lockfile the directory already has where no agent set one', async () => {
+    vi.stubEnv('npm_config_user_agent', '');
+    await writeFile(join(project, 'pnpm-lock.yaml'), '', 'utf8');
+
+    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({ packageManager: 'pnpm' });
+  });
+
+  it('falls back to npm where there is neither', async () => {
+    vi.stubEnv('npm_config_user_agent', '');
+
+    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({ packageManager: 'npm' });
+  });
+
+  it('refuses a manager below the floor a generated project needs', async () => {
+    vi.stubEnv('npm_config_user_agent', 'pnpm/10.25.0 npm/? node/? darwin arm64');
+
+    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
     expect(code).toBe(1);
-    expect(errors.join('\n')).toContain('bun is not installed.');
-    expect(spy).toHaveBeenCalledWith('bun', expect.any(Function));
+    expect(errors.join('\n')).toContain('needs pnpm 10.26.0 or newer');
+  });
+
+  it('points yarn 1 at dlx rather than at an upgrade', async () => {
+    vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/v26.9.0 darwin arm64');
+
+    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(1);
+    expect(errors.join('\n')).toContain('yarn dlx @linteljs/create');
+  });
+
+  // An agent naming a manager with no version, and no such binary to ask: the run stops rather than guessing one.
+  it('refuses a manager that named itself and then answers nothing', async () => {
+    const commands = await import('@spawns');
+    const spy = vi.spyOn(commands, 'packageManagerSpawn').mockReturnValue(undefined);
+
+    vi.stubEnv('npm_config_user_agent', 'pnpm/? npm/? node/?');
+
+    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(1);
+    expect(errors.join('\n')).toContain('`pnpm --version` answers nothing');
 
     spy.mockRestore();
   });
@@ -912,9 +967,11 @@ describe('main: the package manager', () => {
 
 describe('main: answers given as flags', () => {
   it('takes every flag, asks nothing, and records the answers', async () => {
+    vi.stubEnv('npm_config_user_agent', 'bun/1.3.14 npm/? node/v24.3.0 darwin arm64');
+
     const asked = scripted([]);
     const { code } = await runMain([
-      '--skip-scaffold', '--no-install', '--target', 'svelte', '--pm', 'bun', '--libraries', 'zod,es-toolkit',
+      '--skip-scaffold', '--no-install', '--target', 'svelte', '--libraries', 'zod,es-toolkit',
       '--libraries', 'tailwind', '--testing', 'none', '--type-safety', 'relaxed', '--agents', 'codex',
     ], asked);
 
@@ -966,7 +1023,9 @@ describe('main: what a run reports', () => {
   });
 
   it('lists the steps once, before the first of them runs', async () => {
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
+
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
     const steps = printed.indexOf('Steps:');
 
     expect(steps).toBeGreaterThan(-1);
@@ -977,7 +1036,9 @@ describe('main: what a run reports', () => {
 
   // `fix` follows `lint`, so skipping the install marks two of the six rather than one.
   it('marks a skipped step in the list it prints', async () => {
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
+
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
     expect(printed).toContain('  1. scaffold: the official generator (skipped)');
     expect(printed).toContain('  5. install (skipped)');
@@ -986,7 +1047,9 @@ describe('main: what a run reports', () => {
   });
 
   it('closes each stage it ran with what the stage took', async () => {
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
+
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
     const lines = printed.split('\n');
     const label = lines.findIndex((line) => {
       return line.startsWith('[2/6] lint:');
@@ -1001,7 +1064,9 @@ describe('main: what a run reports', () => {
   });
 
   it('numbers each stage as it starts and closes with the next command', async () => {
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
+
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
     expect(printed).toContain('[2/6] lint: eslint and stylelint config');
     expect(printed).toContain('[4/6] standard:');

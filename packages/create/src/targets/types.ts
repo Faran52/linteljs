@@ -1,5 +1,4 @@
 import type { Library } from '@answers/libraries/libraries/librariesAnswer';
-import type { PackageManager } from '@answers/manager/package-manager/packageManagerAnswer';
 import type { Answers } from '@answers/registry';
 import type { Browser } from '@answers/target/browser/browserAnswer';
 import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
@@ -18,9 +17,6 @@ export interface ScaffoldSpec {
   kind: ScaffoldKind;
   // `[scaffolder, name, ...flags]`: `scaffoldCommand` relies on the name sitting second.
   args: [string, string, ...string[]];
-  // Runs the scaffolder through this manager rather than the answered one. For a scaffolder that shells out to npm
-  // whatever launched it, so launching it through anything else only adds a layer that can break on its own.
-  via?: PackageManager;
 }
 
 export interface TsconfigPlugin {

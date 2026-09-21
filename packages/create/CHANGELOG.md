@@ -6,6 +6,28 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
+## Unreleased
+
+- **Breaking: the package manager is no longer asked or flagged.** `--pm` and the questionnaire's manager
+  question are gone. The manager that runs `create` is the project's, recorded in `linteljs.config.json`
+  with its exact version, and read from `npm_config_user_agent`, else a lockfile already in the directory,
+  else npm. One below its floor is refused with the reason rather than installed behind you: pnpm 10.26,
+  npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is pointed at `yarn dlx @linteljs/create my-app`, which Yarn 1
+  forwards to a modern Yarn on its own.
+- A generated project declares that manager three ways: `packageManager` with the exact version, `engines`
+  with the floor, and `devEngines.packageManager` with `onFail: "error"`, which npm 11 and pnpm enforce.
+  Bun gets `engines.bun` and no `packageManager`, since neither corepack nor pnpm's switch knows Bun.
+- **The Node floor is `>=22`**, down from `>=26.8.2`. The CLI itself refuses below 22.6.0, where
+  `--experimental-strip-types` first exists, and the two shipped `scripts/*.ts` now run under that flag so
+  every 22 can run them. CI runs on the major that ran `create`, recorded beside the manager.
+- React Native scaffolds through `create-expo` 5 under whichever manager ran `create`. It no longer forces
+  npm, and npm is no longer pinned to 11 for every target.
+- A run names the scaffolder it is about to fetch, lists its six steps before the first one starts with the
+  skipped ones marked, and closes each stage with what it took.
+- `assets/` is now `templates/` in the published tarball, laid out as the project it lands in rather than by
+  the emitter that reads it. No emitted file changed: a hash of every artifact of all 98 end-to-end cases,
+  5220 of them, is identical before and after.
+
 ## 1.6.0
 
 1.5.4 was cut and never published; its notes are folded in here.

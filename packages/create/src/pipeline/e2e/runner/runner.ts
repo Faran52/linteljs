@@ -15,7 +15,11 @@ import {
   registry,
   runPm,
 } from '../utils/processUtils';
-import { createProject, workspace } from '../utils/workspaceUtils';
+import {
+  createProject,
+  versionOf,
+  workspace,
+} from '../utils/workspaceUtils';
 
 import type { E2eCase } from '../matrix/matrix';
 
@@ -103,8 +107,12 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
   // `prepare` (`postinstall` on yarn) ran: husky writes its runner there.
   expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
-  expect(parseLinteljsConfig(readFileSync(join(project, CONFIG_PATH), 'utf8')))
-    .toMatchObject(answers);
+  // The manager came from the injected user agent rather than a flag, so what the config recorded is the proof it
+  // was read, down to the version.
+  expect(parseLinteljsConfig(readFileSync(join(project, CONFIG_PATH), 'utf8'))).toMatchObject({
+    ...answers,
+    packageManagerVersion: await versionOf(answers.packageManager),
+  });
   expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
     .not.toHaveProperty('linteljs');
 

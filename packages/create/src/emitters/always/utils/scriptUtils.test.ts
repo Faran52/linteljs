@@ -74,7 +74,7 @@ describe('buildScripts', () => {
     }
 
     expect(names('astro')).toContain("find src -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.astro' \\)"
-      + ' -exec node scripts/checkBannedPatterns.ts {} +');
+      + ' -exec node --experimental-strip-types scripts/checkBannedPatterns.ts {} +');
     expect(names('vue')).toContain("-name '*.ts' -o -name '*.tsx' -o -name '*.vue'");
     expect(names('svelte')).toContain("-name '*.ts' -o -name '*.tsx' -o -name '*.svelte'");
   });

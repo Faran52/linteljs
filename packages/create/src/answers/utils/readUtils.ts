@@ -10,6 +10,7 @@ import type {
   MultiRecord,
   OptionalChoiceRecord,
   OptionalMultiRecord,
+  TextRecord,
 } from '../types';
 
 export type JsonValue = null | boolean | number | string | object;
@@ -18,11 +19,12 @@ type ReadResult<R extends AnswerRecord>
   = R extends BooleanRecord ? boolean
     : R extends ListRecord ? string[] | undefined
       : R extends MapRecord ? AliasMap | undefined
-        : R extends MultiRecord<infer V> ? V[]
-          : R extends OptionalMultiRecord<infer V> ? V[] | undefined
-            : R extends ChoiceRecord<infer V> ? V
-              : R extends OptionalChoiceRecord<infer V> ? V | undefined
-                : never;
+        : R extends TextRecord ? string | undefined
+          : R extends MultiRecord<infer V> ? V[]
+            : R extends OptionalMultiRecord<infer V> ? V[] | undefined
+              : R extends ChoiceRecord<infer V> ? V
+                : R extends OptionalChoiceRecord<infer V> ? V | undefined
+                  : never;
 
 export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] => {
   return Array.isArray(value);
@@ -30,7 +32,7 @@ export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] 
 
 /**
  * What a record's own answer is worth when nothing asked for it: `false` for the one boolean kind, a record's
- * `default` for the two kinds that are required in `Answers`, and `undefined` for the four kinds that are optional
+ * `default` for the two kinds that are required in `Answers`, and `undefined` for the five kinds that are optional
  * there. `refuseMisfit` compares an answer against this to tell an unasked value from a misfit one; the prompt
  * writes it for a question a `slot` or an `askedWhen` skipped.
  */
@@ -106,6 +108,16 @@ const stringList = (value: JsonValue | undefined, key: string): string[] => {
   return names;
 };
 
+// The record's `pattern` is the whole vocabulary, so a value that misses it is no more a reading of this key than a
+// number would be.
+const textValue = (value: JsonValue | undefined, key: string, pattern: string): string => {
+  if (typeof value !== 'string' || !new RegExp(pattern, 'u').test(value)) {
+    throw new Error(`${key} must be a string`);
+  }
+
+  return value;
+};
+
 // Names are the project's; the sigil is checked because `simple-import-sort` groups on it and a bare key sorts as a
 // package.
 const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
@@ -169,6 +181,12 @@ export const readAnswer = <R extends AnswerRecord>(record: R, value: JsonValue |
 
     case 'map': {
       return (value === undefined ? undefined : aliasMap(value, record.key)) as ReadResult<R>;
+    }
+
+    case 'text': {
+      return (value === undefined
+        ? undefined
+        : textValue(value, record.key, record.pattern)) as ReadResult<R>;
     }
   }
 };

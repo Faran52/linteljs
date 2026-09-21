@@ -10,11 +10,14 @@ ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent
 | --- | --- | --- |
 | pnpm | `pnpm create @linteljs my-app` | `pnpm dlx @linteljs/create my-app` |
 | npm | `npm create @linteljs my-app` | `npx @linteljs/create my-app` |
-| Yarn 2+ | `yarn create @linteljs my-app` | `yarn dlx @linteljs/create my-app` |
+| Yarn | `yarn create @linteljs my-app` | `yarn dlx @linteljs/create my-app` |
 | Bun | `bun create @linteljs my-app` | `bunx @linteljs/create my-app` |
 
-Yarn 1 cannot use `yarn create @scope` for this package. It looks for a binary called `create`, but this
-package provides `create-linteljs`. Use `npx @linteljs/create my-app` with Yarn 1.
+The manager that runs `create` is the project's, and the project keeps it. On Yarn 1, `yarn create @scope`
+looks for a binary called `create` and this package provides `create-linteljs`, so start with
+`yarn dlx @linteljs/create my-app`: `dlx` on Yarn 1 forwards to a modern Yarn, and the project it writes is a
+Yarn 4 project, which Yarn 1 also forwards to through the `packageManager` field. `yarn create @linteljs`
+works from Yarn 2 on.
 
 If you use pnpm and `minimumReleaseAge` is set, the override has to come before `create`:
 
@@ -24,7 +27,9 @@ pnpm --config.minimumReleaseAge=0 create @linteljs my-app
 
 ## Requirements
 
-Node 26.8.2 or newer. A missing pnpm or Yarn is installed through corepack; Bun has to be installed first.
+Node 22 (22.6.0 or newer), and the package manager that runs `create`, which the project then keeps: pnpm
+10.26 or newer, npm 9.6.5 or newer, Yarn 4 or newer, or Bun 1.2 or newer. Nothing is installed on your
+behalf: a manager below its floor is refused with the reason, rather than upgraded behind your back.
 
 ## What you get
 
@@ -63,23 +68,14 @@ still compose exported layers by hand.
 | React Native | Expo |
 | Web Extension | Vite, then a Manifest V3 layer |
 
-The CLI runs each scaffolder through the package manager selected in the questionnaire. The pnpm spellings are
-not hard-coded into an npm, Yarn, or Bun project.
+The CLI runs each scaffolder through the manager that ran `create`, React Native included: `create-expo` 5
+normalises npm 12's pack output, which is what used to force that one target through npm. The pnpm spellings
+are not hard-coded into an npm, Yarn, or Bun project.
 
-React Native scaffolds through **npm**, whichever package manager you answered. `create-expo-app` shells
-out to npm whatever launched it, so npm is the only launcher it is tested against; under Yarn it dies before
-writing a file, handing a web `ReadableStream` to `fs.write`. That reproduces against the public registry, so
-it is not a linteljs problem, and nothing about the generated project changes: the install and every later
-stage still use the manager you answered.
-
-An npm project is pinned to **npm 11**, in both `packageManager` and `engines`. `create-expo-app` shells out
-to `npm pack --dry-run --json`, and npm 12 returns an object where npm 11 returned an array, so React Native
-fails before writing a file with `Could not parse JSON returned from "npm pack"`. That is
-[expo/expo#48091](https://github.com/expo/expo/issues/48091); a fix is merged in
-[expo/expo#48392](https://github.com/expo/expo/pull/48392) and unpublished. Node 24 bundles npm 12, so run
-`npm i -g npm@11` before scaffolding React Native. The floor is 11 for every target rather than 12 for eight
-of them, because a project declaring a 12 floor warns `EBADENGINE` on every install under the npm 11 that
-React Native needs. Raise it once a fixed `create-expo-app` ships.
+The generated project declares that manager three ways: `packageManager` with the exact version that ran
+`create`, `engines` with the floor above, and `devEngines.packageManager` with `onFail: "error"`, which npm 11
+and pnpm both enforce. Bun gets `engines.bun` and no `packageManager`, since neither corepack nor pnpm's own
+switch knows Bun.
 
 The project name argument uses lowercase letters, digits, dots, dashes and underscores, starts with a letter
 or digit, is not one of npm's reserved names, and is at most 214 characters. Anything past the name is
@@ -99,7 +95,6 @@ A question is asked only where the target has a slot for it.
 | Surfaces | `--surfaces` | `popup`, `background`, `devtools-panel` | `popup,background` | webextension |
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid`, or none | none | webextension, astro |
 | Testing | `--testing` | `vitest`, `none` | `vitest` | every target |
-| Package manager | `--pm` | `pnpm`, `npm`, `yarn`, `bun` | `pnpm` | every target |
 | Libraries | `--libraries` | `zod`, `tanstack-query`, `tailwind`, `es-toolkit`, `ts-pattern`, `t3-env` | `tailwind` | every target |
 | Form library | `--form` | `tanstack-form`, `react-hook-form` (React only), or none | none | every target |
 | Router | `--router` | `react-router`, `tanstack-router`, or none | none | react |
@@ -112,7 +107,7 @@ A list flag takes comma-separated values or the flag repeated. Passing any answe
 non-interactive: the answers not given take their defaults, the way `--yes` takes all of them.
 
 ```bash
-npx @linteljs/create my-app --target svelte --pm bun --libraries zod,es-toolkit --testing none
+npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing none
 ```
 
 What the libraries bring:

@@ -8,7 +8,7 @@ export {
 } from './constants';
 export { type Form } from './libraries/form/formAnswer';
 export { type Library } from './libraries/libraries/librariesAnswer';
-export { type PackageManager } from './manager/package-manager/packageManagerAnswer';
+export { type PackageManager } from './recorded/package-manager/packageManagerAnswer';
 export {
   type AnswerKey,
   ANSWERS,

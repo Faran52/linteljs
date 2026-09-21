@@ -16,7 +16,14 @@ export interface RunResult {
 // The registry every case installs through, published by `registrySetup` before any of them run.
 export const registry = inject('registry');
 
-export const run = async (command: string, args: string[], cwd: string): Promise<RunResult> => {
+// `agent` is the one thing a case puts back: `LAUNCHER_KEYS` strips the launcher's own `npm_config_user_agent` below,
+// and the CLI now reads its manager from that variable, so a case that wants a manager says so by naming one.
+export const run = async (
+  command: string,
+  args: string[],
+  cwd: string,
+  agent?: string,
+): Promise<RunResult> => {
   /**
    * A generated project must not inherit which manager launched this suite. `run-p` reads `npm_execpath` to choose
    * what it spawns, and `pnpm run test:e2e` sets it, so `vue on bun` ran pnpm inside a project pinned to bun and got
@@ -73,6 +80,7 @@ export const run = async (command: string, args: string[], cwd: string): Promise
         YARN_GLOBAL_FOLDER: join(registry.runDir, 'yarn'),
         YARN_CACHE_FOLDER: join(registry.cacheDir, 'yarn-cache'),
         BUN_INSTALL_CACHE_DIR: join(registry.cacheDir, 'bun'),
+        ...(agent === undefined ? {} : { npm_config_user_agent: agent }),
       },
     });
 

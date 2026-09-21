@@ -136,6 +136,8 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
 
   const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
   const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
+  const managerVersionValue = readAnswer(ANSWERS.packageManagerVersion, parsed.packageManagerVersion);
+  const nodeVersionValue = readAnswer(ANSWERS.nodeVersion, parsed.nodeVersion);
   const formValue = readAnswer(ANSWERS.form, parsed.form);
   const routerValue = readAnswer(ANSWERS.router, parsed.router);
   const resolveConditionsValue = readAnswer(ANSWERS.resolveConditions, parsed.resolveConditions);
@@ -153,6 +155,8 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     ...(hostedFrameworkValue === undefined ? {} : { hostedFramework: hostedFrameworkValue }),
     testing: readAnswer(ANSWERS.testing, parsed.testing),
     packageManager: readAnswer(ANSWERS.packageManager, parsed.packageManager),
+    ...(managerVersionValue === undefined ? {} : { packageManagerVersion: managerVersionValue }),
+    ...(nodeVersionValue === undefined ? {} : { nodeVersion: nodeVersionValue }),
     libraries: libraryChoices(parsed.libraries),
     ...(formValue === undefined ? {} : { form: formValue }),
     ...(routerValue === undefined ? {} : { router: routerValue }),

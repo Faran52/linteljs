@@ -3,9 +3,11 @@ import { pluginsAnswer } from './agents/plugins/pluginsAnswer';
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from './constants';
 import { formAnswer } from './libraries/form/formAnswer';
 import { librariesAnswer } from './libraries/libraries/librariesAnswer';
-import { packageManagerAnswer } from './manager/package-manager/packageManagerAnswer';
 import { aliasesAnswer } from './recorded/aliases/aliasesAnswer';
 import { ignoresAnswer } from './recorded/ignores/ignoresAnswer';
+import { nodeVersionAnswer } from './recorded/node-version/nodeVersionAnswer';
+import { packageManagerAnswer } from './recorded/package-manager/packageManagerAnswer';
+import { packageManagerVersionAnswer } from './recorded/package-manager-version/packageManagerVersionAnswer';
 import { resolveConditionsAnswer } from './recorded/resolve-conditions/resolveConditionsAnswer';
 import { browserAnswer } from './target/browser/browserAnswer';
 import { browsersAnswer } from './target/browsers/browsersAnswer';
@@ -22,7 +24,7 @@ import type { Agent } from './agents/agents/agentsAnswer';
 import type { Plugin } from './agents/plugins/pluginsAnswer';
 import type { Form } from './libraries/form/formAnswer';
 import type { Library } from './libraries/libraries/librariesAnswer';
-import type { PackageManager } from './manager/package-manager/packageManagerAnswer';
+import type { PackageManager } from './recorded/package-manager/packageManagerAnswer';
 import type { Browser } from './target/browser/browserAnswer';
 import type { HostedFramework } from './target/hosted-framework/hostedFrameworkAnswer';
 import type { Router } from './target/router/routerAnswer';
@@ -48,6 +50,9 @@ export interface Answers {
   hostedFramework?: HostedFramework;
   testing: Testing;
   packageManager: PackageManager;
+  // Both recorded from the host that ran `create`; absent in a config written before they were.
+  packageManagerVersion?: string;
+  nodeVersion?: string;
   libraries: Library[];
   // Absent is no form library.
   form?: Form;
@@ -90,6 +95,8 @@ export const ANSWERS = {
   hostedFramework: hostedFrameworkAnswer,
   testing: testingAnswer,
   packageManager: packageManagerAnswer,
+  packageManagerVersion: packageManagerVersionAnswer,
+  nodeVersion: nodeVersionAnswer,
   libraries: librariesAnswer,
   form: formAnswer,
   router: routerAnswer,

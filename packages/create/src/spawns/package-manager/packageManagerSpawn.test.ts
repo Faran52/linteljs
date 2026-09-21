@@ -8,7 +8,7 @@ import {
   vi,
 } from 'vitest';
 
-import { isCommandAvailable, packageManagerSpawn } from './packageManagerSpawn';
+import { packageManagerSpawn } from './packageManagerSpawn';
 
 vi.mock('node:child_process', () => {
   return { spawnSync: vi.fn() };
@@ -32,115 +32,20 @@ beforeEach(() => {
   spawn.mockReset();
 });
 
-const calls = (): string[] => {
-  return spawn.mock.calls.map(([command, args]) => {
-    return [command, ...args ?? []].join(' ');
-  });
-};
-
-describe('isCommandAvailable', () => {
-  it('answers by the exit status of --version', () => {
-    spawn.mockReturnValueOnce(exit(0)).mockReturnValueOnce(exit(1));
-
-    expect(isCommandAvailable('pnpm')).toBe(true);
-    expect(isCommandAvailable('nope')).toBe(false);
-    expect(calls()).toEqual(['pnpm --version', 'nope --version']);
-  });
-});
-
 describe('packageManagerSpawn', () => {
-  const notices: string[] = [];
-  const notice = (message: string): void => {
-    notices.push(message);
-  };
+  it('answers the version the manager printed, trimmed', () => {
+    spawn.mockReturnValueOnce(exit(0, '12.5.1\n'));
 
-  it('does nothing when the manager on PATH is new enough', () => {
-    spawn.mockReturnValueOnce(exit(0, '12.4.1\n'));
-
-    packageManagerSpawn('pnpm', notice);
-
-    expect(calls()).toEqual(['pnpm --version']);
+    expect(packageManagerSpawn('pnpm')).toBe('12.5.1');
+    expect(spawn.mock.calls.map(([command, args]) => {
+      return [command, ...args ?? []].join(' ');
+    })).toEqual(['pnpm --version']);
   });
 
-  /**
-   * Yarn 1 is still on a great many machines and `yarn create` means something else there, so the old check, which
-   * asked only whether yarn existed, let the scaffold run under it and fail with `exited with 127` three stages on.
-   * Refused rather than upgraded: someone running an older major on purpose keeps it, and hears why this stopped.
-   */
-  it('refuses a manager whose major is below what a generated project declares', () => {
-    spawn.mockReturnValueOnce(exit(0, '1.22.22\n'));
-
-    expect(() => {
-      packageManagerSpawn('yarn', notice);
-    }).toThrow('yarn 1.22.22 is on PATH, and a project this CLI writes declares yarn 4.18.0');
-    expect(calls()).toEqual(['yarn --version']);
-  });
-
-  it('names the corepack command that would install the right one', () => {
-    spawn.mockReturnValueOnce(exit(0, '8.15.9\n'));
-
-    expect(() => {
-      packageManagerSpawn('pnpm', notice);
-    }).toThrow('corepack install -g pnpm@12.4.1');
-  });
-
-  // No corepack shim for bun, so the refusal points at the installer instead.
-  it('points an older bun at its own installer', () => {
-    spawn.mockReturnValueOnce(exit(0, '0.8.1\n'));
-
-    expect(() => {
-      packageManagerSpawn('bun', notice);
-    }).toThrow('https://bun.sh');
-  });
-
-  it('accepts a newer major than the one declared', () => {
-    spawn.mockReturnValueOnce(exit(0, '13.0.0\n'));
-
-    packageManagerSpawn('pnpm', notice);
-
-    expect(calls()).toEqual(['pnpm --version']);
-  });
-
-  it('installs corepack and then the manager when both are missing', () => {
-    spawn
-      .mockReturnValueOnce(exit(1))
-      .mockReturnValueOnce(exit(1))
-      .mockReturnValue(exit(0));
-
-    packageManagerSpawn('yarn', notice);
-
-    expect(calls()).toEqual([
-      'yarn --version',
-      'corepack --version',
-      'npm install -g corepack',
-      'corepack enable',
-      'corepack install -g yarn',
-    ]);
-    expect(notices).toContain('Installing yarn via corepack...');
-  });
-
-  it('surfaces the failing command', () => {
-    spawn
-      .mockReturnValueOnce(exit(1))
-      .mockReturnValueOnce(exit(0))
-      .mockReturnValueOnce(exit(0))
-      .mockReturnValueOnce({
-        ...exit(1),
-        stderr: 'denied',
-      });
-
-    expect(() => {
-      packageManagerSpawn('pnpm', notice);
-    }).toThrow('corepack install -g pnpm failed: denied');
-  });
-
-  // corepack knows npm, pnpm and yarn only; `corepack install -g bun` is not a thing.
-  it('refuses bun with an install hint rather than a corepack error', () => {
+  // Not on PATH is not a failure here: the refusal, and its wording, belong to `terminal/`.
+  it('answers nothing where the manager is not on PATH', () => {
     spawn.mockReturnValueOnce(exit(1));
 
-    expect(() => {
-      packageManagerSpawn('bun', notice);
-    }).toThrow('https://bun.sh');
-    expect(calls()).toEqual(['bun --version']);
+    expect(packageManagerSpawn('yarn')).toBeUndefined();
   });
 });

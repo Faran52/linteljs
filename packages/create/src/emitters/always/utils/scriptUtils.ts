@@ -39,7 +39,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
     // The type floor as a gate, since lint-staged scans staged files only. `find`, because the index does not see a
     // newly added file.
     'lint:types': `find src -type f \\( ${bannedPatternNames(answers).join(' -o ')} \\)`
-      + ' -exec node scripts/checkBannedPatterns.ts {} +',
+      + ' -exec node --experimental-strip-types scripts/checkBannedPatterns.ts {} +',
     // Measured: 87 stylelint findings in starter CSS passed check without it. `--allow-empty-input`, since stylelint
     // exits 2 on a glob matching nothing.
     'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,

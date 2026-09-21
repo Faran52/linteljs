@@ -21,6 +21,8 @@ export const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', true>
   hostedFramework: true,
   testing: true,
   packageManager: true,
+  packageManagerVersion: true,
+  nodeVersion: true,
   libraries: true,
   form: true,
   router: true,

@@ -867,26 +867,51 @@ that announces the wrong thing. A name is a sentence only the author knows, a ro
 `image` or `imagebutton` and those announce differently, and the two repairs for a nested touchable produce different
 interfaces. Reporting is the honest answer for all five.
 
-### React Native carries three upstream workarounds
+### React Native carries one upstream workaround
 
-None is a choice about the standard; each is a defect in somebody else's published package, and each has its
+It is not a choice about the standard; it is a defect in somebody else's published package, and it has its
 measurement here so it can be removed rather than inherited.
 
-- **The scaffolder runs through npm.** `ScaffoldSpec.via` exists for this one target. `create-expo-app` shells out
-  to `npm pack --dry-run --json` whatever launched it, so npm is the only launcher it is tested against. Launched
-  through Yarn it dies before writing a file with `ERR_INVALID_ARG_TYPE`, passing a web `ReadableStream` where a
-  Buffer is wanted, then passing that error's code to `process.exitCode`, which wants a number. Measured against
-  the public registry as well as this suite's own, so the registry is not the cause.
-- **npm is pinned to 11, for all nine targets.** Same scaffolder, same `npm pack --dry-run --json`: npm 12 answers
-  with an object where npm 11 answered with an array, and `create-expo-app` cannot read it. expo/expo#48091 is
-  merged in expo/expo#48392 and unpublished. The floor is 11 everywhere rather than 12 for the eight that could
-  take it, because a project declaring a 12 floor warns `EBADENGINE` on every install under the npm 11 this one
-  needs. Raise `PACKAGE_MANAGER_VERSIONS.npm`, and delete the CI step that installs npm 11, together.
+Two others are gone. `ScaffoldSpec.via` forced this one target through npm, because `create-expo-app` shelled
+out to `npm pack --dry-run --json` whatever launched it and could not read npm 12's answer, and the npm floor
+was pinned to 11 everywhere for the same reason. `create-expo` 5.0.2 carries `normalizeNpmPackResult`, so the
+target scaffolds through whichever manager ran `create`, the field is deleted and the floor is npm's own.
+
 - **One allowance the target declares.** `@react-native/community-cli-plugin@0.86.3` peers exactly one version of
   `@react-native/metro-config` while pnpm resolves a newer one, and nothing here declares either package.
 
   The deprecated `uuid@7` that `expo` reaches through `@expo/config-plugins` and `xcode` is deliberately *not*
   allowed away. See below.
+
+### The executor's manager and Node
+
+The package manager is not asked and not flagged. It is the one that invoked the CLI, recorded into
+`linteljs.config.json` beside `aliases` and `ignores`, and refused below a floor rather than installed.
+Measured 2026-09-21, so none of it is re-measured:
+
+| fact | source |
+| --- | --- |
+| every scaffolder reads `npm_config_user_agent`, first token, split on `/`, and falls back to npm; none writes `engines` or `packageManager` | create-vite, create-next-app, create-astro, create-vue, create-expo, `@angular/create`; sv through `package-manager-detector`, which adds lockfile, `packageManager` and `devEngines` fallbacks |
+| pnpm's agent is `pnpm/12.5.1 npm/? node/? darwin arm64`: no Node version in it | measured |
+| bun runs the CLI itself: `process.versions.node` is `24.3.0` there and `process.versions.bun` is set | measured |
+| yarn 1 is handled by yarn: its `dlx` forwards to Berry, and in a project whose `packageManager` says `yarn@4.18.0` a yarn 1 on PATH answers `yarn --version` with `4.18.0`. So no yarn 1 project is ever written, and a `yarn/1.x` agent reaching the CLI through `yarn run` is refused with the `dlx` hint rather than silently migrated | measured |
+| `packageManager` must be an exact `name@x.y.z`; corepack does not ship with Node 25+ and does not know bun; pnpm 10+ downloads and switches to the named version, measured with the field at `12.4.1` and PATH at `12.5.1` | corepack README, pnpm settings/cli.md, measured |
+| `devEngines.packageManager` with `onFail: 'error'` is enforced by npm 11 (`EBADDEVENGINES`) and by pnpm; npm 10 ignores it | measured, pnpm settings/cli.md |
+| `allowBuilds` needs pnpm 10.26.0; below it the key is unknown and install scripts are skipped | pnpm settings/build.md |
+| `create-expo` 5.0.2 carries `normalizeNpmPackResult`, the npm 12 fix; `create-expo-app` stopped at 4.0.0 | tarball read |
+| `--experimental-strip-types` exists from 22.6.0, is on by default and warning-free from 22.18.0, and is still accepted on 26.9.0 | Node docs, measured |
+
+A generated project declares the manager three ways, and each says something the others cannot. `packageManager`
+is the exact version that ran `create`, which is what corepack and pnpm's own switch read. `engines` is the floor
+this CLI was tested against, not that exact version, so a project is not pinned to one machine's patch release.
+`devEngines.packageManager` with `onFail: 'error'` is the only one of the three that refuses a different manager
+outright rather than warning. Bun gets no `packageManager`, since neither corepack nor pnpm's switch knows it, and
+`engines.bun` says what the field would have.
+
+Node is `>=22` in a generated project and `22.6.0` as this CLI's own floor: the two shipped `scripts/*.ts` run
+under `--experimental-strip-types`, which is where that flag starts. The pinned tools ask for more (`@angular/create`
+and lint-staged 17.3 want 22.22) and say so themselves as `EBADENGINE` warnings; that is theirs to declare rather
+than ours to copy. CI runs on the major that ran `create`, read off the recorded `nodeVersion`.
 
 ### A deprecation notice is never muted
 

@@ -75,7 +75,6 @@ const SHAPES: RingShape[] = [
     suffixes: {
       agents: 'Answer',
       libraries: 'Answer',
-      manager: 'Answer',
       recorded: 'Answer',
       target: 'Answer',
       testing: 'Answer',
