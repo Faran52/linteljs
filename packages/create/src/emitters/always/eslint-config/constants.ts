@@ -1,8 +1,15 @@
 import type { LibraryLayer } from '@config/types';
 
-// The libraries and routers with a layer behind them, in emit order so the written config is stable; the rest bring
-// no ESLint rules.
-export const LIBRARY_LAYERS: readonly LibraryLayer[] = ['tanstack-query', 'tanstack-router', 'tailwind'];
+/**
+ * The libraries and routers with a layer behind them, in emit order so the written config is stable; the rest bring
+ * no ESLint rules. Kept `as const` rather than annotated `readonly LibraryLayer[]`: the annotation widened the members
+ * away, and `src/types.test.ts` holds this union against `LibraryLayer`, so a layer dropped here fails there.
+ */
+export const LIBRARY_LAYERS = [
+  'tanstack-query',
+  'tanstack-router',
+  'tailwind',
+] as const satisfies readonly LibraryLayer[];
 
 // The subpath, not the barrel, which loads all six framework layers.
 export const PACKAGE = '@linteljs/eslint-config/define-config';
