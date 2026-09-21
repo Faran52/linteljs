@@ -24,6 +24,19 @@ const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine
   },
 };
 
+// What the scaffold stage says before it runs: the package it fetches and the manager that fetches it.
+export const scaffoldNotice = (packageManager: PackageManager, spec: ScaffoldSpec): string => {
+  const [scaffolder] = spec.args;
+  const launcher = spec.via ?? packageManager;
+  // `expo-app@latest` names a version and `@angular/cli@latest` names a scope as well, so only a later `@` is one.
+  const at = scaffolder.lastIndexOf('@');
+  const name = at > 0 ? scaffolder.slice(0, at) : scaffolder;
+
+  return spec.kind === 'create'
+    ? `installing create-${name} through ${launcher}`
+    : `running ${name} through ${launcher}`;
+};
+
 export const scaffoldCommand = (
   packageManager: PackageManager,
   spec: ScaffoldSpec,

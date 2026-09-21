@@ -1,4 +1,5 @@
 import { dirname } from 'node:path';
+import { performance } from 'node:perf_hooks';
 
 import { STAGES } from '@config/constants';
 import { type Stage } from '@config/types';
@@ -20,7 +21,7 @@ import { fixPass } from '../../passes/fix/fixPass';
 import { repairPass } from '../../passes/repair/repairPass';
 import { rewritePass } from '../../passes/rewrite/rewritePass';
 
-import { scaffoldCommand } from './utils/scaffoldUtils';
+import { scaffoldCommand, scaffoldNotice } from './utils/scaffoldUtils';
 
 import type { Answers } from '@answers';
 
@@ -36,6 +37,8 @@ export interface PipelineOptions {
   onNotice?: (message: string) => void;
   // Called as each stage starts, with its position in the full list.
   onStage?: (stage: Stage, index: number, count: number) => void;
+  // Called once the stage's runner resolves, with what it took.
+  onStageDone?: (stage: Stage, milliseconds: number) => void;
 }
 
 type StageRunner = (
@@ -63,6 +66,8 @@ const writeArtifacts = async (
 const stageScaffold = async (options: PipelineOptions): Promise<void> => {
   const spec = targetFor(options.answers).scaffold(options.name, options.answers);
   const [command, ...args] = scaffoldCommand(options.answers.packageManager, spec);
+
+  options.onNotice?.(scaffoldNotice(options.answers.packageManager, spec));
 
   // The scaffolder creates `<name>/` itself, so this runs one directory above.
   const parent = dirname(options.cwd);
@@ -162,7 +167,11 @@ export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
 
     if (!options.skip.includes(stage)) {
       options.onStage?.(stage, STAGES.indexOf(stage) + 1, STAGES.length);
+
+      const started = performance.now();
+
       await STAGE_RUNNERS[stage](options, artifacts, stage);
+      options.onStageDone?.(stage, performance.now() - started);
     }
   }
 };

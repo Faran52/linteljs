@@ -75,6 +75,19 @@ const summary = (name: string, options: CliOptions, answers: Answers): string =>
   return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
 };
 
+// The stages this run will execute, before the first one starts: a stage that is skipped is easier to read here
+// than to notice missing from the numbered lines underneath.
+const stepsPlan = (options: CliOptions): string => {
+  const lines = STAGES.map((stage, index) => {
+    // The rule `pipelineRun` applies: with lint skipped there is nothing of ours to fix against.
+    const skipped = options.skip.includes(stage) || (stage === 'fix' && options.skip.includes('lint'));
+
+    return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;
+  });
+
+  return ['', 'Steps:', ...lines].join('\n');
+};
+
 // Only the questionnaire can supply a missing name; every route that skips it already knows the name.
 const askedFrom = async (
   options: CliOptions,
@@ -240,6 +253,8 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
 
     packageManagerSpawn(answers.packageManager, say);
 
+    say(stepsPlan(options));
+
     await pipelineRun({
       // With --skip-scaffold the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
@@ -256,6 +271,10 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       },
       onStage: (stage, index, count) => {
         say(`[${String(index)}/${String(count)}] ${STAGE_LABELS[stage]}`);
+      },
+      // Six spaces, so it sits under the label rather than under the counter.
+      onStageDone: (_stage, milliseconds) => {
+        say(`      done in ${(milliseconds / 1000).toFixed(1)}s`);
       },
     });
 

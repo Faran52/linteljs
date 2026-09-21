@@ -17,7 +17,7 @@ import {
 } from '@answers';
 import { targetFor } from '@targets';
 
-import { scaffoldCommand } from './scaffoldUtils';
+import { scaffoldCommand, scaffoldNotice } from './scaffoldUtils';
 
 // The answers a scaffolder command line reads, plus the two that change which template it asks for.
 interface ScaffoldOverrides {
@@ -150,5 +150,43 @@ describe('scaffoldCommand', () => {
       target: 'angular',
       packageManager: 'yarn',
     })).toContain('yarn');
+  });
+});
+
+describe('scaffoldNotice', () => {
+  const noticeFor = (overrides: ScaffoldOverrides): string => {
+    const answers = answersFor(overrides);
+
+    return scaffoldNotice(answers.packageManager, targetFor(answers).scaffold('demo-app', answers));
+  };
+
+  it('names the package a create scaffolder installs', () => {
+    expect(noticeFor({})).toBe('installing create-vite through pnpm');
+    expect(noticeFor({ target: 'vue' })).toBe('installing create-vue through pnpm');
+  });
+
+  it('names what a dlx scaffolder runs instead', () => {
+    expect(noticeFor({
+      target: 'svelte',
+      packageManager: 'npm',
+    })).toBe('running sv through npm');
+  });
+
+  it('names the launcher a spec chooses over the answered manager', () => {
+    expect(noticeFor({
+      target: 'react-native',
+      packageManager: 'yarn',
+    })).toBe('installing create-expo-app through npm');
+  });
+
+  // `expo-app@latest` carries a version and `@angular/cli@latest` carries a scope as well.
+  it('drops a version suffix and keeps a scope', () => {
+    expect(noticeFor({ target: 'react-native' })).toContain('create-expo-app ');
+    expect(noticeFor({ target: 'angular' })).toBe('running @angular/cli through pnpm');
+    // A scope is a leading `@` and not a version, so an untagged scoped package keeps all of its name.
+    expect(scaffoldNotice('pnpm', {
+      kind: 'dlx',
+      args: ['@angular/create', 'demo-app'],
+    })).toBe('running @angular/create through pnpm');
   });
 });

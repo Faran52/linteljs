@@ -1380,3 +1380,27 @@ describe('starter files for a router', () => {
     })).not.toContain('metro.config.js');
   });
 });
+
+describe('stage timing', () => {
+  // The terminal prints what each stage took, so a stage that never resolved is a line that never appeared.
+  it('reports every stage it ran, in order, and none it skipped', async () => {
+    const done: [string, number][] = [];
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({}),
+      skip: ['scaffold', 'standard', 'install', 'fix'],
+      onStageDone: (stage, milliseconds) => {
+        done.push([stage, milliseconds]);
+      },
+    });
+
+    expect(done.map(([stage]) => {
+      return stage;
+    })).toEqual(['lint', 'package']);
+    expect(done.every(([, milliseconds]) => {
+      return milliseconds >= 0;
+    })).toBe(true);
+  });
+});

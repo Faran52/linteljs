@@ -576,6 +576,8 @@ describe('main: sync', () => {
     expect(printed).toContain(`${RULE}: changed`);
     expect(printed).toContain('local edit');
     expect(printed).toContain('Re-run with --force');
+    // A sync runs no stages, so it has no step list to print.
+    expect(printed).not.toContain('Steps:');
     expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
   });
 
@@ -961,6 +963,41 @@ describe('main: what a run reports', () => {
 
     expect(code).toBe(0);
     expect(printed.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
+  it('lists the steps once, before the first of them runs', async () => {
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+    const steps = printed.indexOf('Steps:');
+
+    expect(steps).toBeGreaterThan(-1);
+    expect(printed.indexOf('Steps:', steps + 1)).toBe(-1);
+    expect(steps).toBeLessThan(printed.indexOf('['));
+    expect(printed).toContain('  2. lint: eslint and stylelint config');
+  });
+
+  // `fix` follows `lint`, so skipping the install marks two of the six rather than one.
+  it('marks a skipped step in the list it prints', async () => {
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+
+    expect(printed).toContain('  1. scaffold: the official generator (skipped)');
+    expect(printed).toContain('  5. install (skipped)');
+    expect(printed).toContain('  6. fix: eslint and stylelint --fix');
+    expect(printed).not.toContain('  2. lint: eslint and stylelint config (skipped)');
+  });
+
+  it('closes each stage it ran with what the stage took', async () => {
+    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes', '--pm', 'npm']);
+    const lines = printed.split('\n');
+    const label = lines.findIndex((line) => {
+      return line.startsWith('[2/6] lint:');
+    });
+
+    expect(lines.slice(label).find((line) => {
+      return line.startsWith('      done in ');
+    })).toMatch(/^ {6}done in \d+\.\d+s$/u);
+    expect(lines.filter((line) => {
+      return line.startsWith('      done in ');
+    })).toHaveLength(3);
   });
 
   it('numbers each stage as it starts and closes with the next command', async () => {
