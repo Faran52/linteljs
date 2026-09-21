@@ -61,8 +61,15 @@ export const run = async (
         npm_config_registry: registry.url,
         NPM_CONFIG_REGISTRY: registry.url,
         pnpm_config_registry: registry.url,
-        // pnpm 12 and Yarn 4 refuse a version younger than their age gate, and the workspace ones are seconds old.
-        pnpm_config_minimum_release_age: '0',
+        /**
+         * Only this workspace's own packages are exempt from pnpm's age gate: they are published seconds before a
+         * case installs them, so no age rule can ever admit them. Everything else resolves under whatever policy the
+         * machine carries, which is what a person's install does, so a case's lockfile is the one they would get.
+         * Excluding a name does not exclude its dependencies, which is why the pattern names the scope and nothing
+         * more: every dependency under it is a normal npm package with mature versions to choose from.
+         */
+        // JSON, because it is a list: measured, a bare `@linteljs/*` through the environment is silently ignored.
+        pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
         BUN_CONFIG_REGISTRY: registry.url,
         YARN_NPM_REGISTRY_SERVER: registry.url,
         YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',

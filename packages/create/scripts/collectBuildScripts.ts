@@ -173,7 +173,9 @@ const run = (
       npm_config_registry: registry.url,
       NPM_CONFIG_REGISTRY: registry.url,
       pnpm_config_registry: registry.url,
-      pnpm_config_minimum_release_age: '0',
+      // The same exemption the end-to-end harness makes, and for the same reason: these builds are seconds old.
+      // A JSON list, which is the only shape pnpm reads this setting in from the environment.
+      pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
       npm_config_cache: join(registry.cacheDir, 'npm'),
       pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
     },
