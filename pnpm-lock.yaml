@@ -260,6 +260,9 @@ importers:
       jiti:
         specifier: 'catalog:'
         version: 2.7.0
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   packages/eslint-config:
     dependencies:

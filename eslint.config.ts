@@ -162,6 +162,34 @@ const config = [
     },
   },
 
+  // A `utils/` module is helpers, and a long one is two categories in one drawer.
+  // DESIGN.md: `@linteljs/workspace/utils-size`
+  {
+    name: '@linteljs/workspace/utils-size',
+    files: ['packages/*/src/**/utils/*Utils.ts'],
+    rules: {
+      'max-lines': ['error', {
+        max: 200,
+        skipBlankLines: true,
+        skipComments: true,
+      }],
+    },
+  },
+
+  // A ceiling far above anything here, so the longest function stays a fact.
+  // DESIGN.md: `@linteljs/workspace/function-size`
+  {
+    name: '@linteljs/workspace/function-size',
+    files: ['packages/*/src/**/*.ts'],
+    rules: {
+      'max-lines-per-function': ['error', {
+        max: 500,
+        skipBlankLines: true,
+        skipComments: true,
+      }],
+    },
+  },
+
   // The audit and smoke scripts, whose stdout is their output. DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts',

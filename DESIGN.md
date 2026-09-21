@@ -288,6 +288,11 @@ helpers, and a `meta.test.ts` holding all of it. The other rings were flat listi
 barrel at all, and nothing held any of them, which is how `cli.ts` reached 523 lines carrying three
 separate things and how `repair.ts` came to borrow a directory walk from `rewrite.ts`.
 
+Since then the answers became subjects too, `<group>/<kebab>/<key>Answer.ts` with a suite beside each, and the three
+`meta.test.ts` files became one. `src/meta.test.ts` carries a row per ring: the suffix its entries take, the registry
+that has to name the same subjects where there is one, and `files: true` for the two rings read by path rather than
+by subject. A tenth ring is a row there, and `src/rings.ts` is the list the row is held against.
+
 The rule generalised rather than copied. A ring is named for what its members are, or for the world
 it reaches where the world is the membership test. The entry takes the singular of whatever names
 the kind: the ring where the ring has one, the group where a group changes it, and nothing where a
@@ -610,6 +615,24 @@ nothing the CLI writes is a `pnpm add` and not a question.
   routers: a route table is configuration.
 - **Answer flags** go through `parseLinteljsConfig`, so `--target wat` fails with the same message a bad
   `linteljs.config.json` does and there is one validator, not two.
+
+### Solid stays on 1 until two peers move
+
+`@tanstack/solid-query` peers `solid-js ^1.6.0` and `@astrojs/solid-js` peers `solid-js ^1.9.13`. Both have to
+accept 2 before the target moves: the first is a library this CLI offers on Solid, and the second is how Astro
+hosts it, so moving earlier would mean a target that cannot take its own options.
+
+Measured 2026-09-21, and written down so the day they move is an afternoon rather than a research project.
+`create-solid` 0.12 scaffolds it with `--solid --vanilla --ts -t bare --no-devtools`; the last flag is not
+optional, since it prompts even with stdin closed without it. It writes `solid-js@^2.0.0-rc.9` and
+`@solidjs/web@^2.0.0-rc.9` with `jsxImportSource: "@solidjs/web"`, and `@solidjs/vite-plugin@^3.0.0-next.44` in
+turnkey mode: no `index.html`, no mount file, the entries generated around `src/App.tsx` and `src/Document.tsx`.
+Three files come out: `oxlint.config.ts` with the `oxlint` dependency, `AGENTS.md`, and a `pnpm-workspace.yaml`
+written whatever manager ran it. It ships no vitest template for Solid 2, so the starter test is ours, against
+`@solidjs/testing-library@1.0.0-beta.3`, which peers `solid-js >=2.0.0-0` and `@solidjs/web`.
+`@solidjs/router@2.0.0-next.26` matches, and `eslint-plugin-solid` 0.18 ships `configs/v2`, so the Solid layer in
+`eslint-config` switches on the version rather than forking. Until then the target stays on the Vite `solid-ts`
+scaffold at 1.9.
 
 ## Package manager files
 
@@ -1307,6 +1330,27 @@ because it is a fact about two packages rather than about this folder's data.
 function *type* is part of the vocabulary and stays: `Emitter`, `MergedText.merge` and
 `CopiedAssets.transform` all describe a shape a ring implements rather than behaviour this folder
 owns.
+
+### `@linteljs/workspace/utils-size`
+
+A `utils/` module is the helpers one level of readers shares, and a long one is two categories in one drawer.
+Measured after the constants moved: the three largest are `eslint-plugin/src/utils/jsxUtils.ts` at 188 lines,
+`create/src/answers/utils/configUtils.ts` at 143 and `readUtils.ts` at 139, counted the way the rule counts, without
+blank lines or comments. The limit is 200, so the largest has twelve lines of headroom and the next has fifty-seven.
+
+It is a gate on what the phase before it fixed rather than a new opinion. `terminal/cli/utils/argvUtils.ts` was 197
+lines of code and is 90: what came out was five tables and the four pure helpers that derive them, which now sit in
+`terminal/cli/constants.ts`. A `utils/` file growing past 200 again means a table has moved back in.
+
+### `@linteljs/workspace/function-size`
+
+A ceiling far above anything here, so that stays a fact rather than a habit. Measured: the longest function in
+non-test source is 151 lines, then 139, then 118. The longest anywhere is 264, a `describe` callback in
+`pipeline/passes/repair/repairPass.test.ts`, and a suite is a list rather than a function, which is why the limit is
+500 rather than something that would force one to be split.
+
+The rule earns its place by what it refuses rather than by what it reports today: a 500-line function is never the
+answer to anything in this package, and nothing in the repo is close enough for the limit to be an argument.
 
 ### `noInlineConfig`
 

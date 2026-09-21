@@ -6,6 +6,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { UNPUBLISHED_YET_BY_PM } from '../constants';
+
 import {
   registry,
   run,
@@ -14,15 +16,6 @@ import {
 } from './processUtils';
 
 import type { Answers, PackageManager } from '@answers';
-
-// The one failure worth retrying: a scaffolder pins the version it just saw, and `create astro` once asked for a
-// version 33 seconds before it was published. Matched on the error code, since any other failure is real.
-const UNPUBLISHED_YET_BY_PM: Record<PackageManager, string[]> = {
-  pnpm: ['ERR_PNPM_NO_MATCHING_VERSION'],
-  npm: ['npm ERR! code E404', 'npm ERR! 404 Not Found'],
-  yarn: ['YN0027'],
-  bun: ['error:'],
-};
 
 const isUnpublishedYet = (pm: PackageManager, output: string): boolean => {
   return UNPUBLISHED_YET_BY_PM[pm].some((code) => {

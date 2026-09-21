@@ -14,3 +14,12 @@ export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
   },
   bun: { why: ['pm', 'ls', '--all'] },
 };
+
+// The one failure worth retrying: a scaffolder pins the version it just saw, and `create astro` once asked for a
+// version 33 seconds before it was published. Matched on the error code, since any other failure is real.
+export const UNPUBLISHED_YET_BY_PM: Record<PackageManager, string[]> = {
+  pnpm: ['ERR_PNPM_NO_MATCHING_VERSION'],
+  npm: ['npm ERR! code E404', 'npm ERR! 404 Not Found'],
+  yarn: ['YN0027'],
+  bun: ['error:'],
+};

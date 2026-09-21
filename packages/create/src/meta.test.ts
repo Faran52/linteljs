@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import {
+  basename,
+  join,
+  relative,
+} from 'node:path';
 
 import {
   directoriesIn,
@@ -9,6 +13,7 @@ import {
   sourcesUnder,
   takenFromBarrel,
 } from '@mocks/ringShape';
+import ts from 'typescript';
 import {
   describe,
   expect,
@@ -318,6 +323,39 @@ describe.each(RINGED.flatMap(subjectsIn).filter((subject) => {
   it('exports that entry under the same name', () => {
     expect(readFileSync(join(path, `${entry}.ts`), 'utf8')).toMatch(new RegExp(`export const ${entry}[ :]`, 'u'));
   });
+});
+
+/**
+ * A module-level value that is not a function is a constant, and a module holding more than two is carrying a table
+ * its readers cannot see. `constants.ts` beside the entry is where those go, which is why the file that holds them
+ * is exempt here, along with the two that are types or a barrel and the three registries, which are tables by
+ * definition. Before the constants moved this named thirteen files; a fourteenth is a table in the wrong place.
+ */
+it('keeps every module to two constants, so a third is a constants.ts', () => {
+  const exempt = new Set(['constants.ts', 'types.ts', 'index.ts', 'rings.ts']);
+  const registries = new Set(['answers/registry.ts', 'emitters/registry.ts', 'targets/registry.ts']);
+
+  const carrying = sourcesUnder(srcDir).filter((path) => {
+    return !path.endsWith('.test.ts')
+      && !exempt.has(basename(path))
+      && !registries.has(relative(srcDir, path));
+  }).filter((path) => {
+    const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);
+
+    return source.statements.filter((statement) => {
+      return ts.isVariableStatement(statement) && statement.declarationList.declarations.some((declaration) => {
+        const { initializer } = declaration;
+
+        return initializer !== undefined
+          && !ts.isArrowFunction(initializer)
+          && !ts.isFunctionExpression(initializer);
+      });
+    }).length > 2;
+  }).map((path) => {
+    return relative(srcDir, path);
+  });
+
+  expect(carrying).toEqual([]);
 });
 
 // A file is written because its own emitter said so, so the assembler has no condition left to hold.
