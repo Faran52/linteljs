@@ -311,13 +311,14 @@ than assumed, by giving an emitter the forbidden import and reading the message 
 
 Two modules left `process/` in the process, because neither spawned anything and that ring's whole
 membership test is that it does. `scaffoldCommand.ts` is a table and an argv builder, so it is the
-scaffold stage's own `utils/`. `nodeVersionRefusal` is about Node rather than a package manager, so
-it sits beside `main`, next to `nameUtils.ts`, which is the same shape: a validation and the message
-it answers.
+scaffold stage's own `utils/`. The Node refusal is about Node rather than a package manager, so it
+sits beside `main`, next to `nameUtils.ts`, which is the same shape: a validation and the message it
+answers. It is `nodeRefusal` in `terminal/cli/utils/hostUtils.ts` now, beside the manager refusal
+that asks the same question of whatever invoked the CLI.
 
-`src/meta.test.ts` holds the five rings that carry no registry. One table rather than five files,
-because the assertions are identical and only the groups and the suffix differ, so the rule reads as
-data and a sixth ring is one entry. The barrel half earned itself immediately: it found four
+`src/meta.test.ts` holds every ring. One table rather than three files, because the assertions are
+identical and only the groups, the suffix and the registry differ, so the rule reads as data and a
+tenth ring is one entry. The barrel half earned itself immediately: it found four
 exports nothing outside their ring took, `TARGETS` among them, sitting in a barrel while its one
 reader went in by path.
 
@@ -372,7 +373,7 @@ suites never ran here. Fifty-one script files shipped to every generated project
 the end-to-end suite, which `check` excludes because every case hits the network.
 
 Making them ordinary source is not available. Twenty-seven of the thirty-one suites there test a
-module the official scaffolder writes: `@/constants/theme` comes from `create-expo-app`, `./page`
+module the official scaffolder writes: `@/constants/theme` comes from `create-expo`, `./page`
 from `create-next-app`, `./App.vue` from `create-vite`. Owning those means forking the templates,
 which is the first non-goal in this document.
 
@@ -824,7 +825,7 @@ direction to be wrong in.
 ## React Native `build`: `expo export --platform web`, and why it took a layout rule
 
 `buildScripts` ends `check` on `pnpm build` for every target, and `build` is a leg the scaffolder
-normally writes. `create-expo-app` writes none, because an Expo app ships through `eas build`,
+normally writes. `create-expo` writes none, because an Expo app ships through `eas build`,
 which needs an account and a remote builder. The React Native record is therefore the one that
 carries its own: `expo export --platform web`, a real Metro bundle of the app, with static
 rendering of every route on top. This section is the measurement behind it; it replaces the open

@@ -65,6 +65,11 @@ describe.
   `ng build` alone is 65s and exceeds fifteen minutes with three siblings. Only `managerCases` is
   not pnpm and its four cases sit at the head of one file, so at most one bun, one yarn and one npm
   install is ever in flight.
+- **A local run needs a yarn 4 on PATH.** The harness injects `npm_config_user_agent` from each
+  manager's own `--version`, because that is what a real run reads and what the generated project
+  then records. A `yarn/1.x` agent is refused by design, with the `dlx` hint, so on a machine whose
+  yarn is a 1 the yarn cases fail fast and correctly rather than testing anything:
+  `corepack install -g yarn@4.18.0` first, which is what `e2e.yml` does on the runner.
 - **That suite installs the checkout, never npm.** `registrySetup.ts` starts a Verdaccio in front
   of npmjs, publishes the three workspace packages into it, and installs the CLI from it; every
   case then runs one `create-linteljs` command with answer flags, the way a user does, with the

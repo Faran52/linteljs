@@ -74,10 +74,10 @@ const SURFACES = valuesOf(ANSWERS.surfaces.values);
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 /**
- * Which npm the npm pass runs. A generated project declares npm 11, which *warns* about an uncovered install script
- * where npm 12 *blocks* it, and the pin stays until `create-expo-app` stops reading `npm pack --dry-run --json` as
- * an array (4.0.0 still throws `Invalid response from npm` on npm 12's object). The question of what npm 12 will
- * refuse is answerable before then, so point this at one:
+ * Which npm the npm pass runs. A generated project floors npm at 9.6.5 and records whichever one made it, so this
+ * machine's npm is what the pass reads by default. npm 12 *blocks* an uncovered install script where 11 only
+ * *warns*, so the list a runner on 11 collects is not the list a runner on 12 enforces; point this at a 12 to ask
+ * that question directly:
  *
  *   npm install --prefix /tmp/npm12 npm@12
  *   COLLECT_NPM=/tmp/npm12/node_modules/npm/bin/npm-cli.js pnpm --filter @linteljs/create collect:builds
