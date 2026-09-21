@@ -34,6 +34,9 @@ when a version's change lives in a sibling it is described there instead:
   name them: `ThemedView`, `ThemedText`, `ExternalLink` and `Collapsible`.
 - The `fix` stage spins like the rest of them. `eslint --fix` was spawned synchronously, which held the event loop
   for the ten seconds it took and froze the line it was drawn on; every spawn in the CLI is asynchronous now.
+- The README's `minimumReleaseAge` override is spelled the way pnpm's CLI takes it. `--config.minimumReleaseAge=0`
+  is silently ignored as a flag, measured: the same range resolved to the older version with it and the newer one
+  without it, which is the camel-case key `pnpm-workspace.yaml` wants rather than the kebab-case one the CLI does.
 - **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
   saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
   install hand their output back rather than printing it, so a failing one carries what it printed into the error

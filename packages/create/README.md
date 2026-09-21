@@ -23,11 +23,17 @@ A Yarn 1 project is the one shape that cannot gate its install scripts. pnpm has
 `allowScripts`, Bun has `trustedDependencies` and Yarn 4 has `enableScripts`; Yarn 1 runs every one of them
 and has no setting that says otherwise. Everything else in the standard is the same.
 
-If you use pnpm and `minimumReleaseAge` is set, the override has to come before `create`:
+If you use pnpm with `minimumReleaseAge` set, nothing breaks: pnpm resolves the newest version of each dependency
+that is older than your window, and the project starts there. To start on today's instead, the override goes before
+`create`, in the kebab-case pnpm's CLI takes. The camel-case spelling is the one `pnpm-workspace.yaml` uses and is
+silently ignored as a flag:
 
 ```bash
-pnpm --config.minimumReleaseAge=0 create @linteljs my-app
+pnpm --config.minimum-release-age=0 create @linteljs my-app
 ```
+
+The same applies to the project's own first install: a lockfile written with the window off is rejected by a later
+`pnpm install` with the window on, so use the flag for both or neither.
 
 ## Requirements
 
