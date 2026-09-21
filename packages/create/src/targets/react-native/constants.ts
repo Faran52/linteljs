@@ -82,7 +82,31 @@ export const STARTER_FIXES: StarterFix[] = [
           `          void openBrowserAsync(href, {
             presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
           });`,
+        )
+        // The one prop the link adds is an unnamed shape, which `no-inline-object-types` refuses.
+        .replace(
+          "type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };",
+          `interface ExternalLinkOwnProps {
+  href: Href & string;
+}
+
+type Props = Omit<ComponentProps<typeof Link>, 'href'> & ExternalLinkOwnProps;`,
         );
+    },
+  },
+  {
+    // The variant union and the colour are an unnamed shape, which `no-inline-object-types` refuses.
+    path: 'src/components/themed-text.tsx',
+    transform: (source) => {
+      return source.replace(`export type ThemedTextProps = TextProps & {
+  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  themeColor?: ThemeColor;
+};`, `interface ThemedTextOwnProps {
+  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  themeColor?: ThemeColor;
+}
+
+export type ThemedTextProps = TextProps & ThemedTextOwnProps;`);
     },
   },
   {
@@ -96,7 +120,29 @@ export const STARTER_FIXES: StarterFix[] = [
         .replace(
           'export function ThemedView({ style, lightColor, darkColor, type, ...otherProps }: ThemedViewProps) {',
           'export function ThemedView({ style, type, ...otherProps }: ThemedViewProps) {',
-        );
+        )
+        // What is left of the intersection is still a shape with no name, which `no-inline-object-types` refuses.
+        .replace(`export type ThemedViewProps = ViewProps & {
+  type?: ThemeColor;
+};`, `interface ThemedViewOwnProps {
+  type?: ThemeColor;
+}
+
+export type ThemedViewProps = ViewProps & ThemedViewOwnProps;`);
+    },
+  },
+  {
+    // The one prop is an unnamed shape intersected with `PropsWithChildren`, which that type takes as a parameter.
+    path: 'src/components/ui/collapsible.tsx',
+    transform: (source) => {
+      return source.replace(
+        'export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {',
+        `interface CollapsibleProps {
+  title: string;
+}
+
+export function Collapsible({ children, title }: PropsWithChildren<CollapsibleProps>) {`,
+      );
     },
   },
   {

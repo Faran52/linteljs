@@ -21,7 +21,9 @@ when a version's change lives in a sibling it is described there instead:
   `--experimental-strip-types` first exists, and the two shipped `scripts/*.ts` now run under that flag so
   every 22 can run them. CI runs on the major that ran `create`, recorded beside the manager.
 - React Native scaffolds through `create-expo` 5 under whichever manager ran `create`. It no longer forces
-  npm, and npm is no longer pinned to 11 for every target.
+  npm, and npm is no longer pinned to 11 for every target. Four of that template's components declare their
+  props as an unnamed shape, which the standard's own `no-inline-object-types` refuses, so the starter fixes
+  name them: `ThemedView`, `ThemedText`, `ExternalLink` and `Collapsible`.
 - A run names the scaffolder it is about to fetch, lists its six steps before the first one starts with the
   skipped ones marked, and closes each stage with what it took.
 - `assets/` is now `templates/` in the published tarball, laid out as the project it lands in rather than by
