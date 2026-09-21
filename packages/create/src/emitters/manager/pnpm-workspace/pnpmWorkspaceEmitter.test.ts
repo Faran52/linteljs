@@ -47,11 +47,12 @@ describe('mergePnpmWorkspace', () => {
 
   it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {
     const existing = "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n  'custom-pkg': true\n";
-    const merged = mergePnpmWorkspace(existing, answersFor({}));
 
-    // The list is untouched; the peer block that follows is decided on its own.
-    expect(merged.startsWith(existing)).toBe(true);
-    expect(merged).toContain('peerDependencyRules:');
+    // Angular, because it is one of the two targets that still caps a peer: the list is untouched and the block
+    // follows it. A target that caps nothing gets the list alone, which the emitter's own suite holds.
+    expect(mergePnpmWorkspace(existing, answersFor({ target: 'angular' })).startsWith(existing)).toBe(true);
+    expect(mergePnpmWorkspace(existing, answersFor({ target: 'angular' }))).toContain('peerDependencyRules:');
+    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(existing);
   });
 
   it('keeps content that follows the dropped block, not just what precedes it', () => {
@@ -70,30 +71,33 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
   // A name this CLI never emits, so the survival below cannot pass by being written rather than kept.
   const existing = "allowBuilds:\n  'some-native': true\n";
 
-  it('adds the block to a project that already has allowBuilds but not the rules', () => {
-    const merged = mergePnpmWorkspace(existing, answersFor({ target: 'next' }));
+  it('adds the block for a target that still caps a peer, and leaves allowBuilds alone', () => {
+    const merged = mergePnpmWorkspace(existing, answersFor({ target: 'react-native' }));
 
     // The project's own allowBuilds list survives untouched, and the names this CLI would have written are not added.
     expect(merged).toContain("allowBuilds:\n  'some-native': true");
     expect(merged).not.toContain('unrs-resolver');
-    expect(merged).not.toContain('sharp');
-    expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
+    expect(merged).toContain('peerDependencyRules:');
+    expect(merged).toContain("    '@react-native/community-cli-plugin>@react-native/metro-config'");
   });
 
   // Already there is the project's: a hand-widened range is not this CLI's to narrow back.
   it('leaves an existing peerDependencyRules block alone', () => {
     const withRules = `${existing}\npeerDependencyRules:\n  allowedVersions:\n    'mine>eslint': '9'\n`;
-    const merged = mergePnpmWorkspace(withRules, answersFor({ target: 'next' }));
+    const merged = mergePnpmWorkspace(withRules, answersFor({ target: 'react-native' }));
 
     expect(merged).toBe(withRules);
   });
 
-  // Every target installs the resolver that drags the inert plugin, so every target gets a block.
-  it('names the inert resolver peer for a target with nothing else capped', () => {
-    const merged = mergePnpmWorkspace(existing, answersFor({ target: 'vue' }));
-
-    expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
-    expect(merged).not.toContain('jsx-a11y');
+  /**
+   * The common case, and the one that used to be impossible: nothing this project installs caps a peer, so the file
+   * is the build list alone. Measured before it was removed: no lockfile here has `eslint-plugin-import` or
+   * `eslint-plugin-jsx-a11y` in it, the layers take the two forks, and `eslint-plugin-astro` peers the fork itself.
+   */
+  it('writes no rules block for a target with nothing capped', () => {
+    for (const target of ['vue', 'next', 'astro'] as const) {
+      expect(mergePnpmWorkspace(existing, answersFor({ target }))).not.toContain('peerDependencyRules');
+    }
   });
 });
 
@@ -102,6 +106,6 @@ it('adds both blocks to a next scaffold that has neither', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 
   expect(merged).toContain("allowBuilds:\n  '@swc/core': true");
-  expect(merged).toContain("    'eslint-plugin-import>eslint': '10'");
+  expect(merged).not.toContain('peerDependencyRules');
   expect(merged).not.toContain('ignoredBuiltDependencies');
 });

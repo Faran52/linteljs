@@ -93,37 +93,30 @@ describe('emitPnpmWorkspace', () => {
 });
 
 /**
- * One plugin left: `eslint-plugin-import` never runs, arriving as an optional peer of the resolver every project
- * installs. `jsx-a11y-x` and `solid` both admit eslint 10 now, so neither needs an allowance.
+ * None left. All three allowances this table used to carry were for plugins nothing installs any more: the layers
+ * take `import-x` and `jsx-a11y-x`, `eslint-plugin-solid` admits eslint 10, and `eslint-plugin-astro` 3.2 peers the
+ * fork itself rather than only the plugin it replaced. Measured against the lockfiles rather than assumed: neither
+ * `eslint-plugin-import` nor `eslint-plugin-jsx-a11y` appears in this workspace's or a generated project's.
  */
 describe('peerDependencyRules', () => {
-  // The resolver is a dependency of the config every project installs, so this one is not target-specific.
-  it('allows the inert resolver peer for every target', () => {
-    const output = emitPnpmWorkspace(answersFor({ target: 'react' }));
+  it('writes no block at all for a target that caps nothing', () => {
+    for (const target of ['react', 'next', 'solid', 'vue', 'astro', 'svelte'] as const) {
+      const output = emitPnpmWorkspace(answersFor({ target }));
 
-    expect(output).toContain('peerDependencyRules:\n  allowedVersions:\n');
-    expect(output).toContain("    'eslint-plugin-import>eslint': '10'");
+      expect(output).not.toContain('peerDependencyRules');
+      expect(output).toContain('allowBuilds:');
+    }
   });
 
-  // Both used to need one and no longer do: an allowance for a range that already admits the installed major is dead
-  // config, and a reader cannot tell dead config from a live exemption.
-  it('names no allowance for the accessibility or solid plugins', () => {
-    for (const target of ['next', 'solid', 'vue'] as const) {
+  // Dead config a reader cannot tell from a live exemption is the thing worth refusing, so name the three by hand.
+  it('names none of the plugins that used to need one', () => {
+    for (const target of ['next', 'solid', 'astro'] as const) {
       const output = emitPnpmWorkspace(answersFor({ target }));
 
       expect(output).not.toContain('jsx-a11y');
       expect(output).not.toContain('eslint-plugin-solid>');
+      expect(output).not.toContain('eslint-plugin-import>');
     }
-  });
-
-  // The one target that still meets the stale plugin: `eslint-plugin-astro` takes it as an optional peer and runs its
-  // rules as `astro/jsx-a11y/*`, so the allowance is keyed by the plugin that brings it, not by the target.
-  it('allows the stale peer the astro plugin drags in, sorted beside the resolver', () => {
-    expect(emitPnpmWorkspace(answersFor({ target: 'astro' }))).toContain(
-      'peerDependencyRules:\n  allowedVersions:\n'
-      + "    'eslint-plugin-import>eslint': '10'\n"
-      + "    'eslint-plugin-jsx-a11y>eslint': '10'\n",
-    );
   });
 });
 

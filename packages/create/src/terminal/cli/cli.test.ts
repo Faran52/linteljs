@@ -753,9 +753,9 @@ describe('main: sync', () => {
     const workspace = await readFile(join(project, 'pnpm-workspace.yaml'), 'utf8');
     const ignore = await readFile(join(project, '.gitignore'), 'utf8');
 
-    expect(workspace).toContain('peerDependencyRules:');
-    // Merged, so the project's own entry survives.
+    // Merged, so the project's own entry survives, and a Next project caps no peer so nothing follows the list.
     expect(workspace).toContain("'sharp': true");
+    expect(workspace).not.toContain('peerDependencyRules:');
     expect(ignore).toContain('coverage');
     expect(ignore).toContain('.next');
   });

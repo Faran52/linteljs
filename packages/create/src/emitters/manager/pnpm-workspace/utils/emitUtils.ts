@@ -1,26 +1,10 @@
-import { uniq } from 'es-toolkit';
-
 import { targetFor } from '@targets';
 
-import { ESLINT_RANGE } from '../../../always/package-json/constants';
-import { allowedBuildNames, buildDevDependencies } from '../../../always/package-json/packageJsonEmitter';
+import { allowedBuildNames } from '../../../always/package-json/packageJsonEmitter';
 
 import type { Answers } from '@answers';
 
-/**
- * No `packages:` key: the file exists for `allowBuilds` (a denied build fails with ERR_PNPM_IGNORED_BUILDS) and
- * the peer ranges.
- * Plugins whose `eslint` peer range closes before the installed major, keyed by the package that brings them.
- * Scoped with `>` so the allowance reaches only that dependent. Open ranges (`>=9.0.0`) need nothing and are absent.
- */
-const PEER_RANGE_GAPS: Record<string, string[]> = {
-  // Never loaded: pnpm installs `eslint-plugin-import` as an optional peer of the resolver, and the layers use
-  // `import-x`.
-  '@linteljs/eslint-config': ['eslint-plugin-import'],
-  // Optional peer, installed anyway, and this one does run: `astro/jsx-a11y/*` is the stale plugin's rules rebadged.
-  'eslint-plugin-astro': ['eslint-plugin-jsx-a11y'],
-};
-
+// No `packages:` key: the file exists for `allowBuilds`, where a denied build fails with ERR_PNPM_IGNORED_BUILDS.
 export const allowBuildsBlock = (answers: Answers): string => {
   const entries = allowedBuildNames(answers)
     .map((name) => {
@@ -32,35 +16,23 @@ export const allowBuildsBlock = (answers: Answers): string => {
   return `allowBuilds:\n${entries}\n`;
 };
 
-// Follows `versions.ts` rather than repeating a number.
-const eslintMajor = (): string => {
-  return String(Number.parseInt(ESLINT_RANGE.replace(/^[\^~]/, ''), 10));
-};
-
-export const peerRangeAllowances = (answers: Answers): string[] => {
-  const installed = Object.keys(buildDevDependencies(answers));
-
-  return uniq(installed.flatMap((name) => {
-    return PEER_RANGE_GAPS[name] ?? [];
-  })).sort((left, right) => {
-    return left.localeCompare(right, 'en');
-  });
-};
-
-// Always at least one entry: every project's `@linteljs/eslint-config` brings the resolver.
+/**
+ * What a project is allowed to install against a peer range that refuses it, which is the target's own business and
+ * nothing else's now. The table that used to sit here keyed allowances by the plugin that dragged a stale peer in,
+ * and every one of its entries died: the layers take `import-x` and `jsx-a11y-x`, `eslint-plugin-solid` admits
+ * eslint 10, and `eslint-plugin-astro` 3.2 peers the fork itself. Measured rather than assumed, against both
+ * lockfiles: neither plugin it named is installed anywhere. Two allowances are left and both are a target's,
+ * `@angular/build` peering vitest 4 against the 5 a project installs, and React Native's cli plugin pinning a metro
+ * config to the patch. A new one goes on the target record beside those.
+ *
+ * Nothing to allow is now the common case, and pnpm rejects a `peerDependencyRules` key with an empty map under it.
+ */
 export const peerRulesBlock = (answers: Answers): string => {
-  const allowed = peerRangeAllowances(answers);
-  const major = eslintMajor();
-  const entries = [
-    ...allowed.map((name) => {
-      return `    '${name}>eslint': '${major}'`;
-    }),
-    ...Object.entries(targetFor(answers).peerAllowances ?? {}).map(([pair, version]) => {
-      return `    '${pair}': '${version}'`;
-    }),
-  ].join('\n');
+  const entries = Object.entries(targetFor(answers).peerAllowances ?? {}).map(([pair, version]) => {
+    return `    '${pair}': '${version}'`;
+  });
 
-  return `\npeerDependencyRules:\n  allowedVersions:\n${entries}\n`;
+  return entries.length === 0 ? '' : `\npeerDependencyRules:\n  allowedVersions:\n${entries.join('\n')}\n`;
 };
 
 export const emitPnpmWorkspace = (answers: Answers): string => {

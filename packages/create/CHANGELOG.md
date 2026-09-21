@@ -44,6 +44,12 @@ when a version's change lives in a sibling it is described there instead:
   a dependency more than one package uses belongs.
 - The questionnaire shows every option rather than a window of seven, which is what inquirer pages to by default and
   what hid two of the nine frameworks behind a scroll. `es-toolkit` is selected by default beside Tailwind.
+- **A generated project carries no peer overrides it does not need.** The three this CLI used to write are gone,
+  each measured dead rather than assumed: the layers take `eslint-plugin-import-x` and `eslint-plugin-jsx-a11y-x`,
+  `eslint-plugin-solid` admits eslint 10, and `eslint-plugin-astro` 3.2 peers the fork itself, so neither plugin they
+  allowed appears in a lockfile any more. What is left is two, both a target's own and both still refused upstream:
+  Angular's `@angular/build` peers vitest 4 against the 5 a project installs, and React Native's cli plugin pins a
+  metro config to the patch. Every other project's `pnpm-workspace.yaml` is now the build list alone.
 - **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
   saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
   install hand their output back rather than printing it, so a failing one carries what it printed into the error
