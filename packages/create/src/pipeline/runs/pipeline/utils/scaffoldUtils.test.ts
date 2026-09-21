@@ -79,9 +79,18 @@ describe('scaffoldCommand', () => {
     const npm = scaffoldCommand('npm', react);
 
     expect(npm).toEqual([
-      'npm', 'create', 'vite', 'demo-app', '--',
+      'npm', 'create', '--yes', 'vite', 'demo-app', '--',
       '--template', 'react-ts', '--eslint', '--no-interactive', '--no-immediate',
     ]);
+  });
+
+  // Measured on a cold npx store: without it npm stops at `Ok to proceed? (y)` and waits, which no piped run sees.
+  it('tells npm exec to fetch the scaffolder without asking, and nobody else', () => {
+    const react = targetFor(answersFor({ target: 'react' })).scaffold('demo-app', answersFor({ target: 'react' }));
+
+    expect(scaffoldCommand('npm', react)).toContain('--yes');
+    expect(scaffoldCommand('pnpm', react)).not.toContain('--yes');
+    expect(scaffoldCommand('bun', react)).not.toContain('--yes');
   });
 
   it('does not insert -- separator for pnpm, yarn, and bun create', () => {

@@ -28,7 +28,9 @@ when a version's change lives in a sibling it is described there instead:
   works, replaced by the files it wrote or the last thing it said, and what it took. The scaffolder and the install
   get no spinner over their own output, which is the progress worth reading. Behind a pipe nothing changed: the plan
   of six steps with the skipped ones marked, a line per file and a line per stage, which is what a CI log carries.
-- A run names the scaffolder it is about to fetch, and the manager that will fetch it.
+- A run names the scaffolder it is about to fetch, and `npm create` now fetches it without asking. `npm create` is
+  `npm exec`, which stops at `Ok to proceed?` on a terminal; behind a pipe it warned and carried on, which is why no
+  end-to-end case ever saw it.
 - `assets/` is now `templates/` in the published tarball, laid out as the project it lands in rather than by
   the emitter that reads it. No emitted file changed: a hash of every artifact of all 98 end-to-end cases,
   5220 of them, is identical before and after.

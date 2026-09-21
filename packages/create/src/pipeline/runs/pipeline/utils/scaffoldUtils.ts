@@ -11,7 +11,9 @@ const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine
     dlx: ['pnpm', 'dlx'],
   },
   npm: {
-    create: ['npm', 'create'],
+    // `--yes` on both: `npm create` is `npm exec`, which asks before caching a scaffolder it does not have. Behind a
+    // pipe it warns and proceeds, so the end-to-end suite never saw it; on a terminal it stops and waits for a y.
+    create: ['npm', 'create', '--yes'],
     dlx: ['npx', '--yes'],
   },
   yarn: {
