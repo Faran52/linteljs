@@ -43,25 +43,13 @@ jobs:
           node-version: 26.8.1
           cache: pnpm
 
-      # Node 24 bundles npm 12, and `npm pack --dry-run --json` returns an object there where
-      # npm 11 returned an array. `create-expo-app` cannot read it, so the React Native case dies
-      # before writing a file, whichever package manager the case selected: it shells out to npm
-      # directly. https://github.com/expo/expo/issues/48091 is open with no released fix.
+      # `managerCases` runs every target on all four managers, so all four have to be here, and the
+      # CLI installs none of them: one below its floor in `MANAGER_FLOORS` is refused with the
+      # reason. The harness injects `npm_config_user_agent` from each manager's real `--version`, so
+      # what a runner carries is what every generated project records and declares.
       #
-      # On every shard, not just the one holding those cases: the stride decides which shard that
-      # is. The version matches `PACKAGE_MANAGER_VERSIONS.npm`, which an npm project writes into
-      # its own `engines`; a runner on a lower npm would warn EBADENGINE on every install.
-      #
-      # Delete this step, and raise that constant, once a create-expo-app carrying the fix ships.
-      - run: npm i -g npm@11.19.1
-      - run: npm --version
-
-      # `managerCases` runs every target on all four managers, so all four have to be here. The CLI
-      # installs a missing pnpm or yarn through corepack itself, but a runner is the one place that
-      # self-install has nothing to fall back on, and bun has no corepack shim at all: a missing one
-      # is an exit 127 out of `bun create`, not a skip. `testing.md` says the suite never skips.
-      #
-      # Both versions match `PACKAGE_MANAGER_VERSIONS`, which is what a generated project declares.
+      # Yarn is the one that has to be a 4 rather than whatever is already there: a `yarn/1.x` agent
+      # is refused by design, with the `dlx` hint. `testing.md` says the suite never skips.
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.3.14
