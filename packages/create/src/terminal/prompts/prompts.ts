@@ -1,11 +1,15 @@
+import { stdin, stdout } from 'node:process';
+import { createInterface, type Interface } from 'node:readline/promises';
+import { Writable } from 'node:stream';
+
 import {
+  CANCEL_SYMBOL,
   isCancel,
   multiselect,
   type MultiSelectOptions,
   type Option,
   select,
   type SelectOptions,
-  text,
   type TextOptions,
   updateSettings,
 } from '@clack/prompts';
@@ -29,7 +33,11 @@ import { PROJECT_NAME_RULE } from '../constants';
 import { isValidProjectName } from '../utils/nameUtils';
 
 import {
+  ANSWER_GAP,
   ANSWER_KEYS,
+  ANSWERED_MARK,
+  ANSWERED_PREFIX,
+  ASKING_MARK,
   RUN_CANCELLED_MESSAGE,
   STORE_CHOICES,
 } from './constants';
@@ -92,11 +100,108 @@ interface TargetWithStore extends TargetRecord {
 // what follows here is one line per stage with no column of its own, so the guide joined the questions to nothing.
 updateSettings({ withGuide: false });
 
+/**
+ * A question and its answer on one line. clack writes a submitted prompt as one chunk, `◇  <message>\n<value>`, so
+ * joining that first newline is the whole of it; every other frame, including the list a person arrows through, goes
+ * through untouched. Done as a stream rather than by moving the cursor afterwards, which would have to know how many
+ * lines a long answer wrapped onto.
+ */
+const answeredOnOneLine = (): Writable => {
+  return Object.assign(new Writable({
+    write: (chunk: Buffer, _encoding, done) => {
+      const frame = String(chunk);
+
+      stdout.write(frame.startsWith(ANSWERED_PREFIX)
+        ? `${ANSWERED_MARK}${frame.slice(ANSWERED_PREFIX.length).replace('\n', ANSWER_GAP)}`
+        : frame);
+      done();
+    },
+  }), {
+    // clack falls back to 80 columns for a stream that carries no width, which would wrap a long list early.
+    columns: stdout.columns,
+    isTTY: true,
+  });
+};
+
+// One line of text, asked until it is acceptable. Recursion rather than a loop: a refused answer is a fresh question,
+// and there is one of them per keystroke of patience rather than per element of anything.
+const answeredLine = async (
+  asking: Interface,
+  message: string,
+  validate: TextOptions['validate'],
+  cancelled: () => boolean,
+): Promise<string | symbol> => {
+  const typed = (await asking.question(`${ASKING_MARK}${message}${ANSWER_GAP}`)).trim();
+
+  if (cancelled()) {
+    // The symbol clack cancels with, so  tells this apart from an answer the same way it always has.
+    return CANCEL_SYMBOL;
+  }
+
+  const refusal = typeof validate === 'function' ? validate(typed) : undefined;
+
+  if (typeof refusal === 'string') {
+    stdout.write(`   ${refusal}\n`);
+
+    return await answeredLine(asking, message, validate, cancelled);
+  }
+
+  // The line just typed, rewritten where it sits: same line, same width, the mark every other answer carries.
+  stdout.write(`\u001B[1A\u001B[2K\u001B[G${ANSWERED_MARK}${message}${ANSWER_GAP}${typed}\n`);
+
+  return typed;
+};
+
 // The real terminal; tests substitute their own.
 export const clackPrompter: Prompter = {
-  select,
-  multiselect,
-  text,
+  select: async (options) => {
+    return await select({
+      ...options,
+      output: answeredOnOneLine(),
+    });
+  },
+  multiselect: async (options) => {
+    return await multiselect({
+      ...options,
+      output: answeredOnOneLine(),
+    });
+  },
+  /**
+   * Not clack's `text`: that one writes the label, then redraws the value a line below it on every keystroke, by
+   * cursor arithmetic a joined line breaks. A name is a line of text rather than a list of keypresses, which is what
+   * `node:readline` asks for, and the answer stays on the line it was typed on. The line is rewritten once on submit
+   * so it carries the same mark as every other answered question.
+   */
+  text: async ({ message, validate }) => {
+    const asking = createInterface({
+      input: stdin,
+      output: stdout,
+    });
+
+    let cancelled = false;
+
+    asking.on('SIGINT', () => {
+      cancelled = true;
+      asking.close();
+    });
+
+    try {
+      return await answeredLine(asking, message, validate, () => {
+        return cancelled;
+      });
+    }
+    catch (error) {
+      // Ctrl+D ends the input rather than answering it, which readline reports as an abort. Cancelled, like Ctrl+C.
+      if (error instanceof Error && error.name === 'AbortError') {
+        return CANCEL_SYMBOL;
+      }
+
+      throw error;
+    }
+    finally {
+      asking.close();
+    }
+  },
   isCancel,
 };
 

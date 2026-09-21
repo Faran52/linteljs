@@ -37,8 +37,11 @@ when a version's change lives in a sibling it is described there instead:
   instead of scrolling past. Behind a pipe nothing changed, and that is deliberate: the plan of six steps with the
   skipped ones marked, a line per file, a line per stage, and both binaries writing straight through, which is what
   a CI log and the end-to-end suite read.
-- The questionnaire drops the vertical guide it used to draw down its left edge. It exists to connect a block of
-  prompts to what follows, and what follows is now one line per stage with no column of its own.
+- **The questionnaire is one line per question.** The vertical guide down its left edge is gone, an answered
+  question keeps its answer beside it rather than underneath, and the mark it is left with is the tick a finished
+  stage carries. The project name is typed on the question's own line: that one is asked over `node:readline`
+  rather than a prompt library, because a line of text is what it is, and the line is rewritten in place once it is
+  answered. Ctrl+C and Ctrl+D both cancel it, as they did.
 - A run names the scaffolder it is about to fetch, and `npm create` now fetches it without asking. `npm create` is
   `npm exec`, which stops at `Ok to proceed?` on a terminal; behind a pipe it warned and carried on, which is why no
   end-to-end case ever saw it.
