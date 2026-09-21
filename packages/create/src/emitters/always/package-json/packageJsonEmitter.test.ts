@@ -62,6 +62,7 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
   };
 };
 
+// What a scaffolder leaves on disk before this package edits it.
 const SCAFFOLDED: PackageJson = {
   name: 'demo-app',
   version: '0.0.0',
@@ -146,11 +147,22 @@ describe('patchPackageJson', () => {
       .not.toHaveProperty('linteljs');
   });
 
-  it('keeps the scaffolder dependencies and its own scripts', () => {
+  /**
+   * The two directions of the merge, each stated against the tables rather than against a version somebody has to
+   * remember to raise. The `not` lines are the preconditions: a fixture that agreed with `VERSIONS` would let both
+   * assertions pass whether the merge worked or not, so bringing it up to date fails here rather than silently.
+   */
+  it('takes over the names it pins and leaves the scaffolder the rest', () => {
     const patched = patchPackageJson(SCAFFOLDED, answersFor({}));
+    const scaffoldedReact = SCAFFOLDED.dependencies?.['react'];
+    const scaffoldedVite = SCAFFOLDED.devDependencies?.['vite'];
 
-    expect(patched.dependencies?.['react']).toBe('^19.2.0');
-    expect(patched.devDependencies?.['vite']).toBe('^8.3.0');
+    expect(scaffoldedVite).not.toBe(VERSIONS['vite']);
+    expect(patched.devDependencies?.['vite']).toBe(VERSIONS['vite']);
+
+    expect(scaffoldedReact).not.toBe(VERSIONS['react']);
+    expect(patched.dependencies?.['react']).toBe(scaffoldedReact);
+
     expect(patched.scripts?.['dev']).toBe('vite');
     expect(patched.name).toBe('demo-app');
     expect(patched.private).toBe(true);
