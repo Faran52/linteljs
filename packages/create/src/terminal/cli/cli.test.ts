@@ -976,13 +976,21 @@ describe('main: the manager that ran it', () => {
     expect(errors.join('\n')).toContain('needs pnpm 10.26.0 or newer');
   });
 
-  it('points yarn 1 at dlx rather than at an upgrade', async () => {
+  /**
+   * Yarn 1 is its own manager here rather than a yarn to be upgraded, which is the whole of why `yarn-classic`
+   * exists: the repositories that are still yarn 1 are the ones with a standard to adopt. Berry's half of the split
+   * is `hostUtils`'s to hold, since a recorded manager wins over the host on every run after the first.
+   */
+  it('records a yarn 1 run as classic', async () => {
     vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/v26.9.0 darwin arm64');
 
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
-    expect(code).toBe(1);
-    expect(errors.join('\n')).toContain('yarn dlx @linteljs/create');
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({
+      packageManager: 'yarn-classic',
+      packageManagerVersion: '1.22.22',
+    });
   });
 
   // An agent naming a manager with no version, and no such binary to ask: the run stops rather than guessing one.

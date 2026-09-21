@@ -29,7 +29,8 @@
   ],
   "type": "module",
   "bin": {
-    "create-linteljs": "./bin/create-linteljs.js"
+    "create-linteljs": "./bin/create-linteljs.js",
+    "create": "./bin/create-linteljs.js"
   },
   "exports": {
     ".": {

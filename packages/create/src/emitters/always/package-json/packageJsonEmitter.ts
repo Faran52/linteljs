@@ -1,6 +1,10 @@
 import { compact, uniq } from 'es-toolkit';
 
-import { MANAGER_FLOORS, NODE_ENGINE } from '@config/constants';
+import {
+  MANAGER_BINARIES,
+  MANAGER_FLOORS,
+  NODE_ENGINE,
+} from '@config/constants';
 import {
   type Artifact,
   type Framework,
@@ -213,6 +217,8 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...buildDevDependencies(answers),
   };
   const pm = answers.packageManager;
+  // What a project installs with is the command, not the id: `yarn-classic` is yarn 1 and declares itself `yarn`.
+  const binary = MANAGER_BINARIES[pm];
   // The manager that invoked the CLI, or the floor where a config predates the recording of it.
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];
 
@@ -220,18 +226,18 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...packageJson,
     type: 'module',
     // No bun field: neither corepack nor pnpm's switch knows bun, and `engines.bun` says what this would have.
-    ...(pm === 'bun' ? {} : { packageManager: `${pm}@${version}` }),
+    ...(pm === 'bun' ? {} : { packageManager: `${binary}@${version}` }),
     engines: {
       node: NODE_ENGINE,
       // The floor rather than the executor's version: the exact one is in `packageManager`, and the floor is what
       // was tested.
-      [pm]: `>=${MANAGER_FLOORS[pm]}`,
+      [binary]: `>=${MANAGER_FLOORS[pm]}`,
     },
     devEngines: {
       // Spread first, so a scaffolder's own `runtime` entry survives.
       ...existing.devEngines,
       packageManager: {
-        name: pm,
+        name: binary,
         onFail: 'error',
       },
     },

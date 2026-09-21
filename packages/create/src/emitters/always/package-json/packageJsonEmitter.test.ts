@@ -729,3 +729,20 @@ describe('MANAGER_FLOORS against the workspace', () => {
     expect(atLeast(running, MANAGER_FLOORS.pnpm)).toBe(true);
   });
 });
+
+/**
+ * The id is `yarn-classic`; the command is `yarn`. A manifest that named the id would declare a manager nobody can
+ * install, and `packageManager` is the field corepack acts on.
+ */
+describe('a yarn classic project', () => {
+  it('declares the command rather than the id, at its own floor', () => {
+    const manifest = parsePackageJson(emitPackageJson({ name: 'demo' }, answersFor({
+      packageManager: 'yarn-classic',
+      packageManagerVersion: '1.22.22',
+    })));
+
+    expect(manifest.packageManager).toBe('yarn@1.22.22');
+    expect(manifest.engines).toMatchObject({ yarn: '>=1.22.22' });
+    expect(JSON.stringify(manifest)).not.toContain('yarn-classic');
+  });
+});

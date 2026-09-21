@@ -24,7 +24,11 @@ import {
   type PackageManager,
   parseLinteljsConfig,
 } from '@answers';
-import { entryExists, linteljsConfigReader } from '@disk';
+import {
+  entryExists,
+  linteljsConfigReader,
+  readIfPresent,
+} from '@disk';
 import {
   applySync,
   pipelineRun,
@@ -54,6 +58,7 @@ import {
   managerFromUserAgent,
   managerRefusal,
   nodeRefusal,
+  yarnFromLockfile,
 } from './utils/hostUtils';
 import { say, stageReport } from './utils/reportUtils';
 
@@ -95,10 +100,13 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
     return await entryExists(join(cwd, lockfile)) ? name : undefined;
   }));
 
+  const found = present.find((name) => {
+    return name !== undefined;
+  }) ?? 'npm';
+
   return {
-    name: present.find((name) => {
-      return name !== undefined;
-    }) ?? 'npm',
+    // `yarn.lock` names yarn without saying which one, and the two are different managers here.
+    name: found === 'yarn' ? yarnFromLockfile(await readIfPresent(join(cwd, 'yarn.lock'))) : found,
     version: undefined,
   };
 };

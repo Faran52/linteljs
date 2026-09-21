@@ -200,3 +200,18 @@ describe('scaffoldNotice', () => {
     })).toBe('running @angular/create through pnpm');
   });
 });
+
+/**
+ * Yarn 1 has no `dlx`. The two targets that fetch a generator rather than a `create-*` package go through npx, which
+ * ships with Node, so a classic run is not asked to install anything globally to scaffold.
+ */
+describe('a yarn classic scaffold', () => {
+  it('runs a create through yarn and a generator through npx', () => {
+    const react = targetFor(answersFor({ target: 'react' })).scaffold('demo-app', answersFor({ target: 'react' }));
+    const svelte = targetFor(answersFor({ target: 'svelte' })).scaffold('demo-app', answersFor({ target: 'svelte' }));
+
+    expect(scaffoldCommand('yarn-classic', react).slice(0, 2)).toEqual(['yarn', 'create']);
+    expect(scaffoldCommand('yarn-classic', svelte).slice(0, 2)).toEqual(['npx', '--yes']);
+    expect(scaffoldCommand('yarn', svelte).slice(0, 2)).toEqual(['yarn', 'dlx']);
+  });
+});

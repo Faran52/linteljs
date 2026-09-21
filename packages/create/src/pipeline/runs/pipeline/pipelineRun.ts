@@ -1,7 +1,7 @@
 import { dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
 
-import { STAGES } from '@config/constants';
+import { MANAGER_BINARIES, STAGES } from '@config/constants';
 import { type RunOutput, type Stage } from '@config/types';
 
 import {
@@ -139,7 +139,7 @@ const stageStandard = async (
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
   options.onNotice?.(`installing with ${options.answers.packageManager}`);
 
-  await runSpawn(options.answers.packageManager, ['install'], options.cwd, options.output);
+  await runSpawn(MANAGER_BINARIES[options.answers.packageManager], ['install'], options.cwd, options.output);
 };
 
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {

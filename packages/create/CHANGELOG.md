@@ -8,6 +8,13 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- **Yarn 1 is a manager rather than a refusal.** It is recorded as `yarn-classic`, told apart from Yarn 4 by the
+  agent's major and, where there is no agent, by whether `yarn.lock` opens with `# yarn lockfile v1`. A classic
+  project declares `yarn@1.22.22`, installs in CI with `--frozen-lockfile`, reaches its own scripts through
+  `yarn run`, and gets no `.yarnrc.yml`, which is Berry's file. What it cannot do is gate its install scripts:
+  no Yarn 1 setting expresses that, and `DESIGN.md` says so rather than leaving it to be discovered.
+- The package provides a `create` binary beside `create-linteljs`, which is what `yarn create @linteljs` looks
+  for on Yarn 1, and what `@angular/create` ships for the same reason.
 - **Breaking: the package manager is no longer asked or flagged.** `--pm` and the questionnaire's manager
   question are gone. The manager that runs `create` is the project's, recorded in `linteljs.config.json`
   with its exact version, and read from `npm_config_user_agent`, else a lockfile already in the directory,

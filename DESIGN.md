@@ -659,7 +659,7 @@ declares one and `postcss-html` reaches whatever `postcss-safe-parser` happens t
 optional leaves YN0002 printing, measured on a bare project at the versions pinned here, and resting
 on a transitive's hoist is the thing the warning is about, so the extension gives `postcss-html` the
 dependency instead. Declaring `postcss` in the generated project would answer it too, and is the
-alternative if these ever need to agree across all four managers rather than yarn alone.
+alternative if these ever need to agree across all five managers rather than yarn alone.
 
 A blanket `YN0002`/`YN0060` discard used to cover all of them, which also meant the suite's
 no-warnings assertion could never fire on yarn: with nothing printed, yarn never reports `Done with
@@ -937,10 +937,34 @@ under `--experimental-strip-types`, which is where that flag starts. The pinned 
 and lint-staged 17.3 want 22.22) and say so themselves as `EBADENGINE` warnings; that is theirs to declare rather
 than ours to copy. CI runs on the major that ran `create`, read off the recorded `nodeVersion`.
 
+### Yarn 1 is its own manager, not a lower yarn floor
+
+`yarn` in `MANAGER_FLOORS` means Berry and floors at 4.0.0; `yarn-classic` means 1.22.22, the last classic release
+and the only one tested. Lowering the yarn floor instead would have been two lines and a lie: a classic project
+cannot read `.yarnrc.yml`, has no `packageExtensions` for the peer warnings measured per target, has no `dlx`, and
+installs with `--frozen-lockfile` rather than `--immutable`. Each of those is a row in a table that already varies
+by manager, so naming the second yarn costs one row each and states every difference where a reader finds it.
+
+It is the one id that is not also its command, which `MANAGER_BINARIES` exists for. Everything that spawns a
+manager or writes one into a manifest reads that table: `packageManager`, `engines`, `devEngines.packageManager`
+and the refusal message all say `yarn`, because `yarn-classic` is a name nobody can install and no agent ever
+emits. The `yarn create @linteljs` path needs a binary called `create`, which yarn 1 looks for by name and
+`@angular/create` ships for the same reason; `create-linteljs` stays beside it.
+
+Detection splits the two on the major of the agent's first token, and a run with no agent on the lockfile itself:
+classic writes `# yarn lockfile v1`, Berry writes `__metadata`. That path is what makes `sync` and
+`--skip-scaffold` work in a repository that is already yarn 1, which is the case the id exists for, since a yarn 1
+shop is exactly where an unadopted standard is found.
+
+What a classic project does not get is the install-script gate. pnpm has `allowBuilds`, npm `allowScripts`, bun
+`trustedDependencies`, Berry `enableScripts`; yarn 1 runs every install script and has no setting that says
+otherwise. The README says so too. It is the one guarantee this CLI cannot give that manager, and it is written
+down rather than left for someone to find in a postmortem.
+
 ### A deprecation notice is never muted
 
 Nothing emitted here writes `allowedDeprecatedVersions`, and the end-to-end suite asserts on install warnings for
-all four managers but never on a deprecation. A deprecation says a third-party package reached end of life. It is
+all five managers but never on a deprecation. A deprecation says a third-party package reached end of life. It is
 true, the project it names belongs to somebody else, and no config a generated project carries changes the fact;
 all such config does is hide it from the person who could act on it, or report it upstream.
 
@@ -994,7 +1018,7 @@ under an hour in five.
 What cuts it is noticing that the manager axis and the option axes answer different questions:
 
 - `managerCases`: every target on every manager, every multi-select at full value. 36 cases. This is
-  the heaviest dependency set a target has, installed four ways, and it is the only thing that
+  the heaviest dependency set a target has, installed five ways, and it is the only thing that
   answers "does this library break the project" and "does this manager resolve the same manifest
   differently". It is also the only family that runs anything but pnpm.
 - `optionCases`: every combination of the single-select axes, on pnpm alone. 300 cases. A package
@@ -1050,7 +1074,7 @@ than several processes against several ports. The configuration that reached the
 exists, which was a smaller change than an upstream fix.
 
 Three things fell out of it. The publish lock is gone, because one process publishes once. The CI
-cache key no longer carries a shard, because all four hold the same bytes. And Yarn's global metadata
+cache key no longer carries a shard, because all of them hold the same bytes. And Yarn's global metadata
 cache, which stores tarball URLs including the port, is now valid between runs instead of pointing at
 a dead host.
 
@@ -1079,7 +1103,7 @@ of the suite rather than by a lock.
 
 ### bun's cache is pruned rather than deleted
 
-Three of the four managers keep a persistent cache in `.e2e-cache`; bun's was pointed at the
+Four of the five managers keep a persistent cache in `.e2e-cache`; bun's was pointed at the
 directory wiped every run, so every bun case re-downloaded its whole tree every time. The reason was
 real: bun offers no split between a cache of bytes and a cache of which versions exist, and this
 suite publishes `@linteljs/*` under a version no run has used before, so a manifest cached last run

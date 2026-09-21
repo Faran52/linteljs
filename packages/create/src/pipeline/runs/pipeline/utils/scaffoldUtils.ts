@@ -6,21 +6,27 @@ type CommandLine = [string, ...string[]];
 
 // Four spellings of the same intent; wrong, it reads as installing a package called `vite my-app`.
 const SCAFFOLD_COMMANDS: Record<PackageManager, Record<ScaffoldKind, CommandLine>> = {
-  pnpm: {
+  'pnpm': {
     create: ['pnpm', 'create'],
     dlx: ['pnpm', 'dlx'],
   },
-  npm: {
+  'npm': {
     // `--yes` on both: `npm create` is `npm exec`, which asks before caching a scaffolder it does not have. Behind a
     // pipe it warns and proceeds, so the end-to-end suite never saw it; on a terminal it stops and waits for a y.
     create: ['npm', 'create', '--yes'],
     dlx: ['npx', '--yes'],
   },
-  yarn: {
+  'yarn': {
     create: ['yarn', 'create'],
     dlx: ['yarn', 'dlx'],
   },
-  bun: {
+  'yarn-classic': {
+    create: ['yarn', 'create'],
+    // Yarn 1 has no `dlx`, and `yarn global add` would leave the generator installed. npx ships with Node, so the
+    // two `dlx` targets (Angular and Svelte) fetch theirs through it.
+    dlx: ['npx', '--yes'],
+  },
+  'bun': {
     create: ['bun', 'create'],
     dlx: ['bunx'],
   },

@@ -20,6 +20,8 @@ import {
   it,
 } from 'vitest';
 
+import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
+
 import { valuesOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
@@ -387,4 +389,18 @@ describe('answers records', () => {
       return flags.indexOf(flag) !== index;
     })).toEqual([]);
   });
+});
+
+/**
+ * Two tables, one key set. A manager with a floor and no command is one nothing can spawn, and a command with no
+ * floor is one nothing can refuse, and either way the one that is missing is found at a spawn rather than here.
+ */
+it('gives every package manager both a floor and a command', () => {
+  const byName = (left: string, right: string): number => {
+    return left.localeCompare(right, 'en');
+  };
+  const commands = Object.keys(MANAGER_BINARIES).toSorted(byName);
+
+  expect(commands).toEqual(Object.keys(MANAGER_FLOORS).toSorted(byName));
+  expect(commands).toEqual(valuesOf(ANSWERS.packageManager.values).toSorted(byName));
 });

@@ -34,7 +34,7 @@ const DEPRECATION = /deprecated/i;
 // What each manager prints when an install was not clean. Yarn's codes carry no severity, so its summary line
 // decides and every coded line but the banner is then shown.
 const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
-  pnpm: (output) => {
+  'pnpm': (output) => {
     // `Request took` and the speed notice are this suite's own registry on a cold fetch, not the project.
     return (output.match(/^.*(?:\bWARN\b|Ignored build scripts).*$/gm) ?? []).filter((line) => {
       return !line.includes('Request took')
@@ -47,19 +47,25 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
    * than cut with the others, because npm writes it to stderr and `run` appends stderr whole after stdout, so the
    * stage boundary below does not contain it.
    */
-  npm: (output) => {
+  'npm': (output) => {
     return (output.match(/^npm (?:warn|WARN).*$/gm) ?? []).filter((line) => {
       return !line.startsWith('npm warn exec') && !DEPRECATION.test(line);
     });
   },
-  yarn: (output) => {
+  'yarn': (output) => {
     return output.includes('Done with warnings')
       ? (output.match(/^.*YN0(?!000)\d{3}.*$/gm) ?? []).filter((line) => {
           return !DEPRECATION.test(line);
         })
       : [];
   },
-  bun: (output) => {
+  // Yarn 1 has no codes: every line it wants read starts with the word.
+  'yarn-classic': (output) => {
+    return (output.match(/^warning .*$/gm) ?? []).filter((line) => {
+      return !DEPRECATION.test(line);
+    });
+  },
+  'bun': (output) => {
     return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? []).filter((line) => {
       // `Slow filesystem` names this suite's own cache directory, which is a fact about the machine, not the project.
       return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');

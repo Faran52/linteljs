@@ -13,11 +13,15 @@ ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent
 | Yarn | `yarn create @linteljs my-app` | `yarn dlx @linteljs/create my-app` |
 | Bun | `bun create @linteljs my-app` | `bunx @linteljs/create my-app` |
 
-The manager that runs `create` is the project's, and the project keeps it. On Yarn 1, `yarn create @scope`
-looks for a binary called `create` and this package provides `create-linteljs`, so start with
-`yarn dlx @linteljs/create my-app`: `dlx` on Yarn 1 forwards to a modern Yarn, and the project it writes is a
-Yarn 4 project, which Yarn 1 also forwards to through the `packageManager` field. `yarn create @linteljs`
-works from Yarn 2 on.
+The manager that runs `create` is the project's, and the project keeps it. Both Yarns count: a Yarn 4 run
+writes a Yarn 4 project, and a Yarn 1 run writes a Yarn 1 project, recorded as `yarn-classic`. `yarn create`
+reaches this CLI on either, because the package provides a binary called `create` as well as
+`create-linteljs`, which is what `yarn create @scope` on Yarn 1 looks for. `yarn dlx` exists only from Yarn 2,
+so on Yarn 1 use the create alias.
+
+A Yarn 1 project is the one shape that cannot gate its install scripts. pnpm has `allowBuilds`, npm has
+`allowScripts`, Bun has `trustedDependencies` and Yarn 4 has `enableScripts`; Yarn 1 runs every one of them
+and has no setting that says otherwise. Everything else in the standard is the same.
 
 If you use pnpm and `minimumReleaseAge` is set, the override has to come before `create`:
 
@@ -28,7 +32,7 @@ pnpm --config.minimumReleaseAge=0 create @linteljs my-app
 ## Requirements
 
 Node 22 (22.6.0 or newer), and the package manager that runs `create`, which the project then keeps: pnpm
-10.26 or newer, npm 9.6.5 or newer, Yarn 4 or newer, or Bun 1.2 or newer. Nothing is installed on your
+10.26 or newer, npm 9.6.5 or newer, Yarn 4 or newer, Yarn 1.22.22, or Bun 1.2 or newer. Nothing is installed on your
 behalf: a manager below its floor is refused with the reason, rather than upgraded behind your back.
 
 ## What you get

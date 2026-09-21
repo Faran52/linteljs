@@ -1,5 +1,10 @@
-import { MANAGER_FLOORS, NODE_FLOOR } from '@config/constants';
+import {
+  MANAGER_BINARIES,
+  MANAGER_FLOORS,
+  NODE_FLOOR,
+} from '@config/constants';
 
+import { valuesOf } from '@utils/objectUtils';
 import { majorOf, rankOf } from '@utils/versionUtils';
 
 import type { PackageManager } from '@answers';
@@ -9,27 +14,40 @@ export interface DetectedManager {
   version: string | undefined;
 }
 
-const isPackageManager = (name: string): name is PackageManager => {
-  return name in MANAGER_FLOORS;
+// What an agent's first token can say, which is a command rather than an id: derived, so a sixth manager is one row.
+const AGENT_NAMES = new Set<string>(valuesOf(MANAGER_BINARIES));
+
+// Yarn says `yarn` whichever yarn it is, and the two are different managers here, so the major decides. An agent
+// with no version to read is taken for Berry: that is the yarn a fresh project gets, and the one a `dlx` forwards to.
+const managerNamed = (name: string, version: string | undefined): PackageManager => {
+  return name === 'yarn' && version !== undefined && majorOf(version) === 1 ? 'yarn-classic' : name as PackageManager;
 };
 
 /**
  * The first token of `npm_config_user_agent`, read the way every scaffolder reads it:
- * `pnpm/12.5.1 npm/? node/? darwin arm64`. A name outside the four answers `undefined`, as does an unset agent, and
- * so does a version that is not one: pnpm's own agent carries `node/?` rather than a Node version.
+ * `pnpm/12.5.1 npm/? node/? darwin arm64`. A name outside the four commands answers `undefined`, as does an unset
+ * agent, and so does a version that is not one: pnpm's own agent carries `node/?` rather than a Node version.
  */
 export const managerFromUserAgent = (userAgent: string | undefined): DetectedManager | undefined => {
   const [token = ''] = (userAgent ?? '').split(' ');
   const [name = '', version = ''] = token.split('/');
 
-  if (!isPackageManager(name)) {
+  if (!AGENT_NAMES.has(name)) {
     return undefined;
   }
 
+  const read = /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined;
+
   return {
-    name,
-    version: /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined,
+    name: managerNamed(name, read),
+    version: read,
   };
+};
+
+// Both yarns write `yarn.lock`, so the file decides. Classic opens with its own banner; Berry's carries `__metadata`.
+// Anything unreadable or unfamiliar is taken for Berry, which is what a project made here would have.
+export const yarnFromLockfile = (text: string | null): PackageManager => {
+  return text?.includes('# yarn lockfile v1') === true ? 'yarn-classic' : 'yarn';
 };
 
 // At or above the floor a generated project's own files need. Refused below rather than installed.
@@ -48,15 +66,11 @@ export const managerRefusal = (pm: PackageManager, version: string | undefined):
     return undefined;
   }
 
-  // Yarn 1 is the one floor with its own sentence: the fix is a different command rather than an upgrade, since
-  // yarn 1 forwards `dlx` and a `packageManager` field to a modern yarn on its own.
-  if (pm === 'yarn' && majorOf(version) === 1) {
-    return `yarn ${version} ran this. The projects this CLI writes are yarn 4 projects, and yarn 1 forwards to 4 `
-      + 'on its own: run `yarn dlx @linteljs/create <name>`, or `yarn set version stable` in this directory first.';
-  }
+  // The command rather than the id: `yarn-classic` is not something anyone can type or install.
+  const binary = MANAGER_BINARIES[pm];
 
-  return `${pm} ${version} ran this, and a project this CLI writes needs ${pm} ${MANAGER_FLOORS[pm]} or newer. `
-    + 'Upgrade it and run this again.';
+  return `${binary} ${version} ran this, and a project this CLI writes needs ${binary} ${MANAGER_FLOORS[pm]} or `
+    + 'newer. Upgrade it and run this again.';
 };
 
 // The floor this CLI runs on, which is where `--experimental-strip-types` first exists, rather than the `>=22` a

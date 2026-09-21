@@ -295,7 +295,7 @@ describe('parseLinteljsConfig', () => {
     [
       'an unknown package manager',
       config({ packageManager: 'deno' }),
-      /packageManager must be one of: pnpm, npm, yarn, bun/,
+      /packageManager must be one of: pnpm, npm, yarn, yarn-classic, bun/,
     ],
     ['a non-array library list', config({ libraries: 'zod' }), /libraries must be an array/],
     [

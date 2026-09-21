@@ -6,6 +6,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { MANAGER_BINARIES } from '@config/constants';
+
 import { UNPUBLISHED_YET_BY_PM } from '../constants';
 
 import {
@@ -82,9 +84,12 @@ export const createProject = async (root: string, name: string, answers: Answers
   mkdirSync(root, { recursive: true });
 
   const pm = answers.packageManager;
-  // Exactly what the manager sets when it launches the CLI itself: its own name and version, first token, split on
-  // `/`. Injecting it is what keeps four managers four managers now that no flag names one.
-  const agent = `${pm}/${await versionOf(pm)} npm/? node/? e2e`;
+  /**
+   * Exactly what the manager sets when it launches the CLI itself: its own name and version, first token, split on
+   * `/`. Injecting it is what keeps four managers four managers now that no flag names one.
+   * The binary rather than the id: yarn 1 and yarn 4 both say `yarn/<version>`, which is what detection reads.
+   */
+  const agent = `${MANAGER_BINARIES[pm]}/${await versionOf(pm)} npm/? node/? e2e`;
 
   const attempt = async (): Promise<RunResult> => {
     rmSync(join(root, name), {

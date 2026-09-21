@@ -31,3 +31,16 @@ describe('adapterArtifact', () => {
     expect(artifact.content).toHaveProperty('text', expect.stringContaining('# LintelJS project'));
   });
 });
+
+// `yarn check` on 1.x is yarn's own lockfile check, so a classic project reaches its gate through `run`.
+it('sends a classic project through run, where berry needs none', () => {
+  expect(emitAgentAdapter({
+    ...DEFAULT_ANSWERS,
+    packageManager: 'yarn-classic',
+  })).toContain('`yarn run check`');
+
+  expect(emitAgentAdapter({
+    ...DEFAULT_ANSWERS,
+    packageManager: 'yarn',
+  })).toContain('`yarn check`');
+});

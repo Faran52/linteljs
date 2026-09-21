@@ -9,10 +9,13 @@ export const packageManagerAnswer = {
   description: 'The package manager that ran create, recorded so sync runs the same one.',
   kind: 'choice',
   values: {
-    pnpm: { label: 'pnpm' },
-    npm: { label: 'npm' },
-    yarn: { label: 'Yarn' },
-    bun: { label: 'Bun' },
+    'pnpm': { label: 'pnpm' },
+    'npm': { label: 'npm' },
+    'yarn': { label: 'Yarn' },
+    // Yarn 1 is a different manager wearing the same command: no `.yarnrc.yml`, no `dlx`, and install scripts it
+    // cannot gate. `DESIGN.md` carries what a classic project does not get.
+    'yarn-classic': { label: 'Yarn Classic' },
+    'bun': { label: 'Bun' },
   },
   default: 'pnpm',
 } as const satisfies AnswerRecord;

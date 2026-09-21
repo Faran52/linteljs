@@ -44,7 +44,7 @@ describe.
   someone remembers. 98 cases, each one a real scaffold, install and `check`.
 - **The cases are two families, and between them every answer.** `managerCases` is every target on
   every package manager with every multi-select at full value: the heaviest dependency set a target
-  has, installed four ways, which is what catches a library breaking a project and a manager resolving
+  has, installed five ways, which is what catches a library breaking a project and a manager resolving
   the same manifest differently. `optionCases` is every combination of the single-select axes on pnpm
   alone, because a manager does not decide which config is emitted. Multiplying the two together is
   what made the matrix 1200; kept apart they are 327, and the one case per target they share is

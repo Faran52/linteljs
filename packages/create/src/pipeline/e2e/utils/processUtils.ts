@@ -4,6 +4,8 @@ import { env } from 'node:process';
 
 import { inject } from 'vitest';
 
+import { MANAGER_BINARIES } from '@config/constants';
+
 import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
 
 import type { PackageManager } from '@answers';
@@ -124,5 +126,5 @@ export const runPm = async (pm: PackageManager, args: string[], project: string)
     return SPELLINGS[pm][arg] ?? [arg];
   });
 
-  return run(pm, mapped, project);
+  return run(MANAGER_BINARIES[pm], mapped, project);
 };

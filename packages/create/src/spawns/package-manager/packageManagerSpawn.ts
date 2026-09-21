@@ -1,5 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
+import { MANAGER_BINARIES } from '@config/constants';
+
 import type { PackageManager } from '@answers';
 
 /**
@@ -9,7 +11,7 @@ import type { PackageManager } from '@answers';
  * to decide.
  */
 export const packageManagerSpawn = (pm: PackageManager): string | undefined => {
-  const result = spawnSync(pm, ['--version'], {
+  const result = spawnSync(MANAGER_BINARIES[pm], ['--version'], {
     encoding: 'utf8',
     stdio: 'pipe',
   });

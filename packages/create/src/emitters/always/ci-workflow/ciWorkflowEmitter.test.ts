@@ -95,3 +95,12 @@ describe('emitCiWorkflow', () => {
     expect(emitCiWorkflow(answersFor({}))).toContain('permissions:\n  contents: read');
   });
 });
+
+// `--immutable` is Berry's; 1.x has never known it and would fail the workflow on its first run.
+it('installs a classic project with the flag 1.x understands', () => {
+  const workflow = emitCiWorkflow(answersFor({ packageManager: 'yarn-classic' }));
+
+  expect(workflow).toContain('yarn install --frozen-lockfile');
+  expect(workflow).not.toContain('--immutable');
+  expect(workflow).toContain('cache: yarn');
+});

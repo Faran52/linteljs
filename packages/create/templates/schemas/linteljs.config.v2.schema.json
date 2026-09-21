@@ -73,6 +73,7 @@
         "pnpm",
         "npm",
         "yarn",
+        "yarn-classic",
         "bun"
       ]
     },

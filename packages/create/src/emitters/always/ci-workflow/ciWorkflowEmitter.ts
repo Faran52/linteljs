@@ -26,24 +26,29 @@ const nodeVersion = (answers: Answers): string => {
 
 // Third-party actions are pinned to a commit, since a tag can move; GitHub's own go by major tag.
 const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
-  pnpm: {
+  'pnpm': {
     before: ['- uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10'],
     cache: 'pnpm',
     install: 'pnpm install --frozen-lockfile',
   },
   // The only install that refuses to edit the lockfile.
-  npm: {
+  'npm': {
     before: [],
     cache: 'npm',
     install: 'npm ci',
   },
-  yarn: {
+  'yarn': {
     before: [],
     cache: 'yarn',
     install: 'yarn install --immutable',
   },
+  'yarn-classic': {
+    before: [],
+    cache: 'yarn',
+    install: 'yarn install --frozen-lockfile',
+  },
   // `setup-node` fails outright on a `cache` value it does not know.
-  bun: {
+  'bun': {
     before: ['- uses: oven-sh/setup-bun@v2'],
     install: 'bun install --frozen-lockfile',
   },

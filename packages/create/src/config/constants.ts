@@ -12,10 +12,11 @@ import type { ProjectShape, Stage } from './types';
  * through `dlx` and the `packageManager` field, so it never runs a project of ours), bun 1.2 writes the text lockfile.
  */
 export const MANAGER_FLOORS: Record<PackageManager, string> = {
-  pnpm: '10.26.0',
-  npm: '9.6.5',
-  yarn: '4.0.0',
-  bun: '1.2.0',
+  'pnpm': '10.26.0',
+  'npm': '9.6.5',
+  'yarn': '4.0.0',
+  'yarn-classic': '1.22.22',
+  'bun': '1.2.0',
 };
 
 /**
@@ -24,6 +25,19 @@ export const MANAGER_FLOORS: Record<PackageManager, string> = {
  * pinned tools ask for more (`@angular/create` and lint-staged 17.3 want 22.22), and say so themselves as EBADENGINE
  * warnings; that is theirs to declare, not ours to copy.
  */
+/**
+ * The command each id runs, which is the id itself for all but one: `yarn-classic` is yarn 1, wearing the same
+ * `yarn` command as Berry. Anything that spawns a manager or writes one into a manifest reads this rather than the
+ * id, or a project ends up declaring a `yarn-classic` nobody can install.
+ */
+export const MANAGER_BINARIES: Record<PackageManager, string> = {
+  'pnpm': 'pnpm',
+  'npm': 'npm',
+  'yarn': 'yarn',
+  'yarn-classic': 'yarn',
+  'bun': 'bun',
+};
+
 export const NODE_ENGINE = '>=22';
 
 export const NODE_FLOOR = '22.6.0';
@@ -31,10 +45,12 @@ export const NODE_FLOOR = '22.6.0';
 // How each manager is asked to run a script, which the emitters write into a generated `package.json` and its CI
 // workflow, and which `terminal/` and `pipeline/` print and spawn. No ring owns it, so it sits below all of them.
 export const RUN_PREFIX: Record<PackageManager, string> = {
-  pnpm: 'pnpm',
-  npm: 'npm run',
-  yarn: 'yarn',
-  bun: 'bun run',
+  'pnpm': 'pnpm',
+  'npm': 'npm run',
+  'yarn': 'yarn',
+  // `run`, unlike Berry: `yarn check` on 1.x is yarn's own lockfile check, which would shadow the project's gate.
+  'yarn-classic': 'yarn run',
+  'bun': 'bun run',
 };
 
 /**
