@@ -31,7 +31,7 @@ pnpm --config.minimumReleaseAge=0 create @linteljs my-app
 
 ## Requirements
 
-Node 22 (22.6.0 or newer), and the package manager that runs `create`, which the project then keeps: pnpm
+Node 22 (22.13.0 or newer), and the package manager that runs `create`, which the project then keeps: pnpm
 10.26 or newer, npm 9.6.5 or newer, Yarn 4 or newer, Yarn 1.22.22, or Bun 1.2 or newer. Nothing is installed on your
 behalf: a manager below its floor is refused with the reason, rather than upgraded behind your back.
 

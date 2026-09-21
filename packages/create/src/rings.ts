@@ -30,7 +30,7 @@ export const WORLDS: Record<'disk' | 'spawns' | 'terminal', World> = {
     message: 'Spawning lives in spawns/.',
   },
   terminal: {
-    group: ['node:process', '@clack/*'],
+    group: ['node:process', '@inquirer/*'],
     message: 'argv and the terminal live in terminal/.',
   },
 };

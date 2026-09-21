@@ -24,9 +24,10 @@ when a version's change lives in a sibling it is described there instead:
 - A generated project declares that manager three ways: `packageManager` with the exact version, `engines`
   with the floor, and `devEngines.packageManager` with `onFail: "error"`, which npm 11 and pnpm enforce.
   Bun gets `engines.bun` and no `packageManager`, since neither corepack nor pnpm's switch knows Bun.
-- **The Node floor is `>=22`**, down from `>=26.8.2`. The CLI itself refuses below 22.6.0, where
-  `--experimental-strip-types` first exists, and the two shipped `scripts/*.ts` now run under that flag so
-  every 22 can run them. CI runs on the major that ran `create`, recorded beside the manager.
+- **The Node floor is `>=22`**, down from `>=26.8.2`. A generated project means it: the two shipped `scripts/*.ts`
+  run under `--experimental-strip-types`, which exists from 22.6.0, so every 22 can run them. The CLI itself refuses
+  below 22.13.0, which is what its own prompt library supports. CI runs on the major that ran `create`, recorded
+  beside the manager.
 - React Native scaffolds through `create-expo` 5 under whichever manager ran `create`. It no longer forces
   npm, and npm is no longer pinned to 11 for every target. Four of that template's components declare their
   props as an unnamed shape, which the standard's own `no-inline-object-types` refuses, so the starter fixes
@@ -37,11 +38,10 @@ when a version's change lives in a sibling it is described there instead:
   instead of scrolling past. Behind a pipe nothing changed, and that is deliberate: the plan of six steps with the
   skipped ones marked, a line per file, a line per stage, and both binaries writing straight through, which is what
   a CI log and the end-to-end suite read.
-- **The questionnaire is one line per question.** The vertical guide down its left edge is gone, an answered
-  question keeps its answer beside it rather than underneath, and the mark it is left with is the tick a finished
-  stage carries. The project name is typed on the question's own line: that one is asked over `node:readline`
-  rather than a prompt library, because a line of text is what it is, and the line is rewritten in place once it is
-  answered. Ctrl+C and Ctrl+D both cancel it, as they did.
+- **The questionnaire is one line per question**, asked over `@inquirer/prompts` rather than `@clack/prompts`: a
+  question and the answer given to it sit together rather than one under the other, which is how the run below them
+  reads too. The answers, their order and every value written are unchanged. The prompter stays behind this
+  package's own interface, which is why one file changed and the questionnaire's own suite did not.
 - A run names the scaffolder it is about to fetch, and `npm create` now fetches it without asking. `npm create` is
   `npm exec`, which stops at `Ok to proceed?` on a terminal; behind a pipe it warned and carried on, which is why no
   end-to-end case ever saw it.

@@ -1,25 +1,18 @@
-import { stdout } from 'node:process';
-// The real one, reached under its other name: `node:readline/promises` is mocked below, and this is the same
-// factory, so a suite can build a genuine interface to hand back through the mock.
-import { promises as realReadline } from 'node:readline';
-import { createInterface, type Interface } from 'node:readline/promises';
-import { Readable, Writable } from 'node:stream';
-
 import {
-  CANCEL_SYMBOL,
-  multiselect,
+  checkbox,
+  input,
   select,
-} from '@clack/prompts';
+} from '@inquirer/prompts';
 import {
   CANCEL,
   type Recorded,
   scripted,
 } from '@mocks/scriptedPrompter';
 import {
+  beforeEach,
   describe,
   expect,
   it,
-  type MockInstance,
   vi,
 } from 'vitest';
 
@@ -30,7 +23,7 @@ import {
   ask,
   type Asked,
   type AskInput,
-  clackPrompter,
+  inquirerPrompter,
   type Prompter,
 } from './prompts';
 
@@ -39,24 +32,11 @@ interface AskOutcome {
   recorded: Recorded;
 }
 
-// A stubbed question and the interface it belongs to, which the interrupt case needs to emit on.
-interface Asking {
-  interface: Interface;
-  question: MockInstance<Interface['question']>;
-}
-
-vi.mock('node:readline/promises', () => {
-  return { createInterface: vi.fn() };
-});
-
-vi.mock('@clack/prompts', () => {
+vi.mock('@inquirer/prompts', () => {
   return {
     select: vi.fn(),
-    multiselect: vi.fn(),
-    text: vi.fn(),
-    isCancel: vi.fn(),
-    updateSettings: vi.fn(),
-    CANCEL_SYMBOL: Symbol('clack-cancel'),
+    checkbox: vi.fn(),
+    input: vi.fn(),
   };
 });
 
@@ -320,20 +300,13 @@ describe('the project name question', () => {
     const prompter: Prompter = {
       ...recorded.prompter,
       text: (options: Parameters<Prompter['text']>[0]) => {
-        // `undefined` is what clack passes before anything is typed.
-        const validate = options.validate;
+        const { validate } = options;
 
-        // clack types `validate` as a function or a schema; a schema here would mean the question stopped validating.
-        if (typeof validate !== 'function') {
-          throw new TypeError('the project name question must validate with a function');
-        }
-
-        const r0 = validate(undefined);
-        const r1 = validate('My-App');
+        // The empty string is what a person submits before typing anything, and `My-App` is the near miss npm refuses.
         seen.push(
-          typeof r0 === 'string' ? r0 : '',
-          typeof r1 === 'string' ? r1 : '',
-          validate('my-app') === undefined ? undefined : 'unexpected',
+          validate('') ?? '',
+          validate('My-App') ?? '',
+          validate('my-app'),
         );
 
         return recorded.prompter.text(options);
@@ -401,231 +374,143 @@ describe('the form library and router questions', () => {
 });
 
 /**
- * The one place the real terminal is spoken to. Everything above drives `ask` through a scripted `Prompter`; this is
- * the other side of that seam, and the only thing holding what a person reads to what clack is handed.
+ * The one place the prompt library is named. Everything above drives `ask` through a scripted `Prompter`, which is
+ * the seam that makes that possible; these cases are the seam's other side, and the only thing holding the shape
+ * this CLI asks for against the shape the library takes.
  */
-describe('clackPrompter', () => {
-  const outputOf = (spy: typeof multiselect | typeof select): Writable => {
-    const { output } = vi.mocked(spy).mock.calls[0]?.[0] ?? {};
-
-    if (output === undefined) {
-      throw new Error('the prompt was handed no output stream');
-    }
-
-    return output;
-  };
-
-  const writtenBy = (frames: string[], through?: Writable): string[] => {
-    const seen: string[] = [];
-    const writing = vi.spyOn(stdout, 'write').mockImplementation((chunk) => {
-      seen.push(String(chunk));
-
-      return true;
-    });
-
-    try {
-      for (const frame of frames) {
-        through?.write(frame);
-      }
-    }
-    finally {
-      writing.mockRestore();
-    }
-
-    return seen;
-  };
-
-  it('joins a submitted question to its answer, under the mark a finished stage carries', async () => {
-    vi.mocked(select).mockResolvedValue('test-app');
-
-    await clackPrompter.select({
-      message: 'Project name',
-      initialValue: 'test-app',
-      options: [],
-    });
-
-    // Measured: clack writes a submitted prompt as one chunk, and every frame before it starts with another symbol.
-    expect(writtenBy([
-      '\u25C7  Project name\ntest-app',
-      '\u25C6  Framework\n\u25CF React\n',
-    ], outputOf(select))).toEqual([
-      '\u2713  Project name  test-app',
-      '\u25C6  Framework\n\u25CF React\n',
-    ]);
+describe('inquirerPrompter', () => {
+  beforeEach(() => {
+    vi.mocked(select).mockReset();
+    vi.mocked(checkbox).mockReset();
+    vi.mocked(input).mockReset();
   });
 
-  it('gives the stream the terminal it writes to, rather than clack falling back to 80', async () => {
-    vi.mocked(multiselect).mockResolvedValue(['zod']);
+  it('asks a choice as a select, with the label shown and the hint beside it', async () => {
+    vi.mocked(select).mockResolvedValue('react');
 
-    await clackPrompter.multiselect({
+    const answer = await inquirerPrompter.select({
+      message: 'Framework',
+      initialValue: 'react',
+      options: [
+        {
+          value: 'react',
+          label: 'React (Vite)',
+          hint: 'the default',
+        },
+        {
+          value: 'vue',
+          label: 'Vue',
+        },
+      ],
+    });
+
+    expect(answer).toBe('react');
+    // A hint that is absent is an absent key rather than an undefined one, which is what the option type asks for.
+    expect(vi.mocked(select).mock.calls[0]?.[0]).toEqual({
+      message: 'Framework',
+      default: 'react',
+      choices: [
+        {
+          value: 'react',
+          name: 'React (Vite)',
+          description: 'the default',
+        },
+        {
+          value: 'vue',
+          name: 'Vue',
+        },
+      ],
+    });
+  });
+
+  it('asks a multi as a checkbox, ticking what the record defaults to', async () => {
+    vi.mocked(checkbox).mockResolvedValue(['zod']);
+
+    const answer = await inquirerPrompter.multiselect({
       message: 'Libraries',
-      initialValues: [],
+      initialValues: ['zod'],
       required: false,
-      options: [],
+      options: [
+        {
+          value: 'zod',
+          label: 'Zod',
+          hint: 'Schemas that narrow',
+        },
+        {
+          value: 'tailwind',
+          label: 'Tailwind CSS',
+        },
+      ],
     });
 
-    expect(outputOf(multiselect)).toHaveProperty('columns', stdout.columns);
-    expect(outputOf(multiselect)).toHaveProperty('isTTY', true);
+    expect(answer).toEqual(['zod']);
+    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toEqual({
+      message: 'Libraries',
+      required: false,
+      choices: [
+        {
+          value: 'zod',
+          name: 'Zod',
+          description: 'Schemas that narrow',
+          checked: true,
+        },
+        {
+          value: 'tailwind',
+          name: 'Tailwind CSS',
+          checked: false,
+        },
+      ],
+    });
   });
 
-  /**
-   * The name is the one question asked as a line of text rather than a list, and the one clack draws over two lines
-   * whatever the guide says. These hold what a person sees: the answer on the line they typed it on.
-   */
-  describe('the name question', () => {
-    /**
-     * A real `Interface` over streams that go nowhere, with its `question` stubbed. Built rather than shaped: the
-     * type carries far more than this needs, and a partial one would have to be cast into place.
-     */
-    const asked = (answers: string[]): Asking => {
-      const asking = realReadline.createInterface({
-        input: new Readable({
-          read: () => {
-            return undefined;
-          },
-        }),
-        output: new Writable({
-          write: (_chunk, _encoding, done) => {
-            done();
-          },
-        }),
-      });
-      const question = vi.spyOn(asking, 'question');
+  // `true` is how that library spells acceptable, and a string is the message it shows instead.
+  it('asks the name as an input, translating what its validation answers', async () => {
+    vi.mocked(input).mockResolvedValue('my-app');
 
-      for (const answer of answers) {
-        question.mockResolvedValueOnce(answer);
-      }
-
-      vi.mocked(createInterface).mockReturnValue(asking);
-
-      return {
-        interface: asking,
-        question,
-      };
-    };
-
-    it('asks on one line and rewrites that line with the answer', async () => {
-      const { question } = asked(['my-app']);
-      const printed = writtenBy([]);
-
-      const answer = await clackPrompter.text({
-        message: 'Project name',
-        validate: () => {
-          return undefined;
-        },
-      });
-
-      expect(answer).toBe('my-app');
-      expect(question).toHaveBeenCalledWith('\u25C6  Project name  ');
-      expect(printed).toEqual([]);
+    const answer = await inquirerPrompter.text({
+      message: 'Project name',
+      validate: (value) => {
+        return value === 'my-app' ? undefined : 'must be a name';
+      },
     });
 
-    it('rewrites the line it was typed on, in place', async () => {
-      asked(['my-app']);
+    expect(answer).toBe('my-app');
 
-      const seen: string[] = [];
-      const writing = vi.spyOn(stdout, 'write').mockImplementation((chunk) => {
-        seen.push(String(chunk));
+    const asked = vi.mocked(input).mock.calls[0]?.[0];
 
-        return true;
-      });
+    expect(asked?.message).toBe('Project name');
+    expect(asked?.validate?.('my-app')).toBe(true);
+    expect(asked?.validate?.('My-App')).toBe('must be a name');
+  });
 
-      await clackPrompter.text({
-        message: 'Project name',
-        validate: () => {
-          return undefined;
-        },
-      });
+  it('answers the cancel symbol when the question is exited', async () => {
+    vi.mocked(input).mockRejectedValue(Object.assign(new Error('User force closed the prompt'), {
+      name: 'ExitPromptError',
+    }));
 
-      writing.mockRestore();
-
-      // Up one line, clear it, back to column one: the question and its answer end up where the question was.
-      expect(seen).toEqual(['\u001B[1A\u001B[2K\u001B[G\u2713  Project name  my-app\n']);
+    const answer = await inquirerPrompter.text({
+      message: 'Project name',
+      validate: () => {
+        return undefined;
+      },
     });
 
-    // `validate` is optional on the request, and a question with none accepts whatever was typed.
-    it('accepts a question with nothing to validate', async () => {
-      asked(['my-app']);
+    expect(inquirerPrompter.isCancel(answer)).toBe(true);
+  });
 
-      const writing = vi.spyOn(stdout, 'write').mockImplementation(() => {
-        return true;
-      });
+  // A broken terminal is not a cancelled run, and swallowing it would report one as the other.
+  it('rethrows anything that is not an exit', async () => {
+    vi.mocked(select).mockRejectedValue(new Error('stdin is not a terminal'));
 
-      try {
-        expect(await clackPrompter.text({ message: 'Project name' })).toBe('my-app');
-      }
-      finally {
-        writing.mockRestore();
-      }
-    });
+    await expect(inquirerPrompter.select({
+      message: 'Framework',
+      initialValue: 'react',
+      options: [],
+    })).rejects.toThrow('stdin is not a terminal');
+  });
 
-    // Ctrl+C on a readline question is its own event, and has to come back as the symbol clack would have returned.
-    it('answers the cancel symbol when the question is interrupted', async () => {
-      const { interface: asking, question } = asked([]);
-
-      question.mockImplementation(async () => {
-        asking.emit('SIGINT');
-
-        return await Promise.resolve('');
-      });
-
-      expect(await clackPrompter.text({
-        message: 'Project name',
-        validate: () => {
-          return undefined;
-        },
-      })).toBe(CANCEL_SYMBOL);
-    });
-
-    // Measured: readline reports Ctrl+D as an abort rather than an answer, and the run is cancelled either way.
-    it('answers the cancel symbol when the input ends', async () => {
-      const { question } = asked([]);
-
-      question.mockRejectedValueOnce(Object.assign(new Error('Aborted with Ctrl+D'), { name: 'AbortError' }));
-
-      expect(await clackPrompter.text({
-        message: 'Project name',
-        validate: () => {
-          return undefined;
-        },
-      })).toBe(CANCEL_SYMBOL);
-    });
-
-    it('lets anything else through', async () => {
-      const { question } = asked([]);
-
-      question.mockRejectedValueOnce(new Error('the terminal went away'));
-
-      await expect(clackPrompter.text({
-        message: 'Project name',
-        validate: () => {
-          return undefined;
-        },
-      })).rejects.toThrow('the terminal went away');
-    });
-
-    it('says why a name was refused and asks again', async () => {
-      const { question } = asked(['My-App', 'my-app']);
-
-      const seen: string[] = [];
-      const writing = vi.spyOn(stdout, 'write').mockImplementation((chunk) => {
-        seen.push(String(chunk));
-
-        return true;
-      });
-
-      const answer = await clackPrompter.text({
-        message: 'Project name',
-        validate: (value) => {
-          return value === 'my-app' ? undefined : 'must be lowercase';
-        },
-      });
-
-      writing.mockRestore();
-
-      expect(answer).toBe('my-app');
-      expect(question).toHaveBeenCalledTimes(2);
-      expect(seen[0]).toBe('   must be lowercase\n');
-    });
+  it('knows a value from the cancel symbol', () => {
+    expect(inquirerPrompter.isCancel('react')).toBe(false);
+    expect(inquirerPrompter.isCancel(['zod'])).toBe(false);
   });
 });

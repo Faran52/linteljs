@@ -91,9 +91,8 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
           return Promise.resolve(CANCEL);
         }
 
-        const value = answer ?? opts.initialValue;
-
-        return Promise.resolve(typeof value === 'string' ? value : CANCEL);
+        // A text question has no default to fall back on: a script that answers `undefined` answered nothing.
+        return Promise.resolve(typeof answer === 'string' ? answer : CANCEL);
       },
       multiselect: (opts) => {
         record(opts.message, opts.options);

@@ -1,18 +1,8 @@
-import { stdin, stdout } from 'node:process';
-import { createInterface, type Interface } from 'node:readline/promises';
-import { Writable } from 'node:stream';
-
 import {
-  CANCEL_SYMBOL,
-  isCancel,
-  multiselect,
-  type MultiSelectOptions,
-  type Option,
+  checkbox,
+  input,
   select,
-  type SelectOptions,
-  type TextOptions,
-  updateSettings,
-} from '@clack/prompts';
+} from '@inquirer/prompts';
 import { omit } from 'es-toolkit';
 
 import { valuesOf } from '@utils/objectUtils';
@@ -33,11 +23,7 @@ import { PROJECT_NAME_RULE } from '../constants';
 import { isValidProjectName } from '../utils/nameUtils';
 
 import {
-  ANSWER_GAP,
   ANSWER_KEYS,
-  ANSWERED_MARK,
-  ANSWERED_PREFIX,
-  ASKING_MARK,
   RUN_CANCELLED_MESSAGE,
   STORE_CHOICES,
 } from './constants';
@@ -63,15 +49,41 @@ type PromptableRecord
     | OptionalChoiceRecord
     | OptionalMultiRecord;
 
+// What a question offers: the value written to the config, and the two display halves a person reads.
+export interface PromptOption {
+  value: string;
+  label: string;
+  hint?: string;
+}
+
+export interface SelectRequest {
+  message: string;
+  initialValue: string;
+  options: PromptOption[];
+}
+
+export interface MultiSelectRequest {
+  message: string;
+  initialValues: string[];
+  required: boolean;
+  options: PromptOption[];
+}
+
+export interface TextRequest {
+  message: string;
+  // The message to show instead of accepting the value, or `undefined` where it is acceptable.
+  validate: (value: string) => string | undefined;
+}
+
 /**
- * `@clack/prompts` is the one dependency this CLI carries: reading raw keypresses is not something `node:readline`
- * does. Fixed at `string` because `Option<Value>` only resolves its `label` for a primitive it can see at the call
- * site; `askChoice` and `askMulti` recover the literal union with the one cast the standard grants.
+ * The questionnaire's own vocabulary rather than its library's, so the library is one file's business. Fixed at
+ * `string` because a question's values are only a union at the call site; `askChoice` and `askMulti` recover the
+ * literal union with the one cast the standard grants.
  */
 export interface Prompter {
-  select: (opts: SelectOptions<string>) => Promise<string | symbol>;
-  multiselect: (opts: MultiSelectOptions<string>) => Promise<string[] | symbol>;
-  text: (opts: TextOptions) => Promise<string | symbol>;
+  select: (request: SelectRequest) => Promise<string | symbol>;
+  multiselect: (request: MultiSelectRequest) => Promise<string[] | symbol>;
+  text: (request: TextRequest) => Promise<string | symbol>;
   // Ctrl+C resolves a cancel symbol instead of a value; `unwrap` tells the two apart with this.
   isCancel: (value: string | readonly string[] | symbol) => value is symbol;
 }
@@ -96,113 +108,75 @@ interface TargetWithStore extends TargetRecord {
   store: StoreSlot;
 }
 
-// No vertical guide down the left of the questionnaire. It exists to connect a prompt block to what follows, and
-// what follows here is one line per stage with no column of its own, so the guide joined the questions to nothing.
-updateSettings({ withGuide: false });
+const CANCELLED = Symbol('cancelled');
 
 /**
- * A question and its answer on one line. clack writes a submitted prompt as one chunk, `◇  <message>\n<value>`, so
- * joining that first newline is the whole of it; every other frame, including the list a person arrows through, goes
- * through untouched. Done as a stream rather than by moving the cursor afterwards, which would have to know how many
- * lines a long answer wrapped onto.
+ * `@inquirer/prompts` rejects with an `ExitPromptError` on Ctrl+C where this interface resolves a symbol, so the
+ * throw is turned back into one here. Matched on the name rather than the class: the error is constructed inside
+ * `@inquirer/core`, which is a transitive dependency and not ours to import.
  */
-const answeredOnOneLine = (): Writable => {
-  return Object.assign(new Writable({
-    write: (chunk: Buffer, _encoding, done) => {
-      const frame = String(chunk);
-
-      stdout.write(frame.startsWith(ANSWERED_PREFIX)
-        ? `${ANSWERED_MARK}${frame.slice(ANSWERED_PREFIX.length).replace('\n', ANSWER_GAP)}`
-        : frame);
-      done();
-    },
-  }), {
-    // clack falls back to 80 columns for a stream that carries no width, which would wrap a long list early.
-    columns: stdout.columns,
-    isTTY: true,
-  });
-};
-
-// One line of text, asked until it is acceptable. Recursion rather than a loop: a refused answer is a fresh question,
-// and there is one of them per keystroke of patience rather than per element of anything.
-const answeredLine = async (
-  asking: Interface,
-  message: string,
-  validate: TextOptions['validate'],
-  cancelled: () => boolean,
-): Promise<string | symbol> => {
-  const typed = (await asking.question(`${ASKING_MARK}${message}${ANSWER_GAP}`)).trim();
-
-  if (cancelled()) {
-    // The symbol clack cancels with, so  tells this apart from an answer the same way it always has.
-    return CANCEL_SYMBOL;
+const cancellable = async <T>(asked: Promise<T>): Promise<T | symbol> => {
+  try {
+    return await asked;
   }
+  catch (error) {
+    if (error instanceof Error && error.name === 'ExitPromptError') {
+      return CANCELLED;
+    }
 
-  const refusal = typeof validate === 'function' ? validate(typed) : undefined;
-
-  if (typeof refusal === 'string') {
-    stdout.write(`   ${refusal}\n`);
-
-    return await answeredLine(asking, message, validate, cancelled);
+    throw error;
   }
-
-  // The line just typed, rewritten where it sits: same line, same width, the mark every other answer carries.
-  stdout.write(`\u001B[1A\u001B[2K\u001B[G${ANSWERED_MARK}${message}${ANSWER_GAP}${typed}\n`);
-
-  return typed;
 };
 
 // The real terminal; tests substitute their own.
-export const clackPrompter: Prompter = {
-  select: async (options) => {
-    return await select({
-      ...options,
-      output: answeredOnOneLine(),
-    });
+export const inquirerPrompter: Prompter = {
+  select: async ({
+    message,
+    initialValue,
+    options,
+  }) => {
+    return await cancellable(select({
+      message,
+      default: initialValue,
+      choices: options.map((option) => {
+        return {
+          value: option.value,
+          name: option.label,
+          ...(option.hint === undefined ? {} : { description: option.hint }),
+        };
+      }),
+    }));
   },
-  multiselect: async (options) => {
-    return await multiselect({
-      ...options,
-      output: answeredOnOneLine(),
-    });
+  multiselect: async ({
+    message,
+    initialValues,
+    required,
+    options,
+  }) => {
+    return await cancellable(checkbox({
+      message,
+      required,
+      choices: options.map((option) => {
+        return {
+          value: option.value,
+          name: option.label,
+          ...(option.hint === undefined ? {} : { description: option.hint }),
+          checked: initialValues.includes(option.value),
+        };
+      }),
+    }));
   },
-  /**
-   * Not clack's `text`: that one writes the label, then redraws the value a line below it on every keystroke, by
-   * cursor arithmetic a joined line breaks. A name is a line of text rather than a list of keypresses, which is what
-   * `node:readline` asks for, and the answer stays on the line it was typed on. The line is rewritten once on submit
-   * so it carries the same mark as every other answered question.
-   */
   text: async ({ message, validate }) => {
-    const asking = createInterface({
-      input: stdin,
-      output: stdout,
-    });
-
-    let cancelled = false;
-
-    asking.on('SIGINT', () => {
-      cancelled = true;
-      asking.close();
-    });
-
-    try {
-      return await answeredLine(asking, message, validate, () => {
-        return cancelled;
-      });
-    }
-    catch (error) {
-      // Ctrl+D ends the input rather than answering it, which readline reports as an abort. Cancelled, like Ctrl+C.
-      if (error instanceof Error && error.name === 'AbortError') {
-        return CANCEL_SYMBOL;
-      }
-
-      throw error;
-    }
-    finally {
-      asking.close();
-    }
+    return await cancellable(input({
+      message,
+      validate: (value) => {
+        return validate(value) ?? true;
+      },
+    }));
   },
-  isCancel,
+  isCancel: (value): value is symbol => {
+    return value === CANCELLED;
+  },
 };
 
 const unwrap = <T extends string | readonly string[]>(prompter: Prompter, value: T | symbol): T => {
@@ -220,7 +194,7 @@ const askChoice = async <T extends string>(
   initialValue: T,
   describe: (choice: T) => Described,
 ): Promise<T> => {
-  const options: Option<string>[] = choices.map((choice) => {
+  const options: PromptOption[] = choices.map((choice) => {
     return {
       value: choice,
       ...describe(choice),
@@ -253,7 +227,8 @@ const askStore = async (prompter: Prompter, slot: StoreSlot): Promise<boolean> =
   return chosen === 'store';
 };
 
-// `required` is clack's own gate on an empty submission. Filtering `choices` recovers `T` and fixes the answer's order.
+// `required` is the prompt's own gate on an empty submission. Filtering `choices` recovers `T` and fixes
+// the answer's order.
 const askMulti = async <T extends string>(
   prompter: Prompter,
   message: string,
@@ -262,7 +237,7 @@ const askMulti = async <T extends string>(
   required: boolean,
   describe: (choice: T) => Described,
 ): Promise<T[]> => {
-  const options: Option<string>[] = choices.map((choice) => {
+  const options: PromptOption[] = choices.map((choice) => {
     return {
       value: choice,
       ...describe(choice),
@@ -286,9 +261,8 @@ const askMulti = async <T extends string>(
 const askName = async (prompter: Prompter): Promise<string> => {
   const answer = await prompter.text({
     message: 'Project name',
-    placeholder: 'my-app',
     validate: (value) => {
-      return isValidProjectName(value ?? '') ? undefined : `must be ${PROJECT_NAME_RULE}`;
+      return isValidProjectName(value) ? undefined : `must be ${PROJECT_NAME_RULE}`;
     },
   });
 

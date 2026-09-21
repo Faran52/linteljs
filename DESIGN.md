@@ -932,8 +932,11 @@ this CLI was tested against, not that exact version, so a project is not pinned 
 outright rather than warning. Bun gets no `packageManager`, since neither corepack nor pnpm's switch knows it, and
 `engines.bun` says what the field would have.
 
-Node is `>=22` in a generated project and `22.6.0` as this CLI's own floor: the two shipped `scripts/*.ts` run
-under `--experimental-strip-types`, which is where that flag starts. The pinned tools ask for more (`@angular/create`
+Node is `>=22` in a generated project and `22.13.0` as this CLI's own floor, and the two are different facts. The
+project's floor is `--experimental-strip-types`, which starts at 22.6.0 and is what the two shipped `scripts/*.ts`
+run under, so every 22 can run them. The CLI's own is `@inquirer/prompts` 8, which declares
+`^22.13.0 || >=23.5.0`: a questionnaire reading raw keypresses is not something to run below what its own library
+supports, and nothing a project installs is that library. The pinned tools ask for more again (`@angular/create`
 and lint-staged 17.3 want 22.22) and say so themselves as `EBADENGINE` warnings; that is theirs to declare rather
 than ours to copy. CI runs on the major that ran `create`, read off the recorded `nodeVersion`.
 
@@ -1281,7 +1284,7 @@ one list of the rings and their direction, so a tenth ring is a line there rathe
 ### `@linteljs/workspace/create-worlds`
 
 Which folder a module belongs to is read off its import lines rather than decided: `node:fs` means
-`files/`, `node:child_process` means `process/`, `node:process` and `@clack/prompts` mean
+`disk/`, `node:child_process` means `spawns/`, `node:process` and `@inquirer/prompts` mean
 `terminal/`. Nothing else may reach a world, so the only route to a disk is a function that can be
 substituted, and `answers/`, `targets/` and `emitters/` are provably pure.
 

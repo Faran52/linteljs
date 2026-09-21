@@ -73,8 +73,8 @@ export const managerRefusal = (pm: PackageManager, version: string | undefined):
     + 'newer. Upgrade it and run this again.';
 };
 
-// The floor this CLI runs on, which is where `--experimental-strip-types` first exists, rather than the `>=22` a
-// generated project declares: the two shipped `scripts/*.ts` run under that flag.
+// The floor this CLI runs on, which is what its own prompt library supports, rather than the `>=22` a generated
+// project declares. `NODE_FLOOR` carries why the two differ.
 export const nodeRefusal = (running: string): string | undefined => {
   return rankOf(running) < rankOf(NODE_FLOOR)
     ? `Node ${running} is running this, and @linteljs/create needs Node ${NODE_FLOOR} or newer. `

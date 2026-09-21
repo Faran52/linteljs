@@ -54,7 +54,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=22.6.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "build": "tsdown",
@@ -68,7 +68,7 @@
     "prepare": "pnpm run build"
   },
   "dependencies": {
-    "@clack/prompts": "^1.8.0",
+    "@inquirer/prompts": "^8.7.2",
     "es-toolkit": "^1.52.0"
   },
   "devDependencies": {

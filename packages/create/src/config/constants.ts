@@ -20,10 +20,10 @@ export const MANAGER_FLOORS: Record<PackageManager, string> = {
 };
 
 /**
- * A generated project declares `>=22`. The CLI refuses below 22.6.0, where `--experimental-strip-types` first exists:
- * the shipped `scripts/*.ts` run under that flag so they run on every 22, and the flag is still accepted on 26. The
- * pinned tools ask for more (`@angular/create` and lint-staged 17.3 want 22.22), and say so themselves as EBADENGINE
- * warnings; that is theirs to declare, not ours to copy.
+ * A generated project declares `>=22` and means it: the two shipped `scripts/*.ts` run under
+ * `--experimental-strip-types`, which exists from 22.6.0, is on by default from 22.18.0 and is still accepted on 26,
+ * so every 22 can run them. The pinned tools ask for more (`@angular/create` and lint-staged 17.3 want 22.22), and
+ * say so themselves as EBADENGINE warnings; that is theirs to declare, not ours to copy.
  */
 /**
  * The command each id runs, which is the id itself for all but one: `yarn-classic` is yarn 1, wearing the same
@@ -40,7 +40,12 @@ export const MANAGER_BINARIES: Record<PackageManager, string> = {
 
 export const NODE_ENGINE = '>=22';
 
-export const NODE_FLOOR = '22.6.0';
+/**
+ * The CLI's own floor, which is higher than what it writes: `@inquirer/prompts` 8 declares
+ * `^22.13.0 || >=23.5.0`, and a questionnaire that reads raw keypresses is not something to run below what its own
+ * library supports. A project made here still declares `>=22`, because nothing it installs is this.
+ */
+export const NODE_FLOOR = '22.13.0';
 
 // How each manager is asked to run a script, which the emitters write into a generated `package.json` and its CI
 // workflow, and which `terminal/` and `pipeline/` print and spawn. No ring owns it, so it sits below all of them.

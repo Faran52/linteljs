@@ -53,7 +53,7 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   The outer three are named for the world they reach into, which is readable off an import line:
   `node:fs` means `disk/`, `node:child_process` means `spawns/`, `node:process` and
-  `@clack/prompts` mean `terminal/`. Nothing outside those three may reach a world, so the inner
+  `@inquirer/prompts` mean `terminal/`. Nothing outside those three may reach a world, so the inner
   ones are provably pure and substitutable without touching a disk. `no-restricted-imports` in the
   root `eslint.config.ts` enforces it, with `pipeline/e2e/` exempt because the harness spawns real
   package managers on purpose. `spawns/` reaches `disk/` for `isExecutableFile` and never the

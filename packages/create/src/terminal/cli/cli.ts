@@ -42,7 +42,7 @@ import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
   type Asked,
-  clackPrompter,
+  inquirerPrompter,
   type Prompter,
 } from '../prompts/prompts';
 import { isValidProjectName } from '../utils/nameUtils';
@@ -335,7 +335,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
   }
 
   try {
-    const { name, answers } = await askedFrom(options, prompter ?? clackPrompter, hasTerminal, host);
+    const { name, answers } = await askedFrom(options, prompter ?? inquirerPrompter, hasTerminal, host);
 
     if (options.command === 'sync') {
       await runSync(options, answers);

@@ -89,25 +89,25 @@ describe('managerRefusal', () => {
 
 describe('nodeRefusal', () => {
   it('says nothing on the floor this CLI runs on, or above it', () => {
-    expect(nodeRefusal('22.6.0')).toBeUndefined();
+    expect(nodeRefusal('22.13.0')).toBeUndefined();
     expect(nodeRefusal('26.9.0')).toBeUndefined();
   });
 
   it('names both versions and where to get one', () => {
-    const refusal = nodeRefusal('22.5.0') ?? '';
+    const refusal = nodeRefusal('22.12.0') ?? '';
 
-    expect(refusal).toContain('Node 22.5.0 is running this');
-    expect(refusal).toContain('needs Node 22.6.0 or newer');
+    expect(refusal).toContain('Node 22.12.0 is running this');
+    expect(refusal).toContain('needs Node 22.13.0 or newer');
     expect(refusal).toContain('https://nodejs.org');
   });
 
   /**
    * The case that separates this from the manager check above, which a major comparison would wave through: the
-   * floor is the release where `--experimental-strip-types` first exists, so 22.5 is refused and 22.6 is not.
+   * floor is the minor its own prompt library asks for, so 22.12 is refused and 22.13 is not.
    */
   it('compares the minor and the patch, not the major alone', () => {
     expect(nodeRefusal('22.0.0')).toBeDefined();
-    expect(nodeRefusal('22.5.99')).toBeDefined();
+    expect(nodeRefusal('22.12.99')).toBeDefined();
   });
 });
 
