@@ -7,6 +7,7 @@ import {
   type SelectOptions,
   text,
   type TextOptions,
+  updateSettings,
 } from '@clack/prompts';
 import { omit } from 'es-toolkit';
 
@@ -86,6 +87,10 @@ interface Described {
 interface TargetWithStore extends TargetRecord {
   store: StoreSlot;
 }
+
+// No vertical guide down the left of the questionnaire. It exists to connect a prompt block to what follows, and
+// what follows here is one line per stage with no column of its own, so the guide joined the questions to nothing.
+updateSettings({ withGuide: false });
 
 // The real terminal; tests substitute their own.
 export const clackPrompter: Prompter = {
