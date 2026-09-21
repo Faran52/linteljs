@@ -13,7 +13,7 @@ import { browserAnswer } from './target/browser/browserAnswer';
 import { browsersAnswer } from './target/browsers/browsersAnswer';
 import { hostedFrameworkAnswer } from './target/hosted-framework/hostedFrameworkAnswer';
 import { routerAnswer } from './target/router/routerAnswer';
-import { storeAnswer } from './target/store/storeAnswer';
+import { type Store, storeAnswer } from './target/store/storeAnswer';
 import { surfacesAnswer } from './target/surfaces/surfacesAnswer';
 import { targetAnswer } from './target/target/targetAnswer';
 import { testingAnswer } from './testing/testing/testingAnswer';
@@ -58,8 +58,8 @@ export interface Answers {
   form?: Form;
   // Asked only where the target has a `routers` slot; absent is no router.
   router?: Router;
-  // Always false on a target with no `store` slot, where the question is never asked.
-  store: boolean;
+  // Asked only where the target has a `stores` slot; absent is the framework's own state and nothing installed.
+  store?: Store;
   typeSafety: TypeSafety;
   agents: Agent[];
   plugins: Plugin[];
@@ -116,7 +116,6 @@ export const DEFAULT_ANSWERS: Answers = {
   testing: ANSWERS.testing.default,
   packageManager: ANSWERS.packageManager.default,
   libraries: [...ANSWERS.libraries.default],
-  store: false,
   typeSafety: ANSWERS.typeSafety.default,
   agents: [...ANSWERS.agents.default],
   plugins: [...ANSWERS.plugins.default],

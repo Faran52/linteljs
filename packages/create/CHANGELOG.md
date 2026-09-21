@@ -50,6 +50,11 @@ when a version's change lives in a sibling it is described there instead:
   allowed appears in a lockfile any more. What is left is two, both a target's own and both still refused upstream:
   Angular's `@angular/build` peers vitest 4 against the 5 a project installs, and React Native's cli plugin pins a
   metro config to the patch. Every other project's `pnpm-workspace.yaml` is now the build list alone.
+- **The state store is a choice rather than a yes or no.** React, Next and React Native offer Zustand, Redux Toolkit
+  (with RTK Query) and TanStack Store; Vue offers Pinia and TanStack Store; Svelte and Solid offer TanStack Store,
+  which is what crosses components where their own state does not; Angular offers both NgRx shapes; Astro offers
+  Nano Stores, whose atoms outlive an island. The extension still offers none, since MV3 state belongs in
+  `chrome.storage`. A config written by 1.5 carries `store: true`, which now reads as the one store that target had.
 - **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
   saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
   install hand their output back rather than printing it, so a failing one carries what it printed into the error

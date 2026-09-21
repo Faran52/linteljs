@@ -168,7 +168,7 @@ describe('main: what it prints and what it returns', () => {
       return line.startsWith('  --type-safety');
     });
 
-    expect(storeLine?.indexOf('install')).toBe(typeSafetyLine?.indexOf('strict'));
+    expect(storeLine?.indexOf('zustand')).toBe(typeSafetyLine?.indexOf('strict'));
   });
 
   it('fails on a stage name it does not know, before writing anything', async () => {
@@ -304,7 +304,7 @@ describe('main: create', () => {
   it('runs the questionnaire and writes both selected adapters when --yes was not passed', async () => {
     const { printed } = await runMain(
       ['--skip-scaffold', '--no-install'],
-      scripted(['svelte', undefined, ['zod'], undefined, undefined, ['claude-code', 'codex'], []]),
+      scripted(['svelte', undefined, ['zod'], undefined, 'tanstack-store', undefined, ['claude-code', 'codex'], []]),
     );
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
@@ -318,6 +318,7 @@ describe('main: create', () => {
       nodeVersion: versions.node,
       target: 'svelte',
       libraries: ['zod'],
+      store: 'tanstack-store',
       agents: ['claude-code', 'codex'],
       plugins: [],
     });
@@ -815,7 +816,6 @@ describe('main: sync', () => {
       testing: 'none',
       packageManager: 'npm',
       libraries: ['zod', 'tailwind'],
-      store: false,
       typeSafety: 'relaxed',
       agents: ['codex'],
       plugins: ['context7'],
@@ -1033,11 +1033,11 @@ describe('main: answers given as flags', () => {
   });
 
   it('records a router and a store', async () => {
-    await runMain(['--skip-scaffold', '--no-install', '--router', 'tanstack-router', '--store']);
+    await runMain(['--skip-scaffold', '--no-install', '--router', 'tanstack-router', '--store', 'redux-toolkit']);
 
     expect(await configAt()).toMatchObject({
       router: 'tanstack-router',
-      store: true,
+      store: 'redux-toolkit',
     });
   });
 
@@ -1048,7 +1048,7 @@ describe('main: answers given as flags', () => {
     [['--target', 'vue', '--form', 'react-hook-form'], 'react-hook-form is not an answer for vue'],
     [['--router', 'wouter'], 'router must be one of: react-router, tanstack-router'],
     [['--target', 'vue', '--router', 'react-router'], 'router is not an answer for vue'],
-    [['--target', 'svelte', '--store'], 'store is not an answer for svelte'],
+    [['--target', 'svelte', '--store', 'zustand'], 'zustand is not an answer for svelte'],
   ])('refuses %j with the message a bad config gets, before writing anything', async (flags, message) => {
     const { code, errors } = await runMain(['--skip-scaffold', '--no-install', ...flags]);
 

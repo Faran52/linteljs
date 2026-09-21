@@ -26,7 +26,7 @@ describe('schemaFor', () => {
     expect(packaged).toBe(generated);
   });
 
-  it('excuses only browser from the required list a boolean, choice or multi answer otherwise joins', () => {
+  it('excuses only browser from the required list a choice or multi answer otherwise joins', () => {
     const schema = JSON.parse(schemaFor(ANSWERS)) as GeneratedSchema;
 
     expect(schema.required).not.toContain('browser');
@@ -37,7 +37,6 @@ describe('schemaFor', () => {
       'testing',
       'packageManager',
       'libraries',
-      'store',
       'typeSafety',
       'agents',
       'plugins',

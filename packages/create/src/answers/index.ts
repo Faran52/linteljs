@@ -19,6 +19,7 @@ export {
 export { type Browser } from './target/browser/browserAnswer';
 export { type HostedFramework } from './target/hosted-framework/hostedFrameworkAnswer';
 export { type Router } from './target/router/routerAnswer';
+export { type Store } from './target/store/storeAnswer';
 export { type Surface } from './target/surfaces/surfacesAnswer';
 export { type TargetId } from './target/target/targetAnswer';
 export { type Testing } from './testing/testing/testingAnswer';

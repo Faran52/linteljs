@@ -48,6 +48,8 @@ export const astroTarget: TargetBuilder = (answers) => {
     vite: false,
     routeUnit: 'src/pages/, whose files are the routes',
     // `.astro/` is the generated types and content cache.
+    // Atoms outlive an island, which is the state problem Astro actually has.
+    stores: ['nanostores'],
     ignores: ['.astro/**'],
     // `COMPONENT` admits both `Card.astro` and the lowercase `index.astro` a route has to be; `pages` is the route
     // directory.

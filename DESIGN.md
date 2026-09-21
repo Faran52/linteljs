@@ -424,7 +424,8 @@ keeps an explicit list. The layout before this classified an asset by the emitte
 which meant reading `emitters/` to learn what the path could have said.
 
 The move was safe because every asset path is a string and because it was measured: a hash of the
-content and flags of every artifact of every end-to-end case, 5220 of them across 98 cases, taken
+content and flags of every artifact of every end-to-end case, 5220 of them across the 98 cases the
+suite held then, taken
 before and after. It did not move.
 
 ## Project structure
@@ -964,6 +965,26 @@ What a classic project does not get is the install-script gate. pnpm has `allowB
 otherwise. The README says so too. It is the one guarantee this CLI cannot give that manager, and it is written
 down rather than left for someone to find in a postmortem.
 
+### A store is a choice, and the target says which
+
+`store` was a yes or no, because each target had one obvious answer and the question was whether to install it. That
+stopped being true: React has three stores people reach for, NgRx ships two shapes, and TanStack has one for every
+framework. A yes or no cannot say which, so a project that wanted Redux got Zustand and deleted it.
+
+It is the same answer `router` already was, an `optionalChoice` whose values carry an `only` that reads the target's
+own list, so the vocabulary is in one record and which stores a target offers is the target's business. Adding a
+store is a value plus a name on whichever targets offer it.
+
+A store installs a dependency and nothing else. None of them ships ESLint rules, so no layer changes, and the
+`@store/*` alias and `src/lib/store/` convention already reach every project. Vue is the one exception, where
+`create-vue --pinia` writes a store this CLI then moves, which is why `pinia` is a value rather than a package here.
+Two of them bind to the framework rendering them rather than shipping one package: TanStack ships `react-store`
+through `angular-store`, and nanostores binds through the hosted framework on Astro. Svelte reads a nanostores atom
+through its own store contract, so that pair has no binding package at all.
+
+The kind it replaced went with it. `store` was the only `boolean` record, so the questionnaire's special case for it,
+the radio between a slot and none, and the kind itself are gone: every answer is now asked the same way.
+
 ### A deprecation notice is never muted
 
 Nothing emitted here writes `allowedDeprecatedVersions`, and the end-to-end suite asserts on install warnings for
@@ -996,39 +1017,39 @@ an extension is submitted to addons.mozilla.org, which is not a reason to instal
 
 ## The end-to-end matrix: two families, not one cross product
 
-Every answer this CLI can be given is covered, and it costs 98 cases rather than 1200. `matrix.ts`
-enumerates them; nothing is listed by hand. Two families get it to 327, and covering every *pair* of
-answers rather than every combination gets it to 98.
+Every answer this CLI can be given is covered, and it costs 127 cases rather than the whole product.
+`matrix.ts` enumerates them; nothing is listed by hand. Two families get it to 532, and covering every
+*pair* of answers rather than every combination gets it to 127.
 
-The full cross product is 1200. Fixing the rule first, because an earlier count of 1328 assumed a
-Vue project chooses a router and it does not: `create-vue` is called with `--router` unconditionally,
-which is the whole of the 128 difference. A multi-select axis is never combined, it is always its
+The full cross product is 2480. Fixing the rule first, because a Vue project does not choose a router
+and an earlier count assumed it does: `create-vue` is called with `--router` unconditionally, so the
+axis does not exist there. A multi-select axis is never combined, it is always its
 full value (`libraries`, `agents`, `plugins`, `surfaces`); the single-select axes combine
 (`packageManager`, `testing`, `typeSafety`, `form`, `router`, `store`, `browser`, `hostedFramework`).
-Per target that is 288 for React, 352 for the extension, 176 for Astro, 96 each for Next and React
-Native, 64 each for Vue and Angular, 32 each for Svelte and Solid.
+Per target that is 720 for React, 440 each for the extension and Astro, 240 each for Next and React
+Native, 120 each for Vue and Angular, 80 each for Svelte and Solid.
 
-Measured, an install is around 60% of a case: 19.7 to 30.5 seconds of a 39 to 52 second one. So 1200
-is about 15 hours of machine time, and sharding divides that rather than reducing it.
+Measured, an install is around 60% of a case: 19.7 to 30.5 seconds of a 39 to 52 second one. So 2480
+is about 31 hours of machine time, and sharding divides that rather than reducing it.
 
 **Installing once per distinct dependency set does not fix it, which is why it was not built.**
 `typeSafety` is the only axis that changes nothing installed, so it is a clean 2:1 and very nearly
 the only one; every other axis moves at least one package, and the manager splits the install by
-definition. Deduplicating gives 600 installs and still 1200 gates, about 10.5 hours. A 30% cut for a
-tree-cloning mechanism is not a trade worth making, and at 327 cases the same mechanism would save
-under an hour in five.
+definition. Deduplicating gives 1240 installs and still 2480 gates, about 21.7 hours. A 30% cut for a
+tree-cloning mechanism is not a trade worth making, and at 532 cases the same mechanism would save
+two hours in seven.
 
 What cuts it is noticing that the manager axis and the option axes answer different questions:
 
-- `managerCases`: every target on every manager, every multi-select at full value. 36 cases. This is
+- `managerCases`: every target on every manager, every multi-select at full value. 45 cases. This is
   the heaviest dependency set a target has, installed five ways, and it is the only thing that
   answers "does this library break the project" and "does this manager resolve the same manifest
   differently". It is also the only family that runs anything but pnpm.
-- `optionCases`: every combination of the single-select axes, on pnpm alone. 300 cases. A package
-  manager does not decide which config is emitted, so multiplying these by four bought four copies
+- `optionCases`: every combination of the single-select axes, on pnpm alone. 496 cases. A package
+  manager does not decide which config is emitted, so multiplying these by five bought five copies
   of one answer.
 
-They overlap on exactly one case per target, which `ALL_CASES` drops: 327, all 327 labels distinct,
+They overlap on exactly one case per target, which `ALL_CASES` drops: 532, all 532 labels distinct,
 and every one of them legal under `refuseMisfit`.
 
 The two halves are complementary rather than redundant. `managerCases` cannot catch a package the
@@ -1038,8 +1059,9 @@ the same manifest to different trees; `managerCases` is what catches that.
 
 ### Every pair of answers, not every combination
 
-The cross product of the single-select axes is 348 on pnpm. `optionCases` covers every pair of
-answer values instead, which is 98 cases with the manager family included.
+The cross product of the single-select axes is 532 on pnpm, which grew when `store` stopped being a yes
+or no. `optionCases` covers every pair of answer values instead, which is 127 cases with the manager
+family included.
 
 The evidence is the suite's own record. Every defect it has found was a two-way interaction, and not
 one needed a third axis pinned:

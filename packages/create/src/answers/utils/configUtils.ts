@@ -10,9 +10,9 @@ import {
   CURRENT_SCHEMA_VERSION,
   EXPECTED,
 } from '../constants';
-import { ANSWERS } from '../registry';
+import { ANSWERS, DEFAULT_ANSWERS } from '../registry';
 
-import { migrateForm } from './migrationUtils';
+import { migratedStore, migrateForm } from './migrationUtils';
 import {
   isJsonArray,
   readAnswer,
@@ -49,6 +49,22 @@ const schemaVersionOf = (value: JsonValue | undefined): number => {
   }
 
   return value;
+};
+
+// The store a config describes: its own name, or what its v1 yes or no meant. Its own function so the parser below
+// stays one list of reads, and so the version check sits beside the migration rather than inside it.
+const storeAnswerOf = (parsed: ConfigObject, schemaVersion: number): JsonValue | undefined => {
+  const raw = parsed.store;
+  const wasYesOrNo = schemaVersion === 1 && typeof raw === 'boolean';
+  // Answers nothing for anything but a `true`, so it is safe to read before knowing whether it applies.
+  const migrated: JsonValue | undefined = migratedStore(raw, () => {
+    return targetFor({
+      ...DEFAULT_ANSWERS,
+      target: readAnswer(ANSWERS.target, parsed.target),
+    }).stores?.[0];
+  });
+
+  return wasYesOrNo ? migrated : raw;
 };
 
 const isFormValue = (item: JsonValue): item is string => {
@@ -140,6 +156,7 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
   const nodeVersionValue = readAnswer(ANSWERS.nodeVersion, parsed.nodeVersion);
   const formValue = readAnswer(ANSWERS.form, parsed.form);
   const routerValue = readAnswer(ANSWERS.router, parsed.router);
+  const storeValue = readAnswer(ANSWERS.store, storeAnswerOf(parsed, schemaVersion));
   const resolveConditionsValue = readAnswer(ANSWERS.resolveConditions, parsed.resolveConditions);
   const aliasesValue = readAnswer(ANSWERS.aliases, parsed.aliases);
   const browsersValue = readAnswer(ANSWERS.browsers, parsed.browsers);
@@ -160,7 +177,7 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     libraries: libraryChoices(parsed.libraries),
     ...(formValue === undefined ? {} : { form: formValue }),
     ...(routerValue === undefined ? {} : { router: routerValue }),
-    store: readAnswer(ANSWERS.store, parsed.store),
+    ...(storeValue === undefined ? {} : { store: storeValue }),
     typeSafety: readAnswer(ANSWERS.typeSafety, parsed.typeSafety),
     agents: readAnswer(ANSWERS.agents, parsed.agents),
     ...(resolveConditionsValue === undefined ? {} : { resolveConditions: resolveConditionsValue }),

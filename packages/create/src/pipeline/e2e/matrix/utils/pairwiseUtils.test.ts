@@ -27,19 +27,19 @@ describe('coveringSubset', () => {
   it('keeps every pair the full list covered', () => {
     const every = [
       caseFor({
-        store: true,
+        store: 'zustand',
         typeSafety: 'strict',
       }),
       caseFor({
-        store: false,
+        store: 'redux-toolkit',
         typeSafety: 'relaxed',
       }),
       caseFor({
-        store: true,
+        store: 'zustand',
         typeSafety: 'relaxed',
       }),
       caseFor({
-        store: false,
+        store: 'redux-toolkit',
         typeSafety: 'strict',
       }),
     ];

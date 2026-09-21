@@ -39,7 +39,7 @@ export interface E2eCase {
 /**
  * Every combination of two answers, in as few cases as the greedy will manage.
  *
- * The full cross product is 348 on pnpm; every defect this suite has found was a two-way interaction, and none
+ * The full cross product is 532 on pnpm; every defect this suite has found was a two-way interaction, and none
  * needed a third axis pinned: `vue-demi` is hosted-vue with TanStack Query, the devtools floating promise is the
  * extension on chrome, the leftover suites are `testing: none` on angular and on react-native, and `customTypes.d.ts`
  * is `typeSafety: relaxed` on angular. So the suite covers every *pair* of answers rather than every combination.
@@ -59,7 +59,7 @@ export interface E2eCase {
  * resolving the same manifest differently, and it is the only family that runs anything but pnpm.
  *
  * `options` is every combination of the single-select axes on pnpm alone. Multiplying those by four managers is what
- * made the matrix 1200; a manager does not change which config is emitted, so it is fixed here and the combinations
+ * made the matrix 2480; a manager does not change which config is emitted, so it is fixed here and the combinations
  * are what vary. The two families overlap on one case per target, which `ALL_CASES` drops.
  */
 
@@ -127,7 +127,7 @@ const labelFor = (answers: Answers): string => {
     ...(record.hostsFramework === true ? [`host-${answers.hostedFramework ?? 'none'}`] : []),
     ...(answers.form === undefined ? [] : [answers.form]),
     ...(answers.router === undefined ? [] : [answers.router]),
-    ...(answers.store ? ['store'] : []),
+    ...(answers.store === undefined ? [] : [answers.store]),
   ].join(' ');
 };
 
@@ -193,11 +193,12 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
   });
 
   const stores = across(routers, (variant) => {
-    return recordOf(variant).store === undefined ? [false] : [false, true];
+    // Every store the target offers, plus none: the axis the pairwise cover walks.
+    return [undefined, ...recordOf(variant).stores ?? []];
   }, (variant, store) => {
     return {
       ...variant,
-      store,
+      ...(store === undefined ? {} : { store }),
     };
   });
 

@@ -24,10 +24,7 @@ export const reactTarget: TargetRecord = {
     label: 'Hooks',
     path: 'src/lib/hooks/ (use*)',
   },
-  store: {
-    label: 'Zustand',
-    dependency: 'zustand',
-  },
+  stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   routers: ROUTERS,
   ignores: [],
   naming: componentNaming(),

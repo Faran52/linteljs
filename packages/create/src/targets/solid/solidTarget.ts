@@ -15,6 +15,8 @@ export const solidTarget: TargetRecord = {
     label: 'Primitives',
     path: 'src/lib/primitives/ (create*)',
   },
+  // Solid's own stores cover a component; this is for what crosses one.
+  stores: ['tanstack-store'],
   ignores: [],
   naming: componentNaming(),
   folderNaming: { 'src/**/': FOLDER_ROUTED },

@@ -75,7 +75,7 @@ export const answerFlags = (answers: Answers): string[] => {
     ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
     ...(answers.form === undefined ? [] : ['--form', answers.form]),
     ...(answers.router === undefined ? [] : ['--router', answers.router]),
-    ...(answers.store ? ['--store'] : []),
+    ...(answers.store === undefined ? [] : ['--store', answers.store]),
   ];
 };
 

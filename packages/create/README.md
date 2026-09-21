@@ -108,7 +108,7 @@ A question is asked only where the target has a slot for it.
 | Libraries | `--libraries` | `zod`, `tanstack-query`, `tailwind`, `es-toolkit`, `ts-pattern`, `t3-env` | `tailwind` | every target |
 | Form library | `--form` | `tanstack-form`, `react-hook-form` (React only), or none | none | every target |
 | Router | `--router` | `react-router`, `tanstack-router`, or none | none | react |
-| State store | `--store` | the target's store, or none | none | react, next, vue, angular, react-native |
+| State store | `--store` | the stores that target offers, or none | none | every target but the extension |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` | every target |
 | AI agents | `--agents` | `claude-code`, `codex` | `claude-code` | every target |
 | AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three | when an agent was chosen |

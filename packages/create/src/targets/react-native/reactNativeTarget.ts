@@ -25,10 +25,7 @@ export const reactNativeTarget: TargetRecord = {
     label: 'Hooks',
     path: 'src/hooks/ (use*)',
   },
-  store: {
-    label: 'Zustand',
-    dependency: 'zustand',
-  },
+  stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   /**
    * `scripts/reset-project.js` is Expo's CommonJS throwaway helper, deleted by most projects on day one.
    * `metro.config.js` is here because Metro loads it with `require`, so it cannot be ESM and cannot pass

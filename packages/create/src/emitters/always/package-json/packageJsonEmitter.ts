@@ -32,6 +32,8 @@ import {
   ROUTER_DEV_DEPENDENCIES,
   RUNNER_DEV_DEPENDENCIES,
   SHARED_DEV_DEPENDENCIES,
+  STORE_BINDINGS,
+  STORE_DEPENDENCIES,
   SUPERSEDED,
   TANSTACK_FORM_BINDINGS,
   TANSTACK_QUERY_BINDINGS,
@@ -153,11 +155,13 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
   // A hosted framework is not installed by the host's scaffolder.
   names.push(...target.dependencies ?? []);
 
-  // Vue's slot has no dependency: create-vue installs Pinia itself.
-  const store = target.store;
+  // The chosen store's own packages, and the one that binds it to the framework rendering it where there is one.
+  const { store } = answers;
 
-  if (answers.store && store?.dependency !== undefined) {
-    names.push(store.dependency);
+  if (store !== undefined) {
+    const binding = target.framework === undefined ? undefined : STORE_BINDINGS[store]?.[target.framework];
+
+    names.push(...STORE_DEPENDENCIES[store], ...binding === undefined ? [] : [binding]);
   }
 
   return versioned(names);

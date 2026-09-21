@@ -20,7 +20,7 @@ describe('scaffold', () => {
   it('passes --pinia only when the store answer is yes', () => {
     expect(vueTarget.scaffold('demo-app', {
       ...DEFAULT_ANSWERS,
-      store: true,
+      store: 'pinia',
     }).args).toContain('--pinia');
     expect(vueTarget.scaffold('demo-app', DEFAULT_ANSWERS).args).not.toContain('--pinia');
   });

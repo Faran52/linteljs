@@ -14,12 +14,13 @@ describe('storeAnswer', () => {
       ...DEFAULT_ANSWERS,
       target: 'react',
     });
-    const svelte = targetFor({
+    // The extension is the one target with none: MV3 state belongs in `chrome.storage`.
+    const extension = targetFor({
       ...DEFAULT_ANSWERS,
-      target: 'svelte',
+      target: 'webextension',
     });
 
     expect(storeAnswer.slot(react)).toBe(true);
-    expect(storeAnswer.slot(svelte)).toBe(false);
+    expect(storeAnswer.slot(extension)).toBe(false);
   });
 });

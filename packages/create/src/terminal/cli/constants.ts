@@ -55,26 +55,22 @@ export const isMultiKind = (record: AnswerRecord): boolean => {
   return record.kind === 'multi' || record.kind === 'optionalMulti';
 };
 
-// `boolean` for the one boolean answer, `store`; `string`, `multiple` for the two kinds that ask for a list;
-// `string` alone otherwise. Spread after the fixed entries, so a `--target` or a `--router` is one record away.
+// `string`, `multiple` for the two kinds that ask for a list, `string` alone otherwise. Spread after the fixed
+// entries, so a `--target` or a `--store` is one record away.
 const ANSWER_OPTIONS = Object.fromEntries(FLAGGED_ANSWERS.map(({ flag, record }) => {
   return [flag, {
-    type: record.kind === 'boolean' ? 'boolean' : 'string',
+    type: 'string',
     ...(isMultiKind(record) ? { multiple: true } : {}),
   }];
 }));
 
 const labelOf = ({ flag, record }: FlaggedAnswer): string => {
-  if (record.kind === 'boolean') {
-    return `--${flag}`;
-  }
-
   const shape = isMultiKind(record) ? 'list' : 'value';
 
   return `--${flag} <${shape}>`;
 };
 
-// Every answer line lines up on this column, `store` included, rather than each carrying its own two-space gap.
+// Every answer line lines up on this column rather than each carrying its own two-space gap.
 const LABEL_WIDTH = Math.max(...FLAGGED_ANSWERS.map((answer) => {
   return labelOf(answer).length;
 }));
@@ -85,12 +81,8 @@ const noteOf = (record: AnswerRecord): string => {
 
 const answerUsageOf = (answer: FlaggedAnswer): string => {
   const { record } = answer;
-  // `store` alone carries no `values` to list; its description is the one this cannot generate from the record.
-  const description = record.kind === 'boolean'
-    ? 'install the target\'s state store'
-    : `${valuesOf(record.values).join(', ')}${noteOf(record)}`;
 
-  return `  ${labelOf(answer).padEnd(LABEL_WIDTH)}  ${description}`;
+  return `  ${labelOf(answer).padEnd(LABEL_WIDTH)}  ${valuesOf(record.values).join(', ')}${noteOf(record)}`;
 };
 
 export const USAGE = `@linteljs/create [name] [options]

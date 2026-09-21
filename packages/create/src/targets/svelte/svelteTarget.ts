@@ -32,6 +32,8 @@ export const svelteTarget: TargetBuilder = (answers) => {
       label: 'Hooks',
       path: 'src/lib/hooks/',
     },
+    // Runes cover component state; a store is for what crosses components.
+    stores: ['tanstack-store'],
     ignores: ['.svelte-kit/**'],
     naming: sfcNaming('svelte', 'routes'),
     folderNaming: { 'src/**/': FOLDER_ROUTED },

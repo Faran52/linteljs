@@ -51,12 +51,6 @@ export interface OptionalMultiRecord<V extends string = string> extends Base {
   minimum?: number;
 }
 
-// The one boolean answer, `store`: asked as a radio between `none` and the target's own `StoreSlot`, so it carries
-// no `values` of its own.
-export interface BooleanRecord extends Base {
-  kind: 'boolean';
-}
-
 // Open strings: `minItems` is 1, always, and there is nothing to enumerate.
 export interface ListRecord extends Base {
   kind: 'list';
@@ -74,8 +68,7 @@ export interface TextRecord extends Base {
 }
 
 export type AnswerRecord
-  = BooleanRecord
-    | ChoiceRecord
+  = ChoiceRecord
     | ListRecord
     | MapRecord
     | MultiRecord

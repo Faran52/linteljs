@@ -105,7 +105,8 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
     agents: AGENTS,
     plugins: PLUGINS,
     testing: 'vitest',
-    store: record.store !== undefined,
+    // The first store a target offers: this run is about what installs, not about which one anyone would pick.
+    ...(record.stores?.[0] === undefined ? {} : { store: record.stores[0] }),
     form: 'tanstack-form',
     ...(hostedFramework === undefined ? {} : { hostedFramework }),
     ...(record.routers === undefined ? {} : { router: record.routers[0] }),
@@ -145,7 +146,7 @@ const flagsFor = (answers: Answers): string[] => {
     ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
     ...(answers.form === undefined ? [] : ['--form', answers.form]),
     ...(answers.router === undefined ? [] : ['--router', answers.router]),
-    ...(answers.store ? ['--store'] : []),
+    ...(answers.store === undefined ? [] : ['--store', answers.store]),
   ];
 };
 

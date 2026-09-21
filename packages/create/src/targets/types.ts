@@ -3,6 +3,7 @@ import type { Answers } from '@answers/registry';
 import type { Browser } from '@answers/target/browser/browserAnswer';
 import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
 import type { Router } from '@answers/target/router/routerAnswer';
+import type { Store } from '@answers/target/store/storeAnswer';
 import type { TargetId } from '@answers/target/target/targetAnswer';
 import type {
   AliasMap,
@@ -126,14 +127,6 @@ export interface HooksSlot {
   path: string;
 }
 
-// Absent where there is no choice: Solid and Svelte ship a store, and MV3 state belongs in `chrome.storage`.
-export interface StoreSlot {
-  // Printed in the prompt.
-  label: string;
-  // Absent on Vue, whose `--pinia` flag has `create-vue` install Pinia itself.
-  dependency?: string;
-}
-
 export interface TailwindSlot {
   // What the style entry imports instead of `@import "tailwindcss";`.
   imports: string[];
@@ -184,8 +177,8 @@ export interface TargetRecord {
   routeUnit: string;
   // Absent where the framework has none.
   hooksSlot?: HooksSlot;
-  // Absent, the question is not asked.
-  store?: StoreSlot;
+  // Absent, the question is not asked. The order is the offer's: the first is what a config migrated from v2 lands on.
+  stores?: readonly Store[];
   // Absent, the question is not asked.
   routers?: readonly Router[];
   // For a target with no Vite or PostCSS pipeline; React Native takes NativeWind.

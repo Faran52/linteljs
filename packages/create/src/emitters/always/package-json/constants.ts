@@ -1,4 +1,5 @@
 import type { Router } from '@answers';
+import type { Store } from '@answers/target/store/storeAnswer';
 import type { Framework } from '@config/types';
 
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
@@ -23,8 +24,20 @@ export const VERSIONS: Record<string, string> = {
   '@eslint-react/eslint-plugin': '^5.20.0',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
-  // NgRx stable peers on Angular 21 while `ng new` writes 22; the rc's caret self-heals. Measurements in DESIGN.md.
-  '@ngrx/signals': '^22.0.0-rc.0',
+  // Both halves of NgRx 22, released together and peering `@angular/core ^22.0.0`, which is what `ng new` writes.
+  '@ngrx/signals': '^22.0.1',
+  '@ngrx/store': '^22.0.1',
+  '@nanostores/react': '^2.0.1',
+  '@nanostores/solid': '^1.1.1',
+  '@nanostores/vue': '^1.1.0',
+  'nanostores': '^1.5.3',
+  '@reduxjs/toolkit': '^2.12.0',
+  'react-redux': '^9.3.0',
+  '@tanstack/angular-store': '^0.11.1',
+  '@tanstack/react-store': '^0.11.1',
+  '@tanstack/solid-store': '^0.11.1',
+  '@tanstack/svelte-store': '^0.12.1',
+  '@tanstack/vue-store': '^0.11.1',
   '@rolldown/plugin-babel': '^0.2.4',
   '@solidjs/testing-library': '^0.8.10',
   // What lets vitest load React Native at all.
@@ -183,6 +196,43 @@ export const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
   'svelte': '@tanstack/svelte-query',
   'solid': '@tanstack/solid-query',
   'angular': '@tanstack/angular-query-experimental',
+};
+
+/**
+ * What a chosen store installs, before any framework binding. Pinia is absent on purpose: `create-vue` installs it
+ * from the `--pinia` flag, and a version pinned here would fight that. RTK Query ships inside the toolkit, so
+ * `redux-toolkit` is the answer for both, with `react-redux` as what binds it to a component.
+ */
+export const STORE_DEPENDENCIES: Record<Store, readonly string[]> = {
+  'zustand': ['zustand'],
+  'redux-toolkit': ['@reduxjs/toolkit', 'react-redux'],
+  'tanstack-store': [],
+  'pinia': [],
+  'ngrx-signals': ['@ngrx/signals'],
+  'ngrx-store': ['@ngrx/store'],
+  'nanostores': ['nanostores'],
+};
+
+/**
+ * The package that binds a store to the framework rendering it, where one exists. Absent is an answer: Svelte reads
+ * a nanostores atom through its own store contract, so there is no `@nanostores/svelte` to install, and a plain
+ * Astro with no hosted framework uses the atoms directly. A store missing from this table binds nowhere.
+ */
+export const STORE_BINDINGS: Partial<Record<Store, Partial<Record<Framework, string>>>> = {
+  'tanstack-store': {
+    'react': '@tanstack/react-store',
+    'next': '@tanstack/react-store',
+    'react-native': '@tanstack/react-store',
+    'vue': '@tanstack/vue-store',
+    'svelte': '@tanstack/svelte-store',
+    'solid': '@tanstack/solid-store',
+    'angular': '@tanstack/angular-store',
+  },
+  'nanostores': {
+    react: '@nanostores/react',
+    vue: '@nanostores/vue',
+    solid: '@nanostores/solid',
+  },
 };
 
 export const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {

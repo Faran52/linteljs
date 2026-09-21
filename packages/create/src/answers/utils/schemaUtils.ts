@@ -100,10 +100,6 @@ const textProperty = (record: TextRecord): SchemaProperty => {
 
 const propertyFor = (record: AnswerRecord): SchemaProperty => {
   switch (record.kind) {
-    case 'boolean': {
-      return { type: 'boolean' };
-    }
-
     case 'text': {
       return textProperty(record);
     }

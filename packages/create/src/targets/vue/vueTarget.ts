@@ -16,7 +16,8 @@ export const vueTarget: TargetRecord = {
         'vue@latest', name,
         '--ts',
         '--router',
-        ...(answers.store ? ['--pinia'] : []),
+        // Pinia alone: the other store this target offers is installed rather than scaffolded.
+        ...(answers.store === 'pinia' ? ['--pinia'] : []),
         ...(hasTests(answers) ? ['--vitest'] : []),
       ],
     };
@@ -30,8 +31,8 @@ export const vueTarget: TargetRecord = {
     label: 'Composables',
     path: 'src/lib/composables/ (use*)',
   },
-  // No dependency: create-vue installs Pinia itself.
-  store: { label: 'Pinia' },
+  // Pinia carries no dependency here, because create-vue installs it itself.
+  stores: ['pinia', 'tanstack-store'],
   ignores: [],
   naming: sfcNaming('vue'),
   folderNaming: { 'src/**/': FOLDER },

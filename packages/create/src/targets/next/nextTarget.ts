@@ -38,10 +38,7 @@ export const nextTarget: TargetRecord = {
     label: 'Hooks',
     path: 'src/lib/hooks/ (use*)',
   },
-  store: {
-    label: 'Zustand',
-    dependency: 'zustand',
-  },
+  stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
   naming: componentNaming('app'),
   folderNaming: { 'src/**/': FOLDER_ROUTED },

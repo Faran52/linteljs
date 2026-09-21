@@ -3,7 +3,6 @@ import { isJsonObject, valuesOf } from '@utils/objectUtils';
 import type { AliasMap } from '@config/types';
 import type {
   AnswerRecord,
-  BooleanRecord,
   ChoiceRecord,
   ListRecord,
   MapRecord,
@@ -16,31 +15,29 @@ import type {
 export type JsonValue = null | boolean | number | string | object;
 
 type ReadResult<R extends AnswerRecord>
-  = R extends BooleanRecord ? boolean
-    : R extends ListRecord ? string[] | undefined
-      : R extends MapRecord ? AliasMap | undefined
-        : R extends TextRecord ? string | undefined
-          : R extends MultiRecord<infer V> ? V[]
-            : R extends OptionalMultiRecord<infer V> ? V[] | undefined
-              : R extends ChoiceRecord<infer V> ? V
-                : R extends OptionalChoiceRecord<infer V> ? V | undefined
-                  : never;
+  = R extends ListRecord ? string[] | undefined
+    : R extends MapRecord ? AliasMap | undefined
+      : R extends TextRecord ? string | undefined
+        : R extends MultiRecord<infer V> ? V[]
+          : R extends OptionalMultiRecord<infer V> ? V[] | undefined
+            : R extends ChoiceRecord<infer V> ? V
+              : R extends OptionalChoiceRecord<infer V> ? V | undefined
+                : never;
 
 export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] => {
   return Array.isArray(value);
 };
 
 /**
- * What a record's own answer is worth when nothing asked for it: `false` for the one boolean kind, a record's
- * `default` for the two kinds that are required in `Answers`, and `undefined` for the five kinds that are optional
- * there. `refuseMisfit` compares an answer against this to tell an unasked value from a misfit one; the prompt
- * writes it for a question a `slot` or an `askedWhen` skipped.
+ * What a record's own answer is worth when nothing asked for it: a record's `default` for the two kinds that are
+ * required in `Answers`, and `undefined` for the five kinds that are optional there. `refuseMisfit` compares an
+ * answer against this to tell an unasked value from a misfit one; the prompt writes it for a question a `slot` or
+ * an `askedWhen` skipped.
  */
 export const unaskedValueOf = (record: AnswerRecord): JsonValue | undefined => {
   const isRequired = record.kind === 'choice' || record.kind === 'multi';
-  const value: JsonValue | undefined = isRequired ? record.default : undefined;
 
-  return record.kind === 'boolean' ? false : value;
+  return isRequired ? record.default : undefined;
 };
 
 export const refuseDuplicates = (values: string[], field: string): void => {
@@ -149,14 +146,6 @@ const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
  */
 export const readAnswer = <R extends AnswerRecord>(record: R, value: JsonValue | undefined): ReadResult<R> => {
   switch (record.kind) {
-    case 'boolean': {
-      if (typeof value !== 'boolean') {
-        throw new Error(`${record.key} must be a boolean`);
-      }
-
-      return value as ReadResult<R>;
-    }
-
     case 'choice': {
       return choiceValue(value, record.key, record.values) as ReadResult<R>;
     }

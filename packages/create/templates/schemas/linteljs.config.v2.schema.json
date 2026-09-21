@@ -11,7 +11,6 @@
     "testing",
     "packageManager",
     "libraries",
-    "store",
     "typeSafety",
     "agents",
     "plugins"
@@ -114,7 +113,15 @@
       ]
     },
     "store": {
-      "type": "boolean"
+      "enum": [
+        "zustand",
+        "redux-toolkit",
+        "tanstack-store",
+        "pinia",
+        "ngrx-signals",
+        "ngrx-store",
+        "nanostores"
+      ]
     },
     "typeSafety": {
       "enum": [

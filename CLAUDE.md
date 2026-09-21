@@ -43,7 +43,7 @@ and a package-level `--coverage` would answer a narrower question.
 `pnpm check` chains `lint && lint:css && typecheck && test:coverage && build`, which is the same
 chain a generated project gets. `lint:css` passes on an empty glob rather than being absent: this
 workspace has no CSS today, and a repo that ships the gate to nine targets should run it. The
-end-to-end suite is 98 cases, each a real scaffold, install and gate: every target on every package
+end-to-end suite is 127 cases, each a real scaffold, install and gate: every target on every package
 manager at full dependency pressure, plus enough answer combinations on pnpm to cover every *pair*
 of answers. It is excluded from `check` and from the default test run because every case hits the
 network. Shard it with `E2E_SHARD`/`E2E_SHARDS`, widen it with `E2E_CONCURRENCY`, and run the whole

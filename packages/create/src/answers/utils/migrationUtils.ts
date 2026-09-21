@@ -48,3 +48,14 @@ export const migrateForm = <
     form,
   };
 };
+
+/**
+ * What a v1 `store` meant. It was required and written as a yes or no, because a target offered exactly one: a yes
+ * is the store that question was about, which is the first one the target offers now, and anything else is no
+ * answer at all, including a yes on a target that has since stopped offering any.
+ *
+ * Which versions this runs for is the parser's business, next to what it does with `$schema`.
+ */
+export const migratedStore = (store: JsonValue | undefined, offered: () => string | undefined): string | undefined => {
+  return store === true ? offered() : undefined;
+};

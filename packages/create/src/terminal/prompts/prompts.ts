@@ -22,11 +22,7 @@ import { targetFor } from '@targets';
 import { PROJECT_NAME_RULE } from '../constants';
 import { isValidProjectName } from '../utils/nameUtils';
 
-import {
-  ANSWER_KEYS,
-  RUN_CANCELLED_MESSAGE,
-  STORE_CHOICES,
-} from './constants';
+import { ANSWER_KEYS, RUN_CANCELLED_MESSAGE } from './constants';
 
 import type {
   AnswerRecord,
@@ -36,11 +32,11 @@ import type {
   OptionalMultiRecord,
   ValueRecord,
 } from '@answers/types';
-import type { StoreSlot, TargetRecord } from '@targets/types';
+import type { TargetRecord } from '@targets/types';
 
 /**
- * The four value-bearing kinds `askAnswer` dispatches on. `boolean` is `store` alone and is asked directly by the
- * loop, where `target.store`'s presence is proven by a type guard rather than assumed; `list` and `map` carry no
+ * The four value-bearing kinds `askAnswer` dispatches on, which is now every kind a record can be asked in: `store`
+ * was the one `boolean` and became an optional choice when it grew past yes-or-no. `list` and `map` carry no
  * `prompt` on any of today's records, both being hand-edited only, so neither reaches `askAnswer` either.
  */
 type PromptableRecord
@@ -102,10 +98,6 @@ export interface Asked {
 interface Described {
   label: string;
   hint?: string;
-}
-
-interface TargetWithStore extends TargetRecord {
-  store: StoreSlot;
 }
 
 const CANCELLED = Symbol('cancelled');
@@ -214,22 +206,6 @@ const askChoice = async <T extends string>(
   return unwrap(prompter, answer) as T;
 };
 
-const askStore = async (prompter: Prompter, slot: StoreSlot): Promise<boolean> => {
-  const chosen = await askChoice(prompter, 'State store', [...STORE_CHOICES], 'none', (choice) => {
-    return choice === 'none'
-      ? {
-          label: 'None',
-          hint: "The framework's own state, and nothing installed",
-        }
-      : {
-          label: slot.label,
-          hint: `Installs ${slot.label} and gives it a place to live`,
-        };
-  });
-
-  return chosen === 'store';
-};
-
 // `required` is the prompt's own gate on an empty submission. Filtering `choices` recovers `T` and fixes
 // the answer's order.
 const askMulti = async <T extends string>(
@@ -332,10 +308,6 @@ const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers
   } as Answers;
 };
 
-const hasStore = (target: TargetRecord): target is TargetWithStore => {
-  return target.store !== undefined;
-};
-
 /**
  * One record's worth of the questionnaire: `undefined` when its own `prompt` is absent, the unasked value when a
  * `slot` or an `askedWhen` refuses it for the target and the answers so far, and what was asked otherwise.
@@ -355,12 +327,6 @@ const askIfNeeded = async (
 
   const message = record.prompt;
   const target = targetFor(soFarAnswered(answered));
-
-  if (record.kind === 'boolean') {
-    // The one boolean answer, `store`: a radio between the target's own slot and none, false where there is no
-    // slot. `hasStore` stands in for `record.slot` here, so `target.store` narrows with no cast.
-    return hasStore(target) ? await askStore(prompter, target.store) : false;
-  }
 
   if (record.slot !== undefined && !record.slot(target)) {
     return unaskedValueOf(record);

@@ -53,10 +53,11 @@ const askWith = async (
 };
 
 describe('ask', () => {
-  // Svelte has neither a router nor a store slot, so this is name plus eight answers.
+  // Svelte has no router slot and one store, so this is name plus nine answers.
   it('asks the project name first, then returns the chosen answer for every question', async () => {
     const { result } = await askWith([
-      'demo-app', 'svelte', 'none', ['zod', 'tailwind'], undefined, 'relaxed', undefined, undefined]);
+      'demo-app', 'svelte', 'none', ['zod', 'tailwind'], undefined, 'tanstack-store',
+      'relaxed', undefined, undefined]);
 
     expect(result).toEqual({
       name: 'demo-app',
@@ -67,7 +68,7 @@ describe('ask', () => {
         // Never asked: the questionnaire leaves the record's placeholder, which `cli.ts` overwrites with the host.
         packageManager: 'pnpm',
         libraries: ['zod', 'tailwind'],
-        store: false,
+        store: 'tanstack-store',
         typeSafety: 'relaxed',
         agents: ['claude-code'],
         plugins: ['ponytail', 'context7', 'frontend-design'],
@@ -117,15 +118,15 @@ describe('ask', () => {
     expect(recorded.calls).not.toContain('Surfaces');
   });
 
-  // No language question on any target: this CLI generates TypeScript only. Angular has a store slot, so this is
+  // No language question on any target: this CLI generates TypeScript only. Angular has two stores, so this is
   // name plus nine answers.
   it('asks nothing about the language, and still asks for a store', async () => {
     const { result, recorded } = await askWith([
-      'demo-app', 'angular', undefined, undefined, undefined, 'store',
+      'demo-app', 'angular', undefined, undefined, undefined, 'ngrx-store',
       undefined, undefined, undefined]);
 
     expect(result.answers.target).toBe('angular');
-    expect(result.answers.store).toBe(true);
+    expect(result.answers.store).toBe('ngrx-store');
     expect(recorded.calls.some((message) => {
       return message.includes('typescript');
     })).toBe(false);
@@ -242,32 +243,32 @@ describe('ask', () => {
 });
 
 describe('the store question', () => {
-  // A radio, so a target that comes to offer two stores names both without the question changing kind.
-  it('offers the target store and None, and takes the store', async () => {
+  // One choice per store the target offers, with None first, which is where the cursor starts.
+  it('offers every store the target has, and takes the one chosen', async () => {
     const { result, recorded } = await askWith([
-      'demo-app', undefined, undefined, undefined, undefined, undefined, 'store',
+      'demo-app', undefined, undefined, undefined, undefined, undefined, 'redux-toolkit',
       undefined, undefined, undefined]);
 
-    expect(result.answers.store).toBe(true);
+    expect(result.answers.store).toBe('redux-toolkit');
     expect(recorded.calls[6]).toBe('State store');
-    expect(recorded.labels['State store']).toEqual(['Zustand', 'None']);
+    expect(recorded.labels['State store']).toEqual(['None', 'Zustand', 'Redux Toolkit', 'TanStack Store']);
   });
 
-  it('names the store the target actually brings, not React\'s', async () => {
+  // Each target's own list: nothing offers another framework's binding, and Angular offers neither of React's.
+  it('names the stores the target actually brings, not React\'s', async () => {
     const { recorded } = await askWith([
       'demo-app', 'angular', undefined, undefined, undefined,
       undefined, undefined, undefined, undefined]);
 
-    expect(recorded.labels['State store']).toEqual(['NgRx SignalStore', 'None']);
+    expect(recorded.labels['State store']).toEqual(['None', 'NgRx SignalStore', 'NgRx Store']);
   });
 
-  // None is a choice among the stores, and where the cursor starts.
   it('takes None as an answer of its own', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined, 'none',
       undefined, undefined, undefined]);
 
-    expect(result.answers.store).toBe(false);
+    expect(result.answers.store).toBeUndefined();
   });
 
   it('defaults to no store', async () => {
@@ -275,18 +276,17 @@ describe('the store question', () => {
       'demo-app', undefined, undefined, undefined, undefined,
       undefined, undefined, undefined, undefined, undefined]);
 
-    expect(result.answers.store).toBe(false);
+    expect(result.answers.store).toBeUndefined();
   });
 
-  // Svelte's store is the framework's own runes.
+  // The extension is the one target with no stores: MV3 state belongs in `chrome.storage`.
   it('is not asked on a target without a store slot', async () => {
     const { result, recorded } = await askWith([
-      'demo-app', 'svelte', undefined, undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', 'webextension', undefined, undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined]);
 
-    expect(result.answers.store).toBe(false);
-    expect(recorded.calls.some((message) => {
-      return message.includes('state store');
-    })).toBe(false);
+    expect(result.answers.store).toBeUndefined();
+    expect(recorded.calls).not.toContain('State store');
   });
 });
 
@@ -343,9 +343,9 @@ describe('the form library and router questions', () => {
 
   it('offers react-hook-form only where the target renders with React', async () => {
     const vue = await askWith([
-      'demo-app', 'vue', undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', 'vue', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
     const hostedReact = await askWith([
-      'demo-app', 'astro', 'react', undefined, undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', 'astro', 'react', undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(vue.recorded.labels['Form library']).toEqual(['None', 'TanStack Form']);
     expect(hostedReact.recorded.labels['Form library']).toEqual(['None', 'TanStack Form', 'React Hook Form']);

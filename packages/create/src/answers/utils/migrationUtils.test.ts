@@ -1,6 +1,6 @@
 import { ANSWERS } from '../registry';
 
-import { migrateForm } from './migrationUtils';
+import { migratedStore, migrateForm } from './migrationUtils';
 
 describe('migrateForm', () => {
   it('leaves a v2 config alone, form library or not', () => {
@@ -23,5 +23,31 @@ describe('migrateForm', () => {
     expect(() => {
       return migrateForm({ libraries: ['tanstack-form', 'react-hook-form'] }, 1, ANSWERS.form.values);
     }).toThrow('libraries must contain at most one of: tanstack-form, react-hook-form');
+  });
+});
+
+/**
+ * v1 required `store` and wrote a boolean, because a target offered exactly one. The vocabulary has names now, so a
+ * yes has to become one before anything reads it. Which versions this runs for is the parser's, and its own suite
+ * holds that end.
+ */
+describe('migratedStore', () => {
+  const offered = (): string | undefined => {
+    return 'zustand';
+  };
+
+  it('lands a yes on the store that question was about', () => {
+    expect(migratedStore(true, offered)).toBe('zustand');
+  });
+
+  it('answers nothing for a no, which is an absent answer rather than a false', () => {
+    expect(migratedStore(false, offered)).toBeUndefined();
+  });
+
+  // A target that offers none, read from a config that still says yes: there is nothing to land on.
+  it('answers nothing where the target offers no store at all', () => {
+    expect(migratedStore(true, () => {
+      return undefined;
+    })).toBeUndefined();
   });
 });

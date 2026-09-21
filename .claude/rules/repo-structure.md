@@ -137,8 +137,8 @@ aliases it duplicates instead of importing carry a comment saying so.
   `ignores`, and the `packageManager`, `packageManagerVersion` and `nodeVersion` the run records off
   the machine that started it.
 
-  Every record is one of eight kinds, `types.ts`'s own union: `choice`, `optionalChoice`, `multi`,
-  `optionalMulti`, `boolean`, `list`, `map` and `text`. Legality lives on the record rather than in a reader:
+  Every record is one of seven kinds, `types.ts`'s own union: `choice`, `optionalChoice`, `multi`,
+  `optionalMulti`, `list`, `map` and `text`. Legality lives on the record rather than in a reader:
   `slot` says whether a target asks the question at all, `only` on a value says whether this target
   offers it, and `askedWhen` says whether the answers so far still ask it, which is what lets
   `plugins` skip itself when `agents` comes back empty. Display text lives there too, in `values`,

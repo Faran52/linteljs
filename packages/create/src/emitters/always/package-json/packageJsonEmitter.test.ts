@@ -20,9 +20,11 @@ import {
   type Library,
   type PackageManager,
   type Router,
+  type Store,
   type TargetId,
   type Testing,
 } from '@answers';
+import { targetFor } from '@targets';
 
 import { VERSIONS } from './constants';
 import {
@@ -42,7 +44,7 @@ interface AnswerOverrides {
   packageManagerVersion?: string;
   libraries?: Library[];
   form?: Form;
-  store?: boolean;
+  store?: Store;
   router?: Router;
 }
 
@@ -54,6 +56,16 @@ interface Sibling {
 const FORMS = valuesOf(ANSWERS.form.values);
 const LIBRARIES = valuesOf(ANSWERS.libraries.values);
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
+
+// Whatever the target offers, so a sweep over every target asks each for a store it actually has.
+const storeFor = (target: TargetId): Partial<Answers> => {
+  const [store] = targetFor({
+    ...DEFAULT_ANSWERS,
+    target,
+  }).stores ?? [];
+
+  return store === undefined ? {} : { store };
+};
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {
@@ -88,7 +100,7 @@ describe('versioned', () => {
           return patchPackageJson({}, answersFor({
             target,
             libraries: [library],
-            store: true,
+            ...storeFor(target),
           }));
         }).not.toThrow();
       }
@@ -98,7 +110,7 @@ describe('versioned', () => {
           return patchPackageJson({}, answersFor({
             target,
             form,
-            store: true,
+            ...storeFor(target),
           }));
         }).not.toThrow();
       }
@@ -282,12 +294,12 @@ describe('patchPackageJson', () => {
     expect(patched.devDependencies).not.toHaveProperty('vitest');
   });
 
-  it('installs the store dependency only on a yes', () => {
-    const withStore = patchPackageJson({}, answersFor({ store: true }));
+  it('installs a store only where one was chosen', () => {
+    const withStore = patchPackageJson({}, answersFor({ store: 'zustand' }));
     const without = patchPackageJson({}, answersFor({}));
     const angular = patchPackageJson({}, answersFor({
       target: 'angular',
-      store: true,
+      store: 'ngrx-signals',
     }));
 
     expect(withStore.dependencies).toHaveProperty('zustand');
@@ -295,11 +307,43 @@ describe('patchPackageJson', () => {
     expect(angular.dependencies).toHaveProperty('@ngrx/signals');
   });
 
+  /**
+   * What each store brings: its own packages, and the one that binds it to the framework rendering it. The bindings
+   * are why this is a table rather than a name on the target: TanStack ships one package per framework, and Astro's
+   * binding is the hosted framework's rather than Astro's.
+   */
+  it('installs what the chosen store needs, and its framework binding where it has one', () => {
+    const dependenciesOf = (overrides: AnswerOverrides): Record<string, string> => {
+      return patchPackageJson({}, answersFor(overrides)).dependencies ?? {};
+    };
+
+    expect(Object.keys(dependenciesOf({ store: 'redux-toolkit' })))
+      .toEqual(expect.arrayContaining(['@reduxjs/toolkit', 'react-redux']));
+    expect(dependenciesOf({ store: 'tanstack-store' })).toHaveProperty('@tanstack/react-store');
+    expect(dependenciesOf({
+      target: 'svelte',
+      store: 'tanstack-store',
+    })).toHaveProperty('@tanstack/svelte-store');
+    expect(dependenciesOf({
+      target: 'astro',
+      hostedFramework: 'react',
+      store: 'nanostores',
+    })).toHaveProperty('@nanostores/react');
+    // Svelte reads a nanostores atom through its own store contract, so there is no binding package to install.
+    expect(Object.keys(dependenciesOf({
+      target: 'astro',
+      hostedFramework: 'svelte',
+      store: 'nanostores',
+    })).filter((name) => {
+      return name.startsWith('@nanostores/');
+    })).toEqual([]);
+  });
+
   // A version pinned here would fight create-vue's own --pinia install.
   it('installs nothing for a store the scaffolder itself installs', () => {
     expect(patchPackageJson({}, answersFor({
       target: 'vue',
-      store: true,
+      store: 'pinia',
     })).dependencies ?? {})
       .not.toHaveProperty('pinia');
   });

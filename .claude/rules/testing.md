@@ -41,16 +41,16 @@ describe.
 - `packages/create/src/pipeline/e2e/**/*.e2e.test.ts` files are excluded from the default run by their
   `.e2e.` infix. One file holds every target: the cases come from `matrix.ts`, which enumerates them
   rather than listing them, so a new answer is covered the day the model gains it and not the day
-  someone remembers. 98 cases, each one a real scaffold, install and `check`.
+  someone remembers. 127 cases, each one a real scaffold, install and `check`.
 - **The cases are two families, and between them every answer.** `managerCases` is every target on
   every package manager with every multi-select at full value: the heaviest dependency set a target
   has, installed five ways, which is what catches a library breaking a project and a manager resolving
   the same manifest differently. `optionCases` is every combination of the single-select axes on pnpm
   alone, because a manager does not decide which config is emitted. Multiplying the two together is
-  what made the matrix 1200; kept apart they are 327, and the one case per target they share is
+  what made the matrix 2480; kept apart they are 532, and the one case per target they share is
   dropped.
 - **`optionCases` covers every pair of answers, not every combination.** Greedy set cover over the
-  legal enumeration takes 327 to 98. Every defect the suite has found was a two-way interaction, and
+  legal enumeration takes 532 to 127. Every defect the suite has found was a two-way interaction, and
   `matrix.test.ts` pins both halves: that no reachable pair is lost, and that the combination behind
   each of those defects survives. `E2E_FULL=1` runs the cross product for a pre-release sweep.
 - **One registry on one fixed port, always.** Sharding is `E2E_SHARD`/`E2E_SHARDS`, a stride over the

@@ -9,13 +9,6 @@ import {
 // One reader per kind, so the suite is one case per kind: what a legal value reads back as, what an illegal one
 // refuses with, and, for the four kinds that are optional in `Answers`, what an absent one answers.
 describe('readAnswer', () => {
-  it('reads a boolean', () => {
-    expect(readAnswer(ANSWERS.store, true)).toBe(true);
-    expect(() => {
-      return readAnswer(ANSWERS.store, 'true');
-    }).toThrow('store must be a boolean');
-  });
-
   it('reads a choice', () => {
     expect(readAnswer(ANSWERS.testing, 'none')).toBe('none');
     expect(() => {
@@ -75,8 +68,10 @@ describe('readAnswer', () => {
 });
 
 describe('unaskedValueOf', () => {
-  it('answers false for the one boolean kind', () => {
-    expect(unaskedValueOf(ANSWERS.store)).toBe(false);
+  // The kinds that are optional in `Answers` answer nothing, `store` among them since it stopped being a yes or no.
+  it('answers nothing for a kind a target never asks', () => {
+    expect(unaskedValueOf(ANSWERS.store)).toBeUndefined();
+    expect(unaskedValueOf(ANSWERS.router)).toBeUndefined();
   });
 
   it('answers the default for the two kinds required in Answers', () => {

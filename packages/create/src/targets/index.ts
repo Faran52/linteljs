@@ -11,7 +11,6 @@ export type {
   StarterFix,
   StarterRename,
   StarterTest,
-  StoreSlot,
   TargetRecord,
   TsconfigDelta,
   TsconfigPlugin,

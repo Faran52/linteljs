@@ -60,7 +60,6 @@ describe('parseLinteljsConfig', () => {
       testing: 'vitest',
       packageManager: 'pnpm',
       libraries: [],
-      store: false,
       typeSafety: 'strict',
       agents: ['claude-code'],
       plugins: [],
@@ -304,7 +303,9 @@ describe('parseLinteljsConfig', () => {
       /libraries must be one of: zod, tanstack-query, tailwind/,
     ],
     ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
-    ['a non-boolean store', config({ store: 'false' }), /store must be a boolean/],
+    ['a store outside the vocabulary', config({ store: 'false' }), /store must be one of: zustand, redux-toolkit/],
+    // The v1 spelling, in a file that says it is not v1: migrating it would read a yes this version never wrote.
+    ['a yes-or-no store at this version', config({ store: true }), /store must be one of: zustand, redux-toolkit/],
     [
       'an unknown type-safety choice',
       config({ typeSafety: 'unchecked' }),
@@ -390,6 +391,22 @@ describe('a version-one config', () => {
     });
   };
 
+  // `store: true` meant the one store the target had; it names that store now, and `false` means no answer at all.
+  it.each([
+    ['react', 'zustand'],
+    ['angular', 'ngrx-signals'],
+    ['vue', 'pinia'],
+  ])('lands a yes on the first store %s offers', (target, store) => {
+    expect(parseLinteljsConfig(v1({
+      target,
+      store: true,
+    })).store).toBe(store);
+  });
+
+  it('carries no store where the config said no', () => {
+    expect(parseLinteljsConfig(v1({ store: false }))).not.toHaveProperty('store');
+  });
+
   it.each([
     ['tanstack-form', 'vue'],
     ['react-hook-form', 'react'],
@@ -454,10 +471,15 @@ describe('answers a target never asks for', () => {
       target: 'next',
       surfaces: ['popup'],
     }, 'surfaces is not an answer for next'],
-    ['a store on Svelte', {
+    // Svelte offers one store, so the refusal worth holding is of a store it does not offer rather than of the key.
+    ['zustand on Svelte', {
       target: 'svelte',
-      store: true,
-    }, 'store is not an answer for svelte'],
+      store: 'zustand',
+    }, 'zustand is not an answer for svelte'],
+    ['a store on the extension, which has none', {
+      target: 'webextension',
+      store: 'zustand',
+    }, 'store is not an answer for webextension'],
     ['react-hook-form on Vue', {
       target: 'vue',
       form: 'react-hook-form',
@@ -494,7 +516,7 @@ describe('answers a target never asks for', () => {
     expect(parseLinteljsConfig(config({
       target: 'react',
       router: 'tanstack-router',
-      store: true,
+      store: 'redux-toolkit',
     })).router).toBe('tanstack-router');
   });
 });

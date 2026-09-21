@@ -22,10 +22,7 @@ export const angularTarget: TargetRecord = {
   vite: false,
   routeUnit: 'src/app/',
   // SignalStore over classic @ngrx/store; measurements in DESIGN.md.
-  store: {
-    label: 'NgRx SignalStore',
-    dependency: '@ngrx/signals',
-  },
+  stores: ['ngrx-signals', 'ngrx-store'],
   ignores: ['.angular/**'],
   /**
    * No `--file-name-style-guide`: pinning affects initial files only, and later `ng generate` writes the current
