@@ -138,6 +138,8 @@ export const inquirerPrompter: Prompter = {
     return await cancellable(select({
       message,
       default: initialValue,
+      // Every option on screen: the default window is seven, which hid the last two frameworks behind a scroll.
+      pageSize: Math.max(options.length, 1),
       choices: options.map((option) => {
         return {
           value: option.value,
@@ -156,6 +158,7 @@ export const inquirerPrompter: Prompter = {
     return await cancellable(checkbox({
       message,
       required,
+      pageSize: Math.max(options.length, 1),
       choices: options.map((option) => {
         return {
           value: option.value,

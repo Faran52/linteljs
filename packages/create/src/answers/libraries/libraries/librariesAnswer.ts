@@ -33,5 +33,5 @@ export const librariesAnswer = {
       hint: 'Zod-validated environment variables',
     },
   },
-  default: ['tailwind'],
+  default: ['tailwind', 'es-toolkit'],
 } as const satisfies AnswerRecord;

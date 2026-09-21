@@ -42,6 +42,8 @@ when a version's change lives in a sibling it is described there instead:
   peers `<6.1.0`, and the two tilde pins keep theirs: `test-renderer` until an Expo SDK ships React 19.3, and the
   compiler for the same reason as above. `eslint-plugin-sonarjs` and `typescript-eslint` move to the catalog, where
   a dependency more than one package uses belongs.
+- The questionnaire shows every option rather than a window of seven, which is what inquirer pages to by default and
+  what hid two of the nine frameworks behind a scroll. `es-toolkit` is selected by default beside Tailwind.
 - **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
   saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
   install hand their output back rather than printing it, so a failing one carries what it printed into the error

@@ -291,7 +291,7 @@ describe('patchPackageJson', () => {
     }));
 
     expect(withStore.dependencies).toHaveProperty('zustand');
-    expect(without.dependencies).toBeUndefined();
+    expect(without.dependencies ?? {}).not.toHaveProperty('zustand');
     expect(angular.dependencies).toHaveProperty('@ngrx/signals');
   });
 
@@ -300,8 +300,8 @@ describe('patchPackageJson', () => {
     expect(patchPackageJson({}, answersFor({
       target: 'vue',
       store: true,
-    })).dependencies)
-      .toBeUndefined();
+    })).dependencies ?? {})
+      .not.toHaveProperty('pinia');
   });
 
   it('installs the framework binding for tanstack query, plus its lint plugin', () => {

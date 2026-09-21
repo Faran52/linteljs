@@ -409,6 +409,8 @@ describe('inquirerPrompter', () => {
     expect(vi.mocked(select).mock.calls[0]?.[0]).toEqual({
       message: 'Framework',
       default: 'react',
+      // Every option on screen rather than inquirer's window of seven.
+      pageSize: 2,
       choices: [
         {
           value: 'react',
@@ -447,6 +449,7 @@ describe('inquirerPrompter', () => {
     expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toEqual({
       message: 'Libraries',
       required: false,
+      pageSize: 2,
       choices: [
         {
           value: 'zod',
