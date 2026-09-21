@@ -33,7 +33,7 @@
     "eslint": "catalog:",
     "husky": "^9.1.7",
     "jiti": "catalog:",
-    "lint-staged": "^17.5.0",
+    "lint-staged": "^17.5.1",
     "stylelint": "^17.15.0",
     "stylelint-config-recess-order": "^7.8.0",
     "stylelint-config-standard": "^40.0.0",
