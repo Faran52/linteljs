@@ -2,7 +2,7 @@ import { dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
 
 import { STAGES } from '@config/constants';
-import { type Stage } from '@config/types';
+import { type RunOutput, type Stage } from '@config/types';
 
 import {
   artifactWriter,
@@ -39,6 +39,8 @@ export interface PipelineOptions {
   onStage?: (stage: Stage, index: number, count: number) => void;
   // Called once the stage's runner resolves, with what it took.
   onStageDone?: (stage: Stage, milliseconds: number) => void;
+  // What the scaffolder and the install do with their own output. `terminal/` decides; a pipe keeps them visible.
+  output?: RunOutput;
 }
 
 type StageRunner = (
@@ -73,7 +75,7 @@ const stageScaffold = async (options: PipelineOptions): Promise<void> => {
   const parent = dirname(options.cwd);
 
   await mkdir(parent, { recursive: true });
-  await runSpawn(command, args, parent);
+  await runSpawn(command, args, parent, options.output);
 };
 
 const isFresh = (options: PipelineOptions): boolean => {
@@ -137,7 +139,7 @@ const stageStandard = async (
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
   options.onNotice?.(`installing with ${options.answers.packageManager}`);
 
-  await runSpawn(options.answers.packageManager, ['install'], options.cwd);
+  await runSpawn(options.answers.packageManager, ['install'], options.cwd, options.output);
 };
 
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {

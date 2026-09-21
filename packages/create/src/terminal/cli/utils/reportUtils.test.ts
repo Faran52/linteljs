@@ -152,25 +152,34 @@ describe('stageReport on a terminal', () => {
 
     expect(output).not.toContain('Steps:');
     expect(output).not.toContain('wrote CLAUDE.md');
-    expect(output).toContain('standard  2 files, 0.1s');
+    // The first frame is painted as the stage starts, so something is on the line before anything is counted.
+    expect(output).toContain('standard');
+    expect(output).toContain('\u2713 standard  2 files, 0.1s');
   });
 
-  // The install prints its own progress, so its line waits for that output to finish rather than repainting over it.
-  it('gives an inherited stage its line only once it is done', () => {
+  // Nothing else writes to this terminal now, so the two stages that spawn a binary spin like the rest.
+  it('spins for a stage that spawns a binary, and says what it said', () => {
     asTerminal(true);
 
-    const report = stageReport(OPTIONS);
+    const output = printed(() => {
+      const report = stageReport(OPTIONS);
 
-    const during = printed(() => {
       report.onStage('install', 5, 6);
       report.onNotice('installing with pnpm');
-      report.onWrite('.npmrc');
-    });
-    const after = printed(() => {
       report.onStageDone('install', 12_100);
     });
 
-    expect(during).toBe('');
-    expect(after).toContain('install   1 file, 12.1s');
+    expect(output).toContain('\u2713 install   installing with pnpm, 12.1s');
+  });
+
+  // The two halves of one decision: a spinner owns the line only because the binaries are handing their output back.
+  it('captures a spawn on a terminal and lets it write behind a pipe', () => {
+    asTerminal(true);
+
+    expect(stageReport(OPTIONS).output).toBe('capture');
+
+    asTerminal(undefined);
+
+    expect(stageReport(OPTIONS).output).toBe('inherit');
   });
 });

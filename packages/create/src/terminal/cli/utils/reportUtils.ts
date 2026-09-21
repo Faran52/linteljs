@@ -1,12 +1,11 @@
 import { stdout } from 'node:process';
 
-import { log, spinner } from '@clack/prompts';
-
 import { STAGES } from '@config/constants';
-import { type Stage } from '@config/types';
+import { type RunOutput, type Stage } from '@config/types';
 
 import {
-  INHERITED_STAGES,
+  SPINNER_FRAMES,
+  SPINNER_INTERVAL,
   STAGE_LABELS,
   STAGE_WIDTH,
 } from '../constants';
@@ -14,12 +13,15 @@ import {
 import type { PipelineOptions } from '@pipeline';
 import type { CliOptions } from './argvUtils';
 
-export type StageReport = Required<Pick<PipelineOptions,
+export interface StageReport extends Required<Pick<PipelineOptions,
   'onNotice'
   | 'onStage'
   | 'onStageDone'
   | 'onWrite'
->>;
+>> {
+  // Whether the scaffolder and the install write to this terminal, which is the same question the shape answers.
+  output: RunOutput;
+}
 
 // stdout for what the user asked to see; `console.error` for failures.
 export const say = (message: string): void => {
@@ -57,11 +59,12 @@ export const stepsPlan = (options: CliOptions): string => {
 };
 
 // Behind a pipe every event is its own line, under a plan of what is coming: it is what a CI log carries and what
-// the end-to-end suite reads. The plan is printed as the reporter is built, which is before the first stage runs.
+// the end-to-end suite reads. The scaffolder and the install keep writing to the same pipe, so nothing is lost.
 const pipedReport = (options: CliOptions): StageReport => {
   say(stepsPlan(options));
 
   return {
+    output: 'inherit',
     onStage: (stage, index, count) => {
       say(`[${String(index)}/${String(count)}] ${STAGE_LABELS[stage]}`);
     },
@@ -79,54 +82,44 @@ const pipedReport = (options: CliOptions): StageReport => {
 };
 
 /**
- * On a terminal a stage is one line: a spinner carrying the running count, replaced by what the stage did and what it
- * took. No plan above it, because the lines below are the plan.
+ * On a terminal a stage is one line, spinning while it works and left behind saying what it did. Nothing else writes
+ * here: `output: 'capture'` keeps the scaffolder's and the installer's own progress off the line the spinner owns,
+ * and a failure carries what they printed instead.
  *
- * An `INHERITED_STAGES` member gets no spinner and prints its line once it has finished, under the output its binary
- * made: a repainting line and a scaffolder writing to the same terminal fight over it, and the scaffolder's own
- * progress is the one worth reading.
+ * Every frame is written as `clear, text, carriage return`, so the cursor rests at column zero: a failure printed by
+ * `main` lands over the spinner's line rather than after it.
  */
 const liveReport = (): StageReport => {
-  const spin = spinner();
   let current: Stage = 'scaffold';
   let writes = 0;
   let notice = '';
-  let spinning = false;
+  let frame = 0;
+  let turning: ReturnType<typeof setInterval> | undefined;
+
+  const paint = (): void => {
+    frame = (frame + 1) % SPINNER_FRAMES.length;
+    stdout.write(`\u001B[K  ${SPINNER_FRAMES.charAt(frame)} ${stageLine(current, writes, notice)}\r`);
+  };
 
   return {
+    output: 'capture',
     onStage: (stage) => {
       current = stage;
       writes = 0;
       notice = '';
-      spinning = !INHERITED_STAGES.has(stage);
-
-      if (spinning) {
-        spin.start(stageLine(stage, 0, ''));
-      }
+      // Unreferenced, so a stage that throws cannot leave a timer holding the process open.
+      turning = setInterval(paint, SPINNER_INTERVAL).unref();
+      paint();
     },
     onWrite: () => {
       writes += 1;
-
-      if (spinning) {
-        spin.message(stageLine(current, writes, notice));
-      }
     },
     onNotice: (message) => {
       notice = message;
-
-      if (spinning) {
-        spin.message(stageLine(current, writes, notice));
-      }
     },
     onStageDone: (stage, milliseconds) => {
-      const line = stageLine(stage, writes, notice, milliseconds);
-
-      if (spinning) {
-        spin.stop(line);
-      }
-      else {
-        log.step(line);
-      }
+      clearInterval(turning);
+      stdout.write(`\u001B[K  ✓ ${stageLine(stage, writes, notice, milliseconds)}\n`);
     },
   };
 };

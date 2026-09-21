@@ -24,10 +24,12 @@ when a version's change lives in a sibling it is described there instead:
   npm, and npm is no longer pinned to 11 for every target. Four of that template's components declare their
   props as an unnamed shape, which the standard's own `no-inline-object-types` refuses, so the starter fixes
   name them: `ThemedView`, `ThemedText`, `ExternalLink` and `Collapsible`.
-- **A run on a terminal is one line per stage**, named for the stage and carrying what it did: a spinner while it
-  works, replaced by the files it wrote or the last thing it said, and what it took. The scaffolder and the install
-  get no spinner over their own output, which is the progress worth reading. Behind a pipe nothing changed: the plan
-  of six steps with the skipped ones marked, a line per file and a line per stage, which is what a CI log carries.
+- **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
+  saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
+  install hand their output back rather than printing it, so a failing one carries what it printed into the error
+  instead of scrolling past. Behind a pipe nothing changed, and that is deliberate: the plan of six steps with the
+  skipped ones marked, a line per file, a line per stage, and both binaries writing straight through, which is what
+  a CI log and the end-to-end suite read.
 - A run names the scaffolder it is about to fetch, and `npm create` now fetches it without asking. `npm create` is
   `npm exec`, which stops at `Ok to proceed?` on a terminal; behind a pipe it warned and carried on, which is why no
   end-to-end case ever saw it.

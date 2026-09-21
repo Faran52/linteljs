@@ -16,6 +16,9 @@ export type Stage
     | 'install'
     | 'fix';
 
+// What a spawned binary does with its output: write to this terminal, or hand it back so a failure can carry it.
+export type RunOutput = 'capture' | 'inherit';
+
 interface EmittedText {
   text: string;
 }

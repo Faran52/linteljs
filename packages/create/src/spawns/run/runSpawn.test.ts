@@ -34,4 +34,25 @@ describe('runSpawn', () => {
   it('rejects with the command and the status it failed on', async () => {
     await expect(runSpawn('node', ['-e', 'process.exit(2)'], cwd)).rejects.toThrow(/exited with 2$/u);
   });
+
+  it('settles on a clean exit with its output captured, saying nothing itself', async () => {
+    await expect(runSpawn('node', ['-e', 'console.log("scaffolded")'], cwd, 'capture'))
+      .resolves.toBeUndefined();
+  });
+
+  /**
+   * What the binary printed is the whole of why it failed, and on a terminal nobody has seen it: the spinner owns
+   * the line precisely because this output never reached it.
+   */
+  it('carries what a captured command printed on both streams into the failure', async () => {
+    const failing = runSpawn(
+      'node',
+      ['-e', 'console.log("resolving"); console.error("ERR_PNPM_NO_MATCHING_VERSION"); process.exit(1)'],
+      cwd,
+      'capture',
+    );
+
+    await expect(failing).rejects.toThrow(/resolving/u);
+    await expect(failing).rejects.toThrow(/ERR_PNPM_NO_MATCHING_VERSION/u);
+  });
 });

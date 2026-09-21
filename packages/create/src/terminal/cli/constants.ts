@@ -175,12 +175,11 @@ export const STAGE_LABELS: Record<Stage, string> = {
   fix: 'fix: eslint and stylelint --fix',
 };
 
-/**
- * The two stages that hand the terminal to a binary. The scaffolder and the install print their own progress, which
- * is the progress worth reading, so neither gets a spinner to fight it for the line: their summary is printed when
- * they finish, under the output they made.
- */
-export const INHERITED_STAGES = new Set<Stage>(['scaffold', 'install']);
+// Braille, so one cell turns rather than a word growing. Every terminal this CLI refuses to run below draws them.
+export const SPINNER_FRAMES = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
+
+// Slow enough to read a stage's name, fast enough to look alive.
+export const SPINNER_INTERVAL = 80;
 
 // Every stage summary lines up on one column, so a run reads down rather than ragged.
 export const STAGE_WIDTH = Math.max(...STAGES.map((stage) => {
