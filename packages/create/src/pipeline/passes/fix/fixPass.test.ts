@@ -65,20 +65,18 @@ describe('nextStep', () => {
 });
 
 describe('fixPass', () => {
-  it('reports the next step when there is no eslint binary in the project yet', () => {
+  it('reports the next step when there is no eslint binary in the project yet', async () => {
     const notices: string[] = [];
 
-    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
     expect(notices).toEqual(['next: pnpm install && pnpm lint:fix']);
   });
 
-  it('does nothing observable when no callback is given', () => {
-    expect(() => {
-      fixPass(cwd, DEFAULT_ANSWERS);
-    }).not.toThrow();
+  it('does nothing observable when no callback is given', async () => {
+    await expect(fixPass(cwd, DEFAULT_ANSWERS)).resolves.toBeUndefined();
   });
 
   it.each([
@@ -94,7 +92,7 @@ describe('fixPass', () => {
 
     const notices: string[] = [];
 
-    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -106,7 +104,7 @@ describe('fixPass', () => {
 
     const notices: string[] = [];
 
-    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -118,7 +116,7 @@ describe('fixPass', () => {
 
     const notices: string[] = [];
 
-    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -133,7 +131,7 @@ describe('fixPass', () => {
       "require('node:fs').writeFileSync('stylelint-argv', process.argv.slice(2).join(' '));\n",
     );
 
-    fixPass(cwd, DEFAULT_ANSWERS, () => {
+    await fixPass(cwd, DEFAULT_ANSWERS, () => {
       return undefined;
     });
 
@@ -148,7 +146,7 @@ describe('fixPass', () => {
 
     const notices: string[] = [];
 
-    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 
@@ -163,7 +161,7 @@ describe('fixPass', () => {
 
     const notices: string[] = [];
 
-    fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
       notices.push(message);
     });
 

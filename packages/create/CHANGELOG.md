@@ -32,6 +32,8 @@ when a version's change lives in a sibling it is described there instead:
   npm, and npm is no longer pinned to 11 for every target. Four of that template's components declare their
   props as an unnamed shape, which the standard's own `no-inline-object-types` refuses, so the starter fixes
   name them: `ThemedView`, `ThemedText`, `ExternalLink` and `Collapsible`.
+- The `fix` stage spins like the rest of them. `eslint --fix` was spawned synchronously, which held the event loop
+  for the ten seconds it took and froze the line it was drawn on; every spawn in the CLI is asynchronous now.
 - **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
   saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
   install hand their output back rather than printing it, so a failing one carries what it printed into the error

@@ -33,8 +33,8 @@ afterEach(async () => {
 
 describe('localBinarySpawn', () => {
   // Before `install` has run there is nothing there to fix, so absence is not a failure to report.
-  it('answers null where the project has installed nothing', () => {
-    expect(localBinarySpawn(cwd, 'probe', ['--version'])).toBeNull();
+  it('answers null where the project has installed nothing', async () => {
+    await expect(localBinarySpawn(cwd, 'probe', ['--version'])).resolves.toBeNull();
   });
 
   it('answers the exit status and output of the binary the project installed', async () => {
@@ -44,10 +44,25 @@ describe('localBinarySpawn', () => {
     await writeFile(join(bin, 'probe'), '#!/bin/sh\necho ok\nexit 3\n', 'utf8');
     await chmod(join(bin, 'probe'), 0o755);
 
-    expect(localBinarySpawn(cwd, 'probe', [])).toEqual({
+    await expect(localBinarySpawn(cwd, 'probe', [])).resolves.toEqual({
       status: 3,
       stdout: 'ok\n',
       failed: false,
+    });
+  });
+
+  // A binary that is there and will not run: the shim exists, the bit does not, and `spawn` never reaches `close`.
+  it('reports a binary it could not execute as failed rather than absent', async () => {
+    const bin = join(cwd, 'node_modules', '.bin');
+
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'probe'), '#!/bin/sh\necho ok\n', 'utf8');
+    await chmod(join(bin, 'probe'), 0o644);
+
+    await expect(localBinarySpawn(cwd, 'probe', [])).resolves.toEqual({
+      status: null,
+      stdout: '',
+      failed: true,
     });
   });
 });

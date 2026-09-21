@@ -148,8 +148,8 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
   package: stagePackage,
   standard: stageStandard,
   install: stageInstall,
-  fix: (options) => {
-    fixPass(options.cwd, options.answers, options.onNotice);
+  fix: async (options) => {
+    await fixPass(options.cwd, options.answers, options.onNotice);
   },
 };
 
