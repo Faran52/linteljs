@@ -11,7 +11,7 @@ export interface ValueRecord {
 
 interface Base {
   key: string;
-  // `--pm`, `--type-safety`; absent with `prompt` on a never-asked answer.
+  // `--target`, `--type-safety`; absent with `prompt` on a never-asked answer.
   flag?: string;
   // 'Package manager'; absent means never asked and no flag.
   prompt?: string;

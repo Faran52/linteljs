@@ -132,10 +132,9 @@ const probes = (): E2eCase[] => {
   });
 };
 
-const flagsFor = (answers: Answers, pm: Collected): string[] => {
+const flagsFor = (answers: Answers): string[] => {
   return [
     '--target', answers.target,
-    '--pm', pm,
     '--testing', answers.testing,
     '--type-safety', answers.typeSafety,
     '--libraries', answers.libraries.join(','),
@@ -150,12 +149,27 @@ const flagsFor = (answers: Answers, pm: Collected): string[] => {
   ];
 };
 
-const run = (command: string, args: string[], cwd: string, registry: E2eRegistry): string => {
+// The manager is no longer a flag: the CLI reads whatever invoked it out of `npm_config_user_agent`, so a pass that
+// wants a project of a given manager says so the way a real run does.
+const agentFor = (pm: Collected): string => {
+  const version = spawnSync(pm, ['--version'], { encoding: 'utf8' }).stdout.trim();
+
+  return `${pm}/${version} npm/? node/? collect`;
+};
+
+const run = (
+  command: string,
+  args: string[],
+  cwd: string,
+  registry: E2eRegistry,
+  agent?: string,
+): string => {
   const result = spawnSync(command, args, {
     cwd,
     encoding: 'utf8',
     env: {
       ...env,
+      ...agent === undefined ? {} : { npm_config_user_agent: agent },
       npm_config_registry: registry.url,
       NPM_CONFIG_REGISTRY: registry.url,
       pnpm_config_registry: registry.url,
@@ -249,7 +263,13 @@ const collectFor = (
 
     mkdirSync(root, { recursive: true });
     // `--no-install`, so the manifests exist before the allowance is stripped out of them.
-    const created = run('node', [registry.cliBin, name, ...flagsFor(answers, pm), '--no-install'], root, registry);
+    const created = run(
+      'node',
+      [registry.cliBin, name, ...flagsFor(answers), '--no-install'],
+      root,
+      registry,
+      agentFor(pm),
+    );
     const project = join(root, name);
 
     try {

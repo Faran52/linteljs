@@ -55,7 +55,7 @@ export const isMultiKind = (record: AnswerRecord): boolean => {
 };
 
 // `boolean` for the one boolean answer, `store`; `string`, `multiple` for the two kinds that ask for a list;
-// `string` alone otherwise. Spread after the fixed entries, so a `--target` or a `--pm` is one more record away.
+// `string` alone otherwise. Spread after the fixed entries, so a `--target` or a `--router` is one record away.
 const ANSWER_OPTIONS = Object.fromEntries(FLAGGED_ANSWERS.map(({ flag, record }) => {
   return [flag, {
     type: record.kind === 'boolean' ? 'boolean' : 'string',
