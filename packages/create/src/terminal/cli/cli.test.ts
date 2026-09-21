@@ -931,6 +931,42 @@ describe('main: the manager that ran it', () => {
     expect(await configAt()).toMatchObject({ packageManager: 'npm' });
   });
 
+  // A config written before the versions existed: its manager is the project's, and the run fills what it lacks.
+  it('keeps the manager a config recorded and fills only what it lacks', async () => {
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'pnpm',
+    });
+
+    const { code } = await runMain(['--skip-scaffold', '--no-install']);
+
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({
+      packageManager: 'pnpm',
+      packageManagerVersion: '12.5.1',
+      nodeVersion: versions.node,
+    });
+  });
+
+  // The machine's pnpm version says nothing about a project that records npm, and `packageManager` would otherwise
+  // name a version that manager never had. Node is not a manager, so it fills either way.
+  it('fills no version where the machine runs a different manager than the config records', async () => {
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'npm',
+    });
+
+    const { code } = await runMain(['--skip-scaffold', '--no-install']);
+    const written = await configAt();
+
+    expect(code).toBe(0);
+    expect(written).toMatchObject({
+      packageManager: 'npm',
+      nodeVersion: versions.node,
+    });
+    expect(written).not.toHaveProperty('packageManagerVersion');
+  });
+
   it('refuses a manager below the floor a generated project needs', async () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/10.25.0 npm/? node/? darwin arm64');
 

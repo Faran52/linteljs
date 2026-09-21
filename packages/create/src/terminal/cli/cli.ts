@@ -141,11 +141,17 @@ const hosted = (answers: Answers, host: Host): Answers => {
   };
 };
 
-// A config already recorded a manager, so it wins and the host fills only what a config written before this lacks.
+/**
+ * A config already recorded a manager, so it wins and the host fills only what a config written before these were
+ * recorded lacks. The version fills only where the two agree on the manager: this machine's pnpm version says
+ * nothing about a project that records npm, and `packageManager` would then name a version that manager never had.
+ */
 const filled = (answers: Answers, host: Host): Answers => {
+  const sameManager = answers.packageManager === host.packageManager;
+
   return {
     ...answers,
-    ...answers.packageManagerVersion === undefined && host.packageManagerVersion !== undefined
+    ...answers.packageManagerVersion === undefined && sameManager && host.packageManagerVersion !== undefined
       ? { packageManagerVersion: host.packageManagerVersion }
       : {},
     ...answers.nodeVersion === undefined ? { nodeVersion: host.nodeVersion } : {},
