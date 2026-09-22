@@ -5,7 +5,7 @@ change here reaches somebody else's project.
 
 ## What you need
 
-Node 26.8.2 or newer, and pnpm 12. Both are declared in `engines`, so an older one fails at install
+Node 26.10.0 or newer, and pnpm 12. Both are declared in `engines`, so an older one fails at install
 rather than halfway through a run.
 
 ```

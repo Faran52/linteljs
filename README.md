@@ -66,7 +66,7 @@ pnpm install
 pnpm check
 ```
 
-Requires Node 26.8.2+ and pnpm 12. `pnpm check` runs the same chain a generated project gets. The networked
+Requires Node 26.10.0+ and pnpm 12. `pnpm check` runs the same chain a generated project gets. The networked
 end-to-end suite is separate: `pnpm --filter @linteljs/create test:e2e` scaffolds every target for real and
 runs each generated gate.
 
