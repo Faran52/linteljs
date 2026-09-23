@@ -51,6 +51,12 @@ describe('managerFromUserAgent', () => {
       version: undefined,
     });
   });
+
+  // A floor compares three numbers, so a version with anything before or after them is not read as one.
+  it('reads no version from a token that is more than three numbers', () => {
+    expect(managerFromUserAgent('pnpm/v12.5.1 npm/? node/?')?.version).toBeUndefined();
+    expect(managerFromUserAgent('pnpm/12.5.1-rc.1 npm/? node/?')?.version).toBeUndefined();
+  });
 });
 
 describe('acceptsManager', () => {

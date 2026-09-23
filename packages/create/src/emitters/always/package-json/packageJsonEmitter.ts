@@ -191,7 +191,6 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
 
-  const optional: Partial<Record<Library, string[]>> = {};
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
     /*
@@ -219,9 +218,6 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(hasTests(answers)
       ? [...RUNNER_DEV_DEPENDENCIES, ...target.testDevDependencies ?? []]
       : []),
-    ...answers.libraries.flatMap((library) => {
-      return optional[library] ?? [];
-    }),
     ...(answers.styling === undefined ? [] : stylingDev[answers.styling]),
     ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),

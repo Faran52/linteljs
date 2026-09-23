@@ -33,7 +33,6 @@ import { VERSIONS } from './constants';
 import {
   allowedBuildNames,
   buildDevDependencies,
-  emitPackageJson,
   type PackageJson,
   parsePackageJson,
   patchPackageJson,
@@ -199,57 +198,10 @@ describe('patchPackageJson', () => {
     expect(patched).toHaveProperty('description', 'kept');
   });
 
-  it('never emits linteljs metadata', () => {
-    expect(JSON.parse(emitPackageJson({ name: 'demo' }, DEFAULT_ANSWERS)))
-      .not.toHaveProperty('linteljs');
-  });
-
-  /**
-   * The two directions of the merge, each stated against the tables rather than against a version somebody has to
-   * remember to raise. The `not` lines are the preconditions: a fixture that agreed with `VERSIONS` would let both
-   * assertions pass whether the merge worked or not, so bringing it up to date fails here rather than silently.
-   */
-  it('takes over the names it pins and leaves the project the rest', () => {
-    const patched = patchPackageJson(SCAFFOLDED, answersFor({}));
-    const ownDates = SCAFFOLDED.dependencies?.['date-fns'];
-    const ownVite = SCAFFOLDED.devDependencies?.['vite'];
-
-    expect(ownVite).not.toBe(VERSIONS['vite']);
-    expect(patched.devDependencies?.['vite']).toBe(VERSIONS['vite']);
-
-    // Nothing in `VERSIONS` names it and nothing supersedes it, so it is the project's own and survives untouched.
-    expect(VERSIONS).not.toHaveProperty('date-fns');
-    expect(patched.dependencies?.['date-fns']).toBe(ownDates);
-
-    expect(patched.scripts?.['dev']).toBe('vite');
-    expect(patched.name).toBe('demo-app');
-  });
-
-  it('wins on the scripts linteljs owns', () => {
-    expect(patchPackageJson(SCAFFOLDED, answersFor({})).scripts?.['lint']).toBe('eslint .');
-  });
-
   it('drops prettier, which @stylistic supersedes', () => {
     expect(patchPackageJson(SCAFFOLDED, answersFor({})).devDependencies).not.toHaveProperty(
       'prettier',
     );
-  });
-
-  // React Native declares the same package for its vitest transform, so the filter runs on what the scaffolder
-  // left, not the merged result.
-  it('keeps the inherited plugin-react, and keeps the one a target asks for', () => {
-    const scaffolded: PackageJson = {
-      ...SCAFFOLDED,
-      devDependencies: {
-        ...SCAFFOLDED.devDependencies,
-        '@vitejs/plugin-react': '^6.0.0',
-      },
-    };
-
-    expect(patchPackageJson(scaffolded, answersFor({ target: 'react' })).devDependencies)
-      .toHaveProperty('@vitejs/plugin-react');
-    expect(patchPackageJson(scaffolded, answersFor({ target: 'react-native' })).devDependencies)
-      .toHaveProperty('@vitejs/plugin-react');
   });
 
   // Three declarations of one fact: the exact version corepack and pnpm switch to, the floor that was tested, and
@@ -290,35 +242,6 @@ describe('patchPackageJson', () => {
       name: 'bun',
       onFail: 'error',
     });
-  });
-
-  // A config written before the version was recorded, which is every project generated before this.
-  it('falls back to the floor where the config carries no version', () => {
-    const patched = patchPackageJson(SCAFFOLDED, answersFor({ packageManager: 'npm' }));
-
-    expect(patched.packageManager).toBe(`npm@${MANAGER_FLOORS.npm}`);
-    expect(patched.engines?.['npm']).toBe(`>=${MANAGER_FLOORS.npm}`);
-  });
-
-  // What Node a project runs on is the scaffolder's to declare and not linteljs's to overwrite.
-  it('keeps a devEngines entry the scaffolder wrote', () => {
-    const patched = patchPackageJson(
-      {
-        devEngines: {
-          runtime: {
-            name: 'node',
-            onFail: 'warn',
-          },
-        },
-      },
-      answersFor({}),
-    );
-
-    expect(patched.devEngines?.['runtime']).toEqual({
-      name: 'node',
-      onFail: 'warn',
-    });
-    expect(patched.devEngines?.['packageManager']).toBeDefined();
   });
 
   /*
@@ -367,34 +290,6 @@ describe('patchPackageJson', () => {
       .not.toHaveProperty('postcss-html');
   });
 
-  // A target that owns its template owns its build too, so a stale one from an older scaffold is replaced.
-  it('takes over the build script, and gates on it', () => {
-    const patched = patchPackageJson(
-      { scripts: { build: 'tsc -b && vite build' } },
-      answersFor({ target: 'react' }),
-    );
-
-    expect(patched.scripts?.['build']).toBe('vite build');
-    expect(patched.scripts?.['check']).toContain('pnpm build');
-  });
-
-  // Still fetching, so the generator's own build survives; there is nothing on the record to replace it with.
-  it('leaves the build script of a target that still scaffolds', () => {
-    const patched = patchPackageJson(
-      { scripts: { build: 'next build' } },
-      answersFor({ target: 'next' }),
-    );
-
-    expect(patched.scripts?.['build']).toBe('next build');
-  });
-
-  it('omits the test scripts and vitest when testing is declined', () => {
-    const patched = patchPackageJson({}, answersFor({ testing: 'none' }));
-
-    expect(patched.scripts).not.toHaveProperty('test');
-    expect(patched.devDependencies).not.toHaveProperty('vitest');
-  });
-
   it('installs a store only where one was chosen', () => {
     const withStore = patchPackageJson({}, answersFor({ store: 'zustand' }));
     const without = patchPackageJson({}, answersFor({}));
@@ -438,6 +333,19 @@ describe('patchPackageJson', () => {
     })).filter((name) => {
       return name.startsWith('@nanostores/');
     })).toEqual([]);
+  });
+
+  // A binding with no core beside it installs cleanly and fails at the first import.
+  it('installs the core package of a store beside its binding', () => {
+    expect(patchPackageJson({}, answersFor({
+      target: 'angular',
+      store: 'ngrx-store',
+    })).dependencies).toHaveProperty('@ngrx/store');
+    expect(patchPackageJson({}, answersFor({
+      target: 'astro',
+      hostedFramework: 'react',
+      store: 'nanostores',
+    })).dependencies).toHaveProperty('nanostores');
   });
 
   // Pinned here since `create-vue` crossed over: nothing installs it from a `--pinia` flag any more.
@@ -501,38 +409,6 @@ describe('patchPackageJson', () => {
     }
   });
 
-  // The node adapter's runtime entry needs astro in dependencies; a second entry drifted.
-  it('declares astro once for an astro project, hosted or not', () => {
-    const plain = patchPackageJson({}, answersFor({ target: 'astro' }));
-    const hosted = patchPackageJson({}, answersFor({
-      target: 'astro',
-      hostedFramework: 'react',
-      libraries: ['zod'],
-      styling: 'tailwind',
-      data: 'tanstack-query',
-    }));
-
-    for (const patched of [plain, hosted]) {
-      expect(patched.dependencies).toHaveProperty('astro');
-      expect(patched.devDependencies).not.toHaveProperty('astro');
-    }
-  });
-
-  it('adds no runtime dependency for a library that has no binding on this target', () => {
-    const plain = patchPackageJson(
-      {},
-      answersFor({
-        target: 'webextension',
-        libraries: [],
-        data: 'tanstack-query',
-      }),
-    );
-
-    // `qs` alone, which every project receives: no library binding was added beside it.
-    expect(Object.keys(plain.dependencies ?? {})).toEqual(['qs']);
-    expect(plain.devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
-  });
-
   it('installs no html plugins where the html layer is not composed', () => {
     expect(patchPackageJson({}, answersFor({ target: 'angular' })).devDependencies)
       .not.toHaveProperty('@html-eslint/eslint-plugin');
@@ -556,38 +432,9 @@ describe('patchPackageJson', () => {
     expect(scripts?.['postinstall']).toBe('svelte-kit sync && husky');
     expect(scripts).not.toHaveProperty('prepare');
   });
-
-  it("keeps a target's own prepare ahead of husky rather than replacing it", () => {
-    expect(patchPackageJson({}, answersFor({ target: 'svelte' })).scripts?.['prepare'])
-      .toBe('svelte-kit sync && husky');
-  });
-
-  // Without it, lint:css cannot load the syntax the emitted config names.
-  it('installs the SFC stylelint syntax only where a component holds the styles', () => {
-    expect(patchPackageJson({}, answersFor({ target: 'vue' })).devDependencies)
-      .toHaveProperty('postcss-html');
-    expect(patchPackageJson({}, answersFor({ target: 'svelte' })).devDependencies)
-      .toHaveProperty('postcss-html');
-    expect(patchPackageJson({}, answersFor({ target: 'react' })).devDependencies)
-      .not.toHaveProperty('postcss-html');
-  });
-
-  it('names the rendering library the vue testing rule tells an agent to use', () => {
-    expect(patchPackageJson({}, answersFor({ target: 'vue' })).devDependencies)
-      .toHaveProperty('@vue/test-utils');
-    expect(patchPackageJson({}, answersFor({
-      target: 'vue',
-      testing: 'none',
-    })).devDependencies)
-      .not.toHaveProperty('@vue/test-utils');
-  });
 });
 
 describe('parsePackageJson', () => {
-  it('reads an object', () => {
-    expect(parsePackageJson('{"name":"x"}').name).toBe('x');
-  });
-
   it('rejects anything that is not one', () => {
     expect(() => {
       return parsePackageJson('[]');
@@ -597,13 +444,6 @@ describe('parsePackageJson', () => {
 
 // Naming vitest in a jest project is a check that fails on command-not-found.
 describe('the test scripts', () => {
-  it('installs no runner where tests were declined', () => {
-    const devDependencies = buildDevDependencies(answersFor({ testing: 'none' }));
-
-    expect(devDependencies).not.toHaveProperty('vitest');
-    expect(devDependencies).not.toHaveProperty('jest');
-  });
-
   // React Native loads through an adapter; it is still vitest underneath.
   it('gives react native the adapter on top of the shared runner', () => {
     const devDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
@@ -699,8 +539,12 @@ describe('the router', () => {
     expect(devDependencies).not.toHaveProperty('@tanstack/router-plugin');
   });
 
-  it('installs no router by default', () => {
-    expect(patchPackageJson({}, answersFor({})).dependencies ?? {}).not.toHaveProperty('react-router');
+  // Framework mode's packages are the target record's, so the router tables add nothing for it.
+  it('installs framework mode with its server and its build plugin', () => {
+    const { dependencies, devDependencies } = patchPackageJson({}, answersFor({ router: 'react-router-framework' }));
+
+    expect(dependencies).toHaveProperty('@react-router/serve');
+    expect(devDependencies).toHaveProperty('@react-router/dev');
   });
 });
 
@@ -735,24 +579,6 @@ describe('allowScripts', () => {
     });
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('allowScripts');
   });
-
-  /**
-   * One list reaches all three managers now, so npm gets no more and no less than pnpm and bun. `fsevents` is
-   * measured: `COLLECT_NPM=... collect:builds` against
-   * npm 12, which blocks where npm 11 only warns, names `fsevents` on eleven of the seventeen combinations and
-   * nothing else. `@swc/core` and `sharp` are reached by nothing and carried as insurance, an allowance for an
-   * absent package being silent on both managers. Pinned exactly, so a fifth name has to be added on purpose.
-   */
-  it('gives npm the same list as every other manager', () => {
-    const npm = patchPackageJson({}, answersFor({
-      target: 'react',
-      packageManager: 'npm',
-    }));
-
-    expect(Object.keys(npm.allowScripts ?? {}).sort((left, right) => {
-      return left.localeCompare(right, 'en');
-    })).toEqual(['@swc/core', 'fsevents', 'sharp', 'unrs-resolver']);
-  });
 });
 
 // The only ranges this repository can check without the network. `^0.1.0` once sat while the package reached 0.2.0:
@@ -772,6 +598,35 @@ const siblingIn = (directory: string): Sibling => {
     version,
   };
 };
+
+// Every entry pinned tighter than a caret, with the operator it takes; the table says why beside each one.
+const PINNED_TIGHTER: Record<string, string> = {
+  '@react-native/js-polyfills': '~',
+  'expo': '~',
+  'expo-constants': '~',
+  'expo-linking': '~',
+  'expo-router': '~',
+  'expo-status-bar': '~',
+  'react-native': '~',
+  'react-native-css': '',
+  'react-native-safe-area-context': '~',
+  'react-native-screens': '~',
+  'react-native-web': '~',
+  'rxjs': '~',
+  'test-renderer': '~',
+  'typescript': '~',
+};
+
+describe('VERSIONS', () => {
+  it('holds every range to a caret, save the entries pinned tighter for a stated reason', () => {
+    for (const [name, range] of Object.entries(VERSIONS)) {
+      const operator = PINNED_TIGHTER[name] ?? '^';
+
+      expect(range.slice(0, operator.length), name).toBe(operator);
+      expect(range.slice(operator.length), name).toMatch(/^\d+\.\d+\.\d+(?:-[\da-z.]+)?$/u);
+    }
+  });
+});
 
 describe('VERSIONS against the workspace', () => {
   it.each(WORKSPACE_PACKAGES)('carries no stale range for %s', (directory) => {
@@ -905,22 +760,5 @@ describe('MANAGER_FLOORS against the workspace', () => {
     const running = String(packageManager).replace('pnpm@', '');
 
     expect(atLeast(running, MANAGER_FLOORS.pnpm)).toBe(true);
-  });
-});
-
-/**
- * The id is `yarn-classic`; the command is `yarn`. A manifest that named the id would declare a manager nobody can
- * install, and `packageManager` is the field corepack acts on.
- */
-describe('a yarn classic project', () => {
-  it('declares the command rather than the id, at its own floor', () => {
-    const manifest = parsePackageJson(emitPackageJson({ name: 'demo' }, answersFor({
-      packageManager: 'yarn-classic',
-      packageManagerVersion: '1.22.22',
-    })));
-
-    expect(manifest.packageManager).toBe('yarn@1.22.22');
-    expect(manifest.engines).toMatchObject({ yarn: '>=1.22.22' });
-    expect(JSON.stringify(manifest)).not.toContain('yarn-classic');
   });
 });

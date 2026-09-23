@@ -43,6 +43,14 @@ describe('parseCliArgs', () => {
     expect(parseCliArgs(['demo-app', '--skip', 'standard']).unknownSkips).toEqual([]);
   });
 
+  // `surfaces` is the optional list: absent means none, but given it is a list like `libraries`.
+  it('collects an optional list flag given more than once, or comma-separated', () => {
+    expect(parseCliArgs(['--surfaces', 'popup', '--surfaces', 'background']).answers)
+      .toEqual({ surfaces: ['popup', 'background'] });
+    expect(parseCliArgs(['--surfaces', 'popup,background']).answers)
+      .toEqual({ surfaces: ['popup', 'background'] });
+  });
+
   it('keeps extra positional arguments for main to reject', () => {
     expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(['extra']);
     expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(['extra']);

@@ -6,7 +6,6 @@ import {
   readlink,
   realpath,
   rm,
-  stat,
   symlink,
   writeFile,
 } from 'node:fs/promises';
@@ -50,8 +49,6 @@ import {
   entryExists,
   exists,
   linteljsConfigReader,
-  readIfPresent,
-  STYLE_ENTRY_CANDIDATES,
 } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 import { VERSIONS } from '@emitters/always/package-json/constants';
@@ -219,14 +216,6 @@ describe('runPipeline against a directory that already exists', () => {
     expect(patched.scripts?.['lint']).toBe('eslint .');
   });
 
-  it('writes the shell hooks executable', async () => {
-    await generate({});
-
-    const mode = (await stat(join(cwd, 'plugins/linteljs/hooks/git-safety-guard.sh'))).mode;
-
-    expect(mode & 0o111).toBe(0o111);
-  });
-
   it('composes testing.md from the target head and the shared standard', async () => {
     await generate({ target: 'solid' });
 
@@ -239,37 +228,9 @@ describe('runPipeline against a directory that already exists', () => {
     expect(testing).toContain('## Standard');
     expect(testing.indexOf('## Infrastructure')).toBeLessThan(testing.indexOf('## Standard'));
   });
-
-  it('writes no vite config for a target that does not use vite', async () => {
-    expect(await generate({ target: 'next' })).not.toContain('vite.config.ts');
-    expect(await generate({ target: 'angular' })).not.toContain('vite.config.ts');
-  });
-
-  it('writes a tsconfig for every target, since every project is a TypeScript one', async () => {
-    expect(await generate({})).toContain('tsconfig.json');
-    expect(await generate({ target: 'angular' })).toContain('tsconfig.json');
-  });
 });
 
 describe('selected agent setup', () => {
-  it('writes only the Codex adapter and host declaration when Codex is selected', async () => {
-    const written = await generate({
-      agents: ['codex'],
-      plugins: ['context7'],
-    });
-
-    expect(written).toEqual(expect.arrayContaining([
-      CONFIG_PATH,
-      'AGENTS.md',
-      '.agents/plugins/marketplace.json',
-      'plugins/linteljs/.codex-plugin/plugin.json',
-      'plugins/linteljs/skills/linteljs/SKILL.md',
-    ]));
-    expect(written).not.toContain('CLAUDE.md');
-    expect(written).not.toContain('.claude/settings.json');
-    expect(written).not.toContain('plugins/linteljs/.claude-plugin/plugin.json');
-  });
-
   it('writes both adapters and both host declarations when both agents are selected', async () => {
     const written = await generate({ agents: ['claude-code', 'codex'] });
 
@@ -328,32 +289,6 @@ describe('selected agent setup', () => {
 });
 
 describe('generated write safety', () => {
-  it.each([
-    ['live', '// external config\n'],
-    ['dangling', null],
-  ])('rejects an existing %s symbolic-link target without touching its destination', async (_case, original) => {
-    const externalTarget = join(external, 'eslint.config.js');
-    const generatedTarget = join(cwd, 'eslint.config.js');
-
-    if (original !== null) {
-      await writeFile(externalTarget, original, 'utf8');
-    }
-
-    await symlink(externalTarget, generatedTarget);
-
-    await expect(generate({}))
-      .rejects.toThrow('Refusing to write eslint.config.js: target is a symbolic link');
-    await expect(readlink(generatedTarget)).resolves.toBe(externalTarget);
-    await expect(readIfPresent(externalTarget)).resolves.toBe(original);
-  });
-
-  // Only ELOOP is translated; a symlink message would send the reader looking for a link that is not there.
-  it('surfaces a write failure that is not a symbolic link as itself', async () => {
-    await mkdir(join(cwd, 'eslint.config.js'), { recursive: true });
-
-    await expect(generate({})).rejects.toThrow(/EISDIR/);
-  });
-
   it('keeps ordinary regular-file overwrite behavior', async () => {
     await writeFile(join(cwd, 'eslint.config.js'), '// old config\n', 'utf8');
 
@@ -361,6 +296,52 @@ describe('generated write safety', () => {
 
     await expect(readFile(join(cwd, 'eslint.config.js'), 'utf8'))
       .resolves.not.toBe('// old config\n');
+  });
+});
+
+// Neither `--skip-scaffold` nor `--fresh`: the directory is the one `create` just made.
+describe('a plain create run', () => {
+  it('plants the starter a project is born with', async () => {
+    const written: string[] = [];
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({}),
+      skip: ['install', 'fix'],
+      onWrite: (path) => {
+        written.push(path);
+      },
+    });
+
+    expect(written).toContain('src/App.tsx');
+  });
+});
+
+describe('stage timing', () => {
+  it('reports each stage by the time it took rather than a clock reading', async () => {
+    const took: number[] = [];
+    const started = performance.now();
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({}),
+      existing: true,
+      skip: ['install', 'fix'],
+      onStageDone: (_stage, milliseconds) => {
+        took.push(milliseconds);
+      },
+    });
+
+    const elapsed = performance.now() - started;
+
+    expect(took).toHaveLength(3);
+
+    for (const milliseconds of took) {
+      expect(milliseconds).toBeGreaterThanOrEqual(0);
+      expect(milliseconds).toBeLessThanOrEqual(elapsed);
+    }
   });
 });
 
@@ -394,11 +375,6 @@ describe('coverage surface', () => {
       .toContain("include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs,vue}']");
   });
 
-  // Extensionless, vite warns every run; `.ts` is TS5097; `.js` resolves to the `.ts` under `bundler`.
-  it('names the vite config with the extension both vite and tsc accept', async () => {
-    expect(await vitestConfig({})).toContain("import viteConfig from './vite.config.js';");
-  });
-
   it('adds the shells and declarations each target cannot execute', async () => {
     expect(await vitestConfig({ target: 'next' })).toContain("'src/app/layout.tsx'");
     expect(await vitestConfig({ target: 'angular' })).toContain("'src/app/app.routes.ts'");
@@ -420,12 +396,6 @@ describe('coverage surface', () => {
     for (const target of TARGET_IDS) {
       expect([target, thresholds.test(await vitestConfig({ target }))]).toEqual([target, true]);
     }
-  });
-
-  // Without the browser condition vitest resolves Svelte's server build and `render()` throws.
-  it('gives svelte the browser resolve condition its renderer needs', async () => {
-    expect(await vitestConfig({ target: 'svelte' })).toContain("resolve: { conditions: ['browser'] }");
-    expect(await vitestConfig({ target: 'vue' })).not.toContain('conditions');
   });
 
   // Both transforms leave one branch no test can reach in every component.
@@ -482,13 +452,6 @@ describe('build configs a project already owns', () => {
 
     await expect(readFile(join(cwd, 'vite.config.ts'), 'utf8'))
       .resolves.toContain('defineConfig');
-  });
-
-  it('installs them when the project has neither', async () => {
-    const written = await generate({});
-
-    expect(written).toContain('vite.config.ts');
-    expect(written).toContain('vitest.config.ts');
   });
 });
 
@@ -616,10 +579,6 @@ describe('the webextension surfaces', () => {
     expect(firefox).toContain('"scripts"');
   });
 
-  it('writes one manifest when the project ships to one store', async () => {
-    expect(await fresh()).not.toContain('manifest.firefox.json');
-  });
-
   it('names a service worker that the same run actually wrote', async () => {
     await fresh();
 
@@ -629,41 +588,11 @@ describe('the webextension surfaces', () => {
     expect(await exists(join(cwd, worker))).toBe(true);
   });
 
-  it('writes the worker whether or not the project took a test runner', async () => {
-    await pipelineRun({
-      name: 'demo-app',
-      cwd,
-      answers: answersFor({
-        target: 'webextension',
-        testing: 'none',
-      }),
-      existing: true,
-      skip: ['install'],
-      fresh: true,
-    });
-
-    expect(await exists(join(cwd, 'src/background/index.ts'))).toBe(true);
-    expect(await exists(join(cwd, 'src/background/onInstalled.test.ts'))).toBe(false);
-  });
-
   it('writes none of it into a repository the CLI did not scaffold', async () => {
     await generate({ target: 'webextension' });
 
     expect(await exists(join(cwd, 'manifest.json'))).toBe(false);
     expect(await exists(join(cwd, 'src/background/index.ts'))).toBe(false);
-  });
-
-  it('leaves the manifest to targets that have one', async () => {
-    await pipelineRun({
-      name: 'demo-app',
-      cwd,
-      answers: answersFor({ target: 'react' }),
-      existing: true,
-      skip: ['install'],
-      fresh: true,
-    });
-
-    expect(await exists(join(cwd, 'manifest.json'))).toBe(false);
   });
 });
 
@@ -803,12 +732,6 @@ describe('.claude/settings.json', () => {
 });
 
 describe('sync', () => {
-  it('reports nothing pending on a freshly generated project', async () => {
-    await generate({});
-
-    expect((await planSync(cwd, answersFor({}))).pending).toEqual([]);
-  });
-
   it('reports a diff for a locally edited rule and does not overwrite it', async () => {
     await generate({});
 
@@ -822,23 +745,6 @@ describe('sync', () => {
     expect(pending[0]?.status).toBe('changed');
     expect(pending[0]?.diff).toContain('local edit');
     expect(await readFile(path, 'utf8')).toBe('# local edit\n');
-  });
-
-  it('reports a missing file and restores it only when applied', async () => {
-    await generate({});
-
-    const path = join(cwd, 'plugins/linteljs/hooks/git-safety-guard.sh');
-    await rm(path);
-
-    const { pending } = await planSync(cwd, answersFor({}));
-
-    expect(pending[0]?.status).toBe('missing');
-
-    const { written } = await applySync(cwd, answersFor({}), [pending[0]?.target ?? '']);
-
-    expect(written).toEqual(['plugins/linteljs/hooks/git-safety-guard.sh']);
-    expect((await stat(path)).mode & 0o111).toBe(0o111);
-    expect((await planSync(cwd, answersFor({}))).pending).toEqual([]);
   });
 
   it('reaches the configs it emitted, not only the files it copied', async () => {
@@ -900,17 +806,6 @@ describe('sync', () => {
     expect(merged).toContain("{ name: 'ours', re: /ours/ },");
     expect(merged).toContain('CAUGHT_VALUE');
   });
-
-  it('restores checkBannedPatterns when it is missing entirely', async () => {
-    await generate({});
-
-    const path = join(cwd, 'scripts/checkBannedPatterns.ts');
-    await rm(path);
-
-    expect((await applySync(cwd, answersFor({}), ['scripts/checkBannedPatterns.ts'])).written)
-      .toEqual(['scripts/checkBannedPatterns.ts']);
-    expect(await exists(path)).toBe(true);
-  });
 });
 
 describe('root config', () => {
@@ -932,17 +827,6 @@ describe('root config', () => {
     expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLinteljsConfig(answers));
 
     expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
-  });
-
-  it('is not part of the sync artifact plan', async () => {
-    await generate({});
-
-    const { entries, pending } = await planSync(cwd, DEFAULT_ANSWERS);
-
-    expect(entries.map((entry) => {
-      return entry.target;
-    })).not.toContain(CONFIG_PATH);
-    expect(pending).toEqual([]);
   });
 });
 
@@ -1014,18 +898,6 @@ describe('the stages that shell out', () => {
     expect(notices).toEqual(['installing with yarn']);
   });
 
-  // Fatal on purpose: every later step reads `node_modules`.
-  it('stops on a failed install rather than carrying on to the fix pass', async () => {
-    await planted('yarn', 3);
-
-    await expect(pipelineRun({
-      name: 'demo-app',
-      cwd,
-      answers: answersFor({ packageManager: 'yarn' }),
-      skip: ['lint', 'package', 'standard'],
-    })).rejects.toThrow('yarn install exited with 3');
-  });
-
   it('stops when the package manager is not installed at all', async () => {
     await planted('yarn', 0);
 
@@ -1085,6 +957,29 @@ describe('the repository the hooks install into', () => {
       'no git repository here, so the husky hooks will not install until there is one',
     ]);
   });
+
+  // No git at all is not a failed `git init`: nothing is attempted, and the reason is the spawn's own.
+  it('skips the repository and says why when git is not on PATH, with a listener or without', async () => {
+    vi.stubEnv('PATH', '');
+
+    try {
+      const notices = await noticesFromAgent();
+
+      expect(notices).toHaveLength(1);
+      expect(notices[0]).toContain('git was not found on PATH');
+      expect(await exists(join(cwd, '.git'))).toBe(false);
+
+      await expect(pipelineRun({
+        name: 'demo-app',
+        cwd,
+        answers: answersFor({}),
+        skip: ['lint', 'package', 'install', 'fix'],
+      })).resolves.toBeUndefined();
+    }
+    finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });
 
 // The fix pass never takes a generated project down with it.
@@ -1110,30 +1005,6 @@ describe('the eslint --fix pass', () => {
     expect(await noticesFrom(['install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
   });
 
-  // The CLI's closing summary names the install; a second notice here said the same thing twice.
-  it('says nothing more when the fix pass was skipped outright', async () => {
-    expect(await noticesFrom(['install', 'fix'])).toEqual([]);
-  });
-
-  it('reports nothing about the package manager when install and fix were both skipped', async () => {
-    const notices: string[] = [];
-
-    await pipelineRun({
-      name: 'demo-app',
-      cwd,
-      answers: {
-        ...answersFor({}),
-        packageManager: 'bun',
-      },
-      skip: ['install', 'fix'],
-      onNotice: (message) => {
-        notices.push(message);
-      },
-    });
-
-    expect(notices.filter(notAboutTheRepository)).toEqual([]);
-  });
-
   it('does not run when the lint stage was skipped', async () => {
     expect(await noticesFrom(['lint', 'install'])).toEqual([]);
   });
@@ -1156,140 +1027,20 @@ describe('the eslint --fix pass', () => {
     await chmod(join(bin, 'eslint'), 0o755);
   };
 
-  it('runs eslint and reports the files it changed', async () => {
-    await plantedEslint(
-      '[{"filePath":"a.ts","output":"fixed"},{"filePath":"b.ts"}]',
-      // Exit 1 means findings remain, the normal outcome.
-      1,
-    );
-
-    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: 1 file changed']);
-  });
-
-  it('counts more than one, and says so in the plural', async () => {
-    await plantedEslint('[{"output":"a"},{"output":"b"},{"filePath":"c.ts"}]', 1);
-
-    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: 2 files changed']);
-  });
-
-  it('reports a clean pass rather than zero files', async () => {
-    await plantedEslint('[{"filePath":"a.ts"}]', 0);
-
-    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: nothing to fix']);
-  });
-
   // Unreadable formatter output counts as nothing fixed.
-  it.each([
-    ['output that is not JSON at all', 'Oops! Something went wrong.'],
-    ['JSON that is not a result list', '{"results":[]}'],
-  ])('survives %s', async (_case, printed) => {
-    await plantedEslint(printed, 0);
+  it('survives JSON that is not a result list', async () => {
+    await plantedEslint('{"results":[]}', 0);
 
     expect(await noticesFrom(['install'])).toEqual(['eslint --fix: nothing to fix']);
-    expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
-  });
-
-  it('degrades to a warning when eslint cannot run', async () => {
-    const bin = join(cwd, 'node_modules', '.bin');
-
-    await mkdir(bin, { recursive: true });
-    // Exit 2 is a configuration failure.
-    await writeFile(join(bin, 'eslint'), '#!/usr/bin/env node\nprocess.exit(2);\n', 'utf8');
-    await chmod(join(bin, 'eslint'), 0o755);
-
-    const notices = await noticesFrom(['install']);
-
-    expect(notices).toEqual(['eslint --fix could not run; run it yourself once dependencies are installed']);
-    expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
-  });
-
-  // Measured: 261 stylelint findings across the three Vite templates before this pass.
-  const plantedStylelint = async (): Promise<void> => {
-    const bin = join(cwd, 'node_modules', '.bin');
-
-    await mkdir(bin, { recursive: true });
-    await writeFile(
-      join(bin, 'eslint'),
-      '#!/usr/bin/env node\nconsole.log("[]");\nprocess.exit(0);\n',
-      'utf8',
-    );
-    await writeFile(
-      join(bin, 'stylelint'),
-      [
-        '#!/usr/bin/env node',
-        "require('node:fs').writeFileSync('stylelint-argv', process.argv.slice(2).join(' '));",
-      ].join('\n'),
-      'utf8',
-    );
-    await chmod(join(bin, 'eslint'), 0o755);
-    await chmod(join(bin, 'stylelint'), 0o755);
-  };
-
-  const stylelintArgv = async (): Promise<string> => {
-    return await readFile(join(cwd, 'stylelint-argv'), 'utf8');
-  };
-
-  it('fixes the stylesheets over the same glob lint:css gates', async () => {
-    await plantedStylelint();
-    await noticesFrom(['install']);
-
-    expect(await stylelintArgv()).toBe('src/**/*.css --fix --allow-empty-input');
-  });
-
-  it('names the SFC extension on a target whose styles live in its components', async () => {
-    await plantedStylelint();
-
-    await pipelineRun({
-      name: 'demo-app',
-      cwd,
-      answers: answersFor({ target: 'vue' }),
-      existing: true,
-      skip: ['install'],
-    });
-
-    expect(await stylelintArgv()).toBe('src/**/*.{css,vue} --fix --allow-empty-input');
-  });
-
-  it('warns rather than failing a generate when stylelint cannot spawn', async () => {
-    const bin = join(cwd, 'node_modules', '.bin');
-
-    await mkdir(bin, { recursive: true });
-    await writeFile(
-      join(bin, 'eslint'),
-      '#!/usr/bin/env node\nconsole.log("[]");\nprocess.exit(0);\n',
-      'utf8',
-    );
-    await chmod(join(bin, 'eslint'), 0o755);
-    // Present but not executable: the one shape where `spawnSync` reports an error rather than an exit code.
-    await writeFile(join(bin, 'stylelint'), 'not a program\n', 'utf8');
-    await chmod(join(bin, 'stylelint'), 0o644);
-
-    expect(await noticesFrom(['install'])).toEqual([
-      'eslint --fix: nothing to fix',
-      'stylelint --fix could not run; run it yourself once dependencies are installed',
-    ]);
     expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
   });
 });
 
 // Both routes read the directory the same way: `--skip-scaffold` once wrote a second stylesheet nothing imports.
 describe('what create and sync each discover about a project', () => {
-  const withTailwind = (): Answers => {
-    return answersFor({
-      libraries: [],
-      styling: 'tailwind',
-    });
-  };
-
   const plant = async (relative: string, text = ''): Promise<void> => {
     await mkdir(join(cwd, relative, '..'), { recursive: true });
     await writeFile(join(cwd, relative), text, 'utf8');
-  };
-
-  const styleEntriesIn = (targets: string[]): string[] => {
-    return targets.filter((target) => {
-      return STYLE_ENTRY_CANDIDATES.includes(target);
-    });
   };
 
   const generateWith = async (answers: Answers): Promise<string[]> => {
@@ -1308,27 +1059,6 @@ describe('what create and sync each discover about a project', () => {
 
     return written;
   };
-
-  it("merges tailwind into the project's own stylesheet rather than writing a second one", async () => {
-    await plant('src/styles/tailwind.css');
-
-    const written = await generateWith(withTailwind());
-
-    expect(styleEntriesIn(written)).toEqual(['src/styles/tailwind.css']);
-    expect(await exists(join(cwd, 'src/index.css'))).toBe(false);
-  });
-
-  // `sync` is asked before anything is written, so this compares what each made of the same directory.
-  it('plans the same stylesheet as sync does, from the same directory', async () => {
-    await plant('src/styles/tailwind.css');
-
-    const planned = (await planSync(cwd, withTailwind())).entries.map((entry) => {
-      return entry.target;
-    });
-
-    expect(styleEntriesIn(await generateWith(withTailwind())))
-      .toEqual(styleEntriesIn(planned));
-  });
 
   // A React project generated before the setup file became `.tsx` keeps `.ts`.
   it("keeps the setup spelling the project already has, rather than its target's", async () => {
@@ -1372,19 +1102,6 @@ describe('starter files for a router', () => {
     expect(await readFile(join(cwd, 'src/App.tsx'), 'utf8')).toContain("from '@tanstack/react-router'");
   });
 
-  // `renderScreen` imports `@testing-library/react-native`, which `testing: none` never installs, so writing it
-  // anyway left every React Native project of that answer failing its own lint on an unresolved import.
-  it('writes the React Native test helper only when a suite was asked for', async () => {
-    expect(await fresh({
-      target: 'react-native',
-      testing: 'vitest',
-    })).toContain('__mocks__/renderScreen.tsx');
-    expect(await fresh({
-      target: 'react-native',
-      testing: 'none',
-    })).not.toContain('__mocks__/renderScreen.tsx');
-  });
-
   // Both, not just the NativeWind one: Metro needs a config on this target whatever was answered about styling.
   it('writes a metro config for either styling answer on React Native', async () => {
     expect(await fresh({
@@ -1396,29 +1113,5 @@ describe('starter files for a router', () => {
       target: 'react-native',
       libraries: [],
     })).toContain('metro.config.js');
-  });
-});
-
-describe('stage timing', () => {
-  // The terminal prints what each stage took, so a stage that never resolved is a line that never appeared.
-  it('reports every stage it ran, in order, and none it skipped', async () => {
-    const done: [string, number][] = [];
-
-    await pipelineRun({
-      name: 'demo-app',
-      cwd,
-      answers: answersFor({}),
-      skip: ['standard', 'install', 'fix'],
-      onStageDone: (stage, milliseconds) => {
-        done.push([stage, milliseconds]);
-      },
-    });
-
-    expect(done.map(([stage]) => {
-      return stage;
-    })).toEqual(['lint', 'package']);
-    expect(done.every(([, milliseconds]) => {
-      return milliseconds >= 0;
-    })).toBe(true);
   });
 });

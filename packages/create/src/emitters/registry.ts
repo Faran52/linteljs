@@ -115,10 +115,7 @@ export const buildArtifacts = (
    * owns outright, which is what a later `sync` may remove once an answer stops asking for it. Computed here rather
    * than by an emitter, since an emitter would have to leave itself out of its own input.
    */
-  return [...artifacts, {
-    ...emitted('standard', MANAGED_PATH, managedRecord(removableIn(artifacts))),
-    removable: true,
-  }];
+  return [...artifacts, emitted('standard', MANAGED_PATH, managedRecord(removableIn(artifacts)))];
 };
 
 /**

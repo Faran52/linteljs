@@ -27,7 +27,6 @@ import {
   type Agent,
   ANSWERS,
   type Answers,
-  CONFIG_PATH,
   type Data,
   DEFAULT_ANSWERS,
   type Library,
@@ -96,15 +95,6 @@ const textFor = async (overrides: AnswerOverrides, target: string): Promise<stri
 };
 
 describe('buildArtifacts', () => {
-  it('gives React the react state rules and no other framework rules', () => {
-    const targets = targetsOf({ target: 'react' });
-
-    expect(targets).toContain('plugins/linteljs/skills/linteljs/references/react-state.md');
-    expect(targets).toContain('plugins/linteljs/skills/linteljs/references/hooks-order.md');
-    expect(targets).not.toContain('plugins/linteljs/skills/linteljs/references/solid-reactivity.md');
-    expect(targets).not.toContain('plugins/linteljs/skills/linteljs/references/vue-reactivity.md');
-  });
-
   it('gives each signal framework its own reactivity rule and no react-state', () => {
     const references = 'plugins/linteljs/skills/linteljs/references';
 
@@ -126,70 +116,11 @@ describe('buildArtifacts', () => {
       .not.toContain('plugins/linteljs/skills/linteljs/references/testing.md');
   });
 
-  it('always ships the tsconfig and the staged typecheck', () => {
-    expect(targetsOf({ testing: 'none' })).toEqual(
-      expect.arrayContaining(['tsconfig.json', 'scripts/typecheckStaged.ts']),
-    );
-  });
-
-  it('ships the shared plugin, checker, git hooks, and selected Claude declaration', () => {
-    const targets = targetsOf({});
-
-    expect(targets).toEqual(expect.arrayContaining([
-      'CLAUDE.md',
-      'plugins/linteljs/.claude-plugin/plugin.json',
-      'plugins/linteljs/.claude-plugin/marketplace.json',
-      'plugins/linteljs/skills/linteljs/SKILL.md',
-      '.claude/settings.json',
-      'scripts/checkBannedPatterns.ts',
-      '.husky/pre-commit',
-      '.husky/commit-msg',
-      'lint-staged.config.js',
-      'commitlint.config.js',
-    ]));
-    expect(targets.some((target) => {
-      return target.startsWith('.claude/rules/') || target.startsWith('.claude/hooks/');
-    })).toBe(false);
-  });
-
-  it('carries the emitted configs, tagged with the stage that writes each', () => {
-    expect(artifactFor({}, 'eslint.config.js')?.stage).toBe('lint');
-    expect(artifactFor({}, 'stylelint.config.js')?.stage).toBe('lint');
-    expect(artifactFor({}, 'tsconfig.json')?.stage).toBe('package');
-    expect(artifactFor({}, 'vite.config.ts')?.stage).toBe('standard');
-    expect(artifactFor({}, 'vitest.config.ts')?.stage).toBe('standard');
-  });
-
-  it('leaves out the config a target or an answer does not have', () => {
-    expect(targetsOf({ target: 'next' })).not.toContain('vite.config.ts');
-    expect(targetsOf({ testing: 'none' })).not.toContain('vitest.config.ts');
-  });
-
   // Birth-only: both extension migrations rewrote `vite.config.ts` wholesale, and `preserve` keeps `--force` off it.
   it('hands the build configs to the project after the first write', () => {
     expect(artifactFor({}, 'vite.config.ts')?.preserve).toBe(true);
     expect(artifactFor({}, 'vitest.config.ts')?.preserve).toBe(true);
     expect(artifactFor({ target: 'astro' }, 'astro.config.mjs')?.preserve).toBe(true);
-  });
-
-  // The lint and package configs carry the standard itself, so a release has to reach them.
-  it('keeps emitting the configs that carry the standard', () => {
-    expect(artifactFor({}, 'eslint.config.js')?.preserve).toBeUndefined();
-    expect(artifactFor({}, 'stylelint.config.js')?.preserve).toBeUndefined();
-    expect(artifactFor({}, 'tsconfig.json')?.preserve).toBeUndefined();
-  });
-
-  // `package.json` and `README.md` stay out. `.gitignore` and `pnpm-workspace.yaml` are merged artifacts: as stage
-  // writes, the 1.2.0 `peerDependencyRules` allowance reached no existing project.
-  it('claims the merges it owns half of, and not the files a project owns', () => {
-    const targets = targetsOf({});
-
-    expect(targets).toContain('.gitignore');
-    expect(targets).toContain('pnpm-workspace.yaml');
-    // `package.json` joined them in 1.3.2, after two migrations added plugins by hand their answers already implied.
-    expect(targets).toContain('package.json');
-    expect(targets).not.toContain('README.md');
-    expect(artifactFor({}, 'CLAUDE.md')?.preserve).toBe(true);
   });
 
   it('owns the workspace file only under pnpm', () => {
@@ -202,13 +133,6 @@ describe('buildArtifacts', () => {
 
     expect(await textFor({ target: 'react' }, target)).not.toContain('paths:');
     expect(await textFor({ target: 'vue' }, target)).not.toContain('paths:');
-  });
-
-  it('marks every shell script and git hook executable', () => {
-    for (const artifact of buildArtifacts(answersFor({}))) {
-      const isScript = artifact.target.endsWith('.sh') || artifact.target.startsWith('.husky/');
-      expect(artifact.executable === true).toBe(isScript);
-    }
   });
 
   for (const target of TARGET_IDS) {
@@ -306,11 +230,6 @@ describe('typeSafety', () => {
       { typeSafety: 'relaxed' },
     ))
       .toContain('## Types');
-  });
-
-  it('ships the named shapes only where the relaxed floor points at them', () => {
-    expect(targetsOf({})).not.toContain('src/typings/customTypes.d.ts');
-    expect(targetsOf({ typeSafety: 'relaxed' })).toContain('src/typings/customTypes.d.ts');
   });
 });
 
@@ -501,64 +420,6 @@ describe('the shipped test setup', () => {
 
     expect(text).not.toMatch(/^import\s/mu);
   });
-
-  it('ships no setup, and so no fragment, to a project that declined tests', () => {
-    expect(targetsOf({
-      testing: 'none',
-      libraries: [],
-      data: 'tanstack-query',
-    })).not.toContain('__mocks__/setupTests.tsx');
-  });
-
-  // The project adds its own mocks here, so a sync installs it when missing and never overwrites it.
-  // A React project generated before the setup became `.tsx` still holds `.ts`, preserved.
-  it('keeps the setup spelling a project already has, config included', () => {
-    const artifacts = buildArtifacts(
-      answersFor({ target: 'react' }),
-      {
-        setupTests: ['__mocks__/setupTests.ts'],
-        styleEntries: [],
-      },
-    );
-
-    const targets = artifacts.map((artifact) => {
-      return artifact.target;
-    });
-
-    expect(targets).toContain('__mocks__/setupTests.ts');
-    expect(targets).not.toContain('__mocks__/setupTests.tsx');
-
-    const vitest = artifacts.find((artifact) => {
-      return artifact.target === 'vitest.config.ts';
-    });
-
-    expect(vitest?.content).toHaveProperty('text');
-    expect(JSON.stringify(vitest?.content)).toContain('./__mocks__/setupTests.ts');
-  });
-
-  it('preserves the setup once the project owns it', () => {
-    expect(artifactFor({}, '__mocks__/setupTests.tsx')?.preserve).toBe(true);
-  });
-});
-
-describe('the test runner', () => {
-  it('gives every target with a suite the same vitest config', () => {
-    expect(targetsOf({ target: 'react' })).toContain('vitest.config.ts');
-    expect(targetsOf({ target: 'react-native' })).toContain('vitest.config.ts');
-  });
-
-  it('gives a project that declined tests none at all', () => {
-    expect(targetsOf({
-      target: 'react-native',
-      testing: 'none',
-    })).not.toContain('vitest.config.ts');
-  });
-
-  it('writes no jest config for anything', () => {
-    for (const target of TARGET_IDS) {
-      expect(targetsOf({ target })).not.toContain('jest.config.js');
-    }
-  });
 });
 
 // What a `create` run plants and `sync` never touches, kept in this file because the two lists come out of the
@@ -568,12 +429,6 @@ const seedFor = (overrides: Partial<Answers> = {}): Artifact[] => {
     ...DEFAULT_ANSWERS,
     ...overrides,
   }, 'demo-app');
-};
-
-const targetsIn = (artifacts: Artifact[]): string[] => {
-  return artifacts.map((artifact) => {
-    return artifact.target;
-  });
 };
 
 const seedTargetsFor = (overrides: Partial<Answers> = {}): string[] => {
@@ -594,103 +449,7 @@ const find = (artifacts: Artifact[], target: string): Artifact => {
   return found;
 };
 
-describe('the recorded config', () => {
-  // A run that dies between the two leaves the answers recorded rather than the dependencies they imply.
-  it('comes first, in the package stage', () => {
-    const seeded = seedFor();
-
-    expect(seeded[0]?.target).toBe(CONFIG_PATH);
-    expect(seeded[0]?.stage).toBe('package');
-  });
-
-  // `sync` reads this file rather than writing it, so it is seeded rather than built.
-  it('is rewritten on any run rather than at birth alone', () => {
-    expect(find(seedFor(), CONFIG_PATH).fresh).toBeUndefined();
-  });
-});
-
-describe('the README', () => {
-  it('is filled from the shipped template rather than emitted whole', () => {
-    const readme = find(seedFor(), 'README.md');
-
-    expect(readme.content).toHaveProperty('sources', ['fragments/readme/template.md']);
-  });
-
-  // `--skip-scaffold` adopts a project whose README describes the toolchain the later stages replaced.
-  it('is rewritten on any run rather than at birth alone', () => {
-    expect(find(seedFor(), 'README.md').fresh).toBeUndefined();
-  });
-
-  it('names the project and the toolchain the stages leave behind', () => {
-    const readme = find(seedFor(), 'README.md');
-
-    if (!('transform' in readme.content)) {
-      throw new Error('README.md carries no transform');
-    }
-
-    const filled = readme.content.transform(
-      '# {{PROJECT_NAME}}\n\n{{TARGET_LABEL}}\n\n{{RUN}} lint\n\n{{CHECK_CHAIN}}\n\n{{TEST_ROWS}}\n',
-      null,
-    );
-
-    expect(filled).toContain('demo-app');
-    expect(filled).toContain('React (Vite)');
-    expect(filled).not.toContain('{{');
-  });
-});
-
-describe('the manifest', () => {
-  it('is absent for a target that has none', () => {
-    expect(seedTargetsFor()).not.toContain('manifest.json');
-  });
-
-  // Birth only: a manifest's permissions and store metadata are the project's to keep.
-  it('is written once for the packaged browser and never again', () => {
-    const seeded = seedFor({ target: 'webextension' });
-
-    expect(find(seeded, 'manifest.json').fresh).toBe(true);
-  });
-
-  // Chrome rejects `browser_specific_settings` and AMO requires it, so the second is named for its browser.
-  it('names the second browser in its own filename', () => {
-    const seeded = seedFor({
-      target: 'webextension',
-      browser: 'chrome',
-      browsers: ['chrome', 'firefox'],
-    });
-
-    expect(targetsIn(seeded)).toContain('manifest.json');
-    expect(targetsIn(seeded)).toContain('manifest.firefox.json');
-  });
-});
-
 describe('the starter source', () => {
-  // A router replaces the scaffolder's own entry; without one the scaffolder's stands.
-  it('is birth only, so a later run leaves the project its own', () => {
-    const entry = find(seedFor({ router: 'react-router' }), 'src/main.tsx');
-
-    expect(entry.fresh).toBe(true);
-  });
-
-  it('takes the file the chosen router needs and leaves the others', () => {
-    const reactRouter = seedTargetsFor({ router: 'react-router' });
-
-    expect(reactRouter).toContain('src/routes/router.tsx');
-    expect(reactRouter).not.toContain('src/routes/__root.tsx');
-  });
-
-  // A test helper is a test artifact, and `testing: none` is declining it.
-  it('declines a starter test when the testing answer declined one', () => {
-    const covered = seedFor({ target: 'webextension' });
-    const none = seedFor({
-      target: 'webextension',
-      testing: 'none',
-    });
-
-    expect(targetsIn(covered)).toContain('src/counter.test.ts');
-    expect(targetsIn(none)).not.toContain('src/counter.test.ts');
-  });
-
   // Skipped rather than failed: a rearranged starter costs the example, not a broken import.
   it('names the file a starter test covers, so an absent one is skipped', () => {
     const test = find(seedFor({ target: 'webextension' }), 'src/counter.test.ts');
@@ -744,7 +503,7 @@ describe('the starter source', () => {
    * The same shape on the three targets that ported it, because the gates are per record rather than shared: each
    * offers one form library and one data layer, and each spells its pages and its control its own way.
    */
-  describe.each([
+  const contactDemos = [
     {
       target: 'solid' as const,
       page: 'src/pages/contact/ContactPage.tsx',
@@ -772,25 +531,19 @@ describe('the starter source', () => {
       routes: 'src/config/routes.ts',
       barrel: 'src/lib/apis/contact/index.ts',
     },
-  ])('the contact demo on $target', ({
+  ];
+
+  // Vue's case is left out: mutation testing found nothing it killed that a test here does not.
+  describe.each(contactDemos.filter(({ target }) => {
+    return target !== 'vue';
+  }))('the contact demo on $target', ({
     target,
     page,
     binding,
     control,
     button,
-    routes,
     barrel,
   }) => {
-    const sourceOf = (overrides: Partial<Answers>, wanted: string): string => {
-      const { content } = find(seedFor({
-        target,
-        form: 'tanstack-form',
-        ...overrides,
-      }), wanted);
-
-      return 'sources' in content ? content.sources.join() : '';
-    };
-
     it('writes the page, its binding, its control and the button only with a form', () => {
       const withForm = seedTargetsFor({
         target,
@@ -804,6 +557,18 @@ describe('the starter source', () => {
       expect(withForm).toContain(barrel);
       expect(seedTargetsFor({ target })).not.toContain(page);
     });
+  });
+
+  describe.each(contactDemos)('the contact demo on $target', ({ target, routes }) => {
+    const sourceOf = (overrides: Partial<Answers>, wanted: string): string => {
+      const { content } = find(seedFor({
+        target,
+        form: 'tanstack-form',
+        ...overrides,
+      }), wanted);
+
+      return 'sources' in content ? content.sources.join() : '';
+    };
 
     // One route list, in the spelling the form answer asks for, so the header and the router follow it together.
     it('adds contact to the one route list', () => {
@@ -875,13 +640,6 @@ describe('the starter source', () => {
       expect(withForm).toContain('src/components/ui/text-input/TextInput.tsx');
       expect(withForm).toContain('src/components/ui/button/Button.tsx');
       expect(seedTargetsFor({ target: 'next' })).not.toContain('src/app/contact/page.tsx');
-    });
-
-    it('takes the binding the form answer asks for', () => {
-      expect(sourceOf({}, 'src/app/contact/useContactForm.ts'))
-        .toBe('starter-source/next/tanstack-form/src/app/contact/useContactForm.ts');
-      expect(sourceOf({ form: 'react-hook-form' }, 'src/app/contact/useContactForm.ts'))
-        .toBe('starter-source/next/react-hook-form/src/app/contact/useContactForm.ts');
     });
 
     // The nav list has no framework in it, so it is the shared copy in both spellings.

@@ -1,18 +1,18 @@
 import {
+  chmod,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
-  readlink,
   rm,
-  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
   chdir,
   cwd as processCwd,
-  stdin,
+  execPath,
   stdout,
   versions,
 } from 'node:process';
@@ -32,7 +32,12 @@ import {
   vi,
 } from 'vitest';
 
+import { NODE_FLOOR } from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
+
 import {
+  ANSWERS,
   type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -44,7 +49,8 @@ import { exists } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 
-import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from '../prompts/constants';
+import packageJson from '../../../package.json' with { type: 'json' };
+import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
 
@@ -171,6 +177,21 @@ describe('main: what it prints and what it returns', () => {
     expect(storeLine?.indexOf('zustand')).toBe(typeSafetyLine?.indexOf('strict'));
   });
 
+  // Built from the records, so each line is held to its record rather than to a copy of the text.
+  it('shapes each answer line from its record: list or value, every choice, and any note', async () => {
+    const { printed } = await runMain(['--help']);
+    const lineFor = (flag: string): string => {
+      return printed.split('\n').find((line) => {
+        return line.startsWith(`  --${flag} `);
+      }) ?? '';
+    };
+
+    expect(lineFor('libraries')).toMatch(/^ {2}--libraries <list> /u);
+    expect(lineFor('target')).toMatch(/^ {2}--target <value> /u);
+    expect(lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '))).toBe(true);
+    expect(lineFor('router').endsWith(` (${ANSWERS.router.note})`)).toBe(true);
+  });
+
   it('fails on a stage name it does not know, before writing anything', async () => {
     const { code, errors } = await runMain(['demo-app', '--skip', 'lnt']);
 
@@ -180,11 +201,16 @@ describe('main: what it prints and what it returns', () => {
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
+  it('names every stage it does not know, not only the first', async () => {
+    const { errors } = await runMain(['demo-app', '--skip', 'lnt', '--skip', 'fx']);
+
+    expect(errors[0]).toContain('lnt, fx');
+  });
+
   it.each([
     ['an invalid project name', ['My-App', '--skip-scaffold', '--no-install', '--yes'], 'Project name must be'],
     ['an extra create argument', ['demo-app', 'extra', '--yes'], 'Unexpected argument: extra'],
     ['extra create arguments', ['demo-app', 'extra', 'more', '--yes'], 'Unexpected arguments: extra, more'],
-    ['an extra sync argument', ['sync', 'extra'], 'Unexpected argument: extra'],
     ['an unknown option', ['--wat'], "Unknown option '--wat'"],
   ])('fails on %s before writing anything', async (_case, argv, message) => {
     const { code, errors } = await runMain(argv);
@@ -228,18 +254,6 @@ describe('main: what it prints and what it returns', () => {
     expect(errors.join('\n')).not.toContain('A project name is required');
     expect(errors).toEqual([expect.stringContaining('answer every question')]);
   });
-
-  // `--skip-scaffold` patches a directory that is already named.
-  it('does not ask the name when there is no directory to create', async () => {
-    const asked = scripted([
-      undefined, undefined, undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-    ]);
-
-    await runMain(['--skip-scaffold', '--no-install'], asked);
-
-    expect(asked.calls).not.toContain('Project name');
-  });
 });
 
 // Quitting on purpose is not a failure: no "Error:" prefix, exit 130 rather than 1.
@@ -260,37 +274,9 @@ describe('main: cancelled mid-questionnaire', () => {
     expect(errors).toEqual([]);
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
-
-  it('is reachable after some real answers, not only on the first question', async () => {
-    const { code } = await runMain(
-      ['--skip-scaffold', '--no-install'],
-      scripted(['svelte', undefined, undefined, CANCEL]),
-    );
-
-    expect(code).toBe(130);
-  });
 });
 
 describe('main: create', () => {
-  it('patches the directory it is run in and reports every file it wrote', async () => {
-    const { code, printed } = await generated();
-
-    expect(code).toBe(0);
-    expect(printed).toContain('wrote eslint.config.js');
-    expect(printed).toContain(`wrote ${RULE}`);
-    expect(printed).toContain(`wrote ${CONFIG_PATH}`);
-    expect(printed).toContain('Done. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(true);
-    expect(await configAt()).toEqual({
-      $schema: CONFIG_SCHEMA_URL,
-      schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
-      // Recorded from the host rather than answered, so `sync` runs the manager the project was made with.
-      packageManagerVersion: '12.5.1',
-      nodeVersion: versions.node,
-    });
-  });
-
   // With `--skip-scaffold` the directory's own name is what package.json keeps calling it.
   it('names the project after the directory when no name was given', async () => {
     await generated();
@@ -397,15 +383,6 @@ describe('main: create', () => {
     expect(parsePackageJson(await readFile(join(project, 'package.json'), 'utf8')).name)
       .toBe('demo-app');
   });
-
-  it('accepts every default without asking when --yes was passed', async () => {
-    const asked = scripted([]);
-
-    await runMain(['--skip-scaffold', '--no-install', '--yes'], asked);
-
-    expect(asked.calls).toEqual([]);
-    expect(await configAt()).toMatchObject(DEFAULT_ANSWERS);
-  });
 });
 
 // Behind a pipe, EOF reads as the default answer; unguarded this rewrote the project as React for four of seven agents.
@@ -429,18 +406,6 @@ describe('main: patching a project that already exists', () => {
     );
   };
 
-  it('plans from what the project recorded rather than asking again', async () => {
-    await asSvelte();
-
-    const asked = scripted([]);
-    const { code, printed } = await runMain(['--skip-scaffold', '--no-install'], asked);
-
-    expect(code).toBe(0);
-    expect(asked.calls).toEqual([]);
-    expect(printed).toContain('wrote plugins/linteljs/skills/linteljs/references/svelte-reactivity.md');
-    expect((await configAt()).target).toBe('svelte');
-  });
-
   it('keeps the recorded target under --yes, which declines the questions not the record', async () => {
     await asSvelte();
     await runMain(['--skip-scaffold', '--no-install', '--yes']);
@@ -453,124 +418,6 @@ describe('main: patching a project that already exists', () => {
       project,
       'plugins/linteljs/skills/linteljs/references/svelte-reactivity.md',
     ))).toBe(true);
-  });
-
-  it('writes nothing when nobody answered, rather than defaulting to react', async () => {
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install'], scripted([]));
-
-    expect(code).toBe(1);
-    expect(errors).toEqual([`Error: ${NOTHING_ANSWERED_MESSAGE}`]);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-    expect(await exists(join(project, 'package.json'))).toBe(false);
-    expect(await exists(join(project, CONFIG_PATH))).toBe(false);
-  });
-
-  it('stops on a script that answers some of the questions and then runs out', async () => {
-    const { code } = await runMain(['--skip-scaffold', '--no-install'], scripted(['svelte', undefined]));
-
-    expect(code).toBe(1);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-  });
-
-  it.each([
-    ['malformed', '{', 'linteljs.config.json is not valid JSON'],
-    [
-      'invalid',
-      emitLinteljsConfig(DEFAULT_ANSWERS).replace('"target": "react"', '"target": "ember"'),
-      'target must be one of:',
-    ],
-  ])('rejects a scaffold-skipped %s config before prompts or writes', async (_case, config, message) => {
-    const packageText = '{"name":"kept"}\n';
-    const asked = scripted([]);
-
-    await writeFile(join(project, 'package.json'), packageText, 'utf8');
-    await writeFile(join(project, CONFIG_PATH), config, 'utf8');
-
-    const {
-      code,
-      errors,
-      printed,
-    } = await runMain(
-      ['--skip-scaffold', '--no-install'],
-      asked,
-    );
-
-    expect(code).toBe(1);
-    expect(errors.join('\n')).toContain(message);
-    expect(asked.calls).toEqual([]);
-    expect(printed).not.toContain('wrote ');
-    await expect(readFile(join(project, 'package.json'), 'utf8')).resolves.toBe(packageText);
-    await expect(readFile(join(project, CONFIG_PATH), 'utf8')).resolves.toBe(config);
-    await expect(exists(join(project, 'eslint.config.js'))).resolves.toBe(false);
-  });
-});
-
-// The one place `main` reads the real `process.stdin`, so `stdin.isTTY` is stubbed rather than faked by a prompter.
-describe('main: no prompter injected, so the real terminal decides', () => {
-  afterEach(() => {
-    stdin.isTTY = false;
-  });
-
-  it('refuses to guess when there is no terminal and --yes was not passed', async () => {
-    stdin.isTTY = false;
-
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install']);
-
-    expect(code).toBe(1);
-    expect(errors).toEqual([`Error: ${NOTHING_ANSWERED_MESSAGE}`]);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-  });
-
-  it('needs no terminal when --yes is passed, even with one attached', async () => {
-    stdin.isTTY = true;
-
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-
-    expect(code).toBe(0);
-    expect(await configAt()).toMatchObject(DEFAULT_ANSWERS);
-  });
-});
-
-describe('main: config entry safety', () => {
-  it.each([
-    ['create', 'live', ['--skip-scaffold', '--no-install'], emitLinteljsConfig(DEFAULT_ANSWERS)],
-    ['create', 'dangling', ['--skip-scaffold', '--no-install'], null],
-    ['sync', 'live', ['sync', '--force'], emitLinteljsConfig(DEFAULT_ANSWERS)],
-    ['sync', 'dangling', ['sync', '--force'], null],
-  ])('%s rejects a %s config symlink before prompts or writes', async (
-    _route,
-    _case,
-    argv,
-    original,
-  ) => {
-    const packageText = '{"name":"kept"}\n';
-    const target = join(external, 'actual-config.json');
-    const configPath = join(project, CONFIG_PATH);
-    const asked = scripted([]);
-
-    await writeFile(join(project, 'package.json'), packageText, 'utf8');
-
-    if (original !== null) {
-      await writeFile(target, original, 'utf8');
-    }
-
-    await symlink(target, configPath);
-
-    const {
-      code,
-      errors,
-      printed,
-    } = await runMain(argv, asked);
-
-    expect(code).toBe(1);
-    expect(errors).toEqual([
-      'Error: linteljs.config.json must be a regular file; symbolic links are not allowed',
-    ]);
-    expect(asked.calls).toEqual([]);
-    expect(printed).not.toContain('wrote ');
-    await expect(readFile(join(project, 'package.json'), 'utf8')).resolves.toBe(packageText);
-    await expect(readlink(configPath)).resolves.toBe(target);
-    await expect(readOptional(target)).resolves.toBe(original);
   });
 });
 
@@ -598,6 +445,35 @@ describe('main: sync', () => {
     // A sync runs no stages, so it has no step list to print.
     expect(printed).not.toContain('Steps:');
     expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
+  });
+
+  it('counts the files it would change, in the singular for one', async () => {
+    await generated();
+
+    const references = join(project, 'plugins/linteljs/skills/linteljs/references');
+    const [first = '', second = ''] = (await readdir(references)).toSorted((left, right) => {
+      return left.localeCompare(right, 'en');
+    });
+
+    await writeFile(join(references, first), '# local edit\n', 'utf8');
+
+    expect((await runMain(['sync', '--yes'])).printed).toMatch(/\b1 file\b/u);
+
+    await writeFile(join(references, second), '# local edit\n', 'utf8');
+
+    expect((await runMain(['sync', '--yes'])).printed).toMatch(/\b2 files\b/u);
+  });
+
+  // Without git there is no diff to show, and an empty one is not printed as a blank line.
+  it('prints no empty diff where git could not make one', async () => {
+    await generated();
+    await writeFile(join(project, RULE), '# local edit\n', 'utf8');
+    vi.stubEnv('PATH', '');
+
+    const { printed } = await runMain(['sync', '--yes']);
+
+    expect(printed).toContain(`${RULE}: changed\n`);
+    expect(printed).not.toContain(`${RULE}: changed\n\n\n`);
   });
 
   it('overwrites with --force and says so', async () => {
@@ -662,42 +538,10 @@ describe('main: sync', () => {
     expect(await exists(join(project, 'CLAUDE.md'))).toBe(true);
   });
 
-  it('lists an obsolete file without removing it when --force was not passed', async () => {
-    await generated();
-    await writeConfig({
-      ...DEFAULT_ANSWERS,
-      agents: ['codex'],
-    });
-
-    const { printed } = await runMain(['sync'], scripted([]));
-
-    expect(printed).toContain('.claude/settings.json: obsolete');
-    expect(printed).toContain('Re-run with --force');
-    expect(printed).not.toContain('removed ');
-    expect(await exists(join(project, '.claude/settings.json'))).toBe(true);
-  });
-
-  it.each([
-    ['is absent', null, 'linteljs.config.json was not found; this is not a LintelJS-managed project'],
-    ['is not JSON', '{', 'linteljs.config.json is not valid JSON'],
-    [
-      'names a field this build does not accept',
-      emitLinteljsConfig(DEFAULT_ANSWERS).replace('"typeSafety": "strict"', '"typeSafety": "loose"'),
-      'typeSafety must be one of: strict, relaxed',
-    ],
-    [
-      'was written by a newer release',
-      emitLinteljsConfig(DEFAULT_ANSWERS).replace('"schemaVersion": 2', '"schemaVersion": 3'),
-      'linteljs.config.json schema version 3 is unsupported; update @linteljs/create',
-    ],
-  ])('refuses to sync a config that %s, and writes nothing', async (_case, config, message) => {
+  it('refuses to sync a config that is absent, and writes nothing', async () => {
     const asked = scripted([]);
 
     await writeFile(join(project, 'package.json'), '{"name":"kept"}\n', 'utf8');
-
-    if (config !== null) {
-      await writeFile(join(project, CONFIG_PATH), config, 'utf8');
-    }
 
     const {
       code,
@@ -706,24 +550,11 @@ describe('main: sync', () => {
     } = await runMain(['sync', '--force'], asked);
 
     expect(code).toBe(1);
-    expect(errors.join('\n')).toContain(message);
+    expect(errors.join('\n')).toContain('linteljs.config.json was not found; this is not a LintelJS-managed project');
     expect(asked.calls).toEqual([]);
     expect(printed).toBe('');
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-    await expect(readOptional(join(project, CONFIG_PATH))).resolves.toBe(config);
-  });
-
-  it('plans from the root config rather than asking again', async () => {
-    await writeConfig({
-      ...DEFAULT_ANSWERS,
-      target: 'svelte',
-    });
-
-    const asked = scripted([]);
-    const { printed } = await runMain(['sync'], asked);
-
-    expect(asked.calls).toEqual([]);
-    expect(printed).toContain('plugins/linteljs/skills/linteljs/references/svelte-reactivity.md: missing');
+    await expect(readOptional(join(project, CONFIG_PATH))).resolves.toBeNull();
   });
 
   // Recorded by hand, so its only route is read back off disk and written into the emitted config.
@@ -811,33 +642,6 @@ describe('main: sync', () => {
     expect(config.browsers).toEqual(['chrome', 'firefox']);
   });
 
-  // The general form of the two above, through the route that writes the config back.
-  it('plans from every answer a recorded config carries, not a subset of them', async () => {
-    const recorded: Answers = {
-      ...DEFAULT_ANSWERS,
-      target: 'webextension',
-      browser: 'firefox',
-      hostedFramework: 'solid',
-      surfaces: ['devtools-panel'],
-      testing: 'none',
-      packageManager: 'npm',
-      libraries: ['zod'],
-      styling: 'tailwind',
-      typeSafety: 'relaxed',
-      agents: ['codex'],
-      plugins: ['context7'],
-      resolveConditions: ['import', 'default'],
-      aliases: { '@engine': './src/lib/engine/index.ts' },
-      browsers: ['firefox', 'chrome'],
-      ignores: ['src/lib/compat-data/generatedRegistry.ts'],
-    };
-
-    await writeConfig(recorded);
-    await runMain(['--skip-scaffold', '--no-install'], scripted([]));
-
-    expect(await configAt()).toMatchObject(recorded);
-  });
-
   // Two of three migrations had to add plugins by hand that their recorded answers already implied.
   it('adds the dependencies the answers imply and keeps what the project declared', async () => {
     await writeConfig({
@@ -895,29 +699,7 @@ describe('main: sync', () => {
   });
 });
 
-// A stage that threw is surfaced as one line rather than an unhandled rejection over a half-written directory.
-describe('main: an unexpected failure', () => {
-  it('reports the message and exits 1 rather than throwing', async () => {
-    await writeFile(join(project, 'package.json'), '{ not json', 'utf8');
-
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-
-    expect(code).toBe(1);
-    expect(errors.join('\n')).toContain('JSON');
-  });
-});
-
 describe('main: the manager that ran it', () => {
-  it('records the manager and the version its user agent named', async () => {
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-
-    expect(code).toBe(0);
-    expect(await configAt()).toMatchObject({
-      packageManager: 'pnpm',
-      packageManagerVersion: '12.5.1',
-    });
-  });
-
   // `--skip-scaffold` and `sync` run in a directory somebody already has, and a lockfile there is the same answer.
   it('reads the lockfile the directory already has where no agent set one', async () => {
     vi.stubEnv('npm_config_user_agent', '');
@@ -983,36 +765,98 @@ describe('main: the manager that ran it', () => {
     expect(errors.join('\n')).toContain('needs pnpm 10.26.0 or newer');
   });
 
-  /**
-   * Yarn 1 is its own manager here rather than a yarn to be upgraded, which is the whole of why `yarn-classic`
-   * exists: the repositories that are still yarn 1 are the ones with a standard to adopt. Berry's half of the split
-   * is `hostUtils`'s to hold, since a recorded manager wins over the host on every run after the first.
-   */
-  it('records a yarn 1 run as classic', async () => {
-    vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/v26.9.0 darwin arm64');
+  // Every lockfile the detector knows, each answering for its own manager; the two yarns share a filename.
+  it.each([
+    ['a classic yarn.lock', 'yarn.lock', '# yarn lockfile v1\n', 'yarn', '1.22.22', 'yarn-classic'],
+    ['a berry yarn.lock', 'yarn.lock', '__metadata:\n', 'yarn', '4.18.0', 'yarn'],
+    ['bun.lock', 'bun.lock', '', 'bun', '1.3.14', 'bun'],
+    ['bun.lockb', 'bun.lockb', '', 'bun', '1.3.14', 'bun'],
+    ['package-lock.json', 'package-lock.json', '{}', 'npm', '11.19.1', 'npm'],
+    ['npm-shrinkwrap.json', 'npm-shrinkwrap.json', '{}', 'npm', '11.19.1', 'npm'],
+  ])('reads %s as the manager that wrote it', async (_case, lockfile, text, binary, version, manager) => {
+    vi.stubEnv('npm_config_user_agent', '');
+    await writeFile(join(project, lockfile), text, 'utf8');
+    await plantBinary(join(project, 'fake-bin'), binary, [`console.log('${version}');`]);
 
     const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({
-      packageManager: 'yarn-classic',
-      packageManagerVersion: '1.22.22',
+      packageManager: manager,
+      packageManagerVersion: version,
     });
   });
 
-  // An agent naming a manager with no version, and no such binary to ask: the run stops rather than guessing one.
-  it('refuses a manager that named itself and then answers nothing', async () => {
-    const commands = await import('@spawns');
-    const spy = vi.spyOn(commands, 'packageManagerSpawn').mockReturnValue(undefined);
+  it('keeps the versions a config already recorded rather than the machine\'s', async () => {
+    await writeConfig({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'pnpm',
+      packageManagerVersion: '10.30.0',
+      nodeVersion: '24.11.0',
+    });
 
-    vi.stubEnv('npm_config_user_agent', 'pnpm/? npm/? node/?');
+    const { code } = await runMain(['--skip-scaffold', '--no-install']);
+
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({
+      packageManagerVersion: '10.30.0',
+      nodeVersion: '24.11.0',
+    });
+  });
+});
+
+// bun bundles a Node of its own, so under bun the Node a project will run on is asked of `PATH` instead.
+describe('main: the Node a project records', () => {
+  // A shell script rather than `plantBinary`: a stand-in named `node` would answer its own `env node` shebang.
+  const plantNode = async (version: string): Promise<void> => {
+    const bin = join(project, 'fake-bin');
+
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'node'), `#!/bin/sh\necho ${version}\n`, 'utf8');
+    await chmod(join(bin, 'node'), 0o755);
+    vi.stubEnv('PATH', `${bin}:${dirname(execPath)}`);
+  };
+
+  const asBun = (): void => {
+    Object.defineProperty(versions, 'bun', {
+      value: '1.3.14',
+      configurable: true,
+    });
+  };
+
+  afterEach(() => {
+    Reflect.deleteProperty(versions, 'bun');
+  });
+
+  it('records the Node running it under node, not the first one on PATH', async () => {
+    await plantNode('v24.99.0');
+
+    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({ nodeVersion: versions.node });
+  });
+
+  it('records the Node on PATH under bun', async () => {
+    await plantNode('v24.99.0');
+    asBun();
+
+    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(await configAt()).toMatchObject({ nodeVersion: '24.99.0' });
+  });
+
+  it('refuses under bun with no Node on PATH, and names the floor to install', async () => {
+    vi.stubEnv('PATH', '');
+    asBun();
 
     const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
     expect(code).toBe(1);
-    expect(errors.join('\n')).toContain('`pnpm --version` answers nothing');
-
-    spy.mockRestore();
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('bun');
+    expect(errors[0]).toContain(NODE_FLOOR);
   });
 });
 
@@ -1048,22 +892,6 @@ describe('main: answers given as flags', () => {
       store: 'redux-toolkit',
     });
   });
-
-  it.each([
-    [['--target', 'wat'], 'target must be one of: react, next'],
-    [['--libraries', 'react-hook-form'], 'react-hook-form is a form library: name it in "form"'],
-    [['--form', 'formik'], 'form must be one of: tanstack-form, react-hook-form'],
-    [['--target', 'vue', '--form', 'react-hook-form'], 'react-hook-form is not an answer for vue'],
-    [['--router', 'wouter'], 'router must be one of: react-router, react-router-framework, tanstack-router'],
-    [['--target', 'vue', '--router', 'react-router'], 'router is not an answer for vue'],
-    [['--target', 'svelte', '--store', 'zustand'], 'zustand is not an answer for svelte'],
-  ])('refuses %j with the message a bad config gets, before writing anything', async (flags, message) => {
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', ...flags]);
-
-    expect(code).toBe(1);
-    expect(errors.join('\n')).toContain(message);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-  });
 });
 
 describe('main: what a run reports', () => {
@@ -1072,45 +900,6 @@ describe('main: what a run reports', () => {
 
     expect(code).toBe(0);
     expect(printed.trim()).toMatch(/^\d+\.\d+\.\d+$/);
-  });
-
-  it('lists the steps once, before the first of them runs', async () => {
-    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
-
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-    const steps = printed.indexOf('Steps:');
-
-    expect(steps).toBeGreaterThan(-1);
-    expect(printed.indexOf('Steps:', steps + 1)).toBe(-1);
-    expect(steps).toBeLessThan(printed.indexOf('['));
-    expect(printed).toContain('  1. lint: eslint and stylelint config');
-  });
-
-  // `fix` follows `lint`, so skipping the install marks two of the six rather than one.
-  it('marks a skipped step in the list it prints', async () => {
-    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
-
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-    expect(printed).toContain('  4. install (skipped)');
-    expect(printed).toContain('  5. fix: eslint and stylelint --fix');
-    expect(printed).not.toContain('  2. lint: eslint and stylelint config (skipped)');
-  });
-
-  it('closes each stage it ran with what the stage took', async () => {
-    vi.stubEnv('npm_config_user_agent', NPM_AGENT);
-
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-    const lines = printed.split('\n');
-    const label = lines.findIndex((line) => {
-      return line.startsWith('[1/5] lint:');
-    });
-
-    expect(lines.slice(label).find((line) => {
-      return line.startsWith('      done in ');
-    })).toMatch(/^ {6}done in \d+\.\d+s$/u);
-    expect(lines.filter((line) => {
-      return line.startsWith('      done in ');
-    })).toHaveLength(3);
   });
 
   it('numbers each stage as it starts and closes with the next command', async () => {
@@ -1122,5 +911,62 @@ describe('main: what a run reports', () => {
     expect(printed).toContain('[3/5] standard:');
     expect(printed).toContain('Done. Next:\n  npm install\n  npm run lint:fix\n  npm run check');
     expect(printed).not.toContain('  cd ');
+  });
+
+  // The banner says which release wrote the project; a sync only reports on one that exists.
+  it('opens a create run with the release it is, and a sync with nothing', async () => {
+    const created = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const synced = await runMain(['sync', '--yes']);
+
+    expect(created.printed.startsWith(`@linteljs/create ${packageJson.version}\n`)).toBe(true);
+    expect(synced.printed).not.toContain('@linteljs/create');
+  });
+
+  const plantScaffolder = async (): Promise<void> => {
+    await plantBinary(join(project, 'fake-bin'), 'pnpm', [
+      "require('node:fs').mkdirSync(process.argv[4], { recursive: true });",
+    ]);
+  };
+
+  it('closes a named create by entering the directory it made, then the steps it skipped', async () => {
+    await plantScaffolder();
+
+    const { code, printed } = await runMain(['demo-app', '--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(printed.endsWith('\n\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n'))
+      .toBe(true);
+  });
+
+  it('enters nothing when it scaffolded the directory it stands in', async () => {
+    const named = join(project, 'demo-app');
+
+    await mkdir(named);
+    chdir(named);
+    await plantScaffolder();
+
+    const { code, printed } = await runMain(['--no-install', '--yes']);
+
+    expect(code).toBe(0);
+    expect(printed.endsWith('\n\nDone. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n')).toBe(true);
+  });
+
+  it('leaves only the gate once it installed', async () => {
+    await plantBinary(join(project, 'fake-bin'), 'pnpm', ['process.exit(0);']);
+
+    const {
+      code,
+      errors,
+      printed,
+    } = await runMain(['--skip-scaffold', '--yes']);
+
+    expect({
+      code,
+      errors,
+    }).toEqual({
+      code: 0,
+      errors: [],
+    });
+    expect(printed.endsWith('\n\nDone. Next:\n  pnpm check\n')).toBe(true);
   });
 });

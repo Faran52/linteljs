@@ -8,6 +8,14 @@ import {
   vi,
 } from 'vitest';
 
+import { STAGES } from '@config/constants';
+
+import {
+  SPINNER_FRAMES,
+  SPINNER_INTERVAL,
+  STAGE_LABELS,
+} from '../constants';
+
 import {
   say,
   stageLine,
@@ -87,6 +95,11 @@ describe('stageLine', () => {
   it('carries the time alone where a stage neither wrote nor spoke', () => {
     expect(stageLine('fix', 0, '', 8400)).toBe('fix       8.4s');
   });
+
+  // The first frame of a stage that has done nothing yet: the padding is for a summary, so with none it goes.
+  it('is the stage name alone where there is nothing yet to say', () => {
+    expect(stageLine('fix', 0, '')).toBe('fix');
+  });
 });
 
 describe('stepsPlan', () => {
@@ -105,6 +118,28 @@ describe('stepsPlan', () => {
     expect(plan).toContain('  1. lint: eslint and stylelint config (skipped)');
     expect(plan).toContain('  5. fix: eslint and stylelint --fix (skipped)');
     expect(plan).not.toContain('lint: (skipped)');
+  });
+
+  // The end-to-end suite reads this block, so its shape is held line by line: a header, then one line per stage.
+  it('is a header and one numbered line per stage, none marked where nothing was skipped', () => {
+    expect(stepsPlan(OPTIONS).split('\n')).toEqual([
+      '',
+      'Steps:',
+      ...STAGES.map((stage, index) => {
+        return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}`;
+      }),
+    ]);
+  });
+
+  it('marks only the stages lint takes with it, not every stage after it', () => {
+    const plan = stepsPlan({
+      ...OPTIONS,
+      skip: ['lint'],
+    });
+
+    expect(plan.split('\n').filter((line) => {
+      return line.endsWith('(skipped)');
+    })).toHaveLength(2);
   });
 });
 
@@ -171,6 +206,70 @@ describe('stageReport on a terminal', () => {
     });
 
     expect(output).toContain('\u2713 install   installing with pnpm, 12.1s');
+  });
+
+  it('paints the first frame as the stage starts, and turns one frame per interval', () => {
+    asTerminal(true);
+    vi.useFakeTimers();
+
+    try {
+      const output = printed(() => {
+        stageReport(OPTIONS).onStage('standard', 3, 5);
+        vi.advanceTimersByTime(SPINNER_INTERVAL);
+      });
+
+      expect(SPINNER_FRAMES.charAt(2)).not.toBe(SPINNER_FRAMES.charAt(1));
+      expect(output).toBe([
+        `\u001B[K  ${SPINNER_FRAMES.charAt(1)} standard\r`,
+        `\u001B[K  ${SPINNER_FRAMES.charAt(2)} standard\r`,
+      ].join(''));
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // What the last stage said is its own: the next stage starts from nothing written and nothing said.
+  it('starts each stage from a clean line rather than the last stage\'s count', () => {
+    asTerminal(true);
+    vi.useFakeTimers();
+
+    try {
+      const output = printed(() => {
+        const report = stageReport(OPTIONS);
+
+        report.onStage('lint', 1, 5);
+        report.onWrite('eslint.config.js');
+        report.onNotice('said by lint');
+        report.onStageDone('lint', 10);
+        report.onStage('package', 2, 5);
+      });
+
+      expect(output.endsWith(`\u001B[K  ${SPINNER_FRAMES.charAt(2)} package\r`)).toBe(true);
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stops turning once the stage is done', () => {
+    asTerminal(true);
+    vi.useFakeTimers();
+
+    try {
+      const report = stageReport(OPTIONS);
+
+      const output = printed(() => {
+        report.onStage('install', 4, 5);
+        report.onStageDone('install', 10);
+        vi.advanceTimersByTime(SPINNER_INTERVAL * 3);
+      });
+
+      expect(output.endsWith('✓ install   0.0s\n')).toBe(true);
+    }
+    finally {
+      vi.useRealTimers();
+    }
   });
 
   // The two halves of one decision: a spinner owns the line only because the binaries are handing their output back.
