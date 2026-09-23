@@ -21,11 +21,27 @@ import {
   resolve,
 } from 'node:path';
 
+// The two fields this reads out of the packed `package.json`.
+interface PackedManifest {
+  name: string;
+  exports: object;
+}
+
 const root = resolve(import.meta.dirname, '..');
 const smokeDir = join(root, '.smoke');
 const pkgDir = join(smokeDir, 'package');
 
-const run = (cmd, args, cwd = root) => {
+const isPackedManifest = (value: unknown): value is PackedManifest => {
+  return typeof value === 'object'
+    && value !== null
+    && 'name' in value
+    && typeof value.name === 'string'
+    && 'exports' in value
+    && typeof value.exports === 'object'
+    && value.exports !== null;
+};
+
+const run = (cmd: string, args: string[], cwd = root): string => {
   return execFileSync(cmd, args, {
     cwd,
     encoding: 'utf8',
@@ -50,7 +66,9 @@ assert.ok(tarball, 'pnpm pack produced no tarball');
 console.log(`• extracting ${tarball}`);
 run('tar', ['-xzf', join(smokeDir, tarball)], smokeDir);
 
-const manifest = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));
+const manifest: unknown = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));
+
+assert.ok(isPackedManifest(manifest), 'the packed package.json has no `name` and `exports`');
 
 /**
  * Linked rather than installed: Node walks up from `.smoke/` for everything else, so the package's own
@@ -72,12 +90,46 @@ assert.ok(subpaths.length > 1, 'exports map has no layer subpaths');
 // so a missing one breaks generated projects only: nothing in this repository would notice.
 const GROUP_EXPORTS = {
   './react': 'reactGroup',
+  './react-native': 'reactNativeGroup',
   './next': 'nextGroup',
   './vue': 'vueGroup',
+  './nuxt': 'nuxtGroup',
   './svelte': 'svelteGroup',
   './solid': 'solidGroup',
   './angular': 'angularGroup',
 };
+
+/**
+ * A layer in `frameworks/` or `libraries/` is published two ways and lands half-published unless both are checked:
+ * the subpath a project imports by name, and the barrel export the README's "compose layers yourself" needs.
+ * `react-native` had neither and `tailwind` had no barrel export, so each was reachable only through
+ * `defineConfig` while the README told consumers to use subpaths. The source directory is the list, so a new
+ * layer is covered the day its file lands rather than the day someone remembers.
+ */
+const kebab = (name: string): string => {
+  return name.replace(/[A-Z]/gu, (letter: string) => {
+    return `-${letter.toLowerCase()}`;
+  });
+};
+
+const layerNames = ['src/frameworks', 'src/libraries'].flatMap((dir) => {
+  return readdirSync(join(root, dir), { withFileTypes: true })
+    .filter((entry) => {
+      return entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.test.ts');
+    })
+    .map((entry) => {
+      return entry.name.slice(0, -'.ts'.length);
+    });
+});
+
+assert.ok(layerNames.length > 1, 'no layer modules found under src/frameworks or src/libraries');
+
+for (const name of layerNames) {
+  assert.ok(
+    subpaths.includes(`./${kebab(name)}`),
+    `src/**/${name}.ts has no "./${kebab(name)}" entry in exports`,
+  );
+}
 
 const specifiers = subpaths.map((subpath) => {
   return {
@@ -91,13 +143,18 @@ import assert from 'node:assert/strict';
 
 const GROUP_EXPORTS = ${JSON.stringify(GROUP_EXPORTS)};
 
+const LAYER_NAMES = ${JSON.stringify(layerNames)};
+
 export const check = async (subpath, namespace) => {
   const label = subpath;
 
   if (subpath === '.') {
     // The barrel has no default export; it re-exports every layer by name.
     assert.equal(typeof namespace.base, 'function', label + ': barrel does not export base');
-    assert.equal(typeof namespace.react, 'function', label + ': barrel does not export react');
+
+    for (const name of LAYER_NAMES) {
+      assert.equal(typeof namespace[name], 'function', label + ': barrel does not export ' + name);
+    }
 
     return;
   }
@@ -133,11 +190,11 @@ const esmProbe = [
 
 writeFileSync(join(smokeDir, 'probe.mjs'), esmProbe);
 
-console.log(`• loading ${subpaths.length} subpaths`);
+console.log(`• loading ${String(subpaths.length)} subpaths`);
 run('node', [join(smokeDir, 'probe.mjs')], smokeDir);
 
 rmSync(smokeDir, {
   recursive: true,
   force: true,
 });
-console.log(`\n✓ all ${subpaths.length} subpaths resolve from the packed tarball`);
+console.log(`\n✓ all ${String(subpaths.length)} subpaths resolve from the packed tarball`);

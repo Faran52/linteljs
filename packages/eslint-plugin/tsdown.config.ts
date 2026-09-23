@@ -29,14 +29,14 @@ export default defineConfig({
    * No sourcemaps, deliberately: tsdown drives the declaration sourcemap off the same flag, so with it on the
    * emitted `.d.mts`/`.d.cts` carry a `sourceMappingURL` for a `.map` never written, a dead link in every editor.
    * The JS maps were also 224 kB against 60 kB of source, and a rule crash is reproduced against `src` and the
-   * suite rather than by stepping through the bundle. `scripts/smoke.js` fails the build if any shipped file
+   * suite rather than by stepping through the bundle. `scripts/smoke.ts` fails the build if any shipped file
    * references a map that is not in the package.
    */
   sourcemap: false,
   /**
    * The published floor, not this workspace's: `engines.node` is `>=12.0.0`, and a bundle
    * emitted for node24 keeps optional chaining and nullish coalescing that node12 cannot parse,
-   * failing on `require` before any rule ran. `scripts/smoke.js` greps the built artifact for both.
+   * failing on `require` before any rule ran. `scripts/smoke.ts` greps the built artifact for both.
    */
   target: 'node12',
   deps: {

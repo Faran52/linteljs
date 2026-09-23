@@ -175,7 +175,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   exports `typescript`; `frameworks/` and `libraries/` group the layers that come in sets.
   `defineConfig.ts` composes them and owns the ordering, which is load-bearing. Flat rather than
   foldered because each layer file is a tsdown entry backing a published `exports` subpath, which
-  `scripts/smoke.js` resolves against the packed tarball. `config/globs.ts` holds the extension
+  `scripts/smoke.ts` resolves against the packed tarball. `config/globs.ts` holds the extension
   tables six of them read: a table several modules share is not a helper, so it is not in `utils/`.
 
 - **`create/templates/` sits outside `src/`** and is laid out as the project it lands in:

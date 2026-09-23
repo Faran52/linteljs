@@ -32,20 +32,20 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsdown && node scripts/writeDistManifest.js && node scripts/writeRuleDocs.js",
+    "build": "tsdown && node scripts/writeDistManifest.ts && node scripts/writeRuleDocs.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepack": "pnpm run build",
-    "smoke": "node scripts/smoke.js",
-    "audit:ignores": "node scripts/auditIgnores.js",
+    "smoke": "node scripts/smoke.ts",
+    "audit:ignores": "node scripts/auditIgnores.ts",
     "audit:real": "node scripts/fixRealCode.js",
     "audit:options": "node scripts/fixRealCode.js --options",
     "audit:negatives": "node scripts/findFalseNegatives.js",
-    "audit:security": "node scripts/auditSecurity.js",
-    "audit:survivors": "node scripts/auditSurvivors.js",
-    "audit:helpers": "node scripts/auditHelpers.js",
+    "audit:security": "node scripts/auditSecurity.ts",
+    "audit:survivors": "node scripts/auditSurvivors.ts",
+    "audit:helpers": "node scripts/auditHelpers.ts",
     "mutation": "stryker run",
-    "compat": "node scripts/compatMatrix.js",
+    "compat": "node scripts/compatMatrix.ts",
     "prepare": "pnpm run build"
   },
   "exports": {

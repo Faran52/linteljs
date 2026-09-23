@@ -11,7 +11,7 @@
  * could still tell them apart, so growing the corpus strengthens the claim. Anything that does differ is a
  * genuine gap, and the differing sample is the fixture.
  *
- * Usage: node scripts/auditSurvivors.js [ruleFileName]
+ * Usage: node scripts/auditSurvivors.ts [ruleFileName]
  */
 import {
   readFileSync,
@@ -31,60 +31,116 @@ import tseslint from 'typescript-eslint';
 
 import { FIXER_SAMPLES } from '../__mocks__/fixerSamples.ts';
 
+import type { Rule } from 'eslint';
+import type { FixerSample } from '../__mocks__/fixerSamples.ts';
+
+/**
+ * The slice of Stryker's JSON report this reads. Declared here rather than imported from
+ * `mutation-testing-report-schema`: that package is a transitive of Stryker rather than a dependency of this one,
+ * and `package.json` must not grow a runtime dependency for an audit script's type.
+ */
+interface MutantPosition {
+  line: number;
+  column: number;
+}
+
+interface MutantLocation {
+  start: MutantPosition;
+  end: MutantPosition;
+}
+
+interface Mutant {
+  status: string;
+  mutatorName: string;
+  replacement?: string;
+  location: MutantLocation;
+}
+
+interface MutatedFile {
+  source: string;
+  mutants: Mutant[];
+}
+
+interface MutationReport {
+  files: Record<string, MutatedFile>;
+}
+
+const isMutationReport = (value: unknown): value is MutationReport => {
+  return typeof value === 'object' && value !== null && 'files' in value;
+};
+
 const root = resolve(import.meta.dirname, '..');
 const only = process.argv[2];
-const report = JSON.parse(readFileSync(join(root, 'reports/mutation/mutation.json'), 'utf8'));
-const linter = new Linter();
-const written = [];
+const parsed: unknown = JSON.parse(readFileSync(join(root, 'reports/mutation/mutation.json'), 'utf8'));
 
-const languageOptionsFor = (typescript) => {
+if (!isMutationReport(parsed)) {
+  throw new Error('reports/mutation/mutation.json has no `files`: run `pnpm mutation` first');
+}
+
+const report = parsed;
+const linter = new Linter();
+const written: string[] = [];
+
+const languageOptionsFor = (typescript: boolean) => {
   return typescript
     ? { parser: tseslint.parser }
     : {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
+        ecmaVersion: 'latest' as const,
+        sourceType: 'module' as const,
       };
 };
 
 // A named sample has to match a `files` pattern or flat config skips it; an unnamed one is `<input>`, matching none.
-const filesFor = (filename) => {
+const filesFor = (filename?: string) => {
   return filename ? { files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}'] } : {};
 };
 
 // Everything a consumer can observe: the reports, and what `--fix` writes.
-const observe = (rule, sample) => {
+const observe = (rule: Rule.RuleModule, sample: FixerSample): string => {
   const config = [
     {
       ...filesFor(sample.filename),
       plugins: { '@linteljs': { rules: { probe: rule } } },
       languageOptions: languageOptionsFor(sample.typescript ?? false),
-      rules: { '@linteljs/probe': 'error' },
+      rules: { '@linteljs/probe': 'error' as const },
     },
   ];
 
   try {
     const messages = linter.verify(sample.code, config, sample.filename).map((message) => {
-      return `${message.messageId ?? message.message}@${message.line}:${message.column}`;
+      return `${message.messageId ?? message.message}@${String(message.line)}:${String(message.column)}`;
     });
 
     return `${messages.join('|')}##${linter.verifyAndFix(sample.code, config, sample.filename).output}`;
   }
   catch (error) {
-    return `threw:${String(error && error.message).slice(0, 80)}`;
+    const message = error instanceof Error ? error.message : String(error);
+
+    return `threw:${message.slice(0, 80)}`;
   }
 };
 
 // Written beside the original, not in a temp directory: a rule imports `../types.ts` and
 // `../utils/compatUtils.ts`, which only resolve from the directory the rule actually lives in.
-const loadRule = async (source, tag, neighbour) => {
+const isRuleModule = (value: unknown): value is Rule.RuleModule => {
+  return typeof value === 'object'
+    && value !== null
+    && 'create' in value
+    && typeof value.create === 'function';
+};
+
+const loadRule = async (source: string, tag: string, neighbour: string): Promise<Rule.RuleModule> => {
   const file = join(dirname(neighbour), `${tag}.generated.ts`);
   writeFileSync(file, source);
   written.push(file);
 
-  const loaded = await import(pathToFileURL(file).href);
-  const rule = Object.values(loaded).find((value) => {
-    return typeof value?.create === 'function';
-  });
+  const loaded: unknown = await import(pathToFileURL(file).href);
+
+  if (typeof loaded !== 'object' || loaded === null) {
+    throw new Error(`no rule exported from ${basename(neighbour)}`);
+  }
+
+  const rule = Object.values(loaded).find(isRuleModule);
 
   if (!rule) {
     throw new Error(`no rule exported from ${basename(neighbour)}`);
@@ -100,7 +156,7 @@ const loadRule = async (source, tag, neighbour) => {
  * different program, which reported an equivalent mutant as a real defect until the parentheses were put back. A
  * replacement that is a block or a statement is pasted as-is, since wrapping one in parentheses would not parse.
  */
-const spliceMutant = (source, mutant, offsetOf) => {
+const spliceMutant = (source: string, mutant: Mutant, offsetOf: (position: MutantPosition) => number): string => {
   const start = offsetOf(mutant.location.start);
   const end = offsetOf(mutant.location.end);
   const replacement = mutant.replacement ?? '';
@@ -141,37 +197,40 @@ for (const [fileName, file] of Object.entries(report.files)) {
   const lines = source.split('\n');
 
   // Byte offset of a line/column pair, so a mutant's range can be spliced.
-  const offsetOf = (position) => {
+  const offsetOf = (position: MutantPosition): number => {
     let offset = 0;
 
-    for (let index = 0; index < position.line - 1; index++) {
-      offset += lines[index].length + 1;
+    for (const line of lines.slice(0, position.line - 1)) {
+      offset += line.length + 1;
     }
 
     return offset + position.column - 1;
   };
 
   const absolute = resolve(root, fileName);
-  const baseline = await loadRule(source, `base-${counter++}`, absolute);
+  const baseline = await loadRule(source, `base-${String(counter++)}`, absolute);
   const baselineOutput = FIXER_SAMPLES.map((sample) => {
     return observe(baseline, sample);
   });
 
-  console.log(`\n${short}: ${survivors.length} survivors`);
+  console.log(`\n${short}: ${String(survivors.length)} survivors`);
 
   for (const mutant of survivors) {
     const mutated = spliceMutant(source, mutant, offsetOf);
 
-    let rule;
+    let rule: Rule.RuleModule;
 
     try {
-      rule = await loadRule(mutated, `mut-${counter++}`, absolute);
+      rule = await loadRule(mutated, `mut-${String(counter++)}`, absolute);
     }
     catch (error) {
       // A mutant that will not even load cannot be equivalent.
       gaps += 1;
-      console.log(`  GAP (load) ${mutant.location.start.line}:${mutant.location.start.column} `
-        + `${mutant.mutatorName}: ${String(error && error.message).split('\n')[0].slice(0, 60)}`);
+
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.log(`  GAP (load) ${String(mutant.location.start.line)}:${String(mutant.location.start.column)} `
+        + `${mutant.mutatorName}: ${message.split('\n')[0]?.slice(0, 60) ?? ''}`);
       continue;
     }
 
@@ -181,7 +240,8 @@ for (const [fileName, file] of Object.entries(report.files)) {
 
     if (differs) {
       gaps += 1;
-      console.log(`  GAP        ${mutant.location.start.line}:${mutant.location.start.column} ${mutant.mutatorName}`);
+      console.log(`  GAP        ${String(mutant.location.start.line)}:${String(mutant.location.start.column)} `
+        + mutant.mutatorName);
     }
     else {
       equivalent += 1;
@@ -193,7 +253,7 @@ for (const file of written) {
   rmSync(file, { force: true });
 }
 
-console.log(`\n${equivalent} indistinguishable across this corpus, ${gaps} real gaps`);
+console.log(`\n${String(equivalent)} indistinguishable across this corpus, ${String(gaps)} real gaps`);
 
 if (gaps > 0) {
   console.log('Each GAP above changes observable behaviour on some input: write a fixture for it.');

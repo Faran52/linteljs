@@ -8,9 +8,9 @@
  * extending `plugin:@linteljs/recommended` for 5 through 8, a flat `eslint.config.mjs` spreading
  * `configs['flat/recommended']` for 9 and 10, so both halves of the published `configs` object are exercised by a
  * real consumer. Not part of `pnpm check`: it installs six copies of ESLint from the network and takes minutes,
- * so run it before any release, like `smoke.js`.
+ * so run it before any release, like `smoke.ts`.
  *
- * Usage: node scripts/compatMatrix.js
+ * Usage: node scripts/compatMatrix.ts
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -22,15 +22,47 @@ import { dirname, join } from 'node:path';
 import process, { exit } from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+// The majors the package declares: `5` is the `peerDependencies` floor, `10` is what this workspace develops
+// against, and every major between is a real installed base rather than a range endpoint nobody used.
+type Major = 5 | 6 | 7 | 8 | 9 | 10;
+
+/**
+ * The slice of ESLint's JSON formatter output this reads. Written out rather than taken from `ESLint.LintResult`:
+ * the majors under test go back to 5, whose output predates the types this workspace installs, and these four
+ * fields are the whole of what is read from any of them.
+ */
+interface LintMessage {
+  ruleId: string | null;
+  fatal?: boolean;
+}
+
+interface LintResult {
+  messages: LintMessage[];
+  output?: string;
+}
+
 const pkgDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const matrixDir = join(pkgDir, '.compat');
 
-// The majors the package declares: `5` is the `peerDependencies` floor, `10` is what this workspace develops
-// against, and every major between is a real installed base rather than a range endpoint nobody used.
-const MAJORS = [5, 6, 7, 8, 9, 10];
+const MAJORS: Major[] = [5, 6, 7, 8, 9, 10];
+
+const isLintResult = (value: unknown): value is LintResult => {
+  return typeof value === 'object'
+    && value !== null
+    && 'messages' in value
+    && Array.isArray(value.messages);
+};
+
+const isLintResults = (value: unknown): value is LintResult[] => {
+  return Array.isArray(value) && value.every(isLintResult);
+};
+
+const messageOf = (error: unknown): string => {
+  return error instanceof Error ? error.message : String(error);
+};
 
 // Flat config is the default from 9, and the only format 10 reads.
-const isFlat = (major) => {
+const isFlat = (major: Major): boolean => {
   return major >= 9;
 };
 
@@ -85,7 +117,7 @@ const EXPECTED = [
   '@linteljs/destructuring-property-newline',
   '@linteljs/export-specifier-newline',
   '@linteljs/import-newlines',
-  '@linteljs/newline-destructuring',
+  '@linteljs/member-newline',
   '@linteljs/no-eslint-disable',
   '@linteljs/no-import-namespace-destructure',
   '@linteljs/prefer-arrow-functions',
@@ -123,7 +155,7 @@ const flatConfig = [
   '',
 ].join('\n');
 
-const run = (command, args, cwd) => {
+const run = (command: string, args: string[], cwd: string): string => {
   return execFileSync(command, args, {
     cwd,
     encoding: 'utf8',
@@ -133,7 +165,7 @@ const run = (command, args, cwd) => {
 
 // The packed tarball, not `src/` or `dist/` by path: what a consumer installs is the tarball, and an entry missing
 // from `files` or an `exports` map resolving only in this repo is the defect a matrix over source cannot see.
-const packPlugin = () => {
+const packPlugin = (): string => {
   rmSync(matrixDir, {
     recursive: true,
     force: true,
@@ -144,10 +176,14 @@ const packPlugin = () => {
 
   const [tarball] = run('ls', [matrixDir], matrixDir).trim().split('\n');
 
+  if (tarball === undefined || tarball === '') {
+    throw new Error('npm pack produced no tarball');
+  }
+
   return join(matrixDir, tarball);
 };
 
-const prepare = (major, tarball) => {
+const prepare = (major: Major, tarball: string): string => {
   const dir = join(matrixDir, `eslint-${String(major)}`);
 
   mkdirSync(join(dir, 'node_modules'), { recursive: true });
@@ -184,7 +220,7 @@ const prepare = (major, tarball) => {
   return dir;
 };
 
-const lint = (major, dir, fix = false, typescript = false) => {
+const lint = (major: Major, dir: string, fix = false, typescript = false): string => {
   const bin = join(dir, 'node_modules', 'eslint', 'bin', 'eslint.js');
   const named = isFlat(major)
     ? {
@@ -207,11 +243,16 @@ const lint = (major, dir, fix = false, typescript = false) => {
   }
   catch (error) {
     // ESLint exits non-zero whenever it reports, the expected path here; only output that will not parse fails.
-    if (typeof error.stdout === 'string' && error.stdout.trim() !== '') {
-      return error.stdout;
+    const failed = error instanceof Error ? error : new Error(String(error));
+    const stdout: unknown = 'stdout' in failed ? failed.stdout : undefined;
+
+    if (typeof stdout === 'string' && stdout.trim() !== '') {
+      return stdout;
     }
 
-    throw new Error(`eslint ${String(major)} produced no parseable output:\n${String(error.stderr)}`);
+    const stderr: unknown = 'stderr' in failed ? failed.stderr : undefined;
+
+    throw new Error(`eslint ${String(major)} produced no parseable output:\n${String(stderr)}`);
   }
 };
 
@@ -224,7 +265,7 @@ const lint = (major, dir, fix = false, typescript = false) => {
  * The pairing is the parser's own `peerDependencies.eslint`, and the TypeScript beside it is what that parser era
  * accepts. Asserting our rules report, never that the parser is correct.
  */
-const TS_TOOLING = {
+const TS_TOOLING: Record<Major, string[]> = {
   5: ['@typescript-eslint/parser@2.34.0', 'typescript@3.9.10'],
   6: ['@typescript-eslint/parser@2.34.0', 'typescript@3.9.10'],
   7: ['@typescript-eslint/parser@4.33.0', 'typescript@4.4.4'],
@@ -289,22 +330,45 @@ const tsFlatConfig = [
   '',
 ].join('\n');
 
+// Every `lint()` answer goes through here, so a major that prints something other than the JSON formatter's
+// array fails as a bad run rather than as a missing report.
+const resultsOf = (json: string): LintResult[] => {
+  const parsed: unknown = JSON.parse(json);
+
+  if (!isLintResults(parsed)) {
+    throw new Error(`eslint did not answer a JSON result array:\n${json.slice(0, 200)}`);
+  }
+
+  return parsed;
+};
+
+const firstResultOf = (json: string): LintResult => {
+  const [result] = resultsOf(json);
+
+  if (!result) {
+    throw new Error('eslint answered an empty result array');
+  }
+
+  return result;
+};
+
 const tarball = packPlugin();
-const failures = [];
-const fixes = new Map();
-const tsFixes = new Map();
+const failures: string[] = [];
+const fixes = new Map<number, string>();
+const tsFixes = new Map<number, string>();
 
 for (const major of MAJORS) {
   const dir = prepare(major, tarball);
-  const installed = JSON.parse(
+  const version: unknown = JSON.parse(
     run('node', ['-p', 'JSON.stringify(require("eslint/package.json").version)'], dir),
   );
+  const installed = typeof version === 'string' ? version : String(major);
 
-  let reported = [];
-  let fatal = [];
+  let reported: (string | null)[] = [];
+  let fatal: LintMessage[] = [];
 
   try {
-    const [result] = JSON.parse(lint(major, dir));
+    const result = firstResultOf(lint(major, dir));
 
     reported = result.messages.map((message) => {
       return message.ruleId;
@@ -314,8 +378,8 @@ for (const major of MAJORS) {
     });
   }
   catch (error) {
-    failures.push(`eslint ${String(major)}: ${String(error.message)}`);
-    console.log(`  ✗ eslint ${installed}: ${String(error.message).split('\n')[0]}`);
+    failures.push(`eslint ${String(major)}: ${messageOf(error)}`);
+    console.log(`  ✗ eslint ${installed}: ${messageOf(error).split('\n')[0] ?? ''}`);
     continue;
   }
 
@@ -338,18 +402,18 @@ for (const major of MAJORS) {
   // The fixed text, not just the report. A rule that reports on every major but rewrites
   // differently on one of them is the worse defect, and it is invisible to a report-only check.
   try {
-    const [fixed] = JSON.parse(lint(major, dir, true));
+    const fixed = firstResultOf(lint(major, dir, true));
 
     fixes.set(major, fixed.output ?? '');
   }
   catch (error) {
-    failures.push(`eslint ${installed}: fix pass failed: ${String(error.message)}`);
+    failures.push(`eslint ${installed}: fix pass failed: ${messageOf(error)}`);
   }
 
   // The TypeScript leg, with the parser this major's era shipped. Same two questions: does every rule report, and
   // does the fixed text match the newest major.
   try {
-    const [tsResult] = JSON.parse(lint(major, dir, false, true));
+    const tsResult = firstResultOf(lint(major, dir, false, true));
     const tsReported = tsResult.messages.map((message) => {
       return message.ruleId;
     });
@@ -372,12 +436,12 @@ for (const major of MAJORS) {
       continue;
     }
 
-    const [tsFixed] = JSON.parse(lint(major, dir, true, true));
+    const tsFixed = firstResultOf(lint(major, dir, true, true));
 
     tsFixes.set(major, tsFixed.output ?? '');
   }
   catch (error) {
-    failures.push(`eslint ${installed}: typescript pass failed: ${String(error.message)}`);
+    failures.push(`eslint ${installed}: typescript pass failed: ${messageOf(error)}`);
     console.log(`  ✗ eslint ${installed}: typescript pass failed`);
     continue;
   }
@@ -388,9 +452,11 @@ for (const major of MAJORS) {
 }
 
 // Every major has to emit byte-identical text; the newest is the reference, since the unit suite pins it.
-const newest = MAJORS[MAJORS.length - 1];
+const newest = Math.max(...MAJORS);
 
-for (const [label, outputs] of [['javascript', fixes], ['typescript', tsFixes]]) {
+const passes: [string, Map<number, string>][] = [['javascript', fixes], ['typescript', tsFixes]];
+
+for (const [label, outputs] of passes) {
   const reference = outputs.get(newest);
 
   for (const [major, output] of outputs) {

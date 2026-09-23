@@ -1484,7 +1484,7 @@ suppress anything. A directive becomes inert and is reported as having no effect
 regardless, so an *effective* disable surfaces as the error it was hiding. Measured both ways: a
 stray directive exits 1, and one over a real `console.log` reports the `no-console` error as well.
 
-The repo had exactly one, on `execFileSync('pnpm', ...)` in `auditIgnores.js`. It is a named
+The repo had exactly one, on `execFileSync('pnpm', ...)` in `auditIgnores.ts`. It is a named
 exemption now rather than an inline comment, which is the whole point: this workspace keeps its
 exemptions in one file with a measurement each, and an inline directive is neither.
 
@@ -1496,7 +1496,7 @@ enforcement the project already has.
 
 ### `@linteljs/workspace/scripts`
 
-`auditIgnores.js` prints every coverage ignore with its stated reason and `smoke.js` narrates a
+`auditIgnores.ts` prints every coverage ignore with its stated reason and `smoke.ts` narrates a
 pack, so stdout is their output rather than a debugging leftover. `no-console` already allows `warn`
 and `error` everywhere, which covers reporting a failure.
 
@@ -1506,7 +1506,7 @@ which `no-console` permits, so that block bought a generated project nothing whi
 `eslint.config.js`, `stylelint.config.js` and the two `*.config.js` files it copies a free
 `console.log`. Neither package publishes `scripts/`.
 
-`sonarjs/no-os-command-from-path` joins it for the same directory and the same reason. `auditIgnores.js`
+`sonarjs/no-os-command-from-path` joins it for the same directory and the same reason. `auditIgnores.ts`
 runs `execFileSync('pnpm', ['exec', 'vitest', ...])`, and the rule wants an absolute path because a
 writeable `PATH` entry could shadow the name. That is a real hazard for a program a user runs and not
 for one a maintainer invokes by hand in this checkout, where resolving `pnpm` to an absolute path

@@ -17,11 +17,80 @@ import {
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+// The slice of ESLint's JSON formatter output this reads.
+interface LintMessage {
+  ruleId: string | null;
+  fatal?: boolean;
+}
+
+interface LintResult {
+  messages: LintMessage[];
+}
+
+// A `files`-scoped block inside an eslintrc preset, which is where the TypeScript-only rules go.
+interface EslintrcOverride {
+  rules?: object;
+}
+
+/**
+ * What a consumer sees on the default export, and the whole of what is checked below. Written out here rather
+ * than imported from `src/plugin.ts` on purpose: this file reads the packed artifact as a stranger would, and a
+ * source type vouching for the shape is exactly what it must not rely on.
+ */
+interface EslintrcPreset {
+  plugins?: string[];
+  rules?: object;
+  overrides?: EslintrcOverride[];
+}
+
+interface PluginMeta {
+  name?: string;
+  version?: string;
+}
+
+interface PluginShape {
+  rules: object;
+  configs: Record<string, EslintrcPreset | unknown[]>;
+  meta?: PluginMeta;
+}
+
 const root = resolve(import.meta.dirname, '..');
 const smokeDir = join(root, '.smoke');
 const pkgDir = join(smokeDir, 'package');
 
-const run = (cmd, args, cwd = root) => {
+const isLintResult = (entry: unknown): entry is LintResult => {
+  return typeof entry === 'object'
+    && entry !== null
+    && 'messages' in entry
+    && Array.isArray(entry.messages);
+};
+
+const isLintResults = (value: unknown): value is LintResult[] => {
+  return Array.isArray(value) && value.every(isLintResult);
+};
+
+// A bare sort() orders by UTF-16 code unit, so the lists compared below move on a locale change.
+const alphabetically = (left: string, right: string): number => {
+  return left.localeCompare(right);
+};
+
+const isPluginShape = (value: unknown): value is PluginShape => {
+  return typeof value === 'object'
+    && value !== null
+    && 'rules' in value
+    && Boolean(value.rules)
+    && 'configs' in value
+    && Boolean(value.configs);
+};
+
+// A dynamic import's namespace, which is the same untyped boundary as a `JSON.parse`.
+const defaultExportOf = async (href: string): Promise<unknown> => {
+  const loaded: unknown = await import(href);
+
+  return typeof loaded === 'object' && loaded !== null && 'default' in loaded ? loaded.default : undefined;
+};
+
+const run = (cmd: string, args: string[], cwd = root): string => {
   return execFileSync(cmd, args, {
     cwd,
     encoding: 'utf8',
@@ -78,7 +147,7 @@ const expectedPresetNames = [
 
 // The preset spread a consumer actually writes. The configs below name their
 // rules by hand, so they would pass with every preset key misspelled.
-const esmPresetConfig = (pluginPath) => {
+const esmPresetConfig = (pluginPath: string): string => {
   return [
     `import linteljs from ${JSON.stringify(pluginPath)};`,
     '',
@@ -89,7 +158,7 @@ const esmPresetConfig = (pluginPath) => {
   ].join('\n');
 };
 
-const esmConfig = (pluginPath) => {
+const esmConfig = (pluginPath: string): string => {
   return [
     `import linteljs from ${JSON.stringify(pluginPath)};`,
     '',
@@ -104,7 +173,7 @@ const esmConfig = (pluginPath) => {
   ].join('\n');
 };
 
-const cjsConfig = (pluginPath) => {
+const cjsConfig = (pluginPath: string): string => {
   return [
     `const linteljs = require(${JSON.stringify(pluginPath)});`,
     '',
@@ -121,13 +190,13 @@ const cjsConfig = (pluginPath) => {
 
 const eslintBin = join(root, 'node_modules', 'eslint', 'bin', 'eslint.js');
 
-const checkFlavour = (name, configFile, configSource) => {
+const checkFlavour = (name: string, configFile: string, configSource: string): void => {
   const dir = join(smokeDir, name);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, configFile), configSource);
   writeFileSync(join(dir, 'fixture.js'), fixture);
 
-  let output;
+  let output: string;
 
   try {
     output = execFileSync(
@@ -143,14 +212,23 @@ const checkFlavour = (name, configFile, configSource) => {
   catch (error) {
     // ESLint exits non-zero when it reports problems, which is the expected
     // path here. Anything without parseable stdout is a genuine failure.
-    output = error.stdout;
+    const stdout: unknown = error instanceof Error && 'stdout' in error ? error.stdout : undefined;
 
-    if (!output) {
+    if (typeof stdout !== 'string' || stdout === '') {
       throw error;
     }
+
+    output = stdout;
   }
 
-  const [result] = JSON.parse(output);
+  const parsed: unknown = JSON.parse(output);
+
+  assert.ok(isLintResults(parsed), `${name}: eslint did not answer a JSON result array`);
+
+  const [result] = parsed;
+
+  assert.ok(result, `${name}: eslint answered an empty result array`);
+
   const reported = new Set(result.messages.map((message) => {
     return message.ruleId;
   }));
@@ -168,7 +246,8 @@ const checkFlavour = (name, configFile, configSource) => {
   // read as the latter and sent a reviewer hunting for eight missing rules.
   const expected = expectedRuleIds.length;
 
-  console.log(`  ✓ ${name} entry loaded, ${reported.size}/${expected} expected rule ids fired on the fixture`);
+  console.log(`  ✓ ${name} entry loaded, ${String(reported.size)}/${String(expected)} `
+    + 'expected rule ids fired on the fixture');
 };
 
 console.log('• checking ESM entry');
@@ -186,17 +265,20 @@ checkFlavour(
 
 // A `.cjs` flat config receives the module namespace from `require`, an ESM one the default export. Both have to
 // be a usable plugin on their own, or `plugins: { '@linteljs': linteljs }` silently loses `meta` in one of them.
-const cjsNamespace = (await import(pathToFileURL(join(pkgDir, 'dist', 'index.js')).href)).default;
-const esmDefault = (await import(pathToFileURL(join(pkgDir, 'dist', 'index.mjs')).href)).default;
+const cjsNamespace = await defaultExportOf(pathToFileURL(join(pkgDir, 'dist', 'index.js')).href);
+const esmDefault = await defaultExportOf(pathToFileURL(join(pkgDir, 'dist', 'index.mjs')).href);
 
-for (const [label, shape] of [['cjs require()', cjsNamespace], ['esm default', esmDefault]]) {
-  assert.ok(shape?.rules, `${label}: no \`rules\``);
-  assert.ok(shape?.configs, `${label}: no \`configs\``);
-  assert.ok(shape?.meta?.name, `${label}: no \`meta.name\``);
-  assert.ok(shape?.meta?.version, `${label}: no \`meta.version\``);
+assert.ok(isPluginShape(cjsNamespace), 'cjs require(): no `rules` and `configs` on the default export');
+assert.ok(isPluginShape(esmDefault), 'esm default: no `rules` and `configs` on the default export');
+
+const entries: [string, PluginShape][] = [['cjs require()', cjsNamespace], ['esm default', esmDefault]];
+
+for (const [label, shape] of entries) {
+  assert.ok(shape.meta?.name, `${label}: no \`meta.name\``);
+  assert.ok(shape.meta.version, `${label}: no \`meta.version\``);
 
   assert.deepEqual(
-    Object.keys(shape.configs).sort(),
+    Object.keys(shape.configs).sort(alphabetically),
     expectedPresetNames,
     `${label}: published preset names changed`,
   );
@@ -218,8 +300,8 @@ for (const [label, shape] of [['cjs require()', cjsNamespace], ['esm default', e
 
     // Both halves: a category can be entirely TypeScript-only, and then carries everything in `overrides` and
     // nothing in `rules`. `types` is the first one that is. What matters is that the preset enables something.
-    const enabled = Object.keys(preset.rules).length
-      + (preset.overrides ?? []).reduce((total, override) => {
+    const enabled = Object.keys(preset.rules ?? {}).length
+      + (preset.overrides ?? []).reduce((total: number, override) => {
         return total + Object.keys(override.rules ?? {}).length;
       }, 0);
 
@@ -228,8 +310,8 @@ for (const [label, shape] of [['cjs require()', cjsNamespace], ['esm default', e
 }
 
 assert.deepEqual(
-  Object.keys(cjsNamespace.rules).sort(),
-  Object.keys(esmDefault.rules).sort(),
+  Object.keys(cjsNamespace.rules).sort(alphabetically),
+  Object.keys(esmDefault.rules).sort(alphabetically),
   'ESM and CJS entry points expose different rule sets',
 );
 
@@ -273,9 +355,9 @@ console.log('  ✓ no runtime dependency leaked into dist');
  * The `engines.node` floor is `>=12.0.0`, and a bundler cannot downlevel a *builtin*: it rewrites `?.` into
  * something Node 12 parses, then leaves `array.at(-1)` exactly as written, where it is a TypeError on the first
  * call. Every entry below postdates Node 12, so any of them in the bundle means the declared floor is a lie.
- * `compatMatrix.js` cannot catch this: it runs every ESLint major on whatever Node invoked it, the modern one.
+ * `compatMatrix.ts` cannot catch this: it runs every ESLint major on whatever Node invoked it, the modern one.
  */
-const POST_NODE_12 = [
+const POST_NODE_12: [string, number][] = [
   ['.at(', 16.6],
   ['.findLast(', 18],
   ['.findLastIndex(', 18],
@@ -312,11 +394,11 @@ console.log('  \u2713 no API newer than the declared Node floor');
  * put this text at `src/rules/<id>/README.md`, which `files` does not pack, so the eleven files a
  * published path points at went missing from the tarball while every test stayed green.
  */
-const packedDocs = readdirSync(join(pkgDir, 'docs', 'rules')).sort();
+const packedDocs = readdirSync(join(pkgDir, 'docs', 'rules')).sort(alphabetically);
 
 assert.deepEqual(
   packedDocs,
-  Object.keys(esmDefault.rules).sort().map((id) => {
+  Object.keys(esmDefault.rules).sort(alphabetically).map((id) => {
     return `${id}.md`;
   }),
   'docs/rules does not carry exactly one file per published rule',

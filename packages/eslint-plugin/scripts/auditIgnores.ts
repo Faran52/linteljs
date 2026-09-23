@@ -5,7 +5,7 @@
  * ignore at a time and re-measures: coverage still reporting the branch uncovered means the ignore is load
  * bearing and the claim holds, coverage reporting it covered means the tests already reach it and it must go.
  *
- * Usage: node scripts/auditIgnores.js
+ * Usage: node scripts/auditIgnores.ts
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -20,9 +20,26 @@ import {
   resolve,
 } from 'node:path';
 
+// The two counter maps v8's JSON report carries per file: statement hits keyed by id, and branch hits keyed by id
+// with one count per arm. Only the zeros are read, so nothing else in the report is described.
+interface FileCoverage {
+  s: Record<string, number>;
+  b: Record<string, number[]>;
+}
+
+// What one file's report answers: how many statements and branches the run never reached.
+interface UncoveredCounts {
+  statements: number;
+  branches: number;
+}
+
 const root = resolve(import.meta.dirname, '..');
 
-const walk = (dir) => {
+const isCoverageReport = (value: unknown): value is Record<string, FileCoverage> => {
+  return typeof value === 'object' && value !== null;
+};
+
+const walk = (dir: string): string[] => {
   return readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);
 
@@ -41,7 +58,7 @@ const walk = (dir) => {
  */
 const IGNORE = /^\s*\/\* v8 ignore next(?: \d+)? -- .*\*\/\s*$/;
 
-const coverageFor = (file) => {
+const coverageFor = (file: string): UncoveredCounts => {
   try {
     execFileSync('pnpm', ['exec', 'vitest', 'run', '--coverage', '--coverage.reporter=json'], {
       cwd: root,
@@ -53,7 +70,15 @@ const coverageFor = (file) => {
     // non-zero exit here is the expected path. The report is still written.
   }
 
-  const data = JSON.parse(readFileSync(join(root, 'coverage/coverage-final.json'), 'utf8'));
+  const data: unknown = JSON.parse(readFileSync(join(root, 'coverage/coverage-final.json'), 'utf8'));
+
+  if (!isCoverageReport(data)) {
+    return {
+      statements: 0,
+      branches: 0,
+    };
+  }
+
   const entry = Object.entries(data).find(([path]) => {
     return resolve(path) === resolve(file);
   });
@@ -80,15 +105,15 @@ const coverageFor = (file) => {
 };
 
 const files = walk(join(root, 'src'));
-const findings = [];
+const findings: string[] = [];
 let checked = 0;
 
 for (const file of files) {
   const original = readFileSync(file, 'utf8');
   const lines = original.split('\n');
 
-  for (let index = 0; index < lines.length; index++) {
-    if (!IGNORE.test(lines[index])) {
+  for (const [index, line] of lines.entries()) {
+    if (!IGNORE.test(line)) {
       continue;
     }
 
@@ -109,12 +134,12 @@ for (const file of files) {
     // Removing a load-bearing ignore exposes at least one uncovered spot; if nothing is exposed, the tests
     // already reach that code and the ignore claims something untrue.
     if (uncovered.statements === 0 && uncovered.branches === 0) {
-      findings.push(`${relative(root, file)}:${index + 1}  ${lines[index].trim()}`);
+      findings.push(`${relative(root, file)}:${String(index + 1)}  ${line.trim()}`);
     }
   }
 }
 
-console.log(`checked ${checked} ignore directives`);
+console.log(`checked ${String(checked)} ignore directives`);
 
 if (findings.length > 0) {
   console.error('\nThese claim a branch is unreachable, but the tests already reach it:');

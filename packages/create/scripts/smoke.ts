@@ -29,7 +29,7 @@ const root = resolve(import.meta.dirname, '..');
 const smokeDir = join(root, '.smoke');
 const pkgDir = join(smokeDir, 'package');
 
-const run = (cmd, args, cwd = root) => {
+const run = (cmd: string, args: string[], cwd = root): string => {
   return execFileSync(cmd, args, {
     cwd,
     encoding: 'utf8',
@@ -37,7 +37,7 @@ const run = (cmd, args, cwd = root) => {
   });
 };
 
-const filesUnder = (dir) => {
+const filesUnder = (dir: string): string[] => {
   if (!existsSync(dir)) {
     return [];
   }
@@ -122,7 +122,7 @@ const packed = new Set(filesUnder(join(pkgDir, 'templates')).map((file) => {
  * file it now owns.
  */
 const excluded = /^project\/scripts\/.*\.test\.ts$/;
-const missing = [];
+const missing: string[] = [];
 
 for (const file of filesUnder(join(root, 'templates'))) {
   const name = relative(join(root, 'templates'), file);

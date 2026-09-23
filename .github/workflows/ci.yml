@@ -117,7 +117,7 @@ jobs:
       #
       # This is the only thing that can answer whether the shipped bundle runs on the declared
       # Node floor. A bundler lowers syntax and leaves built-in methods exactly where they were,
-      # so `smoke.js`'s scan for post-Node-12 APIs is a cheaper check of the same property, not a
+      # so `smoke.ts`'s scan for post-Node-12 APIs is a cheaper check of the same property, not a
       # substitute for running it.
       - name: Run the rules on node ${{ matrix.node }}
         run: |

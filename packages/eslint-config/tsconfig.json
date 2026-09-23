@@ -25,6 +25,7 @@
     "src/**/*.ts",
     "__mocks__/**/*.ts",
     "typings/**/*.d.ts",
+    "scripts/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts"
   ]

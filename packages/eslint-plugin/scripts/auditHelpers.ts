@@ -1,5 +1,5 @@
 /**
- * Audits surviving mutants in the shared helpers, which `auditSurvivors.js` skips. That script compares one rule
+ * Audits surviving mutants in the shared helpers, which `auditSurvivors.ts` skips. That script compares one rule
  * against its own mutated copy, which works because a rule module has observable output of its own. A helper does
  * not: `src/utils/compatUtils.ts` is imported by every rule and its behaviour is only visible through them, so
  * skipping it left its survivors as the one group never checked for a defect hiding behind them, which is how the
@@ -9,7 +9,7 @@
  * reports and fixed output across the shared corpus. The original is restored in a `finally`, and a copy is
  * parked in the system temp directory first so an interrupted run is recoverable.
  *
- * Usage: node scripts/auditHelpers.js [helperFileName]
+ * Usage: node scripts/auditHelpers.ts [helperFileName]
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -25,10 +25,51 @@ import {
   resolve,
 } from 'node:path';
 
+/**
+ * The slice of Stryker's JSON report this reads. Declared here rather than imported from
+ * `mutation-testing-report-schema`: that package is a transitive of Stryker rather than a dependency of this one,
+ * and `package.json` must not grow a runtime dependency for an audit script's type.
+ */
+interface MutantPosition {
+  line: number;
+  column: number;
+}
+
+interface MutantLocation {
+  start: MutantPosition;
+  end: MutantPosition;
+}
+
+interface Mutant {
+  status: string;
+  mutatorName: string;
+  replacement?: string;
+  location: MutantLocation;
+}
+
+interface MutatedFile {
+  source: string;
+  mutants: Mutant[];
+}
+
+interface MutationReport {
+  files: Record<string, MutatedFile>;
+}
+
+const isMutationReport = (value: unknown): value is MutationReport => {
+  return typeof value === 'object' && value !== null && 'files' in value;
+};
+
 const root = resolve(import.meta.dirname, '..');
 const only = process.argv[2];
-const report = JSON.parse(readFileSync(join(root, 'reports/mutation/mutation.json'), 'utf8'));
-const observer = join(root, 'scripts/auditHelperObserve.js');
+const parsed: unknown = JSON.parse(readFileSync(join(root, 'reports/mutation/mutation.json'), 'utf8'));
+
+if (!isMutationReport(parsed)) {
+  throw new Error('reports/mutation/mutation.json has no `files`: run `pnpm mutation` first');
+}
+
+const report = parsed;
+const observer = join(root, 'scripts/auditHelperObserve.ts');
 
 const observe = () => {
   return execFileSync(process.execPath, [observer], {
@@ -54,7 +95,7 @@ if (helpers.length === 0) {
  * different program, which reported an equivalent mutant as a real defect until the parentheses were put back. A
  * replacement that is a block or a statement is pasted as-is, since wrapping one in parentheses would not parse.
  */
-const spliceMutant = (source, mutant, offsetOf) => {
+const spliceMutant = (source: string, mutant: Mutant, offsetOf: (position: MutantPosition) => number): string => {
   const start = offsetOf(mutant.location.start);
   const end = offsetOf(mutant.location.end);
   const replacement = mutant.replacement ?? '';
@@ -86,25 +127,25 @@ for (const [fileName, file] of helpers) {
   const parked = join(mkdtempSync(join(tmpdir(), 'linteljs-audit-')), short);
   copyFileSync(absolute, parked);
 
-  const offsetOf = (position) => {
+  const offsetOf = (position: MutantPosition): number => {
     let offset = 0;
 
-    for (let index = 0; index < position.line - 1; index++) {
-      offset += lines[index].length + 1;
+    for (const line of lines.slice(0, position.line - 1)) {
+      offset += line.length + 1;
     }
 
     return offset + position.column - 1;
   };
 
-  console.log(`\n${short}: ${survivors.length} survivors (original parked at ${parked})`);
+  console.log(`\n${short}: ${String(survivors.length)} survivors (original parked at ${parked})`);
 
   try {
     for (const mutant of survivors) {
-      const where = `${mutant.location.start.line}:${mutant.location.start.column}`;
+      const where = `${String(mutant.location.start.line)}:${String(mutant.location.start.column)}`;
 
       writeFileSync(absolute, spliceMutant(source, mutant, offsetOf));
 
-      let observed;
+      let observed: string;
 
       try {
         observed = observe();
@@ -112,8 +153,11 @@ for (const [fileName, file] of helpers) {
       catch (error) {
         // A mutant that stops every rule from loading is not equivalent.
         gaps += 1;
+
+        const message = error instanceof Error ? error.message : String(error);
+
         console.log(`  GAP (load) ${where} ${mutant.mutatorName}: `
-          + `${String(error && error.message).split('\n')[0].slice(0, 60)}`);
+          + (message.split('\n')[0]?.slice(0, 60) ?? ''));
         continue;
       }
 
@@ -129,11 +173,16 @@ for (const [fileName, file] of helpers) {
     }
   }
   finally {
-    writeFileSync(absolute, source);
+    /**
+     * The parked copy, not `source`. `source` is the text the report was generated from, so restoring that
+     * overwrites whatever the file says now with whatever it said when `pnpm mutation` last ran. A stale report
+     * and an edited helper is the ordinary case, and it cost three files the first time this was run after one.
+     */
+    copyFileSync(parked, absolute);
   }
 }
 
-console.log(`\n${equivalent} indistinguishable across this corpus, ${gaps} real gaps`);
+console.log(`\n${String(equivalent)} indistinguishable across this corpus, ${String(gaps)} real gaps`);
 
 if (gaps > 0) {
   console.log('Each GAP changes what some rule does on some input: write a fixture for it.');

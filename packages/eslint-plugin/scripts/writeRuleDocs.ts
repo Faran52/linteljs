@@ -38,8 +38,8 @@ const ruleIds = readdirSync(rulesDir, { withFileTypes: true })
  * text resolves to `docs/other-rule` and 404s, so the link is rewritten to the file it becomes. Only siblings are
  * rewritten; any other relative link points out of `src/`, meaningless in the tarball and worth failing on.
  */
-const relink = (text, id) => {
-  return text.replace(/]\(\.\.\/([a-z-]+)\)/g, (match, target) => {
+const relink = (text: string, id: string): string => {
+  return text.replace(/]\(\.\.\/([a-z-]+)\)/g, (match: string, target: string) => {
     if (!ruleIds.includes(target)) {
       throw new Error(`${id}/README.md links ../${target}, which is not a rule`);
     }

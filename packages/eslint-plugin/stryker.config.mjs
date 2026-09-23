@@ -5,9 +5,12 @@
  * and expects the suite to go red, so a surviving mutant is a line no test pins. `pnpm mutation` runs it; reports
  * land in `reports/mutation`.
  *
- * `.mjs`, although this package is `type: module` and `.js` would already be ESM: Stryker's config discovery looks for
- * `stryker.conf.json`, `stryker.config.json` and `stryker.config.mjs`, and nothing else. Renamed to `.js` it is simply
- * not found, and the run falls back to defaults with no error. The extension is upstream's list, not a redundancy.
+ * Not TypeScript, although every other script in this package is. Stryker builds its candidate file names as a cross
+ * product: prefix `''` or `'.'`, suffix `.conf` or `.config`, extension `json`, `js`, `mjs` or `cjs`. Measured against
+ * `SUPPORTED_CONFIG_FILE_NAMES` in `@stryker-mutator/core` 10. There is no `ts` in that list, so `stryker.config.ts`
+ * is simply not found and the run falls back to defaults with no error. The extension is upstream's list, not a
+ * redundancy: `.js` would be found and would already be ESM under this package's `type: module`, but `.mjs` says so
+ * without depending on that field.
  */
 
 // @type {import('@stryker-mutator/api/core').PartialStrykerOptions}
@@ -34,7 +37,7 @@ const config = {
    * logic worth mutating; `plugin.ts` does, and was left out on the strength of a comment naming only the other
    * two. Adding it paid immediately: five survivors were real gaps and `meta.test.ts` now pins each. Both flat
    * block names could be emptied, both arms of the `overrides` branch inverted, and `configs` dropped from the
-   * default export, all with the suite green and only `smoke.js` between that last one and a release. Read the
+   * default export, all with the suite green and only `smoke.ts` between that last one and a release. Read the
    * rest of its survivors with the caveat below in hand: everything in this file runs at module load, so it is
    * the worst case for the attribution problem, not a file with poor tests.
    */
@@ -52,7 +55,7 @@ const config = {
    * would have written the same text anyway: the fixers emit the canonical gap, so when the gap is already
    * canonical, removing the guard changes nothing observable. Feeding those rules whitespace that is *not*
    * canonical tells the two apart, and the fixtures doing it are in `union-newline` and `export-specifier-newline`.
-   * Anything still surviving has been replayed through `scripts/auditSurvivors.js`, which applies the mutant and
+   * Anything still surviving has been replayed through `scripts/auditSurvivors.ts`, which applies the mutant and
    * compares reports and fixed output against the original across the shared corpus. That is evidence of
    * equivalence, not proof: a shape the corpus lacks could still separate them, so growing it strengthens the claim.
    */
