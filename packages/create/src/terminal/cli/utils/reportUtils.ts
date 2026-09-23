@@ -23,6 +23,13 @@ export interface StageReport extends Required<Pick<PipelineOptions,
   output: RunOutput;
 }
 
+// What the spinner's line says about the stage running now.
+interface LiveLine {
+  stage: Stage;
+  writes: number;
+  notice: string;
+}
+
 // stdout for what the user asked to see; `console.error` for failures.
 export const say = (message: string): void => {
   stdout.write(`${message}\n`);
@@ -90,36 +97,37 @@ const pipedReport = (options: CliOptions): StageReport => {
  * `main` lands over the spinner's line rather than after it.
  */
 const liveReport = (): StageReport => {
-  let current: Stage = 'lint';
-  let writes = 0;
-  let notice = '';
+  // Assigned by `onStage`, which the pipeline calls before any other event of a stage.
+  let line: LiveLine;
+  let turning: ReturnType<typeof setInterval>;
   let frame = 0;
-  let turning: ReturnType<typeof setInterval> | undefined;
 
   const paint = (): void => {
     frame = (frame + 1) % SPINNER_FRAMES.length;
-    stdout.write(`\u001B[K  ${SPINNER_FRAMES.charAt(frame)} ${stageLine(current, writes, notice)}\r`);
+    stdout.write(`\u001B[K  ${SPINNER_FRAMES.charAt(frame)} ${stageLine(line.stage, line.writes, line.notice)}\r`);
   };
 
   return {
     output: 'capture',
     onStage: (stage) => {
-      current = stage;
-      writes = 0;
-      notice = '';
+      line = {
+        stage,
+        writes: 0,
+        notice: '',
+      };
       // Unreferenced, so a stage that throws cannot leave a timer holding the process open.
       turning = setInterval(paint, SPINNER_INTERVAL).unref();
       paint();
     },
     onWrite: () => {
-      writes += 1;
+      line.writes += 1;
     },
     onNotice: (message) => {
-      notice = message;
+      line.notice = message;
     },
     onStageDone: (stage, milliseconds) => {
       clearInterval(turning);
-      stdout.write(`\u001B[K  ✓ ${stageLine(stage, writes, notice, milliseconds)}\n`);
+      stdout.write(`\u001B[K  ✓ ${stageLine(stage, line.writes, line.notice, milliseconds)}\n`);
     },
   };
 };

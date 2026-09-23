@@ -102,6 +102,9 @@ interface Described {
 
 const CANCELLED = Symbol('cancelled');
 
+// Its own class so `main` recognises a cancel by one `instanceof` rather than by a tag on a plain `Error`.
+export class RunCancelled extends Error {}
+
 /**
  * `@inquirer/prompts` rejects with an `ExitPromptError` on Ctrl+C where this interface resolves a symbol, so the
  * throw is turned back into one here. Matched on the name rather than the class: the error is constructed inside
@@ -176,7 +179,7 @@ export const inquirerPrompter: Prompter = {
 
 const unwrap = <T extends string | readonly string[]>(prompter: Prompter, value: T | symbol): T => {
   if (prompter.isCancel(value)) {
-    throw Object.assign(new Error(RUN_CANCELLED_MESSAGE), { code: 'CANCELLED' });
+    throw new RunCancelled(RUN_CANCELLED_MESSAGE);
   }
 
   return value;

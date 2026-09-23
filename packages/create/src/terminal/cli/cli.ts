@@ -44,6 +44,7 @@ import {
   type Asked,
   inquirerPrompter,
   type Prompter,
+  RunCancelled,
 } from '../prompts/prompts';
 import { isValidProjectName } from '../utils/nameUtils';
 
@@ -58,13 +59,14 @@ import {
   managerFromUserAgent,
   managerRefusal,
   nodeRefusal,
+  unversionedRefusal,
   yarnFromLockfile,
 } from './utils/hostUtils';
 import { say, stageReport } from './utils/reportUtils';
 
 interface Host {
   packageManager: PackageManager;
-  packageManagerVersion: string | undefined;
+  packageManagerVersion: string;
   nodeVersion: string;
 }
 
@@ -112,12 +114,12 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
 };
 
 // A fresh run records the host: the manager question is gone, so `packageManager` on the answers is a placeholder
-// until here. `exactOptionalPropertyTypes` is on, so an absent version is an absent key rather than an undefined one.
+// until here.
 const hosted = (answers: Answers, host: Host): Answers => {
   return {
     ...answers,
     packageManager: host.packageManager,
-    ...host.packageManagerVersion === undefined ? {} : { packageManagerVersion: host.packageManagerVersion },
+    packageManagerVersion: host.packageManagerVersion,
     nodeVersion: host.nodeVersion,
   };
 };
@@ -132,7 +134,7 @@ const filled = (answers: Answers, host: Host): Answers => {
 
   return {
     ...answers,
-    ...answers.packageManagerVersion === undefined && sameManager && host.packageManagerVersion !== undefined
+    ...answers.packageManagerVersion === undefined && sameManager
       ? { packageManagerVersion: host.packageManagerVersion }
       : {},
     ...answers.nodeVersion === undefined ? { nodeVersion: host.nodeVersion } : {},
@@ -147,6 +149,11 @@ const filled = (answers: Answers, host: Host): Answers => {
 const hostOf = async (cwd: string): Promise<Host | string> => {
   const manager = await detectedManager(cwd);
   const packageManagerVersion = manager.version ?? packageManagerSpawn(manager.name);
+
+  if (packageManagerVersion === undefined) {
+    return unversionedRefusal(manager.name);
+  }
+
   const wrongManager = managerRefusal(manager.name, packageManagerVersion);
 
   if (wrongManager !== undefined) {
@@ -259,7 +266,8 @@ const runSync = async (options: CliOptions, answers: Answers): Promise<void> => 
 // The argument only: a directory name was never chosen as a package name, and adopting one is what
 // `--skip-scaffold` is for.
 const projectNameError = (options: CliOptions): string | undefined => {
-  if (options.command === 'sync' || options.name === '') {
+  // `sync` takes no name, so `parseCliArgs` gives it `''` and this one check covers both.
+  if (options.name === '') {
     return undefined;
   }
 
@@ -289,9 +297,10 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     options = parseCliArgs(argv);
   }
   catch (error) {
-    // `parseArgs` throws a `TypeError` and nothing else.
+    // `parseArgs` throws a `TypeError` and nothing else. The check is kept because it is how an `unknown` catch
+    // binding reaches `message` without a cast, and the rethrow it needs is the arm no argv can take.
     /* v8 ignore next 3 */
-    if (!(error instanceof Error)) {
+    if (!(error instanceof TypeError)) {
       throw error;
     }
 
@@ -359,7 +368,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
   }
   catch (error) {
     // Cancelling is not a failure: no "Error:" prefix, and 130, the SIGINT exit code.
-    if (error instanceof Error && 'code' in error && error.code === 'CANCELLED') {
+    if (error instanceof RunCancelled) {
       say(error.message);
 
       return 130;

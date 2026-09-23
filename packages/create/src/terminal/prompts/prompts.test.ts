@@ -25,6 +25,7 @@ import {
   type AskInput,
   inquirerPrompter,
   type Prompter,
+  RunCancelled,
 } from './prompts';
 
 interface AskOutcome {
@@ -146,14 +147,13 @@ describe('ask', () => {
     await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
-  // Cancelling is tagged by `code`, the way a filesystem error already is, and reachable partway through.
+  // Cancelling is its own class, reachable partway through.
   it('throws a distinct, calm error when a person cancels mid-questionnaire', async () => {
     const recorded = scripted(['demo-app', CANCEL]);
+    const asking = ask(recorded.prompter);
 
-    await expect(ask(recorded.prompter)).rejects.toMatchObject({
-      message: RUN_CANCELLED_MESSAGE,
-      code: 'CANCELLED',
-    });
+    await expect(asking).rejects.toBeInstanceOf(RunCancelled);
+    await expect(asking).rejects.toThrow(RUN_CANCELLED_MESSAGE);
   });
 
   it('uses every default when each prompt is left blank', async () => {

@@ -133,8 +133,8 @@ describe('versioned', () => {
     }).toThrow('No version in VERSIONS for not-a-real-package');
   });
 
-  it('drops the empty name, sorts and de-duplicates what is left', () => {
-    expect(Object.keys(versioned(['vitest', '', 'eslint', 'vitest']))).toEqual(['eslint', 'vitest']);
+  it('sorts and de-duplicates the names', () => {
+    expect(Object.keys(versioned(['vitest', 'eslint', 'vitest']))).toEqual(['eslint', 'vitest']);
   });
 
   it('installs no TanStack binding for the one target that has none', () => {

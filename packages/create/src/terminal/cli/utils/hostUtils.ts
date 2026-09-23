@@ -5,7 +5,7 @@ import {
 } from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
-import { majorOf, rankOf } from '@utils/versionUtils';
+import { rankOf } from '@utils/versionUtils';
 
 import type { PackageManager } from '@answers';
 
@@ -17,30 +17,34 @@ export interface DetectedManager {
 // What an agent's first token can say, which is a command rather than an id: derived, so a sixth manager is one row.
 const AGENT_NAMES = new Set<string>(valuesOf(MANAGER_BINARIES));
 
-// Yarn says `yarn` whichever yarn it is, and the two are different managers here, so the major decides. An agent
-// with no version to read is taken for Berry: that is the yarn a fresh project gets, and the one a `dlx` forwards to.
-const managerNamed = (name: string, version: string | undefined): PackageManager => {
-  return name === 'yarn' && version !== undefined && majorOf(version) === 1 ? 'yarn-classic' : name as PackageManager;
-};
-
 /**
  * The first token of `npm_config_user_agent`, read the way every scaffolder reads it:
  * `pnpm/12.5.1 npm/? node/? darwin arm64`. A name outside the four commands answers `undefined`, as does an unset
  * agent, and so does a version that is not one: pnpm's own agent carries `node/?` rather than a Node version.
  */
 export const managerFromUserAgent = (userAgent: string | undefined): DetectedManager | undefined => {
-  const [token = ''] = (userAgent ?? '').split(' ');
-  const [name = '', version = ''] = token.split('/');
+  if (userAgent === undefined) {
+    return undefined;
+  }
+
+  // Cut off rather than split, so each piece is a string and never a missing element.
+  const token = userAgent.replace(/ .*/su, '');
+  const name = token.replace(/\/.*/su, '');
 
   if (!AGENT_NAMES.has(name)) {
     return undefined;
   }
 
-  const read = /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined;
+  const version = token.slice(name.length + 1).replace(/\/.*/su, '');
 
+  /*
+   * Yarn says `yarn` whichever yarn it is, and the two are different managers here, so the major decides: semver has
+   * no leading zeros, so major 1 is a version opening `1.`. An agent with no version to read is taken for Berry, the
+   * yarn a fresh project gets and the one a `dlx` forwards to.
+   */
   return {
-    name: managerNamed(name, read),
-    version: read,
+    name: name === 'yarn' && /^1\.\d+\.\d+$/u.test(version) ? 'yarn-classic' : name as PackageManager,
+    version: /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined,
   };
 };
 
@@ -55,13 +59,15 @@ export const acceptsManager = (pm: PackageManager, version: string): boolean => 
   return rankOf(version) >= rankOf(MANAGER_FLOORS[pm]);
 };
 
+// A manager that named itself but will not say its version. A refusal like `managerRefusal`, and asked first, so the
+// version that one reads is always a real one.
+export const unversionedRefusal = (pm: PackageManager): string => {
+  return `${pm} ran this, but \`${pm} --version\` answers nothing. Install it and run this again.`;
+};
+
 // Why this run cannot go on, or `undefined`. Answered rather than thrown, like `argumentError` beside it, because it
 // runs before the questionnaire: nobody should answer a dozen questions and then be told their manager is too old.
-export const managerRefusal = (pm: PackageManager, version: string | undefined): string | undefined => {
-  if (version === undefined) {
-    return `${pm} ran this, but \`${pm} --version\` answers nothing. Install it and run this again.`;
-  }
-
+export const managerRefusal = (pm: PackageManager, version: string): string | undefined => {
   if (acceptsManager(pm, version)) {
     return undefined;
   }

@@ -9,6 +9,7 @@ import {
   managerFromUserAgent,
   managerRefusal,
   nodeRefusal,
+  unversionedRefusal,
   yarnFromLockfile,
 } from './hostUtils';
 
@@ -57,6 +58,16 @@ describe('managerFromUserAgent', () => {
     expect(managerFromUserAgent('pnpm/v12.5.1 npm/? node/?')?.version).toBeUndefined();
     expect(managerFromUserAgent('pnpm/12.5.1-rc.1 npm/? node/?')?.version).toBeUndefined();
   });
+
+  // Classic is a readable major of exactly 1; a major merely ending in 1, or an unreadable 1.x, is Berry.
+  it('takes only a readable yarn 1 for classic', () => {
+    expect(managerFromUserAgent('yarn/21.0.0 npm/? node/?')?.name).toBe('yarn');
+    expect(managerFromUserAgent('yarn/1.22.22-rc.1 npm/? node/?')?.name).toBe('yarn');
+  });
+
+  it('reads the version between the first slash and the next', () => {
+    expect(managerFromUserAgent('pnpm/12.5.1/extra npm/? node/?')?.version).toBe('12.5.1');
+  });
 });
 
 describe('acceptsManager', () => {
@@ -85,9 +96,11 @@ describe('managerRefusal', () => {
     );
     expect(managerRefusal('bun', '1.1.0') ?? '').toContain('needs bun 1.2.0 or newer');
   });
+});
 
+describe('unversionedRefusal', () => {
   it('refuses a manager that named itself but answers no version', () => {
-    expect(managerRefusal('pnpm', undefined) ?? '').toBe(
+    expect(unversionedRefusal('pnpm')).toBe(
       'pnpm ran this, but `pnpm --version` answers nothing. Install it and run this again.',
     );
   });

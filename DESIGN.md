@@ -372,11 +372,11 @@ That check needed a wider `takenFromBarrel` than `emitters/` had needed. A barre
 `src/index.ts` carrying `main` onward is the package surface asking for it. Matching `import` alone,
 scanned from `src/` alone, the trim would have deleted three names that are read.
 
-One thing the restructure bought that was not the point of it. `vitest.config.ts` excludes
+One thing the restructure bought that was not the point of it. `vitest.config.ts` used to exclude
 `**/cli.ts` from coverage, for `main`'s process-level wiring. Splitting the flag table, `USAGE` and
 `parseCliArgs` out of that file moved them inside the 100% gate, 52 statements the gate had never
-seen, and the suites that followed them covered every branch with nothing added. The exclusion now
-hides only the entrypoint it was meant for.
+seen, and the suites that followed them covered every branch with nothing added. The exclusion has
+since gone altogether; "Coverage thresholds" below says why.
 
 ### The starter tree mirrors the project it seeds
 
@@ -1566,11 +1566,12 @@ One key per package rather than a single global block, because a glob key takes 
 global thresholds, so a package dropped from the list would stop being gated without failing
 anything. Named one by one, it has to be removed on purpose.
 
-`**/cli.ts` is excluded, and `**/e2e/**` with it. The entrypoint is `process.argv` in and an exit
-code out, wired to `stdout`, and covering it means asserting against a harness rather than against
-behaviour; the end-to-end directory runs nothing under the default gate, so a helper there would
-land as a 0% file against a 100% threshold. The exclusion is narrower than it looks now: the flag
-table, `USAGE` and `parseCliArgs` used to sit in `cli.ts` and moved to `cli/utils/argvUtils.ts` when
-the ring took its shape, so 52 statements that had never been gated are, and were already covered.
-Anything else that leaves that file leaves the exclusion with it, which is the direction this should
-keep going.
+`**/e2e/**` is excluded: the end-to-end directory runs nothing under the default gate, so a helper
+there would land as a 0% file against a 100% threshold.
+
+`**/cli.ts` was excluded too, as the entrypoint, and no longer is. The process wiring was never in it:
+`bin/create-linteljs.js` reads `process.argv` and sets `process.exitCode`, and `main` is a function
+from an argv array to an exit code that `cli.test.ts` calls directly. What the exclusion hid was
+ordinary logic, the host checks, the lockfile detection, the sync report and the next-steps summary,
+and one branch of it that no test had ever taken: the refusal of a manager that answers no version.
+Gated, the file needed that one test and nothing else.

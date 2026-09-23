@@ -6,11 +6,7 @@ import { type Stage } from '@config/types';
 
 import { type AnswerKey } from '@answers';
 
-import {
-  CLI_OPTIONS,
-  FLAGGED_ANSWERS,
-  isMultiKind,
-} from '../constants';
+import { CLI_OPTIONS, FLAGGED_ANSWERS } from '../constants';
 
 import type { JsonValue } from '@answers/utils/readUtils';
 
@@ -42,27 +38,20 @@ const list = (flag: string[]): string[] => {
   });
 };
 
-// `values[record.flag]` to `{ [record.key]: ... }`: a multi-kind flag is comma-split, a boolean flag is dropped
-// unless it was actually passed, and everything else passes through for the config parser to validate.
-const answerFlagsFrom = (values: Record<string, JsonValue | undefined>): AnswerFlags => {
+// `values[record.flag]` to `{ [record.key]: ... }`. `CLI_OPTIONS` declares every answer flag a string and a list one
+// `multiple`, so an array is a list to comma-split and anything else passes through for the config parser to validate.
+const answerFlagsFrom = (values: Record<string, boolean
+  | string
+  | string[]
+  | undefined>): AnswerFlags => {
   const flags: AnswerFlags = {};
 
-  for (const {
-    key,
-    record,
-    flag,
-  } of FLAGGED_ANSWERS) {
+  for (const { key, flag } of FLAGGED_ANSWERS) {
     const value = values[flag];
 
-    if (value === undefined || value === false) {
-      continue;
+    if (value !== undefined) {
+      flags[key] = Array.isArray(value) ? list(value) : value;
     }
-
-    flags[key] = isMultiKind(record) && Array.isArray(value)
-      ? list(value.filter((item): item is string => {
-          return typeof item === 'string';
-        }))
-      : value;
   }
 
   return flags;

@@ -6,7 +6,7 @@ import { ANSWERS } from '@answers';
 export const NOTHING_ANSWERED_MESSAGE
   = 'Nothing was written: answer every question, or pass --yes to accept the defaults.';
 
-// Ctrl+C on purpose, told apart by `error.code` the way a filesystem error already is.
+// Ctrl+C on purpose, told apart by being thrown as a `RunCancelled`.
 export const RUN_CANCELLED_MESSAGE = 'Cancelled: nothing was written.';
 
 // Every key `ANSWERS` has, read off the object itself rather than a hand-kept list.

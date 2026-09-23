@@ -85,7 +85,7 @@ const testBlock = (
   include: string,
   exclude: string[],
   setup: string,
-  indent = '  ',
+  indent: string,
   pool?: string,
 ): string => {
   return `${indent}test: {

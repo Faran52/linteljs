@@ -51,7 +51,7 @@ export const FLAGGED_ANSWERS: readonly FlaggedAnswer[] = valuesOf(ANSWERS).flatM
     : [];
 });
 
-export const isMultiKind = (record: AnswerRecord): boolean => {
+const isMultiKind = (record: AnswerRecord): boolean => {
   return record.kind === 'multi' || record.kind === 'optionalMulti';
 };
 
@@ -145,19 +145,18 @@ export const CLI_OPTIONS = {
 } satisfies ParseArgsOptionsConfig;
 
 /**
- * What each stage does, on the line that announces it.
  * The lockfile a directory already has, for a run with no user agent: `--skip-scaffold` and `sync` on a project
- * that carries one. In the order `package-manager-detector` checks them.
+ * that carries one. In the order `package-manager-detector` checks them, which ends with npm's two; npm is also what
+ * a directory with none is taken for, so those two could never change the answer and have no row.
  */
 export const LOCKFILES: readonly (readonly [string, PackageManager])[] = [
   ['pnpm-lock.yaml', 'pnpm'],
   ['yarn.lock', 'yarn'],
   ['bun.lock', 'bun'],
   ['bun.lockb', 'bun'],
-  ['package-lock.json', 'npm'],
-  ['npm-shrinkwrap.json', 'npm'],
 ];
 
+// What each stage does, on the line that announces it.
 export const STAGE_LABELS: Record<Stage, string> = {
   lint: 'lint: eslint and stylelint config',
   package: 'package: package.json, tsconfig and the manager files',

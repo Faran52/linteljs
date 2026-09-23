@@ -1,4 +1,4 @@
-import { compact, uniq } from 'es-toolkit';
+import { uniq } from 'es-toolkit';
 
 import {
   MANAGER_BINARIES,
@@ -149,7 +149,7 @@ export const parsePackageJson = (text: string): PackageJson => {
 export const versioned = (names: string[]): Record<string, string> => {
   const result: Record<string, string> = {};
 
-  const sorted = uniq(compact(names)).sort((left, right) => {
+  const sorted = uniq(names).sort((left, right) => {
     return left.localeCompare(right, 'en');
   });
 

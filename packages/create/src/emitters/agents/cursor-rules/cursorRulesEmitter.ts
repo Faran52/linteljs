@@ -8,7 +8,7 @@ import type { Answers } from '@answers';
 
 // Cursor's own `description` key, taken from the rule's first heading so no second wording exists to drift.
 const titleOf = (source: string): string => {
-  return /^# (.+)$/mu.exec(source)?.[1] ?? 'LintelJS project standard';
+  return /^# (.+)/mu.exec(source)?.[1] ?? 'LintelJS project standard';
 };
 
 export const cursorArtifacts = (answers: Answers): Artifact[] => {

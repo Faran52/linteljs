@@ -765,14 +765,24 @@ describe('main: the manager that ran it', () => {
     expect(errors.join('\n')).toContain('needs pnpm 10.26.0 or newer');
   });
 
+  // Refused before the floor is read, since there is no version to hold to one.
+  it('refuses a manager that will not say its version, before writing anything', async () => {
+    vi.stubEnv('npm_config_user_agent', 'pnpm/? npm/? node/? darwin arm64');
+    await plantBinary(join(project, 'fake-bin'), 'pnpm', ['process.exit(1);']);
+
+    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+
+    expect(code).toBe(1);
+    expect(errors).toEqual([expect.stringContaining('pnpm --version')]);
+    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
+  });
+
   // Every lockfile the detector knows, each answering for its own manager; the two yarns share a filename.
   it.each([
     ['a classic yarn.lock', 'yarn.lock', '# yarn lockfile v1\n', 'yarn', '1.22.22', 'yarn-classic'],
     ['a berry yarn.lock', 'yarn.lock', '__metadata:\n', 'yarn', '4.18.0', 'yarn'],
     ['bun.lock', 'bun.lock', '', 'bun', '1.3.14', 'bun'],
     ['bun.lockb', 'bun.lockb', '', 'bun', '1.3.14', 'bun'],
-    ['package-lock.json', 'package-lock.json', '{}', 'npm', '11.19.1', 'npm'],
-    ['npm-shrinkwrap.json', 'npm-shrinkwrap.json', '{}', 'npm', '11.19.1', 'npm'],
   ])('reads %s as the manager that wrote it', async (_case, lockfile, text, binary, version, manager) => {
     vi.stubEnv('npm_config_user_agent', '');
     await writeFile(join(project, lockfile), text, 'utf8');
