@@ -360,8 +360,11 @@ it('keeps every module to two constants, so a third is a constants.ts', () => {
   expect(carrying).toEqual([]);
 });
 
+// A Stryker worker reads an instrumented copy of the file, which always carries an `if (`.
+const instrumented = process.env['STRYKER_MUTATOR_WORKER'] !== undefined;
+
 // A file is written because its own emitter said so, so the assembler has no condition left to hold.
-it('leaves the emitter assembler nothing to branch on', () => {
+it.skipIf(instrumented)('leaves the emitter assembler nothing to branch on', () => {
   expect(readFileSync(join(srcDir, 'emitters/registry.ts'), 'utf8')).not.toMatch(/\bif\s*\(/u);
 });
 
