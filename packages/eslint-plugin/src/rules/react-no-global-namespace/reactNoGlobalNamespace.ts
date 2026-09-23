@@ -82,7 +82,7 @@ const isAmbient = (node: TypedNode & Ambient): boolean => {
 // `'use client'` and the rest of a prologue stop being directives the moment anything precedes them, so the
 // import goes after them rather than before the first statement.
 const isDirective = (node: TypedNode): boolean => {
-  return node.type === 'ExpressionStatement' && 'directive' in node;
+  return 'directive' in node;
 };
 
 const isQualified = (node: RuleNode): node is RuleNode & Qualified => {
@@ -188,7 +188,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
         // No import to join: none from `react` at all, a type-only one, or one carrying no named list. A second
         // `import { ... } from 'react'` beside any of those is valid, which rewriting them into one is not.
-        if (existing === undefined || mergeable === undefined) {
+        if (mergeable === undefined) {
           // A file with a `React.` reference has a statement past its prologue, which is what `mustFind` says here.
           const statement = mustFind(source.ast.body.find((entry) => {
             return !isDirective(entry);

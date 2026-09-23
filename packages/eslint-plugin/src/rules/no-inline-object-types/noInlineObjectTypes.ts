@@ -1,5 +1,9 @@
 import { createRule } from '../../types.ts';
-import { optionsOf, type RuleNode } from '../../utils/ruleUtils.ts';
+import {
+  mustFind,
+  optionsOf,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 interface NoInlineObjectTypesOptions {
   allowIn: string[];
@@ -30,10 +34,9 @@ const hasMembers = (node: RuleNode): node is RuleNode & TypeLiteral => {
   return 'members' in node && Array.isArray(node.members);
 };
 
-// `String(...)`, because ESLint types `parent` as ESTree and a TypeScript node type genuinely occurs there: comparing
-// the union directly is a TS2367 the compiler is right about and the runtime is not.
+// A type literal is never a child of `Program`, so it always has a parent.
 const parentTypeOf = (node: RuleNode): string => {
-  return String(node.parent?.type);
+  return mustFind(node.parent).type;
 };
 
 const hasTypeName = (node: RuleNode): node is RuleNode & NamedTypeReference => {
@@ -43,16 +46,14 @@ const hasTypeName = (node: RuleNode): node is RuleNode & NamedTypeReference => {
 /**
  * The generic this literal is an argument to, or an empty string when it is not an argument at all. `Extract<Node,
  * { type: 'ObjectPattern' }>` reaches here as a literal whose parent is the argument list and whose grandparent is
- * the reference to `Extract`.
+ * the reference to `Extract`. Only a `TSTypeReference` carries a `typeName`, and a literal can only sit under one
+ * inside its argument list, so the grandparent alone answers. A type literal is never a child of `Program`, so both
+ * generations exist.
  */
 const argumentToOf = (node: RuleNode): string => {
-  if (parentTypeOf(node) !== 'TSTypeParameterInstantiation') {
-    return '';
-  }
+  const reference = mustFind(mustFind(node.parent).parent);
 
-  const reference = node.parent?.parent;
-
-  if (reference === null || reference === undefined || !hasTypeName(reference)) {
+  if (!hasTypeName(reference)) {
     return '';
   }
 

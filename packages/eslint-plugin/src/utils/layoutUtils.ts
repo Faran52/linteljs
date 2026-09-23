@@ -56,16 +56,10 @@ export const gapIsBlank = (sourceCode: SourceCode, from: number, to: number): bo
 
 // Reads the line's indentation, not the node's column: an ObjectPattern starts after `const `.
 export const getIndent = (sourceCode: SourceCode, node: RuleNode): string => {
-  /* v8 ignore next 3 -- a parsed node always carries a location */
-  if (!node.loc) {
-    return '';
-  }
+  // A parsed node carries a location, and the line it starts on is always in `lines`.
+  const line = mustFind(sourceCode.lines[mustFind(node.loc).start.line - 1]);
 
-  /* v8 ignore next 1 -- the line a node starts on is always present in sourceCode.lines */
-  const line = sourceCode.lines[node.loc.start.line - 1] ?? '';
-
-  /* v8 ignore next 1 -- the pattern matches any string, including an empty one */
-  return /^[\t ]*/.exec(line)?.[0] ?? '';
+  return line.replace(/[^\t ][\s\S]*/u, '');
 };
 
 // Whether replacing `node` with `text` leaves the line within `limit`. Whatever sits either side of the node on
@@ -167,6 +161,18 @@ export const spliceOntoNewline = function* (
   }
 };
 
+// The edit alone, for a caller that has already ruled out a comment anywhere in the statement.
+export const commaToNewline = (
+  sourceCode: SourceCode,
+  fixer: Fixer,
+  currentToken: AST.Token,
+  indent: string,
+): Rule.Fix => {
+  const comma = mustFind(sourceCode.getTokenBefore(currentToken));
+
+  return fixer.replaceTextRange([comma.range[1], currentToken.range[0]], `${lineTerminatorOf(sourceCode)}${indent}`);
+};
+
 // Null when anything is written in the gap: reflowing over a comment there would delete it silently.
 export const fixCommaToNewline = (
   sourceCode: SourceCode,
@@ -176,11 +182,9 @@ export const fixCommaToNewline = (
 ): Rule.Fix | null => {
   const comma = mustFind(sourceCode.getTokenBefore(currentToken));
 
-  const rangeAfterComma: [number, number] = [comma.range[1], currentToken.range[0]];
-
-  if (!gapIsBlank(sourceCode, rangeAfterComma[0], rangeAfterComma[1])) {
+  if (!gapIsBlank(sourceCode, comma.range[1], currentToken.range[0])) {
     return null;
   }
 
-  return fixer.replaceTextRange(rangeAfterComma, `${lineTerminatorOf(sourceCode)}${indent}`);
+  return commaToNewline(sourceCode, fixer, currentToken, indent);
 };

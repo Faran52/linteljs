@@ -9,8 +9,10 @@ import {
 } from '../../utils/layoutUtils.ts';
 import {
   type Fixer,
+  mustFind,
   type ObjectPatternNode,
   optionsOf,
+  rangeOf,
   rebuildLosesComments,
   type RuleNode,
   type TypedNode,
@@ -161,19 +163,14 @@ export const memberNewline = createRule('member-newline', {
     ): IterableIterator<Rule.Fix> {
       // A `TSPropertySignature` node covers its own trailing `;` or `,`, so the last token is already the separator.
       for (const [previous, member] of adjacentPairs(members)) {
-        const endToken = endTokenOf(sourceCode, previous);
-        const targetToken = startTokenOf(sourceCode, member);
+        // Members are parsed nodes, so each has a token at either end and every token and comment a location.
+        const endToken = mustFind(endTokenOf(sourceCode, previous));
+        const targetToken = mustFind(startTokenOf(sourceCode, member));
+        const endLine = mustFind(endToken.loc).end.line;
+        const targetLine = mustFind(targetToken.loc).start.line;
 
-        /* v8 ignore next 3 -- members are parsed nodes, so their tokens carry ranges and locations */
-        if (!endToken?.range || !targetToken?.range || !endToken.loc || !targetToken.loc) {
-          continue;
-        }
-
-        const needsNewline = endToken.loc.end.line === targetToken.loc.start.line;
-        const hasBlankLines = targetToken.loc.start.line > endToken.loc.end.line + 1;
-
-        if (needsNewline || hasBlankLines) {
-          yield fixer.replaceTextRange([endToken.range[1], targetToken.range[0]], `${eol}${indentInner}`);
+        if (endLine === targetLine || targetLine > endLine + 1) {
+          yield fixer.replaceTextRange([rangeOf(endToken)[1], rangeOf(targetToken)[0]], `${eol}${indentInner}`);
         }
       }
     };
@@ -183,14 +180,9 @@ export const memberNewline = createRule('member-newline', {
       members: RuleNode[],
     ): ((fixer: Fixer) => IterableIterator<Rule.Fix>) => {
       return function* (fixer) {
-        const [firstMember] = members;
-        const lastMember = members[members.length - 1];
-
-        /* v8 ignore next 3 -- checkMembers only calls this with two or more members */
-        if (!firstMember || !lastMember) {
-          return;
-        }
-
+        // `checkMembers` only builds this fix for two or more members.
+        const firstMember = mustFind(members[0]);
+        const lastMember = mustFind(members[members.length - 1]);
         const closeBrace = sourceCode.getLastToken(node);
 
         // `getLastToken` skips comments, so a note in the splice gap would be lost; decline the fix, like the rebuild.
@@ -327,14 +319,13 @@ export const memberNewline = createRule('member-newline', {
         }
       },
 
+      // Each selector matches only the node that carries its list, which the types leave optional for `Rule.Node`.
       TSInterfaceBody: (node: InterfaceBodyNode) => {
-        /* v8 ignore next -- the selector only matches a node that has a body */
-        checkMembers(node, node.body ?? []);
+        checkMembers(node, mustFind(node.body));
       },
 
       TSTypeLiteral: (node: TypeLiteralNode) => {
-        /* v8 ignore next -- the selector only matches a node that has members */
-        checkMembers(node, node.members ?? []);
+        checkMembers(node, mustFind(node.members));
       },
     };
   },

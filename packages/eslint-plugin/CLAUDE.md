@@ -31,8 +31,8 @@ local-only. That version is not the source of truth any more. This repo owns the
   `utils/compatUtils.ts` needs none: it describes both ESLint shapes as one interface with every
   member optional, which a real context satisfies structurally. `union-newline/unionNewline.ts`
   used to carry a sixth, `(node.parent?.type as string)`, suppressing a real TS2367 rather than narrowing
-  anything; it reads `String(node.parent?.type)` now, because ESLint types `parent` as ESTree and
-  a TypeScript node type genuinely does occur there.
+  anything; it reads `mustFind(node.parent).type` into a `string` now, because ESLint types `parent`
+  as ESTree and a TypeScript node type genuinely does occur there.
 - **A test that cannot fail is not a test.** Break the rule, watch the suite go red, revert.
 - **Autofix must never change behaviour.** A fix that alters what the program does is a bug report
   waiting to happen against a public package. If a transform cannot be proven safe, it ships as a

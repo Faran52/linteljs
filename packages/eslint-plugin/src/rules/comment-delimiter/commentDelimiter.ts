@@ -61,7 +61,8 @@ const jsdocBodyOf = (comment: CommentNode): string[] => {
 const wholeLineIndentOf = (sourceCode: SourceCode, comment: CommentNode): string | null => {
   const [start, end] = rangeOf(comment);
   const { text } = sourceCode;
-  const lineStart = start === 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1;
+  // At `start` 0 the search reads index 0 alone, the comment's own first character, so it still answers 0.
+  const lineStart = text.lastIndexOf('\n', start - 1) + 1;
 
   if (text.slice(lineStart, start).trim() !== '') {
     return null;
@@ -93,12 +94,10 @@ const jsdocTextFor = (indent: string, contents: string[], eol: string): string =
   ].join(eol);
 };
 
-// Adjacent when exactly one line break separates the two comments and nothing else does. Read off the text rather
-// than off `loc`, which ESTree types as nullable and a comment therefore cannot be trusted to carry.
+// Adjacent when one line break separates the two, and since both hold their lines alone, the rest is indent. Read
+// off the text rather than off `loc`, which ESTree types as nullable and a comment cannot be trusted to carry.
 const isAdjacent = (sourceCode: SourceCode, previous: LineEntry, comment: CommentNode): boolean => {
-  const between = sourceCode.text.slice(rangeOf(previous.comment)[1], rangeOf(comment)[0]);
-
-  return between.trim() === '' && between.split('\n').length === 2;
+  return sourceCode.text.slice(rangeOf(previous.comment)[1], rangeOf(comment)[0]).split('\n').length === 2;
 };
 
 // Null for anything that cannot join a run: a block comment, a directive, or a `//` sharing its line with code.
@@ -157,7 +156,8 @@ const reportShortJsdoc = (
   raw: string,
   eol: string,
 ): void => {
-  if (comment.type !== 'Block' || !raw.startsWith('/**')) {
+  // Only a block's raw text can open `/**`: a line comment opens `//` and a shebang `#!`.
+  if (!raw.startsWith('/**')) {
     return;
   }
 

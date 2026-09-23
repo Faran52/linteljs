@@ -77,9 +77,12 @@ export const unionNewline = createRule('union-newline', {
       return COMPLEX_UNION_MEMBER_TYPES.has(member.type);
     };
 
-    // `String()` rather than a cast: ESLint types `parent` as ESTree, so a direct comparison is TS2367.
+    // A union type is never a child of `Program`, so it always has a parent. Widened to `string`, not cast: ESLint
+    // types `parent` as ESTree, and comparing that union directly is a TS2367 the runtime does not share.
     const isInsideGenericArg = (node: RuleNode): boolean => {
-      return String(node.parent?.type) === 'TSTypeParameterInstantiation';
+      const parentType: string = mustFind(node.parent).type;
+
+      return parentType === 'TSTypeParameterInstantiation';
     };
 
     // An object or function member always splits; length only decides inside a generic argument.
@@ -137,8 +140,7 @@ export const unionNewline = createRule('union-newline', {
 
     return {
       TSUnionType: (node: UnionTypeNode) => {
-        /* v8 ignore next -- the selector only matches a node that has members */
-        const types = node.types ?? [];
+        const types = mustFind(node.types);
         const messageId = messageIdFor(node, types);
 
         if (!messageId) {

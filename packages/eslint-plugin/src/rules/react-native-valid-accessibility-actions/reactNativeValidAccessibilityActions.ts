@@ -8,9 +8,9 @@ import {
   keyNameOf,
   propertiesOf,
 } from '../../utils/jsxUtils.ts';
+import { mustFind, type RuleNode } from '../../utils/ruleUtils.ts';
 
 import type { JsxExpression } from '../../utils/jsxUtils.ts';
-import type { RuleNode } from '../../utils/ruleUtils.ts';
 
 // `AccessibilityActionName` from react-native 0.87.1. These six are announced by the platform under a name it
 // already has words for; any other name is the app's own and is read out verbatim unless a label supplies better.
@@ -72,12 +72,13 @@ export const reactNativeValidAccessibilityActions = createRule('react-native-val
         return;
       }
 
-      // Only a name written down can be matched against the standard set; one computed at runtime may be either.
-      if (named.value?.type !== 'Literal' || typeof named.value.value !== 'string') {
+      // Only a name written down can be matched against the standard set; one computed at runtime may be either. A
+      // property always has a value, and of the expressions only a string literal carries a string `value`.
+      const { value } = mustFind(named.value);
+
+      if (typeof value !== 'string') {
         return;
       }
-
-      const { value } = named.value;
 
       if (!STANDARD_ACTIONS.includes(value) && !keys.includes('label')) {
         context.report({

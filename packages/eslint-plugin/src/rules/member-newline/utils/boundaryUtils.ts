@@ -1,11 +1,11 @@
 // Where a member begins and ends once surrounding comments are counted, and what that says
 // about the block's layout. `index.ts` decides and fixes; nothing here reports.
 import { adjacentPairs, sameLine } from '../../../utils/layoutUtils.ts';
-
-import type {
-  NodeLocation,
-  RuleNode,
-  SourceCode,
+import {
+  mustFind,
+  type NodeLocation,
+  type RuleNode,
+  type SourceCode,
 } from '../../../utils/ruleUtils.ts';
 
 interface Placed {
@@ -27,10 +27,11 @@ export interface PatternAnalysis {
 // returns both, so a same-line note would otherwise be misattributed.
 const leadingCommentsOf = (sourceCode: SourceCode, member: RuleNode) => {
   return sourceCode.getCommentsBefore(member).filter((comment) => {
-    const previousToken = sourceCode.getTokenBefore(comment);
+    // Every member sits inside braces, so a comment above one has at least the `{` before it.
+    const previousToken = mustFind(sourceCode.getTokenBefore(comment));
 
     // A brace has nothing to trail, so a comment written straight after `{` heads the first member.
-    return previousToken?.value === '{' || !sameLine(previousToken, comment);
+    return previousToken.value === '{' || !sameLine(previousToken, comment);
   });
 };
 

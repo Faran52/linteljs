@@ -1,10 +1,11 @@
 // The emitter: a function node in, the arrow that replaces it out. Nothing here decides
 // whether a rewrite is allowed; `safetyUtils.ts` is the other half.
-import type {
-  FunctionNode,
-  NamedNode,
-  RuleNode,
-  SourceCode,
+import {
+  type FunctionNode,
+  mustFind,
+  type NamedNode,
+  type RuleNode,
+  type SourceCode,
 } from '../../../utils/ruleUtils.ts';
 
 interface TypeAnnotation {
@@ -90,9 +91,7 @@ export const writeArrowFunction = (sourceCode: SourceCode, fn: FunctionLike, isT
   return `${asyncPrefix}${generics}(${params})${returnType} => ${body}`;
 };
 
+// Only a named declaration reaches this; an anonymous default export is written by `writeArrowFunction` alone.
 export const writeArrowConstant = (sourceCode: SourceCode, fn: FunctionLike, isTsx: boolean): string => {
-  const id = getFunctionId(fn);
-  /* v8 ignore next 1 -- only a named declaration reaches this, an anonymous default export is handled separately */
-  const name = id ? id.name : '';
-  return `const ${name} = ${writeArrowFunction(sourceCode, fn, isTsx)}`;
+  return `const ${mustFind(getFunctionId(fn)).name} = ${writeArrowFunction(sourceCode, fn, isTsx)}`;
 };

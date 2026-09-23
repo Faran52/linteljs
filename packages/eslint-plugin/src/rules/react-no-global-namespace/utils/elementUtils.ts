@@ -1,4 +1,8 @@
-import { type Ranged, type TypedNode } from '../../../utils/ruleUtils.ts';
+import {
+  mustFind,
+  type Ranged,
+  type TypedNode,
+} from '../../../utils/ruleUtils.ts';
 
 // One part of a tag name: `React` or `Fragment` in `<React.Fragment>`. A deeper member has no `name` of its own.
 interface JsxNamePart {
@@ -36,9 +40,11 @@ export const globalNamespaceTags = (node: TypedNode, namespace: string): JsxTagN
     return [];
   }
 
-  const { name } = node.openingElement;
+  // An opening element always has a name, and one whose `object` is the namespace is a member expression, whose
+  // property is an identifier and so always named.
+  const name = mustFind(node.openingElement.name);
 
-  if (name?.object?.name !== namespace || typeof name.property?.name !== 'string') {
+  if (name.object?.name !== namespace) {
     return [];
   }
 

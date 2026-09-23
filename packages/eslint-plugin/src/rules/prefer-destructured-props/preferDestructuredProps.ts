@@ -3,6 +3,7 @@ import { declaredVariablesOf } from '../../utils/compatUtils.ts';
 import {
   type FunctionNode,
   type MemberExpressionNode,
+  mustFind,
   type NamedNode,
   type Ranged,
   rangeOf,
@@ -89,14 +90,10 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
           return;
         }
 
-        const propsVariable = declaredVariablesOf(context, node).find((variable) => {
+        // A parameter always declares its own binding.
+        const propsVariable = mustFind(declaredVariablesOf(context, node).find((variable) => {
           return variable.name === firstParam.name;
-        });
-
-        /* v8 ignore next 3 -- a parameter always declares its own binding */
-        if (!propsVariable) {
-          return;
-        }
+        }));
 
         const { references } = propsVariable;
 

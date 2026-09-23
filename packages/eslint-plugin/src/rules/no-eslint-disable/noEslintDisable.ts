@@ -17,12 +17,10 @@ interface NoEslintDisableOptions {
 const DIRECTIVE = /^\s*eslint-(?:disable-next-line|disable-line|disable)(?=\s|$)([\s\S]*)/;
 
 // ESLint ends the rule list at a `--` with whitespace either side; everything after it is prose for a human.
-const DESCRIPTION = /\s--\s/;
+const DESCRIPTION = /\s--\s[\s\S]*/;
 
 const rulesNamedBy = (tail: string): string[] => {
-  const [list = ''] = tail.split(DESCRIPTION);
-
-  return list.split(',').map((name) => {
+  return tail.replace(DESCRIPTION, '').split(',').map((name) => {
     return name.trim();
   }).filter((name) => {
     return name !== '';

@@ -1,7 +1,11 @@
 // Reject conversions whose body or position would change meaning; `writeUtils.ts` handles output.
 import { adjacentPairs } from '../../../utils/layoutUtils.ts';
+import {
+  mustFind,
+  type RuleNode,
+  type SourceCode,
+} from '../../../utils/ruleUtils.ts';
 
-import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
 import type { FunctionLike } from './writeUtils.ts';
 
 // An allow-list, not a block-list: anything that keeps consuming after a block-bodied arrow
@@ -41,7 +45,7 @@ export const sitsInUnsafePosition = (sourceCode: SourceCode, fn: FunctionLike): 
   // `(function(){})()` parenthesizes the function, so the arrow keeps the parens; Crockford's
   // `(function(){}())` parenthesizes the call, leaving it bare. The token after is `)` or `(`.
   if (parent.type === 'CallExpression') {
-    return parent.callee === fn && sourceCode.getTokenAfter(fn)?.value !== ')';
+    return parent.callee === fn && mustFind(sourceCode.getTokenAfter(fn)).value !== ')';
   }
 
   return !SAFE_FUNCTION_PARENTS.has(parent.type);

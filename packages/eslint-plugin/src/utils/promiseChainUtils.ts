@@ -2,6 +2,7 @@ import {
   type Ancestor,
   type AncestorReader,
   FUNCTION_TYPES,
+  mustFind,
   type RuleNode,
 } from './ruleUtils.ts';
 
@@ -18,39 +19,39 @@ export const outermostCall = (node: RuleNode): RuleNode => {
     ? node.parent
     : node;
 
+  // Every link of a chain is an expression inside some statement, so each has a parent; only Program has none.
+  let parent = mustFind(current.parent);
+
   while (
-    current.parent?.type === 'MemberExpression'
-    && current.parent.object === current
-    && current.parent.parent.type === 'CallExpression'
-    && current.parent.parent.callee === current.parent
+    parent.type === 'MemberExpression'
+    && parent.object === current
+    && parent.parent.type === 'CallExpression'
+    && parent.parent.callee === parent
   ) {
-    current = current.parent.parent;
+    current = parent.parent;
+    parent = mustFind(current.parent);
   }
 
   // An optional chain is wrapped in a ChainExpression, so the await or return sits above that wrapper, not the call.
-  return current.parent?.type === 'ChainExpression' ? current.parent : current;
+  return parent.type === 'ChainExpression' ? parent : current;
 };
 
 // Whether the value is awaited or returned from an async function; shared by prefer-await-to-then
 // and prefer-try-catch so neither double-reports a line.
 export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): boolean => {
   const outer = outermostCall(node);
+  const parent = mustFind(outer.parent);
 
-  /* v8 ignore next 3 -- only Program lacks a parent, and it is never a call expression */
-  if (!outer.parent) {
-    return false;
-  }
-
-  if (outer.parent.type === 'AwaitExpression') {
+  if (parent.type === 'AwaitExpression') {
     return true;
   }
 
   // An implicit return like async () => promise.catch(handle): the value must be the arrow's body itself.
-  if (outer.parent.type === 'ArrowFunctionExpression') {
-    return outer.parent.body === outer && isAsyncFunction(outer.parent);
+  if (parent.type === 'ArrowFunctionExpression') {
+    return parent.body === outer && isAsyncFunction(parent);
   }
 
-  if (outer.parent.type === 'ReturnStatement') {
+  if (parent.type === 'ReturnStatement') {
     // Innermost enclosing function: reversed and found rather than findLast, newer than this package's Node floor.
     const enclosing = [...reader.getAncestors(node)].reverse().find((ancestor) => {
       return FUNCTION_TYPES.has(ancestor.type);

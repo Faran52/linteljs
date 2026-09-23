@@ -6,6 +6,7 @@ import {
   type Located,
 } from '../../utils/layoutUtils.ts';
 import {
+  mustFind,
   rangeOf,
   type RuleNode,
   type SourceCode,
@@ -33,8 +34,7 @@ const readText = (entry: Texted): string => {
 };
 
 const startLineOf = (node: Located): number => {
-  /* v8 ignore next 1 -- every parsed node and comment carries a location */
-  return node.loc?.start.line ?? 0;
+  return mustFind(node.loc).start.line;
 };
 
 const TYPE_DECLARATION_TYPES = new Set(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration']);
@@ -58,8 +58,9 @@ const directiveOf = (node: object): string | undefined => {
   return 'directive' in node && typeof node.directive === 'string' ? node.directive : undefined;
 };
 
+// No node but a directive carries a string `directive`, so the key alone answers.
 const isDirective = (node: ProgramEntry): boolean => {
-  return node.type === 'ExpressionStatement' && directiveOf(node) !== undefined;
+  return directiveOf(node) !== undefined;
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
@@ -92,17 +93,16 @@ const trailingNoteOf = (sourceCode: SourceCode, node: ProgramEntry): [number, nu
     return undefined;
   }
 
-  // A token's location is always present, where a node's is optional in the type.
-  const before = sourceCode.getTokenBefore(note);
+  // A comment after a node always has that node's last token before it, and a token's location is always present.
+  const before = mustFind(sourceCode.getTokenBefore(note));
 
-  return before?.loc.end.line === startLineOf(note) ? note.range : undefined;
+  return before.loc.end.line === startLineOf(note) ? note.range : undefined;
 };
 
 // Cut from the end of the previous entry, so the blank line goes and a trailing note above stays; `getCommentsBefore`
 // hands back that note beside the declaration's own heading comments, and the line split sorts which travel.
 const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: ProgramEntry): TypeCut => {
-  /* v8 ignore next 1 -- every parsed node carries a location */
-  const previousEndLine = previous.loc?.end.line ?? -1;
+  const previousEndLine = mustFind(previous.loc).end.line;
   const between = sourceCode.getCommentsBefore(typeNode);
 
   const firstOwned = between.find((comment) => {
@@ -117,16 +117,10 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
   const noteRange = trailingNoteOf(sourceCode, typeNode);
   const endPos = noteRange ? noteRange[1] : rangeOf(typeNode)[1];
 
-  // `range` is present on every parsed node and comment, so only the fallback chains are real branches here.
-  const precedingEnd = lastRetained?.range?.[1] ?? previous.range?.[1];
-
-  /* v8 ignore next 1 -- a misplaced type always has a parsed sibling before it */
-  const removalStart = precedingEnd ?? startPos;
-
   return {
     node: typeNode,
     text: sourceCode.text.slice(startPos, endPos),
-    removeRange: [removalStart, endPos],
+    removeRange: [rangeOf(lastRetained ?? previous)[1], endPos],
   };
 };
 
@@ -171,13 +165,7 @@ export const interfaceOrder = createRule('interface-order', {
       // every member and needs a cast to undo.
       'Program:exit': (node) => {
         const { body } = node;
-        // Destructured rather than read back as `body[0]` in the fixer, which would re-answer the empty-program case.
         const [firstStatement] = body;
-
-        if (!firstStatement) {
-          return;
-        }
-
         const headerEndIndex = findHeaderEndIndex(body);
         const firstRuntimeIndex = findFirstRuntimeIndex(body, headerEndIndex);
 
@@ -210,10 +198,11 @@ export const interfaceOrder = createRule('interface-order', {
                 : fixer.insertTextAfter(insertAfterNode, block);
             }
             else {
-              // No header, so the block goes above the first statement's own comments; inserting at the node would
-              // detach a JSDoc from it.
-              const leading = sourceCode.getCommentsBefore(firstStatement);
-              const anchor = leading[0] ?? firstStatement;
+              // No header, so the block goes above the first statement's own comments, since inserting at the node
+              // would detach a JSDoc from it. A cut means a runtime statement exists, so there is a first statement.
+              const first = mustFind(firstStatement);
+              const leading = sourceCode.getCommentsBefore(first);
+              const anchor = leading[0] ?? first;
 
               yield fixer.insertTextBefore(anchor, joinedTypes + `${eol}${eol}`);
             }

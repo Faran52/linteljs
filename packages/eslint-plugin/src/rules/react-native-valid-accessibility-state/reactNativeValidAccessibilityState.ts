@@ -6,9 +6,9 @@ import {
   keyNameOf,
   propertiesOf,
 } from '../../utils/jsxUtils.ts';
+import { mustFind, type RuleNode } from '../../utils/ruleUtils.ts';
 
 import type { JsxProperty } from '../../utils/jsxUtils.ts';
-import type { RuleNode } from '../../utils/ruleUtils.ts';
 
 // `AccessibilityState` from react-native 0.87.1, `Libraries/Components/View/ViewAccessibility.d.ts`. A key outside
 // this set is dropped silently, so the state never reaches VoiceOver or TalkBack.
@@ -58,12 +58,15 @@ export const reactNativeValidAccessibilityState = createRule('react-native-valid
         return;
       }
 
-      // Only a value written down can be judged; one computed at runtime is the caller's to get right.
-      if (property.value?.type !== 'Literal') {
+      // Only a value written down can be judged; one computed at runtime is the caller's to get right. A property
+      // always has a value.
+      const written = mustFind(property.value);
+
+      if (written.type !== 'Literal') {
         return;
       }
 
-      const { value } = property.value;
+      const { value } = written;
 
       if (key === 'checked') {
         if (typeof value !== 'boolean' && value !== 'mixed') {

@@ -77,6 +77,11 @@ tsxRuleTester.run('no-eslint-disable: allowRules', noEslintDisable, {
       code: '// eslint-disable-next-line no-console -- measured\nconsole.log(1);\n',
       options: [{ allowRules: ['no-console'] }],
     },
+    // All of it, spaces and commas included, so none of the prose reads as a name.
+    {
+      code: '// eslint-disable-next-line no-console -- measured, never shipped\nconsole.log(1);\n',
+      options: [{ allowRules: ['no-console'] }],
+    },
   ],
   invalid: [
     // One allowed name does not carry the other: the directive suppresses both.

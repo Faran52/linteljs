@@ -1,6 +1,7 @@
 import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
+  type NamedNode,
   optionsOf,
   rebuildLosesComments,
   type TypedNode,
@@ -14,14 +15,9 @@ interface SortHookDepsOptions {
 // Matching is by call name only, so a project with its own hooks replaces this list through the `hooks` option.
 const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
 
-// Wider than the `Identifier` these two care about, so both take ESLint's loosest expression union.
-const isPlainIdentifier = (element: TypedNode | null): boolean => {
+// Generic over the element, so `every` narrows the whole list and each name is read without a fallback.
+const isPlainIdentifier = <Element extends TypedNode | null>(element: Element): element is Element & NamedNode => {
   return element?.type === 'Identifier';
-};
-
-const nameOf = (element: TypedNode | null): string => {
-  /* v8 ignore next 2 -- only reached once isPlainIdentifier has cleared every element */
-  return element && 'name' in element && typeof element.name === 'string' ? element.name : '';
 };
 
 export const sortHookDependencies = createRule('sort-hook-dependencies', {
@@ -85,7 +81,9 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
           return;
         }
 
-        const names = elements.map(nameOf);
+        const names = elements.map((element) => {
+          return element.name;
+        });
         const sorted = [...names].sort(
           (a, b) => {
             return direction * a.localeCompare(b, 'en', { numeric: true });

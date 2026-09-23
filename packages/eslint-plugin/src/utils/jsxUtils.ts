@@ -1,7 +1,7 @@
 // JSX is absent from ESLint's ESTree types, so the accessibility rules describe the nodes they read as structural
 // interfaces. Structural rather than nominal so a test can hand these a plain object, and so no rule needs a cast.
 
-import type { TypedNode } from './ruleUtils.ts';
+import { mustFind, type TypedNode } from './ruleUtils.ts';
 
 // A JSX name in all three spellings: `View`, `Animated.Image`, `svg:path`. `name` is a string on a `JSXIdentifier`
 // and a nested name on a `JSXNamespacedName`, which is why it carries both.
@@ -188,9 +188,8 @@ export const keyNameOf = (property: JsxProperty): string | undefined => {
     return property.key.name;
   }
 
-  return property.key.type === 'Literal' && typeof property.key.value === 'string'
-    ? property.key.value
-    : undefined;
+  // A key that is neither computed nor an identifier is a literal, and only a string one names a key.
+  return typeof property.key.value === 'string' ? property.key.value : undefined;
 };
 
 /**
@@ -250,11 +249,8 @@ export const isInteractive = (
   element: JsxChild | JsxElement,
   components: readonly string[],
 ): boolean => {
-  const opening = openingOf(element);
-  const attributes = opening.attributes ?? [];
-
-  return components.includes(elementNameOf(opening.name))
-    || hasProp(attributes, TOUCH_HANDLER_PROPS);
+  return components.includes(elementNameOf(openingOf(element).name))
+    || hasProp(elementAttributesOf(element), TOUCH_HANDLER_PROPS);
 };
 
 // Depth-first over every element below `node`, so a control nested inside layout views is still found.
@@ -279,8 +275,9 @@ export const hasTextContent = (node: JsxChild | JsxElement): boolean => {
       return (child.value ?? '').trim() !== '';
     }
 
+    // A container always holds an expression, `{}` included as JSXEmptyExpression.
     if (child.type === 'JSXExpressionContainer') {
-      return child.expression?.type !== 'JSXEmptyExpression';
+      return mustFind(child.expression).type !== 'JSXEmptyExpression';
     }
 
     return hasTextContent(child);

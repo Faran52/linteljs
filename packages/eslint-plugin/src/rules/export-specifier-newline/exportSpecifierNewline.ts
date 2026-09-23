@@ -2,7 +2,7 @@ import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
-  fixCommaToNewline,
+  commaToNewline,
   indentReader,
   lineTerminatorOf,
   sameLine,
@@ -76,12 +76,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
                 return;
               }
 
-              const split = fixCommaToNewline(sourceCode, fixer, pair.token, inner);
-
-              /* v8 ignore next 3 -- the comment check above guarantees a blank gap */
-              if (!split) {
-                return;
-              }
+              const split = commaToNewline(sourceCode, fixer, pair.token, inner);
 
               // Brace gaps belong to the statement, not to this pair, so each is emitted once.
               if (position === 0) {

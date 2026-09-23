@@ -5,6 +5,7 @@ import {
   sourceCodeOf,
 } from '../../utils/compatUtils.ts';
 import {
+  mustFind,
   optionsOf,
   rangeOf,
   type RuleContext,
@@ -45,13 +46,9 @@ const nameVariableOf = (context: RuleContext, fn: FunctionLike): Scope.Variable 
   return nameVariable;
 };
 
-const isAnonymousDefaultExport = (fn: FunctionLike): boolean => {
-  return fn.parent.type === 'ExportDefaultDeclaration' && getFunctionId(fn) === null;
-};
-
+// A method's value is a `function` and stops the walk as one, so only an arrow in a class field needs marking.
 const isClassMemberValue = (fn: FunctionLike): boolean => {
-  const parentType = fn.parent.type;
-  return parentType === 'PropertyDefinition' || parentType === 'MethodDefinition';
+  return fn.parent.type === 'PropertyDefinition';
 };
 
 const buildFrame = (fn: FunctionLike): FunctionFrame => {
@@ -123,9 +120,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       // Any earlier mention, wherever it sits. A reference inside another function only looks safe: that
       // function may itself be called above this declaration, and the dead zone is then two hops away.
       return nameVariable.references.some((reference) => {
-        const range = reference.identifier.range;
-
-        return range !== undefined && range[0] < declarationStart;
+        return rangeOf(reference.identifier)[0] < declarationStart;
       });
     };
 
@@ -203,7 +198,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       },
 
       'ExportDefaultDeclaration > FunctionDeclaration:exit': (fn: FunctionLike) => {
-        if (!isAnonymousDefaultExport(fn)) {
+        if (getFunctionId(fn) !== null) {
           return;
         }
 
@@ -217,12 +212,8 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return;
         }
 
-        const nameVariable = nameVariableOf(context, fn);
-
-        /* v8 ignore next 3 -- a function declaration always declares its own name */
-        if (!nameVariable) {
-          return;
-        }
+        // A named function declaration always declares its own name.
+        const nameVariable = mustFind(nameVariableOf(context, fn));
 
         // Needs to stay a `function` to be constructed, reassigned, carry a prototype, or be declared twice.
         if (hasFunctionOnlyUsage(nameVariable) || isRedeclared(nameVariable)) {
