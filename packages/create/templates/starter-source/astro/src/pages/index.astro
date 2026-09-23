@@ -1,0 +1,16 @@
+---
+import Mark from '../components/ui/mark/Mark.astro';
+import Layout from '../layouts/Layout.astro';
+import { NAME } from '../config/linteljs';
+---
+
+<Layout>
+  <main class="hero">
+    <Mark />
+    <h1 class="title">{NAME}</h1>
+    <p class="lede">Astro, rendered on the server, and the standard already applied.</p>
+    <p class="hint">
+      Run <code>pnpm check</code> for lint, types, tests and build.
+    </p>
+  </main>
+</Layout>

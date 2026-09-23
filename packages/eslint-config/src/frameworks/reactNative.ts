@@ -1,10 +1,8 @@
 import linteljs from '@linteljs/eslint-plugin';
 
-import {
-  REACT_FILES,
-  reactCore,
-  reactGroup,
-} from './utils/reactCoreUtils';
+import { SCRIPT_FILES } from '../config/globs';
+
+import { reactCore, reactGroup } from './utils/reactCoreUtils';
 
 import type { Layer } from '../types';
 
@@ -23,7 +21,7 @@ export const reactNative = (): Layer => {
     ...reactCore(),
     {
       name: '@linteljs/react-native/accessibility',
-      files: REACT_FILES,
+      files: SCRIPT_FILES,
       plugins: { '@linteljs': linteljs },
       /**
        * Named rather than taken as a preset. Each is an opt-out, so `recommended` does not carry them, and the

@@ -4,30 +4,30 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
-
 import { angularTarget } from './angularTarget';
 
-describe('scaffold', () => {
-  it('writes the exact argv for the default answers', () => {
-    expect(angularTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
-      kind: 'dlx',
-      args: [
-        '@angular/cli@latest', 'new', 'demo-app',
-        '--defaults', '--skip-git', '--skip-install',
-        '--package-manager', 'pnpm',
-        '--style', 'css',
-        '--ssr', 'false',
-      ],
-    });
+describe('angularTarget', () => {
+  it('is the record the angular answer names', () => {
+    expect(angularTarget.id).toBe('angular');
   });
 
-  it('names whichever package manager the answers carry', () => {
-    const spec = angularTarget.scaffold('demo-app', {
-      ...DEFAULT_ANSWERS,
-      packageManager: 'npm',
-    });
+  /*
+   * The CLI's own project file is the build, the dev server and the test target in one, and every `buildTarget`
+   * inside it names the project. That is why it is emitted rather than copied, and this flag is what says so.
+   */
+  it('has its project file written rather than copied', () => {
+    expect(angularTarget.angularProject).toBe(true);
+    expect(angularTarget.build).toBe('ng build');
+  });
 
-    expect(spec.args).toEqual(expect.arrayContaining(['--package-manager', 'npm']));
+  /*
+   * `ng generate`'s own spelling, which every file this template writes already follows. Declarations are excluded
+   * because the key below judges them and `check-file` applies every key that matches: `customTypes.d.ts` ships
+   * with `typeSafety: relaxed`, and held to both keys at once it could satisfy neither.
+   */
+  it('names every module the way the CLI would, and leaves declarations to their own key', () => {
+    expect(angularTarget.naming['src/**/!(*.d).ts']).toBe('KEBAB_CASE');
+    expect(angularTarget.naming).not.toHaveProperty('src/**/*.ts');
+    expect(angularTarget.naming['src/**/*.d.ts']).toBeDefined();
   });
 });

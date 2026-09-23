@@ -4,10 +4,15 @@ import {
   FOLDER_ROUTED,
 } from '../constants';
 import { partsFor } from '../utils/frameworkUtils';
+import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
+import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+
+import { ALWAYS, SHARED } from './constants';
 
 import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
 import type { TargetBuilder } from '../registry';
+import type { StarterFile } from '../types';
 
 // Templates on the server, optionally hydrating islands in a hosted framework. `vite: false` although Astro runs on
 // Vite: its Vite options live in `astro.config.mjs`, so the test run borrows them through `getViteConfig`.
@@ -26,21 +31,7 @@ export const astroTarget: TargetBuilder = (answers) => {
 
   return {
     id: 'astro',
-    // `minimal`, like every target's smallest starter; `--no-ai` declines the assistant file this CLI writes itself.
-    scaffold: (name) => {
-      return {
-        kind: 'create',
-        args: [
-          'astro@latest', name,
-          '--template', 'minimal',
-          '--no-install',
-          '--no-git',
-          '--no-ai',
-          '--skip-houston',
-          '--yes',
-        ],
-      };
-    },
+    recordModule: 'src/config/linteljs.ts',
     hostsFramework: true,
     astro: true,
     // The html layer's parser cannot read a template's frontmatter fence.
@@ -61,7 +52,33 @@ export const astroTarget: TargetBuilder = (answers) => {
     },
     // A dynamic route is `[slug].astro`, so a directory may be one too.
     folderNaming: { 'src/**/': FOLDER_ROUTED },
+    /*
+     * Data a template reads, and vitest executes no template: a `.astro` file is not in the coverage include
+     * because nothing here can run one. Astro's own container API would let a suite render a page, which is the
+     * way to take these back into the measurement; until then a module only a page imports sits at zero and says
+     * nothing about whether the project works.
+     */
+    coverageExclude: ['src/config/**', 'src/config/linteljs.ts'],
     styleEntry: 'src/styles/global.css',
+    starterStyles: [
+      './tokens.css',
+      './base.css',
+      '../components/features/app-header/AppHeader.css',
+      '../components/ui/mark/Mark.css',
+      {
+        path: '../components/ui/button/Button.css',
+        when: (answers) => {
+          return answers.store !== undefined || answers.form !== undefined;
+        },
+      },
+      {
+        path: '../components/ui/text-input/TextInput.css',
+        when: (answers) => {
+          return answers.form !== undefined;
+        },
+      },
+    ],
+    tailwindTheme: './theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     /**
      * `astro/tsconfigs/strict` teaches TypeScript about `.astro` and `astro:*` modules. `allowImportingTsExtensions`
@@ -93,16 +110,40 @@ export const astroTarget: TargetBuilder = (answers) => {
     typecheck: 'astro sync && astro check',
     build: 'astro build',
     prepare: 'astro sync',
-    // The minimal starter has no measurable source, so coverage fails on `0/0`; this pair is the smallest fix.
+    publicDirectory: 'public',
     starterFiles: [
+      ...mockFiles(),
+      ...componentStyles(),
+      // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling from `stylex.attrs`.
+      ...componentStyleModules('solid'),
+      ...ALWAYS.map((target): StarterFile => {
+        return { target };
+      }),
+      ...SHARED.map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
       {
-        target: 'src/lib/utils/formatDate.ts',
+        target: 'src/styles/theme.css',
+        when: (current) => {
+          return current.styling === 'tailwind';
+        },
+        variant: 'tailwind',
+        shared: true,
       },
     ],
+    /*
+     * A `.astro` file is not in the coverage include, because vitest cannot execute one, so the helper the header
+     * calls is what the measurement is made of. It is real logic rather than a placeholder: Astro serves `/about`
+     * and `/about/` as the same page, and a header comparing the strings would mark neither.
+     */
     starterTests: [
+      ...mockTests(),
       {
-        target: 'src/lib/utils/formatDate.test.ts',
-        covers: 'src/lib/utils/formatDate.ts',
+        target: 'src/lib/utils/currentPath.test.ts',
+        covers: 'src/lib/utils/currentPath.ts',
       },
     ],
     // Runtime, where the base template puts it for the `@astrojs/node` adapter; unconditional so `--skip-scaffold`

@@ -25,7 +25,8 @@ describe('hasLibrary', () => {
   it('reads the chosen libraries', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
-      libraries: ['zod', 'tailwind'],
+      libraries: ['zod'],
+      styling: 'tailwind',
     };
 
     expect(hasLibrary(answers, 'zod')).toBe(true);

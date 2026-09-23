@@ -4,10 +4,15 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
+  ANSWERS,
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type PackageManager,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
@@ -18,7 +23,11 @@ interface AnswerOverrides {
   target?: TargetId;
   testing?: Testing;
   packageManager?: PackageManager;
+  styling?: Styling;
+  data?: Data;
 }
+
+const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {
@@ -87,12 +96,22 @@ describe('buildScripts', () => {
       .toBe('stylelint "src/**/*.{css,vue}" --fix --allow-empty-input');
   });
 
-  // build is inherited from the scaffolder except React Native, whose eas build needs an account; expo export is the
-  // local Metro bundle instead (measurements in DESIGN.md).
-  it('writes the build script only for the record that carries one', () => {
+  /*
+   * Every target declares its own now that no generator writes one, so there is no case where `build` is absent
+   * and `check` chains a script that does not exist. React Native's is the one with a reason of its own: its `eas
+   * build` needs an account, so `expo export` is the local Metro bundle instead (measurements in DESIGN.md).
+   */
+  it('writes the build script every record carries', () => {
+    for (const target of TARGET_IDS) {
+      expect([target, buildScripts(answersFor({ target }))['build']]).not.toEqual([target, undefined]);
+    }
+
     expect(buildScripts(answersFor({ target: 'react-native' }))['build'])
-      .toBe('expo export --platform web');
-    expect(buildScripts(answersFor({ target: 'react' }))).not.toHaveProperty('build');
+      .toBe('expo export --platform ios --platform android');
+    expect(buildScripts(answersFor({ target: 'react' }))['build']).toBe('vite build');
+    expect(buildScripts(answersFor({ target: 'svelte' }))['dev']).toBe('vite dev');
+    expect(buildScripts(answersFor({ target: 'next' }))['build']).toBe('next build');
+    expect(buildScripts(answersFor({ target: 'angular' }))['build']).toBe('ng build');
   });
 
   // Naming vitest in a project with no suite is a `check` that fails on command-not-found.

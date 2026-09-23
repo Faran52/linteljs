@@ -71,6 +71,10 @@ describe('the carve-out the rule file grants', () => {
     // own `main.ts` is written this way, and without the grant a fresh scaffold failed its own type floor.
     ['a caught value in a promise chain', 'run().catch((err: unknown) => {\n  report(err);\n});\n'],
     ['a caught value in an async promise chain', 'run().catch(async (e: unknown) => {\n  await report(e);\n});\n'],
+    // A labelled tuple element, not an index signature: this is how Vue declares a typed emit, and how any named
+    // tuple reads. What makes an index signature one is the colon after the bracket.
+    ['a labelled tuple element', 'const emit = defineEmits<{\n  change: [value: string];\n}>();\n'],
+    ['a named tuple type', 'type Pair = [first: string, second: number];\n'],
   ])('allows %s', async (_label, source) => {
     expect(await check(source)).toBe('');
   });

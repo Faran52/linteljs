@@ -25,12 +25,11 @@ const recordFor = (overrides: Partial<Answers> = {}) => {
   return webextensionTarget(extensionAnswers(overrides));
 };
 
-describe('scaffold', () => {
-  it('writes the exact argv for the default answers', () => {
-    expect(recordFor().scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
-      kind: 'create',
-      args: ['vite', 'demo-app', '--template', 'vanilla-ts', '--no-interactive', '--no-immediate'],
-    });
+describe('the webextension record', () => {
+  // The popup is a page like any other, so the document is written from the entry the manifest names.
+  it('writes its own popup document', () => {
+    expect(recordFor().htmlEntry).toBe('src/main.ts');
+    expect(recordFor().build).toBe('vite build');
   });
 });
 
@@ -70,16 +69,14 @@ describe('the browser axis', () => {
   ])('marks %s as the browser its background starter is written for', (browser) => {
     const record = recordFor({ browser });
 
-    expect(record.starterFiles).toEqual([
-      {
-        target: 'src/background/index.ts',
-        variant: browser,
-      },
-      {
-        target: 'src/background/onInstalled.ts',
-        variant: browser,
-      },
-    ]);
+    expect(record.starterFiles).toContainEqual({
+      target: 'src/background/index.ts',
+      variant: browser,
+    });
+    expect(record.starterFiles).toContainEqual({
+      target: 'src/background/onInstalled.ts',
+      variant: browser,
+    });
     expect(record.starterTests).toContainEqual({
       target: 'src/background/onInstalled.test.ts',
       covers: 'src/background/onInstalled.ts',
@@ -89,13 +86,15 @@ describe('the browser axis', () => {
 });
 
 describe('the surfaces axis', () => {
-  // What this target wrote before the answer existed; asserted as the exact pair.
+  // The popup is every project's, and the default adds a background to it.
   it('defaults to a popup and a background', () => {
     const record = recordFor();
-
-    expect(record.starterFiles?.map((file) => {
+    const targets = record.starterFiles.map((file) => {
       return file.target;
-    })).toEqual(['src/background/index.ts', 'src/background/onInstalled.ts']);
+    });
+
+    expect(targets).toContain('src/popup/renderPopup.ts');
+    expect(targets).toContain('src/background/onInstalled.ts');
     expect(record.coverageExclude).toEqual(['src/background/index.ts']);
     expect(record.viteInputs).toBeUndefined();
   });
@@ -103,17 +102,20 @@ describe('the surfaces axis', () => {
   // A devtools panel is two pages; crx cannot know about the second, so it needs a Rollup input of its own.
   it('ships both devtools pages and gives the panel a build input', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
-    const targets = record.starterFiles?.map((file) => {
+    const targets = record.starterFiles.map((file) => {
       return file.target;
     });
 
-    expect(targets).toEqual([
+    for (const page of [
       'devtools.html',
       'src/devtools/index.ts',
       'panel.html',
       'src/panel/index.ts',
       'src/panel/renderPanel.ts',
-    ]);
+    ]) {
+      expect(targets).toContain(page);
+    }
+
     expect(record.viteInputs).toEqual({ panel: 'panel.html' });
   });
 
@@ -143,8 +145,15 @@ describe('the surfaces axis', () => {
   });
 
   // A popup's page and entry come from the Vite scaffold.
-  it('adds no starter for a popup, whose page the scaffold already wrote', () => {
-    expect(recordFor({ surfaces: ['popup'] }).starterFiles).toEqual([]);
+  // The popup is the surface every extension has, so choosing it alone adds nothing the default did not carry.
+  it('adds no surface file for a popup, which every project already is', () => {
+    const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles.map((file) => {
+      return file.target;
+    });
+
+    expect(popupOnly).toContain('src/popup/renderPopup.ts');
+    expect(popupOnly).not.toContain('src/background/onInstalled.ts');
+    expect(popupOnly).not.toContain('panel.html');
   });
 });
 

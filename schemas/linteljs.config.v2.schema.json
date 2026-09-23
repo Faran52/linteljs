@@ -27,6 +27,7 @@
         "react",
         "next",
         "vue",
+        "nuxt",
         "svelte",
         "solid",
         "angular",
@@ -91,14 +92,18 @@
       "items": {
         "enum": [
           "zod",
-          "tanstack-query",
-          "tailwind",
           "es-toolkit",
           "ts-pattern",
           "t3-env"
         ]
       },
       "uniqueItems": true
+    },
+    "styling": {
+      "enum": [
+        "tailwind",
+        "stylex"
+      ]
     },
     "form": {
       "enum": [
@@ -109,6 +114,7 @@
     "router": {
       "enum": [
         "react-router",
+        "react-router-framework",
         "tanstack-router"
       ]
     },
@@ -121,6 +127,17 @@
         "ngrx-signals",
         "ngrx-store",
         "nanostores"
+      ]
+    },
+    "data": {
+      "enum": [
+        "tanstack-query",
+        "rtk-query"
+      ]
+    },
+    "mocking": {
+      "enum": [
+        "msw"
       ]
     },
     "typeSafety": {

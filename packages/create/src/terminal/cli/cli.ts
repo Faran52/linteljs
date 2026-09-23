@@ -81,7 +81,7 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
 const summary = (name: string, options: CliOptions, answers: Answers): string => {
   const { packageManager } = answers;
   const run = RUN_PREFIX[packageManager];
-  const enter = options.skip.includes('scaffold') || name === '' ? [] : [`  cd ${name}`];
+  const enter = options.existing || name === '' ? [] : [`  cd ${name}`];
   const install = options.skip.includes('install') ? [`  ${packageManager} install`, `  ${run} lint:fix`] : [];
 
   return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
@@ -193,7 +193,7 @@ const askedFrom = async (
     return fromConfig(await linteljsConfigReader(options.cwd));
   }
 
-  if (options.skip.includes('scaffold') && await entryExists(join(options.cwd, CONFIG_PATH))) {
+  if (options.existing && await entryExists(join(options.cwd, CONFIG_PATH))) {
     return fromConfig(await linteljsConfigReader(options.cwd));
   }
 
@@ -207,7 +207,7 @@ const askedFrom = async (
   }
 
   // With `--skip-scaffold` the directory is already named.
-  const known = options.skip.includes('scaffold') ? basename(options.cwd) : options.name;
+  const known = options.existing ? basename(options.cwd) : options.name;
   const asked = await ask(prompter, known === '' ? {} : { name: known });
 
   return {
@@ -346,10 +346,11 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     await pipelineRun({
       // With --skip-scaffold the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
-      // A scaffolder creates `<name>/` under cwd, so every later stage runs inside it.
-      cwd: options.skip.includes('scaffold') ? options.cwd : resolve(options.cwd, name),
+      // `create` makes `<name>/` under cwd and every stage runs inside it; `--skip-scaffold` is already there.
+      cwd: options.existing ? options.cwd : resolve(options.cwd, name),
       answers,
       skip: options.skip,
+      existing: options.existing,
       fresh: options.fresh,
       ...stageReport(options),
     });

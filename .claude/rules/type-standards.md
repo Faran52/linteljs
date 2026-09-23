@@ -31,10 +31,11 @@ What follows is only where this repository differs, and why.
   `utils/compatUtils.ts` deliberately needed none: it describes both ESLint shapes as one interface
   with every member optional, which a real context satisfies structurally.
 
-- **`es-toolkit/compat` is banned**, in every package, enforced by `@linteljs/workspace/no-compat` in
-  the root config. The strict entry or the standard library. `/compat` exists to ease a lodash
-  migration this workspace never had, and its looser signatures are what a call reaches for when the
-  honest answer is that es-toolkit does not cover the case. `DESIGN.md` carries the measurement.
+- **`es-toolkit/compat` is banned**, in every package, enforced by `base` in
+  `@linteljs/eslint-config` and so shipped to every generated project rather than held here alone.
+  The strict entry or the standard library. `/compat` exists to ease a lodash migration this
+  workspace never had, and its looser signatures are what a call reaches for when the honest answer
+  is that es-toolkit does not cover the case. `DESIGN.md` carries the measurement.
 
 ## The mechanical floor
 

@@ -10,6 +10,23 @@ when a version's change lives in a sibling it is described there instead:
 
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`. A suite that asserts only over types
   has no `expect` call in it and was reported as having no assertions.
+- One owner per rule name. Twelve names were enabled under two ids at once, so a React project
+  reported every hook defect and every unused binding twice, with two wordings, and where both
+  carried a fixer both wanted the same range. `@eslint-react` 5 republishes the whole `react-hooks`
+  7 rule set under its own prefix, so its nine copies are off and `eslint-plugin-react-hooks` owns
+  them: it also carries `refs`, `globals`, `immutability` and the four React Compiler rules that
+  `@eslint-react` has no copy of. `sonarjs/no-unused-vars`, `sonarjs/no-array-delete` and
+  `sonarjs/prefer-regexp-exec` are off for the same reason, behind `unused-imports` and
+  `typescript-eslint`.
+- `@linteljs/no-inline-object-types` reaches a `<script lang="ts">` block. The plugin's preset scopes
+  a TypeScript-only rule to the four TypeScript extensions, and `base` restated two of the three, so
+  the rule was off in every `.vue` and `.svelte` file.
+- `reactNative()` is published: a `./react-native` subpath, a build entry, and `reactNative` and
+  `reactNativeGroup` on the barrel. `nuxt`, `nuxtGroup` and `tailwind` join the barrel too, and
+  `scripts/smoke.js` now holds every layer in `frameworks/` and `libraries/` to having both a
+  subpath and a barrel export.
+- `vue/multi-word-component-names` is no longer restated; `vue/flat/recommended` already sets it to
+  error.
 
 ## 1.6.0
 

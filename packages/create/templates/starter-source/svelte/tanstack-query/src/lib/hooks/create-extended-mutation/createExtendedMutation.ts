@@ -1,0 +1,34 @@
+import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+import { type ApiError, request } from '@utils/fetchExtended';
+
+export interface ExtendedMutationOptions {
+  readonly method?: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  // Query keys to drop once this succeeds, which is how a list reflects what was just written to it.
+  readonly invalidates?: readonly string[];
+}
+
+// The writing half, in Svelte's vocabulary. The binding's own reactive object comes back untouched for the same
+// reason the query one does: unwrapping it here would end the reactivity this exists to carry.
+export const createExtendedMutation = <TResponse, TBody extends object>(
+  path: string,
+  options: ExtendedMutationOptions = {},
+) => {
+  const { method = 'POST', invalidates = [] } = options;
+  const client = useQueryClient();
+
+  return createMutation<TResponse, ApiError, TBody>(() => {
+    return {
+      mutationFn: (body: TBody) => {
+        return request<TResponse>(path, {
+          method,
+          body,
+        });
+      },
+      onSuccess: async () => {
+        await Promise.all(invalidates.map((key) => {
+          return client.invalidateQueries({ queryKey: [key] });
+        }));
+      },
+    };
+  });
+};

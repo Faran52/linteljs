@@ -82,6 +82,12 @@
         "default": "./dist/react.mjs"
       }
     },
+    "./react-native": {
+      "import": {
+        "types": "./dist/reactNative.d.mts",
+        "default": "./dist/reactNative.mjs"
+      }
+    },
     "./next": {
       "import": {
         "types": "./dist/next.d.mts",
@@ -92,6 +98,12 @@
       "import": {
         "types": "./dist/vue.d.mts",
         "default": "./dist/vue.mjs"
+      }
+    },
+    "./nuxt": {
+      "import": {
+        "types": "./dist/nuxt.d.mts",
+        "default": "./dist/nuxt.mjs"
       }
     },
     "./svelte": {

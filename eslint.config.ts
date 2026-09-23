@@ -50,6 +50,7 @@ const config = [
       '**/__mocks__/fixtures/**',
       'packages/create/templates/fragments/test-setup/setupTests.angular.ts',
       'packages/create/templates/fragments/test-setup/setupTests.reactNative.ts',
+      'packages/create/templates/fragments/test-setup/setupTests.msw.ts',
       'packages/create/templates/starter-source/react-native/__mocks__/renderScreen.tsx',
       'packages/create/templates/starter-source/**',
     ],
@@ -95,31 +96,14 @@ const config = [
   },
 
   /**
-   * `es-toolkit/compat` is the lodash-compatibility build, and this workspace never migrated from lodash. Its looser
-   * signatures are the whole temptation: `sortBy` there takes an `ArrayLike<T>` where the strict one is
-   * `T extends object`, so it is what a `string[]` sort reaches for when the real answer is the standard library.
-   * Repeated inside `create-worlds` below, because two blocks naming one rule do not merge their options.
-   * DESIGN.md: `@linteljs/workspace/no-compat`
-   */
-  {
-    name: '@linteljs/workspace/no-compat',
-    rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          {
-            group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
-            message: 'The strict entry or the standard library. /compat is the lodash build.',
-          },
-        ],
-      }],
-    },
-  },
-
-  /**
    * One folder per responsibility, and which one a module belongs to is decided by the world it reaches into rather
    * than by judgement: `node:fs` means `disk/`, `node:child_process` means `spawns/`, argv and the terminal mean
    * `terminal/`. Everything else goes through them, which is what makes the inner rings testable without a disk.
    * `e2e/` is the harness rather than the package, and it spawns real managers on purpose.
+   *
+   * The `es-toolkit/compat` pattern is repeated here rather than inherited. `base` bans it for every project and
+   * for this one, and two config objects naming one rule do not merge their options: this block is the last to
+   * name `no-restricted-imports` for these files, so what it replaces is the layer's own ban.
    * DESIGN.md: `@linteljs/workspace/create-worlds`
    */
   {

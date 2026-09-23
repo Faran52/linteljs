@@ -11,7 +11,7 @@ import type { Layer } from '../src/types';
  * caller to narrow.
  */
 interface CalculatedConfig {
-  rules: object;
+  rules: Partial<Linter.RulesRecord>;
 }
 
 interface ConfigReader {
@@ -40,6 +40,25 @@ export const ruleNamesFor = async (config: Layer, filePath: string): Promise<str
   const calculated = await reader.calculateConfigForFile(filePath);
 
   return Object.keys(calculated.rules);
+};
+
+// Which rules would report, rather than which are listed: one turned off is still a key in the same map.
+export const enabledRuleIdsFor = async (config: Layer, filePath: string): Promise<string[]> => {
+  const reader: ConfigReader = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: config,
+  });
+  const calculated = await reader.calculateConfigForFile(filePath);
+
+  return Object.entries(calculated.rules)
+    .filter(([, entry]) => {
+      const severity = Array.isArray(entry) ? entry[0] : entry;
+
+      return severity !== 'off' && severity !== 0;
+    })
+    .map(([ruleId]) => {
+      return ruleId;
+    });
 };
 
 // `overrideConfigFile: true` keeps this workspace's own `eslint.config.ts` out of the run.

@@ -21,15 +21,9 @@ import {
   workspace,
 } from '../utils/workspaceUtils';
 
-import type { E2eCase } from '../matrix/matrix';
+import { DEPRECATION, YARN_CLASSIC_UPSTREAM } from './constants';
 
-/**
- * Never asserted on, for any manager. A deprecation notice reports that a third-party package reached end of life,
- * which is true of trees this CLI does not choose: `expo` reaches a deprecated `uuid` through the Xcode writer, and
- * a scaffolder installs `expo`, not linteljs. No emitted config makes it go away, and muting it in a generated project
- * would hide a real fact from whoever does own the dependency.
- */
-const DEPRECATION = /deprecated/i;
+import type { E2eCase } from '../matrix/matrix';
 
 // What each manager prints when an install was not clean. Yarn's codes carry no severity, so its summary line
 // decides and every coded line but the banner is then shown.
@@ -62,7 +56,7 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   // Yarn 1 has no codes: every line it wants read starts with the word.
   'yarn-classic': (output) => {
     return (output.match(/^warning .*$/gm) ?? []).filter((line) => {
-      return !DEPRECATION.test(line);
+      return !DEPRECATION.test(line) && !YARN_CLASSIC_UPSTREAM.test(line);
     });
   },
   'bun': (output) => {

@@ -1,27 +1,17 @@
-import { dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
 
 import { MANAGER_BINARIES, STAGES } from '@config/constants';
 import { type RunOutput, type Stage } from '@config/types';
 
-import {
-  artifactWriter,
-  mkdir,
-  projectShapeReader,
-} from '@disk';
+import { artifactWriter, projectShapeReader } from '@disk';
 import {
   type Artifact,
   buildArtifacts,
   seedArtifacts,
 } from '@emitters';
 import { gitSpawn, runSpawn } from '@spawns';
-import { targetFor } from '@targets';
 
 import { fixPass } from '../../passes/fix/fixPass';
-import { repairPass } from '../../passes/repair/repairPass';
-import { rewritePass } from '../../passes/rewrite/rewritePass';
-
-import { scaffoldCommand, scaffoldNotice } from './utils/scaffoldUtils';
 
 import type { Answers } from '@answers';
 
@@ -30,6 +20,8 @@ export interface PipelineOptions {
   cwd: string;
   answers: Answers;
   skip: Stage[];
+  // The directory is a repository that already exists rather than one this run made.
+  existing?: boolean;
   // Treat the directory as fresh scaffolder output although this run did not scaffold it.
   fresh?: boolean;
   onWrite?: (path: string) => void;
@@ -39,7 +31,7 @@ export interface PipelineOptions {
   onStage?: (stage: Stage, index: number, count: number) => void;
   // Called once the stage's runner resolves, with what it took.
   onStageDone?: (stage: Stage, milliseconds: number) => void;
-  // What the scaffolder and the install do with their own output. `terminal/` decides; a pipe keeps them visible.
+  // What the install and the fix pass do with their own output. `terminal/` decides; a pipe keeps them visible.
   output?: RunOutput;
 }
 
@@ -65,42 +57,12 @@ const writeArtifacts = async (
   }
 };
 
-const stageScaffold = async (options: PipelineOptions): Promise<void> => {
-  const spec = targetFor(options.answers).scaffold(options.name, options.answers);
-  const [command, ...args] = scaffoldCommand(options.answers.packageManager, spec);
-
-  options.onNotice?.(scaffoldNotice(options.answers.packageManager, spec));
-
-  // The scaffolder creates `<name>/` itself, so this runs one directory above.
-  const parent = dirname(options.cwd);
-
-  await mkdir(parent, { recursive: true });
-  await runSpawn(command, args, parent, options.output);
-};
-
+/*
+ * Whether this directory is new. `create` makes it, so it is; `--skip-scaffold` points the run at a repository
+ * that already exists, and `--fresh` says that repository is untouched generator output after all.
+ */
 const isFresh = (options: PipelineOptions): boolean => {
-  return options.fresh === true || !options.skip.includes('scaffold');
-};
-
-const stagePackage = async (
-  options: PipelineOptions,
-  artifacts: Artifact[],
-  stage: Stage,
-): Promise<void> => {
-  await writeArtifacts(options, artifacts, stage);
-
-  // Rewrites the scaffolder's source to compile under the flags the tsconfig just set.
-  await rewritePass(options.cwd, options.answers, options.onWrite);
-
-  // Defects in the generator's output, so they gate on fresh alone.
-  if (isFresh(options)) {
-    await repairPass(
-      options.cwd,
-      options.answers,
-      options.onWrite,
-      options.onNotice,
-    );
-  }
+  return options.fresh === true || options.existing !== true;
 };
 
 // `git rev-parse`, not `existsSync('.git')`: a subdirectory of an existing repo must not get a nested one.
@@ -143,9 +105,8 @@ const stageInstall = async (options: PipelineOptions): Promise<void> => {
 };
 
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {
-  scaffold: stageScaffold,
   lint: writeArtifacts,
-  package: stagePackage,
+  package: writeArtifacts,
   standard: stageStandard,
   install: stageInstall,
   fix: async (options) => {

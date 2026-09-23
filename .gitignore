@@ -28,3 +28,5 @@ packages/*/reports/
 # Worktrees the coding agent harness creates for background agents. Never shared.
 .claude/worktrees/
 
+# Scaffolder output and design mockups collected while v2 templates are written. Never shared.
+template-scaffolder-temporary/

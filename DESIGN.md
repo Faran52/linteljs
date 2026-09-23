@@ -241,6 +241,19 @@ decoration: `object-property-newline` alone fixes to a hanging brace on the firs
 lines, which is worse than the shape it replaced. The scope is what keeps it off imports, exports
 and destructuring patterns, which the four `@linteljs` rules already own and would otherwise fight.
 
+JSX props are the same asymmetry one level up, and `@stylistic/jsx-max-props-per-line` is now
+restated over the preset for it. The preset ships `{ maximum: 1, when: 'multiline' }`, which caps a
+tag that already wraps and caps a one-line tag at nothing, so a one-line tag grew props until 120
+columns broke it and only then had to answer to the rule at all. The replacement is the object form,
+`{ maximum: { single: 2, multi: 1 } }`, and `when` is ignored once `maximum` is one, so this
+replaces the preset entry rather than adding to it.
+
+Two on a single line rather than one: `<path d="M12 28 H108" strokeWidth="13" />` is one idea and
+four lines do not make it clearer, while a third prop is where a reader starts scanning. Measured on
+the shipped starters, which `pnpm lint:starters` runs through the real layers: twelve findings across
+six files, every one autofixable, and the three `<path>` elements of each target's `Mark` are the
+shape it reflows most.
+
 ## Duplicate JSX props: this plugin's rule, not a dependency
 
 A component with the same prop twice passes lint, typecheck and the type floor. React keeps the
@@ -441,6 +454,14 @@ never a type error, only a style this standard holds, so it became
 `@linteljs/react-no-global-namespace`: published, fixable, outside `recommended`, enabled by the
 React layer. The gate carries no copy, which is the point of a gate that composes the layers a
 project receives.
+
+A template is read the same way, `.astro` by its own parser and `.vue` and `.svelte` by theirs. Those
+two were excluded at first on the grounds that their layers set `projectService`, which resolves a
+file against a real `tsconfig.json` this walk has no path on disk for. That was a reason to turn the
+option off rather than to skip the extension: thirty-three shipped components were riding on it, and
+the pass that turned it off found seventy-seven. One rule goes off with it, since
+`sonarjs/no-redundant-optional` reads the program to decide whether to run at all and returns early
+under `exactOptionalPropertyTypes`, which every generated `tsconfig.json` sets.
 
 What is still missed is anything needing the real framework types, a wrong argument or a bad return.
 The end-to-end suite remains the only thing that runs that gate.
@@ -864,6 +885,12 @@ carries its own: `expo export --platform web`, a real Metro bundle of the app, w
 rendering of every route on top. This section is the measurement behind it; it replaces the open
 defect that stood here.
 
+v2 moved it to `expo export --platform ios --platform android`. Not because anything here stopped
+holding, but because react-native 0.87 deleted a module Expo SDK 57's web bundler still reads, and
+unlike the native path that one cannot be overridden from a project's `metro.config.js`.
+`DESIGNv2.md` carries that measurement. What this section settled, that a test file under
+`src/app/` is a route, is what made both native platforms exportable in the first place.
+
 The blocker was never the export command. It was that **six starter suites lived under
 `src/app/`, and everything under the route root is a route**: expo-router's context regex
 collects every `.ts`/`.tsx` and ignores only `+api`, `+middleware`, `+html` and
@@ -906,7 +933,7 @@ markup it reports none. Those rules key on lowercase DOM element names, and Reac
 and `<Pressable>`, which they read as unknown custom components and skip. So the preset was 34 rules that could not
 fire, plus a dependency installed to hold them, and React Native no longer installs it.
 
-In its place the layer composes `@linteljs/eslint-plugin`'s own `flat/accessibility`: five rules reading the props
+In its place the layer names five rules of `@linteljs/eslint-plugin`'s own, reading the props
 React Native actually announces with. They are scoped to this layer and not shared, because `Button`, `Switch`,
 `Image` and `TextInput` are ordinary names that mean something else on the web.
 
@@ -1281,10 +1308,13 @@ cycle, an unawaited promise, and an SFC pair. Linting them at the workspace leve
 defect each one exists to trigger, and the `.vue` and `.svelte` pair cannot parse at all without
 the layers those tests compose and the workspace config does not.
 
-`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts` beside it,
+`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts` and
+`setupTests.msw.ts` beside it,
 `templates/starter-source/react-native/__mocks__/renderScreen.tsx` and `templates/starter-source/**`
 are shipped source, copied to disk by the CLI and never imported here. Each imports the framework it is written for, and none of those is
-installed in this workspace, so every import is unresolvable and every call through one untyped.
+installed in this workspace, so every import is unresolvable and every call through one untyped. The
+MSW one differs only in what it reaches for: `../src/mocks/node`, which is a path in the project it
+lands in and no path at all here, so the module is unresolvable for a reason no install would fix.
 They are data here and code only in a generated project, where that project's own `eslint .` judges
 them against the same standard. The end-to-end suite is what proves it.
 
@@ -1364,7 +1394,7 @@ The patterns and the exemptions are built from `WORLDS` in `packages/create/src/
 exempt from the world it owns, which is three of them, and `pipeline/e2e/` besides. `pipeline/` owns
 no world, so only its harness is exempt and the rest of the ring is held like any inner ring.
 
-### `@linteljs/workspace/no-compat`
+### The `es-toolkit/compat` ban
 
 `es-toolkit/compat` is banned outright, in every package. The strict entry or the standard library.
 
@@ -1377,11 +1407,23 @@ would have replaced ten `localeCompare(left, right, 'en')` comparators with a de
 orders mixed case differently, which moves the bytes of `plugins/linteljs/managed.json`, and nothing
 in the suite pins that file's order. The stdlib sort stays.
 
-The block sits before `create-worlds` and the same pattern is repeated inside it. Two config objects
-naming one rule do not merge their options, the later one replaces the earlier wholesale, so a single
-workspace-wide block placed after `create-worlds` silently switched the `node:fs` restriction off.
-That was caught by probing an emitter with a `node:fs` import and getting no error; both halves are
-checked that way now, in `emitters/`, `files/`, `terminal/` and `eslint-config/`.
+`base` carries the ban, written for a project that chose es-toolkit off the `libraries` answer, so
+the measurement above is what the published rule rests on and this workspace is held to it through
+the layer it publishes rather than through a rule only this repository has.
+
+There was a root block saying the same thing, and it is gone. It carried no `files` key and sat
+after `base`, so it was not a second gate: two config objects naming one rule do not merge their
+options, the later replaces the earlier wholesale, and what it replaced was the published rule. The
+workspace was reading its own wording rather than the layer's. Probed with it deleted, the compat
+import is still reported in all three packages, in `scripts/`, and in the rings `create-worlds`
+exempts.
+
+That same replacement is the trap this section exists to record. A single workspace-wide block
+placed after `create-worlds` once silently switched the `node:fs` restriction off, caught by probing
+an emitter with a `node:fs` import and getting no error. Both halves are checked that way now, in
+`emitters/`, `files/`, `terminal/` and `eslint-config/`. `create-worlds` therefore repeats the
+compat pattern rather than inheriting it: it is the last block naming the rule for
+`packages/create/src/**`, and what it replaces is `base`.
 
 ### `@linteljs/workspace/create-config-data`
 

@@ -1,6 +1,7 @@
 import { angularTarget } from './angular/angularTarget';
 import { astroTarget } from './astro/astroTarget';
 import { nextTarget } from './next/nextTarget';
+import { nuxtTarget } from './nuxt/nuxtTarget';
 import { reactTarget } from './react/reactTarget';
 import { reactNativeTarget } from './react-native/reactNativeTarget';
 import { solidTarget } from './solid/solidTarget';
@@ -17,16 +18,19 @@ import type { TargetRecord } from './types';
 export type TargetBuilder = (answers: Answers) => TargetRecord;
 
 export const TARGETS: Record<TargetId, TargetBuilder> = {
-  'react': () => {
-    return reactTarget;
-  },
+  'react': reactTarget,
   'next': () => {
     return nextTarget;
   },
   'vue': () => {
     return vueTarget;
   },
-  'svelte': svelteTarget,
+  'nuxt': () => {
+    return nuxtTarget;
+  },
+  'svelte': () => {
+    return svelteTarget;
+  },
   'solid': () => {
     return solidTarget;
   },

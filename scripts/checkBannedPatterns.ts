@@ -93,7 +93,11 @@ const BANNED: BannedPattern[] = [
   },
   {
     name: 'index signature',
-    re: /\[[A-Za-z_]\w*:\s*(?:string|number|symbol)]/,
+    /*
+     * The trailing colon is what makes it one. Without it this also matched a labelled tuple element, which is
+     * how Vue declares a typed emit (`change: [value: string]`) and how a named tuple reads anywhere else.
+     */
+    re: /\[[A-Za-z_]\w*:\s*(?:string|number|symbol)]\s*:/,
   },
 ];
 

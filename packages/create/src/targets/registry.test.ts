@@ -179,6 +179,8 @@ const LAYER_PLUGINS: Record<Framework, string[]> = {
   }),
   'solid': ['eslint-plugin-solid', 'eslint-plugin-jsx-a11y-x'],
   'vue': ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
+  // `defineConfig` composes `vue()` ahead of `nuxt()`, which brings no plugin of its own.
+  'nuxt': ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
   'svelte': ['eslint-plugin-svelte'],
   'angular': ['angular-eslint'],
 };

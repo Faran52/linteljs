@@ -1,27 +1,40 @@
 import { ANSWERS } from '../registry';
 
-import { migratedStore, migrateForm } from './migrationUtils';
+import { migratedStore, migrateLifted } from './migrationUtils';
 
-describe('migrateForm', () => {
-  it('leaves a v2 config alone, form library or not', () => {
-    expect(migrateForm({ libraries: ['zod', 'react-hook-form'] }, 2, ANSWERS.form.values))
+describe('migrateLifted', () => {
+  it('leaves a config alone where the lift does not apply', () => {
+    expect(migrateLifted({ libraries: ['zod', 'react-hook-form'] }, false, 'form', ANSWERS.form.values))
       .toEqual({ libraries: ['zod', 'react-hook-form'] });
   });
 
-  it('leaves a v1 config alone when its libraries name no form', () => {
-    expect(migrateForm({ libraries: ['zod'] }, 1, ANSWERS.form.values)).toEqual({ libraries: ['zod'] });
+  it('leaves a config alone when its libraries name none of the lifted values', () => {
+    expect(migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values))
+      .toEqual({ libraries: ['zod'] });
   });
 
-  it('lifts the one form a v1 config lists out of libraries', () => {
-    expect(migrateForm({ libraries: ['zod', 'react-hook-form'] }, 1, ANSWERS.form.values)).toEqual({
+  it('lifts the one value listed out of libraries and into its own field', () => {
+    expect(migrateLifted({ libraries: ['zod', 'react-hook-form'] }, true, 'form', ANSWERS.form.values)).toEqual({
       libraries: ['zod'],
       form: 'react-hook-form',
     });
   });
 
-  it('refuses a v1 config listing two forms, which v2 has no field for', () => {
+  // Every version so far has lifted one single select out of the multi select it was hiding inside.
+  it('lifts tailwind into styling and tanstack-query into data, which v2 lifts alongside the form library', () => {
+    expect(migrateLifted({ libraries: ['zod', 'tailwind'] }, true, 'styling', ANSWERS.styling.values)).toEqual({
+      libraries: ['zod'],
+      styling: 'tailwind',
+    });
+    expect(migrateLifted({ libraries: ['tanstack-query'] }, true, 'data', ANSWERS.data.values)).toEqual({
+      libraries: [],
+      data: 'tanstack-query',
+    });
+  });
+
+  it('refuses a config listing two, which the field it lifts into has no room for', () => {
     expect(() => {
-      return migrateForm({ libraries: ['tanstack-form', 'react-hook-form'] }, 1, ANSWERS.form.values);
+      return migrateLifted({ libraries: ['tanstack-form', 'react-hook-form'] }, true, 'form', ANSWERS.form.values);
     }).toThrow('libraries must contain at most one of: tanstack-form, react-hook-form');
   });
 });

@@ -1,0 +1,16 @@
+<header class="header">
+  <p class="brand">{{ name() }}</p>
+  <nav class="tabs" aria-label="Main">
+    @for (page of pages; track page.id) {
+      <a
+        class="tab"
+        [routerLink]="page.path"
+        routerLinkActive="is-current"
+        [routerLinkActiveOptions]="{ exact: page.path === '/' }"
+        ariaCurrentWhenActive="page"
+      >
+        {{ page.label }}
+      </a>
+    }
+  </nav>
+</header>

@@ -4,43 +4,34 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
+import { FOLDER_ROUTED } from '../constants';
+import { componentNaming } from '../utils/namingUtils';
 
 import { nextTarget } from './nextTarget';
 
-describe('scaffold', () => {
-  it('writes the exact argv for the default answers', () => {
-    expect(nextTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
-      kind: 'create',
-      args: [
-        'next-app@latest', 'demo-app',
-        '--ts',
-        '--no-eslint', '--app', '--src-dir', '--no-agents-md',
-        '--tailwind',
-        '--import-alias', '@/*',
-        '--use-pnpm',
-        '--skip-install',
-        '--yes',
-      ],
-    });
+describe('nextTarget', () => {
+  it('is the record the next answer names', () => {
+    expect(nextTarget.id).toBe('next');
   });
 
-  it('flags tailwind only when the library is chosen', () => {
-    const withTailwind = nextTarget.scaffold('demo-app', {
-      ...DEFAULT_ANSWERS,
-      libraries: ['tailwind'],
-    });
-
-    expect(withTailwind.args).toContain('--tailwind');
-    expect(withTailwind.args).not.toContain('--no-tailwind');
+  // The App Router renders the document, so there is no `index.html` to write and none to lint.
+  it('owns its document rather than writing one', () => {
+    expect(nextTarget.html).toBe(false);
+    expect(nextTarget.htmlEntry).toBeUndefined();
   });
 
-  it('names whichever package manager the answers carry', () => {
-    const spec = nextTarget.scaffold('demo-app', {
-      ...DEFAULT_ANSWERS,
-      packageManager: 'yarn',
-    });
+  // Next owns the build, so there is no vite config for a plugin to go in.
+  it('carries no vite build', () => {
+    expect(nextTarget.vite).toBe(false);
+    expect(nextTarget.build).toBe('next build');
+  });
 
-    expect(spec.args).toContain('--use-yarn');
+  it('names files the way any JSX target does', () => {
+    expect(nextTarget.naming).toEqual(componentNaming('app'));
+  });
+
+  // The routes are the directory, so a route folder may be `[id]` or `(group)`.
+  it('admits the route segments a file-based router owns', () => {
+    expect(nextTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
   });
 });

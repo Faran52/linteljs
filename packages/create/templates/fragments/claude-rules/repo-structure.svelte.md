@@ -46,10 +46,11 @@ Components stay at `src/components/`, not `src/lib/components/`. `$lib` already 
 `src/lib`, and SvelteKit's reserved `src/hooks.server.ts` sits at the `src/` root, so neither
 clashes with `lib/hooks/`.
 
-The store is Svelte's own: a `$state` rune exported from a `.svelte.ts` module in `lib/store/`,
-with `svelte/store` only where a library's contract demands one. No store library is installed, so
-do not add one for state a rune already holds. Mind the server: `svelte-reactivity.md` covers why
-module-level state on the server is a cross-user leak.
+The store is Svelte's own unless this project answered otherwise: a `$state` rune exported from a
+`.svelte.ts` module in `lib/store/`, with `svelte/store` only where a library's contract demands
+one. Whichever is there, it is the only file that knows which, and every reader takes the hook it
+exports. Do not add a second library for state a rune already holds. Mind the server:
+`svelte-reactivity.md` covers why module-level state on the server is a cross-user leak.
 
 ## Placement
 

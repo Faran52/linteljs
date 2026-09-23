@@ -14,13 +14,16 @@ import { valuesOf } from '@utils/objectUtils';
 import {
   ANSWERS,
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Form,
   type HostedFramework,
   type Library,
+  type Mocking,
   type PackageManager,
   type Router,
   type Store,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
@@ -28,6 +31,7 @@ import { targetFor } from '@targets';
 
 import { VERSIONS } from './constants';
 import {
+  allowedBuildNames,
   buildDevDependencies,
   emitPackageJson,
   type PackageJson,
@@ -46,6 +50,9 @@ interface AnswerOverrides {
   form?: Form;
   store?: Store;
   router?: Router;
+  styling?: Styling;
+  data?: Data;
+  mocking?: Mocking;
 }
 
 interface Sibling {
@@ -79,7 +86,11 @@ const SCAFFOLDED: PackageJson = {
   name: 'demo-app',
   version: '0.0.0',
   private: true,
-  dependencies: { react: '^19.2.0' },
+  dependencies: {
+    'react': '^19.2.0',
+    // A dependency this CLI neither pins nor supersedes, which is what a project's own looks like.
+    'date-fns': '^4.1.0',
+  },
   devDependencies: {
     vite: '^7.2.0',
     prettier: '^3.6.0',
@@ -132,12 +143,46 @@ describe('versioned', () => {
       {},
       answersFor({
         target: 'webextension',
-        libraries: ['tanstack-query'],
+        libraries: [],
+        data: 'tanstack-query',
       }),
     );
 
-    expect(patched.dependencies).toBeUndefined();
+    // `qs` alone, which `http.ts` reads and every project receives: no binding was added beside it.
+    expect(Object.keys(patched.dependencies ?? {})).toEqual(['qs']);
     expect(patched.devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
+  });
+});
+
+/*
+ * The mocking answer reaches the manifest in three places, and two of them are easy to forget: the install script
+ * that copies the worker has to be allowed, or the install stops and asks, and the key naming where it goes has to
+ * be there, or MSW copies it nowhere.
+ */
+describe('the mocking answer', () => {
+  it('installs msw as a dev dependency, and only when it was answered', () => {
+    expect(buildDevDependencies(answersFor({ mocking: 'msw' }))).toHaveProperty('msw');
+    expect(buildDevDependencies(answersFor({}))).not.toHaveProperty('msw');
+  });
+
+  it('allows the install script that copies the worker', () => {
+    expect(allowedBuildNames(answersFor({ mocking: 'msw' }))).toContain('msw');
+    expect(allowedBuildNames(answersFor({}))).not.toContain('msw');
+  });
+
+  // The served directory, which is where a browser fetches the worker from and differs per target.
+  it('names the worker directory for a target that serves one, and omits the key otherwise', () => {
+    expect(patchPackageJson({}, answersFor({
+      target: 'react',
+      mocking: 'msw',
+    })))
+      .toMatchObject({ msw: { workerDirectory: ['public'] } });
+    expect(patchPackageJson({}, answersFor({ target: 'react' }))).not.toHaveProperty('msw');
+    expect(patchPackageJson({}, answersFor({
+      target: 'react-native',
+      mocking: 'msw',
+    })))
+      .not.toHaveProperty('msw');
   });
 });
 
@@ -164,20 +209,20 @@ describe('patchPackageJson', () => {
    * remember to raise. The `not` lines are the preconditions: a fixture that agreed with `VERSIONS` would let both
    * assertions pass whether the merge worked or not, so bringing it up to date fails here rather than silently.
    */
-  it('takes over the names it pins and leaves the scaffolder the rest', () => {
+  it('takes over the names it pins and leaves the project the rest', () => {
     const patched = patchPackageJson(SCAFFOLDED, answersFor({}));
-    const scaffoldedReact = SCAFFOLDED.dependencies?.['react'];
-    const scaffoldedVite = SCAFFOLDED.devDependencies?.['vite'];
+    const ownDates = SCAFFOLDED.dependencies?.['date-fns'];
+    const ownVite = SCAFFOLDED.devDependencies?.['vite'];
 
-    expect(scaffoldedVite).not.toBe(VERSIONS['vite']);
+    expect(ownVite).not.toBe(VERSIONS['vite']);
     expect(patched.devDependencies?.['vite']).toBe(VERSIONS['vite']);
 
-    expect(scaffoldedReact).not.toBe(VERSIONS['react']);
-    expect(patched.dependencies?.['react']).toBe(scaffoldedReact);
+    // Nothing in `VERSIONS` names it and nothing supersedes it, so it is the project's own and survives untouched.
+    expect(VERSIONS).not.toHaveProperty('date-fns');
+    expect(patched.dependencies?.['date-fns']).toBe(ownDates);
 
     expect(patched.scripts?.['dev']).toBe('vite');
     expect(patched.name).toBe('demo-app');
-    expect(patched.private).toBe(true);
   });
 
   it('wins on the scripts linteljs owns', () => {
@@ -276,15 +321,71 @@ describe('patchPackageJson', () => {
     expect(patched.devEngines?.['packageManager']).toBeDefined();
   });
 
-  // React Native's `eas build` needs an account; `expo export` is the local bundle (measurements in DESIGN.md).
-  it('preserves the scaffolder build script, and gates on it', () => {
+  /*
+   * Declared rather than inherited, since nothing writes a manifest for most targets any more. Without it yarn 1
+   * warns about a missing license on every install and refuses to enable workspaces.
+   */
+  it('marks every generated project private', () => {
+    expect(patchPackageJson({}, answersFor({})).private).toBe(true);
+    expect(patchPackageJson({ private: false }, answersFor({})).private).toBe(true);
+  });
+
+  /*
+   * The emitted vite config imports `@stylexjs/unplugin/vite`, so a project that answers StyleX and does not
+   * install it fails its own lint on an unresolved import before it fails its build on uncompiled styles.
+   */
+  it('installs the stylex build plugin and its peer', () => {
+    const { devDependencies } = patchPackageJson({}, answersFor({ styling: 'stylex' }));
+
+    expect(devDependencies).toHaveProperty('@stylexjs/unplugin');
+    expect(devDependencies).toHaveProperty('unplugin');
+    expect(devDependencies).not.toHaveProperty('@stylexjs/babel-plugin');
+  });
+
+  /*
+   * Next owns its build and has no vite config to plug into, so it compiles through Babel and PostCSS. The
+   * unplugin is there too and is the test run's half: vitest never goes through Next's pipeline.
+   */
+  it('installs the babel and postcss halves where there is no vite config', () => {
+    const { devDependencies } = patchPackageJson({}, answersFor({
+      target: 'next',
+      styling: 'stylex',
+    }));
+
+    expect(devDependencies).toHaveProperty('@stylexjs/babel-plugin');
+    expect(devDependencies).toHaveProperty('@stylexjs/postcss-plugin');
+    expect(devDependencies).toHaveProperty('@stylexjs/unplugin');
+  });
+
+  // `postcss-html` is stylelint's syntax for an SFC `<style>` block, and it does not install its own peer.
+  it('installs postcss beside its syntax for an SFC target', () => {
+    const { devDependencies } = patchPackageJson({}, answersFor({ target: 'vue' }));
+
+    expect(devDependencies).toHaveProperty('postcss-html');
+    expect(devDependencies).toHaveProperty('postcss');
+    expect(patchPackageJson({}, answersFor({ target: 'react' })).devDependencies)
+      .not.toHaveProperty('postcss-html');
+  });
+
+  // A target that owns its template owns its build too, so a stale one from an older scaffold is replaced.
+  it('takes over the build script, and gates on it', () => {
     const patched = patchPackageJson(
       { scripts: { build: 'tsc -b && vite build' } },
       answersFor({ target: 'react' }),
     );
 
-    expect(patched.scripts?.['build']).toBe('tsc -b && vite build');
+    expect(patched.scripts?.['build']).toBe('vite build');
     expect(patched.scripts?.['check']).toContain('pnpm build');
+  });
+
+  // Still fetching, so the generator's own build survives; there is nothing on the record to replace it with.
+  it('leaves the build script of a target that still scaffolds', () => {
+    const patched = patchPackageJson(
+      { scripts: { build: 'next build' } },
+      answersFor({ target: 'next' }),
+    );
+
+    expect(patched.scripts?.['build']).toBe('next build');
   });
 
   it('omits the test scripts and vitest when testing is declined', () => {
@@ -339,19 +440,25 @@ describe('patchPackageJson', () => {
     })).toEqual([]);
   });
 
-  // A version pinned here would fight create-vue's own --pinia install.
-  it('installs nothing for a store the scaffolder itself installs', () => {
-    expect(patchPackageJson({}, answersFor({
+  // Pinned here since `create-vue` crossed over: nothing installs it from a `--pinia` flag any more.
+  it('installs the store a target offers, and the binding that renders it', () => {
+    const { dependencies } = patchPackageJson({}, answersFor({
       target: 'vue',
       store: 'pinia',
-    })).dependencies ?? {})
-      .not.toHaveProperty('pinia');
+    }));
+
+    expect(dependencies).toHaveProperty('pinia');
+    expect(patchPackageJson({}, answersFor({
+      target: 'vue',
+      store: 'tanstack-store',
+    })).dependencies).toHaveProperty('@tanstack/vue-store');
   });
 
   it('installs the framework binding for tanstack query, plus its lint plugin', () => {
     const vue = patchPackageJson({}, answersFor({
       target: 'vue',
-      libraries: ['tanstack-query'],
+      libraries: [],
+      data: 'tanstack-query',
     }));
 
     expect(vue.dependencies).toHaveProperty('@tanstack/vue-query');
@@ -359,7 +466,10 @@ describe('patchPackageJson', () => {
   });
 
   it('installs the class linter beside the tailwind toolchain', () => {
-    const withTailwind = patchPackageJson({}, answersFor({ libraries: ['tailwind'] }));
+    const withTailwind = patchPackageJson({}, answersFor({
+      libraries: [],
+      styling: 'tailwind',
+    }));
     const without = patchPackageJson({}, answersFor({ libraries: [] }));
 
     expect(withTailwind.devDependencies).toHaveProperty('eslint-plugin-better-tailwindcss');
@@ -372,7 +482,8 @@ describe('patchPackageJson', () => {
   it('gives astro the vite adapter alone, and postcss to the targets with neither route', () => {
     const astro = patchPackageJson({}, answersFor({
       target: 'astro',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }));
 
     expect(astro.devDependencies).toHaveProperty('@tailwindcss/vite');
@@ -381,7 +492,8 @@ describe('patchPackageJson', () => {
     for (const target of ['next', 'angular', 'react-native'] as const) {
       const postcss = patchPackageJson({}, answersFor({
         target,
-        libraries: ['tailwind'],
+        libraries: [],
+        styling: 'tailwind',
       }));
 
       expect(postcss.devDependencies).toHaveProperty('@tailwindcss/postcss');
@@ -395,7 +507,9 @@ describe('patchPackageJson', () => {
     const hosted = patchPackageJson({}, answersFor({
       target: 'astro',
       hostedFramework: 'react',
-      libraries: ['tailwind', 'zod', 'tanstack-query'],
+      libraries: ['zod'],
+      styling: 'tailwind',
+      data: 'tanstack-query',
     }));
 
     for (const patched of [plain, hosted]) {
@@ -409,11 +523,13 @@ describe('patchPackageJson', () => {
       {},
       answersFor({
         target: 'webextension',
-        libraries: ['tanstack-query'],
+        libraries: [],
+        data: 'tanstack-query',
       }),
     );
 
-    expect(plain.dependencies).toBeUndefined();
+    // `qs` alone, which every project receives: no library binding was added beside it.
+    expect(Object.keys(plain.dependencies ?? {})).toEqual(['qs']);
     expect(plain.devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
   });
 
@@ -541,7 +657,8 @@ describe('the libraries added in 1.6.0', () => {
     const hosted = patchPackageJson({}, answersFor({
       target: 'astro',
       hostedFramework: 'react',
-      libraries: ['tanstack-query'],
+      libraries: [],
+      data: 'tanstack-query',
     }));
 
     expect(hosted.dependencies).toHaveProperty('@tanstack/react-query');
@@ -550,13 +667,17 @@ describe('the libraries added in 1.6.0', () => {
   it('takes NativeWind on React Native, where Metro has no Tailwind pipeline', () => {
     const native = patchPackageJson({}, answersFor({
       target: 'react-native',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }));
 
     expect(native.dependencies).toHaveProperty('nativewind');
     expect(native.dependencies).toHaveProperty('react-native-css');
     expect(native.devDependencies).toHaveProperty('postcss');
-    expect(patchPackageJson({}, answersFor({ libraries: ['tailwind'] })).dependencies ?? {})
+    expect(patchPackageJson({}, answersFor({
+      libraries: [],
+      styling: 'tailwind',
+    })).dependencies ?? {})
       .not.toHaveProperty('nativewind');
   });
 });
@@ -569,12 +690,13 @@ describe('the router', () => {
     expect(devDependencies).not.toHaveProperty('@tanstack/router-plugin');
   });
 
-  it('installs tanstack router with its vite plugin and lint plugin', () => {
+  // The lint plugin and no build plugin: nothing generates a route tree, so there is nothing for one to generate.
+  it('installs tanstack router with its lint plugin', () => {
     const { dependencies, devDependencies } = patchPackageJson({}, answersFor({ router: 'tanstack-router' }));
 
     expect(dependencies).toHaveProperty('@tanstack/react-router');
-    expect(devDependencies).toHaveProperty('@tanstack/router-plugin');
     expect(devDependencies).toHaveProperty('@tanstack/eslint-plugin-router');
+    expect(devDependencies).not.toHaveProperty('@tanstack/router-plugin');
   });
 
   it('installs no router by default', () => {

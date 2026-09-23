@@ -1,4 +1,9 @@
-// No `defineConfig`: the barrel would load all six framework layers. It lives at `/define-config`.
+/**
+ * Every layer, one export each, which is what makes `scripts/smoke.ts` able to hold the barrel and the `exports`
+ * map to the same list. No `defineConfig`: it would load every framework layer, so it lives at `/define-config`.
+ * Taking a layer through its own subpath stays the better choice for a project, since the barrel resolves the
+ * optional peer of every layer in it.
+ */
 export { astro } from './astro';
 export { base } from './base';
 export {
@@ -10,9 +15,17 @@ export {
   nextGroup,
 } from './frameworks/next';
 export {
+  nuxt,
+  nuxtGroup,
+} from './frameworks/nuxt';
+export {
   react,
   reactGroup,
 } from './frameworks/react';
+export {
+  reactNative,
+  reactNativeGroup,
+} from './frameworks/reactNative';
 export {
   solid,
   solidGroup,
@@ -26,6 +39,7 @@ export {
   vueGroup,
 } from './frameworks/vue';
 export { html } from './html';
+export { tailwind } from './libraries/tailwind';
 export { tanstackQuery } from './libraries/tanstackQuery';
 export { tanstackRouter } from './libraries/tanstackRouter';
 export type {

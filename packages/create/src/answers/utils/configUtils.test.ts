@@ -21,6 +21,8 @@ interface ConfigOverrides {
   hostedFramework?: string;
   surfaces?: string[];
   libraries?: string | string[];
+  styling?: string;
+  data?: string;
   form?: string;
   router?: string;
   store?: boolean | string;
@@ -283,12 +285,12 @@ describe('parseLinteljsConfig', () => {
     [
       'a missing target',
       config({ target: undefined }),
-      /target must be one of: react, next, vue, svelte, solid, angular, astro, webextension, react-native/,
+      /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
     ],
     [
       'an unknown target',
       config({ target: 'ember' }),
-      /target must be one of: react, next, vue, svelte, solid, angular, astro, webextension, react-native/,
+      /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
     ],
     ['an unknown testing choice', config({ testing: 'jest' }), /testing must be one of: vitest, none/],
     [
@@ -300,7 +302,7 @@ describe('parseLinteljsConfig', () => {
     [
       'an unknown library',
       config({ libraries: ['jquery'] }),
-      /libraries must be one of: zod, tanstack-query, tailwind/,
+      /libraries must be one of: zod, es-toolkit, ts-pattern, t3-env/,
     ],
     ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
     ['a store outside the vocabulary', config({ store: 'false' }), /store must be one of: zustand, redux-toolkit/],
@@ -351,7 +353,7 @@ describe('the router and the form libraries', () => {
   it('rejects an unknown router', () => {
     expect(() => {
       return parseLinteljsConfig(config({ router: 'wouter' }));
-    }).toThrow(/router must be one of: react-router, tanstack-router/);
+    }).toThrow(/router must be one of: react-router, react-router-framework, tanstack-router/);
   });
 
   it('round-trips a form library, and keeps it out of libraries', () => {
@@ -364,6 +366,57 @@ describe('the router and the form libraries', () => {
     expect(parsed).toMatchObject({ form: 'tanstack-form' });
     expect(parsed.libraries).not.toContain('tanstack-form');
     expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('form');
+  });
+
+  it('round-trips a styling system, and keeps it out of libraries', () => {
+    const parsed = parseLinteljsConfig(emitLinteljsConfig({
+      ...DEFAULT_ANSWERS,
+      styling: 'tailwind',
+    }));
+
+    expect(parsed).toMatchObject({ styling: 'tailwind' });
+    expect(parsed.libraries).not.toContain('tailwind');
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('styling');
+  });
+
+  it('round-trips a data layer, and keeps it out of libraries', () => {
+    const parsed = parseLinteljsConfig(emitLinteljsConfig({
+      ...DEFAULT_ANSWERS,
+      data: 'tanstack-query',
+    }));
+
+    expect(parsed).toMatchObject({ data: 'tanstack-query' });
+    expect(parsed.libraries).not.toContain('tanstack-query');
+    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('data');
+  });
+
+  /**
+   * The first rule the parser carries that reads two fields at once. `askedWhen` cannot: it is prompt only, so it
+   * hides the question without refusing the value, and a hand-written config would otherwise pass.
+   */
+  it('refuses rtk-query without the Redux store that ships it', () => {
+    expect(parseLinteljsConfig(emitLinteljsConfig({
+      ...DEFAULT_ANSWERS,
+      store: 'redux-toolkit',
+      data: 'rtk-query',
+    }))).toMatchObject({ data: 'rtk-query' });
+
+    expect(() => {
+      return parseLinteljsConfig(emitLinteljsConfig({
+        ...DEFAULT_ANSWERS,
+        store: 'zustand',
+        data: 'rtk-query',
+      }));
+    }).toThrow(/rtk-query is not an answer for react/);
+  });
+
+  it('refuses stylex on a target with no spread site for it', () => {
+    expect(() => {
+      return parseLinteljsConfig(config({
+        target: 'angular',
+        styling: 'stylex',
+      }));
+    }).toThrow(/stylex is not an answer for angular/);
   });
 
   // The v1 spelling: the error names where the answer went rather than calling it an unknown library.
@@ -410,14 +463,15 @@ describe('a version-one config', () => {
   it.each([
     ['tanstack-form', 'vue'],
     ['react-hook-form', 'react'],
-  ])('lifts %s out of libraries', (form, target) => {
+  ])('lifts %s out of libraries, and tailwind with it', (form, target) => {
     const parsed = parseLinteljsConfig(v1({
       target,
-      libraries: ['tailwind', form],
+      libraries: [form, 'tailwind'],
     }));
 
     expect(parsed.form).toBe(form);
-    expect(parsed.libraries).toEqual(['tailwind']);
+    expect(parsed.styling).toBe('tailwind');
+    expect(parsed.libraries).toEqual([]);
   });
 
   // Migrated means migrated: what is written back is a v2 file.
@@ -518,5 +572,25 @@ describe('answers a target never asks for', () => {
       router: 'tanstack-router',
       store: 'redux-toolkit',
     })).router).toBe('tanstack-router');
+  });
+});
+
+describe('the mocking answer', () => {
+  // Named in `answersFrom` as well as in `EXPECTED`, which is the step a new answer is silently dropped by.
+  it('round-trips through a config rather than being dropped', () => {
+    const config = parseLinteljsConfig(JSON.stringify({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      target: 'react',
+      testing: 'vitest',
+      packageManager: 'pnpm',
+      libraries: [],
+      typeSafety: 'strict',
+      agents: [],
+      plugins: [],
+      mocking: 'msw',
+    }));
+
+    expect(config.mocking).toBe('msw');
   });
 });

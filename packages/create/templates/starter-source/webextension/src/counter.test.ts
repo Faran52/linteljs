@@ -1,15 +1,26 @@
-import { setupCounter } from './counter';
+import { createCounter } from './counter';
 
-describe('setupCounter', () => {
-  it('counts a click', () => {
-    const button = document.createElement('button');
+describe('createCounter', () => {
+  it('starts at zero and says so before anything happens', () => {
+    const seen: number[] = [];
 
-    setupCounter(button);
+    createCounter((count) => {
+      seen.push(count);
+    });
 
-    expect(button.innerHTML).toBe('Count is 0');
+    expect(seen).toEqual([0]);
+  });
 
-    button.click();
+  it('counts up, and tells its reader each time', () => {
+    const seen: number[] = [];
+    const counter = createCounter((count) => {
+      seen.push(count);
+    });
 
-    expect(button.innerHTML).toBe('Count is 1');
+    counter.add();
+    counter.add();
+
+    expect(counter.count).toBe(2);
+    expect(seen).toEqual([0, 1, 2]);
   });
 });

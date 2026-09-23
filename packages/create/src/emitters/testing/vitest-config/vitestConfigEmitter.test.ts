@@ -5,8 +5,10 @@ import {
 } from 'vitest';
 
 import {
+  type Data,
   DEFAULT_ANSWERS,
   type Router,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
@@ -19,6 +21,8 @@ interface AnswerOverrides {
   target?: TargetId;
   testing?: Testing;
   router?: Router;
+  styling?: Styling;
+  data?: Data;
 }
 
 const configFor = (overrides: AnswerOverrides = {}): string | null => {
@@ -31,6 +35,19 @@ const configFor = (overrides: AnswerOverrides = {}): string | null => {
 };
 
 describe('emitVitestConfig', () => {
+  /*
+   * Next compiles StyleX through Babel and PostCSS, which a vitest run never goes through, so the plugin is named
+   * in this config too. Without it every suite fails on an uncompiled `defineVars`.
+   */
+  it('names the stylex plugin where there is no vite config to inherit one from', () => {
+    const config = configFor({
+      target: 'next',
+      styling: 'stylex',
+    });
+
+    expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
+    expect(config).toContain('plugins: [createUnplugin(stylex).vite({ useCSSLayers: true })]');
+  });
   it('writes nothing when testing is declined', () => {
     expect(configFor({ testing: 'none' })).toBeNull();
   });
@@ -104,12 +121,21 @@ describe('emitVitestConfig', () => {
   );
 });
 
+/*
+ * A `*.stylex.ts` file is a token table the bundler compiles to CSS, so nothing imports it and nothing executes it.
+ * Left in, it sits at zero against a 100% threshold and every StyleX project fails the gate it was born with.
+ */
+describe('the styling system', () => {
+  it('keeps a StyleX token table out of coverage', () => {
+    expect(configFor({ styling: 'stylex' })).toContain("'**/*.stylex.{ts,tsx}'");
+  });
+});
+
 describe('the router', () => {
-  it('keeps the route table and the generated tree out of coverage', () => {
+  it('keeps the route table out of coverage', () => {
     const config = configFor({ router: 'tanstack-router' }) ?? '';
 
     expect(config).toContain("'src/routes/**'");
-    expect(config).toContain("'src/routeTree.gen.ts'");
     expect(configFor({})).not.toContain('src/routes/**');
   });
 });

@@ -10,10 +10,11 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "lint:css": "stylelint \"packages/*/src/**/*.css\" --allow-empty-input",
+    "lint:css": "stylelint \"packages/*/src/**/*.css\" \"packages/create/templates/**/*.css\" --allow-empty-input",
     "lint:types": "node scripts/lintTypes.ts",
     "lint:starters": "JITI_TSCONFIG_PATHS=1 jiti scripts/lintStarters.ts",
     "lint:starters:fix": "JITI_TSCONFIG_PATHS=1 jiti scripts/lintStarters.ts --fix",
+    "trees": "JITI_TSCONFIG_PATHS=1 jiti scripts/starterTrees.ts",
     "typecheck": "tsc --noEmit -p tsconfig.root.json && pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",

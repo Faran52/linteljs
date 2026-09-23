@@ -7,8 +7,10 @@ import {
 import { parseCliArgs } from './argvUtils';
 
 describe('parseCliArgs', () => {
-  it('turns --skip-scaffold into a skipped scaffold stage', () => {
-    expect(parseCliArgs(['demo-app', '--skip-scaffold']).skip).toEqual(['scaffold']);
+  // There is no scaffold stage to skip any more: the flag says the directory is a repository that already exists.
+  it('reads --skip-scaffold as an existing directory', () => {
+    expect(parseCliArgs(['--skip-scaffold']).existing).toBe(true);
+    expect(parseCliArgs([]).existing).toBe(false);
   });
 
   it('turns --no-install into skipping both the install and the fix that needs it', () => {

@@ -57,11 +57,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
     gates.push('test:coverage');
   }
 
-  // `build` comes from the scaffolder for most targets; a target with none is a gap, not a shape.
-  if (target.build !== undefined) {
-    scripts['build'] = target.build;
-  }
-
+  scripts['build'] = target.build;
   gates.push('build');
 
   return {

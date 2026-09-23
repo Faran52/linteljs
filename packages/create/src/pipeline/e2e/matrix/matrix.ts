@@ -1,10 +1,12 @@
 import { env } from 'node:process';
 
 import {
+  ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
   type Form,
   type HostedFramework,
+  onlyFor,
   rendersWithReact,
   type Router,
   type TargetId,
@@ -14,6 +16,7 @@ import { targetFor } from '@targets';
 import {
   AGENTS,
   BROWSERS,
+  DATA_CHOICES,
   FORMS,
   HOSTED_FRAMEWORKS,
   LIBRARIES,
@@ -21,6 +24,7 @@ import {
   PLUGINS,
   SHARD,
   SHARDS,
+  STYLING_CHOICES,
   SURFACES,
   TARGET_IDS,
   TESTING_CHOICES,
@@ -28,6 +32,7 @@ import {
 } from './constants';
 import { coveringSubset } from './utils/pairwiseUtils';
 
+import type { AnswerRecord } from '@answers/types';
 import type { Framework } from '@config/types';
 import type { TargetRecord } from '@targets/types';
 
@@ -89,6 +94,21 @@ const formsFor = (framework: Framework | undefined): (Form | undefined)[] => {
   })];
 };
 
+// The values an optional choice offers here, read through the same predicate the prompt and the parser use, so the
+// matrix cannot enumerate a combination `refuseMisfit` would then refuse. `undefined` is the answer's own none.
+const offered = <V extends string>(
+  values: readonly V[],
+  record: AnswerRecord,
+  target: TargetRecord,
+  answered: Answers,
+): (V | undefined)[] => {
+  return [undefined, ...values.filter((value) => {
+    const only = onlyFor(record, value);
+
+    return only === undefined || only(target, answered);
+  })];
+};
+
 const hostedFor = (record: TargetRecord): (HostedFramework | undefined)[] => {
   return record.hostsFramework === true ? [undefined, ...HOSTED_FRAMEWORKS] : [undefined];
 };
@@ -128,6 +148,8 @@ const labelFor = (answers: Answers): string => {
     ...(answers.form === undefined ? [] : [answers.form]),
     ...(answers.router === undefined ? [] : [answers.router]),
     ...(answers.store === undefined ? [] : [answers.store]),
+    ...(answers.styling === undefined ? [] : [answers.styling]),
+    ...(answers.data === undefined ? [] : [answers.data]),
   ].join(' ');
 };
 
@@ -146,6 +168,9 @@ const managerCases = (target: TargetId): E2eCase[] => {
       ...everyMultiSelect(target),
       target,
       packageManager,
+      // The heaviest of each: tailwind brings NativeWind on React Native, and the query binding is per framework.
+      styling: 'tailwind',
+      data: 'tanstack-query',
     });
   });
 };
@@ -174,7 +199,16 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
     };
   });
 
-  const forms = across(browsers, (variant) => {
+  const stylings = across(browsers, (variant) => {
+    return offered(STYLING_CHOICES, ANSWERS.styling, recordOf(variant), DEFAULT_ANSWERS);
+  }, (variant, styling) => {
+    return {
+      ...variant,
+      ...(styling === undefined ? {} : { styling }),
+    };
+  });
+
+  const forms = across(stylings, (variant) => {
     return formsFor(recordOf(variant).framework);
   }, (variant, form) => {
     return {
@@ -202,7 +236,19 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
     };
   });
 
-  const testings = across(stores, () => {
+  const datas = across(stores, (variant) => {
+    return offered(DATA_CHOICES, ANSWERS.data, recordOf(variant), {
+      ...DEFAULT_ANSWERS,
+      ...variant,
+    });
+  }, (variant, data) => {
+    return {
+      ...variant,
+      ...(data === undefined ? {} : { data }),
+    };
+  });
+
+  const testings = across(datas, () => {
     return [...TESTING_CHOICES];
   }, (variant, testing) => {
     return {

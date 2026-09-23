@@ -9,8 +9,7 @@ import type { Answers } from '@answers/registry';
 // A stage is a property of an artifact, so it is declared beside one. Stage 4, `standard`, also
 // writes the hooks, the checker, the test setup and the build configs.
 export type Stage
-  = 'scaffold'
-    | 'lint'
+  = 'lint'
     | 'package'
     | 'standard'
     | 'install'
@@ -90,6 +89,7 @@ export type Framework
     | 'next'
     | 'react-native'
     | 'vue'
+    | 'nuxt'
     | 'svelte'
     | 'solid'
     | 'angular';

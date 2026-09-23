@@ -22,9 +22,7 @@ interface NotFound {
  */
 export {
   mkdir,
-  readdir,
   readFile,
-  rename,
   rm,
   rmdir,
 } from 'node:fs/promises';

@@ -176,7 +176,7 @@ describe('main: what it prints and what it returns', () => {
 
     expect(code).toBe(1);
     expect(errors).toEqual([expect.stringContaining('Not a stage: lnt')]);
-    expect(errors[0]).toContain('scaffold, lint, package, standard, install, fix');
+    expect(errors[0]).toContain('lint, package, standard, install, fix');
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
@@ -232,8 +232,8 @@ describe('main: what it prints and what it returns', () => {
   // `--skip-scaffold` patches a directory that is already named.
   it('does not ask the name when there is no directory to create', async () => {
     const asked = scripted([
-      undefined, undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined,
     ]);
 
     await runMain(['--skip-scaffold', '--no-install'], asked);
@@ -304,7 +304,10 @@ describe('main: create', () => {
   it('runs the questionnaire and writes both selected adapters when --yes was not passed', async () => {
     const { printed } = await runMain(
       ['--skip-scaffold', '--no-install'],
-      scripted(['svelte', undefined, ['zod'], undefined, 'tanstack-store', undefined, ['claude-code', 'codex'], []]),
+      scripted([
+        'svelte', undefined, ['zod'], undefined, undefined, 'tanstack-store',
+        undefined, undefined, undefined, ['claude-code', 'codex'], [],
+      ]),
     );
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
@@ -333,8 +336,8 @@ describe('main: create', () => {
     ]);
 
     const asked = scripted([
-      'asked-app', undefined, undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined,
+      'asked-app', undefined, undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined,
     ]);
 
     try {
@@ -412,6 +415,9 @@ describe('main: patching a project that already exists', () => {
       ['--skip-scaffold', '--no-install'],
       scripted([
         'svelte',
+        undefined,
+        undefined,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -815,7 +821,8 @@ describe('main: sync', () => {
       surfaces: ['devtools-panel'],
       testing: 'none',
       packageManager: 'npm',
-      libraries: ['zod', 'tailwind'],
+      libraries: ['zod'],
+      styling: 'tailwind',
       typeSafety: 'relaxed',
       agents: ['codex'],
       plugins: ['context7'],
@@ -1016,7 +1023,7 @@ describe('main: answers given as flags', () => {
     const asked = scripted([]);
     const { code } = await runMain([
       '--skip-scaffold', '--no-install', '--target', 'svelte', '--libraries', 'zod,es-toolkit',
-      '--libraries', 'tailwind', '--testing', 'none', '--type-safety', 'relaxed', '--agents', 'codex',
+      '--styling', 'tailwind', '--testing', 'none', '--type-safety', 'relaxed', '--agents', 'codex',
     ], asked);
 
     expect(code).toBe(0);
@@ -1024,7 +1031,8 @@ describe('main: answers given as flags', () => {
     expect(await configAt()).toMatchObject({
       target: 'svelte',
       packageManager: 'bun',
-      libraries: ['zod', 'es-toolkit', 'tailwind'],
+      libraries: ['zod', 'es-toolkit'],
+      styling: 'tailwind',
       testing: 'none',
       typeSafety: 'relaxed',
       agents: ['codex'],
@@ -1046,7 +1054,7 @@ describe('main: answers given as flags', () => {
     [['--libraries', 'react-hook-form'], 'react-hook-form is a form library: name it in "form"'],
     [['--form', 'formik'], 'form must be one of: tanstack-form, react-hook-form'],
     [['--target', 'vue', '--form', 'react-hook-form'], 'react-hook-form is not an answer for vue'],
-    [['--router', 'wouter'], 'router must be one of: react-router, tanstack-router'],
+    [['--router', 'wouter'], 'router must be one of: react-router, react-router-framework, tanstack-router'],
     [['--target', 'vue', '--router', 'react-router'], 'router is not an answer for vue'],
     [['--target', 'svelte', '--store', 'zustand'], 'zustand is not an answer for svelte'],
   ])('refuses %j with the message a bad config gets, before writing anything', async (flags, message) => {
@@ -1075,7 +1083,7 @@ describe('main: what a run reports', () => {
     expect(steps).toBeGreaterThan(-1);
     expect(printed.indexOf('Steps:', steps + 1)).toBe(-1);
     expect(steps).toBeLessThan(printed.indexOf('['));
-    expect(printed).toContain('  2. lint: eslint and stylelint config');
+    expect(printed).toContain('  1. lint: eslint and stylelint config');
   });
 
   // `fix` follows `lint`, so skipping the install marks two of the six rather than one.
@@ -1083,10 +1091,8 @@ describe('main: what a run reports', () => {
     vi.stubEnv('npm_config_user_agent', NPM_AGENT);
 
     const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
-
-    expect(printed).toContain('  1. scaffold: the official generator (skipped)');
-    expect(printed).toContain('  5. install (skipped)');
-    expect(printed).toContain('  6. fix: eslint and stylelint --fix');
+    expect(printed).toContain('  4. install (skipped)');
+    expect(printed).toContain('  5. fix: eslint and stylelint --fix');
     expect(printed).not.toContain('  2. lint: eslint and stylelint config (skipped)');
   });
 
@@ -1096,7 +1102,7 @@ describe('main: what a run reports', () => {
     const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
     const lines = printed.split('\n');
     const label = lines.findIndex((line) => {
-      return line.startsWith('[2/6] lint:');
+      return line.startsWith('[1/5] lint:');
     });
 
     expect(lines.slice(label).find((line) => {
@@ -1112,9 +1118,8 @@ describe('main: what a run reports', () => {
 
     const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
 
-    expect(printed).toContain('[2/6] lint: eslint and stylelint config');
-    expect(printed).toContain('[4/6] standard:');
-    expect(printed).not.toContain('[1/6] scaffold');
+    expect(printed).toContain('[1/5] lint: eslint and stylelint config');
+    expect(printed).toContain('[3/5] standard:');
     expect(printed).toContain('Done. Next:\n  npm install\n  npm run lint:fix\n  npm run check');
     expect(printed).not.toContain('  cd ');
   });

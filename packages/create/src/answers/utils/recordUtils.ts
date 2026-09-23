@@ -1,4 +1,5 @@
 import type { TargetRecord } from '@targets/types';
+import type { Answers } from '../registry';
 import type { AnswerRecord, ValueRecord } from '../types';
 
 /**
@@ -6,7 +7,10 @@ import type { AnswerRecord, ValueRecord } from '../types';
  * ValueRecord>` on assignment: a closed key union is a legal source for a wider index signature of the same value
  * type, and every one of the four kinds with `values` shares this one.
  */
-export const onlyFor = (record: AnswerRecord, chosen: string): ((target: TargetRecord) => boolean)
+export const onlyFor = (
+  record: AnswerRecord,
+  chosen: string,
+): ((target: TargetRecord, answered: Answers) => boolean)
   | undefined => {
   if (!('values' in record)) {
     return undefined;

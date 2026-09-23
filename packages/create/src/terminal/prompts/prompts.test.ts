@@ -56,8 +56,8 @@ describe('ask', () => {
   // Svelte has no router slot and one store, so this is name plus nine answers.
   it('asks the project name first, then returns the chosen answer for every question', async () => {
     const { result } = await askWith([
-      'demo-app', 'svelte', 'none', ['zod', 'tailwind'], undefined, 'tanstack-store',
-      'relaxed', undefined, undefined]);
+      'demo-app', 'svelte', 'none', ['zod'], 'tailwind', undefined, 'tanstack-store',
+      undefined, undefined, 'relaxed', undefined, undefined, undefined, undefined]);
 
     expect(result).toEqual({
       name: 'demo-app',
@@ -67,7 +67,8 @@ describe('ask', () => {
         testing: 'none',
         // Never asked: the questionnaire leaves the record's placeholder, which `cli.ts` overwrites with the host.
         packageManager: 'pnpm',
-        libraries: ['zod', 'tailwind'],
+        libraries: ['zod'],
+        styling: 'tailwind',
         store: 'tanstack-store',
         typeSafety: 'relaxed',
         agents: ['claude-code'],
@@ -80,7 +81,7 @@ describe('ask', () => {
   it('asks the browser and the UI framework for an extension, and records both', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', 'firefox', ['popup', 'background'], 'solid',
-      undefined, undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(recorded.calls).toContain('Browser');
     expect(recorded.calls).toContain('UI framework');
@@ -92,7 +93,7 @@ describe('ask', () => {
   it('records no hosted framework when the answer is none', async () => {
     const { result } = await askWith([
       'demo-app', 'webextension', 'chrome', ['popup', 'background'], 'none',
-      undefined, undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.hostedFramework).toBeUndefined();
     expect(result.answers.browser).toBe('chrome');
@@ -102,7 +103,7 @@ describe('ask', () => {
   it('asks the surfaces for an extension, and records the ones chosen', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', 'firefox', ['devtools-panel'], 'solid',
-      undefined, undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(recorded.calls).toContain('Surfaces');
     expect(result.answers.surfaces).toEqual(['devtools-panel']);
@@ -111,7 +112,7 @@ describe('ask', () => {
   it('asks neither axis on a target that hosts neither', async () => {
     const { recorded } = await askWith([
       'demo-app', 'react', undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(recorded.calls).not.toContain('Browser');
     expect(recorded.calls).not.toContain('UI framework');
@@ -122,8 +123,8 @@ describe('ask', () => {
   // name plus nine answers.
   it('asks nothing about the language, and still asks for a store', async () => {
     const { result, recorded } = await askWith([
-      'demo-app', 'angular', undefined, undefined, undefined, 'ngrx-store',
-      undefined, undefined, undefined]);
+      'demo-app', 'angular', undefined, undefined, undefined, undefined, 'ngrx-store',
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.target).toBe('angular');
     expect(result.answers.store).toBe('ngrx-store');
@@ -158,7 +159,7 @@ describe('ask', () => {
   it('uses every default when each prompt is left blank', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result).toEqual({
       name: 'demo-app',
@@ -169,8 +170,8 @@ describe('ask', () => {
   it('selects both agents and no plugins', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined,
-      ['claude-code', 'codex'], []]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+      ['claude-code', 'codex'], [], undefined]);
 
     expect(result.answers).toMatchObject({
       agents: ['claude-code', 'codex'],
@@ -181,8 +182,8 @@ describe('ask', () => {
   it('selects one agent and a plugin subset, normalized to declaration order', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, ['codex'],
-      ['frontend-design', 'ponytail']]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, ['codex'],
+      ['frontend-design', 'ponytail'], undefined]);
 
     expect(result.answers).toMatchObject({
       agents: ['codex'],
@@ -194,13 +195,15 @@ describe('ask', () => {
   it('offers every option in the product\'s own name and casing', async () => {
     const { recorded } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(recorded.labels).toMatchObject({
       'Testing': ['Vitest', 'None'],
-      'Libraries': ['Zod', 'TanStack Query', 'Tailwind CSS', 'es-toolkit', 'ts-pattern', 't3-env'],
+      'Libraries': ['Zod', 'es-toolkit', 'ts-pattern', 't3-env'],
+      'Styling': ['None', 'Tailwind CSS', 'StyleX'],
+      'Data fetching': ['None', 'TanStack Query'],
       'Form library': ['None', 'TanStack Form', 'React Hook Form'],
-      'Router': ['None', 'React Router', 'TanStack Router'],
+      'Router': ['None', 'React Router', 'React Router, framework mode', 'TanStack Router'],
       'Type safety': ['Strict', 'Relaxed'],
       'AI agents': ['Claude Code', 'Codex', 'GitHub Copilot', 'Cursor'],
     });
@@ -209,7 +212,7 @@ describe('ask', () => {
   it('skips the plugins question when no agent was chosen', async () => {
     const { result, recorded } = await askWith([
       'demo-app', undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, []]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, undefined]);
 
     expect(result.answers).toMatchObject({
       agents: [],
@@ -221,8 +224,8 @@ describe('ask', () => {
   it('offers AI plugins label only when agents are selected', async () => {
     const { recorded } = await askWith([
       'demo-app', undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, ['codex'],
-      undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, ['codex'],
+      undefined, undefined]);
 
     expect(recorded.labels).toMatchObject({
       'AI plugins': ['Ponytail', 'Context7', 'Frontend Design'],
@@ -232,7 +235,10 @@ describe('ask', () => {
   describe('a name already resolved', () => {
     it('skips the name question and uses it as given', async () => {
       const { result, recorded } = await askWith(
-        [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined],
+        [
+          undefined, undefined, undefined, undefined, undefined, undefined,
+          undefined, undefined, undefined, undefined, undefined, undefined,
+        ],
         { name: 'from-flag' },
       );
 
@@ -246,11 +252,11 @@ describe('the store question', () => {
   // One choice per store the target offers, with None first, which is where the cursor starts.
   it('offers every store the target has, and takes the one chosen', async () => {
     const { result, recorded } = await askWith([
-      'demo-app', undefined, undefined, undefined, undefined, undefined, 'redux-toolkit',
-      undefined, undefined, undefined]);
+      'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, 'redux-toolkit',
+      undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.store).toBe('redux-toolkit');
-    expect(recorded.calls[6]).toBe('State store');
+    expect(recorded.calls[7]).toBe('State store');
     expect(recorded.labels['State store']).toEqual(['None', 'Zustand', 'Redux Toolkit', 'TanStack Store']);
   });
 
@@ -258,15 +264,15 @@ describe('the store question', () => {
   it('names the stores the target actually brings, not React\'s', async () => {
     const { recorded } = await askWith([
       'demo-app', 'angular', undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(recorded.labels['State store']).toEqual(['None', 'NgRx SignalStore', 'NgRx Store']);
   });
 
   it('takes None as an answer of its own', async () => {
     const { result } = await askWith([
-      'demo-app', undefined, undefined, undefined, undefined, undefined, 'none',
-      undefined, undefined, undefined]);
+      'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, 'none',
+      undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.store).toBeUndefined();
   });
@@ -274,7 +280,7 @@ describe('the store question', () => {
   it('defaults to no store', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.store).toBeUndefined();
   });
@@ -283,7 +289,7 @@ describe('the store question', () => {
   it('is not asked on a target without a store slot', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', undefined, undefined, undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.store).toBeUndefined();
     expect(recorded.calls).not.toContain('State store');
@@ -295,7 +301,7 @@ describe('the project name question', () => {
   it('refuses a name npm would not accept and passes one it would', async () => {
     const recorded = scripted([
       'my-app', undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
     const seen: (string | undefined)[] = [];
     const prompter: Prompter = {
       ...recorded.prompter,
@@ -326,26 +332,29 @@ describe('the form library and router questions', () => {
   // Its own answer: the checkbox list carries the libraries and nothing else.
   it('records the form choice apart from the libraries', async () => {
     const { result } = await askWith([
-      'demo-app', undefined, undefined, ['tailwind', 'zod'], 'react-hook-form',
-      undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', undefined, undefined, ['zod'], 'tailwind', 'react-hook-form',
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
-    expect(result.answers.libraries).toEqual(['zod', 'tailwind']);
+    expect(result.answers.libraries).toEqual(['zod']);
+    expect(result.answers.styling).toBe('tailwind');
     expect(result.answers.form).toBe('react-hook-form');
   });
 
   it('leaves form unset when none is chosen', async () => {
     const { result } = await askWith([
-      'demo-app', undefined, undefined, ['zod'], 'none',
-      undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', undefined, undefined, ['zod'], undefined, 'none',
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers).not.toHaveProperty('form');
   });
 
   it('offers react-hook-form only where the target renders with React', async () => {
     const vue = await askWith([
-      'demo-app', 'vue', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', 'vue', undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
     const hostedReact = await askWith([
-      'demo-app', 'astro', 'react', undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', 'astro', 'react', undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(vue.recorded.labels['Form library']).toEqual(['None', 'TanStack Form']);
     expect(hostedReact.recorded.labels['Form library']).toEqual(['None', 'TanStack Form', 'React Hook Form']);
@@ -355,17 +364,18 @@ describe('the form library and router questions', () => {
   it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
     const { recorded } = await askWith([
       'demo-app', target, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined]);
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(recorded.labels['Form library']).toEqual(['None', 'TanStack Form', 'React Hook Form']);
   });
 
   it('asks for a router on React alone, and records the one chosen', async () => {
     const react = await askWith([
-      'demo-app', undefined, undefined, undefined, undefined, 'tanstack-router',
-      undefined, undefined, undefined, undefined]);
+      'demo-app', undefined, undefined, undefined, undefined, undefined, 'tanstack-router',
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
     const next = await askWith([
-      'demo-app', 'next', undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+      'demo-app', 'next', undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined]);
 
     expect(react.result.answers.router).toBe('tanstack-router');
     expect(next.recorded.calls).not.toContain('Router');

@@ -35,11 +35,14 @@ import {
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
+  type Data,
   DEFAULT_ANSWERS,
   type Library,
   type PackageManager,
   type Plugin,
   type Router,
+  type Store,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
@@ -51,6 +54,7 @@ import {
   STYLE_ENTRY_CANDIDATES,
 } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
+import { VERSIONS } from '@emitters/always/package-json/constants';
 import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 
 import { applySync, planSync } from '../sync/syncRun';
@@ -66,6 +70,9 @@ interface AnswerOverrides {
   plugins?: Plugin[];
   browsers?: Browser[];
   router?: Router;
+  store?: Store;
+  styling?: Styling;
+  data?: Data;
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
@@ -79,7 +86,11 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 
 const SCAFFOLDED = JSON.stringify({
   name: 'demo-app',
-  dependencies: { react: '^19.2.0' },
+  // `date-fns` is a dependency this CLI neither pins nor supersedes, which is what a project's own looks like.
+  dependencies: {
+    'react': '^19.2.0',
+    'date-fns': '^4.1.0',
+  },
   scripts: { dev: 'vite' },
 }, null, 2);
 
@@ -110,7 +121,8 @@ const generate = async (overrides: AnswerOverrides): Promise<string[]> => {
     name: 'demo-app',
     cwd,
     answers: answersFor(overrides),
-    skip: ['scaffold', 'install'],
+    existing: true,
+    skip: ['install'],
     onWrite: (path) => {
       written.push(path);
     },
@@ -119,7 +131,7 @@ const generate = async (overrides: AnswerOverrides): Promise<string[]> => {
   return written;
 };
 
-describe('runPipeline with --skip-scaffold', () => {
+describe('runPipeline against a directory that already exists', () => {
   it('writes the expected file list', async () => {
     const written = await generate({});
 
@@ -195,12 +207,14 @@ describe('runPipeline with --skip-scaffold', () => {
     expect(readme).toContain('pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck');
   });
 
-  it('leaves the fixture dependencies and scripts intact', async () => {
+  it('leaves the dependencies and scripts it does not own intact', async () => {
     await generate({});
 
     const patched = parsePackageJson(await readFile(join(cwd, 'package.json'), 'utf8'));
 
-    expect(patched.dependencies?.['react']).toBe('^19.2.0');
+    expect(patched.dependencies?.['date-fns']).toBe('^4.1.0');
+    // Owned since this target crossed over: nothing fetches React any more, so this CLI is what installs it.
+    expect(patched.dependencies?.['react']).toBe(VERSIONS['react']);
     expect(patched.scripts?.['dev']).toBe('vite');
     expect(patched.scripts?.['lint']).toBe('eslint .');
   });
@@ -358,7 +372,8 @@ describe('coverage surface', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor(overrides),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       fresh: true,
     });
 
@@ -390,9 +405,13 @@ describe('coverage surface', () => {
     expect(await vitestConfig({ target: 'react' })).not.toContain('layout');
   });
 
-  // Excluding the layout leaves `--template minimal` at `100% (0/0)`, asserting nothing.
-  it('measures the svelte root layout rather than excluding it', async () => {
-    expect(await vitestConfig({ target: 'svelte' })).not.toContain('+layout.svelte');
+  /*
+   * `<svelte:head>` compiles to a hydration branch, which a suite that renders rather than hydrates cannot reach,
+   * so the root layout sits at 50% branches against a 100% threshold. It keeps its suite; only the measurement
+   * goes, the same trade Next's root layout already takes.
+   */
+  it('excludes the svelte root layout, whose head is a branch no suite reaches', async () => {
+    expect(await vitestConfig({ target: 'svelte' })).toContain("'src/routes/+layout.svelte'");
   });
 
   it('keeps the thresholds at 100 for every target', async () => {
@@ -416,7 +435,8 @@ describe('coverage surface', () => {
         name: 'demo-app',
         cwd,
         answers: answersFor(overrides),
-        skip: ['scaffold', 'install'],
+        existing: true,
+        skip: ['install'],
         fresh: true,
       });
 
@@ -455,7 +475,8 @@ describe('build configs a project already owns', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({}),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       fresh: true,
     });
 
@@ -479,7 +500,8 @@ const fresh = async (overrides: AnswerOverrides): Promise<string[]> => {
     name: 'demo-app',
     cwd,
     answers: answersFor(overrides),
-    skip: ['scaffold', 'install'],
+    existing: true,
+    skip: ['install'],
     fresh: true,
     onWrite: (path) => {
       written.push(path);
@@ -497,16 +519,18 @@ describe('starter tests', () => {
     expect(await fresh({})).toContain('src/App.test.tsx');
   });
 
+  /*
+   * `requires` gates a suite on the file it covers. Every target writes its own source now, so what the gate is
+   * for is the source an answer decides: with no store there is no counter, and its suite would cover nothing.
+   */
   it('writes none when the file it would cover is absent', async () => {
-    expect(await fresh({})).not.toContain('src/App.test.tsx');
+    // The absent case first: a second run writes into the same directory, where the first run's source is still there.
+    expect(await fresh({})).not.toContain('src/lib/store/counter.test.tsx');
+    expect(await fresh({ store: 'zustand' })).toContain('src/lib/store/counter.test.tsx');
   });
 
-  // The layout is the only executable code `--template minimal` writes, so both tests have to land.
+  // Both land, since this repository writes both: the layout is the shell and the page is what it wraps.
   it('covers both the svelte page and its root layout', async () => {
-    await mkdir(join(cwd, 'src/routes'), { recursive: true });
-    await writeFile(join(cwd, 'src/routes/+page.svelte'), '<h1>SvelteKit</h1>\n', 'utf8');
-    await writeFile(join(cwd, 'src/routes/+layout.svelte'), '{@render children()}\n', 'utf8');
-
     expect(await fresh({ target: 'svelte' }))
       .toEqual(expect.arrayContaining(['src/routes/page.test.ts', 'src/routes/layout.test.ts']));
   });
@@ -536,7 +560,8 @@ describe('the webextension surfaces', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'webextension' }),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       fresh: true,
       onWrite: (path) => {
         written.push(path);
@@ -571,7 +596,8 @@ describe('the webextension surfaces', () => {
         target: 'webextension',
         browsers: ['chrome', 'firefox'],
       }),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       fresh: true,
       onWrite: (path) => {
         written.push(path);
@@ -611,7 +637,8 @@ describe('the webextension surfaces', () => {
         target: 'webextension',
         testing: 'none',
       }),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       fresh: true,
     });
 
@@ -631,7 +658,8 @@ describe('the webextension surfaces', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'react' }),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       fresh: true,
     });
 
@@ -639,34 +667,33 @@ describe('the webextension surfaces', () => {
   });
 });
 
-const SVELTE_DOCUMENT = '<html lang="en">\n\t<head>\n\t\t%sveltekit.head%\n\t</head>\n</html>\n';
+// What `ng new` writes, whose rejection value plain TypeScript would leave implicitly `any`.
+const ANGULAR_ENTRY = 'bootstrapApplication(App).catch((err) => log(err));\n';
 
 describe('starter repairs', () => {
   it('repairs the starter code of a directory it was told is fresh output', async () => {
     await mkdir(join(cwd, 'src'), { recursive: true });
-    await writeFile(join(cwd, 'src/app.html'), SVELTE_DOCUMENT, 'utf8');
+    await writeFile(join(cwd, 'src/main.ts'), ANGULAR_ENTRY, 'utf8');
 
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({ target: 'svelte' }),
-      skip: ['scaffold', 'install'],
+      answers: answersFor({ target: 'angular' }),
+      existing: true,
+      skip: ['install'],
       fresh: true,
     });
 
-    const app = await readFile(join(cwd, 'src/app.html'), 'utf8');
-
-    expect(app).toContain('<title>App</title>');
-    expect(app).not.toContain('\t');
+    expect(await readFile(join(cwd, 'src/main.ts'), 'utf8')).toContain('(err: unknown) =>');
   });
 
   it('leaves that same starter code alone in a repository it did not scaffold', async () => {
     await mkdir(join(cwd, 'src'), { recursive: true });
-    await writeFile(join(cwd, 'src/app.html'), SVELTE_DOCUMENT, 'utf8');
+    await writeFile(join(cwd, 'src/main.ts'), ANGULAR_ENTRY, 'utf8');
 
-    await generate({ target: 'svelte' });
+    await generate({ target: 'angular' });
 
-    expect(await readFile(join(cwd, 'src/app.html'), 'utf8')).toBe(SVELTE_DOCUMENT);
+    expect(await readFile(join(cwd, 'src/main.ts'), 'utf8')).toBe(ANGULAR_ENTRY);
   });
 });
 
@@ -977,7 +1004,7 @@ describe('the stages that shell out', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({ packageManager: 'yarn' }),
-      skip: ['scaffold', 'lint', 'package', 'standard', 'fix'],
+      skip: ['lint', 'package', 'standard', 'fix'],
       onNotice: (message) => {
         notices.push(message);
       },
@@ -995,7 +1022,7 @@ describe('the stages that shell out', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({ packageManager: 'yarn' }),
-      skip: ['scaffold', 'lint', 'package', 'standard'],
+      skip: ['lint', 'package', 'standard'],
     })).rejects.toThrow('yarn install exited with 3');
   });
 
@@ -1006,28 +1033,11 @@ describe('the stages that shell out', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({ packageManager: 'bun' }),
-      skip: ['scaffold', 'lint', 'package', 'standard', 'fix'],
+      skip: ['lint', 'package', 'standard', 'fix'],
     })).rejects.toThrow('ENOENT');
   });
 
-  // The scaffolder creates `<name>/` itself; wrong, the project nests inside itself.
-  it('runs the scaffolder one directory above the project it is creating', async () => {
-    await planted('pnpm', 0);
-
-    const project = join(cwd, 'demo-app');
-
-    await pipelineRun({
-      name: 'demo-app',
-      cwd: project,
-      answers: answersFor({}),
-      skip: ['lint', 'package', 'standard', 'install', 'fix'],
-    });
-
-    expect(await invocations()).toEqual([
-      `${await realCwd()} create vite demo-app `
-      + '--template react-ts --eslint --no-interactive --no-immediate',
-    ]);
-  });
+  // A target whose template this repository owns fetches nothing, and the stage makes the directory instead.
 });
 
 // Stage 4's repository notice has its own describe below.
@@ -1044,7 +1054,7 @@ describe('the repository the hooks install into', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({}),
-      skip: ['scaffold', 'lint', 'package', 'install', 'fix'],
+      skip: ['lint', 'package', 'install', 'fix'],
       onNotice: (message) => {
         notices.push(message);
       },
@@ -1097,12 +1107,12 @@ describe('the eslint --fix pass', () => {
 
   it('reports the install step when the project has no eslint yet', async () => {
     // Stage 3 only adds eslint to package.json, so this is what a fresh generate does.
-    expect(await noticesFrom(['scaffold', 'install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
+    expect(await noticesFrom(['install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
   });
 
   // The CLI's closing summary names the install; a second notice here said the same thing twice.
   it('says nothing more when the fix pass was skipped outright', async () => {
-    expect(await noticesFrom(['scaffold', 'install', 'fix'])).toEqual([]);
+    expect(await noticesFrom(['install', 'fix'])).toEqual([]);
   });
 
   it('reports nothing about the package manager when install and fix were both skipped', async () => {
@@ -1115,7 +1125,7 @@ describe('the eslint --fix pass', () => {
         ...answersFor({}),
         packageManager: 'bun',
       },
-      skip: ['scaffold', 'install', 'fix'],
+      skip: ['install', 'fix'],
       onNotice: (message) => {
         notices.push(message);
       },
@@ -1125,7 +1135,7 @@ describe('the eslint --fix pass', () => {
   });
 
   it('does not run when the lint stage was skipped', async () => {
-    expect(await noticesFrom(['scaffold', 'lint', 'install'])).toEqual([]);
+    expect(await noticesFrom(['lint', 'install'])).toEqual([]);
   });
 
   // A stand-in eslint with `output` present exactly on files it rewrote.
@@ -1153,19 +1163,19 @@ describe('the eslint --fix pass', () => {
       1,
     );
 
-    expect(await noticesFrom(['scaffold', 'install'])).toEqual(['eslint --fix: 1 file changed']);
+    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: 1 file changed']);
   });
 
   it('counts more than one, and says so in the plural', async () => {
     await plantedEslint('[{"output":"a"},{"output":"b"},{"filePath":"c.ts"}]', 1);
 
-    expect(await noticesFrom(['scaffold', 'install'])).toEqual(['eslint --fix: 2 files changed']);
+    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: 2 files changed']);
   });
 
   it('reports a clean pass rather than zero files', async () => {
     await plantedEslint('[{"filePath":"a.ts"}]', 0);
 
-    expect(await noticesFrom(['scaffold', 'install'])).toEqual(['eslint --fix: nothing to fix']);
+    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: nothing to fix']);
   });
 
   // Unreadable formatter output counts as nothing fixed.
@@ -1175,7 +1185,7 @@ describe('the eslint --fix pass', () => {
   ])('survives %s', async (_case, printed) => {
     await plantedEslint(printed, 0);
 
-    expect(await noticesFrom(['scaffold', 'install'])).toEqual(['eslint --fix: nothing to fix']);
+    expect(await noticesFrom(['install'])).toEqual(['eslint --fix: nothing to fix']);
     expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
   });
 
@@ -1187,7 +1197,7 @@ describe('the eslint --fix pass', () => {
     await writeFile(join(bin, 'eslint'), '#!/usr/bin/env node\nprocess.exit(2);\n', 'utf8');
     await chmod(join(bin, 'eslint'), 0o755);
 
-    const notices = await noticesFrom(['scaffold', 'install']);
+    const notices = await noticesFrom(['install']);
 
     expect(notices).toEqual(['eslint --fix could not run; run it yourself once dependencies are installed']);
     expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
@@ -1221,7 +1231,7 @@ describe('the eslint --fix pass', () => {
 
   it('fixes the stylesheets over the same glob lint:css gates', async () => {
     await plantedStylelint();
-    await noticesFrom(['scaffold', 'install']);
+    await noticesFrom(['install']);
 
     expect(await stylelintArgv()).toBe('src/**/*.css --fix --allow-empty-input');
   });
@@ -1233,7 +1243,8 @@ describe('the eslint --fix pass', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({ target: 'vue' }),
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
     });
 
     expect(await stylelintArgv()).toBe('src/**/*.{css,vue} --fix --allow-empty-input');
@@ -1253,7 +1264,7 @@ describe('the eslint --fix pass', () => {
     await writeFile(join(bin, 'stylelint'), 'not a program\n', 'utf8');
     await chmod(join(bin, 'stylelint'), 0o644);
 
-    expect(await noticesFrom(['scaffold', 'install'])).toEqual([
+    expect(await noticesFrom(['install'])).toEqual([
       'eslint --fix: nothing to fix',
       'stylelint --fix could not run; run it yourself once dependencies are installed',
     ]);
@@ -1264,7 +1275,10 @@ describe('the eslint --fix pass', () => {
 // Both routes read the directory the same way: `--skip-scaffold` once wrote a second stylesheet nothing imports.
 describe('what create and sync each discover about a project', () => {
   const withTailwind = (): Answers => {
-    return answersFor({ libraries: ['tailwind'] });
+    return answersFor({
+      libraries: [],
+      styling: 'tailwind',
+    });
   };
 
   const plant = async (relative: string, text = ''): Promise<void> => {
@@ -1285,7 +1299,8 @@ describe('what create and sync each discover about a project', () => {
       name: 'demo-app',
       cwd,
       answers,
-      skip: ['scaffold', 'install'],
+      existing: true,
+      skip: ['install'],
       onWrite: (path) => {
         written.push(path);
       },
@@ -1328,32 +1343,33 @@ describe('what create and sync each discover about a project', () => {
 });
 
 describe('starter files for a router', () => {
-  it('writes none without a router', async () => {
+  // The entry is written either way; without a router it is the base copy, and no route table joins it.
+  it('writes the base entry and no route table without a router', async () => {
     const written = await fresh({});
 
-    expect(written).not.toContain('src/main.tsx');
+    expect(written).toContain('src/main.tsx');
     expect(written).not.toContain('src/routes/router.tsx');
+    expect(written).not.toContain('src/routeTree.gen.ts');
   });
 
   it('writes the react-router table and entry, and nothing of tanstack', async () => {
     const written = await fresh({ router: 'react-router' });
 
-    expect(written).toContain('src/main.tsx');
+    expect(written).toContain('src/App.tsx');
     expect(written).toContain('src/routes/router.tsx');
     expect(written).not.toContain('src/routeTree.gen.ts');
-    expect(await readFile(join(cwd, 'src/main.tsx'), 'utf8')).toContain("from 'react-router'");
+    // The entry is the same file whatever was answered; `App` is what the router replaces.
+    expect(await readFile(join(cwd, 'src/App.tsx'), 'utf8')).toContain("from 'react-router'");
   });
 
-  it('writes the tanstack routes, entry and committed tree', async () => {
+  // No `routes/` directory and no generated tree: the tree is built from the one route list, in the entry.
+  it('writes the tanstack entry and nothing generated beside it', async () => {
     const written = await fresh({ router: 'tanstack-router' });
 
-    expect(written).toEqual(expect.arrayContaining([
-      'src/main.tsx',
-      'src/routes/__root.tsx',
-      'src/routes/index.tsx',
-      'src/routeTree.gen.ts',
-    ]));
+    expect(written).toContain('src/App.tsx');
     expect(written).not.toContain('src/routes/router.tsx');
+    expect(written).not.toContain('src/routeTree.gen.ts');
+    expect(await readFile(join(cwd, 'src/App.tsx'), 'utf8')).toContain("from '@tanstack/react-router'");
   });
 
   // `renderScreen` imports `@testing-library/react-native`, which `testing: none` never installs, so writing it
@@ -1369,15 +1385,17 @@ describe('starter files for a router', () => {
     })).not.toContain('__mocks__/renderScreen.tsx');
   });
 
-  it('writes the NativeWind metro config only when tailwind was chosen on React Native', async () => {
+  // Both, not just the NativeWind one: Metro needs a config on this target whatever was answered about styling.
+  it('writes a metro config for either styling answer on React Native', async () => {
     expect(await fresh({
       target: 'react-native',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     })).toContain('metro.config.js');
     expect(await fresh({
       target: 'react-native',
       libraries: [],
-    })).not.toContain('metro.config.js');
+    })).toContain('metro.config.js');
   });
 });
 
@@ -1390,7 +1408,7 @@ describe('stage timing', () => {
       name: 'demo-app',
       cwd,
       answers: answersFor({}),
-      skip: ['scaffold', 'standard', 'install', 'fix'],
+      skip: ['standard', 'install', 'fix'],
       onStageDone: (stage, milliseconds) => {
         done.push([stage, milliseconds]);
       },

@@ -9,9 +9,11 @@ import { valuesOf } from '@utils/objectUtils';
 import {
   ANSWERS,
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Library,
   type Router,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
@@ -24,6 +26,8 @@ interface AnswerOverrides {
   testing?: Testing;
   libraries?: Library[];
   router?: Router;
+  styling?: Styling;
+  data?: Data;
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
@@ -165,11 +169,21 @@ describe('emitEslintConfig', () => {
   });
 
   it('asks for a library layer only when its library was selected', () => {
-    expect(emitEslintConfig(answersFor({ libraries: ['tanstack-query'] })))
+    expect(emitEslintConfig(answersFor({
+      libraries: [],
+      data: 'tanstack-query',
+    })))
       .toContain("libraries: ['tanstack-query'],");
-    expect(emitEslintConfig(answersFor({ libraries: ['tailwind'] })))
+    expect(emitEslintConfig(answersFor({
+      libraries: [],
+      styling: 'tailwind',
+    })))
       .toContain("libraries: ['tailwind'],");
-    expect(emitEslintConfig(answersFor({ libraries: ['tailwind', 'tanstack-query'] })))
+    expect(emitEslintConfig(answersFor({
+      libraries: [],
+      styling: 'tailwind',
+      data: 'tanstack-query',
+    })))
       .toContain("libraries: ['tanstack-query', 'tailwind'],");
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
   });
@@ -178,7 +192,7 @@ describe('emitEslintConfig', () => {
   it.each<[TargetId, string]>([
     ['react', './src/index.css'],
     ['next', './src/app/globals.css'],
-    ['vue', './src/assets/main.css'],
+    ['vue', './src/styles/main.css'],
     ['solid', './src/index.css'],
     ['angular', './src/styles.css'],
     ['webextension', './src/style.css'],
@@ -188,7 +202,8 @@ describe('emitEslintConfig', () => {
   ])('names %s tailwind entry point as its stylesheet', (target, entry) => {
     expect(emitEslintConfig(answersFor({
       target,
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     })))
       .toContain(`tailwindEntryPoint: '${entry}',`);
   });
@@ -208,7 +223,10 @@ describe('emitEslintConfig', () => {
   });
 
   it('names no tailwind entry point when tailwind was not selected', () => {
-    expect(emitEslintConfig(answersFor({ libraries: ['tanstack-query'] }))).not.toContain('tailwindEntryPoint');
+    expect(emitEslintConfig(answersFor({
+      libraries: [],
+      data: 'tanstack-query',
+    }))).not.toContain('tailwindEntryPoint');
   });
 
   it('omits the html layer where there is no markup for it to lint', () => {
@@ -329,14 +347,15 @@ describe('ignores', () => {
 });
 
 describe('the router', () => {
-  it('composes the tanstack-router layer and ignores the generated tree', () => {
+  it('composes the tanstack-router layer', () => {
     const config = emitEslintConfig(answersFor({
       target: 'react',
       router: 'tanstack-router',
     }));
 
     expect(config).toContain("'tanstack-router'");
-    expect(config).toContain("'src/routeTree.gen.ts'");
+    // Nothing generated to ignore: the route tree is built from the one route list.
+    expect(config).not.toContain('routeTree.gen.ts');
   });
 
   it('adds nothing for react-router, which ships no rules', () => {

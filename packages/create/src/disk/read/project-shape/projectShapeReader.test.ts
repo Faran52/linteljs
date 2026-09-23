@@ -62,13 +62,13 @@ describe('projectShapeReader', () => {
   });
 });
 
-// A target with no stylesheet of its own contributes nothing to look for.
+// Every target declares one, and the reader has to know every spelling it might meet.
 const targetDefaults = (): string[] => {
-  return TARGET_IDS.flatMap((target) => {
+  return TARGET_IDS.map((target) => {
     return TARGETS[target]({
       ...DEFAULT_ANSWERS,
       target,
-    }).styleEntry ?? [];
+    }).styleEntry;
   });
 };
 

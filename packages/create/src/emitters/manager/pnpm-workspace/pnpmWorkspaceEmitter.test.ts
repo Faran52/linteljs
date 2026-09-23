@@ -7,7 +7,9 @@ import {
 import {
   type Answers,
   type Browser,
+  type Data,
   DEFAULT_ANSWERS,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -17,6 +19,8 @@ import { allowBuildsBlock, emitPnpmWorkspace } from './utils/emitUtils';
 interface AnswerOverrides {
   target?: TargetId;
   browser?: Browser;
+  styling?: Styling;
+  data?: Data;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {

@@ -15,7 +15,7 @@ export const STYLE_ENTRY_CANDIDATES = [
   'src/styles/globals.css',
   'src/styles/index.css',
   'src/app/globals.css',
-  'src/assets/main.css',
+  'src/styles/main.css',
   'src/global.css',
   'src/globals.css',
   'src/styles.css',

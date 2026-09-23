@@ -8,7 +8,6 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type HostedFramework,
-  type Library,
 } from '@answers';
 
 import { astroTarget } from './astroTarget';
@@ -25,20 +24,12 @@ const recordFor = (overrides: Partial<Answers> = {}) => {
   return astroTarget(answersFor(overrides));
 };
 
-describe('scaffold', () => {
-  it('writes the exact argv for the default answers', () => {
-    expect(recordFor().scaffold('demo-site', DEFAULT_ANSWERS)).toEqual({
-      kind: 'create',
-      args: [
-        'astro@latest', 'demo-site',
-        '--template', 'minimal',
-        '--no-install',
-        '--no-git',
-        '--no-ai',
-        '--skip-houston',
-        '--yes',
-      ],
-    });
+describe('the astro record', () => {
+  // Astro renders the document itself, so there is no `index.html` and its own config is what a vite config would be.
+  it('owns its document and its build', () => {
+    expect(recordFor().html).toBe(false);
+    expect(recordFor().vite).toBe(false);
+    expect(recordFor().build).toBe('astro build');
   });
 });
 
@@ -162,10 +153,8 @@ describe('the hosted framework axis', () => {
 
   // The adapter is chosen once, in the package-json emitter; the record adds nothing of its own.
   it('adds no tailwind adapter of its own', () => {
-    const libraries: Library[] = ['tailwind'];
-
-    expect(recordFor({ libraries }).devDependencies).not.toContain('@tailwindcss/vite');
-    expect(recordFor({ libraries }).devDependencies).not.toContain('@tailwindcss/postcss');
+    expect(recordFor({ styling: 'tailwind' }).devDependencies).not.toContain('@tailwindcss/vite');
+    expect(recordFor({ styling: 'tailwind' }).devDependencies).not.toContain('@tailwindcss/postcss');
   });
 
   // Nothing in an Astro scaffold typechecks against `@babel/core`: the wiring lives in `astroTarget.config.mjs`.

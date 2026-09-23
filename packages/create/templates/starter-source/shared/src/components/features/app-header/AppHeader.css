@@ -1,0 +1,62 @@
+/* Colocated with the component, imported from the style entry: a scoped block would not reach three targets. */
+
+.header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.125rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+/* The name is whatever was typed, so it truncates rather than pushing the nav off. */
+.brand {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-ui);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.tabs {
+  display: flex;
+  flex: none;
+  gap: 0.125rem;
+}
+
+.tab {
+  padding: 0.3125rem 0.625rem;
+  font-size: var(--text-ui);
+  color: var(--muted-foreground);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease);
+}
+
+.tab:hover {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+/*
+ * A class rather than `[aria-current="page"]`. The attribute is still on the element and still what a screen
+ * reader reads; styling off a class is what lets StyleX say the same thing, since it compiles to atomic classes
+ * and has no attribute selector to match on.
+ */
+.tab-current {
+  font-weight: 560;
+  color: var(--primary);
+  background: var(--muted);
+}
+
+.tab-button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+}

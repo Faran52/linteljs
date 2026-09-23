@@ -32,7 +32,12 @@ export const vue = (): Layer => {
         },
       },
       rules: {
-        'vue/multi-word-component-names': 'error',
+        /*
+         * `for` alone, where the rule's default demands nesting as well. No accessibility guidance asks for both:
+         * a label bound by `for` to a control's id is the documented association, and demanding the control also
+         * sit inside the label rules out every layout that puts anything between them, an error message included.
+         */
+        'vuejs-accessibility/label-has-for': ['error', { required: { every: ['id'] } }],
       },
     },
 

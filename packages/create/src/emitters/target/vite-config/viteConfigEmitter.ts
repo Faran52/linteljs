@@ -1,33 +1,12 @@
-import { partition } from 'es-toolkit';
-
 import { type Artifact } from '@config/types';
 
-import { type Answers, hasLibrary } from '@answers';
+import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
+import { sortedImports } from '../../utils/importUtils';
 
 // For the five Vite targets. `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
-
-// Everything after `from`, quotes included, so sorting by it is sorting by specifier.
-const specifierOf = (line: string): string => {
-  return line.replace(/^import .* from /, '');
-};
-
-// The order `simple-import-sort` would fix to: packages by specifier, then the project's own files after a blank line.
-const sortedImports = (lines: string[]): string => {
-  const bySpecifier = (left: string, right: string): number => {
-    return specifierOf(left).localeCompare(specifierOf(right), 'en');
-  };
-  const [own, packages] = partition(lines, (line) => {
-    return specifierOf(line).startsWith("'.");
-  });
-
-  own.sort(bySpecifier);
-  packages.sort(bySpecifier);
-
-  return [packages.join('\n'), ...(own.length === 0 ? [] : [own.join('\n')])].join('\n\n');
-};
 
 export const emitViteConfig = (answers: Answers): string | null => {
   // Read off the record, so a host composes both plugins without this emitter knowing which.
@@ -41,19 +20,33 @@ export const emitViteConfig = (answers: Answers): string | null => {
     return null;
   }
 
-  const tailwind = hasLibrary(answers, 'tailwind');
-  const tanstackRouter = answers.router === 'tanstack-router';
+  const tailwind = answers.styling === 'tailwind';
+  const stylex = answers.styling === 'stylex';
 
   const imports = sortedImports([
     "import { defineConfig } from 'vite';",
-    ...(tanstackRouter ? ["import { tanstackRouter } from '@tanstack/router-plugin/vite';"] : []),
     ...vitePlugin.imports,
     ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
+    /*
+     * The raw factory through `unplugin`, not `@stylexjs/unplugin/vite`. Every pre-built factory that package
+     * ships is typed `=> any`, so the shorter import puts an `any` in `plugins` and the project fails its own
+     * lint; `unpluginFactory` is the one export it types properly.
+     */
+    ...(stylex
+      ? [
+          "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
+          "import { createUnplugin } from 'unplugin';",
+        ]
+      : []),
   ]);
 
-  // The router plugin rewrites route files before the framework plugin transforms them.
   const calls = [
-    ...(tanstackRouter ? ["tanstackRouter({ target: 'react', autoCodeSplitting: true })"] : []),
+    /*
+     * StyleX first, which is what its own documentation asks for: placed after the framework plugin it breaks
+     * Fast Refresh. `useCSSLayers` is its documented default for new projects and is what keeps the generated
+     * atomic rules from outranking a hand-written one by specificity alone.
+     */
+    ...(stylex ? ['createUnplugin(stylex).vite({ useCSSLayers: true })'] : []),
     ...vitePlugin.calls,
     ...(tailwind ? ['tailwindcss()'] : []),
   ];

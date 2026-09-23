@@ -9,13 +9,17 @@ import { valuesOf } from '@utils/objectUtils';
 import {
   ANSWERS,
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type HostedFramework,
   type Library,
+  type Router,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
 
+import { emitNuxtConfig } from '../../target/nuxt-config/nuxtConfigEmitter';
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
 import { buildAliases } from '../utils/aliasUtils';
 
@@ -26,6 +30,9 @@ interface AnswerOverrides {
   target?: TargetId;
   testing?: Testing;
   libraries?: Library[];
+  styling?: Styling;
+  data?: Data;
+  router?: Router;
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
@@ -94,9 +101,35 @@ describe('buildTsconfig', () => {
       .not.toContain('vite/client');
   });
 
-  it('refuses ts extensions in imports, which the scaffold rewrite is what makes possible', () => {
+  it('refuses ts extensions in imports, which the starter never writes', () => {
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions
       .allowImportingTsExtensions).toBe(false);
+  });
+
+  /*
+   * Expo augments `react-native` with `interface TextStyle`, which only merges against the legacy types. Naming
+   * the condition is what keeps that augmentation from shadowing the strict alias and emptying every style type.
+   */
+  it('names the legacy react-native condition, and nothing else does', () => {
+    expect(buildTsconfig(answersFor({ target: 'react-native' })).compilerOptions.customConditions)
+      .toEqual(['react-native-legacy-deep-imports', 'react-native']);
+    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions)
+      .not.toHaveProperty('customConditions');
+  });
+
+  /*
+   * Framework mode's generated route types sit under `.react-router/types` and are written by `typegen`. `rootDirs`
+   * is what lets a route module import its own `Route.*` from a path beside itself rather than from that tree.
+   */
+  it('merges the generated route types into the source tree for framework mode', () => {
+    const { compilerOptions, include } = buildTsconfig(answersFor({
+      target: 'react',
+      router: 'react-router-framework',
+    }));
+
+    expect(compilerOptions.rootDirs).toEqual(['.', './.react-router/types']);
+    expect(include).toContain('.react-router/types/**/*');
+    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions).not.toHaveProperty('rootDirs');
   });
 
   it('drops noEmit only on angular, whose vitest compiler has to emit', () => {
@@ -108,7 +141,9 @@ describe('buildTsconfig', () => {
 
 // The alias list feeds tsconfig paths, the import-sort buckets and the resolver; hand-kept copies drifted.
 describe('alias coupling', () => {
-  for (const target of TARGET_IDS) {
+  for (const target of TARGET_IDS.filter((id) => {
+    return id !== 'nuxt';
+  })) {
     for (const withZod of [true, false]) {
       const libraries: Library[] = withZod ? ['zod'] : [];
       const label = `${target}${withZod ? ' with zod' : ''}`;
@@ -122,10 +157,10 @@ describe('alias coupling', () => {
         const { paths } = buildTsconfig(answers).compilerOptions;
         const config = emitEslintConfig(answers);
 
-        expect(Object.keys(paths)).toEqual(Object.keys(aliases));
+        expect(Object.keys(paths ?? {})).toEqual(Object.keys(aliases));
 
         for (const [alias, directory] of Object.entries(aliases)) {
-          expect(paths[alias]).toEqual([directory]);
+          expect(paths?.[alias]).toEqual([directory]);
           expect(config).toContain(`'${alias}': '${directory}',`);
         }
 
@@ -155,11 +190,36 @@ describe('alias coupling', () => {
     const { paths } = buildTsconfig(answers).compilerOptions;
     const config = emitEslintConfig(answers);
 
-    expect(paths['@engine']).toEqual(['./src/lib/engine/index.ts']);
-    expect(paths['@workers/*']).toEqual(['./src/workers/*']);
+    expect(paths?.['@engine']).toEqual(['./src/lib/engine/index.ts']);
+    expect(paths?.['@workers/*']).toEqual(['./src/workers/*']);
     expect(buildAliases(answers)['@engine']).toBe('./src/lib/engine/index.ts');
     expect(config).toContain("'@engine': './src/lib/engine/index.ts',");
     expect(config).toContain("'@workers/*': './src/workers/*',");
+  });
+
+  /*
+   * Nuxt is the one target whose aliases do not reach tsconfig through `paths`. It declares them in
+   * `nuxt.config.ts`, which merges them into the paths Nuxt generates, and the emitted `tsconfig.json` extends
+   * that and inherits the merged set. So the same coupling holds, one file over.
+   */
+  it('carries the alias map through nuxt.config for nuxt, whose tsconfig declares none', () => {
+    const answers = answersFor({ target: 'nuxt' });
+    const aliases = buildAliases(answers);
+    const nuxtConfig = emitNuxtConfig(answers);
+    const config = emitEslintConfig(answers);
+
+    expect(buildTsconfig(answers).compilerOptions.paths).toBeUndefined();
+
+    for (const [alias, directory] of Object.entries(aliases)) {
+      const prefix = alias.replace('/*', '');
+      // Absolute, because Nuxt writes these into `.nuxt/` and reads them relative to it.
+      const root = directory.replace('/*', '').replace('./', '');
+
+      expect(nuxtConfig).toContain(`'${prefix}': join(import.meta.dirname, '${root}'),`);
+      // The wildcard too: TypeScript resolves by pattern where Vite resolves by prefix.
+      expect(nuxtConfig).toContain(`'${prefix}/*': join(import.meta.dirname, '${root}/*'),`);
+      expect(config).toContain(`'${alias}': '${directory}',`);
+    }
   });
 
   // Last, so a restated one is deliberate.
@@ -178,8 +238,8 @@ describe('alias coupling', () => {
     const answers = answersFor({ target: 'next' });
     const { paths } = buildTsconfig(answers).compilerOptions;
 
-    expect(paths['@server/*']).toEqual(['./src/lib/server/*']);
-    expect(paths['@content/*']).toEqual(['./src/content/*']);
+    expect(paths?.['@server/*']).toEqual(['./src/lib/server/*']);
+    expect(paths?.['@content/*']).toEqual(['./src/content/*']);
     expect(buildAliases(answers)['@server/*']).toBe('./src/lib/server/*');
     expect(emitEslintConfig(answers)).toContain("'@content/*': './src/content/*',");
   });
@@ -190,10 +250,11 @@ describe('alias coupling', () => {
     });
 
     for (const target of others) {
+      // `?? {}` for nuxt, whose tsconfig declares no paths at all: absent is the strongest form of not having one.
       const { paths } = buildTsconfig(answersFor({ target })).compilerOptions;
 
-      expect(paths).not.toHaveProperty('@server/*');
-      expect(paths).not.toHaveProperty('@content/*');
+      expect(paths ?? {}).not.toHaveProperty('@server/*');
+      expect(paths ?? {}).not.toHaveProperty('@content/*');
     }
   });
 
@@ -201,7 +262,7 @@ describe('alias coupling', () => {
   it("matches the extension target's own documented layout", () => {
     const { paths } = buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions;
 
-    expect(paths['@model/*']).toEqual(['./src/lib/model/*']);
+    expect(paths?.['@model/*']).toEqual(['./src/lib/model/*']);
     expect(paths).not.toHaveProperty('@store/*');
     expect(paths).not.toHaveProperty('@providers/*');
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
@@ -215,8 +276,8 @@ describe('alias coupling', () => {
     const config = buildTsconfig(answersFor({ target: 'svelte' }));
 
     expect(config.extends).toBe('./.svelte-kit/tsconfig.json');
-    expect(config.compilerOptions.paths['$lib']).toEqual(['./src/lib']);
-    expect(config.compilerOptions.paths['$lib/*']).toEqual(['./src/lib/*']);
+    expect(config.compilerOptions.paths?.['$lib']).toEqual(['./src/lib']);
+    expect(config.compilerOptions.paths?.['$lib/*']).toEqual(['./src/lib/*']);
     expect(buildTsconfig(answersFor({ target: 'react' })).extends).toBeUndefined();
   });
 });

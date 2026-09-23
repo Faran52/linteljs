@@ -1,4 +1,5 @@
 import angularEslint from 'angular-eslint';
+import tseslint from 'typescript-eslint';
 
 import { presetOf } from '../utils/presetUtils';
 
@@ -19,6 +20,19 @@ export const angular = (): Layer => {
       name: '@linteljs/angular/inline-templates',
       files: TS_FILES,
       processor: angularEslint.processInlineTemplates,
+    },
+
+    {
+      /*
+       * A class with a decorator on it is not an extraneous class: it is how Angular declares a component, and a
+       * component with no state of its own still has a template, a selector and a place in the injector. The rule
+       * ships the option for exactly this, and without it every presentational component fails its own lint.
+       */
+      name: '@linteljs/angular/decorated-classes',
+      files: TS_FILES,
+      // Declared here so the layer stands alone: it names a rule whose plugin no preset above it registers.
+      plugins: { '@typescript-eslint': tseslint.plugin },
+      rules: { '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }] },
     },
 
     ...presetOf(angularEslint.configs.templateRecommended, 'angular-eslint/template', TEMPLATE_FILES),

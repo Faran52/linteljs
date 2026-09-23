@@ -9,8 +9,10 @@ import { valuesOf } from '@utils/objectUtils';
 import {
   ANSWERS,
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Library,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -19,6 +21,8 @@ import { buildAliases } from './aliasUtils';
 interface AnswerOverrides {
   target?: TargetId;
   libraries?: Library[];
+  styling?: Styling;
+  data?: Data;
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);

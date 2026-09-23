@@ -18,6 +18,7 @@ import { huskyEmitter } from './always/husky/huskyEmitter';
 import { lintStagedEmitter } from './always/lint-staged/lintStagedEmitter';
 import { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 import { linteljsPluginEmitter } from './always/linteljs-plugin/linteljsPluginEmitter';
+import { linteljsRecordEmitter } from './always/linteljs-record/linteljsRecordEmitter';
 import { packageJsonEmitter } from './always/package-json/packageJsonEmitter';
 import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
@@ -27,8 +28,13 @@ import { styleEntryEmitter } from './libraries/style-entry/styleEntryEmitter';
 import { npmrcEmitter } from './manager/npmrc/npmrcEmitter';
 import { pnpmWorkspaceEmitter } from './manager/pnpm-workspace/pnpmWorkspaceEmitter';
 import { yarnrcEmitter } from './manager/yarnrc/yarnrcEmitter';
+import { angularConfigEmitter } from './target/angular-config/angularConfigEmitter';
 import { astroConfigEmitter } from './target/astro-config/astroConfigEmitter';
+import { expoConfigEmitter } from './target/expo-config/expoConfigEmitter';
+import { htmlEntryEmitter } from './target/html-entry/htmlEntryEmitter';
 import { manifestEmitter } from './target/manifest/manifestEmitter';
+import { nuxtConfigEmitter } from './target/nuxt-config/nuxtConfigEmitter';
+import { reactRouterConfigEmitter } from './target/react-router-config/reactRouterConfigEmitter';
 import { starterSourceEmitter } from './target/starter-source/starterSourceEmitter';
 import { viteConfigEmitter } from './target/vite-config/viteConfigEmitter';
 import { testSetupEmitter } from './testing/test-setup/testSetupEmitter';
@@ -69,6 +75,8 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'manager/pnpm-workspace': pnpmWorkspaceEmitter,
   'target/vite-config': viteConfigEmitter,
   'target/astro-config': astroConfigEmitter,
+  'target/react-router-config': reactRouterConfigEmitter,
+  'target/nuxt-config': nuxtConfigEmitter,
   'testing/vitest-config': vitestConfigEmitter,
   'testing/test-setup': testSetupEmitter,
   'manager/npmrc': npmrcEmitter,
@@ -80,6 +88,10 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
 export const SEED_EMITTERS: Record<string, Emitter> = {
   'always/linteljs-config': linteljsConfigEmitter,
   'always/readme': readmeEmitter,
+  'always/linteljs-record': linteljsRecordEmitter,
+  'target/angular-config': angularConfigEmitter,
+  'target/expo-config': expoConfigEmitter,
+  'target/html-entry': htmlEntryEmitter,
   'target/manifest': manifestEmitter,
   'target/starter-source': starterSourceEmitter,
 };

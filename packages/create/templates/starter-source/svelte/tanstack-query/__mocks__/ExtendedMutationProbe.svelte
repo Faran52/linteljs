@@ -1,0 +1,34 @@
+<script lang="ts">
+  import { untrack } from 'svelte';
+
+  import { createExtendedMutation } from '$lib/hooks/create-extended-mutation/createExtendedMutation';
+
+  interface Props {
+    path: string;
+    invalidates?: readonly string[] | undefined;
+  }
+
+  // What the fake endpoint answers and what the probe sends it, named because the hook takes both as type arguments.
+  interface Answered {
+    status: string;
+  }
+
+  interface Sent {
+    message: string;
+  }
+
+  // The half that calls the hook, for the reason the query probe is its own component.
+  const { path, invalidates = [] }: Props = $props();
+
+  // The probe is handed one path for its lifetime, so reading it once is the intent rather than a missed dependency.
+  const mutation = untrack(() => {
+    return createExtendedMutation<Answered, Sent>(path, { invalidates });
+  });
+
+  const send = (): void => {
+    mutation.mutate({ message: 'hello there' });
+  };
+</script>
+
+<button type="button" onclick={send}>send</button>
+<output data-testid="status">{mutation.status}</output>

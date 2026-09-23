@@ -13,9 +13,14 @@ import process, { argv } from 'node:process';
 import { ESLint } from 'eslint';
 import ts from 'typescript';
 
-import { DEFAULT_ANSWERS } from '../packages/create/src/answers';
+import {
+  ANSWERS,
+  DEFAULT_ANSWERS,
+  onlyFor,
+} from '../packages/create/src/answers';
 import { starterSourceEmitter } from '../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
 import { targetFor } from '../packages/create/src/targets';
+import { valuesOf } from '../packages/create/src/utils/objectUtils';
 import { defineConfig } from '../packages/eslint-config/src/defineConfig';
 
 import type { Answers, TargetId } from '../packages/create/src/answers';
@@ -164,6 +169,18 @@ const unresolvedNames = (files: string[]): string[] => {
 
 const SCRIPTS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx']);
 
+/*
+ * What ESLint can read here beyond a script: Astro's template and the two single file component formats. Each of
+ * the three parsers reads the file and nothing of its surroundings, so the markup is judged by the same rules a
+ * project judges it by.
+ *
+ * `.vue` and `.svelte` cost one thing the other extensions do not, and `no-program` below is what pays it: their
+ * layers ask for a program where every other layer here leaves it to `typescript()`.
+ *
+ * The program further down takes scripts alone either way: TypeScript has no parser for a component at all.
+ */
+const TEMPLATES = new Set(['.astro', '.vue', '.svelte']);
+
 // Unresolvable by construction: the frameworks are not installed here, and `@/` and a sibling import both name
 // scaffolder output. The one rule whose findings say nothing about the file.
 const UNRESOLVABLE = 'import-x/no-unresolved';
@@ -178,8 +195,11 @@ const widestFor = (target: TargetId): Answers[] => {
     ...DEFAULT_ANSWERS,
     target,
     surfaces: ['popup', 'background', 'devtools-panel'],
-    libraries: ['tailwind', 'tanstack-query', 'zod'],
+    libraries: ['zod'],
+    // Its own field since v2 lifted it out of `libraries`, and it still opens a starter file.
+    styling: 'tailwind',
   };
+  const record = targetFor(widest);
 
   return [
     widest,
@@ -187,14 +207,68 @@ const widestFor = (target: TargetId): Answers[] => {
       ...widest,
       browser: 'firefox',
     },
+    /*
+     * One pass per form library: each binds the same page through its own hook, and the page is shared. A pass
+     * without zod too, since the rules it replaces are their own file either way.
+     */
+    ...valuesOf(ANSWERS.form.values)
+      .filter((form) => {
+        const only = onlyFor(ANSWERS.form, form);
+
+        return only === undefined || only(record, widest);
+      })
+      .flatMap((form): Answers[] => {
+        return [
+          {
+            ...widest,
+            form,
+          },
+          {
+            ...widest,
+            form,
+            libraries: [],
+          },
+        ];
+      }),
+    /*
+     * StyleX has its own names for the tokens and its own module beside every styled component; the widest pass
+     * above is the Tailwind one. A form and a store come with it because two of those four modules ship only
+     * where the component they sit beside does.
+     */
     {
       ...widest,
-      router: 'react-router',
+      styling: 'stylex',
+      form: 'tanstack-form',
+      ...(record.stores?.[0] === undefined ? {} : { store: record.stores[0] }),
+    },
+    /*
+     * One pass per data layer, with a form so there is something to submit. RTK Query needs the Redux store it
+     * ships inside, and registering it is what its own store file is for.
+     */
+    {
+      ...widest,
+      form: 'tanstack-form',
+      data: 'tanstack-query',
     },
     {
       ...widest,
-      router: 'tanstack-router',
+      form: 'tanstack-form',
+      store: 'redux-toolkit',
+      data: 'rtk-query',
     },
+    // One pass per store: the markup is shared, and the module behind `useCounter` is not.
+    ...(record.stores ?? []).map((store): Answers => {
+      return {
+        ...widest,
+        store,
+      };
+    }),
+    ...(record.routers ?? []).map((router): Answers => {
+      return {
+        ...widest,
+        router,
+      };
+    }),
   ];
 };
 
@@ -220,16 +294,21 @@ const destinationsFor = (every: Answers[]): Map<string, string> => {
 };
 
 /**
- * Every module the official scaffolder writes that this record knows about: each starter test's `covers`, and the
- * `needs` beside it for anything else the suite imports. A set per target rather than per asset, because the
- * question a relative import asks is whether the target writes that path, not whether this one file covers it:
- * `src/App.tsx` is what `App.test.tsx` covers and also what both of react's routers import.
+ * Every module a starter may import: every destination this target writes, each starter test's `covers`, the
+ * `needs` beside it, and the record this CLI emits for the Version page to read. A set per target rather than
+ * per asset, because the question a relative import asks is whether the target writes that path rather than
+ * whether this one file covers it: `src/App.tsx` is what `App.test.tsx` covers and what both routers import.
  */
-const scaffolded = (every: Answers[]): Set<string> => {
+const writtenPaths = (every: Answers[]): Set<string> => {
   const found = new Set<string>();
 
   for (const answers of every) {
+    found.add(targetFor(answers).recordModule);
+
     for (const artifact of starterSourceEmitter(answers)) {
+      // Its own destination too: one starter file importing another is reaching a path the project has.
+      found.add(artifact.target);
+
       for (const path of artifact.requires ?? []) {
         found.add(path);
       }
@@ -239,23 +318,31 @@ const scaffolded = (every: Answers[]): Set<string> => {
   return found;
 };
 
-const filesIn = (dir: string): string[] => {
+const filesIn = (dir: string, extensions: Set<string>): string[] => {
   return readdirSync(dir, {
     recursive: true,
     withFileTypes: true,
   }).filter((entry) => {
-    return entry.isFile() && SCRIPTS.has(extname(entry.name));
+    return entry.isFile() && extensions.has(extname(entry.name));
   }).map((entry) => {
     return join(entry.parentPath, entry.name);
   });
 };
 
+const LINTED = SCRIPTS.union(TEMPLATES);
+
 // `--fix` writes the fixed text back to the asset, so the shipped bytes are already what the fix stage would make
 // them. A generated project skipping that stage then gets the same file as one that runs it.
 const fixing = argv.includes('--fix');
 
+/*
+ * A directory per target, and one more that is not one: `shared/` holds what has no framework in it, and every
+ * target reaches its files rather than owning a copy. It is linted through whichever target places it.
+ */
+const SHARED_ROOT = 'shared';
+
 const targets = readdirSync(STARTERS, { withFileTypes: true }).filter((entry) => {
-  return entry.isDirectory();
+  return entry.isDirectory() && entry.name !== SHARED_ROOT;
 }).map((entry) => {
   return entry.name as TargetId;
 });
@@ -274,7 +361,7 @@ for (const target of targets) {
     placed.set(source, destination);
   }
 
-  covered.set(target, scaffolded(widestFor(target)));
+  covered.set(target, writtenPaths(widestFor(target)));
 }
 
 for (const target of targets) {
@@ -282,6 +369,8 @@ for (const target of targets) {
   const record = targetFor(every[0] ?? DEFAULT_ANSWERS);
   const config = await defineConfig({
     framework: record.framework,
+    // Astro's layer is what brings its parser; without it every `.astro` file is a file with no configuration.
+    astro: record.astro === true,
     vitest: true,
   });
 
@@ -294,13 +383,35 @@ for (const target of targets) {
     name: '@linteljs/starters/no-page-tree',
     rules: { '@next/next/no-html-link-for-pages': 'off' },
   });
+
+  /**
+   * `projectService` resolves a file against a real `tsconfig.json`, and this walk lints text at a path nothing on
+   * disk holds. `vue()` and `svelte()` set it on their own layer rather than leaving it to `typescript()`, which is
+   * why those two extensions were once excluded outright; off here, they parse like any other file.
+   *
+   * It costs no more than the omission of `typescript()` already costs, since both drop the same half: the rules
+   * that read a program. `@typescript-eslint`'s `*-type-checked` sets are not composed here to begin with, and
+   * what `projectService` was still feeding is sonarjs's type-aware half, fifty-odd rules with `null-dereference`
+   * and `no-ignored-return` among them. Every syntactic rule runs, and the end-to-end suite is the real gate.
+   *
+   * `sonarjs/no-redundant-optional` goes off with it, being the one rule that reads the program to decide whether
+   * to run at all rather than what to say: it returns early under `exactOptionalPropertyTypes`, which every
+   * generated `tsconfig.json` sets. With no program it cannot see the flag, so `?: T | undefined` would report
+   * here and never in the project that receives the file, which is the one artefact this omission can produce.
+   */
+  config.push({
+    name: '@linteljs/starters/no-program',
+    languageOptions: { parserOptions: { projectService: false } },
+    rules: { 'sonarjs/no-redundant-optional': 'off' },
+  });
+
   const eslint = new ESLint({
     overrideConfigFile: true,
     overrideConfig: config,
     fix: fixing,
   });
 
-  for (const path of filesIn(join(STARTERS, target))) {
+  for (const path of filesIn(join(STARTERS, target), LINTED)) {
     const source = path.slice('packages/create/templates/'.length);
     const destination = placed.get(source);
 
@@ -331,7 +442,7 @@ for (const target of targets) {
 }
 
 const unresolved = unresolvedNames(targets.flatMap((target) => {
-  return filesIn(join(STARTERS, target));
+  return filesIn(join(STARTERS, target), SCRIPTS);
 }));
 
 for (const message of unresolved) {

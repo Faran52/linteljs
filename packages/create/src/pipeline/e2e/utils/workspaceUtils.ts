@@ -76,6 +76,9 @@ export const answerFlags = (answers: Answers): string[] => {
     ...(answers.form === undefined ? [] : ['--form', answers.form]),
     ...(answers.router === undefined ? [] : ['--router', answers.router]),
     ...(answers.store === undefined ? [] : ['--store', answers.store]),
+    ...(answers.styling === undefined ? [] : ['--styling', answers.styling]),
+    ...(answers.data === undefined ? [] : ['--data', answers.data]),
+    ...(answers.mocking === undefined ? [] : ['--mocking', answers.mocking]),
   ];
 };
 

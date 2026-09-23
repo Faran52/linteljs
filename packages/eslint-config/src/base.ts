@@ -11,16 +11,17 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
-import { SCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS } from './config/globs';
+import {
+  SCRIPT_AND_SFC_FILES,
+  SCRIPT_EXTENSIONS,
+  TYPESCRIPT_EXTENSIONS,
+} from './config/globs';
 import { buildNaming } from './utils/checkFileUtils';
 import { buildGroups } from './utils/importSortUtils';
 import { presetOf } from './utils/presetUtils';
 
 import type { Linter } from 'eslint';
 import type { BaseOptions, Layer } from './types';
-
-// Limit presets to script parsers: Angular markup crashes `@stylistic/indent` and is owned by `angular()`.
-const SCRIPT_FILES = [`**/*.{${SCRIPT_EXTENSIONS},vue,svelte}`];
 
 /**
  * TypeScript, plus the two single-file component extensions whose `<script lang="ts">` block is TypeScript in a file
@@ -82,13 +83,14 @@ export const base = (options: BaseOptions = {}): Layer => {
       languageOptions: { parser: tseslint.parser },
     },
 
-    ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', SCRIPT_FILES),
-    ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', SCRIPT_FILES),
-    ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', SCRIPT_FILES),
+    // Limit presets to script parsers: Angular markup crashes `@stylistic/indent` and is owned by `angular()`.
+    ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', SCRIPT_AND_SFC_FILES),
+    ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', SCRIPT_AND_SFC_FILES),
+    ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', SCRIPT_AND_SFC_FILES),
 
     {
       name: '@linteljs/base',
-      files: SCRIPT_FILES,
+      files: SCRIPT_AND_SFC_FILES,
 
       plugins: {
         'check-file': checkFile,
@@ -118,6 +120,14 @@ export const base = (options: BaseOptions = {}): Layer => {
           },
         }],
         '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+        // The preset's `when: 'multiline'` caps nothing on a one-line element, so a tag grew props until `max-len`
+        // broke it and only then had to wrap. Two is the width a one-line tag stays readable at.
+        '@stylistic/jsx-max-props-per-line': ['error', {
+          maximum: {
+            single: 2,
+            multi: 1,
+          },
+        }],
         // One property per line; `object-curly-newline` alone leaves the braces on the first and last property lines.
         '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
         '@stylistic/object-curly-newline': ['error', {
@@ -134,18 +144,41 @@ export const base = (options: BaseOptions = {}): Layer => {
         'import-x/no-cycle': 'error',
         'import-x/no-anonymous-default-export': 'error',
 
+        /**
+         * `/compat` is the lodash-compatibility build, and a project scaffolded today has no lodash to migrate from.
+         * Its looser signatures are the whole temptation: they let a call typecheck that the strict entry refuses,
+         * and the strict entry refusing it is usually the standard library answering instead.
+         */
+        'no-restricted-imports': ['error', {
+          patterns: [
+            {
+              group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
+              message: 'Use the core es-toolkit entry. Compat is the lodash migration path.',
+            },
+          ],
+        }],
+
         'simple-import-sort/imports': ['error', { groups: buildGroups(aliases, frameworkGroup) }],
         'simple-import-sort/exports': 'error',
 
-        // `unused-imports` owns unused reporting; the other three would double-report.
+        // `unused-imports` owns unused reporting; the other four would double-report.
         'no-unused-vars': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         'sonarjs/unused-import': 'off',
+        'sonarjs/no-unused-vars': 'off',
         'unused-imports/no-unused-imports': 'error',
         'unused-imports/no-unused-vars': ['error', {
           vars: 'all',
           args: 'after-used',
         }],
+
+        /**
+         * `typescript-eslint` owns both, and sonarjs's copies report the same defect a second time once
+         * `typescript()` is composed. Off here rather than there because both need type information to fire
+         * (`requiresTypeChecking`), so on a JavaScript-only stack where `base` runs alone they see nothing either way.
+         */
+        'sonarjs/no-array-delete': 'off',
+        'sonarjs/prefer-regexp-exec': 'off',
 
         // Catches what `@linteljs/prefer-arrow-functions` declines to rewrite.
         'func-style': ['error', 'expression'],
@@ -157,11 +190,12 @@ export const base = (options: BaseOptions = {}): Layer => {
       },
     },
 
-    // A script's stdout is its output. Without this every reference repo turned `no-console` off for `**/*.js`.
     /**
-     * Both read TypeScript nodes, so both are restated over the SFC extensions the plugin's own preset cannot reach.
-     * Over `TYPED_FILES` rather than `SCRIPT_FILES`: on a `.js` file they matched nothing and were listed as enabled
-     * anyway, which contradicts the language scoping every other TypeScript rule here gets.
+     * Every `language: 'typescript'` rule the plugin publishes, restated over the SFC extensions its own preset
+     * cannot reach: that preset scopes itself to the four TypeScript extensions, so a `<script lang="ts">` block
+     * never saw one. Over `TYPED_FILES` rather than the script globs: on a `.js` file they match nothing and were
+     * listed as enabled anyway, which contradicts the language scoping every other TypeScript rule here gets.
+     * `base.test.ts` derives the list from the registry, so a fourth cannot be missed the way the third was.
      */
     {
       name: '@linteljs/base/typescript-rules',
@@ -169,9 +203,11 @@ export const base = (options: BaseOptions = {}): Layer => {
       rules: {
         '@linteljs/union-newline': 'error',
         '@linteljs/interface-order': 'error',
+        '@linteljs/no-inline-object-types': 'error',
       },
     },
 
+    // A script's stdout is its output. Without this every reference repo turned `no-console` off for `**/*.js`.
     {
       name: '@linteljs/base/scripts',
       files: [`scripts/**/*.{${SCRIPT_EXTENSIONS}}`],

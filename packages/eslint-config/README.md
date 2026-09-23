@@ -32,7 +32,7 @@ Each layer switch is off unless you enable it.
 
 | Option | Effect |
 | --- | --- |
-| `framework` | Adds a framework layer: `'react'`, `'next'`, `'vue'`, `'svelte'`, `'solid'`, or `'angular'`. `next` includes React. |
+| `framework` | Adds a framework layer: `'react'`, `'next'`, `'react-native'`, `'vue'`, `'nuxt'`, `'svelte'`, `'solid'`, or `'angular'`. `next` includes React, `nuxt` includes Vue, and `react-native` is React without the web accessibility preset. |
 | `typescript` | Enables the TypeScript layer. |
 | `vitest` | Enables rules for `*.test.*` and `*.spec.*` files. |
 | `html` | Enables the HTML layer. |
@@ -49,9 +49,10 @@ import sorting stays aligned with the framework that loaded it.
 
 ## Layer order
 
-The composer applies the layers in this order: base, TypeScript, framework, library, Vitest, then HTML.
+The composer applies the layers in this order: base, TypeScript, framework, library, Vitest, HTML, then Astro.
 Framework layers override shared layers. Vue and Svelte must come after TypeScript so their top-level parsers
-can nest the TypeScript parser correctly.
+can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for
+`.astro` files, and any layer placed after it that carries a parser with no `files` glob would replace it.
 
 `next()` is the one framework layer that stacks: React comes first, then Next. Angular owns its template
 processing, so a generated Angular project does not add `html()`.
@@ -88,7 +89,9 @@ choice for a project config.
 | `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro`, `astro-eslint-parser` |
 | `react()` | `/react` | React, React Hooks, JSX accessibility, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |
 | `next()` | `/next` | Next configuration, composed after React. | `@next/eslint-plugin-next`, plus the peers of `react()`. |
+| `reactNative()` | `/react-native` | React and React Hooks as `react()` has them, with this plugin's React Native accessibility rules in place of the web ones. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks` |
 | `vue()` | `/vue` | Vue recommended rules and template accessibility, with TypeScript nested in the SFC parser. | `eslint-plugin-vue`, `vue-eslint-parser`, `eslint-plugin-vuejs-accessibility` |
+| `nuxt()` | `/nuxt` | The two conventions Nuxt's build imposes, composed after Vue. | Those of `vue()`. |
 | `svelte()` | `/svelte` | Svelte recommended rules with the same parser arrangement. Accessibility is the compiler's, reported by `svelte-check --fail-on-warnings`, not this layer's. | `eslint-plugin-svelte`, `svelte-eslint-parser` |
 | `solid()` | `/solid` | Solid TypeScript rules and JSX accessibility. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y-x` |
 | `angular()` | `/angular` | Angular TypeScript rules, plus template rules and template accessibility. | `angular-eslint` |
@@ -108,13 +111,23 @@ interface BaseOptions {
   folderNaming?: NamingMap;
   aliases?: AliasMap;
   frameworkGroup?: string[];
-  resolver?: { project?: string };
+  resolver?: {
+    project?: string;
+    conditionNames?: string[];
+    noWarnOnMultipleProjects?: boolean;
+  };
 }
 ```
 
 Pass aliases to the composer instead of adding them in a later block. The base layer uses them for both import
 resolution and import-sort groups. Set `resolver.project` when the relevant tsconfig is not the one the
-resolver finds from the working directory.
+resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
+resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
+glob matching more than one tsconfig.
+
+`base` also reads `.gitignore` from `process.cwd()` and turns what git ignores into what ESLint ignores. In a
+monorepo that means the `.gitignore` of whichever directory ESLint was started from, so a package-level run picks
+up that package's file and not the repository root's. Pass `ignores` for anything the root file covers.
 
 ## Why these layers exist
 

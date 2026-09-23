@@ -15,10 +15,15 @@ export const removableIn = (artifacts: Artifact[]): string[] => {
   });
 };
 
+/**
+ * A project keeps this record in version control, so the order is part of what the CLI emits: a bare `.sort()`
+ * puts `SKILL.md` ahead of the `references/` beside it and every consumer's next `sync` is a diff of pure churn.
+ * The locale is explicit for the same reason the comparator is, so the bytes do not follow the machine.
+ */
 export const managedRecord = (removable: string[]): string => {
   return `${JSON.stringify({
     removable: [...removable].toSorted((left, right) => {
-      return left.localeCompare(right);
+      return left.localeCompare(right, 'en');
     }),
   }, null, 2)}\n`;
 };

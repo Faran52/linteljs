@@ -62,7 +62,13 @@ describe('optionCases', () => {
    * hosted-vue with TanStack Query, the devtools floating promise is the extension on chrome, the leftover suites are
    * `testing: none` on angular and react-native, and `customTypes.d.ts` is `typeSafety: relaxed` on angular.
    */
-  it('covers every pair of answers the full enumeration reaches', () => {
+  /*
+   * A minute rather than the default thirty seconds. What is slow is not the cover, which is 102 cases over ten
+   * targets, but `everyCase`, the cross product it is checked against: phase 8 added a tenth target and a third
+   * router to react, and the product grew with both. The check is worth its minute, since it is the only thing
+   * that proves the reduction loses no reachable pair.
+   */
+  it('covers every pair of answers the full enumeration reaches', { timeout: 60_000 }, () => {
     for (const target of TARGET_IDS) {
       const missing = [...coveredBy(everyCase(target))].filter((pair) => {
         return !coveredBy(optionCases(target)).has(pair);

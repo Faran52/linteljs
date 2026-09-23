@@ -7,8 +7,10 @@ import {
 import {
   type Answers,
   type Browser,
+  type Data,
   DEFAULT_ANSWERS,
   type HostedFramework,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -22,6 +24,8 @@ interface AnswerOverrides {
   target?: TargetId;
   browser?: Browser;
   hostedFramework?: HostedFramework;
+  styling?: Styling;
+  data?: Data;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {

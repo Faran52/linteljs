@@ -37,8 +37,8 @@ const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> =>
  */
 describe('the asset a destination derives', () => {
   it('reads it straight off the destination where no answer gates the file', () => {
-    expect(sourcesByTarget({ target: 'astro' })['src/lib/utils/formatDate.ts'])
-      .toBe('starter-source/astro/src/lib/utils/formatDate.ts');
+    expect(sourcesByTarget({ target: 'astro' })['src/lib/utils/currentPath.ts'])
+      .toBe('starter-source/astro/src/lib/utils/currentPath.ts');
   });
 
   // Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone.
@@ -54,7 +54,7 @@ describe('the asset a destination derives', () => {
       .toBe(`starter-source/webextension/${browser}/src/background/index.ts`);
   });
 
-  // Both routers replace the scaffolder's `main.tsx`, so the destination alone cannot say which file to copy.
+  // Three spellings of `App` fill one destination, so the destination alone cannot say which file to copy.
   it.each([
     ['react-router'],
     ['tanstack-router'],
@@ -62,24 +62,48 @@ describe('the asset a destination derives', () => {
     expect(sourcesByTarget({
       target: 'react',
       router: router as 'react-router' | 'tanstack-router',
-    })['src/main.tsx'])
-      .toBe(`starter-source/react/${router}/src/main.tsx`);
+    })['src/App.tsx'])
+      .toBe(`starter-source/react/${router}/src/App.tsx`);
+  });
+
+  it('takes the base spelling of a varying file when no answer opens a variant', () => {
+    expect(sourcesByTarget({ target: 'react' })['src/App.tsx'])
+      .toBe('starter-source/react/src/App.tsx');
   });
 
   // A file a library gates ships only with it, and sits under that library's own directory.
   it('puts a library-gated starter under the library that brings it', () => {
     expect(sourcesByTarget({
       target: 'react-native',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     })['metro.config.js'])
       .toBe('starter-source/react-native/tailwind/metro.config.js');
   });
 
-  it('writes nothing for a library that was not chosen', () => {
+  it('writes nothing for a styling answer that was not chosen', () => {
+    expect(sourcesByTarget({
+      target: 'react-native',
+      libraries: [],
+    })['nativewind-env.d.ts'])
+      .toBeUndefined();
+  });
+
+  /*
+   * One destination, two spellings, and no answer under which neither applies: every Expo project needs a metro
+   * config, and the Tailwind one is the same file with NativeWind wrapped around it.
+   */
+  it('picks a metro config for either styling answer', () => {
+    expect(sourcesByTarget({
+      target: 'react-native',
+      libraries: [],
+      styling: 'tailwind',
+    })['metro.config.js'])
+      .toBe('starter-source/react-native/tailwind/metro.config.js');
     expect(sourcesByTarget({
       target: 'react-native',
       libraries: [],
     })['metro.config.js'])
-      .toBeUndefined();
+      .toBe('starter-source/react-native/metro.config.js');
   });
 });

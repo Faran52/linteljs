@@ -1,6 +1,6 @@
 import { type Artifact, type DefineConfigOptions } from '@config/types';
 
-import { type Answers, hasLibrary } from '@answers';
+import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -8,10 +8,10 @@ import { buildAliases } from '../utils/aliasUtils';
 
 import {
   BASE_IGNORES,
+  LAYER_ANSWERS,
   LIBRARY_LAYERS,
   MAX_LINE,
   PACKAGE,
-  ROUTE_TREE,
 } from './constants';
 
 // Keyed by `keyof DefineConfigOptions`, so a renamed option fails to compile here rather than in a project.
@@ -81,7 +81,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
   }
 
   const layers = LIBRARY_LAYERS.filter((layer) => {
-    return layer === 'tanstack-router' ? answers.router === 'tanstack-router' : hasLibrary(answers, layer);
+    return LAYER_ANSWERS[layer](answers);
   });
 
   if (layers.length > 0) {
@@ -89,10 +89,8 @@ const optionRows = (answers: Answers): OptionRow[] => {
   }
 
   // Without the entry point `better-tailwindcss` warns once per class string: 63 warnings on one real project.
-  const { styleEntry } = target;
-
-  if (hasLibrary(answers, 'tailwind') && styleEntry !== undefined) {
-    rows.push(['tailwindEntryPoint', quote(`./${styleEntry}`)]);
+  if (answers.styling === 'tailwind') {
+    rows.push(['tailwindEntryPoint', quote(`./${target.styleEntry}`)]);
   }
 
   // Only where recorded; `@linteljs/eslint-config` explains why the order is not a safe default.
@@ -102,13 +100,12 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['resolver', `{ conditionNames: ${arrayLiteral('conditionNames', resolveConditions, 2)} }`]);
   }
 
-  // The project's own last. Only what `.gitignore` cannot name belongs here: a generated file a project commits.
+  // The project's own last.
   rows.push([
     'ignores',
     arrayLiteral('ignores', [
       ...BASE_IGNORES,
       ...target.ignores,
-      ...(answers.router === 'tanstack-router' ? [ROUTE_TREE] : []),
       ...answers.ignores ?? [],
     ]),
   ]);

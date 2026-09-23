@@ -5,47 +5,52 @@ import { isJsonArray, isValueOf } from './readUtils';
 import type { JsonValue } from './readUtils';
 
 /**
- * v1 kept the form library inside `libraries`. Lift it before the members are checked against today's vocabulary,
- * or a valid v1 file fails as an unknown library. Silent, the way an absent `surfaces` still describes its project.
- * Generic over the caller's own parsed-object type, so migrating `form`/`libraries` leaves every other key's type
- * exactly as the caller had it.
+ * Every version so far has lifted one single select out of `libraries` into a field of its own: v1 kept the form
+ * library there, and v2 kept `tailwind` and `tanstack-query`. Lift before the members are checked against today's
+ * vocabulary, or a valid older file fails as an unknown library. Silent, the way an absent `surfaces` still
+ * describes its project.
+ *
+ * Generic over the caller's own parsed-object type, so a lift leaves every other key's type exactly as the caller
+ * had it. `field` is a key of that type rather than a free string, so a typo cannot write a property nothing reads.
  */
-export const migrateForm = <
-  F extends string,
-  P extends Partial<Record<'form' | 'libraries', JsonValue>>,
+export const migrateLifted = <
+  V extends string,
+  K extends string,
+  P extends Partial<Record<K | 'libraries', JsonValue>>,
 >(
   parsed: P,
-  schemaVersion: number,
-  formValues: Record<F, unknown>,
+  applies: boolean,
+  field: K,
+  values: Record<V, unknown>,
 ): P => {
   const listed = parsed.libraries;
 
-  if (schemaVersion !== 1 || !isJsonArray(listed)) {
+  if (!applies || !isJsonArray(listed)) {
     return parsed;
   }
 
-  const isForm = (item: JsonValue): item is F => {
-    return typeof item === 'string' && isValueOf(item, formValues);
+  const isLifted = (item: JsonValue): item is V => {
+    return typeof item === 'string' && isValueOf(item, values);
   };
 
-  const forms = listed.filter(isForm);
+  const lifted = listed.filter(isLifted);
 
-  if (forms.length > 1) {
-    throw new Error(`libraries must contain at most one of: ${valuesOf(formValues).join(', ')}`);
+  if (lifted.length > 1) {
+    throw new Error(`libraries must contain at most one of: ${valuesOf(values).join(', ')}`);
   }
 
-  const [form] = forms;
+  const [only] = lifted;
 
-  if (form === undefined) {
+  if (only === undefined) {
     return parsed;
   }
 
   return {
     ...parsed,
     libraries: listed.filter((library) => {
-      return !isForm(library);
+      return !isLifted(library);
     }),
-    form,
+    [field]: only,
   };
 };
 

@@ -31,6 +31,7 @@ describe('typescript', () => {
     expect(ruleIds).toContain('unused-imports/no-unused-vars');
     expect(ruleIds).not.toContain('@typescript-eslint/no-unused-vars');
     expect(ruleIds).not.toContain('sonarjs/unused-import');
+    expect(ruleIds).not.toContain('sonarjs/no-unused-vars');
     expect(ruleIds).not.toContain('no-unused-vars');
   });
 

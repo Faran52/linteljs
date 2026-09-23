@@ -13,6 +13,7 @@ import type { Answers } from '@answers';
 
 export interface CompilerOptions {
   rootDir: string;
+  rootDirs?: string[];
   target: string;
   lib: string[];
   useDefineForClassFields: boolean;
@@ -20,6 +21,7 @@ export interface CompilerOptions {
   jsxImportSource?: string;
   module: string;
   moduleResolution: string;
+  customConditions?: string[];
   resolveJsonModule: boolean;
   allowImportingTsExtensions: boolean;
   isolatedModules: boolean;
@@ -43,7 +45,7 @@ export interface CompilerOptions {
   forceConsistentCasingInFileNames: boolean;
   types: string[];
   plugins?: TsconfigPlugin[];
-  paths: Record<string, string[]>;
+  paths?: Record<string, string[]>;
 }
 
 export interface TsconfigFile {
@@ -75,58 +77,66 @@ const pathsFrom = (answers: Answers): Record<string, string[]> => {
   });
 };
 
+const compilerOptionsFor = (answers: Answers): CompilerOptions => {
+  const delta = targetFor(answers).tsconfig;
+
+  return {
+    rootDir: '.',
+    ...(delta.rootDirs === undefined ? {} : { rootDirs: delta.rootDirs }),
+
+    target: 'esnext',
+    lib: ['dom', 'dom.iterable', 'esnext'],
+    // Angular's decorators read fields before the base constructor defines them; [[Define]] wipes them.
+    useDefineForClassFields: delta.useDefineForClassFields ?? true,
+    ...(delta.jsx === undefined ? {} : { jsx: delta.jsx }),
+    ...(delta.jsxImportSource === undefined ? {} : { jsxImportSource: delta.jsxImportSource }),
+
+    module: 'esnext',
+    moduleResolution: 'bundler',
+    ...(delta.customConditions === undefined ? {} : { customConditions: delta.customConditions }),
+    resolveJsonModule: true,
+    // Off: the starter is this repo's own source and names no extension, so nothing needs the allowance.
+    allowImportingTsExtensions: false,
+    isolatedModules: true,
+    moduleDetection: 'force',
+    importHelpers: true,
+    verbatimModuleSyntax: true,
+
+    // Absent on Angular: ngtsc emits nothing under it; `typecheck` passes --noEmit on the command line.
+    ...(delta.dropsNoEmit === true ? {} : { noEmit: true }),
+    incremental: true,
+
+    strict: true,
+    noUncheckedIndexedAccess: true,
+    exactOptionalPropertyTypes: true,
+    noImplicitOverride: true,
+    noFallthroughCasesInSwitch: true,
+    // `noPropertyAccessFromIndexSignature` is absent: CSS modules are index signatures, and it failed Next's own
+    // starter page eight times. `noUncheckedIndexedAccess` covers the safety half.
+    allowUnreachableCode: false,
+    allowUnusedLabels: false,
+    // Parameter properties are not erasable, and Angular's DI is built on them.
+    ...(delta.dropsErasableSyntaxOnly === true ? {} : { erasableSyntaxOnly: true }),
+    allowJs: true,
+    checkJs: false,
+    skipLibCheck: true,
+
+    esModuleInterop: true,
+    forceConsistentCasingInFileNames: true,
+
+    types: typesFor(answers),
+    ...(delta.plugins === undefined ? {} : { plugins: delta.plugins }),
+
+    ...(delta.dropsPaths === true ? {} : { paths: pathsFrom(answers) }),
+  };
+};
+
 export const buildTsconfig = (answers: Answers): TsconfigFile => {
   const delta = targetFor(answers).tsconfig;
 
   return {
     ...(delta.extends === undefined ? {} : { extends: delta.extends }),
-    compilerOptions: {
-      rootDir: '.',
-
-      target: 'esnext',
-      lib: ['dom', 'dom.iterable', 'esnext'],
-      // Angular's decorators read fields before the base constructor defines them; [[Define]] wipes them.
-      useDefineForClassFields: delta.useDefineForClassFields ?? true,
-      ...(delta.jsx === undefined ? {} : { jsx: delta.jsx }),
-      ...(delta.jsxImportSource === undefined ? {} : { jsxImportSource: delta.jsxImportSource }),
-
-      module: 'esnext',
-      moduleResolution: 'bundler',
-      resolveJsonModule: true,
-      // Off: `rewriteScaffoldedSource` strips the extensions instead.
-      allowImportingTsExtensions: false,
-      isolatedModules: true,
-      moduleDetection: 'force',
-      importHelpers: true,
-      verbatimModuleSyntax: true,
-
-      // Absent on Angular: ngtsc emits nothing under it; `typecheck` passes --noEmit on the command line.
-      ...(delta.dropsNoEmit === true ? {} : { noEmit: true }),
-      incremental: true,
-
-      strict: true,
-      noUncheckedIndexedAccess: true,
-      exactOptionalPropertyTypes: true,
-      noImplicitOverride: true,
-      noFallthroughCasesInSwitch: true,
-      // `noPropertyAccessFromIndexSignature` is absent: CSS modules are index signatures, and it failed Next's own
-      // starter page eight times. `noUncheckedIndexedAccess` covers the safety half.
-      allowUnreachableCode: false,
-      allowUnusedLabels: false,
-      // Parameter properties are not erasable, and Angular's DI is built on them.
-      ...(delta.dropsErasableSyntaxOnly === true ? {} : { erasableSyntaxOnly: true }),
-      allowJs: true,
-      checkJs: false,
-      skipLibCheck: true,
-
-      esModuleInterop: true,
-      forceConsistentCasingInFileNames: true,
-
-      types: typesFor(answers),
-      ...(delta.plugins === undefined ? {} : { plugins: delta.plugins }),
-
-      paths: pathsFrom(answers),
-    },
+    compilerOptions: compilerOptionsFor(answers),
     include: [...BASE_INCLUDE, ...(delta.include ?? [])],
     exclude: BASE_EXCLUDE,
   };

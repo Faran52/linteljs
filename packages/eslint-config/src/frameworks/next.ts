@@ -1,6 +1,6 @@
 import nextPlugin from '@next/eslint-plugin-next';
 
-import { SCRIPT_EXTENSIONS } from '../config/globs';
+import { SCRIPT_FILES } from '../config/globs';
 
 import { reactGroup } from './react';
 
@@ -11,13 +11,11 @@ import type { Layer } from '../types';
 
 export const nextGroup: string[] = [...reactGroup, '^next$', '^next/'];
 
-const REACT_FILES = [`**/*.{${SCRIPT_EXTENSIONS}}`];
-
 export const next = (): Layer => {
   return [
     {
       name: '@linteljs/next',
-      files: REACT_FILES,
+      files: SCRIPT_FILES,
       plugins: { '@next/next': nextPlugin },
       rules: {
         ...nextPlugin.configs['core-web-vitals'].rules,

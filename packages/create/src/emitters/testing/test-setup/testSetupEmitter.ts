@@ -1,10 +1,6 @@
 import { type Artifact, type ProjectShape } from '@config/types';
 
-import {
-  type Answers,
-  hasLibrary,
-  hasTests,
-} from '@answers';
+import { type Answers, hasTests } from '@answers';
 import { targetFor } from '@targets';
 
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
@@ -16,8 +12,10 @@ import type { TargetRecord } from '@targets/types';
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {
   return [
     target.testSetup ?? 'fragments/test-setup/setupTests.ts',
-    ...(target.routerMocks === true ? ['fragments/test-setup/setupTests.router.ts'] : []),
-    ...(hasLibrary(answers, 'tanstack-query') ? ['fragments/test-setup/setupTests.tanstackQuery.ts'] : []),
+    ...(target.routerMock === undefined ? [] : [target.routerMock]),
+    ...(answers.data === 'tanstack-query' ? ['fragments/test-setup/setupTests.tanstackQuery.ts'] : []),
+    // Last, so the interceptor is listening by the time anything else in the setup makes a request.
+    ...(answers.mocking === 'msw' ? ['fragments/test-setup/setupTests.msw.ts'] : []),
   ];
 };
 

@@ -1,5 +1,6 @@
 import { targetFor } from '@targets';
 
+import { dataAnswer } from '../libraries/data/dataAnswer';
 import { formAnswer } from '../libraries/form/formAnswer';
 import { DEFAULT_ANSWERS } from '../registry';
 import { storeAnswer } from '../target/store/storeAnswer';
@@ -13,11 +14,30 @@ describe('onlyFor', () => {
     expect(only?.(targetFor({
       ...DEFAULT_ANSWERS,
       target: 'react',
-    }))).toBe(true);
+    }), DEFAULT_ANSWERS)).toBe(true);
     expect(only?.(targetFor({
       ...DEFAULT_ANSWERS,
       target: 'vue',
-    }))).toBe(false);
+    }), DEFAULT_ANSWERS)).toBe(false);
+  });
+
+  // The second argument is why this is a predicate rather than a target check: `rtk-query` is legal or not by
+  // another answer, and the prompt and the parser have to agree about which.
+  it('answers a predicate that reads the answers rather than the target', () => {
+    const only = onlyFor(dataAnswer, 'rtk-query');
+    const target = targetFor({
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+    });
+
+    expect(only?.(target, {
+      ...DEFAULT_ANSWERS,
+      store: 'redux-toolkit',
+    })).toBe(true);
+    expect(only?.(target, {
+      ...DEFAULT_ANSWERS,
+      store: 'zustand',
+    })).toBe(false);
   });
 
   it('answers undefined where there is no predicate to answer with', () => {

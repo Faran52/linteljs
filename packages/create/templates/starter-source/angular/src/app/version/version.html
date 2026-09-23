@@ -1,0 +1,31 @@
+<main class="page">
+  <h1 class="page-title">Version</h1>
+  <p class="page-lede">What this project is running, and the answers it was generated from.</p>
+
+  <section class="section">
+    <h2 class="section-title">Stack</h2>
+    <dl class="rows">
+      @for (entry of stack; track entry.name) {
+        <div class="row">
+          <dt>{{ entry.name }}</dt>
+          <dd>{{ entry.version }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">Your answers</h2>
+    <dl class="rows">
+      @for (entry of answers; track entry.label) {
+        <div class="row">
+          <dt>{{ entry.label }}</dt>
+          <dd>{{ entry.value }}</dd>
+        </div>
+      }
+    </dl>
+    <p class="note">
+      Recorded in <code>linteljs.config.json</code>, which <code>sync</code> reads.
+    </p>
+  </section>
+</main>

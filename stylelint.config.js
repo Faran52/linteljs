@@ -5,6 +5,19 @@ const config = {
     'stylelint-config-standard',
     'stylelint-config-recess-order',
   ],
+  overrides: [
+    {
+      /*
+       * Tailwind's own at-rules, in the theme bridge this repository ships to a project that chose Tailwind. That
+       * project lints them through `stylelint-config-tailwindcss`, which its emitted config extends; this
+       * workspace has no Tailwind of its own and no reason to install one to read four lines of it.
+       */
+      files: ['packages/create/templates/**/tailwind/**/*.css'],
+      rules: {
+        'at-rule-no-unknown': [true, { ignoreAtRules: ['theme', 'custom-variant'] }],
+      },
+    },
+  ],
 };
 
 export default config;

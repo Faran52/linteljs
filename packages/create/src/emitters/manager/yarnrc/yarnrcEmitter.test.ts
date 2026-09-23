@@ -6,9 +6,11 @@ import {
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Form,
   type Library,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -18,6 +20,8 @@ interface AnswerOverrides {
   target?: TargetId;
   libraries?: Library[];
   form?: Form;
+  styling?: Styling;
+  data?: Data;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {

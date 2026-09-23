@@ -88,10 +88,10 @@ const answerUsageOf = (answer: FlaggedAnswer): string => {
 export const USAGE = `@linteljs/create [name] [options]
 @linteljs/create sync [options]
 
-  --skip-scaffold   run stages 2-6 against an existing repository
+  --skip-scaffold   run against a directory that already exists
   --no-install      skip the install and the eslint --fix pass that needs it
-  --fresh           with --skip-scaffold, treat the directory as new scaffolder output
-  --skip <stage>    skip a stage: scaffold, lint, package, standard, install, fix (repeatable)
+  --fresh           with --skip-scaffold, plant the seed files a new project is born with
+  --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing
   --force           sync: overwrite without asking
   --version, -v
@@ -159,7 +159,6 @@ export const LOCKFILES: readonly (readonly [string, PackageManager])[] = [
 ];
 
 export const STAGE_LABELS: Record<Stage, string> = {
-  scaffold: 'scaffold: the official generator',
   lint: 'lint: eslint and stylelint config',
   package: 'package: package.json, tsconfig and the manager files',
   standard: 'standard: hooks, agent files, test setup and starter tests',

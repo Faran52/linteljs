@@ -6,7 +6,9 @@ import {
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
+  type Styling,
   type Surface,
 } from '@answers';
 
@@ -20,6 +22,8 @@ interface AnswerOverrides {
   browser?: Answers['browser'];
   surfaces?: Surface[];
   target?: Answers['target'];
+  styling?: Styling;
+  data?: Data;
 }
 
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {

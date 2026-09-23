@@ -23,8 +23,10 @@ import { type Artifact } from '@config/types';
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Library,
+  type Styling,
   type TargetId,
   type Testing,
   type TypeSafety,
@@ -38,6 +40,8 @@ interface AnswerOverrides {
   testing?: Testing;
   libraries?: Library[];
   typeSafety?: TypeSafety;
+  styling?: Styling;
+  data?: Data;
 }
 
 /**

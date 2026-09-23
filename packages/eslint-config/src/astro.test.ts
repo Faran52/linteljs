@@ -1,4 +1,8 @@
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import {
+  enabledRuleIdsFor,
+  ruleIdsFor,
+  startsWith,
+} from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -29,11 +33,13 @@ describe('astro', () => {
     expect(ruleIds).toContain('astro/jsx-a11y/alt-text');
   });
 
-  // The plugin leaves its rule entries unglobbed.
-  it('says nothing about a TypeScript file', async () => {
-    const ruleIds = await ruleIdsFor(astro(), 'export const value = 1;\n', 'src/lib/utils/sample.ts');
+  // The plugin leaves its rule entries unglobbed and this layer scopes them, so what is worth asserting is the
+  // enabled set under `base()`. `astro()` alone matches no TypeScript file at all, so linting one answers a single
+  // null-id "no matching configuration" notice and an assertion over the reported ids holds whatever the layer does.
+  it('enables no astro rule on a TypeScript file', async () => {
+    const enabled = await enabledRuleIdsFor([...base(), ...astro()], 'src/lib/utils/sample.ts');
 
-    expect(ruleIds.filter(Boolean)).toEqual([]);
+    expect(enabled.filter(startsWith('astro/'))).toEqual([]);
   });
 
   it('stacks under base without either losing its rules', async () => {

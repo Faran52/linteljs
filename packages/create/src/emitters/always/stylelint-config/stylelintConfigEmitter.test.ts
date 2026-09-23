@@ -30,7 +30,8 @@ describe('emitStylelintConfig', () => {
     })).not.toContain('stylelint-config-tailwindcss');
     expect(emitStylelintConfig({
       ...DEFAULT_ANSWERS,
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }))
       .toContain("'stylelint-config-tailwindcss',");
   });
@@ -80,12 +81,32 @@ describe('emitStylelintConfig', () => {
   });
 });
 
+/*
+ * `stylelint-config-standard` prefers `url()`, and Tailwind 4's entry has to be `@import "tailwindcss";`. Taking
+ * the default would mean one notation with that answer and another without it, in a file this CLI writes itself.
+ */
+describe('the import notation', () => {
+  it('pins the string form for every project, whatever styles it', () => {
+    for (const target of TARGET_IDS) {
+      for (const styling of [undefined, 'tailwind', 'stylex'] as const) {
+        expect(emitStylelintConfig({
+          ...DEFAULT_ANSWERS,
+          libraries: [],
+          target,
+          ...(styling === undefined ? {} : { styling }),
+        })).toContain("'import-notation': 'string',");
+      }
+    }
+  });
+});
+
 // A Tailwind 4 `@custom-variant` body is a bare `&` rule by design, which stylelint reads as dangling.
 describe('the tailwind nesting carve-out', () => {
   it('stands the scoping-root rule down for a tailwind project', () => {
     expect(emitStylelintConfig({
       ...DEFAULT_ANSWERS,
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }))
       .toContain("'nesting-selector-no-missing-scoping-root': null,");
   });

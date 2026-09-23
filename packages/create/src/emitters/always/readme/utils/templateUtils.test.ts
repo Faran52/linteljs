@@ -6,7 +6,9 @@ import {
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
+  type Styling,
   type TargetId,
   type Testing,
 } from '@answers';
@@ -16,6 +18,8 @@ import { fillSlots, sharedSlots } from './templateUtils';
 interface AnswerOverrides {
   target?: TargetId;
   testing?: Testing;
+  styling?: Styling;
+  data?: Data;
 }
 
 describe('fillSlots', () => {

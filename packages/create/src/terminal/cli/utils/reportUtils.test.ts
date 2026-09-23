@@ -22,6 +22,7 @@ const OPTIONS: CliOptions = {
   name: 'demo',
   cwd: '/projects/demo',
   skip: [],
+  existing: false,
   unknownSkips: [],
   unexpectedArguments: [],
   yes: true,
@@ -73,7 +74,7 @@ describe('stageLine', () => {
     expect(stageLine('lint', 1, '', 40)).toBe('lint      1 file, 0.0s');
   });
 
-  // The scaffolder and the install write nothing through the pipeline, so what they said is all they have.
+  // The install writes nothing through the pipeline, so what it said is all it has.
   it('falls back to what a stage said where it wrote nothing', () => {
     expect(stageLine('install', 0, 'installing with pnpm', 12_100)).toBe('install   installing with pnpm, 12.1s');
   });
@@ -90,8 +91,8 @@ describe('stageLine', () => {
 
 describe('stepsPlan', () => {
   it('numbers every stage in order', () => {
-    expect(stepsPlan(OPTIONS)).toContain('  1. scaffold: the official generator');
-    expect(stepsPlan(OPTIONS)).toContain('  5. install');
+    expect(stepsPlan(OPTIONS)).toContain('  1. lint:');
+    expect(stepsPlan(OPTIONS)).toContain('  4. install');
   });
 
   // The rule `pipelineRun` applies: with lint skipped there is nothing of ours left for fix to run over.
@@ -101,9 +102,9 @@ describe('stepsPlan', () => {
       skip: ['lint'],
     });
 
-    expect(plan).toContain('  2. lint: eslint and stylelint config (skipped)');
-    expect(plan).toContain('  6. fix: eslint and stylelint --fix (skipped)');
-    expect(plan).not.toContain('scaffold: the official generator (skipped)');
+    expect(plan).toContain('  1. lint: eslint and stylelint config (skipped)');
+    expect(plan).toContain('  5. fix: eslint and stylelint --fix (skipped)');
+    expect(plan).not.toContain('lint: (skipped)');
   });
 });
 

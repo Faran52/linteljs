@@ -5,8 +5,14 @@ import type { Answers } from './registry';
 export interface ValueRecord {
   label: string;
   hint?: string;
-  // Narrows the offered values within a legal slot; absent means every value in `values` is legal.
-  only?: (target: TargetRecord) => boolean;
+  /**
+   * Narrows the offered values within a legal slot; absent means every value in `values` is legal.
+   *
+   * The answers so far are the second argument because one value is legal or not by another answer rather than by
+   * the target: `rtk-query` ships inside `@reduxjs/toolkit` and needs that store. A predicate rather than a second
+   * mechanism, so the prompt hides what the parser refuses and the rule is written once.
+   */
+  only?: (target: TargetRecord, answered: Answers) => boolean;
 }
 
 interface Base {

@@ -6,9 +6,11 @@ import {
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Library,
   type Router,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -18,6 +20,8 @@ interface AnswerOverrides {
   target?: TargetId;
   libraries?: Library[];
   router?: Router;
+  styling?: Styling;
+  data?: Data;
 }
 
 const configFor = (overrides: AnswerOverrides): string | null => {
@@ -73,7 +77,8 @@ describe('emitViteConfig', () => {
   it('keeps every plugin call inside the line length it emits for itself', () => {
     const react = configFor({
       target: 'react',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }) ?? '';
 
     expect(react.split('\n').every((line) => {
@@ -94,12 +99,14 @@ describe('emitViteConfig', () => {
   it('stacks tailwind after whatever plugin the target already had', () => {
     expect(configFor({
       target: 'webextension',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }) ?? '')
       .toContain('plugins: [\n    crx({ manifest }),\n    tailwindcss(),\n  ],');
     expect(configFor({
       target: 'vue',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }) ?? '')
       .toContain('plugins: [\n    vue(),\n    tailwindcss(),\n  ],');
   });
@@ -109,6 +116,37 @@ describe('emitViteConfig', () => {
       target: 'vue',
       libraries: [],
     }) ?? '').not.toContain('tailwind');
+  });
+
+  /*
+   * First in the list, which is what StyleX's own documentation asks for: placed after the framework plugin it
+   * breaks Fast Refresh. Built from the raw factory rather than imported from `@stylexjs/unplugin/vite`, because
+   * every pre-built factory that package ships is typed `=> any` and a project that put one in `plugins` would
+   * fail its own `no-unsafe-assignment`.
+   */
+  it('adds the stylex plugin before the framework one, through the one export it types', () => {
+    const react = configFor({
+      target: 'react',
+      libraries: [],
+      styling: 'stylex',
+    }) ?? '';
+
+    expect(react).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
+    expect(react).toContain("import { createUnplugin } from 'unplugin';");
+    expect(react).not.toContain('@stylexjs/unplugin/vite');
+    expect(configFor({
+      target: 'vue',
+      libraries: [],
+      styling: 'stylex',
+    }) ?? '')
+      .toContain('plugins: [\n    createUnplugin(stylex).vite({ useCSSLayers: true }),\n    vue(),\n  ],');
+  });
+
+  it('leaves stylex out when it was not chosen', () => {
+    expect(configFor({
+      target: 'vue',
+      libraries: [],
+    }) ?? '').not.toContain('stylex');
   });
 });
 
@@ -140,16 +178,10 @@ describe('extra rollup inputs', () => {
 });
 
 describe('the router', () => {
-  it('runs the tanstack router plugin ahead of the framework plugin', () => {
-    const react = configFor({ router: 'tanstack-router' }) ?? '';
-    const plugin = react.indexOf("tanstackRouter({ target: 'react', autoCodeSplitting: true })");
-
-    expect(react).toContain("import { tanstackRouter } from '@tanstack/router-plugin/vite';");
-    expect(plugin).toBeGreaterThan(-1);
-    expect(plugin).toBeLessThan(react.indexOf('react()'));
-  });
-
-  it('adds nothing for react-router', () => {
+  // Neither router adds a build plugin: the starter's TanStack route tree is built from the one route list rather
+  // than generated out of a `routes/` directory, which is what that plugin exists to do.
+  it('adds nothing for either router', () => {
+    expect(configFor({ router: 'tanstack-router' })).not.toContain('tanstackRouter');
     expect(configFor({ router: 'react-router' })).not.toContain('tanstackRouter');
   });
 });

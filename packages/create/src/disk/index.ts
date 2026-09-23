@@ -11,16 +11,10 @@ export {
 export {
   entryExists,
   exists,
-  isAbsence,
   isExecutableFile,
-  mkdir,
-  readdir,
-  readFile,
   readIfPresent,
-  rename,
   rm,
   rmdir,
 } from './utils/fsUtils';
 export { safeProjectPath } from './utils/pathUtils';
 export { artifactWriter } from './write/artifact/artifactWriter';
-export { projectFileWriter } from './write/project-file/projectFileWriter';

@@ -9,8 +9,10 @@ import {
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type Router,
+  type Styling,
   type TargetId,
   type Testing,
   type TypeSafety,
@@ -24,6 +26,8 @@ interface AnswerOverrides {
   typeSafety?: TypeSafety;
   router?: Router;
   testing?: Testing;
+  styling?: Styling;
+  data?: Data;
 }
 
 // The file the artifact copies from, read the way `shippedAssetsReader` reads it.
@@ -52,12 +56,6 @@ describe('checkerArtifact', () => {
   it('throws when the type-safety anchor has drifted out of the shipped checker', () => {
     expect(() => {
       return transformOf(answersFor({ typeSafety: 'relaxed' }))('// a checker with no anchor\n', null);
-    }).toThrow('no longer contains the anchor');
-  });
-
-  it('throws when the skip-list anchor has drifted out of the shipped checker', () => {
-    expect(() => {
-      return transformOf(answersFor({ target: 'react-native' }))('// a checker with no anchor\n', null);
     }).toThrow('no longer contains the anchor');
   });
 
@@ -141,19 +139,5 @@ describe('the checker merge when a block cannot be found', () => {
     const merged = transformOf(answersFor({}))(shipped, broken);
 
     expect(merged).toContain('const PROJECT_BANNED: BannedPattern[] = [];');
-  });
-});
-
-describe('the generated route tree', () => {
-  it('is skipped by the checker, since TanStack writes it with as any', () => {
-    const tree = "  'src/routeTree.gen.ts',";
-
-    expect(transformOf(answersFor({ router: 'tanstack-router' }))('const PROJECT_SKIPPED: string[] = [];\n', null))
-      .toContain(tree);
-    expect(transformOf(answersFor({
-      router: 'tanstack-router',
-      testing: 'none',
-    }))('const PROJECT_SKIPPED: string[] = [];\n', null)).toContain(tree);
-    expect(transformOf(answersFor({}))('const PROJECT_SKIPPED: string[] = [];\n', null)).not.toContain(tree);
   });
 });

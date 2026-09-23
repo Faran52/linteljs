@@ -1,11 +1,29 @@
 import { createBrowserRouter } from 'react-router';
 
-import App from '../App';
+import { AppHeader } from '../components/features/app-header/AppHeader';
+import { NAME } from '../config/linteljs';
+import { ROUTES } from '../pages/routes';
 
-// The route table. A page lives in `src/pages/<kebab>/{Name}Page.tsx` and is named here once.
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    Component: App,
-  },
-]);
+import type { FC, ReactNode } from 'react';
+
+interface ShellProps {
+  readonly children: ReactNode;
+}
+
+// The header is outside the route, so it renders once and every route fills what sits under it.
+const Shell: FC<ShellProps> = ({ children }) => {
+  return (
+    <>
+      <AppHeader name={NAME} />
+      {children}
+    </>
+  );
+};
+
+// One route per page, read off the one list the header reads. A page is added there and appears in both.
+export const router = createBrowserRouter(ROUTES.map(({ path, element }) => {
+  return {
+    path,
+    element: <Shell>{element}</Shell>,
+  };
+}));

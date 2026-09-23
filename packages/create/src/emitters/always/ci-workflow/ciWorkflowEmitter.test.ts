@@ -10,8 +10,10 @@ import { majorOf } from '@utils/versionUtils';
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type PackageManager,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -23,6 +25,8 @@ interface AnswerOverrides {
   packageManager?: PackageManager;
   target?: TargetId;
   nodeVersion?: string;
+  styling?: Styling;
+  data?: Data;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {

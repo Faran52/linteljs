@@ -248,10 +248,18 @@ const askName = async (prompter: Prompter): Promise<string> => {
   return unwrap(prompter, answer);
 };
 
-// The values a record offers here, narrowed by `only` for this target: what a target never asks for is never shown.
-const offeredValuesOf = <V extends string>(values: Record<V, ValueRecord>, target: TargetRecord): V[] => {
+/**
+ * The values a record offers here, narrowed by `only`: what a target never asks for is never shown, and neither is
+ * what another answer has already ruled out. `rtk-query` is the second case, being legal only with the Redux store
+ * that ships it, and the parser refuses the same value through the same predicate.
+ */
+const offeredValuesOf = <V extends string>(
+  values: Record<V, ValueRecord>,
+  target: TargetRecord,
+  answered: Answers,
+): V[] => {
   return valuesOf(values).filter((value) => {
-    return values[value].only === undefined || values[value].only(target);
+    return values[value].only === undefined || values[value].only(target, answered);
   });
 };
 
@@ -268,16 +276,17 @@ const askAnswer = async (
   // Already checked by the caller: only a record with a `prompt` reaches here.
   message: string,
   target: TargetRecord,
+  answered: Answers,
 ): Promise<JsonValue | undefined> => {
   switch (record.kind) {
     case 'choice': {
-      const offered = offeredValuesOf(record.values, target);
+      const offered = offeredValuesOf(record.values, target, answered);
 
       return await askChoice(prompter, message, offered, record.default, describeFrom(record.values));
     }
 
     case 'optionalChoice': {
-      const offered = ['none', ...offeredValuesOf(record.values, target)];
+      const offered = ['none', ...offeredValuesOf(record.values, target, answered)];
       const describeValue = describeFrom(record.values);
       const picked = await askChoice(prompter, message, offered, 'none', (choice) => {
         return choice === 'none' ? record.none : describeValue(choice);
@@ -287,13 +296,13 @@ const askAnswer = async (
     }
 
     case 'multi': {
-      const offered = offeredValuesOf(record.values, target);
+      const offered = offeredValuesOf(record.values, target, answered);
 
       return await askMulti(prompter, message, offered, record.default, false, describeFrom(record.values));
     }
 
     case 'optionalMulti': {
-      const offered = offeredValuesOf(record.values, target);
+      const offered = offeredValuesOf(record.values, target, answered);
 
       return await askMulti(prompter, message, offered, [], false, describeFrom(record.values));
     }
@@ -338,7 +347,7 @@ const askIfNeeded = async (
   }
 
   // `list` and `map` carry no `prompt`, which the check above already refused; neither reaches `askAnswer`.
-  return await askAnswer(prompter, record as PromptableRecord, message, target);
+  return await askAnswer(prompter, record as PromptableRecord, message, target, soFarAnswered(answered));
 };
 
 // `undefined` means omitted, not written: `exactOptionalPropertyTypes` bans setting an optional property to it.

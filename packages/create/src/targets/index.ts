@@ -5,11 +5,7 @@ export {
 export type {
   HooksSlot,
   PluginSpec,
-  ScaffoldKind,
-  ScaffoldSpec,
   StarterFile,
-  StarterFix,
-  StarterRename,
   StarterTest,
   TargetRecord,
   TsconfigDelta,

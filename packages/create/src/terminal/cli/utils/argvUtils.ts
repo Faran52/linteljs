@@ -24,6 +24,8 @@ export interface CliOptions {
   // Present when any answer flag was passed; the run then asks nothing.
   answers?: AnswerFlags;
   skip: Stage[];
+  // `--skip-scaffold`: the directory is a repository that already exists rather than one this run makes.
+  existing: boolean;
   // Kept rather than thrown on, so `main` reports every argv problem the same way.
   unknownSkips: string[];
   unexpectedArguments: string[];
@@ -89,10 +91,6 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     return !isStage(value);
   });
 
-  if (values['skip-scaffold'] && !skip.includes('scaffold')) {
-    skip.push('scaffold');
-  }
-
   // `parseArgs` has no `--no-` negation, so the flag is declared under its literal name.
   if (values['no-install']) {
     skip.push('install', 'fix');
@@ -107,6 +105,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     unexpectedArguments,
     ...(answered ? { answers: flagged } : {}),
     // An answer flag makes the run non-interactive the way --yes does; the rest take the defaults.
+    existing: values['skip-scaffold'],
     yes: values.yes || answered,
     fresh: values.fresh,
     force: values.force,

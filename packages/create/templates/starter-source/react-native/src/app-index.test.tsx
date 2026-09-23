@@ -1,48 +1,24 @@
 import { renderScreen } from '@mocks/renderScreen';
 import { screen } from '@testing-library/react-native';
 
-import Home from './app/index';
+import HomeScreen from '@/app/index';
+import { NAME } from '@/config/linteljs';
 
-const { device } = vi.hoisted(() => {
-  return { device: { isDevice: true } };
-});
+/*
+ * Beside `src/app/`, not inside it: expo-router treats every file under the route root as a route, and measured,
+ * `expo export` died on `expect is not defined` when a suite sat there.
+ */
+describe('the home screen', () => {
+  it('carries the project name and the mark', async () => {
+    await renderScreen(<HomeScreen />);
 
-vi.mock('expo-device', () => {
-  return {
-    get isDevice() {
-      return device.isDevice;
-    },
-  };
-});
-
-describe('Home', () => {
-  it('renders its heading', async () => {
-    await renderScreen(<Home />);
-
-    expect(screen.getByText('Welcome to Expo')).toBeTruthy();
+    expect(screen.getByText(NAME)).toBeTruthy();
+    expect(screen.getByLabelText('linteljs')).toBeTruthy();
   });
 
-  it('names the three things a new project does first', async () => {
-    await renderScreen(<Home />);
+  it('names the one command that runs the whole gate', async () => {
+    await renderScreen(<HomeScreen />);
 
-    expect(screen.getByText('Try editing')).toBeTruthy();
-    expect(screen.getByText('Dev tools')).toBeTruthy();
-    expect(screen.getByText('Fresh start')).toBeTruthy();
-  });
-
-  it('tells a real device to shake it', async () => {
-    device.isDevice = true;
-
-    await renderScreen(<Home />);
-
-    expect(screen.getByText(/shake device/)).toBeTruthy();
-  });
-
-  it('gives a simulator the keyboard shortcut instead', async () => {
-    device.isDevice = false;
-
-    await renderScreen(<Home />);
-
-    expect(screen.getByText(/press/)).toBeTruthy();
+    expect(screen.getByText(/pnpm check/)).toBeTruthy();
   });
 });

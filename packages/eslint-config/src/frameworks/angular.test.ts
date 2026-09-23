@@ -5,9 +5,25 @@ import {
   it,
 } from 'vitest';
 
+import base from '../base';
+
 import angular from './angular';
 
 describe('angular', () => {
+  /*
+   * A component with no state of its own is normal Angular: it still has a template, a selector and a place in the
+   * injector. Without the carve-out every presentational component in a project fails its own lint.
+   */
+  it('lets a decorated class carry nothing, and still refuses an undecorated one', async () => {
+    const decorated = "@Component({ selector: 'app-mark' })\nexport class Mark {}\n";
+    const bare = 'export class Bag {}\n';
+
+    await expect(ruleIdsFor([...base(), ...angular()], decorated, 'src/app/mark.ts'))
+      .resolves.not.toContain('@typescript-eslint/no-extraneous-class');
+    await expect(ruleIdsFor([...base(), ...angular()], bare, 'src/app/bag.ts'))
+      .resolves.toContain('@typescript-eslint/no-extraneous-class');
+  });
+
   it('reports on a template', async () => {
     const code = '<div *ngIf="on">{{ label }}</div>\n<button (click)="go()"></button>\n';
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.html');

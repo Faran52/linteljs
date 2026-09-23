@@ -56,6 +56,16 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
     };
   },
 
+  'nuxt': async () => {
+    const { vue } = await import('./frameworks/vue');
+    const { nuxt, nuxtGroup } = await import('./frameworks/nuxt');
+
+    return {
+      layer: [...vue(), ...nuxt()],
+      group: nuxtGroup,
+    };
+  },
+
   'svelte': async () => {
     const { svelte, svelteGroup } = await import('./frameworks/svelte');
 

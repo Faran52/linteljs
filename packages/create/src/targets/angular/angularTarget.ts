@@ -1,22 +1,24 @@
 import { DECLARATION_KEY, FOLDER } from '../constants';
+import {
+  accessorFiles,
+  accessorTests,
+  mockFiles,
+  mockTests,
+} from '../utils/mockUtils';
+import { componentStyles } from '../utils/styleUtils';
 
-import type { TargetRecord } from '../types';
+import {
+  ACCESSORS,
+  ALWAYS,
+  SHARED,
+} from './constants';
+
+import type { StarterFile, TargetRecord } from '../types';
 
 export const angularTarget: TargetRecord = {
   id: 'angular',
-  // `--style css` matches what `lint:css` assumes; `--skip-git` avoids a nested repo breaking the hooks.
-  scaffold: (name, answers) => {
-    return {
-      kind: 'dlx',
-      args: [
-        '@angular/cli@latest', 'new', name,
-        '--defaults', '--skip-git', '--skip-install',
-        '--package-manager', answers.packageManager,
-        '--style', 'css',
-        '--ssr', 'false',
-      ],
-    };
-  },
+  recordModule: 'src/config/linteljs.ts',
+  angularProject: true,
   framework: 'angular',
   html: false,
   vite: false,
@@ -31,11 +33,41 @@ export const angularTarget: TargetRecord = {
    * key is not optional here either: `customTypes.d.ts` ships with `typeSafety: relaxed` and is not kebab.
    */
   naming: {
-    'src/**/*.ts': 'KEBAB_CASE',
+    // `!(*.d)`: the declaration key below judges those, and `check-file` applies every key that matches a file, so
+    // two of them on one name have to agree. `customTypes.d.ts` ships with `typeSafety: relaxed` and is not kebab.
+    'src/**/!(*.d).ts': 'KEBAB_CASE',
     ...DECLARATION_KEY,
   },
   folderNaming: { 'src/**/': FOLDER },
+  // `vmThreads`, which Angular's Vite plugin sets, has no Node globals; `testPool` on `types.ts` carries why.
+  testPool: 'forks',
+  /*
+   * The one place Angular's kebab spelling is bridged rather than followed. `fetchExtended.ts` is a shared asset
+   * with no framework in it, so it is one file across ten targets, and nine of them spell it in camel; Angular
+   * names every source file in kebab and its own lint rule holds it to that. The alias keeps the specifier the
+   * same everywhere, so the adapter and its suite stay one asset rather than nine plus a copy.
+   */
+  extraAliases: { '@utils/fetchExtended': './src/lib/utils/fetch-extended.ts' },
   styleEntry: 'src/styles.css',
+  starterStyles: [
+    './styles/tokens.css',
+    './styles/base.css',
+    './components/features/app-header/AppHeader.css',
+    './components/ui/mark/Mark.css',
+    {
+      path: './components/ui/button/Button.css',
+      when: (answers) => {
+        return answers.store !== undefined || answers.form !== undefined;
+      },
+    },
+    {
+      path: './components/ui/text-input/TextInput.css',
+      when: (answers) => {
+        return answers.form !== undefined;
+      },
+    },
+  ],
+  tailwindTheme: './styles/theme.css',
   vitePlugin: {
     imports: [],
     calls: [],
@@ -45,11 +77,6 @@ export const angularTarget: TargetRecord = {
     dropsErasableSyntaxOnly: true,
     dropsNoEmit: true,
   },
-  // Both first names are types.
-  typeOnlyImports: {
-    '@angular/core': ['ApplicationConfig'],
-    '@angular/router': ['Routes'],
-  },
   // Vitest cannot read a decorator; the tsconfig is named because the plugin defaults to `tsconfig.spec.json`.
   vitestPlugin: {
     imports: ["import angular from '@analogjs/vite-plugin-angular';"],
@@ -57,24 +84,58 @@ export const angularTarget: TargetRecord = {
   },
   // Declarations Angular reads at bootstrap, with no branch; `ng new` already ships the component spec.
   coverageExclude: ['src/app/app.config.ts', 'src/app/app.routes.ts'],
-  starterFixes: [
+  publicDirectory: 'public',
+  starterFiles: [
+    // Kebab, because every source file this target writes is: the asset is the same bytes as the other nine.
+    ...mockFiles(true, 'src/lib/utils/fetch-extended.ts'),
+    ...componentStyles(),
+    ...accessorFiles(ACCESSORS),
+    ...ALWAYS.map((target): StarterFile => {
+      return { target };
+    }),
+    ...SHARED.map((target): StarterFile => {
+      return {
+        target,
+        shared: true,
+      };
+    }),
     {
-      path: 'src/main.ts',
-      transform: (source) => {
-        // A rejection value is genuinely unknown.
-        return source.replace('.catch((err) =>', '.catch((err: unknown) =>');
+      target: 'src/styles/theme.css',
+      when: (answers) => {
+        return answers.styling === 'tailwind';
       },
+      variant: 'tailwind',
+      shared: true,
     },
+  ],
+  /*
+   * One suite, walking the real router: the header is outside the outlet and every page is behind it, so opening
+   * each route covers the shell, the header, the mark and all three pages at once.
+   */
+  starterTests: [
+    ...mockTests('src/lib/utils/fetch-extended'),
+    ...accessorTests(ACCESSORS),
     {
-      // `no-empty-source` has no fixer; the file says what it is for.
-      path: 'src/app/app.css',
-      transform: (source) => {
-        return source.trim() === '' ? '/* Component styles for app-root. */\n' : source;
-      },
+      target: 'src/app/app.spec.ts',
+      covers: 'src/app/app.ts',
+      needs: ['src/app/app.routes.ts'],
     },
   ],
   typecheck: 'tsc --noEmit',
-  devDependencies: ['angular-eslint'],
+  // The two a scaffolder used to write; `ng test` is declined, since this standard's runner is vitest.
+  build: 'ng build',
+  extraScripts: { dev: 'ng serve' },
+  devDependencies: ['angular-eslint', '@angular/cli', '@angular/build', '@angular/compiler-cli'],
+  dependencies: [
+    '@angular/common',
+    '@angular/compiler',
+    '@angular/core',
+    '@angular/forms',
+    '@angular/platform-browser',
+    '@angular/router',
+    'rxjs',
+    'tslib',
+  ],
   // Only the emitted `vitest.config.ts` calls the compiler plugin.
   testDevDependencies: ['@analogjs/vite-plugin-angular'],
   allowBuilds: ['@parcel/watcher', 'esbuild', 'lmdb', 'msgpackr-extract'],

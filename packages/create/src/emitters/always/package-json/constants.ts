@@ -24,6 +24,22 @@ export const VERSIONS: Record<string, string> = {
   '@eslint-react/eslint-plugin': '^5.20.0',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
+  /*
+   * Angular's runtime, its compiler and its build, all released together on one version. `zone.js` is absent on
+   * purpose: an application on signals and `provideBrowserGlobalErrorListeners` is zoneless, which is Angular 20's
+   * own default and what `ng new` stopped writing.
+   */
+  '@angular/common': '^22.1.0',
+  '@angular/compiler': '^22.1.0',
+  '@angular/core': '^22.1.0',
+  '@angular/forms': '^22.1.0',
+  '@angular/platform-browser': '^22.1.0',
+  '@angular/router': '^22.1.0',
+  '@angular/build': '^22.1.8',
+  '@angular/cli': '^22.1.8',
+  '@angular/compiler-cli': '^22.1.0',
+  'rxjs': '~7.8.0',
+  'tslib': '^2.3.0',
   // Both halves of NgRx 22, released together and peering `@angular/core ^22.0.0`, which is what `ng new` writes.
   '@ngrx/signals': '^22.0.1',
   '@ngrx/store': '^22.0.1',
@@ -39,6 +55,11 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/svelte-store': '^0.12.1',
   '@tanstack/vue-store': '^0.11.1',
   '@rolldown/plugin-babel': '^0.2.4',
+  '@stylexjs/babel-plugin': '^0.19.1',
+  '@stylexjs/postcss-plugin': '^0.19.1',
+  '@stylexjs/stylex': '^0.19.1',
+  '@stylexjs/unplugin': '^0.19.1',
+  'unplugin': '^2.3.11',
   '@solidjs/testing-library': '^0.8.10',
   // What lets vitest load React Native at all.
   '@srsholmes/vitest-react-native': '^0.1.5',
@@ -89,6 +110,24 @@ export const VERSIONS: Record<string, string> = {
   'husky': '^9.1.7',
   'lint-staged': '^17.5.1',
   'postcss-html': '^2.0.0',
+  // Next owns its own build, its own router and its own document; nothing else installs it.
+  'next': '^16.3.5',
+  /*
+   * Expo's runtime and the modules a tab layout measures itself with, all on the SDK's own release train: Expo
+   * pins these together and a mismatched one is what `expo-doctor` exists to find. `react-native-web` and
+   * `react-dom` are what the `web` script bundles against.
+   */
+  'expo': '~57.0.24',
+  'react-native': '~0.87.1',
+  // Shipped in lockstep with react-native, and read directly by `metro.config.js` since 0.87 deleted its wrapper.
+  '@react-native/js-polyfills': '~0.87.1',
+  'expo-router': '~57.0.22',
+  'expo-constants': '~57.0.19',
+  'expo-linking': '~57.0.10',
+  'expo-status-bar': '~57.0.1',
+  'react-native-safe-area-context': '~5.7.0',
+  'react-native-screens': '~4.26.0',
+  'react-native-web': '~0.21.0',
   // A vanilla or Astro scaffold installs no framework, so a hosted one brings its own.
   'react': '^19.3.0',
   'react-dom': '^19.3.0',
@@ -101,6 +140,10 @@ export const VERSIONS: Record<string, string> = {
   // A peer of stylelint-config-recess-order that pnpm does not install on its own.
   'stylelint-order': '^8.1.1',
   'svelte': '^5.57.1',
+  // SvelteKit is the framework this target is, so its own template installs the kit and the adapter rather than
+  // inheriting them from `sv create`.
+  '@sveltejs/kit': '^2.70.3',
+  '@sveltejs/adapter-auto': '^7.0.1',
   'svelte-check': '^4.7.6',
   'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',
@@ -117,9 +160,19 @@ export const VERSIONS: Record<string, string> = {
   'test-renderer': '~1.2.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
+  // A dev dependency whatever the data answer is: it answers requests, it never ships in a build.
+  'msw': '^2.15.0',
+  // Read by `http.ts`, which every project receives. `URLSearchParams` loses an array; this keeps it.
+  'qs': '^6.16.0',
+  '@types/qs': '^6.15.1',
   'vite-plugin-solid': '^2.11.14',
   'vitest': '^5.0.1',
   'vue': '^3.5.43',
+  // Vue's meta-framework, which brings its own Vite, its own Nitro server and its own tsconfigs.
+  'nuxt': '^4.5.2',
+  // A Vue application routes, and this target asks no router question to answer otherwise.
+  'vue-router': '^5.3.1',
+  'pinia': '^4.0.3',
   'vue-eslint-parser': '^10.4.1',
   'vue-tsc': '^3.3.11',
   'zod': '^4.6.5',
@@ -130,7 +183,6 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/eslint-plugin-router': '^1.162.0',
   '@tanstack/react-form': '^1.33.5',
   '@tanstack/react-router': '^1.170.38',
-  '@tanstack/router-plugin': '^1.168.40',
   '@tanstack/solid-form': '^1.33.5',
   '@tanstack/svelte-form': '^1.33.5',
   '@tanstack/vue-form': '^1.33.5',
@@ -141,6 +193,14 @@ export const VERSIONS: Record<string, string> = {
   // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version, so a caret resolves past it.
   'react-native-css': '3.1.0-rc.0',
   'react-router': '^8.4.0',
+  /*
+   * Framework mode's own four, pinned with the router because React Router releases them as one version. The
+   * server entry reads `isbot` to tell a crawler from a browser, which decides whether it streams.
+   */
+  '@react-router/dev': '^8.4.0',
+  '@react-router/node': '^8.4.0',
+  '@react-router/serve': '^8.4.0',
+  'isbot': '^5.2.2',
   'ts-pattern': '^5.9.0',
   'zustand': '^5.0.15',
 };
@@ -193,21 +253,22 @@ export const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
   'next': '@tanstack/react-query',
   'react-native': '@tanstack/react-query',
   'vue': '@tanstack/vue-query',
+  'nuxt': '@tanstack/vue-query',
   'svelte': '@tanstack/svelte-query',
   'solid': '@tanstack/solid-query',
   'angular': '@tanstack/angular-query-experimental',
 };
 
 /**
- * What a chosen store installs, before any framework binding. Pinia is absent on purpose: `create-vue` installs it
- * from the `--pinia` flag, and a version pinned here would fight that. RTK Query ships inside the toolkit, so
+ * What a chosen store installs, before any framework binding. TanStack Store is absent because its binding is the
+ * whole of it: `@tanstack/react-store` and its siblings re-export the core. RTK Query ships inside the toolkit, so
  * `redux-toolkit` is the answer for both, with `react-redux` as what binds it to a component.
  */
 export const STORE_DEPENDENCIES: Record<Store, readonly string[]> = {
   'zustand': ['zustand'],
   'redux-toolkit': ['@reduxjs/toolkit', 'react-redux'],
   'tanstack-store': [],
-  'pinia': [],
+  'pinia': ['pinia'],
   'ngrx-signals': ['@ngrx/signals'],
   'ngrx-store': ['@ngrx/store'],
   'nanostores': ['nanostores'],
@@ -240,6 +301,7 @@ export const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
   'next': '@tanstack/react-form',
   'react-native': '@tanstack/react-form',
   'vue': '@tanstack/vue-form',
+  'nuxt': '@tanstack/vue-form',
   'svelte': '@tanstack/svelte-form',
   'solid': '@tanstack/solid-form',
   'angular': '@tanstack/angular-form',
@@ -247,12 +309,15 @@ export const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
 
 export const ROUTER_DEPENDENCIES: Record<Router, string[]> = {
   'react-router': ['react-router'],
+  // The record carries framework mode's own four, since they are the build rather than the router.
+  'react-router-framework': [],
   'tanstack-router': ['@tanstack/react-router'],
 };
 
 export const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
   'react-router': [],
-  'tanstack-router': ['@tanstack/router-plugin', '@tanstack/eslint-plugin-router'],
+  'react-router-framework': [],
+  'tanstack-router': ['@tanstack/eslint-plugin-router'],
 };
 
 /**

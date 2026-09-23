@@ -69,7 +69,6 @@ export const RUN_PREFIX: Record<PackageManager, string> = {
 export const MANAGED_PATH = 'plugins/linteljs/managed.json';
 
 export const STAGES: Stage[] = [
-  'scaffold',
   'lint',
   'package',
   'standard',

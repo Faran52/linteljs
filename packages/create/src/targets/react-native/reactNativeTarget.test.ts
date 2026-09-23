@@ -4,211 +4,41 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
-
-import { esmAssetImports } from '../utils/targetUtils';
+import { FOLDER_ROUTED } from '../constants';
+import { componentNaming } from '../utils/namingUtils';
 
 import { reactNativeTarget } from './reactNativeTarget';
 
-// The shapes `app.json` is read back as. Named because this workspace writes no object type inline, and because
-// three assertions share the first of them.
-interface CompilerExperiments {
-  reactCompiler: boolean;
-}
-
-interface CompilerExpo {
-  experiments: CompilerExperiments;
-}
-
-interface CompilerConfig {
-  expo: CompilerExpo;
-}
-
-interface VersionedExpo {
-  sdkVersion: string;
-  experiments: CompilerExperiments;
-}
-
-interface VersionedConfig {
-  expo: VersionedExpo;
-}
-
-const transformFor = (path: string): (source: string) => string => {
-  const fix = (reactNativeTarget.starterFixes ?? []).find((entry) => {
-    return entry.path === path;
+describe('reactNativeTarget', () => {
+  it('is the record the react-native answer names', () => {
+    expect(reactNativeTarget.id).toBe('react-native');
   });
 
-  if (fix?.transform === undefined) {
-    throw new Error(`no transform for ${path}`);
-  }
-
-  return fix.transform;
-};
-
-describe('scaffold', () => {
-  // `--no-agents-md` is load-bearing: create-expo 5 otherwise writes the three agent files the emitters own.
-  it('writes the exact argv for the default answers', () => {
-    expect(reactNativeTarget.scaffold('demo-app', DEFAULT_ANSWERS)).toEqual({
-      kind: 'create',
-      args: ['expo@latest', 'demo-app', '--yes', '--no-install', '--no-agents-md'],
-    });
-  });
-});
-
-describe('starterFixes', () => {
-  it('wires the four plain asset-only files straight to esmAssetImports', () => {
-    for (const path of [
-      'src/app/explore.tsx',
-      'src/components/animated-icon.web.tsx',
-      'src/components/app-tabs.tsx',
-      'src/components/web-badge.tsx',
-    ]) {
-      expect(transformFor(path)).toBe(esmAssetImports);
-    }
+  /*
+   * Expo reads its application metadata from `app.json`, three of whose fields are the project's name, so it is
+   * emitted rather than copied. `eas build` needs a remote account, so `expo export` is what the gate runs, and
+   * the two native platforms rather than web: Expo SDK 57's web bundler asks react-native for a module 0.87
+   * deleted, and that path ignores the override `metro.config.js` carries.
+   */
+  it('has its application metadata written rather than copied', () => {
+    expect(reactNativeTarget.expoProject).toBe(true);
+    expect(reactNativeTarget.build).toBe('expo export --platform ios --platform android');
   });
 
-  it("rewrites the animated icon's asset require and unwinds its finally-only promise chain", () => {
-    const source = [
-      '      onLayout={() => {',
-      '        SplashScreen.hideAsync().finally(() => {',
-      '          setAnimate(true);',
-      '        });',
-      '      }}',
-      "      source={require('@/assets/images/expo-logo.png')}",
-      '',
-    ].join('\n');
+  /*
+   * A runner of its own: React Native resolves a module the way Metro does and renders through a test renderer
+   * rather than a DOM, so neither the transform nor the environment every other target uses applies.
+   */
+  it('runs its suite the way Metro resolves', () => {
+    const [platform] = reactNativeTarget.testPlatforms ?? [];
 
-    const output = transformFor('src/components/animated-icon.tsx')(source);
-
-    expect(output).toContain("import expoLogoAsset from '@/assets/images/expo-logo.png';");
-    expect(output).toContain('const reveal = async (): Promise<void> => {');
-    expect(output).toContain('await SplashScreen.hideAsync();');
-    expect(output).toContain('void reveal();');
-    expect(output).not.toContain('.finally(');
+    expect(platform?.name).toBe('native');
+    expect(platform?.extensions[0]).toBe('.ios.tsx');
   });
 
-  it("voids expo's floating splash screen call", () => {
-    const output = transformFor('src/app/_layout.tsx')('SplashScreen.preventAutoHideAsync();\n');
-
-    expect(output).toBe('void SplashScreen.preventAutoHideAsync();\n');
-  });
-
-  it('drops async from the link handler and voids the browser call it awaited', () => {
-    const source = [
-      '      onPress={async (event) => {',
-      "        if (process.env.EXPO_OS !== 'web') {",
-      '          await openBrowserAsync(href, {',
-      '            presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,',
-      '          });',
-      '        }',
-      '      }}',
-      '',
-    ].join('\n');
-
-    const output = transformFor('src/components/external-link.tsx')(source);
-
-    expect(output).toContain('onPress={(event) => {');
-    expect(output).toContain('void openBrowserAsync(href, {');
-    expect(output).not.toContain('await openBrowserAsync');
-    expect(output).not.toContain('async (event)');
-  });
-
-  it('removes the two themed-view props nothing reads', () => {
-    const source = [
-      'export type ThemedViewProps = ViewProps & {',
-      '  lightColor?: string;',
-      '  darkColor?: string;',
-      '  type?: ThemeColor;',
-      '};',
-      '',
-      'export function ThemedView({ style, lightColor, darkColor, type, ...otherProps }: ThemedViewProps) {',
-      '  return null;',
-      '}',
-      '',
-    ].join('\n');
-
-    const output = transformFor('src/components/themed-view.tsx')(source);
-
-    expect(output).not.toContain('lightColor');
-    expect(output).not.toContain('darkColor');
-    expect(output).toContain('export function ThemedView({ style, type, ...otherProps }: ThemedViewProps) {');
-  });
-
-  it('replaces the hydration effect with a synced external store read', () => {
-    const source = [
-      "import { useEffect, useState } from 'react';",
-      '',
-      'export function useColorScheme() {',
-      '  const [hasHydrated, setHasHydrated] = useState(false);',
-      '',
-      '  useEffect(() => {',
-      '    setHasHydrated(true);',
-      '  }, []);',
-      '',
-      '  return hasHydrated;',
-      '}',
-      '',
-    ].join('\n');
-
-    const output = transformFor('src/hooks/use-color-scheme.web.ts')(source);
-
-    expect(output).toContain("import { useSyncExternalStore } from 'react';");
-    expect(output).toContain('const hasHydrated = useSyncExternalStore(');
-    expect(output).not.toContain('useEffect');
-    expect(output).not.toContain('setHasHydrated');
-  });
-
-  it('adds reactCompiler experiment to app.json', () => {
-    const source = JSON.stringify({
-      expo: {
-        experiments: {
-          reactCompiler: false,
-        },
-      },
-    }, null, 2) + '\n';
-
-    const output = transformFor('app.json')(source);
-    const parsed = JSON.parse(output) as CompilerConfig;
-
-    expect(parsed.expo.experiments.reactCompiler).toBe(true);
-  });
-
-  it('keeps reactCompiler true in app.json', () => {
-    const source = JSON.stringify({
-      expo: {
-        experiments: {
-          reactCompiler: true,
-        },
-      },
-    }, null, 2) + '\n';
-
-    const output = transformFor('app.json')(source);
-    const parsed = JSON.parse(output) as CompilerConfig;
-
-    expect(parsed.expo.experiments.reactCompiler).toBe(true);
-  });
-
-  it('adds the experiments block when app.json has none', () => {
-    const source = JSON.stringify({
-      expo: {
-        sdkVersion: '53.0.0',
-      },
-    }, null, 2) + '\n';
-
-    const parsed = JSON.parse(transformFor('app.json')(source)) as VersionedConfig;
-
-    expect(parsed.expo.sdkVersion).toBe('53.0.0');
-    expect(parsed.expo.experiments.reactCompiler).toBe(true);
-  });
-
-  it('leaves app.json unchanged when it has no expo key', () => {
-    const source = JSON.stringify({
-      name: 'my-app',
-    }, null, 2) + '\n';
-
-    const output = transformFor('app.json')(source);
-
-    expect(output).toContain('name');
-    expect(output).not.toContain('reactCompiler');
+  // `src/app` stays exempt from the component glob: expo-router resolves a route by its filename.
+  it('names files the way any JSX target does, less the route root', () => {
+    expect(reactNativeTarget.naming).toEqual(componentNaming('app'));
+    expect(reactNativeTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
   });
 });

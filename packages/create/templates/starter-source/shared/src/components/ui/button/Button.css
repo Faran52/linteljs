@@ -1,0 +1,27 @@
+/* Colocated with the component, imported from the style entry: a scoped block would not reach ten targets. */
+
+.button {
+  padding: 0.4375rem 0.9375rem;
+  font-size: var(--text-ui);
+  font-weight: 540;
+  color: var(--primary-foreground);
+  cursor: pointer;
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition: opacity var(--motion-fast) var(--motion-ease);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.88;
+}

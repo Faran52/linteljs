@@ -4,6 +4,7 @@ import { targetFor } from '@targets';
 
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { emitted } from '../../utils/artifactUtils';
+import { sortedImports } from '../../utils/importUtils';
 
 import type { Answers } from '@answers';
 import type { PluginSpec, TestPlatform } from '@targets/types';
@@ -17,6 +18,15 @@ const SHARED_COVERAGE_EXCLUDE = [
   '**/*.d.ts',
   'src/typings/**',
   'src/{main,index}.{ts,tsx}',
+  // A StyleX token table is compiled to CSS by the bundler, so at runtime there is nothing of it left to measure.
+  '**/*.stylex.{ts,tsx}',
+  /*
+   * A component's style module, which is the same kind of thing one level down: a declaration of rules, compiled
+   * to atomic classes under StyleX and a table of class names otherwise. Astro is what settles it rather than
+   * taste: an `.astro` component has no vitest renderer, so a module only an `.astro` file imports cannot be
+   * reached by any suite that could be written.
+   */
+  '**/components/**/styles.{ts,tsx}',
 ];
 
 // A bare `src/**` hands rolldown `src/app.html` and friends, each printing a parse failure while the gate passes.
@@ -71,18 +81,29 @@ ${indent}},`;
  * Unconditional: `NODE_ENGINE` is `>=26.8.1`, so every generated project is past
  * the version where this matters.
  */
-const testBlock = (include: string, exclude: string[], setup: string, indent = '  '): string => {
+const testBlock = (
+  include: string,
+  exclude: string[],
+  setup: string,
+  indent = '  ',
+  pool?: string,
+): string => {
   return `${indent}test: {
 ${indent}  globals: true,
 ${indent}  environment: 'happy-dom',
-${indent}  setupFiles: ['./${setup}'],
+${pool === undefined ? '' : `${indent}  pool: '${pool}',\n`}${indent}  setupFiles: ['./${setup}'],
 ${indent}  execArgv: ['--no-experimental-webstorage'],
 ${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;
 };
 
-// `resolve.extensions` makes `foo.web.tsx` outrank `foo.tsx` as Metro does; without the second project `.web`
-// modules sit at zero coverage. `environment: 'node'`, since React Native renders through a test renderer.
+/*
+ * One project, and the only one this CLI writes by hand: React Native needs its own transform, its own module
+ * resolution and a `node` environment, since it renders through a test renderer rather than a DOM.
+ *
+ * `resolve.extensions` is Metro's own order, so a `.ios` or `.native` module outranks the plain one the way it
+ * does at runtime.
+ */
 const platformProjects = (
   platforms: TestPlatform[],
   include: string,
@@ -95,7 +116,6 @@ const platformProjects = (
       `        '${platform.name}',`,
       `        [${quoted(platform.extensions)}],`,
       `        [${quoted(platform.include)}],`,
-      ...(platform.exclude === undefined ? [] : [`        [${quoted(platform.exclude)}],`]),
     ];
 
     return `      platform(\n${lines.join('\n')}\n      ),`;
@@ -105,14 +125,13 @@ const platformProjects = (
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
-const platform = (name: string, extensions: string[], include: string[], exclude: string[] = []) => {
+const platform = (name: string, extensions: string[], include: string[]) => {
   return {
     plugins: [react(), reactNative()],
     resolve: { tsconfigPaths: true, extensions },
     test: {
       name,
       include,
-      exclude,
       globals: true,
       environment: 'node',
       setupFiles: ['./${setup}'],
@@ -149,15 +168,32 @@ ${conditions}${block}
 `;
 };
 
-// A standalone config inherits no resolution; measured on a real Next project, 27 of 36 suites failed on the
-// import line without `tsconfigPaths`.
-const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined): string => {
-  const pluginImports = vitestPlugin === undefined ? '' : `${vitestPlugin.imports.join('\n')}\n`;
-  const plugins = vitestPlugin === undefined
-    ? ''
-    : `  plugins: [${vitestPlugin.calls.join(', ')}],\n`;
+/*
+ * A standalone config inherits no resolution; measured on a real Next project, 27 of 36 suites failed on the
+ * import line without `tsconfigPaths`.
+ *
+ * StyleX is added here rather than left to the target's own build. A target with a Vite config gets the plugin
+ * through it, and this is the shape for one that has none: Next compiles through Babel and PostCSS, which a
+ * vitest run never reaches, so without the plugin every suite fails on an uncompiled `defineVars`.
+ */
+const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: boolean): string => {
+  const calls = [
+    ...(stylex ? ['createUnplugin(stylex).vite({ useCSSLayers: true })'] : []),
+    ...vitestPlugin?.calls ?? [],
+  ];
+  const pluginImports = sortedImports([
+    ...vitestPlugin?.imports ?? [],
+    ...(stylex
+      ? [
+          "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
+          "import { createUnplugin } from 'unplugin';",
+        ]
+      : []),
+  ]);
+  const plugins = calls.length === 0 ? '' : `  plugins: [${calls.join(', ')}],\n`;
+  const prelude = pluginImports === '' ? '' : `${pluginImports}\n`;
 
-  return `${pluginImports}import { defineConfig } from 'vitest/config';
+  return `${prelude}import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 ${plugins}  resolve: { tsconfigPaths: true },
@@ -185,10 +221,10 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
   }
 
   if (target.vite) {
-    return mergedConfig(testBlock(include, exclude, setup, '    '), target.testConditions);
+    return mergedConfig(testBlock(include, exclude, setup, '    ', target.testPool), target.testConditions);
   }
 
-  const block = testBlock(include, exclude, setup);
+  const block = testBlock(include, exclude, setup, '  ', target.testPool);
 
   // Astro's `getViteConfig` is the only way to reach its Vite config when there is no `vite.config.ts` to merge.
   if (target.vitestFactory !== undefined) {
@@ -200,7 +236,7 @@ ${block}
 `;
   }
 
-  return standaloneConfig(block, target.vitestPlugin);
+  return standaloneConfig(block, target.vitestPlugin, answers.styling === 'stylex');
 };
 
 // Birth only, for the same reason `vite.config.ts` is. The excludes name this CLI's layout guesses, which a

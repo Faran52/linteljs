@@ -8,7 +8,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { rules as lintelRules } from '@linteljs/eslint-plugin';
 import {
+  enabledRuleIdsFor,
   ruleIdsFor,
   ruleIdsForFile,
   ruleNamesFor,
@@ -84,6 +86,19 @@ describe('base: stylistic', () => {
 
     await expect(ruleIdsFor(base(), code, 'src/components/ui/Widget.tsx'))
       .resolves.toContain('@stylistic/jsx-quotes');
+  });
+
+  // The preset caps a multiline tag and nothing else, so the two-prop tag passing and the three-prop one failing is
+  // the half that is new here. The multiline case is kept so a later edit cannot drop `multi` unnoticed.
+  it('caps a single-line tag at two props and a multiline one at one per line', async () => {
+    const widget = 'src/components/ui/Widget.tsx';
+    const two = 'export const Widget = () => {\n  return <div id="a" lang="b" />;\n};\n';
+    const three = 'export const Widget = () => {\n  return <div id="a" lang="b" title="c" />;\n};\n';
+    const multiline = 'export const Widget = () => {\n  return (\n    <div\n      id="a" lang="b"\n    />\n  );\n};\n';
+
+    await expect(ruleIdsFor(base(), two, widget)).resolves.not.toContain('@stylistic/jsx-max-props-per-line');
+    await expect(ruleIdsFor(base(), three, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
+    await expect(ruleIdsFor(base(), multiline, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
   });
 
   it('reports a same-line else', async () => {
@@ -208,6 +223,22 @@ describe('base: unused imports', () => {
   });
 });
 
+describe('base: restricted imports', () => {
+  // Both halves of the pattern: the bare entry and the deep path, which the first glob does not cover.
+  it('reports the compat entry and its subpaths, and leaves the core entry alone', async () => {
+    const importing = (from: string): string => {
+      return `import { sortBy } from '${from}';\n\nexport const run = sortBy;\n`;
+    };
+
+    await expect(ruleIdsFor(base(), importing('es-toolkit/compat'), TS_FILE))
+      .resolves.toContain('no-restricted-imports');
+    await expect(ruleIdsFor(base(), importing('es-toolkit/compat/array/sortBy'), TS_FILE))
+      .resolves.toContain('no-restricted-imports');
+    await expect(ruleIdsFor(base(), importing('es-toolkit'), TS_FILE))
+      .resolves.not.toContain('no-restricted-imports');
+  });
+});
+
 describe('base: linteljs rules', () => {
   it('reports union-newline', async () => {
     const code = 'export type Value = { a: string } | { b: string };\n';
@@ -222,23 +253,43 @@ describe('base: linteljs rules', () => {
   });
 
   /**
-   * Both read TypeScript nodes, so both are restated over the SFC extensions the plugin's own preset cannot reach.
+   * Derived from the plugin's own registry rather than named, which is the whole point of the pair below: the
+   * restatement listed two of the three `language: 'typescript'` rules, so `no-inline-object-types` was off in
+   * every `.vue` and `.svelte` script block from the day it shipped and nothing said so. Naming the rules here
+   * is what let a third be missed, so a fourth is covered the day it is written.
+   */
+  const TYPESCRIPT_RULE_IDS = Object.entries(lintelRules)
+    .filter(([, rule]) => {
+      return rule.meta.docs.language === 'typescript';
+    })
+    .map(([name]) => {
+      return `@linteljs/${name}`;
+    });
+
+  it('has more than one TypeScript-only rule to restate, so the assertions below are not vacuous', () => {
+    expect(TYPESCRIPT_RULE_IDS.length).toBeGreaterThan(1);
+  });
+
+  /**
+   * They read TypeScript nodes, so they are restated over the SFC extensions the plugin's own preset cannot reach.
    * That restatement used to run over every script extension, which listed them as enabled on a `.js` file where
    * they can match nothing. A rule enabled where it cannot fire is a claim about the config that is not true.
    */
-  it('leaves the TypeScript-only rules off a plain .js file', async () => {
+  it('leaves every TypeScript-only rule off a plain .js file', async () => {
     const names = await ruleNamesFor(base(), 'src/lib/utils/sample.js');
 
-    expect(names).not.toContain('@linteljs/union-newline');
-    expect(names).not.toContain('@linteljs/interface-order');
+    for (const ruleId of TYPESCRIPT_RULE_IDS) {
+      expect(`${ruleId}: ${String(names.includes(ruleId))}`).toBe(`${ruleId}: false`);
+    }
   });
 
-  it('keeps them on for TypeScript and for an SFC, which is why they are restated at all', async () => {
+  it('keeps every one of them on for TypeScript and for an SFC, which is why they are restated at all', async () => {
     for (const file of ['src/lib/utils/sample.ts', 'src/components/Card.vue', 'src/components/Card.svelte']) {
-      const names = await ruleNamesFor(base(), file);
+      const enabled = await enabledRuleIdsFor(base(), file);
 
-      expect(`${file}: ${String(names.includes('@linteljs/union-newline'))}`).toBe(`${file}: true`);
-      expect(`${file}: ${String(names.includes('@linteljs/interface-order'))}`).toBe(`${file}: true`);
+      for (const ruleId of TYPESCRIPT_RULE_IDS) {
+        expect(`${file} ${ruleId}: ${String(enabled.includes(ruleId))}`).toBe(`${file} ${ruleId}: true`);
+      }
     }
   });
 });

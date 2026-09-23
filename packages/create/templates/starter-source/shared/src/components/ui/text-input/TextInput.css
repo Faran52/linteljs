@@ -1,0 +1,55 @@
+/* Colocated with the component, imported from the style entry: a scoped block would not reach ten targets. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.label {
+  font-size: var(--text-ui);
+  font-weight: 560;
+}
+
+.input,
+
+.textarea {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  font-size: var(--text-ui);
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  transition: border-color var(--motion-fast) var(--motion-ease);
+}
+
+.textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.input:focus-visible,
+
+.textarea:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/*
+ * A class rather than `[aria-invalid="true"]`, which would say the same thing here and could not be said at all
+ * under StyleX. The component threads invalid to both answers as one boolean instead.
+ */
+.input-invalid,
+
+.textarea-invalid {
+  border-color: var(--destructive);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-body);
+  color: var(--destructive);
+}

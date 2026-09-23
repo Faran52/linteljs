@@ -1,8 +1,11 @@
 import { agentsAnswer } from './agents/agents/agentsAnswer';
 import { pluginsAnswer } from './agents/plugins/pluginsAnswer';
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from './constants';
+import { dataAnswer } from './libraries/data/dataAnswer';
 import { formAnswer } from './libraries/form/formAnswer';
 import { librariesAnswer } from './libraries/libraries/librariesAnswer';
+import { mockingAnswer } from './libraries/mocking/mockingAnswer';
+import { stylingAnswer } from './libraries/styling/stylingAnswer';
 import { aliasesAnswer } from './recorded/aliases/aliasesAnswer';
 import { ignoresAnswer } from './recorded/ignores/ignoresAnswer';
 import { nodeVersionAnswer } from './recorded/node-version/nodeVersionAnswer';
@@ -22,8 +25,11 @@ import { typeSafetyAnswer } from './typesafety/type-safety/typeSafetyAnswer';
 import type { AliasMap } from '@config/types';
 import type { Agent } from './agents/agents/agentsAnswer';
 import type { Plugin } from './agents/plugins/pluginsAnswer';
+import type { Data } from './libraries/data/dataAnswer';
 import type { Form } from './libraries/form/formAnswer';
 import type { Library } from './libraries/libraries/librariesAnswer';
+import type { Mocking } from './libraries/mocking/mockingAnswer';
+import type { Styling } from './libraries/styling/stylingAnswer';
 import type { PackageManager } from './recorded/package-manager/packageManagerAnswer';
 import type { Browser } from './target/browser/browserAnswer';
 import type { HostedFramework } from './target/hosted-framework/hostedFrameworkAnswer';
@@ -54,12 +60,18 @@ export interface Answers {
   packageManagerVersion?: string;
   nodeVersion?: string;
   libraries: Library[];
+  // Absent is plain CSS: the tokens and the starter stylesheet, with no utility system.
+  styling?: Styling;
   // Absent is no form library.
   form?: Form;
   // Asked only where the target has a `routers` slot; absent is no router.
   router?: Router;
   // Asked only where the target has a `stores` slot; absent is the framework's own state and nothing installed.
   store?: Store;
+  // Absent is calling the api layer directly. `rtk-query` is legal only with the Redux store that ships it.
+  data?: Data;
+  // Absent is an api layer that answers locally, with no request for a handler to intercept.
+  mocking?: Mocking;
   typeSafety: TypeSafety;
   agents: Agent[];
   plugins: Plugin[];
@@ -98,9 +110,12 @@ export const ANSWERS = {
   packageManagerVersion: packageManagerVersionAnswer,
   nodeVersion: nodeVersionAnswer,
   libraries: librariesAnswer,
+  styling: stylingAnswer,
   form: formAnswer,
   router: routerAnswer,
   store: storeAnswer,
+  data: dataAnswer,
+  mocking: mockingAnswer,
   typeSafety: typeSafetyAnswer,
   agents: agentsAnswer,
   plugins: pluginsAnswer,

@@ -90,7 +90,7 @@ const pipedReport = (options: CliOptions): StageReport => {
  * `main` lands over the spinner's line rather than after it.
  */
 const liveReport = (): StageReport => {
-  let current: Stage = 'scaffold';
+  let current: Stage = 'lint';
   let writes = 0;
   let notice = '';
   let frame = 0;

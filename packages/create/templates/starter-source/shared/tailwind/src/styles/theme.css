@@ -1,0 +1,49 @@
+/*
+ * Tailwind's names, pointed at the tokens rather than given values of their own. `bg-background` then resolves to
+ * `--background`, so a utility and a hand-written rule read the same theme and a project retints both at once.
+ *
+ * `inline` because the values are already custom properties: without it Tailwind would wrap each one again.
+ */
+
+@theme inline {
+  --default-transition-duration: var(--motion-fast);
+  --default-transition-timing-function: var(--motion-ease);
+
+  /* Surfaces and the text on them. */
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-foreground-2: var(--foreground-2);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-dim: var(--dim);
+  --color-border: var(--border);
+  --color-hair: var(--hair);
+  --color-input: var(--input);
+
+  /* The brand, and the three states that answer back. */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ok: var(--ok);
+  --color-destructive: var(--destructive);
+
+  /* By what a thing is rather than by size. */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Typefaces, and the scale in rem. */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --text-eyebrow: var(--text-eyebrow);
+  --text-body: var(--text-body);
+  --text-ui: var(--text-ui);
+  --text-value: var(--text-value);
+  --text-metric: var(--text-metric);
+}
+
+/* The class the tokens switch on, so `dark:` utilities and the token block agree about what dark means. */
+@custom-variant dark (&:where(.dark, .dark *));

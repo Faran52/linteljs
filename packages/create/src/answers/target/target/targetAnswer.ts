@@ -11,6 +11,7 @@ export const targetAnswer = {
     'react': { label: 'React (Vite)' },
     'next': { label: 'Next.js' },
     'vue': { label: 'Vue' },
+    'nuxt': { label: 'Nuxt' },
     'svelte': { label: 'Svelte' },
     'solid': { label: 'Solid' },
     'angular': { label: 'Angular' },

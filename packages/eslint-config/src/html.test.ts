@@ -1,4 +1,8 @@
-import { ruleIdsFor } from '@mocks/lintText';
+import {
+  enabledRuleIdsFor,
+  ruleIdsFor,
+  startsWith,
+} from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -17,10 +21,13 @@ describe('html', () => {
       .resolves.toContain('@html-eslint/require-img-alt');
   });
 
-  it('says nothing about a TypeScript file', async () => {
-    const ruleIds = await ruleIdsFor(html(), 'export const value = 1;\n', 'src/lib/utils/sample.ts');
+  // Read off the enabled set under `base()` rather than off what a fixture trips. `html()` alone matches no
+  // TypeScript file at all, so linting one answers a single null-id "no matching configuration" notice and an
+  // assertion over the reported ids holds whatever the layer does. Unscope the layer and eighteen rules land here.
+  it('enables no html rule on a TypeScript file', async () => {
+    const enabled = await enabledRuleIdsFor([...base(), ...html()], 'src/lib/utils/sample.ts');
 
-    expect(ruleIds.filter(Boolean)).toEqual([]);
+    expect(enabled.filter(startsWith('@html-eslint/'))).toEqual([]);
   });
 
   // Without `**/*.html` in typescript()'s untyped tail, `index.html` throws on a type-aware rule.

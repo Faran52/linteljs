@@ -25,6 +25,9 @@ export const DECLARATION_KEY: NamingMap = { 'src/**/*.d.ts': DECLARATION };
 // uncovered branch per component. `process.env.VITEST`, not `mode`, because a function config cannot be merged.
 export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 
+// Stands `useNavigate` in for a suite that mounts no router; every React binding and Solid's take the same one.
+export const ROUTER_MOCK = 'fragments/test-setup/setupTests.router.ts';
+
 // The one spelling of React's build wiring, read by the React target and every host.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: [
@@ -125,5 +128,3 @@ export const COMMON_REACT_PLUGINS = [
   'eslint-plugin-jsx-a11y-x',
   'eslint-plugin-react-hooks',
 ];
-
-export const ASSET_REQUIRE = /require\('([^']+\.(?:png|jpe?g|gif|webp|avif|svg))'\)/g;

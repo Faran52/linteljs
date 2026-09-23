@@ -15,10 +15,12 @@ import { isJsonObject } from '@utils/objectUtils';
 
 import {
   type Answers,
+  type Data,
   type Form,
   hasLibrary,
   hasTests,
   type Library,
+  type Styling,
 } from '@answers';
 import { targetFor } from '@targets';
 
@@ -55,6 +57,7 @@ export interface PackageJson {
   name?: string;
   version?: string;
   private?: boolean;
+  main?: string;
   type?: string;
   packageManager?: string;
   engines?: Record<string, string>;
@@ -68,10 +71,17 @@ export interface PackageJson {
   allowScripts?: Record<string, boolean | string>;
 }
 
-// Astro calls `@tailwindcss/vite` from `astro.config.mjs` while owning no vite config, so this reads the record
-// rather than `vite`. Next, Angular and React Native take PostCSS.
+/*
+ * Astro calls `@tailwindcss/vite` from `astro.config.mjs` and Nuxt passes it through `vite.plugins` in
+ * `nuxt.config.ts`, both while owning no vite config of their own, so this reads the record rather than `vite`.
+ * Next, Angular and React Native take PostCSS.
+ *
+ * Nuxt is here rather than with them because PostCSS does not work: Nuxt runs `postcss-import` ahead of any plugin
+ * named in its `postcss` key, and that tries to read `@import "tailwindcss"` off disk. Tailwind 4 resolves that
+ * import itself, which is what the Vite plugin does and the PostCSS one cannot be reached in time to.
+ */
 const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
-  return target.vite || target.astro === true;
+  return target.vite || target.astro === true || target.nuxtProject === true;
 };
 
 const tailwindDevDependencies = (target: TargetRecord): string[] => {
@@ -90,11 +100,18 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
   };
   const runtime: Record<Library, string[]> = {
     'zod': ['zod'],
-    'tanstack-query': bound(TANSTACK_QUERY_BINDINGS),
-    'tailwind': target.tailwind?.dependencies ?? [],
     'es-toolkit': ['es-toolkit'],
     'ts-pattern': ['ts-pattern'],
     't3-env': [answers.target === 'next' ? '@t3-oss/env-nextjs' : '@t3-oss/env-core'],
+  };
+  const styling: Record<Styling, string[]> = {
+    tailwind: target.tailwind?.dependencies ?? [],
+    stylex: ['@stylexjs/stylex'],
+  };
+  // `rtk-query` installs nothing: it is `@reduxjs/toolkit`, which the store this answer requires already brings.
+  const data: Record<Data, string[]> = {
+    'tanstack-query': bound(TANSTACK_QUERY_BINDINGS),
+    'rtk-query': [],
   };
   const forms: Record<Form, string[]> = {
     'tanstack-form': bound(TANSTACK_FORM_BINDINGS),
@@ -102,9 +119,13 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
   };
 
   return [
+    // `http.ts` ships on every project and `qs` is what it builds a querystring with.
+    'qs',
     ...answers.libraries.flatMap((library) => {
       return runtime[library];
     }),
+    ...(answers.styling === undefined ? [] : styling[answers.styling]),
+    ...(answers.data === undefined ? [] : data[answers.data]),
     ...(answers.form === undefined ? [] : forms[answers.form]),
   ];
 };
@@ -170,15 +191,28 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
 
-  const optional: Partial<Record<Library, string[]>> = {
+  const optional: Partial<Record<Library, string[]>> = {};
+  const stylingDev: Record<Styling, string[]> = {
+    tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
+    /*
+     * The build plugin and its peer. `@stylexjs/stylex` is the runtime the answer installs; this is what compiles
+     * `defineVars` and the style calls into CSS, and without it the emitted config imports a module the project
+     * never installed. `unplugin` is a real peer that nothing installs on its behalf.
+     *
+     * Not keyed off `vite`: Astro and Nuxt own their Vite config rather than emitting one and still take the
+     * plugin through it. `stylexBuild` on the record is what names a target that compiles some other way.
+     */
+    stylex: target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin'],
+  };
+  const dataDev: Record<Data, string[]> = {
     'tanstack-query': ['@tanstack/eslint-plugin-query'],
-    'tailwind': ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
+    'rtk-query': [],
   };
 
   return versioned([
     ...SHARED_DEV_DEPENDENCIES,
-    // Stylelint's syntax for an SFC `<style>` block.
-    ...(target.sfcExtension === undefined ? [] : ['postcss-html']),
+    // Stylelint's syntax for an SFC `<style>` block, and the peer it does not install for itself.
+    ...(target.sfcExtension === undefined ? [] : ['postcss-html', 'postcss']),
     ...target.devDependencies,
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
     'typescript',
@@ -188,7 +222,13 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...answers.libraries.flatMap((library) => {
       return optional[library] ?? [];
     }),
+    ...(answers.styling === undefined ? [] : stylingDev[answers.styling]),
+    ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),
+    // Development and the test run only, which is the whole of what a mocking layer is for.
+    ...(answers.mocking === 'msw' ? ['msw'] : []),
+    // `qs` ships no types of its own.
+    '@types/qs',
   ]);
 };
 
@@ -201,12 +241,19 @@ const withoutSuperseded = (dependencies: Record<string, string>): Record<string,
 };
 
 export const allowedBuildNames = (answers: Answers): string[] => {
-  return uniq([...ALLOWED_BUILDS, ...targetFor(answers).allowBuilds]).sort((left, right) => {
+  /*
+   * MSW's install script is what copies `mockServiceWorker.js` into the served directory, so the answer that asks
+   * for a browser worker is the answer that has to allow it. Without this the install stops and asks.
+   */
+  const mocking = answers.mocking === 'msw' ? ['msw'] : [];
+
+  return uniq([...ALLOWED_BUILDS, ...mocking, ...targetFor(answers).allowBuilds]).sort((left, right) => {
     return left.localeCompare(right, 'en');
   });
 };
 
 export const patchPackageJson = (existing: PackageJson, answers: Answers): PackageJson => {
+  const target = targetFor(answers);
   const packageJson = { ...existing };
 
   Reflect.deleteProperty(packageJson, 'linteljs');
@@ -229,6 +276,20 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   return {
     ...packageJson,
     type: 'module',
+    /*
+     * Declared rather than inherited. A generated project is an application, and a scaffolder used to write this;
+     * without it yarn 1 warns about a missing license on every install and refuses workspaces, and npm would
+     * publish the thing by accident.
+     */
+    private: true,
+    ...(target.packageMain === undefined ? {} : { main: target.packageMain }),
+    /*
+     * Where MSW puts `mockServiceWorker.js` on install. A browser worker is a real file the page fetches,
+     * so it has to sit in whatever directory the dev server serves, and this key is how MSW is told which.
+     */
+    ...(answers.mocking === 'msw' && target.publicDirectory !== undefined
+      ? { msw: { workerDirectory: [target.publicDirectory] } }
+      : {}),
     // No bun field: neither corepack nor pnpm's switch knows bun, and `engines.bun` says what this would have.
     ...(pm === 'bun' ? {} : { packageManager: `${binary}@${version}` }),
     engines: {
@@ -249,7 +310,8 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       ...existing.scripts,
       ...buildScripts(answers),
     },
-    ...(Object.keys(dependencies).length > 0 ? { dependencies } : {}),
+    // Never empty: `qs` is read by `http.ts`, which every project receives whatever it answered.
+    dependencies,
     devDependencies,
     // bun blocks every install script it has not been told about, and reads the list from here rather than bunfig.
     ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuildNames(answers) } : {}),

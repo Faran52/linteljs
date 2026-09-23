@@ -1,0 +1,71 @@
+/*
+ * The vocabulary, not the values. Named by role rather than by shade, so a component never spells a colour and a
+ * theme is one block to override. Dark mode is a class rather than a media query: an application that offers the
+ * choice has to be able to set it.
+ *
+ * Each group carries a heading, which is also what makes the blank line between them legal: stylelint's standard
+ * config allows an empty line before a custom property that follows a comment, and refuses a bare one.
+ */
+
+:root {
+  /* How long a colour or a hover takes, so no stylesheet writes its own milliseconds. */
+  --motion-fast: 160ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Surfaces and the text on them, from the page down to the line between two rows. */
+  --background: #faf9f7;
+  --card: #fff;
+  --foreground: #1c1b19;
+  --foreground-2: #3d3a35;
+  --muted: #f2f0ec;
+  --muted-foreground: #6f6b64;
+  --faint: #8a857d;
+  --dim: #a8a29a;
+  --border: #e7e3dd;
+  --hair: #f0ece7;
+  --input: #e7e3dd;
+
+  /* The brand, and the three states that answer back. */
+  --primary: #a8541c;
+  --primary-foreground: #fff;
+  --ring: var(--primary);
+  --ok: #1f7a6d;
+  --destructive: #b23a32;
+
+  /* By what a thing is rather than by size: a control, a surface, the frame around both. */
+  --radius-xs: 4px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 9px;
+  --radius-xl: 11px;
+
+  /* Typefaces, and the scale in rem so a reader's own font size reaches it. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", menlo, consolas, monospace;
+  --text-eyebrow: 0.594rem;
+  --text-body: 0.719rem;
+  --text-ui: 0.781rem;
+  --text-value: 0.875rem;
+  --text-metric: 1.063rem;
+}
+
+.dark {
+  /* Surfaces and the text on them. */
+  --background: #1f2128;
+  --card: #262932;
+  --foreground: #f0ede7;
+  --foreground-2: #c9c5bd;
+  --muted: #2e313a;
+  --muted-foreground: #8e8a82;
+  --faint: #78746d;
+  --dim: #5a5750;
+  --border: #32343c;
+  --hair: #2a2c34;
+  --input: #32343c;
+
+  /* The brand, and the three states that answer back. */
+  --primary: #e8a05c;
+  --primary-foreground: #241505;
+  --ok: #2f9e8f;
+  --destructive: #d2544b;
+}

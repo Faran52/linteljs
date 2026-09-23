@@ -23,7 +23,7 @@ removing a `useEffect`.
 ## Banned Patterns
 
 - Do not call a `useState` setter synchronously inside a `useEffect` to sync, reset, or adjust
-  state from props or other state (`@eslint-react/set-state-in-effect`). It renders twice and the
+  state from props or other state (`react-hooks/set-state-in-effect`). It renders twice and the
   first render shows stale output.
 - Do not read or write `ref.current` during render (`react-hooks/refs`). Refs are touched in
   effects and event handlers only.

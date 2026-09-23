@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import {
+  enabledRuleIdsFor,
   messagesForFile,
   ruleIdsFor,
   ruleIdsForFile,
@@ -17,6 +18,7 @@ import { defineConfig } from './defineConfig';
 import angular from './frameworks/angular';
 import next from './frameworks/next';
 import react from './frameworks/react';
+import reactNative from './frameworks/reactNative';
 import solid from './frameworks/solid';
 import svelte from './frameworks/svelte';
 import vue from './frameworks/vue';
@@ -25,7 +27,11 @@ import tanstackQuery from './libraries/tanstackQuery';
 import typescript from './typescript';
 import vitest from './vitest';
 
-import type { Framework, Layer } from './types';
+import type {
+  DefineConfigOptions,
+  Framework,
+  Layer,
+} from './types';
 
 const SFC_FIXTURES = join(import.meta.dirname, '../__mocks__/fixtures/sfc');
 
@@ -47,6 +53,8 @@ const FRAMEWORK_PACKAGES: [Framework, string][] = [
   ['react', 'react'],
   ['next', 'next'],
   ['vue', 'vue'],
+  // Its import group is Vue's plus Nuxt's own, so the framework bucket has to hold `nuxt` as well.
+  ['nuxt', 'nuxt'],
   ['svelte', 'svelte'],
   ['solid', 'solid-js'],
   ['angular', '@angular/core'],
@@ -241,7 +249,12 @@ describe('defineConfig', () => {
     const config = await defineConfig({
       framework: 'react',
       ignores: ['generated/**'],
-      naming: { 'src/**/*.ts': 'CAMEL_CASE' },
+      // `generated/**/*.ts` is in the map so the ignore below is the only thing that can silence that path.
+      // Without it `check-file` never covered `generated/` and the assertion passed whether `ignores` arrived or not.
+      naming: {
+        'src/**/*.ts': 'CAMEL_CASE',
+        'generated/**/*.ts': 'CAMEL_CASE',
+      },
     });
 
     await expect(ruleIdsFor(config, 'export const value = 1;\n', 'src/lib/utils/Bad-Name.ts'))
@@ -249,7 +262,98 @@ describe('defineConfig', () => {
 
     const ignored = await ruleIdsFor(config, 'export const value = 1;\n', 'generated/Bad-Name.ts');
 
+    // The null id is the "file ignored" notice itself, which is the evidence the ignore arrived.
     expect(ignored.filter(Boolean)).toEqual([]);
+  });
+});
+
+/**
+ * Two plugins enabling the same rule name is one defect reported twice, with two wordings, and where both carry a
+ * fixer it is two fixers on one range. It went unseen because every check in this suite named the pair it already
+ * knew about: `@eslint-react` 5 republishing the whole `react-hooks` 7 rule set put twelve names under two ids in
+ * every React project, and `typescript.test.ts` checked three owners of unused code while sonarjs had grown a
+ * fourth. This asserts the property instead, over the widest composition each framework can be given, so the next
+ * plugin to republish somebody else's rules fails here on the day it is bumped.
+ *
+ * `--fix` is the sharp end: `unused-imports/no-unused-vars` and `sonarjs/no-unused-vars` both reported the same
+ * unused binding and both wanted the range.
+ */
+const namesUnderTwoIds = (ruleIds: string[]): string[] => {
+  const idsByName = new Map<string, string[]>();
+
+  for (const ruleId of ruleIds) {
+    const name = ruleId.slice(ruleId.lastIndexOf('/') + 1);
+
+    idsByName.set(name, [...idsByName.get(name) ?? [], ruleId]);
+  }
+
+  return [...idsByName.values()]
+    .filter((ids) => {
+      return ids.length > 1;
+    })
+    .map((ids) => {
+      return [...ids].sort((left, right) => {
+        return left.localeCompare(right);
+      }).join(' + ');
+    });
+};
+
+/**
+ * Pairs that share a name and nothing else, each confirmed by linting a file that trips one and not the other.
+ * An entry here is a claim that the two read different nodes, so adding one without linting for it defeats the
+ * assertion above.
+ */
+const LOOKALIKES = [
+  // React's is the hook dependency array; TanStack's is the `queryKey`. Measured on one file: two reports, two
+  // different lines, two different missing identifiers.
+  '@tanstack/query/exhaustive-deps + react-hooks/exhaustive-deps',
+  // Vue's reads the template only, and reports a `v-for` binding nobody used. The other reads the script.
+  'unused-imports/no-unused-vars + vue/no-unused-vars',
+  // The same split: `vue/no-multi-spaces` is the template's whitespace, `@stylistic`'s is the script's.
+  '@stylistic/no-multi-spaces + vue/no-multi-spaces',
+  // Not a sort rule at all: `solid/imports` is which of the three `solid-js` entries a symbol comes from.
+  'simple-import-sort/imports + solid/imports',
+];
+
+// Every layer at once, so a pair that only meets under one combination still meets here.
+const WIDEST: DefineConfigOptions = {
+  typescript: true,
+  vitest: true,
+  html: true,
+  astro: true,
+  libraries: [
+    'tanstack-query',
+    'tanstack-router',
+    'tailwind',
+  ],
+};
+
+// One file per framework, in the extension that framework's components are written in.
+const DUPLICATE_CASES: [string, Framework | undefined, string][] = [
+  ['no framework', undefined, 'src/lib/utils/sample.ts'],
+  ['a test file', undefined, 'src/lib/utils/sample.test.ts'],
+  ['react', 'react', 'src/components/ui/Widget.tsx'],
+  ['next', 'next', 'src/app/page.tsx'],
+  ['react-native', 'react-native', 'src/components/ui/Widget.tsx'],
+  ['vue', 'vue', 'src/components/ui/Card.vue'],
+  ['nuxt', 'nuxt', 'src/components/ui/Card.vue'],
+  ['svelte', 'svelte', 'src/components/ui/Card.svelte'],
+  ['solid', 'solid', 'src/components/ui/Widget.tsx'],
+  ['angular', 'angular', 'src/app/app.component.ts'],
+];
+
+describe('one owner per rule name', () => {
+  it.each(DUPLICATE_CASES)('enables no rule name under two ids: %s', async (_label, framework, filePath) => {
+    const config = await defineConfig({
+      ...WIDEST,
+      framework,
+    });
+
+    const duplicated = namesUnderTwoIds(await enabledRuleIdsFor(config, filePath)).filter((pair) => {
+      return !LOOKALIKES.includes(pair);
+    });
+
+    expect(duplicated).toEqual([]);
   });
 });
 
@@ -258,8 +362,11 @@ const composes = (config: Layer): void => {
   new Linter().verify('const value = 1;\n', config, 'src/lib/utils/sample.ts');
 };
 
+// `reactNative` is in the list for the identity risk it alone carries: it registers `@linteljs` beside the
+// registration `reactCore()` already makes, so a second plugin object would throw here and nowhere else.
 const LAYERS: [string, () => Layer][] = [
   ['react', react],
+  ['react-native', reactNative],
   ['vue', vue],
   ['svelte', svelte],
   ['solid', solid],

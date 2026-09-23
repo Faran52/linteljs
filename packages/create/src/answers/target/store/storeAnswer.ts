@@ -48,7 +48,7 @@ export const storeAnswer = {
     },
     'pinia': {
       label: 'Pinia',
-      hint: "Vue's own store, installed by its scaffolder",
+      hint: "Vue's own store",
       only: (target) => {
         return target.stores?.includes('pinia') === true;
       },

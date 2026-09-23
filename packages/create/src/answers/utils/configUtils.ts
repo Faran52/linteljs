@@ -6,13 +6,14 @@ import { targetFor } from '@targets';
 
 import {
   CONFIG_SCHEMA_URL,
-  CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
   EXPECTED,
+  SCHEMA_URLS,
+  type SchemaVersion,
 } from '../constants';
 import { ANSWERS, DEFAULT_ANSWERS } from '../registry';
 
-import { migratedStore, migrateForm } from './migrationUtils';
+import { migratedStore, migrateLifted } from './migrationUtils';
 import {
   isJsonArray,
   readAnswer,
@@ -39,7 +40,7 @@ const isConfigObject = (value: unknown): value is ConfigObject => {
 };
 
 // 1 is read and migrated, 2 is current. Anything else names the fix rather than the shape.
-const schemaVersionOf = (value: JsonValue | undefined): number => {
+const schemaVersionOf = (value: JsonValue | undefined): SchemaVersion => {
   if (typeof value !== 'number') {
     throw new Error('schemaVersion must be 1 or 2');
   }
@@ -125,38 +126,51 @@ const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
     for (const chosen of chosenValuesOf(answers[key])) {
       const only = onlyFor(candidate, chosen);
 
-      if (only !== undefined && !only(record)) {
+      if (only !== undefined && !only(record, answers)) {
         throw new Error(`${chosen} is not an answer for ${answers.target}`);
       }
     }
   }
 };
 
-const configFrom = (raw: ConfigObject): LinteljsConfig => {
-  const schemaVersion = schemaVersionOf(raw.schemaVersion);
-  const parsed = migrateForm(raw, schemaVersion, ANSWERS.form.values);
+/**
+ * Every single select v1 kept inside `libraries`, lifted into the field v2 gave it: the form library, the styling
+ * system and the data layer. Three of them because a multi select was the wrong shape for all three, and one
+ * migration because v2 is the first version any of them exists in. Its own function so `configFrom` stays a list
+ * of reads.
+ */
+const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject => {
+  const fromV1 = schemaVersion === 1;
 
-  const unexpected = Object.keys(parsed).find((key) => {
-    return !expectedKeys.includes(key);
-  });
+  return migrateLifted(
+    migrateLifted(
+      migrateLifted(raw, fromV1, 'form', ANSWERS.form.values),
+      fromV1,
+      'styling',
+      ANSWERS.styling.values,
+    ),
+    fromV1,
+    'data',
+    ANSWERS.data.values,
+  );
+};
 
-  if (unexpected !== undefined) {
-    throw new Error(`linteljs.config.json has unexpected property: ${unexpected}`);
-  }
-
-  const expectedSchema = schemaVersion === 1 ? CONFIG_SCHEMA_URL_V1 : CONFIG_SCHEMA_URL;
-
-  if (parsed.$schema !== expectedSchema) {
-    throw new Error(`$schema must be ${expectedSchema}`);
-  }
-
+/**
+ * One read per field, in the order a config carries them. Its own function so the checks above it stay readable:
+ * an absent optional answer is a key that is never written rather than one written `undefined`, which
+ * `exactOptionalPropertyTypes` refuses, so each one costs a conditional spread and they add up.
+ */
+const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): LinteljsConfig => {
   const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
   const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
   const managerVersionValue = readAnswer(ANSWERS.packageManagerVersion, parsed.packageManagerVersion);
   const nodeVersionValue = readAnswer(ANSWERS.nodeVersion, parsed.nodeVersion);
+  const stylingValue = readAnswer(ANSWERS.styling, parsed.styling);
   const formValue = readAnswer(ANSWERS.form, parsed.form);
   const routerValue = readAnswer(ANSWERS.router, parsed.router);
   const storeValue = readAnswer(ANSWERS.store, storeAnswerOf(parsed, schemaVersion));
+  const dataValue = readAnswer(ANSWERS.data, parsed.data);
+  const mockingValue = readAnswer(ANSWERS.mocking, parsed.mocking);
   const resolveConditionsValue = readAnswer(ANSWERS.resolveConditions, parsed.resolveConditions);
   const aliasesValue = readAnswer(ANSWERS.aliases, parsed.aliases);
   const browsersValue = readAnswer(ANSWERS.browsers, parsed.browsers);
@@ -175,9 +189,12 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     ...(managerVersionValue === undefined ? {} : { packageManagerVersion: managerVersionValue }),
     ...(nodeVersionValue === undefined ? {} : { nodeVersion: nodeVersionValue }),
     libraries: libraryChoices(parsed.libraries),
+    ...(stylingValue === undefined ? {} : { styling: stylingValue }),
     ...(formValue === undefined ? {} : { form: formValue }),
     ...(routerValue === undefined ? {} : { router: routerValue }),
     ...(storeValue === undefined ? {} : { store: storeValue }),
+    ...(dataValue === undefined ? {} : { data: dataValue }),
+    ...(mockingValue === undefined ? {} : { mocking: mockingValue }),
     typeSafety: readAnswer(ANSWERS.typeSafety, parsed.typeSafety),
     agents: readAnswer(ANSWERS.agents, parsed.agents),
     ...(resolveConditionsValue === undefined ? {} : { resolveConditions: resolveConditionsValue }),
@@ -186,6 +203,29 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
     ...(ignoresValue === undefined ? {} : { ignores: ignoresValue }),
     plugins: readAnswer(ANSWERS.plugins, parsed.plugins),
   };
+
+  return config;
+};
+
+const configFrom = (raw: ConfigObject): LinteljsConfig => {
+  const schemaVersion = schemaVersionOf(raw.schemaVersion);
+  const parsed = lifted(raw, schemaVersion);
+
+  const unexpected = Object.keys(parsed).find((key) => {
+    return !expectedKeys.includes(key);
+  });
+
+  if (unexpected !== undefined) {
+    throw new Error(`linteljs.config.json has unexpected property: ${unexpected}`);
+  }
+
+  const expectedSchema = SCHEMA_URLS[schemaVersion];
+
+  if (parsed.$schema !== expectedSchema) {
+    throw new Error(`$schema must be ${expectedSchema}`);
+  }
+
+  const config = answersFrom(parsed, schemaVersion);
 
   refuseMisfit(config, targetFor(config));
 

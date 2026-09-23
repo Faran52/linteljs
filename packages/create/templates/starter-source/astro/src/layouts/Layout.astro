@@ -1,0 +1,27 @@
+---
+import AppHeader from '../components/features/app-header/AppHeader.astro';
+import { NAME } from '../config/linteljs';
+
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+}
+
+// The document every page is rendered into, which is what a layout is in Astro: there is no client entry to own it.
+const { title = NAME } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <AppHeader name={NAME} />
+    <slot />
+  </body>
+</html>

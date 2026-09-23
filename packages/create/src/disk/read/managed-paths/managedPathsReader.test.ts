@@ -1,12 +1,14 @@
 import {
   mkdir,
   mkdtemp,
+  rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
 import {
+  afterEach,
   beforeEach,
   describe,
   expect,
@@ -21,6 +23,14 @@ let cwd = '';
 
 beforeEach(async () => {
   cwd = await mkdtemp(join(tmpdir(), 'linteljs-managed-'));
+});
+
+// The one file here that left its directories behind; every other suite that takes a temp directory removes it.
+afterEach(async () => {
+  await rm(cwd, {
+    recursive: true,
+    force: true,
+  });
 });
 
 const record = async (text: string): Promise<void> => {

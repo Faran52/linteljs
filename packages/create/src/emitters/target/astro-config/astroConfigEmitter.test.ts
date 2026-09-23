@@ -6,9 +6,11 @@ import {
 
 import {
   type Answers,
+  type Data,
   DEFAULT_ANSWERS,
   type HostedFramework,
   type Library,
+  type Styling,
   type TargetId,
 } from '@answers';
 
@@ -18,6 +20,8 @@ interface AnswerOverrides {
   target?: TargetId;
   hostedFramework?: HostedFramework;
   libraries?: Library[];
+  styling?: Styling;
+  data?: Data;
 }
 
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {
@@ -84,7 +88,8 @@ describe('emitAstroConfig', () => {
   it('keeps the compiler out of the test run through the vitest guard', () => {
     const output = emitAstroConfig(answersFor({
       hostedFramework: 'react',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }));
 
     expect(output).toContain('const reactCompiler = process.env.VITEST === undefined');
@@ -108,7 +113,10 @@ describe('emitAstroConfig', () => {
    * `@tailwindcss/vite`. This file's `vite` key is the only route Vite options have into an Astro build.
    */
   it('passes tailwind through the vite key rather than as an integration', () => {
-    const output = emitAstroConfig(answersFor({ libraries: ['tailwind'] }));
+    const output = emitAstroConfig(answersFor({
+      libraries: [],
+      styling: 'tailwind',
+    }));
 
     expect(output).toContain("import tailwindcss from '@tailwindcss/vite';");
     expect(output).toContain('vite: { plugins: [tailwindcss()] },');
@@ -118,10 +126,23 @@ describe('emitAstroConfig', () => {
   it('carries both where a site hosts a framework and takes tailwind', () => {
     const output = emitAstroConfig(answersFor({
       hostedFramework: 'vue',
-      libraries: ['tailwind'],
+      libraries: [],
+      styling: 'tailwind',
     }));
 
     expect(output).toContain('integrations: [vue()],');
     expect(output).toContain('vite: { plugins: [tailwindcss()] },');
+  });
+
+  /*
+   * StyleX reaches this target through the Vite config it owns rather than one this CLI emits, so the plugin is
+   * named here instead. First, which its own documentation asks for: after the framework plugin it breaks Fast
+   * Refresh.
+   */
+  it('names the stylex plugin first among the vite plugins', () => {
+    const config = emitAstroConfig(answersFor({ styling: 'stylex' }));
+
+    expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
+    expect(config).toContain('createUnplugin(stylex).vite({ useCSSLayers: true })');
   });
 });

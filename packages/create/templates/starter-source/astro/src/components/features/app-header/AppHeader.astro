@@ -1,0 +1,28 @@
+---
+import { PAGES } from '../../../config/routes';
+import { isCurrentPath } from '../../../lib/utils/currentPath';
+import { styles } from './styles';
+
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const here = Astro.url.pathname;
+---
+
+<!-- Real links, and a full navigation: Astro renders each page on the server, which is the whole of what it is. -->
+<header {...styles.header}>
+  <p {...styles.brand}>{name}</p>
+  <nav {...styles.tabs} aria-label="Main">
+    {PAGES.map((page) => (
+      <a
+        {...styles.tab(isCurrentPath(here, page.path))}
+        href={page.path}
+        aria-current={isCurrentPath(here, page.path) ? 'page' : undefined}
+      >
+        {page.label}
+      </a>
+    ))}
+  </nav>
+</header>

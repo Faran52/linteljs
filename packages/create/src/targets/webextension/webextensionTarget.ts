@@ -2,13 +2,20 @@ import { hasSurface } from '@answers/utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
 import { hostedNaming, partsFor } from '../utils/frameworkUtils';
+import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
-import { viteScaffold } from '../utils/targetUtils';
+
+import {
+  BROWSERS,
+  CRX,
+  POPUP,
+  SHARED,
+} from './constants';
 
 import type { Answers } from '@answers/registry';
 import type { Browser } from '@answers/target/browser/browserAnswer';
 import type { TargetBuilder } from '../registry';
-import type { PluginSpec, StarterFile } from '../types';
+import type { StarterFile } from '../types';
 
 // Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
 // ambient types; the hosted framework decides what a component is and which plugin and layer handle it.
@@ -20,36 +27,42 @@ import type { PluginSpec, StarterFile } from '../types';
  * Which four files those are is not listed here. Both browsers fill the same four destinations and the asset for
  * each sits under a directory named for the browser, so `variant` on the entry is the whole of the difference.
  */
-interface BrowserParts {
-  types: string[];
-  devDependencies: string[];
-}
-
-const BROWSERS: Record<Browser, BrowserParts> = {
-  chrome: {
-    // Without the types the first line of extension code fails `typecheck`; once listed, `types` is an allow-list.
-    types: ['chrome'],
-    devDependencies: ['@types/chrome'],
-  },
-  firefox: {
-    // `browser.*`, promise-returning; these types carry no `chrome`, so Chrome's starter does not typecheck here.
-    types: ['firefox-webext-browser'],
-    devDependencies: ['@types/firefox-webext-browser'],
-  },
-};
-
-const CRX: PluginSpec = {
-  imports: [
-    "import { crx } from '@crxjs/vite-plugin';",
-    "import manifest from './manifest.json' with { type: 'json' };",
-  ],
-  calls: ['crx({ manifest })'],
-};
-
 // A surface decides what the manifest names and whether the build needs an input the manifest does not give it.
-// `popup` contributes nothing: the Vite scaffold already wrote `index.html` and `src/main.ts`.
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
-  const files: StarterFile[] = [];
+  const files: StarterFile[] = [
+    ...POPUP.map((target): StarterFile => {
+      return { target };
+    }),
+    ...SHARED.map((target): StarterFile => {
+      return {
+        target,
+        shared: true,
+      };
+    }),
+    {
+      target: 'src/styles/theme.css',
+      when: (current) => {
+        return current.styling === 'tailwind';
+      },
+      variant: 'tailwind',
+      shared: true,
+    },
+    /*
+     * The same bytes every other target's mark and button take, at the path this one puts them: there are no
+     * components here, so a stylesheet under `components/` would sit beside nothing. The popup always has a
+     * button, so neither is conditional.
+     */
+    {
+      target: 'src/lib/mark.css',
+      source: 'src/components/ui/mark/Mark.css',
+      shared: true,
+    },
+    {
+      target: 'src/popup/button.css',
+      source: 'src/components/ui/button/Button.css',
+      shared: true,
+    },
+  ];
 
   if (hasSurface(answers, 'background')) {
     // `manifest.json` names the entry, so it must exist before the first `vite build`.
@@ -109,7 +122,8 @@ export const webextensionTarget: TargetBuilder = (answers) => {
 
   return {
     id: 'webextension',
-    scaffold: viteScaffold('vanilla'),
+    recordModule: 'src/config/linteljs.ts',
+    htmlEntry: 'src/main.ts',
     hostsBrowser: true,
     hostsFramework: true,
     html: true,
@@ -130,6 +144,18 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     extraAliases: { '@model/*': './src/lib/model/*' },
     omitAliases: ['@store/*'],
     styleEntry: 'src/style.css',
+    /*
+     * Beside the markup that uses them rather than under `components/`, which this target has none of: the mark
+     * is a string in `lib/` and the popup builds its button node by node. That is also what keeps them under
+     * StyleX, where the style entry drops a component's stylesheet because a `styles.ts` replaces it.
+     */
+    starterStyles: [
+      './styles/tokens.css',
+      './styles/base.css',
+      './lib/mark.css',
+      './popup/button.css',
+    ],
+    tailwindTheme: './styles/theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     ...(hosted?.sfcExtension === undefined ? {} : { sfcExtension: hosted.sfcExtension }),
     // The framework plugin runs before `crx`, which wraps whatever the plugins above produced.
@@ -144,11 +170,16 @@ export const webextensionTarget: TargetBuilder = (answers) => {
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    starterFiles: surfaceFiles(answers, answers.browser),
+    starterFiles: [...mockFiles(), ...surfaceFiles(answers, answers.browser)],
     starterTests: [
+      ...mockTests(),
       {
         target: 'src/counter.test.ts',
         covers: 'src/counter.ts',
+      },
+      {
+        target: 'src/popup/renderPopup.test.ts',
+        covers: 'src/popup/renderPopup.ts',
       },
       ...hasSurface(answers, 'background')
         ? [{
@@ -164,19 +195,16 @@ export const webextensionTarget: TargetBuilder = (answers) => {
           }]
         : [],
     ],
-    starterFixes: [
-      {
-        path: 'src/counter.ts',
-        transform: (source) => {
-          // restrict-template-expressions: interpolating a number relies on implicit coercion.
-          return source.replace('${counter}', '${String(counter)}');
-        },
-      },
-    ],
     coverageExclude: surfaceCoverageExclude(answers),
     // crx builds only pages the manifest names; the panel is opened at runtime, so it goes in `rollupOptions.input`.
     ...(hasSurface(answers, 'devtools-panel') ? { viteInputs: { panel: 'panel.html' } } : {}),
     typecheck: 'tsc --noEmit',
+    // The three a scaffolder used to write.
+    build: 'vite build',
+    extraScripts: {
+      dev: 'vite',
+      preview: 'vite preview',
+    },
     ...(hosted === undefined ? {} : { dependencies: hosted.dependencies }),
     devDependencies: [
       '@crxjs/vite-plugin',

@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
+import { type Answers, DEFAULT_ANSWERS } from '@answers';
 
 import { testSetupEmitter } from './testSetupEmitter';
 
@@ -42,7 +42,8 @@ describe('testSetupEmitter', () => {
   it('appends the fragment a selected library brings', () => {
     const [artifact] = testSetupEmitter({
       ...DEFAULT_ANSWERS,
-      libraries: ['tanstack-query'],
+      libraries: [],
+      data: 'tanstack-query',
     }, FRESH);
 
     expect(artifact?.content).toHaveProperty('sources', [
@@ -60,5 +61,27 @@ describe('testSetupEmitter', () => {
     }, FRESH);
 
     expect(artifact?.content).toHaveProperty('sources', ['fragments/test-setup/setupTests.angular.ts']);
+  });
+});
+
+describe('the mocking answer', () => {
+  /*
+   * Last in the join, because the fragments above it may themselves make a request while setting up and the
+   * interceptor has to be listening by then.
+   */
+  it('appends the msw fragment, and only when msw was answered', () => {
+    const sourcesFor = (mocking: Answers['mocking']): string[] => {
+      const answers: Answers = {
+        ...DEFAULT_ANSWERS,
+        target: 'react',
+        ...(mocking === undefined ? {} : { mocking }),
+      };
+      const [artifact] = testSetupEmitter(answers, FRESH);
+
+      return artifact !== undefined && 'sources' in artifact.content ? artifact.content.sources : [];
+    };
+
+    expect(sourcesFor('msw').at(-1)).toBe('fragments/test-setup/setupTests.msw.ts');
+    expect(sourcesFor(undefined)).not.toContain('fragments/test-setup/setupTests.msw.ts');
   });
 });

@@ -6,8 +6,11 @@ export {
   CURRENT_SCHEMA_VERSION,
   LEGACY_CONFIG_PATH,
 } from './constants';
+export { type Data } from './libraries/data/dataAnswer';
 export { type Form } from './libraries/form/formAnswer';
 export { type Library } from './libraries/libraries/librariesAnswer';
+export { type Mocking } from './libraries/mocking/mockingAnswer';
+export { type Styling } from './libraries/styling/stylingAnswer';
 export { type PackageManager } from './recorded/package-manager/packageManagerAnswer';
 export {
   type AnswerKey,
@@ -32,3 +35,4 @@ export {
   rendersWithReact,
 } from './utils/answerUtils';
 export { parseLinteljsConfig } from './utils/configUtils';
+export { onlyFor } from './utils/recordUtils';
