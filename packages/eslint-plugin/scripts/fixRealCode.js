@@ -74,7 +74,7 @@ const ORDERED_RULES = [
   'destructuring-property-newline',
   'export-specifier-newline',
   'import-newlines',
-  'newline-destructuring',
+  'member-newline',
   'union-newline',
 ];
 

@@ -6,6 +6,28 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 
+## Unreleased
+
+- **Breaking: `interface-order` is now in `recommended`.** It was opt-out through 1.x on the grounds
+  that it asks for a house layout rather than making a claim about a type. A shared config is a house
+  layout, and every project `@linteljs/create` writes already received the rule through `base`, so
+  leaving it out of the preset only hid the position from a consumer composing the plugin directly.
+  A project with a different convention will report on upgrade. The rule still reports rather than
+  rewriting freely, and its fix is still `reorder`.
+
+- **Breaking: `newline-destructuring` is now `member-newline`.** The rule governs destructuring
+  patterns, interface bodies and type literals, so two thirds of the old name described something it
+  does not do, and it sat beside `destructuring-property-newline` reading as a near-duplicate of a
+  rule it does not overlap. Rename the id wherever it is configured. Nothing else about the rule
+  changed: the same shapes are reported, with the same fixes and the same options.
+- **Breaking: two of that rule's message ids changed.** `consistNewline` is now `membersOnNewline`,
+  matching `destructuring-property-newline`'s `propertiesOnNewline` and dropping a truncation that
+  read as a typo, and `multilineProperty` is now `multilineMember`. `mustSplit` and
+  `noBlankBetween` are unchanged, so JSON and SARIF output naming those two still matches.
+- All four of that rule's messages say "Members" where they said "Properties". An interface body has
+  members, and reporting one as a property was wrong. The `{{maxProperties}}` placeholder keeps its
+  name, because it is the option name and the option is not renamed.
+
 ## 1.6.0
 
 New rule, `react-no-global-namespace`. `@types/react` declares `React` as a global namespace so JSX

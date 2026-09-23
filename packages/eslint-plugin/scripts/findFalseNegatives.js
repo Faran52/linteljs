@@ -666,7 +666,7 @@ const importBlankLineCase = (state) => {
   });
 };
 
-// ----------------------------------------------------- newline-destructuring
+// ----------------------------------------------------- member-newline
 
 const restCount = (properties) => {
   return properties.filter((property) => {
@@ -1797,7 +1797,7 @@ const SHAPES = {
       shape: 'type moved below runtime code, no header',
     },
   ],
-  'newline-destructuring': [
+  'member-newline': [
     {
       build: patternJoinedCase(false),
       shape: 'pattern joined onto one line, over maxProperties',

@@ -1,4 +1,3 @@
-import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import { Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 import {
@@ -8,7 +7,6 @@ import {
 } from 'vitest';
 
 import {
-  isInsideFunctionBody,
   isSafeToConvert,
   SAFE_DECLARATION_PARENTS,
   sitsInUnsafePosition,
@@ -82,32 +80,6 @@ const parseFunction = (code: string, options: ParseOptions = {}): ParsedFunction
     fn,
   };
 };
-
-describe('isInsideFunctionBody', () => {
-  it.each([
-    {
-      label: 'a node nested inside a function',
-      code: 'function outer() {\n  return 1;\n}',
-      expected: true,
-    },
-    {
-      label: 'a node at the top level, with no enclosing function',
-      code: 'const value = 1;',
-      expected: false,
-    },
-    // An arrow is a function too, so a reference inside one counts the same as inside a `function`.
-    {
-      label: 'a node nested inside an arrow function',
-      code: 'const outer = () => {\n  return 1;\n};',
-      expected: true,
-    },
-  ])('is $expected for $label', ({ code, expected }) => {
-    const { sourceCode, firstNode } = sourceCodeFrom(code);
-    const literal = firstNode('Literal');
-
-    expect(isInsideFunctionBody(sourceCode, literal)).toBe(expected);
-  });
-});
 
 describe('SAFE_DECLARATION_PARENTS', () => {
   it('lists exactly the statement positions a declaration is legal in', () => {

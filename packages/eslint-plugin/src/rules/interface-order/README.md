@@ -4,7 +4,7 @@ Keep top-level interfaces and type aliases together, after imports and before ru
 
 - Applies to: TypeScript only
 - Fixable: yes (code)
-- In `recommended`: no
+- In `recommended`: yes
 
 Types belong in one block near the top of the file, where a reader looking for the shape of things
 can find them without scrolling past the implementation. Only top-level `interface` and `type`

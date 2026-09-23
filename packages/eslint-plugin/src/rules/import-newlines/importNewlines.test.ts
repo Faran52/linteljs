@@ -95,6 +95,25 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'limitLineCount' }],
     },
     {
+      // Under the member count, so the collapsed form is where this ends up: emitted in one pass
+      // rather than split first and collapsed on the next.
+      code: "import {\n  alpha, bravo } from 'mod';",
+      output: "import { alpha, bravo } from 'mod';",
+      errors: [{ messageId: 'limitLineCount' }],
+    },
+    {
+      // Under the member count but too long to collapse, so the half-split statement splits.
+      code: `import {\n  alpha, ${LONG} } from 'mod';`,
+      output: `import {\n  alpha,\n  ${LONG}\n} from 'mod';`,
+      errors: [{ messageId: 'limitLineCount' }],
+    },
+    {
+      // Under the member count and carrying a comment, so neither rebuild is available.
+      code: "import {\n  alpha, /* keep */ bravo } from 'mod';",
+      output: null,
+      errors: [{ messageId: 'limitLineCount' }],
+    },
+    {
       code: "import {\n  alpha,\n\n  bravo,\n  charlie\n} from 'mod';",
       output: "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'noBlankBetween' }],

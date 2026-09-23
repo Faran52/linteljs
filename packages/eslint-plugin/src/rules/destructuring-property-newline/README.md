@@ -56,3 +56,9 @@ None.
 
 The fix puts the moved property one indentation step in from the line the pattern starts on, and
 the step is read off the file rather than assumed.
+
+This rule owns the half-split pattern.
+[`@linteljs/member-newline`](../member-newline) used to report the same shape under
+its own message with a whole-pattern rebuild behind it, so one pattern drew two messages and two
+fixers. That rule stands down on patterns now, and still reports the shape in an interface or a
+type literal, which this one does not visit.

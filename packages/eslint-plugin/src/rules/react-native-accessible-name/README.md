@@ -109,5 +109,5 @@ Element names are matched as written, not resolved to where they were imported f
 name resolves to its last part, so `Animated.View` is checked as a `View`.
 
 This rule is not in `recommended`, and nothing outside React Native should turn it on: `Button`,
-`Switch` and `Image` are ordinary names that mean something else on the web. Enable it through
-`flat/accessibility`, or by rule name in a React Native config.
+`Switch` and `Image` are ordinary names that mean something else on the web. Take `flat/all`, or
+name the rule in a React Native config.

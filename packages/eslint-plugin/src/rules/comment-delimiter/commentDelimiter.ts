@@ -27,6 +27,13 @@ const DIRECTIVE_KEYWORD = /^\/\/\s*(?:eslint-\w+|@?ts-\w+|[vc]8 ignore|istanbul 
 // Test files carry no comments at all under the shipped standard, which is a different rule's business.
 const TEST_FILE_PATTERN = /(?:^|[/\\.])(?:test|spec)\.[cm]?[jt]sx?$|(?:^|[/\\])__tests__(?:[/\\]|$)/;
 
+/**
+ * A tag makes the block machine-read rather than prose, and every reader of one stops at `/**`: `@type` in a
+ * checked `.js` file is the annotation itself, `@jsxImportSource` is a pragma TypeScript takes from a block
+ * comment only, and `@deprecated` on a `//` line strikes nothing through.
+ */
+const JSDOC_TAG = /(^|\s)@[a-z]/i;
+
 const isDirective = (raw: string): boolean => {
   return DIRECTIVE_OPENER.test(raw) || DIRECTIVE_KEYWORD.test(raw);
 };
@@ -159,6 +166,12 @@ const reportShortJsdoc = (
 
   // An empty body cannot happen in source that parses, and three content lines is JSDoc already.
   if (indent === null || body.length === 0 || body.length >= MIN_JSDOC_LINES) {
+    return;
+  }
+
+  if (body.some((line) => {
+    return JSDOC_TAG.test(line);
+  })) {
     return;
   }
 

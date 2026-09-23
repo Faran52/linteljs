@@ -2,6 +2,7 @@ import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
+  fitsOnLine,
   indentReader,
   lineTerminatorOf,
   spliceOntoNewline,
@@ -49,9 +50,10 @@ type TypeLiteralNode = RuleNode & Membered;
 // What `context.report` accepts; the two builders answer different shapes, so one ladder serves both without a cast.
 type ReportFix = (fixer: Fixer) => IterableIterator<Rule.Fix> | Rule.Fix | null;
 
-interface NewlineDestructuringOptions {
+interface MemberNewlineOptions {
   maxProperties: number;
   maxPropertiesWithRest: number;
+  maxLineLength: number;
 }
 
 const isRestElement = (property: TypedNode): boolean => {
@@ -60,8 +62,10 @@ const isRestElement = (property: TypedNode): boolean => {
 
 const DEFAULT_MAX_PROPERTIES = 2;
 const DEFAULT_MAX_PROPERTIES_WITH_REST = 1;
+// The same figure `import-newlines` defaults to, since both answer the same question about the same line.
+const DEFAULT_MAX_LINE_LENGTH = 120;
 
-export const newlineDestructuring = createRule('newline-destructuring', {
+export const memberNewline = createRule('member-newline', {
   meta: {
     type: 'layout',
     docs: {
@@ -75,10 +79,10 @@ export const newlineDestructuring = createRule('newline-destructuring', {
     fixable: 'code',
     messages: {
       mustSplit:
-        'Properties must be broken into multiple lines if there are more than {{maxProperties}}.',
-      noBlankBetween: 'Properties cannot have blank lines between them.',
-      consistNewline: 'Properties must be put on newlines.',
-      multilineProperty: 'Multiline property must be put on newlines.',
+        'Members must be broken into multiple lines if there are more than {{maxProperties}}.',
+      noBlankBetween: 'Members cannot have blank lines between them.',
+      membersOnNewline: 'Members must be put on newlines.',
+      multilineMember: 'Multiline member must be put on newlines.',
     },
     schema: [
       {
@@ -94,45 +98,59 @@ export const newlineDestructuring = createRule('newline-destructuring', {
             minimum: 0,
             default: DEFAULT_MAX_PROPERTIES_WITH_REST,
           },
+          maxLineLength: {
+            type: 'integer',
+            minimum: 1,
+            default: DEFAULT_MAX_LINE_LENGTH,
+          },
         },
         additionalProperties: false,
       },
     ],
   },
   create: (context) => {
-    const options = optionsOf<NewlineDestructuringOptions>(context);
+    const options = optionsOf<MemberNewlineOptions>(context);
     const maxCount = options.maxProperties ?? DEFAULT_MAX_PROPERTIES;
     const maxRestCount = options.maxPropertiesWithRest ?? DEFAULT_MAX_PROPERTIES_WITH_REST;
+    const maxLineLength = options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH;
     const sourceCode = sourceCodeOf(context);
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
+    // The pattern rewritten, or null when a comment inside it means the rebuild would delete one. A string rather
+    // than a fix, so the collapsed form can be measured against the line limit before it is offered.
+    const writePattern = (node: DestructuredPattern, multiLine: boolean): string | null => {
+      if (rebuildLosesComments(sourceCode, node)) {
+        return null;
+      }
+
+      const { outer, inner: indentInner } = indentsAt(node);
+
+      const parts = node.properties.map((prop, index) => {
+        const isLast = index === node.properties.length - 1;
+        const separator = multiLine ? `,${eol}${indentInner}` : ', ';
+        const suffix = isLast ? '' : separator;
+
+        // No special case for `RestElement`: its text already carries the dots, and rebuilding
+        // it as `...` plus `argument.name` breaks on a member-expression rest target.
+        return `${sourceCode.getText(prop)}${suffix}`;
+      });
+
+      const inner = parts.join('');
+      // Collapsed form keeps the inner spaces, matching both the split form's style and what `import-newlines` emits.
+      const body = multiLine ? `{${eol}${indentInner}${inner}${eol}${outer}}` : `{ ${inner} }`;
+      const annotation = node.typeAnnotation ? sourceCode.getText(node.typeAnnotation) : '';
+      // The optional `?` sits between the closing brace and the annotation; dropping it makes the parameter required.
+      const optional = node.optional ? '?' : '';
+
+      return `${body}${optional}${annotation}`;
+    };
+
     const buildFix = (node: DestructuredPattern, multiLine = true): ((fixer: Fixer) => Rule.Fix | null) => {
       return (fixer) => {
-        if (rebuildLosesComments(sourceCode, node)) {
-          return null;
-        }
+        const text = writePattern(node, multiLine);
 
-        const { outer, inner: indentInner } = indentsAt(node);
-
-        const parts = node.properties.map((prop, index) => {
-          const isLast = index === node.properties.length - 1;
-          const separator = multiLine ? `,${eol}${indentInner}` : ', ';
-          const suffix = isLast ? '' : separator;
-
-          // No special case for `RestElement`: its text already carries the dots, and rebuilding
-          // it as `...` plus `argument.name` breaks on a member-expression rest target.
-          return `${sourceCode.getText(prop)}${suffix}`;
-        });
-
-        const inner = parts.join('');
-        // Collapsed form keeps the inner spaces, matching both the split form's style and what `import-newlines` emits.
-        const body = multiLine ? `{${eol}${indentInner}${inner}${eol}${outer}}` : `{ ${inner} }`;
-        const annotation = node.typeAnnotation ? sourceCode.getText(node.typeAnnotation) : '';
-        // The optional `?` sits between the closing brace and the annotation; dropping it makes the parameter required.
-        const optional = node.optional ? '?' : '';
-
-        return fixer.replaceText(node, `${body}${optional}${annotation}`);
+        return text === null ? null : fixer.replaceText(node, text);
       };
     };
 
@@ -193,7 +211,7 @@ export const newlineDestructuring = createRule('newline-destructuring', {
 
     // A member that spans lines drags the whole block open regardless of count; the pattern
     // rebuild cannot express it, so `ObjectPattern` calls this with no fix.
-    const reportedMultilineProperty = (
+    const reportedMultilineMember = (
       node: RuleNode,
       analysis: PatternAnalysis,
       fix?: ReportFix,
@@ -204,31 +222,42 @@ export const newlineDestructuring = createRule('newline-destructuring', {
 
       context.report({
         node,
-        messageId: 'multilineProperty',
+        messageId: 'multilineMember',
         fix,
       });
 
       return true;
     };
 
-    // The three complaints a block over the threshold can draw; a rebuilt pattern or spliced
-    // member list answers all three, so the fix is a parameter.
-    const reportOverThreshold = (node: RuleNode, analysis: PatternAnalysis, fix: ReportFix) => {
+    /**
+     * The three complaints a block over the threshold can draw; a rebuilt pattern or spliced member list answers
+     * all three, so the fix is a parameter. `threshold` is passed rather than read off `maxCount`, since a pattern
+     * carrying a rest is judged against `maxPropertiesWithRest` and the message names the number that fired.
+     */
+    const reportOverThreshold = (
+      node: RuleNode,
+      analysis: PatternAnalysis,
+      threshold: number,
+      fix: ReportFix,
+      // Off for a pattern: `destructuring-property-newline` reports the half-split shape under its
+      // own message and fixes it comma by comma, and one shape is worth one message.
+      reportsSameLinePairs = true,
+    ) => {
       if (!analysis.isMultiLine) {
         context.report({
           node,
           messageId: 'mustSplit',
-          data: { maxProperties: String(maxCount) },
+          data: { maxProperties: String(threshold) },
           fix,
         });
 
         return;
       }
 
-      if (analysis.hasSameLinePairs) {
+      if (analysis.hasSameLinePairs && reportsSameLinePairs) {
         context.report({
           node,
-          messageId: 'consistNewline',
+          messageId: 'membersOnNewline',
           fix,
         });
       }
@@ -250,12 +279,12 @@ export const newlineDestructuring = createRule('newline-destructuring', {
       const analysis = analyzeProperties(sourceCode, members);
       const fix = buildMemberFix(node, members);
 
-      if (reportedMultilineProperty(node, analysis, fix)) {
+      if (reportedMultilineMember(node, analysis, fix)) {
         return;
       }
 
       if (members.length > maxCount) {
-        reportOverThreshold(node, analysis, fix);
+        reportOverThreshold(node, analysis, maxCount, fix);
       }
     };
 
@@ -271,20 +300,28 @@ export const newlineDestructuring = createRule('newline-destructuring', {
         const threshold = hasRest ? maxRestCount : maxCount;
         const analysis = analyzeProperties(sourceCode, properties);
 
-        if (reportedMultilineProperty(node, analysis)) {
+        if (reportedMultilineMember(node, analysis)) {
           return;
         }
 
         if (properties.length > threshold) {
-          reportOverThreshold(node, analysis, buildFix(node));
+          reportOverThreshold(node, analysis, threshold, buildFix(node), false);
           return;
         }
 
         if (analysis.isMultiLine && !analysis.hasMultilineProperty) {
+          const collapsed = writePattern(node, false);
+
+          // A collapse the line cannot hold trades this report for a `max-len` finding no fixer can
+          // answer, so the pattern is left split.
+          if (collapsed !== null && !fitsOnLine(sourceCode, node, collapsed, maxLineLength)) {
+            return;
+          }
+
           context.report({
             node,
             messageId: 'mustSplit',
-            data: { maxProperties: String(maxCount) },
+            data: { maxProperties: String(threshold) },
             fix: buildFix(node, false),
           });
         }

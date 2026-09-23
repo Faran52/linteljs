@@ -46,7 +46,7 @@ const RULE_MODULES = [
   'export-specifier-newline',
   'import-newlines',
   'interface-order',
-  'newline-destructuring',
+  'member-newline',
   'no-duplicate-jsx-props',
   'no-eslint-disable',
   'no-inline-object-types',

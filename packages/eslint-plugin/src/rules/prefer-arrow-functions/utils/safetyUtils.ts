@@ -1,13 +1,7 @@
 // Reject conversions whose body or position would change meaning; `writeUtils.ts` handles output.
 import { adjacentPairs } from '../../../utils/layoutUtils.ts';
-import { FUNCTION_TYPES } from '../../../utils/ruleUtils.ts';
 
-import type {
-  Ancestor,
-  AncestorReader,
-  RuleNode,
-  SourceCode,
-} from '../../../utils/ruleUtils.ts';
+import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
 import type { FunctionLike } from './writeUtils.ts';
 
 // An allow-list, not a block-list: anything that keeps consuming after a block-bodied arrow
@@ -34,12 +28,6 @@ export const SAFE_DECLARATION_PARENTS = new Set([
   'SwitchCase',
   'TSModuleBlock',
 ]);
-
-export const isInsideFunctionBody = (sourceCode: AncestorReader, node: Ancestor): boolean => {
-  return sourceCode.getAncestors(node).some((ancestor) => {
-    return FUNCTION_TYPES.has(ancestor.type);
-  });
-};
 
 // `void`, `typeof`, `as` and `satisfies` need parentheses around an arrow.
 export const sitsInUnsafePosition = (sourceCode: SourceCode, fn: FunctionLike): boolean => {

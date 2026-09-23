@@ -51,6 +51,14 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     '/** short */ const value = 1;',
     // Merged into a block, this line's `*/` would close it early and spill the rest as code.
     '// alpha\n// bravo `*/` charlie\n// delta\nexport const value = 1;\n',
+    // A tag makes the block machine-read, and every reader of one stops at `/**`: under `checkJs` the first
+    // line is the annotation itself, TypeScript takes the pragma from a block comment only, and an editor
+    // strikes nothing through for a `// @deprecated`.
+    "/** @type {import('tailwindcss').Config} */\nexport default {};\n",
+    '/** @jsxImportSource @emotion/react */\nexport const value = 1;\n',
+    '/** @deprecated use `other` instead */\nexport const old = 1;\n',
+    // The tag need not open the block, which is why every line is tested rather than the first.
+    '/**\n * Adds two numbers.\n * @returns the sum\n */\nexport const add = 1;\n',
   ],
   invalid: [
     {
@@ -121,6 +129,13 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       code: '/** short doc */\nexport const value = 1;',
       filename: 'src/lib/utils/sample.ts',
       output: '// short doc\nexport const value = 1;',
+      errors: [{ messageId: 'useSlashes' }],
+    },
+    {
+      // An `@` with something other than whitespace in front is an address, not a tag, which is the whole
+      // reason the pattern is anchored rather than a bare `@[a-z]`.
+      code: '/** ask faran@example.com first */\nexport const value = 1;',
+      output: '// ask faran@example.com first\nexport const value = 1;',
       errors: [{ messageId: 'useSlashes' }],
     },
   ],

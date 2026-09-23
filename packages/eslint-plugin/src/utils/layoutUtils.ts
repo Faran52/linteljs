@@ -1,6 +1,7 @@
 import {
   type Fixer,
   mustFind,
+  rangeOf,
   type RuleNode,
   type SourceCode,
 } from './ruleUtils.ts';
@@ -65,6 +66,22 @@ export const getIndent = (sourceCode: SourceCode, node: RuleNode): string => {
 
   /* v8 ignore next 1 -- the pattern matches any string, including an empty one */
   return /^[\t ]*/.exec(line)?.[0] ?? '';
+};
+
+// Whether replacing `node` with `text` leaves the line within `limit`. Whatever sits either side of the node on
+// its line counts, since a length rule measures the line and a collapse it cannot satisfy is an unfixable error.
+export const fitsOnLine = (
+  sourceCode: SourceCode,
+  node: RuleNode,
+  text: string,
+  limit: number,
+): boolean => {
+  const [start, end] = rangeOf(node);
+  const before = start - (sourceCode.text.lastIndexOf('\n', start - 1) + 1);
+  const newlineAfter = sourceCode.text.indexOf('\n', end);
+  const after = (newlineAfter === -1 ? sourceCode.text.length : newlineAfter) - end;
+
+  return before + text.length + after <= limit;
 };
 
 // A fixer that always writes \n leaves a CRLF repo with mixed endings, a permanently dirty diff on Windows.

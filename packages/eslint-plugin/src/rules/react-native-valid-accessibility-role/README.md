@@ -77,5 +77,4 @@ None.
 
 ## Notes
 
-This rule is not in `recommended`. Enable it through `flat/accessibility`, or by rule name in a
-React Native config.
+This rule is not in `recommended`. Take `flat/all`, or name the rule in a React Native config.

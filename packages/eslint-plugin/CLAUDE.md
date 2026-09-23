@@ -21,7 +21,7 @@ local-only. That version is not the source of truth any more. This repo owns the
   shape the traversal actually hands over: `as RuleNode` in
   `prefer-arrow-functions/preferArrowFunctions.ts`, `as ImportNode` in
   `import-newlines/importNewlines.ts`, `as PropertyNode[]` in
-  `newline-destructuring/newlineDestructuring.ts`. The other two are not that shape and were
+  `member-newline/memberNewline.ts`. The other two are not that shape and were
   undercounted here until a review found them: `{} as LintelConfigs` in `plugin.ts`, a `Record`
   keyed by a union that cannot be built incrementally without one, and `as Partial<T>` in
   `utils/ruleUtils.ts`, which `.claude/rules/type-standards.md` carries in its own exempt table.
@@ -108,16 +108,20 @@ why that file is shaped the way it is rather than driving everything through a r
 Code one rule owns stays in that rule's own `utils/` subdirectory. Splitting it out into
 `src/utils` used to be the wrong move for a single-consumer helper, and out of a flat `rules/` it
 broke one-rule-per-file; a `utils/` beside the rule is where it belongs, because a helper sitting
-as a sibling of the rule reads like a second rule. Three rules carry one today:
+as a sibling of the rule reads like a second rule. Four rules carry one today:
 
 - `prefer-arrow-functions/utils/writeUtils.ts`, the emitter (function node in, arrow text out), and
   `utils/safetyUtils.ts`, the layer that decides whether a rewrite is allowed at all.
 - `import-newlines/utils/writeUtils.ts`, the same emitter split: statement in, replacement text
   out. Answering with a string rather than a fix is what lets the rule measure a collapsed import
   against the line limit before deciding to report it.
-- `newline-destructuring/utils/boundaryUtils.ts`, where a member begins and ends once its comments
+- `member-newline/utils/boundaryUtils.ts`, where a member begins and ends once its comments
   are counted, and the layout analysis read off those boundaries. Two of that rule's defects lived
   there, and both fix strategies plus the whole report ladder are decided from it.
+- `react-no-global-namespace/utils/elementUtils.ts`, the walk from a JSX element down to the tag
+  names reaching a namespace, and `utils/nameUtils.ts`, the one read of a node's `name`. JSX is
+  absent from ESLint's ESTree types, so both describe what they read structurally, which is the
+  same reason `src/utils/jsxUtils.ts` is shaped that way.
 
 The `Utils` suffix is enforced wherever the directory is called `utils`: the root
 `eslint.config.ts` maps `**/utils/*.ts` to `*Utils` through `check-file`, which now reaches a rule's
@@ -201,9 +205,9 @@ same mistakes are the ones a new rule will make.
   `then(a, b, extra)` deleted the middle argument. Replaced by `prefer-try-catch`, report-only.
 - `no-import-namespace-destructure` resolved names in the immediate scope only, so it was dead
   inside any function or block. Now walks the scope chain.
-- `import-newlines`, `newline-destructuring`, `export-specifier-newline` and `union-newline` all
+- `import-newlines`, `member-newline`, `export-specifier-newline` and `union-newline` all
   emitted fixes at column 0. Found by running `--fix` on this repo.
-- `newline-destructuring` counted a doc comment between members as a blank line, so every
+- `member-newline` counted a doc comment between members as a blank line, so every
   documented interface reported forever with no fix that could satisfy it.
 - The CJS entry exposed no `meta`, because a `.cjs` config gets the namespace rather than the
   default export. Found by `scripts/smoke.js`.

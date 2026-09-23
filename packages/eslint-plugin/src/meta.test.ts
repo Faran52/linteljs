@@ -535,6 +535,14 @@ describe('language scoping, resolved by eslint', () => {
   );
 });
 
+// The rule ids the hand-edited README table names, in the order it names them. A row opens with the
+// id as a linked code span, which nothing else in the file does.
+const tableRows = (readme: string): string[] => {
+  return [...readme.matchAll(/^\| \[`@linteljs\/([a-z][a-z0-9-]*)`\]/gm)].flatMap((match) => {
+    return match[1] ?? [];
+  });
+};
+
 describe('documentation', () => {
   it.each(ruleCases)('documents "%s" with its description and examples', (name, rule) => {
     const doc = readFileSync(join(rulesDir, name, 'README.md'), 'utf8');
@@ -563,7 +571,7 @@ describe('documentation', () => {
     expect(undocumented.filter(Boolean)).toEqual([]);
   });
 
-  // The bullet block under each title is prose restating `meta`, and nothing compared the two: `newline-destructuring`
+  // The bullet block under each title is prose restating `meta`, and nothing compared the two: `member-newline`
   // shipped `- Fixable: yes (whitespace)` against a `code` fixer while every other check passed. A bullet may carry a
   // qualifier after its value, as `yes (code), except the hoisted case` does, so each is matched as a prefix.
   it.each(ruleCases)('restates "%s" metadata the way meta declares it', (name, rule) => {
@@ -588,6 +596,42 @@ describe('documentation', () => {
     for (const name of ruleNames) {
       expect(readme).toContain(`\`${PLUGIN_NAME}/${name}\``);
     }
+  });
+
+  // The check above asks only that an id appears somewhere, which a duplicated row passes:
+  // `react-no-global-namespace` shipped twice and nothing saw it. Counting is what catches that.
+  it('names every rule in the README table exactly once', () => {
+    const rows = tableRows(readFileSync(join(root, 'README.md'), 'utf8'));
+
+    expect(rows.filter((name, index) => {
+      return rows.indexOf(name) !== index;
+    })).toEqual([]);
+  });
+
+  // A table nobody generates drifts out of order one edit at a time, and a reader scanning for a
+  // rule gives up before they reach the one row that moved.
+  it('keeps the README table in rule id order', () => {
+    expect(tableRows(readFileSync(join(root, 'README.md'), 'utf8'))).toEqual(alphabetically(ruleNames));
+  });
+
+  /**
+   * 1.6.0 removed the category presets and seven documents went on pointing at one. Every page in
+   * the package is read, not just the root README: `scripts/writeRuleDocs.ts` publishes each rule's
+   * own README under `docs/`, so a stale preset name there ships too.
+   */
+  it('names no preset outside the two the plugin ships, in any of its docs', () => {
+    const presets: string[] = [...PRESET_NAMES];
+    const named = new Set(ruleNames.map((name) => {
+      return join(rulesDir, name, 'README.md');
+    }).concat(join(root, 'README.md')).flatMap((path) => {
+      return [...readFileSync(path, 'utf8').matchAll(/\bflat\/([a-z][a-z-]*)/g)].flatMap((match) => {
+        return match[1] ?? [];
+      });
+    }));
+
+    expect([...named].filter((preset) => {
+      return !presets.includes(preset);
+    })).toEqual([]);
   });
 
   it('keeps the README free of em-dashes', () => {

@@ -87,16 +87,16 @@
     "docs": {
       "fixShape": "reorder",
       "language": "typescript",
-      "recommended": false,
+      "recommended": true,
       "description": "Keep top-level interfaces and type aliases together, after imports and before runtime code."
     }
   },
-  "newline-destructuring": {
+  "member-newline": {
     "messages": {
-      "mustSplit": "Properties must be broken into multiple lines if there are more than {{maxProperties}}.",
-      "noBlankBetween": "Properties cannot have blank lines between them.",
-      "consistNewline": "Properties must be put on newlines.",
-      "multilineProperty": "Multiline property must be put on newlines."
+      "mustSplit": "Members must be broken into multiple lines if there are more than {{maxProperties}}.",
+      "noBlankBetween": "Members cannot have blank lines between them.",
+      "membersOnNewline": "Members must be put on newlines.",
+      "multilineMember": "Multiline member must be put on newlines."
     },
     "schema": [
       {
@@ -111,6 +111,11 @@
             "type": "integer",
             "minimum": 0,
             "default": 1
+          },
+          "maxLineLength": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 120
           }
         },
         "additionalProperties": false

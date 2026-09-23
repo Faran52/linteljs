@@ -3,7 +3,7 @@ import { destructuringPropertyNewline } from './destructuring-property-newline/d
 import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifierNewline.ts';
 import { importNewlines } from './import-newlines/importNewlines.ts';
 import { interfaceOrder } from './interface-order/interfaceOrder.ts';
-import { newlineDestructuring } from './newline-destructuring/newlineDestructuring.ts';
+import { memberNewline } from './member-newline/memberNewline.ts';
 import { noDuplicateJsxProps } from './no-duplicate-jsx-props/noDuplicateJsxProps.ts';
 import { noEslintDisable } from './no-eslint-disable/noEslintDisable.ts';
 import { noImportNamespaceDestructure } from './no-import-namespace-destructure/noImportNamespaceDestructure.ts';
@@ -39,7 +39,7 @@ export const rules = {
   'export-specifier-newline': exportSpecifierNewline,
   'import-newlines': importNewlines,
   'interface-order': interfaceOrder,
-  'newline-destructuring': newlineDestructuring,
+  'member-newline': memberNewline,
   'no-duplicate-jsx-props': noDuplicateJsxProps,
   'no-eslint-disable': noEslintDisable,
   'no-inline-object-types': noInlineObjectTypes,

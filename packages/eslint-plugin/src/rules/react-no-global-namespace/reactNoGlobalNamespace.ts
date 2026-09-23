@@ -1,5 +1,9 @@
 import { createRule } from '../../types.ts';
-import { scopeOf, sourceCodeOf } from '../../utils/compatUtils.ts';
+import {
+  physicalFilenameOf,
+  scopeOf,
+  sourceCodeOf,
+} from '../../utils/compatUtils.ts';
 import {
   type Fixer,
   mustFind,
@@ -27,10 +31,18 @@ interface ImportSource {
   value?: string;
 }
 
-// One specifier, read for the name it binds and for whether it is a named one a fix may sit beside.
+// One specifier, read for the name it binds, for whether it is a named one a fix may sit beside, and for
+// whether `import { type X }` made that binding a type rather than a value.
 interface ImportSpecifier extends Ranged {
   type: string;
+  importKind?: string;
   local: NamedNode;
+}
+
+// `declare` marks an ambient declaration. Described structurally for the same reason `TSQualifiedName` is:
+// ESLint's ESTree types carry no such field, and typescript-estree puts it on several node types.
+interface Ambient {
+  declare?: boolean;
 }
 
 // One import statement, read for the names already bound so a fix never writes a duplicate specifier. `importKind`
@@ -51,6 +63,27 @@ const namedSpecifiers = (node: ImportNode): ImportSpecifier[] => {
 const NAMESPACE = 'React';
 
 const MODULE = 'react';
+
+const DECLARATION_FILE = /\.d\.[cm]?ts$/;
+
+// A value reach needs a value binding. `import type { Fragment } from 'react'` and `import { type Fragment }`
+// both bind a type, and `<Fragment>` against one is a value TypeScript refuses. A type reach takes either.
+const bindsUsably = (node: ImportNode, name: string, isType: boolean): boolean => {
+  return node.specifiers.some((specifier) => {
+    return specifier.local.name === name
+      && (isType || (node.importKind !== 'type' && specifier.importKind !== 'type'));
+  });
+};
+
+const isAmbient = (node: TypedNode & Ambient): boolean => {
+  return node.declare === true;
+};
+
+// `'use client'` and the rest of a prologue stop being directives the moment anything precedes them, so the
+// import goes after them rather than before the first statement.
+const isDirective = (node: TypedNode): boolean => {
+  return node.type === 'ExpressionStatement' && 'directive' in node;
+};
 
 const isQualified = (node: RuleNode): node is RuleNode & Qualified => {
   return 'left' in node && 'right' in node;
@@ -96,6 +129,16 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
   create: (context) => {
     const source = sourceCodeOf(context);
 
+    /**
+     * An import turns a script into a module, so every global in the file stops being global and
+     * `declare module '*.svg'` becomes an augmentation of a module that does not exist. A `.d.ts` is that
+     * file by definition. Nothing to say either: the file cannot take the import the message asks for.
+     */
+    if (DECLARATION_FILE.test(physicalFilenameOf(context))
+      || (source.ast.body.some(isAmbient) && !source.ast.body.some(isImport))) {
+      return {};
+    }
+
     // The file's own `react` import, which a fix merges into rather than writing a second statement beside it.
     const existingImport = (): (TypedNode & ImportNode) | undefined => {
       for (const statement of source.ast.body) {
@@ -121,9 +164,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       }
 
       const existing = existingImport();
-      const alreadyImported = existing?.specifiers.some((specifier) => {
-        return specifier.local.name === name;
-      }) === true;
+      const alreadyImported = existing !== undefined && bindsUsably(existing, name, isType);
 
       // Bound to something else already, so replacing the member access would quietly mean a different value.
       const collides = !alreadyImported && resolveVariable(scope, name) !== null;
@@ -148,8 +189,10 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         // No import to join: none from `react` at all, a type-only one, or one carrying no named list. A second
         // `import { ... } from 'react'` beside any of those is valid, which rewriting them into one is not.
         if (existing === undefined || mergeable === undefined) {
-          // A file with a `React.` reference has a statement to insert before, which is what `mustFind` says here.
-          const statement = mustFind(source.ast.body[0]);
+          // A file with a `React.` reference has a statement past its prologue, which is what `mustFind` says here.
+          const statement = mustFind(source.ast.body.find((entry) => {
+            return !isDirective(entry);
+          }));
 
           return [
             fixer.insertTextBefore(statement, `import { ${specifier} } from '${MODULE}';\n\n`),
@@ -212,5 +255,3 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
     };
   },
 });
-
-export default reactNoGlobalNamespace;

@@ -37,6 +37,10 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
     // Inside an await, but not the awaited value, so the ancestor walk must see the `await` directly above the chain.
     'async function load() {\n  return await wrap(promise.then(parse));\n}',
 
+    // The exemption is the whole subtree under the await, callbacks included. Two levels down here,
+    // which is the shape the README describes.
+    'async function load(items) {\n  return await Promise.all(items.map((item) => item.load().then(parse)));\n}',
+
     // The same for a yield, which is the other half of that ancestor test.
     'function* walk() {\n  yield wrap(promise.then(parse));\n}',
 
@@ -106,6 +110,13 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
     },
     {
       code: 'function* walk() {\n  yield promise.then(parse);\n}',
+      options: [{ strict: true }],
+      errors: [{ messageId: 'preferAwait' }],
+    },
+    {
+      // The other side of the valid case above: what the default exempts, strict reports.
+      code: 'async function load(items) {\n'
+        + '  return await Promise.all(items.map((item) => item.load().then(parse)));\n}',
       options: [{ strict: true }],
       errors: [{ messageId: 'preferAwait' }],
     },

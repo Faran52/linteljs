@@ -56,7 +56,8 @@ import 'side-effects-only';
 
 - `maxItems`: integer, `2` by default. More named members than this and the statement splits one
   per line. Fewer, and a statement already split collapses back onto one line, provided the result
-  fits inside `maxLineLength`.
+  fits inside `maxLineLength`. A half-split statement under the count collapses in that one pass
+  rather than being split first and collapsed on the next.
 - `maxLineLength`: integer, `120` by default. A statement longer than this splits even when it is
   under the member count. It only applies when there is a named member to break onto a line of its
   own: a default or namespace import has nothing to split, so it is left alone however long it

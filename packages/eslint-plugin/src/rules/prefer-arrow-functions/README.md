@@ -150,6 +150,10 @@ const widget = new Widget();
 
 Also left alone, for the same reason in each case:
 
+- `export default function greet() {}`. There is no `export default const`, so the arrow would need
+  a statement of its own and the export would have to be rewritten to name it, which is two edits to
+  the module rather than one to the function. The anonymous form, `export default function () {}`,
+  has no name to keep and does convert.
 - a getter or setter
 - a declaration whose name is bound twice, which includes an overload implementation. In a function
   body or a script, `function x() {}` is var-scoped and may be declared again. Two `const x` in one
@@ -178,9 +182,11 @@ the incorrect list above.
 Converting it would turn working code into a crash, so the rule reports it under a separate message
 and offers no fix. Move the call below the declaration and the ordinary fix applies.
 
-A reference from inside another function that only runs later is safe in practice, but nothing in a
-lint rule can prove when that function is called, so a textual reference above the declaration is
-enough to decline.
+A reference from inside another function looks safe, and is not: that function may itself be called
+above this declaration, which puts the dead zone two hops away. `run(); function run() { helper(); }
+function helper() {}` is the commonest script shape there is, and converting `helper` throws before
+the file finishes loading. Nothing in a lint rule can prove when a function is called, so a textual
+reference above the declaration is enough to decline, wherever it sits.
 
 That defect is why this rule exists in its current shape. The version this was ported from
 converted such a function and turned working code into a `ReferenceError`.

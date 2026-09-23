@@ -149,9 +149,9 @@ export const interfaceOrder = createRule('interface-order', {
     type: 'layout',
     docs: {
       language: 'typescript',
-      // Off by default: the only rule that relocates declarations, and comment placement is a judgement call no rule
-      // can make reliably.
-      recommended: false,
+      // On by default from 2.0. It is still the only rule that relocates declarations, and comment placement is
+      // still a judgement call, which is why the fix is `reorder` and why it reports rather than rewrites freely.
+      recommended: true,
       fixShape: 'reorder',
       description: 'Keep top-level interfaces and type aliases together, after imports and before runtime code.',
     },

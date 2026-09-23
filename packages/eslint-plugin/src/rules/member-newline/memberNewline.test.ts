@@ -1,8 +1,8 @@
 import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { newlineDestructuring } from './newlineDestructuring.ts';
+import { memberNewline } from './memberNewline.ts';
 
-jsRuleTester.run('newline-destructuring', newlineDestructuring, {
+jsRuleTester.run('member-newline', memberNewline, {
   valid: [
     'const { alpha } = source;',
     'const { alpha, bravo } = source;',
@@ -16,6 +16,16 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
     // Already one per line with the braces on their own lines, so neither brace gap needs touching.
     'const {\n  alpha,\n  bravo,\n  charlie,\n} = source;',
 
+    // Half-split patterns, both ways round. `destructuring-property-newline` reports this shape and
+    // fixes it comma by comma, so this rule says nothing and the reader gets one message for it.
+    'const { alpha, bravo,\n  charlie\n} = source;',
+    'const {\n  alpha,\n  bravo, charlie\n} = source;',
+
+    // Collapsing would run the line past 120 characters, which `max-len` would then report with
+    // nothing able to fix it, so the split form stands.
+    'const {\n  alphaProperty = computeSomethingRatherLong(configuration),\n'
+    + '  bravoProperty = computeSomethingElseEntirely(configuration)\n} = source;',
+
     'const [alpha, bravo, charlie] = source;',
     'const alpha = source;',
   ],
@@ -25,12 +35,6 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
       code: 'const {\n  alpha, bravo, charlie } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
       errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      // And the mirror: the closing brace is already down, the opening one is not.
-      code: 'const { alpha, bravo,\n  charlie\n} = source;',
-      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      errors: [{ messageId: 'consistNewline' }],
     },
     {
       // The rebuild cannot carry a comment across, so it reports without a fix rather than deleting the note.
@@ -43,7 +47,7 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
       // express the multiline member, so this reports once with no fix.
       code: 'const { alpha: {\n  first\n}, bravo, charlie } = source;',
       output: null,
-      errors: [{ messageId: 'multilineProperty' }],
+      errors: [{ messageId: 'multilineMember' }],
     },
     {
       code: 'const { alpha, bravo, charlie /* tail */ } = source;',
@@ -77,14 +81,13 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
       errors: [{ messageId: 'mustSplit' }],
     },
     {
+      // The rest threshold is what fires here, so the message names 1 rather than `maxProperties`.
       code: 'const { alpha, ...rest } = source;',
       output: 'const {\n  alpha,\n  ...rest\n} = source;',
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const {\n  alpha,\n  bravo, charlie\n} = source;',
-      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      errors: [{ messageId: 'consistNewline' }],
+      errors: [{
+        messageId: 'mustSplit',
+        data: { maxProperties: '1' },
+      }],
     },
     {
       code: 'const {\n  alpha,\n\n  bravo,\n  charlie\n} = source;',
@@ -94,24 +97,41 @@ jsRuleTester.run('newline-destructuring', newlineDestructuring, {
     {
       code: 'const {\n  alpha,\n  bravo\n} = source;',
       output: 'const { alpha, bravo } = source;',
+      errors: [{
+        messageId: 'mustSplit',
+        data: { maxProperties: '2' },
+      }],
+    },
+    {
+      // Under the threshold and split, so the collapse branch, but the rebuild would take the
+      // comment with it: the report still goes out and the fix declines.
+      code: 'const {\n  alpha,\n  /* keep */ bravo\n} = source;',
+      output: null,
+      errors: [{ messageId: 'mustSplit' }],
+    },
+    {
+      // Exactly at the limit still collapses: what the guard refuses is a line past it.
+      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
+      output: 'const { alphaProperty, bravoProperty } = source;',
+      options: [{ maxLineLength: 48 }],
       errors: [{ messageId: 'mustSplit' }],
     },
     {
       // A property that spans lines drags the whole pattern onto newlines, whatever the property count.
       code: 'const { alpha = {\n  first: 1\n}, bravo } = source;',
       output: null,
-      errors: [{ messageId: 'multilineProperty' }],
+      errors: [{ messageId: 'multilineMember' }],
     },
     {
       // The multiline property is the last one, checked separately from the pairs before it.
       code: 'const { alpha, bravo = {\n  first: 1\n} } = source;',
       output: null,
-      errors: [{ messageId: 'multilineProperty' }],
+      errors: [{ messageId: 'multilineMember' }],
     },
   ],
 });
 
-jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
+jsRuleTester.run('member-newline (options)', memberNewline, {
   valid: [
     {
       code: 'const { alpha, bravo, charlie } = source;',
@@ -131,39 +151,67 @@ jsRuleTester.run('newline-destructuring (options)', newlineDestructuring, {
       code: 'const { alpha } = source;',
       options: [{ maxProperties: 0 }],
     },
+
+    // One character over, so the collapse is refused and the pattern stays as it was written.
+    {
+      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
+      options: [{ maxLineLength: 47 }],
+    },
+
+    // The suffix after the pattern counts too: `= somewhatLongerSource;` is what pushes it over.
+    {
+      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = somewhatLongerSource;',
+      options: [{ maxLineLength: 48 }],
+    },
   ],
   invalid: [
     {
       code: 'const { alpha, bravo } = source;',
       output: 'const {\n  alpha,\n  bravo\n} = source;',
       options: [{ maxProperties: 1 }],
-      errors: [{ messageId: 'mustSplit' }],
+      errors: [{
+        messageId: 'mustSplit',
+        data: { maxProperties: '1' },
+      }],
     },
     {
       code: 'const { alpha, bravo, charlie } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
       options: [{ maxProperties: 2 }],
-      errors: [{ message: 'Properties must be broken into multiple lines if there are more than 2.' }],
+      errors: [{ message: 'Members must be broken into multiple lines if there are more than 2.' }],
     },
     {
       code: 'const { alpha, bravo, charlie, delta } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie,\n  delta\n} = source;',
       options: [{ maxProperties: 3 }],
-      errors: [{ message: 'Properties must be broken into multiple lines if there are more than 3.' }],
+      errors: [{ message: 'Members must be broken into multiple lines if there are more than 3.' }],
     },
     {
+      // `maxProperties` is deliberately far away from the rest threshold: the message has to name
+      // the 1 that fired, not the 9 that did not.
       code: 'const { alpha, ...rest } = source;',
       output: 'const {\n  alpha,\n  ...rest\n} = source;',
       options: [{
         maxProperties: 9,
         maxPropertiesWithRest: 1,
       }],
-      errors: [{ messageId: 'mustSplit' }],
+      errors: [{ message: 'Members must be broken into multiple lines if there are more than 1.' }],
+    },
+    {
+      // And the collapse arm of the same read: under a widened rest threshold, so the message
+      // names that threshold rather than `maxProperties`.
+      code: 'const {\n  alpha,\n  ...rest\n} = source;',
+      output: 'const { alpha, ...rest } = source;',
+      options: [{
+        maxProperties: 9,
+        maxPropertiesWithRest: 3,
+      }],
+      errors: [{ message: 'Members must be broken into multiple lines if there are more than 3.' }],
     },
   ],
 });
 
-tsRuleTester.run('newline-destructuring (typescript)', newlineDestructuring, {
+tsRuleTester.run('member-newline (typescript)', memberNewline, {
   valid: [
     'interface Small {\n  alpha: string;\n  bravo: number;\n}',
     'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean;\n}',
@@ -251,7 +299,7 @@ tsRuleTester.run('newline-destructuring (typescript)', newlineDestructuring, {
     {
       code: 'interface Wide {\n  alpha: string;\n  bravo: number; charlie: boolean;\n}',
       output: 'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean;\n}',
-      errors: [{ messageId: 'consistNewline' }],
+      errors: [{ messageId: 'membersOnNewline' }],
     },
     {
       code: 'interface Wide {\n  alpha: string;\n\n  bravo: number;\n  charlie: boolean;\n}',
@@ -262,21 +310,21 @@ tsRuleTester.run('newline-destructuring (typescript)', newlineDestructuring, {
       // A member spanning lines forces the whole body open even though there are only two members.
       code: 'interface Holder { alpha: {\n  first: string;\n}; bravo: number }',
       output: 'interface Holder {\n  alpha: {\n  first: string;\n};\n  bravo: number\n}',
-      errors: [{ messageId: 'multilineProperty' }],
+      errors: [{ messageId: 'multilineMember' }],
     },
     {
       // The same, but also over the count threshold: the multiline complaint is the whole answer,
       // since carrying on would add a second report for the same body.
       code: 'interface Holder { alpha: {\n  first: string;\n}; bravo: number; charlie: boolean }',
       output: 'interface Holder {\n  alpha: {\n  first: string;\n};\n  bravo: number;\n  charlie: boolean\n}',
-      errors: [{ messageId: 'multilineProperty' }],
+      errors: [{ messageId: 'multilineMember' }],
     },
     {
       // Members already on lines of their own are left as the author put them, indentation
       // included; only the pair still sharing a line moves.
       code: 'interface Shape {\n  alpha: string; bravo: number;\n      charlie: boolean;\n}',
       output: 'interface Shape {\n  alpha: string;\n  bravo: number;\n      charlie: boolean;\n}',
-      errors: [{ messageId: 'consistNewline' }],
+      errors: [{ messageId: 'membersOnNewline' }],
     },
     {
       // A comment above a member anchors the split to the comment, not the member, so the doc stays attached.
@@ -296,13 +344,13 @@ tsRuleTester.run('newline-destructuring (typescript)', newlineDestructuring, {
       // split still anchors on the member.
       code: 'interface Row {\n  alpha: string;\n  // heading for bravo\n  bravo: number; charlie: boolean;\n}',
       output: 'interface Row {\n  alpha: string;\n  // heading for bravo\n  bravo: number;\n  charlie: boolean;\n}',
-      errors: [{ messageId: 'consistNewline' }],
+      errors: [{ messageId: 'membersOnNewline' }],
     },
     {
       // A real violation below a note leaves the note where it was written.
       code: 'interface Row {\n  meta?: string; // describes meta\n  note?: string; last: number;\n}',
       output: 'interface Row {\n  meta?: string; // describes meta\n  note?: string;\n  last: number;\n}',
-      errors: [{ messageId: 'consistNewline' }],
+      errors: [{ messageId: 'membersOnNewline' }],
     },
     {
       // `getLastToken` skips comments, so the gap the closing splice rewrites is exactly where a trailing note lives.

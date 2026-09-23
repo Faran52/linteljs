@@ -66,9 +66,25 @@ type-only import (`import type { FC } from 'react'`) cannot carry a `type` speci
 or namespace import has no list to join. Two imports from one module are valid; the alternatives are
 not.
 
-One case reports without a fix: a name already bound to something else in scope. Rewriting
-`React.ReactNode` to `ReactNode` where the file declares its own `ReactNode` would quietly mean the
-other one.
+A new statement goes after the directive prologue rather than at the top of the file. `'use client'`
+is a directive only while nothing precedes it, and an import above one leaves Next's compiler
+refusing the file.
+
+Two cases report without a fix, both for the same reason: the name is taken and rewriting the member
+access would quietly mean something else.
+
+- The file declares its own `ReactNode`.
+- The file imports the name as a type, `import type { Fragment } from 'react'` or
+  `import { type Fragment }`, and the reach is a value. `<Fragment>` against a type-only binding is
+  what TypeScript refuses, so reading the name alone is not enough: a value reach needs a value
+  specifier.
+
+## What it leaves alone
+
+A declaration file, and any file whose body carries a top-level `declare` and no import at all.
+Adding an import turns a script into a module: `declare module '*.svg'` becomes an augmentation of a
+module that does not exist and every global in the file stops being global. There is nothing to
+report either, because the file cannot take the import the message asks for.
 
 ## Options
 

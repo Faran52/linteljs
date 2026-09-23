@@ -209,7 +209,7 @@ describe('analyzeProperties', () => {
     });
   });
 
-  // A pair still sharing a line inside an otherwise split block is what `consistNewline` reports.
+  // A pair still sharing a line inside an otherwise split block is what `membersOnNewline` reports.
   it('flags a pair that still shares a line inside an otherwise split block', () => {
     const { sourceCode, members } = propertiesOf('const {\n  alpha, bravo,\n  charlie\n} = source;');
 

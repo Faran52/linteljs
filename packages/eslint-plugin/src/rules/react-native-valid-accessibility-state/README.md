@@ -77,5 +77,4 @@ None.
 The `aria-*` aliases (`aria-disabled`, `aria-checked` and the rest) set the same state through
 separate props and are typed individually by React Native, so they need no checking here.
 
-This rule is not in `recommended`. Enable it through `flat/accessibility`, or by rule name in a
-React Native config.
+This rule is not in `recommended`. Take `flat/all`, or name the rule in a React Native config.

@@ -31,6 +31,33 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'widget.ts',
   },
   {
+    /**
+     * The corpus carried a `'use client'` sample and a React one, and never the two together, so nothing saw
+     * the insert land above a directive. An import ahead of it stops it being a directive at all.
+     * Flat on purpose: the indentation check counts lines at column 0 and any honest new top-level
+     * statement trips it, so a sample about an insert has to carry no indentation of its own.
+     */
+    name: 'React global under a use client directive',
+    code: "'use client';\n\ninterface Props { children?: React.ReactNode }\n\nexport type { Props };\n",
+    typescript: true,
+    filename: 'panel.tsx',
+  },
+  {
+    // A declaration file is a script until something imports into it, at which point `declare module '*.svg'`
+    // augments a module that does not exist and every global here stops being global.
+    name: 'React global in a global declaration file',
+    code: "declare module '*.svg' {\n  const Component: React.FC;\n  export default Component;\n}\n",
+    typescript: true,
+    filename: 'custom.d.ts',
+  },
+  {
+    // The name is bound, but to a type; rewriting the tags against it makes a value out of a type-only binding.
+    name: 'type-only react import beside a value reach',
+    code: "import type { Fragment } from 'react';\n\nconst view = <React.Fragment>text</React.Fragment>;\n",
+    typescript: true,
+    filename: 'view.tsx',
+  },
+  {
     name: 'empty named import',
     code: "import {\n} from 'mod';",
   },
@@ -55,6 +82,12 @@ export const FIXER_SAMPLES: FixerSample[] = [
   {
     name: 'default-only import split over lines',
     code: "import\ndefaultExport from 'mod';",
+  },
+  // Under the member count and half split, so the one pass that fixes it collapses rather than
+  // splitting into a shape the next pass would undo.
+  {
+    name: 'half-split import under the member count',
+    code: "import {\n  alpha, bravo } from 'mod';",
   },
 
   {
@@ -93,6 +126,13 @@ export const FIXER_SAMPLES: FixerSample[] = [
   {
     name: 'array pattern with a leading hole',
     code: 'const [, alpha, bravo,\n  charlie] = source;',
+  },
+  // Under the property count, so a collapse is on offer, and the collapsed line would run past 120
+  // characters: `max-len` would then report a line no fixer in this plugin can shorten.
+  {
+    name: 'split destructuring too long to collapse',
+    code: 'const {\n  alphaProperty = computeSomethingRatherLong(configuration),\n'
+      + '  bravoProperty = computeSomethingElseEntirely(configuration)\n} = source;',
   },
 
   {
@@ -167,6 +207,12 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'outer: function helper() {\n  return 1;\n}\n',
     filename: 'sample.cjs',
   },
+  // Main at the top, helpers below: `run()` reaches `helper` immediately, so a `const helper` two hops down
+  // sits in its dead zone at that moment and the converted file throws before it does anything.
+  {
+    name: 'function called before its declaration through another function',
+    code: 'run();\n\nfunction run() {\n  helper();\n}\n\nfunction helper() {\n  return 1;\n}\n',
+  },
 
   {
     name: 'hook dependencies with a comment',
@@ -220,6 +266,23 @@ export const FIXER_SAMPLES: FixerSample[] = [
   {
     name: 'two slash lines stay separate',
     code: '// alpha\n// bravo\nconst value = 1;\n',
+  },
+  // A tagged block is read by a tool, and every reader of one stops at `/**`. None of these three survives
+  // becoming a `//` line, and none of them was in the corpus when the rule was rewriting all of them.
+  {
+    name: 'jsdoc type annotation on a config file',
+    code: "/** @type {import('tailwindcss').Config} */\nmodule.exports = {};\n",
+    filename: 'tailwind.config.cjs',
+  },
+  {
+    name: 'jsx import source pragma',
+    code: '/** @jsxImportSource @emotion/react */\nconst value = 1;\n',
+    typescript: true,
+    filename: 'styled.tsx',
+  },
+  {
+    name: 'deprecated tag on one line',
+    code: '/** @deprecated use `other` */\nexport const old = 1;\n',
   },
   // A three-line run merges into one `/** */` block; if a line already carries a literal `*/`, merging it would
   // close that block early and spill the rest of the run as code.

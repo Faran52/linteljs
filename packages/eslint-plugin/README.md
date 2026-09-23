@@ -97,8 +97,7 @@ export default [
 ```
 
 `union-newline` is in `recommended`. `interface-order` is not, but the `base` layer in
-`@linteljs/eslint-config` turns it on. Without that layer, enable it through `flat/ordering` or by rule
-name.
+`@linteljs/eslint-config` turns it on. Without that layer, take `flat/all` or name the rule.
 
 ## Rules
 
@@ -110,12 +109,12 @@ Each rule link has examples, options, and cases it declines to fix.
 | [`@linteljs/destructuring-property-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/destructuring-property-newline) | Keep destructuring patterns either compact or fully expanded, never half-split. | yes | | |
 | [`@linteljs/export-specifier-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/export-specifier-newline) | Put each export specifier on its own line. | yes | | |
 | [`@linteljs/import-newlines`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/import-newlines) | Split import lists when they get crowded or too long. | yes | | `maxItems`, `maxLineLength` |
-| [`@linteljs/interface-order`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/interface-order) | Keep top-level interfaces and type aliases together, after imports and before runtime code. | | yes | |
-| [`@linteljs/newline-destructuring`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/newline-destructuring) | Keep crowded destructuring patterns, interfaces, and type literals on separate lines. | yes | | `maxProperties`, `maxPropertiesWithRest` |
+| [`@linteljs/interface-order`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/interface-order) | Keep top-level interfaces and type aliases together, after imports and before runtime code. | yes | yes | |
+| [`@linteljs/member-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/member-newline) | Keep crowded destructuring patterns, interfaces, and type literals on separate lines. | yes | | `maxProperties`, `maxPropertiesWithRest`, `maxLineLength` |
 | [`@linteljs/no-duplicate-jsx-props`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-duplicate-jsx-props) | Report duplicate JSX props on the same element. | | | |
 | [`@linteljs/no-eslint-disable`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-eslint-disable) | Fix what a rule reports, or name the exemption in the config. Do not disable it inline. | yes | | `allowRules` |
-| [`@linteljs/no-inline-object-types`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-inline-object-types) | Give an object type a name instead of writing its shape inline. | yes | yes | `allowIn` |
 | [`@linteljs/no-import-namespace-destructure`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-import-namespace-destructure) | Avoid destructuring namespace imports when a named import is enough. | yes | | |
+| [`@linteljs/no-inline-object-types`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-inline-object-types) | Give an object type a name instead of writing its shape inline. | yes | yes | `allowIn` |
 | [`@linteljs/prefer-arrow-functions`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-arrow-functions) | Prefer arrow functions when the conversion keeps behaviour the same. | yes | | `forceHoisted` |
 | [`@linteljs/prefer-await-to-then`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-await-to-then) | Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values. | yes | | `strict` |
 | [`@linteljs/prefer-destructured-props`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-destructured-props) | Destructure component props in the function signature instead of reading them one field at a time. | | | |
@@ -124,7 +123,6 @@ Each rule link has examples, options, and cases it declines to fix.
 | [`@linteljs/react-native-no-nested-touchables`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-no-nested-touchables) | Disallow controls inside a container marked accessible. | | | `components` |
 | [`@linteljs/react-native-valid-accessibility-actions`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-actions) | Require accessibilityActions and onAccessibilityAction to be declared together and well formed. | | |  |
 | [`@linteljs/react-native-valid-accessibility-role`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-role) | Require accessibilityRole and role values React Native understands. | | |  |
-| [`@linteljs/react-no-global-namespace`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-no-global-namespace) | Import the React names a file uses instead of reaching them through the global namespace. | | | |
 | [`@linteljs/react-native-valid-accessibility-state`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-state) | Require accessibilityState to be an object of the keys React Native reads. | | |  |
 | [`@linteljs/react-no-global-namespace`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-no-global-namespace) | Import the React names a file uses instead of reaching them through the global namespace. | | | |
 | [`@linteljs/sort-hook-dependencies`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/sort-hook-dependencies) | Keep hook dependency arrays in a consistent order. | | | `order`, `hooks` |

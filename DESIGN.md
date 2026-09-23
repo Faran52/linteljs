@@ -270,6 +270,38 @@ It is not in `recommended`, because the plugin ships no JSX layer of its own. Th
 layers of `@linteljs/eslint-config` turn it on, and those are the two that render JSX; Vue and
 Svelte templates are not JSX and take nothing.
 
+## `no-inline-object-types` and `interface-order` are both on by default
+
+Both are opinions about types rather than defects, and both ship in `recommended` from 2.0. They
+do not ask for the same kind of thing, which is worth keeping straight: one asks for a name and the
+other asks for a position.
+
+An inline shape is a type nothing else can say: it cannot be imported, extended, narrowed by a guard
+or documented above its own declaration, so the second place that needs it either repeats it or
+takes a worse type. That is the same class of problem as a duplicate JSX prop, and it is the class
+`recommended` is for. The blast radius is the honest objection: `useState<{ id: string }>()`,
+`Record<string, { id: string }>` and a callback parameter each report, which is three findings on
+three lines nobody would call wrong, and it lands on idiomatic React straight away. The answer is
+that each of those has a name the author already knows and the reader wanted, `allowIn` covers the
+one case where the literal is a matcher rather than a shape, and the alternative is a rule almost
+nobody turns on. This workspace lints itself with it and carries zero findings today; the twelve it
+found in the React Native starter tests are named types now.
+
+`interface-order` asks for something else. It says top-level interfaces and type aliases sit
+together after the imports and before the runtime code, which is a house layout rather than a claim
+about the type. Through 1.x it was opt-out for exactly that reason: a project that groups its types
+per section is not worse off, it is different, and a default rule reporting a file because its
+author organises differently is a rule people turn off.
+
+2.0 takes the other side of that, and the reason is what this package is for rather than a change
+of mind about the argument. A shared config is a house layout; that is the product. Every generated
+project already received this rule through `base`, so the position was already the standard for
+everyone this repository writes a project for, and leaving it out of `recommended` only hid that
+from the consumer who composes the plugin directly. The cost is real and stated: a project with a
+different convention now reports on upgrade, which is why it landed in a major and why the fix is
+`reorder` and report-only rather than a free rewrite. `base` still restates it over `TYPED_FILES`,
+not to enable it but to reach a `<script lang="ts">` block the plugin's own preset cannot.
+
 ## Targets
 
 Nine: React, Next.js, Vue, Svelte, Solid, Angular, Astro, React Native through Expo, and a

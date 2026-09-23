@@ -2,6 +2,7 @@ import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
+  fitsOnLine,
   indentReader,
   lineTerminatorOf,
 } from '../../utils/layoutUtils.ts';
@@ -137,25 +138,31 @@ export const importNewlines = createRule('import-newlines', {
       }
     };
 
+    // The collapsed form when it is usable: null for a comment the rebuild cannot carry, for a line it would
+    // overrun, and for a statement with too many members to collapse in the first place.
+    const collapsedText = (node: ImportNode, namedCount: number): string | null => {
+      const collapsed = namedCount > maxItems ? null : writeImport(sourceCode, node, null, eol);
+
+      return collapsed !== null && fitsOnLine(sourceCode, node, collapsed, maxLineLength) ? collapsed : null;
+    };
+
     const checkMultiLineImport = (node: ImportNode, namedCount: number, importLineCount: number) => {
+      const collapsed = collapsedText(node, namedCount);
+
       if (importLineCount !== namedCount + 2) {
+        // A half-split statement under the member count collapses in the end, so the fix goes
+        // straight there rather than splitting it fully and collapsing it on the next pass.
         context.report({
           node,
           messageId: 'limitLineCount',
-          fix: splitFix(node),
+          fix: collapsed === null ? splitFix(node) : fixTo(node, collapsed),
         });
 
         return;
       }
 
-      if (namedCount > maxItems) {
-        return;
-      }
-
-      const collapsed = writeImport(sourceCode, node, null, eol);
-
       // No collapsed form means the statement cannot be rewritten, so reporting it would leave an unfixable error.
-      if (collapsed === null || collapsed.length + node.loc.start.column > maxLineLength) {
+      if (collapsed === null) {
         return;
       }
 

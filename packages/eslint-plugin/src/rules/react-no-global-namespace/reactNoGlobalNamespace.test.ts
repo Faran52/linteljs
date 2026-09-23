@@ -24,6 +24,22 @@ function build() {
   let value: React.ReactNode;
   return value;
 }`,
+
+    /**
+     * A declaration file is a script until something imports into it. An import would make it a module, at
+     * which point `declare module '*.svg'` augments a module that does not exist and every global here stops
+     * being global. There is nothing to report either: the file cannot take the import the message asks for.
+     */
+    {
+      code: "declare module '*.svg' {\n  const Component: React.FC;\n  export default Component;\n}",
+      filename: 'custom.d.ts',
+    },
+
+    // The same shape with no extension to go on: a top-level `declare` and not one import in the file.
+    {
+      code: 'declare global {\n  interface Window { root: React.ReactNode }\n}',
+      filename: 'globals.ts',
+    },
   ],
   invalid: [
     {
@@ -50,6 +66,24 @@ function build() {
     {
       code: "import { useState } from 'react';\nlet value: React.ReactNode;",
       output: "import { type ReactNode, useState } from 'react';\nlet value: ReactNode;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    /**
+     * `'use client'` is a directive only while nothing precedes it. The insert used to go before the first
+     * statement, which put the import above the directive and left Next's compiler refusing the file.
+     */
+    {
+      code: "'use client';\n\ninterface Props { children?: React.ReactNode }",
+      output: "'use client';\n\nimport { type ReactNode } from 'react';\n\ninterface Props { children?: ReactNode }",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    // A `declare` beside an import is already a module, so another import changes nothing about the file.
+    {
+      code: "import { render } from 'x';\n\ndeclare const value: React.ReactNode;",
+      output: "import { type ReactNode } from 'react';\n\nimport { render } from 'x';\n\n"
+        + 'declare const value: ReactNode;',
       errors: [{ messageId: 'globalNamespace' }],
     },
 
@@ -166,6 +200,31 @@ tsxRuleTester.run('react-no-global-namespace: markup', reactNoGlobalNamespace, {
     {
       code: "import { useState } from 'react';\nconst el = <React.Fragment>t</React.Fragment>;",
       output: "import { Fragment, useState } from 'react';\nconst el = <Fragment>t</Fragment>;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    /**
+     * The name is imported, but as a type, so `<Fragment>` against it is a value TypeScript refuses. Reading
+     * the name alone counted that as already imported and rewrote both tags. The name is taken either way,
+     * which leaves nothing to write: reported with no fix.
+     */
+    {
+      code: "import type { Fragment } from 'react';\nconst el = <React.Fragment />;",
+      output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    // The same binding under the inline spelling, where `importKind` sits on the specifier instead.
+    {
+      code: "import { type Fragment } from 'react';\nconst el = <React.Fragment />;",
+      output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    // A value specifier of that name is what a value reach needs, so only the tag changes.
+    {
+      code: "import { Fragment } from 'react';\nconst el = <React.Fragment />;",
+      output: "import { Fragment } from 'react';\nconst el = <Fragment />;",
       errors: [{ messageId: 'globalNamespace' }],
     },
   ],

@@ -11,6 +11,7 @@ import { type Fixer, mustFind } from '../utils/ruleUtils.ts';
 
 import {
   adjacentPairs,
+  fitsOnLine,
   fixCommaToNewline,
   gapIsBlank,
   getIndent,
@@ -300,6 +301,31 @@ describe('fixCommaToNewline', () => {
     const second = mustFind(sourceCode.getLastToken(firstNode('ArrayExpression'), 1));
 
     expect(fixCommaToNewline(sourceCode, captureFixer(), second)?.text).toBe('\n');
+  });
+});
+
+describe('fitsOnLine', () => {
+  // The pattern is what a collapse would replace; `const ` in front of it and ` = source;` behind
+  // it stay where they are, so both count towards the line the reader ends up with.
+  const fitsPattern = (code: string, text: string, limit: number): boolean => {
+    const { sourceCode, firstNode } = sourceCodeFrom(code);
+
+    return fitsOnLine(sourceCode, firstNode('ObjectPattern'), text, limit);
+  };
+
+  const SPLIT = 'const {\n  alpha,\n  bravo\n} = source;';
+
+  it('counts what sits either side of the node on its line', () => {
+    expect(fitsPattern(SPLIT, '{ alpha, bravo }', 32)).toBe(true);
+    expect(fitsPattern(SPLIT, '{ alpha, bravo }', 31)).toBe(false);
+  });
+
+  it('measures to the end of the file when nothing follows the node', () => {
+    expect(fitsPattern('const {\n  alpha,\n  bravo\n} = s;', '{ alpha, bravo }', 27)).toBe(true);
+  });
+
+  it('measures to the next line break when something follows', () => {
+    expect(fitsPattern(`${SPLIT}\nconst other = 1;\n`, '{ alpha, bravo }', 32)).toBe(true);
   });
 });
 

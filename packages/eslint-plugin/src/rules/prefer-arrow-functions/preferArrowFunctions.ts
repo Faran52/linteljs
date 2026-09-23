@@ -1,6 +1,5 @@
 import { createRule } from '../../types.ts';
 import {
-  ancestorReaderOf,
   declaredVariablesOf,
   physicalFilenameOf,
   sourceCodeOf,
@@ -13,7 +12,6 @@ import {
 } from '../../utils/ruleUtils.ts';
 
 import {
-  isInsideFunctionBody,
   isSafeToConvert,
   SAFE_DECLARATION_PARENTS,
   sitsInUnsafePosition,
@@ -122,16 +120,12 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
     ): boolean => {
       const [declarationStart] = rangeOf(fn);
 
+      // Any earlier mention, wherever it sits. A reference inside another function only looks safe: that
+      // function may itself be called above this declaration, and the dead zone is then two hops away.
       return nameVariable.references.some((reference) => {
         const range = reference.identifier.range;
 
-        if (range === undefined || range[0] >= declarationStart) {
-          return false;
-        }
-
-        // A call inside another function body runs whenever that function is called, not
-        // at this point; matches the line `no-use-before-define` draws with `functions: false`.
-        return !isInsideFunctionBody(ancestorReaderOf(context), reference.identifier);
+        return range !== undefined && range[0] < declarationStart;
       });
     };
 

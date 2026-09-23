@@ -70,6 +70,8 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
     // `super` is only legal inside a method, so shorthand that reaches for it cannot become an arrow either.
     'const service = {\n  greet() {\n    return super.toString();\n  }\n};',
 
+    // There is no `export default const`, so converting this means writing a statement of its own
+    // and rewriting the export to name it. The anonymous form has no name to keep and does convert.
     'export default function greet() {\n  return 1;\n}',
 
     'const service = {\n  get value() {\n    return 1;\n  }\n};',
@@ -409,13 +411,23 @@ class Holder {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
-      // `outer` mentions `greet` above its declaration, but the mention is inside a function body
-      // so it does not run before `greet` is initialised.
+      // `outer` mentions `greet` above its declaration. Nothing here says when `outer` runs, so `greet`
+      // declines; `outer` itself is mentioned nowhere earlier and converts.
       code: 'function outer() {\n  return greet();\n}\n\nfunction greet() {\n  return 1;\n}',
-      output: 'const outer = () => {\n  return greet();\n};\n\nconst greet = () => {\n  return 1;\n};',
+      output: 'const outer = () => {\n  return greet();\n};\n\nfunction greet() {\n  return 1;\n}',
       errors: [
         { messageId: 'preferArrow' },
-        { messageId: 'preferArrow' },
+        { messageId: 'preferArrowHoisted' },
+      ],
+    },
+    {
+      // The two-hop shape, and the reason the mention inside a function body counts: `run()` on line one
+      // runs `helper()` immediately, so converting `helper` throws `ReferenceError` at load.
+      code: 'run();\n\nfunction run() {\n  helper();\n}\n\nfunction helper() {\n  return 1;\n}',
+      output: null,
+      errors: [
+        { messageId: 'preferArrowHoisted' },
+        { messageId: 'preferArrowHoisted' },
       ],
     },
     {
@@ -428,11 +440,6 @@ class Holder {
     {
       // Called above its declaration; a `const` would be in its temporal dead zone at that point.
       code: 'greet();\n\nfunction greet() {\n  return 1;\n}',
-      output: null,
-      errors: [{ messageId: 'preferArrowHoisted' }],
-    },
-    {
-      code: 'const result = greet();\n\nfunction greet() {\n  return 1;\n}',
       output: null,
       errors: [{ messageId: 'preferArrowHoisted' }],
     },

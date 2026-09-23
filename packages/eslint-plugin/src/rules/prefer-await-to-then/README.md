@@ -65,6 +65,11 @@ const inner = async () => {
   return await promise.then(parse);
 };
 
+// correct: anywhere under that await counts, callback included, so this chain is exempt too
+const all = async (items) => {
+  return await Promise.all(items.map((item) => item.load().then(parse)));
+};
+
 // correct: returned from an async function, so the caller's await settles it.
 // prefer-try-catch takes this one.
 const handover = async () => {
@@ -94,9 +99,14 @@ refactor, not a fix.
 Exempt at the default setting:
 
 - top level of a module, where a call has to start somewhere
-- inside a `yield` or `await`, which is already the shape being asked for
+- anywhere under a `yield` or an `await`, which is already the shape being asked for
 - inside a constructor, which cannot be async
 - a value returned from an async function, so the caller's `await` settles it
+
+The second is the whole subtree, not the awaited value alone. In
+`await Promise.all(items.map((item) => item.load().then(parse)))` the chain is two callbacks down
+from the `await` and is still exempt, because the expression it belongs to is awaited and the
+function around it is already async. `strict: true` reports it.
 
 The last two are where `prefer-try-catch` picks up. With the default options the two rules never
 report the same line. Under `strict: true` they do, which is the point of the option.
