@@ -1,11 +1,11 @@
-import { NODE_FLOOR, RUN_PREFIX } from '@config/constants';
+import { RUN_PREFIX } from '@config/constants';
 import { type Artifact } from '@config/types';
 
 import { majorOf } from '@utils/versionUtils';
 
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers, PackageManager } from '@answers';
+import type { HostedAnswers, PackageManager } from '@answers';
 
 // The one workflow this standard owns, emitted rather than preserved because it is the gate: a reference repo renamed
 // `check` and its workflow called the old name for two days while `sync` reported it up to date.
@@ -18,10 +18,10 @@ interface ManagerSetup {
   install: string;
 }
 
-// The major of the Node that made the project, so CI runs what it was built on, and the floor's major where a
-// config predates the recording of it. A bare major cannot resolve below `engines.node`, which is a major too.
-const nodeVersion = (answers: Answers): string => {
-  return String(majorOf(answers.nodeVersion ?? NODE_FLOOR));
+// The major of the Node that made the project, so CI runs what it was built on. A bare major cannot resolve below
+// `engines.node`, which is a major too.
+const nodeVersion = (answers: HostedAnswers): string => {
+  return String(majorOf(answers.nodeVersion));
 };
 
 // Third-party actions are pinned to a commit, since a tag can move; GitHub's own go by major tag.
@@ -54,7 +54,7 @@ const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
   },
 };
 
-export const emitCiWorkflow = (answers: Answers): string => {
+export const emitCiWorkflow = (answers: HostedAnswers): string => {
   const setup = MANAGER_SETUP[answers.packageManager];
 
   const before = setup.before.map((step) => {
@@ -94,6 +94,6 @@ ${before}      - uses: actions/setup-node@v7
 };
 
 // The directory is named for `.github/workflows/ci.yml`, so the path is spelled here and nowhere else.
-export const ciWorkflowEmitter = (answers: Answers): Artifact[] => {
+export const ciWorkflowEmitter = (answers: HostedAnswers): Artifact[] => {
   return [emitted('standard', '.github/workflows/ci.yml', emitCiWorkflow(answers))];
 };

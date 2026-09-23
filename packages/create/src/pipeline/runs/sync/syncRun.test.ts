@@ -10,6 +10,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   afterEach,
   beforeEach,
@@ -20,7 +21,7 @@ import {
 
 import { MANAGED_PATH } from '@config/constants';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type HostedAnswers } from '@answers';
 import { exists } from '@disk';
 
 import {
@@ -39,8 +40,8 @@ const CLAUDE_ONLY = [
   'plugins/linteljs/.claude-plugin/plugin.json',
 ];
 
-const CODEX_ONLY: Answers = {
-  ...DEFAULT_ANSWERS,
+const CODEX_ONLY: HostedAnswers = {
+  ...HOSTED_DEFAULTS,
   agents: ['codex'],
 };
 
@@ -58,7 +59,7 @@ afterEach(async () => {
 });
 
 // `sync --force` without the CLI.
-const applyPending = async (answers: Answers): Promise<SyncResult> => {
+const applyPending = async (answers: HostedAnswers): Promise<SyncResult> => {
   const { pending } = await planSync(cwd, answers);
 
   return await applySync(cwd, answers, pending.map((entry) => {
@@ -66,7 +67,7 @@ const applyPending = async (answers: Answers): Promise<SyncResult> => {
   }));
 };
 
-const statusOf = async (answers: Answers, target: string): Promise<string | undefined> => {
+const statusOf = async (answers: HostedAnswers, target: string): Promise<string | undefined> => {
   const { entries } = await planSync(cwd, answers);
 
   return entries.find((entry) => {
@@ -76,7 +77,7 @@ const statusOf = async (answers: Answers, target: string): Promise<string | unde
 
 describe('planSync', () => {
   it('marks every artifact missing against an empty directory, and pending all of them', async () => {
-    const plan = await planSync(cwd, DEFAULT_ANSWERS);
+    const plan = await planSync(cwd, HOSTED_DEFAULTS);
 
     expect(plan.entries.length).toBeGreaterThan(0);
     expect(plan.entries.every((entry) => {
@@ -86,9 +87,9 @@ describe('planSync', () => {
   });
 
   it('marks a written artifact unchanged and leaves it out of pending', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, ['eslint.config.js']);
+    await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
 
-    const plan = await planSync(cwd, DEFAULT_ANSWERS);
+    const plan = await planSync(cwd, HOSTED_DEFAULTS);
     const entry = plan.entries.find((candidate) => {
       return candidate.target === 'eslint.config.js';
     });
@@ -100,10 +101,10 @@ describe('planSync', () => {
   });
 
   it('marks a locally edited artifact changed and carries a diff of the edit', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, ['eslint.config.js']);
+    await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
     await writeFile(join(cwd, 'eslint.config.js'), '// edited locally\n', 'utf8');
 
-    const plan = await planSync(cwd, DEFAULT_ANSWERS);
+    const plan = await planSync(cwd, HOSTED_DEFAULTS);
     const entry = plan.entries.find((candidate) => {
       return candidate.target === 'eslint.config.js';
     });
@@ -115,14 +116,14 @@ describe('planSync', () => {
 
   // An edit is the project's; only absence is still linteljs's to fix.
   it('calls an edited preserved artifact unchanged and its absence missing', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, ['CLAUDE.md']);
+    await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md']);
     await writeFile(join(cwd, 'CLAUDE.md'), '# our own instructions\n', 'utf8');
 
-    expect(await statusOf(DEFAULT_ANSWERS, 'CLAUDE.md')).toBe('unchanged');
+    expect(await statusOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toBe('unchanged');
 
     await rm(join(cwd, 'CLAUDE.md'));
 
-    expect(await statusOf(DEFAULT_ANSWERS, 'CLAUDE.md')).toBe('missing');
+    expect(await statusOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toBe('missing');
   });
 
   // A bare catch that read any read failure as absence would report this as "missing" and invite a
@@ -130,11 +131,11 @@ describe('planSync', () => {
   it('rejects rather than reporting missing when a target cannot be read for a reason other than absence', async () => {
     await mkdir(join(cwd, 'eslint.config.js'));
 
-    await expect(planSync(cwd, DEFAULT_ANSWERS)).rejects.toThrow();
+    await expect(planSync(cwd, HOSTED_DEFAULTS)).rejects.toThrow();
   });
 
   it('marks a generated agent file obsolete once the answers stop selecting its host', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, CLAUDE_ONLY);
+    await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
 
     const { entries, pending } = await planSync(cwd, CODEX_ONLY);
     const obsolete = entries.filter((entry) => {
@@ -152,7 +153,7 @@ describe('planSync', () => {
 
   // Exact paths, not prefixes: neither adapter is in the inventory, nor is a file this CLI never wrote.
   it('leaves the deselected adapter and unknown files below a generated directory alone', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, ['CLAUDE.md', '.claude/settings.json']);
+    await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md', '.claude/settings.json']);
     await writeFile(join(cwd, '.claude/notes.md'), '# ours\n', 'utf8');
 
     const obsolete = (await planSync(cwd, CODEX_ONLY)).entries.filter((entry) => {
@@ -176,7 +177,7 @@ describe('planSync', () => {
 
 describe('applySync', () => {
   it('writes only the targets it is given', async () => {
-    const { written, removed } = await applySync(cwd, DEFAULT_ANSWERS, ['eslint.config.js']);
+    const { written, removed } = await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
 
     expect(written).toEqual(['eslint.config.js']);
     expect(removed).toEqual([]);
@@ -185,7 +186,7 @@ describe('applySync', () => {
   });
 
   it('writes the file content that planSync would call unchanged afterwards', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, ['eslint.config.js']);
+    await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
 
     const written = await readFile(join(cwd, 'eslint.config.js'), 'utf8');
 
@@ -198,7 +199,7 @@ describe('applySync', () => {
     await writeFile(external, '// external config\n', 'utf8');
     await symlink(external, join(cwd, 'eslint.config.js'));
 
-    await expect(applySync(cwd, DEFAULT_ANSWERS, ['eslint.config.js']))
+    await expect(applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']))
       .rejects.toThrow('Refusing to write eslint.config.js: target is a symbolic link');
     await expect(readFile(external, 'utf8')).resolves.toBe('// external config\n');
   });
@@ -223,7 +224,7 @@ describe('applySync', () => {
   });
 
   it('makes an executable artifact executable on disk', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, [CLAUDE_HOOK]);
+    await applySync(cwd, HOSTED_DEFAULTS, [CLAUDE_HOOK]);
 
     const mode = (await stat(join(cwd, CLAUDE_HOOK))).mode;
 
@@ -234,20 +235,20 @@ describe('applySync', () => {
   // pattern list as well as the project's own blocks.
   it('writes a preserved file when missing, and leaves it alone once it exists', async () => {
     const setup = '__mocks__/setupTests.tsx';
-    const first = await applySync(cwd, DEFAULT_ANSWERS, [setup]);
+    const first = await applySync(cwd, HOSTED_DEFAULTS, [setup]);
 
     expect(first.written).toEqual([setup]);
 
     await writeFile(join(cwd, setup), '// the project own setup\n', 'utf8');
 
-    const second = await applySync(cwd, DEFAULT_ANSWERS, [setup]);
+    const second = await applySync(cwd, HOSTED_DEFAULTS, [setup]);
 
     expect(second.written).toEqual([]);
     expect(await readFile(join(cwd, setup), 'utf8')).toBe('// the project own setup\n');
   });
 
   it('removes the obsolete files it is given and reports each one', async () => {
-    await applyPending(DEFAULT_ANSWERS);
+    await applyPending(HOSTED_DEFAULTS);
 
     const { removed } = await applyPending(CODEX_ONLY);
 
@@ -264,7 +265,7 @@ describe('applySync', () => {
   });
 
   it('removes nothing it was not given, even where the plan called it obsolete', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, CLAUDE_ONLY);
+    await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
 
     const { removed } = await applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);
 
@@ -274,7 +275,7 @@ describe('applySync', () => {
 
   // An empty `.claude/` left behind would read as if the host were still configured.
   it('drops the directories that empty out and keeps the ones that do not', async () => {
-    await applyPending(DEFAULT_ANSWERS);
+    await applyPending(HOSTED_DEFAULTS);
     await applyPending(CODEX_ONLY);
 
     expect(await exists(join(cwd, '.claude'))).toBe(false);
@@ -285,7 +286,7 @@ describe('applySync', () => {
   });
 
   it('keeps a directory a project put its own file in', async () => {
-    await applySync(cwd, DEFAULT_ANSWERS, ['.claude/settings.json']);
+    await applySync(cwd, HOSTED_DEFAULTS, ['.claude/settings.json']);
     await writeFile(join(cwd, '.claude/notes.md'), '# ours\n', 'utf8');
 
     await applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);

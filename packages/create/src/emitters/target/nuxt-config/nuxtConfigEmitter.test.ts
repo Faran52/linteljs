@@ -1,3 +1,4 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
@@ -6,13 +7,13 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers, type HostedAnswers } from '@answers';
 
 import { emitNuxtConfig, nuxtConfigEmitter } from './nuxtConfigEmitter';
 
-const answersFor = (overrides: Partial<Answers> = {}): Answers => {
+const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   return {
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     target: 'nuxt',
     ...overrides,
   };

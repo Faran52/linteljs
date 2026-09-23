@@ -1,3 +1,4 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
@@ -6,13 +7,13 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers } from '@answers';
 
 import { emitReactRouterConfig, reactRouterConfigEmitter } from './reactRouterConfigEmitter';
 
 const targetsOf = (overrides: Partial<Answers>): string[] => {
   return reactRouterConfigEmitter({
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     target: 'react',
     ...overrides,
   }, EMPTY_PROJECT, 'demo-app').map((artifact) => {

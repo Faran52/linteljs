@@ -66,10 +66,6 @@ const baseReactTarget: TargetRecord = {
   html: true,
   vite: true,
   routeUnit: 'src/pages/<kebab>/{Name}Page.tsx',
-  hooksSlot: {
-    label: 'Hooks',
-    path: 'src/lib/hooks/ (use*)',
-  },
   stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   routers: ROUTERS,
   ignores: [],

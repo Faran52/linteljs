@@ -12,6 +12,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import { plantBinary } from '@mocks/plantBinary';
 import {
   afterEach,
@@ -29,13 +30,12 @@ import { valuesOf } from '@utils/objectUtils';
 import {
   type Agent,
   ANSWERS,
-  type Answers,
   type Browser,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   type Data,
-  DEFAULT_ANSWERS,
+  type HostedAnswers,
   type Library,
   type PackageManager,
   type Plugin,
@@ -74,9 +74,9 @@ interface AnswerOverrides {
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-const answersFor = (overrides: AnswerOverrides): Answers => {
+const answersFor = (overrides: AnswerOverrides): HostedAnswers => {
   return {
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     ...overrides,
   };
 };
@@ -166,9 +166,9 @@ describe('runPipeline against a directory that already exists', () => {
     expect(await linteljsConfigReader(cwd)).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      ...DEFAULT_ANSWERS,
+      ...HOSTED_DEFAULTS,
     });
-    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLinteljsConfig(DEFAULT_ANSWERS));
+    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLinteljsConfig(HOSTED_DEFAULTS));
 
     // Same stage, config first, so the recorded answers and the dependencies they imply agree.
     expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
@@ -1043,7 +1043,7 @@ describe('what create and sync each discover about a project', () => {
     await writeFile(join(cwd, relative), text, 'utf8');
   };
 
-  const generateWith = async (answers: Answers): Promise<string[]> => {
+  const generateWith = async (answers: HostedAnswers): Promise<string[]> => {
     const written: string[] = [];
 
     await pipelineRun({

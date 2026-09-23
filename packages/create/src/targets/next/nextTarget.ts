@@ -40,10 +40,6 @@ export const nextTarget: TargetRecord = {
   html: false,
   vite: false,
   routeUnit: 'src/app/',
-  hooksSlot: {
-    label: 'Hooks',
-    path: 'src/lib/hooks/ (use*)',
-  },
   stores: STORES,
   ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
   naming: componentNaming('app'),

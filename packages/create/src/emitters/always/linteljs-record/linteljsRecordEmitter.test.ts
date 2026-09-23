@@ -1,12 +1,14 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers, type HostedAnswers } from '@answers';
 
 import { emitLinteljsRecord, linteljsRecordEmitter } from './linteljsRecordEmitter';
 
-const answersFor = (overrides: Partial<Answers> = {}): Answers => {
+const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   return {
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     ...overrides,
   };
 };
@@ -32,7 +34,8 @@ describe('emitLinteljsRecord', () => {
 
     expect(recorded).toContain("version: '26.9.0'");
     expect(recorded).toContain("version: '12.4.1'");
-    expect(emitLinteljsRecord(answersFor(), 'my-app')).not.toContain("name: 'node'");
+    // Every run records its Node, so the manager's version is the one that can be absent.
+    expect(emitLinteljsRecord(answersFor(), 'my-app')).not.toContain("name: 'pnpm'");
   });
 
   it('prints every answer a prompt asked, and nothing a record never asks', () => {

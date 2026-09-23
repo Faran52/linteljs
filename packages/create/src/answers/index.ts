@@ -17,6 +17,7 @@ export {
   ANSWERS,
   type Answers,
   DEFAULT_ANSWERS,
+  type HostedAnswers,
   type LinteljsConfig,
 } from './registry';
 export { type Browser } from './target/browser/browserAnswer';

@@ -1,6 +1,6 @@
 import { type Emitter } from '@config/types';
 
-import { ANSWERS, type Answers } from '@answers';
+import { ANSWERS, type HostedAnswers } from '@answers';
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -16,7 +16,7 @@ import { answerRows, stackRows } from './utils/recordUtils';
  * ranges rather than resolved versions, so a build-time import would cost `resolveJsonModule` and two per-target
  * exceptions to restate a literal. Seeded rather than built, so a project owns it from its first run.
  */
-export const emitLinteljsRecord = (answers: Answers, name: string): string => {
+export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string => {
   const rows = (entries: [string, string][]): string => {
     return entries.map(([left, right]) => {
       return `  {\n    ${left},\n    ${right},\n  },`;

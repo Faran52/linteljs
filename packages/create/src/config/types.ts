@@ -1,4 +1,4 @@
-import type { Answers } from '@answers/registry';
+import type { HostedAnswers } from '@answers/registry';
 
 /**
  * The vocabulary every ring shares: `emitters/` builds an artifact, `files/` applies it, `pipeline/` sequences
@@ -70,7 +70,7 @@ export interface ProjectShape {
  * the emitter's own: a target that has no vite config answers `[]` and `buildArtifacts` holds no branch about it.
  * Fewer parameters is fine, since most emitters read only the answers.
  */
-export type Emitter = (answers: Answers, project: ProjectShape, name: string) => Artifact[];
+export type Emitter = (answers: HostedAnswers, project: ProjectShape, name: string) => Artifact[];
 
 export type AliasMap = Record<string, string>;
 

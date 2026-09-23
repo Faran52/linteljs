@@ -12,6 +12,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { execPath } from 'node:process';
 
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
@@ -28,7 +29,7 @@ import {
   ANSWERS,
   type Answers,
   type Data,
-  DEFAULT_ANSWERS,
+  type HostedAnswers,
   type Library,
   type PackageManager,
   type Styling,
@@ -64,9 +65,9 @@ interface ScannedArtifact {
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-const answersFor = (overrides: AnswerOverrides): Answers => {
+const answersFor = (overrides: AnswerOverrides): HostedAnswers => {
   return {
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     ...overrides,
   };
 };
@@ -160,7 +161,7 @@ describe('buildArtifacts', () => {
      * is asked for, since a browser and a router each pick a different asset for one destination.
      */
     it(`resolves every seeded starter for ${target}`, async () => {
-      const cases: Answers[] = [
+      const cases: HostedAnswers[] = [
         answersFor({ target }),
         {
           ...answersFor({ target }),
@@ -338,7 +339,7 @@ describe('the shipped test setup', () => {
 
   const setupFor = async (overrides: AnswerOverrides): Promise<string> => {
     return await textFor(overrides, setupTestsPath({
-      ...DEFAULT_ANSWERS,
+      ...HOSTED_DEFAULTS,
       ...overrides,
     }));
   };
@@ -426,7 +427,7 @@ describe('the shipped test setup', () => {
 // same registry and a reader comparing them should not have to open a second one.
 const seedFor = (overrides: Partial<Answers> = {}): Artifact[] => {
   return seedArtifacts({
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     ...overrides,
   }, 'demo-app');
 };

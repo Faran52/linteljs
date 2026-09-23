@@ -2,7 +2,7 @@ import { dirname, join } from 'node:path';
 
 import { MANAGED_PATH } from '@config/constants';
 
-import { type Answers, LEGACY_CONFIG_PATH } from '@answers';
+import { type HostedAnswers, LEGACY_CONFIG_PATH } from '@answers';
 import {
   artifactWriter,
   entryExists,
@@ -74,7 +74,7 @@ const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry
   return entries;
 };
 
-export const planSync = async (cwd: string, answers: Answers): Promise<SyncPlan> => {
+export const planSync = async (cwd: string, answers: HostedAnswers): Promise<SyncPlan> => {
   const entries: SyncEntry[] = [];
   const expected = new Set<string>();
 
@@ -166,7 +166,7 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
 
 export const applySync = async (
   cwd: string,
-  answers: Answers,
+  answers: HostedAnswers,
   targets: string[],
 ): Promise<SyncResult> => {
   const written: string[] = [];

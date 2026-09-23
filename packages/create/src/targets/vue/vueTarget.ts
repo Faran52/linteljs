@@ -31,10 +31,6 @@ export const vueTarget: TargetRecord = {
   vite: true,
   sfcExtension: 'vue',
   routeUnit: 'src/views/, routed from src/router/',
-  hooksSlot: {
-    label: 'Composables',
-    path: 'src/lib/composables/ (use*)',
-  },
   // Pinia carries no dependency here, because create-vue installs it itself.
   stores: ['pinia', 'tanstack-store'],
   ignores: [],

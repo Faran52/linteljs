@@ -4,8 +4,8 @@ import process from 'node:process';
 
 import {
   ANSWERS,
-  type Answers,
   DEFAULT_ANSWERS,
+  type HostedAnswers,
   type TargetId,
 } from '../packages/create/src/answers';
 import { EMPTY_PROJECT } from '../packages/create/src/config/constants';
@@ -112,7 +112,7 @@ const render = (branch: Branch, prefix: string): string => {
   return [...directories, ...files].join('');
 };
 
-const answersFor = (target: TargetId): Answers => {
+const answersFor = (target: TargetId): HostedAnswers => {
   const record = targetFor({
     ...DEFAULT_ANSWERS,
     target,
@@ -129,6 +129,8 @@ const answersFor = (target: TargetId): Answers => {
     data: 'tanstack-query',
     mocking: 'msw',
     agents: ['claude-code'],
+    // Recorded off the Node running this, as a real run records the host's.
+    nodeVersion: process.versions.node,
     ...(store === undefined ? {} : { store }),
     ...(router === undefined ? {} : { router }),
   };

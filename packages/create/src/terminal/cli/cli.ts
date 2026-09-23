@@ -21,6 +21,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
+  type HostedAnswers,
   type PackageManager,
   parseLinteljsConfig,
 } from '@answers';
@@ -41,7 +42,6 @@ import { PROJECT_NAME_RULE } from '../constants';
 import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
-  type Asked,
   inquirerPrompter,
   type Prompter,
   RunCancelled,
@@ -68,6 +68,12 @@ interface Host {
   packageManager: PackageManager;
   packageManagerVersion: string;
   nodeVersion: string;
+}
+
+// What `askedFrom` answers once the host has filled what it records.
+interface HostedAsk {
+  name: string;
+  answers: HostedAnswers;
 }
 
 const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
@@ -115,7 +121,7 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
 
 // A fresh run records the host: the manager question is gone, so `packageManager` on the answers is a placeholder
 // until here.
-const hosted = (answers: Answers, host: Host): Answers => {
+const hosted = (answers: Answers, host: Host): HostedAnswers => {
   return {
     ...answers,
     packageManager: host.packageManager,
@@ -129,7 +135,7 @@ const hosted = (answers: Answers, host: Host): Answers => {
  * recorded lacks. The version fills only where the two agree on the manager: this machine's pnpm version says
  * nothing about a project that records npm, and `packageManager` would then name a version that manager never had.
  */
-const filled = (answers: Answers, host: Host): Answers => {
+const filled = (answers: Answers, host: Host): HostedAnswers => {
   const sameManager = answers.packageManager === host.packageManager;
 
   return {
@@ -137,7 +143,7 @@ const filled = (answers: Answers, host: Host): Answers => {
     ...answers.packageManagerVersion === undefined && sameManager
       ? { packageManagerVersion: host.packageManagerVersion }
       : {},
-    ...answers.nodeVersion === undefined ? { nodeVersion: host.nodeVersion } : {},
+    nodeVersion: answers.nodeVersion ?? host.nodeVersion,
   };
 };
 
@@ -181,15 +187,15 @@ const askedFrom = async (
   prompter: Prompter,
   hasTerminal: boolean,
   host: Host,
-): Promise<Asked> => {
-  const named = (answers: Answers): Asked => {
+): Promise<HostedAsk> => {
+  const named = (answers: Answers): HostedAsk => {
     return {
       name: options.name,
       answers: hosted(answers, host),
     };
   };
 
-  const fromConfig = (answers: Answers): Asked => {
+  const fromConfig = (answers: Answers): HostedAsk => {
     return {
       name: options.name,
       answers: filled(answers, host),
@@ -223,7 +229,7 @@ const askedFrom = async (
   };
 };
 
-const runSync = async (options: CliOptions, answers: Answers): Promise<void> => {
+const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<void> => {
   const { pending } = await planSync(options.cwd, answers);
 
   if (pending.length === 0) {

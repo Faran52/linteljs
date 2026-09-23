@@ -36,10 +36,6 @@ export const nuxtTarget: TargetRecord = {
   vite: false,
   sfcExtension: 'vue',
   routeUnit: 'src/pages/, whose files are the routes',
-  hooksSlot: {
-    label: 'Composables',
-    path: 'src/lib/composables/ (use*)',
-  },
   /*
    * Declared so the dependency is installed and the question is asked, with no counter module yet: this target
    * ships the pages and not the store demo. The same recorded gap astro, webextension and angular carry on `form`.

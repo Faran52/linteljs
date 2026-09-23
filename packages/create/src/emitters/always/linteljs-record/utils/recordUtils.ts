@@ -1,6 +1,10 @@
 import { valuesOf } from '@utils/objectUtils';
 
-import { type AnswerKey, type Answers } from '@answers';
+import {
+  type AnswerKey,
+  type Answers,
+  type HostedAnswers,
+} from '@answers';
 import { targetFor } from '@targets';
 
 import type { AnswerRecord } from '@answers/types';
@@ -12,7 +16,7 @@ const plain = (range: string | undefined): string | undefined => {
 
 // The stack, in the order a reader cares about it: this CLI, the framework it wrote for, the build tool, then the
 // machine. A row whose version is unknown is left out rather than printed empty.
-export const stackRows = (answers: Answers, versions: Record<string, string>): [string, string][] => {
+export const stackRows = (answers: HostedAnswers, versions: Record<string, string>): [string, string][] => {
   const target = targetFor(answers);
   const framework = target.framework === undefined ? [] : [[target.framework, plain(versions[target.framework])]];
 

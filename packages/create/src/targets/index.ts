@@ -3,7 +3,6 @@ export {
   TARGETS,
 } from './registry';
 export type {
-  HooksSlot,
   PluginSpec,
   StarterFile,
   StarterTest,

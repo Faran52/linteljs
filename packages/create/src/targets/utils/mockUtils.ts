@@ -66,15 +66,16 @@ export const mockFiles = (servesAWorker = true, adapter = 'src/lib/utils/fetchEx
     /*
      * A worker is a file the page fetches, so it needs a directory the dev server serves. Passed in rather than
      * read off the record: this module is imported by every target, and reading the registry back would close a
-     * cycle through it. React Native is the one that passes `false`, having no dev server to serve one.
+     * cycle through it. React Native is the one that passes `false`, having no dev server to serve one, and so has
+     * no entry at all rather than one no answer could reach.
      */
-    {
-      target: '__mocks__/msw/browser.ts',
-      when: (answers) => {
-        return usesMsw(answers) && servesAWorker;
-      },
-      shared: true,
-    },
+    ...servesAWorker
+      ? [{
+        target: '__mocks__/msw/browser.ts',
+        when: usesMsw,
+        shared: true,
+      } satisfies StarterFile]
+      : [],
     {
       target: '__mocks__/msw/handlers.ts',
       when: (answers) => {

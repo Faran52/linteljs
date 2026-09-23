@@ -124,12 +124,6 @@ export interface FrameworkParts {
   stateRules: string[];
 }
 
-// `label` lets Solid say "primitives" rather than "Hooks". Absent on Angular and the extension target.
-export interface HooksSlot {
-  label: string;
-  path: string;
-}
-
 export interface TailwindSlot {
   // What the style entry imports instead of `@import "tailwindcss";`.
   imports: string[];
@@ -202,10 +196,8 @@ export interface TargetRecord {
   // The scaffolder's own stylesheet, quoted as the tailwind layer's `entryPoint`. Absent on Svelte, which ships none.
   // Every target has one, so the emitters never ask whether there is a stylesheet to import into.
   styleEntry: string;
-  // Quoted into CLAUDE.md and the repo-structure rule.
+  // Where a page lives, printed by `scripts/starterTrees.ts`.
   routeUnit: string;
-  // Absent where the framework has none.
-  hooksSlot?: HooksSlot;
   // Absent, the question is not asked. The order is the offer's: the first is what a config migrated from v2 lands on.
   stores?: readonly Store[];
   // Absent, the question is not asked.

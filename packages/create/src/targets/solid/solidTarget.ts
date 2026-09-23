@@ -34,10 +34,6 @@ export const solidTarget: TargetRecord = {
   html: true,
   vite: true,
   routeUnit: 'src/pages/<kebab>/{Name}Page.tsx',
-  hooksSlot: {
-    label: 'Primitives',
-    path: 'src/lib/primitives/ (create*)',
-  },
   // Solid's own stores cover a component; this is for what crosses one.
   stores: ['tanstack-store'],
   ignores: [],

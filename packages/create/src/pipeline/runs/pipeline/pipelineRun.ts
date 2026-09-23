@@ -13,12 +13,12 @@ import { gitSpawn, runSpawn } from '@spawns';
 
 import { fixPass } from '../../passes/fix/fixPass';
 
-import type { Answers } from '@answers';
+import type { HostedAnswers } from '@answers';
 
 export interface PipelineOptions {
   name: string;
   cwd: string;
-  answers: Answers;
+  answers: HostedAnswers;
   skip: Stage[];
   // The directory is a repository that already exists rather than one this run made.
   existing?: boolean;

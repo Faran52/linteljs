@@ -43,7 +43,7 @@ import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter
 import { emitted } from './utils/artifactUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
-import type { Answers } from '@answers';
+import type { HostedAnswers } from '@answers';
 
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once
@@ -102,7 +102,7 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
  * stage-only. One line per emitter and no branch: whether a file is written is the emitter's own question.
  */
 export const buildArtifacts = (
-  answers: Answers,
+  answers: HostedAnswers,
   project: ProjectShape = EMPTY_PROJECT,
   name = '',
 ): Artifact[] => {
@@ -124,7 +124,7 @@ export const buildArtifacts = (
  * reaches disk as an `Artifact`, so `applyArtifact` is the only writer either way.
  */
 export const seedArtifacts = (
-  answers: Answers,
+  answers: HostedAnswers,
   name: string,
   project: ProjectShape = EMPTY_PROJECT,
 ): Artifact[] => {

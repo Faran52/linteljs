@@ -37,10 +37,6 @@ export const svelteTarget: TargetRecord = {
   vite: true,
   sfcExtension: 'svelte',
   routeUnit: 'src/routes/',
-  hooksSlot: {
-    label: 'Hooks',
-    path: 'src/lib/hooks/',
-  },
   // Runes cover component state; a store is for what crosses components.
   stores: ['tanstack-store'],
   /*

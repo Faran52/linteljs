@@ -38,10 +38,6 @@ export const reactNativeTarget: TargetRecord = {
   html: false,
   vite: false,
   routeUnit: 'src/app/',
-  hooksSlot: {
-    label: 'Hooks',
-    path: 'src/hooks/ (use*)',
-  },
   stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   ignores: [
     '.expo/**',

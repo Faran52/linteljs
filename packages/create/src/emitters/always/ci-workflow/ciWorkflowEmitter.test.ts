@@ -1,17 +1,13 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { NODE_FLOOR } from '@config/constants';
-
-import { majorOf } from '@utils/versionUtils';
-
 import {
-  type Answers,
   type Data,
-  DEFAULT_ANSWERS,
+  type HostedAnswers,
   type PackageManager,
   type Styling,
   type TargetId,
@@ -29,9 +25,9 @@ interface AnswerOverrides {
   data?: Data;
 }
 
-const answersFor = (overrides: AnswerOverrides): Answers => {
+const answersFor = (overrides: AnswerOverrides): HostedAnswers => {
   return {
-    ...DEFAULT_ANSWERS,
+    ...HOSTED_DEFAULTS,
     ...overrides,
   };
 };
@@ -60,12 +56,6 @@ describe('emitCiWorkflow', () => {
   // A project made on 26 and gated on the floor is a project CI has never run the way anyone develops it.
   it('runs CI on the major of the node that made the project', () => {
     expect(emitCiWorkflow(answersFor({ nodeVersion: '26.9.0' }))).toContain('node-version: 26\n');
-  });
-
-  // A config written before the version was recorded, which is every project generated before this.
-  it('falls back to the floor major where the config carries no node version', () => {
-    expect(emitCiWorkflow(answersFor({})))
-      .toContain(`node-version: ${String(majorOf(NODE_FLOOR))}\n`);
   });
 
   it('installs without letting the manager edit the lockfile', () => {
