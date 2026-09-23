@@ -164,6 +164,12 @@ settings:
 
 catalogs:
   default:
+    '@stryker-mutator/core':
+      specifier: ^10.0.0
+      version: 10.0.0
+    '@stryker-mutator/vitest-runner':
+      specifier: ^10.0.0
+      version: 10.0.0
     '@types/node':
       specifier: ^26.6.2
       version: 26.6.2
@@ -191,6 +197,9 @@ catalogs:
     vitest:
       specifier: ^5.0.1
       version: 5.0.1
+
+patchedDependencies:
+  '@stryker-mutator/vitest-runner@10.0.0': b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf
 
 importers:
 
@@ -263,6 +272,12 @@ importers:
       '@linteljs/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@stryker-mutator/core':
+        specifier: 'catalog:'
+        version: 10.0.0(@types/node@26.6.2)
+      '@stryker-mutator/vitest-runner':
+        specifier: 'catalog:'
+        version: 10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.1)
       jiti:
         specifier: 'catalog:'
         version: 2.7.0
@@ -394,11 +409,11 @@ importers:
   packages/eslint-plugin:
     devDependencies:
       '@stryker-mutator/core':
-        specifier: ^10.0.0
+        specifier: 'catalog:'
         version: 10.0.0(@types/node@26.6.2)
       '@stryker-mutator/vitest-runner':
-        specifier: ^10.0.0
-        version: 10.0.0(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.1)
+        specifier: 'catalog:'
+        version: 10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.1)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2
@@ -6395,7 +6410,7 @@ snapshots:
 
   '@stryker-mutator/util@10.0.0': {}
 
-  '@stryker-mutator/vitest-runner@10.0.0(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.1)':
+  '@stryker-mutator/vitest-runner@10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.1)':
     dependencies:
       '@stryker-mutator/api': 10.0.0
       '@stryker-mutator/core': 10.0.0(@types/node@26.6.2)

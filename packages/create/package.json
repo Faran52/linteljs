@@ -65,6 +65,7 @@
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "typecheck": "tsc --noEmit",
+    "mutation": "stryker run",
     "prepare": "pnpm run build"
   },
   "dependencies": {
@@ -73,6 +74,8 @@
   },
   "devDependencies": {
     "@linteljs/eslint-config": "workspace:*",
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/vitest-runner": "catalog:",
     "jiti": "catalog:",
     "typescript": "catalog:"
   }

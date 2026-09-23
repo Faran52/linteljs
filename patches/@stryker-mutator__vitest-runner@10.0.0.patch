@@ -1,0 +1,38 @@
+diff --git a/dist/src/stryker-setup.js b/dist/src/stryker-setup.js
+index aecfacbe47b285c272c47e54b3d66a716adfdc41..927a65ded920469ccea1ea8dcdc5f12ac1c21f5d 100644
+--- a/dist/src/stryker-setup.js
++++ b/dist/src/stryker-setup.js
+@@ -63,7 +63,7 @@ function collectTestName({ name, suite, }) {
+         nameParts.unshift(currentSuite.name);
+         currentSuite = currentSuite.suite;
+     }
+-    return nameParts.join(' ').trim();
++    return nameParts.filter(Boolean).join(' > ');
+ }
+ function toRawTestId(test) {
+     return `${test.file?.filepath ?? 'unknown.js'}#${collectTestName(test)}`;
+diff --git a/dist/src/test-helpers.js b/dist/src/test-helpers.js
+index 56cc786f30c524ae18ce87eef1a67fdf26b703c5..9b6d43b30da4ab4e9c6d1d9ea66af049995cf638 100644
+--- a/dist/src/test-helpers.js
++++ b/dist/src/test-helpers.js
+@@ -8,7 +8,7 @@ export function collectTestName({ name, suite, }) {
+         nameParts.unshift(currentSuite.name);
+         currentSuite = currentSuite.suite;
+     }
+-    return nameParts.join(' ').trim();
++    return nameParts.filter(Boolean).join(' > ');
+ }
+ export function toRawTestId(test) {
+     return `${test.file?.filepath ?? 'unknown.js'}#${collectTestName(test)}`;
+diff --git a/dist/src/vitest-test-runner.js b/dist/src/vitest-test-runner.js
+index 84f1ca026503b8e92b7adc952ec6c6a401943656..70e67f19261206427370ad7fc7b245200847d56a 100644
+--- a/dist/src/vitest-test-runner.js
++++ b/dist/src/vitest-test-runner.js
+@@ -48,7 +48,6 @@ export class VitestTestRunner {
+             };
+         }
+         return {
+-            pool: 'threads',
+             maxWorkers: 1,
+         };
+     }

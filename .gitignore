@@ -15,8 +15,9 @@ coverage/
 # tarball because every version through 1.0.3 published this path.
 packages/eslint-plugin/docs/
 
-# Stryker writes its report into the package it ran in.
-packages/eslint-plugin/reports/
+# Stryker writes its report into the package it ran in, and its sandboxes under .stryker-tmp.
+packages/*/reports/
+.stryker-tmp/
 
 # pnpm's local content-addressed store, created when a run sets store-dir inside the repo.
 .pnpm-store/
@@ -26,3 +27,4 @@ packages/eslint-plugin/reports/
 
 # Worktrees the coding agent harness creates for background agents. Never shared.
 .claude/worktrees/
+

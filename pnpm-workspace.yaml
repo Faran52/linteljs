@@ -2,6 +2,8 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 catalog:
+  '@stryker-mutator/core': ^10.0.0
+  '@stryker-mutator/vitest-runner': ^10.0.0
   '@types/node': ^26.6.2
   '@vitest/coverage-v8': ^5.0.1
   eslint: ^10.11.0
@@ -14,3 +16,8 @@ catalog:
 
 packages:
   - 'packages/*'
+# The vitest runner names tests with a space where vitest 5 matches ` > `, so every per-test run ran nothing and read
+# as survived (stryker-js#6210, fixed upstream in the unmerged #6214). It also pinned threads, which `process.chdir`
+# in create's cli suite refuses, so each package's own pool now stands. On a bump, drop what the release carries.
+patchedDependencies:
+  '@stryker-mutator/vitest-runner@10.0.0': patches/@stryker-mutator__vitest-runner@10.0.0.patch
