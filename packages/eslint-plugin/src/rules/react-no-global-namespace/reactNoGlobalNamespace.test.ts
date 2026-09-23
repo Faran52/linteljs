@@ -40,8 +40,29 @@ function build() {
       code: 'declare global {\n  interface Window { root: React.ReactNode }\n}',
       filename: 'globals.ts',
     },
+
+    // And the other way round: the extension alone, with no `declare` to go on, in each of its three spellings.
+    ...['props.d.ts', 'props.d.cts', 'props.d.mts'].map((filename) => {
+      return {
+        code: 'interface Props { children: React.ReactNode }',
+        filename,
+      };
+    }),
+
+    // One `declare` makes the file a script whatever sits beside it, so a plain statement does not undo it.
+    {
+      code: 'declare const root: HTMLElement;\nconst value: React.ReactNode = null;',
+      filename: 'globals.ts',
+    },
   ],
   invalid: [
+    {
+      // Only a name ending in the extension is a declaration file.
+      code: 'interface Props { children: React.ReactNode }',
+      filename: 'props.d.tsx',
+      output: "import { type ReactNode } from 'react';\n\ninterface Props { children: ReactNode }",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
     {
       code: 'let value: React.ReactNode;',
       output: "import { type ReactNode } from 'react';\n\nlet value: ReactNode;",
@@ -76,6 +97,22 @@ function build() {
     {
       code: "'use client';\n\ninterface Props { children?: React.ReactNode }",
       output: "'use client';\n\nimport { type ReactNode } from 'react';\n\ninterface Props { children?: ReactNode }",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    /**
+     * Only a string literal opening the file is a directive. typescript-eslint gives every ExpressionStatement a
+     * `directive` key, and reading the key alone skipped `run();` as if it were one: the import landed after it,
+     * and a file of nothing but expression statements found no statement at all and threw.
+     */
+    {
+      code: 'run();\nconst element: React.ReactNode = 1;',
+      output: "import { type ReactNode } from 'react';\n\nrun();\nconst element: ReactNode = 1;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: "React.createElement('div');",
+      output: "import { createElement } from 'react';\n\ncreateElement('div');",
       errors: [{ messageId: 'globalNamespace' }],
     },
 

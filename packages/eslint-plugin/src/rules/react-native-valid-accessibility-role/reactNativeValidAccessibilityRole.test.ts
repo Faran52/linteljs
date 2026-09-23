@@ -2,18 +2,37 @@ import { tsxRuleTester } from '@mocks/ruleTesters';
 
 import { reactNativeValidAccessibilityRole } from './reactNativeValidAccessibilityRole.ts';
 
+// Written out again rather than imported, so a name dropped from the rule's list fails here instead of vanishing
+// from both at once.
+const ACCESSIBILITY_ROLES = [
+  'adjustable', 'alert', 'button', 'checkbox', 'combobox', 'drawerlayout', 'dropdownlist', 'grid', 'header',
+  'horizontalscrollview', 'iconmenu', 'image', 'imagebutton', 'keyboardkey', 'link', 'list', 'menu', 'menubar',
+  'menuitem', 'none', 'pager', 'progressbar', 'radio', 'radiogroup', 'scrollbar', 'scrollview', 'search',
+  'slidingdrawer', 'spinbutton', 'summary', 'switch', 'tab', 'tabbar', 'tablist', 'text', 'timer', 'togglebutton',
+  'toolbar', 'viewgroup', 'webview',
+];
+
+const ARIA_ROLES = [
+  'alert', 'alertdialog', 'application', 'article', 'banner', 'button', 'cell', 'checkbox', 'columnheader',
+  'combobox', 'complementary', 'contentinfo', 'definition', 'dialog', 'directory', 'document', 'feed', 'figure',
+  'form', 'grid', 'group', 'heading', 'img', 'link', 'list', 'listitem', 'log', 'main', 'marquee', 'math', 'menu',
+  'menubar', 'menuitem', 'meter', 'navigation', 'none', 'note', 'option', 'presentation', 'progressbar', 'radio',
+  'radiogroup', 'region', 'row', 'rowgroup', 'rowheader', 'scrollbar', 'searchbox', 'separator', 'slider',
+  'spinbutton', 'status', 'summary', 'switch', 'tab', 'table', 'tablist', 'tabpanel', 'term', 'timer', 'toolbar',
+  'tooltip', 'tree', 'treegrid', 'treeitem',
+];
+
 tsxRuleTester.run('react-native-valid-accessibility-role', reactNativeValidAccessibilityRole, {
   valid: [
-    'const view = <View accessibilityRole="button" />;',
-    'const view = <View accessibilityRole="none" />;',
-    // In React Native's own type and absent from the published third-party list, which is why the list here
-    // is read off the package rather than off a doc page.
-    'const view = <View accessibilityRole="dropdownlist" />;',
-    'const view = <View accessibilityRole="viewgroup" />;',
-    'const view = <View role="searchbox" />;',
-    'const view = <View role="none" />;',
+    ...ACCESSIBILITY_ROLES.map((role) => {
+      return `const view = <View accessibilityRole="${role}" />;`;
+    }),
+    ...ARIA_ROLES.map((role) => {
+      return `const view = <View role="${role}" />;`;
+    }),
     'const view = <View accessibilityRole="button" role="button" />;',
-    // A value computed at runtime is unreadable rather than wrong.
+    // A value computed at runtime is unreadable rather than wrong, and so is an element standing in for one.
+    'const view = <View accessibilityRole=<Role /> />;',
     'const view = <View accessibilityRole={role} />;',
     'const view = <View role={role} />;',
     'const view = <View />;',

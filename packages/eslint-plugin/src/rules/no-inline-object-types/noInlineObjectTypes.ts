@@ -31,7 +31,7 @@ interface TypeLiteral {
 // `TSTypeLiteral` is absent from ESLint's ESTree types, so the one field this rule reads is described structurally
 // and narrowed by a predicate. A real parsed node satisfies it, and no cast is needed to say so.
 const hasMembers = (node: RuleNode): node is RuleNode & TypeLiteral => {
-  return 'members' in node && Array.isArray(node.members);
+  return 'members' in node;
 };
 
 // A type literal is never a child of `Program`, so it always has a parent.
@@ -39,32 +39,25 @@ const parentTypeOf = (node: RuleNode): string => {
   return mustFind(node.parent).type;
 };
 
+// Only a `TSTypeReference` carries a `typeName`, and it is always an entity name, so the key alone answers.
 const hasTypeName = (node: RuleNode): node is RuleNode & NamedTypeReference => {
-  return 'typeName' in node && typeof node.typeName === 'object' && node.typeName !== null;
+  return 'typeName' in node;
 };
 
 /**
- * The generic this literal is an argument to, or an empty string when it is not an argument at all. `Extract<Node,
+ * The generic this literal is an argument to, or `undefined` when it is not an argument at all. `Extract<Node,
  * { type: 'ObjectPattern' }>` reaches here as a literal whose parent is the argument list and whose grandparent is
- * the reference to `Extract`. Only a `TSTypeReference` carries a `typeName`, and a literal can only sit under one
- * inside its argument list, so the grandparent alone answers. A type literal is never a child of `Program`, so both
- * generations exist.
+ * the reference to `Extract`. A literal can only sit under a `TSTypeReference` inside its argument list, so the
+ * grandparent alone answers. A type literal is never a child of `Program`, so both generations exist.
+ *
+ * A bare `Extract<...>` carries an identifier and a name. A qualified one, `ts.Extract<...>`, carries a
+ * `TSQualifiedName` with no `name` at all, so it answers `undefined` too and no allowance can match it. `undefined`
+ * rather than an empty string, which `allowIn: ['']` would have matched for every literal outside a generic.
  */
-const argumentToOf = (node: RuleNode): string => {
+const argumentToOf = (node: RuleNode): string | undefined => {
   const reference = mustFind(mustFind(node.parent).parent);
 
-  if (!hasTypeName(reference)) {
-    return '';
-  }
-
-  /**
-   * A bare `Extract<...>` carries an identifier and a name. A qualified one, `ts.Extract<...>`, carries a
-   * `TSQualifiedName` with no `name` at all, and answering the string `undefined` for it would let
-   * `allowIn: ['undefined']` switch the rule off by accident.
-   */
-  const { name } = reference.typeName;
-
-  return typeof name === 'string' ? name : '';
+  return hasTypeName(reference) ? reference.typeName.name : undefined;
 };
 
 export const noInlineObjectTypes = createRule('no-inline-object-types', {
@@ -95,7 +88,8 @@ export const noInlineObjectTypes = createRule('no-inline-object-types', {
   // Report-only. Extracting the shape needs a name and a place to put it, and both are decisions a fixer would have
   // to invent: a generated `Type1` beside the code is worse than the inline shape it replaced.
   create: (context) => {
-    const allowIn = optionsOf<NoInlineObjectTypesOptions>(context).allowIn ?? [];
+    // A Set reads an absent option as empty, and takes the `undefined` a literal outside any generic answers.
+    const allowIn = new Set<string | undefined>(optionsOf<NoInlineObjectTypesOptions>(context).allowIn);
 
     return {
       // `RuleNode`, not the TS shape: an untyped selector's parameter must be a supertype of every visitor shape.
@@ -112,7 +106,7 @@ export const noInlineObjectTypes = createRule('no-inline-object-types', {
         }
 
         // A literal handed to a named generic, where `allowIn` says that generic reads shapes rather than holds them.
-        if (allowIn.includes(argumentToOf(node))) {
+        if (allowIn.has(argumentToOf(node))) {
           return;
         }
 

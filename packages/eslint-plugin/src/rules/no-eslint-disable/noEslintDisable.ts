@@ -55,7 +55,8 @@ export const noEslintDisable = createRule('no-eslint-disable', {
   // Report-only. Deleting the comment is a one-line fix to write and a bad one to apply: every finding it was hiding
   // arrives at once, in a file the author did not open, from a `--fix` they ran for something else.
   create: (context: RuleContext) => {
-    const allowRules = optionsOf<NoEslintDisableOptions>(context).allowRules ?? [];
+    // A Set reads an absent option as empty, so no fallback list is needed.
+    const allowRules = new Set(optionsOf<NoEslintDisableOptions>(context).allowRules);
 
     return {
       Program: () => {
@@ -73,7 +74,7 @@ export const noEslintDisable = createRule('no-eslint-disable', {
            */
           const named = rulesNamedBy(tail);
           const allowed = named.length > 0 && named.every((name) => {
-            return allowRules.includes(name);
+            return allowRules.has(name);
           });
 
           if (!allowed) {

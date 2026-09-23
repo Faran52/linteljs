@@ -8,6 +8,7 @@ import {
 } from '../../utils/layoutUtils.ts';
 import {
   type Fixer,
+  mustFind,
   optionsOf,
   type TypedNode,
 } from '../../utils/ruleUtils.ts';
@@ -100,12 +101,13 @@ export const importNewlines = createRule('import-newlines', {
     };
 
     // Measured from tokens, not node locations: a token's `loc` is always present, a node's is optional in the type.
+    // A parsed specifier always has a first and a last token.
     const hasBlankLines = (specifiers: ImportNode['specifiers']): boolean => {
       for (const [previous, specifier] of adjacentPairs(specifiers)) {
-        const before = sourceCode.getLastToken(previous);
-        const current = sourceCode.getFirstToken(specifier);
+        const before = mustFind(sourceCode.getLastToken(previous));
+        const current = mustFind(sourceCode.getFirstToken(specifier));
 
-        if (before && current && current.loc.start.line - before.loc.end.line > 1) {
+        if (current.loc.start.line - before.loc.end.line > 1) {
           return true;
         }
       }

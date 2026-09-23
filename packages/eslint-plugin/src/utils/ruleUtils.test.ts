@@ -5,7 +5,11 @@ import {
   it,
 } from 'vitest';
 
-import { mustFind, rangeOf } from './ruleUtils.ts';
+import {
+  isDirective,
+  mustFind,
+  rangeOf,
+} from './ruleUtils.ts';
 
 // Both take the shape rather than RuleNode, so a degenerate argument here needs no cast.
 const parsed = sourceCodeFrom([
@@ -16,6 +20,24 @@ const parsed = sourceCodeFrom([
   '};',
   '',
 ].join('\n'));
+
+describe('isDirective', () => {
+  it('answers for a statement carrying a string directive', () => {
+    expect(isDirective({
+      type: 'ExpressionStatement',
+      directive: 'use client',
+    })).toBe(true);
+  });
+
+  // typescript-eslint's shape for `run();`: the key is present and undefined, so the key alone would answer wrongly.
+  it('declines a statement whose directive key is undefined, or absent', () => {
+    expect(isDirective({
+      type: 'ExpressionStatement',
+      directive: undefined,
+    })).toBe(false);
+    expect(isDirective({ type: 'VariableDeclaration' })).toBe(false);
+  });
+});
 
 describe('mustFind', () => {
   it('hands back whatever the lookup found', () => {

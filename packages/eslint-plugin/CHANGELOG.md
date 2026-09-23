@@ -27,6 +27,12 @@ when a version's change lives in a sibling it is described there instead:
 - All four of that rule's messages say "Members" where they said "Properties". An interface body has
   members, and reporting one as a property was wrong. The `{{maxProperties}}` placeholder keeps its
   name, because it is the option name and the option is not renamed.
+- `react-no-global-namespace` recognises a directive by its string value. typescript-eslint gives
+  every expression statement a `directive` key, so a file of plain statements was read as one long
+  prologue: `React.createElement('div');` alone crashed the rule, and after a leading `run();` the
+  import was inserted below it.
+- `no-inline-object-types` no longer treats a literal outside any generic as an argument to one
+  named `''`, so `allowIn: ['']` stops silencing it everywhere.
 
 ## 1.6.0
 

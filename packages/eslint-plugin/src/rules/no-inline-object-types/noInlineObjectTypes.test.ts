@@ -130,6 +130,12 @@ tsRuleTester.run('no-inline-object-types: allowIn', noInlineObjectTypes, {
       options: [{ allowIn: ['Wrapper', 'ns', 'undefined'] }],
       errors: [{ messageId: 'nameTheType' }],
     },
+    {
+      // A literal outside any generic names no generic, which an empty entry must not stand in for.
+      code: 'export const read = (value: { a: string }): string => value.a;\n',
+      options: [{ allowIn: [''] }],
+      errors: [{ messageId: 'nameTheType' }],
+    },
   ],
 });
 

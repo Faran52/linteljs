@@ -6,6 +6,7 @@ import {
   type Located,
 } from '../../utils/layoutUtils.ts';
 import {
+  isDirective,
   mustFind,
   rangeOf,
   type RuleNode,
@@ -51,16 +52,6 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
   }
 
   return false;
-};
-
-// Every ExpressionStatement carries a `directive` key, undefined off the prologue, so narrowing needs `object`.
-const directiveOf = (node: object): string | undefined => {
-  return 'directive' in node && typeof node.directive === 'string' ? node.directive : undefined;
-};
-
-// No node but a directive carries a string `directive`, so the key alone answers.
-const isDirective = (node: ProgramEntry): boolean => {
-  return directiveOf(node) !== undefined;
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
@@ -129,8 +120,10 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
 const cutsFor = (sourceCode: SourceCode, body: ProgramEntry[], firstRuntimeIndex: number): TypeCut[] => {
   const cuts: TypeCut[] = [];
 
-  for (const [[, previous], [index, candidate]] of adjacentPairs([...body.entries()])) {
-    if (index > firstRuntimeIndex && isTypeDeclaration(candidate)) {
+  // From the first runtime statement on, so every candidate sits after it and the header stays where it is. With no
+  // runtime statement the index is -1 and the slice is the last entry alone, which pairs with nothing.
+  for (const [previous, candidate] of adjacentPairs(body.slice(firstRuntimeIndex))) {
+    if (isTypeDeclaration(candidate)) {
       cuts.push(cutFor(sourceCode, candidate, previous));
     }
   }
@@ -168,11 +161,6 @@ export const interfaceOrder = createRule('interface-order', {
         const [firstStatement] = body;
         const headerEndIndex = findHeaderEndIndex(body);
         const firstRuntimeIndex = findFirstRuntimeIndex(body, headerEndIndex);
-
-        if (firstRuntimeIndex === -1) {
-          return;
-        }
-
         const cuts = cutsFor(sourceCode, body, firstRuntimeIndex);
         const [firstCut] = cuts;
 

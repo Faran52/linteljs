@@ -6,6 +6,15 @@ tsxRuleTester.run('react-native-valid-accessibility-actions', reactNativeValidAc
   valid: [
     "const view = <View accessibilityActions={[{ name: 'activate' }]} onAccessibilityAction={handle} />;",
     "const view = <View accessibilityActions={[{ name: 'magicTap' }]} onAccessibilityAction={handle} />;",
+    // Every standard name is announced by the platform, so none of them needs a label.
+    "const view = <View accessibilityActions={[{ name: 'decrement' }, { name: 'escape' }, { name: 'increment' }, "
+    + "{ name: 'longpress' }]} onAccessibilityAction={handle} />;",
+    // Only a string name can be matched against the standard set, so a number is left alone.
+    'const view = <View accessibilityActions={[{ name: 5 }]} onAccessibilityAction={handle} />;',
+    // A computed key has no name to judge, so it is not reported as a stray.
+    "const view = <View accessibilityActions={[{ name: 'activate', [key]: 'x' }]} onAccessibilityAction={handle} />;",
+    // A hole carries no properties to judge.
+    "const view = <View accessibilityActions={[, { name: 'activate' }]} onAccessibilityAction={handle} />;",
     // A name the platform has no words for needs a label, and this one has it.
     "const view = <View accessibilityActions={[{ name: 'mute', label: 'Mute' }]} onAccessibilityAction={handle} />;",
     // Computed at runtime, so the array cannot be read.

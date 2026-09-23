@@ -124,14 +124,11 @@ export const getIndentStep = (sourceCode: SourceCode): string => {
     return '\t';
   }
 
-  const narrowest = [...widths].sort((first, second) => {
-    return first - second;
-  })[0];
+  // `Infinity` for a file with no spaced line, which the ceiling sends to the floor like any other outlier. A width
+  // under the floor lands on the floor too, so raising it to the floor is the same answer as falling back.
+  const narrowest = Math.min(...widths);
 
-  // >= and > are equivalent here since the floor equals the fallback width; no test can separate them, not a defect.
-  const usable = narrowest !== undefined && narrowest >= MIN_SANE_INDENT && narrowest <= MAX_SANE_INDENT;
-
-  return ' '.repeat(usable ? narrowest : MIN_SANE_INDENT);
+  return ' '.repeat(narrowest <= MAX_SANE_INDENT ? Math.max(narrowest, MIN_SANE_INDENT) : MIN_SANE_INDENT);
 };
 
 // Reads the file's indent step once rather than per node, so a brace and its members share one scale.

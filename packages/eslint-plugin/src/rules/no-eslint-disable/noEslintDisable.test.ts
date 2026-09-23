@@ -77,6 +77,11 @@ tsxRuleTester.run('no-eslint-disable: allowRules', noEslintDisable, {
       code: '// eslint-disable-next-line no-console -- measured\nconsole.log(1);\n',
       options: [{ allowRules: ['no-console'] }],
     },
+    // A stray comma names nothing, so it cannot be a rule the list leaves out.
+    {
+      code: '/* eslint-disable no-console,, no-alert, */\nexport const value = 1;\n',
+      options: [{ allowRules: ['no-alert', 'no-console'] }],
+    },
     // All of it, spaces and commas included, so none of the prose reads as a name.
     {
       code: '// eslint-disable-next-line no-console -- measured, never shipped\nconsole.log(1);\n',

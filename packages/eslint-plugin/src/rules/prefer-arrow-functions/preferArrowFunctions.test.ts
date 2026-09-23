@@ -241,6 +241,13 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
+      // A `with` statement also carries an `object`, and it is not a member read, so there is no `prototype` here.
+      code: 'function scope() {\n  return 1;\n}\n\nwith (scope) {}',
+      output: 'const scope = () => {\n  return 1;\n};\n\nwith (scope) {}',
+      languageOptions: { sourceType: 'script' },
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
       // A private name is not an Identifier, so `make.#prototype` reaches a field of that name
       // rather than the function's own prototype.
       code: `function make() {
@@ -593,6 +600,13 @@ tsxRuleTester.run('prefer-arrow-functions (tsx)', preferArrowFunctions, {
       filename: 'component.tsx',
       code: 'function Comp() {\n  return <div>arguments</div>;\n}',
       output: 'const Comp = () => {\n  return <div>arguments</div>;\n};',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      // And for `super`, which JSX text carries as a token of that value but not a keyword.
+      filename: 'component.tsx',
+      code: 'function Comp() {\n  return <div>super</div>;\n}',
+      output: 'const Comp = () => {\n  return <div>super</div>;\n};',
       errors: [{ messageId: 'preferArrow' }],
     },
     {

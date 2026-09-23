@@ -6,6 +6,7 @@ import {
 } from '../../utils/compatUtils.ts';
 import {
   type Fixer,
+  isDirective,
   mustFind,
   type NamedNode,
   type Ranged,
@@ -79,14 +80,9 @@ const isAmbient = (node: TypedNode & Ambient): boolean => {
   return node.declare === true;
 };
 
-// `'use client'` and the rest of a prologue stop being directives the moment anything precedes them, so the
-// import goes after them rather than before the first statement.
-const isDirective = (node: TypedNode): boolean => {
-  return 'directive' in node;
-};
-
+// The visitor only sees a `TSQualifiedName`, which always carries both halves, so one key narrows for the two.
 const isQualified = (node: RuleNode): node is RuleNode & Qualified => {
-  return 'left' in node && 'right' in node;
+  return 'left' in node;
 };
 
 // `TypedNode` rather than `RuleNode`: this walks `ast.body`, whose members ESLint types as ESTree statements.
@@ -189,7 +185,8 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         // No import to join: none from `react` at all, a type-only one, or one carrying no named list. A second
         // `import { ... } from 'react'` beside any of those is valid, which rewriting them into one is not.
         if (mergeable === undefined) {
-          // A file with a `React.` reference has a statement past its prologue, which is what `mustFind` says here.
+          // After the prologue: `'use client'` stops being a directive the moment anything precedes it. A file with
+          // a `React.` reference has a statement past its prologue, which is what `mustFind` says here.
           const statement = mustFind(source.ast.body.find((entry) => {
             return !isDirective(entry);
           }));
@@ -240,13 +237,13 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        report(node, mustFind(opening.property?.name), false, tags.map(rangeOf));
+        report(node, mustFind(mustFind(opening.property).name), false, tags.map(rangeOf));
       },
 
       // `React.createElement`, in a value. A computed access names nothing a fix could import, and is the only way
       // the property of a member expression is not an identifier, so the guard covers both.
       MemberExpression: (node) => {
-        if (node.computed || node.object.type !== 'Identifier' || node.object.name !== NAMESPACE) {
+        if (node.computed || nameOf(node.object) !== NAMESPACE) {
           return;
         }
 

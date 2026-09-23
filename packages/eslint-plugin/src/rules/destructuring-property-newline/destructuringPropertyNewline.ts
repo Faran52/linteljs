@@ -39,11 +39,6 @@ export const destructuringPropertyNewline = createRule('destructuring-property-n
     const indentsAt = indentReader(sourceCode);
 
     const checkProperties = (node: RuleNode, properties: PatternMember[]) => {
-      // A pattern with one member or none yields no pairs below, so the indent read is wasted work.
-      if (properties.length <= 1) {
-        return;
-      }
-
       const [first] = properties;
       const last = properties[properties.length - 1];
 

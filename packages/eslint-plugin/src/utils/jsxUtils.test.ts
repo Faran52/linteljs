@@ -7,6 +7,7 @@ import {
 import {
   asElement,
   attributesOf,
+  descendantElements,
   elementAttributesOf,
   elementNameOf,
   elementsOf,
@@ -269,6 +270,29 @@ describe('the array accessors', () => {
 
   it('reads an expression with no elements as having none', () => {
     expect(elementsOf({ type: 'Identifier' })).toEqual([]);
+  });
+});
+
+describe('descendantElements', () => {
+  // Text and containers are walked through rather than listed: only an element can be a control.
+  it('lists the elements at every depth and nothing else', () => {
+    const inner = { type: 'JSXElement' };
+    const outer = {
+      type: 'JSXElement',
+      children: [{
+        type: 'JSXText',
+        value: 'label',
+      }, inner],
+    };
+    const fragment = {
+      type: 'JSXFragment',
+      children: [{ type: 'JSXExpressionContainer' }, outer],
+    };
+
+    expect(descendantElements({
+      type: 'JSXElement',
+      children: [fragment],
+    })).toEqual([outer, inner]);
   });
 });
 

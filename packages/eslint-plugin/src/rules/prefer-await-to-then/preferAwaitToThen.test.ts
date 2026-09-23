@@ -23,6 +23,13 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
     'async function load() {\n  return api?.fetch(url).catch(handle);\n}',
     'async function load() {\n  return api?.fetch(url).then(parse);\n}',
 
+    // CommonJS allows a return outside any function. It is top-level code, and the handover has no function to ask
+    // whether it is async, so it has to answer rather than read one.
+    {
+      code: 'return promise.then(parse);',
+      languageOptions: { sourceType: 'commonjs' },
+    },
+
     // A constructor cannot be async, so there is no await to reach for.
     'class Service {\n  constructor() {\n    load().then(parse);\n  }\n}',
 

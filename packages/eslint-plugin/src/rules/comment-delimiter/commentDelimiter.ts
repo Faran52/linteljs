@@ -3,6 +3,7 @@ import { physicalFilenameOf, sourceCodeOf } from '../../utils/compatUtils.ts';
 import { lineTerminatorOf } from '../../utils/layoutUtils.ts';
 import {
   type Fixer,
+  mustFind,
   rangeOf,
   type RuleContext,
   type SourceCode,
@@ -61,8 +62,8 @@ const jsdocBodyOf = (comment: CommentNode): string[] => {
 const wholeLineIndentOf = (sourceCode: SourceCode, comment: CommentNode): string | null => {
   const [start, end] = rangeOf(comment);
   const { text } = sourceCode;
-  // At `start` 0 the search reads index 0 alone, the comment's own first character, so it still answers 0.
-  const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+  // Searching from `start` itself is safe: that character opens the comment and is never a line break.
+  const lineStart = text.lastIndexOf('\n', start) + 1;
 
   if (text.slice(lineStart, start).trim() !== '') {
     return null;
@@ -118,12 +119,12 @@ const lineEntryOf = (sourceCode: SourceCode, comment: CommentNode, raw: string):
 };
 
 const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void => {
-  const [first] = run;
-  const last = run[run.length - 1];
-
-  if (first === undefined || last === undefined || run.length < MIN_JSDOC_LINES) {
+  if (run.length < MIN_JSDOC_LINES) {
     return;
   }
+
+  const first = mustFind(run[0]);
+  const last = mustFind(run[run.length - 1]);
 
   // A `//` line can hold `*/` as plain text; a `/** */` block cannot, since that sequence closes it wherever it
   // falls. Merging a run that carries one would truncate the block early and spill the rest as code.
@@ -223,8 +224,9 @@ export const commentDelimiter = createRule('comment-delimiter', {
           const raw = sourceCode.text.slice(start, end);
           const entry = lineEntryOf(sourceCode, comment, raw);
 
+          // No flush here: whatever comment this is, it sits between the run and the next entry, so that entry is
+          // not adjacent and breaks the run itself.
           if (entry === null) {
-            flush();
             reportShortJsdoc(context, sourceCode, comment, raw, eol);
             continue;
           }

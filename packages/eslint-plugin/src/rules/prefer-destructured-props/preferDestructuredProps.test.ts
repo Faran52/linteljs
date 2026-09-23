@@ -49,9 +49,17 @@ tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
 
     // The declarator holds the call's result here, not the component.
     'const Value = (function (props) { return props.alpha; })();',
+    // With an argument too: a callee is never one of its own call's arguments, however the call is written.
+    'const Value = (function (props) { return props.alpha; })(input);',
+    'const Value = function (props) { return props.alpha; }(input);',
+
+    // A component with no parameter has no props to destructure.
+    'function Widget() { return null; }',
 
     // No declarator to read a name from, so the wrapped shape stays out of reach and is declined.
     'export default memo(function (props) { return props.alpha; });',
+    // A function expression's own id is not its binding: only a declaration is judged by its own name.
+    'export default memo(function Widget(props) { return props.alpha; });',
   ],
   invalid: [
     {

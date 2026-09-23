@@ -97,14 +97,16 @@ const NEW_DOT_TARGET: [string, string][] = [
   ['Identifier', 'target'],
 ];
 
+// `every` reads past an offset only once the tokens before it matched, and no function ends on `new` or `new .`: the
+// grammar puts a callee after one and a property after the other. So each index read here is inside the list.
 const containsNewDotTarget = (sourceCode: SourceCode, node: RuleNode): boolean => {
   const tokens = sourceCode.getTokens(node);
 
   return tokens.some((_, index) => {
     return NEW_DOT_TARGET.every(([type, value], offset) => {
-      const token = tokens[index + offset];
+      const token = mustFind(tokens[index + offset]);
 
-      return token?.type === type && token.value === value;
+      return token.type === type && token.value === value;
     });
   });
 };

@@ -40,12 +40,12 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
 
     return {
       ExportNamedDeclaration: (node) => {
-        const [first] = node.specifiers;
-        const last = node.specifiers[node.specifiers.length - 1];
-
-        if (!first || !last) {
+        if (node.specifiers.length === 0) {
           return;
         }
+
+        const first = mustFind(node.specifiers[0]);
+        const last = mustFind(node.specifiers[node.specifiers.length - 1]);
 
         const { outer: indent, inner } = indentsAt(node);
         const openBrace = sourceCode.getTokenBefore(first);

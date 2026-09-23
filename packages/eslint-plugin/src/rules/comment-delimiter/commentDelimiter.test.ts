@@ -30,8 +30,25 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     '// v8 ignore next\nexport const value = 1;\n',
     '// c8 ignore next\nexport const value = 1;\n',
     '// istanbul ignore next\nexport const value = 1;\n',
-    // A directive breaks a run instead of joining it, so neither side reaches three.
-    '// alpha\n// bravo\n// prettier-ignore\n// charlie\n// delta\n',
+    // A directive breaks a run instead of joining it, so neither side reaches three. One directive a line, since a
+    // lone comment reports nothing and only a broken run shows the line was read as a directive.
+    ...[
+      '// prettier-ignore',
+      '//prettier-ignore',
+      '// eslint-disable-next-line no-console',
+      '// eslint-x',
+      '// @ts-expect-error',
+      '// @ts-x',
+      '// ts-ignore',
+      '// v8 ignore next',
+      '// c8 ignore next',
+      '// istanbul ignore next',
+      '/// <reference lib="dom" />',
+      '///<reference lib="dom" />',
+      '///   <reference lib="dom" />',
+    ].map((directive) => {
+      return `// alpha\n// bravo\n${directive}\n// charlie\n// delta\n`;
+    }),
     // An empty JSDoc block has no body to move into `//` lines.
     '/** */\nexport const value = 1;\n',
     {
@@ -47,8 +64,22 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
       filename: '__tests__/sample.ts',
     },
+    ...[
+      'test.ts',
+      'src/sample.test.cts',
+      'src/sample.spec.mts',
+      'src\\sample.test.js',
+      'src/__tests__',
+    ].map((filename) => {
+      return {
+        code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
+        filename,
+      };
+    }),
     // A short block with code after it on the same line is a trailing note, and moving it would move the code.
     '/** short */ const value = 1;',
+    // One character of code after it on a last line with no newline still shares the line.
+    '/** short */ a',
     // Merged into a block, this line's `*/` would close it early and spill the rest as code.
     '// alpha\n// bravo `*/` charlie\n// delta\nexport const value = 1;\n',
     // A tag makes the block machine-read, and every reader of one stops at `/**`: under `checkJs` the first
@@ -61,6 +92,44 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     '/**\n * Adds two numbers.\n * @returns the sum\n */\nexport const add = 1;\n',
   ],
   invalid: [
+    // A line that only mentions a directive's marker past its start is prose, and joins the run.
+    ...[
+      '// bravo #! here',
+      '// bravo /// <reference lib="dom" />',
+      '// bravo // eslint-disable',
+    ].map((line) => {
+      return {
+        code: `// alpha\n${line}\n// charlie\nexport const value = 1;`,
+        output: `/**\n * alpha\n * ${line.slice(3)}\n * charlie\n */\nexport const value = 1;`,
+        errors: [{ messageId: 'useJsdoc' as const }],
+      };
+    }),
+    // A name that only resembles a test file is ordinary source, so its comments are judged.
+    ...[
+      'src/contest.ts',
+      'src/sample.test.ts.snap',
+      'src/my__tests__/sample.ts',
+      'src/__tests__x/sample.ts',
+    ].map((filename) => {
+      return {
+        code: '// alpha\n// bravo\n// charlie\nexport const value = 1;',
+        filename,
+        output: '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;',
+        errors: [{ messageId: 'useJsdoc' as const }],
+      };
+    }),
+    {
+      // A continuation line with no leading star keeps its first character.
+      code: '/**\n First.\n * Second.\n */\nexport const value = 1;',
+      output: '// First.\n// Second.\nexport const value = 1;',
+      errors: [{ messageId: 'useSlashes' }],
+    },
+    {
+      // Trailing whitespace after the block still leaves it alone on its line.
+      code: '/** short doc */  \nexport const value = 1;',
+      output: '// short doc  \nexport const value = 1;',
+      errors: [{ messageId: 'useSlashes' }],
+    },
     {
       code: '/** Shared expo-out curve; every surface enters and exits on this single easing. */\n'
         + 'export const EASE = 1;',

@@ -46,9 +46,10 @@ export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): 
     return true;
   }
 
-  // An implicit return like async () => promise.catch(handle): the value must be the arrow's body itself.
+  // An implicit return like async () => promise.catch(handle). A call under an arrow can only be its body: every
+  // other child is a parameter pattern or a type annotation.
   if (parent.type === 'ArrowFunctionExpression') {
-    return parent.body === outer && isAsyncFunction(parent);
+    return isAsyncFunction(parent);
   }
 
   if (parent.type === 'ReturnStatement') {

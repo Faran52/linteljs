@@ -23,14 +23,9 @@ const declarationNameOf = (fn: FunctionLike): string => {
   return fn.id?.name ?? '';
 };
 
-const sameRange = (left: Ranged, right: Ranged): boolean => {
-  return rangeOf(left)[0] === rangeOf(right)[0] && rangeOf(left)[1] === rangeOf(right)[1];
-};
-
+// By identity: ESLint links `parent` on the same objects the call's `arguments` hold.
 const isArgumentOf = (call: Called, node: Ranged): boolean => {
-  return call.arguments.some((argument) => {
-    return sameRange(argument, node);
-  });
+  return call.arguments.includes(node);
 };
 
 const bindingNameOf = (fn: FunctionLike): string => {
@@ -71,7 +66,8 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
     schema: [],
   },
   create: (context) => {
-    // Record member objects during traversal: old ESLint cannot read a reference's parent.
+    // Record member objects during traversal: a scope reference's identifier is typed without `parent`, so reading
+    // it back from there would take a cast.
     const memberObjects = new Map<string, boolean>();
 
     return {

@@ -43,6 +43,14 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'panel.tsx',
   },
   {
+    // typescript-eslint gives every ExpressionStatement a `directive` key, and reading the key alone took a file of
+    // nothing but calls for one with no statement past its prologue, which threw.
+    name: 'React global in a file of expression statements',
+    code: "React.createElement('div');\n",
+    typescript: true,
+    filename: 'render.ts',
+  },
+  {
     // A declaration file is a script until something imports into it, at which point `declare module '*.svg'`
     // augments a module that does not exist and every global here stops being global.
     name: 'React global in a global declaration file',

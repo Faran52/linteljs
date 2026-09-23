@@ -320,6 +320,11 @@ describe('fitsOnLine', () => {
     expect(fitsPattern(SPLIT, '{ alpha, bravo }', 31)).toBe(false);
   });
 
+  it('measures the column from the start of the line the node is on', () => {
+    expect(fitsPattern(`const lead = 1;\n${SPLIT}`, '{ alpha, bravo }', 32)).toBe(true);
+    expect(fitsPattern(`const lead = 1;\n${SPLIT}`, '{ alpha, bravo }', 31)).toBe(false);
+  });
+
   it('measures to the end of the file when nothing follows the node', () => {
     expect(fitsPattern('const {\n  alpha,\n  bravo\n} = s;', '{ alpha, bravo }', 27)).toBe(true);
   });

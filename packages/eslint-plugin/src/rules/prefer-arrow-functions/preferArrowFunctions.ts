@@ -37,6 +37,12 @@ interface PreferArrowFunctionsOptions {
   forceHoisted: boolean;
 }
 
+interface PropertyMatch {
+  type: 'Property';
+}
+
+type PropertyNode = Extract<RuleNode, PropertyMatch>;
+
 const SKIPPED_PROPERTY_KINDS = new Set(['get', 'set']);
 
 // The variable a function's own name binds; a function declares at most one, so the first element is it.
@@ -99,6 +105,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
     // Every function visitor fires on `:exit`, so by the time a function is judged each `this` in it is recorded.
     const functionStack: FunctionFrame[] = [];
     const containsThis = new WeakSet<FunctionLike>();
+    const propertyOf = new WeakMap<object, PropertyNode>();
 
     // Whether the function calls itself by name, which an arrow has none of:
     // `function fact(n) { fact(n-1) }` would recurse into an unresolved global.
@@ -131,13 +138,14 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return true;
         }
 
-        const { parent } = reference.identifier as RuleNode;
+        // An identifier is never the Program, and ESLint 5 on links every node in a full pass before any listener.
+        const parent = mustFind((reference.identifier as RuleNode).parent);
 
-        if (parent?.type === 'NewExpression' && parent.callee === reference.identifier) {
+        if (parent.type === 'NewExpression' && parent.callee === reference.identifier) {
           return true;
         }
 
-        return parent?.type === 'MemberExpression'
+        return parent.type === 'MemberExpression'
           && parent.object === reference.identifier
           && parent.property.type === 'Identifier'
           && parent.property.name === 'prototype';
@@ -236,14 +244,15 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         reportFix(fn, 'preferArrow', `${writeArrowConstant(sourceCode, fn, isTsx)};`);
       },
 
+      // Recorded on the way down, so the visitor below reads its property already typed as one.
+      'Property': (property: PropertyNode) => {
+        propertyOf.set(property.value, property);
+      },
+
       // Keyed on the function: a property's `value` is an ESTree node with no `parent`, which everything below needs.
       'FunctionExpression[parent.type="Property"]:exit': (fn: FunctionLike) => {
-        const property = fn.parent;
-
-        /* v8 ignore next 3 -- the selector only matches a property's value */
-        if (property.type !== 'Property') {
-          return;
-        }
+        // The selector matched a property's value, and the visitor above recorded every one on entering it.
+        const property = mustFind(propertyOf.get(fn));
 
         if (SKIPPED_PROPERTY_KINDS.has(property.kind)) {
           return;

@@ -69,7 +69,10 @@ export const reactNativeValidAccessibilityRole = createRule('react-native-valid-
             continue;
           }
 
-          if (typeof value !== 'string' || !valid.includes(value)) {
+          // Compared rather than looked up, so a non-string literal matches nothing and needs no check of its own.
+          if (!valid.some((role) => {
+            return role === value;
+          })) {
             context.report({
               node,
               messageId: 'invalidRole',

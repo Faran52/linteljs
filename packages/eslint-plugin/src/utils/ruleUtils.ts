@@ -78,6 +78,12 @@ export const FUNCTION_TYPES = new Set([
   'FunctionExpression',
 ]);
 
+// A prologue statement. typescript-eslint gives every ExpressionStatement a `directive` key, undefined off the
+// prologue, so the string decides; the `in` narrows `object` for the compiler.
+export const isDirective = (node: object): boolean => {
+  return 'directive' in node && typeof node.directive === 'string';
+};
+
 // A lookup the parse guarantees will hit, so a throw here beats a silent `continue` scattered across every rule.
 // `undefined` as well as `null`, because an index into a body the parse guarantees is the same promise.
 export const mustFind = <Found>(found: Found | null | undefined): Found => {
