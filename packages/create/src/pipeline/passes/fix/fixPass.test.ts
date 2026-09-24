@@ -95,6 +95,8 @@ describe('fixPass', () => {
     ],
     ['[{"output":"a"},{"output":"b"}]', 1, 'eslint --fix: 2 files changed'],
     ['[{"filePath":"a.ts"}]', 0, 'eslint --fix: nothing to fix'],
+    // Unreadable formatter output counts as nothing fixed.
+    ['{"results":[]}', 0, 'eslint --fix: nothing to fix'],
   ])('reports what eslint fixed, for %s', async (printed, exitCode, notice) => {
     await plantEslint(`console.log(${JSON.stringify(printed)});\nprocess.exit(${String(exitCode)});\n`);
 

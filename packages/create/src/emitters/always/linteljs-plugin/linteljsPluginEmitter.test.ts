@@ -115,6 +115,55 @@ describe('referenceArtifacts', () => {
       expect(text).not.toMatch(/^---\npaths:/u);
     }
   });
+
+  const targetsOf = (overrides: AnswerOverrides): string[] => {
+    return referenceArtifacts(answersFor(overrides)).map(({ target }) => {
+      return target;
+    });
+  };
+
+  const textOf = async (overrides: AnswerOverrides, name: string): Promise<string> => {
+    const artifact = find(overrides, reference(name));
+
+    return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+  };
+
+  it.each<[TargetId, string]>([
+    ['solid', 'solid-reactivity.md'],
+    ['vue', 'vue-reactivity.md'],
+    ['svelte', 'svelte-reactivity.md'],
+  ])('gives %s its own reactivity rule and no react-state', (target, rule) => {
+    expect(targetsOf({ target })).toContain(reference(rule));
+    expect(targetsOf({ target })).not.toContain(reference('react-state.md'));
+  });
+
+  it('emits the zod rule only with zod', () => {
+    expect(targetsOf({ libraries: [] })).not.toContain(reference('type-standards-zod.md'));
+    expect(targetsOf({ libraries: ['zod'] })).toContain(reference('type-standards-zod.md'));
+  });
+
+  it('drops the testing rule when there is nothing to govern', () => {
+    expect(targetsOf({})).toContain(reference('testing.md'));
+    expect(targetsOf({ testing: 'none' })).not.toContain(reference('testing.md'));
+  });
+
+  it('composes testing.md from the target head and the shared standard', async () => {
+    const testing = await textOf({ target: 'solid' }, 'testing.md');
+
+    expect(testing).toContain('@solidjs/testing-library');
+    expect(testing).toContain('## Standard');
+    expect(testing.indexOf('## Infrastructure')).toBeLessThan(testing.indexOf('## Standard'));
+  });
+
+  // The standard stays whole under either setting; relaxed adds its deviations after it.
+  it('appends the deviations section to the type rule only when relaxed', async () => {
+    const strict = await textOf({}, 'type-standards.md');
+    const relaxed = await textOf({ typeSafety: 'relaxed' }, 'type-standards.md');
+
+    expect(strict).not.toContain('## Relaxed type safety');
+    expect(relaxed).toContain('## Relaxed type safety');
+    expect(relaxed).toContain('## Types');
+  });
 });
 
 const HOOK_ASSETS = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');

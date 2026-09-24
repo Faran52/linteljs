@@ -5,6 +5,7 @@ import {
 } from 'vitest';
 
 import {
+  ANSWERS,
   type Data,
   DEFAULT_ANSWERS,
   type Router,
@@ -12,10 +13,12 @@ import {
   type TargetId,
   type Testing,
 } from '#answers';
+import { EMPTY_PROJECT } from '#config/constants';
+import { valuesOf } from '#utils/objectUtils';
 
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 
-import { emitVitestConfig } from './vitestConfigEmitter';
+import { emitVitestConfig, vitestConfigEmitter } from './vitestConfigEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -137,5 +140,50 @@ describe('the router', () => {
 
     expect(config).toContain("'src/routes/**'");
     expect(configFor({})).not.toContain('src/routes/**');
+  });
+});
+
+// The build configs are the project's after the first write: both reference repos rewrote their vite config wholesale.
+describe('vitestConfigEmitter', () => {
+  it('hands the config to the project after the first write', () => {
+    expect(vitestConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT).map(({ target, preserve }) => {
+      return [target, preserve];
+    })).toEqual([['vitest.config.ts', true]]);
+  });
+});
+
+// The 100% thresholds are measured over exactly the code somebody wrote.
+describe('the coverage surface', () => {
+  it('never counts the bootstrap entry, whose only assertion is about the framework', () => {
+    expect(configFor()).toContain("'src/{main,index}.{ts,tsx}'");
+  });
+
+  // `src/**` alone hands rolldown files it cannot parse, printing `RolldownError: Parse failed` on a clean check.
+  it.each<[TargetId, string]>([
+    ['react', ''],
+    ['svelte', ',svelte'],
+    ['vue', ',vue'],
+  ])('measures only what v8 can instrument on %s, plus its component format', (target, format) => {
+    expect(configFor({ target })).toContain(`include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}']`);
+  });
+
+  it('adds the shells and declarations each target cannot execute', () => {
+    expect(configFor({ target: 'next' })).toContain("'src/app/layout.tsx'");
+    expect(configFor({ target: 'angular' })).toContain("'src/app/app.routes.ts'");
+    expect(configFor({ target: 'react' })).not.toContain('layout');
+  });
+
+  /*
+   * `<svelte:head>` compiles to a hydration branch, which a suite that renders rather than hydrates cannot reach,
+   * so the root layout sits at 50% branches against a 100% threshold. It keeps its suite; only the measurement
+   * goes, the same trade Next's root layout already takes.
+   */
+  it('excludes the svelte root layout, whose head is a branch no suite reaches', () => {
+    expect(configFor({ target: 'svelte' })).toContain("'src/routes/+layout.svelte'");
+  });
+
+  it.each(valuesOf(ANSWERS.target.values))('keeps the thresholds at 100 on %s', (target) => {
+    expect(configFor({ target }))
+      .toMatch(/thresholds: \{\s*lines: 100,\s*branches: 100,\s*functions: 100,\s*statements: 100,\s*\}/u);
   });
 });

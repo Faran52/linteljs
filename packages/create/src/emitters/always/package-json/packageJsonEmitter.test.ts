@@ -23,7 +23,11 @@ import {
   type TargetId,
   type Testing,
 } from '#answers';
-import { MANAGER_FLOORS, NODE_ENGINE } from '#config/constants';
+import {
+  EMPTY_PROJECT,
+  MANAGER_FLOORS,
+  NODE_ENGINE,
+} from '#config/constants';
 import { targetFor } from '#targets';
 import { valuesOf } from '#utils/objectUtils';
 
@@ -33,6 +37,7 @@ import {
   buildDependencies,
   buildDevDependencies,
   type PackageJson,
+  packageJsonEmitter,
   parsePackageJson,
   patchPackageJson,
   versioned,
@@ -430,6 +435,30 @@ describe('patchPackageJson', () => {
 
     expect(scripts?.['postinstall']).toBe('svelte-kit sync && husky');
     expect(scripts).not.toHaveProperty('prepare');
+  });
+});
+
+describe('packageJsonEmitter', () => {
+  it('leaves the dependencies and scripts it does not own intact in the file on disk', () => {
+    const [artifact] = packageJsonEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    // `date-fns` is a dependency this CLI neither pins nor supersedes, which is what a project's own looks like.
+    const scaffolded = JSON.stringify({
+      name: 'demo-app',
+      dependencies: {
+        'react': '^19.2.0',
+        'date-fns': '^4.1.0',
+      },
+      scripts: { dev: 'vite' },
+    });
+    const patched = parsePackageJson(
+      artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(scaffolded) : '{}',
+    );
+
+    expect(patched.dependencies?.['date-fns']).toBe('^4.1.0');
+    // Owned since this target crossed over: nothing fetches React any more, so this CLI is what installs it.
+    expect(patched.dependencies?.['react']).toBe(VERSIONS['react']);
+    expect(patched.scripts?.['dev']).toBe('vite');
+    expect(patched.scripts?.['lint']).toBe('eslint .');
   });
 });
 

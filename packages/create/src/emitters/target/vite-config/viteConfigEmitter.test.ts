@@ -14,7 +14,7 @@ import {
   type TargetId,
 } from '#answers';
 
-import { emitViteConfig } from './viteConfigEmitter';
+import { emitViteConfig, viteConfigEmitter } from './viteConfigEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -183,5 +183,21 @@ describe('the router', () => {
   it('adds nothing for either router', () => {
     expect(configFor({ router: 'tanstack-router' })).not.toContain('tanstackRouter');
     expect(configFor({ router: 'react-router' })).not.toContain('tanstackRouter');
+  });
+});
+
+describe('viteConfigEmitter', () => {
+  // Both reference repos rewrote `vite.config.ts` wholesale, so it is the project's after the first write.
+  it('hands the config to the project after the first write', () => {
+    expect(viteConfigEmitter(DEFAULT_ANSWERS).map(({ target, preserve }) => {
+      return [target, preserve];
+    })).toEqual([['vite.config.ts', true]]);
+  });
+});
+
+// Hot reloading leaves one branch no test can reach in every component.
+describe('the test run', () => {
+  it('keeps solid hot reloading out of it', () => {
+    expect(configFor({ target: 'solid' })).toContain('solid({ hot: process.env.VITEST === undefined })');
   });
 });

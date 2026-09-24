@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { mergeGitignore } from './gitignoreEmitter';
+import { gitignoreEmitter, mergeGitignore } from './gitignoreEmitter';
 
 // coverage/ and *.tsbuildinfo come from scripts linteljs writes, not the generator, so no generator ignores them.
 describe('mergeGitignore', () => {
@@ -36,5 +36,15 @@ describe('mergeGitignore', () => {
   // duplicates.
   it('recognises an entry it already added on a CRLF line ending', () => {
     expect(mergeGitignore('coverage/\r\n*.tsbuildinfo\r\n')).toBe('coverage/\r\n*.tsbuildinfo\r\n');
+  });
+});
+
+describe('gitignoreEmitter', () => {
+  // Through the artifact, so the list on disk is what the merge keeps.
+  it("keeps the generator's list and adds what linteljs's own scripts produce", () => {
+    const [artifact] = gitignoreEmitter();
+
+    expect(artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge('node_modules\n') : '')
+      .toBe('node_modules\n\n# linteljs\ncoverage/\n*.tsbuildinfo\n');
   });
 });

@@ -50,9 +50,13 @@ const transformOf = (answers: Answers): ((source: string, current: string | null
   return content.transform;
 };
 
-// Guards against anchor drift: a silent miss would ship the wrong floor. buildArtifacts.test.ts covers the matched
-// cases.
+// Guards against anchor drift: a silent miss would ship the wrong floor.
 describe('checkerArtifact', () => {
+  it.each<TypeSafety>(['strict', 'relaxed'])('writes the %s floor into the shipped checker', (typeSafety) => {
+    expect(transformOf(answersFor({ typeSafety }))(readFileSync(SHIPPED, 'utf8'), null))
+      .toContain(`const TYPE_SAFETY: TypeSafety = '${typeSafety}';`);
+  });
+
   it('throws when the type-safety anchor has drifted out of the shipped checker', () => {
     expect(() => {
       return transformOf(answersFor({ typeSafety: 'relaxed' }))('// a checker with no anchor\n', null);

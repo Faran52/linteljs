@@ -4,7 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import { emitClaudeSettings } from './claudeSettingsEmitter';
+import { type Answers, DEFAULT_ANSWERS } from '#answers';
+
+import { claudeSettingsEmitter, emitClaudeSettings } from './claudeSettingsEmitter';
 
 describe('emitClaudeSettings', () => {
   it('enables every selected plugin with its required marketplace', () => {
@@ -88,5 +90,30 @@ describe('emitClaudeSettings', () => {
       },
     });
     expect(output.endsWith('\n')).toBe(true);
+  });
+});
+
+describe('claudeSettingsEmitter', () => {
+  // Through the artifact, so what is on disk is what the merge is handed.
+  it('merges the settings a running project already holds, and writes its own where there are none', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      agents: ['claude-code'],
+    };
+    const settings = claudeSettingsEmitter(answers).find(({ target }) => {
+      return target === '.claude/settings.json';
+    });
+    const merge = settings !== undefined && 'merge' in settings.content
+      ? settings.content.merge
+      : () => {
+          return '';
+        };
+    const merged: unknown = JSON.parse(merge(`${JSON.stringify({ enabledPlugins: { 'caveman@caveman': true } })}\n`));
+
+    expect(merged).toHaveProperty('enabledPlugins', expect.objectContaining({
+      'caveman@caveman': true,
+      'linteljs@linteljs': true,
+    }));
+    expect(merge(null)).toBe(emitClaudeSettings(answers.plugins));
   });
 });

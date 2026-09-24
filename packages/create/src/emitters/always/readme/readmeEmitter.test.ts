@@ -5,8 +5,10 @@ import {
 } from 'vitest';
 
 import { DEFAULT_ANSWERS } from '#answers';
+import { EMPTY_PROJECT } from '#config/constants';
+import { shippedAssetsReader } from '#disk';
 
-import { emitReadme } from './readmeEmitter';
+import { emitReadme, readmeEmitter } from './readmeEmitter';
 
 describe('emitReadme', () => {
   it('fills the project name and target label into the template', () => {
@@ -32,5 +34,20 @@ describe('emitReadme', () => {
     }).toThrow(
       'README.md template has unfilled slots: {{NOT_A_REAL_SLOT}}',
     );
+  });
+});
+
+// The scaffolder's README contradicts the project once the later stages have run, so it is replaced, not merged.
+describe('readmeEmitter', () => {
+  it("replaces the scaffolder's README with one that matches the project", async () => {
+    const [artifact] = readmeEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    const scaffolded = '# use npm, yarn or bun\n';
+    const readme = artifact === undefined ? '' : await shippedAssetsReader(artifact.content, scaffolded);
+
+    expect(readme).not.toContain('yarn');
+    expect(readme).toContain('# demo-app');
+    expect(readme).toContain('React (Vite)');
+    expect(readme).toContain('`pnpm lint:css`');
+    expect(readme).toContain('pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck');
   });
 });

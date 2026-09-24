@@ -9,15 +9,17 @@ import {
   type Browser,
   type Data,
   DEFAULT_ANSWERS,
+  type PackageManager,
   type Styling,
   type TargetId,
 } from '#answers';
 
-import { mergePnpmWorkspace } from './pnpmWorkspaceEmitter';
+import { mergePnpmWorkspace, pnpmWorkspaceEmitter } from './pnpmWorkspaceEmitter';
 import { allowBuildsBlock, emitPnpmWorkspace } from './utils/emitUtils';
 
 interface AnswerOverrides {
   target?: TargetId;
+  packageManager?: PackageManager;
   browser?: Browser;
   styling?: Styling;
   data?: Data;
@@ -29,6 +31,24 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
     ...overrides,
   };
 };
+
+describe('pnpmWorkspaceEmitter', () => {
+  it('owns the workspace file only under pnpm', () => {
+    expect(pnpmWorkspaceEmitter(answersFor({ packageManager: 'pnpm' }))).toHaveLength(1);
+    expect(pnpmWorkspaceEmitter(answersFor({ packageManager: 'npm' }))).toEqual([]);
+  });
+
+  // Read off the artifact rather than the merge, so the file on disk is what reaches it.
+  it("drops create-next-app's build opt-out, which would fail the install, and keeps the rest of the file", () => {
+    const [artifact] = pnpmWorkspaceEmitter(answersFor({ target: 'next' }));
+    const scaffolded = 'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\noverrides:\n  left-pad: 1.0.0\n';
+    const merged = artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(scaffolded) : '';
+
+    expect(merged).not.toContain('ignoredBuiltDependencies');
+    expect(merged).toContain("'unrs-resolver': true");
+    expect(merged).toContain('overrides:\n  left-pad: 1.0.0\n');
+  });
+});
 
 describe('mergePnpmWorkspace', () => {
   it('writes the emitted block alone when there is no existing file', () => {

@@ -14,7 +14,7 @@ import {
   type TargetId,
 } from '#answers';
 
-import { emitAstroConfig } from './astroConfigEmitter';
+import { astroConfigEmitter, emitAstroConfig } from './astroConfigEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -144,5 +144,14 @@ describe('emitAstroConfig', () => {
 
     expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
     expect(config).toContain('createUnplugin(stylex).vite({ useCSSLayers: true })');
+  });
+});
+
+// The build configs are the project's after the first write: both reference repos rewrote their vite config wholesale.
+describe('astroConfigEmitter', () => {
+  it('hands the config to the project after the first write', () => {
+    expect(astroConfigEmitter(answersFor()).map(({ target, preserve }) => {
+      return [target, preserve];
+    })).toEqual([['astro.config.mjs', true]]);
   });
 });

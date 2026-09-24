@@ -16,6 +16,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import { type HostedAnswers } from '#answers';
@@ -31,6 +32,7 @@ import {
 import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 const CLAUDE_HOOK = 'plugins/linteljs/hooks/git-safety-guard.sh';
+const TYPE_STANDARDS = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 
 // The three files only a Claude Code project gets, and the whole of what removal may touch here.
 // Sorted, because the record a run leaves behind is sorted and what `sync` finds obsolete follows it.
@@ -98,6 +100,39 @@ describe('planSync', () => {
     expect(plan.pending.some((candidate) => {
       return candidate.target === 'eslint.config.js';
     })).toBe(false);
+  });
+
+  // A copied rule rather than an emitted config, and a full project around it, every other file of which is unchanged.
+  it('reports a locally edited rule alone, with its diff, and leaves the edit on disk', async () => {
+    await applyPending(HOSTED_DEFAULTS);
+    await writeFile(join(cwd, TYPE_STANDARDS), '# local edit\n', 'utf8');
+
+    const { pending } = await planSync(cwd, HOSTED_DEFAULTS);
+
+    expect(pending.map(({ target, status }) => {
+      return [target, status];
+    })).toEqual([[TYPE_STANDARDS, 'changed']]);
+    expect(pending[0]?.diff).toContain('local edit');
+    expect(await readFile(join(cwd, TYPE_STANDARDS), 'utf8')).toBe('# local edit\n');
+  });
+
+  // A machine with no git still needs to be told which files differ.
+  it('reports a changed file without a diff when git cannot be spawned', async () => {
+    await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
+    await writeFile(join(cwd, TYPE_STANDARDS), '# local edit\n', 'utf8');
+    vi.stubEnv('PATH', '');
+
+    try {
+      const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries.find(({ target }) => {
+        return target === TYPE_STANDARDS;
+      });
+
+      expect(entry?.status).toBe('changed');
+      expect(entry?.diff).toBe('');
+    }
+    finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('marks a locally edited artifact changed and carries a diff of the edit', async () => {
@@ -191,6 +226,23 @@ describe('applySync', () => {
     const written = await readFile(join(cwd, 'eslint.config.js'), 'utf8');
 
     expect(written).toContain('composeConfig');
+  });
+
+  it('restores an edited and a deleted config, after which nothing is pending', async () => {
+    await applyPending(HOSTED_DEFAULTS);
+    await writeFile(join(cwd, 'eslint.config.js'), '// hand edited\n', 'utf8');
+    await rm(join(cwd, 'tsconfig.json'));
+
+    const { pending } = await planSync(cwd, HOSTED_DEFAULTS);
+
+    expect(pending.map(({ target, status }) => {
+      return [target, status];
+    })).toEqual([['eslint.config.js', 'changed'], ['tsconfig.json', 'missing']]);
+
+    const { written } = await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js', 'tsconfig.json']);
+
+    expect(written).toEqual(['eslint.config.js', 'tsconfig.json']);
+    expect((await planSync(cwd, HOSTED_DEFAULTS)).pending).toEqual([]);
   });
 
   it('refuses to write a generated artifact through a symbolic link', async () => {

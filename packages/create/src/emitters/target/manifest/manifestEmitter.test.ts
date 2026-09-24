@@ -6,20 +6,26 @@ import {
 
 import {
   type Answers,
+  type Browser,
   type Data,
   DEFAULT_ANSWERS,
   type Styling,
   type Surface,
 } from '#answers';
+import { EMPTY_PROJECT } from '#config/constants';
+
+import { starterSourceEmitter } from '../starter-source/starterSourceEmitter';
 
 import {
   emitManifest,
   type Manifest,
+  manifestEmitter,
   parseManifest,
 } from './manifestEmitter';
 
 interface AnswerOverrides {
   browser?: Answers['browser'];
+  browsers?: Browser[];
   surfaces?: Surface[];
   target?: Answers['target'];
   styling?: Styling;
@@ -130,5 +136,51 @@ describe('emitManifest', () => {
 
     expect(emitted?.endsWith('}\n')).toBe(true);
     expect(emitted).toContain('\n  "manifest_version": 3,');
+  });
+});
+
+describe('manifestEmitter', () => {
+  const manifestsFor = (overrides: AnswerOverrides): Record<string, Manifest> => {
+    return Object.fromEntries(manifestEmitter(answersFor(overrides), EMPTY_PROJECT, 'demo-app').map((artifact) => {
+      return [artifact.target, parseManifest('text' in artifact.content ? artifact.content.text : '')];
+    }));
+  };
+
+  // Birth only: a manifest's permissions and store metadata are the project's to keep.
+  it('plants one manifest, named for the project, on a project being born', () => {
+    const artifacts = manifestEmitter(answersFor(), EMPTY_PROJECT, 'demo-app');
+
+    expect(artifacts.map(({ target, seed }) => {
+      return [target, seed];
+    })).toEqual([['manifest.json', true]]);
+    expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
+  });
+
+  // Chrome rejects `browser_specific_settings` and AMO requires it, so a project shipping to both stores gets two.
+  it('writes a second manifest, named for its browser, for a project packaged for two stores', () => {
+    const manifests = manifestsFor({ browsers: ['chrome', 'firefox'] });
+
+    expect(Object.keys(manifests)).toEqual(['manifest.json', 'manifest.firefox.json']);
+    expect(manifests['manifest.json']?.browser_specific_settings).toBeUndefined();
+    expect(manifests['manifest.firefox.json']?.browser_specific_settings).toBeDefined();
+    expect(manifests['manifest.json']?.background).toHaveProperty('service_worker');
+    expect(manifests['manifest.firefox.json']?.background).toHaveProperty('scripts');
+  });
+
+  // A manifest naming a background entry nothing wrote will not load, and the entry registers the handler beside it.
+  it.each<Browser>(['chrome', 'firefox'])('names a %s background entry the starter source writes', (browser) => {
+    const answers = answersFor({
+      browser,
+      surfaces: ['background'],
+    });
+    const background = manifestsFor({
+      browser,
+      surfaces: ['background'],
+    })['manifest.json']?.background ?? { scripts: [] };
+    const entry = 'service_worker' in background ? background.service_worker : background.scripts[0];
+
+    expect(starterSourceEmitter(answers).map(({ target }) => {
+      return target;
+    })).toEqual(expect.arrayContaining([entry, 'src/background/onInstalled.ts']));
   });
 });
