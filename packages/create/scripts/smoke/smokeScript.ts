@@ -24,7 +24,7 @@ const FLAGS = ['--existing', '--no-install', '--seed', '--skip', '--yes', '-y', 
 const STAGES = ['lint', 'package', 'standard', 'install', 'fix'];
 
 // Beside the script it spawns, and negated in `files` so a generated project inherits no test for a file it owns.
-const EXCLUDED = /^project\/scripts\/(?:.*\/)?[^/]+\.test\.ts$/;
+const EXCLUDED = /^project\/(?:scripts|plugins)\/(?:.*\/)?[^/]+\.test\.ts$/;
 
 log('packing and extracting the tarball');
 

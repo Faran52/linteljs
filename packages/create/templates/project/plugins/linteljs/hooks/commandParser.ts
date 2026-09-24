@@ -1,22 +1,69 @@
+// Reads a Bash hook payload on stdin and answers whether its command is a banned git operation or eslint without --fix.
+// Usage: node --experimental-strip-types commandParser.ts git|eslint
 import { readFileSync } from 'node:fs';
+
+type Mode = 'eslint' | 'git';
+type Decision = typeof CLEAR | typeof INDETERMINATE | typeof MATCH;
+
+interface TokenizerState {
+  active: boolean;
+  quote: string;
+  segments: string[][];
+  token: string;
+  tokens: string[];
+}
+
+interface Inspection {
+  index: number;
+  result: Decision;
+  terminal?: boolean;
+  tokens?: string[];
+}
+
+interface EnvOption {
+  index: number;
+  result: Decision;
+  splitString?: string;
+}
+
+interface EnvInspection {
+  index: number;
+  result: Decision;
+  tokens: string[];
+}
+
+interface ToolInput {
+  command: string;
+}
+
+interface BashPayload {
+  tool_input: ToolInput;
+}
 
 const CLEAR = 'clear';
 const INDETERMINATE = 'indeterminate';
 const MATCH = 'match';
 const MAX_DEPTH = 8;
 
-const commandName = (token) => {
+// A payload is whatever the host sent, so it is narrowed before its command is read.
+const isBashPayload = (value: unknown): value is BashPayload => {
+  return typeof value === 'object' && value !== null
+    && 'tool_input' in value && typeof value.tool_input === 'object' && value.tool_input !== null
+    && 'command' in value.tool_input && typeof value.tool_input.command === 'string';
+};
+
+const commandName = (token: string): string => {
   return token.replaceAll('\\', '/').split('/').at(-1)?.toLowerCase() ?? '';
 };
 
-const isAssignment = (token) => {
+const isAssignment = (token: string): boolean => {
   return /^[A-Za-z_]\w*=/u.test(token);
 };
-const isEslint = (token) => {
+const isEslint = (token: string): boolean => {
   return ['eslint', 'eslint.cmd'].includes(commandName(token));
 };
 
-const emitToken = (state) => {
+const emitToken = (state: TokenizerState): void => {
   if (state.active) {
     state.tokens.push(state.token);
   }
@@ -24,7 +71,7 @@ const emitToken = (state) => {
   state.active = false;
 };
 
-const emitSegment = (state) => {
+const emitSegment = (state: TokenizerState): void => {
   emitToken(state);
   if (state.tokens.length > 0) {
     state.segments.push(state.tokens);
@@ -32,8 +79,8 @@ const emitSegment = (state) => {
   state.tokens = [];
 };
 
-const readQuotedCharacter = (source, index, state) => {
-  const character = source[index];
+const readQuotedCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
+  const character = source.charAt(index);
   if (character === state.quote) {
     state.quote = '';
   }
@@ -42,7 +89,7 @@ const readQuotedCharacter = (source, index, state) => {
     if (index >= source.length) {
       return undefined;
     }
-    state.token += source[index];
+    state.token += source.charAt(index);
   }
   else {
     state.token += character;
@@ -51,8 +98,8 @@ const readQuotedCharacter = (source, index, state) => {
   return index;
 };
 
-const readUnquotedCharacter = (source, index, state) => {
-  const character = source[index];
+const readUnquotedCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
+  const character = source.charAt(index);
   if (character === '"' || character === "'") {
     state.quote = character;
     state.active = true;
@@ -62,7 +109,7 @@ const readUnquotedCharacter = (source, index, state) => {
     if (index >= source.length) {
       return undefined;
     }
-    state.token += source[index];
+    state.token += source.charAt(index);
     state.active = true;
   }
   else if (character === '#' && !state.active) {
@@ -90,8 +137,8 @@ const readUnquotedCharacter = (source, index, state) => {
   return index;
 };
 
-const segmentsOf = (source) => {
-  const state = {
+const segmentsOf = (source: string): string[][] | undefined => {
+  const state: TokenizerState = {
     active: false,
     quote: '',
     segments: [],
@@ -117,11 +164,11 @@ const segmentsOf = (source) => {
   return state.segments;
 };
 
-const skipOptions = (tokens, start, valued) => {
+const skipOptions = (tokens: string[], start: number, valued: Set<string>): number | undefined => {
   let index = start;
 
   while ((tokens[index] ?? '').startsWith('-')) {
-    const option = tokens[index];
+    const option = tokens[index] ?? '';
     if (option === '--') {
       return index + 1;
     }
@@ -139,7 +186,7 @@ const skipOptions = (tokens, start, valued) => {
   return index;
 };
 
-const hasExactFix = (arguments_) => {
+const hasExactFix = (arguments_: string[]): boolean => {
   for (const argument of arguments_) {
     if (argument === '--') {
       return false;
@@ -151,7 +198,7 @@ const hasExactFix = (arguments_) => {
   return false;
 };
 
-const commitIsBanned = (arguments_) => {
+const commitIsBanned = (arguments_: string[]): boolean => {
   for (const argument of arguments_) {
     if (argument === '--') {
       return false;
@@ -163,7 +210,7 @@ const commitIsBanned = (arguments_) => {
   return false;
 };
 
-const addIsBanned = (arguments_) => {
+const addIsBanned = (arguments_: string[]): boolean => {
   let options = true;
   for (const argument of arguments_) {
     if (argument === '--') {
@@ -180,7 +227,7 @@ const addIsBanned = (arguments_) => {
   return false;
 };
 
-const gitResult = (tokens, start) => {
+const gitResult = (tokens: string[], start: number): Decision => {
   if (commandName(tokens[start] ?? '') !== 'git') {
     return CLEAR;
   }
@@ -217,15 +264,26 @@ const gitResult = (tokens, start) => {
   return CLEAR;
 };
 
-const directRunnerArguments = (tokens, start) => {
+// Only an eslint run without an exact `--fix` before `--` matches.
+const fixResult = (arguments_: string[]): Decision => {
+  return hasExactFix(arguments_) ? CLEAR : MATCH;
+};
+
+const directRunnerResult = (tokens: string[], start: number): Decision => {
   const index = skipOptions(tokens, start, new Set(['-p', '--package']));
   if (index === undefined) {
     return INDETERMINATE;
   }
-  return isEslint(tokens[index] ?? '') ? tokens.slice(index + 1) : undefined;
+  return isEslint(tokens[index] ?? '') ? fixResult(tokens.slice(index + 1)) : CLEAR;
 };
 
-const scriptRunnerArguments = (tokens, start, before, commands, after) => {
+const scriptRunnerResult = (
+  tokens: string[],
+  start: number,
+  before: Set<string>,
+  commands: string[],
+  after: Set<string>,
+): Decision => {
   let index = skipOptions(tokens, start, before);
   if (index === undefined) {
     return INDETERMINATE;
@@ -237,16 +295,16 @@ const scriptRunnerArguments = (tokens, start, before, commands, after) => {
   if (index === undefined) {
     return INDETERMINATE;
   }
-  return isEslint(tokens[index] ?? '') ? tokens.slice(index + 1) : undefined;
+  return isEslint(tokens[index] ?? '') ? fixResult(tokens.slice(index + 1)) : CLEAR;
 };
 
-const npmArguments = (tokens, start) => {
+const npmResult = (tokens: string[], start: number): Decision => {
   let index = skipOptions(tokens, start, new Set(['--prefix', '--workspace']));
   if (index === undefined) {
     return INDETERMINATE;
   }
   if (!['exec', 'x', 'run'].includes(tokens[index] ?? '')) {
-    return undefined;
+    return CLEAR;
   }
   index += 1;
   index = skipOptions(tokens, index, new Set(['--package', '-w', '--workspace']));
@@ -254,22 +312,22 @@ const npmArguments = (tokens, start) => {
     return INDETERMINATE;
   }
   if (!isEslint(tokens[index] ?? '')) {
-    return undefined;
+    return CLEAR;
   }
   const arguments_ = tokens.slice(index + 1);
-  return arguments_[0] === '--' ? arguments_.slice(1) : arguments_;
+  return fixResult(arguments_[0] === '--' ? arguments_.slice(1) : arguments_);
 };
 
-const eslintArguments = (tokens, start) => {
+const eslintResult = (tokens: string[], start: number): Decision => {
   const executable = commandName(tokens[start] ?? '');
   if (isEslint(tokens[start] ?? '')) {
-    return tokens.slice(start + 1);
+    return fixResult(tokens.slice(start + 1));
   }
   if (['npx', 'bunx'].includes(executable)) {
-    return directRunnerArguments(tokens, start + 1);
+    return directRunnerResult(tokens, start + 1);
   }
   if (executable === 'pnpm') {
-    return scriptRunnerArguments(
+    return scriptRunnerResult(
       tokens,
       start + 1,
       new Set(['-C', '--dir', '--filter']),
@@ -278,38 +336,30 @@ const eslintArguments = (tokens, start) => {
     );
   }
   if (executable === 'npm') {
-    return npmArguments(tokens, start + 1);
+    return npmResult(tokens, start + 1);
   }
   if (executable === 'yarn') {
-    return scriptRunnerArguments(
+    return scriptRunnerResult(
       tokens,
       start + 1,
       new Set(['--cwd']),
       ['exec', 'dlx', 'run'],
-      new Set(),
+      new Set<string>(),
     );
   }
   if (executable === 'bun') {
-    return scriptRunnerArguments(
+    return scriptRunnerResult(
       tokens,
       start + 1,
       new Set(['--cwd']),
       ['x', 'run'],
-      new Set(),
+      new Set<string>(),
     );
   }
-  return undefined;
+  return CLEAR;
 };
 
-const eslintResult = (tokens, start) => {
-  const arguments_ = eslintArguments(tokens, start);
-  if (arguments_ === INDETERMINATE) {
-    return INDETERMINATE;
-  }
-  return arguments_ !== undefined && !hasExactFix(arguments_) ? MATCH : CLEAR;
-};
-
-const inspectSource = (source, mode, depth) => {
+const inspectSource = (source: string, mode: Mode, depth: number): Decision => {
   if (depth > MAX_DEPTH) {
     return INDETERMINATE;
   }
@@ -317,7 +367,7 @@ const inspectSource = (source, mode, depth) => {
   if (segments === undefined) {
     return INDETERMINATE;
   }
-  let result = CLEAR;
+  let result: Decision = CLEAR;
 
   for (const tokens of segments) {
     const segmentResult = inspectSegment(tokens, mode, depth);
@@ -332,8 +382,8 @@ const inspectSource = (source, mode, depth) => {
   return result;
 };
 
-const envOption = (tokens, index) => {
-  const option = tokens[index];
+const envOption = (tokens: string[], index: number): EnvOption => {
+  const option = tokens[index] ?? '';
   if (option === '-S' || option === '--split-string') {
     const splitString = tokens[index + 1];
     return splitString === undefined
@@ -401,15 +451,13 @@ const envOption = (tokens, index) => {
   };
 };
 
-const splitEnvArguments = (splitString, trailing) => {
-  const segments = segmentsOf(splitString);
-  if (segments === undefined || segments.length !== 1 || segments[0].length === 0) {
-    return undefined;
-  }
-  return [...segments[0], ...trailing];
+// A split string is one command: none at all, or several, is not something env would run as this one.
+const splitEnvArguments = (splitString: string, trailing: string[]): string[] | undefined => {
+  const [first, ...rest] = segmentsOf(splitString) ?? [];
+  return first === undefined || rest.length > 0 ? undefined : [...first, ...trailing];
 };
 
-const inspectEnv = (tokens, start, depth) => {
+const inspectEnv = (tokens: string[], start: number, depth: number): EnvInspection => {
   if (depth > MAX_DEPTH) {
     return {
       index: start,
@@ -419,7 +467,7 @@ const inspectEnv = (tokens, start, depth) => {
   }
   let index = start;
   while (index < tokens.length) {
-    const option = tokens[index];
+    const option = tokens[index] ?? '';
     if (option === '--') {
       return {
         index: index + 1,
@@ -462,7 +510,7 @@ const inspectEnv = (tokens, start, depth) => {
   };
 };
 
-const skipAssignments = (tokens, start) => {
+const skipAssignments = (tokens: string[], start: number): number => {
   let index = start;
   while (isAssignment(tokens[index] ?? '')) {
     index += 1;
@@ -470,11 +518,11 @@ const skipAssignments = (tokens, start) => {
   return index;
 };
 
-const commandWrapper = (tokens, start) => {
+const commandWrapper = (tokens: string[], start: number): Inspection => {
   let index = start;
   let lookup = false;
   while ((tokens[index] ?? '').startsWith('-')) {
-    const option = tokens[index];
+    const option = tokens[index] ?? '';
     if (option === '--') {
       return {
         index: index + 1,
@@ -493,10 +541,10 @@ const commandWrapper = (tokens, start) => {
   };
 };
 
-const execWrapper = (tokens, start) => {
+const execWrapper = (tokens: string[], start: number): Inspection => {
   let index = start;
   while ((tokens[index] ?? '').startsWith('-')) {
-    const option = tokens[index];
+    const option = tokens[index] ?? '';
     if (option === '--') {
       return {
         index: skipAssignments(tokens, index + 1),
@@ -522,7 +570,7 @@ const execWrapper = (tokens, start) => {
   };
 };
 
-const optionWrapper = (tokens, start, valued) => {
+const optionWrapper = (tokens: string[], start: number, valued: Set<string>): Inspection => {
   const index = skipOptions(tokens, start, valued);
   return index === undefined
     ? {
@@ -535,9 +583,9 @@ const optionWrapper = (tokens, start, valued) => {
       };
 };
 
-const shellWrapper = (tokens, start, mode, depth) => {
+const shellWrapper = (tokens: string[], start: number, mode: Mode, depth: number): Inspection => {
   for (let index = start; index < tokens.length; index += 1) {
-    const option = tokens[index];
+    const option = tokens[index] ?? '';
     if (option === '--') {
       continue;
     }
@@ -562,8 +610,8 @@ const shellWrapper = (tokens, start, mode, depth) => {
   };
 };
 
-const wrapperResult = (tokens, index, mode, depth) => {
-  const name = commandName(tokens[index]);
+const wrapperResult = (tokens: string[], index: number, mode: Mode, depth: number): Inspection | undefined => {
+  const name = commandName(tokens[index] ?? '');
   if (name === 'env') {
     const result = inspectEnv(tokens, index + 1, depth);
     return {
@@ -599,7 +647,7 @@ const wrapperResult = (tokens, index, mode, depth) => {
   return undefined;
 };
 
-const inspectSegment = (tokens, mode, depth) => {
+const inspectSegment = (tokens: string[], mode: Mode, depth: number): Decision => {
   let effective = tokens;
   let index = skipAssignments(effective, effective[0] === '!' ? 1 : 0);
   while (index < effective.length) {
@@ -622,31 +670,35 @@ const inspectSegment = (tokens, mode, depth) => {
   return mode === 'git' ? gitResult(effective, index) : eslintResult(effective, index);
 };
 
-const main = () => {
+// Malformed JSON or a payload with no Bash command is not a command to judge, so both read as nothing.
+const commandOf = (): string | undefined => {
+  try {
+    const payload: unknown = JSON.parse(readFileSync(0, 'utf8'));
+    return isBashPayload(payload) ? payload.tool_input.command : undefined;
+  }
+  catch {
+    return undefined;
+  }
+};
+
+// The `process` global, not an import from `node:process`: that import sets stdin non-blocking, and a large
+// payload then fails its read with EAGAIN and reads as no command at all. The 4 MB depth case pins it.
+const main = (): void => {
   const mode = process.argv[2];
   if (mode !== 'git' && mode !== 'eslint') {
     process.stdout.write(INDETERMINATE);
     return;
   }
 
-  let payload;
-  try {
-    payload = JSON.parse(readFileSync(0, 'utf8'));
-  }
-  catch {
-    process.stdout.write('silent');
-    return;
-  }
-
-  const command = payload?.tool_input?.command;
-  if (typeof command !== 'string') {
+  const command = commandOf();
+  if (command === undefined) {
     process.stdout.write('silent');
     return;
   }
 
   try {
     const result = inspectSource(command, mode, 0);
-    let decision = result;
+    let decision: string = result;
     if (result === MATCH) {
       decision = mode === 'git' ? 'deny' : 'warn';
     }

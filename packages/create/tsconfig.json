@@ -16,6 +16,7 @@
     "__mocks__/**/*.ts",
     "scripts/**/*.ts",
     "templates/project/scripts/**/*.ts",
+    "templates/project/plugins/**/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts",
     "vitest.e2e.config.ts"

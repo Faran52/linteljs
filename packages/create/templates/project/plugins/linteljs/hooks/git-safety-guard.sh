@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 payload=$(cat)
-decision=$(printf '%s' "$payload" | node "${CLAUDE_PLUGIN_ROOT}/hooks/commandParser.js" git)
+decision=$(printf '%s' "$payload" | node --experimental-strip-types "${CLAUDE_PLUGIN_ROOT}/hooks/commandParser.ts" git)
 status=$?
 
 if [ "$status" -ne 0 ]; then

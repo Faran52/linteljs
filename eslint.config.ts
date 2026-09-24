@@ -56,6 +56,8 @@ const config = [
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',
+      // The TypeScript a generated project receives; the shipped `.sh` hooks beside it stay kebab-case.
+      'packages/create/templates/project/{scripts,plugins}/**/*.ts': 'CAMEL_CASE',
       // DESIGN.md: `'**/utils/*.ts': '*Utils'`
       '**/utils/*.ts': '*Utils',
     },

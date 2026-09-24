@@ -67,6 +67,8 @@
     "dist",
     "templates",
     "!templates/project/scripts/**/*.test.ts",
+    "!templates/project/plugins/**/*.test.ts",
+    "!templates/**/node_modules",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"

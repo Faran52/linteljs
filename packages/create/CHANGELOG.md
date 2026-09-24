@@ -11,6 +11,13 @@ when a version's change lives in a sibling it is described there instead:
 - The `create-linteljs` and `create` binaries are built by tsdown from `bin/createLinteljs.ts` into
   `dist/create-linteljs.mjs`, replacing the hand-written `bin/create-linteljs.js` shim. The package no longer
   ships a `bin/` directory.
+- **The hooks' command parser is TypeScript: `plugins/linteljs/hooks/commandParser.ts`**, typed throughout and
+  run by `git-safety-guard.sh` and `eslint-fix-warning.sh` as `node --experimental-strip-types`, the way the
+  shipped `scripts/*.ts` already run. It reaches a project through `sync`, which removes the recorded
+  `commandParser.js`. Its decisions are unchanged.
+- **The Node floor of a generated project is `>=22.6`**, up from `>=22`. 22.0 to 22.5 have no
+  `--experimental-strip-types`, so they could run neither the parser nor the two shipped scripts. The CLI's own
+  floor stays `22.13.0`.
 - React Native projects declare `@react-native/metro-config` at react-native's own version, so pnpm resolves
   one copy and needs no peer allowance; a new metro-config release no longer brings back a peer warning. Yarn 4
   installs are clean through `packageExtensions` for Expo SDK 57's own tree, and React Native's `.yarnrc.yml`

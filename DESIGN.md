@@ -1037,9 +1037,9 @@ this CLI was tested against, not that exact version, so a project is not pinned 
 outright rather than warning. Bun gets no `packageManager`, since neither corepack nor pnpm's switch knows it, and
 `engines.bun` says what the field would have.
 
-Node is `>=22` in a generated project and `22.13.0` as this CLI's own floor, and the two are different facts. The
+Node is `>=22.6` in a generated project and `22.13.0` as this CLI's own floor, and the two are different facts. The
 project's floor is `--experimental-strip-types`, which starts at 22.6.0 and is what the two shipped `scripts/*.ts`
-run under, so every 22 can run them. The CLI's own is `@inquirer/prompts` 8, which declares
+and the hooks' `commandParser.ts` run under; 22.0 to 22.5 lack the flag, so the floor names 22.6. The CLI's own is `@inquirer/prompts` 8, which declares
 `^22.13.0 || >=23.5.0`: a questionnaire reading raw keypresses is not something to run below what its own library
 supports, and nothing a project installs is that library. The pinned tools ask for more again (`@angular/create`
 and lint-staged 17.3 want 22.22) and say so themselves as `EBADENGINE` warnings; that is theirs to declare rather

@@ -92,7 +92,7 @@ export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
     copied('plugins/linteljs/skills/linteljs/SKILL.md'),
     ...referenceArtifacts(answers),
     copied('plugins/linteljs/hooks/hooks.json'),
-    copied('plugins/linteljs/hooks/commandParser.js'),
+    copied('plugins/linteljs/hooks/commandParser.ts'),
     hook('eslint-fix-warning.sh'),
     hook('git-safety-guard.sh'),
     hook('banned-pattern-guard.sh'),
