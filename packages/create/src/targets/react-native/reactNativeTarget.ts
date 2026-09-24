@@ -216,6 +216,7 @@ export const reactNativeTarget: TargetRecord = {
       return name !== 'eslint-plugin-jsx-a11y-x';
     }),
     '@types/react',
+    '@react-native/metro-config',
   ],
   // `@srsholmes/vitest-react-native` strips the Flow types and stands in for native modules; its `esbuild` needs an
   // install script, hence `allowBuilds`.
@@ -233,11 +234,6 @@ export const reactNativeTarget: TargetRecord = {
     'react-dom': '19.2.3',
     '@types/react': '~19.2.2',
   },
-  /*
-   * Inside react-native's own tree: the community CLI plugin peers the exact metro-config of its own release, and
-   * pnpm answers worklets' open peer on it with the newest. Nothing here declares either.
-   */
-  peerAllowances: { '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1' },
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMock: ROUTER_MOCK,
 };

@@ -8,6 +8,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- React Native projects declare `@react-native/metro-config` at react-native's own version, so pnpm resolves
+  one copy and needs no peer allowance; a new metro-config release no longer brings back a peer warning. Yarn 4
+  installs are clean through `packageExtensions` for Expo SDK 57's own tree, and React Native's `.yarnrc.yml`
+  no longer discards YN0060 and YN0086.
 - **Breaking: the generated `eslint.config.js` imports `composeConfig` from
   `@linteljs/eslint-config/compose-config`**, the new name of `defineConfig`. `sync` rewrites the file in an
   existing project.

@@ -21,9 +21,8 @@ export const allowBuildsBlock = (answers: Answers): string => {
  * nothing else's now. The table that used to sit here keyed allowances by the plugin that dragged a stale peer in,
  * and every one of its entries died: the layers take `import-x` and `jsx-a11y-x`, `eslint-plugin-solid` admits
  * eslint 10, and `eslint-plugin-astro` 3.2 peers the fork itself. Measured rather than assumed, against both
- * lockfiles: neither plugin it named is installed anywhere. Two allowances are left and both are a target's,
- * `@angular/build` peering vitest 4 against the 5 a project installs, and React Native's cli plugin pinning a metro
- * config to the patch. A new one goes on the target record beside those.
+ * lockfiles: neither plugin it named is installed anywhere. One allowance is left and it is a target's,
+ * `@angular/build` peering vitest 4 against the 5 a project installs. A new one goes on the target record beside it.
  *
  * Nothing to allow is now the common case, and pnpm rejects a `peerDependencyRules` key with an empty map under it.
  */

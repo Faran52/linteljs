@@ -132,15 +132,15 @@ describe('peer allowances a target carries', () => {
 });
 
 /**
- * React Native's own toolchain disagrees with itself about metro-config, which is a resolution this CLI can state.
- * A deprecation is not: nothing here mutes one, for any target. React Native's `expo` reaches an end-of-life `uuid`,
- * the notice is true, and it belongs to whoever owns the dependency.
+ * React Native's metro-config clash is gone because the project declares the release react-native pins, so there is no
+ * peer to allow. A deprecation is never muted, for any target: `expo` reaches an end-of-life `uuid`, the notice is
+ * true, and it belongs to whoever owns the dependency.
  */
 describe('react native allowances', () => {
-  it('allows the metro-config peer react-native resolves past, and mutes no deprecation', () => {
+  it('allows no peer and mutes no deprecation', () => {
     const output = emitPnpmWorkspace(answersFor({ target: 'react-native' }));
 
-    expect(output).toContain("    '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1'");
+    expect(output).not.toContain('peerDependencyRules');
     expect(output).not.toContain('allowedDeprecatedVersions');
   });
 

@@ -38,11 +38,37 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     peerDependencies:
       react-dom: "*"
 `,
-  // Every React Native project installs it for Reanimated, and it hard-peers two packages nothing declares.
+  // Every React Native project installs it for Reanimated, and it hard-peers a babel nothing declares.
   'react-native-worklets': `  "react-native-worklets@*":
     dependencies:
       "@babel/core": "^7"
-      "@react-native/metro-config": "0.86.3"
+`,
+  /*
+   * Expo SDK 57's own tree: `react` walks up to the project, the expo modules are `expo`'s own dependencies, and
+   * babel has no parent that declares it.
+   */
+  'expo': `  "@expo/cli@*":
+    peerDependencies:
+      react: "*"
+  "@expo/router-server@*":
+    peerDependenciesMeta:
+      expo-constants:
+        optional: true
+      expo-font:
+        optional: true
+  "expo-symbols@*":
+    peerDependenciesMeta:
+      expo-font:
+        optional: true
+  "expo-linking@*":
+    peerDependencies:
+      expo: "*"
+  "babel-preset-expo@*":
+    dependencies:
+      "@babel/core": "^7"
+  "babel-plugin-transform-flow-enums@*":
+    dependencies:
+      "@babel/core": "^7"
 `,
   // `react-native-css` comes with the tailwind answer on react-native, and hard-peers two packages nothing declares.
   'react-native-css': `  "react-native-css@*":

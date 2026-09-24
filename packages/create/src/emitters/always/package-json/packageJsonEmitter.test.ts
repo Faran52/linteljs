@@ -525,6 +525,13 @@ describe('the libraries added in 1.6.0', () => {
     expect(buildDependencies(answersFor({}))['react']).toBe(VERSIONS['react']);
   });
 
+  // The cli plugin inside react-native peers its own release exactly; any other and every manager reports the clash.
+  it('declares the metro-config of react-native\'s own release, on React Native alone', () => {
+    expect(buildDevDependencies(answersFor({ target: 'react-native' }))['@react-native/metro-config'])
+      .toBe(VERSIONS['react-native']);
+    expect(buildDevDependencies(answersFor({}))).not.toHaveProperty('@react-native/metro-config');
+  });
+
   // nuxt 4.5 peers rolldown outright, and its builder and devtools peer vite; only pnpm and bun install them unasked.
   it('names the peers nuxt asks the project for', () => {
     const nuxt = buildDevDependencies(answersFor({ target: 'nuxt' }));
@@ -643,6 +650,7 @@ const siblingIn = (directory: string): Sibling => {
 // Every entry pinned tighter than a caret, with the operator it takes; the table says why beside each one.
 const PINNED_TIGHTER: Record<string, string> = {
   '@angular/build': '~',
+  '@react-native/metro-config': '',
   'expo': '~',
   'expo-constants': '~',
   'expo-linking': '~',

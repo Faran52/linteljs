@@ -76,19 +76,19 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
   const existing = "allowBuilds:\n  'some-native': true\n";
 
   it('adds the block for a target that still caps a peer, and leaves allowBuilds alone', () => {
-    const merged = mergePnpmWorkspace(existing, answersFor({ target: 'react-native' }));
+    const merged = mergePnpmWorkspace(existing, answersFor({ target: 'angular' }));
 
     // The project's own allowBuilds list survives untouched, and the names this CLI would have written are not added.
     expect(merged).toContain("allowBuilds:\n  'some-native': true");
     expect(merged).not.toContain('unrs-resolver');
     expect(merged).toContain('peerDependencyRules:');
-    expect(merged).toContain("    '@react-native/community-cli-plugin>@react-native/metro-config'");
+    expect(merged).toContain("    '@angular/build>vitest'");
   });
 
   // Already there is the project's: a hand-widened range is not this CLI's to narrow back.
   it('leaves an existing peerDependencyRules block alone', () => {
     const withRules = `${existing}\npeerDependencyRules:\n  allowedVersions:\n    'mine>eslint': '9'\n`;
-    const merged = mergePnpmWorkspace(withRules, answersFor({ target: 'react-native' }));
+    const merged = mergePnpmWorkspace(withRules, answersFor({ target: 'angular' }));
 
     expect(merged).toBe(withRules);
   });
@@ -99,7 +99,7 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
    * `eslint-plugin-jsx-a11y` in it, the layers take the two forks, and `eslint-plugin-astro` peers the fork itself.
    */
   it('writes no rules block for a target with nothing capped', () => {
-    for (const target of ['vue', 'next', 'astro'] as const) {
+    for (const target of ['vue', 'next', 'astro', 'react-native'] as const) {
       expect(mergePnpmWorkspace(existing, answersFor({ target }))).not.toContain('peerDependencyRules');
     }
   });

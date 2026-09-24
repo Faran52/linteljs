@@ -992,10 +992,20 @@ out to `npm pack --dry-run --json` whatever launched it and could not read npm 1
 was pinned to 11 everywhere for the same reason. `create-expo` 5.0.2 carries `normalizeNpmPackResult`, so the
 target scaffolds through whichever manager ran `create`, the field is deleted and the floor is npm's own.
 
-- **One allowance the target declares.** `@react-native/community-cli-plugin@0.86.3` peers exactly one version of
-  `@react-native/metro-config`, and nothing here declares either package. Worklets peers it at `*`, which pnpm
-  answers with the newest, 0.87.1: measured on 0.86.3, `pnpm peers check` reports exactly that pair without the
-  allowance and nothing with it.
+- **One package the target declares for a peer.** `@react-native/community-cli-plugin@0.86.3` peers exactly its
+  own release of `@react-native/metro-config`, and worklets peers it at `*`, which a manager answers with the
+  newest. Undeclared, pnpm resolved 0.87.1 and `pnpm peers check` reported exactly that pair. It used to be
+  allowed away with a `peerDependencyRules` entry naming 0.87.1, which the next metro-config release would have
+  broken. The project now declares `@react-native/metro-config` at react-native's own version, both peers resolve
+  to it, and `pnpm peers check` reports nothing, with tailwind or without. The yarn extension that handed worklets
+  the same version is gone with it, measured dead: the same tree and the same peer report without it.
+
+  Yarn 4 still reported YN0086 for React Native, which the allowance had been discarding by coupling rather than
+  by measurement. Seven requests inside Expo SDK 57's own tree caused it, none of them a clash, so no YN0060:
+  `@expo/cli` passing no `react` to `@expo/log-box`, `@expo/router-server` and `expo-symbols` asking for the
+  `expo-constants` and `expo-font` that `expo` itself depends on, `expo-linking` passing no `expo` to
+  `expo-constants`, and `babel-preset-expo` and `babel-plugin-transform-flow-enums` passing no `@babel/core` to
+  their plugins. Each has a `packageExtensions` entry, and the target carries no `logFilters`.
 
   The deprecated `uuid@7` that `expo` reaches through `@expo/config-plugins` and `xcode` is deliberately *not*
   allowed away. See below.

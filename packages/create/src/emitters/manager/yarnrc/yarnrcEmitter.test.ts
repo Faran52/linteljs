@@ -84,6 +84,8 @@ describe('emitYarnrc', () => {
     expect(angular).toContain('  - code: "YN0060"\n    level: "discard"\n');
     expect(emitYarnrc(answersFor({}))).not.toContain('YN0086');
     expect(emitYarnrc(answersFor({}))).not.toContain('YN0060');
+    // Measured without it: React Native's peers are all answered by packageExtensions, so it filters nothing.
+    expect(emitYarnrc(answersFor({ target: 'react-native' }))).not.toContain('logFilters');
   });
 
   // Hard peers no emitted manifest answers. Written only where the dependent is installed: yarn reports YN0068 for a
@@ -97,14 +99,15 @@ describe('emitYarnrc', () => {
     const css = '  "react-native-css@*":\n    dependencies:\n      lightningcss: ">=1.27.0"\n'
       + '      "@expo/metro-config": ">=54"\n';
 
-    expect(native).toContain(
-      '  "react-native-worklets@*":\n    dependencies:\n      "@babel/core": "^7"\n'
-      + '      "@react-native/metro-config": "0.86.3"\n',
-    );
+    // The project declares metro-config itself, so worklets' peer on it is answered without an extension.
+    expect(native).toContain('  "react-native-worklets@*":\n    dependencies:\n      "@babel/core": "^7"\n');
+    expect(native).not.toContain('"@react-native/metro-config"');
+    expect(native).toContain('  "expo-linking@*":\n    peerDependencies:\n      expo: "*"\n');
     expect(native).not.toContain('react-native-css');
     expect(styled).toContain(css);
     // A target declaring none carries none.
     expect(emitYarnrc(answersFor({}))).not.toContain('react-native-worklets');
+    expect(emitYarnrc(answersFor({}))).not.toContain('@expo/cli');
   });
 
   // Neither passes down a peer its own dependencies ask for, so the request stops short of the project.

@@ -124,6 +124,8 @@ export const VERSIONS: Record<string, string> = {
    */
   'expo': '~57.0.24',
   'react-native': '0.86.3',
+  // react-native's cli plugin peers its own release exactly and worklets peers `*`; declared, both resolve to it.
+  '@react-native/metro-config': '0.86.3',
   'expo-router': '~57.0.22',
   'expo-constants': '~57.0.19',
   'expo-linking': '~57.0.10',
