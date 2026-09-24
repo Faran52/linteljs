@@ -101,9 +101,16 @@ describe('buildTsconfig', () => {
       .not.toContain('vite/client');
   });
 
-  it('refuses ts extensions in imports, which the starter never writes', () => {
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions
-      .allowImportingTsExtensions).toBe(false);
+  it('allows the ts extension the shipped scripts import with, by rewrite where ngtsc drops noEmit', () => {
+    const optionsOf = (target: 'angular' | 'react' | 'vue') => {
+      const { allowImportingTsExtensions, rewriteRelativeImportExtensions } = buildTsconfig(answersFor({ target }))
+        .compilerOptions;
+
+      return [allowImportingTsExtensions, rewriteRelativeImportExtensions];
+    };
+
+    expect([optionsOf('react'), optionsOf('vue'), optionsOf('angular')])
+      .toEqual([[true, undefined], [true, undefined], [false, true]]);
   });
 
   /*

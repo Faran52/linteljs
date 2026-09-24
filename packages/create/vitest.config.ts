@@ -23,7 +23,7 @@ export default defineConfig({
     isolate: true,
     // Real fs and spawned binaries per test; shared CI runners need margin the 5s default lacks.
     testTimeout: 30000,
-    include: ['src/**/*.test.ts', 'templates/project/scripts/*.test.ts'],
+    include: ['src/**/*.test.ts', 'templates/project/scripts/**/*.test.ts'],
     exclude: ['**/*.e2e.test.ts'],
   },
 });

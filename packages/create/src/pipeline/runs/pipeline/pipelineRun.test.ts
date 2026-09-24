@@ -148,6 +148,7 @@ describe('runPipeline against a directory that already exists', () => {
       'plugins/linteljs/hooks/git-safety-guard.sh',
       'scripts/checkBannedPatterns.ts',
       'scripts/typecheckStaged.ts',
+      'scripts/utils/loggerUtils.ts',
       '.husky/pre-commit',
       'lint-staged.config.js',
       'commitlint.config.js',

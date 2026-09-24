@@ -8,6 +8,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- Generated projects get `scripts/utils/loggerUtils.ts`, and `checkBannedPatterns.ts` and `typecheckStaged.ts`
+  report through it: `[ERROR]` lines on stderr, and a stack trace under `DEBUG=true`. The tsconfig sets
+  `allowImportingTsExtensions` (Angular: `rewriteRelativeImportExtensions`), so a script can import
+  `./utils/loggerUtils.ts` by the name Node's type stripping needs.
 - **Breaking: `--skip-scaffold` is now `--existing`, and `--fresh` is now `--seed`.** No scaffolder runs any
   more, so both were named for a stage that is gone. `--existing` runs in the directory that already exists
   rather than making `<name>/`; `--seed` plants the starter and seed files a new project is born with.

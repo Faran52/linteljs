@@ -24,6 +24,7 @@ export interface CompilerOptions {
   customConditions?: string[];
   resolveJsonModule: boolean;
   allowImportingTsExtensions: boolean;
+  rewriteRelativeImportExtensions?: boolean;
   isolatedModules: boolean;
   moduleDetection: string;
   importHelpers: boolean;
@@ -95,8 +96,13 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     moduleResolution: 'bundler',
     ...(delta.customConditions === undefined ? {} : { customConditions: delta.customConditions }),
     resolveJsonModule: true,
-    // Off: the starter is this repo's own source and names no extension, so nothing needs the allowance.
-    allowImportingTsExtensions: false,
+    /**
+     * `scripts/` runs on Node's type stripping, which needs the `.ts` in `./utils/loggerUtils.ts`. The allowance
+     * needs `noEmit`; where ngtsc drops that, the rewrite grants the same. Not everywhere: vue-tsc rejects a `.vue`
+     * import under the rewrite.
+     */
+    allowImportingTsExtensions: delta.dropsNoEmit !== true,
+    ...(delta.dropsNoEmit === true ? { rewriteRelativeImportExtensions: true } : {}),
     isolatedModules: true,
     moduleDetection: 'force',
     importHelpers: true,

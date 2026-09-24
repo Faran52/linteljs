@@ -19,6 +19,7 @@ import { lintStagedEmitter } from './always/lint-staged/lintStagedEmitter';
 import { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 import { linteljsPluginEmitter } from './always/linteljs-plugin/linteljsPluginEmitter';
 import { linteljsRecordEmitter } from './always/linteljs-record/linteljsRecordEmitter';
+import { loggerUtilsEmitter } from './always/logger-utils/loggerUtilsEmitter';
 import { packageJsonEmitter } from './always/package-json/packageJsonEmitter';
 import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
@@ -67,6 +68,7 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'always/commitlint': commitlintEmitter,
   'always/tsconfig': tsconfigEmitter,
   'always/typecheck-staged': typecheckStagedEmitter,
+  'always/logger-utils': loggerUtilsEmitter,
   'always/ci-workflow': ciWorkflowEmitter,
   'typesafety/custom-types': customTypesEmitter,
   'libraries/style-entry': styleEntryEmitter,

@@ -81,8 +81,8 @@ export const astroTarget: TargetBuilder = (answers) => {
     tailwindTheme: './theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     /**
-     * `astro/tsconfigs/strict` teaches TypeScript about `.astro` and `astro:*` modules. `allowImportingTsExtensions`
-     * goes back off because this CLI strips the extensions instead; `jsx` stays `preserve`, which Astro needs.
+     * `astro/tsconfigs/strict` teaches TypeScript about `.astro` and `astro:*` modules; `jsx` stays `preserve`, which
+     * Astro needs.
      * `include` re-names `.astro/types.d.ts` because this config replaces the inherited `include`.
      */
     tsconfig: {
