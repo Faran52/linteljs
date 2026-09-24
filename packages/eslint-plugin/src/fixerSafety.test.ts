@@ -1,8 +1,10 @@
 import {
   alphabetically,
   commentsIn,
+  FIXER_SAMPLES,
   type FixerSample,
   fixWith,
+  isSfcSample,
   parseableSamples,
   parseErrorsIn,
   tokensIn,
@@ -20,6 +22,26 @@ import type { FixShape } from './types.ts';
 const ruleNames = Object.keys(rules);
 const samples = parseableSamples().map((sample) => {
   return [sample.name, sample] as const;
+});
+
+/**
+ * `parseableSamples` drops a sample its parser rejects, so a component parser wired up wrong would leave every
+ * assertion below holding over nothing for Vue, Svelte and Astro. Each has to parse before any rule reads it.
+ */
+describe('the corpus', () => {
+  const sfc = FIXER_SAMPLES.filter(isSfcSample).map((sample) => {
+    return [sample.name, sample] as const;
+  });
+
+  it('holds samples for every component parser', () => {
+    expect(new Set(sfc.map(([, sample]) => {
+      return sample.filename?.replace(/^.*\./, '');
+    }))).toEqual(new Set(['astro', 'svelte', 'vue']));
+  });
+
+  it.each(sfc)('parses %s', (_label, sample: FixerSample) => {
+    expect(parseErrorsIn(sample.code, sample.typescript, sample.filename)).toEqual([]);
+  });
 });
 
 describe.each(ruleNames)('%s', (name) => {

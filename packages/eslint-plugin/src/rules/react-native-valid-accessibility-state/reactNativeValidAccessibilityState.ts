@@ -60,7 +60,7 @@ export const reactNativeValidAccessibilityState = createRule('react-native-valid
 
       // Only a value written down can be judged; one computed at runtime is the caller's to get right. A property
       // always has a value.
-      const written = mustFind(property.value);
+      const written = mustFind(property.value, 'the value of an accessibilityState property');
 
       if (written.type !== 'Literal') {
         return;

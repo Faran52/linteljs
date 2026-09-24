@@ -1,5 +1,8 @@
+import * as astroParser from 'astro-eslint-parser';
 import { Linter } from 'eslint';
+import svelteParser from 'svelte-eslint-parser';
 import tseslint from 'typescript-eslint';
+import vueParser from 'vue-eslint-parser';
 
 import { rules } from '../src/rules/index.ts';
 
@@ -14,8 +17,11 @@ export interface FixerSample {
   name: string;
   code: string;
   typescript?: boolean | undefined;
-  // Without one every snippet is called `<input>`, so `physicalFilenameOf` never sees a `.tsx`
-  // and JSX never kicks in.
+  /**
+   * Without one every snippet is called `<input>`, so `physicalFilenameOf` never sees a `.tsx`
+   * and JSX never kicks in. A `.vue`, `.svelte` or `.astro` one is read by that framework's parser, the way a
+   * consumer's config globs pick it.
+   */
   filename?: string | undefined;
   // Declared, not sniffed out of the text, so the CRLF set is a decision.
   crlf?: true;
@@ -471,6 +477,226 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
     crlf: true,
   },
+
+  // Every other parser a consumer runs these rules under, each with TypeScript beneath it the way their layers set it.
+  {
+    name: 'vue <script setup lang="ts">',
+    code: [
+      '<script setup lang="ts">',
+      "import { computed, ref } from 'vue';",
+      "import type { Item } from './types';",
+      '',
+      'interface Props { items: Item[]; title?: string }',
+      '',
+      'type Mode = { kind: \'a\' } | { kind: \'b\' };',
+      '',
+      'const props = defineProps<Props>();',
+      'const count = ref(0);',
+      'const mode = ref<Mode>({ kind: \'a\' });',
+      'function increment(step: number): void {',
+      '  count.value += step;',
+      '}',
+      'const label = computed(function () {',
+      "  return props.title ?? 'none';",
+      '});',
+      'const { items, title } = props;',
+      '</script>',
+      '',
+      '<template>',
+      '  <h1>{{ label }} {{ title }} {{ mode.kind }}</h1>',
+      '  <button @click="increment(1)">{{ count }} of {{ items.length }}</button>',
+      '</template>',
+      '',
+    ].join('\n'),
+    filename: 'Counter.vue',
+  },
+  {
+    name: 'vue <script> beside <script setup>',
+    code: [
+      '<script lang="ts">',
+      "export default { name: 'Panel', inheritAttrs: false };",
+      'export interface PanelSlot { header: string; body: string }',
+      '</script>',
+      '',
+      '<script setup lang="ts">',
+      "import { onMounted } from 'vue';",
+      '',
+      'onMounted(async function () {',
+      "  await fetch('/ping').then(function (response) { return response.ok; });",
+      '});',
+      '</script>',
+      '',
+      '<template><div><slot /></div></template>',
+      '',
+    ].join('\n'),
+    filename: 'Panel.vue',
+  },
+  {
+    name: 'vue options api in plain javascript',
+    code: [
+      '<script>',
+      "'use strict';",
+      'export default {',
+      '  data() { return { alpha: 1, bravo: 2 }; },',
+      '  methods: { go: function () { return this.alpha; } },',
+      '};',
+      '</script>',
+      '',
+      '<template><p>{{ alpha }}</p></template>',
+      '',
+    ].join('\n'),
+    filename: 'Legacy.vue',
+  },
+  {
+    name: 'svelte module and instance scripts',
+    code: [
+      '<script context="module" lang="ts">',
+      '  export interface Row { id: number; label: string }',
+      '  export function rowsOf(count: number): Row[] {',
+      '    return Array.from({ length: count }, function (_, id) {',
+      '      return { id, label: String(id) };',
+      '    });',
+      '  }',
+      '</script>',
+      '',
+      '<script lang="ts">',
+      "  import { onMount } from 'svelte';",
+      '  type Choice = { id: number } | null;',
+      '  export let rows: Row[] = [];',
+      '  let selected: Choice = null;',
+      '  function select(id: number) {',
+      '    selected = { id };',
+      '  }',
+      '  onMount(function () { select(0); });',
+      '</script>',
+      '',
+      '{#each rows as row (row.id)}',
+      '  <button on:click={function () { select(row.id); }}>{row.label} {selected?.id}</button>',
+      '{/each}',
+      '',
+    ].join('\n'),
+    filename: 'Rows.svelte',
+  },
+  {
+    name: 'astro frontmatter',
+    code: [
+      '---',
+      "import Layout from '../layouts/Layout.astro';",
+      "import { format, trim } from '../lib/format';",
+      '',
+      'interface Props { title: string; items: string[] }',
+      '',
+      'type Size = { small: true } | { large: true };',
+      '',
+      'const { title, items } = Astro.props;',
+      'const size: Size = { small: true };',
+      'function shout(text: string): string {',
+      '  return trim(text).toUpperCase();',
+      '}',
+      '---',
+      '',
+      '<Layout title={title}>',
+      '  <ul data-size={JSON.stringify(size)}>',
+      '    {items.map((item) => <li>{shout(format(item))}</li>)}',
+      '  </ul>',
+      '</Layout>',
+      '',
+    ].join('\n'),
+    filename: 'index.astro',
+  },
+  // Indented, with a type after runtime code: a fixer that writes at column 0 shows up in the indentation checks.
+  {
+    name: 'svelte script with a type after runtime code',
+    code: [
+      '<script lang="ts">',
+      "  import { onMount } from 'svelte';",
+      '',
+      '  const count = 1;',
+      '',
+      '  interface Row { id: number }',
+      '',
+      '  onMount(() => count);',
+      '</script>',
+      '',
+      '<p>{count}</p>',
+      '',
+    ].join('\n'),
+    filename: 'Ordered.svelte',
+  },
+  // A `React.` reach where the import has to land inside a component's script, and one where no import can go.
+  {
+    name: 'svelte script reaching through React',
+    code: '<script lang="ts">\n  const state = React.useState(0);\n</script>\n\n<p>{state}</p>\n',
+    filename: 'Reach.svelte',
+  },
+  {
+    name: 'svelte template reaching through React',
+    code: '<script lang="ts">\n  const label = 1;\n</script>\n\n<p>{React.version} {label}</p>\n',
+    filename: 'Template.svelte',
+  },
+  {
+    name: 'astro frontmatter reaching through React',
+    code: [
+      '---',
+      "import Island from '../Island';",
+      'const count = React.useMemo(() => 1, []);',
+      '---',
+      '',
+      '<Island count={count} />',
+      '',
+    ].join('\n'),
+    filename: 'reach.astro',
+  },
+  // A prologue is the one place a string statement means something, and the fixers must neither move nor wrap it.
+  {
+    name: 'nested prologue directives',
+    code: "'use strict';\n\nfunction run() {\n  'use strict';\n  return 1;\n}\n\nmodule.exports = { run };\n",
+    filename: 'directives.cjs',
+  },
+  {
+    name: 'a server directive before a typed export',
+    code: "'use server';\n\nexport async function act(input: { id: string }): Promise<void> {\n  await input;\n}\n",
+    typescript: true,
+    filename: 'actions.ts',
+  },
+  {
+    name: 'a file that is only a directive',
+    code: "'use client';\n",
+    typescript: true,
+    filename: 'client.ts',
+  },
+  // Nothing to walk: a rule that assumes a first statement, a first token or a comment's neighbour meets none here.
+  ...['empty.js', 'empty.ts', 'Empty.vue', 'Empty.svelte', 'empty.astro'].map((filename) => {
+    return {
+      name: `an empty ${filename}`,
+      code: '',
+      typescript: filename.endsWith('.ts'),
+      filename,
+    };
+  }),
+  ...['notes.js', 'notes.ts'].map((filename) => {
+    return {
+      name: `a comment-only ${filename}`,
+      code: '// one note\n/* and a block */\n',
+      typescript: filename.endsWith('.ts'),
+      filename,
+    };
+  }),
+  {
+    name: 'a comment-only vue script',
+    code: '<script setup lang="ts">\n// nothing yet\n</script>\n',
+    filename: 'Stub.vue',
+  },
+  {
+    name: 'a comment-only svelte script',
+    code: '<script lang="ts">\n  /* nothing yet */\n</script>\n',
+    filename: 'Stub.svelte',
+  },
+  {
+    name: 'a comment-only astro frontmatter',
+    code: '---\n// nothing yet\n---\n',
+    filename: 'stub.astro',
+  },
 ];
 
 const linter = new Linter();
@@ -480,7 +706,35 @@ const sourceTypeFor = (filename?: string): 'commonjs' | 'module' => {
   return filename?.endsWith('.cjs') ? 'commonjs' : 'module';
 };
 
+const SFC_EXTENSIONS = ['.vue', '.svelte', '.astro'];
+
+const SFC_PARSERS: [string, Linter.Parser][] = [
+  ['.vue', vueParser],
+  ['.svelte', svelteParser],
+  ['.astro', astroParser],
+];
+
+const sfcParserFor = (filename?: string): Linter.Parser | undefined => {
+  return SFC_PARSERS.find(([extension]) => {
+    return filename?.endsWith(extension) ?? false;
+  })?.[1];
+};
+
+// The component parsers nest typescript-eslint for the script inside, which reads plain JavaScript as well.
 const languageOptionsFor = ({ typescript, filename }: Pick<FixerSample, 'filename' | 'typescript'>) => {
+  const sfc = sfcParserFor(filename);
+
+  if (sfc !== undefined) {
+    return {
+      parser: sfc,
+      parserOptions: {
+        parser: tseslint.parser,
+        extraFileExtensions: SFC_EXTENSIONS,
+        sourceType: 'module' as const,
+      },
+    };
+  }
+
   return typescript
     ? { parser: tseslint.parser }
     : {
@@ -492,7 +746,12 @@ const languageOptionsFor = ({ typescript, filename }: Pick<FixerSample, 'filenam
 // A named sample opts itself in via `files`; an unnamed one is linted as
 // `<input>`, matching no pattern and getting nothing.
 const filesFor = (filename?: string) => {
-  return filename ? { files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}'] } : {};
+  return filename ? { files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,vue,svelte,astro}'] } : {};
+};
+
+// Written for a component parser, which is what the guard in `fixerSafety.test.ts` holds to parsing at all.
+export const isSfcSample = (sample: FixerSample): boolean => {
+  return sfcParserFor(sample.filename) !== undefined;
 };
 
 // Parse errors in a snippet, so a fixer's output can be checked for validity.

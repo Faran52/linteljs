@@ -123,8 +123,8 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
     return;
   }
 
-  const first = mustFind(run[0]);
-  const last = mustFind(run[run.length - 1]);
+  const first = mustFind(run[0], 'the first comment of a run');
+  const last = mustFind(run[run.length - 1], 'the last comment of a run');
 
   // A `//` line can hold `*/` as plain text; a `/** */` block cannot, since that sequence closes it wherever it
   // falls. Merging a run that carries one would truncate the block early and spill the rest as code.

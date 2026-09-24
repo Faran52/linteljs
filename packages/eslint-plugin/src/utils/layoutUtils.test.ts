@@ -298,7 +298,10 @@ describe('fixCommaToNewline', () => {
   // Both callers pass an indent today; nothing else pins what the default writes, so this test does.
   it('writes a bare line break when no indent is given', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
-    const second = mustFind(sourceCode.getLastToken(firstNode('ArrayExpression'), 1));
+    const second = mustFind(
+      sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
+      'the token before the closing bracket',
+    );
 
     expect(fixCommaToNewline(sourceCode, captureFixer(), second)?.text).toBe('\n');
   });

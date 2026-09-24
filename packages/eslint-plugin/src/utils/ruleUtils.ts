@@ -84,11 +84,16 @@ export const isDirective = (node: object): boolean => {
   return 'directive' in node && typeof node.directive === 'string';
 };
 
-// A lookup the parse guarantees will hit, so a throw here beats a silent `continue` scattered across every rule.
-// `undefined` as well as `null`, because an index into a body the parse guarantees is the same promise.
-export const mustFind = <Found>(found: Found | null | undefined): Found => {
+/**
+ * A lookup the parse guarantees will hit, under every parser the plugin ships with, so a throw here beats a silent
+ * `continue` scattered across every rule. `undefined` as well as `null`, because an index into a body the parse
+ * guarantees is the same promise. The throw aborts that file's lint, and ESLint appends the file, the line from
+ * ESLint 9 on, and the rule id; what only the rule knows is which lookup failed, so `lookup` names it.
+ */
+export const mustFind = <Found>(found: Found | null | undefined, lookup: string): Found => {
   if (!found) {
-    throw new Error('@linteljs/eslint-plugin: a lookup the parse guarantees came back empty. Please open an issue.');
+    throw new Error(`@linteljs/eslint-plugin: ${lookup} was not found, which the parse promises. `
+      + 'Please open an issue with the file and the parser it ran under.');
   }
 
   return found;

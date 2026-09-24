@@ -42,7 +42,7 @@ export const globalNamespaceTags = (node: TypedNode, namespace: string): JsxTagN
 
   // An opening element always has a name, and one whose `object` is the namespace is a member expression, whose
   // property is an identifier and so always named.
-  const name = mustFind(node.openingElement.name);
+  const name = mustFind(node.openingElement.name, 'the name of a JSX opening element');
 
   if (name.object?.name !== namespace) {
     return [];

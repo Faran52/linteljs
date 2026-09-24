@@ -80,7 +80,7 @@ export const unionNewline = createRule('union-newline', {
     // A union type is never a child of `Program`, so it always has a parent. Widened to `string`, not cast: ESLint
     // types `parent` as ESTree, and comparing that union directly is a TS2367 the runtime does not share.
     const isInsideGenericArg = (node: RuleNode): boolean => {
-      const parentType: string = mustFind(node.parent).type;
+      const parentType: string = mustFind(node.parent, 'the parent of a union type').type;
 
       return parentType === 'TSTypeParameterInstantiation';
     };
@@ -121,8 +121,8 @@ export const unionNewline = createRule('union-newline', {
             // A pipe separating two members sharing a line is always preceded by the member before it.
             const pipeToken = mustFind(sourceCode.getTokenBefore(curr, (token) => {
               return token.value === '|';
-            }));
-            const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipeToken));
+            }), 'the `|` before a union member');
+            const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipeToken), "the token before a union's `|`");
 
             // The pipe lookup skips comments, so a note written before it goes with the splice below.
             if (!gapIsBlank(sourceCode, tokenBeforePipe.range[1], pipeToken.range[0])) {
@@ -140,7 +140,7 @@ export const unionNewline = createRule('union-newline', {
 
     return {
       TSUnionType: (node: UnionTypeNode) => {
-        const types = mustFind(node.types);
+        const types = mustFind(node.types, 'the members of a union type');
         const messageId = messageIdFor(node, types);
 
         if (!messageId) {

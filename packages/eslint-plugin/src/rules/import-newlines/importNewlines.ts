@@ -104,8 +104,8 @@ export const importNewlines = createRule('import-newlines', {
     // A parsed specifier always has a first and a last token.
     const hasBlankLines = (specifiers: ImportNode['specifiers']): boolean => {
       for (const [previous, specifier] of adjacentPairs(specifiers)) {
-        const before = mustFind(sourceCode.getLastToken(previous));
-        const current = mustFind(sourceCode.getFirstToken(specifier));
+        const before = mustFind(sourceCode.getLastToken(previous), 'the last token of an import specifier');
+        const current = mustFind(sourceCode.getFirstToken(specifier), 'the first token of an import specifier');
 
         if (current.loc.start.line - before.loc.end.line > 1) {
           return true;

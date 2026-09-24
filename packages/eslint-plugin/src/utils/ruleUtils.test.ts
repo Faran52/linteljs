@@ -43,13 +43,23 @@ describe('mustFind', () => {
   it('hands back whatever the lookup found', () => {
     const identifier = parsed.firstNode('Identifier');
 
-    expect(mustFind(parsed.sourceCode.getFirstToken(identifier)).value).toBe('alpha');
+    expect(mustFind(parsed.sourceCode.getFirstToken(identifier), 'the first token').value).toBe('alpha');
   });
 
-  it('names the plugin when a lookup comes back null', () => {
+  // ESLint names the rule and the file; only the rule knows which of its lookups failed.
+  it('names the plugin and the lookup when one comes back null', () => {
     expect(() => {
-      return mustFind(null);
-    }).toThrow(/@linteljs\/eslint-plugin: a lookup the parse guarantees came back empty/);
+      return mustFind(null, 'the token before a comma');
+    }).toThrow('@linteljs/eslint-plugin: the token before a comma was not found, which the parse promises. '
+      + 'Please open an issue with the file and the parser it ran under.');
+  });
+
+  it('treats undefined, an index past a list, the same way', () => {
+    const empty: string[] = [];
+
+    expect(() => {
+      return mustFind(empty.at(0), 'the first element');
+    }).toThrow('the first element was not found');
   });
 });
 

@@ -8,6 +8,16 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- `react-no-global-namespace` fixes a Svelte component correctly: the `react` import goes inside the
+  `<script>` holding the reference, at its indent, rather than above the tag, and a reference in the markup
+  is reported with no fix.
+- `interface-order` checks each Svelte `<script>`, where it used to report nothing, and its fix keeps the
+  script's indentation.
+- `interface-order` takes `{ trimBlankLines: boolean }`, default `true`: the fix empties whitespace-only lines
+  inside the declarations it moves. `false` moves the text byte for byte.
+- A crash on a lookup the parse should guarantee now names the lookup that failed and asks for the parser in
+  the issue.
+
 - **Breaking: `interface-order` is now in `recommended`.** It was opt-out through 1.x on the grounds
   that it asks for a house layout rather than making a claim about a type. A shared config is a house
   layout, and every project `@linteljs/create` writes already received the rule through `base`, so

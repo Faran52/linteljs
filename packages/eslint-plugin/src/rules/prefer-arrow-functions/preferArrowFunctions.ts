@@ -139,7 +139,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         }
 
         // An identifier is never the Program, and ESLint 5 on links every node in a full pass before any listener.
-        const parent = mustFind((reference.identifier as RuleNode).parent);
+        const parent = mustFind((reference.identifier as RuleNode).parent, 'the parent of a reference to the function');
 
         if (parent.type === 'NewExpression' && parent.callee === reference.identifier) {
           return true;
@@ -221,7 +221,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         }
 
         // A named function declaration always declares its own name.
-        const nameVariable = mustFind(nameVariableOf(context, fn));
+        const nameVariable = mustFind(nameVariableOf(context, fn), 'the variable a function declaration declares');
 
         // Needs to stay a `function` to be constructed, reassigned, carry a prototype, or be declared twice.
         if (hasFunctionOnlyUsage(nameVariable) || isRedeclared(nameVariable)) {
@@ -252,7 +252,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       // Keyed on the function: a property's `value` is an ESTree node with no `parent`, which everything below needs.
       'FunctionExpression[parent.type="Property"]:exit': (fn: FunctionLike) => {
         // The selector matched a property's value, and the visitor above recorded every one on entering it.
-        const property = mustFind(propertyOf.get(fn));
+        const property = mustFind(propertyOf.get(fn), 'the property recorded for a method function');
 
         if (SKIPPED_PROPERTY_KINDS.has(property.kind)) {
           return;

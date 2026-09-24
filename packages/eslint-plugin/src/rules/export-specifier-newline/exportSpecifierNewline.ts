@@ -44,8 +44,8 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
           return;
         }
 
-        const first = mustFind(node.specifiers[0]);
-        const last = mustFind(node.specifiers[node.specifiers.length - 1]);
+        const first = mustFind(node.specifiers[0], 'the first specifier of an export');
+        const last = mustFind(node.specifiers[node.specifiers.length - 1], 'the last specifier of an export');
 
         const { outer: indent, inner } = indentsAt(node);
         const openBrace = sourceCode.getTokenBefore(first);
@@ -55,7 +55,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
         const shared: SharedLine[] = [];
 
         for (const [previous, specifier] of adjacentPairs(node.specifiers)) {
-          const currentToken = mustFind(sourceCode.getFirstToken(specifier));
+          const currentToken = mustFind(sourceCode.getFirstToken(specifier), 'the first token of an export specifier');
 
           if (sameLine(sourceCode.getLastToken(previous), currentToken)) {
             shared.push({

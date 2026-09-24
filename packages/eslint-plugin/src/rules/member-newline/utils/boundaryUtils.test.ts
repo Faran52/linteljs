@@ -109,7 +109,7 @@ describe('startTokenOf', () => {
       throw new Error('expected a first member');
     }
 
-    const token = mustFind(startTokenOf(sourceCode, alpha));
+    const token = mustFind(startTokenOf(sourceCode, alpha), 'the first token of alpha');
 
     if (!token.loc) {
       throw new Error('expected the comment to carry a location');
@@ -128,7 +128,7 @@ describe('startTokenOf', () => {
       throw new Error('expected a first member');
     }
 
-    const token = mustFind(startTokenOf(sourceCode, alpha));
+    const token = mustFind(startTokenOf(sourceCode, alpha), 'the first token of alpha');
 
     expect(token.type).toBe('Block');
   });
@@ -168,7 +168,7 @@ describe('endTokenOf', () => {
       throw new Error('expected a first member');
     }
 
-    const token = mustFind(endTokenOf(sourceCode, alpha));
+    const token = mustFind(endTokenOf(sourceCode, alpha), 'the last token of alpha');
 
     expect(token.type).toBe('Block');
   });

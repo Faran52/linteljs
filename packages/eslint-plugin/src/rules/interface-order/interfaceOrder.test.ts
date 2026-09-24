@@ -1,4 +1,4 @@
-import { tsRuleTester } from '@mocks/ruleTesters';
+import { svelteRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
 import { interfaceOrder } from './interfaceOrder.ts';
 
@@ -31,6 +31,25 @@ const value = thing;`,
     'type Alpha = string;\ntype Bravo = number;\ntype Charlie = boolean;',
   ],
   invalid: [
+    // A blank line left holding indentation inside a moved declaration comes out empty by default.
+    {
+      code: 'const value = 1;\n\ninterface Alpha {\n  first: string;\n  \n  second: string;\n}\n',
+      output: 'interface Alpha {\n  first: string;\n\n  second: string;\n}\n\nconst value = 1;\n',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    // A blank line only: a line of code keeps whatever follows it, trailing spaces included.
+    {
+      code: 'const value = 1;\n\ninterface Alpha {\n  first: string;  \n}\n',
+      output: 'interface Alpha {\n  first: string;  \n}\n\nconst value = 1;\n',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    // And keeps its indentation when asked to.
+    {
+      code: 'const value = 1;\n\ninterface Alpha {\n  first: string;\n  \n  second: string;\n}\n',
+      options: [{ trimBlankLines: false }],
+      output: 'interface Alpha {\n  first: string;\n  \n  second: string;\n}\n\nconst value = 1;\n',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
     {
       // A bare expression statement carries a directive key too; testing the key rather than its value would treat
       // `thing();` as part of the prologue.
@@ -166,6 +185,80 @@ const value = thing;`,
       code: 'class Service {}\n\ntype Instance = InstanceType<typeof Service>;',
       output: 'type Instance = InstanceType<typeof Service>;\n\nclass Service {}',
       errors: [{ messageId: 'moveAfterImports' }],
+    },
+  ],
+});
+
+/**
+ * svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so the rule once saw no declaration in
+ * a component and said nothing. Each script is its own list now, and the fix writes at the indent the script body
+ * is written at rather than at column 0.
+ */
+const component = (...script: string[]): string => {
+  return ['<script lang="ts">', ...script.map((line) => {
+    return line === '' ? '' : `  ${line}`;
+  }), '</script>', '', '<p>{count}</p>', ''].join('\n');
+};
+
+svelteRuleTester.run('interface-order: svelte', interfaceOrder, {
+  valid: [
+    {
+      code: component("import { onMount } from 'svelte';", '', 'interface Row { id: number }', '', 'onMount(() => 1);'),
+      filename: 'Rows.svelte',
+    },
+  ],
+  invalid: [
+    {
+      code: component(
+        "import { onMount } from 'svelte';",
+        '',
+        'const count = 1;',
+        '',
+        'interface Row { id: number }',
+        '',
+        'onMount(() => count);',
+      ),
+      filename: 'Rows.svelte',
+      output: component(
+        "import { onMount } from 'svelte';",
+        '',
+        'interface Row { id: number }',
+        '',
+        'const count = 1;',
+        '',
+        'onMount(() => count);',
+      ),
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
+      code: [
+        '<script context="module" lang="ts">',
+        '  export const limit = 3;',
+        '  export interface Row { id: number }',
+        '</script>',
+        '',
+        '<script lang="ts">',
+        '  let rows = [];',
+        '  type Id = number;',
+        '</script>',
+        '',
+      ].join('\n'),
+      filename: 'Two.svelte',
+      output: [
+        '<script context="module" lang="ts">',
+        '  export interface Row { id: number }',
+        '',
+        '  export const limit = 3;',
+        '</script>',
+        '',
+        '<script lang="ts">',
+        '  type Id = number;',
+        '',
+        '  let rows = [];',
+        '</script>',
+        '',
+      ].join('\n'),
+      errors: [{ messageId: 'moveAfterImports' }, { messageId: 'moveAfterImports' }],
     },
   ],
 });

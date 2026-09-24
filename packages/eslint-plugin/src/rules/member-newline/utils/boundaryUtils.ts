@@ -28,7 +28,10 @@ export interface PatternAnalysis {
 const leadingCommentsOf = (sourceCode: SourceCode, member: RuleNode) => {
   return sourceCode.getCommentsBefore(member).filter((comment) => {
     // Every member sits inside braces, so a comment above one has at least the `{` before it.
-    const previousToken = mustFind(sourceCode.getTokenBefore(comment));
+    const previousToken = mustFind(
+      sourceCode.getTokenBefore(comment),
+      'the token before a comment above a type member',
+    );
 
     // A brace has nothing to trail, so a comment written straight after `{` heads the first member.
     return previousToken.value === '{' || !sameLine(previousToken, comment);

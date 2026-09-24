@@ -67,7 +67,19 @@ const build = () => {
 
 ## Options
 
-None.
+### `trimBlankLines`
+
+Whether a blank line that still holds indentation comes out empty when the fix moves the declaration it
+sits in. Defaults to `true`: an editor that keeps the indent on an empty line leaves whitespace the
+move would otherwise carry to its new place. Set it to `false` to move the text byte for byte.
+
+```js
+{
+  rules: {
+    '@linteljs/interface-order': ['error', { trimBlankLines: false }],
+  },
+}
+```
 
 ## Notes
 

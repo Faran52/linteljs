@@ -164,10 +164,10 @@ export const memberNewline = createRule('member-newline', {
       // A `TSPropertySignature` node covers its own trailing `;` or `,`, so the last token is already the separator.
       for (const [previous, member] of adjacentPairs(members)) {
         // Members are parsed nodes, so each has a token at either end and every token and comment a location.
-        const endToken = mustFind(endTokenOf(sourceCode, previous));
-        const targetToken = mustFind(startTokenOf(sourceCode, member));
-        const endLine = mustFind(endToken.loc).end.line;
-        const targetLine = mustFind(targetToken.loc).start.line;
+        const endToken = mustFind(endTokenOf(sourceCode, previous), 'the last token of a type member');
+        const targetToken = mustFind(startTokenOf(sourceCode, member), 'the first token of a type member');
+        const endLine = mustFind(endToken.loc, "the location of a type member's last token").end.line;
+        const targetLine = mustFind(targetToken.loc, "the location of a type member's first token").start.line;
 
         if (endLine === targetLine || targetLine > endLine + 1) {
           yield fixer.replaceTextRange([rangeOf(endToken)[1], rangeOf(targetToken)[0]], `${eol}${indentInner}`);
@@ -181,8 +181,8 @@ export const memberNewline = createRule('member-newline', {
     ): ((fixer: Fixer) => IterableIterator<Rule.Fix>) => {
       return function* (fixer) {
         // `checkMembers` only builds this fix for two or more members.
-        const firstMember = mustFind(members[0]);
-        const lastMember = mustFind(members[members.length - 1]);
+        const firstMember = mustFind(members[0], 'the first member of a type');
+        const lastMember = mustFind(members[members.length - 1], 'the last member of a type');
         const closeBrace = sourceCode.getLastToken(node);
 
         // `getLastToken` skips comments, so a note in the splice gap would be lost; decline the fix, like the rebuild.
@@ -321,11 +321,11 @@ export const memberNewline = createRule('member-newline', {
 
       // Each selector matches only the node that carries its list, which the types leave optional for `Rule.Node`.
       TSInterfaceBody: (node: InterfaceBodyNode) => {
-        checkMembers(node, mustFind(node.body));
+        checkMembers(node, mustFind(node.body, 'the members of an interface body'));
       },
 
       TSTypeLiteral: (node: TypeLiteralNode) => {
-        checkMembers(node, mustFind(node.members));
+        checkMembers(node, mustFind(node.members, 'the members of a type literal'));
       },
     };
   },

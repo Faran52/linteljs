@@ -66,13 +66,17 @@
     "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "astro-eslint-parser": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-sonarjs": "catalog:",
+    "svelte": "catalog:",
+    "svelte-eslint-parser": "catalog:",
     "tsdown": "catalog:",
     "tslib": "^2.8.1",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "vue-eslint-parser": "catalog:"
   },
   "peerDependencies": {
     "eslint": ">=5.0.0"

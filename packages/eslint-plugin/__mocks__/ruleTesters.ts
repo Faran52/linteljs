@@ -1,4 +1,5 @@
 import { RuleTester } from 'eslint';
+import svelteParser from 'svelte-eslint-parser';
 import tseslint from 'typescript-eslint';
 
 export const jsRuleTester = new RuleTester({
@@ -26,5 +27,14 @@ export const tsxRuleTester = new RuleTester({
     parserOptions: {
       ecmaFeatures: { jsx: true },
     },
+  },
+});
+
+// A `.svelte` file, whose `Program.body` holds each `<script>` as an element with its statements beneath it.
+export const svelteRuleTester = new RuleTester({
+  files: ['**/*.svelte'],
+  languageOptions: {
+    parser: svelteParser,
+    parserOptions: { parser: tseslint.parser },
   },
 });

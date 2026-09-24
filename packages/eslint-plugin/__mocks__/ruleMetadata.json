@@ -81,7 +81,18 @@
     "messages": {
       "moveAfterImports": "Top-level type/interface declarations must be placed after imports, before runtime code."
     },
-    "schema": [],
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "trimBlankLines": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
     "type": "layout",
     "fixable": "code",
     "docs": {

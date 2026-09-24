@@ -1,5 +1,6 @@
 import {
   jsRuleTester,
+  svelteRuleTester,
   tsRuleTester,
   tsxRuleTester,
 } from '@mocks/ruleTesters';
@@ -291,6 +292,31 @@ jsRuleTester.run('react-no-global-namespace: values', reactNoGlobalNamespace, {
     {
       code: "import { useState } from 'react';\nReact.createElement('div');",
       output: "import { createElement, useState } from 'react';\ncreateElement('div');",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+  ],
+});
+
+/**
+ * svelte-eslint-parser puts each `<script>` in `Program.body` as an element. The import once went before the first
+ * of those, which is above the `<script>` tag: markup text, parseable, and a component that no longer imports what
+ * it calls. Now it goes inside the script that holds the reference, and a reference in the template, where no import
+ * can go, is reported with no fix.
+ */
+svelteRuleTester.run('react-no-global-namespace: svelte', reactNoGlobalNamespace, {
+  valid: [],
+  invalid: [
+    {
+      code: '<script lang="ts">\n  const state = React.useState(0);\n</script>\n\n<p>{state}</p>\n',
+      filename: 'Probe.svelte',
+      output: '<script lang="ts">\n  import { useState } from \'react\';\n\n  const state = useState(0);\n</script>\n\n'
+        + '<p>{state}</p>\n',
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: '<script lang="ts">\n  const label = 1;\n</script>\n\n<p>{React.version} {label}</p>\n',
+      filename: 'Probe.svelte',
+      output: null,
       errors: [{ messageId: 'globalNamespace' }],
     },
   ],

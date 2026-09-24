@@ -1,9 +1,11 @@
 import { createRule } from '../../types.ts';
 import {
+  ancestorsOf,
   physicalFilenameOf,
   scopeOf,
   sourceCodeOf,
 } from '../../utils/compatUtils.ts';
+import { getIndent, type Located } from '../../utils/layoutUtils.ts';
 import {
   type Fixer,
   isDirective,
@@ -147,6 +149,33 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
     };
 
     /**
+     * Where a new import goes: after the prologue, since `'use client'` stops being a directive the moment anything
+     * precedes it, and a file with a `React.` reference has an entry past it. svelte-eslint-parser is the one parser
+     * whose `Program.body` holds markup: each `<script>` is an element there with its statements beneath it, so the
+     * import goes before the statement holding the reference inside its script. A reference in the template has no
+     * script to take an import, so it gets no fix.
+     */
+    const importAnchor = (member: RuleNode): (Located & Ranged) | undefined => {
+      const first = mustFind(source.ast.body.find((entry) => {
+        return !isDirective(entry);
+      }), 'the first statement past the prologue');
+      const firstType: string = first.type;
+
+      if (!firstType.startsWith('Svelte')) {
+        return first;
+      }
+
+      const chain = [...ancestorsOf(context, member), member];
+      const script = chain.findIndex((node) => {
+        const type: string = node.type;
+
+        return type === 'SvelteScriptElement';
+      });
+
+      return script === -1 ? undefined : chain[script + 1];
+    };
+
+    /**
      * `React.ReactNode` in a type position and `React.createElement` in a value one are the same reach through the
      * same global, so both land here. `member` is what the fix replaces; `isType` decides whether the specifier it
      * adds carries `type`.
@@ -169,6 +198,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       const mergeable = existing !== undefined && existing.importKind !== 'type'
         ? namedSpecifiers(existing)[0]
         : undefined;
+      const anchor = importAnchor(member);
 
       const rewrite = (fixer: Fixer): ReturnType<Fixer['replaceText']>[] => {
         const specifier = isType ? `type ${name}` : name;
@@ -185,14 +215,14 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         // No import to join: none from `react` at all, a type-only one, or one carrying no named list. A second
         // `import { ... } from 'react'` beside any of those is valid, which rewriting them into one is not.
         if (mergeable === undefined) {
-          // After the prologue: `'use client'` stops being a directive the moment anything precedes it. A file with
-          // a `React.` reference has a statement past its prologue, which is what `mustFind` says here.
-          const statement = mustFind(source.ast.body.find((entry) => {
-            return !isDirective(entry);
-          }));
+          const before = mustFind(anchor, 'the statement a new import goes before');
 
+          // The statement's own indent after the import, which is none in a script and the body's in a component.
           return [
-            fixer.insertTextBefore(statement, `import { ${specifier} } from '${MODULE}';\n\n`),
+            fixer.insertTextBeforeRange(
+              rangeOf(before),
+              `import { ${specifier} } from '${MODULE}';\n\n${getIndent(source, before)}`,
+            ),
             ...replaced,
           ];
         }
@@ -212,7 +242,9 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         node: member,
         messageId: 'globalNamespace',
         data: { name },
-        fix: collides ? null : rewrite,
+        // No anchor is a reference in Svelte markup, where `Program.body` holds elements and no import is ever found to
+        // merge into either, so there is nothing to fix with.
+        fix: collides || anchor === undefined ? null : rewrite,
       });
     };
 
@@ -237,7 +269,9 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        report(node, mustFind(mustFind(opening.property).name), false, tags.map(rangeOf));
+        const member = mustFind(opening.property, 'the member of a namespaced JSX tag');
+
+        report(node, mustFind(member.name, 'the name of a namespaced JSX tag'), false, tags.map(rangeOf));
       },
 
       // `React.createElement`, in a value. A computed access names nothing a fix could import, and is the only way
@@ -247,7 +281,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        report(node, mustFind(nameOf(node.property)), false, [rangeOf(node)]);
+        report(node, mustFind(nameOf(node.property), 'the name of a namespace member'), false, [rangeOf(node)]);
       },
     };
   },

@@ -45,7 +45,8 @@ export const sitsInUnsafePosition = (sourceCode: SourceCode, fn: FunctionLike): 
   // `(function(){})()` parenthesizes the function, so the arrow keeps the parens; Crockford's
   // `(function(){}())` parenthesizes the call, leaving it bare. The token after is `)` or `(`.
   if (parent.type === 'CallExpression') {
-    return parent.callee === fn && mustFind(sourceCode.getTokenAfter(fn)).value !== ')';
+    return parent.callee === fn
+      && mustFind(sourceCode.getTokenAfter(fn), 'the token after a called function').value !== ')';
   }
 
   return !SAFE_FUNCTION_PARENTS.has(parent.type);
@@ -104,7 +105,7 @@ const containsNewDotTarget = (sourceCode: SourceCode, node: RuleNode): boolean =
 
   return tokens.some((_, index) => {
     return NEW_DOT_TARGET.every(([type, value], offset) => {
-      const token = mustFind(tokens[index + offset]);
+      const token = mustFind(tokens[index + offset], 'a token of a `new.target` sequence');
 
       return token.type === type && token.value === value;
     });

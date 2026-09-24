@@ -74,7 +74,7 @@ export const reactNativeValidAccessibilityActions = createRule('react-native-val
 
       // Only a name written down can be matched against the standard set; one computed at runtime may be either. A
       // property always has a value, and of the expressions only a string literal carries a string `value`.
-      const { value } = mustFind(named.value);
+      const { value } = mustFind(named.value, "the value of an accessibility action's name");
 
       if (typeof value !== 'string') {
         return;
