@@ -7,7 +7,9 @@ import {
 
 import { claudeSettingsEmitter } from './agents/claude-settings/claudeSettingsEmitter';
 import { codexMarketplaceEmitter } from './agents/codex-marketplace/codexMarketplaceEmitter';
+import { copilotHooksEmitter } from './agents/copilot-hooks/copilotHooksEmitter';
 import { copilotInstructionsEmitter } from './agents/copilot-instructions/copilotInstructionsEmitter';
+import { cursorHooksEmitter } from './agents/cursor-hooks/cursorHooksEmitter';
 import { cursorRulesEmitter } from './agents/cursor-rules/cursorRulesEmitter';
 import { bannedPatternsEmitter } from './always/banned-patterns/bannedPatternsEmitter';
 import { ciWorkflowEmitter } from './always/ci-workflow/ciWorkflowEmitter';
@@ -61,7 +63,9 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'agents/claude-settings': claudeSettingsEmitter,
   'agents/codex-marketplace': codexMarketplaceEmitter,
   'agents/copilot-instructions': copilotInstructionsEmitter,
+  'agents/copilot-hooks': copilotHooksEmitter,
   'agents/cursor-rules': cursorRulesEmitter,
+  'agents/cursor-hooks': cursorHooksEmitter,
   'always/banned-patterns': bannedPatternsEmitter,
   'always/husky': huskyEmitter,
   'always/lint-staged': lintStagedEmitter,

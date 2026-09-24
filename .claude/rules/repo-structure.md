@@ -221,7 +221,7 @@ Both are the standard's own stated exceptions; these are the files that take the
 - `packages/create/templates/project/scripts/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
   beside the scripts they spawn, and so do the hook suites in `templates/project/plugins/linteljs/hooks/`:
   `gitSafetyGuardHook.test.ts`, `eslintFixWarningHook.test.ts`, `bannedPatternGuardHook.test.ts`,
-  `utils/commandParserUtils.test.ts` and `hooks.test.ts`, one per shipped file. `package.json` excludes every
+  `utils/commandParserUtils.test.ts`, `utils/hostUtils.test.ts` and `hooks.test.ts`, one per shipped file. `package.json` excludes every
   one of them from the packed tarball, and the emitter lists each hook by name, so no suite reaches a generated
   project. What the three hook suites share is `__mocks__/runHook.ts`, which also holds every hook's stdout to
   nothing or exactly one decision.

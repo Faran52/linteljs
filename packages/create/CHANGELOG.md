@@ -18,6 +18,14 @@ when a version's change lives in a sibling it is described there instead:
   an existing project through its recorded `managed.json`. The same `hooks.json` serves Claude Code and Codex on
   macOS, Linux and Windows: both substitute `${CLAUDE_PLUGIN_ROOT}` before a shell runs the line. Codex runs a
   cached copy of the plugin, so reinstall it in Codex after a `sync` that changes `plugins/linteljs/`.
+- **Cursor and Copilot run the agent hooks too.** Choosing Cursor writes `.cursor/hooks.json`, which runs the git
+  guard before each shell command and the eslint warning after it; it is merged, so a project's own Cursor hooks
+  survive a `sync`. Choosing Copilot writes `.github/hooks/linteljs.json`, which Copilot CLI and the cloud agent
+  run for the git guard, the eslint warning and the banned-pattern check. Both are recorded in `managed.json`, so
+  `sync` updates them and removes them when the agent is dropped. The scripts are the same for all four hosts:
+  `utils/hostUtils.ts` reads which host called from the payload and answers in its format, and under Cursor the
+  copy loaded from Claude Code's hooks stays silent, so no guard runs twice. Cursor gets no banned-pattern hook,
+  since it documents no edited path on an event that can answer the agent.
 - **The command guards read PowerShell.** They match `Bash|PowerShell`, and Claude Code's PowerShell tool is read
   in its own quoting. `cmd /c`, `pwsh -Command` and `Invoke-Expression` are unwrapped like `sh -c`, and a
   command they cannot read is denied by the git guard, as unreadable bash already was. `--no-verify` is now

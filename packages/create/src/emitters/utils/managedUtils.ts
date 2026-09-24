@@ -2,8 +2,8 @@ import type { Artifact } from '@config/types';
 
 /**
  * Only what linteljs owns outright. A preserved artifact is the project's from the moment it has one, and a merge
- * carries the project's own lines beside linteljs's, so neither is ever safe to delete. `.claude/settings.json` is
- * the one merge that says otherwise: the whole file exists because a host was selected.
+ * carries the project's own lines beside linteljs's, so neither is ever safe to delete. `.claude/settings.json` and
+ * `.cursor/hooks.json` are the merges that say otherwise: each file exists because a host was selected.
  */
 export const removableIn = (artifacts: Artifact[]): string[] => {
   return artifacts.filter((artifact) => {

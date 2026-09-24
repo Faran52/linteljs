@@ -1,6 +1,3 @@
-import { spawnSync } from 'node:child_process';
-import { join } from 'node:path';
-
 import {
   describe,
   expect,
@@ -132,19 +129,5 @@ describe('skipOptions', () => {
 
   it('cannot skip a valued option with no value', () => {
     expect(skipOptions(['-C'], 0, new Set(['-C']))).toBeUndefined();
-  });
-});
-
-// Spawned: reading stdin through `node:process` rather than the global failed a large payload with EAGAIN.
-describe('readCommandInput', () => {
-  it('reads a payload larger than one pipe buffer', () => {
-    const command = `git status ${'x'.repeat(4 * 1024 * 1024)}; git stash`;
-    const result = spawnSync(process.execPath, [join(import.meta.dirname, '..', 'gitSafetyGuardHook.ts')], {
-      input: JSON.stringify({ tool_input: { command } }),
-      encoding: 'utf8',
-      maxBuffer: 16 * 1024 * 1024,
-    });
-
-    expect(result.stdout).toContain('"permissionDecision":"deny"');
   });
 });

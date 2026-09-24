@@ -139,13 +139,14 @@ const targetsOf = (answers: Answers): string[] => {
 };
 
 describe('linteljsPluginEmitter', () => {
-  // Claude and Codex load the tree as a plugin, and Copilot and Cursor are each handed a copy of its rules.
+  // Claude and Codex load the tree as a plugin, and Copilot and Cursor are each handed a copy of its rules and run
+  // its hook scripts from their own hooks files.
   it.each(valuesOf(ANSWERS.agents.values))('writes the same tree for %s as for no agent at all', (agent) => {
     expect(targetsOf(answersFor({ agents: [agent] }))).toEqual(targetsOf(answersFor({ agents: [] })));
   });
 
   // `hooks.json` runs each hook through `node`, so none needs to be executable.
-  it('ships the hooks and the parser they share', () => {
+  it('ships the hooks and the parser and host adapter they share', () => {
     const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS).filter(({ target }) => {
       return target.startsWith('plugins/linteljs/hooks/');
     }).map(({ target, executable }) => {
@@ -158,6 +159,7 @@ describe('linteljsPluginEmitter', () => {
       ['plugins/linteljs/hooks/eslintFixWarningHook.ts', undefined],
       ['plugins/linteljs/hooks/bannedPatternGuardHook.ts', undefined],
       ['plugins/linteljs/hooks/utils/commandParserUtils.ts', undefined],
+      ['plugins/linteljs/hooks/utils/hostUtils.ts', undefined],
     ]);
   });
 });

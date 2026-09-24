@@ -1,12 +1,17 @@
-// PreToolUse(Bash|PowerShell): denies a banned git operation, and any command too tangled to read, since a guard
-// cannot vouch for what it cannot read. Stdout is the decision JSON or nothing.
+// Before a shell command: denies a banned git operation, and any command too tangled to read, since a guard cannot
+// vouch for what it cannot read. Stdout is the decision JSON or nothing.
 import {
   commandName,
   parseCommand,
   type ParsedCommand,
-  readCommandInput,
   skipOptions,
 } from './utils/commandParserUtils.ts';
+import {
+  type CommandInput,
+  readCommand,
+  readPayload,
+  writeDecision,
+} from './utils/hostUtils.ts';
 
 const GLOBAL_VALUED = new Set([
   '-C',
@@ -75,11 +80,7 @@ const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
   return undefined;
 };
 
-const decide = (): string | undefined => {
-  const input = readCommandInput();
-  if (input === undefined) {
-    return undefined;
-  }
+const decide = (input: CommandInput): string | undefined => {
   const commands = parseCommand(input.command, input.dialect);
   if (commands === undefined) {
     return UNREADABLE_REASON;
@@ -97,14 +98,9 @@ const decide = (): string | undefined => {
   return unreadable ? UNREADABLE_REASON : undefined;
 };
 
-const reason = decide();
+const payload = readPayload();
+const input = payload === undefined ? undefined : readCommand(payload, 'beforeShellExecution');
 
-if (reason !== undefined) {
-  process.stdout.write(`${JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      permissionDecision: 'deny',
-      permissionDecisionReason: reason,
-    },
-  })}\n`);
+if (input !== undefined) {
+  writeDecision(input.host, 'deny', decide(input));
 }

@@ -325,6 +325,36 @@ describe('applySync', () => {
     expect(await exists(join(cwd, 'CLAUDE.md'))).toBe(true);
   });
 
+  // Both hooks files are in managed.json: sync rewrites each, keeps a project's own Cursor hook, and takes both away
+  // with their agents.
+  it('keeps the Cursor and Copilot hooks files current and removes them once their agents are dropped', async () => {
+    const hosted: HostedAnswers = {
+      ...HOSTED_DEFAULTS,
+      agents: ['cursor', 'copilot'],
+    };
+    const own = '{"version":1,"hooks":{"afterFileEdit":[{"command":".cursor/hooks/format.sh"}]}}\n';
+
+    await applyPending(hosted);
+
+    const managed: unknown = JSON.parse(await readFile(join(cwd, MANAGED_PATH), 'utf8'));
+
+    const hooksFiles = ['.cursor/hooks.json', '.github/hooks/linteljs.json'];
+
+    expect(managed).toHaveProperty('removable', expect.arrayContaining(hooksFiles));
+
+    await writeFile(join(cwd, '.cursor/hooks.json'), own, 'utf8');
+    await applyPending(hosted);
+
+    expect(await readFile(join(cwd, '.cursor/hooks.json'), 'utf8')).toContain('.cursor/hooks/format.sh');
+    expect(await readFile(join(cwd, '.cursor/hooks.json'), 'utf8')).toContain('gitSafetyGuardHook.ts');
+
+    const { removed } = await applyPending(CODEX_ONLY);
+
+    expect(removed).toEqual(expect.arrayContaining(hooksFiles));
+    expect(await exists(join(cwd, '.cursor/hooks.json'))).toBe(false);
+    expect(await exists(join(cwd, '.github/hooks/linteljs.json'))).toBe(false);
+  });
+
   // The shell hooks and their parser, as a project written before the hooks became TypeScript recorded them.
   it('removes the retired shell hooks and parser a previous run recorded, and keeps what replaced them', async () => {
     const retired = [
@@ -364,6 +394,7 @@ describe('applySync', () => {
     expect(await exists(join(cwd, 'plugins/linteljs/hooks/hooks.json'))).toBe(true);
     expect(await exists(join(cwd, 'plugins/linteljs/hooks/gitSafetyGuardHook.ts'))).toBe(true);
     expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/commandParserUtils.ts'))).toBe(true);
+    expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'))).toBe(true);
   });
 
   it('removes nothing it was not given, even where the plan called it obsolete', async () => {

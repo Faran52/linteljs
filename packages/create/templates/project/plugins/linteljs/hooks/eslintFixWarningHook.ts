@@ -1,11 +1,19 @@
-// PreToolUse(Bash|PowerShell): warns, never blocks, when eslint runs without `--fix`. One run with `--fix` fixes what
-// it can and still reports the rest, so a bare run only costs a second one. Stdout is the decision JSON or nothing.
+/**
+ * Around a shell command: warns, never blocks, when eslint runs without `--fix`. One run with `--fix` fixes what it
+ * can and still reports the rest, so a bare run only costs a second one. Claude Code and Codex read the warning before
+ * the command runs; Cursor and Copilot take added context only after it. Stdout is the decision JSON or nothing.
+ */
 import {
   commandName,
   parseCommand,
-  readCommandInput,
   skipOptions,
 } from './utils/commandParserUtils.ts';
+import {
+  type CommandInput,
+  readCommand,
+  readPayload,
+  writeDecision,
+} from './utils/hostUtils.ts';
 
 type Verdict = 'clear' | 'unfixed' | 'unreadable';
 
@@ -104,11 +112,7 @@ const eslintVerdict = (tokens: string[]): Verdict => {
   return 'clear';
 };
 
-const decide = (): string | undefined => {
-  const input = readCommandInput();
-  if (input === undefined) {
-    return undefined;
-  }
+const decide = (input: CommandInput): string | undefined => {
   const commands = parseCommand(input.command, input.dialect);
   if (commands === undefined) {
     return UNREADABLE;
@@ -124,13 +128,9 @@ const decide = (): string | undefined => {
   return unreadable ? UNREADABLE : undefined;
 };
 
-const context = decide();
+const payload = readPayload();
+const input = payload === undefined ? undefined : readCommand(payload, 'postToolUse');
 
-if (context !== undefined) {
-  process.stdout.write(`${JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      additionalContext: context,
-    },
-  })}\n`);
+if (input !== undefined) {
+  writeDecision(input.host, 'warn', decide(input));
 }

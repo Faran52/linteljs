@@ -211,6 +211,8 @@ selected hosts. Host-specific files point to it instead of copying the standard.
 | `plugins/linteljs/` | Every project | Lintel |
 | `.claude/settings.json` | Claude Code | Shared: Lintel merges its plugin entries into what you have |
 | `.agents/plugins/marketplace.json` | Codex | Lintel |
+| `.cursor/hooks.json` | Cursor | Shared: Lintel merges its hook entries into what you have |
+| `.github/hooks/linteljs.json` | Copilot | Lintel |
 | `CLAUDE.md` | Claude Code | You |
 | `AGENTS.md` | Codex | You |
 
@@ -223,6 +225,13 @@ for banned patterns. They inspect command payloads, Bash and PowerShell alike. T
 Each is a TypeScript file in `plugins/linteljs/hooks/` that both hosts run with `node`, so a project needs Node
 22.18 or newer. Codex runs plugin hooks only once you trust them through `/hooks`, and runs a cached copy of the
 plugin, so reinstall it in Codex after a `sync` that changes `plugins/linteljs/`.
+
+Cursor and Copilot run the same scripts from their own hooks files. Cursor runs `.cursor/hooks.json` in a
+trusted workspace: the git guard at its shell gate and the eslint warning after each shell command. It has no
+banned-pattern hook, because Cursor documents no file path on an edit event that can answer the agent. Copilot
+CLI and the Copilot cloud agent run `.github/hooks/linteljs.json` with nothing to enable. Each hook reads which
+host called it from the payload and answers in that host's format, and under Cursor the copy loaded from Claude
+Code's hooks stays silent, so no guard runs twice.
 
 ## Why this is shared
 

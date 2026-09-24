@@ -1,4 +1,11 @@
-import { commandPayload, runHook } from '@mocks/runHook';
+import {
+  commandPayload,
+  copilotPayload,
+  cursorShellPayload,
+  cursorToolPayload,
+  runHook,
+  spawnHook,
+} from '@mocks/runHook';
 import {
   describe,
   expect,
@@ -451,5 +458,31 @@ describe('gitSafetyGuardHook.ts', () => {
 
   it('stays silent when the payload carries no command', () => {
     expect(runHook('gitSafetyGuardHook.ts', { tool_input: {} })).toBeUndefined();
+  });
+
+  // One guard, every host: each reads its own payload shape and is answered in its own words, which `runHook` holds.
+  describe('on Copilot and Cursor', () => {
+    it.each(['bash', 'powershell'])('denies a banned git operation Copilot runs in %s', (tool) => {
+      expect(runHook('gitSafetyGuardHook.ts', copilotPayload(tool, { command: 'git stash' }))).toMatch(BLOCKED);
+    });
+
+    it('reads a Copilot powershell command as PowerShell', () => {
+      expect(runHook('gitSafetyGuardHook.ts', copilotPayload('powershell', { command: 'git add `\n.' })))
+        .toMatch(BLOCKED);
+    });
+
+    it('clears a Copilot command with nothing to deny', () => {
+      expect(runHook('gitSafetyGuardHook.ts', copilotPayload('bash', { command: 'git status' }))).toBeUndefined();
+    });
+
+    it('denies at Cursor\'s shell gate, and allows a clear command there explicitly', () => {
+      expect(runHook('gitSafetyGuardHook.ts', cursorShellPayload('git commit --amend'))).toMatch(BLOCKED);
+      expect(spawnHook('gitSafetyGuardHook.ts', cursorShellPayload('git status'))).toBe('{"permission":"allow"}\n');
+    });
+
+    // Cursor runs Claude Code's copy of this hook as `preToolUse` too; its shell gate is the one that answers.
+    it('answers nothing to the copy Cursor runs from Claude Code\'s hooks', () => {
+      expect(spawnHook('gitSafetyGuardHook.ts', cursorToolPayload('git stash', 'preToolUse'))).toBe('');
+    });
   });
 });

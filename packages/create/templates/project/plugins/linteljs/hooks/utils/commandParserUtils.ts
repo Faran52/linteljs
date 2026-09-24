@@ -1,7 +1,5 @@
-// Reads the shell command a PreToolUse hook is handed and answers the commands it would run. It decides nothing:
+// Reads the shell command a hook is handed and answers the commands it would run. It decides nothing:
 // each guard judges the commands it is given, and `undefined` means the command could not be read.
-import { readFileSync } from 'node:fs';
-
 export type Dialect = 'bash' | 'powershell';
 
 export interface ParsedCommand {
@@ -10,11 +8,6 @@ export interface ParsedCommand {
   // Part of the command is computed where it runs (a PowerShell subexpression or `Start-Process`), so no guard can
   // vouch for what it is.
   opaque: boolean;
-}
-
-export interface CommandInput {
-  command: string;
-  dialect: Dialect;
 }
 
 interface Segment {
@@ -31,14 +24,6 @@ interface TokenizerState {
   segments: Segment[];
   token: string;
   tokens: string[];
-}
-
-interface ToolInput {
-  command: string;
-}
-
-interface CommandPayload {
-  tool_input: ToolInput;
 }
 
 // What unwrapping one word of a command answers: the commands a nested shell runs, where the wrapped command starts,
@@ -67,37 +52,6 @@ type Step = NestedStep | NextStep | NoWrapperStep | UnreadableStep;
 
 const MAX_DEPTH = 8;
 const UNREADABLE: Step = { kind: 'unreadable' };
-
-const isCommandPayload = (value: unknown): value is CommandPayload => {
-  return typeof value === 'object' && value !== null
-    && 'tool_input' in value && typeof value.tool_input === 'object' && value.tool_input !== null
-    && 'command' in value.tool_input && typeof value.tool_input.command === 'string';
-};
-
-const isPowerShellPayload = (value: object): boolean => {
-  return 'tool_name' in value && value.tool_name === 'PowerShell';
-};
-
-/**
- * The `process` global, not an import from `node:process`: that import sets stdin non-blocking, and a large payload
- * then fails its read with EAGAIN and reads as no command at all. Malformed JSON, or a payload with no command, is
- * not a command to judge, so both answer `undefined`.
- */
-export const readCommandInput = (): CommandInput | undefined => {
-  try {
-    const payload: unknown = JSON.parse(readFileSync(0, 'utf8'));
-
-    return isCommandPayload(payload)
-      ? {
-          command: payload.tool_input.command,
-          dialect: isPowerShellPayload(payload) ? 'powershell' : 'bash',
-        }
-      : undefined;
-  }
-  catch {
-    return undefined;
-  }
-};
 
 // `C:\Git\cmd\git.exe` and `/usr/bin/git` are both `git`: Windows spells a binary with its extension.
 export const commandName = (token: string): string => {

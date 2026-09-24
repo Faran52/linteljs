@@ -36,3 +36,12 @@ and Codex load them through the linteljs plugin and run them with Node 22.18 or 
 plugin hooks until you trust them: run `/hooks` in Codex and trust the linteljs entries. Codex also
 runs its own cached copy of the plugin, so after `sync` changes anything under `plugins/linteljs/`,
 reinstall the linteljs plugin in Codex to pick the change up.
+
+Cursor and Copilot run the same scripts from their own hooks files, written when you choose them.
+Cursor reads `.cursor/hooks.json` once you trust the workspace: the git guard runs before each shell
+command and the eslint warning after it. Cursor documents no file path for an agent's edit on an
+event that can answer the agent, so there the banned-pattern check runs on commit only. If Claude
+Code is chosen too, Cursor may also load Claude Code's copy of the hooks (Cursor Settings, Agents,
+Third-Party Imports); that copy stays silent under Cursor, so each guard answers once. Copilot CLI
+and the Copilot cloud agent read `.github/hooks/linteljs.json` with nothing to enable, and report
+the eslint warning and the banned-pattern findings after the tool runs.

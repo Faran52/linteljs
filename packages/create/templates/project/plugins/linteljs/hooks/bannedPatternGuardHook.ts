@@ -1,78 +1,28 @@
-/**
- * PostToolUse(Edit|Write|apply_patch): runs the project's own scripts/checkBannedPatterns.ts over each file an agent
- * wrote, the same checker lint-staged runs on commit, and blocks with its findings. Stdout is the decision JSON or
- * nothing.
- */
+// After a file edit: runs the project's own scripts/checkBannedPatterns.ts over each file an agent wrote, the same
+// checker lint-staged runs on commit, and reports its findings. Stdout is the decision JSON or nothing.
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import {
   dirname,
   join,
   resolve,
 } from 'node:path';
 
-interface EditPayload {
-  cwd: string;
-  paths: string[];
-}
-
-type Field = 'command' | 'cwd' | 'file_path' | 'filePath' | 'patch' | 'tool_input' | 'tool_response';
-
-type FieldValue = object | string | undefined;
+import {
+  type EditInput,
+  readEdit,
+  readPayload,
+  writeDecision,
+} from './utils/hostUtils.ts';
 
 const CHECKED = /\.(?:ts|tsx|mts|cts|vue|svelte)$/u;
-const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)$/u;
 const CHECKER = join('scripts', 'checkBannedPatterns.ts');
 
-// A payload is whatever the host sent, so a field is read only once it proves to be a string or an object.
-const isFieldEntry = (entry: [string, unknown]): entry is [string, FieldValue] => {
-  const [, field] = entry;
-  return typeof field === 'string' || (typeof field === 'object' && field !== null);
-};
-
-const valueAt = (value: FieldValue, key: Field): FieldValue => {
-  return typeof value === 'object' ? new Map(Object.entries(value).filter(isFieldEntry)).get(key) : undefined;
-};
-
-const stringAt = (value: FieldValue, key: Field): string | undefined => {
-  const field = valueAt(value, key);
-  return typeof field === 'string' ? field : undefined;
-};
-
-// Claude Code names the file; Codex's apply_patch carries the patch text, whose Add and Update headers name them.
-const editedPaths = (payload: object): string[] => {
-  const input = valueAt(payload, 'tool_input');
-  const named = [stringAt(input, 'file_path'), stringAt(valueAt(payload, 'tool_response'), 'filePath')];
-  const patch = stringAt(input, 'command') ?? stringAt(input, 'patch') ?? (typeof input === 'string' ? input : '');
-  const patched = patch.split(/\r?\n/u).map((line) => {
-    return PATCHED_FILE.exec(line)?.[1];
-  });
-
-  return [...named, ...patched].filter((path) => {
-    return path !== undefined;
-  });
-};
-
-// The process global rather than `node:process`, which sets stdin non-blocking and fails a large read.
-const readPayload = (): EditPayload | undefined => {
-  try {
-    const payload: unknown = JSON.parse(readFileSync(0, 'utf8'));
-    if (typeof payload !== 'object' || payload === null) {
-      return undefined;
-    }
-    const cwd = stringAt(payload, 'cwd');
-    return {
-      cwd: resolve(cwd === undefined || cwd === '' ? '.' : cwd),
-      paths: editedPaths(payload),
-    };
-  }
-  catch {
-    return undefined;
-  }
-};
-
-// The payload's `cwd` is wherever the agent stands, which need not be the project root, so the checker is searched
-// for upwards: from the root Claude Code exports where there is one, then from `cwd`, which is all Codex sends.
+/**
+ * The payload's `cwd` is wherever the agent stands, which need not be the project root, so the checker is searched
+ * for upwards: from the root Claude Code exports where there is one, then from `cwd`, which is all Codex and Copilot
+ * send.
+ */
 const checkerAbove = (start: string): string | undefined => {
   let directory = start;
   for (;;) {
@@ -93,13 +43,10 @@ const findChecker = (cwd: string): string | undefined => {
   return (projectDir === undefined || projectDir === '' ? undefined : checkerAbove(projectDir)) ?? checkerAbove(cwd);
 };
 
-const decide = (): string | undefined => {
-  const payload = readPayload();
-  if (payload === undefined) {
-    return undefined;
-  }
-  const files = new Set(payload.paths.map((path) => {
-    return resolve(payload.cwd, path);
+const decide = (input: EditInput): string | undefined => {
+  const cwd = resolve(input.cwd);
+  const files = new Set(input.paths.map((path) => {
+    return resolve(cwd, path);
   }));
 
   for (const file of files) {
@@ -107,7 +54,7 @@ const decide = (): string | undefined => {
       continue;
     }
     // No checker anywhere above is a project with no floor to enforce, which is not a violation to report.
-    const checker = findChecker(payload.cwd);
+    const checker = findChecker(cwd);
     if (checker === undefined) {
       return undefined;
     }
@@ -121,11 +68,9 @@ const decide = (): string | undefined => {
   return undefined;
 };
 
-const reason = decide();
+const payload = readPayload();
+const input = payload === undefined ? undefined : readEdit(payload);
 
-if (reason !== undefined) {
-  process.stdout.write(`${JSON.stringify({
-    decision: 'block',
-    reason,
-  })}\n`);
+if (input !== undefined) {
+  writeDecision(input.host, 'block', decide(input));
 }

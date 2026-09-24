@@ -9,7 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { runHook } from '@mocks/runHook';
+import { copilotPayload, runHook } from '@mocks/runHook';
 import {
   afterEach,
   beforeEach,
@@ -213,6 +213,26 @@ describe('bannedPatternGuardHook.ts', () => {
     expect(runHook('bannedPatternGuardHook.ts', {
       cwd,
       tool_input: '*** Update File: src/app.md',
+    })).toBeUndefined();
+    expect(checkedPaths()).toEqual([]);
+  });
+
+  it.each(['edit', 'create'])('checks the path Copilot\'s %s tool names, and reports it as added context', (tool) => {
+    const output = runHook('bannedPatternGuardHook.ts', copilotPayload(tool, { path: 'src/app.ts' }, cwd));
+
+    expect(output).toContain('bad cast');
+    expect(checkedPaths()).toEqual([join(cwd, 'src/app.ts')]);
+  });
+
+  // Cursor documents no path on the edit event that can answer the agent, so this hook is not registered there,
+  // and the copy Cursor runs from Claude Code's hooks answers nothing.
+  it('answers nothing under Cursor', () => {
+    expect(runHook('bannedPatternGuardHook.ts', {
+      cursor_version: '2.4.0',
+      cwd,
+      hook_event_name: 'postToolUse',
+      tool_name: 'Write',
+      tool_input: { file_path: 'src/app.ts' },
     })).toBeUndefined();
     expect(checkedPaths()).toEqual([]);
   });

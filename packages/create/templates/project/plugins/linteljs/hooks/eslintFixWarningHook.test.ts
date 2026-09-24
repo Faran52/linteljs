@@ -1,4 +1,11 @@
-import { commandPayload, runHook } from '@mocks/runHook';
+import {
+  commandPayload,
+  copilotPayload,
+  cursorShellPayload,
+  cursorToolPayload,
+  runHook,
+  spawnHook,
+} from '@mocks/runHook';
 import {
   describe,
   expect,
@@ -233,5 +240,30 @@ describe('eslintFixWarningHook.ts', () => {
 
   it('stays silent when the payload carries no command', () => {
     expect(runHook('eslintFixWarningHook.ts', { tool_input: {} })).toBeUndefined();
+  });
+
+  // Copilot and Cursor take added context only after a tool runs, so both register this hook there.
+  describe('on Copilot and Cursor', () => {
+    it.each(['bash', 'powershell'])('warns after Copilot runs eslint without --fix in %s', (tool) => {
+      expect(runHook('eslintFixWarningHook.ts', copilotPayload(tool, { command: 'npx eslint src' }))).toMatch(UNFIXED);
+    });
+
+    it('clears a Copilot run with --fix', () => {
+      expect(runHook('eslintFixWarningHook.ts', copilotPayload('bash', { command: 'eslint src --fix' })))
+        .toBeUndefined();
+    });
+
+    it('warns after Cursor runs eslint without --fix', () => {
+      expect(runHook('eslintFixWarningHook.ts', cursorToolPayload('pnpm exec eslint src', 'postToolUse')))
+        .toMatch(UNFIXED);
+    });
+
+    // Claude Code's copy runs as `preToolUse` under Cursor, and the shell gate belongs to the git guard.
+    it.each([
+      ['Claude Code\'s copy', cursorToolPayload('eslint src', 'preToolUse')],
+      ['the shell gate', cursorShellPayload('eslint src')],
+    ])('answers nothing to %s under Cursor', (_label, payload) => {
+      expect(spawnHook('eslintFixWarningHook.ts', payload)).toBe('');
+    });
   });
 });

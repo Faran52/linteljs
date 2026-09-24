@@ -947,6 +947,51 @@ marked opaque, which the git guard also denies. `cmd /c`, `pwsh -Command` and `I
 the way `sh -c` is. This is a guardrail, as `SKILL.md` says: a variable holding a subcommand still passes, in
 either shell.
 
+### Cursor and Copilot: their own hooks files, the same scripts
+
+| fact | source |
+| --- | --- |
+| Cursor project hooks are `.cursor/hooks.json`, `"version": 1`, run from the project root in a trusted workspace; cloud agents run them too | cursor.com/docs/agent/hooks, "Configuration" and "Cloud agent support" |
+| `beforeShellExecution` gets `command` and `cwd` and answers `permission`, `user_message`, `agent_message`; Cursor's own examples print `{"permission":"allow"}` for a clear command | same page, "beforeShellExecution" and the examples |
+| `postToolUse` gets `tool_name` (`Shell`), `tool_input.command` and `cwd`, and answers `additional_context`; `afterFileEdit` gets `file_path` and answers nothing | same page, "postToolUse", "afterFileEdit" |
+| every Cursor payload carries `cursor_version` and `hook_event_name`; hooks get `CURSOR_PROJECT_DIR` and `CLAUDE_PROJECT_DIR` | same page, "Common schema", "Environment Variables" |
+| Cursor loads Claude Code's hooks when Third-Party Imports is on, the default, mapping `PreToolUse` to `preToolUse`, `Bash` to `Shell` and `Edit` to `Write` | cursor.com/docs/reference/third-party-hooks |
+| Copilot reads `.github/hooks/*.json`, `"version": 1`; `preToolUse` and `postToolUse` get `toolName` and `toolArgs`, which the CLI sends as JSON text; the shell tools are `bash` and `powershell`, the edit tools `edit` and `create` | docs.github.com/en/copilot/reference/hooks-configuration, and the CLI hooks tutorial |
+| `command` is copied into `bash` and `powershell` where they are absent; `cwd` is relative to the repository root; the cloud agent honours `bash` or `command` only | same reference, "Command hooks" |
+| `preToolUse` answers `permissionDecision` and `permissionDecisionReason`, with no added context; `postToolUse` answers `additionalContext` | same reference, "preToolUse decision control", "postToolUse output" |
+
+Each host reaches `plugins/linteljs/hooks/<name>Hook.ts` as `node` with that fixed path from the project root:
+Cursor runs project hooks there, and Copilot's `cwd: "."` puts them there. The line is the same in every shell, so
+Copilot's file uses `command` rather than a `bash` and a `powershell` that would say the same thing.
+
+Nothing is copied per host. `utils/hostUtils.ts` reads which host called from the payload's shape, `cursor_version`
+for Cursor and `toolName` for Copilot, with Claude Code and Codex the shape that has neither. It hands each guard
+the command and its dialect, or the edited paths and `cwd`, and writes the guard's decision in that host's words.
+A dialect comes from the tool name, `PowerShell` or `powershell`; Cursor names no shell, so the platform decides,
+PowerShell on Windows.
+
+Where the host answers the agent differs. The git guard denies before the command on every host. The eslint
+warning is added context, which Claude Code and Codex take before a shell command and Cursor and Copilot only
+after one, so there it follows the run. The banned-pattern check is a block reason after an edit under Claude
+Code and Codex and added context under Copilot, which reads the edit tool's `path`. Cursor has none: the edit
+event that names a file answers nothing, and the one that can answer does not document where the path is, so the
+check runs on commit there.
+
+Cursor also loads Claude Code's hooks, and in a project that chose both, `.claude/settings.json` enables the
+linteljs plugin whose `hooks.json` registers the same scripts. So under Cursor each hook answers on one event only,
+the one `.cursor/hooks.json` gives it: the git guard on `beforeShellExecution`, the eslint warning on
+`postToolUse`. Claude Code's copy arrives as `preToolUse` and `postToolUse` on `Write`, which are not those, and
+prints nothing. That is decided from the payload rather than a flag in the command, so it holds whichever way
+Cursor loaded the copy.
+
+`.cursor/hooks.json` is merged, because it is the one file every Cursor project hook shares: a sync replaces the
+entries naming `plugins/linteljs/hooks/` and keeps the rest. It is removable like `.claude/settings.json`, so
+dropping Cursor removes the file. `.github/hooks/linteljs.json` is linteljs's own name in a directory Copilot reads
+whole, so it is owned outright.
+
+VS Code's Local agent also reads `.github/hooks/*.json`, but sends its own payloads with tool names it leaves to
+the debug log, so nothing here relies on it.
+
 ## React Native `build`: `expo export`, and why it took a layout rule
 
 `buildScripts` ends `check` on `pnpm build` for every target, and `build` is a leg the scaffolder
