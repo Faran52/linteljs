@@ -24,6 +24,12 @@ list published by the best-known third-party plugin is missing `dropdownlist`, `
 seven Android container roles, and carries three values (`img`, `img button`, `img link`) React
 Native has never accepted for `accessibilityRole`.
 
+The lists follow the newest react-native release, not an older one a project may pin. 0.86.3 lacks
+ten of the accessibility roles, `dropdownlist`, `grid`, `pager`, `scrollview`,
+`horizontalscrollview`, `viewgroup`, `webview`, `drawerlayout`, `slidingdrawer` and `iconmenu`. A
+rule that refused them would report valid code on 0.87, and on 0.86 the type checker rejects them
+first.
+
 ## What it does not report
 
 - A value computed at runtime. `accessibilityRole={role}` is unreadable here rather than wrong,

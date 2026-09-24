@@ -11,6 +11,7 @@ import type { RuleNode } from '../../utils/ruleUtils.ts';
  * `AccessibilityRole` from react-native 0.87.1, `Libraries/Components/View/ViewAccessibility.d.ts`. Read off the
  * package rather than from a doc page: the published list here was missing `dropdownlist`, `grid` and the seven
  * Android container roles, and carried three (`img`, `img button`, `img link`) React Native has never accepted.
+ * The newest release on purpose: 0.86 lacks ten of these, and there the type checker rejects them first.
  */
 const ACCESSIBILITY_ROLES = [
   'adjustable', 'alert', 'button', 'checkbox', 'combobox', 'drawerlayout', 'dropdownlist', 'grid', 'header',
