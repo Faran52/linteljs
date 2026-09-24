@@ -36,14 +36,9 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
         && !DEPRECATION.test(line);
     });
   },
-  /**
-   * `npm warn exec` is npx fetching the scaffolder itself, in the stage before this one. It is matched by name rather
-   * than cut with the others, because npm writes it to stderr and `run` appends stderr whole after stdout, so the
-   * stage boundary below does not contain it.
-   */
   'npm': (output) => {
     return (output.match(/^npm (?:warn|WARN).*$/gm) ?? []).filter((line) => {
-      return !line.startsWith('npm warn exec') && !DEPRECATION.test(line);
+      return !DEPRECATION.test(line);
     });
   },
   'yarn': (output) => {
@@ -68,13 +63,15 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
 };
 
 export const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
-  // Proves the install resolved the workspace versions rather than anything published.
-  const why = await runPm(pm, ['why', '@linteljs/eslint-plugin'], project);
-
+  // Proves the install resolved the workspace versions rather than anything published. One `why` per package: yarn 1
+  // names a dependent without its version, so only a package's own answer carries it on every manager.
   const version = registry.version.replaceAll('.', String.raw`\.`);
 
-  expect(why.output).toMatch(new RegExp(`@linteljs/eslint-plugin[@ ](npm:)?${version}`));
-  expect(why.output).toMatch(new RegExp(`@linteljs/eslint-config[@ ](npm:)?${version}`));
+  for (const name of ['@linteljs/eslint-plugin', '@linteljs/eslint-config']) {
+    const why = await runPm(pm, ['why', name], project);
+
+    expect(why.output).toMatch(new RegExp(`${name}[@ ](npm:)?${version}`));
+  }
 
   // ESLint exits 2 on a configuration failure and 1 on findings.
   const lint = await runPm(pm, ['lint'], project);
@@ -92,18 +89,15 @@ export const verifyLintOutput = async (pm: PackageManager, project: string): Pro
 
 export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => {
   const root = join(workspace, label.replaceAll(' ', '-'));
-  // `create-expo` rejects a name matching one of its own dependencies.
-  const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
+  const name = answers.target;
   const project = join(root, name);
 
   const create = await createProject(root, name, answers);
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
   expect(create.output).not.toContain('next: ');
-  // From the install stage on: what a scaffolder's own `npx` or `dlx` prints before linteljs exists is not linteljs's.
-  const installed = create.output.slice(create.output.indexOf('installing with '));
-
-  expect(INSTALL_NOISE[answers.packageManager](installed)).toEqual([]);
+  // The whole run: nothing but linteljs and the install it spawns writes to it.
+  expect(INSTALL_NOISE[answers.packageManager](create.output)).toEqual([]);
   // `prepare` (`postinstall` on yarn) ran: husky writes its runner there.
   expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);

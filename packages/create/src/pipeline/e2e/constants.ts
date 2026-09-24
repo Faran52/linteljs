@@ -1,6 +1,8 @@
+import { MANAGER_FLOORS } from '@config/constants';
+
 import type { PackageManager } from '@answers';
 
-// Every manager, and every scaffolder and install the CLI spawns, reads the workspace registry from its environment.
+// Every manager, and every install the CLI spawns, reads the workspace registry from its environment.
 export const LAUNCHER_KEYS = new Set(['npm_execpath', 'npm_node_execpath', 'npm_config_user_agent']);
 
 // `why` and a script name, spelled the way each manager wants them.
@@ -20,13 +22,16 @@ export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
   'bun': { why: ['pm', 'ls', '--all'] },
 };
 
-// The one failure worth retrying: a scaffolder pins the version it just saw, and `create astro` once asked for a
-// version 33 seconds before it was published. Matched on the error code, since any other failure is real.
-export const UNPUBLISHED_YET_BY_PM: Record<PackageManager, string[]> = {
-  'pnpm': ['ERR_PNPM_NO_MATCHING_VERSION'],
-  'npm': ['npm ERR! code E404', 'npm ERR! 404 Not Found'],
-  'yarn': ['YN0027'],
-  // Measured on 1.22.22: no code, just the sentence.
-  'yarn-classic': ["Couldn't find any versions"],
-  'bun': ['error:'],
+/**
+ * The release each yarn case runs. Both answer to `yarn`, so one on PATH can only ever be one of the two, and a
+ * machine carrying yarn 1 recorded every `yarn` case as `yarn-classic`. Asked for through corepack by release;
+ * inside the project the `packageManager` field the CLI writes then selects the same release. The floor for yarn 1,
+ * which is its last release, and for yarn 4 the one `e2e.yml` used to install globally.
+ */
+export const COREPACK_RELEASES: Record<PackageManager, string | undefined> = {
+  'pnpm': undefined,
+  'npm': undefined,
+  'yarn': '4.18.0',
+  'yarn-classic': MANAGER_FLOORS['yarn-classic'],
+  'bun': undefined,
 };

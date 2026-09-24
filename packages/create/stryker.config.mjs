@@ -42,7 +42,12 @@ const config = {
     'src/**/*.ts',
     '!src/**/*.test.ts',
     '!src/**/types.ts',
-    '!src/pipeline/e2e/**',
+    // The harness only; `e2e/matrix/` is pure and its suite runs here, so it is mutated with the rest.
+    '!src/pipeline/e2e/*.ts',
+    '!src/pipeline/e2e/registry/**',
+    '!src/pipeline/e2e/runner/**',
+    '!src/pipeline/e2e/targets/**',
+    '!src/pipeline/e2e/utils/**',
   ],
 
   // Suites here spawn git and node, which a loaded machine slows past the default margin.

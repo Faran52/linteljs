@@ -29,10 +29,6 @@ export const ROOT = workspaceRootFrom(import.meta.dirname);
  * every shard in `e2e.yml` is its own machine, so two registries never want the same machine at once. Fixed rather
  * than chosen freshly because Yarn caches package metadata globally, tarball URLs included, and Verdaccio answers its
  * conditional request with 304 whenever upstream is unchanged: a port that moved between runs is a dead tarball host.
- *
- * This is also what makes bun usable. `bunx` and `bun create` resolve a scaffolder against whatever registry they
- * find and got `ConnectionRefused` whenever a second port existed on the same machine, which is the only reason the
- * suite was ever documented as CI-shards-only.
  */
 export const PORT = 48730;
 

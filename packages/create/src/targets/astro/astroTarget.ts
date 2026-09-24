@@ -146,7 +146,7 @@ export const astroTarget: TargetBuilder = (answers) => {
         covers: 'src/lib/utils/currentPath.ts',
       },
     ],
-    // Runtime, where the base template puts it for the `@astrojs/node` adapter; unconditional so `--skip-scaffold`
+    // Runtime, where the base template puts it for the `@astrojs/node` adapter; unconditional so `--existing`
     // installs it too.
     dependencies: ['astro', ...(hosted === undefined ? [] : hosted.dependencies)],
     devDependencies: [

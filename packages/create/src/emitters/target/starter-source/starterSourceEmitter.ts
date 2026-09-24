@@ -73,7 +73,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
     written.add(file.target);
     artifacts.push({
       ...joined(file.target, [sourceOf(target.id, file)]),
-      fresh: true,
+      seed: true,
     });
   }
 
@@ -93,7 +93,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       written.add(test.target);
       artifacts.push({
         ...joined(test.target, [sourceOf(target.id, test)]),
-        fresh: true,
+        seed: true,
         requires: [test.covers, ...test.needs ?? []],
       });
     }

@@ -56,7 +56,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
 
   A project that recorded `typescript: false` under an older version is refused, not converted:
   `parseLinteljsConfig` rejects a property it does not know, naming it, so both routes that plan from a
-  recorded block (`sync`, and `create --skip-scaffold`) stop before writing. Converting silently would
+  recorded block (`sync`, and `create --existing`) stop before writing. Converting silently would
   rewrite that project's `eslint.config.js`, `tsconfig.json` and scripts as TypeScript over source that
   is not, which is not recoverable without git.
 
@@ -1016,7 +1016,7 @@ emits. The `yarn create @linteljs` path needs a binary called `create`, which ya
 
 Detection splits the two on the major of the agent's first token, and a run with no agent on the lockfile itself:
 classic writes `# yarn lockfile v1`, Berry writes `__metadata`. That path is what makes `sync` and
-`--skip-scaffold` work in a repository that is already yarn 1, which is the case the id exists for, since a yarn 1
+`--existing` work in a repository that is already yarn 1, which is the case the id exists for, since a yarn 1
 shop is exactly where an unadopted standard is found.
 
 What a classic project does not get is the install-script gate. pnpm has `allowBuilds`, npm `allowScripts`, bun
@@ -1074,53 +1074,25 @@ and neither carries a dev-time dependency for it.
 `web-ext lint` and `web-ext sign` are the real reasons to reach for the tool, and both run under `npx` on the day
 an extension is submitted to addons.mozilla.org, which is not a reason to install it in every project from birth.
 
-## The end-to-end matrix: two families, not one cross product
+## The end-to-end matrix: every pair of answers, the manager among them
 
-Every answer this CLI can be given is covered, and it costs 127 cases rather than the whole product.
-`matrix.ts` enumerates them; nothing is listed by hand. Two families get it to 532, and covering every
-*pair* of answers rather than every combination gets it to 127.
+Every answer this CLI can be given is covered, and it costs 209 cases rather than the whole product.
+`matrix.ts` enumerates them; nothing is listed by hand. Per target, every legal combination of the
+single-select axes on every package manager is enumerated, and a greedy cover keeps enough of them
+that every *pair* of answer values appears at least once. A multi-select axis is never combined: it
+is always its full value (`libraries`, `agents`, `plugins`, `surfaces`), so every case carries a
+target's heaviest dependency set. The axes are `packageManager`, `hostedFramework`, `browser`,
+`styling`, `form`, `router`, `store`, `data`, `testing` and `typeSafety`.
 
-The full cross product is 2480. Fixing the rule first, because a Vue project does not choose a router
-and an earlier count assumed it does: `create-vue` is called with `--router` unconditionally, so the
-axis does not exist there. A multi-select axis is never combined, it is always its
-full value (`libraries`, `agents`, `plugins`, `surfaces`); the single-select axes combine
-(`packageManager`, `testing`, `typeSafety`, `form`, `router`, `store`, `browser`, `hostedFramework`).
-Per target that is 720 for React, 440 each for the extension and Astro, 240 each for Next and React
-Native, 120 each for Vue and Angular, 80 each for Svelte and Solid.
-
-Measured, an install is around 60% of a case: 19.7 to 30.5 seconds of a 39 to 52 second one. So 2480
-is about 31 hours of machine time, and sharding divides that rather than reducing it.
+Measured, an install is around 60% of a case: 19.7 to 30.5 seconds of a 39 to 52 second one. So the
+full product is days of machine time, and sharding divides that rather than reducing it.
 
 **Installing once per distinct dependency set does not fix it, which is why it was not built.**
 `typeSafety` is the only axis that changes nothing installed, so it is a clean 2:1 and very nearly
 the only one; every other axis moves at least one package, and the manager splits the install by
-definition. Deduplicating gives 1240 installs and still 2480 gates, about 21.7 hours. A 30% cut for a
-tree-cloning mechanism is not a trade worth making, and at 532 cases the same mechanism would save
-two hours in seven.
-
-What cuts it is noticing that the manager axis and the option axes answer different questions:
-
-- `managerCases`: every target on every manager, every multi-select at full value. 45 cases. This is
-  the heaviest dependency set a target has, installed five ways, and it is the only thing that
-  answers "does this library break the project" and "does this manager resolve the same manifest
-  differently". It is also the only family that runs anything but pnpm.
-- `optionCases`: every combination of the single-select axes, on pnpm alone. 496 cases. A package
-  manager does not decide which config is emitted, so multiplying these by five bought five copies
-  of one answer.
-
-They overlap on exactly one case per target, which `ALL_CASES` drops: 532, all 532 labels distinct,
-and every one of them legal under `refuseMisfit`.
-
-The two halves are complementary rather than redundant. `managerCases` cannot catch a package the
-emitted config needs but only installs when its answer is selected, because everything is always
-selected there; `optionCases` is what catches it. `optionCases` cannot catch npm and bun resolving
-the same manifest to different trees; `managerCases` is what catches that.
+definition. A 30% cut for a tree-cloning mechanism is not a trade worth making.
 
 ### Every pair of answers, not every combination
-
-The cross product of the single-select axes is 532 on pnpm, which grew when `store` stopped being a yes
-or no. `optionCases` covers every pair of answer values instead, which is 127 cases with the manager
-family included.
 
 The evidence is the suite's own record. Every defect it has found was a two-way interaction, and not
 one needed a third axis pinned:
@@ -1132,8 +1104,7 @@ one needed a third axis pinned:
 | the generator's `app.spec.ts` left behind | Angular, with `testing: none` |
 | `@mocks/renderScreen` importing what is not installed | React Native, with `testing: none` |
 | `customTypes.d.ts` against KEBAB_CASE | Angular, with `typeSafety: relaxed` |
-
-A pairwise set would have caught all five, and the 327-case run took 2h51m to report the same ones.
+| rolldown's unmet peer, which no `packageExtensions` can mark optional | React, on yarn 1 |
 
 Greedy set cover over the legal enumeration rather than synthesised candidates: every case the
 greedy can pick is one `refuseMisfit` already accepts, so nothing has to be checked for legality and
@@ -1143,14 +1114,35 @@ stride over the result and a case that moved between runs would move between sha
 What this gives up is three-way interactions, the kind that only appear when a hosted framework, a
 testing answer and a type floor coincide. `E2E_FULL=1` runs the cross product for a pre-release
 sweep, which is one branch rather than a second generator. `matrix.test.ts` pins both halves: that no
-reachable pair is lost, and that the combination behind each defect above still appears.
+reachable pair is lost, checked against a pair definition of its own, and that the combination behind
+each defect above still appears.
 
-### One registry on a fixed port, and the bun failure that made it necessary
+### Why the manager is an axis and no longer a family
+
+Until 2.0 the suite was two families: every target on every manager at full dependency pressure, and
+every option combination on pnpm alone, 152 cases between them. The manager family was sized for the
+scaffolders each manager launched: `bun create` refusing a registry on a second port, a scaffolder
+misreading npm's output, a scaffolder pinning a version published seconds earlier. None of those exist
+once the templates are this CLI's own.
+
+What a manager still changes is how it resolves the dependency set a target and its answers emit,
+and the files the CLI writes for it: `pnpm-workspace.yaml`, `.yarnrc.yml` and its
+`packageExtensions`, the script spellings. That is a pair of the manager with each answer that moves a
+dependency, which the family never covered: it held every answer at one value. The pair cover found
+the first such defect on its first run, React's rolldown peer on yarn 1.
+
+The pair definition also gained `styling` and `data`. Both were enumerated and never paired, so the
+cover never promised the vue-demi combination in the table above; it held only by the greedy's luck.
+Those two axes and the manager's pairs with everything are why the count went from 152 to 209. The
+floor is five managers times a target's widest axis, which is what Astro and the extension, at 30 each,
+sit on.
+
+### One registry on a fixed port
 
 The suite used to derive a registry port per shard so two shards could share a machine. Nothing ever
-successfully did: `bunx` and `bun create` answered `ConnectionRefused` for the create package's own
-tarball while `curl` got 200 on the same URL, reproducibly, with seven hypotheses falsified. It only
-ever happened with several registries on several ports at once.
+successfully did: the scaffolders `bunx` and `bun create` launched answered `ConnectionRefused` with
+several registries on several ports at once. The scaffolders are gone, and the reason the port stays
+fixed is Yarn's, below.
 
 So the port is fixed and there is one registry per run. In `e2e.yml` every shard is its own machine,
 so one per run is one per machine; locally, parallelism is `maxConcurrency` inside one process rather
@@ -1167,10 +1159,10 @@ a dead host.
 Vitest splits by file, and one file holds every target, so a file split cannot balance anything.
 `E2E_SHARD`/`E2E_SHARDS` take every Nth case from the ordered list instead, which hands each shard an
 even share of every target: no shard is the one that drew React Native and Angular together. Measured
-at four shards: 82, 82, 82, 81.
+at four shards: 53, 52, 52, 52.
 
-The ceiling is 11 shards, the smallest target's case count, below which a shard could draw no case
-from a file at all and vitest would call the file empty.
+The ceiling is the smallest target's case count, 15, below which a shard could draw no case from a
+file at all and vitest would call the file empty. `matrix.ts` derives it rather than naming it.
 
 ### `run` spawns asynchronously so that concurrency is real
 
@@ -1180,10 +1172,10 @@ collects from a `spawn`, keeping stdout and stderr in separate buffers and joini
 exactly as `spawnSync` handed them over: every matcher in `INSTALL_NOISE` is line-anchored, and
 interleaving two streams by chunk can split a line across a switch between them.
 
-Files stay serial and the cases inside a file run together. Only `managerCases` is not pnpm, and its
-four cases sit at the head of one file, so at most one bun, one yarn and one npm install is ever in
-flight. The managers whose caches are least happy about a second writer are serialised by the shape
-of the suite rather than by a lock.
+Files stay serial and the cases inside a file run together. With the manager an axis, every file
+mixes managers, so `createProject` holds one install per binary at a time, pnpm excepted: its store is
+built for concurrent writers, and yarn's and bun's caches are not. Both yarns queue together, because
+they share `YARN_CACHE_FOLDER`.
 
 ### bun's cache is pruned rather than deleted
 
@@ -1219,9 +1211,10 @@ writing it, so a project that reformatted its own config keeps those bytes throu
 and `cli.test.ts` pins exactly that. `pipeline.test.ts` pins the other half: the config is not in the
 sync plan at all.
 
-Two properties carry what the stage runners used to decide in code. `fresh: true` is birth only, for
-the manifest and the starter source, which a project owns from its first run; `artifactWriter` already
-received `fresh` for the `preserve` decision and now answers `false` outright. `requires` names a path
+Two properties carry what the stage runners used to decide in code. `seed: true` is birth only, for
+the manifest and the starter source, which a project owns from its first run: `create` plants them, and
+so does `--existing --seed`. A `preserve` file that already exists is the project's on every run,
+born or not, so `artifactWriter` never overwrites one. `requires` names a path
 that has to exist, which is how a starter test is skipped when a rearranged starter moved the file it
 covers. Both are data on the artifact rather than a branch in the pipeline, so a new one of either
 costs no orchestrator change.

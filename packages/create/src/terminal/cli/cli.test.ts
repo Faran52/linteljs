@@ -120,7 +120,7 @@ const runMain = async (argv: string[], recorded?: Recorded): Promise<Run> => {
 };
 
 const generated = async (): Promise<Run> => {
-  return await runMain(['--skip-scaffold', '--no-install', '--yes']);
+  return await runMain(['--existing', '--no-install', '--yes']);
 };
 
 const configAt = async (): Promise<ReturnType<typeof parseLinteljsConfig>> => {
@@ -150,7 +150,7 @@ describe('main: what it prints and what it returns', () => {
     const { code, printed } = await runMain(['--help']);
 
     expect(code).toBe(0);
-    expect(printed).toContain('--skip-scaffold');
+    expect(printed).toContain('--existing');
   });
 
   // `form` carries no `slot`: every target asks it. Only `react-hook-form`, one of its two values, is react-only.
@@ -208,7 +208,7 @@ describe('main: what it prints and what it returns', () => {
   });
 
   it.each([
-    ['an invalid project name', ['My-App', '--skip-scaffold', '--no-install', '--yes'], 'Project name must be'],
+    ['an invalid project name', ['My-App', '--existing', '--no-install', '--yes'], 'Project name must be'],
     ['an extra create argument', ['demo-app', 'extra', '--yes'], 'Unexpected argument: extra'],
     ['extra create arguments', ['demo-app', 'extra', 'more', '--yes'], 'Unexpected arguments: extra, more'],
     ['an unknown option', ['--wat'], "Unknown option '--wat'"],
@@ -264,7 +264,7 @@ describe('main: cancelled mid-questionnaire', () => {
       printed,
       errors,
     } = await runMain(
-      ['--skip-scaffold', '--no-install'],
+      ['--existing', '--no-install'],
       scripted([CANCEL]),
     );
 
@@ -277,7 +277,7 @@ describe('main: cancelled mid-questionnaire', () => {
 });
 
 describe('main: create', () => {
-  // With `--skip-scaffold` the directory's own name is what package.json keeps calling it.
+  // With `--existing` the directory's own name is what package.json keeps calling it.
   it('names the project after the directory when no name was given', async () => {
     await generated();
 
@@ -289,7 +289,7 @@ describe('main: create', () => {
 
   it('runs the questionnaire and writes both selected adapters when --yes was not passed', async () => {
     const { printed } = await runMain(
-      ['--skip-scaffold', '--no-install'],
+      ['--existing', '--no-install'],
       scripted([
         'svelte', undefined, ['zod'], undefined, undefined, 'tanstack-store',
         undefined, undefined, undefined, ['claude-code', 'codex'], [],
@@ -377,7 +377,7 @@ describe('main: create', () => {
   });
 
   it('names the project after the argument even where no scaffolder ran', async () => {
-    const { printed } = await runMain(['demo-app', '--skip-scaffold', '--no-install', '--yes']);
+    const { printed } = await runMain(['demo-app', '--existing', '--no-install', '--yes']);
 
     expect(printed).toContain('wrote package.json');
     expect(parsePackageJson(await readFile(join(project, 'package.json'), 'utf8')).name)
@@ -389,7 +389,7 @@ describe('main: create', () => {
 describe('main: patching a project that already exists', () => {
   const asSvelte = async (): Promise<void> => {
     await runMain(
-      ['--skip-scaffold', '--no-install'],
+      ['--existing', '--no-install'],
       scripted([
         'svelte',
         undefined,
@@ -408,7 +408,7 @@ describe('main: patching a project that already exists', () => {
 
   it('keeps the recorded target under --yes, which declines the questions not the record', async () => {
     await asSvelte();
-    await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    await runMain(['--existing', '--no-install', '--yes']);
 
     const patched = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
 
@@ -571,7 +571,7 @@ describe('main: sync', () => {
     expect(emitted).toContain("resolver: { conditionNames: ['import', 'require', 'node', 'default'] },");
   });
 
-  // Both extension axes survive the round trip, since `sync` and `--skip-scaffold` plan from the record.
+  // Both extension axes survive the round trip, since `sync` and `--existing` plan from the record.
   // `answersIn` once dropped a new answer silently and replanned a devtools-panel project as a popup one.
   // Both merges were once stage writes, so the 1.2.0 `peerDependencyRules` allowance reached no existing project.
   it('merges into the workspace file and the gitignore a project already has', async () => {
@@ -700,12 +700,12 @@ describe('main: sync', () => {
 });
 
 describe('main: the manager that ran it', () => {
-  // `--skip-scaffold` and `sync` run in a directory somebody already has, and a lockfile there is the same answer.
+  // `--existing` and `sync` run in a directory somebody already has, and a lockfile there is the same answer.
   it('reads the lockfile the directory already has where no agent set one', async () => {
     vi.stubEnv('npm_config_user_agent', '');
     await writeFile(join(project, 'pnpm-lock.yaml'), '', 'utf8');
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({ packageManager: 'pnpm' });
@@ -714,7 +714,7 @@ describe('main: the manager that ran it', () => {
   it('falls back to npm where there is neither', async () => {
     vi.stubEnv('npm_config_user_agent', '');
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({ packageManager: 'npm' });
@@ -727,7 +727,7 @@ describe('main: the manager that ran it', () => {
       packageManager: 'pnpm',
     });
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install']);
+    const { code } = await runMain(['--existing', '--no-install']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({
@@ -745,7 +745,7 @@ describe('main: the manager that ran it', () => {
       packageManager: 'npm',
     });
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install']);
+    const { code } = await runMain(['--existing', '--no-install']);
     const written = await configAt();
 
     expect(code).toBe(0);
@@ -759,7 +759,7 @@ describe('main: the manager that ran it', () => {
   it('refuses a manager below the floor a generated project needs', async () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/10.25.0 npm/? node/? darwin arm64');
 
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code, errors } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(1);
     expect(errors.join('\n')).toContain('needs pnpm 10.26.0 or newer');
@@ -770,7 +770,7 @@ describe('main: the manager that ran it', () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/? npm/? node/? darwin arm64');
     await plantBinary(join(project, 'fake-bin'), 'pnpm', ['process.exit(1);']);
 
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code, errors } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(1);
     expect(errors).toEqual([expect.stringContaining('pnpm --version')]);
@@ -788,7 +788,7 @@ describe('main: the manager that ran it', () => {
     await writeFile(join(project, lockfile), text, 'utf8');
     await plantBinary(join(project, 'fake-bin'), binary, [`console.log('${version}');`]);
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({
@@ -805,7 +805,7 @@ describe('main: the manager that ran it', () => {
       nodeVersion: '24.11.0',
     });
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install']);
+    const { code } = await runMain(['--existing', '--no-install']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({
@@ -841,7 +841,7 @@ describe('main: the Node a project records', () => {
   it('records the Node running it under node, not the first one on PATH', async () => {
     await plantNode('v24.99.0');
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({ nodeVersion: versions.node });
@@ -851,7 +851,7 @@ describe('main: the Node a project records', () => {
     await plantNode('v24.99.0');
     asBun();
 
-    const { code } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(0);
     expect(await configAt()).toMatchObject({ nodeVersion: '24.99.0' });
@@ -861,7 +861,7 @@ describe('main: the Node a project records', () => {
     vi.stubEnv('PATH', '');
     asBun();
 
-    const { code, errors } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { code, errors } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(code).toBe(1);
     expect(errors).toHaveLength(1);
@@ -876,7 +876,7 @@ describe('main: answers given as flags', () => {
 
     const asked = scripted([]);
     const { code } = await runMain([
-      '--skip-scaffold', '--no-install', '--target', 'svelte', '--libraries', 'zod,es-toolkit',
+      '--existing', '--no-install', '--target', 'svelte', '--libraries', 'zod,es-toolkit',
       '--styling', 'tailwind', '--testing', 'none', '--type-safety', 'relaxed', '--agents', 'codex',
     ], asked);
 
@@ -895,7 +895,7 @@ describe('main: answers given as flags', () => {
   });
 
   it('records a router and a store', async () => {
-    await runMain(['--skip-scaffold', '--no-install', '--router', 'tanstack-router', '--store', 'redux-toolkit']);
+    await runMain(['--existing', '--no-install', '--router', 'tanstack-router', '--store', 'redux-toolkit']);
 
     expect(await configAt()).toMatchObject({
       router: 'tanstack-router',
@@ -915,7 +915,7 @@ describe('main: what a run reports', () => {
   it('numbers each stage as it starts and closes with the next command', async () => {
     vi.stubEnv('npm_config_user_agent', NPM_AGENT);
 
-    const { printed } = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const { printed } = await runMain(['--existing', '--no-install', '--yes']);
 
     expect(printed).toContain('[1/5] lint: eslint and stylelint config');
     expect(printed).toContain('[3/5] standard:');
@@ -923,9 +923,17 @@ describe('main: what a run reports', () => {
     expect(printed).not.toContain('  cd ');
   });
 
+  it('names yarn 1 by the command it answers to', async () => {
+    vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/v26.9.0 darwin arm64');
+
+    const { printed } = await runMain(['--existing', '--no-install', '--yes']);
+
+    expect(printed).toContain('Done. Next:\n  yarn install\n  yarn run lint:fix\n  yarn run check');
+  });
+
   // The banner says which release wrote the project; a sync only reports on one that exists.
   it('opens a create run with the release it is, and a sync with nothing', async () => {
-    const created = await runMain(['--skip-scaffold', '--no-install', '--yes']);
+    const created = await runMain(['--existing', '--no-install', '--yes']);
     const synced = await runMain(['sync', '--yes']);
 
     expect(created.printed.startsWith(`@linteljs/create ${packageJson.version}\n`)).toBe(true);
@@ -968,7 +976,7 @@ describe('main: what a run reports', () => {
       code,
       errors,
       printed,
-    } = await runMain(['--skip-scaffold', '--yes']);
+    } = await runMain(['--existing', '--yes']);
 
     expect({
       code,

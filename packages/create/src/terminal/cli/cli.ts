@@ -10,6 +10,7 @@ import {
 } from 'node:process';
 
 import {
+  MANAGER_BINARIES,
   NODE_FLOOR,
   RUN_PREFIX,
   STAGES,
@@ -90,13 +91,15 @@ const summary = (name: string, options: CliOptions, answers: Answers): string =>
   const { packageManager } = answers;
   const run = RUN_PREFIX[packageManager];
   const enter = options.existing || name === '' ? [] : [`  cd ${name}`];
-  const install = options.skip.includes('install') ? [`  ${packageManager} install`, `  ${run} lint:fix`] : [];
+  const install = options.skip.includes('install')
+    ? [`  ${MANAGER_BINARIES[packageManager]} install`, `  ${run} lint:fix`]
+    : [];
 
   return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
 };
 
-// The manager that invoked this CLI, which is the one a generated project keeps: the user agent every scaffolder
-// reads, else the lockfile the directory already has, else npm, which is what a bare `node .../create` is.
+// The manager that invoked this CLI, which is the one a generated project keeps: the user agent that manager sets,
+// else the lockfile the directory already has, else npm, which is what a bare `node .../create` is.
 const detectedManager = async (cwd: string): Promise<DetectedManager> => {
   const fromAgent = managerFromUserAgent(env['npm_config_user_agent']);
 
@@ -219,7 +222,7 @@ const askedFrom = async (
     throw new Error(NOTHING_ANSWERED_MESSAGE);
   }
 
-  // With `--skip-scaffold` the directory is already named.
+  // With `--existing` the directory is already named.
   const known = options.existing ? basename(options.cwd) : options.name;
   const asked = await ask(prompter, known === '' ? {} : { name: known });
 
@@ -270,7 +273,7 @@ const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<voi
 };
 
 // The argument only: a directory name was never chosen as a package name, and adopting one is what
-// `--skip-scaffold` is for.
+// `--existing` is for.
 const projectNameError = (options: CliOptions): string | undefined => {
   // `sync` takes no name, so `parseCliArgs` gives it `''` and this one check covers both.
   if (options.name === '') {
@@ -359,14 +362,14 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     }
 
     await pipelineRun({
-      // With --skip-scaffold the directory's existing name is the project's.
+      // With --existing the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
-      // `create` makes `<name>/` under cwd and every stage runs inside it; `--skip-scaffold` is already there.
+      // `create` makes `<name>/` under cwd and every stage runs inside it; `--existing` is already there.
       cwd: options.existing ? options.cwd : resolve(options.cwd, name),
       answers,
       skip: options.skip,
       existing: options.existing,
-      fresh: options.fresh,
+      seed: options.seed,
       ...stageReport(options),
     });
 

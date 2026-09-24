@@ -143,11 +143,11 @@ Both routers' `useNavigate` is mocked in the test setup, so a navigation asserts
 @linteljs/create [name] [options]
 @linteljs/create sync [options]
 
-  --skip-scaffold   run stages 2-6 against an existing repository
-  --no-install      skip install and the ESLint fix pass
-  --fresh           with --skip-scaffold, treat the directory as new scaffolder output
-  --skip <stage>    skip scaffold, lint, package, standard, install, or fix (repeatable)
-  --yes, -y         accept defaults, ask nothing
+  --existing        run in this directory, which already exists, rather than making <name>/
+  --no-install      skip the install and the eslint --fix pass that needs it
+  --seed            with --existing, plant the starter and seed files a new project is born with
+  --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
+  --yes, -y         accept the defaults, ask nothing
   --force           sync: overwrite without asking
   --version, -v
   --help, -h
@@ -160,12 +160,12 @@ A run numbers each stage as it starts and ends with what to do next:
 
 ```text
 @linteljs/create 1.6.0
-[1/6] scaffold: the official generator
+[1/5] lint: eslint and stylelint config
 ...
-[4/6] standard: hooks, agent files, test setup and starter tests
+[3/5] standard: hooks, agent files, test setup and starter tests
   wrote CLAUDE.md
   ...
-[6/6] fix: eslint and stylelint --fix
+[5/5] fix: eslint and stylelint --fix
   eslint --fix: 3 files changed
 
 Done. Next:
@@ -179,7 +179,7 @@ how many files would change, then one diff per file.
 ## Existing projects and updates
 
 ```bash
-npx @linteljs/create --skip-scaffold
+npx @linteljs/create --existing
 ```
 
 If `linteljs.config.json` already exists, the CLI uses it and asks nothing. Otherwise it asks the questionnaire.

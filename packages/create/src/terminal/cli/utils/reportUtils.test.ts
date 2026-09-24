@@ -34,7 +34,7 @@ const OPTIONS: CliOptions = {
   unknownSkips: [],
   unexpectedArguments: [],
   yes: true,
-  fresh: false,
+  seed: false,
   force: false,
   help: false,
   version: false,

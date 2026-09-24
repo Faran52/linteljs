@@ -12,14 +12,14 @@ import {
 import { safeProjectPath } from '../../utils/pathUtils';
 import { projectFileWriter } from '../project-file/projectFileWriter';
 
-// `fresh` decides whether an existing `preserve` file is the project's or a scaffolder's default: a scaffolder
-// writes its own `vite.config.ts` moments before this runs.
+// `seed` says the project is being born, so its seed artifacts are planted. A `preserve` file that already exists is
+// the project's on every run, born or not.
 export const artifactWriter = async (
   cwd: string,
   artifact: Artifact,
-  fresh = false,
+  seed = false,
 ): Promise<boolean> => {
-  if (artifact.fresh === true && !fresh) {
+  if (artifact.seed === true && !seed) {
     return false;
   }
 
@@ -33,7 +33,7 @@ export const artifactWriter = async (
 
   const path = await safeProjectPath(cwd, artifact.target);
 
-  if (!fresh && artifact.preserve === true && await entryExists(path)) {
+  if (artifact.preserve === true && await entryExists(path)) {
     return false;
   }
 

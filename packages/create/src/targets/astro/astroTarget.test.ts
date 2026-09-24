@@ -117,7 +117,7 @@ describe('the hosted framework axis', () => {
     expect(record.stateRules).toEqual(['vue-reactivity.md']);
   });
 
-  // Runtime, where the node adapter's entry needs it; unconditional so a --skip-scaffold run installs it.
+  // Runtime, where the node adapter's entry needs it; unconditional so a --existing run installs it.
   it('declares astro once, as a runtime dependency, hosted or not', () => {
     const records = [recordFor(), recordFor({ hostedFramework: 'react' })];
 

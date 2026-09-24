@@ -48,6 +48,30 @@ describe('artifactWriter', () => {
     await expect(readFile(join(cwd, 'kept.txt'), 'utf8')).resolves.toBe('project\n');
   });
 
+  // A project being born is no licence to overwrite: `create` into a directory that exists, or `--existing --seed`,
+  // once replaced a project's own CLAUDE.md and test setup with the shipped defaults.
+  it('leaves an existing preserved artifact alone on a run that plants seeds too', async () => {
+    await writeFile(join(cwd, 'kept.txt'), 'project\n', 'utf8');
+
+    const artifact = {
+      ...emitted('standard', 'kept.txt', 'shipped\n'),
+      preserve: true,
+    } satisfies Artifact;
+
+    await expect(artifactWriter(cwd, artifact, true)).resolves.toBe(false);
+    await expect(readFile(join(cwd, 'kept.txt'), 'utf8')).resolves.toBe('project\n');
+  });
+
+  it('plants a seed artifact only on a run that plants seeds', async () => {
+    const artifact = {
+      ...emitted('standard', 'seed.txt', 'shipped\n'),
+      seed: true,
+    } satisfies Artifact;
+
+    await expect(artifactWriter(cwd, artifact)).resolves.toBe(false);
+    await expect(artifactWriter(cwd, artifact, true)).resolves.toBe(true);
+  });
+
   it('gives a merged artifact the current file and reports its write', async () => {
     await writeFile(join(cwd, 'settings.json'), 'current\n', 'utf8');
 

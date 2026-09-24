@@ -77,13 +77,13 @@ const help = run(process.execPath, [join(pkgDir, 'bin', 'create-linteljs.js'), '
 
 /**
  * Every option `parseCliArgs` accepts, against what `--help` prints. The one that went missing was `--skip`: accepted,
- * undocumented, invisible to a test that only parses argv. Matched at a word boundary because `--skip` is a prefix of
- * `--skip-scaffold`, so `includes` passed with the line documenting it deleted.
+ * undocumented, invisible to a test that only parses argv. Matched at a word boundary: `--skip` was once a prefix of
+ * another flag, and `includes` passed with the line documenting it deleted.
  */
 for (const flag of [
-  '--skip-scaffold',
+  '--existing',
   '--no-install',
-  '--fresh',
+  '--seed',
   '--skip',
   '--yes',
   '-y',
@@ -95,7 +95,7 @@ for (const flag of [
 }
 
 // Every stage `--skip` accepts, so a renamed one cannot leave the help text naming the old word.
-for (const stage of ['scaffold', 'lint', 'package', 'standard', 'install', 'fix']) {
+for (const stage of ['lint', 'package', 'standard', 'install', 'fix']) {
   assert.match(help, new RegExp(`\\b${stage}\\b`), `--help does not mention the ${stage} stage`);
 }
 

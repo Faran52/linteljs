@@ -88,9 +88,9 @@ const answerUsageOf = (answer: FlaggedAnswer): string => {
 export const USAGE = `@linteljs/create [name] [options]
 @linteljs/create sync [options]
 
-  --skip-scaffold   run against a directory that already exists
+  --existing        run in this directory, which already exists, rather than making <name>/
   --no-install      skip the install and the eslint --fix pass that needs it
-  --fresh           with --skip-scaffold, plant the seed files a new project is born with
+  --seed            with --existing, plant the starter and seed files a new project is born with
   --skip <stage>    skip a stage: lint, package, standard, install, fix (repeatable)
   --yes, -y         accept the defaults, ask nothing
   --force           sync: overwrite without asking
@@ -105,7 +105,7 @@ A non-interactive create needs a project name, or --yes to take the directory's.
 `;
 
 export const CLI_OPTIONS = {
-  'skip-scaffold': {
+  'existing': {
     type: 'boolean',
     default: false,
   },
@@ -113,7 +113,7 @@ export const CLI_OPTIONS = {
     type: 'boolean',
     default: false,
   },
-  'fresh': {
+  'seed': {
     type: 'boolean',
     default: false,
   },
@@ -145,7 +145,7 @@ export const CLI_OPTIONS = {
 } satisfies ParseArgsOptionsConfig;
 
 /**
- * The lockfile a directory already has, for a run with no user agent: `--skip-scaffold` and `sync` on a project
+ * The lockfile a directory already has, for a run with no user agent: `--existing` and `sync` on a project
  * that carries one. In the order `package-manager-detector` checks them, which ends with npm's two; npm is also what
  * a directory with none is taken for, so those two could never change the answer and have no row.
  */

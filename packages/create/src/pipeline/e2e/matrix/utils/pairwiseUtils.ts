@@ -5,20 +5,23 @@ export interface PairwiseCase {
   answers: Answers;
 }
 
-interface Leader<T> {
-  item?: T;
-  gain: number;
+interface Scored<T> {
+  item: T;
+  pairs: string[];
 }
 
 // The axes a case is a point in. A constant one costs a pair that any case covers, so they are all listed rather
 // than filtered per target: the arithmetic is the same and the list stays readable.
 const axesOf = (answers: Answers): string[] => {
   return [
+    `pm:${answers.packageManager}`,
     `host:${answers.hostedFramework ?? 'none'}`,
     `browser:${answers.browser}`,
+    `styling:${answers.styling ?? 'none'}`,
     `form:${answers.form ?? 'none'}`,
     `router:${answers.router ?? 'none'}`,
-    `store:${String(answers.store)}`,
+    `store:${answers.store ?? 'none'}`,
+    `data:${answers.data ?? 'none'}`,
     `testing:${answers.testing}`,
     `safety:${answers.typeSafety}`,
   ];
@@ -35,37 +38,36 @@ export const pairsOf = (answers: Answers): string[] => {
 };
 
 /**
- * The greedy set cover over every pair of answers: enough cases that each pair appears at least once, which is what
- * turns the full cross product into the 98 the suite runs. Generic over what a case is, because the solver reads
- * nothing but the answers a case carries.
+ * The greedy set cover over every pair of answers: enough cases that each pair appears at least once. Generic over
+ * what a case is, because the solver reads nothing but the answers a case carries. Each case's pairs are derived
+ * once; the greedy only counts which of them are still uncovered.
  */
 export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
-  const uncovered = new Set(cases.flatMap((item) => {
-    return pairsOf(item.answers);
+  const scored = cases.map((item) => {
+    return {
+      item,
+      pairs: pairsOf(item.answers),
+    };
+  });
+  const uncovered = new Set(scored.flatMap(({ pairs }) => {
+    return pairs;
   }));
+  const gainOf = (pairs: string[]): number => {
+    return pairs.filter((pair) => {
+      return uncovered.has(pair);
+    }).length;
+  };
+  // Ties go to the earlier case, which keeps the cover stable for the shard stride.
+  const leader = (): Scored<T> | undefined => {
+    return scored.reduce<Scored<T> | undefined>((best, candidate) => {
+      return best === undefined || gainOf(candidate.pairs) > gainOf(best.pairs) ? candidate : best;
+    }, undefined);
+  };
   const chosen: T[] = [];
 
-  while (uncovered.size > 0) {
-    // The running best of the greedy: absent until some case gains a pair, which the first pass always does.
-    const best = cases.reduce<Leader<T>>((leader, item) => {
-      const gain = pairsOf(item.answers).filter((pair) => {
-        return uncovered.has(pair);
-      }).length;
-
-      return gain > leader.gain
-        ? {
-            item,
-            gain,
-          }
-        : leader;
-    }, { gain: 0 });
-
-    // Unreachable: every pair in `uncovered` came from a case, so some case always gains.
-    if (best.item === undefined) {
-      break;
-    }
-
-    for (const pair of pairsOf(best.item.answers)) {
+  // Until no case gains a pair, which is exactly when every pair is covered, since each pair came from some case.
+  for (let best = leader(); best !== undefined && gainOf(best.pairs) > 0; best = leader()) {
+    for (const pair of best.pairs) {
       uncovered.delete(pair);
     }
 

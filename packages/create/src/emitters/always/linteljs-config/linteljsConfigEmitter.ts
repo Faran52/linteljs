@@ -9,7 +9,7 @@ import {
 
 import { emitted } from '../../utils/artifactUtils';
 
-// The envelope every recorded project carries, so `sync` and `create --skip-scaffold` replan from what it says.
+// The envelope every recorded project carries, so `sync` and `create --existing` replan from what it says.
 export const emitLinteljsConfig = (answers: Answers): string => {
   return `${JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,

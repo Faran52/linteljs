@@ -8,6 +8,14 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- **Breaking: `--skip-scaffold` is now `--existing`, and `--fresh` is now `--seed`.** No scaffolder runs any
+  more, so both were named for a stage that is gone. `--existing` runs in the directory that already exists
+  rather than making `<name>/`; `--seed` plants the starter and seed files a new project is born with.
+- A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is
+  left alone on every run. A `create` into an existing directory, and `--existing --seed`, used to replace the
+  project's own copy, a rule written for a scaffolder's default that was about to be superseded.
+- The closing summary and the fix pass's next step name Yarn 1 by the command it answers to, `yarn`, rather
+  than the id `yarn-classic`.
 - **Yarn 1 is a manager rather than a refusal.** It is recorded as `yarn-classic`, told apart from Yarn 4 by the
   agent's major and, where there is no agent, by whether `yarn.lock` opens with `# yarn lockfile v1`. A classic
   project declares `yarn@1.22.22`, installs in CI with `--frozen-lockfile`, reaches its own scripts through

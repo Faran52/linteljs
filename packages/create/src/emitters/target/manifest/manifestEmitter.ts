@@ -134,7 +134,7 @@ export const manifestEmitter = (answers: Answers, _project: ProjectShape, name: 
         browser === answers.browser ? 'manifest.json' : `manifest.${browser}.json`,
         manifest,
       ),
-      fresh: true,
+      seed: true,
     } satisfies Artifact];
   });
 };

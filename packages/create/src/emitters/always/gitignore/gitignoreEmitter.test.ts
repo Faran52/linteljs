@@ -21,7 +21,7 @@ describe('mergeGitignore', () => {
     expect(mergeGitignore(null)).toBe('# linteljs\ncoverage/\n*.tsbuildinfo\n');
   });
 
-  // Re-running `--skip-scaffold` must not stack a second block on every pass.
+  // Re-running `--existing` must not stack a second block on every pass.
   it('adds nothing a second time', () => {
     const once = mergeGitignore('node_modules\n');
 

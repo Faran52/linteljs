@@ -25,10 +25,9 @@ export default defineConfig({
     // Starts the one registry holding the workspace versions; every case installs through it.
     globalSetup: ['src/pipeline/e2e/registry/registry.ts'],
     /**
-     * Files run one at a time and the cases inside a file run together. Every case but the four in `managerCases`
-     * is pnpm, and those four sit at the head of one file, so at most one bun, one yarn and one npm install is ever
-     * in flight: the managers whose caches are least happy about a second writer are serialised by the shape of the
-     * suite rather than by a lock.
+     * Files run one at a time and the cases inside a file run together. `createProject` holds one install per
+     * binary at a time, pnpm excepted, so the managers whose caches are least happy about a second writer never
+     * meet one.
      */
     fileParallelism: false,
     /**
@@ -39,5 +38,8 @@ export default defineConfig({
      */
     maxConcurrency: Number(env['E2E_CONCURRENCY'] ?? '2'),
     hookTimeout: 120_000,
+    // A case's title is its label, which runs past vitest's 40-character cut: truncated, two cases share a title and
+    // `-t` cannot name one.
+    taskTitleValueFormatTruncate: 1000,
   },
 });

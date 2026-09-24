@@ -8,8 +8,8 @@ import { parseCliArgs } from './argvUtils';
 
 describe('parseCliArgs', () => {
   // There is no scaffold stage to skip any more: the flag says the directory is a repository that already exists.
-  it('reads --skip-scaffold as an existing directory', () => {
-    expect(parseCliArgs(['--skip-scaffold']).existing).toBe(true);
+  it('reads --existing as an existing directory', () => {
+    expect(parseCliArgs(['--existing']).existing).toBe(true);
     expect(parseCliArgs([]).existing).toBe(false);
   });
 
@@ -18,9 +18,9 @@ describe('parseCliArgs', () => {
     expect(parseCliArgs(['demo-app', '--no-install']).skip).toEqual(['install', 'fix']);
   });
 
-  it('carries --fresh through for a directory the CLI did not scaffold', () => {
-    expect(parseCliArgs(['--skip-scaffold', '--fresh']).fresh).toBe(true);
-    expect(parseCliArgs(['--skip-scaffold']).fresh).toBe(false);
+  it('carries --seed through for a directory the CLI did not make', () => {
+    expect(parseCliArgs(['--existing', '--seed']).seed).toBe(true);
+    expect(parseCliArgs(['--existing']).seed).toBe(false);
   });
 
   it('reads sync as a command rather than a project name', () => {

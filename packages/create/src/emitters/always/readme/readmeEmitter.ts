@@ -10,7 +10,7 @@ export const emitReadme = (template: string, projectName: string, answers: Answe
 };
 
 // Every scaffolder's README describes a toolchain the later stages replaced, so this is rewritten on any run
-// rather than at birth alone: `--skip-scaffold` adopts a project whose README says the same wrong thing.
+// rather than at birth alone: `--existing` adopts a project whose README says the same wrong thing.
 export const readmeEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
   return [{
     stage: 'standard',

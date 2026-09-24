@@ -299,7 +299,7 @@ describe('generated write safety', () => {
   });
 });
 
-// Neither `--skip-scaffold` nor `--fresh`: the directory is the one `create` just made.
+// Neither `--existing` nor `--seed`: the directory is the one `create` just made.
 describe('a plain create run', () => {
   it('plants the starter a project is born with', async () => {
     const written: string[] = [];
@@ -347,15 +347,16 @@ describe('stage timing', () => {
 
 // The 100% thresholds are measured over exactly the code somebody wrote.
 describe('coverage surface', () => {
-  // A birth run: `vitest.config.ts` is the project's once it exists.
+  // A birth run into a directory without one: `vitest.config.ts` is the project's once it exists.
   const vitestConfig = async (overrides: AnswerOverrides): Promise<string> => {
+    await rm(join(cwd, 'vitest.config.ts'), { force: true });
     await pipelineRun({
       name: 'demo-app',
       cwd,
       answers: answersFor(overrides),
       existing: true,
       skip: ['install'],
-      fresh: true,
+      seed: true,
     });
 
     return await readFile(join(cwd, 'vitest.config.ts'), 'utf8');
@@ -401,13 +402,14 @@ describe('coverage surface', () => {
   // Both transforms leave one branch no test can reach in every component.
   it('keeps the build-time transforms out of the test run', async () => {
     const viteConfig = async (overrides: AnswerOverrides): Promise<string> => {
+      await rm(join(cwd, 'vite.config.ts'), { force: true });
       await pipelineRun({
         name: 'demo-app',
         cwd,
         answers: answersFor(overrides),
         existing: true,
         skip: ['install'],
-        fresh: true,
+        seed: true,
       });
 
       return await readFile(join(cwd, 'vite.config.ts'), 'utf8');
@@ -437,9 +439,9 @@ describe('build configs a project already owns', () => {
     await expect(readFile(join(cwd, 'vitest.config.ts'), 'utf8')).resolves.toBe(OWN_VITEST);
   });
 
-  // At birth the file on disk is the scaffolder's default, so this standard's version has to land over it.
-  it('replaces the scaffolder default on a birth run', async () => {
-    await writeFile(join(cwd, 'vite.config.ts'), '// vite scaffolder default\n', 'utf8');
+  // No scaffolder writes a default any more, so a config already there is the project's even on a birth run.
+  it('leaves them alone on a birth run too', async () => {
+    await writeFile(join(cwd, 'vite.config.ts'), OWN_VITE, 'utf8');
 
     await pipelineRun({
       name: 'demo-app',
@@ -447,11 +449,10 @@ describe('build configs a project already owns', () => {
       answers: answersFor({}),
       existing: true,
       skip: ['install'],
-      fresh: true,
+      seed: true,
     });
 
-    await expect(readFile(join(cwd, 'vite.config.ts'), 'utf8'))
-      .resolves.toContain('defineConfig');
+    await expect(readFile(join(cwd, 'vite.config.ts'), 'utf8')).resolves.toBe(OWN_VITE);
   });
 });
 
@@ -465,7 +466,7 @@ const fresh = async (overrides: AnswerOverrides): Promise<string[]> => {
     answers: answersFor(overrides),
     existing: true,
     skip: ['install'],
-    fresh: true,
+    seed: true,
     onWrite: (path) => {
       written.push(path);
     },
@@ -498,7 +499,7 @@ describe('starter tests', () => {
       .toEqual(expect.arrayContaining(['src/routes/page.test.ts', 'src/routes/layout.test.ts']));
   });
 
-  // `--skip-scaffold` without `--fresh` points at a repository somebody has worked in.
+  // `--existing` without `--seed` points at a repository somebody has worked in.
   it('writes none into a repository the CLI did not scaffold', async () => {
     await mkdir(join(cwd, 'src'), { recursive: true });
     await writeFile(join(cwd, 'src/App.tsx'), 'export default () => null;\n', 'utf8');
@@ -525,7 +526,7 @@ describe('the webextension surfaces', () => {
       answers: answersFor({ target: 'webextension' }),
       existing: true,
       skip: ['install'],
-      fresh: true,
+      seed: true,
       onWrite: (path) => {
         written.push(path);
       },
@@ -561,7 +562,7 @@ describe('the webextension surfaces', () => {
       }),
       existing: true,
       skip: ['install'],
-      fresh: true,
+      seed: true,
       onWrite: (path) => {
         written.push(path);
       },
@@ -610,7 +611,7 @@ describe('starter repairs', () => {
       answers: answersFor({ target: 'angular' }),
       existing: true,
       skip: ['install'],
-      fresh: true,
+      seed: true,
     });
 
     expect(await readFile(join(cwd, 'src/main.ts'), 'utf8')).toContain('(err: unknown) =>');
@@ -1036,7 +1037,7 @@ describe('the eslint --fix pass', () => {
   });
 });
 
-// Both routes read the directory the same way: `--skip-scaffold` once wrote a second stylesheet nothing imports.
+// Both routes read the directory the same way: `--existing` once wrote a second stylesheet nothing imports.
 describe('what create and sync each discover about a project', () => {
   const plant = async (relative: string, text = ''): Promise<void> => {
     await mkdir(join(cwd, relative, '..'), { recursive: true });

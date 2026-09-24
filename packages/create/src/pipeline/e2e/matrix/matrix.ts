@@ -22,11 +22,8 @@ import {
   LIBRARIES,
   PACKAGE_MANAGERS,
   PLUGINS,
-  SHARD,
-  SHARDS,
   STYLING_CHOICES,
   SURFACES,
-  TARGET_IDS,
   TESTING_CHOICES,
   TYPE_SAFETY_CHOICES,
 } from './constants';
@@ -42,30 +39,24 @@ export interface E2eCase {
 }
 
 /**
- * Every combination of two answers, in as few cases as the greedy will manage.
+ * Every combination of two answers, per target, in as few cases as the greedy will manage.
  *
- * The full cross product is 532 on pnpm; every defect this suite has found was a two-way interaction, and none
- * needed a third axis pinned: `vue-demi` is hosted-vue with TanStack Query, the devtools floating promise is the
- * extension on chrome, the leftover suites are `testing: none` on angular and on react-native, and `customTypes.d.ts`
- * is `typeSafety: relaxed` on angular. So the suite covers every *pair* of answers rather than every combination.
+ * Every defect this suite has found was a two-way interaction, and none needed a third axis pinned: `vue-demi` is
+ * hosted-vue with TanStack Query, the devtools floating promise is the extension on chrome, the leftover suites are
+ * `testing: none` on angular and on react-native, `customTypes.d.ts` is `typeSafety: relaxed` on angular, and the
+ * rolldown peer is React on yarn 1. So the suite covers every *pair* of answers rather than every combination.
+ *
+ * The package manager is one of the axes. It used to be a family of its own, every target on every manager at full
+ * dependency pressure, sized for the scaffolders each manager launched (`bun create` refusing a second registry port,
+ * a scaffolder misreading npm's output). Those are gone: what a manager changes now is how it resolves the
+ * dependency set a target and its libraries emit, and the files the CLI writes for it, which is a pair of the manager
+ * with each of those answers. Every multi-select stays at its full value in every case.
  *
  * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
  * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the
  * reachable one. Deterministic, because the shard is a stride over this list: ties go to the earlier case.
  *
  * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
- */
-
-/**
- * Two families, and between them every answer this CLI can be given.
- *
- * `managers` is every target on every package manager with every multi-select at its full value: the heaviest
- * dependency set a target has, installed four ways. That is what catches a library breaking a project and a manager
- * resolving the same manifest differently, and it is the only family that runs anything but pnpm.
- *
- * `options` is every combination of the single-select axes on pnpm alone. Multiplying those by four managers is what
- * made the matrix 2480; a manager does not change which config is emitted, so it is fixed here and the combinations
- * are what vary. The two families overlap on one case per target, which `ALL_CASES` drops.
  */
 
 // A multi-select is never combined: it is always every value it has, so one case carries the whole set.
@@ -79,11 +70,12 @@ const everyMultiSelect = (target: TargetId): Partial<Answers> => {
   };
 };
 
-const recordFor = (target: TargetId, hostedFramework: HostedFramework | undefined): TargetRecord => {
+// The record for the answers chosen so far, which is what the prompt hands `targetFor` when it asks the next one.
+const recordFor = (target: TargetId, variant: Partial<Answers>): TargetRecord => {
   return targetFor({
     ...DEFAULT_ANSWERS,
+    ...variant,
     target,
-    ...(hostedFramework === undefined ? {} : { hostedFramework }),
   });
 };
 
@@ -160,29 +152,14 @@ const asCase = (answers: Answers): E2eCase => {
   };
 };
 
-// Every target on every manager, at maximum dependency pressure and default options.
-const managerCases = (target: TargetId): E2eCase[] => {
-  return PACKAGE_MANAGERS.map((packageManager) => {
-    return asCase({
-      ...DEFAULT_ANSWERS,
-      ...everyMultiSelect(target),
-      target,
-      packageManager,
-      // The heaviest of each: tailwind brings NativeWind on React Native, and the query binding is per framework.
-      styling: 'tailwind',
-      data: 'tanstack-query',
-    });
-  });
-};
-
-// Every legal combination of the single-select axes a target asks for, on pnpm. Reduced by `coveringSubset`.
-const everyOptionCase = (target: TargetId): E2eCase[] => {
+// Every legal combination of the single-select axes a target asks for, on every manager. Reduced by `coveringSubset`.
+const everyCase = (target: TargetId): E2eCase[] => {
   const recordOf = (variant: Partial<Answers>): TargetRecord => {
-    return recordFor(target, variant.hostedFramework);
+    return recordFor(target, variant);
   };
 
   const hosted = across([{}], () => {
-    return hostedFor(recordFor(target, undefined));
+    return hostedFor(recordFor(target, {}));
   }, (variant, hostedFramework) => {
     return {
       ...variant,
@@ -257,12 +234,21 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
     };
   });
 
-  return across(testings, () => {
+  const safeties = across(testings, () => {
     return [...TYPE_SAFETY_CHOICES];
   }, (variant, typeSafety) => {
     return {
       ...variant,
       typeSafety,
+    };
+  });
+
+  return across(safeties, () => {
+    return [...PACKAGE_MANAGERS];
+  }, (variant, packageManager) => {
+    return {
+      ...variant,
+      packageManager,
     };
   }).map((variant) => {
     return asCase({
@@ -270,49 +256,38 @@ const everyOptionCase = (target: TargetId): E2eCase[] => {
       ...everyMultiSelect(target),
       ...variant,
       target,
-      packageManager: 'pnpm',
     });
   });
 };
 
-export const optionCases = (target: TargetId): E2eCase[] => {
-  const every = everyOptionCase(target);
+export const targetCases = (target: TargetId): E2eCase[] => {
+  const every = everyCase(target);
 
   return env['E2E_FULL'] === '1' ? every : coveringSubset(every);
 };
 
-// Grouped by target and ordered, because the shard below is a stride over this list and the label is its identity.
-const ALL_CASES: E2eCase[] = TARGET_IDS.flatMap((target) => {
-  const seen = new Set<string>();
-
-  return [...managerCases(target), ...optionCases(target)].filter((item) => {
-    const fresh = !seen.has(item.label);
-
-    seen.add(item.label);
-
-    return fresh;
-  });
-});
-
 /**
- * The ceiling is the smallest target's case count, below which a shard could draw nothing from that file at all and
- * vitest would call it empty. Derived rather than written down: the pairwise reduction moved it from 11 to 8 and a
- * number in a comment would not have noticed.
+ * This shard's share of `cases`, which is every target's cases in order. A stride rather than a slice: each shard then
+ * holds an even share of every target, so no shard is the one that drew React Native and Angular together. Vitest's
+ * own `--shard` splits by file, and one file holds every target.
+ *
+ * The ceiling is the smallest target's case count, above which a shard could draw nothing from that target at all
+ * and vitest would call its block empty. Derived rather than written down, so a reduction that moves it is noticed.
  */
-const MAX_SHARDS = Math.min(...TARGET_IDS.map((target) => {
-  return ALL_CASES.filter((item) => {
-    return item.answers.target === target;
-  }).length;
-}));
+export const shardOf = (cases: E2eCase[], shard: number, shards: number): E2eCase[] => {
+  const counts = new Map<TargetId, number>();
 
-if (SHARDS > MAX_SHARDS || SHARD < 1 || SHARD > SHARDS) {
-  throw new Error(
-    `E2E_SHARD ${String(SHARD)} of ${String(SHARDS)} is out of range: 1 to ${String(MAX_SHARDS)} shards`,
-  );
-}
+  for (const { answers } of cases) {
+    counts.set(answers.target, (counts.get(answers.target) ?? 0) + 1);
+  }
 
-export const casesFor = (target: TargetId): E2eCase[] => {
-  return ALL_CASES.filter((item, index) => {
-    return item.answers.target === target && index % SHARDS === SHARD - 1;
+  const ceiling = Math.min(...counts.values());
+
+  if (shards > ceiling || shard < 1 || shard > shards) {
+    throw new Error(`E2E_SHARD ${String(shard)} of ${String(shards)} is out of range: 1 to ${String(ceiling)} shards`);
+  }
+
+  return cases.filter((_item, index) => {
+    return index % shards === shard - 1;
   });
 };

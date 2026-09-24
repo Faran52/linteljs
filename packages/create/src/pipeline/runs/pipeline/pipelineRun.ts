@@ -22,8 +22,8 @@ export interface PipelineOptions {
   skip: Stage[];
   // The directory is a repository that already exists rather than one this run made.
   existing?: boolean;
-  // Treat the directory as fresh scaffolder output although this run did not scaffold it.
-  fresh?: boolean;
+  // Plant the seed artifacts in an existing directory, as if this run had made it.
+  seed?: boolean;
   onWrite?: (path: string) => void;
   // What happened that was not a file write.
   onNotice?: (message: string) => void;
@@ -51,18 +51,15 @@ const writeArtifacts = async (
       continue;
     }
 
-    if (await artifactWriter(options.cwd, artifact, isFresh(options))) {
+    if (await artifactWriter(options.cwd, artifact, plantsSeeds(options))) {
       options.onWrite?.(artifact.target);
     }
   }
 };
 
-/*
- * Whether this directory is new. `create` makes it, so it is; `--skip-scaffold` points the run at a repository
- * that already exists, and `--fresh` says that repository is untouched generator output after all.
- */
-const isFresh = (options: PipelineOptions): boolean => {
-  return options.fresh === true || options.existing !== true;
+// A project is born once: `create` makes the directory, and `--existing --seed` asks for the same in one that exists.
+const plantsSeeds = (options: PipelineOptions): boolean => {
+  return options.seed === true || options.existing !== true;
 };
 
 // `git rev-parse`, not `existsSync('.git')`: a subdirectory of an existing repo must not get a nested one.

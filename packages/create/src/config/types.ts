@@ -44,8 +44,8 @@ export interface Artifact {
   executable?: boolean;
   // Installed when missing, never overwritten, not even under --force.
   preserve?: true;
-  // Fresh scaffolder output only. A project owns these from its first run, so a later one leaves them where they are.
-  fresh?: true;
+  // Planted only when a project is born (`create`, or `--existing --seed`). It owns these from then on.
+  seed?: true;
   // Written only when this path is already there: a starter test covering source the scaffolder may not have written.
   requires?: string[];
   /**
@@ -58,7 +58,7 @@ export interface Artifact {
 }
 
 // What a project already holds, per file this CLI has more than one spelling of; one record, so `sync` and
-// `create --skip-scaffold` discover the same files.
+// `create --existing` discover the same files.
 export interface ProjectShape {
   setupTests: readonly string[];
   styleEntries: readonly string[];

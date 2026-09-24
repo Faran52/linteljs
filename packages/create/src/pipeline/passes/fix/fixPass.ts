@@ -1,4 +1,4 @@
-import { RUN_PREFIX } from '@config/constants';
+import { MANAGER_BINARIES, RUN_PREFIX } from '@config/constants';
 
 import { styleGlob } from '@emitters/always/utils/scriptUtils';
 import { localBinarySpawn } from '@spawns';
@@ -10,8 +10,9 @@ interface EslintFixResult {
   output?: string;
 }
 
+// The command rather than the id: `yarn-classic` is not something anyone can type.
 export const nextStep = (answers: Answers): string => {
-  return `next: ${answers.packageManager} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
+  return `next: ${MANAGER_BINARIES[answers.packageManager]} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
 };
 
 // `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed.

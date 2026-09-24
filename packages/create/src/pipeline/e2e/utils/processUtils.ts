@@ -43,18 +43,18 @@ export const run = async (
       cwd,
       /**
        * `spawnSync` was handed `input: ''`, which closed every child's stdin; `spawn`'s default leaves it an open
-       * pipe that is never written and never ended, so anything that reads stdin waits for ever. `pipeline.ts`
-       * spawns the scaffolder and the install with `stdio: 'inherit'`, so that dead pipe is inherited all the way
-       * down. Nothing prompts today; `ignore` is what keeps that true when some upstream tool grows a question.
+       * pipe that is never written and never ended, so anything that reads stdin waits for ever. `pipelineRun.ts`
+       * spawns the install with `stdio: 'inherit'`, so that dead pipe is inherited all the way down. Nothing
+       * prompts today; `ignore` is what keeps that true when some upstream tool grows a question.
        */
       stdio: ['ignore', 'pipe', 'pipe'],
       /**
-       * Well inside the 900s a case is given, so a leg that stalls is killed and reported as itself: `close` fires
-       * with a null code, `outcome` prints what the command had printed before it stopped, and the failure names
-       * its own stage. Without it a stall is a bare per-case timeout carrying nothing, which is what four
-       * concurrent `vite build` and `ng build` runs produced.
+       * Half the 600s a case is given, so a leg that stalls is killed and reported as itself: `close` fires with a
+       * null code, `outcome` prints what the command had printed before it stopped, and the failure names its own
+       * stage. Measured on 2026-09-24, one case per target across all five managers at concurrency two: a whole case
+       * took 17 to 97 seconds, so one command is well under a third of this even on a slower CI runner.
        */
-      timeout: 600_000,
+      timeout: 300_000,
       killSignal: 'SIGKILL',
       env: {
         ...parentEnv,
@@ -70,6 +70,8 @@ export const run = async (
          */
         // JSON, because it is a list: measured, a bare `@linteljs/*` through the environment is silently ignored.
         pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
+        // `COREPACK_RELEASES` fetches a yarn by release; with stdin ignored, a download prompt would fail the case.
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0',
         BUN_CONFIG_REGISTRY: registry.url,
         YARN_NPM_REGISTRY_SERVER: registry.url,
         YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
@@ -121,6 +123,32 @@ export const run = async (
       });
     });
   });
+};
+
+// The run each binary's last queued command settles with, which the next one waits for.
+const installs = new Map<string, Promise<RunResult>>();
+
+/**
+ * One install per binary at a time, pnpm excepted: its store is built for concurrent writers, and yarn's and bun's
+ * global caches are not. By binary, so both yarns queue together: they share `YARN_CACHE_FOLDER`. The cases used to
+ * get this from their order, every non-pnpm case at the head of its file, which a manager axis no longer allows.
+ */
+export const oneAtATime = async (pm: PackageManager, work: () => Promise<RunResult>): Promise<RunResult> => {
+  if (pm === 'pnpm') {
+    return work();
+  }
+
+  const binary = MANAGER_BINARIES[pm];
+  const queued = async (): Promise<RunResult> => {
+    await installs.get(binary);
+
+    return work();
+  };
+  const next = queued();
+
+  installs.set(binary, next);
+
+  return next;
 };
 
 // Folds the exit status into the asserted value, so a failure prints the process output.

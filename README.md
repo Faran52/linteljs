@@ -38,10 +38,10 @@ It runs linting, CSS linting, type-checking, coverage, and the build. Coverage t
 
 ## Existing projects
 
-Lintel applies to an existing repository without scaffolding it:
+Lintel applies to an existing repository too, in place:
 
 ```bash
-npx @linteljs/create --skip-scaffold
+npx @linteljs/create --existing
 ```
 
 Later, review what an update would change before it touches anything:

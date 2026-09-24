@@ -20,13 +20,14 @@ export interface CliOptions {
   // Present when any answer flag was passed; the run then asks nothing.
   answers?: AnswerFlags;
   skip: Stage[];
-  // `--skip-scaffold`: the directory is a repository that already exists rather than one this run makes.
+  // `--existing`: the directory is a repository that already exists rather than one this run makes.
   existing: boolean;
   // Kept rather than thrown on, so `main` reports every argv problem the same way.
   unknownSkips: string[];
   unexpectedArguments: string[];
   yes: boolean;
-  fresh: boolean;
+  // `--seed`: plant the seed artifacts in that directory as if this run had made it.
+  seed: boolean;
   force: boolean;
   help: boolean;
   version: boolean;
@@ -94,9 +95,9 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     unexpectedArguments,
     ...(answered ? { answers: flagged } : {}),
     // An answer flag makes the run non-interactive the way --yes does; the rest take the defaults.
-    existing: values['skip-scaffold'],
+    existing: values.existing,
     yes: values.yes || answered,
-    fresh: values.fresh,
+    seed: values.seed,
     force: values.force,
     help: values.help,
     version: values.version,

@@ -8,9 +8,10 @@ import { join } from 'node:path';
 
 import { MANAGER_BINARIES } from '@config/constants';
 
-import { UNPUBLISHED_YET_BY_PM } from '../constants';
+import { COREPACK_RELEASES } from '../constants';
 
 import {
+  oneAtATime,
   registry,
   run,
   runPm,
@@ -18,12 +19,6 @@ import {
 } from './processUtils';
 
 import type { Answers, PackageManager } from '@answers';
-
-const isUnpublishedYet = (pm: PackageManager, output: string): boolean => {
-  return UNPUBLISHED_YET_BY_PM[pm].some((code) => {
-    return output.includes(code);
-  });
-};
 
 export const workspace = mkdtempSync(join(tmpdir(), 'linteljs-e2e-'));
 
@@ -35,7 +30,10 @@ export const afterAllCleanup = (): void => {
 };
 
 const readVersion = async (pm: PackageManager): Promise<string> => {
-  const { output } = await runPm(pm, ['--version'], workspace);
+  const release = COREPACK_RELEASES[pm];
+  const { output } = release === undefined
+    ? await runPm(pm, ['--version'], workspace)
+    : await run('corepack', [`${MANAGER_BINARIES[pm]}@${release}`, '--version'], workspace);
   // The first line: npm appends a new-version notice on stderr, which `run` joins after stdout.
   const [version = ''] = output.trim().split('\n');
 
@@ -94,16 +92,7 @@ export const createProject = async (root: string, name: string, answers: Answers
    */
   const agent = `${MANAGER_BINARIES[pm]}/${await versionOf(pm)} npm/? node/? e2e`;
 
-  const attempt = async (): Promise<RunResult> => {
-    rmSync(join(root, name), {
-      recursive: true,
-      force: true,
-    });
-
+  return oneAtATime(pm, async () => {
     return run('node', [registry.cliBin, name, ...answerFlags(answers)], root, agent);
-  };
-
-  const first = await attempt();
-
-  return first.status === 0 || !isUnpublishedYet(answers.packageManager, first.output) ? first : attempt();
+  });
 };
