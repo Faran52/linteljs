@@ -35,7 +35,12 @@ export const VERSIONS: Record<string, string> = {
   '@angular/forms': '^22.1.0',
   '@angular/platform-browser': '^22.1.0',
   '@angular/router': '^22.1.0',
-  '@angular/build': '^22.1.8',
+  /*
+   * Held on 22.1: 22.2.0 turned `SourceFileCache` from a `Map` subclass into a class holding one, and
+   * `@analogjs/vite-plugin-angular` 2.7.2 (and its 2.8 beta) still calls `cache.has` on it, so every vitest run on
+   * an angular project died at startup. Lift the tilde once an analog release reads the new shape.
+   */
+  '@angular/build': '~22.1.8',
   '@angular/cli': '^22.1.8',
   '@angular/compiler-cli': '^22.1.0',
   'rxjs': '~7.8.0',
@@ -127,6 +132,13 @@ export const VERSIONS: Record<string, string> = {
   'expo-status-bar': '~57.0.1',
   'react-native-safe-area-context': '~5.7.0',
   'react-native-screens': '~4.26.0',
+  /*
+   * The releases that peer this project's react-native 0.87 rather than Expo 57's own 0.86 pins (Reanimated 4.5.1
+   * and worklets 0.10.1 peer 0.83 to 0.86), and worklets on the minor Reanimated names.
+   */
+  'react-native-gesture-handler': '~2.32.0',
+  'react-native-reanimated': '~4.7.0',
+  'react-native-worklets': '~0.13.0',
   'react-native-web': '~0.21.0',
   // A vanilla or Astro scaffold installs no framework, so a hosted one brings its own.
   'react': '^19.3.0',
@@ -170,9 +182,12 @@ export const VERSIONS: Record<string, string> = {
   'vue': '^3.5.43',
   // Vue's meta-framework, which brings its own Vite, its own Nitro server and its own tsconfigs.
   'nuxt': '^4.5.2',
+  // nuxt 4.5's own peer range, which is the release its builder is tested on.
+  'rolldown': '~1.2.1',
   // A Vue application routes, and this target asks no router question to answer otherwise.
   'vue-router': '^5.3.1',
   'pinia': '^4.0.3',
+  '@vue/devtools-api': '^8.1.5',
   'vue-eslint-parser': '^10.4.1',
   'vue-tsc': '^3.3.11',
   'zod': '^4.6.5',
@@ -268,7 +283,8 @@ export const STORE_DEPENDENCIES: Record<Store, readonly string[]> = {
   'zustand': ['zustand'],
   'redux-toolkit': ['@reduxjs/toolkit', 'react-redux'],
   'tanstack-store': [],
-  'pinia': ['pinia'],
+  // pinia 4 made its devtools a required peer, which only pnpm and bun install unasked.
+  'pinia': ['pinia', '@vue/devtools-api'],
   'ngrx-signals': ['@ngrx/signals'],
   'ngrx-store': ['@ngrx/store'],
   'nanostores': ['nanostores'],

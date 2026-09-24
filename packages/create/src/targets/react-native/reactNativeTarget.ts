@@ -66,6 +66,9 @@ export const reactNativeTarget: TargetRecord = {
     ],
     dependencies: ['nativewind', 'react-native-css'],
     devDependencies: ['postcss'],
+    // NativeWind adds its declaration file to `include` itself on the first bundle, which is `check` rewriting the
+    // project it checks; named here, there is nothing for it to write.
+    tsconfigInclude: ['nativewind-env.d.ts'],
   },
   vitePlugin: {
     imports: [],
@@ -212,6 +215,8 @@ export const reactNativeTarget: TargetRecord = {
   /*
    * Expo's runtime, its router and the two native modules a tab layout measures itself with. `react-native-web`
    * and `react-dom` are what the `web` script bundles against, and Expo's own types reference the first.
+   * Reanimated and the gesture handler are expo-router's peers, which Expo's own template installs and yarn reports
+   * missing, and `react-native-css` requires Reanimated at runtime without declaring it; worklets is Reanimated's.
    */
   dependencies: [
     'expo',
@@ -222,9 +227,12 @@ export const reactNativeTarget: TargetRecord = {
     'react',
     'react-dom',
     'react-native',
+    'react-native-gesture-handler',
+    'react-native-reanimated',
     'react-native-safe-area-context',
     'react-native-screens',
     'react-native-web',
+    'react-native-worklets',
   ],
   // Not `COMMON_REACT_PLUGINS`: the accessibility plugin in that list cannot fire on React Native.
   devDependencies: [
@@ -248,18 +256,13 @@ export const reactNativeTarget: TargetRecord = {
   /*
    * Inside react-native's own tree: the community CLI plugin peers the exact metro-config of its own release and
    * pnpm resolves a newer one. Nothing here declares either.
+   *
+   * And Expo SDK 57's `expo-modules-core` names worklets up to 0.10, the line for react-native 0.86; the worklets
+   * that runs on 0.87 is 0.13, which `@expo/ui` inside the same SDK already takes.
    */
-  peerAllowances: { '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1' },
-  // Hard peers of two packages this target's own template declares, which no manifest here answers.
-  peerExtensions: {
-    'react-native-css': {
-      'lightningcss': '>=1.27.0',
-      '@expo/metro-config': '>=54',
-    },
-    'react-native-worklets': {
-      '@babel/core': '^7',
-      '@react-native/metro-config': '0.87.1',
-    },
+  peerAllowances: {
+    '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1',
+    'expo-modules-core>react-native-worklets': '0.13',
   },
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMock: ROUTER_MOCK,

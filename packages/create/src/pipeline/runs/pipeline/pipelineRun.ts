@@ -96,9 +96,12 @@ const stageStandard = async (
 
 // Fatal on purpose: every later step reads `node_modules`.
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
-  options.onNotice?.(`installing with ${options.answers.packageManager}`);
+  // The command it runs rather than the id: `yarn-classic` is not something anyone can type.
+  const binary = MANAGER_BINARIES[options.answers.packageManager];
 
-  await runSpawn(MANAGER_BINARIES[options.answers.packageManager], ['install'], options.cwd, options.output);
+  options.onNotice?.(`installing with ${binary}`);
+
+  await runSpawn(binary, ['install'], options.cwd, options.output);
 };
 
 const STAGE_RUNNERS: Record<Stage, StageRunner> = {

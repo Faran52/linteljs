@@ -132,12 +132,14 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
 };
 
 export const buildTsconfig = (answers: Answers): TsconfigFile => {
-  const delta = targetFor(answers).tsconfig;
+  const record = targetFor(answers);
+  const delta = record.tsconfig;
+  const styled = answers.styling === 'tailwind' ? record.tailwind?.tsconfigInclude ?? [] : [];
 
   return {
     ...(delta.extends === undefined ? {} : { extends: delta.extends }),
     compilerOptions: compilerOptionsFor(answers),
-    include: [...BASE_INCLUDE, ...(delta.include ?? [])],
+    include: [...BASE_INCLUDE, ...(delta.include ?? []), ...styled],
     exclude: BASE_EXCLUDE,
   };
 };

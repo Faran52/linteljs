@@ -22,8 +22,15 @@ export const contactApi = baseApi.injectEndpoints({
         queryFn: (values) => {
           const errors = validateContact(values);
 
+          // `baseApi` is a `fetchBaseQuery`, so an error here is its error type; `CUSTOM_ERROR` is the arm for one
+          // that no request produced.
           return Object.keys(errors).length > 0
-            ? { error: 'Contact details are not valid' }
+            ? {
+                error: {
+                  status: 'CUSTOM_ERROR',
+                  error: 'Contact details are not valid',
+                },
+              }
             : { data: { status: 200 } };
         },
       }),

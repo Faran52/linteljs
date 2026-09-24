@@ -132,6 +132,21 @@ describe('buildTsconfig', () => {
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions).not.toHaveProperty('rootDirs');
   });
 
+  // Otherwise NativeWind adds it on the first bundle, and `check` rewrites the project it is checking.
+  it('includes the NativeWind declaration file on react-native under tailwind alone', () => {
+    const styled = buildTsconfig(answersFor({
+      target: 'react-native',
+      styling: 'tailwind',
+    })).include;
+
+    expect(styled).toContain('nativewind-env.d.ts');
+    expect(buildTsconfig(answersFor({ target: 'react-native' })).include).not.toContain('nativewind-env.d.ts');
+    expect(buildTsconfig(answersFor({
+      target: 'react',
+      styling: 'tailwind',
+    })).include).not.toContain('nativewind-env.d.ts');
+  });
+
   it('drops noEmit only on angular, whose vitest compiler has to emit', () => {
     expect(buildTsconfig(answersFor({ target: 'angular' })).compilerOptions.noEmit)
       .toBeUndefined();

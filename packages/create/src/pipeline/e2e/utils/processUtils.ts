@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { env } from 'node:process';
+import { stripVTControlCharacters } from 'node:util';
 
 import { inject } from 'vitest';
 
@@ -33,7 +34,10 @@ export const run = async (
    * failed the other. `npm_config_registry` and the cache paths below are this suite's own and stay.
    */
   const parentEnv = Object.fromEntries(Object.entries(env).filter(([key]) => {
-    return !LAUNCHER_KEYS.has(key) && !key.startsWith('npm_package_') && !key.startsWith('npm_lifecycle_');
+    return !LAUNCHER_KEYS.has(key)
+      && !key.startsWith('npm_package_')
+      && !key.startsWith('npm_lifecycle_')
+      && !key.startsWith('VITEST');
   }));
 
   // `spawn` rather than `spawnSync`: a case is one `it.concurrent`, and a synchronous spawn blocks the event loop
@@ -99,8 +103,10 @@ export const run = async (
     // line-anchored, and interleaving two streams by chunk can split one line across a switch between them.
     const out: string[] = [];
     const err: string[] = [];
+    // Without colour: a launcher setting `FORCE_COLOR` hands it to every manager, and a matcher then meets the
+    // escape codes between a package's name and its version.
     const joined = (): string => {
-      return `${out.join('')}${err.join('')}`;
+      return stripVTControlCharacters(`${out.join('')}${err.join('')}`);
     };
 
     child.stdout.on('data', (chunk: Buffer) => {

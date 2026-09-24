@@ -9,22 +9,6 @@ import { HEAD, PEER_EXTENSIONS } from './constants';
 
 import type { Answers } from '@answers';
 
-// yaml needs a scoped name quoted.
-const key = (name: string): string => {
-  return name.startsWith('@') ? `"${name}"` : name;
-};
-
-// Peers asked by the scaffolder's own tree, which no emitted dependency keys.
-const targetBlocks = (peerExtensions: Record<string, Record<string, string>>): string => {
-  return Object.entries(peerExtensions).map(([dependent, peers]) => {
-    const lines = Object.entries(peers).map(([peer, range]) => {
-      return `      ${key(peer)}: "${range}"\n`;
-    }).join('');
-
-    return `  "${dependent}@*":\n    dependencies:\n${lines}`;
-  }).join('');
-};
-
 const logFiltersBlock = (codes: string[]): string => {
   // yarn rejects a bare `logFilters:` key outright: an empty list has to omit it.
   if (codes.length === 0) {
@@ -41,7 +25,7 @@ export const emitYarnrc = (answers: Answers): string => {
   const installed = [...Object.keys(buildDependencies(answers)), ...Object.keys(buildDevDependencies(answers))];
   const blocks = [...new Set(installed.flatMap((name) => {
     return PEER_EXTENSIONS[name] === undefined ? [] : [PEER_EXTENSIONS[name]];
-  }))].join('') + targetBlocks(target.peerExtensions ?? {});
+  }))].join('');
 
   /**
    * A target naming `peerAllowances` knowingly exceeds a peer's range, and yarn can express no per-package allowance:

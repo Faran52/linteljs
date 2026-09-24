@@ -25,8 +25,7 @@ import { DEPRECATION, YARN_CLASSIC_UPSTREAM } from './constants';
 
 import type { E2eCase } from '../matrix/matrix';
 
-// What each manager prints when an install was not clean. Yarn's codes carry no severity, so its summary line
-// decides and every coded line but the banner is then shown.
+// What each manager prints when an install was not clean.
 const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   'pnpm': (output) => {
     // `Request took` and the speed notice are this suite's own registry on a cold fetch, not the project.
@@ -41,9 +40,13 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
       return !DEPRECATION.test(line);
     });
   },
+  /*
+   * Yarn's summary decides; then every coded line counts but the ones that only narrate a cold install: YN0000 the
+   * banner, YN0007 a package built for the first time, YN0013 packages fetched, YN0085 the resolution delta.
+   */
   'yarn': (output) => {
     return output.includes('Done with warnings')
-      ? (output.match(/^.*YN0(?!000)\d{3}.*$/gm) ?? []).filter((line) => {
+      ? (output.match(/^.*YN0(?!000|007|013|085)\d{3}.*$/gm) ?? []).filter((line) => {
           return !DEPRECATION.test(line);
         })
       : [];

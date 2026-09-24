@@ -187,7 +187,9 @@ export const nuxtTarget: TargetRecord = {
   prepare: 'nuxt prepare',
   testDevDependencies: PARTS.vue.testDevDependencies,
   dependencies: ['nuxt', ...PARTS.vue.dependencies, 'vue-router'],
-  devDependencies: [...PARTS.vue.devDependencies, '@vitejs/plugin-vue'],
+  // `rolldown` is nuxt 4.5's own required peer, and `vite` that of `@vitejs/plugin-vue` and nuxt's devtools; yarn
+  // installs no peer the project does not name.
+  devDependencies: [...PARTS.vue.devDependencies, '@vitejs/plugin-vue', 'rolldown', 'vite'],
   // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
   allowBuilds: ['vue-demi', 'better-sqlite3', 'esbuild'],
   stateRules: ['vue-reactivity.md'],

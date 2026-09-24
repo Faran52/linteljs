@@ -899,6 +899,24 @@ describe('the stages that shell out', () => {
     expect(notices).toEqual(['installing with yarn']);
   });
 
+  it('names yarn 1 by the command it runs', async () => {
+    await planted('yarn', 0);
+
+    const notices: string[] = [];
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({ packageManager: 'yarn-classic' }),
+      skip: ['lint', 'package', 'standard', 'fix'],
+      onNotice: (message) => {
+        notices.push(message);
+      },
+    });
+
+    expect(notices).toEqual(['installing with yarn']);
+  });
+
   it('stops when the package manager is not installed at all', async () => {
     await planted('yarn', 0);
 

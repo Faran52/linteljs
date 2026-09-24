@@ -129,6 +129,8 @@ export interface TailwindSlot {
   imports: string[];
   dependencies: string[];
   devDependencies: string[];
+  // Added to `tsconfig.json`'s `include` under this answer alone.
+  tsconfigInclude?: string[];
 }
 
 export interface TsconfigDelta {
@@ -292,8 +294,6 @@ export interface TargetRecord {
   allowBuilds: string[];
   // `dependent>peer` pairs pnpm may satisfy with the version named, beyond the eslint ones every project carries.
   peerAllowances?: Record<string, string>;
-  // Peers yarn must see declared, as `dependent -> peer -> range`; the scaffolder's tree asks for them.
-  peerExtensions?: Record<string, Record<string, string>>;
   // Relative to `templates/fragments/claude-rules/`.
   stateRules: string[];
   // Overridden only where a test environment is needed.

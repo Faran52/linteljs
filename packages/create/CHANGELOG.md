@@ -14,8 +14,21 @@ when a version's change lives in a sibling it is described there instead:
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is
   left alone on every run. A `create` into an existing directory, and `--existing --seed`, used to replace the
   project's own copy, a rule written for a scaffolder's default that was about to be superseded.
-- The closing summary and the fix pass's next step name Yarn 1 by the command it answers to, `yarn`, rather
-  than the id `yarn-classic`.
+- The closing summary, the install notice and the fix pass's next step name Yarn 1 by the command it answers to,
+  `yarn`, rather than the id `yarn-classic`.
+- **Generated projects that failed their own `check` now pass it.** Found by the end-to-end suite on real installs:
+  - The React Router `AppHeader` read `style` off a plain-CSS `styles.ts` that never declared it, a
+    `no-unsafe-return` on every router answer. The plain-CSS shape now matches StyleX's.
+  - RTK Query's contact `queryFn` returned a bare string as its error; it now returns a `FetchBaseQueryError`.
+  - Angular's `@angular/build` is held on `~22.1.8`: 22.2.0 changed `SourceFileCache`, and
+    `@analogjs/vite-plugin-angular` 2.7 still calls `cache.has` on it, so every vitest run died at startup.
+  - React Native installs `react-native-reanimated`, `react-native-worklets` and `react-native-gesture-handler`,
+    which expo-router peers and `react-native-css` requires, at the releases that support react-native 0.87.
+    Under Tailwind, `nativewind-env.d.ts` is in the tsconfig `include`, so NativeWind no longer rewrites the
+    tsconfig during `check`.
+- **Installs report no unmet or stale peers.** Nuxt declares `rolldown` and `vite`, pinia brings
+  `@vue/devtools-api`, and `.yarnrc.yml` writes a package extension only when its package is installed, which
+  also covers nuxt's devtools and `@tanstack/eslint-plugin-router`. pnpm allows Expo's own worklets conflict.
 - **Yarn 1 is a manager rather than a refusal.** It is recorded as `yarn-classic`, told apart from Yarn 4 by the
   agent's major and, where there is no agent, by whether `yarn.lock` opens with `# yarn lockfile v1`. A classic
   project declares `yarn@1.22.22`, installs in CI with `--frozen-lockfile`, reaches its own scripts through

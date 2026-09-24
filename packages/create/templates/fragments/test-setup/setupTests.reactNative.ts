@@ -16,3 +16,15 @@ vi.mock('react-native-screens', async () => {
     enableScreens: vi.fn(),
   };
 });
+
+/*
+ * Expo resolves a relative fetch against the dev server's origin at runtime, and Node's `Request` refuses one, so
+ * `fetchBaseQuery({ baseUrl: '/api' })` threw before its fetch was ever called. The suite does what the runtime does.
+ */
+const NodeRequest = globalThis.Request;
+
+globalThis.Request = class extends NodeRequest {
+  constructor(...[input, init]: ConstructorParameters<typeof Request>) {
+    super(typeof input === 'string' && input.startsWith('/') ? new URL(input, 'http://localhost:8081') : input, init);
+  }
+};

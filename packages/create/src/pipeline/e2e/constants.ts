@@ -2,8 +2,19 @@ import { MANAGER_FLOORS } from '@config/constants';
 
 import type { PackageManager } from '@answers';
 
-// Every manager, and every install the CLI spawns, reads the workspace registry from its environment.
-export const LAUNCHER_KEYS = new Set(['npm_execpath', 'npm_node_execpath', 'npm_config_user_agent']);
+/**
+ * Every manager, and every install the CLI spawns, reads the workspace registry from its environment. What
+ * launched the suite is not handed on: the manager's own keys, and the `TEST` and `NODE_ENV` vitest sets (with
+ * every `VITEST*` key, filtered by prefix). A config that asks `process.env.VITEST === undefined` took its test
+ * branch under the harness, so `react-router build` found no React Router plugin: no user's shell carries them.
+ */
+export const LAUNCHER_KEYS = new Set([
+  'npm_execpath',
+  'npm_node_execpath',
+  'npm_config_user_agent',
+  'NODE_ENV',
+  'TEST',
+]);
 
 // `why` and a script name, spelled the way each manager wants them.
 export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {

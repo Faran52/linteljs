@@ -38,6 +38,31 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     peerDependencies:
       react-dom: "*"
 `,
+  // Every React Native project installs it for Reanimated, and it hard-peers two packages nothing declares.
+  'react-native-worklets': `  "react-native-worklets@*":
+    dependencies:
+      "@babel/core": "^7"
+      "@react-native/metro-config": "0.87.1"
+`,
+  // `react-native-css` comes with the tailwind answer on react-native, and hard-peers two packages nothing declares.
+  'react-native-css': `  "react-native-css@*":
+    dependencies:
+      lightningcss: ">=1.27.0"
+      "@expo/metro-config": ">=54"
+`,
+  // `@typescript-eslint/utils` beneath it peers typescript, which the plugin never passes down.
+  '@tanstack/eslint-plugin-router': `  "@tanstack/eslint-plugin-router@*":
+    peerDependencies:
+      typescript: "*"
+`,
+  // nuxt hands neither vite to its builder and devtools, nor its devtools vue to `@vue/devtools-core`.
+  'nuxt': `  "nuxt@*":
+    peerDependencies:
+      vite: "*"
+  "@nuxt/devtools@*":
+    peerDependencies:
+      vue: "*"
+`,
   // stylelint 17 dropped postcss, so nothing declares one. Optional leaves YN0002 printing; DESIGN.md has why.
   'postcss-html': `  "postcss-html@*":
     dependencies:

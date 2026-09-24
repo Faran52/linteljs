@@ -32,6 +32,7 @@ import { targetFor } from '@targets';
 import { VERSIONS } from './constants';
 import {
   allowedBuildNames,
+  buildDependencies,
   buildDevDependencies,
   type PackageJson,
   parsePackageJson,
@@ -504,6 +505,36 @@ describe('the libraries added in 1.6.0', () => {
     expect(hosted.dependencies).toHaveProperty('@tanstack/react-query');
   });
 
+  // expo-router's peers, which yarn reports missing, and the Reanimated `react-native-css` requires unannounced.
+  it('installs Reanimated, its worklets and the gesture handler on every React Native project', () => {
+    const native = buildDependencies(answersFor({ target: 'react-native' }));
+
+    expect(native).toHaveProperty('react-native-reanimated');
+    expect(native).toHaveProperty('react-native-worklets');
+    expect(native).toHaveProperty('react-native-gesture-handler');
+    expect(buildDependencies(answersFor({}))).not.toHaveProperty('react-native-reanimated');
+  });
+
+  // nuxt 4.5 peers rolldown outright, and its builder and devtools peer vite; only pnpm and bun install them unasked.
+  it('names the peers nuxt asks the project for', () => {
+    const nuxt = buildDevDependencies(answersFor({ target: 'nuxt' }));
+
+    expect(nuxt).toHaveProperty('rolldown');
+    expect(nuxt).toHaveProperty('vite');
+    expect(buildDevDependencies(answersFor({ target: 'vue' }))).not.toHaveProperty('rolldown');
+  });
+
+  it('installs the devtools pinia 4 peers on, wherever pinia goes', () => {
+    for (const target of ['vue', 'nuxt'] as const) {
+      expect(buildDependencies(answersFor({
+        target,
+        store: 'pinia',
+      }))).toHaveProperty('@vue/devtools-api');
+    }
+
+    expect(buildDependencies(answersFor({ target: 'vue' }))).not.toHaveProperty('@vue/devtools-api');
+  });
+
   it('takes NativeWind on React Native, where Metro has no Tailwind pipeline', () => {
     const native = patchPackageJson({}, answersFor({
       target: 'react-native',
@@ -601,6 +632,7 @@ const siblingIn = (directory: string): Sibling => {
 
 // Every entry pinned tighter than a caret, with the operator it takes; the table says why beside each one.
 const PINNED_TIGHTER: Record<string, string> = {
+  '@angular/build': '~',
   '@react-native/js-polyfills': '~',
   'expo': '~',
   'expo-constants': '~',
@@ -609,9 +641,13 @@ const PINNED_TIGHTER: Record<string, string> = {
   'expo-status-bar': '~',
   'react-native': '~',
   'react-native-css': '',
+  'react-native-gesture-handler': '~',
+  'react-native-reanimated': '~',
   'react-native-safe-area-context': '~',
   'react-native-screens': '~',
   'react-native-web': '~',
+  'react-native-worklets': '~',
+  'rolldown': '~',
   'rxjs': '~',
   'test-renderer': '~',
   'typescript': '~',

@@ -6,8 +6,12 @@
  * markup is one file and only this one changes: under StyleX the same three names come back as compiled atomic
  * classes instead.
  */
+import type { CSSProperties } from 'react';
+
+// The shape StyleX's `props` answers, so `AppHeader.tsx` reads `style` off either answer; plain CSS never sets it.
 interface ElementProps {
   readonly className: string;
+  readonly style?: CSSProperties;
 }
 
 export const styles = {
