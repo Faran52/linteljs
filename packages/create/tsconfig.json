@@ -1,7 +1,14 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
+    /**
+     * The repository root, so a script can import the shared `scripts/utils/`. Nothing is emitted from here and
+     * tsdown ignores it: the build is byte-identical either way.
+     */
+    "rootDir": "../..",
+
+    // `scripts/` runs on Node's type stripping, which needs the `.ts` in a relative specifier. Nothing is emitted.
+    "allowImportingTsExtensions": true,
 
     "paths": {
       "@mocks/*": ["./__mocks__/*"],
@@ -26,8 +33,8 @@
   "include": [
     "src/**/*.ts",
     "__mocks__/**/*.ts",
-    "scripts/*.ts",
-    "templates/project/scripts/*.ts",
+    "scripts/**/*.ts",
+    "templates/project/scripts/**/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts",
     "vitest.e2e.config.ts"

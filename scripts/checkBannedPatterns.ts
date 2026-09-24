@@ -3,6 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { argv, exit } from 'node:process';
 
+import { logError } from './utils/loggerUtils.ts';
+
 interface BannedPattern {
   name: string;
   re: RegExp;
@@ -238,19 +240,13 @@ for (const file of files) {
   }
 
   if (hits.length > 0) {
-    console.error(`✘ Banned pattern in ${file}:`);
-
-    for (const hit of hits) {
-      console.error(`  ${hit}`);
-    }
-
+    logError(`Banned pattern in ${file}:\n  ${hits.join('\n  ')}`);
     failed = true;
   }
 }
 
 if (failed) {
-  console.error('\n→ Fix the source: build the real type, from its owner.');
-  console.error('  See .claude/rules/type-standards.md.');
+  logError('Fix the source: build the real type, from its owner. See .claude/rules/type-standards.md.');
   exit(1);
 }
 

@@ -174,23 +174,30 @@ const config = [
     },
   },
 
-  // The audit and smoke scripts, whose stdout is their output. DESIGN.md: `@linteljs/workspace/scripts`
+  // Every script reports through `loggerUtils.ts`. Options given, since severity alone inherits the layer's `allow`.
+  // DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts',
-    files: ['packages/*/scripts/**'],
+    files: ['scripts/**', 'packages/*/scripts/**'],
     rules: {
-      'no-console': 'off',
+      'no-console': ['error', {}],
       'sonarjs/no-os-command-from-path': 'off',
     },
+  },
+  {
+    name: '@linteljs/workspace/scripts-logger',
+    files: ['scripts/utils/loggerUtils.ts', 'packages/create/templates/project/scripts/utils/loggerUtils.ts'],
+    rules: { 'no-console': 'off' },
   },
 
   // The one file that has to be CommonJS. DESIGN.md: `@linteljs/workspace/old-node-runner`
   {
     name: '@linteljs/workspace/old-node-runner',
-    files: ['packages/eslint-plugin/scripts/runRules.cjs'],
+    files: ['packages/eslint-plugin/scripts/release/runRules.cjs'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'import-x/no-commonjs': 'off',
+      'no-console': 'off',
       'unicorn/prefer-module': 'off',
     },
   },

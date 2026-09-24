@@ -125,5 +125,5 @@ jobs:
             set -e
             cp -r /src/dist /src/scripts /tmp/
             npm install --no-audit --no-fund --no-save eslint@${{ matrix.eslint }}
-            node scripts/runRules.cjs dist/index.js
+            node scripts/release/runRules.cjs dist/index.js
           '

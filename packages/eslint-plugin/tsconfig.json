@@ -1,7 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
+    /**
+     * The repository root, so a script can import the shared `scripts/utils/`. Nothing is emitted from here and
+     * tsdown ignores it: the build is byte-identical either way.
+     */
+    "rootDir": "../..",
 
     /**
      * The rule sources import each other with an explicit `.ts` specifier. tsdown resolves
@@ -20,7 +24,7 @@
   "include": [
     "src/**/*.ts",
     "__mocks__/**/*.ts",
-    "scripts/*.ts",
+    "scripts/**/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts"
   ]

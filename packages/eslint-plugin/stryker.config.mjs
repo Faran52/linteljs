@@ -55,9 +55,8 @@ const config = {
    * would have written the same text anyway: the fixers emit the canonical gap, so when the gap is already
    * canonical, removing the guard changes nothing observable. Feeding those rules whitespace that is *not*
    * canonical tells the two apart, and the fixtures doing it are in `union-newline` and `export-specifier-newline`.
-   * Anything still surviving has been replayed through `scripts/auditSurvivors.ts`, which applies the mutant and
-   * compares reports and fixed output against the original across the shared corpus. That is evidence of
-   * equivalence, not proof: a shape the corpus lacks could still separate them, so growing it strengthens the claim.
+   * Anything still surviving is classified row by row in the dead-code ledger, each equivalent argued and each gap
+   * closed by a test proven against a targeted run.
    */
   thresholds: {
     high: 100,

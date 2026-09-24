@@ -5,6 +5,8 @@ import {
   exit,
 } from 'node:process';
 
+import { logError } from './utils/loggerUtils.ts';
+
 interface ExecSyncError extends ExecException {
   stdout: string;
   stderr: string;
@@ -63,8 +65,6 @@ const errors: string[] = lines.filter((line: string) => {
 });
 
 if (errors.length > 0) {
-  console.error('\nTypeScript errors in staged files:\n');
-  console.error(errors.join('\n'));
-  console.error('');
+  logError(`TypeScript errors in staged files:\n${errors.join('\n')}`);
   exit(1);
 }

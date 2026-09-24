@@ -2,6 +2,8 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 
+import { escape, uniq } from 'es-toolkit';
+
 import {
   ANSWERS,
   DEFAULT_ANSWERS,
@@ -13,13 +15,9 @@ import { buildArtifacts, seedArtifacts } from '../packages/create/src/emitters/r
 import { targetFor } from '../packages/create/src/targets';
 import { valuesOf } from '../packages/create/src/utils/objectUtils';
 
-/**
- * The tree every target is actually generated with, rendered as one page.
- *
- * Read off the emitters rather than off a project on disk, so it is the same list `create` writes and cannot drift
- * from it: a file that stops being emitted stops appearing here on the next run. `v2-trees.html` beside it is the
- * tree that was proposed; this is the tree that exists.
- */
+import { log } from './utils/loggerUtils.ts';
+
+// Every target's generated tree as one HTML page, read off the emitters so it is the list `create` writes.
 interface Branch {
   readonly directories: Map<string, Branch>;
   readonly files: string[];
@@ -59,10 +57,6 @@ const countOf = (branch: Branch): number => {
   return branch.files.length + [...branch.directories.values()].reduce((total, child) => {
     return total + countOf(child);
   }, 0);
-};
-
-const escape = (value: string): string => {
-  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 };
 
 // Colour follows what decides the file, which is the one thing a reader wants from a tree this size.
@@ -147,7 +141,7 @@ const treeFor = (target: TargetId): Tree => {
 
   const root = emptyBranch();
 
-  for (const path of [...new Set(paths)]) {
+  for (const path of uniq(paths)) {
     insert(root, path);
   }
 
@@ -239,4 +233,4 @@ details:not([open]) > summary::before { content: '\\25B8'; }
 const out = join(import.meta.dirname, '../template-scaffolder-temporary/v2-generated-trees.html');
 
 writeFileSync(out, document_);
-process.stdout.write(`${String(targets.length)} trees written to ${out}\n`);
+log(`${String(targets.length)} trees written to ${out}`);

@@ -48,10 +48,12 @@ local-only. That version is not the source of truth any more. This repo owns the
 - **Arrow functions everywhere.** The plugin lints itself with its own
   `@linteljs/prefer-arrow-functions`, so this is enforced, not a preference.
 - `"type": "module"`, so `scripts/` is TypeScript run by Node's own type stripping, `node
-  scripts/<name>.ts`, with no loader and no build step. `tsconfig.json` includes `scripts/*.ts`, so
-  they are typechecked and type-aware linted like anything else. Two files are deliberately not
-  that: `runRules.cjs`, which has to parse on Node 12, and `stryker.config.mjs`, whose extension is
-  the only one Stryker's config discovery looks for.
+  scripts/<purpose>/<name>.ts`, with no loader and no build step: `build/` runs inside `pnpm build`,
+  `release/` packs the tarball and proves it, `audit/` points the rules at real third-party code.
+  `tsconfig.json` includes `scripts/**/*.ts`, so they are typechecked and type-aware linted like
+  anything else, and they report through the root `scripts/utils/loggerUtils.ts`. Two files are
+  deliberately not TypeScript: `release/runRules.cjs`, which has to parse on Node 12, and
+  `stryker.config.mjs`, whose extension is the only one Stryker's config discovery looks for.
   Linting comes from the workspace root's `eslint.config.ts`, which carries this package's two
   documented rule exemptions.
 - A rule is a `kebab-case` directory named after its id, and everything that rule owns lives in it:
@@ -164,13 +166,13 @@ Claim nothing that has not been run.
 - The bundler is **tsdown** (rolldown), not tsup. It emits `index.mjs`/`index.d.mts` for ESM and
   `index.js`/`index.d.ts` for CJS, and the `exports` map names those exactly. The CJS half is
   `.js` rather than `.cjs` because ESLint 5's config loader switches on the extension and sends a
-  `.cjs` main to its YAML branch; `scripts/writeDistManifest.ts` drops a `dist/package.json`
+  `.cjs` main to its YAML branch; `scripts/build/writeDistManifest.ts` drops a `dist/package.json`
   marking the directory `commonjs` so Node still reads it correctly under `"type": "module"`.
   Sourcemaps are off on purpose: tsdown drives the declaration sourcemap from the
   same flag and emits a `sourceMappingURL` for a `.map` it never writes.
 - Coverage thresholds are 100 across lines, branches, functions and statements. They are a gate,
   not a target, and lowering one to make a build pass is not an option.
-- `node scripts/smoke.ts` packs the tarball and runs a real ESLint against it through both the ESM
+- `node scripts/release/smoke.ts` packs the tarball and runs a real ESLint against it through both the ESM
   and the CJS entry point. Unit tests cannot catch a broken `exports` map or a missing entry in
   `files`. Run it before any release.
 - `peerDependencies.eslint` is `>=5.0.0`, and a rule that only works on one major is broken. No
@@ -179,7 +181,7 @@ Claim nothing that has not been run.
   and `utils/compatUtils.ts` reads the modern shape first and the legacy one second. Its own test
   drives both, because the legacy half cannot execute on the ESLint this suite runs against and
   would otherwise sit uncovered forever.
-- `node scripts/compatMatrix.ts` is what turns that from a declaration into a fact. It packs the
+- `node scripts/release/compatMatrix.ts` is what turns that from a declaration into a fact. It packs the
   tarball, installs ESLint 5, 6, 7, 8, 9 and 10 side by side, and lints one fixture that trips
   every universal rule in `recommended`, through `.eslintrc.json` on 5 to 8 and flat config on 9
   and 10, so both published preset shapes are exercised by a real consumer. It then asserts every

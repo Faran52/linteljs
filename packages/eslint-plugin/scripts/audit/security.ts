@@ -1,38 +1,33 @@
 /**
- * Runs the security-relevant slice of eslint-plugin-sonarjs over src and scripts. SonarQube proper needs a server
- * and a token, and this project has none; the same analyser SonarSource ships for JavaScript and TypeScript is
- * eslint-plugin-sonarjs, already a devDependency, so the checks run locally with no service.
+ * The security-relevant slice of eslint-plugin-sonarjs over `src` and `scripts`, the analyser SonarQube runs, with
+ * no server. Kept out of `eslint.config.ts`: a scan an inline comment can switch off is not a scan, so this one sets
+ * `noInlineConfig` and fails on any finding. Every rule name is checked against the installed plugin first,
+ * so one a plugin upgrade renamed fails the run rather than skipping quietly.
  *
- * Deliberately NOT part of `eslint.config.ts`: that config turns some sonarjs rules off for documented reasons
- * and honours inline `eslint-disable` comments, and a security scan a comment can switch off is not a security
- * scan, so this one sets `noInlineConfig` and carries its own allowlist. The full ruleset is 279 rules, and
- * running all of them buries the security findings under hundreds of style complaints
- * (`arrow-function-convention` alone demands the opposite of the house style), so the list below is picked by
- * what a rule is FOR. Every name is checked against the installed plugin before the scan runs: a rule a plugin
- * upgrade renamed or dropped fails the run rather than skipping quietly.
- *
- * Usage: node scripts/auditSecurity.ts
+ * Usage: node scripts/audit/security.ts
  */
 import { relative, resolve } from 'node:path';
+import process from 'node:process';
 
+import { countBy } from 'es-toolkit';
 import { ESLint } from 'eslint';
 import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 
-// The two fields an allowlist entry is matched on.
-interface FindingKey {
+import { log, logError } from '../../../../scripts/utils/loggerUtils.ts';
+
+interface Finding {
   file: string;
   rule: string | null;
+  fatal: boolean;
+  line: number;
+  text: string;
 }
 
-const root = resolve(import.meta.dirname, '..');
+const root = resolve(import.meta.dirname, '../..');
 
-/**
- * Rule name to the hazard it covers; the value is why the rule is in the scan, so a future reader can judge a
- * removal instead of guessing. Deliberately excluded: the 26 `aws-*` rules (no infrastructure code here), and
- * everything about complexity, naming, duplication or test hygiene, which are code quality and already covered
- * by `pnpm lint`.
- */
+// Rule to the hazard it covers, so a removal can be judged. Out on purpose: the `aws-*` rules, with no
+// infrastructure here, and complexity, naming and duplication, which `pnpm lint` already covers.
 const SECURITY_RULES: Record<string, string> = {
   // Injection: attacker-controlled data reaching an interpreter.
   'code-eval': 'code injection through eval, Function and setTimeout with a string',
@@ -121,17 +116,6 @@ const SECURITY_RULES: Record<string, string> = {
   'no-regex-spaces': 'runs of literal spaces nobody can count',
 };
 
-// Findings that are known, understood and accepted. Matched on file plus rule, not line, so an unrelated edit
-// above does not silently retire the entry. Anything not listed here fails the run.
-const ALLOWLIST = [
-  {
-    file: 'scripts/auditIgnores.ts',
-    rule: 'sonarjs/no-os-command-from-path',
-    reason: 'maintainer tooling, never packed or shipped. Resolving pnpm from PATH is the point: '
-      + 'the script runs where the developer runs pnpm.',
-  },
-];
-
 // `rules` is optional on a plugin, so a scan that found none would otherwise read as a mass rename below.
 if (!sonarjs.rules) {
   throw new Error('eslint-plugin-sonarjs exports no rules: nothing for this scan to run');
@@ -145,13 +129,10 @@ const missing = expected.filter((name) => {
 
 // A rule this scan believes it runs but the plugin no longer has would show up as a clean report, the worst outcome.
 if (missing.length > 0) {
-  console.error(`eslint-plugin-sonarjs no longer ships ${String(missing.length)} rule(s) this scan expects:`);
-
-  for (const name of missing) {
-    console.error(`  sonarjs/${name}  (${String(SECURITY_RULES[name])})`);
-  }
-
-  console.error('\nThe plugin renamed or dropped them. Update SECURITY_RULES, do not delete the line.');
+  logError(`eslint-plugin-sonarjs no longer ships ${String(missing.length)} rule(s) this scan expects:\n${
+    missing.map((name) => {
+      return `  sonarjs/${name}  (${String(SECURITY_RULES[name])})`;
+    }).join('\n')}\nThe plugin renamed or dropped them. Update SECURITY_RULES, do not delete the line.`);
   process.exit(1);
 }
 
@@ -183,16 +164,12 @@ const eslint = new ESLint({
       rules,
     },
     {
-      /**
-       * The scripts still outside tsconfig, so these rules get no types on them; syntax alone still runs.
-       * `runRules.cjs` has to stay CommonJS ES5 for the `node:12-alpine` job; the two audit scripts are the
-       * conversion to TypeScript that is not done yet.
-       */
-      files: ['scripts/**/*.js', 'scripts/**/*.cjs'],
+      // `runRules.cjs` stays CommonJS for the `node:12-alpine` job and outside tsconfig, so it gets syntax alone.
+      files: ['scripts/**/*.cjs'],
       plugins: { sonarjs },
       languageOptions: {
         parser: tseslint.parser,
-        sourceType: 'module',
+        sourceType: 'commonjs',
       },
       linterOptions: {
         noInlineConfig: true,
@@ -203,15 +180,14 @@ const eslint = new ESLint({
   ],
 });
 
-console.log(`• sonarjs ${String(installed.length)} rules installed, `
-  + `${String(expected.length)} selected as security relevant`);
+log(`sonarjs ${String(installed.length)} rules installed, ${String(expected.length)} selected as security relevant`);
 
 const results = await eslint.lintFiles(['src', 'scripts']);
 
-console.log(`• scanned ${String(results.length)} files under src/ and scripts/`);
+log(`scanned ${String(results.length)} files under src/ and scripts/`);
 
 const findings = results.flatMap((result) => {
-  return result.messages.map((message) => {
+  return result.messages.map((message): Finding => {
     return {
       file: relative(root, result.filePath),
       line: message.line,
@@ -228,12 +204,9 @@ const fatal = findings.filter((finding) => {
 });
 
 if (fatal.length > 0) {
-  console.error('\nParse failures. These files were not scanned at all:');
-
-  for (const finding of fatal) {
-    console.error(`  ${finding.file}:${String(finding.line)}  ${finding.text}`);
-  }
-
+  logError(`Parse failures. These files were not scanned at all:\n${fatal.map((finding) => {
+    return `  ${finding.file}:${String(finding.line)}  ${finding.text}`;
+  }).join('\n')}`);
   process.exit(1);
 }
 
@@ -243,66 +216,30 @@ const reported = findings.filter((finding) => {
   return finding.rule !== null;
 });
 
-const allowedOf = (finding: FindingKey) => {
-  return ALLOWLIST.find((entry) => {
-    return entry.file === finding.file && entry.rule === finding.rule;
-  });
+const byRule = countBy(reported, (finding) => {
+  return String(finding.rule);
+});
+const lineOf = ({
+  file,
+  line,
+  rule,
+  text,
+}: Finding): string => {
+  return `  ${file}:${String(line)}  ${String(rule)}\n    ${text}`;
 };
 
-// The reason travels with the finding, so the report below never has to look the entry up a second time.
-const allowed = reported.flatMap((finding) => {
-  const entry = allowedOf(finding);
-
-  return entry
-    ? [{
-        finding,
-        reason: entry.reason,
-      }]
-    : [];
-});
-
-const failures = reported.filter((finding) => {
-  return !allowedOf(finding);
-});
-
-const byRule = new Map<string | null, number>();
-
-for (const finding of reported) {
-  byRule.set(finding.rule, (byRule.get(finding.rule) ?? 0) + 1);
+if (reported.length > 0) {
+  log(`findings by rule:\n${Object.entries(byRule).sort(([left], [right]) => {
+    return left.localeCompare(right);
+  }).map(([rule, count]) => {
+    return `  ${String(count)}  ${rule}`;
+  }).join('\n')}`);
 }
 
-if (byRule.size > 0) {
-  console.log('\nfindings by rule:');
-
-  const byName = [...byRule].sort(([left], [right]) => {
-    return String(left).localeCompare(String(right));
-  });
-
-  for (const [rule, count] of byName) {
-    console.log(`  ${String(count)}  ${String(rule)}`);
-  }
-}
-
-if (allowed.length > 0) {
-  console.log('\nallowlisted, reported here so they stay visible:');
-
-  for (const { finding, reason } of allowed) {
-    console.log(`  ${finding.file}:${String(finding.line)}  ${String(finding.rule)}`);
-    console.log(`    ${finding.text}`);
-    console.log(`    accepted: ${reason}`);
-  }
-}
-
-if (failures.length > 0) {
-  console.error(`\n${String(failures.length)} unaccepted finding(s):`);
-
-  for (const finding of failures) {
-    console.error(`  ${finding.file}:${String(finding.line)}  ${String(finding.rule)}`);
-    console.error(`    ${finding.text}`);
-  }
-
-  console.error('\nFix it, or add an ALLOWLIST entry in this script saying why it is acceptable.');
+// No allowlist: none is needed today, and a finding worth accepting deserves the argument in review, not here.
+if (reported.length > 0) {
+  logError(`${String(reported.length)} finding(s):\n${reported.map(lineOf).join('\n')}`);
   process.exit(1);
 }
 
-console.log(`\n✓ ${String(expected.length)} security rules ran clean over ${String(results.length)} files`);
+log(`${String(expected.length)} security rules ran clean over ${String(results.length)} files`);

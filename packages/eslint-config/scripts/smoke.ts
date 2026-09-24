@@ -1,12 +1,10 @@
 /**
- * Smoke test for the *packed* artifact. `pnpm test` exercises the TypeScript sources, which resolve by relative
- * path and so say nothing about the `exports` map; this packs the tarball, extracts it, links it under a
- * `node_modules` so imports go through the package name, and loads every declared subpath. The failure it
- * exists for: an `exports` entry with no matching `tsdown` entry, which typechecks, builds, publishes, then
- * 404s on a consumer's first import. A directory or file path would resolve past the map and prove nothing.
+ * Smoke test for the packed tarball: links it under `node_modules` and imports every `exports` subpath by package
+ * name. An `exports` entry with no tsdown entry typechecks, builds and publishes, then 404s on a consumer's import.
+ *
+ * Usage: node scripts/smoke.ts
  */
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import {
   mkdirSync,
   readdirSync,
@@ -20,6 +18,10 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { execPath } from 'node:process';
+
+import { log } from '../../../scripts/utils/loggerUtils.ts';
+import { run, unpackTarball } from '../../../scripts/utils/processUtils.ts';
 
 // The two fields this reads out of the packed `package.json`.
 interface PackedManifest {
@@ -29,7 +31,6 @@ interface PackedManifest {
 
 const root = resolve(import.meta.dirname, '..');
 const smokeDir = join(root, '.smoke');
-const pkgDir = join(smokeDir, 'package');
 
 const isPackedManifest = (value: unknown): value is PackedManifest => {
   return typeof value === 'object'
@@ -41,40 +42,15 @@ const isPackedManifest = (value: unknown): value is PackedManifest => {
     && value.exports !== null;
 };
 
-const run = (cmd: string, args: string[], cwd = root): string => {
-  return execFileSync(cmd, args, {
-    cwd,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'inherit'],
-  });
-};
+log('packing and extracting the tarball');
 
-rmSync(smokeDir, {
-  recursive: true,
-  force: true,
-});
-mkdirSync(smokeDir, { recursive: true });
-
-console.log('• packing tarball');
-run('pnpm', ['pack', '--pack-destination', smokeDir]);
-
-const tarball = readdirSync(smokeDir).find((file) => {
-  return file.endsWith('.tgz');
-});
-assert.ok(tarball, 'pnpm pack produced no tarball');
-
-console.log(`• extracting ${tarball}`);
-run('tar', ['-xzf', join(smokeDir, tarball)], smokeDir);
+const pkgDir = unpackTarball(root, smokeDir);
 
 const manifest: unknown = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));
 
 assert.ok(isPackedManifest(manifest), 'the packed package.json has no `name` and `exports`');
 
-/**
- * Linked rather than installed: Node walks up from `.smoke/` for everything else, so the package's own
- * dependencies still resolve out of the workspace's `node_modules`. The link's parent is made from the
- * manifest name, because a scoped package puts the scope directory between `node_modules` and the link.
- */
+// Linked rather than installed, so the package's own dependencies resolve out of the workspace.
 const linkPath = join(smokeDir, 'node_modules', manifest.name);
 
 mkdirSync(dirname(linkPath), { recursive: true });
@@ -99,13 +75,8 @@ const GROUP_EXPORTS = {
   './angular': 'angularGroup',
 };
 
-/**
- * A layer in `frameworks/` or `libraries/` is published two ways and lands half-published unless both are checked:
- * the subpath a project imports by name, and the barrel export the README's "compose layers yourself" needs.
- * `react-native` had neither and `tailwind` had no barrel export, so each was reachable only through
- * `defineConfig` while the README told consumers to use subpaths. The source directory is the list, so a new
- * layer is covered the day its file lands rather than the day someone remembers.
- */
+// Each layer file needs both its subpath and its barrel export; the directory is the list. Not es-toolkit's
+// `kebabCase`, which splits digits: `i18next` would become `i-18-next`.
 const kebab = (name: string): string => {
   return name.replace(/[A-Z]/gu, (letter: string) => {
     return `-${letter.toLowerCase()}`;
@@ -161,8 +132,7 @@ export const check = async (subpath, namespace) => {
 
   assert.equal(typeof namespace.default, 'function', label + ': default export is not a function');
 
-  // Awaited: \`define-config\` loads its layers on demand and so hands back a promise, while a
-  // layer hands back the array itself, and awaiting an array is the array.
+  // \`define-config\` answers a promise and a layer an array; awaiting covers both.
   const configs = await namespace.default();
 
   assert.ok(Array.isArray(configs), label + ': layer() did not return an array');
@@ -190,11 +160,11 @@ const esmProbe = [
 
 writeFileSync(join(smokeDir, 'probe.mjs'), esmProbe);
 
-console.log(`• loading ${String(subpaths.length)} subpaths`);
-run('node', [join(smokeDir, 'probe.mjs')], smokeDir);
+log(`loading ${String(subpaths.length)} subpaths`);
+run(execPath, [join(smokeDir, 'probe.mjs')], smokeDir);
 
 rmSync(smokeDir, {
   recursive: true,
   force: true,
 });
-console.log(`\n✓ all ${String(subpaths.length)} subpaths resolve from the packed tarball`);
+log(`all ${String(subpaths.length)} subpaths resolve from the packed tarball`);

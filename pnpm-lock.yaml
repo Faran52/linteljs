@@ -179,6 +179,9 @@ catalogs:
     astro-eslint-parser:
       specifier: ^3.1.0
       version: 3.1.0
+    es-toolkit:
+      specifier: ^1.52.0
+      version: 1.52.0
     eslint:
       specifier: ^10.11.0
       version: 10.11.0
@@ -238,6 +241,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.0.1(vitest@5.0.1)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       eslint:
         specifier: 'catalog:'
         version: 10.11.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -278,7 +284,7 @@ importers:
         specifier: ^8.7.2
         version: 8.7.2(@types/node@26.6.2)
       es-toolkit:
-        specifier: ^1.52.0
+        specifier: 'catalog:'
         version: 1.52.0
     devDependencies:
       '@linteljs/eslint-config':
@@ -441,6 +447,9 @@ importers:
       astro-eslint-parser:
         specifier: 'catalog:'
         version: 3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.3)(supports-color@10.2.2)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       eslint:
         specifier: 'catalog:'
         version: 10.11.0(jiti@2.7.0)(supports-color@10.2.2)

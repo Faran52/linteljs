@@ -127,7 +127,7 @@ jobs:
 
       - run: pnpm check
 
-      - run: pnpm --filter @linteljs/eslint-plugin audit:ignores
+      - run: pnpm audit:ignores
 
       # SonarSource's own analyser for JS/TS, run locally since this project has no SonarQube server or token.
       - run: pnpm --filter @linteljs/eslint-plugin audit:security

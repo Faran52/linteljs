@@ -422,7 +422,7 @@ module the official scaffolder writes: `@/constants/theme` comes from `create-ex
 from `create-next-app`, `./App.vue` from `create-vite`. Owning those means forking the templates,
 which is the first non-goal in this document.
 
-So `scripts/lintStarters.ts` lints each file the way the project receiving it will. `defineConfig`
+So `scripts/lint-starters/lintStarters.ts` lints each file the way the project receiving it will. `defineConfig`
 is the same function a generated `eslint.config.js` calls, handed that target's own framework, and
 each file is judged at the path its target record places it on rather than the path it is stored at,
 which is what makes the naming rules mean anything. The answers widen per target until every file is
@@ -1492,7 +1492,7 @@ suppress anything. A directive becomes inert and is reported as having no effect
 regardless, so an *effective* disable surfaces as the error it was hiding. Measured both ways: a
 stray directive exits 1, and one over a real `console.log` reports the `no-console` error as well.
 
-The repo had exactly one, on `execFileSync('pnpm', ...)` in `auditIgnores.ts`. It is a named
+The repo had exactly one, on `execFileSync('pnpm', ...)` in the ignore audit. It is a named
 exemption now rather than an inline comment, which is the whole point: this workspace keeps its
 exemptions in one file with a measurement each, and an inline directive is neither.
 
@@ -1504,26 +1504,21 @@ enforcement the project already has.
 
 ### `@linteljs/workspace/scripts`
 
-`auditIgnores.ts` prints every coverage ignore with its stated reason and `smoke.ts` narrates a
-pack, so stdout is their output rather than a debugging leftover. `no-console` already allows `warn`
-and `error` everywhere, which covers reporting a failure.
+Every script under `scripts/` and `packages/*/scripts/` reports through `scripts/utils/loggerUtils.ts`, which is
+the copy of what a generated project receives at `scripts/utils/loggerUtils.ts`. So this block turns `no-console` *on*
+for every method, `warn` and `error` included, and `@linteljs/workspace/scripts-logger` turns it off for the two copies
+of the logger alone. `base()` still stands the rule down under `scripts/` for a consumer, which is a published default
+and not this repository's to narrow. `runRules.cjs` is the one script outside it: it runs on Node 12, which cannot load
+a TypeScript module, and it reports through `console.error`.
 
-It is here rather than in `base()`, where it used to sit as `no-console: 'off'` for `**/*.js`.
-Nothing `@linteljs/create` emits logs at all: the only `console` calls it ships are `console.error`,
-which `no-console` permits, so that block bought a generated project nothing while handing its
-`eslint.config.js`, `stylelint.config.js` and the two `*.config.js` files it copies a free
-`console.log`. Neither package publishes `scripts/`.
-
-`sonarjs/no-os-command-from-path` joins it for the same directory and the same reason. `auditIgnores.ts`
-runs `execFileSync('pnpm', ['exec', 'vitest', ...])`, and the rule wants an absolute path because a
-writeable `PATH` entry could shadow the name. That is a real hazard for a program a user runs and not
-for one a maintainer invokes by hand in this checkout, where resolving `pnpm` to an absolute path
-would have to consult the same `PATH` to find it. It was an inline `eslint-disable` until
-`noInlineConfig` above went on; converting it is what that entry is for.
+`sonarjs/no-os-command-from-path` joins it for the same directories. The audits and smokes run
+`execFileSync('pnpm', ...)`, and the rule wants an absolute path because a writeable `PATH` entry could shadow the
+name. That is a real hazard for a program a user runs and not for one a maintainer invokes by hand in this checkout,
+where resolving `pnpm` to an absolute path would have to consult the same `PATH` to find it.
 
 ### `@linteljs/workspace/old-node-runner`
 
-`scripts/runRules.cjs` is the file the `oldest-runtime` CI job runs inside `node:12-alpine`, and it
+`scripts/release/runRules.cjs` is the file the `oldest-runtime` CI job runs inside `node:12-alpine`, and it
 has to parse there before it can prove anything. Node 12 has no ESM for a `.js` file in a package
 that does not say so, and this one is copied out of the package into a bare container directory, so
 `require` is the only module system available to it. Written as ESM it fails at parse and the job

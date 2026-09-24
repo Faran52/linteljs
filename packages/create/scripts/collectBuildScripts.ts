@@ -1,344 +1,152 @@
 /**
- * Every build script a generated project can meet, collected in one pass instead of one failure at a time.
+ * Every build script a generated project can meet, in one pass. pnpm aborts on an unlisted `postinstall`, and
+ * `vue-demi` surfaced as combination 1,187 of 1,200 in the end-to-end matrix. This installs each target's maximal
+ * dependency set with `allowBuilds` emptied and prints what belongs in the record or `SHARED_ALLOWED_BUILDS`.
+ * Seventeen real installs per manager, so run it after a dependency bump.
  *
- * pnpm refuses an unlisted `postinstall` and aborts the install, so a package that starts shipping one breaks
- * `create` for whoever picks the answer that pulls it. `vue-demi` was found that way: it reaches only an Astro or
- * extension project hosting Vue with TanStack Query selected, which is the 1,187th combination of 1,200 and was
- * caught by the end-to-end matrix rather than by anything cheaper.
- *
- * This is the cheaper thing. It installs the maximal dependency set of every target with its `allowBuilds` block
- * emptied, so pnpm reports every package that wanted to run a script rather than only the first unlisted one, and
- * prints the table. What it prints belongs in `allowBuilds` on the record, or in `SHARED_ALLOWED_BUILDS` where every
- * target sees it.
- *
- * Run it after a dependency bump, not on every commit: it is seventeen real installs.
- *
- *   pnpm --filter @linteljs/create collect:builds
+ * Usage: pnpm --filter @linteljs/create collect:builds   (COLLECT_CONCURRENCY, default 4)
  */
-import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   rmSync,
-  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import process, { env } from 'node:process';
+import process, { env, execPath } from 'node:process';
+
+import { Semaphore } from 'es-toolkit';
 
 import {
-  ANSWERS,
-  type Answers,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-  type TargetId,
-} from '../src/answers';
-import { parsePackageJson } from '../src/emitters/always/package-json/packageJsonEmitter';
+  log,
+  logError,
+  logWarn,
+} from '../../../scripts/utils/loggerUtils.ts';
 import { startRegistry } from '../src/pipeline/e2e/registry/registry';
-import { targetFor } from '../src/targets';
-import { valuesOf } from '../src/utils/objectUtils';
+
+import {
+  type Collected,
+  NPM,
+  PASSES,
+  run,
+} from './utils/passesUtils.ts';
+import { flagsFor, probes } from './utils/probesUtils.ts';
 
 import type { E2eCase } from '../src/pipeline/e2e/matrix/matrix';
 import type { E2eRegistry } from '../src/pipeline/e2e/registry/registry';
 
-/**
- * Both managers, because they do not block the same set. npm blocks a *superset*: every install script it has not
- * been told about, plus `@swc/core` and `fsevents`, which pnpm and bun run unasked. A list measured on pnpm alone
- * therefore closes pnpm and bun and leaves npm's extra two to a constant that nothing re-measures. This is what
- * re-measures it.
- */
-type Collected = 'pnpm' | 'npm';
+const MANAGERS: Collected[] = ['pnpm', 'npm'];
+const CONCURRENCY = Number(env['COLLECT_CONCURRENCY'] ?? 4);
 
-interface Pass {
-  // Strips the allowance out of what `create` wrote, so every package that wants a script is reported.
-  clear: (project: string) => void;
-  install: string[];
-  // Reads the installed tree, so both still answer after an install that refused to build anything.
-  list: (project: string, registry: E2eRegistry) => string[];
-}
-
-interface ScriptEntry {
-  name: string;
-}
-
-interface ScriptListing {
-  allowScripts: ScriptEntry[];
-}
-
-const AGENTS = valuesOf(ANSWERS.agents.values);
-const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
-const LIBRARIES = valuesOf(ANSWERS.libraries.values);
-const PLUGINS = valuesOf(ANSWERS.plugins.values);
-const SURFACES = valuesOf(ANSWERS.surfaces.values);
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
-
-/**
- * Which npm the npm pass runs. A generated project floors npm at 9.6.5 and records whichever one made it, so this
- * machine's npm is what the pass reads by default. npm 12 *blocks* an uncovered install script where 11 only
- * *warns*, so the list a runner on 11 collects is not the list a runner on 12 enforces; point this at a 12 to ask
- * that question directly:
- *
- *   npm install --prefix /tmp/npm12 npm@12
- *   COLLECT_NPM=/tmp/npm12/node_modules/npm/bin/npm-cli.js pnpm --filter @linteljs/create collect:builds
- */
-const NPM_CLI = env['COLLECT_NPM'];
-const NPM: [string, string[]] = NPM_CLI === undefined ? ['npm', []] : ['node', [NPM_CLI]];
-
-/**
- * Everything installable turned on, which is what makes one run per target enough: every library, every agent and
- * plugin, a store and a form and a router wherever the target offers one, and a suite, since test dependencies carry
- * build scripts of their own. The axes left at their default are the ones that only ever *replace* a package rather
- * than add one, so a second pass over them would install nothing new.
- */
-const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined): Answers => {
-  const record = targetFor({
-    ...DEFAULT_ANSWERS,
-    target,
-    ...(hostedFramework === undefined ? {} : { hostedFramework }),
-  });
-
-  return {
-    ...DEFAULT_ANSWERS,
-    target,
-    libraries: LIBRARIES,
-    agents: AGENTS,
-    plugins: PLUGINS,
-    testing: 'vitest',
-    // The first store a target offers: this run is about what installs, not about which one anyone would pick.
-    ...(record.stores?.[0] === undefined ? {} : { store: record.stores[0] }),
-    form: 'tanstack-form',
-    ...(hostedFramework === undefined ? {} : { hostedFramework }),
-    ...(record.routers === undefined ? {} : { router: record.routers[0] }),
-    ...(target === 'webextension' ? { surfaces: SURFACES } : {}),
-  };
-};
-
-// Seventeen: the seven plain targets, plus Astro and the extension once per framework they can host and once without.
-const probes = (): E2eCase[] => {
-  return TARGET_IDS.flatMap((target) => {
-    const hosts = targetFor({
-      ...DEFAULT_ANSWERS,
-      target,
-    }).hostsFramework === true
-      ? [undefined, ...HOSTED_FRAMEWORKS]
-      : [undefined];
-
-    return hosts.map((hostedFramework) => {
-      return {
-        label: hostedFramework === undefined ? target : `${target} hosting ${hostedFramework}`,
-        answers: maximal(target, hostedFramework),
-      };
-    });
-  });
-};
-
-const flagsFor = (answers: Answers): string[] => {
-  return [
-    '--target', answers.target,
-    '--testing', answers.testing,
-    '--type-safety', answers.typeSafety,
-    '--libraries', answers.libraries.join(','),
-    '--agents', answers.agents.join(','),
-    '--plugins', answers.plugins.join(','),
-    ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
-    ...(answers.hostedFramework === undefined ? [] : ['--hosted', answers.hostedFramework]),
-    ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
-    ...(answers.form === undefined ? [] : ['--form', answers.form]),
-    ...(answers.router === undefined ? [] : ['--router', answers.router]),
-    ...(answers.store === undefined ? [] : ['--store', answers.store]),
-  ];
-};
-
-// The manager is no longer a flag: the CLI reads whatever invoked it out of `npm_config_user_agent`, so a pass that
-// wants a project of a given manager says so the way a real run does.
-const agentFor = (pm: Collected): string => {
-  const version = spawnSync(pm, ['--version'], { encoding: 'utf8' }).stdout.trim();
-
-  return `${pm}/${version} npm/? node/? collect`;
-};
-
-const run = (
-  command: string,
-  args: string[],
-  cwd: string,
-  registry: E2eRegistry,
-  agent?: string,
-): string => {
-  const result = spawnSync(command, args, {
-    cwd,
-    encoding: 'utf8',
-    env: {
-      ...env,
-      ...agent === undefined ? {} : { npm_config_user_agent: agent },
-      npm_config_registry: registry.url,
-      NPM_CONFIG_REGISTRY: registry.url,
-      pnpm_config_registry: registry.url,
-      // The same exemption the end-to-end harness makes, and for the same reason: these builds are seconds old.
-      // A JSON list, which is the only shape pnpm reads this setting in from the environment.
-      pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
-      npm_config_cache: join(registry.cacheDir, 'npm'),
-      pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
-    },
-  });
-
-  return `${result.stdout}${result.stderr}`;
-};
-
-const PASSES: Record<Collected, Pass> = {
-  pnpm: {
-    clear: (project) => {
-      const path = join(project, 'pnpm-workspace.yaml');
-
-      writeFileSync(path, readFileSync(path, 'utf8').replace(/^allowBuilds:\n(?: {2}.*\n)*/m, 'allowBuilds: {}\n'));
-    },
-    install: ['install'],
-    list: (project, registry) => {
-      const listing = run('pnpm', ['ignored-builds'], project, registry);
-      const names = /Automatically ignored builds during installation:\n((?: {2}\S+\n)+)/.exec(listing)?.[1];
-
-      return names === undefined
-        ? []
-        : names.trim().split('\n').map((line) => {
-            return line.trim();
-          });
-    },
-  },
-  npm: {
-    clear: (project) => {
-      const path = join(project, 'package.json');
-      const manifest = parsePackageJson(readFileSync(path, 'utf8'));
-
-      Reflect.deleteProperty(manifest, 'allowScripts');
-      writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
-    },
-    install: ['install', '--no-audit', '--no-fund'],
-    // npm 11 warns where npm 12 blocks, and `install-scripts ls` answers either way. `--json` rather than the prose.
-    list: (project, registry) => {
-      const listing = run(NPM[0], [...NPM[1], 'install-scripts', 'ls', '--json'], project, registry);
-      const opening = listing.indexOf('{');
-
-      if (opening === -1) {
-        return [];
-      }
-
-      // A version without the subcommand answers prose, or nothing; neither is a reason to lose the whole run.
-      try {
-        const parsed: unknown = JSON.parse(listing.slice(opening));
-
-        return isScriptListing(parsed)
-          ? parsed.allowScripts.map((entry) => {
-              return entry.name;
-            })
-          : [];
-      }
-      catch {
-        console.log(`npm install-scripts ls answered no JSON:\n${listing.slice(0, 400)}`);
-
-        return [];
-      }
-    },
-  },
-};
-
-const isScriptListing = (value: unknown): value is ScriptListing => {
-  return typeof value === 'object'
-    && value !== null
-    && 'allowScripts' in value
-    && Array.isArray(value.allowScripts);
-};
-
-// One probe, both managers. Separate from `main` so the reporting below reads as reporting.
-const collectFor = (
+const collectOne = async (
   { label, answers }: E2eCase,
+  pm: Collected,
   workspace: string,
   registry: E2eRegistry,
-): Record<Collected, string[]> => {
-  const perManager: Record<Collected, string[]> = {
-    pnpm: [],
-    npm: [],
-  };
+  agent: string,
+): Promise<string[]> => {
+  const root = join(workspace, `${label.replaceAll(' ', '-')}-${pm}`);
+  const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
+  const project = join(root, name);
 
-  for (const pm of ['pnpm', 'npm'] as const) {
-    const pass = PASSES[pm];
-    const root = join(workspace, `${label.replaceAll(' ', '-')}-${pm}`);
-    const name = answers.target === 'react-native' ? 'rn-app' : answers.target;
+  mkdirSync(root, { recursive: true });
 
-    mkdirSync(root, { recursive: true });
-    // `--no-install`, so the manifests exist before the allowance is stripped out of them.
-    const created = run(
-      'node',
-      [registry.cliBin, name, ...flagsFor(answers), '--no-install'],
-      root,
-      registry,
-      agentFor(pm),
-    );
-    const project = join(root, name);
+  // `--no-install`, so the manifests exist before the allowance is stripped out of them.
+  const flags = [registry.cliBin, name, ...flagsFor(answers), '--no-install'];
+  const created = await run(execPath, flags, root, registry, agent);
 
-    try {
-      pass.clear(project);
-    }
-    catch {
-      console.log(`${label} on ${pm}: create wrote no manifest\n${created}`);
-      continue;
-    }
+  try {
+    PASSES[pm].clear(project);
+  }
+  catch {
+    logWarn(`${label} on ${pm}: create wrote no manifest\n${created}`);
 
-    // pnpm exits 1 on the first ignored build and npm 11 only warns; both are expected here rather than failures.
-    const [binary, prefix] = pm === 'npm' ? NPM : [pm, []];
-
-    run(binary, [...prefix, ...pass.install], project, registry);
-    perManager[pm] = pass.list(project, registry);
+    return [];
   }
 
-  return perManager;
+  // pnpm exits 1 on the first ignored build and npm 11 only warns, so the exit code is not a verdict here.
+  const [binary, prefix] = pm === 'npm' ? NPM : [pm, []];
+
+  await run(binary, [...prefix, ...PASSES[pm].install], project, registry);
+
+  return await PASSES[pm].list(project, registry);
 };
 
-const sorted = (names: Set<string>): string => {
-  return [...names].sort((left, right) => {
+const sorted = (names: Iterable<string>): string => {
+  const list = [...new Set(names)].sort((left, right) => {
     return left.localeCompare(right, 'en');
-  }).map((name) => {
-    return `  '${name}'`;
-  }).join('\n');
+  });
+
+  return list.length === 0
+    ? '  (none)'
+    : list.map((name) => {
+        return `  '${name}'`;
+      }).join('\n');
 };
 
-const report = (found: Map<string, Record<Collected, string[]>>): void => {
-  const everything = new Set<string>();
-  const npmOnly = new Set<string>();
-
-  console.log(`\n  ${'target'.padEnd(28)}${'pnpm'.padEnd(46)}npm only\n`);
-
-  for (const [label, perManager] of found) {
-    const extra = perManager.npm.filter((name) => {
-      return !perManager.pnpm.includes(name);
+const report = (found: [string, Record<Collected, string[]>][]): void => {
+  const rows = found.map(([label, { pnpm, npm }]) => {
+    const extra = npm.filter((name) => {
+      return !pnpm.includes(name);
     });
 
-    for (const name of [...perManager.pnpm, ...perManager.npm]) {
-      everything.add(name);
-    }
+    return {
+      label,
+      pnpm,
+      extra,
+    };
+  });
 
-    for (const name of extra) {
-      npmOnly.add(name);
-    }
-
-    const names = perManager.pnpm.length === 0 ? '(none)' : perManager.pnpm.join(', ');
-
-    console.log(`  ${label.padEnd(28)}${names.padEnd(46)}${extra.length === 0 ? '-' : extra.join(', ')}`);
-  }
-
-  console.log(`\nUnion, for allowBuilds:\n${sorted(everything)}`);
-  console.log(`\nBlocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${
-    npmOnly.size === 0 ? '  (none)' : sorted(npmOnly)}\n`);
+  log([
+    `  ${'target'.padEnd(28)}${'pnpm'.padEnd(46)}npm only`,
+    ...rows.map(({
+      label,
+      pnpm,
+      extra,
+    }) => {
+      return `  ${label.padEnd(28)}${(pnpm.join(', ') || '(none)').padEnd(46)}${extra.join(', ') || '-'}`;
+    }),
+  ].join('\n'));
+  log(`Union, for allowBuilds:\n${sorted(found.flatMap(([, { pnpm, npm }]) => {
+    return [...pnpm, ...npm];
+  }))}`);
+  log(`Blocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${sorted(rows.flatMap(({ extra }) => {
+    return extra;
+  }))}`);
 };
 
 const main = async (): Promise<void> => {
   const { registry, stop } = await startRegistry();
   const workspace = mkdtempSync(join(tmpdir(), 'linteljs-builds-'));
-  const found = new Map<string, Record<Collected, string[]>>();
+  const semaphore = new Semaphore(CONCURRENCY);
 
   try {
-    for (const probe of probes()) {
-      found.set(probe.label, collectFor(probe, workspace, registry));
-    }
+    // The CLI reads its manager from `npm_config_user_agent`, so a pass names one the way a real run does.
+    const agents = new Map(await Promise.all(MANAGERS.map(async (pm): Promise<[Collected, string]> => {
+      const version = (await run(pm, ['--version'], workspace, registry)).trim();
+
+      return [pm, `${pm}/${version} npm/? node/? collect`];
+    })));
+
+    const found = await Promise.all(probes().map(async (probe) => {
+      const [pnpm, npm] = await Promise.all(MANAGERS.map(async (pm) => {
+        await semaphore.acquire();
+
+        try {
+          return await collectOne(probe, pm, workspace, registry, agents.get(pm) ?? pm);
+        }
+        finally {
+          semaphore.release();
+        }
+      }));
+
+      return [probe.label, {
+        pnpm: pnpm ?? [],
+        npm: npm ?? [],
+      }] satisfies [string, Record<Collected, string[]>];
+    }));
+
+    report(found);
   }
   finally {
     stop();
@@ -347,14 +155,12 @@ const main = async (): Promise<void> => {
       force: true,
     });
   }
-
-  report(found);
 };
 
 try {
   await main();
 }
 catch (error) {
-  console.error(error);
+  logError('collecting build scripts failed', error instanceof Error ? error : undefined);
   process.exitCode = 1;
 }

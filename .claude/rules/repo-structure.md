@@ -187,8 +187,8 @@ aliases it duplicates instead of importing carry a comment saying so.
 
 - **Coverage is gated at 100% on all four metrics for all three packages.** A line that cannot be
   reached is deleted rather than ignored; the one sanctioned exception is a `/* v8 ignore */` on a
-  defensive branch whose unreachability is argued in the comment beside it, audited by the plugin's
-  `audit:ignores`.
+  defensive branch whose unreachability is argued in the comment beside it, audited by the root
+  `audit:ignores` across every package.
 
 ## The colocation exceptions, named
 

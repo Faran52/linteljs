@@ -6,7 +6,10 @@
      * layers out of that package's source, and ESLint types a config field as `X | undefined`
      * rather than `X?`, so spreading a preset is rejected on every property it left out.
      */
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+
+    // Node's type stripping needs the `.ts` in a relative specifier, and nothing here is emitted.
+    "allowImportingTsExtensions": true
   },
 
   /**
@@ -17,10 +20,10 @@
   "include": [
     "eslint.config.ts",
     "vitest.config.ts",
-    "scripts/*.ts",
+    "scripts/**/*.ts",
 
     /**
-     * `scripts/lintStarters.ts` composes a project's layers out of `eslint-config`'s source, which pulls every
+     * `scripts/lint-starters/` composes a project's layers out of `eslint-config`'s source, which pulls every
      * framework layer into this program. Those layers lean on that package's ambient shims for the plugins that
      * ship no types of their own, so the shims have to come with them or `solid.ts` fails here and nowhere else.
      */
