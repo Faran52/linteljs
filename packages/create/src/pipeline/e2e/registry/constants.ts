@@ -25,8 +25,8 @@ const workspaceRootFrom = (from: string): string => {
 export const ROOT = workspaceRootFrom(import.meta.dirname);
 
 /**
- * One registry for a run, on a fixed port. Sharding is a stride over the cases inside one process (`matrix.ts`), and
- * every shard in `e2e.yml` is its own machine, so two registries never want the same machine at once. Fixed rather
+ * One registry for a run, on a fixed port. Every job in `e2e.yml` is one package manager on its own machine, so two
+ * registries never want the same machine at once. Fixed rather
  * than chosen freshly because Yarn caches package metadata globally, tarball URLs included, and Verdaccio answers its
  * conditional request with 304 whenever upstream is unchanged: a port that moved between runs is a dead tarball host.
  */
@@ -38,6 +38,9 @@ export const RUN_DIR = join(ROOT, '.e2e');
 // Never wiped, and outside `RUN_DIR`. A package manager's cache records the registry a tarball came from, which the
 // fixed port above keeps valid between runs, so every download survives to the next one.
 export const CACHE_DIR = join(ROOT, '.e2e-cache');
+
+// What the registry proxies everything outside `@linteljs/*` to, unless `E2E_UPSTREAM` names another.
+export const UPSTREAM = 'https://registry.npmjs.org/';
 
 export const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin'].map((name) => {
   return join(ROOT, 'packages', name, 'package.json');

@@ -1085,7 +1085,8 @@ target's heaviest dependency set. The axes are `packageManager`, `hostedFramewor
 `styling`, `form`, `router`, `store`, `data`, `testing` and `typeSafety`.
 
 Measured, an install is around 60% of a case: 19.7 to 30.5 seconds of a 39 to 52 second one. So the
-full product is days of machine time, and sharding divides that rather than reducing it.
+full product is days of machine time, and splitting it across machines divides that rather than
+reducing it.
 
 **Installing once per distinct dependency set does not fix it, which is why it was not built.**
 `typeSafety` is the only axis that changes nothing installed, so it is a clean 2:1 and very nearly
@@ -1108,8 +1109,8 @@ one needed a third axis pinned:
 
 Greedy set cover over the legal enumeration rather than synthesised candidates: every case the
 greedy can pick is one `refuseMisfit` already accepts, so nothing has to be checked for legality and
-the pair universe is by construction the reachable one. It is deterministic, because the shard is a
-stride over the result and a case that moved between runs would move between shards.
+the pair universe is by construction the reachable one. It is deterministic, so a label that failed
+names the same case when it is run again with `-t`.
 
 What this gives up is three-way interactions, the kind that only appear when a hosted framework, a
 testing answer and a type floor coincide. `E2E_FULL=1` runs the cross product for a pre-release
@@ -1144,25 +1145,38 @@ successfully did: the scaffolders `bunx` and `bun create` launched answered `Con
 several registries on several ports at once. The scaffolders are gone, and the reason the port stays
 fixed is Yarn's, below.
 
-So the port is fixed and there is one registry per run. In `e2e.yml` every shard is its own machine,
+So the port is fixed and there is one registry per run. In `e2e.yml` every job is its own machine,
 so one per run is one per machine; locally, parallelism is `maxConcurrency` inside one process rather
 than several processes against several ports. The configuration that reached the bun defect no longer
 exists, which was a smaller change than an upstream fix.
 
 Three things fell out of it. The publish lock is gone, because one process publishes once. The CI
-cache key no longer carries a shard, because all of them hold the same bytes. And Yarn's global metadata
+cache key carries no job, because npmjs serves every manager the same bytes. And Yarn's global metadata
 cache, which stores tarball URLs including the port, is now valid between runs instead of pointing at
 a dead host.
 
-### Sharding is a stride over the cases, not vitest's `--shard`
+### The split is by package manager, not vitest's `--shard`
 
 Vitest splits by file, and one file holds every target, so a file split cannot balance anything.
-`E2E_SHARD`/`E2E_SHARDS` take every Nth case from the ordered list instead, which hands each shard an
-even share of every target: no shard is the one that drew React Native and Angular together. Measured
-at four shards: 53, 52, 52, 52.
+The suite used to take every Nth case into each of four shards, which balanced well and put every
+manager on every runner. That is the one thing a runner cannot honestly hold: yarn 1 and yarn 4 both
+answer to `yarn`, so one on PATH is only ever one of the two, and the harness had to fetch both
+through corepack by release. That was the last manager the suite installed itself, after the CLI
+had stopped installing any.
 
-The ceiling is the smallest target's case count, 15, below which a shard could draw no case from a
-file at all and vitest would call the file empty. `matrix.ts` derives it rather than naming it.
+So `E2E_PM` names one manager, and the suite runs its cases on whatever binary of it is on PATH,
+reading the version from `--version` exactly as it does for the others. A yarn whose major does not
+match fails the run once, before any case, rather than every case recording `yarn-classic` for a
+`yarn` answer. `e2e.yml` runs one job per manager and each sets up only its own.
+
+Unset, a run takes every manager whose binary answers `--version` with a version this suite would
+record as that manager. No machine carries all five, so the alternative is a local run that always
+fails one yarn's cases for a reason nobody needs told; skipping what is absent tests what the
+machine has, and a missing manager is loud again the moment `E2E_PM` names it.
+
+The jobs are not even, and do not need to be: at concurrency two the last full run measured npm at
+2843 case-seconds, yarn-classic 2466, yarn 1629, pnpm 1622 and bun 1471, so the slowest job is
+about 24 minutes of cases. The pair cover gives each manager 40 to 46 of the 209.
 
 ### `run` spawns asynchronously so that concurrency is real
 
@@ -1172,10 +1186,11 @@ collects from a `spawn`, keeping stdout and stderr in separate buffers and joini
 exactly as `spawnSync` handed them over: every matcher in `INSTALL_NOISE` is line-anchored, and
 interleaving two streams by chunk can split a line across a switch between them.
 
-Files stay serial and the cases inside a file run together. With the manager an axis, every file
-mixes managers, so `createProject` holds one install per binary at a time, pnpm excepted: its store is
-built for concurrent writers, and yarn's and bun's caches are not. Both yarns queue together, because
-they share `YARN_CACHE_FOLDER`.
+Files stay serial and the cases inside a file run together. With the manager an axis, a run without
+`E2E_PM` mixes managers in every file, so `createProject` holds one install per manager at a time,
+pnpm excepted: its store is built for concurrent writers, and yarn's and bun's caches are not. Only
+one yarn is ever in a run, since the other major is refused, so the two never share
+`YARN_CACHE_FOLDER` at once.
 
 ### bun's cache is pruned rather than deleted
 

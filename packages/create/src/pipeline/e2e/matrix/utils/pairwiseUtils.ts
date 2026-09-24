@@ -57,7 +57,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
       return uncovered.has(pair);
     }).length;
   };
-  // Ties go to the earlier case, which keeps the cover stable for the shard stride.
+  // Ties go to the earlier case, which keeps the cover stable, so a label names the same case every run.
   const leader = (): Scored<T> | undefined => {
     return scored.reduce<Scored<T> | undefined>((best, candidate) => {
       return best === undefined || gainOf(candidate.pairs) > gainOf(best.pairs) ? candidate : best;

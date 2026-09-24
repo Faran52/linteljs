@@ -1,5 +1,3 @@
-import { MANAGER_FLOORS } from '@config/constants';
-
 import type { PackageManager } from '@answers';
 
 /**
@@ -31,18 +29,4 @@ export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
     check: ['run', 'check'],
   },
   'bun': { why: ['pm', 'ls', '--all'] },
-};
-
-/**
- * The release each yarn case runs. Both answer to `yarn`, so one on PATH can only ever be one of the two, and a
- * machine carrying yarn 1 recorded every `yarn` case as `yarn-classic`. Asked for through corepack by release;
- * inside the project the `packageManager` field the CLI writes then selects the same release. The floor for yarn 1,
- * which is its last release, and for yarn 4 the one `e2e.yml` used to install globally.
- */
-export const COREPACK_RELEASES: Record<PackageManager, string | undefined> = {
-  'pnpm': undefined,
-  'npm': undefined,
-  'yarn': '4.18.0',
-  'yarn-classic': MANAGER_FLOORS['yarn-classic'],
-  'bun': undefined,
 };

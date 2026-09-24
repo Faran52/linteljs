@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { createServer } from 'node:net';
 import { join } from 'node:path';
+import { env } from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
@@ -21,6 +22,7 @@ import {
   PORT,
   ROOT,
   RUN_DIR,
+  UPSTREAM,
   WORKSPACE_MANIFESTS,
 } from './constants';
 
@@ -183,9 +185,34 @@ const publishedAs = (version: string, publish: () => void): void => {
  * same registry and the same freshly published CLI, and duplicating a hundred lines of verdaccio wiring to get them
  * is how the two drift.
  */
+// `E2E_UPSTREAM` stands in for npmjs, for a machine whose network cannot reach it but can reach a mirror.
+export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {
+  return [
+    `storage: ${storage}`,
+    'uplinks:',
+    '  npmjs:',
+    `    url: ${upstream}`,
+    // Defaults are 2 and 5m: two transient failures refuse every later request as a 404 for five minutes.
+    '    max_fails: 30',
+    '    fail_timeout: 10s',
+    '    timeout: 60s',
+    'packages:',
+    "  '@linteljs/*':",
+    '    access: $all',
+    '    publish: $all',
+    "  '**':",
+    '    access: $all',
+    '    proxy: npmjs',
+    'log:',
+    '  type: stdout',
+    '  level: error',
+    '',
+  ].join('\n');
+};
+
 export const startRegistry = async (): Promise<StartedRegistry> => {
   /**
-   * Outside `RUN_DIR`, so it survives the wipe. One npmjs tarball is stored once and served to all four managers,
+   * Outside `RUN_DIR`, so it survives the wipe. One npmjs tarball is stored once and served to every manager,
    * which all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a
    * port. Measured: the same storage on a different port with the uplink unreachable still serves both.
    */
@@ -204,27 +231,7 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
   const url = `http://127.0.0.1:${String(PORT)}/`;
   const config = join(RUN_DIR, 'verdaccio.yaml');
 
-  writeFileSync(config, [
-    `storage: ${storage}`,
-    'uplinks:',
-    '  npmjs:',
-    '    url: https://registry.npmjs.org/',
-    // Defaults are 2 and 5m: two transient failures refuse every later request as a 404 for five minutes.
-    '    max_fails: 30',
-    '    fail_timeout: 10s',
-    '    timeout: 60s',
-    'packages:',
-    "  '@linteljs/*':",
-    '    access: $all',
-    '    publish: $all',
-    "  '**':",
-    '    access: $all',
-    '    proxy: npmjs',
-    'log:',
-    '  type: stdout',
-    '  level: error',
-    '',
-  ].join('\n'));
+  writeFileSync(config, verdaccioConfig(storage, env['E2E_UPSTREAM']));
 
   const verdaccio = spawn(
     join(ROOT, 'node_modules/.bin/verdaccio'),

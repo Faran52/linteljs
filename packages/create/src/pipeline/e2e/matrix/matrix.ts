@@ -54,7 +54,7 @@ export interface E2eCase {
  *
  * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
  * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the
- * reachable one. Deterministic, because the shard is a stride over this list: ties go to the earlier case.
+ * reachable one. Deterministic, ties going to the earlier case, so a label that failed names the same case next run.
  *
  * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
  */
@@ -264,30 +264,4 @@ export const targetCases = (target: TargetId): E2eCase[] => {
   const every = everyCase(target);
 
   return env['E2E_FULL'] === '1' ? every : coveringSubset(every);
-};
-
-/**
- * This shard's share of `cases`, which is every target's cases in order. A stride rather than a slice: each shard then
- * holds an even share of every target, so no shard is the one that drew React Native and Angular together. Vitest's
- * own `--shard` splits by file, and one file holds every target.
- *
- * The ceiling is the smallest target's case count, above which a shard could draw nothing from that target at all
- * and vitest would call its block empty. Derived rather than written down, so a reduction that moves it is noticed.
- */
-export const shardOf = (cases: E2eCase[], shard: number, shards: number): E2eCase[] => {
-  const counts = new Map<TargetId, number>();
-
-  for (const { answers } of cases) {
-    counts.set(answers.target, (counts.get(answers.target) ?? 0) + 1);
-  }
-
-  const ceiling = Math.min(...counts.values());
-
-  if (shards > ceiling || shard < 1 || shard > shards) {
-    throw new Error(`E2E_SHARD ${String(shard)} of ${String(shards)} is out of range: 1 to ${String(ceiling)} shards`);
-  }
-
-  return cases.filter((_item, index) => {
-    return index % shards === shard - 1;
-  });
 };

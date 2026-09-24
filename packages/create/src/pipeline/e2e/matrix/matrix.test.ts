@@ -17,7 +17,7 @@ import {
 } from '@answers';
 import { targetFor } from '@targets';
 
-import { shardOf, targetCases } from './matrix';
+import { targetCases } from './matrix';
 
 // Only the answers are read, so the cases arrive as the narrowest thing that carries them.
 interface Answered {
@@ -304,7 +304,7 @@ describe('targetCases', () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 
-  it('is stable, so the shard stride names the same cases twice running', () => {
+  it('is stable, so a label names the same case twice running', () => {
     for (const target of TARGET_IDS) {
       expect(targetCases(target).map((item) => {
         return item.label;
@@ -312,74 +312,5 @@ describe('targetCases', () => {
         return item.label;
       }));
     }
-  });
-});
-
-describe('shardOf', () => {
-  // Built inside each test rather than here, so a mutant in the enumeration is traced to the tests that read it.
-  const allCases = (): ReturnType<typeof targetCases> => {
-    return TARGET_IDS.flatMap(targetCases);
-  };
-
-  const labels = (cases: ReturnType<typeof targetCases>): string[] => {
-    return cases.map(({ label }) => {
-      return label;
-    }).toSorted((left, right) => {
-      return left.localeCompare(right);
-    });
-  };
-
-  it('hands one shard every case', () => {
-    const every = allCases();
-
-    expect(shardOf(every, 1, 1)).toEqual(every);
-  });
-
-  // A stride rather than a slice, so every shard holds an even share of every target.
-  it('splits every target between the shards, each case to exactly one', () => {
-    const every = allCases();
-    const first = shardOf(every, 1, 2);
-    const second = shardOf(every, 2, 2);
-
-    for (const target of TARGET_IDS) {
-      const of = (cases: ReturnType<typeof targetCases>): ReturnType<typeof targetCases> => {
-        return cases.filter(({ answers }) => {
-          return answers.target === target;
-        });
-      };
-
-      expect(of(first).length).toBeGreaterThan(0);
-      expect(of(second).length).toBeGreaterThan(0);
-      expect(labels([...of(first), ...of(second)])).toEqual(labels(of(every)));
-    }
-  });
-
-  it('takes every Nth case, starting from the shard it is', () => {
-    const every = allCases();
-
-    expect(shardOf(every, 2, 3)).toEqual(every.filter((_item, index) => {
-      return index % 3 === 1;
-    }));
-  });
-
-  // The ceiling is the smallest target's count: one more shard than that leaves some target's block empty.
-  it('allows as many shards as the smallest target has cases, and not one more', () => {
-    const smallest = Math.min(...TARGET_IDS.map((target) => {
-      return targetCases(target).length;
-    }));
-
-    expect(shardOf(allCases(), smallest, smallest).length).toBeGreaterThan(0);
-    expect(() => {
-      return shardOf(allCases(), 1, smallest + 1);
-    }).toThrow(`E2E_SHARD 1 of ${String(smallest + 1)} is out of range: 1 to ${String(smallest)} shards`);
-  });
-
-  it.each([
-    [0, 1],
-    [3, 2],
-  ])('refuses shard %i of %i', (shard, shards) => {
-    expect(() => {
-      return shardOf(allCases(), shard, shards);
-    }).toThrow(`E2E_SHARD ${String(shard)} of ${String(shards)} is out of range`);
   });
 });

@@ -6,9 +6,9 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { MANAGER_BINARIES } from '@config/constants';
+import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
 
-import { COREPACK_RELEASES } from '../constants';
+import { PACKAGE_MANAGERS } from '../matrix/constants';
 
 import {
   oneAtATime,
@@ -29,11 +29,17 @@ export const afterAllCleanup = (): void => {
   });
 };
 
-const readVersion = async (pm: PackageManager): Promise<string> => {
-  const release = COREPACK_RELEASES[pm];
-  const { output } = release === undefined
-    ? await runPm(pm, ['--version'], workspace)
-    : await run('corepack', [`${MANAGER_BINARIES[pm]}@${release}`, '--version'], workspace);
+// What a manager sets when it launches the CLI itself. The binary rather than the id: both yarns say `yarn/<version>`.
+const agentOf = (pm: PackageManager, version: string): string => {
+  return `${MANAGER_BINARIES[pm]}/${version} npm/? node/? e2e`;
+};
+
+/**
+ * The version in what `<binary> --version` answered, refused unless the CLI would read it back as `pm`. Both yarns
+ * answer to `yarn` and the CLI tells them apart by major, so a case run on the other one would record the wrong
+ * manager and assert against the right one.
+ */
+export const versionFrom = (pm: PackageManager, output: string): string => {
   // The first line: npm appends a new-version notice on stderr, which `run` joins after stdout.
   const [version = ''] = output.trim().split('\n');
 
@@ -43,7 +49,16 @@ const readVersion = async (pm: PackageManager): Promise<string> => {
     throw new Error(`${pm} --version answered ${output}`);
   }
 
+  if (MANAGER_BINARIES[pm] === 'yarn' && version.startsWith('1.') !== (pm === 'yarn-classic')) {
+    throw new Error(`The ${MANAGER_BINARIES[pm]} on PATH is ${version}, which cannot run the ${pm} cases: put one `
+      + `at ${MANAGER_FLOORS[pm]} or above, of the same major, first on PATH.`);
+  }
+
   return version;
+};
+
+const readVersion = async (pm: PackageManager): Promise<string> => {
+  return versionFrom(pm, (await runPm(pm, ['--version'], workspace)).output);
 };
 
 // The version the manager would have written into its own user agent, read once per manager. The promise is what is
@@ -85,14 +100,37 @@ export const createProject = async (root: string, name: string, answers: Answers
   mkdirSync(root, { recursive: true });
 
   const pm = answers.packageManager;
-  /**
-   * Exactly what the manager sets when it launches the CLI itself: its own name and version, first token, split on
-   * `/`. Injecting it is what keeps four managers four managers now that no flag names one.
-   * The binary rather than the id: yarn 1 and yarn 4 both say `yarn/<version>`, which is what detection reads.
-   */
-  const agent = `${MANAGER_BINARIES[pm]}/${await versionOf(pm)} npm/? node/? e2e`;
+  // Injected, because no flag names a manager: the agent is the only way a case says which one it is.
+  const agent = agentOf(pm, await versionOf(pm));
 
   return oneAtATime(pm, async () => {
     return run('node', [registry.cliBin, name, ...answerFlags(answers)], root, agent);
   });
+};
+
+/**
+ * The managers a run tests. `E2E_PM` names one, as each job in `e2e.yml` does, and its version is read here so a
+ * missing binary or the wrong yarn fails the run once rather than every case. Unset, every manager this machine
+ * answers for: both yarns answer to `yarn`, so no one machine carries all five, and a local run tests what it has.
+ */
+export const managersToRun = async (requested: string | undefined): Promise<PackageManager[]> => {
+  if (requested === undefined) {
+    const read = await Promise.allSettled(PACKAGE_MANAGERS.map(versionOf));
+
+    return PACKAGE_MANAGERS.filter((_pm, index) => {
+      return read[index]?.status === 'fulfilled';
+    });
+  }
+
+  const pm = PACKAGE_MANAGERS.find((manager) => {
+    return manager === requested;
+  });
+
+  if (pm === undefined) {
+    throw new Error(`E2E_PM is ${requested}, and is one of ${PACKAGE_MANAGERS.join(', ')} or unset`);
+  }
+
+  await versionOf(pm);
+
+  return [pm];
 };

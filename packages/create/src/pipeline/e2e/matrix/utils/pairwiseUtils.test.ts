@@ -79,7 +79,7 @@ describe('coveringSubset', () => {
     expect(coveringSubset([caseFor({}), caseFor({})])).toHaveLength(1);
   });
 
-  // Ties go to the earlier case, which is what keeps the shard stride naming the same cases on every run.
+  // Ties go to the earlier case, which is what keeps a label naming the same case on every run.
   it('breaks a tie towards the earlier case', () => {
     const first = caseFor({ store: 'zustand' });
     const second = caseFor({ store: 'redux-toolkit' });

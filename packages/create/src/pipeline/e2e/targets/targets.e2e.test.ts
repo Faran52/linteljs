@@ -10,18 +10,17 @@ import { valuesOf } from '@utils/objectUtils';
 
 import { ANSWERS } from '@answers';
 
-import { shardOf, targetCases } from '../matrix/matrix';
+import { targetCases } from '../matrix/matrix';
 import { runE2eCase } from '../runner/runner';
-import { afterAllCleanup } from '../utils/workspaceUtils';
+import { afterAllCleanup, managersToRun } from '../utils/workspaceUtils';
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-// Every shard is its own machine in `e2e.yml`, and each starts its own registry on the same fixed port.
-const CASES = shardOf(
-  TARGET_IDS.flatMap(targetCases),
-  Number(env['E2E_SHARD'] ?? '1'),
-  Number(env['E2E_SHARDS'] ?? '1'),
-);
+// Every job in `e2e.yml` is one manager on its own machine, and each starts its own registry on the same fixed port.
+const MANAGERS = await managersToRun(env['E2E_PM']);
+const CASES = TARGET_IDS.flatMap(targetCases).filter(({ answers }) => {
+  return MANAGERS.includes(answers.packageManager);
+});
 
 describe.each(TARGET_IDS)('%s end-to-end', (target) => {
   afterAll(afterAllCleanup);

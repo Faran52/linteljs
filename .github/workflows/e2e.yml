@@ -18,24 +18,26 @@ concurrency:
 
 jobs:
   generate:
-    # Four shards, one runner each, and the split is `matrix.ts`'s stride rather than vitest's own
-    # `--shard`. Vitest splits by file, and one file holds every target; a stride over the
-    # ordered case list hands every shard an even share of every target, so no shard is the one
-    # that drew React Native and Angular. Measured even: 82/82/82/81.
+    # One package manager per runner, named to the suite by `E2E_PM`. Both yarns answer to `yarn`, so
+    # no one machine can carry the two, and a job that sets up only its own manager tests exactly the
+    # binary a user of it would run. The last full local run at concurrency two measured, in
+    # case-seconds, npm 2843, yarn-classic 2466, yarn 1629, pnpm 1622 and bun 1471: about 24
+    # minutes of cases for the slowest job, well inside the timeout on a slower runner.
     #
     # Each runner is its own machine, so each starts its own registry on the same fixed port with
     # its own storage, and nothing is shared between them.
-    name: answers pass their own gate (shard ${{ matrix.shard }}/4)
+    name: answers pass their own gate (${{ matrix.pm }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
-      # Every shard reports: one failing answer must not hide a second in another shard.
+      # Every manager reports: one failing answer must not hide a second on another manager.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        pm: [pnpm, npm, bun, yarn, yarn-classic]
     steps:
       - uses: actions/checkout@v7
 
+      # pnpm runs the workspace itself, so every job has it, and the pnpm job tests this one.
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - uses: actions/setup-node@v7
@@ -43,28 +45,29 @@ jobs:
           node-version: 26.10.0
           cache: pnpm
 
-      # Every target runs on every manager, so all of them have to be here, and the
-      # CLI installs none of them: one below its floor in `MANAGER_FLOORS` is refused with the
-      # reason. The harness injects `npm_config_user_agent` from each manager's real `--version`, so
-      # what a runner carries is what every generated project records and declares.
-      #
-      # Both yarns run through corepack at the release `COREPACK_RELEASES` names, so corepack has to be
-      # enabled, and which yarn a runner carries globally does not matter.
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      # The CLI installs no manager: one below its floor in `MANAGER_FLOORS` is refused with the
+      # reason. The harness injects `npm_config_user_agent` from the manager's real `--version`, so
+      # what a runner carries is what every generated project records, and a yarn of the wrong major
+      # fails the run before any case.
+      - if: matrix.pm == 'bun'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.3.14
 
-      # Node 26 no longer bundles corepack, so it is installed before it can enable yarn.
-      - run: npm i -g corepack && corepack enable
-      - run: bun --version && yarn --version
+      # Into setup-node's prefix, which is ahead of the yarn 1 the runner image carries on PATH.
+      - if: matrix.pm == 'yarn-classic'
+        run: npm i -g yarn@1.22.22
+
+      # Node 26 no longer bundles corepack. Installed ahead of time, so no case ever waits on a download.
+      - if: matrix.pm == 'yarn'
+        run: npm i -g corepack && corepack enable yarn && corepack install -g yarn@4.18.0
 
       - run: pnpm install --frozen-lockfile
 
       # The registry's own storage, and nothing else. Every tarball npmjs serves is stored once here
-      # and handed to all four package managers, which all speak the registry protocol, so this is
-      # one copy where their four caches would be four. Those are deliberately not cached: npm's
-      # cacache alone reached 125GB locally, it never evicts, and a manager refetching over loopback
-      # is cheap. Verdaccio rewrites `dist.tarball` per request, and the port is fixed anyway, so a
+      # and handed to whichever manager the job runs. The managers' own caches are deliberately not
+      # cached: npm's cacache alone reached 125GB locally, it never evicts, and a manager refetching
+      # over loopback is cheap. Verdaccio rewrites `dist.tarball` per request, and the port is fixed anyway, so a
       # restored storage works whatever restored it.
       #
       # The week in the key is the eviction policy. A tarball is immutable and is never replaced, so
@@ -72,8 +75,8 @@ jobs:
       # rotating weekly rebuilds it from npmjs instead. Metadata is not at stake either way, since
       # verdaccio revalidates a packument after two minutes and a run picks up what was published.
       #
-      # One key for every shard now, not one per shard: the four hold the same bytes, and the first
-      # to finish saves it for the rest of the week.
+      # One key for every job, not one per manager: npmjs serves every manager the same tarballs, so
+      # the first job to finish saves it for the rest of the week.
       - id: week
         run: echo "id=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
 
@@ -95,6 +98,5 @@ jobs:
       # an install and a full `check`, both of which want more than one.
       - run: pnpm --filter @linteljs/create test:e2e
         env:
-          E2E_SHARD: ${{ matrix.shard }}
-          E2E_SHARDS: 4
+          E2E_PM: ${{ matrix.pm }}
           E2E_CONCURRENCY: 2

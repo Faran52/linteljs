@@ -16,7 +16,7 @@ export interface RunResult {
   output: string;
 }
 
-// The registry every case installs through, published by `registrySetup` before any of them run.
+// The registry every case installs through, published by `registry.ts` before any of them run.
 export const registry = inject('registry');
 
 // `agent` is the one thing a case puts back: `LAUNCHER_KEYS` strips the launcher's own `npm_config_user_agent` below,
@@ -74,20 +74,18 @@ export const run = async (
          */
         // JSON, because it is a list: measured, a bare `@linteljs/*` through the environment is silently ignored.
         pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
-        // `COREPACK_RELEASES` fetches a yarn by release; with stdin ignored, a download prompt would fail the case.
-        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0',
         BUN_CONFIG_REGISTRY: registry.url,
         YARN_NPM_REGISTRY_SERVER: registry.url,
         YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
         YARN_NPM_MINIMAL_AGE_GATE: '0',
         /**
          * Split by what each directory remembers. A cache of bytes is keyed by the bytes and persists. A cache of
-         * *which versions exist* starts empty every run, because `registrySetup` publishes a version no run has used
+         * *which versions exist* starts empty every run, because `registry.ts` publishes a version no run has used
          * before and a manifest cached last run does not list it: the range resolves to the previous run's build and
          * the `why` assertion catches it. Publishing a unique version ends the other staleness, where one version was
          * republished with different bytes and bun reported `Integrity check failed`, but not this one.
          * npm's cacache is integrity-keyed and needs neither treatment; bun's is pruned of `@linteljs` by
-         * `registrySetup` at the start of a run, which is the same split spelled by hand.
+         * `registry.ts` at the start of a run, which is the same split spelled by hand.
          */
         npm_config_cache: join(registry.cacheDir, 'npm'),
         pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
@@ -131,28 +129,24 @@ export const run = async (
   });
 };
 
-// The run each binary's last queued command settles with, which the next one waits for.
-const installs = new Map<string, Promise<RunResult>>();
+// The run each manager's last queued command settles with, which the next one waits for.
+const installs = new Map<PackageManager, Promise<RunResult>>();
 
-/**
- * One install per binary at a time, pnpm excepted: its store is built for concurrent writers, and yarn's and bun's
- * global caches are not. By binary, so both yarns queue together: they share `YARN_CACHE_FOLDER`. The cases used to
- * get this from their order, every non-pnpm case at the head of its file, which a manager axis no longer allows.
- */
+// One install per manager at a time, pnpm excepted: its store is built for concurrent writers, and yarn's and bun's
+// global caches are not. By manager rather than binary, since `versionFrom` lets only one yarn into a run.
 export const oneAtATime = async (pm: PackageManager, work: () => Promise<RunResult>): Promise<RunResult> => {
   if (pm === 'pnpm') {
     return work();
   }
 
-  const binary = MANAGER_BINARIES[pm];
   const queued = async (): Promise<RunResult> => {
-    await installs.get(binary);
+    await installs.get(pm);
 
     return work();
   };
   const next = queued();
 
-  installs.set(binary, next);
+  installs.set(pm, next);
 
   return next;
 };

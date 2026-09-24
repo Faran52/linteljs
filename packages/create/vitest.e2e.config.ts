@@ -10,10 +10,9 @@ import { defineConfig } from 'vitest/config';
  * No `testTimeout` here: the suite sets its own per-case timeout, because the number that
  * matters is per target rather than per file.
  *
- * Sharding is `E2E_SHARD`/`E2E_SHARDS`, read in `matrix.ts`, not vitest's own `--shard`. Vitest
- * splits by file, and one file holds every target, so a file split cannot balance
- * them; the stride in `matrix.ts` gives every shard an even share of every target. `e2e.yml` runs
- * four, one machine each.
+ * The split is `E2E_PM`, one package manager per run, read in `targets.e2e.test.ts`, not vitest's
+ * own `--shard`: vitest splits by file, and one file holds every target. `e2e.yml` runs one job per
+ * manager, one machine each.
  */
 export default defineConfig({
   resolve: {
