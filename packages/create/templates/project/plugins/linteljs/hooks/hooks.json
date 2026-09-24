@@ -2,15 +2,15 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/eslint-fix-warning.sh\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/gitSafetyGuardHook.ts\""
           },
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/git-safety-guard.sh\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/eslintFixWarningHook.ts\""
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/banned-pattern-guard.sh\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/bannedPatternGuardHook.ts\""
           }
         ]
       }

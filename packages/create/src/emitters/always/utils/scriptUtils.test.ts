@@ -60,31 +60,9 @@ describe('buildScripts', () => {
     );
   });
 
-  /**
-   * The type floor as a gate of its own: lint-staged scans staged files only, so without this `check` passes on
-   * code the commit then rejects. The extension list covers the target's own source extensions, an SFC being where
-   * a Vue or Svelte project's logic lives.
-   */
-  it('scans the banned patterns over the source extensions the target writes', () => {
-    const names = (target: TargetId): string => {
-      const script = buildScripts(answersFor({ target }))['lint:types'];
-
-      if (script === undefined) {
-        throw new Error(`no lint:types script for ${target}`);
-      }
-
-      return script;
-    };
-
-    for (const target of ['react', 'next', 'angular', 'webextension', 'react-native'] as const) {
-      expect(names(target)).toContain("-name '*.ts' -o -name '*.tsx' ");
-      expect(names(target)).not.toMatch(/-name '\*\.(astro|vue|svelte)'/u);
-    }
-
-    expect(names('astro')).toContain("find src -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.astro' \\)"
-      + ' -exec node --experimental-strip-types scripts/checkBannedPatterns.ts {} +');
-    expect(names('vue')).toContain("-name '*.ts' -o -name '*.tsx' -o -name '*.vue'");
-    expect(names('svelte')).toContain("-name '*.ts' -o -name '*.tsx' -o -name '*.svelte'");
+  // The type floor as a gate of its own, since lint-staged scans staged files only. The checker picks the extensions.
+  it.each<TargetId>(['react', 'astro', 'vue', 'svelte'])('runs the banned patterns over src for %s', (target) => {
+    expect(buildScripts(answersFor({ target }))['lint:types']).toBe('node scripts/checkBannedPatterns.ts src');
   });
 
   // The fixing counterpart to `lint:fix`, over the same glob the gate reads; stylelint exits 2 on an empty match.

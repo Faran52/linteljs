@@ -63,8 +63,26 @@ describe('checkerArtifact', () => {
     }).toThrow('no longer contains the anchor');
   });
 
+  // `.astro` stays out: the checker reads script and SFC files only.
+  it.each<[TargetId, string]>([
+    ['react', "['.ts', '.tsx']"],
+    ['astro', "['.ts', '.tsx']"],
+    ['vue', "['.ts', '.tsx', '.vue']"],
+    ['svelte', "['.ts', '.tsx', '.svelte']"],
+  ])('writes the extensions a directory is scanned for on %s', (target, extensions) => {
+    expect(transformOf(answersFor({ target }))(readFileSync(SHIPPED, 'utf8'), null))
+      .toContain(`const SCANNED_EXTENSIONS: string[] = ${extensions};`);
+  });
+
+  it('throws when the extension anchor has drifted out of the shipped checker', () => {
+    expect(() => {
+      return transformOf(answersFor({}))("const TYPE_SAFETY: TypeSafety = 'strict';\n", null);
+    }).toThrow('no longer contains the anchor');
+  });
+
   it('leaves the strict floor untouched for a target with nothing to exempt', () => {
-    const source = "const TYPE_SAFETY: TypeSafety = 'strict';\nconst PROJECT_SKIPPED: string[] = [];\n";
+    const source = "const TYPE_SAFETY: TypeSafety = 'strict';\n"
+      + "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];\nconst PROJECT_SKIPPED: string[] = [];\n";
 
     expect(transformOf(answersFor({}))(source, null)).toBe(source);
   });

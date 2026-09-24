@@ -15,18 +15,6 @@ export const styleGlob = (answers: Answers): string => {
   return sfcExtension === undefined ? 'src/**/*.css' : `src/**/*.{css,${sfcExtension}}`;
 };
 
-// What the type floor scans, spelled the way `find -name` takes it; SFC and `.astro` join the script extensions.
-const bannedPatternNames = (answers: Answers): string[] => {
-  const { astro, sfcExtension } = targetFor(answers);
-
-  return [
-    "-name '*.ts'",
-    "-name '*.tsx'",
-    ...(astro === true ? ["-name '*.astro'"] : []),
-    ...(sfcExtension === undefined ? [] : [`-name '*.${sfcExtension}'`]),
-  ];
-};
-
 export const buildScripts = (answers: Answers): Record<string, string> & CheckScript => {
   const run = RUN_PREFIX[answers.packageManager];
   const target = targetFor(answers);
@@ -35,10 +23,9 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
   const scripts: Record<string, string> = {
     'lint': 'eslint .',
     'lint:fix': 'eslint . --fix',
-    // The type floor as a gate, since lint-staged scans staged files only. `find`, because the index does not see a
-    // newly added file.
-    'lint:types': `find src -type f \\( ${bannedPatternNames(answers).join(' -o ')} \\)`
-      + ' -exec node --experimental-strip-types scripts/checkBannedPatterns.ts {} +',
+    // The type floor as a gate, since lint-staged scans staged files only. The checker walks `src` itself, so a newly
+    // added file the index has not seen is scanned too.
+    'lint:types': 'node scripts/checkBannedPatterns.ts src',
     // Measured: 87 stylelint findings in starter CSS passed check without it. `--allow-empty-input`, since stylelint
     // exits 2 on a glob matching nothing.
     'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,

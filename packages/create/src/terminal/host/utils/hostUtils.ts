@@ -78,7 +78,7 @@ export const managerRefusal = (pm: PackageManager, version: string): string | un
     + 'newer. Upgrade it and run this again.';
 };
 
-// The floor this CLI runs on, which is what its own prompt library supports, rather than the `>=22.6` a generated
+// The floor this CLI runs on, which is what its own prompt library supports, rather than the `>=22.18` a generated
 // project declares. `NODE_FLOOR` carries why the two differ.
 export const nodeRefusal = (running: string): string | undefined => {
   return rankOf(running) < rankOf(NODE_FLOOR)

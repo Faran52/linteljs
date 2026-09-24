@@ -1,10 +1,17 @@
 /**
- * Mechanical floor for the type standards, run by lint-staged and the PostToolUse(Edit|Write) hook.
+ * Mechanical floor for the type standards, run by lint-staged on the staged files, by `lint:types` over `src`,
+ * and by the linteljs plugin's PostToolUse hook on each file an agent writes.
  * `sync` restores it when missing but never overwrites your lists.
  *
- * Usage: node scripts/checkBannedPatterns.ts src/foo.ts src/bar.tsx src/App.vue
+ * Usage: node scripts/checkBannedPatterns.ts src
+ *        node scripts/checkBannedPatterns.ts src/foo.ts src/bar.tsx src/App.vue
  */
-import { readFileSync } from 'node:fs';
+import {
+  readdirSync,
+  readFileSync,
+  statSync,
+} from 'node:fs';
+import { join } from 'node:path';
 import { argv, exit } from 'node:process';
 
 import { logError } from './utils/loggerUtils.ts';
@@ -37,6 +44,9 @@ const directive = (name: string): RegExp => {
 
 // Which floor this project runs. `@linteljs/create` writes this line from the `typeSafety` answer.
 const TYPE_SAFETY: TypeSafety = 'strict';
+
+// What a directory argument is searched for. `@linteljs/create` writes this line from the target.
+const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];
 
 const ALWAYS_BANNED: BannedPattern[] = [
   {
@@ -173,7 +183,28 @@ const scriptBlocksOnly = (content: string): string => {
   return output + blankSpan(content.slice(cursor));
 };
 
-const files: string[] = argv.slice(2);
+// A directory is walked for the scanned extensions, past `node_modules` and dot-directories; a file is taken as named.
+const filesUnder = (path: string): string[] => {
+  if (statSync(path, { throwIfNoEntry: false })?.isDirectory() !== true) {
+    return [path];
+  }
+
+  return readdirSync(path, { withFileTypes: true }).flatMap((entry) => {
+    const child = join(path, entry.name);
+
+    if (entry.isDirectory()) {
+      return entry.name === 'node_modules' || entry.name.startsWith('.') ? [] : filesUnder(child);
+    }
+
+    return SCANNED_EXTENSIONS.some((extension) => {
+      return entry.name.endsWith(extension);
+    })
+      ? [child]
+      : [];
+  });
+};
+
+const files: string[] = argv.slice(2).flatMap(filesUnder);
 let failed = false;
 
 for (const file of files) {

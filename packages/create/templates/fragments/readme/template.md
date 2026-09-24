@@ -29,3 +29,10 @@ installed CLI, showing a diff and refusing to overwrite anything you have edited
 Git hooks run `scripts/checkBannedPatterns.ts`, `eslint --fix`, `stylelint --fix` and a typecheck
 filtered to the staged files, and commit messages go through commitlint. They install with
 `{{RUN}} install`.
+
+Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, warn when eslint runs
+without `--fix`, and run `scripts/checkBannedPatterns.ts` over each file an agent writes. Claude Code
+and Codex load them through the linteljs plugin and run them with Node 22.18 or newer. Codex skips
+plugin hooks until you trust them: run `/hooks` in Codex and trust the linteljs entries. Codex also
+runs its own cached copy of the plugin, so after `sync` changes anything under `plugins/linteljs/`,
+reinstall the linteljs plugin in Codex to pick the change up.

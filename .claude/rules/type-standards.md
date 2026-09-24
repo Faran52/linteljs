@@ -40,10 +40,10 @@ What follows is only where this repository differs, and why.
 ## The mechanical floor
 
 `scripts/checkBannedPatterns.ts` is this repository's own copy of the floor it publishes, and it
-now runs here the same two ways it runs in a generated project: `lint-staged` on commit, and the
-`PostToolUse(Edit|Write)` hook at write time. `packages/create/templates/project/scripts/` holds
-the shipped original; the root copy governs this workspace, and its `PROJECT_SKIPPED` list is where
-this repository's exemptions live.
+now runs here the same three ways it runs in a generated project: `lint-staged` on commit, the
+plugin's `bannedPatternGuardHook.ts` at write time, and `lint:types` in `check`.
+`packages/create/templates/project/scripts/` holds the shipped original; the root copy governs this
+workspace, and its `PROJECT_SKIPPED` list is where this repository's exemptions live.
 
 It is a floor, not the standard. The rule file is the standard.
 
@@ -102,6 +102,6 @@ The file is `preserve: true`, so a project owns the list and an entry goes the d
 starter behind it. Without that, a project answering `typeSafety: strict` was blocked at its first
 commit by twelve files it did not write.
 
-`emitters/registry.test.ts` runs the emitted checker over the emitted starter code for every target,
-which is the only thing anywhere that does: `pnpm check` never invokes the checker, and the
-end-to-end suite never commits.
+`emitters/registry.test.ts` runs the emitted checker over the emitted starter code for every target.
+`check` runs the checker too, through `lint:types`, here and in a generated project, and so does every
+end-to-end case's gate.

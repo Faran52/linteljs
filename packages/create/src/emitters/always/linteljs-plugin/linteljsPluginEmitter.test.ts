@@ -142,8 +142,8 @@ describe('linteljsPluginEmitter', () => {
     expect(targetsOf(answersFor({ agents: [agent] }))).toEqual(targetsOf(answersFor({ agents: [] })));
   });
 
-  // The writer sets the mode from `executable`, so the flag is what makes a hook runnable on disk.
-  it('ships the hooks, the shell ones executable and the shared parser not', () => {
+  // `hooks.json` runs each hook through `node`, so none needs to be executable.
+  it('ships the hooks and the parser they share', () => {
     const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS).filter(({ target }) => {
       return target.startsWith('plugins/linteljs/hooks/');
     }).map(({ target, executable }) => {
@@ -152,10 +152,10 @@ describe('linteljsPluginEmitter', () => {
 
     expect(hooks).toEqual([
       ['plugins/linteljs/hooks/hooks.json', undefined],
-      ['plugins/linteljs/hooks/commandParser.ts', undefined],
-      ['plugins/linteljs/hooks/eslint-fix-warning.sh', true],
-      ['plugins/linteljs/hooks/git-safety-guard.sh', true],
-      ['plugins/linteljs/hooks/banned-pattern-guard.sh', true],
+      ['plugins/linteljs/hooks/gitSafetyGuardHook.ts', undefined],
+      ['plugins/linteljs/hooks/eslintFixWarningHook.ts', undefined],
+      ['plugins/linteljs/hooks/bannedPatternGuardHook.ts', undefined],
+      ['plugins/linteljs/hooks/utils/commandParserUtils.ts', undefined],
     ]);
   });
 });

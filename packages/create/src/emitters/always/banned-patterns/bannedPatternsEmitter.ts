@@ -27,6 +27,23 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
   return source.replace(anchor, replacement);
 };
 
+// `.astro` is left out: the checker reads script and SFC files only, so listing it scanned nothing.
+export const scannedExtensions = (answers: Answers): string[] => {
+  const { sfcExtension } = targetFor(answers);
+
+  return ['.ts', '.tsx', ...(sfcExtension === undefined ? [] : [`.${sfcExtension}`])];
+};
+
+const withExtensions = (source: string, answers: Answers): string => {
+  return replaceAnchored(
+    source,
+    "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];",
+    `const SCANNED_EXTENSIONS: string[] = [${scannedExtensions(answers).map((extension) => {
+      return `'${extension}'`;
+    }).join(', ')}];`,
+  );
+};
+
 const withTypeSafety = (source: string, answers: Answers): string => {
   return answers.typeSafety === 'relaxed'
     ? replaceAnchored(
@@ -44,7 +61,7 @@ export const checkerArtifact = (answers: Answers): Artifact => {
     content: {
       sources: ['project/scripts/checkBannedPatterns.ts'],
       transform: (source, current) => {
-        return mergeChecker(withTypeSafety(source, answers), current);
+        return mergeChecker(withExtensions(withTypeSafety(source, answers), answers), current);
       },
     },
   };

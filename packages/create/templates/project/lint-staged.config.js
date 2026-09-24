@@ -20,9 +20,9 @@ const config = {
     const files = stagedFiles.join(' ');
 
     return [
-      `node --experimental-strip-types scripts/checkBannedPatterns.ts ${files}`,
+      `node scripts/checkBannedPatterns.ts ${files}`,
       `eslint ${files} --fix`,
-      `node --experimental-strip-types scripts/typecheckStaged.ts ${files}`,
+      `node scripts/typecheckStaged.ts ${files}`,
     ];
   },
   '*.{css,scss,vue,svelte}': ['stylelint --fix'],

@@ -102,7 +102,7 @@ describe('runPipeline against a directory that already exists', () => {
       'plugins/linteljs/skills/linteljs/references/repo-structure.md',
       'plugins/linteljs/skills/linteljs/references/testing.md',
       'plugins/linteljs/skills/linteljs/references/react-state.md',
-      'plugins/linteljs/hooks/git-safety-guard.sh',
+      'plugins/linteljs/hooks/gitSafetyGuardHook.ts',
       'scripts/checkBannedPatterns.ts',
       'scripts/typecheckStaged.ts',
       'scripts/utils/loggerUtils.ts',

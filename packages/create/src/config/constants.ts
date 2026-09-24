@@ -33,17 +33,17 @@ export const MANAGER_BINARIES: Record<PackageManager, string> = {
 };
 
 /**
- * A generated project declares `>=22.6` and means it: the two shipped `scripts/*.ts` and the hooks' `commandParser.ts`
- * run under `--experimental-strip-types`, which exists from 22.6.0, is on by default from 22.18.0 and is still
- * accepted on 26. The pinned tools ask for more (`@angular/create` and lint-staged 17.3 want 22.22), and say so
- * themselves as EBADENGINE warnings; that is theirs to declare, not ours to copy.
+ * A generated project declares `>=22.18` and means it: the shipped `scripts/*.ts` and the plugin's hooks run as plain
+ * `node file.ts`, and 22.18.0 is the first release that strips types by default. The pinned tools ask for more
+ * (`@angular/create` and lint-staged 17.3 want 22.22), and say so themselves as EBADENGINE warnings; that is theirs to
+ * declare, not ours to copy.
  */
-export const NODE_ENGINE = '>=22.6';
+export const NODE_ENGINE = '>=22.18';
 
 /**
- * The CLI's own floor, which is higher than what it writes: `@inquirer/prompts` 8 declares
- * `^22.13.0 || >=23.5.0`, and a questionnaire that reads raw keypresses is not something to run below what its own
- * library supports. A project made here still declares `>=22.6`, because nothing it installs is this.
+ * The CLI's own floor: `@inquirer/prompts` 8 declares `^22.13.0 || >=23.5.0`, and a questionnaire that reads raw
+ * keypresses is not something to run below what its own library supports. It sits below `NODE_ENGINE` because
+ * nothing the CLI runs strips types; the project it writes is what needs 22.18.
  */
 export const NODE_FLOOR = '22.13.0';
 

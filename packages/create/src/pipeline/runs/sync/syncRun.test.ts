@@ -31,7 +31,7 @@ import {
 
 import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
-const CLAUDE_HOOK = 'plugins/linteljs/hooks/git-safety-guard.sh';
+const HUSKY_HOOK = '.husky/pre-commit';
 const TYPE_STANDARDS = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 
 // The three files only a Claude Code project gets, and the whole of what removal may touch here.
@@ -285,9 +285,9 @@ describe('applySync', () => {
   });
 
   it('makes an executable artifact executable on disk', async () => {
-    await applySync(cwd, HOSTED_DEFAULTS, [CLAUDE_HOOK]);
+    await applySync(cwd, HOSTED_DEFAULTS, [HUSKY_HOOK]);
 
-    const mode = (await stat(join(cwd, CLAUDE_HOOK))).mode;
+    const mode = (await stat(join(cwd, HUSKY_HOOK))).mode;
 
     expect(mode & 0o111).toBe(0o111);
   });
@@ -323,6 +323,47 @@ describe('applySync', () => {
     expect(await exists(join(cwd, '.agents/plugins/marketplace.json'))).toBe(true);
     // Not in the inventory, so `--force` has no mandate over it even with its host gone.
     expect(await exists(join(cwd, 'CLAUDE.md'))).toBe(true);
+  });
+
+  // The shell hooks and their parser, as a project written before the hooks became TypeScript recorded them.
+  it('removes the retired shell hooks and parser a previous run recorded, and keeps what replaced them', async () => {
+    const retired = [
+      'plugins/linteljs/hooks/banned-pattern-guard.sh',
+      'plugins/linteljs/hooks/commandParser.ts',
+      'plugins/linteljs/hooks/eslint-fix-warning.sh',
+      'plugins/linteljs/hooks/git-safety-guard.sh',
+    ];
+
+    await applyPending(HOSTED_DEFAULTS);
+    await writeFile(
+      join(cwd, MANAGED_PATH),
+      `${JSON.stringify({ removable: retired })}\n`,
+      'utf8',
+    );
+
+    for (const target of retired) {
+      await writeFile(join(cwd, target), '#!/usr/bin/env bash\n', 'utf8');
+    }
+
+    const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
+
+    expect(entries.filter(({ status }) => {
+      return status === 'obsolete';
+    }).map(({ target }) => {
+      return target;
+    })).toEqual(retired);
+
+    const { removed } = await applyPending(HOSTED_DEFAULTS);
+
+    expect(removed).toEqual(retired);
+
+    for (const target of retired) {
+      expect(await exists(join(cwd, target))).toBe(false);
+    }
+
+    expect(await exists(join(cwd, 'plugins/linteljs/hooks/hooks.json'))).toBe(true);
+    expect(await exists(join(cwd, 'plugins/linteljs/hooks/gitSafetyGuardHook.ts'))).toBe(true);
+    expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/commandParserUtils.ts'))).toBe(true);
   });
 
   it('removes nothing it was not given, even where the plan called it obsolete', async () => {

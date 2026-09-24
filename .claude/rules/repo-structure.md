@@ -215,11 +215,11 @@ Both are the standard's own stated exceptions; these are the files that take the
   deliberately defective input its layer tests lint.
 - `packages/create/templates/project/scripts/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
   beside the scripts they spawn, and so do the hook suites in `templates/project/plugins/linteljs/hooks/`:
-  `commandParser.test.ts`, `gitSafetyGuard.test.ts`, `eslintFixWarning.test.ts`, `bannedPatternGuard.test.ts`
-  and `hooks.test.ts`, one per shipped file. The TypeScript is camelCase and the `.sh` hooks keep their
-  kebab-case names. `package.json` excludes every one of them from the packed tarball, and the emitter lists
-  each hook by name, so no suite reaches a generated project. What the three shell suites share is
-  `__mocks__/runHook.ts`.
+  `gitSafetyGuardHook.test.ts`, `eslintFixWarningHook.test.ts`, `bannedPatternGuardHook.test.ts`,
+  `utils/commandParserUtils.test.ts` and `hooks.test.ts`, one per shipped file. `package.json` excludes every
+  one of them from the packed tarball, and the emitter lists each hook by name, so no suite reaches a generated
+  project. What the three hook suites share is `__mocks__/runHook.ts`, which also holds every hook's stdout to
+  nothing or exactly one decision.
 
 Three files in `eslint-plugin` are named for what they cover rather than for one source file, which
 the standard permits because what they cover is the package: `meta.test.ts` holds the whole published

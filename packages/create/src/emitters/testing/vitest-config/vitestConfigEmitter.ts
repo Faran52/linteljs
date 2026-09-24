@@ -77,8 +77,8 @@ ${indent}},`;
  * `--localstorage-file`, and happy-dom stopped replacing it, so a storage-backed
  * component test reads `undefined`. Turning the native one off hands the global
  * back to happy-dom's shim. https://github.com/capricorn86/happy-dom/issues/1950
- * Unconditional: `NODE_ENGINE` is `>=26.8.1`, so every generated project is past
- * the version where this matters.
+ * Unconditional: Node accepts the flag from 22.4, below `NODE_ENGINE`, and
+ * on a release without native storage it turns off nothing.
  */
 const testBlock = (
   include: string,

@@ -81,20 +81,13 @@ export const referenceArtifacts = (answers: Answers): Artifact[] => {
 // The plugin tree every agent reads, written whichever agents were chosen: Claude and Codex load it as a plugin,
 // and the rule files under it are what Copilot and Cursor are each given a copy of.
 export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
-  const hook = (name: string): Artifact => {
-    return {
-      ...copied(`plugins/linteljs/hooks/${name}`),
-      executable: true,
-    };
-  };
-
   return [
     copied('plugins/linteljs/skills/linteljs/SKILL.md'),
     ...referenceArtifacts(answers),
     copied('plugins/linteljs/hooks/hooks.json'),
-    copied('plugins/linteljs/hooks/commandParser.ts'),
-    hook('eslint-fix-warning.sh'),
-    hook('git-safety-guard.sh'),
-    hook('banned-pattern-guard.sh'),
+    copied('plugins/linteljs/hooks/gitSafetyGuardHook.ts'),
+    copied('plugins/linteljs/hooks/eslintFixWarningHook.ts'),
+    copied('plugins/linteljs/hooks/bannedPatternGuardHook.ts'),
+    copied('plugins/linteljs/hooks/utils/commandParserUtils.ts'),
   ];
 };

@@ -130,7 +130,8 @@ what these three are, so this workspace's structure rule adopts it rather than a
 its own. No target selects it; it ships because the standard for a library is part of the standard.
 
 The enforcement half is installed too, and is the same set a generated project receives:
-`.claude/hooks/` with `.claude/settings.json` wiring them, `.husky/pre-commit` and `commit-msg`,
+`.claude/settings.json` running the shipped plugin hooks straight from
+`packages/create/templates/project/plugins/linteljs/hooks/`, `.husky/pre-commit` and `commit-msg`,
 `lint-staged.config.js`, `commitlint.config.js`, and `scripts/checkBannedPatterns.ts` with
 `scripts/typecheckStaged.ts`. The checker's `PROJECT_SKIPPED` carries this workspace's exemptions
 with a reason each; `type-standards.md` explains them.

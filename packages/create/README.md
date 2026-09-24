@@ -37,7 +37,8 @@ The same applies to the project's own first install: a lockfile written with the
 
 ## Requirements
 
-Node 22 (22.13.0 or newer), and the package manager that runs `create`, which the project then keeps: pnpm
+Node 22 (22.13.0 or newer to run `create`; the project it writes declares 22.18 or newer, the first release that
+runs its TypeScript scripts and hooks with plain `node`), and the package manager that runs `create`, which the project then keeps: pnpm
 10.26 or newer, npm 9.6.5 or newer, Yarn 4 or newer, Yarn 1.22.22, or Bun 1.2 or newer. Nothing is installed on your
 behalf: a manager below its floor is refused with the reason, rather than upgraded behind your back.
 
@@ -218,7 +219,10 @@ plugin, and approve hooks when you open the project. The project still lints, bu
 you decline.
 
 The hooks warn about ESLint without `--fix`, reject banned git operations, and check each file an agent writes
-for banned patterns. They inspect command payloads. They do not execute commands.
+for banned patterns. They inspect command payloads, Bash and PowerShell alike. They do not execute commands.
+Each is a TypeScript file in `plugins/linteljs/hooks/` that both hosts run with `node`, so a project needs Node
+22.18 or newer. Codex runs plugin hooks only once you trust them through `/hooks`, and runs a cached copy of the
+plugin, so reinstall it in Codex after a `sync` that changes `plugins/linteljs/`.
 
 ## Why this is shared
 

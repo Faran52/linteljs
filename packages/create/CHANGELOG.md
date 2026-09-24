@@ -11,13 +11,25 @@ when a version's change lives in a sibling it is described there instead:
 - The `create-linteljs` and `create` binaries are built by tsdown from `bin/createLinteljs.ts` into
   `dist/create-linteljs.mjs`, replacing the hand-written `bin/create-linteljs.js` shim. The package no longer
   ships a `bin/` directory.
-- **The hooks' command parser is TypeScript: `plugins/linteljs/hooks/commandParser.ts`**, typed throughout and
-  run by `git-safety-guard.sh` and `eslint-fix-warning.sh` as `node --experimental-strip-types`, the way the
-  shipped `scripts/*.ts` already run. It reaches a project through `sync`, which removes the recorded
-  `commandParser.js`. Its decisions are unchanged.
-- **The Node floor of a generated project is `>=22.6`**, up from `>=22`. 22.0 to 22.5 have no
-  `--experimental-strip-types`, so they could run neither the parser nor the two shipped scripts. The CLI's own
-  floor stays `22.13.0`.
+- **The agent hooks are TypeScript, run by `node` with no shell script around them.**
+  `plugins/linteljs/hooks/` holds `hooks.json`, `gitSafetyGuardHook.ts`, `eslintFixWarningHook.ts`,
+  `bannedPatternGuardHook.ts` and the parser both command guards share, `utils/commandParserUtils.ts`. The three
+  `.sh` hooks and `commandParser.ts` are gone, and `sync` removes them, and the older `commandParser.js`, from
+  an existing project through its recorded `managed.json`. The same `hooks.json` serves Claude Code and Codex on
+  macOS, Linux and Windows: both substitute `${CLAUDE_PLUGIN_ROOT}` before a shell runs the line. Codex runs a
+  cached copy of the plugin, so reinstall it in Codex after a `sync` that changes `plugins/linteljs/`.
+- **The command guards read PowerShell.** They match `Bash|PowerShell`, and Claude Code's PowerShell tool is read
+  in its own quoting. `cmd /c`, `pwsh -Command` and `Invoke-Expression` are unwrapped like `sh -c`, and a
+  command they cannot read is denied by the git guard, as unreadable bash already was. `--no-verify` is now
+  denied on any git subcommand, not only `commit`. Each denial names the command it stopped and what to run
+  instead, and a hook prints nothing but the decision JSON.
+- **`lint:types` is `node scripts/checkBannedPatterns.ts src`**, replacing a Unix-only `find` pipeline. The
+  checker walks a directory itself, past `node_modules` and dot-directories, for the extensions `create` writes
+  into it, and still takes files as lint-staged and the hook pass them. `.astro` left the list: the checker never
+  read it.
+- **The Node floor of a generated project is `>=22.18`**, up from `>=22`, the first release that strips types by
+  default. The shipped scripts, the hooks and `lint-staged.config.js` run TypeScript as plain `node file.ts`,
+  with no `--experimental-strip-types`. The CLI's own floor stays `22.13.0`.
 - React Native projects declare `@react-native/metro-config` at react-native's own version, so pnpm resolves
   one copy and needs no peer allowance; a new metro-config release no longer brings back a peer warning. Yarn 4
   installs are clean through `packageExtensions` for Expo SDK 57's own tree, and React Native's `.yarnrc.yml`

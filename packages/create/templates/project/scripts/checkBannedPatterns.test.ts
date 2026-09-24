@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import {
+  mkdir,
   mkdtemp,
   rm,
   writeFile,
@@ -191,5 +192,47 @@ describe('single-file components', () => {
       '</style>',
       '',
     ].join('\n'))).toBe('');
+  });
+});
+
+// `lint:types` hands it `src`; lint-staged and the plugin hook hand it files.
+describe('its arguments', () => {
+  const run = (...paths: string[]): string => {
+    const { status, stderr } = spawnSync(execPath, [CHECKER, ...paths], {
+      cwd,
+      encoding: 'utf8',
+    });
+
+    return status === 0 ? '' : stderr;
+  };
+
+  beforeEach(async () => {
+    await mkdir(join(cwd, 'src/nested/node_modules/pkg'), { recursive: true });
+    await mkdir(join(cwd, 'src/.cache'), { recursive: true });
+    await writeFile(join(cwd, 'src/clean.ts'), 'export const clean = 1;\n', 'utf8');
+    await writeFile(join(cwd, 'src/nested/deep.tsx'), 'export const deep = input as never;\n', 'utf8');
+    await writeFile(join(cwd, 'src/nested/node_modules/pkg/index.ts'), 'export const a = b as never;\n', 'utf8');
+    await writeFile(join(cwd, 'src/.cache/cached.ts'), 'export const a = b as never;\n', 'utf8');
+    await writeFile(join(cwd, 'src/notes.md'), 'x as never\n', 'utf8');
+  });
+
+  it('walks a directory for the scanned extensions, past node_modules and dot-directories', () => {
+    const report = run('src');
+
+    expect(report).toContain(join('src', 'nested', 'deep.tsx'));
+    expect(report).not.toContain('node_modules');
+    expect(report).not.toContain('.cache');
+    expect(report).not.toContain('notes.md');
+  });
+
+  it('checks a named file whatever directory it sits in', () => {
+    expect(run(join('src', 'nested', 'node_modules', 'pkg', 'index.ts'))).toContain('[as never]');
+    expect(run(join('src', 'clean.ts'))).toBe('');
+  });
+
+  it('passes a directory with nothing banned in it', async () => {
+    await rm(join(cwd, 'src/nested/deep.tsx'));
+
+    expect(run('src')).toBe('');
   });
 });

@@ -897,6 +897,36 @@ A project written before the record existed has none, and reads as an empty one:
 the answers ask for and removes nothing until its own run writes the record. That is the safe
 direction to be wrong in.
 
+## The agent hooks: one `hooks.json`, run by `node`, inside the plugin
+
+| fact | source |
+| --- | --- |
+| Claude Code substitutes `${CLAUDE_PLUGIN_ROOT}` into a hook's `command` itself, in shell and exec form, and also exports it | code.claude.com/docs/en/hooks, "Exec form and shell form" |
+| Claude Code loads a plugin in place when its marketplace is a local directory with a relative source, so `CLAUDE_PLUGIN_ROOT` is `<project>/plugins/linteljs` | code.claude.com/docs/en/plugin-marketplaces, "Local Directory Marketplaces" |
+| Codex copies every installed plugin, local ones included, to `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/` and runs it from there | developers.openai.com/codex/plugins/build, and this machine's cache |
+| Codex replaces `${PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_ROOT}` in `command` before any shell runs it, on every platform, and exports both | `codex-rs/hooks/src/engine/discovery.rs` at `c7c824d` |
+| Codex's command handler has `command`, `commandWindows`, `timeout`, `async` and `statusMessage`; an unknown `args` is dropped without an error | `codex-rs/config/src/hook_config.rs` at `c7c824d` |
+| a hook's stdout is parsed as the decision only when it starts with `{` and ends with `}`; Codex ignores plain text | both hosts' hooks references |
+
+Every hook sits in `plugins/linteljs/hooks/` beside `hooks.json`, because that is the only path both hosts can
+reach: Claude Code runs the plugin from the project, Codex from its cache copy. So nothing in a hook may reach the
+project through the plugin's own location. The two command guards need nothing from the project, and the
+banned-pattern hook finds `scripts/checkBannedPatterns.ts` by walking up from `CLAUDE_PROJECT_DIR` where the host
+exports it and from the payload's `cwd` otherwise.
+
+`hooks.json` is shell form, `node "${CLAUDE_PLUGIN_ROOT}/hooks/<name>.ts"`, rather than Claude Code's recommended
+exec form with `args`. Codex drops `args` silently and would run a bare `node`, which reads the payload on stdin as
+a program. Both hosts substitute the placeholder before a shell sees it, so the same line runs under sh, Git Bash,
+PowerShell and cmd, and needs no `commandWindows` and no wrapper script.
+
+The command guards read the payload's `tool_name` to choose a dialect, since Claude Code's PowerShell tool hands
+them PowerShell. `utils/commandParserUtils.ts` answers the commands a line would run, or nothing when it cannot
+read it, and each guard treats nothing as a finding: the git guard denies, the eslint guard warns. A PowerShell
+subexpression, script block or `Start-Process` is read as the commands inside it, and the command it sits in is
+marked opaque, which the git guard also denies. `cmd /c`, `pwsh -Command` and `Invoke-Expression` are unwrapped
+the way `sh -c` is. This is a guardrail, as `SKILL.md` says: a variable holding a subcommand still passes, in
+either shell.
+
 ## React Native `build`: `expo export`, and why it took a layout rule
 
 `buildScripts` ends `check` on `pnpm build` for every target, and `build` is a leg the scaffolder
@@ -1028,7 +1058,7 @@ Measured 2026-09-21, so none of it is re-measured:
 | `devEngines.packageManager` with `onFail: 'error'` is enforced by npm 11 (`EBADDEVENGINES`) and by pnpm; npm 10 ignores it | measured, pnpm settings/cli.md |
 | `allowBuilds` needs pnpm 10.26.0; below it the key is unknown and install scripts are skipped | pnpm settings/build.md |
 | `create-expo` 5.0.2 carries `normalizeNpmPackResult`, the npm 12 fix; `create-expo-app` stopped at 4.0.0 | tarball read |
-| `--experimental-strip-types` exists from 22.6.0, is on by default and warning-free from 22.18.0, and is still accepted on 26.9.0 | Node docs, measured |
+| type stripping exists behind `--experimental-strip-types` from 22.6.0 and is on by default and warning-free from 22.18.0; the three hooks and the checker run as plain `node file.ts` on 22.18.0 with nothing on stderr | Node docs, measured |
 
 A generated project declares the manager three ways, and each says something the others cannot. `packageManager`
 is the exact version that ran `create`, which is what corepack and pnpm's own switch read. `engines` is the floor
@@ -1037,9 +1067,10 @@ this CLI was tested against, not that exact version, so a project is not pinned 
 outright rather than warning. Bun gets no `packageManager`, since neither corepack nor pnpm's switch knows it, and
 `engines.bun` says what the field would have.
 
-Node is `>=22.6` in a generated project and `22.13.0` as this CLI's own floor, and the two are different facts. The
-project's floor is `--experimental-strip-types`, which starts at 22.6.0 and is what the two shipped `scripts/*.ts`
-and the hooks' `commandParser.ts` run under; 22.0 to 22.5 lack the flag, so the floor names 22.6. The CLI's own is `@inquirer/prompts` 8, which declares
+Node is `>=22.18` in a generated project and `22.13.0` as this CLI's own floor, and the two are different facts. The
+project's floor is type stripping on by default: the shipped `scripts/*.ts` and the plugin's three hooks run as plain
+`node file.ts`, from lint-staged, from `lint:types` and from a host that passes no Node flags, and 22.18.0 is the
+first release where that works without `--experimental-strip-types`. The CLI's own is `@inquirer/prompts` 8, which declares
 `^22.13.0 || >=23.5.0`: a questionnaire reading raw keypresses is not something to run below what its own library
 supports, and nothing a project installs is that library. The pinned tools ask for more again (`@angular/create`
 and lint-staged 17.3 want 22.22) and say so themselves as `EBADENGINE` warnings; that is theirs to declare rather
