@@ -27,7 +27,7 @@ interface Options {
 // React Native's `Button` builds its label from `title`, so a titled button is named even with no label prop.
 const NAME_PROPS = [...LABEL_PROPS, ...LABELLED_BY_PROPS, 'title'] as const;
 
-export const reactNativeAccessibleName = createRule('react-native-accessible-name', {
+export const nativeAccessibleName = createRule('native-accessible-name', {
   meta: {
     type: 'problem',
     docs: {

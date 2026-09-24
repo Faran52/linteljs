@@ -1,4 +1,4 @@
-# @linteljs/react-native-no-nested-touchables
+# @linteljs/native-no-nested-touchables
 
 Disallow controls inside a container marked accessible.
 
@@ -84,7 +84,7 @@ whose buttons are not named after a React Native primitive.
 
 ```js
 {
-  '@linteljs/react-native-no-nested-touchables': ['error', {
+  '@linteljs/native-no-nested-touchables': ['error', {
     components: ['IconButton', 'Pill', 'SegmentControl'],
   }],
 }

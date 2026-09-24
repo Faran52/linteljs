@@ -7,8 +7,8 @@ import {
 
 import type { ESLint, Linter } from 'eslint';
 
-// Two, and the level is the only axis. A rule's domain is carried by its id, the way `react-native-*` already did
-// and `@stylistic`'s `jsx-*` does, rather than by a field generating a preset per value.
+// Two, and the level is the only axis. A rule's domain is carried by its id, the way `native-*` and
+// `@stylistic`'s `jsx-*` do, rather than by a field generating a preset per value.
 export type PresetName = 'recommended' | 'all';
 
 // A `files`-scoped block inside an eslintrc preset, which is where the TypeScript-only rules go.

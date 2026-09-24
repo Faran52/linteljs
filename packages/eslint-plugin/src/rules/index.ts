@@ -4,6 +4,13 @@ import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifi
 import { importNewlines } from './import-newlines/importNewlines.ts';
 import { interfaceOrder } from './interface-order/interfaceOrder.ts';
 import { memberNewline } from './member-newline/memberNewline.ts';
+import { nativeAccessibleName } from './native-accessible-name/nativeAccessibleName.ts';
+import { nativeNoNestedTouchables } from './native-no-nested-touchables/nativeNoNestedTouchables.ts';
+import {
+  nativeValidAccessibilityActions,
+} from './native-valid-accessibility-actions/nativeValidAccessibilityActions.ts';
+import { nativeValidAccessibilityRole } from './native-valid-accessibility-role/nativeValidAccessibilityRole.ts';
+import { nativeValidAccessibilityState } from './native-valid-accessibility-state/nativeValidAccessibilityState.ts';
 import { noDuplicateJsxProps } from './no-duplicate-jsx-props/noDuplicateJsxProps.ts';
 import { noEslintDisable } from './no-eslint-disable/noEslintDisable.ts';
 import { noImportNamespaceDestructure } from './no-import-namespace-destructure/noImportNamespaceDestructure.ts';
@@ -12,17 +19,6 @@ import { preferArrowFunctions } from './prefer-arrow-functions/preferArrowFuncti
 import { preferAwaitToThen } from './prefer-await-to-then/preferAwaitToThen.ts';
 import { preferDestructuredProps } from './prefer-destructured-props/preferDestructuredProps.ts';
 import { preferTryCatch } from './prefer-try-catch/preferTryCatch.ts';
-import { reactNativeAccessibleName } from './react-native-accessible-name/reactNativeAccessibleName.ts';
-import { reactNativeNoNestedTouchables } from './react-native-no-nested-touchables/reactNativeNoNestedTouchables.ts';
-import {
-  reactNativeValidAccessibilityActions,
-} from './react-native-valid-accessibility-actions/reactNativeValidAccessibilityActions.ts';
-import {
-  reactNativeValidAccessibilityRole,
-} from './react-native-valid-accessibility-role/reactNativeValidAccessibilityRole.ts';
-import {
-  reactNativeValidAccessibilityState,
-} from './react-native-valid-accessibility-state/reactNativeValidAccessibilityState.ts';
 import { reactNoGlobalNamespace } from './react-no-global-namespace/reactNoGlobalNamespace.ts';
 import { sortHookDependencies } from './sort-hook-dependencies/sortHookDependencies.ts';
 import { unionNewline } from './union-newline/unionNewline.ts';
@@ -40,6 +36,11 @@ export const rules = {
   'import-newlines': importNewlines,
   'interface-order': interfaceOrder,
   'member-newline': memberNewline,
+  'native-accessible-name': nativeAccessibleName,
+  'native-no-nested-touchables': nativeNoNestedTouchables,
+  'native-valid-accessibility-actions': nativeValidAccessibilityActions,
+  'native-valid-accessibility-role': nativeValidAccessibilityRole,
+  'native-valid-accessibility-state': nativeValidAccessibilityState,
   'no-duplicate-jsx-props': noDuplicateJsxProps,
   'no-eslint-disable': noEslintDisable,
   'no-inline-object-types': noInlineObjectTypes,
@@ -48,11 +49,6 @@ export const rules = {
   'prefer-await-to-then': preferAwaitToThen,
   'prefer-destructured-props': preferDestructuredProps,
   'prefer-try-catch': preferTryCatch,
-  'react-native-accessible-name': reactNativeAccessibleName,
-  'react-native-no-nested-touchables': reactNativeNoNestedTouchables,
-  'react-native-valid-accessibility-actions': reactNativeValidAccessibilityActions,
-  'react-native-valid-accessibility-role': reactNativeValidAccessibilityRole,
-  'react-native-valid-accessibility-state': reactNativeValidAccessibilityState,
   'react-no-global-namespace': reactNoGlobalNamespace,
   'sort-hook-dependencies': sortHookDependencies,
   'union-newline': unionNewline,

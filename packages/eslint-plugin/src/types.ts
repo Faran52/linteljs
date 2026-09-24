@@ -39,7 +39,7 @@ interface LintelRuleDefinition {
 /**
  * How far a fixer may move the tokens it touches, and the whole of what this says. A domain taxonomy used to live
  * here as `category`, generating one published preset per value, until `accessibility` turned out to be exactly the
- * rules whose id begins `react-native-`. The id carries the domain now and the presets carry the level.
+ * React Native rules, whose ids begin `native-`. The id carries the domain now and the presets carry the level.
  *
  * `whitespace`: the token stream is identical afterwards.
  * `reorder`: the same tokens in a different order.

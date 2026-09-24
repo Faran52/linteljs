@@ -23,7 +23,7 @@ const STATE_KEYS = [
 // The two forms that are a state value but not an object, so the mistake is legible rather than merely wrong.
 const NOT_OBJECT_TYPES = ['Literal', 'ArrayExpression'];
 
-export const reactNativeValidAccessibilityState = createRule('react-native-valid-accessibility-state', {
+export const nativeValidAccessibilityState = createRule('native-valid-accessibility-state', {
   meta: {
     type: 'problem',
     docs: {

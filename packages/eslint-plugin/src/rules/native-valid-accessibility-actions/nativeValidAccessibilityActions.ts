@@ -25,7 +25,7 @@ const STANDARD_ACTIONS = [
 
 const ACTION_KEYS = ['name', 'label'];
 
-export const reactNativeValidAccessibilityActions = createRule('react-native-valid-accessibility-actions', {
+export const nativeValidAccessibilityActions = createRule('native-valid-accessibility-actions', {
   meta: {
     type: 'problem',
     docs: {

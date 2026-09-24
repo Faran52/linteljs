@@ -1,8 +1,8 @@
-import { reactNativeValidAccessibilityState } from './reactNativeValidAccessibilityState.ts';
+import { nativeValidAccessibilityState } from './nativeValidAccessibilityState.ts';
 
 import { tsxRuleTester } from '#mocks/ruleTesters';
 
-tsxRuleTester.run('react-native-valid-accessibility-state', reactNativeValidAccessibilityState, {
+tsxRuleTester.run('native-valid-accessibility-state', nativeValidAccessibilityState, {
   valid: [
     'const view = <View accessibilityState={{ disabled: true }} />;',
     'const view = <View accessibilityState={{ busy: false, expanded: true, selected: false }} />;',

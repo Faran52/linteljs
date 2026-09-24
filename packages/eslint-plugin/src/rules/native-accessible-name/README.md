@@ -1,4 +1,4 @@
-# @linteljs/react-native-accessible-name
+# @linteljs/native-accessible-name
 
 Require an accessible name on React Native elements that are announced.
 
@@ -97,7 +97,7 @@ they are named, unless they happen to carry one of the touch handlers above.
 
 ```js
 {
-  '@linteljs/react-native-accessible-name': ['error', {
+  '@linteljs/native-accessible-name': ['error', {
     components: ['IconButton', 'Pill', 'SegmentControl'],
   }],
 }

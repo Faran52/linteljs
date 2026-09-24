@@ -18,7 +18,7 @@ interface Options {
   components: string[];
 }
 
-export const reactNativeNoNestedTouchables = createRule('react-native-no-nested-touchables', {
+export const nativeNoNestedTouchables = createRule('native-no-nested-touchables', {
   meta: {
     type: 'problem',
     docs: {

@@ -37,7 +37,7 @@ const ROLE_PROPS: [string, string[]][] = [
   ['role', ARIA_ROLES],
 ];
 
-export const reactNativeValidAccessibilityRole = createRule('react-native-valid-accessibility-role', {
+export const nativeValidAccessibilityRole = createRule('native-valid-accessibility-role', {
   meta: {
     type: 'problem',
     docs: {

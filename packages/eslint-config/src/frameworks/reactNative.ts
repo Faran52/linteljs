@@ -27,11 +27,11 @@ export const reactNative = (): Layer => {
        * the group, which is what made a published preset for it hard to justify.
        */
       rules: {
-        '@linteljs/react-native-accessible-name': 'error',
-        '@linteljs/react-native-no-nested-touchables': 'error',
-        '@linteljs/react-native-valid-accessibility-actions': 'error',
-        '@linteljs/react-native-valid-accessibility-role': 'error',
-        '@linteljs/react-native-valid-accessibility-state': 'error',
+        '@linteljs/native-accessible-name': 'error',
+        '@linteljs/native-no-nested-touchables': 'error',
+        '@linteljs/native-valid-accessibility-actions': 'error',
+        '@linteljs/native-valid-accessibility-role': 'error',
+        '@linteljs/native-valid-accessibility-state': 'error',
       },
     },
   ];

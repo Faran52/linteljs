@@ -67,7 +67,7 @@ export default [
 ```
 
 There are two presets and no others. A rule's subject is in its id rather than in a preset name:
-the five `react-native-*` rules are React Native accessibility, and `react-no-global-namespace` is
+the five `native-*` rules are React Native accessibility, and `react-no-global-namespace` is
 React. Those are opt-outs, so `recommended` does not carry them; name the ones you want, or take
 `all` and turn off what you do not.
 
@@ -111,6 +111,11 @@ Each rule link has examples, options, and cases it declines to fix.
 | [`@linteljs/import-newlines`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/import-newlines) | Split import lists when they get crowded or too long. | yes | | `maxItems`, `maxLineLength` |
 | [`@linteljs/interface-order`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/interface-order) | Keep top-level interfaces and type aliases together, after imports and before runtime code. | yes | yes | |
 | [`@linteljs/member-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/member-newline) | Keep crowded destructuring patterns, interfaces, and type literals on separate lines. | yes | | `maxProperties`, `maxPropertiesWithRest`, `maxLineLength` |
+| [`@linteljs/native-accessible-name`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/native-accessible-name) | Require an accessible name on React Native elements that are announced. | | | `components` |
+| [`@linteljs/native-no-nested-touchables`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/native-no-nested-touchables) | Disallow controls inside a container marked accessible. | | | `components` |
+| [`@linteljs/native-valid-accessibility-actions`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/native-valid-accessibility-actions) | Require accessibilityActions and onAccessibilityAction to be declared together and well formed. | | |  |
+| [`@linteljs/native-valid-accessibility-role`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/native-valid-accessibility-role) | Require accessibilityRole and role values React Native understands. | | |  |
+| [`@linteljs/native-valid-accessibility-state`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/native-valid-accessibility-state) | Require accessibilityState to be an object of the keys React Native reads. | | |  |
 | [`@linteljs/no-duplicate-jsx-props`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-duplicate-jsx-props) | Report duplicate JSX props on the same element. | | | |
 | [`@linteljs/no-eslint-disable`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-eslint-disable) | Fix what a rule reports, or name the exemption in the config. Do not disable it inline. | yes | | `allowRules` |
 | [`@linteljs/no-import-namespace-destructure`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/no-import-namespace-destructure) | Avoid destructuring namespace imports when a named import is enough. | yes | | |
@@ -119,11 +124,6 @@ Each rule link has examples, options, and cases it declines to fix.
 | [`@linteljs/prefer-await-to-then`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-await-to-then) | Prefer `await` to `.then()`, `.catch()`, and `.finally()` when reading Promise values. | yes | | `strict` |
 | [`@linteljs/prefer-destructured-props`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-destructured-props) | Destructure component props in the function signature instead of reading them one field at a time. | | | |
 | [`@linteljs/prefer-try-catch`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/prefer-try-catch) | Prefer `try`/`catch` around an awaited rejection path instead of a promise callback. | yes | | |
-| [`@linteljs/react-native-accessible-name`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-accessible-name) | Require an accessible name on React Native elements that are announced. | | | `components` |
-| [`@linteljs/react-native-no-nested-touchables`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-no-nested-touchables) | Disallow controls inside a container marked accessible. | | | `components` |
-| [`@linteljs/react-native-valid-accessibility-actions`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-actions) | Require accessibilityActions and onAccessibilityAction to be declared together and well formed. | | |  |
-| [`@linteljs/react-native-valid-accessibility-role`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-role) | Require accessibilityRole and role values React Native understands. | | |  |
-| [`@linteljs/react-native-valid-accessibility-state`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-native-valid-accessibility-state) | Require accessibilityState to be an object of the keys React Native reads. | | |  |
 | [`@linteljs/react-no-global-namespace`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/react-no-global-namespace) | Import the React names a file uses instead of reaching them through the global namespace. | | | |
 | [`@linteljs/sort-hook-dependencies`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/sort-hook-dependencies) | Keep hook dependency arrays in a consistent order. | | | `order`, `hooks` |
 | [`@linteljs/union-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/union-newline) | Split union types when object or function members make them hard to read. | yes | yes | `maxGenericMembers` |

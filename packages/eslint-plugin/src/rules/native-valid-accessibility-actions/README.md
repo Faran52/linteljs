@@ -1,4 +1,4 @@
-# @linteljs/react-native-valid-accessibility-actions
+# @linteljs/native-valid-accessibility-actions
 
 Require accessibilityActions and onAccessibilityAction to be declared together and well formed.
 

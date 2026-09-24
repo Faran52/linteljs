@@ -1,4 +1,4 @@
-import { reactNativeValidAccessibilityRole } from './reactNativeValidAccessibilityRole.ts';
+import { nativeValidAccessibilityRole } from './nativeValidAccessibilityRole.ts';
 
 import { tsxRuleTester } from '#mocks/ruleTesters';
 
@@ -22,7 +22,7 @@ const ARIA_ROLES = [
   'tooltip', 'tree', 'treegrid', 'treeitem',
 ];
 
-tsxRuleTester.run('react-native-valid-accessibility-role', reactNativeValidAccessibilityRole, {
+tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRole, {
   valid: [
     ...ACCESSIBILITY_ROLES.map((role) => {
       return `const view = <View accessibilityRole="${role}" />;`;

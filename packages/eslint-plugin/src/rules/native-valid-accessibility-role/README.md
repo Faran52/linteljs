@@ -1,4 +1,4 @@
-# @linteljs/react-native-valid-accessibility-role
+# @linteljs/native-valid-accessibility-role
 
 Require accessibilityRole and role values React Native understands.
 
@@ -31,7 +31,7 @@ Native has never accepted for `accessibilityRole`.
 - Whether a role is *right* for the element. `accessibilityRole="header"` on a button is valid
   and wrong, and no linter can tell.
 - A missing role. An unnamed control is
-  [`react-native-accessible-name`](../react-native-accessible-name); which role it should carry
+  [`native-accessible-name`](../native-accessible-name); which role it should carry
   is a judgment this rule does not make.
 
 It is not fixable. `"buton"` is probably `"button"`, but `"img"` could be `"image"` or

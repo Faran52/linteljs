@@ -39,6 +39,14 @@ when a version's change lives in a sibling it is described there instead:
 - All four of that rule's messages say "Members" where they said "Properties". An interface body has
   members, and reporting one as a property was wrong. The `{{maxProperties}}` placeholder keeps its
   name, because it is the option name and the option is not renamed.
+- **Breaking: the five `react-native-*` rules are now `native-*`.** `react-native-accessible-name` is
+  `native-accessible-name`, `react-native-no-nested-touchables` is `native-no-nested-touchables`,
+  `react-native-valid-accessibility-actions` is `native-valid-accessibility-actions`,
+  `react-native-valid-accessibility-role` is `native-valid-accessibility-role`, and
+  `react-native-valid-accessibility-state` is `native-valid-accessibility-state`. Under the old prefix
+  they sorted among the `react-*` rules and read as React rules. Rename the ids wherever they are
+  configured. Nothing else about the rules changed: the same elements are reported, with the same
+  messages and the same options.
 - `react-no-global-namespace` recognises a directive by its string value. typescript-eslint gives
   every expression statement a `directive` key, so a file of plain statements was read as one long
   prologue: `React.createElement('div');` alone crashed the rule, and after a leading `run();` the

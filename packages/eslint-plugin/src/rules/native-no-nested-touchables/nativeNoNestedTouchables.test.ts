@@ -1,8 +1,8 @@
-import { reactNativeNoNestedTouchables } from './reactNativeNoNestedTouchables.ts';
+import { nativeNoNestedTouchables } from './nativeNoNestedTouchables.ts';
 
 import { tsxRuleTester } from '#mocks/ruleTesters';
 
-tsxRuleTester.run('react-native-no-nested-touchables', reactNativeNoNestedTouchables, {
+tsxRuleTester.run('native-no-nested-touchables', nativeNoNestedTouchables, {
   valid: [
     // Without `accessible`, the container is not a focus stop and each control keeps its own.
     'const view = <View><Pressable accessibilityLabel="Save" /></View>;',

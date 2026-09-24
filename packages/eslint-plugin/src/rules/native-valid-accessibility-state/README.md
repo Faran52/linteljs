@@ -1,4 +1,4 @@
-# @linteljs/react-native-valid-accessibility-state
+# @linteljs/native-valid-accessibility-state
 
 Require accessibilityState to be an object of the keys React Native reads.
 

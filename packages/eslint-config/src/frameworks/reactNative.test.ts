@@ -46,14 +46,14 @@ describe('reactNative', () => {
     const code = 'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Save.tsx');
 
-    expect(ruleIds).toContain('@linteljs/react-native-accessible-name');
+    expect(ruleIds).toContain('@linteljs/native-accessible-name');
   });
 
   it('reports an accessibility role React Native drops silently', async () => {
     const code = 'export const Save = () => {\n  return <Text accessibilityRole="searchbox">a</Text>;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Save.tsx');
 
-    expect(ruleIds).toContain('@linteljs/react-native-valid-accessibility-role');
+    expect(ruleIds).toContain('@linteljs/native-valid-accessibility-role');
   });
 
   // Scoped to this layer alone: `Button` and `TextInput` are ordinary names that mean something else on the web.
@@ -61,7 +61,7 @@ describe('reactNative', () => {
     const code = 'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Save.tsx');
 
-    expect(ruleIds).not.toContain('@linteljs/react-native-accessible-name');
+    expect(ruleIds).not.toContain('@linteljs/native-accessible-name');
   });
 
   /**

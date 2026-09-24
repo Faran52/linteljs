@@ -1,8 +1,8 @@
-import { reactNativeValidAccessibilityActions } from './reactNativeValidAccessibilityActions.ts';
+import { nativeValidAccessibilityActions } from './nativeValidAccessibilityActions.ts';
 
 import { tsxRuleTester } from '#mocks/ruleTesters';
 
-tsxRuleTester.run('react-native-valid-accessibility-actions', reactNativeValidAccessibilityActions, {
+tsxRuleTester.run('native-valid-accessibility-actions', nativeValidAccessibilityActions, {
   valid: [
     "const view = <View accessibilityActions={[{ name: 'activate' }]} onAccessibilityAction={handle} />;",
     "const view = <View accessibilityActions={[{ name: 'magicTap' }]} onAccessibilityAction={handle} />;",

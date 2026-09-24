@@ -1,8 +1,8 @@
-import { reactNativeAccessibleName } from './reactNativeAccessibleName.ts';
+import { nativeAccessibleName } from './nativeAccessibleName.ts';
 
 import { tsxRuleTester } from '#mocks/ruleTesters';
 
-tsxRuleTester.run('react-native-accessible-name', reactNativeAccessibleName, {
+tsxRuleTester.run('native-accessible-name', nativeAccessibleName, {
   valid: [
     'const view = <Pressable accessibilityLabel="Save" />;',
     // The ARIA alias reaches the same native behaviour, so a rule that knew only the legacy spelling would
