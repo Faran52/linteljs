@@ -20,6 +20,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:isolated": "tsx scripts/isolated-coverage/isolatedCoverageScript.ts",
     "build": "pnpm -r build",
     "check": "pnpm lint && pnpm lint:types && pnpm lint:starters && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build",
     "prepare": "husky"
@@ -37,6 +38,7 @@
     "husky": "^9.1.7",
     "jiti": "catalog:",
     "lint-staged": "^17.5.1",
+    "p-queue": "^9.3.3",
     "stylelint": "^17.15.0",
     "stylelint-config-recess-order": "^7.8.0",
     "stylelint-config-standard": "^40.0.0",
