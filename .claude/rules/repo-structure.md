@@ -156,7 +156,8 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   `registry.ts` holds `ANSWERS`, one line per record in ask order, and only what derives from the
   list itself: `AnswerKey`, `Answers`, `LinteljsConfig` and `DEFAULT_ANSWERS`, the same shape
-  `538fa34` gave `targets/registry.ts`. `constants.ts` holds the schema URLs and the config path, and
+  `538fa34` gave `targets/registry.ts`. It is code rather than a table, so `registry.test.ts` holds each
+  record filed under its own key and `DEFAULT_ANSWERS` to a config the parser accepts. `constants.ts` holds the schema URLs and the config path, and
   `index.ts` is the barrel the outer rings take the ring through. `meta.test.ts` holds the files to
   the registry in both directions: every key has exactly one file across the groups, that file
   exports a const named for itself, and the record's own `key` field names the same file, so a
@@ -177,9 +178,11 @@ aliases it duplicates instead of importing carry a comment saying so.
 
 - **`eslint-plugin` groups by rule id, not by ring.** `src/rules/<kebab-rule-id>/` holds the rule
   file named for its single export, its test, and `README.md`. The directory name is the id, so the
-  id is spelled once. `src/rules/index.ts` is the only `index` in the package. `meta.test.ts` asserts
-  the directory listing equals the registry and that no `index.ts` survives in a rule directory, so a
-  half-renamed directory fails rather than sitting unnoticed.
+  id is spelled once. `src/rules/index.ts` is the registry, the one `index` besides the package's own
+  barrel: it builds the `rules` object, so it is code and `index.test.ts` beside it holds the
+  directory listing equal to the registry and each id to the rule its own directory exports.
+  `meta.test.ts` asserts that no `index.ts` survives in a rule directory, so a half-renamed directory
+  fails rather than sitting unnoticed.
 
 - **`eslint-config` takes the subject shape, grouped by what a layer is.** `layers/<name>/<name>Layer.ts`
   for `base`, `typescript`, `vitest` and `html`, `frameworks/<name>/<name>Framework.ts` for the nine
@@ -187,12 +190,13 @@ aliases it duplicates instead of importing carry a comment saying so.
   it and a `utils/` only where one subject alone reads the helper: `layers/base/utils/` holds the
   naming and import-sort builders. The suffix is on the file and not the export, so `baseLayer.ts`
   still exports `base`. `compose-config/composeConfig.ts` composes them and owns the ordering,
-  which is load-bearing; nothing names a kind for it, so its entry takes no suffix, and its loader
-  tables sit in its `constants.ts`. `index.ts` and `types.ts` stay at the root as the package's own
+  which is load-bearing; nothing names a kind for it, so its entry takes no suffix. Its loader
+  tables are functions, so they sit in `utils/loaderUtils.ts` with their own suite rather than in a
+  `constants.ts`, which holds data only. `index.ts` and `types.ts` stay at the root as the package's own
   entry points. Nesting costs the published surface nothing: tsdown's entries are keyed, so
   `dist/react.mjs` is flat whatever path backs it, and `scripts/smoke/smokeScript.ts` resolves every
   `exports` subpath against the packed tarball. `src/meta.test.ts` holds the tree and holds the
-  tsdown entries one to one against `exports`. `config/globs.ts` holds the extension tables several
+  tsdown entries one to one against `exports`. `config/constants.ts` holds the extension tables several
   layers read, and `frameworks/utils/` and `utils/` hold what several subjects read: a table several
   modules share is not a helper, so it is not in `utils/`.
 
@@ -226,3 +230,9 @@ Three files in `eslint-plugin` are named for what they cover rather than for one
 the standard permits because what they cover is the package: `meta.test.ts` holds the whole published
 surface against `__mocks__/ruleMetadata.json`, `ruleModules.test.ts` loads each rule module inside a test body
 and checks it exports the rule under its own name, and `fixerSafety.test.ts` runs the shared corpus through every rule at once.
+
+The same holds for `meta.test.ts` in `create` and `eslint-config`, which hold each package's tree, for
+`create/src/types.test.ts`, which holds the types `create` redeclares equal to `eslint-config`'s own, and for
+`hooks.test.ts`, which holds the shipped hooks together. These five names are the only suites with no source
+beside them; `pnpm test:isolated` skips them by name and lists them, and fails on any other test file with no
+source, as it does on a source with no test other than a data-only `constants.ts` or a pure re-export barrel.

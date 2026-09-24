@@ -4,19 +4,23 @@
  * process with coverage on; the run of `x.test.ts` is `x.ts`'s own coverage, and every other run's hits name the
  * suites that cover the rest by pass-through. A gap no run hits is dead code or a missing test.
  *
- * A source with statements but no function and no branch is data, a table, and needs no suite of its own: asserting
- * a table equal to itself proves nothing. Such a file is listed as data rather than as untested.
+ * One code file has exactly one test file. The exemptions are a `constants.ts`, which must hold data only, no function
+ * and no branch, and a barrel of nothing but `export ... from`, told by its source. Any other source with no test
+ * beside it is untested however data-like it is, and a source two test files claim by name is reported. The suites
+ * that cover a package rather than a file are the documented exceptions, listed so they stay visible.
  *
  * Usage: tsx scripts/isolated-coverage/isolatedCoverageScript.ts [--concurrency <n>] [--timeout <seconds>]
  */
 import {
   existsSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
 } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
 import {
   basename,
+  dirname,
   join,
   relative,
 } from 'node:path';
@@ -34,6 +38,8 @@ import {
 
 import {
   COVERED_BY_SHOWN,
+  DATA_FILE,
+  DOCUMENTED_SUITES,
   REPORTS_PREFIX,
   SOURCE_SUFFIX,
   TEST_SUFFIX,
@@ -49,6 +55,7 @@ import {
   metricsOf,
 } from './utils/coverageUtils.ts';
 import { coverageRun, listTests } from './utils/runUtils.ts';
+import { isBarrel } from './utils/sourceUtils.ts';
 
 import type { FileCoverage } from './utils/coverageUtils.ts';
 
@@ -149,8 +156,19 @@ const sourceOf = (test: string): string => {
   return `${test.slice(0, -TEST_SUFFIX.length)}${SOURCE_SUFFIX}`;
 };
 
+// The source a test names up to its first dot, so `x.test.ts` and `x.other.test.ts` both claim `x.ts`.
+const claimOf = (test: string): string => {
+  return join(dirname(test), `${basename(test).split('.')[0] ?? ''}${SOURCE_SUFFIX}`);
+};
+
 const noSource = tests.filter((test) => {
   return !existsSync(sourceOf(test));
+});
+const documented = noSource.filter((test) => {
+  return DOCUMENTED_SUITES.includes(basename(test));
+});
+const orphaned = noSource.filter((test) => {
+  return !DOCUMENTED_SUITES.includes(basename(test));
 });
 const outOfScope = tests.filter((test) => {
   return existsSync(sourceOf(test)) && !maps.has(sourceOf(test));
@@ -160,6 +178,12 @@ const paired = new Map(tests.filter((test) => {
 }).map((test) => {
   return [sourceOf(test), test];
 }));
+const claimants = Map.groupBy(tests, claimOf);
+const claimedTwice = [...claimants].filter(([, claiming]) => {
+  return claiming.length > 1;
+}).map(([source, claiming]) => {
+  return `${relative(root, source)}  claimed by: ${claiming.map(labelOf).join(', ')}`;
+});
 
 // The gap of `file` against every run but its own, as the lines the report prints.
 const explain = (file: string, coverage: FileCoverage, gap: string[], own?: string): string[] => {
@@ -183,8 +207,9 @@ const explain = (file: string, coverage: FileCoverage, gap: string[], own?: stri
 
 const short: string[] = [];
 const untested: string[] = [];
+const impure: string[] = [];
 const data: string[] = [];
-let empty = 0;
+let barrels = 0;
 
 for (const [file, coverage] of [...maps].toSorted(([left], [right]) => {
   return left.localeCompare(right);
@@ -192,14 +217,21 @@ for (const [file, coverage] of [...maps].toSorted(([left], [right]) => {
   const test = paired.get(file);
   const path = relative(root, file);
 
+  if (basename(file) === DATA_FILE && !isData(coverage)) {
+    impure.push(`${path}  ${describeGap(coverage, entriesOf(coverage).filter((key) => {
+      return !key.startsWith('s:');
+    }))}`);
+    continue;
+  }
+
   if (test === undefined) {
-    if (entriesOf(coverage).length === 0) {
-      empty += 1;
+    if (basename(file) === DATA_FILE) {
+      data.push(path);
       continue;
     }
 
-    if (isData(coverage)) {
-      data.push(path);
+    if (isBarrel(readFileSync(file, 'utf8'))) {
+      barrels += 1;
       continue;
     }
 
@@ -228,27 +260,32 @@ const listed = (heading: string, items: string[]): void => {
   }
 };
 
+const relativeTo = (test: string): string => {
+  return relative(root, test);
+};
+
 listed('Short of full coverage from their own test file', short);
 listed('Sources with no test file beside them', untested);
-listed('Runs that wrote no coverage report', failed.map((test) => {
-  return relative(root, test);
-}));
-listed(`Runs killed at the ${String(timeoutSeconds)}s deadline`, timedOut.map((test) => {
-  return relative(root, test);
-}));
-listed('Data, no function and no branch, so no suite of its own', data);
-listed('Skipped, no source file beside them', noSource.map((test) => {
-  return relative(root, test);
-}));
-listed('Out of scope, their source is outside the coverage include set', outOfScope.map((test) => {
-  return relative(root, test);
-}));
+listed(`${DATA_FILE} must hold data only, and these hold a function or a branch`, impure);
+listed('Sources more than one test file claims by name', claimedTwice);
+listed('Test files with no source beside them', orphaned.map(relativeTo));
+listed('Runs that wrote no coverage report', failed.map(relativeTo));
+listed(`Runs killed at the ${String(timeoutSeconds)}s deadline`, timedOut.map(relativeTo));
+listed(`Data, a ${DATA_FILE}, so no suite of its own`, data);
+listed(
+  'Skipped: the documented exceptions in .claude/rules/repo-structure.md, suites of a package rather than one file',
+  documented.map(relativeTo),
+);
+listed('Out of scope, their source is outside the coverage include set', outOfScope.map(relativeTo));
 log(`${String(paired.size)} pairs, ${String(short.length)} short, ${String(untested.length)} untested, `
-  + `${String(data.length)} data, ${String(empty)} sources with nothing to measure, `
-  + `${String(timedOut.length)} timed out, ${String(noSource.length)} skipped, `
-  + `${String(outOfScope.length)} out of scope; ${String(tests.length)} runs at concurrency ${String(concurrency)} `
-  + `in ${String(seconds)}s`);
+  + `${String(impure.length)} impure ${DATA_FILE}, ${String(claimedTwice.length)} claimed twice, `
+  + `${String(orphaned.length)} orphaned, ${String(data.length)} data, ${String(barrels)} barrels, `
+  + `${String(timedOut.length)} timed out, `
+  + `${String(documented.length)} documented exceptions, ${String(outOfScope.length)} out of scope; `
+  + `${String(tests.length)} runs at concurrency ${String(concurrency)} in ${String(seconds)}s`);
 
-if (short.length > 0 || untested.length > 0 || failed.length > 0 || timedOut.length > 0) {
+if ([short, untested, impure, claimedTwice, orphaned, failed, timedOut].some((found) => {
+  return found.length > 0;
+})) {
   process.exit(1);
 }

@@ -1,4 +1,19 @@
-import { walkStarters } from '@mocks/starterWalk';
+import {
+  byKey,
+  componentStyleGates,
+  contactGates,
+  type GateRow,
+  mswGates,
+  NOT_TANSTACK_QUERY,
+  PRESSABLE,
+  TAILWIND,
+  TANSTACK_QUERY,
+  walkGates,
+  WITH_FORM,
+  WITH_STORE,
+  WITHOUT_FORM,
+  WITHOUT_STORE,
+} from '@mocks/starterGates';
 import {
   describe,
   expect,
@@ -75,20 +90,50 @@ describe('vueTarget', () => {
   });
 });
 
-/*
- * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
- * one destination, and a gate that never opens, or never shuts, decides nothing.
- */
+// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
+const GATES: GateRow[] = [
+  ...mswGates(),
+  ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
+  ...contactGates(['tanstack-query']),
+  ['src/views/routes.ts', WITHOUT_FORM],
+  ['src/views/routes.ts@with-form', WITH_FORM],
+  ['src/views/HomeView.vue', WITHOUT_STORE],
+  ['src/views/HomeView.vue@with-store', WITH_STORE],
+  ['src/views/ContactView.vue', WITH_FORM],
+  ['src/views/useContactForm.ts', WITH_FORM],
+  ['src/components/ui/app-button/AppButton.vue', PRESSABLE],
+  ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
+  ['src/components/ui/text-input/types.ts', WITH_FORM],
+  ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/composables/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/installData.ts', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/installData.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/installStore.ts', [{ store: [undefined, 'tanstack-store'] }]],
+  ['src/lib/providers/installStore.ts@pinia', [{ store: ['pinia'] }]],
+  ['src/lib/store/counter.ts@pinia', [{ store: ['pinia'] }]],
+  ['src/lib/store/counter.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
+  ['src/styles/theme.css@tailwind', TAILWIND],
+  ['../components/ui/app-button/AppButton.css', PRESSABLE],
+  ['../components/ui/text-input/TextInput.css', WITH_FORM],
+  ['src/lib/composables/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/composables/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+];
+
+// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
-  const walked = walkStarters(() => {
+  const walk = walkGates(() => {
     return vueTarget;
   }, 'vue');
 
   it('write at most one spelling of each destination under any answer set', () => {
-    expect(walked.twice).toEqual([]);
+    expect(walk.twice).toEqual([]);
   });
 
-  it('each open under some answer set and shut under another', () => {
-    expect(walked.fixed).toEqual([]);
+  it('are each pinned below, and nothing else is', () => {
+    expect(byKey(GATES)).toEqual(walk.gated);
+  });
+
+  it.each(GATES)('%s', (key, conditions) => {
+    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
   });
 });

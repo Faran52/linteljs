@@ -2,7 +2,7 @@ import type {
   Framework,
   Layer,
   LibraryLayer,
-} from '../types';
+} from '../../types';
 
 export interface FrameworkParts {
   layer: Layer;
@@ -16,7 +16,7 @@ interface LibraryOptions {
 // Loaded on demand: each plugin is an optional peer.
 export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   'react': async () => {
-    const { react, reactGroup } = await import('../frameworks/react/reactFramework');
+    const { react, reactGroup } = await import('../../frameworks/react/reactFramework');
 
     return {
       layer: react(),
@@ -25,8 +25,8 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'next': async () => {
-    const { react } = await import('../frameworks/react/reactFramework');
-    const { next, nextGroup } = await import('../frameworks/next/nextFramework');
+    const { react } = await import('../../frameworks/react/reactFramework');
+    const { next, nextGroup } = await import('../../frameworks/next/nextFramework');
 
     return {
       layer: [...react(), ...next()],
@@ -35,7 +35,7 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'react-native': async () => {
-    const { reactNative, reactNativeGroup } = await import('../frameworks/react-native/reactNativeFramework');
+    const { reactNative, reactNativeGroup } = await import('../../frameworks/react-native/reactNativeFramework');
 
     return {
       layer: reactNative(),
@@ -44,7 +44,7 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'vue': async () => {
-    const { vue, vueGroup } = await import('../frameworks/vue/vueFramework');
+    const { vue, vueGroup } = await import('../../frameworks/vue/vueFramework');
 
     return {
       layer: vue(),
@@ -53,8 +53,8 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'nuxt': async () => {
-    const { vue } = await import('../frameworks/vue/vueFramework');
-    const { nuxt, nuxtGroup } = await import('../frameworks/nuxt/nuxtFramework');
+    const { vue } = await import('../../frameworks/vue/vueFramework');
+    const { nuxt, nuxtGroup } = await import('../../frameworks/nuxt/nuxtFramework');
 
     return {
       layer: [...vue(), ...nuxt()],
@@ -63,7 +63,7 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'svelte': async () => {
-    const { svelte, svelteGroup } = await import('../frameworks/svelte/svelteFramework');
+    const { svelte, svelteGroup } = await import('../../frameworks/svelte/svelteFramework');
 
     return {
       layer: svelte(),
@@ -72,7 +72,7 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'solid': async () => {
-    const { solid, solidGroup } = await import('../frameworks/solid/solidFramework');
+    const { solid, solidGroup } = await import('../../frameworks/solid/solidFramework');
 
     return {
       layer: solid(),
@@ -81,7 +81,7 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'angular': async () => {
-    const { angular, angularGroup } = await import('../frameworks/angular/angularFramework');
+    const { angular, angularGroup } = await import('../../frameworks/angular/angularFramework');
 
     return {
       layer: angular(),
@@ -92,17 +92,17 @@ export const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
 
 export const LIBRARIES: Record<LibraryLayer, (options: LibraryOptions) => Promise<Layer>> = {
   'tanstack-query': async () => {
-    const { tanstackQuery } = await import('../libraries/tanstack-query/tanstackQueryLibrary');
+    const { tanstackQuery } = await import('../../libraries/tanstack-query/tanstackQueryLibrary');
 
     return tanstackQuery();
   },
   'tanstack-router': async () => {
-    const { tanstackRouter } = await import('../libraries/tanstack-router/tanstackRouterLibrary');
+    const { tanstackRouter } = await import('../../libraries/tanstack-router/tanstackRouterLibrary');
 
     return tanstackRouter();
   },
   'tailwind': async ({ tailwindEntryPoint }) => {
-    const { tailwind } = await import('../libraries/tailwind/tailwindLibrary');
+    const { tailwind } = await import('../../libraries/tailwind/tailwindLibrary');
 
     return tailwind(tailwindEntryPoint);
   },

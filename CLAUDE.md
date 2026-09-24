@@ -102,13 +102,14 @@ combinations.
   file names carry the suffix and the exports do not: `baseLayer.ts` exports `base`. Each entry backs
   a published `exports` subpath through a keyed tsdown entry, so `dist/` stays flat however deep the
   source sits. `compose-config/composeConfig.ts` takes no suffix, since nothing names a kind for it,
-  and keeps its loader tables in its `constants.ts`. `index.ts` and `types.ts` stay at the root,
-  `config/` holds the glob tables several layers read, and `src/meta.test.ts` holds the tree
-  and the tsdown entries to it.
+  and its loader tables are code, so they sit in `utils/loaderUtils.ts` with a suite beside them.
+  `index.ts` and `types.ts` stay at the root, `config/constants.ts` holds the glob tables several
+  layers read, and `src/meta.test.ts` holds the tree and the tsdown entries to it.
 - `packages/eslint-plugin/src/rules/`: one directory per rule, named for its `kebab-case` id and
   holding `<camelCaseExport>.ts`, its test beside it, and `README.md`. The directory name is the id,
-  so the id is spelled once. `index` is a barrel and nothing else, which is why the rule is not one:
-  `src/rules/index.ts` is the only `index` in the package. A helper only one rule uses sits under
+  so the id is spelled once. `src/rules/index.ts` is the registry rather than a barrel: it builds the
+  `rules` object, so `index.test.ts` beside it holds each id to the rule its own directory exports.
+  A helper only one rule uses sits under
   that rule's own `utils/`, suffixed `*Utils` like every other; `src/utils/` is for what rules share.
 - Any `utils/` directory, in either package: `*Utils.ts`, so `ruleUtils.ts` and `checkFileUtils.ts`
   rather than `ruleApi.ts` and `checkFile.ts`. Enforced rather than asked for: the `naming` map in
@@ -142,6 +143,9 @@ Claim nothing that has not been run.
 
 - New or touched code carries zero loose types, TypeScript errors and ESLint findings before it is
   declared done.
+- One code file has exactly one test file beside it. A `constants.ts` holds data only and has none,
+  and a barrel of nothing but `export ... from` has no code to test. `pnpm test:isolated` runs every
+  suite alone and holds each source to its own, and fails on a `constants.ts` with a function or branch.
 - A fix to a rule or a fixer needs a case in the rule's own suite *and*, when it is about what a
   fixer emits, an entry in `packages/eslint-plugin/__mocks__/fixerSamples.ts`. That corpus is
   checked against every rule, so one nasty input covers all of them.

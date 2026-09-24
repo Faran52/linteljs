@@ -6,6 +6,18 @@ export const TEST_SUFFIX = '.test.ts';
 
 export const SOURCE_SUFFIX = '.ts';
 
+// The one name that holds data and so has no suite of its own.
+export const DATA_FILE = 'constants.ts';
+
+// Suites that cover a package rather than one file, each named in .claude/rules/repo-structure.md.
+export const DOCUMENTED_SUITES = [
+  'meta.test.ts',
+  'types.test.ts',
+  'fixerSafety.test.ts',
+  'ruleModules.test.ts',
+  'hooks.test.ts',
+];
+
 // Every metric a threshold key can carry, each set to this so no run fails on the merged-suite gate.
 export const THRESHOLD_METRICS = ['statements', 'branches', 'functions', 'lines'];
 

@@ -1,6 +1,6 @@
 import betterTailwindcss from 'eslint-plugin-better-tailwindcss';
 
-import { SCRIPT_AND_SFC_FILES } from '../../config/globs';
+import { SCRIPT_AND_SFC_FILES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';

@@ -1,6 +1,6 @@
 import nextPlugin from '@next/eslint-plugin-next';
 
-import { SCRIPT_FILES } from '../../config/globs';
+import { SCRIPT_FILES } from '../../config/constants';
 import { reactGroup } from '../react/reactFramework';
 
 import type { Layer } from '../../types';

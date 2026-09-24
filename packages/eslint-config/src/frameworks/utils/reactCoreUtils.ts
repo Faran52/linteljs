@@ -2,7 +2,7 @@ import eslintReact from '@eslint-react/eslint-plugin';
 import linteljs from '@linteljs/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-import { SCRIPT_FILES } from '../../config/globs';
+import { SCRIPT_FILES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';

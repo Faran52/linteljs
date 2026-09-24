@@ -1,11 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-import {
-  moduleNameOf,
-  ruleDirectories,
-  rulesDir,
-} from '@mocks/ruleTree';
+import { moduleNameOf, rulesDir } from '@mocks/ruleTree';
 import { ESLint, type Linter } from 'eslint';
 import {
   describe,
@@ -110,11 +106,6 @@ describe('plugin shape', () => {
 
   it('declares no runtime dependencies', () => {
     expect(packageJson['dependencies']).toBeUndefined();
-  });
-
-  // toEqual on both sorted lists catches a rule with no directory and a directory nothing registers.
-  it('registers exactly the rules that have a directory', () => {
-    expect(alphabetically(ruleDirectories)).toEqual(alphabetically(ruleNames));
   });
 });
 

@@ -64,8 +64,9 @@ local-only. That version is not the source of truth any more. This repo owns the
   `<camelCaseExport>.ts`, `<camelCaseExport>.test.ts`, `README.md`, and a `utils/` subdirectory for
   the helpers only that rule uses. The implementation file is named for its single export, which is
   the repo-wide convention, so the directory is the one place the kebab-case id is written and
-  nothing has to translate between two spellings of it. `index` means a barrel in this package and
-  `src/rules/index.ts` is the only one. `README.md` rather than the camelCase filename because
+  nothing has to translate between two spellings of it. No rule directory holds an `index`:
+  `src/index.ts` is the package's barrel, and `src/rules/index.ts` is the registry, code rather than
+  a barrel, with `index.test.ts` beside it. `README.md` rather than the camelCase filename because
   GitHub renders a directory's README when you browse to it, which is what makes `meta.docs.url`
   point at the directory and land on the doc and the source at once.
 - `package.json` is canonical for package manager, engines, dependencies and scripts.
@@ -87,11 +88,11 @@ the rest.
    exactly the registered rules, so a new rule without one fails, and an accidental change to an
    existing message or schema fails too.
 
-Steps 1, 3 and 4 are the same directory, and `meta.test.ts` reads that directory back rather than
-probing three derived paths: it lists `src/rules/`, holds the listing against the registry in both
-directions, and then holds each directory's files, less what sits directly under `utils/`, equal to
-the three names derived from the id. A directory nobody registered fails, and so does a leftover
-`index.ts` or half a rename. The `*Utils` suffix under `utils/` is the lint naming map's, not the
+Steps 1, 3 and 4 are the same directory, read back rather than probed at three derived paths:
+`src/rules/index.test.ts` holds the listing of `src/rules/` against the registry in both directions,
+and each id to the rule its own directory exports, and `meta.test.ts` holds each directory's files,
+less what sits directly under `utils/`, equal to the three names derived from the id. A directory
+nobody registered fails, and so does a leftover `index.ts` or half a rename. The `*Utils` suffix under `utils/` is the lint naming map's, not the
 suite's.
 
 `src/ruleModules.test.ts` needs no step: it reads the same listing and imports each rule inside a

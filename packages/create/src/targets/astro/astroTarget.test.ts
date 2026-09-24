@@ -1,4 +1,13 @@
-import { walkStarters } from '@mocks/starterWalk';
+import {
+  byKey,
+  componentStyleGates,
+  type GateRow,
+  mswGates,
+  PRESSABLE,
+  TAILWIND,
+  walkGates,
+  WITH_FORM,
+} from '@mocks/starterGates';
 import {
   describe,
   expect,
@@ -165,18 +174,28 @@ describe('the hosted framework axis', () => {
   });
 });
 
-/*
- * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
- * one destination, and a gate that never opens, or never shuts, decides nothing.
- */
+// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
+const GATES: GateRow[] = [
+  ...mswGates(),
+  ...componentStyleGates('mark/Mark', 'button/Button', true),
+  ['src/styles/theme.css@tailwind', TAILWIND],
+  ['../components/ui/button/Button.css', PRESSABLE],
+  ['../components/ui/text-input/TextInput.css', WITH_FORM],
+];
+
+// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
-  const walked = walkStarters(astroTarget, 'astro');
+  const walk = walkGates(astroTarget, 'astro');
 
   it('write at most one spelling of each destination under any answer set', () => {
-    expect(walked.twice).toEqual([]);
+    expect(walk.twice).toEqual([]);
   });
 
-  it('each open under some answer set and shut under another', () => {
-    expect(walked.fixed).toEqual([]);
+  it('are each pinned below, and nothing else is', () => {
+    expect(byKey(GATES)).toEqual(walk.gated);
+  });
+
+  it.each(GATES)('%s', (key, conditions) => {
+    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
   });
 });

@@ -15,7 +15,7 @@ import {
   SCRIPT_AND_SFC_FILES,
   SCRIPT_EXTENSIONS,
   TYPESCRIPT_EXTENSIONS,
-} from '../../config/globs';
+} from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import { buildNaming } from './utils/checkFileUtils';

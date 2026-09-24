@@ -1,0 +1,327 @@
+import { isDeepStrictEqual } from 'node:util';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import {
+  ANSWERS,
+  type Answers,
+  DEFAULT_ANSWERS,
+  type TargetId,
+} from '@answers';
+
+import type { TargetBuilder } from '@targets/registry';
+import type { TargetRecord } from '@targets/types';
+
+export type Condition = {
+  readonly [K in keyof Answers]?: typeof ANSWERED | readonly Answers[K][];
+};
+
+export type GateRow = readonly [key: string, conditions: readonly Condition[]];
+
+export interface GateWalk {
+  // Every gated entry the record carries under any answer set, sorted.
+  gated: string[];
+  // Destinations two entries both wrote under one answer set: a variant that forgot to exclude its base.
+  twice: string[];
+  // The first answer set where the entry's own gate disagrees with the row, described; undefined where none does.
+  mismatchOf: (key: string, conditions: readonly Condition[]) => string | undefined;
+}
+
+type Gate = (answers: Answers) => boolean;
+
+/**
+ * What a target record's `when`s mean, pinned per entry. A row names an entry by its destination and variant and
+ * says, as answers rather than code, when it is written: a list of conditions, any one of which writes it, each
+ * holding when every answer it names takes one of the listed values. The walk then holds the record's own gate to
+ * that over every answer set the target can see, so a gate swapped for another that still toggles fails.
+ */
+export const ANSWERED = 'answered';
+
+// The answers a gate can read, which is what a mismatch is described by.
+const AXES = new Set<string>([
+  'store',
+  'form',
+  'data',
+  'router',
+  'styling',
+  'mocking',
+  'libraries',
+  'testing',
+  'hostedFramework',
+  'browser',
+  'surfaces',
+]);
+
+export const WITH_FORM: readonly Condition[] = [{ form: ANSWERED }];
+export const WITHOUT_FORM: readonly Condition[] = [{ form: [undefined] }];
+export const WITH_STORE: readonly Condition[] = [{ store: ANSWERED }];
+export const WITHOUT_STORE: readonly Condition[] = [{ store: [undefined] }];
+// A button is what a store or a form gives the page to press.
+export const PRESSABLE: readonly Condition[] = [{ store: ANSWERED }, { form: ANSWERED }];
+export const TANSTACK_QUERY: readonly Condition[] = [{ data: ['tanstack-query'] }];
+export const NOT_TANSTACK_QUERY: readonly Condition[] = [{ data: [undefined, 'rtk-query'] }];
+export const RTK_QUERY: readonly Condition[] = [{ data: ['rtk-query'] }];
+export const TAILWIND: readonly Condition[] = [{ styling: ['tailwind'] }];
+export const STYLEX: readonly Condition[] = [{ styling: ['stylex'] }];
+export const NOT_STYLEX: readonly Condition[] = [{ styling: [undefined, 'tailwind'] }];
+
+// The api edge every target shares. React Native has no dev server to serve a worker, so it writes none.
+export const mswGates = (servesAWorker = true): GateRow[] => {
+  const msw: readonly Condition[] = [{ mocking: ['msw'] }];
+  const bare: readonly Condition[] = [{
+    mocking: ['msw'],
+    form: [undefined],
+  }];
+  const withForm: readonly Condition[] = [{
+    mocking: ['msw'],
+    form: ANSWERED,
+  }];
+
+  return [
+    ...servesAWorker ? [['__mocks__/msw/browser.ts', msw] as const] : [],
+    ['__mocks__/msw/node.ts', msw],
+    ['__mocks__/msw/handlers.ts', bare],
+    ['__mocks__/msw/handlers.ts@with-form', withForm],
+    ['__mocks__/msw/handlers.test.ts', bare],
+    ['__mocks__/msw/handlers.test.ts@with-form', withForm],
+  ];
+};
+
+// The layer a form submits through: one spelling per data layer the target offers, and one rule set, zod or not.
+export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]): GateRow[] => {
+  return [
+    ['src/lib/apis/contact/index.ts', WITH_FORM],
+    ['src/lib/apis/contact/api.ts', [{
+      form: ANSWERED,
+      data: [undefined],
+    }]],
+    ...dataLayers.map((data): GateRow => {
+      return [`src/lib/apis/contact/api.ts@${data}`, [{
+        form: ANSWERED,
+        data: [data],
+      }]];
+    }),
+    ['src/lib/apis/contact/schemas.ts', [{
+      form: ANSWERED,
+      libraries: [[]],
+    }]],
+    ['src/lib/apis/contact/schemas.ts@zod', [{
+      form: ANSWERED,
+      libraries: [['zod']],
+    }]],
+  ];
+};
+
+/*
+ * Each styled component's stylesheet ships with its component and never under StyleX; with `modules`, its style
+ * module ships in the spelling the styling answer picks, and StyleX's tokens with them.
+ */
+export const componentStyleGates = (mark: string, button: string, modules: boolean): GateRow[] => {
+  const components: [string, readonly Condition[]][] = [
+    ['src/components/features/app-header/AppHeader', [{}]],
+    [`src/components/ui/${mark}`, [{}]],
+    [`src/components/ui/${button}`, PRESSABLE],
+    ['src/components/ui/text-input/TextInput', WITH_FORM],
+  ];
+  const under = (ships: readonly Condition[], styling: NonNullable<Condition['styling']>): Condition[] => {
+    return ships.map((condition) => {
+      return {
+        ...condition,
+        styling,
+      };
+    });
+  };
+
+  return [
+    ...components.map(([path, ships]): GateRow => {
+      return [`${path}.css`, under(ships, [undefined, 'tailwind'])];
+    }),
+    ...modules
+      ? [
+          ...components.flatMap(([path, ships]): GateRow[] => {
+            const styles = `${path.slice(0, path.lastIndexOf('/'))}/styles.ts`;
+
+            return [
+              [styles, under(ships, [undefined, 'tailwind'])],
+              [`${styles}@stylex`, under(ships, ['stylex'])],
+            ];
+          }),
+          ['src/styles/tokens.stylex.ts@stylex', STYLEX] as const,
+        ]
+      : [],
+  ];
+};
+
+// One override per value an answer takes, and the empty one for leaving it unanswered.
+const answered = <K extends keyof Answers>(key: K, values: Answers[K][], unanswered = true): Partial<Answers>[] => {
+  return [
+    ...unanswered ? [{}] : [],
+    ...values.map((value): Partial<Answers> => {
+      return { [key]: value };
+    }),
+  ];
+};
+
+// Every answer a `when` reads, each at every value there is, the unanswered one included.
+const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
+  const base: Answers = {
+    ...DEFAULT_ANSWERS,
+    target,
+  };
+  const {
+    hostsBrowser,
+    hostsFramework,
+    routers = [],
+    stores = [],
+  } = builder(base);
+  const axes: Partial<Answers>[][] = [
+    answered('store', [...stores]),
+    answered('form', valuesOf(ANSWERS.form.values)),
+    answered('data', valuesOf(ANSWERS.data.values)),
+    answered('router', [...routers]),
+    answered('styling', valuesOf(ANSWERS.styling.values)),
+    answered('mocking', valuesOf(ANSWERS.mocking.values)),
+    answered('libraries', [[], ['zod']], false),
+    answered('testing', valuesOf(ANSWERS.testing.values), false),
+    ...hostsFramework === true ? [answered('hostedFramework', valuesOf(ANSWERS.hostedFramework.values))] : [],
+    ...hostsBrowser === true
+      ? [
+          answered('browser', valuesOf(ANSWERS.browser.values), false),
+          answered('surfaces', [[], ...valuesOf(ANSWERS.surfaces.values).map((surface) => {
+            return [surface];
+          })]),
+        ]
+      : [],
+  ];
+
+  return axes.reduce<Answers[]>((sets, overrides) => {
+    return sets.flatMap((answers) => {
+      return overrides.map((override): Answers => {
+        return {
+          ...answers,
+          ...override,
+        };
+      });
+    });
+  }, [base]);
+};
+
+const keyOf = (path: string, variant: string | undefined): string => {
+  return variant === undefined ? path : `${path}@${variant}`;
+};
+
+// Every gated entry by its key. Two entries under one key write the same asset, so either gate writes it.
+const gatesOf = (record: TargetRecord): Map<string, Gate> => {
+  const gates = new Map<string, Gate>();
+  const entries: [string, Gate | undefined][] = [
+    ...[...record.starterFiles, ...record.starterTests].map(({
+      target,
+      variant,
+      when,
+    }): [string, Gate | undefined] => {
+      return [keyOf(target, variant), when];
+    }),
+    ...(record.starterStyles ?? []).map((style): [string, Gate | undefined] => {
+      return typeof style === 'string' ? [style, undefined] : [style.path, style.when];
+    }),
+  ];
+
+  for (const [key, when] of entries) {
+    const other = gates.get(key);
+
+    if (when !== undefined) {
+      gates.set(key, other === undefined
+        ? when
+        : (answers) => {
+            return other(answers) || when(answers);
+          });
+    }
+  }
+
+  return gates;
+};
+
+// The emitter's own reading: every file whose `when` holds, and every suite too unless testing was declined.
+const writtenBy = (record: TargetRecord, answers: Answers): string[] => {
+  return [
+    ...record.starterFiles,
+    ...answers.testing === 'none' ? [] : record.starterTests,
+  ].filter((file) => {
+    return file.when === undefined || file.when(answers);
+  }).map((file) => {
+    return file.target;
+  });
+};
+
+const holds = (conditions: readonly Condition[], answers: Answers): boolean => {
+  const given = new Map<string, unknown>(Object.entries(answers));
+
+  return conditions.some((condition) => {
+    return Object.entries(condition).every(([key, allowed]) => {
+      const value = given.get(key);
+
+      return allowed === ANSWERED
+        ? value !== undefined
+        : allowed.some((option) => {
+            return isDeepStrictEqual(option, value);
+          });
+    });
+  });
+};
+
+const describeAnswers = (answers: Answers): string => {
+  return JSON.stringify(Object.fromEntries(Object.entries(answers).filter(([key, value]) => {
+    return AXES.has(key) && value !== undefined;
+  })));
+};
+
+export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk => {
+  const walked = answerSets(builder, target).map((answers) => {
+    const record = builder(answers);
+
+    return {
+      answers,
+      record,
+      gates: gatesOf(record),
+    };
+  });
+  const twice = new Set<string>();
+
+  for (const { answers, record } of walked) {
+    const written = writtenBy(record, answers);
+
+    for (const [index, path] of written.entries()) {
+      if (written.indexOf(path) !== index) {
+        twice.add(path);
+      }
+    }
+  }
+
+  return {
+    gated: [...new Set(walked.flatMap(({ gates }) => {
+      return [...gates.keys()];
+    }))].toSorted((left, right) => {
+      return left.localeCompare(right);
+    }),
+    twice: [...twice],
+    mismatchOf: (key, conditions) => {
+      for (const { answers, gates } of walked) {
+        const actual = gates.get(key)?.(answers) ?? false;
+
+        if (actual !== holds(conditions, answers)) {
+          return `${actual ? 'written' : 'not written'} under ${describeAnswers(answers)}`;
+        }
+      }
+
+      return undefined;
+    },
+  };
+};
+
+export const byKey = (rows: readonly GateRow[]): string[] => {
+  return rows.map(([key]) => {
+    return key;
+  }).toSorted((left, right) => {
+    return left.localeCompare(right);
+  });
+};

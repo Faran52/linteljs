@@ -1,4 +1,4 @@
-import { SCRIPT_FILES } from '../../config/globs';
+import { SCRIPT_FILES } from '../../config/constants';
 import { reactCore, reactGroup } from '../utils/reactCoreUtils';
 
 import type { Layer } from '../../types';

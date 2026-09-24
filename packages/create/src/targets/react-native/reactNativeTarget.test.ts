@@ -1,4 +1,12 @@
-import { walkStarters } from '@mocks/starterWalk';
+import {
+  byKey,
+  type GateRow,
+  mswGates,
+  RTK_QUERY,
+  TAILWIND,
+  TANSTACK_QUERY,
+  walkGates,
+} from '@mocks/starterGates';
 import {
   describe,
   expect,
@@ -43,20 +51,40 @@ describe('reactNativeTarget', () => {
   });
 });
 
-/*
- * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
- * one destination, and a gate that never opens, or never shuts, decides nothing.
- */
+// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
+const GATES: GateRow[] = [
+  // No dev server to serve a worker from, so no browser half.
+  ...mswGates(false),
+  // The render helper every screen suite takes, so only a project with tests has one.
+  ['__mocks__/renderScreen.tsx', [{ testing: ['vitest'] }]],
+  // NativeWind is wired through Metro and its own type stub, and the layout imports its stylesheet.
+  ['metro.config.js@tailwind', TAILWIND],
+  ['nativewind-env.d.ts@tailwind', TAILWIND],
+  ['src/app/_layout.tsx', [{ styling: [undefined, 'stylex'] }]],
+  ['src/app/_layout.tsx@tailwind', TAILWIND],
+  ['src/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/apis/baseApi.ts@rtk-query', RTK_QUERY],
+  ['src/hooks/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/apis/baseApi.test.ts@rtk-query', RTK_QUERY],
+];
+
+// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
-  const walked = walkStarters(() => {
+  const walk = walkGates(() => {
     return reactNativeTarget;
   }, 'react-native');
 
   it('write at most one spelling of each destination under any answer set', () => {
-    expect(walked.twice).toEqual([]);
+    expect(walk.twice).toEqual([]);
   });
 
-  it('each open under some answer set and shut under another', () => {
-    expect(walked.fixed).toEqual([]);
+  it('are each pinned below, and nothing else is', () => {
+    expect(byKey(GATES)).toEqual(walk.gated);
+  });
+
+  it.each(GATES)('%s', (key, conditions) => {
+    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
   });
 });

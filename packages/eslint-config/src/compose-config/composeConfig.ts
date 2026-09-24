@@ -1,10 +1,10 @@
 import { base } from '../layers/base/baseLayer';
 import { typescript } from '../layers/typescript/typescriptLayer';
 
-import { FRAMEWORKS, LIBRARIES } from './constants';
+import { FRAMEWORKS, LIBRARIES } from './utils/loaderUtils';
 
 import type { ComposeConfigOptions, Layer } from '../types';
-import type { FrameworkParts } from './constants';
+import type { FrameworkParts } from './utils/loaderUtils';
 
 const loadVitest = async (): Promise<Layer> => {
   const { vitest } = await import('../layers/vitest/vitestLayer');

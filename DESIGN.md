@@ -502,6 +502,26 @@ content and flags of every artifact of every end-to-end case, 5220 of them acros
 suite held then, taken
 before and after. It did not move.
 
+### One code file, one test file
+
+`pnpm test:isolated` runs every suite in a process of its own and holds each source to the suite beside it, because
+the merged run hides a module covered only by some other file's test. A file with no suite of its own is one of
+two things. A `constants.ts` is data, and has to stay data: a function or a branch in one fails the run, since a
+table asserted equal to itself proves nothing and behaviour needs a suite. A barrel of nothing but `export ... from`
+has no code, and is told by its source rather than its name. Anything else without a suite fails however much it
+looks like a table.
+
+Five files were settled by it. `compose-config`'s loader tables are functions, so they left `constants.ts` for
+`utils/loaderUtils.ts` and a suite that loads each one. `eslint-config`'s glob tables were data under another name,
+so `config/globs.ts` became `config/constants.ts`. `answers/registry.ts`, `mockingAnswer.ts` and the plugin's
+`rules/index.ts` are code that reads like a table: each gained a suite asserting what a reader depends on, a record
+filed under its own key, a default the parser accepts, an optional answer read as absent, an id wired to its own
+directory's rule.
+
+The suites that cover a package rather than one file, `meta.test.ts`, `types.test.ts`, `fixerSafety.test.ts`,
+`ruleModules.test.ts` and `hooks.test.ts`, are named in `.claude/rules/repo-structure.md`; the report lists them
+so they stay visible, and fails on any other test file with no source beside it.
+
 ## Project structure
 
 The shape every generated project gets, and the reasoning the per-target
