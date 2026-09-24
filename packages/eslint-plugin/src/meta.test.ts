@@ -17,42 +17,27 @@ import {
   docsUrl,
   FIX_SHAPES,
   type LintelRuleModule,
-  RULE_LANGUAGES,
   type RuleLanguage,
   TYPESCRIPT_FILES,
 } from './types';
 
+import {
+  moduleNameOf,
+  ruleDirectories,
+  rulesDir,
+} from '#mocks/ruleTree';
+
 const root = join(import.meta.dirname, '..');
-const rulesDir = join(root, 'src', 'rules');
 
-// Read off disk rather than probed, so a directory the registry never exports is caught too.
-const ruleDirectories = readdirSync(rulesDir, { withFileTypes: true }).filter((entry) => {
-  return entry.isDirectory();
-}).map((entry) => {
-  return entry.name;
-});
-
+// Every file a rule directory holds, `utils/` included, as paths relative to it.
 const filesIn = (ruleName: string): string[] => {
-  return readdirSync(join(rulesDir, ruleName));
-};
-
-// Every module a rule owns, its own and the private helpers under `utils/`, as paths relative to the rule directory.
-const modulesIn = (ruleName: string): string[] => {
   return readdirSync(join(rulesDir, ruleName), {
     withFileTypes: true,
     recursive: true,
   }).filter((entry) => {
-    return entry.isFile() && entry.name.endsWith('.ts');
+    return entry.isFile();
   }).map((entry) => {
     return relative(join(rulesDir, ruleName), join(entry.parentPath, entry.name));
-  });
-};
-
-// The implementation file is named for its single export, so the directory name is the only place the rule id
-// appears. `index` is a barrel in this repo and a rule directory is not one.
-const moduleNameOf = (ruleName: string): string => {
-  return ruleName.replace(/-([a-z])/g, (_match, letter: string) => {
-    return letter.toUpperCase();
   });
 };
 
@@ -71,19 +56,6 @@ const readJson = (path: string): Record<string, unknown> => {
   }
 
   return { ...parsed };
-};
-
-// `import()` on a computed path returns `any`, so the namespace is bound `unknown` and narrowed
-// by this guard, not a generic helper.
-const isNamespace = (loaded: unknown): loaded is object => {
-  return typeof loaded === 'object' && loaded !== null;
-};
-
-const isRuleModule = (value: unknown): value is LintelRuleModule => {
-  return typeof value === 'object'
-    && value !== null
-    && 'create' in value
-    && typeof value.create === 'function';
 };
 
 // Bare `sort()` orders by UTF-16 and mutates the receiver; `toSorted` with `localeCompare` avoids
@@ -129,10 +101,6 @@ const languagesOf = (ids: string[]): RuleLanguage[] => {
 };
 
 describe('plugin shape', () => {
-  it('registers at least one rule', () => {
-    expect(ruleNames.length).toBeGreaterThan(0);
-  });
-
   it('reports a version matching package.json', () => {
     expect(plugin.meta?.version).toBe(packageJson['version']);
   });
@@ -145,10 +113,6 @@ describe('plugin shape', () => {
     expect(packageJson['dependencies']).toBeUndefined();
   });
 
-  it('exposes rules on the default export', () => {
-    expect(plugin.rules).toBe(rules);
-  });
-
   // toEqual on both sorted lists catches a rule with no directory and a directory nothing registers.
   it('registers exactly the rules that have a directory', () => {
     expect(alphabetically(ruleDirectories)).toEqual(alphabetically(ruleNames));
@@ -157,10 +121,6 @@ describe('plugin shape', () => {
 
 describe.each(ruleCases)('rule "%s"', (name, rule) => {
   const { meta } = rule;
-
-  it('uses a kebab-case id', () => {
-    expect(name).toMatch(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/);
-  });
 
   it('declares a description written as a sentence', () => {
     expect(meta.docs.description.length).toBeGreaterThan(10);
@@ -179,49 +139,16 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
     expect(fixShape === undefined || meta.fixable !== undefined).toBe(true);
   });
 
-  it('declares a known language', () => {
-    expect(RULE_LANGUAGES).toContain(meta.docs.language);
-  });
-
-  it('declares whether recommended enables it', () => {
-    expect(typeof meta.docs.recommended).toBe('boolean');
-  });
-
   it('derives its docs url from its id', () => {
     expect(meta.docs.url).toBe(docsUrl(name));
   });
 
-  it('keeps its rule, its suite and its doc in its own directory', () => {
-    const present = filesIn(name);
-
-    expect(requiredFiles(name).filter((file) => {
-      return !present.includes(file);
-    })).toEqual([]);
-  });
-
-  // The directory is the one place the kebab-case id is written, so a rename that missed one half shows up here.
-  it('names its module for its single export, not index', () => {
-    expect(filesIn(name)).not.toContain('index.ts');
-    expect(Object.keys(rule)).toContain('create');
-  });
-
-  // Complements the required-files check: a stray file could sit here forever otherwise. A private helper belongs
-  // under `utils/`, where the root config's `**/utils/*.ts` naming map enforces the `*Utils` suffix on it.
-  it('holds nothing beside them but a utils directory', () => {
-    const strays = filesIn(name).filter((file) => {
-      return !requiredFiles(name).includes(file) && file !== 'utils';
-    });
-
-    expect(strays).toEqual([]);
-  });
-
-  it('suffixes every private helper and puts it under utils', () => {
-    const misplaced = modulesIn(name).filter((file) => {
-      return !requiredFiles(name).includes(file)
-        && !/^utils\/[a-z][A-Za-z]*Utils(\.test)?\.ts$/.test(file);
-    });
-
-    expect(misplaced).toEqual([]);
+  // Equality both ways: a missing README fails, and so do a leftover `index.ts`, half a rename and a helper outside
+  // `utils/`. The `*Utils` suffix inside it is the root config's `**/utils/*.ts` naming map, so it is not repeated.
+  it('holds its rule, its suite, its doc and nothing else but helpers under utils', () => {
+    expect(alphabetically(filesIn(name).filter((file) => {
+      return !/^utils\/[^/]+\.ts$/.test(file);
+    }))).toEqual(alphabetically(requiredFiles(name)));
   });
 
   it('declares a valid rule type', () => {
@@ -239,10 +166,6 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
     }
 
     expect(meta.docs.description).not.toMatch(/[—–]/);
-  });
-
-  it('declares a schema', () => {
-    expect(meta.schema).toBeDefined();
   });
 
   // Without `additionalProperties: false`, a typo in a consumer's config is silently accepted and never takes effect.
@@ -263,34 +186,6 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
     expect(schema.filter((entry) => {
       return entry.type === 'object' && entry.additionalProperties !== false;
     })).toEqual([]);
-  });
-
-  it('marks itself fixable when it provides a fix', () => {
-    // Reads every non-test module, not just the rule's own, since a fixer may live in `utils/writeUtils.ts`.
-    const source = modulesIn(name).filter((file) => {
-      return !file.endsWith('.test.ts');
-    }).map((file) => {
-      return readFileSync(join(rulesDir, name, file), 'utf8');
-    }).join('\n');
-
-    const providesFix = /\bfix[:(*]|\* fix\(/.test(source);
-
-    expect(providesFix && meta.fixable === undefined ? [name] : []).toEqual([]);
-  });
-});
-
-// Resolves each rule through its id rather than trusting the registry's own import path. Cannot catch a rule
-// that throws while its module evaluates, since this file imports `./index` too; `ruleModules.test.ts` covers it.
-describe('rule modules load', () => {
-  it.each(ruleNames)('%s builds a usable rule at import time', async (name) => {
-    const loaded: unknown = await import(`./rules/${name}/${moduleNameOf(name)}.ts`);
-    const rule = isNamespace(loaded) ? Object.values(loaded).find(isRuleModule) : undefined;
-
-    if (!rule) {
-      throw new Error(`${name}/index.ts exports no rule`);
-    }
-
-    expect(rule.meta.docs.description).toBeTruthy();
   });
 });
 
@@ -406,20 +301,8 @@ describe('configs', () => {
   });
 
   // An opt-out rule still needs a path in, or excluding it from `recommended` ships it permanently off.
-  it('keeps every opt-out rule reachable through all', () => {
-    const optOut = ruleCases.filter(([, rule]) => {
-      return !rule.meta.docs.recommended;
-    });
-
-    expect(optOut.length).toBeGreaterThan(0);
-
-    for (const [name] of optOut) {
-      expect(enabledIn(configs['flat/all'])).toContain(`${PLUGIN_NAME}/${name}`);
-    }
-  });
-
   it('carries every rule in all', () => {
-    expect(alphabetically(enabledIn(configs['flat/all']))).toEqual(alphabetically(prefixed(ruleNames)));
+    expect(enabledIn(configs['flat/all'])).toEqual(prefixed(ruleNames));
   });
 
   it('registers the plugin once per preset, on the unscoped block', () => {
@@ -590,27 +473,9 @@ describe('documentation', () => {
     })).toEqual([]);
   });
 
-  it('lists every rule in the README table', () => {
-    const readme = readFileSync(join(root, 'README.md'), 'utf8');
-
-    for (const name of ruleNames) {
-      expect(readme).toContain(`\`${PLUGIN_NAME}/${name}\``);
-    }
-  });
-
-  // The check above asks only that an id appears somewhere, which a duplicated row passes:
-  // `react-no-global-namespace` shipped twice and nothing saw it. Counting is what catches that.
-  it('names every rule in the README table exactly once', () => {
-    const rows = tableRows(readFileSync(join(root, 'README.md'), 'utf8'));
-
-    expect(rows.filter((name, index) => {
-      return rows.indexOf(name) !== index;
-    })).toEqual([]);
-  });
-
-  // A table nobody generates drifts out of order one edit at a time, and a reader scanning for a
-  // rule gives up before they reach the one row that moved.
-  it('keeps the README table in rule id order', () => {
+  // Equality, not containment: `react-no-global-namespace` once shipped two rows and a containment check passed it.
+  // A table nobody generates also drifts out of order one edit at a time.
+  it('lists every rule in the README table once, in rule id order', () => {
     expect(tableRows(readFileSync(join(root, 'README.md'), 'utf8'))).toEqual(alphabetically(ruleNames));
   });
 

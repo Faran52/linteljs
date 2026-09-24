@@ -4,99 +4,19 @@ import {
   it,
 } from 'vitest';
 
-import type { Rule } from 'eslint';
+import { moduleNameOf, ruleDirectories } from '#mocks/ruleTree';
 
-// Every member optional so the test fails on whichever one is missing; `create` is typed off
-// ESLint's own rule module rather than `unknown`, since the test reads it back.
-interface LoadedDocs {
-  description?: string;
-  language?: string;
-  recommended?: boolean;
-}
+/**
+ * No rule is imported at the top, and that is the whole reason this file is not part of `meta.test.ts`. A rule that
+ * throws while its module is evaluated takes every file importing it down as a failed file with no test results,
+ * which Stryker reads as a surviving mutant. Imported inside the test body, it is one ordinary failure with the
+ * rule's name on it.
+ */
+describe.each(ruleDirectories)('%s', (ruleName) => {
+  it('evaluates its module and exports the rule under the module\'s name', async () => {
+    const module = moduleNameOf(ruleName);
+    const loaded: unknown = await import(`./rules/${ruleName}/${module}.ts`);
 
-interface LoadedMeta {
-  docs?: LoadedDocs;
-  messages?: Record<string, string>;
-}
-
-interface LoadedRule {
-  meta?: LoadedMeta;
-  create?: Rule.RuleModule['create'];
-}
-
-// `import()` on a computed path returns `any`, so the namespace comes back `unknown`, narrowed
-// here by a guard rather than a generic unknown-in/unknown-out helper.
-const isNamespace = (loaded: unknown): loaded is object => {
-  return typeof loaded === 'object' && loaded !== null;
-};
-
-const isRuleModule = (value: unknown): value is LoadedRule => {
-  return typeof value === 'object'
-    && value !== null
-    && 'create' in value
-    && typeof value.create === 'function';
-};
-
-// Nothing here is imported at the top on purpose: a malformed rule module would throw at import time and
-// take the whole file down at zero failures; importing inside the test body turns that into one ordinary failure.
-
-const RULE_MODULES = [
-  'comment-delimiter',
-  'destructuring-property-newline',
-  'export-specifier-newline',
-  'import-newlines',
-  'interface-order',
-  'member-newline',
-  'no-duplicate-jsx-props',
-  'no-eslint-disable',
-  'no-inline-object-types',
-  'no-import-namespace-destructure',
-  'prefer-arrow-functions',
-  'prefer-await-to-then',
-  'prefer-destructured-props',
-  'prefer-try-catch',
-  'react-native-accessible-name',
-  'react-native-no-nested-touchables',
-  'react-native-valid-accessibility-actions',
-  'react-native-valid-accessibility-role',
-  'react-native-valid-accessibility-state',
-  'react-no-global-namespace',
-  'sort-hook-dependencies',
-  'union-newline',
-];
-
-describe.each(RULE_MODULES)('%s', (moduleName) => {
-  it('builds a complete rule when its module is evaluated', async () => {
-    const module = moduleName.replace(/-([a-z])/g, (_match, letter: string) => {
-      return letter.toUpperCase();
-    });
-    const loaded: unknown = await import(`./rules/${moduleName}/${module}.ts`);
-    const rule = isNamespace(loaded) ? Object.values(loaded).find(isRuleModule) : undefined;
-
-    if (!rule) {
-      throw new Error(`${moduleName}/index.ts exports no rule`);
-    }
-
-    // Each of these is `createRule`'s responsibility to produce, so a malformed definition
-    // fails here rather than downstream.
-    expect(typeof rule.create).toBe('function');
-    expect(rule.meta?.docs?.description).toBeTruthy();
-    expect(rule.meta?.docs?.language).toBeTruthy();
-    expect(rule.meta?.docs?.language).toBeTruthy();
-    expect(typeof rule.meta?.docs?.recommended).toBe('boolean');
-    expect(Object.keys(rule.meta?.messages ?? {}).length).toBeGreaterThan(0);
-  });
-});
-
-describe('the registry', () => {
-  it('exports every rule module listed here and no others', async () => {
-    const { rules } = await import('./rules/index.ts');
-
-    // `localeCompare` avoids UTF-16 ordering, and `toSorted` avoids reordering either array in place.
-    const byName = (left: string, right: string): number => {
-      return left.localeCompare(right);
-    };
-
-    expect(Object.keys(rules).toSorted(byName)).toEqual(RULE_MODULES.toSorted(byName));
+    expect(loaded).toHaveProperty([module, 'create'], expect.any(Function));
   });
 });

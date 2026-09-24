@@ -210,5 +210,5 @@ Both are the standard's own stated exceptions; these are the files that take the
 
 Three files in `eslint-plugin` are named for what they cover rather than for one source file, which
 the standard permits because what they cover is the package: `meta.test.ts` holds the whole published
-surface against `__mocks__/ruleMetadata.json`, `ruleModules.test.ts` checks the registry against the
-directory listing, and `fixerSafety.test.ts` runs the shared corpus through every rule at once.
+surface against `__mocks__/ruleMetadata.json`, `ruleModules.test.ts` loads each rule module inside a test body
+and checks it exports the rule under its own name, and `fixerSafety.test.ts` runs the shared corpus through every rule at once.

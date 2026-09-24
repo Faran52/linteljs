@@ -72,7 +72,7 @@ local-only. That version is not the source of truth any more. This repo owns the
 
 ## 3. Adding a rule
 
-Six steps. The type system catches a missed one in the first two, and `src/meta.test.ts` catches
+Five steps. The type system catches a missed one in the first two, and `src/meta.test.ts` catches
 the rest.
 
 1. `src/rules/<kebab-case>/<camelCaseExport>.ts`, built with `createRule('<kebab-case>', { ... })` from
@@ -86,19 +86,20 @@ the rest.
    messages, schema, type, fixable and the four `docs` fields, `fixShape` among them. `meta.test.ts` asserts it covers
    exactly the registered rules, so a new rule without one fails, and an accidental change to an
    existing message or schema fails too.
-6. The rule id in `RULE_MODULES` in `src/ruleModules.test.ts`. That file imports no rule
-   at the top level on purpose: a rule that throws while its module is being evaluated would take
-   the whole file down before a test ran, and the runner would report zero failures rather than
-   one. Importing inside the test body turns it into an ordinary failure with the rule's name on
-   it. `meta.test.ts` cannot stand in for this, because it imports `./index` (the package barrel)
-   statically and dies the same way.
 
 Steps 1, 3 and 4 are the same directory, and `meta.test.ts` reads that directory back rather than
 probing three derived paths: it lists `src/rules/`, holds the listing against the registry in both
-directions, and then holds each directory's contents against the three names derived from the id.
-A directory nobody registered now fails, which the old per-rule `existsSync` could not see. It also
-asserts no `index.ts` survives in a rule directory and that every remaining `.ts` sits at
-`utils/*Utils.ts`, so half a rename is caught rather than left to read oddly.
+directions, and then holds each directory's files, less what sits directly under `utils/`, equal to
+the three names derived from the id. A directory nobody registered fails, and so does a leftover
+`index.ts` or half a rename. The `*Utils` suffix under `utils/` is the lint naming map's, not the
+suite's.
+
+`src/ruleModules.test.ts` needs no step: it reads the same listing and imports each rule inside a
+test body, checking the module exports the rule under the module's own name. It is its own file
+because `meta.test.ts` imports the barrel statically: a rule that throws while its module is
+evaluated takes that file down as a failed file with no test results, which Stryker reads as a
+surviving mutant. Imported inside the test body it is one ordinary failure with the rule's name on
+it.
 
 Code shared *between* rules lives in five modules under `src/utils`, and a helper belongs to
 exactly one of them: `ruleUtils.ts` for the names ESLint's rule API is reached through (the node
@@ -140,9 +141,9 @@ staying beside the rule under a convention nothing checked. Neither count above 
 both are only as true as the last person who read them.
 
 The presets and the docs URL derive from the registry, so do not hand-maintain those. The
-README rule table is **not** derived: no script writes it. `meta.test.ts` only checks that each
-rule id appears somewhere in `README.md`, so a wrong description or a missing options column
-passes. Edit it by hand and read it back.
+README rule table is **not** derived: no script writes it. `meta.test.ts` checks that its rows name
+every rule id once, in id order, and nothing about the other columns, so a wrong description or a
+missing options column passes. Edit it by hand and read it back.
 
 There are two presets and there is no third. `recommended` carries the rules with
 `meta.docs.recommended`, `all` carries every rule, and a rule's subject lives in its id rather than
