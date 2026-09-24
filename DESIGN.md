@@ -1597,7 +1597,7 @@ anything. Named one by one, it has to be removed on purpose.
 there would land as a 0% file against a 100% threshold.
 
 `**/cli.ts` was excluded too, as the entrypoint, and no longer is. The process wiring was never in it:
-`bin/create-linteljs.js` reads `process.argv` and sets `process.exitCode`, and `main` is a function
+`bin/createLinteljs.ts`, built to `dist/create-linteljs.mjs`, reads `process.argv` and sets `process.exitCode`, and `main` is a function
 from an argv array to an exit code that `cli.test.ts` calls directly. What the exclusion hid was
 ordinary logic, the host checks, the lockfile detection, the sync report and the next-steps summary,
 and one branch of it that no test had ever taken: the refusal of a manager that answers no version.

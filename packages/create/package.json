@@ -29,8 +29,8 @@
   ],
   "type": "module",
   "bin": {
-    "create-linteljs": "./bin/create-linteljs.js",
-    "create": "./bin/create-linteljs.js"
+    "create-linteljs": "./dist/create-linteljs.mjs",
+    "create": "./dist/create-linteljs.mjs"
   },
   "exports": {
     ".": {
@@ -64,7 +64,6 @@
     "access": "public"
   },
   "files": [
-    "bin",
     "dist",
     "templates",
     "!templates/project/scripts/**/*.test.ts",

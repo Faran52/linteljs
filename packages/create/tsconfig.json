@@ -11,6 +11,7 @@
     "allowImportingTsExtensions": true
   },
   "include": [
+    "bin/**/*.ts",
     "src/**/*.ts",
     "__mocks__/**/*.ts",
     "scripts/**/*.ts",

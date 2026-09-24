@@ -32,7 +32,7 @@ const pkgDir = unpackTarball(root, smokeDir);
 
 log('running the packed binary');
 
-const help = run(execPath, [join(pkgDir, 'bin', 'create-linteljs.js'), '--help'], smokeDir);
+const help = run(execPath, [join(pkgDir, 'dist', 'create-linteljs.mjs'), '--help'], smokeDir);
 
 for (const flag of FLAGS) {
   assert.match(help, new RegExp(`${flag}(?![\\w-])`), `--help does not mention ${flag}`);
