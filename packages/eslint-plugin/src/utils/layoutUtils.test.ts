@@ -1,3 +1,4 @@
+import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import { Linter } from 'eslint';
 import {
   describe,
@@ -22,8 +23,6 @@ import {
 } from './layoutUtils.ts';
 
 import type { Rule } from 'eslint';
-
-import { sourceCodeFrom } from '#mocks/sourceCodeFrom';
 
 const stepFor = (code: string): string => {
   return getIndentStep(sourceCodeFrom(code).sourceCode);

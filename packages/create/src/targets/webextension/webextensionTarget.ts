@@ -1,4 +1,4 @@
-import { hasSurface } from '#answers/utils/answerUtils';
+import { hasSurface } from '@answers/utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
 import { hostedNaming, partsFor } from '../utils/frameworkUtils';
@@ -12,8 +12,8 @@ import {
   SHARED,
 } from './constants';
 
-import type { Answers } from '#answers/registry';
-import type { Browser } from '#answers/target/browser/browserAnswer';
+import type { Answers } from '@answers/registry';
+import type { Browser } from '@answers/target/browser/browserAnswer';
 import type { TargetBuilder } from '../registry';
 import type { StarterFile } from '../types';
 

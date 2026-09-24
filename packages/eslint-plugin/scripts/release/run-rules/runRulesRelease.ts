@@ -1,9 +1,9 @@
 /**
- * Loads the built plugin and lints one fixture on whatever Node and ESLint are present. CI strips the types on the
- * host and runs the `.mjs` inside `node:14-alpine`, so the syntax stays what Node 14 parses: only a bare floor runtime
- * shows the bundle runs there, since a bundler lowers syntax and leaves built-in methods where they were.
+ * Loads the built plugin and lints one fixture on whatever Node and ESLint are present. CI builds it with tsdown,
+ * `--target node14`, and runs the `.mjs` inside `node:14-alpine`: only a bare floor runtime shows the bundle runs
+ * there, since a bundler lowers syntax and leaves built-in methods where they were.
  *
- * Usage: node scripts/release/run-rules/runRulesRelease.ts [path-to-entry]
+ * Usage: tsx scripts/release/run-rules/runRulesRelease.ts [path-to-entry]
  */
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';

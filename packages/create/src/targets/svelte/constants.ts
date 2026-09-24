@@ -1,4 +1,4 @@
-import type { Answers } from '#answers/registry';
+import type { Answers } from '@answers/registry';
 import type { AccessorNames } from '../utils/mockUtils';
 
 /**

@@ -12,11 +12,16 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { execPath } from 'node:process';
 
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
+
+import { MANAGED_PATH } from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
 
 import {
   type Agent,
@@ -27,18 +32,14 @@ import {
   type PackageManager,
   type TargetId,
   type Testing,
-} from '#answers';
-import { MANAGED_PATH } from '#config/constants';
+} from '@answers';
 import {
   managedPathsReader,
   shippedAssetsReader,
   TEMPLATES_ROOT,
-} from '#disk';
-import { valuesOf } from '#utils/objectUtils';
+} from '@disk';
 
 import { buildArtifacts, seedArtifacts } from './registry';
-
-import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 interface AnswerOverrides {
   agents?: Agent[];

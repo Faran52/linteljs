@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { EMPTY_PROJECT } from '@config/constants';
+
 import {
   type Answers,
   type Browser,
@@ -11,8 +13,7 @@ import {
   DEFAULT_ANSWERS,
   type Styling,
   type Surface,
-} from '#answers';
-import { EMPTY_PROJECT } from '#config/constants';
+} from '@answers';
 
 import { starterSourceEmitter } from '../starter-source/starterSourceEmitter';
 

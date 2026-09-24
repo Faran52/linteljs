@@ -3,6 +3,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  ownBlockNames,
+  ruleIdsFor,
+  startsWith,
+} from '@mocks/lintText';
+import {
   describe,
   expect,
   it,
@@ -12,12 +17,6 @@ import base from '../../layers/base/baseLayer';
 import react from '../react/reactFramework';
 
 import reactNative, { reactNativeGroup } from './reactNativeFramework';
-
-import {
-  ownBlockNames,
-  ruleIdsFor,
-  startsWith,
-} from '#mocks/lintText';
 
 describe('reactNative', () => {
   it('keeps the linteljs rules that have nothing to do with a DOM', async () => {

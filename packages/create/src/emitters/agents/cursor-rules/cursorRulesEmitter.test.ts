@@ -1,18 +1,17 @@
 import {
+  answersFor,
+  RULE,
+  targets,
+  transformOf,
+  UNSCOPED,
+} from '@mocks/agentRules';
+import {
   describe,
   expect,
   it,
 } from 'vitest';
 
 import { cursorArtifacts, cursorRulesEmitter } from './cursorRulesEmitter';
-
-import {
-  answersFor,
-  RULE,
-  targets,
-  transformOf,
-  UNSCOPED,
-} from '#mocks/agentRules';
 
 describe('cursorRulesEmitter', () => {
   it('writes the Cursor rules only where Cursor was chosen', () => {

@@ -10,6 +10,10 @@
     // `scripts/` names the `.ts` in a relative specifier, as the shipped scripts must for Node. Nothing is emitted.
     "allowImportingTsExtensions": true,
 
+    "paths": {
+      "@mocks/*": ["./__mocks__/*"]
+    },
+
     /**
      * Off here, and only here.
      *

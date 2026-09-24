@@ -1,6 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import {
+  moduleNameOf,
+  ruleDirectories,
+  rulesDir,
+} from '@mocks/ruleTree';
 import { ESLint, type Linter } from 'eslint';
 import {
   describe,
@@ -20,12 +25,6 @@ import {
   type RuleLanguage,
   TYPESCRIPT_FILES,
 } from './types';
-
-import {
-  moduleNameOf,
-  ruleDirectories,
-  rulesDir,
-} from '#mocks/ruleTree';
 
 const root = join(import.meta.dirname, '..');
 

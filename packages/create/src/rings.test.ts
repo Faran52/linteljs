@@ -1,3 +1,4 @@
+import { directoriesIn } from '@mocks/ringShape';
 import { expect, it } from 'vitest';
 
 import {
@@ -5,8 +6,6 @@ import {
   RINGS,
   WORLDS,
 } from './rings';
-
-import { directoriesIn } from '#mocks/ringShape';
 
 it('names every ring once', () => {
   expect([...new Set(RINGS)]).toStrictEqual([...RINGS]);

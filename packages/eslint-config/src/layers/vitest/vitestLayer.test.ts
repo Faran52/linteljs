@@ -1,3 +1,5 @@
+import { ownBlockNames, ruleIdsFor } from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -7,9 +9,6 @@ import {
 import base from '../base/baseLayer';
 
 import vitest from './vitestLayer';
-
-import { ownBlockNames, ruleIdsFor } from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
 
 const FOCUSED = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
 

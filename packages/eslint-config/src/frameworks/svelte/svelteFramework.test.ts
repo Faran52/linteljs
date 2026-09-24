@@ -1,16 +1,6 @@
 import { join } from 'node:path';
 
 import {
-  describe,
-  expect,
-  it,
-} from 'vitest';
-
-import base from '../../layers/base/baseLayer';
-
-import svelte, { svelteGroup } from './svelteFramework';
-
-import {
   enabledRuleIdsFor,
   messagesForFile,
   ownBlockNames,
@@ -19,8 +9,17 @@ import {
   SFC_FIXTURES,
   sortsAheadOfPackages,
   startsWith,
-} from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import base from '../../layers/base/baseLayer';
+
+import svelte, { svelteGroup } from './svelteFramework';
 
 const FILENAME_RULE = 'check-file/filename-naming-convention';
 

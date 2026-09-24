@@ -1,12 +1,13 @@
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   type AnswerKey,
   type Answers,
   type HostedAnswers,
-} from '#answers';
-import { targetFor } from '#targets';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
 
-import type { AnswerRecord } from '#answers/types';
+import type { AnswerRecord } from '@answers/types';
 
 // A version range as written, with the caret stripped: the page states what was recorded, not a range to resolve.
 const plain = (range: string | undefined): string | undefined => {

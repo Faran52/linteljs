@@ -1,4 +1,4 @@
-import { hasTests } from '#answers/utils/answerUtils';
+import { hasTests } from '@answers/utils/answerUtils';
 
 import {
   COMMON_REACT_PLUGINS,

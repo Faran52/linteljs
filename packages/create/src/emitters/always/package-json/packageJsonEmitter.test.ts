@@ -8,6 +8,14 @@ import {
 } from 'vitest';
 
 import {
+  EMPTY_PROJECT,
+  MANAGER_FLOORS,
+  NODE_ENGINE,
+} from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import {
   ANSWERS,
   type Answers,
   type Data,
@@ -22,14 +30,8 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '#answers';
-import {
-  EMPTY_PROJECT,
-  MANAGER_FLOORS,
-  NODE_ENGINE,
-} from '#config/constants';
-import { targetFor } from '#targets';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
 
 import { VERSIONS } from './constants';
 import {

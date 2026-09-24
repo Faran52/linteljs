@@ -1,4 +1,12 @@
 import {
+  enabledRuleIdsFor,
+  ownBlockNames,
+  ruleIdsFor,
+  ruleNamesFor,
+  startsWith,
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
+import {
   describe,
   expect,
   it,
@@ -8,15 +16,6 @@ import base from '../../layers/base/baseLayer';
 import typescript from '../../layers/typescript/typescriptLayer';
 
 import astro from './astroFramework';
-
-import {
-  enabledRuleIdsFor,
-  ownBlockNames,
-  ruleIdsFor,
-  ruleNamesFor,
-  startsWith,
-} from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
 
 const PAGE = (body: string): string => {
   return `---\nconst title = 'Home';\n---\n\n<h1>{title}</h1>\n${body}\n`;

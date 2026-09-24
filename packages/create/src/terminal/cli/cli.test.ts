@@ -15,6 +15,12 @@ import {
   versions,
 } from 'node:process';
 
+import { plantBinary } from '@mocks/plantBinary';
+import {
+  CANCEL,
+  type Recorded,
+  scripted,
+} from '@mocks/scriptedPrompter';
 import {
   afterEach,
   beforeEach,
@@ -24,6 +30,8 @@ import {
   vi,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -32,23 +40,15 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '#answers';
-import { exists } from '#disk';
-import { emitLinteljsConfig } from '#emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '#emitters/always/package-json/packageJsonEmitter';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { exists } from '@disk';
+import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
+import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
-
-import { plantBinary } from '#mocks/plantBinary';
-import {
-  CANCEL,
-  type Recorded,
-  scripted,
-} from '#mocks/scriptedPrompter';
 
 interface Run {
   code: number;

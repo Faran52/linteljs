@@ -12,7 +12,7 @@ import {
   type Router,
   type Styling,
   type TargetId,
-} from '#answers';
+} from '@answers';
 
 import { emitViteConfig, viteConfigEmitter } from './viteConfigEmitter';
 

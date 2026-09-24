@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { expect } from 'vitest';
 
-import { TEMPLATES_ROOT } from '#disk';
+import { TEMPLATES_ROOT } from '@disk';
 
 interface ToolInput {
   command: string;

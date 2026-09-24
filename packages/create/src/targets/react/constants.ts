@@ -1,5 +1,5 @@
-import type { Answers } from '#answers/registry';
-import type { Router } from '#answers/target/router/routerAnswer';
+import type { Answers } from '@answers/registry';
+import type { Router } from '@answers/target/router/routerAnswer';
 import type { AccessorNames } from '../utils/mockUtils';
 
 // The only target with a `routers` slot, so it supports every router the vocabulary has.

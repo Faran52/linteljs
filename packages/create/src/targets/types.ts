@@ -1,13 +1,13 @@
-import type { Answers } from '#answers/registry';
-import type { HostedFramework } from '#answers/target/hosted-framework/hostedFrameworkAnswer';
-import type { Router } from '#answers/target/router/routerAnswer';
-import type { Store } from '#answers/target/store/storeAnswer';
-import type { TargetId } from '#answers/target/target/targetAnswer';
+import type { Answers } from '@answers/registry';
+import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
+import type { Router } from '@answers/target/router/routerAnswer';
+import type { Store } from '@answers/target/store/storeAnswer';
+import type { TargetId } from '@answers/target/target/targetAnswer';
 import type {
   AliasMap,
   Framework,
   NamingMap,
-} from '#config/types';
+} from '@config/types';
 
 export interface TsconfigPlugin {
   name: string;

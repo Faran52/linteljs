@@ -2,7 +2,7 @@
  * Smoke test for the packed tarball: the `bin`, the `files` list and the `templates/` beside `dist/` are only wrong
  * once packed, and an asset missing from the tarball passes every test here and dies in a generated project.
  *
- * Usage: jiti scripts/smoke/smokeScript.ts
+ * Usage: tsx scripts/smoke/smokeScript.ts
  */
 import assert from 'node:assert/strict';
 import {

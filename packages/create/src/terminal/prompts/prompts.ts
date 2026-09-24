@@ -5,6 +5,8 @@ import {
 } from '@inquirer/prompts';
 import { omit } from 'es-toolkit';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   type AnswerKey,
   ANSWERS,
@@ -13,10 +15,9 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '#answers';
-import { type JsonValue, unaskedValueOf } from '#answers/utils/readUtils';
-import { targetFor } from '#targets';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { type JsonValue, unaskedValueOf } from '@answers/utils/readUtils';
+import { targetFor } from '@targets';
 
 import { PROJECT_NAME_RULE } from '../constants';
 import { isValidProjectName } from '../utils/nameUtils';
@@ -30,8 +31,8 @@ import type {
   OptionalChoiceRecord,
   OptionalMultiRecord,
   ValueRecord,
-} from '#answers/types';
-import type { TargetRecord } from '#targets/types';
+} from '@answers/types';
+import type { TargetRecord } from '@targets/types';
 
 /**
  * The four value-bearing kinds `askAnswer` dispatches on, which is now every kind a record can be asked in: `store`

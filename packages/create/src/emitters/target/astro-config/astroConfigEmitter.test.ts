@@ -12,7 +12,7 @@ import {
   type Library,
   type Styling,
   type TargetId,
-} from '#answers';
+} from '@answers';
 
 import { astroConfigEmitter, emitAstroConfig } from './astroConfigEmitter';
 

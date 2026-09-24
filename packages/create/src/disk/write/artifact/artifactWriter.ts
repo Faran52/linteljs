@@ -1,7 +1,7 @@
 import { chmod } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { type Artifact } from '#emitters';
+import { type Artifact } from '@emitters';
 
 import { shippedAssetsReader } from '../../read/shipped-assets/shippedAssetsReader';
 import {

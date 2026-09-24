@@ -1,18 +1,19 @@
 import { performance } from 'node:perf_hooks';
 
-import { MANAGER_BINARIES, STAGES } from '#config/constants';
-import { type RunOutput, type Stage } from '#config/types';
-import { artifactWriter, projectShapeReader } from '#disk';
+import { MANAGER_BINARIES, STAGES } from '@config/constants';
+import { type RunOutput, type Stage } from '@config/types';
+
+import { artifactWriter, projectShapeReader } from '@disk';
 import {
   type Artifact,
   buildArtifacts,
   seedArtifacts,
-} from '#emitters';
-import { gitSpawn, runSpawn } from '#spawns';
+} from '@emitters';
+import { gitSpawn, runSpawn } from '@spawns';
 
 import { fixPass } from '../../passes/fix/fixPass';
 
-import type { HostedAnswers } from '#answers';
+import type { HostedAnswers } from '@answers';
 
 export interface PipelineOptions {
   name: string;

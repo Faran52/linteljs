@@ -1,15 +1,16 @@
 import { cwd as processCwd } from 'node:process';
 import { parseArgs } from 'node:util';
 
-import { type AnswerKey } from '#answers';
-import { STAGES } from '#config/constants';
-import { type Stage } from '#config/types';
+import { STAGES } from '@config/constants';
+import { type Stage } from '@config/types';
+
+import { type AnswerKey } from '@answers';
 
 import { PROJECT_NAME_RULE } from '../../constants';
 import { isValidProjectName } from '../../utils/nameUtils';
 import { CLI_OPTIONS, FLAGGED_ANSWERS } from '../constants';
 
-import type { JsonValue } from '#answers/utils/readUtils';
+import type { JsonValue } from '@answers/utils/readUtils';
 
 // Answers given as flags, validated by the config parser so a wrong value names its choices.
 export type AnswerFlags = Partial<Record<AnswerKey, JsonValue>>;

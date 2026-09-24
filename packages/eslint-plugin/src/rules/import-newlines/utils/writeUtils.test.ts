@@ -1,3 +1,4 @@
+import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import {
   describe,
   expect,
@@ -7,8 +8,6 @@ import {
 import { type ImportNode, writeImport } from './writeUtils.ts';
 
 import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
-
-import { sourceCodeFrom } from '#mocks/sourceCodeFrom';
 
 interface ParsedImport {
   sourceCode: SourceCode;

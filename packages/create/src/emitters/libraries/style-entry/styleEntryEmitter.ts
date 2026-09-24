@@ -1,6 +1,7 @@
-import { type Answers } from '#answers';
-import { type Artifact, type ProjectShape } from '#config/types';
-import { targetFor } from '#targets';
+import { type Artifact, type ProjectShape } from '@config/types';
+
+import { type Answers } from '@answers';
+import { targetFor } from '@targets';
 
 import { merged } from '../../utils/artifactUtils';
 

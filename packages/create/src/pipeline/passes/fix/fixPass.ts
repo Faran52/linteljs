@@ -1,8 +1,9 @@
-import { MANAGER_BINARIES, RUN_PREFIX } from '#config/constants';
-import { styleGlob } from '#emitters/always/utils/scriptUtils';
-import { localBinarySpawn } from '#spawns';
+import { MANAGER_BINARIES, RUN_PREFIX } from '@config/constants';
 
-import type { Answers } from '#answers';
+import { styleGlob } from '@emitters/always/utils/scriptUtils';
+import { localBinarySpawn } from '@spawns';
+
+import type { Answers } from '@answers';
 
 interface EslintFixResult {
   // Present exactly when the file was fixed.

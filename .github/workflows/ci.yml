@@ -111,15 +111,19 @@ jobs:
           name: plugin-dist
           path: packages/eslint-plugin/dist
 
-      # The runner is TypeScript and Node 14 strips no types, so the host strips them into a `.mjs` first.
+      # The runner is TypeScript and Node 14 strips no types, so tsdown builds it into a `.mjs` on the host, which
+      # also inlines anything it imports. `--ignore-scripts` keeps `prepare` from rebuilding the downloaded `dist`.
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@v7
         with:
           node-version: 26.10.0
-      - name: Strip the runner's types
-        working-directory: packages/eslint-plugin/scripts/release/run-rules
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Build the runner for node 14
+        working-directory: packages/eslint-plugin
         run: >-
-          node --no-warnings -e "const fs = require('node:fs'); fs.writeFileSync('runRulesRelease.mjs',
-          require('node:module').stripTypeScriptTypes(fs.readFileSync('runRulesRelease.ts', 'utf8')))"
+          pnpm exec tsdown scripts/release/run-rules/runRulesRelease.ts --no-config --no-dts --no-clean
+          --format esm --target node14 --platform node --out-dir scripts/release/run-rules
 
       # Docker is driven from the host rather than through `container:`, because that would run
       # actions/* on Node 24 inside the image, and node:14-alpine's musl is too old for it.

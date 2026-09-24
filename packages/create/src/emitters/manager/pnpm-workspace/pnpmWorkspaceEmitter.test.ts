@@ -12,7 +12,7 @@ import {
   type PackageManager,
   type Styling,
   type TargetId,
-} from '#answers';
+} from '@answers';
 
 import { mergePnpmWorkspace, pnpmWorkspaceEmitter } from './pnpmWorkspaceEmitter';
 import { allowBuildsBlock, emitPnpmWorkspace } from './utils/emitUtils';

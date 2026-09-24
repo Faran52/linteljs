@@ -1,14 +1,15 @@
 import { join } from 'node:path';
 import { env, versions } from 'node:process';
 
+import { NODE_FLOOR } from '@config/constants';
+
 import {
   type Answers,
   type HostedAnswers,
   type PackageManager,
-} from '#answers';
-import { NODE_FLOOR } from '#config/constants';
-import { entryExists, readIfPresent } from '#disk';
-import { nodeSpawn, packageManagerSpawn } from '#spawns';
+} from '@answers';
+import { entryExists, readIfPresent } from '@disk';
+import { nodeSpawn, packageManagerSpawn } from '@spawns';
 
 import { LOCKFILES } from './constants';
 import {

@@ -1,6 +1,7 @@
-import { type Answers, hasTests } from '#answers';
-import { RUN_PREFIX } from '#config/constants';
-import { targetFor } from '#targets';
+import { RUN_PREFIX } from '@config/constants';
+
+import { type Answers, hasTests } from '@answers';
+import { targetFor } from '@targets';
 
 // `check` is named in the return type so callers need no unreachable `?? ''`.
 // `check` is named so callers need no unreachable `?? ''`.

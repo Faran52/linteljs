@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -11,13 +13,12 @@ import {
   DEFAULT_ANSWERS,
   type Router,
   type TargetId,
-} from '#answers';
-import { shippedAssetsReader } from '#disk';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { shippedAssetsReader } from '@disk';
 
 import { starterSourceEmitter } from './starterSourceEmitter';
 
-import type { Artifact } from '#config/types';
+import type { Artifact } from '@config/types';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   return {

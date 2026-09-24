@@ -1,14 +1,4 @@
 import {
-  describe,
-  expect,
-  it,
-} from 'vitest';
-
-import { rules } from './rules/index.ts';
-
-import type { FixShape } from './types.ts';
-
-import {
   alphabetically,
   commentsIn,
   FIXER_SAMPLES,
@@ -18,7 +8,16 @@ import {
   parseableSamples,
   parseErrorsIn,
   tokensIn,
-} from '#mocks/fixerSamples';
+} from '@mocks/fixerSamples';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { rules } from './rules/index.ts';
+
+import type { FixShape } from './types.ts';
 
 const ruleNames = Object.keys(rules);
 const samples = parseableSamples().map((sample) => {

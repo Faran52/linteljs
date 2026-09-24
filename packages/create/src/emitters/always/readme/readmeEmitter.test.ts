@@ -4,9 +4,10 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '#answers';
-import { EMPTY_PROJECT } from '#config/constants';
-import { shippedAssetsReader } from '#disk';
+import { EMPTY_PROJECT } from '@config/constants';
+
+import { DEFAULT_ANSWERS } from '@answers';
+import { shippedAssetsReader } from '@disk';
 
 import { emitReadme, readmeEmitter } from './readmeEmitter';
 

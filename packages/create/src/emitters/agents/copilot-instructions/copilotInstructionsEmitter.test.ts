@@ -1,18 +1,17 @@
 import {
+  answersFor,
+  RULE,
+  targets,
+  transformOf,
+  UNSCOPED,
+} from '@mocks/agentRules';
+import {
   describe,
   expect,
   it,
 } from 'vitest';
 
 import { copilotArtifacts, copilotInstructionsEmitter } from './copilotInstructionsEmitter';
-
-import {
-  answersFor,
-  RULE,
-  targets,
-  transformOf,
-  UNSCOPED,
-} from '#mocks/agentRules';
 
 describe('copilotInstructionsEmitter', () => {
   it('writes the Copilot files only where Copilot was chosen', () => {

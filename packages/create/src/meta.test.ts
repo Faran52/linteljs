@@ -5,24 +5,6 @@ import {
   relative,
 } from 'node:path';
 
-import ts from 'typescript';
-import {
-  describe,
-  expect,
-  it,
-} from 'vitest';
-
-import { ANSWERS } from '#answers';
-import { MANAGER_BINARIES, MANAGER_FLOORS } from '#config/constants';
-import { BUILD_EMITTERS, SEED_EMITTERS } from '#emitters/registry';
-import { TARGETS } from '#targets/registry';
-import { valuesOf } from '#utils/objectUtils';
-
-import { RINGS } from './rings';
-
-import type { AnswerRecord } from '#answers/types';
-import type { Ring } from './rings';
-
 import {
   directoriesIn,
   entriesIn,
@@ -30,7 +12,26 @@ import {
   modulesIn,
   sourcesUnder,
   takenFromBarrel,
-} from '#mocks/ringShape';
+} from '@mocks/ringShape';
+import ts from 'typescript';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS } from '@answers';
+import { BUILD_EMITTERS, SEED_EMITTERS } from '@emitters/registry';
+import { TARGETS } from '@targets/registry';
+
+import { RINGS } from './rings';
+
+import type { AnswerRecord } from '@answers/types';
+import type { Ring } from './rings';
 
 interface RingShape {
   name: Ring;

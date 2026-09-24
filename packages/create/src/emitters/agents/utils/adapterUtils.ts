@@ -1,9 +1,9 @@
-import { RUN_PREFIX } from '#config/constants';
-import { type Artifact } from '#config/types';
+import { RUN_PREFIX } from '@config/constants';
+import { type Artifact } from '@config/types';
 
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers } from '#answers';
+import type { Answers } from '@answers';
 
 export const emitAgentAdapter = (answers: Answers): string => {
   // The same table the README and the summary read, which is the only one that knows `yarn run` from `yarn`.

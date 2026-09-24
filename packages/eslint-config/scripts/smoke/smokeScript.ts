@@ -2,7 +2,7 @@
  * Smoke test for the packed tarball: links it under `node_modules` and imports every `exports` subpath by package
  * name. An `exports` entry with no tsdown entry typechecks, builds and publishes, then 404s on a consumer's import.
  *
- * Usage: jiti scripts/smoke/smokeScript.ts
+ * Usage: tsx scripts/smoke/smokeScript.ts
  */
 import assert from 'node:assert/strict';
 import {

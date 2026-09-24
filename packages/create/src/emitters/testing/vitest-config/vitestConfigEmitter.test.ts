@@ -4,6 +4,10 @@ import {
   it,
 } from 'vitest';
 
+import { EMPTY_PROJECT } from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Data,
@@ -12,9 +16,7 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '#answers';
-import { EMPTY_PROJECT } from '#config/constants';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
 
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 

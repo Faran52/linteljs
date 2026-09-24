@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '#answers';
+import { type Answers, DEFAULT_ANSWERS } from '@answers';
 
 import { vueTarget } from './vueTarget';
 

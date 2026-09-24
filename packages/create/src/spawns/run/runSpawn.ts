@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { env } from 'node:process';
 
-import type { RunOutput } from '#config/types';
+import type { RunOutput } from '@config/types';
 
 /**
  * Asynchronous on purpose: a `spawnSync` install blocks the event loop, which serialises a whole end-to-end file

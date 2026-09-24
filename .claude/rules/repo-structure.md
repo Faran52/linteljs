@@ -41,8 +41,9 @@ aliases it duplicates instead of importing carry a comment saying so.
   `release/compat-matrix/constants.ts`. A group with no name of its own, the root `scripts/` and a
   package's flat `scripts/`, suffixes `Script`: `scripts/lint-starters/lintStartersScript.ts`. A helper
   several scripts read sits in the nearest shared `utils/`, the root `scripts/utils/` for all three
-  packages. `checkBannedPatterns.ts` and `typecheckStaged.ts` stay flat at `scripts/`: they mirror the
-  paths a generated project receives, which its hooks and lint-staged call.
+  packages. Every script runs as `tsx <path>`, which resolves the `@` aliases from the tsconfig in the
+  working directory. `checkBannedPatterns.ts` and `typecheckStaged.ts` stay flat at `scripts/` and on
+  plain `node`: they mirror the paths a generated project receives, which its hooks and lint-staged call.
 
 - **`create` is one folder per responsibility, and membership is decided rather than chosen.** The
   standard leaves the ring count open; this package has nine folders, and a lint rule rather than
@@ -211,8 +212,8 @@ aliases it duplicates instead of importing carry a comment saying so.
 
 Both are the standard's own stated exceptions; these are the files that take them.
 
-- `__mocks__/` at package root, reached as `#mocks/*` through the package's own `imports` field. `eslint-config/__mocks__/fixtures/` holds the
-  deliberately defective input its layer tests lint.
+- `__mocks__/` at package root, aliased `@mocks/*` in the package's own tsconfig `paths`. `eslint-config/__mocks__/fixtures/`
+  holds the deliberately defective input its layer tests lint.
 - `packages/create/templates/project/scripts/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
   beside the scripts they spawn, and so do the hook suites in `templates/project/plugins/linteljs/hooks/`:
   `gitSafetyGuardHook.test.ts`, `eslintFixWarningHook.test.ts`, `bannedPatternGuardHook.test.ts`,

@@ -2,17 +2,16 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
-  describe,
-  expect,
-  it,
-} from 'vitest';
-
-import {
   commandPayload,
   expectDecisionOutput,
   type HookScript,
   runHook,
-} from '#mocks/runHook';
+} from '@mocks/runHook';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
 
 // One file for both hosts: Claude Code and Codex each substitute `${CLAUDE_PLUGIN_ROOT}` before a shell sees it,
 // and Codex ignores an exec-form `args`, so the path sits inside `command`.

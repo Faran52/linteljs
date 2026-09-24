@@ -1,15 +1,15 @@
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { type Answers } from '#answers';
-import { EMPTY_PROJECT } from '#config/constants';
+import { EMPTY_PROJECT } from '@config/constants';
+
+import { type Answers } from '@answers';
 
 import { emitReactRouterConfig, reactRouterConfigEmitter } from './reactRouterConfigEmitter';
-
-import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 const targetsOf = (overrides: Partial<Answers>): string[] => {
   return reactRouterConfigEmitter({

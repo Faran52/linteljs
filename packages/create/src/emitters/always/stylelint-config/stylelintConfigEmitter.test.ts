@@ -4,8 +4,9 @@ import {
   it,
 } from 'vitest';
 
-import { ANSWERS, DEFAULT_ANSWERS } from '#answers';
-import { valuesOf } from '#utils/objectUtils';
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
 import { emitStylelintConfig } from './stylelintConfigEmitter';
 

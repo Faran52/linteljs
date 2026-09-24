@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { execPath, versions } from 'node:process';
 
+import { plantBinary } from '@mocks/plantBinary';
 import {
   afterEach,
   beforeEach,
@@ -18,8 +19,9 @@ import {
   vi,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '#answers';
-import { NODE_FLOOR } from '#config/constants';
+import { NODE_FLOOR } from '@config/constants';
+
+import { DEFAULT_ANSWERS } from '@answers';
 
 import {
   filled,
@@ -27,8 +29,6 @@ import {
   hosted,
   hostOf,
 } from './host';
-
-import { plantBinary } from '#mocks/plantBinary';
 
 const HOST: Host = {
   packageManager: 'pnpm',

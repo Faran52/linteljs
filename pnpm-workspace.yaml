@@ -1,4 +1,6 @@
 allowBuilds:
+  # tsx's esbuild takes its binary from an optional dependency; the postinstall only re-checks it.
+  esbuild: false
   sharp: true
   unrs-resolver: true
 catalog:
@@ -14,6 +16,7 @@ catalog:
   svelte: ^5.57.1
   svelte-eslint-parser: ^1.8.1
   tsdown: ^0.23.0
+  tsx: ^4.23.15
   typescript: ~6.0.3
   typescript-eslint: ^8.70.0
   vitest: ^5.0.1

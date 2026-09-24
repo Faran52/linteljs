@@ -5,6 +5,8 @@ import {
   vi,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -12,9 +14,8 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   parseLinteljsConfig,
-} from '#answers';
-import { targetFor } from '#targets';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { targetFor } from '@targets';
 
 import { targetCases } from './matrix';
 

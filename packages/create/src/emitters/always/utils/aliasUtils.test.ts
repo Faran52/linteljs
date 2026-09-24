@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -12,8 +14,7 @@ import {
   type Library,
   type Styling,
   type TargetId,
-} from '#answers';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
 
 import { buildAliases } from './aliasUtils';
 

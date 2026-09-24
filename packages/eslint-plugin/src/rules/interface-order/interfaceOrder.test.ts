@@ -1,6 +1,6 @@
-import { interfaceOrder } from './interfaceOrder.ts';
+import { svelteRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { svelteRuleTester, tsRuleTester } from '#mocks/ruleTesters';
+import { interfaceOrder } from './interfaceOrder.ts';
 
 tsRuleTester.run('interface-order', interfaceOrder, {
   valid: [

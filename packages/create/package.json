@@ -41,25 +41,6 @@
     },
     "./package.json": "./package.json"
   },
-  "imports": {
-    "#mocks/*": "./__mocks__/*.ts",
-    "#answers": "./src/answers/index.ts",
-    "#answers/*": "./src/answers/*.ts",
-    "#config/*": "./src/config/*.ts",
-    "#disk": "./src/disk/index.ts",
-    "#disk/*": "./src/disk/*.ts",
-    "#emitters": "./src/emitters/index.ts",
-    "#emitters/*": "./src/emitters/*.ts",
-    "#pipeline": "./src/pipeline/index.ts",
-    "#pipeline/*": "./src/pipeline/*.ts",
-    "#spawns": "./src/spawns/index.ts",
-    "#spawns/*": "./src/spawns/*.ts",
-    "#targets": "./src/targets/index.ts",
-    "#targets/*": "./src/targets/*.ts",
-    "#terminal": "./src/terminal/index.ts",
-    "#terminal/*": "./src/terminal/*.ts",
-    "#utils/*": "./src/utils/*.ts"
-  },
   "publishConfig": {
     "access": "public"
   },
@@ -78,10 +59,10 @@
   },
   "scripts": {
     "build": "tsdown",
-    "collect:builds": "jiti scripts/collect-builds/collectBuildsScript.ts",
+    "collect:builds": "tsx scripts/collect-builds/collectBuildsScript.ts",
     "prepack": "pnpm run build",
-    "schema": "jiti scripts/write-schemas/writeSchemasScript.ts",
-    "smoke": "jiti scripts/smoke/smokeScript.ts",
+    "schema": "tsx scripts/write-schemas/writeSchemasScript.ts",
+    "smoke": "tsx scripts/smoke/smokeScript.ts",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "typecheck": "tsc --noEmit",
@@ -96,7 +77,7 @@
     "@linteljs/eslint-config": "workspace:*",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
-    "jiti": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

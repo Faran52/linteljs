@@ -1,4 +1,4 @@
-import type { PackageManager } from '#answers/recorded/package-manager/packageManagerAnswer';
+import type { PackageManager } from '@answers/recorded/package-manager/packageManagerAnswer';
 import type { ProjectShape, Stage } from './types';
 
 /**

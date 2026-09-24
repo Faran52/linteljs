@@ -7,6 +7,9 @@ import { defineConfig } from 'vitest/config';
  * `pnpm vitest run` and, once the tarballs they look for exist, run real scaffolds and installs inside a fast gate.
  */
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     globals: true,
     /*

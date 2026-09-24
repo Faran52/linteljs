@@ -9,6 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { runHook } from '@mocks/runHook';
 import {
   afterEach,
   beforeEach,
@@ -16,8 +17,6 @@ import {
   expect,
   it,
 } from 'vitest';
-
-import { runHook } from '#mocks/runHook';
 
 const isPath = (value: unknown): value is string => {
   return typeof value === 'string';

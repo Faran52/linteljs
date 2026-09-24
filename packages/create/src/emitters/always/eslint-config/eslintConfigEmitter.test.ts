@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -14,9 +16,8 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '#answers';
-import { FOLDER_ROUTED } from '#targets/constants';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
+import { FOLDER_ROUTED } from '@targets/constants';
 
 import { emitEslintConfig } from './eslintConfigEmitter';
 

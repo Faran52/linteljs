@@ -1,6 +1,6 @@
-import { exportSpecifierNewline } from './exportSpecifierNewline.ts';
+import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { jsRuleTester, tsRuleTester } from '#mocks/ruleTesters';
+import { exportSpecifierNewline } from './exportSpecifierNewline.ts';
 
 const declare = 'const alpha = 1, bravo = 2, charlie = 3;\n';
 

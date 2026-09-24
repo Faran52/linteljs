@@ -5,4 +5,4 @@ export {
 export {
   type Artifact,
   type ArtifactContent,
-} from '#config/types';
+} from '@config/types';

@@ -4,6 +4,8 @@ import {
   it,
 } from 'vitest';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import {
   ANSWERS,
   type Answers,
@@ -13,8 +15,7 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '#answers';
-import { valuesOf } from '#utils/objectUtils';
+} from '@answers';
 
 import { buildScripts } from './scriptUtils';
 

@@ -4,8 +4,8 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '#answers';
-import { shippedAssetsReader } from '#disk';
+import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { shippedAssetsReader } from '@disk';
 
 import { claudeSettingsEmitter, emitClaudeSettings } from './claudeSettingsEmitter';
 

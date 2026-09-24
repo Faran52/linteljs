@@ -46,7 +46,31 @@
     "types": [
       "node",
       "vitest/globals"
-    ]
+    ],
+
+    /**
+     * `@linteljs/create`'s ring aliases, for what sits outside a package and reads its source: the root scripts, run
+     * by tsx, which reads this file. A child's `paths` replaces this map rather than merging, so each package
+     * declares its own.
+     */
+    "paths": {
+      "@answers": ["./packages/create/src/answers/index.ts"],
+      "@answers/*": ["./packages/create/src/answers/*"],
+      "@config/*": ["./packages/create/src/config/*"],
+      "@disk": ["./packages/create/src/disk/index.ts"],
+      "@disk/*": ["./packages/create/src/disk/*"],
+      "@emitters": ["./packages/create/src/emitters/index.ts"],
+      "@emitters/*": ["./packages/create/src/emitters/*"],
+      "@pipeline": ["./packages/create/src/pipeline/index.ts"],
+      "@pipeline/*": ["./packages/create/src/pipeline/*"],
+      "@spawns": ["./packages/create/src/spawns/index.ts"],
+      "@spawns/*": ["./packages/create/src/spawns/*"],
+      "@targets": ["./packages/create/src/targets/index.ts"],
+      "@targets/*": ["./packages/create/src/targets/*"],
+      "@terminal": ["./packages/create/src/terminal/index.ts"],
+      "@terminal/*": ["./packages/create/src/terminal/*"],
+      "@utils/*": ["./packages/create/src/utils/*"]
+    }
   },
 
   "include": [

@@ -7,8 +7,8 @@ import {
   CONFIG_PATH,
   type PackageManager,
   parseLinteljsConfig,
-} from '#answers';
-import { parsePackageJson } from '#emitters/always/package-json/packageJsonEmitter';
+} from '@answers';
+import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 
 import {
   outcome,

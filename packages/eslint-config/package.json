@@ -30,7 +30,7 @@
     "build": "tsdown",
     "mutation": "stryker run",
     "prepack": "pnpm run build",
-    "smoke": "jiti scripts/smoke/smokeScript.ts",
+    "smoke": "tsx scripts/smoke/smokeScript.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -145,9 +145,6 @@
     },
     "./package.json": "./package.json"
   },
-  "imports": {
-    "#mocks/*": "./__mocks__/*.ts"
-  },
   "dependencies": {
     "@linteljs/eslint-plugin": "workspace:*",
     "@stylistic/eslint-plugin": "^5.10.0",
@@ -181,7 +178,6 @@
     "eslint-plugin-svelte": "^3.23.0",
     "eslint-plugin-vue": "^10.11.0",
     "eslint-plugin-vuejs-accessibility": "^2.6.0",
-    "jiti": "catalog:",
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -189,6 +185,7 @@
     "svelte-eslint-parser": "catalog:",
     "tailwindcss": "^4.3.3",
     "tsdown": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "vue": "^3.5.43",

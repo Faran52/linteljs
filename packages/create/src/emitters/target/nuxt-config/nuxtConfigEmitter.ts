@@ -1,10 +1,11 @@
-import { type Artifact, type Emitter } from '#config/types';
-import { targetFor } from '#targets';
+import { type Artifact, type Emitter } from '@config/types';
+
+import { targetFor } from '@targets';
 
 import { buildAliases } from '../../always/utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 
-import type { Answers } from '#answers';
+import type { Answers } from '@answers';
 
 /**
  * Nuxt reads its whole build from here, and two of these lines are why this target works at all.

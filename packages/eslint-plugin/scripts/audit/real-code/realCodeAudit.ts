@@ -4,7 +4,7 @@
  * back. Report-only rules and arrow conversions are judged against shapes read off the AST, and each file's fix
  * time is recorded so a superlinear rule shows up. `--options` repeats the checks under every `meta.schema` option.
  *
- * Usage: jiti scripts/audit/real-code/realCodeAudit.ts [dir...] [--rule <id>] [--max-files <n>] [--options]
+ * Usage: tsx scripts/audit/real-code/realCodeAudit.ts [dir...] [--rule <id>] [--max-files <n>] [--options]
  */
 import { readFileSync } from 'node:fs';
 import { extname } from 'node:path';

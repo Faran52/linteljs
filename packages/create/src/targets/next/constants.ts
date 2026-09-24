@@ -1,4 +1,4 @@
-import type { Answers } from '#answers/registry';
+import type { Answers } from '@answers/registry';
 
 /**
  * Every file the template writes whatever was answered, from this target's own tree. No `scaffold` on this record:

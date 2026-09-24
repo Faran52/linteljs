@@ -1,6 +1,6 @@
-import { commentDelimiter } from './commentDelimiter.ts';
+import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { tsxRuleTester } from '#mocks/ruleTesters';
+import { commentDelimiter } from './commentDelimiter.ts';
 
 tsxRuleTester.run('comment-delimiter', commentDelimiter, {
   valid: [

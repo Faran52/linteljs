@@ -1,6 +1,6 @@
 // What a browser contributes, what crx is wired as, and the popup every project gets.
 
-import type { Browser } from '#answers/target/browser/browserAnswer';
+import type { Browser } from '@answers/target/browser/browserAnswer';
 import type { PluginSpec } from '../types';
 
 export interface BrowserParts {

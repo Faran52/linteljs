@@ -47,15 +47,15 @@ local-only. That version is not the source of truth any more. This repo owns the
   `findLastIndex` or `toSorted`, and why `utils/compatUtils.ts` exists.
 - **Arrow functions everywhere.** The plugin lints itself with its own
   `@linteljs/prefer-arrow-functions`, so this is enforced, not a preference.
-- `"type": "module"`, so `scripts/` is TypeScript run through jiti, `jiti
+- `"type": "module"`, so `scripts/` is TypeScript run through tsx, `tsx
   scripts/<group>/<subject>/<subject><Group>.ts`, with no build step: `build/` runs
   inside `pnpm build`, `release/` packs the tarball and proves it, `audit/` points the rules at real
   third-party code. Each script is the ring shape below: `audit/real-code/realCodeAudit.ts`, its own
   `utils/*Utils.ts` and `constants.ts`, and what several scripts in a group read in the group's `utils/`.
   `tsconfig.json` includes `scripts/**/*.ts`, so they are typechecked and type-aware linted like
   anything else, and they report through the root `scripts/utils/loggerUtils.ts`.
-  `release/run-rules/runRulesRelease.ts` is the exception twice over: CI strips its types into a `.mjs` on the host
-  and runs that on a bare `node:14-alpine`, so its syntax stays what Node 14 parses, and it writes
+  `release/run-rules/runRulesRelease.ts` is the exception twice over: CI builds it with tsdown into a `.mjs` on the
+  host, `--target node14`, and runs that on a bare `node:14-alpine`, so its syntax is what Node 14 parses, and it writes
   to `process.stdout`, since nothing above the package is copied in. `stryker.config.mjs` stays
   JavaScript, the only extension Stryker's config discovery looks for.
   Linting comes from the workspace root's `eslint.config.ts`, which carries this package's two

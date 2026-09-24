@@ -1,1 +1,1 @@
-export { main } from '#terminal';
+export { main } from '@terminal';

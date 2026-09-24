@@ -13,13 +13,13 @@ import {
   DEFAULT_ANSWERS,
   type HostedAnswers,
   parseLinteljsConfig,
-} from '#answers';
-import { entryExists, linteljsConfigReader } from '#disk';
+} from '@answers';
+import { entryExists, linteljsConfigReader } from '@disk';
 import {
   applySync,
   pipelineRun,
   planSync,
-} from '#pipeline';
+} from '@pipeline';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import {

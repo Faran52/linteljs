@@ -1,3 +1,4 @@
+import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import { Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 import {
@@ -15,8 +16,6 @@ import {
 
 import type { Rule } from 'eslint';
 import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
-
-import { sourceCodeFrom } from '#mocks/sourceCodeFrom';
 
 interface ParsedFunction {
   sourceCode: SourceCode;
@@ -46,7 +45,7 @@ const functionFrom = (code: string): ParsedFunction => {
 };
 
 // Generics and a return type annotation are TypeScript-only syntax, so these fixtures need the TypeScript parser
-// rather than #mocks/sourceCodeFrom; component.tsx names a real file rather than a flag asserted from nowhere.
+// rather than @mocks/sourceCodeFrom; component.tsx names a real file rather than a flag asserted from nowhere.
 const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];

@@ -1,9 +1,10 @@
-import { type Answers, type HostedAnswers } from '#answers';
-import { EMPTY_PROJECT } from '#config/constants';
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+
+import { EMPTY_PROJECT } from '@config/constants';
+
+import { type Answers, type HostedAnswers } from '@answers';
 
 import { emitLinteljsRecord, linteljsRecordEmitter } from './linteljsRecordEmitter';
-
-import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   return {

@@ -4,13 +4,14 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '#answers';
-import { EMPTY_PROJECT } from '#config/constants';
+import { EMPTY_PROJECT } from '@config/constants';
+
+import { type Answers, DEFAULT_ANSWERS } from '@answers';
 
 import { STYLEX_AT_RULE, TAILWIND_IMPORT } from './constants';
 import { mergeStyleEntry, styleEntryEmitter } from './styleEntryEmitter';
 
-import type { Artifact } from '#config/types';
+import type { Artifact } from '@config/types';
 
 const answersFor = (overrides: Partial<Answers>): Answers => {
   return {

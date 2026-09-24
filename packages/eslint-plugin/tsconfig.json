@@ -14,7 +14,11 @@
      */
     "allowImportingTsExtensions": true,
 
-    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo",
+
+    "paths": {
+      "@mocks/*": ["./__mocks__/*"]
+    }
   },
 
   "include": [

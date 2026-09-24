@@ -1,6 +1,6 @@
-import { destructuringPropertyNewline } from './destructuringPropertyNewline.ts';
+import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
-import { jsRuleTester, tsRuleTester } from '#mocks/ruleTesters';
+import { destructuringPropertyNewline } from './destructuringPropertyNewline.ts';
 
 jsRuleTester.run('destructuring-property-newline', destructuringPropertyNewline, {
   valid: [

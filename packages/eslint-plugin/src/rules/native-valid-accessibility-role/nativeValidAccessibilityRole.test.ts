@@ -1,6 +1,6 @@
-import { nativeValidAccessibilityRole } from './nativeValidAccessibilityRole.ts';
+import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { tsxRuleTester } from '#mocks/ruleTesters';
+import { nativeValidAccessibilityRole } from './nativeValidAccessibilityRole.ts';
 
 // Written out again rather than imported, so a name dropped from the rule's list fails here instead of vanishing
 // from both at once.

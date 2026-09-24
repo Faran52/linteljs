@@ -1,4 +1,11 @@
 import {
+  enabledRuleIdsFor,
+  ownBlockNames,
+  ruleIdsFor,
+  startsWith,
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
+import {
   describe,
   expect,
   it,
@@ -8,14 +15,6 @@ import base from '../base/baseLayer';
 import typescript from '../typescript/typescriptLayer';
 
 import html from './htmlLayer';
-
-import {
-  enabledRuleIdsFor,
-  ownBlockNames,
-  ruleIdsFor,
-  startsWith,
-} from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
 
 const NO_ALT = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 

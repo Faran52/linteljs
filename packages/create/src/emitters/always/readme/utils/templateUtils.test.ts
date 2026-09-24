@@ -11,7 +11,7 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '#answers';
+} from '@answers';
 
 import { fillSlots, sharedSlots } from './templateUtils';
 

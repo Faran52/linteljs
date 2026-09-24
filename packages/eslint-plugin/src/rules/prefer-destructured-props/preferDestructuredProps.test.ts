@@ -1,6 +1,6 @@
-import { preferDestructuredProps } from './preferDestructuredProps.ts';
+import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { tsxRuleTester } from '#mocks/ruleTesters';
+import { preferDestructuredProps } from './preferDestructuredProps.ts';
 
 tsxRuleTester.run('prefer-destructured-props', preferDestructuredProps, {
   valid: [

@@ -1,4 +1,11 @@
 import {
+  ownBlockNames,
+  ruleIdsFor,
+  sortsAheadOfPackages,
+  startsWith,
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
+import {
   describe,
   expect,
   it,
@@ -7,14 +14,6 @@ import {
 import base from '../../layers/base/baseLayer';
 
 import angular, { angularGroup } from './angularFramework';
-
-import {
-  ownBlockNames,
-  ruleIdsFor,
-  sortsAheadOfPackages,
-  startsWith,
-} from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
 
 describe('angular', () => {
   /*

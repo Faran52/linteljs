@@ -6,7 +6,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { MANAGER_BINARIES, MANAGER_FLOORS } from '#config/constants';
+import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
 
 import { PACKAGE_MANAGERS } from '../matrix/constants';
 
@@ -18,7 +18,7 @@ import {
   type RunResult,
 } from './processUtils';
 
-import type { Answers, PackageManager } from '#answers';
+import type { Answers, PackageManager } from '@answers';
 
 export const workspace = mkdtempSync(join(tmpdir(), 'linteljs-e2e-'));
 

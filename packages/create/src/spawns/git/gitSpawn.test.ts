@@ -14,7 +14,7 @@ import {
   it,
 } from 'vitest';
 
-import { exists } from '#disk';
+import { exists } from '@disk';
 
 import { gitSpawn } from './gitSpawn';
 

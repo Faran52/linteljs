@@ -1,6 +1,6 @@
-import { noDuplicateJsxProps } from './noDuplicateJsxProps.ts';
+import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { tsxRuleTester } from '#mocks/ruleTesters';
+import { noDuplicateJsxProps } from './noDuplicateJsxProps.ts';
 
 tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
   valid: [

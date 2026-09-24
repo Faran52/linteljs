@@ -1,10 +1,9 @@
+import { commandPayload, runHook } from '@mocks/runHook';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
-
-import { commandPayload, runHook } from '#mocks/runHook';
 
 interface CommandProbe {
   command: string;

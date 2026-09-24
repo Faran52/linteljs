@@ -3,7 +3,7 @@
  * framework, each file judged at the path it lands on. Nothing in `pnpm check` reads that tree otherwise, and its
  * frameworks are not installed here, so type-aware rules stay with the end-to-end suite.
  *
- * Usage: jiti scripts/lint-starters/lintStartersScript.ts [--fix]
+ * Usage: tsx scripts/lint-starters/lintStartersScript.ts [--fix]
  */
 import {
   globSync,

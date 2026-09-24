@@ -1,3 +1,5 @@
+import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -7,9 +9,6 @@ import {
 import react from '../../frameworks/react/reactFramework';
 
 import tanstackRouter from './tanstackRouterLibrary';
-
-import { ruleIdsFor, startsWith } from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
 
 describe('tanstackRouter', () => {
   it('reports a loader declared ahead of the beforeLoad it depends on', async () => {

@@ -1,10 +1,9 @@
+import { moduleNameOf, ruleDirectories } from '@mocks/ruleTree';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
-
-import { moduleNameOf, ruleDirectories } from '#mocks/ruleTree';
 
 /**
  * No rule is imported at the top, and that is the whole reason this file is not part of `meta.test.ts`. A rule that

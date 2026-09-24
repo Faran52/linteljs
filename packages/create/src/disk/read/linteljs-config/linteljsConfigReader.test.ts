@@ -24,8 +24,8 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   LEGACY_CONFIG_PATH,
-} from '#answers';
-import { emitLinteljsConfig } from '#emitters/always/linteljs-config/linteljsConfigEmitter';
+} from '@answers';
+import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import { linteljsConfigReader } from './linteljsConfigReader';
 

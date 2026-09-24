@@ -1,6 +1,6 @@
-import type { Router } from '#answers';
-import type { Store } from '#answers/target/store/storeAnswer';
-import type { Framework } from '#config/types';
+import type { Router } from '@answers';
+import type { Store } from '@answers/target/store/storeAnswer';
+import type { Framework } from '@config/types';
 
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
 // `catalog:` version in `pnpm-workspace.yaml`; `versions.test.ts` gates it.

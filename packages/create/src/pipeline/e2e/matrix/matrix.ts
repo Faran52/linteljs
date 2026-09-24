@@ -10,8 +10,8 @@ import {
   rendersWithReact,
   type Router,
   type TargetId,
-} from '#answers';
-import { targetFor } from '#targets';
+} from '@answers';
+import { targetFor } from '@targets';
 
 import {
   AGENTS,
@@ -29,9 +29,9 @@ import {
 } from './constants';
 import { coveringSubset } from './utils/pairwiseUtils';
 
-import type { AnswerRecord } from '#answers/types';
-import type { Framework } from '#config/types';
-import type { TargetRecord } from '#targets/types';
+import type { AnswerRecord } from '@answers/types';
+import type { Framework } from '@config/types';
+import type { TargetRecord } from '@targets/types';
 
 export interface E2eCase {
   label: string;

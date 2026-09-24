@@ -6,8 +6,9 @@ import {
   it,
 } from 'vitest';
 
-import { ANSWERS } from '#answers';
-import { valuesOf } from '#utils/objectUtils';
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS } from '@answers';
 
 import { targetCases } from '../matrix/matrix';
 import { runE2eCase } from '../runner/runner';

@@ -1,6 +1,6 @@
-import { nativeAccessibleName } from './nativeAccessibleName.ts';
+import { tsxRuleTester } from '@mocks/ruleTesters';
 
-import { tsxRuleTester } from '#mocks/ruleTesters';
+import { nativeAccessibleName } from './nativeAccessibleName.ts';
 
 tsxRuleTester.run('native-accessible-name', nativeAccessibleName, {
   valid: [

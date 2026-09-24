@@ -9,6 +9,8 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+import { plantBinary } from '@mocks/plantBinary';
 import {
   afterEach,
   beforeEach,
@@ -18,6 +20,8 @@ import {
   vi,
 } from 'vitest';
 
+import { type Stage } from '@config/types';
+
 import {
   type Agent,
   CONFIG_PATH,
@@ -26,17 +30,13 @@ import {
   type PackageManager,
   type Plugin,
   type TargetId,
-} from '#answers';
-import { type Stage } from '#config/types';
-import { exists } from '#disk';
-import { emitLinteljsConfig } from '#emitters/always/linteljs-config/linteljsConfigEmitter';
+} from '@answers';
+import { exists } from '@disk';
+import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import { planSync } from '../sync/syncRun';
 
 import { pipelineRun } from './pipelineRun';
-
-import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
-import { plantBinary } from '#mocks/plantBinary';
 
 interface AnswerOverrides {
   target?: TargetId;

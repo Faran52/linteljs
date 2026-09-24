@@ -1,6 +1,15 @@
 import { join } from 'node:path';
 
 import {
+  messagesForFile,
+  ownBlockNames,
+  ruleIdsForFile,
+  SFC_FIXTURES,
+  sortsAheadOfPackages,
+  startsWith,
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
+import {
   describe,
   expect,
   it,
@@ -10,16 +19,6 @@ import base from '../../layers/base/baseLayer';
 import typescript from '../../layers/typescript/typescriptLayer';
 
 import vue, { vueGroup } from './vueFramework';
-
-import {
-  messagesForFile,
-  ownBlockNames,
-  ruleIdsForFile,
-  SFC_FIXTURES,
-  sortsAheadOfPackages,
-  startsWith,
-} from '#mocks/lintText';
-import { layerWithoutConfig } from '#mocks/presets';
 
 describe('vue', () => {
   it('parses a single-file component and reports on its template', async () => {

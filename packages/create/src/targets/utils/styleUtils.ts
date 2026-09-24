@@ -1,5 +1,5 @@
-import type { Answers } from '#answers/registry';
-import type { TargetId } from '#answers/target/target/targetAnswer';
+import type { Answers } from '@answers/registry';
+import type { TargetId } from '@answers/target/target/targetAnswer';
 import type { StarterFile } from '../types';
 
 /*

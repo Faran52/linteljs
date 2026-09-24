@@ -1,5 +1,6 @@
-import { type ProjectShape } from '#config/types';
-import { SETUP_TESTS_CANDIDATES } from '#emitters/always/banned-patterns/bannedPatternsEmitter';
+import { type ProjectShape } from '@config/types';
+
+import { SETUP_TESTS_CANDIDATES } from '@emitters/always/banned-patterns/bannedPatternsEmitter';
 
 import { allPresent } from '../../utils/fsUtils';
 

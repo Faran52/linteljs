@@ -10,6 +10,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   afterEach,
   beforeEach,
@@ -19,17 +20,16 @@ import {
   vi,
 } from 'vitest';
 
-import { CONFIG_PATH, type HostedAnswers } from '#answers';
-import { MANAGED_PATH } from '#config/constants';
-import { exists } from '#disk';
+import { MANAGED_PATH } from '@config/constants';
+
+import { CONFIG_PATH, type HostedAnswers } from '@answers';
+import { exists } from '@disk';
 
 import {
   applySync,
   planSync,
   type SyncResult,
 } from './syncRun';
-
-import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 const HUSKY_HOOK = '.husky/pre-commit';
 const TYPE_STANDARDS = 'plugins/linteljs/skills/linteljs/references/type-standards.md';

@@ -8,7 +8,7 @@ import {
   vi,
 } from 'vitest';
 
-import { STAGES } from '#config/constants';
+import { STAGES } from '@config/constants';
 
 import {
   SPINNER_FRAMES,
