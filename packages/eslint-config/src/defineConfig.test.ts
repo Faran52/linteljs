@@ -193,6 +193,28 @@ describe('defineConfig', () => {
       .resolves.toContain('better-tailwindcss/no-duplicate-classes');
   });
 
+  // On the layer, as `tailwind.test.ts` does: proving the effect needs a real CSS entry with a custom token.
+  it('hands the tailwind entry point to the tailwind layer', async () => {
+    const config = await defineConfig({
+      libraries: ['tailwind'],
+      tailwindEntryPoint: './src/app/globals.css',
+    });
+    const block = config.find(({ name }) => {
+      return name === '@linteljs/tailwind';
+    });
+
+    expect(block?.settings).toEqual({ 'better-tailwindcss': { entryPoint: './src/app/globals.css' } });
+  });
+
+  it('puts vue underneath nuxt rather than beside it', async () => {
+    const config = await defineConfig({ framework: 'nuxt' });
+
+    await expect(enabledRuleIdsFor(config, 'src/components/badge.vue'))
+      .resolves.toContain('vue/multi-word-component-names');
+    await expect(enabledRuleIdsFor(config, 'src/pages/about.vue'))
+      .resolves.not.toContain('vue/multi-word-component-names');
+  });
+
   it('composes the vitest layer on request and not otherwise', async () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';

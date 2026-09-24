@@ -43,7 +43,9 @@ export const svelte = (): Layer => {
 
     {
       name: '@linteljs/svelte',
-      files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+      // Not `.svelte.js`: `typescript()` turns the type-aware rules off every `.js` file, so a JavaScript rune module
+      // has nothing to gain from the project service.
+      files: ['**/*.svelte', '**/*.svelte.ts'],
       languageOptions: {
         parserOptions: {
           parser: tseslint.parser,

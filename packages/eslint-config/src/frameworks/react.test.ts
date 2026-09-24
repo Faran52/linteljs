@@ -1,8 +1,11 @@
 import {
   JSX_FIXTURE,
+  ownBlockNames,
   ruleIdsFor,
   ruleIdsForFile,
+  sortsAheadOfPackages,
 } from '@mocks/lintText';
+import { layerWithout, layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -12,7 +15,15 @@ import {
 import base from '../base';
 import typescript from '../typescript';
 
-import react from './react';
+import react, { reactGroup } from './react';
+
+interface FlatConfigs {
+  flat: object;
+}
+
+interface FlatNamespaced {
+  configs: FlatConfigs;
+}
 
 describe('react', () => {
   it('reports a hook called inside a condition', async () => {
@@ -112,5 +123,83 @@ describe('react', () => {
     const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
+  it.each([
+    'react',
+    'react-dom',
+    'react/jsx-runtime',
+    'react-native',
+    '@react-navigation/native',
+  ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
+    await expect(sortsAheadOfPackages(base({ frameworkGroup: reactGroup }), specifier)).resolves.toBe(true);
+  });
+
+  // Each pattern in a group is a sub-group of its own, emitted in pattern order, so `^react-dom$` is what puts
+  // `react-dom` straight after `react` rather than among the `react-*` packages in alphabetical order.
+  it('sorts react-dom straight after react, ahead of react/ and the react-* packages', async () => {
+    const block = (specifiers: string[]): string => {
+      return [
+        ...specifiers.map((specifier, index) => {
+          return `import { a${String(index)} } from '${specifier}';`;
+        }),
+        '',
+        'export const value = 1;',
+        '',
+      ].join('\n');
+    };
+    const layer = base({ frameworkGroup: reactGroup });
+
+    await expect(ruleIdsFor(layer, block(['react', 'react-dom', 'react/jsx-runtime', 'react-aria']), 'src/lib/a.ts'))
+      .resolves.not.toContain('simple-import-sort/imports');
+    await expect(ruleIdsFor(layer, block(['react', 'react/jsx-runtime', 'react-aria', 'react-dom']), 'src/lib/a.ts'))
+      .resolves.toContain('simple-import-sort/imports');
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(react())).toEqual([
+      '@linteljs/react/hooks-one-owner',
+      '@linteljs/react',
+    ]);
+  });
+
+  it.each([
+    ['recommended', 'jsx-a11y-x/recommended'],
+  ])('names %s when eslint-plugin-jsx-a11y-x stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('eslint-plugin-jsx-a11y-x', key, async () => {
+      return (await import('./react')).react;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
+  });
+
+  it.each([
+    ['recommended-typescript', 'eslint-react/typescript'],
+  ])('names %s when @eslint-react/eslint-plugin stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('@eslint-react/eslint-plugin', key, async () => {
+      return (await import('./react')).react;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
+  });
+
+  // `configs.flat` is the plugin's own namespace for its flat presets, so the one that can go missing sits under it.
+  it('names the hooks preset when its plugin stops publishing it', async () => {
+    const layer = await layerWithout('eslint-plugin-react-hooks', (plugin: FlatNamespaced) => {
+      return {
+        ...plugin,
+        configs: {
+          ...plugin.configs,
+          flat: {
+            ...plugin.configs.flat,
+            recommended: undefined,
+          },
+        },
+      };
+    }, async () => {
+      return (await import('./react')).react;
+    });
+
+    expect(layer).toThrow('react-hooks/flat/recommended is not published');
   });
 });

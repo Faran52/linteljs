@@ -11,10 +11,12 @@ import process from 'node:process';
 import { rules as lintelRules } from '@linteljs/eslint-plugin';
 import {
   enabledRuleIdsFor,
+  ownBlockNames,
   ruleIdsFor,
   ruleIdsForFile,
   ruleNamesFor,
 } from '@mocks/lintText';
+import { layerWithout, layerWithoutConfig } from '@mocks/presets';
 import importX from 'eslint-plugin-import-x';
 import tseslint from 'typescript-eslint';
 import {
@@ -26,7 +28,12 @@ import {
 
 import base from './base';
 
+import type sonarjs from 'eslint-plugin-sonarjs';
 import type { Layer } from './types';
+
+interface FlatConfigsBearing {
+  flatConfigs: object;
+}
 
 const TS_FILE = 'src/lib/utils/sample.ts';
 
@@ -107,6 +114,46 @@ describe('base: stylistic', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/brace-style');
   });
 
+  it('reports a block kept on one line, which the preset allows', async () => {
+    const code = 'export const pick = (flag) => {\n  if (flag) { return 1; }\n\n  return 2;\n};\n';
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/brace-style');
+  });
+
+  it('exempts a line whose length is a URL', async () => {
+    const code = `// https://example.com/${'a'.repeat(130)}\nexport const value = 1;\n`;
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.not.toContain('@stylistic/max-len');
+  });
+
+  it('lets a string take the other quote rather than escape one', async () => {
+    await expect(ruleIdsFor(base(), 'export const value = "it\'s";\n', TS_FILE))
+      .resolves.not.toContain('@stylistic/quotes');
+  });
+
+  it('lets one property sit between braces on their own lines', async () => {
+    await expect(ruleIdsFor(base(), 'export const value = {\n  a: 1,\n};\n', TS_FILE))
+      .resolves.not.toContain('@stylistic/object-curly-newline');
+  });
+
+  it('ends every member of a multiline type with a semicolon, the last one included', async () => {
+    const comma = 'export interface Shape {\n  a: string,\n  b: string;\n}\n';
+    const bareLast = 'export interface Shape {\n  a: string;\n  b: string\n}\n';
+    const closed = 'export interface Shape {\n  a: string;\n  b: string;\n}\n';
+
+    await expect(ruleIdsFor(base(), comma, TS_FILE)).resolves.toContain('@stylistic/member-delimiter-style');
+    await expect(ruleIdsFor(base(), bareLast, TS_FILE)).resolves.toContain('@stylistic/member-delimiter-style');
+    await expect(ruleIdsFor(base(), closed, TS_FILE)).resolves.not.toContain('@stylistic/member-delimiter-style');
+  });
+
+  it('separates a one-line type with semicolons and leaves its last member bare', async () => {
+    const comma = 'export const value = (shape: { a: string, b: string }) => shape;\n';
+    const bareLast = 'export const value = (shape: { a: string; b: string }) => shape;\n';
+
+    await expect(ruleIdsFor(base(), comma, TS_FILE)).resolves.toContain('@stylistic/member-delimiter-style');
+    await expect(ruleIdsFor(base(), bareLast, TS_FILE)).resolves.not.toContain('@stylistic/member-delimiter-style');
+  });
+
   it('reports a braceless if', async () => {
     const code = 'export const pick = (flag) => {\n  if (flag) return 1;\n\n  return 2;\n};\n';
 
@@ -150,6 +197,41 @@ describe('base: ignores', () => {
     }
   });
 
+  it('names every block it writes', async () => {
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'linteljs-names-')));
+
+    await writeFile(join(root, '.gitignore'), 'dist\n');
+
+    const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
+
+    try {
+      const names = ownBlockNames(base({
+        ignores: ['build/**'],
+        naming: { 'src/**/*.ts': 'CAMEL_CASE' },
+      }));
+
+      expect(names.filter((name) => {
+        return name.startsWith('@linteljs/base');
+      })).toEqual([
+        '@linteljs/base/gitignore',
+        '@linteljs/base/ignores',
+        '@linteljs/base/typescript-syntax',
+        '@linteljs/base',
+        '@linteljs/base/typescript-rules',
+        '@linteljs/base/scripts',
+        '@linteljs/base/fixtures',
+        '@linteljs/base/naming',
+      ]);
+    }
+    finally {
+      spy.mockRestore();
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
   it('still builds a config where there is no .gitignore to read', async () => {
     const root = await mkdtemp(join(tmpdir(), 'linteljs-nogit-'));
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
@@ -178,9 +260,10 @@ describe('base: quality', () => {
       .resolves.toContain('func-style');
   });
 
-  it('reports console.log but not console.warn', async () => {
+  it('reports console.log but not console.warn or console.error', async () => {
     await expect(ruleIdsFor(base(), 'console.log(1);\n', TS_FILE)).resolves.toContain('no-console');
     await expect(ruleIdsFor(base(), 'console.warn(1);\n', TS_FILE)).resolves.not.toContain('no-console');
+    await expect(ruleIdsFor(base(), 'console.error(1);\n', TS_FILE)).resolves.not.toContain('no-console');
   });
 
   it('reports console.log in a .js file too', async () => {
@@ -224,7 +307,7 @@ describe('base: unused imports', () => {
 });
 
 describe('base: restricted imports', () => {
-  // Both halves of the pattern: the bare entry and the deep path, which the first glob does not cover.
+  // The bare entry and a deep path: one gitignore-style pattern covers both.
   it('reports the compat entry and its subpaths, and leaves the core entry alone', async () => {
     const importing = (from: string): string => {
       return `import { sortBy } from '${from}';\n\nexport const run = sortBy;\n`;
@@ -346,5 +429,50 @@ describe('base: resolver options', () => {
       },
     });
     expect(settingsOf(base())).toMatchObject({ 'import-x/resolver': { typescript: { alwaysTryTypes: true } } });
+  });
+});
+
+describe('base: presets', () => {
+  const loadBase = async (): Promise<() => Layer> => {
+    return (await import('./base')).base;
+  };
+
+  // import-x keeps its flat presets under `flatConfigs`, and its settings are read off the same preset.
+  it('names the import-x preset when the plugin stops publishing it', async () => {
+    const layer = await layerWithout('eslint-plugin-import-x', (plugin: FlatConfigsBearing) => {
+      return {
+        ...plugin,
+        flatConfigs: {
+          ...plugin.flatConfigs,
+          typescript: undefined,
+        },
+      };
+    }, loadBase);
+
+    expect(layer).toThrow('import-x/typescript is not published');
+  });
+
+  // The plugin types `configs` as optional, so a release without it has to reach the same message.
+  it('names the sonarjs preset when the plugin publishes no configs at all', async () => {
+    const layer = await layerWithout('eslint-plugin-sonarjs', (plugin: typeof sonarjs) => {
+      return {
+        ...plugin,
+        configs: undefined,
+      };
+    }, loadBase);
+
+    expect(layer).toThrow('sonarjs/recommended is not published');
+  });
+
+  it('names the stylistic preset when the plugin stops publishing it', async () => {
+    const layer = await layerWithoutConfig('@stylistic/eslint-plugin', 'recommended', loadBase);
+
+    expect(layer).toThrow('stylistic/recommended is not published');
+  });
+
+  it('names the linteljs preset when the plugin stops publishing it', async () => {
+    const layer = await layerWithoutConfig('@linteljs/eslint-plugin', 'flat/recommended', loadBase);
+
+    expect(layer).toThrow('@linteljs/flat/recommended is not published');
   });
 });

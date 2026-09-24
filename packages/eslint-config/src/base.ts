@@ -51,15 +51,12 @@ export const base = (options: BaseOptions = {}): Layer => {
 
   // No default `conditionNames`: `import` ahead of `types` makes `react-native` resolve to its Flow `index.js`, which
   // import-x cannot parse. Measured: 127 findings on a clean React Native project, 111 of them left unfixed.
-  const importSettings: Linter.Config['settings'] = {
-    ...importX.flatConfigs.typescript.settings,
-    'import-x/resolver': {
-      typescript: {
-        alwaysTryTypes: true,
-        ...(resolver?.project === undefined ? {} : { project: resolver.project }),
-        ...(resolver?.conditionNames === undefined ? {} : { conditionNames: resolver.conditionNames }),
-        ...(resolver?.noWarnOnMultipleProjects === true ? { noWarnOnMultipleProjects: true } : {}),
-      },
+  const importResolver: Linter.Config['settings'] = {
+    typescript: {
+      alwaysTryTypes: true,
+      ...(resolver?.project === undefined ? {} : { project: resolver.project }),
+      ...(resolver?.conditionNames === undefined ? {} : { conditionNames: resolver.conditionNames }),
+      ...(resolver?.noWarnOnMultipleProjects === true ? { noWarnOnMultipleProjects: true } : {}),
     },
   };
 
@@ -72,10 +69,16 @@ export const base = (options: BaseOptions = {}): Layer => {
         }]
       : []),
 
-    {
-      ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript')[0],
-      settings: importSettings,
-    },
+    // Read once, through `presetOf`, so a release without the preset fails with its name rather than a TypeError.
+    ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript').map((preset) => {
+      return {
+        ...preset,
+        settings: {
+          ...preset.settings,
+          'import-x/resolver': importResolver,
+        },
+      };
+    }),
 
     {
       name: '@linteljs/base/typescript-syntax',
@@ -152,7 +155,8 @@ export const base = (options: BaseOptions = {}): Layer => {
         'no-restricted-imports': ['error', {
           patterns: [
             {
-              group: ['es-toolkit/compat', 'es-toolkit/compat/*'],
+              // Gitignore syntax, so the entry covers its subpaths too.
+              group: ['es-toolkit/compat'],
               message: 'Use the core es-toolkit entry. Compat is the lodash migration path.',
             },
           ],

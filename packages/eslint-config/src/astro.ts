@@ -7,8 +7,9 @@ import type { Layer } from './types';
 
 const ASTRO_FILES = ['**/*.astro'];
 
-// The template and the virtual `.ts` files the plugin extracts from it, which no tsconfig can contain.
-const ASTRO_TYPELESS = ['**/*.astro', '**/*.astro/*.ts', '**/*.astro/*.js'];
+// The template and the virtual `.ts` files the plugin extracts from it, which no tsconfig can contain. The virtual
+// `.js` files need no entry: `typescript()` already turns the type-aware rules off every `.js` path.
+const ASTRO_TYPELESS = ['**/*.astro', '**/*.astro/*.ts'];
 
 // A file-type layer that stacks with a framework one, since a site may host React, Vue, Svelte or Solid islands.
 // Scoped, because the plugin leaves its rule entry unglobbed.

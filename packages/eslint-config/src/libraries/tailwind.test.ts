@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -81,5 +82,27 @@ describe('tailwind', () => {
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
 
     expect(ruleIds.some(startsWith('better-tailwindcss/'))).toBe(false);
+  });
+
+  it('leaves a class the theme does not know alone', async () => {
+    const code = [
+      'export const Card = () => {',
+      '  return <div className="flex brand-card">x</div>;',
+      '};',
+      '',
+    ].join('\n');
+
+    await expect(ruleIdsFor(layer, code, 'src/components/Card.tsx'))
+      .resolves.not.toContain('better-tailwindcss/no-unknown-classes');
+  });
+
+  it.each([
+    ['recommended', 'better-tailwindcss/recommended'],
+  ])('names %s when eslint-plugin-better-tailwindcss stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('eslint-plugin-better-tailwindcss', key, async () => {
+      return (await import('./tailwind')).tailwind;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
   });
 });

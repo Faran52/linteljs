@@ -28,5 +28,8 @@
     "scripts/*.ts",
     "tsdown.config.ts",
     "vitest.config.ts"
-  ]
+  ],
+
+  // Lint input with tsconfigs of its own; `registerHome.ts` imports an SFC no TypeScript program can resolve.
+  "exclude": ["__mocks__/fixtures"]
 }

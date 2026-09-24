@@ -25,8 +25,11 @@ const ALIAS_BUCKETS = [
   ['@mocks'],
 ];
 
+// Up to the wildcard, wherever it sits: `@features/*/api` is the `@features` alias.
 const aliasNameOf = (alias: string): string => {
-  return alias.replace(/\/\*$/, '');
+  const wildcard = alias.indexOf('*');
+
+  return wildcard === -1 ? alias : alias.slice(0, wildcard).replace(/\/$/, '');
 };
 
 // Not `RegExp.escape`, which also rewrites `@` and would churn every group.

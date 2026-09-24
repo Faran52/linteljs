@@ -23,10 +23,16 @@ when a version's change lives in a sibling it is described there instead:
   the rule was off in every `.vue` and `.svelte` file.
 - `reactNative()` is published: a `./react-native` subpath, a build entry, and `reactNative` and
   `reactNativeGroup` on the barrel. `nuxt`, `nuxtGroup` and `tailwind` join the barrel too, and
-  `scripts/smoke.js` now holds every layer in `frameworks/` and `libraries/` to having both a
+  `scripts/smoke.ts` now holds every layer in `frameworks/` and `libraries/` to having both a
   subpath and a barrel export.
 - `vue/multi-word-component-names` is no longer restated; `vue/flat/recommended` already sets it to
   error.
+- An alias whose `paths` key has its wildcard mid-key, such as `@features/*/api`, sorts into its
+  alias bucket. The pattern kept a literal `*`, matched nothing, and the imports sorted with the
+  packages.
+- `svelte()` no longer parses a `.svelte.js` rune module with typescript-eslint and the project
+  service. The type-aware rules are off for every `.js` file, so it bought nothing, and a
+  `.svelte.js` outside every tsconfig failed to parse.
 
 ## 1.6.0
 

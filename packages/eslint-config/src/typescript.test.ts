@@ -1,6 +1,11 @@
 import { join } from 'node:path';
 
-import { ruleIdsForFile } from '@mocks/lintText';
+import {
+  enabledRuleIdsFor,
+  ownBlockNames,
+  ruleIdsForFile,
+  ruleNamesFor,
+} from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -43,5 +48,22 @@ describe('typescript', () => {
     });
 
     expect(reported).toHaveLength(1);
+  });
+
+  // `strictTypeChecked` has no files glob, so a plain script would otherwise ask for types it cannot have.
+  it('turns the type-aware rules off a plain .js file', async () => {
+    await expect(ruleNamesFor([...base(), ...typescript()], 'src/tool.js'))
+      .resolves.toContain('@typescript-eslint/no-floating-promises');
+    await expect(enabledRuleIdsFor([...base(), ...typescript()], 'src/tool.js'))
+      .resolves.not.toContain('@typescript-eslint/no-floating-promises');
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(typescript())).toEqual([
+      '@linteljs/typescript',
+      '@linteljs/typescript/untyped',
+      '@linteljs/typescript/unused-vars-handover',
+      '@linteljs/typescript/asset-requires',
+    ]);
   });
 });

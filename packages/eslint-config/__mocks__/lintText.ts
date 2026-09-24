@@ -24,6 +24,13 @@ export const SFC_FIXTURES = join(import.meta.dirname, 'fixtures/sfc');
 // On disk for the same reason.
 export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 
+// A block name has no lint behaviour, so the layer itself is the only place to read one.
+export const ownBlockNames = (layer: Layer): string[] => {
+  return layer.flatMap(({ name }) => {
+    return name?.startsWith('@linteljs/') ? [name] : [];
+  });
+};
+
 export const startsWith = (prefix: string) => {
   return (ruleId: string | null): boolean => {
     return ruleId?.startsWith(prefix) ?? false;
@@ -99,4 +106,13 @@ export const ruleIdsForFile = async (config: Layer, filePath: string): Promise<(
   return messages.map((message) => {
     return message.ruleId;
   });
+};
+
+// Whether `specifier` sorts into a bucket of its own ahead of the packages. The blank line between it and a package
+// import is right only when the two land in different buckets, so the sort rule reports exactly when it does not.
+export const sortsAheadOfPackages = async (config: Layer, specifier: string): Promise<boolean> => {
+  const code = `import { a } from '${specifier}';\n\nimport { b } from 'zod';\n\nexport const value = [a, b];\n`;
+  const ruleIds = await ruleIdsFor(config, code, 'src/lib/utils/sample.ts');
+
+  return !ruleIds.includes('simple-import-sort/imports');
 };

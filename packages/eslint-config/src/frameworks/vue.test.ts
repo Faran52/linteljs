@@ -2,10 +2,13 @@ import { join } from 'node:path';
 
 import {
   messagesForFile,
+  ownBlockNames,
   ruleIdsForFile,
   SFC_FIXTURES,
+  sortsAheadOfPackages,
   startsWith,
 } from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -15,7 +18,7 @@ import {
 import base from '../base';
 import typescript from '../typescript';
 
-import vue from './vue';
+import vue, { vueGroup } from './vue';
 
 describe('vue', () => {
   it('parses a single-file component and reports on its template', async () => {
@@ -70,5 +73,53 @@ describe('vue', () => {
 
     expect(ruleIds).toContain('@linteljs/union-newline');
     expect(ruleIds).toContain('@linteljs/no-inline-object-types');
+  });
+
+  // An SFC import is typed as nothing, so the two rules that follow a value out of it are handed to `vue-tsc`.
+  it('lets a .ts file pass an imported component along', async () => {
+    const file = join(SFC_FIXTURES, 'registerHome.ts');
+    const plain = await ruleIdsForFile([...base(), ...typescript()], file);
+    const composed = await ruleIdsForFile([...base(), ...typescript(), ...vue()], file);
+
+    expect(plain).toContain('@typescript-eslint/no-unsafe-argument');
+    expect(plain).toContain('@typescript-eslint/no-unsafe-assignment');
+    expect(composed).not.toContain('@typescript-eslint/no-unsafe-argument');
+    expect(composed).not.toContain('@typescript-eslint/no-unsafe-assignment');
+  });
+
+  it.each([
+    'vue',
+    'vue-router',
+    'pinia',
+    '@vue/test-utils',
+  ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
+    await expect(sortsAheadOfPackages(base({ frameworkGroup: vueGroup }), specifier)).resolves.toBe(true);
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(vue())).toEqual([
+      '@linteljs/vue',
+      '@linteljs/vue/sfc-import-seam',
+    ]);
+  });
+
+  it.each([
+    ['flat/recommended', 'vue/flat/recommended'],
+  ])('names %s when eslint-plugin-vue stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('eslint-plugin-vue', key, async () => {
+      return (await import('./vue')).vue;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
+  });
+
+  it.each([
+    ['flat/recommended', 'vuejs-accessibility/flat/recommended'],
+  ])('names %s when eslint-plugin-vuejs-accessibility stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('eslint-plugin-vuejs-accessibility', key, async () => {
+      return (await import('./vue')).vue;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
   });
 });

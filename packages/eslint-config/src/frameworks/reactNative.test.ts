@@ -2,7 +2,11 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import {
+  ownBlockNames,
+  ruleIdsFor,
+  startsWith,
+} from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -85,5 +89,13 @@ describe('reactNative', () => {
   // `^react-` already covers `react-native`, so there is no second group to keep in step with the first.
   it('sorts imports by the same group as react', () => {
     expect(reactNativeGroup).toContain('^react-');
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(reactNative())).toEqual([
+      '@linteljs/react/hooks-one-owner',
+      '@linteljs/react',
+      '@linteljs/react-native/accessibility',
+    ]);
   });
 });

@@ -1,4 +1,9 @@
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import {
+  ownBlockNames,
+  ruleIdsFor,
+  sortsAheadOfPackages,
+  startsWith,
+} from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -7,7 +12,7 @@ import {
 
 import base from '../base';
 
-import next from './next';
+import next, { nextGroup } from './next';
 import react from './react';
 
 // `no-html-link-for-pages` off: it writes a paragraph to stderr on every lint when no `pages/` directory exists.
@@ -99,5 +104,18 @@ describe('next', () => {
     });
 
     expect(parsers).toEqual([]);
+  });
+
+  it.each([
+    'next',
+    'next/link',
+  ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
+    await expect(sortsAheadOfPackages(base({ frameworkGroup: nextGroup }), specifier)).resolves.toBe(true);
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(next())).toEqual([
+      '@linteljs/next',
+    ]);
   });
 });

@@ -1,4 +1,5 @@
 import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -22,5 +23,15 @@ describe('tanstackQuery', () => {
     const ruleIds = await ruleIdsFor([...react(), ...tanstackQuery()], code, 'src/lib/hooks/useThing.ts');
 
     expect(ruleIds.some(startsWith('@tanstack/query/'))).toBe(true);
+  });
+
+  it.each([
+    ['flat/recommended', 'tanstack-query/flat/recommended'],
+  ])('names %s when @tanstack/eslint-plugin-query stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('@tanstack/eslint-plugin-query', key, async () => {
+      return (await import('./tanstackQuery')).tanstackQuery;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
   });
 });

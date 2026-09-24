@@ -1,4 +1,4 @@
-import { ruleIdsFor } from '@mocks/lintText';
+import { ruleIdsFor, sortsAheadOfPackages } from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -126,6 +126,46 @@ describe('buildGroups', () => {
     expect(new RegExp('^$lib(?:/|$)').exec('$lib/store/user')).toBeNull();
   });
 
+  it('files every named alias in its bucket and nowhere else', () => {
+    const named = [
+      '@config', '@typings',
+      '@lib', '@store', '@services', '@providers', '@apis', '@utils',
+      '@hooks', '@composables', '@primitives',
+      '@ui', '@features', '@components',
+      '@mocks',
+    ];
+    const aliases = Object.fromEntries([...named, '@widgets'].map((name) => {
+      return [`${name}/*`, `./src/${name.slice(1)}/*`];
+    }));
+    const pattern = (name: string): string => {
+      return `^${name}(?:/|$)`;
+    };
+
+    expect(buildGroups(aliases).slice(2, -4)).toEqual([
+      ['@config', '@typings'].map(pattern),
+      ['@lib', '@store', '@services', '@providers', '@apis', '@utils'].map(pattern),
+      ['@hooks', '@composables', '@primitives'].map(pattern),
+      ['@ui', '@features', '@components'].map(pattern),
+      ['@mocks'].map(pattern),
+      ['@widgets'].map(pattern),
+    ]);
+  });
+
+  it('adds no framework bucket for an empty framework group', () => {
+    expect(buildGroups({}, [])).toEqual(buildGroups());
+  });
+
+  // A wildcard mid-key once kept its `\*` in the pattern, which matches no specifier a project writes.
+  it('matches an alias whose wildcard sits mid-key', () => {
+    const patterns = buildGroups({
+      '@features/*/api': './src/features/*/api',
+      '@app/shared/*': './src/app/shared/*',
+    }).flat();
+
+    expect(patterns).toContain('^@features(?:/|$)');
+    expect(patterns).toContain('^@app/shared(?:/|$)');
+  });
+
   it('keeps the styles bucket last', () => {
     const groups = buildGroups(ALIASES, reactGroup);
 
@@ -145,5 +185,10 @@ describe('base: simple-import-sort', () => {
 
     await expect(ruleIdsFor(base(), code, 'src/lib/utils/sample.ts'))
       .resolves.toContain('simple-import-sort/imports');
+  });
+
+  // The control for every framework's own bucket test: with no framework group, a framework import is a package.
+  it('sorts a framework import with the packages when no framework group is given', async () => {
+    await expect(sortsAheadOfPackages(base(), 'react')).resolves.toBe(false);
   });
 });

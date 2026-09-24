@@ -1,4 +1,5 @@
 import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -23,5 +24,15 @@ describe('tanstackRouter', () => {
     const ruleIds = await ruleIdsFor([...react(), ...tanstackRouter()], code, 'src/routes/index.tsx');
 
     expect(ruleIds.some(startsWith('@tanstack/router/'))).toBe(true);
+  });
+
+  it.each([
+    ['flat/recommended', 'tanstack-router/flat/recommended'],
+  ])('names %s when @tanstack/eslint-plugin-router stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('@tanstack/eslint-plugin-router', key, async () => {
+      return (await import('./tanstackRouter')).tanstackRouter;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
   });
 });

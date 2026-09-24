@@ -1,4 +1,10 @@
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import {
+  ownBlockNames,
+  ruleIdsFor,
+  sortsAheadOfPackages,
+  startsWith,
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -7,7 +13,7 @@ import {
 
 import base from '../base';
 
-import angular from './angular';
+import angular, { angularGroup } from './angular';
 
 describe('angular', () => {
   /*
@@ -54,5 +60,44 @@ describe('angular', () => {
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.ts');
 
     expect(ruleIds.some(startsWith('@angular-eslint/'))).toBe(true);
+  });
+
+  // The processor hands an inline template to the template rules as a virtual `.html` file.
+  it('reports on a template written inline in a component', async () => {
+    const code = [
+      "@Component({ selector: 'app-logo', template: '<img src=\"/a.png\">' })",
+      'export class LogoComponent {}',
+      '',
+    ].join('\n');
+    const ruleIds = await ruleIdsFor(angular(), code, 'src/app/logo.component.ts');
+
+    expect(ruleIds).toContain('@angular-eslint/template/alt-text');
+  });
+
+  it.each([
+    '@angular/core',
+    'rxjs',
+    'rxjs/operators',
+  ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
+    await expect(sortsAheadOfPackages(base({ frameworkGroup: angularGroup }), specifier)).resolves.toBe(true);
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(angular())).toEqual([
+      '@linteljs/angular/inline-templates',
+      '@linteljs/angular/decorated-classes',
+    ]);
+  });
+
+  it.each([
+    ['tsRecommended', 'angular-eslint/tsRecommended'],
+    ['templateRecommended', 'angular-eslint/template'],
+    ['templateAccessibility', 'angular-eslint/templateAccessibility'],
+  ])('names %s when angular-eslint stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('angular-eslint', key, async () => {
+      return (await import('./angular')).angular;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
   });
 });

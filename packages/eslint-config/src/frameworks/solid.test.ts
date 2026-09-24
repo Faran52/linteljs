@@ -1,4 +1,10 @@
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
+import {
+  ownBlockNames,
+  ruleIdsFor,
+  sortsAheadOfPackages,
+  startsWith,
+} from '@mocks/lintText';
+import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -7,7 +13,7 @@ import {
 
 import base from '../base';
 
-import solid from './solid';
+import solid, { solidGroup } from './solid';
 
 describe('solid', () => {
   it('reports destructured props, which break reactivity in Solid', async () => {
@@ -37,5 +43,47 @@ describe('solid', () => {
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');
 
     expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
+  // No preset in this layer registers the plugin, so its own block has to for the layer to stand alone.
+  it('runs its linteljs rule without base', async () => {
+    const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
+
+    await expect(ruleIdsFor(solid(), code, 'src/pages/Chip.tsx'))
+      .resolves.toContain('@linteljs/no-duplicate-jsx-props');
+  });
+
+  it.each([
+    'solid-js',
+    'solid-js/web',
+    '@solidjs/router',
+  ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
+    await expect(sortsAheadOfPackages(base({ frameworkGroup: solidGroup }), specifier)).resolves.toBe(true);
+  });
+
+  it('names every block it writes', () => {
+    expect(ownBlockNames(solid())).toEqual([
+      '@linteljs/solid',
+    ]);
+  });
+
+  it.each([
+    ['flat/typescript', 'solid/flat/typescript'],
+  ])('names %s when eslint-plugin-solid stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('eslint-plugin-solid', key, async () => {
+      return (await import('./solid')).solid;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
+  });
+
+  it.each([
+    ['recommended', 'jsx-a11y-x/recommended'],
+  ])('names %s when eslint-plugin-jsx-a11y-x stops publishing it', async (key, label) => {
+    const layer = await layerWithoutConfig('eslint-plugin-jsx-a11y-x', key, async () => {
+      return (await import('./solid')).solid;
+    });
+
+    expect(layer).toThrow(`${label} is not published`);
   });
 });

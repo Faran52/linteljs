@@ -1,5 +1,3 @@
-import linteljs from '@linteljs/eslint-plugin';
-
 import { SCRIPT_FILES } from '../config/globs';
 
 import { reactCore, reactGroup } from './utils/reactCoreUtils';
@@ -21,8 +19,8 @@ export const reactNative = (): Layer => {
     ...reactCore(),
     {
       name: '@linteljs/react-native/accessibility',
+      // `reactCore()` above registers the plugin over the same files.
       files: SCRIPT_FILES,
-      plugins: { '@linteljs': linteljs },
       /**
        * Named rather than taken as a preset. Each is an opt-out, so `recommended` does not carry them, and the
        * subject lives in the id now rather than in a preset name. This layer is the only thing that ever wanted
