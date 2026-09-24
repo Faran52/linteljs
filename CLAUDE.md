@@ -101,8 +101,9 @@ combinations.
   `frameworks/<name>/<name>Framework.ts` and `libraries/<name>/<name>Library.ts` for the rest. The
   file names carry the suffix and the exports do not: `baseLayer.ts` exports `base`. Each entry backs
   a published `exports` subpath through a keyed tsdown entry, so `dist/` stays flat however deep the
-  source sits. `index.ts`, `defineConfig.ts` and `types.ts` are the package's own entry points at the
-  root, `config/` holds the glob tables several layers read, and `src/meta.test.ts` holds the tree
+  source sits. `compose-config/composeConfig.ts` takes no suffix, since nothing names a kind for it,
+  and keeps its loader tables in its `constants.ts`. `index.ts` and `types.ts` stay at the root,
+  `config/` holds the glob tables several layers read, and `src/meta.test.ts` holds the tree
   and the tsdown entries to it.
 - `packages/eslint-plugin/src/rules/`: one directory per rule, named for its `kebab-case` id and
   holding `<camelCaseExport>.ts`, its test beside it, and `README.md`. The directory name is the id,

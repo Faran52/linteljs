@@ -103,7 +103,7 @@ interface ResolverOptions {
   noWarnOnMultipleProjects?: boolean;
 }
 
-export interface DefineConfigOptions {
+export interface ComposeConfigOptions {
   framework?: Framework;
   typescript?: boolean;
   vitest?: boolean;

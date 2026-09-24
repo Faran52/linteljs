@@ -27,7 +27,7 @@ export const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> 
 };
 
 // The subpath, not the barrel, which loads all six framework layers.
-export const PACKAGE = '@linteljs/eslint-config/define-config';
+export const PACKAGE = '@linteljs/eslint-config/compose-config';
 
 // `plugins/linteljs/` is shipped, not written here; `.agents/` is the codex half of `.claude/`. Ignoring one and
 // not the other made a real project's gate fail on skill files mirrored into `.agents/`.

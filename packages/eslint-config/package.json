@@ -47,10 +47,10 @@
         "default": "./dist/base.mjs"
       }
     },
-    "./define-config": {
+    "./compose-config": {
       "import": {
-        "types": "./dist/defineConfig.d.mts",
-        "default": "./dist/defineConfig.mjs"
+        "types": "./dist/composeConfig.d.mts",
+        "default": "./dist/composeConfig.mjs"
       }
     },
     "./typescript": {

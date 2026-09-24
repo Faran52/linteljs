@@ -34,7 +34,7 @@ export const astro = (): Layer => {
   return [
     ...recommended,
     ...a11y,
-    // After `typescript()`, which is why `defineConfig` composes this layer last.
+    // After `typescript()`, which is why `composeConfig` composes this layer last.
     {
       ...tseslint.configs.disableTypeChecked,
       name: '@linteljs/astro/untyped',

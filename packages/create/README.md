@@ -60,7 +60,7 @@ Every generated target is TypeScript. A fresh project starts with `pnpm check`, 
 linting, type-checking, coverage, and the build. Coverage thresholds are 100%, and starter tests live beside
 scaffolded code so the setup proves itself immediately.
 
-The generated `eslint.config.js` uses `defineConfig` from `@linteljs/eslint-config/define-config`. The
+The generated `eslint.config.js` uses `composeConfig` from `@linteljs/eslint-config/compose-config`. The
 composer fixes layer order and keeps framework import-sort groups aligned with the base layer. A project can
 still compose exported layers by hand.
 

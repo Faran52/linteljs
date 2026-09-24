@@ -1,5 +1,5 @@
 /**
- * Lints the shipped starter source the way the project receiving it will: `defineConfig` with the target's own
+ * Lints the shipped starter source the way the project receiving it will: `composeConfig` with the target's own
  * framework, each file judged at the path it lands on. Nothing in `pnpm check` reads that tree otherwise, and its
  * frameworks are not installed here, so type-aware rules stay with the end-to-end suite.
  *
@@ -19,7 +19,7 @@ import { ESLint } from 'eslint';
 import { ANSWERS, DEFAULT_ANSWERS } from '../../packages/create/src/answers';
 import { targetFor } from '../../packages/create/src/targets';
 import { valuesOf } from '../../packages/create/src/utils/objectUtils';
-import { defineConfig } from '../../packages/eslint-config/src/defineConfig';
+import { composeConfig } from '../../packages/eslint-config/src/compose-config/composeConfig';
 import { log, logError } from '../utils/loggerUtils.ts';
 
 import {
@@ -94,7 +94,7 @@ const STARTER_OVERRIDES: Linter.Config[] = [
 
 const eslintFor = async (target: (typeof targets)[number]): Promise<ESLint> => {
   const record = targetFor(answerSets.get(target)?.[0] ?? DEFAULT_ANSWERS);
-  const config = await defineConfig({
+  const config = await composeConfig({
     framework: record.framework,
     astro: record.astro === true,
     vitest: true,
@@ -141,7 +141,7 @@ const lintTarget = async (target: string, eslint: ESLint): Promise<[string[], nu
   return [findings, fixable, files.length, unplaced];
 };
 
-// Built in turn: `defineConfig` loads its layers lazily, and two loads racing each other read a half-built module.
+// Built in turn: `composeConfig` loads its layers lazily, and two loads racing each other read a half-built module.
 const linters: [string, ESLint][] = [];
 
 for (const target of targets) {

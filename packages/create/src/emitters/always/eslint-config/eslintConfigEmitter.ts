@@ -1,5 +1,5 @@
 import { type Answers } from '#answers';
-import { type Artifact, type DefineConfigOptions } from '#config/types';
+import { type Artifact, type ComposeConfigOptions } from '#config/types';
 import { targetFor } from '#targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -13,8 +13,8 @@ import {
   PACKAGE,
 } from './constants';
 
-// Keyed by `keyof DefineConfigOptions`, so a renamed option fails to compile here rather than in a project.
-type OptionRow = [keyof DefineConfigOptions, string];
+// Keyed by `keyof ComposeConfigOptions`, so a renamed option fails to compile here rather than in a project.
+type OptionRow = [keyof ComposeConfigOptions, string];
 
 // `String.raw` for a value carrying a backslash, which an ordinary literal parses back as an escape.
 const quote = (value: string): string => {
@@ -124,9 +124,9 @@ export const emitEslintConfig = (answers: Answers): string => {
 
   // Named: import/no-anonymous-default-export reports a bare array.
   return [
-    `import { defineConfig } from '${PACKAGE}';`,
+    `import { composeConfig } from '${PACKAGE}';`,
     '',
-    `const config = await defineConfig({\n${options}\n});`,
+    `const config = await composeConfig({\n${options}\n});`,
     '',
     'export default config;',
     '',

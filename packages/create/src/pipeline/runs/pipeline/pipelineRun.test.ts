@@ -763,7 +763,7 @@ describe('sync', () => {
     const { written } = await applySync(cwd, answersFor({}), ['eslint.config.js', 'tsconfig.json']);
 
     expect(written).toEqual(['eslint.config.js', 'tsconfig.json']);
-    expect(await readFile(join(cwd, 'eslint.config.js'), 'utf8')).toContain('defineConfig');
+    expect(await readFile(join(cwd, 'eslint.config.js'), 'utf8')).toContain('composeConfig');
     expect((await planSync(cwd, answersFor({}))).pending).toEqual([]);
   });
 

@@ -42,9 +42,9 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
  * Character for character: both READMEs quote it. An ordinary literal, not `String.raw`, since the emitted file now
  * carries a `String.raw` of its own and a raw fixture cannot hold the backticks that tag needs.
  */
-const CANONICAL_REACT = `import { defineConfig } from '@linteljs/eslint-config/define-config';
+const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/compose-config';
 
-const config = await defineConfig({
+const config = await composeConfig({
   framework: 'react',
   typescript: true,
   vitest: true,
@@ -89,7 +89,7 @@ describe('emitEslintConfig', () => {
 
     expect(output).not.toContain("from '@linteljs/eslint-config'");
     expect(output.match(/^import /gm)).toHaveLength(1);
-    expect(output).toContain("import { defineConfig } from '@linteljs/eslint-config/define-config';");
+    expect(output).toContain("import { composeConfig } from '@linteljs/eslint-config/compose-config';");
   });
 
   // The composer puts react underneath next and reads the order off the layer.

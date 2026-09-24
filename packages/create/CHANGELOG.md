@@ -8,6 +8,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- **Breaking: the generated `eslint.config.js` imports `composeConfig` from
+  `@linteljs/eslint-config/compose-config`**, the new name of `defineConfig`. `sync` rewrites the file in an
+  existing project.
 - **React Native follows Expo SDK 57's own pins.** react-native `0.86.3`, react and react-dom `19.2.3`,
   `@types/react` `~19.2.2`, Reanimated `4.5.1` and worklets `0.10.1`, as `expo-template-default@sdk-57` pins
   them, instead of react-native 0.87 from npm latest, which no Expo SDK is tested against. SDK 58 moves the

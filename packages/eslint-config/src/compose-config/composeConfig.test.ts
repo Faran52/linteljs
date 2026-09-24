@@ -7,25 +7,26 @@ import {
   it,
 } from 'vitest';
 
-import { defineConfig } from './defineConfig';
-import angular from './frameworks/angular/angularFramework';
-import next from './frameworks/next/nextFramework';
-import react from './frameworks/react/reactFramework';
-import reactNative from './frameworks/react-native/reactNativeFramework';
-import solid from './frameworks/solid/solidFramework';
-import svelte from './frameworks/svelte/svelteFramework';
-import vue from './frameworks/vue/vueFramework';
-import base from './layers/base/baseLayer';
-import html from './layers/html/htmlLayer';
-import typescript from './layers/typescript/typescriptLayer';
-import vitest from './layers/vitest/vitestLayer';
-import tanstackQuery from './libraries/tanstack-query/tanstackQueryLibrary';
+import angular from '../frameworks/angular/angularFramework';
+import next from '../frameworks/next/nextFramework';
+import react from '../frameworks/react/reactFramework';
+import reactNative from '../frameworks/react-native/reactNativeFramework';
+import solid from '../frameworks/solid/solidFramework';
+import svelte from '../frameworks/svelte/svelteFramework';
+import vue from '../frameworks/vue/vueFramework';
+import base from '../layers/base/baseLayer';
+import html from '../layers/html/htmlLayer';
+import typescript from '../layers/typescript/typescriptLayer';
+import vitest from '../layers/vitest/vitestLayer';
+import tanstackQuery from '../libraries/tanstack-query/tanstackQueryLibrary';
+
+import { composeConfig } from './composeConfig';
 
 import type {
-  DefineConfigOptions,
+  ComposeConfigOptions,
   Framework,
   Layer,
-} from './types';
+} from '../types';
 
 import {
   enabledRuleIdsFor,
@@ -34,9 +35,9 @@ import {
   ruleIdsForFile,
 } from '#mocks/lintText';
 
-const SFC_FIXTURES = join(import.meta.dirname, '../__mocks__/fixtures/sfc');
+const SFC_FIXTURES = join(import.meta.dirname, '../../__mocks__/fixtures/sfc');
 
-const TYPED_FILE = join(import.meta.dirname, '../__mocks__/fixtures/typed/floating.ts');
+const TYPED_FILE = join(import.meta.dirname, '../../__mocks__/fixtures/typed/floating.ts');
 
 // Without a framework bucket both imports fall into the package bucket and the blank line is reported.
 const sortedFor = (specifier: string): string => {
@@ -63,9 +64,9 @@ const FRAMEWORK_PACKAGES: [Framework, string][] = [
 
 const SORT_RULE = 'simple-import-sort/imports';
 
-describe('defineConfig', () => {
+describe('composeConfig', () => {
   it('returns base alone when asked for nothing, rather than a default nobody wrote', async () => {
-    const baseOnly = await defineConfig();
+    const baseOnly = await composeConfig();
 
     await expect(ruleIdsFor(baseOnly, 'export const value = "x";\n', 'src/lib/utils/sample.ts'))
       .resolves.toContain('@stylistic/quotes');
@@ -74,7 +75,7 @@ describe('defineConfig', () => {
   });
 
   it('composes the type-aware layer on request', async () => {
-    const ruleIds = await ruleIdsForFile(await defineConfig({ typescript: true }), TYPED_FILE);
+    const ruleIds = await ruleIdsForFile(await composeConfig({ typescript: true }), TYPED_FILE);
 
     expect(ruleIds).toContain('@typescript-eslint/no-floating-promises');
   });
@@ -82,8 +83,8 @@ describe('defineConfig', () => {
   it.each(FRAMEWORK_PACKAGES)('gives base the sort bucket %s owns', async (framework, specifier) => {
     const code = sortedFor(specifier);
 
-    const own = await ruleIdsFor(await defineConfig({ framework }), code, 'src/app/entry.ts');
-    const none = await ruleIdsFor(await defineConfig(), code, 'src/app/entry.ts');
+    const own = await ruleIdsFor(await composeConfig({ framework }), code, 'src/app/entry.ts');
+    const none = await ruleIdsFor(await composeConfig(), code, 'src/app/entry.ts');
 
     expect(own).not.toContain(SORT_RULE);
     expect(none).toContain(SORT_RULE);
@@ -94,7 +95,7 @@ describe('defineConfig', () => {
     ['vue', 'Home.vue', 'vue/'],
     ['svelte', 'Page.svelte', 'svelte/'],
   ])('orders %s after typescript, so its component still parses', async (framework, fixture, prefix) => {
-    const config = await defineConfig({
+    const config = await composeConfig({
       framework: framework === 'vue' ? 'vue' : 'svelte',
       typescript: true,
     });
@@ -123,7 +124,7 @@ describe('defineConfig', () => {
       '',
     ].join('\n');
 
-    const ruleIds = await ruleIdsFor(await defineConfig({ framework: 'next' }), code, 'src/app/page.tsx');
+    const ruleIds = await ruleIdsFor(await composeConfig({ framework: 'next' }), code, 'src/app/page.tsx');
 
     expect(ruleIds).toContain('@next/next/no-img-element');
     expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
@@ -133,8 +134,8 @@ describe('defineConfig', () => {
   // project rather than only the layer's own suite.
   it('composes react-native as react without the accessibility preset', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" src="/b.png" />;\n};\n';
-    const native = await ruleIdsFor(await defineConfig({ framework: 'react-native' }), code, 'src/Logo.tsx');
-    const web = await ruleIdsFor(await defineConfig({ framework: 'react' }), code, 'src/Logo.tsx');
+    const native = await ruleIdsFor(await composeConfig({ framework: 'react-native' }), code, 'src/Logo.tsx');
+    const web = await ruleIdsFor(await composeConfig({ framework: 'react' }), code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
     expect(native).not.toContain('jsx-a11y-x/alt-text');
@@ -151,7 +152,7 @@ describe('defineConfig', () => {
       '',
     ].join('\n');
 
-    const config = await defineConfig({
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['tanstack-query'],
     });
@@ -170,7 +171,7 @@ describe('defineConfig', () => {
       '});',
       '',
     ].join('\n');
-    const config = await defineConfig({
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['tanstack-router'],
     });
@@ -181,13 +182,13 @@ describe('defineConfig', () => {
 
   it('composes the tailwind layer through the same door', async () => {
     const code = 'export const Card = () => {\n  return <div className="p-2 p-2">x</div>;\n};\n';
-    const config = await defineConfig({
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['tailwind'],
     });
     // The plugin resolves `tailwindcss` from cwd.
     const pinned = [...config, {
-      settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '..') } },
+      settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../..') } },
     }];
 
     await expect(ruleIdsFor(pinned, code, 'src/components/Card.tsx'))
@@ -196,7 +197,7 @@ describe('defineConfig', () => {
 
   // On the layer, as `tailwind.test.ts` does: proving the effect needs a real CSS entry with a custom token.
   it('hands the tailwind entry point to the tailwind layer', async () => {
-    const config = await defineConfig({
+    const config = await composeConfig({
       libraries: ['tailwind'],
       tailwindEntryPoint: './src/app/globals.css',
     });
@@ -208,7 +209,7 @@ describe('defineConfig', () => {
   });
 
   it('puts vue underneath nuxt rather than beside it', async () => {
-    const config = await defineConfig({ framework: 'nuxt' });
+    const config = await composeConfig({ framework: 'nuxt' });
 
     await expect(enabledRuleIdsFor(config, 'src/components/badge.vue'))
       .resolves.toContain('vue/multi-word-component-names');
@@ -220,38 +221,38 @@ describe('defineConfig', () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';
 
-    await expect(ruleIdsFor(await defineConfig({ vitest: true }), code, path))
+    await expect(ruleIdsFor(await composeConfig({ vitest: true }), code, path))
       .resolves.toContain('vitest/no-focused-tests');
-    await expect(ruleIdsFor(await defineConfig(), code, path))
+    await expect(ruleIdsFor(await composeConfig(), code, path))
       .resolves.not.toContain('vitest/no-focused-tests');
   });
 
   it('composes the html layer on request and not otherwise', async () => {
     const code = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 
-    await expect(ruleIdsFor(await defineConfig({
+    await expect(ruleIdsFor(await composeConfig({
       html: true,
       typescript: true,
     }), code, 'index.html'))
       .resolves.toContain('@html-eslint/require-img-alt');
-    await expect(ruleIdsFor(await defineConfig({ typescript: true }), code, 'index.html'))
+    await expect(ruleIdsFor(await composeConfig({ typescript: true }), code, 'index.html'))
       .resolves.not.toContain('@html-eslint/require-img-alt');
   });
 
   it('composes the astro layer on request and not otherwise', async () => {
     const page = "---\nconst title = 'Home';\n---\n\n<img src='/a.png' />\n";
 
-    await expect(ruleIdsFor(await defineConfig({
+    await expect(ruleIdsFor(await composeConfig({
       astro: true,
       typescript: true,
     }), page, 'src/pages/index.astro'))
       .resolves.toContain('astro/jsx-a11y/alt-text');
-    await expect(ruleIdsFor(await defineConfig({ typescript: true }), page, 'src/pages/index.astro'))
+    await expect(ruleIdsFor(await composeConfig({ typescript: true }), page, 'src/pages/index.astro'))
       .resolves.not.toContain('astro/jsx-a11y/alt-text');
   });
 
   it('composes the astro layer beside a hosted framework rather than instead of one', async () => {
-    const config = await defineConfig({
+    const config = await composeConfig({
       astro: true,
       framework: 'solid',
       typescript: true,
@@ -269,7 +270,7 @@ describe('defineConfig', () => {
   });
 
   it('passes the base options through under the names base already uses', async () => {
-    const config = await defineConfig({
+    const config = await composeConfig({
       framework: 'react',
       ignores: ['generated/**'],
       // `generated/**/*.ts` is in the map so the ignore below is the only thing that can silence that path.
@@ -339,7 +340,7 @@ const LOOKALIKES = [
 ];
 
 // Every layer at once, so a pair that only meets under one combination still meets here.
-const WIDEST: DefineConfigOptions = {
+const WIDEST: ComposeConfigOptions = {
   typescript: true,
   vitest: true,
   html: true,
@@ -367,7 +368,7 @@ const DUPLICATE_CASES: [string, Framework | undefined, string][] = [
 
 describe('one owner per rule name', () => {
   it.each(DUPLICATE_CASES)('enables no rule name under two ids: %s', async (_label, framework, filePath) => {
-    const config = await defineConfig({
+    const config = await composeConfig({
       ...WIDEST,
       framework,
     });

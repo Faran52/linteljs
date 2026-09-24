@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@linteljs/eslint-config.svg)](https://www.npmjs.com/package/@linteljs/eslint-config)
 [![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
 
-Composable ESLint flat-config layers for TypeScript projects. Use `defineConfig` when you want the shared
+Composable ESLint flat-config layers for TypeScript projects. Use `composeConfig` when you want the shared
 layer order without hand-writing the stack.
 
 ```bash
@@ -12,9 +12,9 @@ npm install --save-dev @linteljs/eslint-config eslint
 
 ```js
 // eslint.config.js
-import { defineConfig } from '@linteljs/eslint-config/define-config';
+import { composeConfig } from '@linteljs/eslint-config/compose-config';
 
-const config = await defineConfig({
+const config = await composeConfig({
   framework: 'react',
   typescript: true,
   vitest: true,
@@ -23,7 +23,7 @@ const config = await defineConfig({
 export default config;
 ```
 
-`defineConfig` returns a normal flat-config array. Add your own blocks after it to override a rule or scope an
+`composeConfig` returns a normal flat-config array. Add your own blocks after it to override a rule or scope an
 exception.
 
 ## Options
@@ -81,7 +81,7 @@ choice for a project config.
 
 | Export | Subpath | Purpose | Optional peers to install |
 | --- | --- | --- | --- |
-| `defineConfig(options?)` | `/define-config` | Loads requested layers and orders them. | Those of the layers it loads. |
+| `composeConfig(options?)` | `/compose-config` | Loads requested layers and orders them. | Those of the layers it loads. |
 | `base(options?)` | `/base` | Shared style, imports, unused imports, naming, complexity, and Lintel rules. It works for JavaScript on its own. Beyond the plugin's `recommended`, `base` enables `@linteljs/interface-order` everywhere and widens `@linteljs/union-newline`; the other three Lintel rules outside `recommended` arrive with `react()` and `solid()`. | None. Its plugins are dependencies of this package. |
 | `typescript()` | `/typescript` | Strict type-aware rules and an untyped tail for JavaScript and HTML. | None. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
@@ -131,7 +131,7 @@ up that package's file and not the repository root's. Pass `ignores` for anythin
 
 ## Why these layers exist
 
-The config is layered so a project only loads the plugins it chose. `defineConfig` makes that order a tested
+The config is layered so a project only loads the plugins it chose. `composeConfig` makes that order a tested
 public API instead of an undocumented convention.
 
 `base` uses `import-x`'s TypeScript settings rather than a hand-written replacement. Those settings tell the

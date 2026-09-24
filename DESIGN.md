@@ -441,7 +441,7 @@ module the official scaffolder writes: `@/constants/theme` comes from `create-ex
 from `create-next-app`, `./App.vue` from `create-vite`. Owning those means forking the templates,
 which is the first non-goal in this document.
 
-So `scripts/lint-starters/lintStartersScript.ts` lints each file the way the project receiving it will. `defineConfig`
+So `scripts/lint-starters/lintStartersScript.ts` lints each file the way the project receiving it will. `composeConfig`
 is the same function a generated `eslint.config.js` calls, handed that target's own framework, and
 each file is judged at the path its target record places it on rather than the path it is stored at,
 which is what makes the naming rules mean anything. The answers widen per target until every file is

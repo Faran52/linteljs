@@ -98,7 +98,8 @@ export const VERSIONS: Record<string, string> = {
   'astro-eslint-parser': '^3.1.0',
   'babel-plugin-react-compiler': '^1.0.0',
   'eslint': ESLINT_RANGE,
-  // The plugin, not `eslint-config-next`, which bundles plugins the layers already cover; see `frameworks/next.ts`.
+  // The plugin, not `eslint-config-next`, which bundles plugins the layers already cover; see eslint-config's
+  // `frameworks/next/`.
   '@next/eslint-plugin-next': '^16.3.5',
   // The sibling package; `versions.test.ts` fails the moment they diverge.
   '@linteljs/eslint-config': '^1.6.0',

@@ -190,7 +190,7 @@ describe('applySync', () => {
 
     const written = await readFile(join(cwd, 'eslint.config.js'), 'utf8');
 
-    expect(written).toContain('defineConfig');
+    expect(written).toContain('composeConfig');
   });
 
   it('refuses to write a generated artifact through a symbolic link', async () => {

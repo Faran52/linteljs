@@ -10,7 +10,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     base: 'src/layers/base/baseLayer.ts',
-    defineConfig: 'src/defineConfig.ts',
+    composeConfig: 'src/compose-config/composeConfig.ts',
     typescript: 'src/layers/typescript/typescriptLayer.ts',
     vitest: 'src/layers/vitest/vitestLayer.ts',
     html: 'src/layers/html/htmlLayer.ts',

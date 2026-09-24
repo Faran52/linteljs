@@ -8,6 +8,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- **Breaking: `defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The
+  `./define-config` subpath is gone and `DefineConfigOptions` is `ComposeConfigOptions`. ESLint's own
+  `eslint/config`, Vite, Vitest, Astro and Nuxt each export a `defineConfig` that returns what it is given,
+  and a project imports several of them, so an editor's auto-import could pick the wrong one. This one is an
+  async function that picks and joins the layers its options ask for, and is now named for that.
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`. A suite that asserts only over types
   has no `expect` call in it and was reported as having no assertions.
 - One owner per rule name. Twelve names were enabled under two ids at once, so a React project

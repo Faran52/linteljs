@@ -131,7 +131,7 @@ export const check = async (subpath, namespace) => {
 
   assert.equal(typeof namespace.default, 'function', label + ': default export is not a function');
 
-  // \`define-config\` answers a promise and a layer an array; awaiting covers both.
+  // \`compose-config\` answers a promise and a layer an array; awaiting covers both.
   const configs = await namespace.default();
 
   assert.ok(Array.isArray(configs), label + ': layer() did not return an array');

@@ -185,9 +185,10 @@ aliases it duplicates instead of importing carry a comment saying so.
   frameworks, `libraries/<name>/<name>Library.ts` for the three libraries, each with its suite beside
   it and a `utils/` only where one subject alone reads the helper: `layers/base/utils/` holds the
   naming and import-sort builders. The suffix is on the file and not the export, so `baseLayer.ts`
-  still exports `base`. `defineConfig.ts` composes them and owns the ordering, which is
-  load-bearing; it sits at the root with `index.ts` and `types.ts` as the package's own entry
-  points. Nesting costs the published surface nothing: tsdown's entries are keyed, so
+  still exports `base`. `compose-config/composeConfig.ts` composes them and owns the ordering,
+  which is load-bearing; nothing names a kind for it, so its entry takes no suffix, and its loader
+  tables sit in its `constants.ts`. `index.ts` and `types.ts` stay at the root as the package's own
+  entry points. Nesting costs the published surface nothing: tsdown's entries are keyed, so
   `dist/react.mjs` is flat whatever path backs it, and `scripts/smoke/smokeScript.ts` resolves every
   `exports` subpath against the packed tarball. `src/meta.test.ts` holds the tree and holds the
   tsdown entries one to one against `exports`. `config/globs.ts` holds the extension tables several

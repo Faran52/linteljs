@@ -67,6 +67,12 @@ describe.each(subjects)('$group/$name', ({
   });
 });
 
+// No group names a kind here, so the entry takes no suffix and is named for its directory.
+it('holds compose-config to its entry, its suite and its constants', () => {
+  expect(readdirSync(join(srcDir, 'compose-config')).toSorted(byName))
+    .toEqual(['composeConfig.test.ts', 'composeConfig.ts', 'constants.ts']);
+});
+
 // The source nests by subject while `exports` stays flat, so the keyed tsdown entries are the one join between them.
 describe('tsdown entries', () => {
   const { entry } = tsdownConfig;

@@ -398,7 +398,7 @@ export const nextTarget: TargetRecord = {
   },
   testDevDependencies: ['@testing-library/dom', '@testing-library/react'],
   dependencies: ['next', 'react', 'react-dom'],
-  // The plugin, not `eslint-config-next`; `frameworks/next.ts` says why.
+  // The plugin, not `eslint-config-next`; `frameworks/next/nextFramework.ts` says why.
   devDependencies: [...COMMON_REACT_PLUGINS, '@next/eslint-plugin-next', '@types/react', '@types/react-dom'],
   allowBuilds: [],
   stateRules: ['react-state.md', 'hooks-order.md'],

@@ -44,7 +44,7 @@ export type Framework
 export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind';
 
 // `frameworkGroup` is dropped: the composer reads it off the framework layer.
-export interface DefineConfigOptions extends Omit<BaseOptions, 'frameworkGroup'> {
+export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'> {
   framework?: Framework;
   typescript?: boolean;
   vitest?: boolean;

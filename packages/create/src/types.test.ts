@@ -4,14 +4,14 @@ import { LIBRARY_LAYERS } from '#emitters/always/eslint-config/constants';
 
 import type {
   AliasMap as UpstreamAliasMap,
-  DefineConfigOptions as UpstreamDefineConfigOptions,
+  ComposeConfigOptions as UpstreamComposeConfigOptions,
   Framework as UpstreamFramework,
   LibraryLayer as UpstreamLibraryLayer,
   NamingMap as UpstreamNamingMap,
 } from '@linteljs/eslint-config';
 import type {
   AliasMap,
-  DefineConfigOptions,
+  ComposeConfigOptions,
   Framework,
   LibraryLayer,
   NamingMap,
@@ -23,6 +23,6 @@ it('mirrors eslint-config exactly', () => {
   expectTypeOf<NamingMap>().toEqualTypeOf<UpstreamNamingMap>();
   expectTypeOf<Framework>().toEqualTypeOf<UpstreamFramework>();
   expectTypeOf<LibraryLayer>().toEqualTypeOf<UpstreamLibraryLayer>();
-  expectTypeOf<DefineConfigOptions>().toEqualTypeOf<UpstreamDefineConfigOptions>();
+  expectTypeOf<ComposeConfigOptions>().toEqualTypeOf<UpstreamComposeConfigOptions>();
   expectTypeOf<(typeof LIBRARY_LAYERS)[number]>().toEqualTypeOf<LibraryLayer>();
 });
