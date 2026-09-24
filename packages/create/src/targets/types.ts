@@ -147,8 +147,6 @@ export interface TsconfigDelta {
   types?: string[];
   // A base config the framework supplies. An extending config replaces `paths`, so `$lib` is re-declared.
   extends?: string;
-  // Replaces the base's own, rather than adding to it: an extending config overwrites the array.
-  customConditions?: string[];
   // Two trees read as one, which is how a generator's route types resolve beside the modules they type.
   rootDirs?: string[];
   /*
@@ -292,6 +290,8 @@ export interface TargetRecord {
   testDevDependencies?: string[];
   // Beyond the shared two; pnpm aborts with `ERR_PNPM_IGNORED_BUILDS` when one is missing.
   allowBuilds: string[];
+  // Read before `VERSIONS`, for a target whose platform pins a release every other target has moved past.
+  versions?: Record<string, string>;
   // `dependent>peer` pairs pnpm may satisfy with the version named, beyond the eslint ones every project carries.
   peerAllowances?: Record<string, string>;
   // Relative to `templates/fragments/claude-rules/`.

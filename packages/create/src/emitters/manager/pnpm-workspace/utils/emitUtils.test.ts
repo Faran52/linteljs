@@ -144,12 +144,6 @@ describe('react native allowances', () => {
     expect(output).not.toContain('allowedDeprecatedVersions');
   });
 
-  // Expo SDK 57's modules core still names worklets up to the 0.86 line; the one that runs on 0.87 is 0.13.
-  it('allows the worklets expo-modules-core has not caught up with', () => {
-    expect(emitPnpmWorkspace(answersFor({ target: 'react-native' })))
-      .toContain("    'expo-modules-core>react-native-worklets': '0.13'");
-  });
-
   it('mutes no deprecation for a firefox extension either', () => {
     expect(emitPnpmWorkspace(answersFor({
       target: 'webextension',

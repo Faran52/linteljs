@@ -89,11 +89,8 @@ describe('the asset a destination derives', () => {
       .toBeUndefined();
   });
 
-  /*
-   * One destination, two spellings, and no answer under which neither applies: every Expo project needs a metro
-   * config, and the Tailwind one is the same file with NativeWind wrapped around it.
-   */
-  it('picks a metro config for either styling answer', () => {
+  // Expo's default Metro config serves a project without NativeWind, which is the one thing that wraps it.
+  it('writes a metro config under tailwind alone', () => {
     expect(sourcesByTarget({
       target: 'react-native',
       libraries: [],
@@ -104,6 +101,6 @@ describe('the asset a destination derives', () => {
       target: 'react-native',
       libraries: [],
     })['metro.config.js'])
-      .toBe('starter-source/react-native/metro.config.js');
+      .toBeUndefined();
   });
 });

@@ -144,7 +144,7 @@ export const parsePackageJson = (text: string): PackageJson => {
 
 // Sorted and de-duped like a package manager writes back. Throws on a missing entry: a silent skip is how
 // @types/node vanished before.
-export const versioned = (names: string[]): Record<string, string> => {
+export const versioned = (names: string[], pins: Record<string, string> = {}): Record<string, string> => {
   const result: Record<string, string> = {};
 
   const sorted = uniq(names).sort((left, right) => {
@@ -152,7 +152,7 @@ export const versioned = (names: string[]): Record<string, string> => {
   });
 
   for (const name of sorted) {
-    const version = VERSIONS[name];
+    const version = pins[name] ?? VERSIONS[name];
 
     if (version === undefined) {
       throw new Error(`No version in VERSIONS for ${name}; add one to src/emitters/always/package-json/constants.ts`);
@@ -183,7 +183,7 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
     names.push(...STORE_DEPENDENCIES[store], ...binding === undefined ? [] : [binding]);
   }
 
-  return versioned(names);
+  return versioned(names, target.versions);
 };
 
 export const buildDevDependencies = (answers: Answers): Record<string, string> => {
@@ -223,7 +223,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(answers.mocking === 'msw' ? ['msw'] : []),
     // `qs` ships no types of its own.
     '@types/qs',
-  ]);
+  ], target.versions);
 };
 
 const withoutSuperseded = (dependencies: Record<string, string>): Record<string, string> => {

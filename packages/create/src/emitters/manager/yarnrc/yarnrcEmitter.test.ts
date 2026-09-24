@@ -99,7 +99,7 @@ describe('emitYarnrc', () => {
 
     expect(native).toContain(
       '  "react-native-worklets@*":\n    dependencies:\n      "@babel/core": "^7"\n'
-      + '      "@react-native/metro-config": "0.87.1"\n',
+      + '      "@react-native/metro-config": "0.86.3"\n',
     );
     expect(native).not.toContain('react-native-css');
     expect(styled).toContain(css);

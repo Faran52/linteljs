@@ -876,20 +876,15 @@ A project written before the record existed has none, and reads as an empty one:
 the answers ask for and removes nothing until its own run writes the record. That is the safe
 direction to be wrong in.
 
-## React Native `build`: `expo export --platform web`, and why it took a layout rule
+## React Native `build`: `expo export`, and why it took a layout rule
 
 `buildScripts` ends `check` on `pnpm build` for every target, and `build` is a leg the scaffolder
 normally writes. `create-expo` writes none, because an Expo app ships through `eas build`,
 which needs an account and a remote builder. The React Native record is therefore the one that
-carries its own: `expo export --platform web`, a real Metro bundle of the app, with static
+carries its own: `expo export`, a real Metro bundle of the app for ios, android and web, with static
 rendering of every route on top. This section is the measurement behind it; it replaces the open
-defect that stood here.
-
-v2 moved it to `expo export --platform ios --platform android`. Not because anything here stopped
-holding, but because react-native 0.87 deleted a module Expo SDK 57's web bundler still reads, and
-unlike the native path that one cannot be overridden from a project's `metro.config.js`.
-`DESIGNv2.md` carries that measurement. What this section settled, that a test file under
-`src/app/` is a route, is what made both native platforms exportable in the first place.
+defect that stood here. What it settled, that a test file under `src/app/` is a route, is what made
+every platform exportable in the first place.
 
 The blocker was never the export command. It was that **six starter suites lived under
 `src/app/`, and everything under the route root is a route**: expo-router's context regex
@@ -911,9 +906,10 @@ So the layout rule, which the route suites in `targets/reactNative.ts` also carr
 test file under `src/app/`, ever.** The route suites sit directly in `src/` beside the directory
 they cover, named for the route with the path flattened, `app-index.test.tsx` for
 `src/app/index.tsx`. A test for the route unit sits beside the route unit the way a test for a
-file sits beside the file; a `__tests__/` directory remains out, per the testing standard. Web is
-the exported platform because it is the one that also proves static rendering; ios export was
-measured green too, and `eas` remains the real shipping path.
+file sits beside the file; a `__tests__/` directory remains out, per the testing standard. Every
+platform is exported: the native bundles are what the target ships, web is the one that also proves
+static rendering, and none needs Xcode or the Android SDK. Measured on 0.86.3, the three take 18
+seconds together. `eas` remains the real shipping path.
 
 One cosmetic seam remains: `@srsholmes/vitest-react-native@0.1.5` passes `hostComponentNames` to
 `@testing-library/react-native`, whose v14 dropped the option and warns with a stack trace per
@@ -951,6 +947,22 @@ that announces the wrong thing. A name is a sentence only the author knows, a ro
 `image` or `imagebutton` and those announce differently, and the two repairs for a nested touchable produce different
 interfaces. Reporting is the honest answer for all five.
 
+### React Native follows the Expo SDK's pins, not react-native's latest
+
+react-native, react, Reanimated, worklets and the Expo modules a project installs sit at exactly what the SDK's own
+template pins, `expo-template-default@sdk-57` at 57.0.26: react-native 0.86.3, react 19.2.3, Reanimated 4.5.1,
+worklets 0.10.1. No Expo SDK is ever tested against 0.87, which was npm's latest; SDK 58 goes to 0.88, and this
+target moves with it. react and `@types/react` are pinned on the target record rather than in `VERSIONS`, since
+every other target is on 19.3.
+
+Tracking 0.87 cost three workarounds, all deleted with the pin, each proven by the React Native end-to-end cases on
+all five managers: a `customConditions` naming `react-native-legacy-deep-imports`, because 0.87's strict types
+declare `TextStyle` and `ViewStyle` as aliases that Expo's `interface` augmentation shadows; a `getPolyfills`
+override in `metro.config.js` for the `rn-get-polyfills` 0.87 deleted and SDK 57 still reads; and a native-only
+`build`, because the web bundler reads that module where no override reaches. 0.86.3 serves the legacy types
+under `types` and still ships the module. The template is pinned at 57.0.26 rather than 57.0.27 because the
+latter's floors were hours old, and pnpm 12's default `minimumReleaseAge` refuses a version under two days.
+
 ### React Native carries one upstream workaround
 
 It is not a choice about the standard; it is a defect in somebody else's published package, and it has its
@@ -962,7 +974,9 @@ was pinned to 11 everywhere for the same reason. `create-expo` 5.0.2 carries `no
 target scaffolds through whichever manager ran `create`, the field is deleted and the floor is npm's own.
 
 - **One allowance the target declares.** `@react-native/community-cli-plugin@0.86.3` peers exactly one version of
-  `@react-native/metro-config` while pnpm resolves a newer one, and nothing here declares either package.
+  `@react-native/metro-config`, and nothing here declares either package. Worklets peers it at `*`, which pnpm
+  answers with the newest, 0.87.1: measured on 0.86.3, `pnpm peers check` reports exactly that pair without the
+  allowance and nothing with it.
 
   The deprecated `uuid@7` that `expo` reaches through `@expo/config-plugins` and `xcode` is deliberately *not*
   allowed away. See below.

@@ -365,48 +365,12 @@ finds: with no hosted framework a file under `components/` is PascalCase and a c
 it is camelCase and a component by extension. A string of markup is not a component under either rule, and no name
 satisfies both.
 
-### React Native is pinned to a react-native the SDK around it has not caught up with
+### React Native's route list goes out of coverage with the shell
 
-The target runs react-native 0.87.1, which is what `latest` resolves to, on Expo SDK 57. Expo's own template pins
-0.86.3, and the gap between those two releases is where every React Native finding in this phase came from. Both
-are recorded because both are the kind of thing only a real generated project running its own gate can find.
+`DESIGN.md` carries why React Native follows the Expo SDK's pins rather than react-native's latest, and the three
+0.87 workarounds that pin deleted.
 
-**The style types read as empty.** Under 0.87 a `<Text style={{ fontSize: 28 }} />` fails and a `<Text style={{}} />`
-passes, with every React Native style property reported as unknown. Nothing in the starter is wrong. 0.87 serves
-the Strict TypeScript API from `types_generated` under the `types` condition, where `TextStyle` and `ViewStyle` are
-type aliases; 0.86 served `types/`, where they are interfaces. Expo ships `types/react-native-web.d.ts`, which
-augments the module with `interface TextStyle` and `interface ViewStyle` to add the web-only properties. An
-interface merges with an interface and shadows an alias, so under 0.87 the augmentation replaces each type with a
-web-only one rather than adding to it.
-
-Naming `react-native-legacy-deep-imports` in `customConditions` is the fix, and it is a one-line delta on the
-record. It selects the surface Expo's augmentation was written against. Expo's base sets `["react-native"]` and an
-extending tsconfig replaces the array rather than adding to it, so both are named. This goes the release Expo
-declares those as aliases too.
-
-The route not taken was opting into the strict API properly, which the React Native documentation describes.
-Measured: it does not help, because the shadowing is Expo's and happens either way. The only way to keep the strict
-types is to drop `expo-env.d.ts` from the program, which is the file Expo generates, says to commit, and hangs its
-own globals off.
-
-**The bundler asks for a file that release deleted.** `expo export` fails with
-`Cannot find module '.../react-native/rn-get-polyfills'`. 0.87 removed that module; Expo SDK 57 still reads it, in
-two places. `@expo/metro-config` reads it by path inside `serializer.getPolyfills`, which a project's own
-`metro.config.js` can replace, and `@expo/cli` reads it as a package subpath on the web path only, where it cannot.
-It was a two-line wrapper over `@react-native/js-polyfills`, which Expo's own source says where it reads it, so the
-replacement is that package named directly.
-
-So every React Native project gets a `metro.config.js`, in two spellings, and `build` is
-`expo export --platform ios --platform android` rather than web. That is not a concession: the native bundle is
-what this target's product is, both platforms build a real bundle, and neither needs Xcode or the Android SDK. Web
-stays reachable through the `web` script, which is where it was already.
-
-Downgrading to the 0.86.3 Expo writes would have made both findings disappear and is the wrong trade. The template
-is owned now, so a version is a decision this repository makes rather than one it inherits, and the standard it
-publishes tracks the release rather than the scaffolder. `@expo/metro-config@58` has already dropped the polyfill
-read; SDK 58 is where this stops being a workaround.
-
-**The route list goes out of coverage with the shell.** `src/config/routes.ts` is shared by five targets, and on
+`src/config/routes.ts` is shared by five targets, and on
 four of them `AppHeader` reads it and that component's suite covers it. Here the nav is the tab bar inside
 `src/app/_layout.tsx`, which is already excluded because rendering the navigator reaches Expo's own TypeScript
 source inside `node_modules` that no test transform strips. Excluding one without the other leaves a table nothing

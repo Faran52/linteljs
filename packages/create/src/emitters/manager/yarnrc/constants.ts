@@ -42,7 +42,7 @@ export const PEER_EXTENSIONS: Record<string, string> = {
   'react-native-worklets': `  "react-native-worklets@*":
     dependencies:
       "@babel/core": "^7"
-      "@react-native/metro-config": "0.87.1"
+      "@react-native/metro-config": "0.86.3"
 `,
   // `react-native-css` comes with the tailwind answer on react-native, and hard-peers two packages nothing declares.
   'react-native-css': `  "react-native-css@*":

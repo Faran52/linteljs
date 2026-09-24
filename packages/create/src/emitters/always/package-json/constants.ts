@@ -118,27 +118,20 @@ export const VERSIONS: Record<string, string> = {
   // Next owns its own build, its own router and its own document; nothing else installs it.
   'next': '^16.3.5',
   /*
-   * Expo's runtime and the modules a tab layout measures itself with, all on the SDK's own release train: Expo
-   * pins these together and a mismatched one is what `expo-doctor` exists to find. `react-native-web` and
-   * `react-dom` are what the `web` script bundles against.
+   * Expo's runtime and the modules a tab layout measures itself with, at exactly what the SDK's own template pins:
+   * Expo tests them together and a mismatched one is what `expo-doctor` exists to find. DESIGN.md has why.
    */
   'expo': '~57.0.24',
-  'react-native': '~0.87.1',
-  // Shipped in lockstep with react-native, and read directly by `metro.config.js` since 0.87 deleted its wrapper.
-  '@react-native/js-polyfills': '~0.87.1',
+  'react-native': '0.86.3',
   'expo-router': '~57.0.22',
   'expo-constants': '~57.0.19',
   'expo-linking': '~57.0.10',
   'expo-status-bar': '~57.0.1',
   'react-native-safe-area-context': '~5.7.0',
   'react-native-screens': '~4.26.0',
-  /*
-   * The releases that peer this project's react-native 0.87 rather than Expo 57's own 0.86 pins (Reanimated 4.5.1
-   * and worklets 0.10.1 peer 0.83 to 0.86), and worklets on the minor Reanimated names.
-   */
   'react-native-gesture-handler': '~2.32.0',
-  'react-native-reanimated': '~4.7.0',
-  'react-native-worklets': '~0.13.0',
+  'react-native-reanimated': '4.5.1',
+  'react-native-worklets': '0.10.1',
   'react-native-web': '~0.21.0',
   // A vanilla or Astro scaffold installs no framework, so a hosted one brings its own.
   'react': '^19.3.0',

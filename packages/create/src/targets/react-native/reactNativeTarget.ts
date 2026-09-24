@@ -78,16 +78,6 @@ export const reactNativeTarget: TargetRecord = {
     jsx: 'react-jsx',
     extends: 'expo/tsconfig.base',
     include: ['.expo/types/**/*.ts', 'expo-env.d.ts'],
-    /*
-     * The legacy surface, not the Strict TypeScript API 0.87 serves by default. Expo's own
-     * `types/react-native-web.d.ts` augments `react-native` with `interface TextStyle` and `interface ViewStyle`,
-     * which merged while those were interfaces. The strict types declare them as aliases, so the augmentation
-     * shadows each one with a web-only interface instead of merging: every React Native style property then reads
-     * as unknown, and `<Text style={{ fontSize: 28 }} />` fails while `<Text style={{}} />` passes. Expo's base
-     * sets `["react-native"]` and an extending config replaces the array, so both are named here. Drop this the
-     * release Expo declares those as aliases too.
-     */
-    customConditions: ['react-native-legacy-deep-imports', 'react-native'],
   },
   testSetup: 'fragments/test-setup/setupTests.reactNative.ts',
   /*
@@ -147,20 +137,11 @@ export const reactNativeTarget: TargetRecord = {
       // it sits behind is not written either.
       when: hasTests,
     },
-    /*
-     * Two spellings of one file: the Tailwind one wraps the config in NativeWind's own, and both carry the
-     * `getPolyfills` override this SDK and this react-native need between them.
-     */
+    // NativeWind wraps Metro's config; without it Expo's default serves.
     {
       target: 'metro.config.js',
       when: isTailwind,
       variant: 'tailwind',
-    },
-    {
-      target: 'metro.config.js',
-      when: (answers): boolean => {
-        return !isTailwind(answers);
-      },
     },
     {
       target: 'nativewind-env.d.ts',
@@ -198,13 +179,8 @@ export const reactNativeTarget: TargetRecord = {
     },
   ],
   typecheck: 'tsc --noEmit',
-  /*
-   * `eas build` needs a remote account, so an export stands in. The two native platforms rather than web: Expo SDK
-   * 57 bundles web through a code path that asks react-native for the `rn-get-polyfills` 0.87 deleted, and unlike
-   * the native one it does not read the override `metro.config.js` carries. Both of these produce a real bundle
-   * and neither needs Xcode or the Android SDK, so this is the heavier check besides.
-   */
-  build: 'expo export --platform ios --platform android',
+  // `eas build` needs a remote account, so an export of every platform stands in; none needs Xcode or the Android SDK.
+  build: 'expo export',
   // The four a scaffolder used to write; `expo lint` is declined, since this standard's linter is the emitted one.
   extraScripts: {
     start: 'expo start',
@@ -240,8 +216,6 @@ export const reactNativeTarget: TargetRecord = {
       return name !== 'eslint-plugin-jsx-a11y-x';
     }),
     '@types/react',
-    // Named because `metro.config.js` imports it, which a transitive copy does not entitle it to do.
-    '@react-native/js-polyfills',
   ],
   // `@srsholmes/vitest-react-native` strips the Flow types and stands in for native modules; its `esbuild` needs an
   // install script, hence `allowBuilds`.
@@ -253,17 +227,17 @@ export const reactNativeTarget: TargetRecord = {
     'test-renderer',
   ],
   allowBuilds: ['esbuild'],
-  /*
-   * Inside react-native's own tree: the community CLI plugin peers the exact metro-config of its own release and
-   * pnpm resolves a newer one. Nothing here declares either.
-   *
-   * And Expo SDK 57's `expo-modules-core` names worklets up to 0.10, the line for react-native 0.86; the worklets
-   * that runs on 0.87 is 0.13, which `@expo/ui` inside the same SDK already takes.
-   */
-  peerAllowances: {
-    '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1',
-    'expo-modules-core>react-native-worklets': '0.13',
+  // What Expo SDK 57's own template pins, where every other target has moved on.
+  versions: {
+    'react': '19.2.3',
+    'react-dom': '19.2.3',
+    '@types/react': '~19.2.2',
   },
+  /*
+   * Inside react-native's own tree: the community CLI plugin peers the exact metro-config of its own release, and
+   * pnpm answers worklets' open peer on it with the newest. Nothing here declares either.
+   */
+  peerAllowances: { '@react-native/community-cli-plugin>@react-native/metro-config': '0.87.1' },
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMock: ROUTER_MOCK,
 };

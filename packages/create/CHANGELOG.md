@@ -8,6 +8,13 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- **React Native follows Expo SDK 57's own pins.** react-native `0.86.3`, react and react-dom `19.2.3`,
+  `@types/react` `~19.2.2`, Reanimated `4.5.1` and worklets `0.10.1`, as `expo-template-default@sdk-57` pins
+  them, instead of react-native 0.87 from npm latest, which no Expo SDK is tested against. SDK 58 moves the
+  target to 0.88. The 0.87 workarounds go with it: the tsconfig no longer sets `customConditions`,
+  `metro.config.js` is written only under Tailwind and no longer overrides `getPolyfills`,
+  `@react-native/js-polyfills` is no longer installed, and `build` is `expo export` for every platform, web
+  included.
 - Generated projects get `scripts/utils/loggerUtils.ts`, and `checkBannedPatterns.ts` and `typecheckStaged.ts`
   report through it: `[ERROR]` lines on stderr, and a stack trace under `DEBUG=true`. The tsconfig sets
   `allowImportingTsExtensions` (Angular: `rewriteRelativeImportExtensions`), so a script can import
@@ -27,12 +34,12 @@ when a version's change lives in a sibling it is described there instead:
   - Angular's `@angular/build` is held on `~22.1.8`: 22.2.0 changed `SourceFileCache`, and
     `@analogjs/vite-plugin-angular` 2.7 still calls `cache.has` on it, so every vitest run died at startup.
   - React Native installs `react-native-reanimated`, `react-native-worklets` and `react-native-gesture-handler`,
-    which expo-router peers and `react-native-css` requires, at the releases that support react-native 0.87.
+    which expo-router peers and `react-native-css` requires, at Expo SDK 57's pins.
     Under Tailwind, `nativewind-env.d.ts` is in the tsconfig `include`, so NativeWind no longer rewrites the
     tsconfig during `check`.
 - **Installs report no unmet or stale peers.** Nuxt declares `rolldown` and `vite`, pinia brings
   `@vue/devtools-api`, and `.yarnrc.yml` writes a package extension only when its package is installed, which
-  also covers nuxt's devtools and `@tanstack/eslint-plugin-router`. pnpm allows Expo's own worklets conflict.
+  also covers nuxt's devtools and `@tanstack/eslint-plugin-router`.
 - **Yarn 1 is a manager rather than a refusal.** It is recorded as `yarn-classic`, told apart from Yarn 4 by the
   agent's major and, where there is no agent, by whether `yarn.lock` opens with `# yarn lockfile v1`. A classic
   project declares `yarn@1.22.22`, installs in CI with `--frozen-lockfile`, reaches its own scripts through

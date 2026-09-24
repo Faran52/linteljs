@@ -106,7 +106,7 @@ describe('buildScripts', () => {
     }
 
     expect(buildScripts(answersFor({ target: 'react-native' }))['build'])
-      .toBe('expo export --platform ios --platform android');
+      .toBe('expo export');
     expect(buildScripts(answersFor({ target: 'react' }))['build']).toBe('vite build');
     expect(buildScripts(answersFor({ target: 'svelte' }))['dev']).toBe('vite dev');
     expect(buildScripts(answersFor({ target: 'next' }))['build']).toBe('next build');

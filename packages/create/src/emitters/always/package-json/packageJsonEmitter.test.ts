@@ -513,6 +513,18 @@ describe('the libraries added in 1.6.0', () => {
     expect(buildDependencies(answersFor({}))).not.toHaveProperty('react-native-reanimated');
   });
 
+  // Expo SDK 57's template pins react exactly, where every other target takes the caret the table carries.
+  it('pins react to what Expo SDK 57 ships, on React Native alone', () => {
+    const native = answersFor({ target: 'react-native' });
+
+    expect(buildDependencies(native)).toMatchObject({
+      'react': '19.2.3',
+      'react-dom': '19.2.3',
+    });
+    expect(buildDevDependencies(native)['@types/react']).toBe('~19.2.2');
+    expect(buildDependencies(answersFor({}))['react']).toBe(VERSIONS['react']);
+  });
+
   // nuxt 4.5 peers rolldown outright, and its builder and devtools peer vite; only pnpm and bun install them unasked.
   it('names the peers nuxt asks the project for', () => {
     const nuxt = buildDevDependencies(answersFor({ target: 'nuxt' }));
@@ -631,20 +643,19 @@ const siblingIn = (directory: string): Sibling => {
 // Every entry pinned tighter than a caret, with the operator it takes; the table says why beside each one.
 const PINNED_TIGHTER: Record<string, string> = {
   '@angular/build': '~',
-  '@react-native/js-polyfills': '~',
   'expo': '~',
   'expo-constants': '~',
   'expo-linking': '~',
   'expo-router': '~',
   'expo-status-bar': '~',
-  'react-native': '~',
+  'react-native': '',
   'react-native-css': '',
   'react-native-gesture-handler': '~',
-  'react-native-reanimated': '~',
+  'react-native-reanimated': '',
   'react-native-safe-area-context': '~',
   'react-native-screens': '~',
   'react-native-web': '~',
-  'react-native-worklets': '~',
+  'react-native-worklets': '',
   'rolldown': '~',
   'rxjs': '~',
   'test-renderer': '~',

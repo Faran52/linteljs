@@ -16,13 +16,12 @@ describe('reactNativeTarget', () => {
 
   /*
    * Expo reads its application metadata from `app.json`, three of whose fields are the project's name, so it is
-   * emitted rather than copied. `eas build` needs a remote account, so `expo export` is what the gate runs, and
-   * the two native platforms rather than web: Expo SDK 57's web bundler asks react-native for a module 0.87
-   * deleted, and that path ignores the override `metro.config.js` carries.
+   * emitted rather than copied. `eas build` needs a remote account, so `expo export` of every platform is what
+   * the gate runs.
    */
   it('has its application metadata written rather than copied', () => {
     expect(reactNativeTarget.expoProject).toBe(true);
-    expect(reactNativeTarget.build).toBe('expo export --platform ios --platform android');
+    expect(reactNativeTarget.build).toBe('expo export');
   });
 
   /*

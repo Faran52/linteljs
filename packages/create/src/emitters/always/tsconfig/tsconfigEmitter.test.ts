@@ -113,17 +113,6 @@ describe('buildTsconfig', () => {
   });
 
   /*
-   * Expo augments `react-native` with `interface TextStyle`, which only merges against the legacy types. Naming
-   * the condition is what keeps that augmentation from shadowing the strict alias and emptying every style type.
-   */
-  it('names the legacy react-native condition, and nothing else does', () => {
-    expect(buildTsconfig(answersFor({ target: 'react-native' })).compilerOptions.customConditions)
-      .toEqual(['react-native-legacy-deep-imports', 'react-native']);
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions)
-      .not.toHaveProperty('customConditions');
-  });
-
-  /*
    * Framework mode's generated route types sit under `.react-router/types` and are written by `typegen`. `rootDirs`
    * is what lets a route module import its own `Route.*` from a path beside itself rather than from that tree.
    */

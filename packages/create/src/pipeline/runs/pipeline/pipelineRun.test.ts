@@ -1121,8 +1121,8 @@ describe('starter files for a router', () => {
     expect(await readFile(join(cwd, 'src/App.tsx'), 'utf8')).toContain("from '@tanstack/react-router'");
   });
 
-  // Both, not just the NativeWind one: Metro needs a config on this target whatever was answered about styling.
-  it('writes a metro config for either styling answer on React Native', async () => {
+  // Expo's default Metro config serves the rest; NativeWind is the one answer that wraps it.
+  it('writes a metro config on React Native under tailwind alone', async () => {
     expect(await fresh({
       target: 'react-native',
       libraries: [],
@@ -1131,6 +1131,6 @@ describe('starter files for a router', () => {
     expect(await fresh({
       target: 'react-native',
       libraries: [],
-    })).toContain('metro.config.js');
+    })).not.toContain('metro.config.js');
   });
 });

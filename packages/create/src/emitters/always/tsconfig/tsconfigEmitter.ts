@@ -20,7 +20,6 @@ export interface CompilerOptions {
   jsxImportSource?: string;
   module: string;
   moduleResolution: string;
-  customConditions?: string[];
   resolveJsonModule: boolean;
   allowImportingTsExtensions: boolean;
   rewriteRelativeImportExtensions?: boolean;
@@ -93,7 +92,6 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
 
     module: 'esnext',
     moduleResolution: 'bundler',
-    ...(delta.customConditions === undefined ? {} : { customConditions: delta.customConditions }),
     resolveJsonModule: true,
     /**
      * `scripts/` runs on Node's type stripping, which needs the `.ts` in `./utils/loggerUtils.ts`. The allowance
