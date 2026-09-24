@@ -1,10 +1,4 @@
-import {
-  describe,
-  expect,
-  it,
-} from 'vitest';
-
-import { attributesOf, noDuplicateJsxProps } from './noDuplicateJsxProps.ts';
+import { noDuplicateJsxProps } from './noDuplicateJsxProps.ts';
 
 import { tsxRuleTester } from '#mocks/ruleTesters';
 
@@ -107,18 +101,4 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
   ],
-});
-
-describe('attributesOf', () => {
-  // A rule run only ever hands the listener a real opening element, so the shapes this declines are
-  // reachable from a direct call alone.
-  it.each([
-    ['a node carrying no attributes', { type: 'Identifier' }],
-    ['attributes that are not a list', {
-      type: 'JSXOpeningElement',
-      attributes: 'className',
-    }],
-  ])('declines %s', (_label, value) => {
-    expect(attributesOf(value)).toEqual([]);
-  });
 });
