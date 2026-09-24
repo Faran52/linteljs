@@ -226,11 +226,11 @@ assert.deepEqual(
 
 /**
  * One read per bundle file for three checks. A `sourceMappingURL` to a file not packed is a dead link in every
- * editor. `tslib` in dist means a runtime dependency grew. And the `engines.node` floor is 12, where a bundler
- * downlevels `?.` but leaves `array.at(-1)`, a TypeError on first call: `compatMatrix.ts` runs modern Node, so it
+ * editor. `tslib` in dist means a runtime dependency grew. And the `engines.node` floor is 14, where a bundler
+ * downlevels `??=` but leaves `array.at(-1)`, a TypeError on first call: `compatMatrix.ts` runs modern Node, so it
  * cannot see that.
  */
-const POST_NODE_12: [string, number][] = [
+const POST_NODE_14: [string, number][] = [
   ['.at(', 16.6],
   ['.findLast(', 18],
   ['.findLastIndex(', 18],
@@ -255,8 +255,8 @@ for (const file of readdirSync(distDir)) {
 
   assert.ok(!contents.includes('tslib'), `${file} references tslib, which is not a runtime dependency`);
 
-  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? POST_NODE_12 : []) {
-    assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 12`);
+  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? POST_NODE_14 : []) {
+    assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 14`);
   }
 }
 

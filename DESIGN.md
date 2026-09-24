@@ -1508,23 +1508,13 @@ Every script under `scripts/` and `packages/*/scripts/` reports through `scripts
 the copy of what a generated project receives at `scripts/utils/loggerUtils.ts`. So this block turns `no-console` *on*
 for every method, `warn` and `error` included, and `@linteljs/workspace/scripts-logger` turns it off for the two copies
 of the logger alone. `base()` still stands the rule down under `scripts/` for a consumer, which is a published default
-and not this repository's to narrow. `runRules.cjs` is the one script outside it: it runs on Node 12, which cannot load
-a TypeScript module, and it reports through `console.error`.
+and not this repository's to narrow. `release/runRules.ts` writes to `process.stdout` instead: it runs in a container
+holding only the plugin's own `dist/` and `scripts/`, with no logger above them.
 
 `sonarjs/no-os-command-from-path` joins it for the same directories. The audits and smokes run
 `execFileSync('pnpm', ...)`, and the rule wants an absolute path because a writeable `PATH` entry could shadow the
 name. That is a real hazard for a program a user runs and not for one a maintainer invokes by hand in this checkout,
 where resolving `pnpm` to an absolute path would have to consult the same `PATH` to find it.
-
-### `@linteljs/workspace/old-node-runner`
-
-`scripts/release/runRules.cjs` is the file the `oldest-runtime` CI job runs inside `node:12-alpine`, and it
-has to parse there before it can prove anything. Node 12 has no ESM for a `.js` file in a package
-that does not say so, and this one is copied out of the package into a bare container directory, so
-`require` is the only module system available to it. Written as ESM it fails at parse and the job
-reports a syntax error instead of a rule result.
-
-Scoped to that one file. Every other script in the workspace is ESM and stays that way.
 
 ### `@linteljs/workspace/ast-identity`
 

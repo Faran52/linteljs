@@ -134,7 +134,7 @@ and [prefer-try-catch](https://github.com/Faran52/linteljs/tree/main/packages/es
 
 ## Compatibility
 
-The package supports ESLint `>=5.0.0` and Node `>=12.0.0`.
+The package supports ESLint `>=5.0.0` and Node `>=14.0.0`.
 
 | ESLint | Config format | Preset |
 | --- | --- | --- |

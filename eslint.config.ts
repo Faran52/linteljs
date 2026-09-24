@@ -190,18 +190,6 @@ const config = [
     rules: { 'no-console': 'off' },
   },
 
-  // The one file that has to be CommonJS. DESIGN.md: `@linteljs/workspace/old-node-runner`
-  {
-    name: '@linteljs/workspace/old-node-runner',
-    files: ['packages/eslint-plugin/scripts/release/runRules.cjs'],
-    rules: {
-      '@typescript-eslint/no-require-imports': 'off',
-      'import-x/no-commonjs': 'off',
-      'no-console': 'off',
-      'unicorn/prefer-module': 'off',
-    },
-  },
-
   // `sonarjs/different-types-comparison` cannot read an AST identity check. Named file by file, so
   // a seventh site has to be added on purpose. DESIGN.md: `@linteljs/workspace/ast-identity`
   {

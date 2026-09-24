@@ -163,20 +163,6 @@ const eslint = new ESLint({
       },
       rules,
     },
-    {
-      // `runRules.cjs` stays CommonJS for the `node:12-alpine` job and outside tsconfig, so it gets syntax alone.
-      files: ['scripts/**/*.cjs'],
-      plugins: { sonarjs },
-      languageOptions: {
-        parser: tseslint.parser,
-        sourceType: 'commonjs',
-      },
-      linterOptions: {
-        noInlineConfig: true,
-        reportUnusedDisableDirectives: false,
-      },
-      rules,
-    },
   ],
 });
 

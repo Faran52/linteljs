@@ -69,7 +69,7 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
-  // Reversed and found rather than `findLastIndex`, which needs Node 18 and this package declares a floor of 12.
+  // Reversed and found rather than `findLastIndex`, which needs Node 18 and this package declares a floor of 14.
   const fromEnd = [...body].reverse().findIndex((statement) => {
     return statement.type === 'ImportDeclaration' || isDirective(statement);
   });

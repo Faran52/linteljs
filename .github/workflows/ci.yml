@@ -94,13 +94,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The floor `engines.node` declares, paired with the ESLint majors that era of Node
-        # shipped alongside. setup-node cannot install Node 12 any more, so this runs in a
-        # container.
+        # The floor `engines.node` declares, paired with the oldest ESLint majors, in a container
+        # so the image is the bare runtime a consumer on that floor has.
         include:
-          - node: 12
+          - node: 14
             eslint: '5'
-          - node: 12
+          - node: 14
             eslint: '6'
           - node: 14
             eslint: '7'
@@ -112,12 +111,22 @@ jobs:
           name: plugin-dist
           path: packages/eslint-plugin/dist
 
+      # The runner is TypeScript and Node 14 strips no types, so the host strips them into a `.mjs` first.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26.10.0
+      - name: Strip the runner's types
+        working-directory: packages/eslint-plugin/scripts/release
+        run: >-
+          node --no-warnings -e "const fs = require('node:fs'); fs.writeFileSync('runRules.mjs',
+          require('node:module').stripTypeScriptTypes(fs.readFileSync('runRules.ts', 'utf8')))"
+
       # Docker is driven from the host rather than through `container:`, because that would run
-      # actions/* on Node 24 inside the image, and node:12-alpine's musl is too old for it.
+      # actions/* on Node 24 inside the image, and node:14-alpine's musl is too old for it.
       #
       # This is the only thing that can answer whether the shipped bundle runs on the declared
       # Node floor. A bundler lowers syntax and leaves built-in methods exactly where they were,
-      # so `smoke.ts`'s scan for post-Node-12 APIs is a cheaper check of the same property, not a
+      # so `smoke.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property, not a
       # substitute for running it.
       - name: Run the rules on node ${{ matrix.node }}
         run: |
@@ -125,5 +134,5 @@ jobs:
             set -e
             cp -r /src/dist /src/scripts /tmp/
             npm install --no-audit --no-fund --no-save eslint@${{ matrix.eslint }}
-            node scripts/release/runRules.cjs dist/index.js
+            node scripts/release/runRules.mjs dist/index.js
           '

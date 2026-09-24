@@ -41,9 +41,9 @@ local-only. That version is not the source of truth any more. This repo owns the
 ## 2. Conventions
 
 - **pnpm 12 only** to develop, Node 26 to develop, and neither is what the package declares.
-  `engines.node` is `>=12.0.0` and `peerDependencies.eslint` is `>=5.0.0`, matching what is
+  `engines.node` is `>=14.0.0` and `peerDependencies.eslint` is `>=5.0.0`, matching what is
   published: `@linteljs/eslint-plugin` has installs against those floors and narrowing them is a silent
-  break. That is why `tsdown.config.ts` targets `node12`, why no rule uses `findLast`,
+  break. That is why `tsdown.config.ts` targets `node14`, why no rule uses `findLast`,
   `findLastIndex` or `toSorted`, and why `utils/compatUtils.ts` exists.
 - **Arrow functions everywhere.** The plugin lints itself with its own
   `@linteljs/prefer-arrow-functions`, so this is enforced, not a preference.
@@ -51,9 +51,11 @@ local-only. That version is not the source of truth any more. This repo owns the
   scripts/<purpose>/<name>.ts`, with no loader and no build step: `build/` runs inside `pnpm build`,
   `release/` packs the tarball and proves it, `audit/` points the rules at real third-party code.
   `tsconfig.json` includes `scripts/**/*.ts`, so they are typechecked and type-aware linted like
-  anything else, and they report through the root `scripts/utils/loggerUtils.ts`. Two files are
-  deliberately not TypeScript: `release/runRules.cjs`, which has to parse on Node 12, and
-  `stryker.config.mjs`, whose extension is the only one Stryker's config discovery looks for.
+  anything else, and they report through the root `scripts/utils/loggerUtils.ts`.
+  `release/runRules.ts` is the exception twice over: CI strips its types into a `.mjs` on the host
+  and runs that on a bare `node:14-alpine`, so its syntax stays what Node 14 parses, and it writes
+  to `process.stdout`, since nothing above the package is copied in. `stryker.config.mjs` stays
+  JavaScript, the only extension Stryker's config discovery looks for.
   Linting comes from the workspace root's `eslint.config.ts`, which carries this package's two
   documented rule exemptions.
 - A rule is a `kebab-case` directory named after its id, and everything that rule owns lives in it:
@@ -189,13 +191,13 @@ Claim nothing that has not been run.
   before any release. It found the seven rules still destructuring `sourceCode` off the context,
   which the whole unit suite passed straight through.
 - The Node floor cannot be proven the same way, because the matrix runs every ESLint on whichever
-  Node invoked it. `smoke.ts` greps the bundle for APIs newer than Node 12 instead: a bundler
+  Node invoked it. `smoke.ts` greps the bundle for APIs newer than Node 14 instead: a bundler
   downlevels `?.` and leaves `array.at(-1)` exactly where it was.
 - CI runs all of the above. `.github/workflows/ci.yml` carries the gate, the two packed-artifact
   smokes, the six-major ESLint matrix, and an `oldest-runtime` job that runs the built bundle
-  inside `node:12-alpine` and `node:14-alpine`. That container job is the only thing that can
+  inside `node:14-alpine`. That container job is the only thing that can
   prove the declared Node floor: a bundler lowers syntax and leaves built-in methods where they
-  were, so `smoke.ts`'s scan for post-Node-12 APIs is a cheaper check of the same property rather
+  were, so `smoke.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property rather
   than a substitute for running it.
 - Grep the diff for em-dashes before committing, same as any outward artifact.
 

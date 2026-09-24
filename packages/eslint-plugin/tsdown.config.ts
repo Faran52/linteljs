@@ -33,12 +33,9 @@ export default defineConfig({
    * references a map that is not in the package.
    */
   sourcemap: false,
-  /**
-   * The published floor, not this workspace's: `engines.node` is `>=12.0.0`, and a bundle
-   * emitted for node24 keeps optional chaining and nullish coalescing that node12 cannot parse,
-   * failing on `require` before any rule ran. `scripts/release/smoke.ts` greps the built artifact for both.
-   */
-  target: 'node12',
+  // The published floor, not this workspace's: `engines.node` is `>=14.0.0`, and a bundle emitted for
+  // node24 keeps syntax node14 cannot parse, failing on `require` before any rule ran.
+  target: 'node14',
   deps: {
     // `eslint` is a peer dependency and must never be inlined into the bundle.
     neverBundle: ['eslint'],

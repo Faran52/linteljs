@@ -8,6 +8,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- **Breaking: Node `>=14.0.0`.** The floor was 12. The bundle now targets `node14`, so it keeps optional
+  chaining and nullish coalescing, and CI runs ESLint 5, 6 and 7 against it on a bare `node:14-alpine`.
 - `react-no-global-namespace` fixes a Svelte component correctly: the `react` import goes inside the
   `<script>` holding the reference, at its indent, rather than above the tag, and a reference in the markup
   is reported with no fix.
