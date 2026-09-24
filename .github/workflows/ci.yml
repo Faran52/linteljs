@@ -116,17 +116,17 @@ jobs:
         with:
           node-version: 26.10.0
       - name: Strip the runner's types
-        working-directory: packages/eslint-plugin/scripts/release
+        working-directory: packages/eslint-plugin/scripts/release/run-rules
         run: >-
-          node --no-warnings -e "const fs = require('node:fs'); fs.writeFileSync('runRules.mjs',
-          require('node:module').stripTypeScriptTypes(fs.readFileSync('runRules.ts', 'utf8')))"
+          node --no-warnings -e "const fs = require('node:fs'); fs.writeFileSync('runRulesRelease.mjs',
+          require('node:module').stripTypeScriptTypes(fs.readFileSync('runRulesRelease.ts', 'utf8')))"
 
       # Docker is driven from the host rather than through `container:`, because that would run
       # actions/* on Node 24 inside the image, and node:14-alpine's musl is too old for it.
       #
       # This is the only thing that can answer whether the shipped bundle runs on the declared
       # Node floor. A bundler lowers syntax and leaves built-in methods exactly where they were,
-      # so `smoke.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property, not a
+      # so `smokeRelease.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property, not a
       # substitute for running it.
       - name: Run the rules on node ${{ matrix.node }}
         run: |
@@ -134,5 +134,5 @@ jobs:
             set -e
             cp -r /src/dist /src/scripts /tmp/
             npm install --no-audit --no-fund --no-save eslint@${{ matrix.eslint }}
-            node scripts/release/runRules.mjs dist/index.js
+            node scripts/release/run-rules/runRulesRelease.mjs dist/index.js
           '

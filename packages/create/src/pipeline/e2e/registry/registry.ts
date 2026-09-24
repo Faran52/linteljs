@@ -181,9 +181,9 @@ const publishedAs = (version: string, publish: () => void): void => {
  * A registry holding the workspace versions in front of npmjs, so an install resolves `@linteljs/*` to what is
  * checked out and everything else to the real thing. Nothing published is ever consulted for this scope.
  *
- * Exported apart from `setup` because the suite is not its only caller: `scripts/collectBuildScripts.ts` needs the
- * same registry and the same freshly published CLI, and duplicating a hundred lines of verdaccio wiring to get them
- * is how the two drift.
+ * Exported apart from `setup` because the suite is not its only caller: `scripts/collect-builds/collectBuildsScript.ts`
+ * needs the same registry and the same freshly published CLI, and duplicating a hundred lines of verdaccio wiring to
+ * get them is how the two drift.
  */
 // `E2E_UPSTREAM` stands in for npmjs, for a machine whose network cannot reach it but can reach a mirror.
 export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {

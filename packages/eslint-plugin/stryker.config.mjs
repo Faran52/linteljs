@@ -37,7 +37,7 @@ const config = {
    * logic worth mutating; `plugin.ts` does, and was left out on the strength of a comment naming only the other
    * two. Adding it paid immediately: five survivors were real gaps and `meta.test.ts` now pins each. Both flat
    * block names could be emptied, both arms of the `overrides` branch inverted, and `configs` dropped from the
-   * default export, all with the suite green and only `smoke.ts` between that last one and a release. Read the
+   * default export, all with the suite green and only the release smoke between that last one and a release. Read the
    * rest of its survivors with the caveat below in hand: everything in this file runs at module load, so it is
    * the worst case for the attribution problem, not a file with poor tests.
    */

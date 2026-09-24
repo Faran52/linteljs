@@ -35,6 +35,15 @@ aliases it duplicates instead of importing carry a comment saying so.
   the workspace's own convention and `@linteljs/create` deliberately does not ship it; `DESIGN.md`
   carries that as a non-goal, which is why it is absent from the published standard.
 
+- **Scripts take the ring shape too.** Each script is a kebab-case directory holding one entry named
+  for it with its group as suffix, `utils/*Utils.ts` for helpers only it reads, and `constants.ts` for
+  its tables: `eslint-plugin/scripts/audit/real-code/realCodeAudit.ts`,
+  `release/compat-matrix/constants.ts`. A group with no name of its own, the root `scripts/` and a
+  package's flat `scripts/`, suffixes `Script`: `scripts/lint-starters/lintStartersScript.ts`. A helper
+  several scripts read sits in the nearest shared `utils/`, the root `scripts/utils/` for all three
+  packages. `checkBannedPatterns.ts` and `typecheckStaged.ts` stay flat at `scripts/`: they mirror the
+  paths a generated project receives, which its hooks and lint-staged call.
+
 - **`create` is one folder per responsibility, and membership is decided rather than chosen.** The
   standard leaves the ring count open; this package has nine folders, and a lint rule rather than
   taste decides which one a module belongs to.
@@ -175,7 +184,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   exports `typescript`; `frameworks/` and `libraries/` group the layers that come in sets.
   `defineConfig.ts` composes them and owns the ordering, which is load-bearing. Flat rather than
   foldered because each layer file is a tsdown entry backing a published `exports` subpath, which
-  `scripts/smoke.ts` resolves against the packed tarball. `config/globs.ts` holds the extension
+  `scripts/smoke/smokeScript.ts` resolves against the packed tarball. `config/globs.ts` holds the extension
   tables six of them read: a table several modules share is not a helper, so it is not in `utils/`.
 
 - **`create/templates/` sits outside `src/`** and is laid out as the project it lands in:

@@ -127,9 +127,9 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
 /**
  * The v2 schema, generated from the records rather than hand-kept: `required` off the kinds that are required in
  * `Answers` (`browser` alone excepted, for the config files that predate it), every property's shape off its own
- * record's `kind`, in `ANSWERS`' own order. `scripts/writeSchemas.ts` writes this to both checked-in copies, and
- * `schemaUtils.test.ts` pins them against it, so a schema that drifts from the records is a failing test rather
- * than a silent one.
+ * record's `kind`, in `ANSWERS`' own order. `scripts/write-schemas/writeSchemasScript.ts` writes this to both
+ * checked-in copies, and `schemaUtils.test.ts` pins them against it, so a schema that drifts from the records is a
+ * failing test rather than a silent one.
  */
 export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
   const keys = valuesOf(answers);

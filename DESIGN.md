@@ -422,7 +422,7 @@ module the official scaffolder writes: `@/constants/theme` comes from `create-ex
 from `create-next-app`, `./App.vue` from `create-vite`. Owning those means forking the templates,
 which is the first non-goal in this document.
 
-So `scripts/lint-starters/lintStarters.ts` lints each file the way the project receiving it will. `defineConfig`
+So `scripts/lint-starters/lintStartersScript.ts` lints each file the way the project receiving it will. `defineConfig`
 is the same function a generated `eslint.config.js` calls, handed that target's own framework, and
 each file is judged at the path its target record places it on rather than the path it is stored at,
 which is what makes the naming rules mean anything. The answers widen per target until every file is
@@ -1508,7 +1508,7 @@ Every script under `scripts/` and `packages/*/scripts/` reports through `scripts
 the copy of what a generated project receives at `scripts/utils/loggerUtils.ts`. So this block turns `no-console` *on*
 for every method, `warn` and `error` included, and `@linteljs/workspace/scripts-logger` turns it off for the two copies
 of the logger alone. `base()` still stands the rule down under `scripts/` for a consumer, which is a published default
-and not this repository's to narrow. `release/runRules.ts` writes to `process.stdout` instead: it runs in a container
+and not this repository's to narrow. `release/run-rules/runRulesRelease.ts` writes to `process.stdout` instead: it runs in a container
 holding only the plugin's own `dist/` and `scripts/`, with no logger above them.
 
 `sonarjs/no-os-command-from-path` joins it for the same directories. The audits and smokes run

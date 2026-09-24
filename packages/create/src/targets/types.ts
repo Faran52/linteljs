@@ -198,7 +198,7 @@ export interface TargetRecord {
   // The scaffolder's own stylesheet, quoted as the tailwind layer's `entryPoint`. Absent on Svelte, which ships none.
   // Every target has one, so the emitters never ask whether there is a stylesheet to import into.
   styleEntry: string;
-  // Where a page lives, printed by `scripts/starterTrees.ts`.
+  // Where a page lives, printed by `scripts/starter-trees/starterTreesScript.ts`.
   routeUnit: string;
   // Absent, the question is not asked. The order is the offer's: the first is what a config migrated from v2 lands on.
   stores?: readonly Store[];

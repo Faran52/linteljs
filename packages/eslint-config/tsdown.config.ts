@@ -2,9 +2,9 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig({
   /**
-   * One entry per subpath in package.json `exports`. A subpath with no entry here typechecks fine and 404s at
-   * install time, so `scripts/smoke.ts` resolves every one against the built `dist` before publish. Keyed, not
-   * an array: an array preserves `src/frameworks/` in the output path, while `exports` points at a flat
+   * One entry per subpath in package.json `exports`. A subpath with no entry here typechecks fine and 404s at install
+   * time, so `scripts/smoke/smokeScript.ts` resolves every one against the built `dist` before publish. Keyed, not an
+   * array: an array preserves `src/frameworks/` in the output path, while `exports` points at a flat
    * `./dist/react.mjs`.
    */
   entry: {

@@ -12,7 +12,7 @@ coverage/
 .worktrees/
 .superpowers/
 
-# Generated from src/rules/*/README.md by scripts/build/writeRuleDocs.ts at build, packed into the
+# Generated from src/rules/*/README.md by scripts/build/rule-docs/ruleDocsBuild.ts at build, packed into the
 # tarball because every version through 1.0.3 published this path.
 packages/eslint-plugin/docs/
 

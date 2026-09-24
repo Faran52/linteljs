@@ -30,7 +30,7 @@
     "build": "tsdown",
     "mutation": "stryker run",
     "prepack": "pnpm run build",
-    "smoke": "node scripts/smoke.ts",
+    "smoke": "node scripts/smoke/smokeScript.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

@@ -26,11 +26,11 @@ export default defineConfig({
   treeshake: true,
   platform: 'node',
   /**
-   * No sourcemaps, deliberately: tsdown drives the declaration sourcemap off the same flag, so with it on the
-   * emitted `.d.mts`/`.d.cts` carry a `sourceMappingURL` for a `.map` never written, a dead link in every editor.
-   * The JS maps were also 224 kB against 60 kB of source, and a rule crash is reproduced against `src` and the
-   * suite rather than by stepping through the bundle. `scripts/release/smoke.ts` fails the build if any shipped file
-   * references a map that is not in the package.
+   * No sourcemaps, deliberately: tsdown drives the declaration sourcemap off the same flag, so with it on the emitted
+   * `.d.mts`/`.d.cts` carry a `sourceMappingURL` for a `.map` never written, a dead link in every editor. The JS maps
+   * were also 224 kB against 60 kB of source, and a rule crash is reproduced against `src` and the suite rather than by
+   * stepping through the bundle. `scripts/release/smoke/smokeRelease.ts` fails the build if any shipped file references
+   * a map that is not in the package.
    */
   sourcemap: false,
   // The published floor, not this workspace's: `engines.node` is `>=14.0.0`, and a bundle emitted for

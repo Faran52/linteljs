@@ -1,8 +1,8 @@
 /**
- * Every layer, one export each, which is what makes `scripts/smoke.ts` able to hold the barrel and the `exports`
- * map to the same list. No `defineConfig`: it would load every framework layer, so it lives at `/define-config`.
- * Taking a layer through its own subpath stays the better choice for a project, since the barrel resolves the
- * optional peer of every layer in it.
+ * Every layer, one export each, which is what makes `scripts/smoke/smokeScript.ts` able to hold the barrel and the
+ * `exports` map to the same list. No `defineConfig`: it would load every framework layer, so it lives at
+ * `/define-config`. Taking a layer through its own subpath stays the better choice for a project, since the barrel
+ * resolves the optional peer of every layer in it.
  */
 export { astro } from './astro';
 export { base } from './base';

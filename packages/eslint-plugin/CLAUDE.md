@@ -48,11 +48,13 @@ local-only. That version is not the source of truth any more. This repo owns the
 - **Arrow functions everywhere.** The plugin lints itself with its own
   `@linteljs/prefer-arrow-functions`, so this is enforced, not a preference.
 - `"type": "module"`, so `scripts/` is TypeScript run by Node's own type stripping, `node
-  scripts/<purpose>/<name>.ts`, with no loader and no build step: `build/` runs inside `pnpm build`,
-  `release/` packs the tarball and proves it, `audit/` points the rules at real third-party code.
+  scripts/<group>/<subject>/<subject><Group>.ts`, with no loader and no build step: `build/` runs
+  inside `pnpm build`, `release/` packs the tarball and proves it, `audit/` points the rules at real
+  third-party code. Each script is the ring shape below: `audit/real-code/realCodeAudit.ts`, its own
+  `utils/*Utils.ts` and `constants.ts`, and what several scripts in a group read in the group's `utils/`.
   `tsconfig.json` includes `scripts/**/*.ts`, so they are typechecked and type-aware linted like
   anything else, and they report through the root `scripts/utils/loggerUtils.ts`.
-  `release/runRules.ts` is the exception twice over: CI strips its types into a `.mjs` on the host
+  `release/run-rules/runRulesRelease.ts` is the exception twice over: CI strips its types into a `.mjs` on the host
   and runs that on a bare `node:14-alpine`, so its syntax stays what Node 14 parses, and it writes
   to `process.stdout`, since nothing above the package is copied in. `stryker.config.mjs` stays
   JavaScript, the only extension Stryker's config discovery looks for.
@@ -168,13 +170,13 @@ Claim nothing that has not been run.
 - The bundler is **tsdown** (rolldown), not tsup. It emits `index.mjs`/`index.d.mts` for ESM and
   `index.js`/`index.d.ts` for CJS, and the `exports` map names those exactly. The CJS half is
   `.js` rather than `.cjs` because ESLint 5's config loader switches on the extension and sends a
-  `.cjs` main to its YAML branch; `scripts/build/writeDistManifest.ts` drops a `dist/package.json`
+  `.cjs` main to its YAML branch; `scripts/build/dist-manifest/distManifestBuild.ts` drops a `dist/package.json`
   marking the directory `commonjs` so Node still reads it correctly under `"type": "module"`.
   Sourcemaps are off on purpose: tsdown drives the declaration sourcemap from the
   same flag and emits a `sourceMappingURL` for a `.map` it never writes.
 - Coverage thresholds are 100 across lines, branches, functions and statements. They are a gate,
   not a target, and lowering one to make a build pass is not an option.
-- `node scripts/release/smoke.ts` packs the tarball and runs a real ESLint against it through both the ESM
+- `node scripts/release/smoke/smokeRelease.ts` packs the tarball and runs a real ESLint against it through both the ESM
   and the CJS entry point. Unit tests cannot catch a broken `exports` map or a missing entry in
   `files`. Run it before any release.
 - `peerDependencies.eslint` is `>=5.0.0`, and a rule that only works on one major is broken. No
@@ -183,7 +185,7 @@ Claim nothing that has not been run.
   and `utils/compatUtils.ts` reads the modern shape first and the legacy one second. Its own test
   drives both, because the legacy half cannot execute on the ESLint this suite runs against and
   would otherwise sit uncovered forever.
-- `node scripts/release/compatMatrix.ts` is what turns that from a declaration into a fact. It packs the
+- `node scripts/release/compat-matrix/compatMatrixRelease.ts` is what turns that from a declaration into a fact. It packs the
   tarball, installs ESLint 5, 6, 7, 8, 9 and 10 side by side, and lints one fixture that trips
   every universal rule in `recommended`, through `.eslintrc.json` on 5 to 8 and flat config on 9
   and 10, so both published preset shapes are exercised by a real consumer. It then asserts every
@@ -191,13 +193,13 @@ Claim nothing that has not been run.
   before any release. It found the seven rules still destructuring `sourceCode` off the context,
   which the whole unit suite passed straight through.
 - The Node floor cannot be proven the same way, because the matrix runs every ESLint on whichever
-  Node invoked it. `smoke.ts` greps the bundle for APIs newer than Node 14 instead: a bundler
+  Node invoked it. `smokeRelease.ts` greps the bundle for APIs newer than Node 14 instead: a bundler
   downlevels `?.` and leaves `array.at(-1)` exactly where it was.
 - CI runs all of the above. `.github/workflows/ci.yml` carries the gate, the two packed-artifact
   smokes, the six-major ESLint matrix, and an `oldest-runtime` job that runs the built bundle
   inside `node:14-alpine`. That container job is the only thing that can
   prove the declared Node floor: a bundler lowers syntax and leaves built-in methods where they
-  were, so `smoke.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property rather
+  were, so `smokeRelease.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property rather
   than a substitute for running it.
 - Grep the diff for em-dashes before committing, same as any outward artifact.
 
@@ -218,7 +220,7 @@ same mistakes are the ones a new rule will make.
 - `member-newline` counted a doc comment between members as a blank line, so every
   documented interface reported forever with no fix that could satisfy it.
 - The CJS entry exposed no `meta`, because a `.cjs` config gets the namespace rather than the
-  default export. Found by `scripts/smoke.ts`.
+  default export. Found by the release smoke.
 - The bundle carried a side-effect `require('eslint')` even though every import was type-only:
   `verbatimModuleSyntax` keeps the statement for `import { type X }`. Found by loading the packed
   artifact rather than by reading the source.

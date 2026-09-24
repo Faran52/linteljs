@@ -32,17 +32,17 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsdown && node scripts/build/writeDistManifest.ts && node scripts/build/writeRuleDocs.ts",
+    "build": "tsdown && node scripts/build/dist-manifest/distManifestBuild.ts && node scripts/build/rule-docs/ruleDocsBuild.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepack": "pnpm run build",
-    "smoke": "node scripts/release/smoke.ts",
-    "audit:real": "node scripts/audit/realCode.ts",
-    "audit:options": "node scripts/audit/realCode.ts --options",
-    "audit:negatives": "node scripts/audit/falseNegatives.ts",
-    "audit:security": "node scripts/audit/security.ts",
+    "smoke": "node scripts/release/smoke/smokeRelease.ts",
+    "audit:real": "node scripts/audit/real-code/realCodeAudit.ts",
+    "audit:options": "node scripts/audit/real-code/realCodeAudit.ts --options",
+    "audit:negatives": "node scripts/audit/false-negatives/falseNegativesAudit.ts",
+    "audit:security": "node scripts/audit/security/securityAudit.ts",
     "mutation": "stryker run",
-    "compat": "node scripts/release/compatMatrix.ts",
+    "compat": "node scripts/release/compat-matrix/compatMatrixRelease.ts",
     "prepare": "pnpm run build"
   },
   "exports": {
