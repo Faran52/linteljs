@@ -207,6 +207,13 @@ describe('isSafeToConvert', () => {
       options: { script: true },
       expected: false,
     },
+    // A pattern parameter binds no one name, and makes the list non-simple, where a repeat is a parse error anyway.
+    {
+      label: 'a sloppy-mode function taking a pattern beside its names',
+      code: 'function pick({ first }, second) {\n  return first + second;\n}',
+      options: { script: true },
+      expected: true,
+    },
     // An explicit `this` parameter is TypeScript-only syntax, so this drives the check through
     // the TypeScript parser rather than through `@mocks/sourceCodeFrom`.
     {

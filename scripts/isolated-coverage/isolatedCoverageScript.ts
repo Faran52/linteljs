@@ -4,7 +4,10 @@
  * process with coverage on; the run of `x.test.ts` is `x.ts`'s own coverage, and every other run's hits name the
  * suites that cover the rest by pass-through. A gap no run hits is dead code or a missing test.
  *
- * Usage: tsx scripts/isolated-coverage/isolatedCoverageScript.ts [--concurrency <n>]
+ * A source with statements but no function and no branch is data, a table, and needs no suite of its own: asserting
+ * a table equal to itself proves nothing. Such a file is listed as data rather than as untested.
+ *
+ * Usage: tsx scripts/isolated-coverage/isolatedCoverageScript.ts [--concurrency <n>] [--timeout <seconds>]
  */
 import {
   existsSync,
@@ -34,6 +37,7 @@ import {
   REPORTS_PREFIX,
   SOURCE_SUFFIX,
   TEST_SUFFIX,
+  TIMEOUT_SECONDS,
 } from './constants.ts';
 import {
   attribute,
@@ -41,6 +45,7 @@ import {
   entriesOf,
   gapOf,
   hitsOf,
+  isData,
   metricsOf,
 } from './utils/coverageUtils.ts';
 import { coverageRun, listTests } from './utils/runUtils.ts';
@@ -48,11 +53,22 @@ import { coverageRun, listTests } from './utils/runUtils.ts';
 import type { FileCoverage } from './utils/coverageUtils.ts';
 
 const root = cwd();
-const { values } = parseArgs({ options: { concurrency: { type: 'string' } } });
+const { values } = parseArgs({
+  options: {
+    concurrency: { type: 'string' },
+    timeout: { type: 'string' },
+  },
+});
 const concurrency = Number(values.concurrency ?? availableParallelism());
+const timeoutSeconds = Number(values.timeout ?? TIMEOUT_SECONDS);
 
 if (!Number.isInteger(concurrency) || concurrency < 1) {
   logError(`--concurrency takes a whole number from 1, not ${values.concurrency ?? ''}`);
+  process.exit(1);
+}
+
+if (!Number.isInteger(timeoutSeconds) || timeoutSeconds < 1) {
+  logError(`--timeout takes a whole number of seconds from 1, not ${values.timeout ?? ''}`);
   process.exit(1);
 }
 
@@ -74,15 +90,28 @@ const queue = new PQueue({ concurrency });
 const hitsByTest = new Map<string, Map<string, Set<string>>>();
 const maps = new Map<string, FileCoverage>();
 const failed: string[] = [];
+const timedOut: string[] = [];
 
 try {
   await Promise.all(tests.map(async (test, index) => {
     return queue.add(async () => {
-      const report = await coverageRun(root, relative(root, test), join(reports, String(index)), thresholdKeys);
+      const report = await coverageRun(
+        root,
+        relative(root, test),
+        join(reports, String(index)),
+        thresholdKeys,
+        timeoutSeconds * 1000,
+      );
 
-      logDebug(`${relative(root, test)} ${report === undefined ? 'wrote no report' : 'done'}`);
+      logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
 
-      if (report === undefined) {
+      if (report === 'timed out') {
+        timedOut.push(test);
+
+        return;
+      }
+
+      if (report === 'failed') {
         failed.push(test);
 
         return;
@@ -154,6 +183,7 @@ const explain = (file: string, coverage: FileCoverage, gap: string[], own?: stri
 
 const short: string[] = [];
 const untested: string[] = [];
+const data: string[] = [];
 let empty = 0;
 
 for (const [file, coverage] of [...maps].toSorted(([left], [right]) => {
@@ -165,6 +195,11 @@ for (const [file, coverage] of [...maps].toSorted(([left], [right]) => {
   if (test === undefined) {
     if (entriesOf(coverage).length === 0) {
       empty += 1;
+      continue;
+    }
+
+    if (isData(coverage)) {
+      data.push(path);
       continue;
     }
 
@@ -198,6 +233,10 @@ listed('Sources with no test file beside them', untested);
 listed('Runs that wrote no coverage report', failed.map((test) => {
   return relative(root, test);
 }));
+listed(`Runs killed at the ${String(timeoutSeconds)}s deadline`, timedOut.map((test) => {
+  return relative(root, test);
+}));
+listed('Data, no function and no branch, so no suite of its own', data);
 listed('Skipped, no source file beside them', noSource.map((test) => {
   return relative(root, test);
 }));
@@ -205,10 +244,11 @@ listed('Out of scope, their source is outside the coverage include set', outOfSc
   return relative(root, test);
 }));
 log(`${String(paired.size)} pairs, ${String(short.length)} short, ${String(untested.length)} untested, `
-  + `${String(empty)} sources with nothing to measure, ${String(noSource.length)} skipped, `
+  + `${String(data.length)} data, ${String(empty)} sources with nothing to measure, `
+  + `${String(timedOut.length)} timed out, ${String(noSource.length)} skipped, `
   + `${String(outOfScope.length)} out of scope; ${String(tests.length)} runs at concurrency ${String(concurrency)} `
   + `in ${String(seconds)}s`);
 
-if (short.length > 0 || untested.length > 0 || failed.length > 0) {
+if (short.length > 0 || untested.length > 0 || failed.length > 0 || timedOut.length > 0) {
   process.exit(1);
 }

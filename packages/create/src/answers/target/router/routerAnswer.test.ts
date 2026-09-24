@@ -40,7 +40,9 @@ describe('routerAnswer', () => {
 
     expect(routerAnswer.values['react-router'].only(react)).toBe(true);
     expect(routerAnswer.values['tanstack-router'].only(react)).toBe(true);
+    expect(routerAnswer.values['react-router-framework'].only(react)).toBe(true);
     expect(routerAnswer.values['react-router'].only(declarativeOnly)).toBe(true);
     expect(routerAnswer.values['tanstack-router'].only(declarativeOnly)).toBe(false);
+    expect(routerAnswer.values['react-router-framework'].only(declarativeOnly)).toBe(false);
   });
 });

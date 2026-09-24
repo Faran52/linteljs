@@ -24,8 +24,8 @@ import {
   propertiesOf,
 } from './jsxUtils.ts';
 
-// A lint run only ever hands these a real parsed node, so the declining arms below are reachable from a direct call
-// alone. The rule suites cover everything a parse can produce.
+// Driven with hand-built nodes of the shapes a parse hands over, so every arm is reached here rather than through a
+// rule's suite; the declining arms are reachable from a direct call alone.
 
 describe('attributesOf', () => {
   it.each([
@@ -52,6 +52,15 @@ describe('attributesOf', () => {
 });
 
 describe('asElement', () => {
+  it('hands back a node that has an opening element', () => {
+    const element = {
+      type: 'JSXElement',
+      openingElement: { type: 'JSXOpeningElement' },
+    };
+
+    expect(asElement(element)).toBe(element);
+  });
+
   it('declines a node with no opening element', () => {
     expect(asElement({ type: 'Identifier' })).toEqual({});
   });
@@ -178,6 +187,22 @@ describe('literalValueOf', () => {
 });
 
 describe('expressionOf', () => {
+  it('answers the expression inside the braces', () => {
+    const expression = { type: 'ObjectExpression' };
+
+    expect(expressionOf({
+      type: 'JSXAttribute',
+      name: {
+        type: 'JSXIdentifier',
+        name: 'accessibilityState',
+      },
+      value: {
+        type: 'JSXExpressionContainer',
+        expression,
+      },
+    })).toBe(expression);
+  });
+
   it('answers undefined when the value is not in braces', () => {
     expect(expressionOf({
       type: 'JSXAttribute',
@@ -215,6 +240,16 @@ describe('keyNameOf', () => {
     expect(keyNameOf(property)).toBeUndefined();
   });
 
+  it('reads an identifier key', () => {
+    expect(keyNameOf({
+      type: 'Property',
+      key: {
+        type: 'Identifier',
+        name: 'disabled',
+      },
+    })).toBe('disabled');
+  });
+
   it('reads a string-literal key', () => {
     expect(keyNameOf({
       type: 'Property',
@@ -227,6 +262,27 @@ describe('keyNameOf', () => {
 });
 
 describe('isHidden', () => {
+  // A bare `aria-hidden` is `true`; only a literal `false` leaves the element reachable.
+  it.each([
+    ['a bare aria-hidden', undefined, true],
+    ['aria-hidden={false}', {
+      type: 'JSXExpressionContainer',
+      expression: {
+        type: 'Literal',
+        value: false,
+      },
+    }, false],
+  ])('reads %s', (_label, value, hidden) => {
+    expect(isHidden([{
+      type: 'JSXAttribute',
+      name: {
+        type: 'JSXIdentifier',
+        name: 'aria-hidden',
+      },
+      ...value === undefined ? {} : { value },
+    }])).toBe(hidden);
+  });
+
   it('reads importantForAccessibility=no-hide-descendants as hidden', () => {
     expect(isHidden([{
       type: 'JSXAttribute',
@@ -313,5 +369,33 @@ describe('hasTextContent', () => {
       type: 'JSXElement',
       children: [{ type: 'JSXText' }],
     })).toBe(false);
+  });
+
+  // A container holds a value this cannot read, so it counts as text unless it is the empty `{}`.
+  it.each([
+    ['visible words', [{
+      type: 'JSXText',
+      value: 'Save',
+    }], true],
+    ['an expression', [{
+      type: 'JSXExpressionContainer',
+      expression: { type: 'Identifier' },
+    }], true],
+    ['an empty expression', [{
+      type: 'JSXExpressionContainer',
+      expression: { type: 'JSXEmptyExpression' },
+    }], false],
+    ['words inside a nested element', [{
+      type: 'JSXElement',
+      children: [{
+        type: 'JSXText',
+        value: 'Save',
+      }],
+    }], true],
+  ])('reads %s', (_label, children, text) => {
+    expect(hasTextContent({
+      type: 'JSXElement',
+      children,
+    })).toBe(text);
   });
 });

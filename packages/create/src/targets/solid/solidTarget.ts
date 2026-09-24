@@ -7,6 +7,11 @@ import {
   ROUTER_MOCK,
 } from '../constants';
 import {
+  hasForm,
+  hasStore,
+  pressable,
+} from '../utils/gateUtils';
+import {
   accessorFiles,
   accessorTests,
   mockFiles,
@@ -18,9 +23,6 @@ import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 import {
   ACCESSORS,
   ALWAYS,
-  hasForm,
-  hasStore,
-  pressable,
   SHARED,
 } from './constants';
 

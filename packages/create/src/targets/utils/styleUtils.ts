@@ -1,3 +1,5 @@
+import { hasForm, pressable } from './gateUtils';
+
 import type { Answers } from '@answers/registry';
 import type { TargetId } from '@answers/target/target/targetAnswer';
 import type { StarterFile } from '../types';
@@ -30,14 +32,6 @@ export const COMPONENT_PATHS: ComponentPaths = {
   textInput: 'src/components/ui/text-input/TextInput',
 };
 
-const hasControls = (answers: Answers): boolean => {
-  return answers.store !== undefined || answers.form !== undefined;
-};
-
-const hasForm = (answers: Answers): boolean => {
-  return answers.form !== undefined;
-};
-
 const always = (): boolean => {
   return true;
 };
@@ -46,7 +40,7 @@ const always = (): boolean => {
 const COMPONENTS: readonly (readonly [keyof ComponentPaths, (answers: Answers) => boolean])[] = [
   ['header', always],
   ['mark', always],
-  ['button', hasControls],
+  ['button', pressable],
   ['textInput', hasForm],
 ];
 

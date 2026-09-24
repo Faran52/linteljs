@@ -3,14 +3,17 @@ import { Linter } from 'eslint';
 import type { Rule } from 'eslint';
 import type { RuleNode, SourceCode } from '../src/utils/ruleUtils.ts';
 
+type Parser = NonNullable<Linter.LanguageOptions['parser']>;
+
 // A real `SourceCode` for a snippet: there is no public constructor, so this runs a throwaway rule to capture one.
+// Espree unless a parser is given, which is how a TypeScript-only node reaches a helper's own suite.
 export interface ParsedSnippet {
   sourceCode: SourceCode;
   firstNode: (type: string) => RuleNode;
   lastNode: (type: string) => RuleNode;
 }
 
-export const sourceCodeFrom = (code: string): ParsedSnippet => {
+export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];
   let captured: SourceCode | undefined;
@@ -35,6 +38,7 @@ export const sourceCodeFrom = (code: string): ParsedSnippet => {
       languageOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        ...parser === undefined ? {} : { parser },
       },
       rules: { 'probe/capture': 'error' },
     },

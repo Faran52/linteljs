@@ -1,3 +1,4 @@
+import { walkStarters } from '@mocks/starterWalk';
 import {
   describe,
   expect,
@@ -29,5 +30,23 @@ describe('angularTarget', () => {
     expect(angularTarget.naming['src/**/!(*.d).ts']).toBe('KEBAB_CASE');
     expect(angularTarget.naming).not.toHaveProperty('src/**/*.ts');
     expect(angularTarget.naming['src/**/*.d.ts']).toBeDefined();
+  });
+});
+
+/*
+ * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
+ * one destination, and a gate that never opens, or never shuts, decides nothing.
+ */
+describe('the starter gates', () => {
+  const walked = walkStarters(() => {
+    return angularTarget;
+  }, 'angular');
+
+  it('write at most one spelling of each destination under any answer set', () => {
+    expect(walked.twice).toEqual([]);
+  });
+
+  it('each open under some answer set and shut under another', () => {
+    expect(walked.fixed).toEqual([]);
   });
 });

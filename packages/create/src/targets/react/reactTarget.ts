@@ -8,6 +8,7 @@ import {
   REACT_VITE_PLUGIN,
   ROUTER_MOCK,
 } from '../constants';
+import { hasStore } from '../utils/gateUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -22,9 +23,6 @@ import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 import {
   ALWAYS,
   DECLARATIVE_ROUTERS,
-  hasRouter,
-  hasStore,
-  isFrameworkMode,
   PROVIDERS,
   REACT_ACCESSORS,
   ROUTERS,
@@ -38,6 +36,16 @@ import type {
   StarterTest,
   TargetRecord,
 } from '../types';
+
+// Framework mode moves the build, the typecheck, the vite plugin and the tsconfig, which is what makes the record
+// a function of the answers rather than a constant.
+const isFrameworkMode = (answers: Answers): boolean => {
+  return answers.router === 'react-router-framework';
+};
+
+const hasRouter = (answers: Answers): boolean => {
+  return answers.router !== undefined;
+};
 
 const baseReactTarget: TargetRecord = {
   id: 'react',

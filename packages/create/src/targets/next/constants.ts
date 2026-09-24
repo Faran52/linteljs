@@ -1,5 +1,3 @@
-import type { Answers } from '@answers/registry';
-
 /**
  * Every file the template writes whatever was answered, from this target's own tree. No `scaffold` on this record:
  * the tree is this repository's own, so nothing is fetched.
@@ -32,20 +30,6 @@ export const FROM_REACT: readonly string[] = [
   'src/lib/apis/contact/index.ts',
   'src/components/ui/text-input/TextInput.tsx',
 ];
-
-// A file varies by one answer and no more, which is what keeps this a sum rather than a product.
-export const hasStore = (answers: Answers): boolean => {
-  return answers.store !== undefined;
-};
-
-export const hasForm = (answers: Answers): boolean => {
-  return answers.form !== undefined;
-};
-
-// The button is what either of them gives the page to press.
-export const pressable = (answers: Answers): boolean => {
-  return hasStore(answers) || hasForm(answers);
-};
 
 // Next takes React's hooks to the byte, the way it takes React's primitives.
 export { REACT_ACCESSORS as ACCESSORS } from '../react/constants';

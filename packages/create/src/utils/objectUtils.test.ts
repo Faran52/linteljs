@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { isJsonObject } from './objectUtils';
+import { isJsonObject, valuesOf } from './objectUtils';
 
 /**
  * Five guards in four rings read off this one, and each declares its own narrowed shape, so none of their suites
@@ -35,5 +35,14 @@ describe('isJsonObject', () => {
     ['a null-prototype object', Object.create(null)],
   ])('refuses %s', (_case, value) => {
     expect(isJsonObject(value)).toBe(false);
+  });
+});
+
+describe('valuesOf', () => {
+  it('answers the keys a record carries, in the order it declares them', () => {
+    expect(valuesOf({
+      react: 'React',
+      vue: 'Vue',
+    })).toEqual(['react', 'vue']);
   });
 });

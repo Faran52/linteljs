@@ -2,6 +2,11 @@ import { hasLibrary } from '@answers/utils/answerUtils';
 
 import { FOLDER, PARTS } from '../constants';
 import {
+  hasForm,
+  hasStore,
+  pressable,
+} from '../utils/gateUtils';
+import {
   accessorFiles,
   accessorTests,
   mockFiles,
@@ -14,9 +19,6 @@ import {
   ACCESSORS,
   ALWAYS,
   COMPONENTS,
-  hasForm,
-  hasStore,
-  pressable,
   SHARED,
 } from './constants';
 

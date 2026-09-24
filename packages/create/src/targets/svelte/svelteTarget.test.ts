@@ -1,3 +1,4 @@
+import { walkStarters } from '@mocks/starterWalk';
 import {
   describe,
   expect,
@@ -35,5 +36,23 @@ describe('svelteTarget', () => {
   // SvelteKit's routes are the directory, so a route folder may be `[id]` or `(group)`.
   it('admits the route segments a file-based router owns', () => {
     expect(svelteTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
+  });
+});
+
+/*
+ * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
+ * one destination, and a gate that never opens, or never shuts, decides nothing.
+ */
+describe('the starter gates', () => {
+  const walked = walkStarters(() => {
+    return svelteTarget;
+  }, 'svelte');
+
+  it('write at most one spelling of each destination under any answer set', () => {
+    expect(walked.twice).toEqual([]);
+  });
+
+  it('each open under some answer set and shut under another', () => {
+    expect(walked.fixed).toEqual([]);
   });
 });

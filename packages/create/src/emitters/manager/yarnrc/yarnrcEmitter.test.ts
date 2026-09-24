@@ -15,7 +15,7 @@ import {
   type TargetId,
 } from '@answers';
 
-import { emitYarnrc } from './yarnrcEmitter';
+import { emitYarnrc, yarnrcEmitter } from './yarnrcEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -146,5 +146,20 @@ describe('emitYarnrc', () => {
     expect(svelte).toContain('  "postcss-html@*":\n');
     expect(svelte).not.toContain('@vue/test-utils');
     expect(emitYarnrc(answersFor({}))).not.toContain('postcss-html');
+  });
+});
+
+describe('yarnrcEmitter', () => {
+  // Berry reads `.yarnrc.yml`; every other manager, yarn 1 included, would carry a file it never reads.
+  it('writes the yarnrc for berry and nothing for any other manager', () => {
+    expect(yarnrcEmitter(answersFor({}))).toEqual([{
+      stage: 'package',
+      target: '.yarnrc.yml',
+      content: { text: emitYarnrc(answersFor({})) },
+    }]);
+    expect(yarnrcEmitter({
+      ...DEFAULT_ANSWERS,
+      packageManager: 'yarn-classic',
+    })).toEqual([]);
   });
 });

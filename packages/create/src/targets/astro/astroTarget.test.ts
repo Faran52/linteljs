@@ -1,3 +1,4 @@
+import { walkStarters } from '@mocks/starterWalk';
 import {
   describe,
   expect,
@@ -161,5 +162,21 @@ describe('the hosted framework axis', () => {
   it('ships no babel type stub even when react is hosted', () => {
     expect(recordFor({ hostedFramework: 'react' }).devDependencies).not.toContain('@types/babel__core');
     expect(recordFor({ hostedFramework: 'react' }).devDependencies).toContain('@babel/core');
+  });
+});
+
+/*
+ * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
+ * one destination, and a gate that never opens, or never shuts, decides nothing.
+ */
+describe('the starter gates', () => {
+  const walked = walkStarters(astroTarget, 'astro');
+
+  it('write at most one spelling of each destination under any answer set', () => {
+    expect(walked.twice).toEqual([]);
+  });
+
+  it('each open under some answer set and shut under another', () => {
+    expect(walked.fixed).toEqual([]);
   });
 });

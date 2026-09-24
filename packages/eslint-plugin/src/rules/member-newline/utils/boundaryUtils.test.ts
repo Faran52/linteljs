@@ -148,17 +148,6 @@ describe('startTokenOf', () => {
 });
 
 describe('endTokenOf', () => {
-  it('returns the member\'s own last token when nothing trails it', () => {
-    const { sourceCode, members } = propertiesOf('const { alpha, bravo } = source;');
-    const [alpha] = members;
-
-    if (!alpha) {
-      throw new Error('expected a first member');
-    }
-
-    expect(endTokenOf(sourceCode, alpha)).toBe(sourceCode.getLastToken(alpha));
-  });
-
   // A note written right after a member, before its comma, trails that member.
   it('returns a comment trailing the member on the same line', () => {
     const { sourceCode, members } = propertiesOf('const { alpha /* trail */, bravo } = source;');
@@ -173,9 +162,16 @@ describe('endTokenOf', () => {
     expect(token.type).toBe('Block');
   });
 
-  // A comment on the line below heads the next member, not this one's trailer.
-  it('does not attribute a next-line comment to the member before it', () => {
-    const { sourceCode, members } = propertiesOf('const {\n  alpha,\n  // heads bravo\n  bravo\n} = source;');
+  /*
+   * The member's own last token wherever nothing trails it on its line: nothing after it at all, a comment on the
+   * line below that heads the next member, and one below the last member with no comma between to stop at.
+   */
+  it.each([
+    ['nothing trails it', 'const { alpha, bravo } = source;'],
+    ['a next-line comment heads the next member', 'const {\n  alpha,\n  // heads bravo\n  bravo\n} = source;'],
+    ['a next-line comment closes the block', 'const {\n  alpha\n  // closes the block\n} = source;'],
+  ])('returns the member\'s own last token when %s', (_label, code) => {
+    const { sourceCode, members } = propertiesOf(code);
     const [alpha] = members;
 
     if (!alpha) {
@@ -230,6 +226,15 @@ describe('analyzeProperties', () => {
     const { sourceCode, members } = propertiesOf('const {\n  /** first */\n  alpha,\n  bravo\n} = source;');
 
     expect(analyzeProperties(sourceCode, members).hasBlankBetween).toBe(false);
+  });
+
+  // The gap is measured to the comment heading the next member, not to the member itself.
+  it('measures the gap above a later member from the comment heading it', () => {
+    const tight = propertiesOf('const {\n  alpha,\n  // heads bravo\n  bravo\n} = source;');
+    const spaced = propertiesOf('const {\n  alpha,\n\n  // heads bravo\n  bravo\n} = source;');
+
+    expect(analyzeProperties(tight.sourceCode, tight.members).hasBlankBetween).toBe(false);
+    expect(analyzeProperties(spaced.sourceCode, spaced.members).hasBlankBetween).toBe(true);
   });
 
   // A member whose value spans multiple lines drags the block open regardless of where it sits,

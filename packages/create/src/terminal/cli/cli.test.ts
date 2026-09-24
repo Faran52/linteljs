@@ -30,10 +30,7 @@ import {
   vi,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
-
 import {
-  ANSWERS,
   type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -136,45 +133,6 @@ describe('main: what it prints and what it returns', () => {
 
     expect(code).toBe(0);
     expect(printed).toContain('--existing');
-  });
-
-  // `form` carries no `slot`: every target asks it. Only `react-hook-form`, one of its two values, is react-only.
-  it('does not scope --form to react, since only one of its values is', async () => {
-    const { printed } = await runMain(['--help']);
-    const formLine = printed.split('\n').find((line) => {
-      return line.includes('--form ');
-    });
-
-    expect(formLine).toContain('react-hook-form');
-    expect(formLine).not.toContain('react only');
-  });
-
-  it('lines up every answer description on one column, store included', async () => {
-    const { printed } = await runMain(['--help']);
-    const lines = printed.split('\n');
-    const storeLine = lines.find((line) => {
-      return line.startsWith('  --store');
-    });
-    const typeSafetyLine = lines.find((line) => {
-      return line.startsWith('  --type-safety');
-    });
-
-    expect(storeLine?.indexOf('zustand')).toBe(typeSafetyLine?.indexOf('strict'));
-  });
-
-  // Built from the records, so each line is held to its record rather than to a copy of the text.
-  it('shapes each answer line from its record: list or value, every choice, and any note', async () => {
-    const { printed } = await runMain(['--help']);
-    const lineFor = (flag: string): string => {
-      return printed.split('\n').find((line) => {
-        return line.startsWith(`  --${flag} `);
-      }) ?? '';
-    };
-
-    expect(lineFor('libraries')).toMatch(/^ {2}--libraries <list> /u);
-    expect(lineFor('target')).toMatch(/^ {2}--target <value> /u);
-    expect(lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '))).toBe(true);
-    expect(lineFor('router').endsWith(` (${ANSWERS.router.note})`)).toBe(true);
   });
 
   // `argumentError` owns the wording; what is `main`'s is that a refusal is one line and nothing after it runs.

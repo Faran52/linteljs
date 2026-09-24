@@ -1,4 +1,3 @@
-import type { Answers } from '@answers/registry';
 import type { AccessorNames } from '../utils/mockUtils';
 
 /**
@@ -25,20 +24,6 @@ export const SHARED: readonly string[] = [
   'src/styles/tokens.css',
   'src/styles/base.css',
 ];
-
-// A file varies by one answer and no more, which is what keeps this a sum rather than a product.
-export const hasStore = (answers: Answers): boolean => {
-  return answers.store !== undefined;
-};
-
-export const hasForm = (answers: Answers): boolean => {
-  return answers.form !== undefined;
-};
-
-// The button is what either of them gives the page to press.
-export const pressable = (answers: Answers): boolean => {
-  return hasStore(answers) || hasForm(answers);
-};
 
 // `create*` is the verb Svelte's own query binding uses, and the reactive object comes back untouched.
 export const ACCESSORS: AccessorNames = {

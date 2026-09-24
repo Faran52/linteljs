@@ -35,6 +35,15 @@ describe('safeProjectPath', () => {
     await expect(safeProjectPath(cwd, 'src/main.tsx')).resolves.toBe(join(cwd, 'src', 'main.tsx'));
   });
 
+  // Only the directories below the root are walked, so a project reached through a link takes a file at its root.
+  it('resolves a target at the root of a project that is itself a symbolic link', async () => {
+    await mkdir(join(cwd, 'real'));
+    await symlink(join(cwd, 'real'), join(cwd, 'linked'));
+
+    await expect(safeProjectPath(join(cwd, 'linked'), 'package.json'))
+      .resolves.toBe(join(cwd, 'linked', 'package.json'));
+  });
+
   // An absolute target is refused rather than resolved, even where it happens to land inside the project.
   it('refuses an absolute target', async () => {
     await expect(safeProjectPath(cwd, join(cwd, 'src/main.tsx'))).rejects.toThrow('must be a relative path');

@@ -23,7 +23,11 @@ import { emitNuxtConfig } from '../../target/nuxt-config/nuxtConfigEmitter';
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
 import { buildAliases } from '../utils/aliasUtils';
 
-import { buildTsconfig, emitTsconfig } from './tsconfigEmitter';
+import {
+  buildTsconfig,
+  emitTsconfig,
+  tsconfigEmitter,
+} from './tsconfigEmitter';
 
 interface AnswerOverrides {
   hostedFramework?: HostedFramework;
@@ -343,5 +347,15 @@ describe('a hosted framework brings its own JSX settings', () => {
       .not.toHaveProperty('jsx');
     expect(buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions)
       .not.toHaveProperty('jsx');
+  });
+});
+
+describe('tsconfigEmitter', () => {
+  it('writes the emitted text to tsconfig.json at the package stage', () => {
+    expect(tsconfigEmitter(answersFor({}))).toEqual([{
+      stage: 'package',
+      target: 'tsconfig.json',
+      content: { text: emitTsconfig(answersFor({})) },
+    }]);
   });
 });

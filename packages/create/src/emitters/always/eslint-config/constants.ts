@@ -1,4 +1,3 @@
-import type { Answers } from '@answers';
 import type { LibraryLayer } from '@config/types';
 
 /**
@@ -11,20 +10,6 @@ export const LIBRARY_LAYERS = [
   'tanstack-router',
   'tailwind',
 ] as const satisfies readonly LibraryLayer[];
-
-// Which answer turns each layer on. None of the three is a `library` any more: the router, the styling system and
-// the data layer each became a field of its own, so the gate is the answer that installs the package behind it.
-export const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
-  'tanstack-query': (answers) => {
-    return answers.data === 'tanstack-query';
-  },
-  'tanstack-router': (answers) => {
-    return answers.router === 'tanstack-router';
-  },
-  'tailwind': (answers) => {
-    return answers.styling === 'tailwind';
-  },
-};
 
 // The subpath, not the barrel, which loads all six framework layers.
 export const PACKAGE = '@linteljs/eslint-config/compose-config';

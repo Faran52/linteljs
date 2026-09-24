@@ -1,4 +1,5 @@
 import {
+  chmod,
   mkdtemp,
   rm,
   symlink,
@@ -20,6 +21,7 @@ import {
   entryExists,
   exists,
   isAbsence,
+  isExecutableFile,
   readIfPresent,
 } from './fsUtils';
 
@@ -42,6 +44,20 @@ describe('isAbsence', () => {
     expect(isAbsence(Object.assign(new Error('denied'), { code: 'EACCES' }))).toBe(false);
     expect(isAbsence(new Error('no code at all'))).toBe(false);
     expect(isAbsence('not even an error')).toBe(false);
+  });
+});
+
+// A directory carries the execute bit too, so the mode alone would take one for a binary.
+describe('isExecutableFile', () => {
+  it('takes an executable file and refuses a plain one, a directory and absence', async () => {
+    await writeFile(join(cwd, 'tool'), '', 'utf8');
+    await chmod(join(cwd, 'tool'), 0o755);
+    await writeFile(join(cwd, 'plain.txt'), '', 'utf8');
+
+    expect(isExecutableFile(join(cwd, 'tool'))).toBe(true);
+    expect(isExecutableFile(join(cwd, 'plain.txt'))).toBe(false);
+    expect(isExecutableFile(cwd)).toBe(false);
+    expect(isExecutableFile(join(cwd, 'absent'))).toBe(false);
   });
 });
 

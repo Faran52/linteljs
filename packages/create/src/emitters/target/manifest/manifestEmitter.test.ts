@@ -157,6 +157,13 @@ describe('manifestEmitter', () => {
     expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
   });
 
+  it('writes none for a target that hosts no browser', () => {
+    expect(manifestEmitter({
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+    }, EMPTY_PROJECT, 'demo-app')).toEqual([]);
+  });
+
   // Chrome rejects `browser_specific_settings` and AMO requires it, so a project shipping to both stores gets two.
   it('writes a second manifest, named for its browser, for a project packaged for two stores', () => {
     const manifests = manifestsFor({ browsers: ['chrome', 'firefox'] });

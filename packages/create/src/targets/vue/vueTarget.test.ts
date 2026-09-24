@@ -1,3 +1,4 @@
+import { walkStarters } from '@mocks/starterWalk';
 import {
   describe,
   expect,
@@ -71,5 +72,23 @@ describe('vueTarget', () => {
 
   it('names a single-file component by its own extension', () => {
     expect(vueTarget.sfcExtension).toBe('vue');
+  });
+});
+
+/*
+ * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
+ * one destination, and a gate that never opens, or never shuts, decides nothing.
+ */
+describe('the starter gates', () => {
+  const walked = walkStarters(() => {
+    return vueTarget;
+  }, 'vue');
+
+  it('write at most one spelling of each destination under any answer set', () => {
+    expect(walked.twice).toEqual([]);
+  });
+
+  it('each open under some answer set and shut under another', () => {
+    expect(walked.fixed).toEqual([]);
   });
 });

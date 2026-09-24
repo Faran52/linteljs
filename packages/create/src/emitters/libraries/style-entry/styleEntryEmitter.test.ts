@@ -94,6 +94,14 @@ describe('the stylesheets a starter ships', () => {
     expect(text).toContain('@import "./components/features/app-header/AppHeader.css";');
   });
 
+  // A stylesheet gated on an answer is imported exactly where the answer ships its component.
+  it('imports a gated stylesheet only under the answers that ship it', () => {
+    const button = '@import "./components/ui/button/Button.css";';
+
+    expect(contentOf(styleEntryEmitter(answersFor({ store: 'zustand' }), EMPTY_PROJECT)[0])).toContain(button);
+    expect(contentOf(styleEntryEmitter(answersFor({}), EMPTY_PROJECT)[0])).not.toContain(button);
+  });
+
   // Nothing to import and no utility system: the file would be empty, so it is not written at all.
   it('writes nothing for a target with neither a styling answer nor a starter stylesheet', () => {
     expect(styleEntryEmitter(answersFor({ target: 'react-native' }), EMPTY_PROJECT)).toEqual([]);
@@ -109,6 +117,30 @@ describe('the stylesheets a starter ships', () => {
     expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";'])).toBe(first);
     expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']))
       .toBe(`@import "./c.css";\n\n${first}`);
+  });
+});
+
+describe('the tailwind answer', () => {
+  // Tailwind first, so the stylesheets can use it; the theme last, since its `@theme` reads the tokens.
+  it('imports tailwind ahead of the stylesheets and the theme after them', () => {
+    const lines = contentOf(styleEntryEmitter(answersFor({ styling: 'tailwind' }), EMPTY_PROJECT)[0])
+      .trimEnd()
+      .split('\n');
+
+    expect(lines[0]).toBe(TAILWIND_IMPORT);
+    expect(lines.at(-1)).toBe('@import "./styles/theme.css";');
+  });
+
+  // NativeWind reaches Tailwind by subpath and maps no theme file of its own.
+  it('takes the block a target names in place of the bare import, and no theme where it names none', () => {
+    const text = contentOf(styleEntryEmitter(answersFor({
+      target: 'react-native',
+      styling: 'tailwind',
+    }), EMPTY_PROJECT)[0]);
+
+    expect(text).toContain('@import "nativewind/theme";');
+    expect(text).not.toContain(TAILWIND_IMPORT);
+    expect(text).not.toContain('theme.css";');
   });
 });
 

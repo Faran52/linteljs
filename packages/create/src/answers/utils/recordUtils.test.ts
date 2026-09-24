@@ -2,8 +2,8 @@ import { targetFor } from '@targets';
 
 import { dataAnswer } from '../libraries/data/dataAnswer';
 import { formAnswer } from '../libraries/form/formAnswer';
+import { nodeVersionAnswer } from '../recorded/node-version/nodeVersionAnswer';
 import { DEFAULT_ANSWERS } from '../registry';
-import { storeAnswer } from '../target/store/storeAnswer';
 
 import { onlyFor } from './recordUtils';
 
@@ -45,6 +45,6 @@ describe('onlyFor', () => {
     // that carries no `values` at all.
     expect(onlyFor(formAnswer, 'tanstack-form')).toBeUndefined();
     expect(onlyFor(formAnswer, 'formik')).toBeUndefined();
-    expect(onlyFor(storeAnswer, 'true')).toBeUndefined();
+    expect(onlyFor(nodeVersionAnswer, '26.1.0')).toBeUndefined();
   });
 });

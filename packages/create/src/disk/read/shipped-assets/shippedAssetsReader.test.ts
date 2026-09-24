@@ -24,6 +24,15 @@ describe('shippedAssetsReader', () => {
     expect(await shippedAssetsReader({ text: 'export default {};' })).toBe('export default {};');
   });
 
+  // A merge composes against what is on disk, so the current text is its whole input.
+  it('hands a merge the current text and returns what it composes', async () => {
+    expect(await shippedAssetsReader({
+      merge: (current) => {
+        return `${current ?? 'nothing'} merged`;
+      },
+    }, 'on disk')).toBe('on disk merged');
+  });
+
   it('reads and joins copied sources in the order they are listed', async () => {
     const joined = await shippedAssetsReader({
       sources: [

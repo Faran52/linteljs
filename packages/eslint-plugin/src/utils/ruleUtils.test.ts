@@ -1,4 +1,5 @@
 import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
+import { Linter } from 'eslint';
 import {
   describe,
   expect,
@@ -8,8 +9,16 @@ import {
 import {
   isDirective,
   mustFind,
+  optionsOf,
   rangeOf,
+  rebuildLosesComments,
 } from './ruleUtils.ts';
+
+import type { Rule } from 'eslint';
+
+interface ProbeOptions {
+  max: number;
+}
 
 // Both take the shape rather than RuleNode, so a degenerate argument here needs no cast.
 const parsed = sourceCodeFrom([
@@ -72,5 +81,46 @@ describe('rangeOf', () => {
     expect(() => {
       return rangeOf({});
     }).toThrow(/@linteljs\/eslint-plugin: a parsed node carries no range/);
+  });
+});
+
+describe('optionsOf', () => {
+  // What a rule reads its first option through, from a real run so the context is ESLint's own.
+  const optionsFrom = (entry: Linter.RuleEntry): Partial<ProbeOptions> => {
+    let read: Partial<ProbeOptions> = {};
+    const capture: Rule.RuleModule = {
+      meta: { schema: false },
+      create: (context) => {
+        read = optionsOf<ProbeOptions>(context);
+
+        return {};
+      },
+    };
+
+    new Linter().verify('', [{
+      plugins: { probe: { rules: { capture } } },
+      rules: { 'probe/capture': entry },
+    }]);
+
+    return read;
+  };
+
+  it('answers the first option a rule was configured with', () => {
+    expect(optionsFrom(['error', { max: 2 }])).toEqual({ max: 2 });
+  });
+
+  // An unconfigured rule reads every option as its default, so it gets an empty object rather than undefined.
+  it('answers an empty object where none was given', () => {
+    expect(optionsFrom('error')).toEqual({});
+  });
+});
+
+describe('rebuildLosesComments', () => {
+  it('answers whether a comment sits inside the node a fixer would rebuild', () => {
+    const commented = sourceCodeFrom('const a = { /* kept */ b: 1 };\n');
+    const bare = sourceCodeFrom('const a = { b: 1 };\n');
+
+    expect(rebuildLosesComments(commented.sourceCode, commented.firstNode('ObjectExpression'))).toBe(true);
+    expect(rebuildLosesComments(bare.sourceCode, bare.firstNode('ObjectExpression'))).toBe(false);
   });
 });

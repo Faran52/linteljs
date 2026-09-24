@@ -15,7 +15,7 @@ import {
 
 import { buildScripts } from '../utils/scriptUtils';
 
-import { emitCiWorkflow } from './ciWorkflowEmitter';
+import { ciWorkflowEmitter, emitCiWorkflow } from './ciWorkflowEmitter';
 
 interface AnswerOverrides {
   packageManager?: PackageManager;
@@ -97,4 +97,14 @@ it('installs a classic project with the flag 1.x understands', () => {
   expect(workflow).toContain('yarn install --frozen-lockfile');
   expect(workflow).not.toContain('--immutable');
   expect(workflow).toContain('cache: yarn');
+});
+
+describe('ciWorkflowEmitter', () => {
+  it('writes the emitted text to .github/workflows/ci.yml at the standard stage', () => {
+    expect(ciWorkflowEmitter(answersFor({}))).toEqual([{
+      stage: 'standard',
+      target: '.github/workflows/ci.yml',
+      content: { text: emitCiWorkflow(answersFor({})) },
+    }]);
+  });
 });

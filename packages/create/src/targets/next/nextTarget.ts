@@ -7,6 +7,11 @@ import {
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
 import {
+  hasForm,
+  hasStore,
+  pressable,
+} from '../utils/gateUtils';
+import {
   accessorFiles,
   accessorTests,
   mockFiles,
@@ -21,9 +26,6 @@ import {
   ACCESSORS,
   ALWAYS,
   FROM_REACT,
-  hasForm,
-  hasStore,
-  pressable,
   SHARED,
 } from './constants';
 

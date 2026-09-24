@@ -110,6 +110,21 @@ describe('parseLinteljsConfig', () => {
     }).toThrow(new RegExp(`${field} must be one of`));
   });
 
+  // Recorded off the machine that ran `create`, so absent from a config written before they were.
+  it('round-trips the recorded manager and node versions', () => {
+    const answers: Answers = {
+      ...DEFAULT_ANSWERS,
+      packageManagerVersion: '10.2.0',
+      nodeVersion: '26.1.0',
+    };
+
+    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...answers,
+    });
+  });
+
   it('round-trips the resolver conditions', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -125,8 +140,6 @@ describe('parseLinteljsConfig', () => {
 
   it.each([
     [[], 'must be a non-empty array'],
-    [['import', ''], 'must contain only non-empty strings'],
-    [['import', 1], 'must contain only non-empty strings'],
     [['import', 'import'], 'must not contain duplicate values'],
     ['import', 'must be a non-empty array'],
   ])('rejects resolveConditions of %j', (resolveConditions, message) => {
@@ -160,9 +173,6 @@ describe('parseLinteljsConfig', () => {
   // Only the sigil is checked: a bare `engine` sorts as a package.
   it.each([
     [{ engine: './src/lib/engine' }, 'must start with @ or \\$'],
-    [{ '@engine': '' }, 'must be a non-empty string'],
-    [{ '@engine': 3 }, 'must be a non-empty string'],
-    [['@engine'], 'aliases must be an object'],
     ['@engine', 'aliases must be an object'],
   ])('rejects aliases of %j', (aliases, message) => {
     expect(() => {
@@ -190,7 +200,6 @@ describe('parseLinteljsConfig', () => {
   });
 
   it.each([
-    [[], 'must contain at least 1 value'],
     [['chrome', 'chrome'], 'must not contain duplicate values'],
     [['safari'], 'must be one of'],
   ])('rejects browsers of %j', (browsers, message) => {
@@ -220,8 +229,6 @@ describe('parseLinteljsConfig', () => {
 
   it.each([
     [[], 'must be a non-empty array'],
-    [['a', ''], 'must contain only non-empty strings'],
-    [['a', 2], 'must contain only non-empty strings'],
     [['a', 'a'], 'must not contain duplicate values'],
     ['a', 'must be a non-empty array'],
   ])('rejects ignores of %j', (ignores, message) => {

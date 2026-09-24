@@ -66,6 +66,14 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).toContain(skipped);
   });
 
+  // `String.replace` reads `$&` and `$'` in a string replacement as the match and the text after it.
+  it('carries a project block verbatim when its text reads as a replacement pattern', () => {
+    const skipped = "const PROJECT_SKIPPED: string[] = ['$& and $\' are literal'];";
+    const current = withBlocks(skipped, 'const PROJECT_BANNED: Banned[] = [];');
+
+    expect(mergeChecker(SHIPPED, current)).toContain(skipped);
+  });
+
   it('leaves the shipped block alone when the project never declared one', () => {
     const current = 'const BASE_SKIPPED = [];\n\nexport const run = () => {};';
 
@@ -80,5 +88,12 @@ describe('mergeChecker', () => {
     );
 
     expect(mergeChecker(shipped, current)).toBe(shipped);
+  });
+
+  // An edit that broke the block leaves nothing to lift, so the shipped one stands rather than half a list.
+  it('leaves the shipped block alone when the project left one unterminated', () => {
+    const current = "const PROJECT_BANNED: Banned[] = [\n  { pattern: 'TODO' },\n";
+
+    expect(mergeChecker(SHIPPED, current)).toBe(SHIPPED);
   });
 });

@@ -193,6 +193,14 @@ describe('viteConfigEmitter', () => {
       return [target, preserve];
     })).toEqual([['vite.config.ts', true]]);
   });
+
+  // Next owns its bundler, so there is no vite config for this CLI to write.
+  it('writes nothing for a target whose build is not vite', () => {
+    expect(viteConfigEmitter({
+      ...DEFAULT_ANSWERS,
+      target: 'next',
+    })).toEqual([]);
+  });
 });
 
 // Hot reloading leaves one branch no test can reach in every component.

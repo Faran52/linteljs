@@ -1,3 +1,4 @@
+import { walkStarters } from '@mocks/starterWalk';
 import {
   describe,
   expect,
@@ -214,5 +215,21 @@ describe('the host slots', () => {
   it('declares both, so the questionnaire asks them', () => {
     expect(recordFor().hostsBrowser).toBe(true);
     expect(recordFor().hostsFramework).toBe(true);
+  });
+});
+
+/*
+ * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
+ * one destination, and a gate that never opens, or never shuts, decides nothing.
+ */
+describe('the starter gates', () => {
+  const walked = walkStarters(webextensionTarget, 'webextension');
+
+  it('write at most one spelling of each destination under any answer set', () => {
+    expect(walked.twice).toEqual([]);
+  });
+
+  it('each open under some answer set and shut under another', () => {
+    expect(walked.fixed).toEqual([]);
   });
 });

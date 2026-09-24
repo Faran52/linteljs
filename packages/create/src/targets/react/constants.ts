@@ -1,4 +1,3 @@
-import type { Answers } from '@answers/registry';
 import type { Router } from '@answers/target/router/routerAnswer';
 import type { AccessorNames } from '../utils/mockUtils';
 
@@ -33,25 +32,6 @@ export const SHARED: readonly string[] = [
   'src/styles/tokens.css',
   'src/styles/base.css',
 ];
-
-/**
- * A file varies by one answer and no more, which is what keeps this a sum rather than a product: the counter
- * markup is the same for all three stores, so `HomePage` varies by whether there is a store and the store module
- * varies by which one. A file that would vary by two answers is split until each half varies by one.
- */
-// Framework mode moves the build, the typecheck, the vite plugin and the tsconfig, which is what makes the record
-// a function of the answers rather than a constant.
-export const isFrameworkMode = (answers: Answers): boolean => {
-  return answers.router === 'react-router-framework';
-};
-
-export const hasStore = (answers: Answers): boolean => {
-  return answers.store !== undefined;
-};
-
-export const hasRouter = (answers: Answers): boolean => {
-  return answers.router !== undefined;
-};
 
 /*
  * `src/lib/hooks/` and `use*`, with a `.ts` suite: a hook is not a component, and a camelCase `.tsx` is refused by

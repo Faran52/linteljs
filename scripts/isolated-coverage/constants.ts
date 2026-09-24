@@ -13,3 +13,6 @@ export const THRESHOLD_OFF = 0;
 
 // ponytail: a module every suite imports is covered by all of them, and seventy names say no more than ten.
 export const COVERED_BY_SHOWN = 10;
+
+// A single suite runs in seconds; ten minutes is a hang, not a slow file.
+export const TIMEOUT_SECONDS = 600;

@@ -19,11 +19,16 @@ import { componentNaming } from '../utils/namingUtils';
 import {
   ACCESSORS,
   ALWAYS,
-  isTailwind,
   SHARED,
 } from './constants';
 
+import type { Answers } from '@answers/registry';
 import type { StarterFile, TargetRecord } from '../types';
+
+// Metro has no Tailwind pipeline of its own, so all three ship only with the answer that brings NativeWind.
+const isTailwind = (answers: Answers): boolean => {
+  return answers.styling === 'tailwind';
+};
 
 // `framework: 'react'` rather than its own layer: `eslint-plugin-react-native` caps at `eslint ^9` and
 // `eslint-config-expo` bundles plugins that collide with `base()`.

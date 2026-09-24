@@ -51,6 +51,15 @@ describe('parseCliArgs', () => {
       .toEqual({ surfaces: ['popup', 'background'] });
   });
 
+  // A single flag passes through as given, for the config parser to validate rather than this one.
+  it('carries a single answer flag under its answer key, unsplit', () => {
+    expect(parseCliArgs(['--target', 'svelte', '--type-safety', 'relaxed']).answers)
+      .toEqual({
+        target: 'svelte',
+        typeSafety: 'relaxed',
+      });
+  });
+
   it('keeps extra positional arguments for main to reject', () => {
     expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(['extra']);
     expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(['extra']);

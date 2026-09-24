@@ -58,6 +58,19 @@ describe('answerRows', () => {
     ]);
   });
 
+  // An empty list is an answer of nothing, so it prints no row rather than an empty value.
+  it('prints a list answer joined, and no row for an empty one', () => {
+    const label = `label: '${ANSWERS.agents.prompt}'`;
+
+    expect(answerRows(answersFor({ agents: ['codex', 'cursor'] }), ANSWERS)).toContainEqual([
+      label,
+      "value: 'codex, cursor'",
+    ]);
+    expect(answerRows(answersFor({ agents: [] }), ANSWERS).map(([row]) => {
+      return row;
+    })).not.toContain(label);
+  });
+
   // `aliases` is a map and carries no prompt, so a page never has to render one.
   it('prints nothing for an answer no prompt asks', () => {
     const rows = answerRows(answersFor({ aliases: { '@app/*': './src/*' } }), ANSWERS);

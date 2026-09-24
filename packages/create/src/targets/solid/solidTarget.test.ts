@@ -1,3 +1,4 @@
+import { walkStarters } from '@mocks/starterWalk';
 import {
   describe,
   expect,
@@ -26,5 +27,23 @@ describe('solidTarget', () => {
   // Solid has a file-based router, so a route directory may be `[id]` or `(group)`.
   it('admits the route segments a file-based router owns', () => {
     expect(solidTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
+  });
+});
+
+/*
+ * Every `when` on the record, over every answer set it can see. `starterSourceEmitter` refuses two spellings of
+ * one destination, and a gate that never opens, or never shuts, decides nothing.
+ */
+describe('the starter gates', () => {
+  const walked = walkStarters(() => {
+    return solidTarget;
+  }, 'solid');
+
+  it('write at most one spelling of each destination under any answer set', () => {
+    expect(walked.twice).toEqual([]);
+  });
+
+  it('each open under some answer set and shut under another', () => {
+    expect(walked.fixed).toEqual([]);
   });
 });

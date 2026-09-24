@@ -19,7 +19,7 @@ import {
 } from '@answers';
 import { FOLDER_ROUTED } from '@targets/constants';
 
-import { emitEslintConfig } from './eslintConfigEmitter';
+import { emitEslintConfig, eslintConfigEmitter } from './eslintConfigEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -186,6 +186,16 @@ describe('emitEslintConfig', () => {
     })))
       .toContain("libraries: ['tanstack-query', 'tailwind'],");
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
+  });
+
+  // Each layer is its one answer value: the other value of the same answer installs a package with no layer behind it.
+  it('asks for no layer for the other value of the answer that gates it', () => {
+    expect(emitEslintConfig(answersFor({
+      libraries: [],
+      data: 'rtk-query',
+      styling: 'stylex',
+      router: 'react-router',
+    }))).not.toContain('libraries:');
   });
 
   // The scaffolder's own path lets the plugin read the project's theme rather than Tailwind's defaults.
@@ -366,5 +376,15 @@ describe('the router', () => {
 
     expect(config).not.toContain('tanstack-router');
     expect(config).not.toContain('routeTree');
+  });
+});
+
+describe('eslintConfigEmitter', () => {
+  it('writes the emitted text to eslint.config.js at the lint stage', () => {
+    expect(eslintConfigEmitter(answersFor({}))).toEqual([{
+      stage: 'lint',
+      target: 'eslint.config.js',
+      content: { text: emitEslintConfig(answersFor({})) },
+    }]);
   });
 });

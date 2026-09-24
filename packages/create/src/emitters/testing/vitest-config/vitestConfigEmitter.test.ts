@@ -152,6 +152,13 @@ describe('vitestConfigEmitter', () => {
       return [target, preserve];
     })).toEqual([['vitest.config.ts', true]]);
   });
+
+  it('writes nothing when testing is declined', () => {
+    expect(vitestConfigEmitter({
+      ...DEFAULT_ANSWERS,
+      testing: 'none',
+    }, EMPTY_PROJECT)).toEqual([]);
+  });
 });
 
 // The 100% thresholds are measured over exactly the code somebody wrote.

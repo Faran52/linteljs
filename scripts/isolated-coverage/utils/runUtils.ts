@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import process from 'node:process';
 
 import { run } from '../../utils/processUtils.ts';
 import {
@@ -13,6 +14,9 @@ import {
 import { isCoverageReport } from './coverageUtils.ts';
 
 import type { CoverageReport } from './coverageUtils.ts';
+
+// A run that wrote a report, one that wrote none, or one killed at the deadline.
+export type RunOutcome = CoverageReport | 'failed' | 'timed out';
 
 interface ListedTest {
   file: string;
@@ -48,10 +52,10 @@ export const coverageRun = async (
   test: string,
   reportsDirectory: string,
   thresholdKeys: string[],
-): Promise<CoverageReport | undefined> => {
-  const child = spawn('pnpm', [
-    'exec',
-    'vitest',
+  timeoutMs: number,
+): Promise<RunOutcome> => {
+  // The bin itself rather than `pnpm exec`, which starts vitest in a process group the deadline cannot reach.
+  const child = spawn(join(cwd, 'node_modules', '.bin', 'vitest'), [
     'run',
     test,
     '--coverage.enabled',
@@ -65,16 +69,30 @@ export const coverageRun = async (
   ], {
     cwd,
     stdio: 'ignore',
+    // Its own process group, so the deadline kills vitest's workers with it rather than orphaning them.
+    detached: true,
   });
+  const deadline = AbortSignal.timeout(timeoutMs);
+  const kill = (): void => {
+    if (child.pid !== undefined) {
+      process.kill(-child.pid, 'SIGKILL');
+    }
+  };
 
+  deadline.addEventListener('abort', kill, { once: true });
   await once(child, 'close');
+  deadline.removeEventListener('abort', kill);
+
+  if (deadline.aborted) {
+    return 'timed out';
+  }
 
   try {
     const report: unknown = JSON.parse(await readFile(join(reportsDirectory, REPORT_FILE), 'utf8'));
 
-    return isCoverageReport(report) ? report : undefined;
+    return isCoverageReport(report) ? report : 'failed';
   }
   catch {
-    return undefined;
+    return 'failed';
   }
 };

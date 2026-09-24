@@ -8,6 +8,7 @@ import {
   copied,
   emitted,
   joined,
+  merged,
 } from './artifactUtils';
 
 describe('emitted', () => {
@@ -50,6 +51,21 @@ describe('joined', () => {
           'fragments/test-setup/setupTests.router.ts',
         ],
       },
+    });
+  });
+});
+
+describe('merged', () => {
+  // The merge is carried rather than run: what is on disk is only known when the artifact is written.
+  it('carries the given stage and target with the merge as its content', () => {
+    const merge = (current: string | null): string => {
+      return current ?? '';
+    };
+
+    expect(merged('package', 'package.json', merge)).toEqual({
+      stage: 'package',
+      target: 'package.json',
+      content: { merge },
     });
   });
 });

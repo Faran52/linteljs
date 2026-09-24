@@ -1,4 +1,5 @@
 import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
+import tseslint from 'typescript-eslint';
 import {
   describe,
   expect,
@@ -14,15 +15,12 @@ interface ParsedImport {
   node: ImportNode;
 }
 
-// The `importKind === 'type'` branch cannot be reached from plain JS fixtures here; it's covered via tsRuleTester in
-// index.test.ts.
-
 const isImportNode = (node: RuleNode): node is ImportNode => {
   return node.type === 'ImportDeclaration';
 };
 
-const importNodeFrom = (code: string): ParsedImport => {
-  const { sourceCode, firstNode } = sourceCodeFrom(code);
+const importNodeFrom = (code: string, typescript = false): ParsedImport => {
+  const { sourceCode, firstNode } = sourceCodeFrom(code, typescript ? tseslint.parser : undefined);
   const node = firstNode('ImportDeclaration');
 
   if (!isImportNode(node)) {
@@ -96,6 +94,13 @@ describe('writeImport', () => {
     const { sourceCode, node } = importNodeFrom("import 'mod';");
 
     expect(writeImport(sourceCode, node, null, '\n')).toBe("import  from 'mod';");
+  });
+
+  // `import type` is TypeScript's alone, so the keyword survives only where the parser read one.
+  it('keeps the type keyword on a type-only import', () => {
+    const { sourceCode, node } = importNodeFrom("import type {\n  Alpha,\n  Bravo\n} from 'mod';", true);
+
+    expect(writeImport(sourceCode, node, null, '\n')).toBe("import type { Alpha, Bravo } from 'mod';");
   });
 
   // An import attribute clause sits after the module specifier, so it needs an explicit slice to survive the rebuild.

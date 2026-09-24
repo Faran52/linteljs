@@ -1,4 +1,3 @@
-import type { Answers } from '@answers/registry';
 import type { AccessorNames } from '../utils/mockUtils';
 
 /**
@@ -25,11 +24,6 @@ export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/routes.ts',
 ];
-
-// Metro has no Tailwind pipeline of its own, so all three ship only with the answer that brings NativeWind.
-export const isTailwind = (answers: Answers): boolean => {
-  return answers.styling === 'tailwind';
-};
 
 // React Native takes React's hooks, at the `src/hooks/` its own record already names.
 export const ACCESSORS: AccessorNames = {

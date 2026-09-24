@@ -29,6 +29,9 @@ describe('readAnswer', () => {
     expect(() => {
       return readAnswer(ANSWERS.agents, ['gemini']);
     }).toThrow('agents must be one of: claude-code, codex, copilot, cursor');
+    expect(() => {
+      return readAnswer(ANSWERS.agents, 'codex');
+    }).toThrow('agents must be an array');
   });
 
   it('reads an optional multi', () => {
@@ -37,6 +40,9 @@ describe('readAnswer', () => {
     expect(() => {
       return readAnswer(ANSWERS.surfaces, ['sidebar']);
     }).toThrow('surfaces must be one of: popup, background, devtools-panel');
+    expect(() => {
+      return readAnswer(ANSWERS.browsers, []);
+    }).toThrow('browsers must contain at least 1 value');
   });
 
   it('reads a list', () => {
@@ -45,6 +51,12 @@ describe('readAnswer', () => {
     expect(() => {
       return readAnswer(ANSWERS.ignores, []);
     }).toThrow('ignores must be a non-empty array');
+    expect(() => {
+      return readAnswer(ANSWERS.ignores, ['a', '']);
+    }).toThrow('ignores must contain only non-empty strings');
+    expect(() => {
+      return readAnswer(ANSWERS.ignores, ['a', 2]);
+    }).toThrow('ignores must contain only non-empty strings');
   });
 
   it('reads a text', () => {
@@ -64,6 +76,15 @@ describe('readAnswer', () => {
     expect(() => {
       return readAnswer(ANSWERS.aliases, { 'app/*': 'src/*' });
     }).toThrow('aliases key must start with @ or $: app/*');
+    expect(() => {
+      return readAnswer(ANSWERS.aliases, ['@app/*']);
+    }).toThrow('aliases must be an object');
+    expect(() => {
+      return readAnswer(ANSWERS.aliases, { '@app/*': '' });
+    }).toThrow('aliases.@app/* must be a non-empty string');
+    expect(() => {
+      return readAnswer(ANSWERS.aliases, { '@app/*': 3 });
+    }).toThrow('aliases.@app/* must be a non-empty string');
   });
 });
 

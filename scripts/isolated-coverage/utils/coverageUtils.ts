@@ -54,6 +54,11 @@ export const entriesOf = (file: FileCoverage): string[] => {
   ];
 };
 
+// A table: statements and nothing else, so there is no behaviour for a suite of its own to hold.
+export const isData = (file: FileCoverage): boolean => {
+  return Object.keys(file.fnMap).length === 0 && Object.keys(file.branchMap).length === 0;
+};
+
 export const hitsOf = (file: FileCoverage): Set<string> => {
   const counts = [
     ...Object.entries(file.s).map(([id, count]) => {

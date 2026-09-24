@@ -8,7 +8,7 @@ import { valuesOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
-import { emitStylelintConfig } from './stylelintConfigEmitter';
+import { emitStylelintConfig, stylelintConfigEmitter } from './stylelintConfigEmitter';
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
@@ -117,5 +117,15 @@ describe('the tailwind nesting carve-out', () => {
       libraries: [],
     }))
       .not.toContain('nesting-selector-no-missing-scoping-root');
+  });
+});
+
+describe('stylelintConfigEmitter', () => {
+  it('writes the emitted text to stylelint.config.js at the lint stage', () => {
+    expect(stylelintConfigEmitter(DEFAULT_ANSWERS)).toEqual([{
+      stage: 'lint',
+      target: 'stylelint.config.js',
+      content: { text: emitStylelintConfig(DEFAULT_ANSWERS) },
+    }]);
   });
 });

@@ -1,4 +1,8 @@
-import { type Artifact, type ComposeConfigOptions } from '@config/types';
+import {
+  type Artifact,
+  type ComposeConfigOptions,
+  type LibraryLayer,
+} from '@config/types';
 
 import { type Answers } from '@answers';
 import { targetFor } from '@targets';
@@ -8,7 +12,6 @@ import { buildAliases } from '../utils/aliasUtils';
 
 import {
   BASE_IGNORES,
-  LAYER_ANSWERS,
   LIBRARY_LAYERS,
   MAX_LINE,
   PACKAGE,
@@ -16,6 +19,20 @@ import {
 
 // Keyed by `keyof ComposeConfigOptions`, so a renamed option fails to compile here rather than in a project.
 type OptionRow = [keyof ComposeConfigOptions, string];
+
+// Which answer turns each layer on. None of the three is a `library` any more: the router, the styling system and
+// the data layer each became a field of its own, so the gate is the answer that installs the package behind it.
+const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
+  'tanstack-query': (answers) => {
+    return answers.data === 'tanstack-query';
+  },
+  'tanstack-router': (answers) => {
+    return answers.router === 'tanstack-router';
+  },
+  'tailwind': (answers) => {
+    return answers.styling === 'tailwind';
+  },
+};
 
 // `String.raw` for a value carrying a backslash, which an ordinary literal parses back as an escape.
 const quote = (value: string): string => {

@@ -292,6 +292,22 @@ describe('spliceOntoNewline', () => {
   it('yields nothing when only the first anchor carries a range', () => {
     expect([...spliceOntoNewline(fixer, { range: [0, 1] }, null, '  ', '\n')]).toEqual([]);
   });
+
+  it('replaces the gap between two anchors on one line with a break and the indent', () => {
+    const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
+    const array = firstNode('ArrayExpression');
+
+    expect([...spliceOntoNewline(
+      fixer,
+      sourceCode.getFirstToken(array),
+      sourceCode.getLastToken(array),
+      '  ',
+      '\n',
+    )]).toEqual([{
+      range: [15, 23],
+      text: '\n  ',
+    }]);
+  });
 });
 
 describe('fixCommaToNewline', () => {
@@ -304,6 +320,17 @@ describe('fixCommaToNewline', () => {
     );
 
     expect(fixCommaToNewline(sourceCode, captureFixer(), second)?.text).toBe('\n');
+  });
+
+  // Reflowing over a comment in the gap would delete it, so there is no fix to offer.
+  it('offers no fix when a comment sits between the comma and the element', () => {
+    const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, /* kept */ two];\n');
+    const second = mustFind(
+      sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
+      'the token before the closing bracket',
+    );
+
+    expect(fixCommaToNewline(sourceCode, captureFixer(), second)).toBeNull();
   });
 });
 

@@ -154,4 +154,11 @@ describe('astroConfigEmitter', () => {
       return [target, preserve];
     })).toEqual([['astro.config.mjs', true]]);
   });
+
+  it('writes nothing for a target that is not astro', () => {
+    expect(astroConfigEmitter({
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+    })).toEqual([]);
+  });
 });

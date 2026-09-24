@@ -412,6 +412,12 @@ describe('buildDependencies', () => {
 });
 
 describe('buildDevDependencies', () => {
+  // A project that declined tests installs no runner, since nothing it holds would run one.
+  it('installs the test runner only where testing was answered', () => {
+    expect(buildDevDependencies(answersFor({}))).toHaveProperty('vitest');
+    expect(buildDevDependencies(answersFor({ testing: 'none' }))).not.toHaveProperty('vitest');
+  });
+
   /*
    * The emitted vite config imports `@stylexjs/unplugin/vite`, so a project that answers StyleX and does not
    * install it fails its own lint on an unresolved import before it fails its build on uncompiled styles.
@@ -538,6 +544,16 @@ describe('the router', () => {
 });
 
 describe('packageJsonEmitter', () => {
+  // With nothing on disk the file is born, and the project name is the one thing only the caller knows.
+  it('names a package.json it writes from nothing after the project', () => {
+    const [artifact] = packageJsonEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
+    const born = parsePackageJson(
+      artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '{}',
+    );
+
+    expect(born.name).toBe('demo-app');
+  });
+
   it('leaves the dependencies and scripts it does not own intact in the file on disk', () => {
     const [artifact] = packageJsonEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');
     // `date-fns` is a dependency this CLI neither pins nor supersedes, which is what a project's own looks like.

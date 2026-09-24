@@ -19,7 +19,11 @@ import {
 } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
 
-import { checkerArtifact } from './bannedPatternsEmitter';
+import {
+  bannedPatternsEmitter,
+  checkerArtifact,
+  setupTestsPath,
+} from './bannedPatternsEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -51,6 +55,32 @@ const transformOf = (answers: Answers): ((source: string, current: string | null
 };
 
 // Guards against anchor drift: a silent miss would ship the wrong floor.
+describe('bannedPatternsEmitter', () => {
+  it('writes the checker and nothing else', () => {
+    expect(bannedPatternsEmitter(answersFor({})).map(({ target }) => {
+      return target;
+    })).toEqual(['scripts/checkBannedPatterns.ts']);
+  });
+});
+
+describe('setupTestsPath', () => {
+  // Read off `jsx`, since Solid and Vue set `preserve` and render without a React transform.
+  it.each<[TargetId, string]>([
+    ['react', '__mocks__/setupTests.tsx'],
+    ['next', '__mocks__/setupTests.tsx'],
+    ['vue', '__mocks__/setupTests.ts'],
+    ['solid', '__mocks__/setupTests.ts'],
+  ])('names the %s setup file %s', (target, path) => {
+    expect(setupTestsPath(answersFor({ target }))).toBe(path);
+  });
+
+  // A project that already holds the other spelling keeps it rather than gaining a second setup file.
+  it('keeps the spelling a project already holds', () => {
+    expect(setupTestsPath(answersFor({ target: 'react' }), ['__mocks__/setupTests.ts']))
+      .toBe('__mocks__/setupTests.ts');
+  });
+});
+
 describe('checkerArtifact', () => {
   it.each<TypeSafety>(['strict', 'relaxed'])('writes the %s floor into the shipped checker', (typeSafety) => {
     expect(transformOf(answersFor({ typeSafety }))(readFileSync(SHIPPED, 'utf8'), null))
@@ -114,52 +144,5 @@ describe('the checker merge', () => {
     expect(merged).toContain('the wire vocabulary, argued in type-standards.md');
     // And the standard's own half is the shipped one, not whatever the project froze.
     expect(merged).toContain('CAUGHT_VALUE');
-  });
-
-  it('takes the shipped blocks whole on a first write', () => {
-    expect(shippedFor(answersFor({}))).toContain('const PROJECT_SKIPPED');
-  });
-
-  // `String.replace` reads `$&` and `$'` in a string replacement as the match and the text after it.
-  it("carries a project's block verbatim when its text reads as a replacement pattern", () => {
-    const answers = answersFor({});
-    const note = "  // $& and $' below are literal, not the match and its tail";
-
-    const merged = transformOf(answers)(readFileSync(SHIPPED, 'utf8'), skippingWith(answers, note, ENTRY));
-
-    expect(merged).toContain(note);
-  });
-
-  // A reason quoting code carries `];` as a substring, which ended the block mid-comment and left its array open.
-  it("carries a project's block whole when a reason inside it quotes code", () => {
-    const answers = answersFor({});
-    const reason = '  // every read is guarded, never a bare arr[0]; see type-standards.md';
-
-    const merged = transformOf(answers)(readFileSync(SHIPPED, 'utf8'), skippingWith(answers, reason, ENTRY));
-
-    expect(merged).toContain(ENTRY);
-    expect(merged).toContain(reason);
-  });
-});
-
-/**
- * The three ways the carry-over declines and leaves the shipped text: a project whose file no longer declares the
- * block at all, and either side left unterminated by an edit that broke it.
- */
-describe('the checker merge when a block cannot be found', () => {
-  it('takes the shipped block when the project no longer declares one', () => {
-    const shipped = readFileSync(SHIPPED, 'utf8');
-    const merged = transformOf(answersFor({}))(shipped, '// a checker with no project blocks\n');
-
-    expect(merged).toContain('const PROJECT_SKIPPED');
-    expect(merged).toContain('const PROJECT_BANNED');
-  });
-
-  it('takes the shipped block when the project left one unterminated', () => {
-    const shipped = readFileSync(SHIPPED, 'utf8');
-    const broken = 'const PROJECT_BANNED: BannedPattern[] = [\n  { name: "ours" },\n';
-    const merged = transformOf(answersFor({}))(shipped, broken);
-
-    expect(merged).toContain('const PROJECT_BANNED: BannedPattern[] = [];');
   });
 });

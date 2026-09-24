@@ -89,6 +89,20 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       languageOptions: { sourceType: 'script' },
     },
 
+    // Annex B: a sloppy-mode declaration may stand as an if or else body, or under a label, where a `const` may not.
+    {
+      code: 'if (flag) function helper() {\n  return 1;\n}',
+      languageOptions: { sourceType: 'script' },
+    },
+    {
+      code: 'if (flag) run();\nelse function helper() {\n  return 1;\n}',
+      languageOptions: { sourceType: 'script' },
+    },
+    {
+      code: 'outer: function helper() {\n  return 1;\n}',
+      languageOptions: { sourceType: 'script' },
+    },
+
     // A `var`-scoped name at the top level of a script may bind twice; a module binds lexically,
     // where this would already be a parse error.
     {
