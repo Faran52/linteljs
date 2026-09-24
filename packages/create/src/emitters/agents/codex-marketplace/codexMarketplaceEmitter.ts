@@ -1,9 +1,9 @@
-import { type Artifact } from '@config/types';
+import { type Artifact } from '#config/types';
 
 import { copied, emitted } from '../../utils/artifactUtils';
 import { adapterArtifact } from '../utils/adapterUtils';
 
-import type { Answers, Plugin } from '@answers';
+import type { Answers, Plugin } from '#answers';
 
 interface MarketplaceSource {
   source: 'git-subdir' | 'local' | 'url';

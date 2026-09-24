@@ -1,11 +1,11 @@
-import { type Artifact } from '@config/types';
+import { type Artifact } from '#config/types';
 
 import { copied, merged } from '../../utils/artifactUtils';
 import { adapterArtifact } from '../utils/adapterUtils';
 
 import { mergeClaudeSettings } from './utils/mergeUtils';
 
-import type { Answers, Plugin } from '@answers';
+import type { Answers, Plugin } from '#answers';
 
 export const emitClaudeSettings = (plugins: Plugin[]): string => {
   const usesOfficialMarketplace = plugins.includes('context7')

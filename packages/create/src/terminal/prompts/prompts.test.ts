@@ -4,11 +4,6 @@ import {
   select,
 } from '@inquirer/prompts';
 import {
-  CANCEL,
-  type Recorded,
-  scripted,
-} from '@mocks/scriptedPrompter';
-import {
   beforeEach,
   describe,
   expect,
@@ -16,7 +11,7 @@ import {
   vi,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '#answers';
 
 import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from './constants';
 import {
@@ -27,6 +22,12 @@ import {
   type Prompter,
   RunCancelled,
 } from './prompts';
+
+import {
+  CANCEL,
+  type Recorded,
+  scripted,
+} from '#mocks/scriptedPrompter';
 
 interface AskOutcome {
   result: Asked;

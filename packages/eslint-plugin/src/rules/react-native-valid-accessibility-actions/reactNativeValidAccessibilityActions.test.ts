@@ -1,6 +1,6 @@
-import { tsxRuleTester } from '@mocks/ruleTesters';
-
 import { reactNativeValidAccessibilityActions } from './reactNativeValidAccessibilityActions.ts';
+
+import { tsxRuleTester } from '#mocks/ruleTesters';
 
 tsxRuleTester.run('react-native-valid-accessibility-actions', reactNativeValidAccessibilityActions, {
   valid: [

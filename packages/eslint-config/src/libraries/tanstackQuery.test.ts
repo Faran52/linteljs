@@ -1,5 +1,3 @@
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
-import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -9,6 +7,9 @@ import {
 import react from '../frameworks/react';
 
 import tanstackQuery from './tanstackQuery';
+
+import { ruleIdsFor, startsWith } from '#mocks/lintText';
+import { layerWithoutConfig } from '#mocks/presets';
 
 describe('tanstackQuery', () => {
   it('reports a query key missing a dependency', async () => {

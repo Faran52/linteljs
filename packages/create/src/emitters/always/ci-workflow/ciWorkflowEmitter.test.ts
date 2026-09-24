@@ -1,4 +1,3 @@
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
@@ -11,11 +10,13 @@ import {
   type PackageManager,
   type Styling,
   type TargetId,
-} from '@answers';
+} from '#answers';
 
 import { buildScripts } from '../utils/scriptUtils';
 
 import { emitCiWorkflow } from './ciWorkflowEmitter';
+
+import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 interface AnswerOverrides {
   packageManager?: PackageManager;

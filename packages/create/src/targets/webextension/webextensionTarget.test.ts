@@ -9,7 +9,7 @@ import {
   type Browser,
   DEFAULT_ANSWERS,
   type HostedFramework,
-} from '@answers';
+} from '#answers';
 
 import { webextensionTarget } from './webextensionTarget';
 

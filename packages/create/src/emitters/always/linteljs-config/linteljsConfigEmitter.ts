@@ -1,11 +1,10 @@
-import { type Artifact } from '@config/types';
-
 import {
   type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
-} from '@answers';
+} from '#answers';
+import { type Artifact } from '#config/types';
 
 import { emitted } from '../../utils/artifactUtils';
 

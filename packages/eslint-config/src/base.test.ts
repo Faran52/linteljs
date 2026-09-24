@@ -9,14 +9,6 @@ import { join } from 'node:path';
 import process from 'node:process';
 
 import { rules as lintelRules } from '@linteljs/eslint-plugin';
-import {
-  enabledRuleIdsFor,
-  ownBlockNames,
-  ruleIdsFor,
-  ruleIdsForFile,
-  ruleNamesFor,
-} from '@mocks/lintText';
-import { layerWithout, layerWithoutConfig } from '@mocks/presets';
 import importX from 'eslint-plugin-import-x';
 import tseslint from 'typescript-eslint';
 import {
@@ -30,6 +22,15 @@ import base from './base';
 
 import type sonarjs from 'eslint-plugin-sonarjs';
 import type { Layer } from './types';
+
+import {
+  enabledRuleIdsFor,
+  ownBlockNames,
+  ruleIdsFor,
+  ruleIdsForFile,
+  ruleNamesFor,
+} from '#mocks/lintText';
+import { layerWithout, layerWithoutConfig } from '#mocks/presets';
 
 interface FlatConfigsBearing {
   flatConfigs: object;

@@ -1,11 +1,4 @@
 import {
-  ownBlockNames,
-  ruleIdsFor,
-  sortsAheadOfPackages,
-  startsWith,
-} from '@mocks/lintText';
-import { layerWithoutConfig } from '@mocks/presets';
-import {
   describe,
   expect,
   it,
@@ -14,6 +7,14 @@ import {
 import base from '../base';
 
 import solid, { solidGroup } from './solid';
+
+import {
+  ownBlockNames,
+  ruleIdsFor,
+  sortsAheadOfPackages,
+  startsWith,
+} from '#mocks/lintText';
+import { layerWithoutConfig } from '#mocks/presets';
 
 describe('solid', () => {
   it('reports destructured props, which break reactivity in Solid', async () => {

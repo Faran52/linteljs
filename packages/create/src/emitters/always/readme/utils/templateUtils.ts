@@ -1,10 +1,9 @@
-import { RUN_PREFIX } from '@config/constants';
-
 import {
   ANSWERS,
   type Answers,
   hasTests,
-} from '@answers';
+} from '#answers';
+import { RUN_PREFIX } from '#config/constants';
 
 import { buildScripts } from '../../utils/scriptUtils';
 

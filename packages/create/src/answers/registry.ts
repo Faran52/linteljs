@@ -22,7 +22,7 @@ import { targetAnswer } from './target/target/targetAnswer';
 import { testingAnswer } from './testing/testing/testingAnswer';
 import { typeSafetyAnswer } from './typesafety/type-safety/typeSafetyAnswer';
 
-import type { AliasMap } from '@config/types';
+import type { AliasMap } from '#config/types';
 import type { Agent } from './agents/agents/agentsAnswer';
 import type { Plugin } from './agents/plugins/pluginsAnswer';
 import type { Data } from './libraries/data/dataAnswer';

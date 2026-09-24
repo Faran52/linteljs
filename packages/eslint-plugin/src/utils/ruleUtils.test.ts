@@ -1,4 +1,3 @@
-import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import {
   describe,
   expect,
@@ -10,6 +9,8 @@ import {
   mustFind,
   rangeOf,
 } from './ruleUtils.ts';
+
+import { sourceCodeFrom } from '#mocks/sourceCodeFrom';
 
 // Both take the shape rather than RuleNode, so a degenerate argument here needs no cast.
 const parsed = sourceCodeFrom([

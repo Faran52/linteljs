@@ -7,28 +7,8 @@
      */
     "rootDir": "../..",
 
-    // `scripts/` runs on Node's type stripping, which needs the `.ts` in a relative specifier. Nothing is emitted.
-    "allowImportingTsExtensions": true,
-
-    "paths": {
-      "@mocks/*": ["./__mocks__/*"],
-      "@answers": ["./src/answers/index.ts"],
-      "@answers/*": ["./src/answers/*"],
-      "@config/*": ["./src/config/*"],
-      "@disk": ["./src/disk/index.ts"],
-      "@disk/*": ["./src/disk/*"],
-      "@emitters": ["./src/emitters/index.ts"],
-      "@emitters/*": ["./src/emitters/*"],
-      "@pipeline": ["./src/pipeline/index.ts"],
-      "@pipeline/*": ["./src/pipeline/*"],
-      "@spawns": ["./src/spawns/index.ts"],
-      "@spawns/*": ["./src/spawns/*"],
-      "@targets": ["./src/targets/index.ts"],
-      "@targets/*": ["./src/targets/*"],
-      "@terminal": ["./src/terminal/index.ts"],
-      "@terminal/*": ["./src/terminal/*"],
-      "@utils/*": ["./src/utils/*"]
-    }
+    // `scripts/` names the `.ts` in a relative specifier, as the shipped scripts must for Node. Nothing is emitted.
+    "allowImportingTsExtensions": true
   },
   "include": [
     "src/**/*.ts",

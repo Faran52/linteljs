@@ -3,7 +3,7 @@
  * and two of the first ones written here were wrong, overstating coverage and hiding a live path. Each is removed in
  * turn and its file re-measured under its own package's suite: still uncovered means the claim holds.
  *
- * Usage: node scripts/audit-ignores/auditIgnoresScript.ts
+ * Usage: jiti scripts/audit-ignores/auditIgnoresScript.ts
  */
 import { execFileSync } from 'node:child_process';
 import {

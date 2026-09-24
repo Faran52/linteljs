@@ -4,7 +4,7 @@
  * `noInlineConfig` and fails on any finding. Every rule name is checked against the installed plugin first,
  * so one a plugin upgrade renamed fails the run rather than skipping quietly.
  *
- * Usage: node scripts/audit/security/securityAudit.ts
+ * Usage: jiti scripts/audit/security/securityAudit.ts
  */
 import { relative, resolve } from 'node:path';
 import process from 'node:process';

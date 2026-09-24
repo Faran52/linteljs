@@ -1,4 +1,4 @@
-import type { Answers } from '@answers/registry';
+import type { Answers } from '#answers/registry';
 import type { AccessorNames } from '../utils/mockUtils';
 
 // Every file the template writes whatever was answered. No `scaffold` on this record: the tree is this

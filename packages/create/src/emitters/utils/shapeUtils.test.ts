@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { EMPTY_PROJECT } from '@config/constants';
+import { EMPTY_PROJECT } from '#config/constants';
 
 import { projectSpelling } from './shapeUtils';
 

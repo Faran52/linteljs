@@ -396,6 +396,9 @@ importers:
       eslint-plugin-vuejs-accessibility:
         specifier: ^2.6.0
         version: 2.6.0(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(globals@17.12.0)(supports-color@10.2.2)
+      jiti:
+        specifier: 'catalog:'
+        version: 2.7.0
       next:
         specifier: ^16.3.5
         version: 16.3.5(@babel/core@7.29.7(supports-color@10.2.2))(@types/node@26.6.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -456,6 +459,9 @@ importers:
       eslint-plugin-sonarjs:
         specifier: 'catalog:'
         version: 4.2.1(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))
+      jiti:
+        specifier: 'catalog:'
+        version: 2.7.0
       svelte:
         specifier: 'catalog:'
         version: 5.57.1(@typescript-eslint/types@8.70.0)

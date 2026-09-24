@@ -5,11 +5,11 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { inject } from 'vitest';
 
-import { MANAGER_BINARIES } from '@config/constants';
+import { MANAGER_BINARIES } from '#config/constants';
 
 import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
 
-import type { PackageManager } from '@answers';
+import type { PackageManager } from '#answers';
 
 export interface RunResult {
   status: number;

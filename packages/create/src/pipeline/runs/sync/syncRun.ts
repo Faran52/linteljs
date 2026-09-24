@@ -1,8 +1,7 @@
 import { dirname, join } from 'node:path';
 
-import { MANAGED_PATH } from '@config/constants';
-
-import { type HostedAnswers, LEGACY_CONFIG_PATH } from '@answers';
+import { type HostedAnswers, LEGACY_CONFIG_PATH } from '#answers';
+import { MANAGED_PATH } from '#config/constants';
 import {
   artifactWriter,
   entryExists,
@@ -13,9 +12,9 @@ import {
   rmdir,
   safeProjectPath,
   shippedAssetsReader,
-} from '@disk';
-import { buildArtifacts } from '@emitters';
-import { gitSpawn } from '@spawns';
+} from '#disk';
+import { buildArtifacts } from '#emitters';
+import { gitSpawn } from '#spawns';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 

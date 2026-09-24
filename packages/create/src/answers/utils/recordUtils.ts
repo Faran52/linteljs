@@ -1,4 +1,4 @@
-import type { TargetRecord } from '@targets/types';
+import type { TargetRecord } from '#targets/types';
 import type { Answers } from '../registry';
 import type { AnswerRecord, ValueRecord } from '../types';
 

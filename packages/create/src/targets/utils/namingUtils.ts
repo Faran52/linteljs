@@ -1,6 +1,6 @@
 import { COMPONENT, DECLARATION_KEY } from '../constants';
 
-import type { NamingMap } from '@config/types';
+import type { NamingMap } from '#config/types';
 
 // `check-file` applies every matching key, so two conventions on one file satisfy neither. A route directory gets
 // two keys because `src/!(app)/**/*` alone cannot reach a file directly in `src/`.

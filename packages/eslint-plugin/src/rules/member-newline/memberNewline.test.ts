@@ -1,6 +1,6 @@
-import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
-
 import { memberNewline } from './memberNewline.ts';
+
+import { jsRuleTester, tsRuleTester } from '#mocks/ruleTesters';
 
 jsRuleTester.run('member-newline', memberNewline, {
   valid: [

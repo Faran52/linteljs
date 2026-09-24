@@ -1,6 +1,6 @@
-import { jsRuleTester } from '@mocks/ruleTesters';
-
 import { preferAwaitToThen } from './preferAwaitToThen.ts';
+
+import { jsRuleTester } from '#mocks/ruleTesters';
 
 jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
   valid: [

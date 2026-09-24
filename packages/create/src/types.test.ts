@@ -1,14 +1,7 @@
 import { expectTypeOf, it } from 'vitest';
 
-import { LIBRARY_LAYERS } from '@emitters/always/eslint-config/constants';
+import { LIBRARY_LAYERS } from '#emitters/always/eslint-config/constants';
 
-import type {
-  AliasMap,
-  DefineConfigOptions,
-  Framework,
-  LibraryLayer,
-  NamingMap,
-} from '@config/types';
 import type {
   AliasMap as UpstreamAliasMap,
   DefineConfigOptions as UpstreamDefineConfigOptions,
@@ -16,6 +9,13 @@ import type {
   LibraryLayer as UpstreamLibraryLayer,
   NamingMap as UpstreamNamingMap,
 } from '@linteljs/eslint-config';
+import type {
+  AliasMap,
+  DefineConfigOptions,
+  Framework,
+  LibraryLayer,
+  NamingMap,
+} from '#config/types';
 
 // Declared twice on purpose, so this package installs before eslint-config publishes; this is what keeps them equal.
 it('mirrors eslint-config exactly', () => {

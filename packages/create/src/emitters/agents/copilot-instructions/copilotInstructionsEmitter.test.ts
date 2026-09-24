@@ -1,17 +1,18 @@
 import {
-  answersFor,
-  RULE,
-  targets,
-  transformOf,
-  UNSCOPED,
-} from '@mocks/agentRules';
-import {
   describe,
   expect,
   it,
 } from 'vitest';
 
 import { copilotArtifacts } from './copilotInstructionsEmitter';
+
+import {
+  answersFor,
+  RULE,
+  targets,
+  transformOf,
+  UNSCOPED,
+} from '#mocks/agentRules';
 
 describe('copilotArtifacts', () => {
   it('writes the repository-wide file and one path-scoped rule per source', () => {

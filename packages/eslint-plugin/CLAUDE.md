@@ -47,8 +47,8 @@ local-only. That version is not the source of truth any more. This repo owns the
   `findLastIndex` or `toSorted`, and why `utils/compatUtils.ts` exists.
 - **Arrow functions everywhere.** The plugin lints itself with its own
   `@linteljs/prefer-arrow-functions`, so this is enforced, not a preference.
-- `"type": "module"`, so `scripts/` is TypeScript run by Node's own type stripping, `node
-  scripts/<group>/<subject>/<subject><Group>.ts`, with no loader and no build step: `build/` runs
+- `"type": "module"`, so `scripts/` is TypeScript run through jiti, `jiti
+  scripts/<group>/<subject>/<subject><Group>.ts`, with no build step: `build/` runs
   inside `pnpm build`, `release/` packs the tarball and proves it, `audit/` points the rules at real
   third-party code. Each script is the ring shape below: `audit/real-code/realCodeAudit.ts`, its own
   `utils/*Utils.ts` and `constants.ts`, and what several scripts in a group read in the group's `utils/`.
@@ -176,7 +176,7 @@ Claim nothing that has not been run.
   same flag and emits a `sourceMappingURL` for a `.map` it never writes.
 - Coverage thresholds are 100 across lines, branches, functions and statements. They are a gate,
   not a target, and lowering one to make a build pass is not an option.
-- `node scripts/release/smoke/smokeRelease.ts` packs the tarball and runs a real ESLint against it through both the ESM
+- `pnpm smoke` packs the tarball and runs a real ESLint against it through both the ESM
   and the CJS entry point. Unit tests cannot catch a broken `exports` map or a missing entry in
   `files`. Run it before any release.
 - `peerDependencies.eslint` is `>=5.0.0`, and a rule that only works on one major is broken. No
@@ -185,7 +185,7 @@ Claim nothing that has not been run.
   and `utils/compatUtils.ts` reads the modern shape first and the legacy one second. Its own test
   drives both, because the legacy half cannot execute on the ESLint this suite runs against and
   would otherwise sit uncovered forever.
-- `node scripts/release/compat-matrix/compatMatrixRelease.ts` is what turns that from a declaration into a fact. It packs the
+- `pnpm compat` is what turns that from a declaration into a fact. It packs the
   tarball, installs ESLint 5, 6, 7, 8, 9 and 10 side by side, and lints one fixture that trips
   every universal rule in `recommended`, through `.eslintrc.json` on 5 to 8 and flat config on 9
   and 10, so both published preset shapes are exercised by a real consumer. It then asserts every

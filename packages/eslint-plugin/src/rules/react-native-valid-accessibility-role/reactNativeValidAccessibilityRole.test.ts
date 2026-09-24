@@ -1,6 +1,6 @@
-import { tsxRuleTester } from '@mocks/ruleTesters';
-
 import { reactNativeValidAccessibilityRole } from './reactNativeValidAccessibilityRole.ts';
+
+import { tsxRuleTester } from '#mocks/ruleTesters';
 
 // Written out again rather than imported, so a name dropped from the rule's list fails here instead of vanishing
 // from both at once.

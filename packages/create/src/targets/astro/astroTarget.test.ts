@@ -8,7 +8,7 @@ import {
   type Answers,
   DEFAULT_ANSWERS,
   type HostedFramework,
-} from '@answers';
+} from '#answers';
 
 import { astroTarget } from './astroTarget';
 

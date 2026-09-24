@@ -6,7 +6,7 @@ import {
 
 import { managedRecord, removableIn } from './managedUtils';
 
-import type { Artifact } from '@config/types';
+import type { Artifact } from '#config/types';
 
 const emittedAt = (target: string): Artifact => {
   return {

@@ -1,12 +1,12 @@
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
-
 import {
   ANSWERS,
   type Answers,
   type HostedAnswers,
-} from '@answers';
+} from '#answers';
 
 import { answerRows, stackRows } from './recordUtils';
+
+import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   return {

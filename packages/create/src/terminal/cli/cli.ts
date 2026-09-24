@@ -10,13 +10,6 @@ import {
 } from 'node:process';
 
 import {
-  MANAGER_BINARIES,
-  NODE_FLOOR,
-  RUN_PREFIX,
-  STAGES,
-} from '@config/constants';
-
-import {
   type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
@@ -25,18 +18,24 @@ import {
   type HostedAnswers,
   type PackageManager,
   parseLinteljsConfig,
-} from '@answers';
+} from '#answers';
+import {
+  MANAGER_BINARIES,
+  NODE_FLOOR,
+  RUN_PREFIX,
+  STAGES,
+} from '#config/constants';
 import {
   entryExists,
   linteljsConfigReader,
   readIfPresent,
-} from '@disk';
+} from '#disk';
 import {
   applySync,
   pipelineRun,
   planSync,
-} from '@pipeline';
-import { nodeSpawn, packageManagerSpawn } from '@spawns';
+} from '#pipeline';
+import { nodeSpawn, packageManagerSpawn } from '#spawns';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import { PROJECT_NAME_RULE } from '../constants';

@@ -16,11 +16,11 @@ import {
   it,
 } from 'vitest';
 
-import { emitted, merged } from '@emitters/utils/artifactUtils';
+import { emitted, merged } from '#emitters/utils/artifactUtils';
 
 import { artifactWriter } from './artifactWriter';
 
-import type { Artifact } from '@emitters';
+import type { Artifact } from '#emitters';
 
 let cwd = '';
 

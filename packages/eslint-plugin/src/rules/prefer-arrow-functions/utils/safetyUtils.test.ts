@@ -21,7 +21,7 @@ interface ParsedFunction {
   fn: FunctionLike;
 }
 
-// Finds the last function-like node via a real Linter run, not @mocks/sourceCodeFrom, which returns only the first node
+// Finds the last function-like node via a real Linter run, not #mocks/sourceCodeFrom, which returns only the first node
 // of a type; the ts/script options serve fixtures needing the TypeScript parser or a non-strict sourceType.
 interface ParseOptions {
   ts?: boolean;
@@ -208,7 +208,7 @@ describe('isSafeToConvert', () => {
       expected: false,
     },
     // An explicit `this` parameter is TypeScript-only syntax, so this drives the check through
-    // the TypeScript parser rather than through `@mocks/sourceCodeFrom`.
+    // the TypeScript parser rather than through `#mocks/sourceCodeFrom`.
     {
       label: 'an explicit this parameter',
       code: 'function greet(this: Service): string {\n  return "x";\n}',

@@ -1,10 +1,4 @@
 import {
-  ownBlockNames,
-  ruleIdsFor,
-  sortsAheadOfPackages,
-  startsWith,
-} from '@mocks/lintText';
-import {
   describe,
   expect,
   it,
@@ -14,6 +8,13 @@ import base from '../base';
 
 import next, { nextGroup } from './next';
 import react from './react';
+
+import {
+  ownBlockNames,
+  ruleIdsFor,
+  sortsAheadOfPackages,
+  startsWith,
+} from '#mocks/lintText';
 
 // `no-html-link-for-pages` off: it writes a paragraph to stderr on every lint when no `pages/` directory exists.
 const composed = (): ReturnType<typeof base> => {

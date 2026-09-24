@@ -1,11 +1,11 @@
+import { reactNoGlobalNamespace } from './reactNoGlobalNamespace.ts';
+
 import {
   jsRuleTester,
   svelteRuleTester,
   tsRuleTester,
   tsxRuleTester,
-} from '@mocks/ruleTesters';
-
-import { reactNoGlobalNamespace } from './reactNoGlobalNamespace.ts';
+} from '#mocks/ruleTesters';
 
 tsRuleTester.run('react-no-global-namespace: types', reactNoGlobalNamespace, {
   valid: [

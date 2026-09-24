@@ -5,7 +5,7 @@
  * purpose is a skip rather than a miss. A large miss count usually means a broken edit, not broken rules.
  * `--neuter <id>` stubs a rule to report nothing, which proves the detector can fail.
  *
- * Usage: node scripts/audit/false-negatives/falseNegativesAudit.ts [dir...] [--rule <id>] [--shape <text>]
+ * Usage: jiti scripts/audit/false-negatives/falseNegativesAudit.ts [dir...] [--rule <id>] [--shape <text>]
  *          [--limit <n>] [--max-files <n>] [--neuter <id>]
  */
 import { readFileSync } from 'node:fs';

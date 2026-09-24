@@ -7,10 +7,6 @@ import {
   it,
 } from 'vitest';
 
-import { MANAGER_FLOORS, NODE_ENGINE } from '@config/constants';
-
-import { valuesOf } from '@utils/objectUtils';
-
 import {
   ANSWERS,
   type Answers,
@@ -26,8 +22,10 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '@answers';
-import { targetFor } from '@targets';
+} from '#answers';
+import { MANAGER_FLOORS, NODE_ENGINE } from '#config/constants';
+import { targetFor } from '#targets';
+import { valuesOf } from '#utils/objectUtils';
 
 import { VERSIONS } from './constants';
 import {

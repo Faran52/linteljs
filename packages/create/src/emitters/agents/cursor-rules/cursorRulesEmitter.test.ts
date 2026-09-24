@@ -1,17 +1,18 @@
 import {
-  answersFor,
-  RULE,
-  targets,
-  transformOf,
-  UNSCOPED,
-} from '@mocks/agentRules';
-import {
   describe,
   expect,
   it,
 } from 'vitest';
 
 import { cursorArtifacts } from './cursorRulesEmitter';
+
+import {
+  answersFor,
+  RULE,
+  targets,
+  transformOf,
+  UNSCOPED,
+} from '#mocks/agentRules';
 
 describe('cursorArtifacts', () => {
   it('writes every rule under .cursor/rules with the mdc suffix', () => {

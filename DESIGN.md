@@ -1338,17 +1338,6 @@ Proven to fire, not assumed: `src/utils/stray.ts` reports `The filename "stray.t
 the "*Utils" pattern`, and the same file as `strayUtils.ts` exits 0. `ignoreMiddleExtensions` is on,
 so `layoutUtils.test.ts` is judged on `layoutUtils`.
 
-### `resolver: { project: 'packages/*/tsconfig.json' }`
-
-The one place the default resolver cannot work it out for itself. It reads a single tsconfig
-discovered from the working directory, which in a workspace is the root, and the root has no
-`paths`. Each package's `@mocks/*` lives in its own tsconfig.
-
-`noWarnOnMultipleProjects` rides beside it. The resolver prints "Multiple projects found" twice per
-run when `project` is a glob, and the advice it gives (one tsconfig with references) is the layout
-this workspace deliberately does not have. Measured: the notice carries no finding, so silencing it
-changes nothing in what `pnpm lint` reports.
-
 ### `@linteljs/workspace/create-rings`
 
 `answers/` is what the user chose and `targets/` is what linteljs knows.

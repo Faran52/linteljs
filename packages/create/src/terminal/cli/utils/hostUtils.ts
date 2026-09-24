@@ -2,12 +2,11 @@ import {
   MANAGER_BINARIES,
   MANAGER_FLOORS,
   NODE_FLOOR,
-} from '@config/constants';
+} from '#config/constants';
+import { valuesOf } from '#utils/objectUtils';
+import { rankOf } from '#utils/versionUtils';
 
-import { valuesOf } from '@utils/objectUtils';
-import { rankOf } from '@utils/versionUtils';
-
-import type { PackageManager } from '@answers';
+import type { PackageManager } from '#answers';
 
 export interface DetectedManager {
   name: PackageManager;

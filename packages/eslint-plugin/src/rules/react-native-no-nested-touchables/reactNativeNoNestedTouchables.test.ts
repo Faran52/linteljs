@@ -1,6 +1,6 @@
-import { tsxRuleTester } from '@mocks/ruleTesters';
-
 import { reactNativeNoNestedTouchables } from './reactNativeNoNestedTouchables.ts';
+
+import { tsxRuleTester } from '#mocks/ruleTesters';
 
 tsxRuleTester.run('react-native-no-nested-touchables', reactNativeNoNestedTouchables, {
   valid: [

@@ -8,7 +8,7 @@
      */
     "exactOptionalPropertyTypes": false,
 
-    // Node's type stripping needs the `.ts` in a relative specifier, and nothing here is emitted.
+    // The scripts name the `.ts` in a relative specifier, as the shipped ones must for Node. Nothing is emitted.
     "allowImportingTsExtensions": true
   },
 

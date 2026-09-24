@@ -1,4 +1,3 @@
-import { ruleIdsFor, sortsAheadOfPackages } from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -11,6 +10,8 @@ import { reactGroup } from '../frameworks/react';
 import { buildGroups } from './importSortUtils';
 
 import type { AliasMap } from '../types';
+
+import { ruleIdsFor, sortsAheadOfPackages } from '#mocks/lintText';
 
 const ALIASES: AliasMap = {
   '@components/*': './src/components/*',

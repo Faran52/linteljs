@@ -3,7 +3,7 @@
  * shapes, and the bundle itself. A missing `files` entry, a broken `exports` map or a CJS build that throws on
  * `require` passes every unit test.
  *
- * Usage: node scripts/release/smoke/smokeRelease.ts
+ * Usage: jiti scripts/release/smoke/smokeRelease.ts
  */
 import assert from 'node:assert/strict';
 import {

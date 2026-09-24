@@ -1,12 +1,4 @@
 import {
-  JSX_FIXTURE,
-  ownBlockNames,
-  ruleIdsFor,
-  ruleIdsForFile,
-  sortsAheadOfPackages,
-} from '@mocks/lintText';
-import { layerWithout, layerWithoutConfig } from '@mocks/presets';
-import {
   describe,
   expect,
   it,
@@ -16,6 +8,15 @@ import base from '../base';
 import typescript from '../typescript';
 
 import react, { reactGroup } from './react';
+
+import {
+  JSX_FIXTURE,
+  ownBlockNames,
+  ruleIdsFor,
+  ruleIdsForFile,
+  sortsAheadOfPackages,
+} from '#mocks/lintText';
+import { layerWithout, layerWithoutConfig } from '#mocks/presets';
 
 interface FlatConfigs {
   flat: object;

@@ -1,8 +1,7 @@
 import { isEqual } from 'es-toolkit';
 
-import { isJsonObject, valuesOf } from '@utils/objectUtils';
-
-import { targetFor } from '@targets';
+import { targetFor } from '#targets';
+import { isJsonObject, valuesOf } from '#utils/objectUtils';
 
 import {
   CONFIG_SCHEMA_URL,
@@ -21,7 +20,7 @@ import {
 } from './readUtils';
 import { onlyFor } from './recordUtils';
 
-import type { TargetRecord } from '@targets/types';
+import type { TargetRecord } from '#targets/types';
 import type { Library } from '../libraries/libraries/librariesAnswer';
 import type {
   AnswerKey,

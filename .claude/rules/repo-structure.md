@@ -203,7 +203,7 @@ aliases it duplicates instead of importing carry a comment saying so.
 
 Both are the standard's own stated exceptions; these are the files that take them.
 
-- `__mocks__/` at package root, aliased `@mocks/*`. `eslint-config/__mocks__/fixtures/` holds the
+- `__mocks__/` at package root, reached as `#mocks/*` through the package's own `imports` field. `eslint-config/__mocks__/fixtures/` holds the
   deliberately defective input its layer tests lint.
 - `packages/create/templates/project/scripts/checkBannedPatterns.test.ts` and `typecheckStaged.test.ts` sit
   beside the scripts they spawn. `package.json` excludes them from the packed tarball.

@@ -4,11 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers, DEFAULT_ANSWERS } from '#answers';
 
 import { testSetupEmitter } from './testSetupEmitter';
 
-import type { ProjectShape } from '@config/types';
+import type { ProjectShape } from '#config/types';
 
 // A project that holds neither spelling, so the target's own is the one written.
 const FRESH: ProjectShape = {

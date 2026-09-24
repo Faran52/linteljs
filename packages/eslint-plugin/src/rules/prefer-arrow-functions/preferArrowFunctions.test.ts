@@ -1,10 +1,10 @@
+import { preferArrowFunctions } from './preferArrowFunctions.ts';
+
 import {
   jsRuleTester,
   tsRuleTester,
   tsxRuleTester,
-} from '@mocks/ruleTesters';
-
-import { preferArrowFunctions } from './preferArrowFunctions.ts';
+} from '#mocks/ruleTesters';
 
 jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
   valid: [

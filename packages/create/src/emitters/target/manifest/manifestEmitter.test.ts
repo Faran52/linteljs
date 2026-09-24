@@ -10,7 +10,7 @@ import {
   DEFAULT_ANSWERS,
   type Styling,
   type Surface,
-} from '@answers';
+} from '#answers';
 
 import {
   emitManifest,

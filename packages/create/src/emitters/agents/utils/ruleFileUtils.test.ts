@@ -1,17 +1,18 @@
 import {
-  RULE,
-  targets,
-  transformOf,
-} from '@mocks/agentRules';
-import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '#answers';
 
 import { globsOf, ruleArtifacts } from './ruleFileUtils';
+
+import {
+  RULE,
+  targets,
+  transformOf,
+} from '#mocks/agentRules';
 
 describe('globsOf', () => {
   // One comma-separated string, which is how both tools spell a multi-glob. Empty where a rule governs any file

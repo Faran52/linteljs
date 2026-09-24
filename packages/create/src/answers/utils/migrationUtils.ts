@@ -1,4 +1,4 @@
-import { valuesOf } from '@utils/objectUtils';
+import { valuesOf } from '#utils/objectUtils';
 
 import { isJsonArray, isValueOf } from './readUtils';
 

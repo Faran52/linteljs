@@ -12,8 +12,6 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
-import { plantBinary } from '@mocks/plantBinary';
 import {
   afterEach,
   beforeEach,
@@ -22,10 +20,6 @@ import {
   it,
   vi,
 } from 'vitest';
-
-import { type Stage } from '@config/types';
-
-import { valuesOf } from '@utils/objectUtils';
 
 import {
   type Agent,
@@ -44,19 +38,24 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '@answers';
+} from '#answers';
+import { type Stage } from '#config/types';
 import {
   entryExists,
   exists,
   linteljsConfigReader,
-} from '@disk';
-import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
-import { VERSIONS } from '@emitters/always/package-json/constants';
-import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
+} from '#disk';
+import { emitLinteljsConfig } from '#emitters/always/linteljs-config/linteljsConfigEmitter';
+import { VERSIONS } from '#emitters/always/package-json/constants';
+import { parsePackageJson } from '#emitters/always/package-json/packageJsonEmitter';
+import { valuesOf } from '#utils/objectUtils';
 
 import { applySync, planSync } from '../sync/syncRun';
 
 import { pipelineRun } from './pipelineRun';
+
+import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
+import { plantBinary } from '#mocks/plantBinary';
 
 interface AnswerOverrides {
   target?: TargetId;

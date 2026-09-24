@@ -1,4 +1,4 @@
-import type { Answers } from '@answers';
+import type { Answers } from '#answers';
 
 // What the solver reads of a case, which is the answers and nothing else.
 export interface PairwiseCase {

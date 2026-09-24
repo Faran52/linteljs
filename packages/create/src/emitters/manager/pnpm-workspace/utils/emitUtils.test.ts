@@ -12,7 +12,7 @@ import {
   type HostedFramework,
   type Styling,
   type TargetId,
-} from '@answers';
+} from '#answers';
 
 import {
   allowBuildsBlock,

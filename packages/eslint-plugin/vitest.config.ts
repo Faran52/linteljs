@@ -2,9 +2,6 @@ import { defineConfig, type ViteUserConfig } from 'vitest/config';
 
 const config: ViteUserConfig = {
   cacheDir: '.vitest-cache',
-  resolve: {
-    tsconfigPaths: true,
-  },
   test: {
     globals: true,
     unstubGlobals: true,

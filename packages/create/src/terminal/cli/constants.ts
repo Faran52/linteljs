@@ -1,22 +1,20 @@
 import { type ParseArgsOptionsConfig } from 'node:util';
 
-import { STAGES } from '@config/constants';
-import { type Stage } from '@config/types';
-
-import { valuesOf } from '@utils/objectUtils';
-
 import {
   type AnswerKey,
   ANSWERS,
   type PackageManager,
-} from '@answers';
+} from '#answers';
+import { STAGES } from '#config/constants';
+import { type Stage } from '#config/types';
+import { valuesOf } from '#utils/objectUtils';
 
 import type {
   AnswerRecord,
   ListRecord,
   MapRecord,
   TextRecord,
-} from '@answers/types';
+} from '#answers/types';
 
 type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord | TextRecord>;
 

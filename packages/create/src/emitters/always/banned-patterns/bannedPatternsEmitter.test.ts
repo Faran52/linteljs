@@ -16,8 +16,8 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '@answers';
-import { TEMPLATES_ROOT } from '@disk';
+} from '#answers';
+import { TEMPLATES_ROOT } from '#disk';
 
 import { checkerArtifact } from './bannedPatternsEmitter';
 

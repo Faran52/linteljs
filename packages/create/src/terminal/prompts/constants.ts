@@ -1,6 +1,5 @@
-import { valuesOf } from '@utils/objectUtils';
-
-import { ANSWERS } from '@answers';
+import { ANSWERS } from '#answers';
+import { valuesOf } from '#utils/objectUtils';
 
 // Thrown by `cli.ts` before `ask`: nothing here can tell "no terminal" from a person who cancelled one.
 export const NOTHING_ANSWERED_MESSAGE

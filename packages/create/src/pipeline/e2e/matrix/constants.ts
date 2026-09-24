@@ -1,6 +1,5 @@
-import { valuesOf } from '@utils/objectUtils';
-
-import { ANSWERS } from '@answers';
+import { ANSWERS } from '#answers';
+import { valuesOf } from '#utils/objectUtils';
 
 export const AGENTS = valuesOf(ANSWERS.agents.values);
 export const BROWSERS = valuesOf(ANSWERS.browser.values);

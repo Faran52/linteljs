@@ -1,7 +1,6 @@
-import { type Artifact, type DefineConfigOptions } from '@config/types';
-
-import { type Answers } from '@answers';
-import { targetFor } from '@targets';
+import { type Answers } from '#answers';
+import { type Artifact, type DefineConfigOptions } from '#config/types';
+import { targetFor } from '#targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { buildAliases } from '../utils/aliasUtils';

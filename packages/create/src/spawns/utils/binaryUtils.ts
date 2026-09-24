@@ -5,7 +5,7 @@ import {
 } from 'node:path';
 import { env } from 'node:process';
 
-import { isExecutableFile } from '@disk';
+import { isExecutableFile } from '#disk';
 
 // Resolved from PATH rather than spawned by name, so `sync` can run it from another cwd and a directory that merely
 // carries the name is not mistaken for the binary. Executable directories are rejected.

@@ -1,6 +1,5 @@
-import { type Artifact, type Emitter } from '@config/types';
-
-import { targetFor } from '@targets';
+import { type Artifact, type Emitter } from '#config/types';
+import { targetFor } from '#targets';
 
 import { emitted } from '../../utils/artifactUtils';
 

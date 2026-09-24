@@ -1,4 +1,3 @@
-import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import {
   describe,
   expect,
@@ -6,6 +5,8 @@ import {
 } from 'vitest';
 
 import { isAwaitedOrAsyncReturn, outermostCall } from './promiseChainUtils.ts';
+
+import { sourceCodeFrom } from '#mocks/sourceCodeFrom';
 
 // Shapes that look climbable but are not; none of these can reach the walk through either rule,
 // which is why they're fixtures here.

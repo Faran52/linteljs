@@ -1,6 +1,6 @@
-import { tsxRuleTester } from '@mocks/ruleTesters';
-
 import { reactNativeAccessibleName } from './reactNativeAccessibleName.ts';
+
+import { tsxRuleTester } from '#mocks/ruleTesters';
 
 tsxRuleTester.run('react-native-accessible-name', reactNativeAccessibleName, {
   valid: [

@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '#answers';
 
 import { adapterArtifact, emitAgentAdapter } from './adapterUtils';
 

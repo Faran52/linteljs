@@ -4,8 +4,6 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
-
 import {
   ANSWERS,
   type Answers,
@@ -17,7 +15,8 @@ import {
   type Styling,
   type TargetId,
   type Testing,
-} from '@answers';
+} from '#answers';
+import { valuesOf } from '#utils/objectUtils';
 
 import { emitNuxtConfig } from '../../target/nuxt-config/nuxtConfigEmitter';
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';

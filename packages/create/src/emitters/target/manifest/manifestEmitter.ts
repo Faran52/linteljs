@@ -1,14 +1,12 @@
-import { type Artifact, type ProjectShape } from '@config/types';
-
-import { isJsonObject } from '@utils/objectUtils';
-
 import {
   type Answers,
   type Browser,
   browsersOf,
   hasSurface,
-} from '@answers';
-import { targetFor } from '@targets';
+} from '#answers';
+import { type Artifact, type ProjectShape } from '#config/types';
+import { targetFor } from '#targets';
+import { isJsonObject } from '#utils/objectUtils';
 
 import { emitted } from '../../utils/artifactUtils';
 

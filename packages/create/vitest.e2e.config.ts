@@ -15,9 +15,6 @@ import { defineConfig } from 'vitest/config';
  * manager, one machine each.
  */
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-  },
   test: {
     globals: true,
     include: ['src/**/*.e2e.test.ts'],

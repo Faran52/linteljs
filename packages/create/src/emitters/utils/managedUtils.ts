@@ -1,4 +1,4 @@
-import type { Artifact } from '@config/types';
+import type { Artifact } from '#config/types';
 
 /**
  * Only what linteljs owns outright. A preserved artifact is the project's from the moment it has one, and a merge

@@ -46,32 +46,7 @@
     "types": [
       "node",
       "vitest/globals"
-    ],
-
-    /**
-     * `@linteljs/create`'s ring aliases, declared here because this is the config that types everything outside a
-     * package: `eslint.config.ts` and `scripts/lint-starters/` both read that package's source. A `paths` block in
-     * a child replaces the parent's whole map rather than merging into it, so the three packages each declare their
-     * own and none of them inherits this.
-     */
-    "paths": {
-      "@answers": ["./packages/create/src/answers/index.ts"],
-      "@answers/*": ["./packages/create/src/answers/*"],
-      "@config/*": ["./packages/create/src/config/*"],
-      "@disk": ["./packages/create/src/disk/index.ts"],
-      "@disk/*": ["./packages/create/src/disk/*"],
-      "@emitters": ["./packages/create/src/emitters/index.ts"],
-      "@emitters/*": ["./packages/create/src/emitters/*"],
-      "@pipeline": ["./packages/create/src/pipeline/index.ts"],
-      "@pipeline/*": ["./packages/create/src/pipeline/*"],
-      "@spawns": ["./packages/create/src/spawns/index.ts"],
-      "@spawns/*": ["./packages/create/src/spawns/*"],
-      "@targets": ["./packages/create/src/targets/index.ts"],
-      "@targets/*": ["./packages/create/src/targets/*"],
-      "@terminal": ["./packages/create/src/terminal/index.ts"],
-      "@terminal/*": ["./packages/create/src/terminal/*"],
-      "@utils/*": ["./packages/create/src/utils/*"]
-    }
+    ]
   },
 
   "include": [

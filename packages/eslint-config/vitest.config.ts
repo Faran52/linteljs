@@ -7,9 +7,6 @@ import { defineConfig } from 'vitest/config';
  * defect (`eslint-plugin` raised it for the same reason).
  */
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-  },
   test: {
     globals: true,
     include: ['src/**/*.test.ts'],

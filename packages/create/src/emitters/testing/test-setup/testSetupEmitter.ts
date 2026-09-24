@@ -1,12 +1,11 @@
-import { type Artifact, type ProjectShape } from '@config/types';
-
-import { type Answers, hasTests } from '@answers';
-import { targetFor } from '@targets';
+import { type Answers, hasTests } from '#answers';
+import { type Artifact, type ProjectShape } from '#config/types';
+import { targetFor } from '#targets';
 
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { joined } from '../../utils/artifactUtils';
 
-import type { TargetRecord } from '@targets/types';
+import type { TargetRecord } from '#targets/types';
 
 // Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {

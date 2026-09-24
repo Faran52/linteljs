@@ -1,4 +1,4 @@
-import { targetFor } from '@targets';
+import { targetFor } from '#targets';
 
 import { DEFAULT_ANSWERS } from '../../registry';
 

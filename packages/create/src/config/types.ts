@@ -1,4 +1,4 @@
-import type { HostedAnswers } from '@answers/registry';
+import type { HostedAnswers } from '#answers/registry';
 
 /**
  * The vocabulary every ring shares: `emitters/` builds an artifact, `files/` applies it, `pipeline/` sequences

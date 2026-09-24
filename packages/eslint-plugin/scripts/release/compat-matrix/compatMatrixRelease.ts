@@ -4,7 +4,7 @@
  * halves of `configs` meet a real consumer. Every major must then emit byte-identical fixed text. Network and
  * minutes, so it is not in `pnpm check`; run it before a release.
  *
- * Usage: node scripts/release/compat-matrix/compatMatrixRelease.ts
+ * Usage: jiti scripts/release/compat-matrix/compatMatrixRelease.ts
  */
 import { execFile } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';

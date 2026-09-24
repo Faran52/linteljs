@@ -1,6 +1,6 @@
-import { isJsonObject, valuesOf } from '@utils/objectUtils';
+import { isJsonObject, valuesOf } from '#utils/objectUtils';
 
-import type { AliasMap } from '@config/types';
+import type { AliasMap } from '#config/types';
 import type {
   AnswerRecord,
   ChoiceRecord,

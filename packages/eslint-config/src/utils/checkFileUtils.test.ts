@@ -1,4 +1,3 @@
-import { ruleIdsFor } from '@mocks/lintText';
 import {
   describe,
   expect,
@@ -11,6 +10,8 @@ import html from '../html';
 import { buildNaming } from './checkFileUtils';
 
 import type { NamingMap } from '../types';
+
+import { ruleIdsFor } from '#mocks/lintText';
 
 const NAMING: NamingMap = {
   'src/components/**/*.tsx': 'PASCAL_CASE',

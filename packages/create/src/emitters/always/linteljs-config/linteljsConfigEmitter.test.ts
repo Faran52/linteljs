@@ -8,7 +8,7 @@ import {
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
-} from '@answers';
+} from '#answers';
 
 import { emitLinteljsConfig } from './linteljsConfigEmitter';
 

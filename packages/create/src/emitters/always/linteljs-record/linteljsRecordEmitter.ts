@@ -1,7 +1,6 @@
-import { type Emitter } from '@config/types';
-
-import { ANSWERS, type HostedAnswers } from '@answers';
-import { targetFor } from '@targets';
+import { ANSWERS, type HostedAnswers } from '#answers';
+import { type Emitter } from '#config/types';
+import { targetFor } from '#targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { VERSIONS } from '../package-json/constants';

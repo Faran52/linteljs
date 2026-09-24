@@ -19,8 +19,6 @@ import {
   it,
 } from 'vitest';
 
-import { type Artifact } from '@config/types';
-
 import {
   type Answers,
   type Data,
@@ -30,8 +28,9 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '@answers';
-import { shippedAssetsReader, TEMPLATES_ROOT } from '@disk';
+} from '#answers';
+import { type Artifact } from '#config/types';
+import { shippedAssetsReader, TEMPLATES_ROOT } from '#disk';
 
 import { referenceArtifacts } from './linteljsPluginEmitter';
 

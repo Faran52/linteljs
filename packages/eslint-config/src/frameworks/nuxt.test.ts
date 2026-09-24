@@ -1,14 +1,6 @@
 import { join } from 'node:path';
 
 import {
-  enabledRuleIdsFor,
-  ownBlockNames,
-  ruleIdsForFile,
-  SFC_FIXTURES,
-  sortsAheadOfPackages,
-  startsWith,
-} from '@mocks/lintText';
-import {
   describe,
   expect,
   it,
@@ -19,6 +11,15 @@ import typescript from '../typescript';
 
 import nuxt, { nuxtGroup } from './nuxt';
 import vue from './vue';
+
+import {
+  enabledRuleIdsFor,
+  ownBlockNames,
+  ruleIdsForFile,
+  SFC_FIXTURES,
+  sortsAheadOfPackages,
+  startsWith,
+} from '#mocks/lintText';
 
 // The vue layer nests its own parser under the two beneath it, and its `projectService` wants a file on disk.
 const layer = [...base(), ...typescript(), ...vue(), ...nuxt()];

@@ -1,4 +1,3 @@
-import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import {
   describe,
   expect,
@@ -18,6 +17,8 @@ import {
   scopeOf,
   sourceCodeOf,
 } from './compatUtils.ts';
+
+import { sourceCodeFrom } from '#mocks/sourceCodeFrom';
 
 // Both shapes are built as fixtures because the legacy half never executes through a real ESLint 10 rule.
 

@@ -13,7 +13,7 @@ import {
   type Router,
   type Styling,
   type TargetId,
-} from '@answers';
+} from '#answers';
 
 import { emitYarnrc } from './yarnrcEmitter';
 

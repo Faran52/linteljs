@@ -1,4 +1,3 @@
-import { tsxRuleTester } from '@mocks/ruleTesters';
 import {
   describe,
   expect,
@@ -6,6 +5,8 @@ import {
 } from 'vitest';
 
 import { attributesOf, noDuplicateJsxProps } from './noDuplicateJsxProps.ts';
+
+import { tsxRuleTester } from '#mocks/ruleTesters';
 
 tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
   valid: [

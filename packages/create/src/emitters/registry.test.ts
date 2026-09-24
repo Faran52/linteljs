@@ -12,17 +12,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { execPath } from 'node:process';
 
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
-
-import { MANAGED_PATH } from '@config/constants';
-import { type Artifact } from '@config/types';
-
-import { valuesOf } from '@utils/objectUtils';
 
 import {
   type Agent,
@@ -36,15 +30,20 @@ import {
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '@answers';
+} from '#answers';
+import { MANAGED_PATH } from '#config/constants';
+import { type Artifact } from '#config/types';
 import {
   managedPathsReader,
   shippedAssetsReader,
   TEMPLATES_ROOT,
-} from '@disk';
+} from '#disk';
+import { valuesOf } from '#utils/objectUtils';
 
 import { setupTestsPath } from './always/banned-patterns/bannedPatternsEmitter';
 import { buildArtifacts, seedArtifacts } from './registry';
+
+import { HOSTED_DEFAULTS } from '#mocks/hostedAnswers';
 
 interface AnswerOverrides {
   agents?: Agent[];

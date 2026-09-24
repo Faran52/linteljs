@@ -1,4 +1,4 @@
-import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
+import { emitLinteljsConfig } from '#emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import {
   CONFIG_SCHEMA_URL,

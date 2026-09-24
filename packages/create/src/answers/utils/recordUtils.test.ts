@@ -1,4 +1,4 @@
-import { targetFor } from '@targets';
+import { targetFor } from '#targets';
 
 import { dataAnswer } from '../libraries/data/dataAnswer';
 import { formAnswer } from '../libraries/form/formAnswer';

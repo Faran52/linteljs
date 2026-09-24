@@ -1,12 +1,6 @@
 import { join } from 'node:path';
 
 import {
-  enabledRuleIdsFor,
-  ownBlockNames,
-  ruleIdsForFile,
-  ruleNamesFor,
-} from '@mocks/lintText';
-import {
   describe,
   expect,
   it,
@@ -14,6 +8,13 @@ import {
 
 import base from './base';
 import typescript from './typescript';
+
+import {
+  enabledRuleIdsFor,
+  ownBlockNames,
+  ruleIdsForFile,
+  ruleNamesFor,
+} from '#mocks/lintText';
 
 // `fixtures/typed/` carries its own `tsconfig.json` for `projectService`.
 const TYPED_FILE = join(import.meta.dirname, '../__mocks__/fixtures/typed/floating.ts');

@@ -1,7 +1,7 @@
 import { stdout } from 'node:process';
 
-import { STAGES } from '@config/constants';
-import { type RunOutput, type Stage } from '@config/types';
+import { STAGES } from '#config/constants';
+import { type RunOutput, type Stage } from '#config/types';
 
 import {
   SPINNER_FRAMES,
@@ -10,7 +10,7 @@ import {
   STAGE_WIDTH,
 } from '../constants';
 
-import type { PipelineOptions } from '@pipeline';
+import type { PipelineOptions } from '#pipeline';
 import type { CliOptions } from './argvUtils';
 
 export interface StageReport extends Required<Pick<PipelineOptions,

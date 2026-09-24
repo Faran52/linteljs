@@ -32,17 +32,17 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsdown && node scripts/build/dist-manifest/distManifestBuild.ts && node scripts/build/rule-docs/ruleDocsBuild.ts",
+    "build": "tsdown && jiti scripts/build/dist-manifest/distManifestBuild.ts && jiti scripts/build/rule-docs/ruleDocsBuild.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepack": "pnpm run build",
-    "smoke": "node scripts/release/smoke/smokeRelease.ts",
-    "audit:real": "node scripts/audit/real-code/realCodeAudit.ts",
-    "audit:options": "node scripts/audit/real-code/realCodeAudit.ts --options",
-    "audit:negatives": "node scripts/audit/false-negatives/falseNegativesAudit.ts",
-    "audit:security": "node scripts/audit/security/securityAudit.ts",
+    "smoke": "jiti scripts/release/smoke/smokeRelease.ts",
+    "audit:real": "jiti scripts/audit/real-code/realCodeAudit.ts",
+    "audit:options": "jiti scripts/audit/real-code/realCodeAudit.ts --options",
+    "audit:negatives": "jiti scripts/audit/false-negatives/falseNegativesAudit.ts",
+    "audit:security": "jiti scripts/audit/security/securityAudit.ts",
     "mutation": "stryker run",
-    "compat": "node scripts/release/compat-matrix/compatMatrixRelease.ts",
+    "compat": "jiti scripts/release/compat-matrix/compatMatrixRelease.ts",
     "prepare": "pnpm run build"
   },
   "exports": {
@@ -58,6 +58,9 @@
     },
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#mocks/*": "./__mocks__/*.ts"
+  },
   "devDependencies": {
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
@@ -67,6 +70,7 @@
     "es-toolkit": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-sonarjs": "catalog:",
+    "jiti": "catalog:",
     "svelte": "catalog:",
     "svelte-eslint-parser": "catalog:",
     "tsdown": "catalog:",

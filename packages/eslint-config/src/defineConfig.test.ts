@@ -1,11 +1,5 @@
 import { join } from 'node:path';
 
-import {
-  enabledRuleIdsFor,
-  messagesForFile,
-  ruleIdsFor,
-  ruleIdsForFile,
-} from '@mocks/lintText';
 import { Linter } from 'eslint';
 import {
   describe,
@@ -32,6 +26,13 @@ import type {
   Framework,
   Layer,
 } from './types';
+
+import {
+  enabledRuleIdsFor,
+  messagesForFile,
+  ruleIdsFor,
+  ruleIdsForFile,
+} from '#mocks/lintText';
 
 const SFC_FIXTURES = join(import.meta.dirname, '../__mocks__/fixtures/sfc');
 

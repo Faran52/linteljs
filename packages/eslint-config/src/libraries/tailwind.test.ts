@@ -1,7 +1,5 @@
 import { join } from 'node:path';
 
-import { ruleIdsFor, startsWith } from '@mocks/lintText';
-import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
   expect,
@@ -14,6 +12,9 @@ import react from '../frameworks/react';
 import tailwind from './tailwind';
 
 import type { Layer } from '../types';
+
+import { ruleIdsFor, startsWith } from '#mocks/lintText';
+import { layerWithoutConfig } from '#mocks/presets';
 
 // The plugin resolves `tailwindcss` from cwd, which is the repo root when the whole workspace runs.
 const CWD_SETTINGS: Layer = [{

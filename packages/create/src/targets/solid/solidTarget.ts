@@ -1,4 +1,4 @@
-import { hasLibrary } from '@answers/utils/answerUtils';
+import { hasLibrary } from '#answers/utils/answerUtils';
 
 import {
   FOLDER_ROUTED,
