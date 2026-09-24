@@ -3,11 +3,7 @@ import {
   join,
   resolve,
 } from 'node:path';
-import {
-  env,
-  stdin,
-  versions,
-} from 'node:process';
+import { stdin } from 'node:process';
 
 import {
   type Answers,
@@ -16,29 +12,22 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
   type HostedAnswers,
-  type PackageManager,
   parseLinteljsConfig,
 } from '#answers';
-import {
-  MANAGER_BINARIES,
-  NODE_FLOOR,
-  RUN_PREFIX,
-  STAGES,
-} from '#config/constants';
-import {
-  entryExists,
-  linteljsConfigReader,
-  readIfPresent,
-} from '#disk';
+import { entryExists, linteljsConfigReader } from '#disk';
 import {
   applySync,
   pipelineRun,
   planSync,
 } from '#pipeline';
-import { nodeSpawn, packageManagerSpawn } from '#spawns';
 
 import packageJson from '../../../package.json' with { type: 'json' };
-import { PROJECT_NAME_RULE } from '../constants';
+import {
+  filled,
+  type Host,
+  hosted,
+  hostOf,
+} from '../host/host';
 import { NOTHING_ANSWERED_MESSAGE } from '../prompts/constants';
 import {
   ask,
@@ -46,29 +35,19 @@ import {
   type Prompter,
   RunCancelled,
 } from '../prompts/prompts';
-import { isValidProjectName } from '../utils/nameUtils';
 
-import { LOCKFILES, USAGE } from './constants';
+import { USAGE } from './constants';
 import {
   type AnswerFlags,
+  argumentError,
   type CliOptions,
   parseCliArgs,
 } from './utils/argvUtils';
 import {
-  type DetectedManager,
-  managerFromUserAgent,
-  managerRefusal,
-  nodeRefusal,
-  unversionedRefusal,
-  yarnFromLockfile,
-} from './utils/hostUtils';
-import { say, stageReport } from './utils/reportUtils';
-
-interface Host {
-  packageManager: PackageManager;
-  packageManagerVersion: string;
-  nodeVersion: string;
-}
+  nextSteps,
+  say,
+  stageReport,
+} from './utils/reportUtils';
 
 // What `askedFrom` answers once the host has filled what it records.
 interface HostedAsk {
@@ -83,104 +62,6 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
     ...DEFAULT_ANSWERS,
     ...flags,
   }));
-};
-
-// What to do next, once every stage has run: enter the directory, install what was skipped, run the gate.
-const summary = (name: string, options: CliOptions, answers: Answers): string => {
-  const { packageManager } = answers;
-  const run = RUN_PREFIX[packageManager];
-  const enter = options.existing || name === '' ? [] : [`  cd ${name}`];
-  const install = options.skip.includes('install')
-    ? [`  ${MANAGER_BINARIES[packageManager]} install`, `  ${run} lint:fix`]
-    : [];
-
-  return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
-};
-
-// The manager that invoked this CLI, which is the one a generated project keeps: the user agent that manager sets,
-// else the lockfile the directory already has, else npm, which is what a bare `node .../create` is.
-const detectedManager = async (cwd: string): Promise<DetectedManager> => {
-  const fromAgent = managerFromUserAgent(env['npm_config_user_agent']);
-
-  if (fromAgent !== undefined) {
-    return fromAgent;
-  }
-
-  const present = await Promise.all(LOCKFILES.map(async ([lockfile, name]) => {
-    return await entryExists(join(cwd, lockfile)) ? name : undefined;
-  }));
-
-  const found = present.find((name) => {
-    return name !== undefined;
-  }) ?? 'npm';
-
-  return {
-    // `yarn.lock` names yarn without saying which one, and the two are different managers here.
-    name: found === 'yarn' ? yarnFromLockfile(await readIfPresent(join(cwd, 'yarn.lock'))) : found,
-    version: undefined,
-  };
-};
-
-// A fresh run records the host: the manager question is gone, so `packageManager` on the answers is a placeholder
-// until here.
-const hosted = (answers: Answers, host: Host): HostedAnswers => {
-  return {
-    ...answers,
-    packageManager: host.packageManager,
-    packageManagerVersion: host.packageManagerVersion,
-    nodeVersion: host.nodeVersion,
-  };
-};
-
-/**
- * A config already recorded a manager, so it wins and the host fills only what a config written before these were
- * recorded lacks. The version fills only where the two agree on the manager: this machine's pnpm version says
- * nothing about a project that records npm, and `packageManager` would then name a version that manager never had.
- */
-const filled = (answers: Answers, host: Host): HostedAnswers => {
-  const sameManager = answers.packageManager === host.packageManager;
-
-  return {
-    ...answers,
-    ...answers.packageManagerVersion === undefined && sameManager
-      ? { packageManagerVersion: host.packageManagerVersion }
-      : {},
-    nodeVersion: answers.nodeVersion ?? host.nodeVersion,
-  };
-};
-
-/**
- * The machine this run records, or the one sentence that stops it: the manager that invoked the CLI has to be one a
- * project of ours can be installed by, and the Node a generated project will run on has to be one this CLI can write
- * for. Answered rather than thrown, like `argumentError` above, and asked before the questionnaire.
- */
-const hostOf = async (cwd: string): Promise<Host | string> => {
-  const manager = await detectedManager(cwd);
-  const packageManagerVersion = manager.version ?? packageManagerSpawn(manager.name);
-
-  if (packageManagerVersion === undefined) {
-    return unversionedRefusal(manager.name);
-  }
-
-  const wrongManager = managerRefusal(manager.name, packageManagerVersion);
-
-  if (wrongManager !== undefined) {
-    return wrongManager;
-  }
-
-  // bun runs this CLI itself, so `versions.node` there is the Node bun bundles rather than the one a project runs on.
-  const nodeVersion = versions['bun'] === undefined ? versions.node : nodeSpawn();
-
-  if (nodeVersion === undefined) {
-    return 'bun ran this, and the project it writes runs on Node. '
-      + `Install Node ${NODE_FLOOR} or newer and run this again.`;
-  }
-
-  return nodeRefusal(nodeVersion) ?? {
-    packageManager: manager.name,
-    packageManagerVersion,
-    nodeVersion,
-  };
 };
 
 // Only the questionnaire can supply a missing name; every route that skips it already knows the name.
@@ -271,32 +152,6 @@ const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<voi
   }
 };
 
-// The argument only: a directory name was never chosen as a package name, and adopting one is what
-// `--existing` is for.
-const projectNameError = (options: CliOptions): string | undefined => {
-  // `sync` takes no name, so `parseCliArgs` gives it `''` and this one check covers both.
-  if (options.name === '') {
-    return undefined;
-  }
-
-  return isValidProjectName(options.name) ? undefined : `Project name must be ${PROJECT_NAME_RULE}.`;
-};
-
-// Every refusal of the argv, in the order a user meets them.
-const argumentError = (options: CliOptions): string | undefined => {
-  if (options.unexpectedArguments.length > 0) {
-    const plural = options.unexpectedArguments.length === 1 ? '' : 's';
-
-    return `Unexpected argument${plural}: ${options.unexpectedArguments.join(', ')}`;
-  }
-
-  if (options.unknownSkips.length > 0) {
-    return `Not a stage: ${options.unknownSkips.join(', ')}. Pass one of: ${STAGES.join(', ')}.`;
-  }
-
-  return projectNameError(options);
-};
-
 // Returns the exit code rather than calling `process.exit`, which drops queued stderr writes.
 export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
   let options: CliOptions;
@@ -372,7 +227,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
       ...stageReport(options),
     });
 
-    say(summary(name, options, answers));
+    say(nextSteps(name, options, answers.packageManager));
   }
   catch (error) {
     // Cancelling is not a failure: no "Error:" prefix, and 130, the SIGINT exit code.

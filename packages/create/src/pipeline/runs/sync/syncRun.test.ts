@@ -19,7 +19,7 @@ import {
   vi,
 } from 'vitest';
 
-import { type HostedAnswers } from '#answers';
+import { CONFIG_PATH, type HostedAnswers } from '#answers';
 import { MANAGED_PATH } from '#config/constants';
 import { exists } from '#disk';
 
@@ -86,6 +86,15 @@ describe('planSync', () => {
       return entry.status === 'missing';
     })).toBe(true);
     expect(plan.pending).toEqual(plan.entries);
+  });
+
+  // The recorded config is what sync plans from, so it is the project's own bytes and never a file to rewrite.
+  it('never plans the recorded config', async () => {
+    const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
+
+    expect(entries.map(({ target }) => {
+      return target;
+    })).not.toContain(CONFIG_PATH);
   });
 
   it('marks a written artifact unchanged and leaves it out of pending', async () => {

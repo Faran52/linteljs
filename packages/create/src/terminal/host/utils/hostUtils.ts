@@ -64,7 +64,7 @@ export const unversionedRefusal = (pm: PackageManager): string => {
   return `${pm} ran this, but \`${pm} --version\` answers nothing. Install it and run this again.`;
 };
 
-// Why this run cannot go on, or `undefined`. Answered rather than thrown, like `argumentError` beside it, because it
+// Why this run cannot go on, or `undefined`. Answered rather than thrown, like `argumentError`, because it
 // runs before the questionnaire: nobody should answer a dozen questions and then be told their manager is too old.
 export const managerRefusal = (pm: PackageManager, version: string): string | undefined => {
   if (acceptsManager(pm, version)) {

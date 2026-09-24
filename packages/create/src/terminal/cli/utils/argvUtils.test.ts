@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { parseCliArgs } from './argvUtils';
+import { argumentError, parseCliArgs } from './argvUtils';
 
 describe('parseCliArgs', () => {
   // There is no scaffold stage to skip any more: the flag says the directory is a repository that already exists.
@@ -54,5 +54,32 @@ describe('parseCliArgs', () => {
   it('keeps extra positional arguments for main to reject', () => {
     expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(['extra']);
     expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(['extra']);
+  });
+});
+
+// Every refusal names what to act on, so the line opens with the fix rather than a class name.
+describe('argumentError', () => {
+  it.each([
+    ['an invalid project name', ['My-App'], 'Project name must be'],
+    ['an extra create argument', ['demo-app', 'extra'], 'Unexpected argument: extra'],
+    ['extra create arguments', ['demo-app', 'extra', 'more'], 'Unexpected arguments: extra, more'],
+    ['an extra sync argument', ['sync', 'extra'], 'Unexpected argument: extra'],
+    ['every stage it does not know', ['demo-app', '--skip', 'lnt', '--skip', 'fx'], 'Not a stage: lnt, fx.'],
+  ])('refuses %s', (_case, argv, message) => {
+    expect(argumentError(parseCliArgs(argv))?.startsWith(message)).toBe(true);
+  });
+
+  it('names the stages it does know beside one it does not', () => {
+    expect(argumentError(parseCliArgs(['--skip', 'lnt'])))
+      .toContain('Pass one of: lint, package, standard, install, fix.');
+  });
+
+  // `sync` and a bare `create` both carry an empty name, which is not a name to refuse.
+  it.each([
+    ['a valid name', ['demo-app']],
+    ['no name', []],
+    ['sync', ['sync']],
+  ])('refuses nothing for %s', (_case, argv) => {
+    expect(argumentError(parseCliArgs(argv))).toBeUndefined();
   });
 });

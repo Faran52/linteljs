@@ -5,6 +5,8 @@ import { type AnswerKey } from '#answers';
 import { STAGES } from '#config/constants';
 import { type Stage } from '#config/types';
 
+import { PROJECT_NAME_RULE } from '../../constants';
+import { isValidProjectName } from '../../utils/nameUtils';
 import { CLI_OPTIONS, FLAGGED_ANSWERS } from '../constants';
 
 import type { JsonValue } from '#answers/utils/readUtils';
@@ -101,4 +103,30 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     help: values.help,
     version: values.version,
   };
+};
+
+// The argument only: a directory name was never chosen as a package name, and adopting one is what
+// `--existing` is for.
+const projectNameError = (options: CliOptions): string | undefined => {
+  // `sync` takes no name, so `parseCliArgs` gives it `''` and this one check covers both.
+  if (options.name === '') {
+    return undefined;
+  }
+
+  return isValidProjectName(options.name) ? undefined : `Project name must be ${PROJECT_NAME_RULE}.`;
+};
+
+// Every refusal of the argv, in the order a user meets them.
+export const argumentError = (options: CliOptions): string | undefined => {
+  if (options.unexpectedArguments.length > 0) {
+    const plural = options.unexpectedArguments.length === 1 ? '' : 's';
+
+    return `Unexpected argument${plural}: ${options.unexpectedArguments.join(', ')}`;
+  }
+
+  if (options.unknownSkips.length > 0) {
+    return `Not a stage: ${options.unknownSkips.join(', ')}. Pass one of: ${STAGES.join(', ')}.`;
+  }
+
+  return projectNameError(options);
 };

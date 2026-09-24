@@ -1,10 +1,6 @@
 import { type ParseArgsOptionsConfig } from 'node:util';
 
-import {
-  type AnswerKey,
-  ANSWERS,
-  type PackageManager,
-} from '#answers';
+import { type AnswerKey, ANSWERS } from '#answers';
 import { STAGES } from '#config/constants';
 import { type Stage } from '#config/types';
 import { valuesOf } from '#utils/objectUtils';
@@ -141,18 +137,6 @@ export const CLI_OPTIONS = {
   },
   ...ANSWER_OPTIONS,
 } satisfies ParseArgsOptionsConfig;
-
-/**
- * The lockfile a directory already has, for a run with no user agent: `--existing` and `sync` on a project
- * that carries one. In the order `package-manager-detector` checks them, which ends with npm's two; npm is also what
- * a directory with none is taken for, so those two could never change the answer and have no row.
- */
-export const LOCKFILES: readonly (readonly [string, PackageManager])[] = [
-  ['pnpm-lock.yaml', 'pnpm'],
-  ['yarn.lock', 'yarn'],
-  ['bun.lock', 'bun'],
-  ['bun.lockb', 'bun'],
-];
 
 // What each stage does, on the line that announces it.
 export const STAGE_LABELS: Record<Stage, string> = {

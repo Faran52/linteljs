@@ -358,8 +358,10 @@ Two modules left `process/` in the process, because neither spawned anything and
 membership test is that it does. `scaffoldCommand.ts` is a table and an argv builder, so it is the
 scaffold stage's own `utils/`. The Node refusal is about Node rather than a package manager, so it
 sits beside `main`, next to `nameUtils.ts`, which is the same shape: a validation and the message it
-answers. It is `nodeRefusal` in `terminal/cli/utils/hostUtils.ts` now, beside the manager refusal
-that asks the same question of whatever invoked the CLI.
+answers. It is `nodeRefusal` in `terminal/host/utils/hostUtils.ts` now, beside the manager refusal
+that asks the same question of whatever invoked the CLI. `terminal/host/` is the subject that asks
+both: which manager and which Node a run records, read off the user agent, the lockfile and `PATH`,
+which `cli.ts` carried inline until its suite was testing all of it through `main`.
 
 `src/meta.test.ts` holds every ring. One table rather than three files, because the assertions are
 identical and only the groups, the suffix and the registry differ, so the rule reads as data and a

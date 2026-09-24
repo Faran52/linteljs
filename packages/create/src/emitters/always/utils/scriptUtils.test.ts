@@ -125,4 +125,19 @@ describe('buildScripts', () => {
     expect(coverage).toBe('vitest run --coverage');
     expect(check).toContain('test:coverage');
   });
+
+  it('always wires husky through prepare', () => {
+    expect(buildScripts(answersFor({}))['prepare']).toBe('husky');
+  });
+
+  // Replacing SvelteKit's own prepare breaks typecheck, and yarn 2+ runs no prepare at all.
+  it('wires husky and the target step through postinstall on yarn, which runs no prepare', () => {
+    const scripts = buildScripts(answersFor({
+      target: 'svelte',
+      packageManager: 'yarn',
+    }));
+
+    expect(scripts['postinstall']).toBe('svelte-kit sync && husky');
+    expect(scripts).not.toHaveProperty('prepare');
+  });
 });

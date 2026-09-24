@@ -5,7 +5,6 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -20,6 +19,8 @@ import {
 } from 'vitest';
 
 import {
+  type Agent,
+  ANSWERS,
   type Answers,
   type Data,
   DEFAULT_ANSWERS,
@@ -31,10 +32,12 @@ import {
 } from '#answers';
 import { type Artifact } from '#config/types';
 import { shippedAssetsReader, TEMPLATES_ROOT } from '#disk';
+import { isJsonObject, valuesOf } from '#utils/objectUtils';
 
-import { referenceArtifacts } from './linteljsPluginEmitter';
+import { linteljsPluginEmitter, referenceArtifacts } from './linteljsPluginEmitter';
 
 interface AnswerOverrides {
+  agents?: Agent[];
   target?: TargetId;
   testing?: Testing;
   libraries?: Library[];
@@ -58,11 +61,6 @@ interface BashHookPayload {
   tool_input: ToolInput;
 }
 
-interface BashPayloadCase {
-  label: string;
-  payload: (cwd: string, command: string) => BashHookPayload;
-}
-
 interface HookOutput {
   decision?: 'block';
   reason?: string;
@@ -71,6 +69,11 @@ interface HookOutput {
 interface CommandProbe {
   command: string;
   label: string;
+}
+
+interface SkillDocument {
+  frontmatter: Map<string, string>;
+  body: string;
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -166,8 +169,119 @@ describe('referenceArtifacts', () => {
   });
 });
 
+const targetsOf = (answers: Answers): string[] => {
+  return linteljsPluginEmitter(answers).map(({ target }) => {
+    return target;
+  });
+};
+
+describe('linteljsPluginEmitter', () => {
+  // Claude and Codex load the tree as a plugin, and Copilot and Cursor are each handed a copy of its rules.
+  it.each(valuesOf(ANSWERS.agents.values))('writes the same tree for %s as for no agent at all', (agent) => {
+    expect(targetsOf(answersFor({ agents: [agent] }))).toEqual(targetsOf(answersFor({ agents: [] })));
+  });
+
+  // The writer sets the mode from `executable`, so the flag is what makes a hook runnable on disk.
+  it('ships the hooks, the shell ones executable and the shared parser not', () => {
+    const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS).filter(({ target }) => {
+      return target.startsWith('plugins/linteljs/hooks/');
+    }).map(({ target, executable }) => {
+      return [target, executable];
+    });
+
+    expect(hooks).toEqual([
+      ['plugins/linteljs/hooks/hooks.json', undefined],
+      ['plugins/linteljs/hooks/commandParser.js', undefined],
+      ['plugins/linteljs/hooks/eslint-fix-warning.sh', true],
+      ['plugins/linteljs/hooks/git-safety-guard.sh', true],
+      ['plugins/linteljs/hooks/banned-pattern-guard.sh', true],
+    ]);
+  });
+});
+
+const parseSkill = (text: string): SkillDocument => {
+  const match = /^---\n([\s\S]+?)\n---\n\n([\s\S]+)$/u.exec(text);
+
+  if (match?.[1] === undefined || match[2] === undefined) {
+    throw new Error('SKILL.md must contain closed YAML frontmatter and a body');
+  }
+
+  const entries = match[1].split('\n').map((line): [string, string] => {
+    const separator = line.indexOf(': ');
+
+    if (separator === -1) {
+      throw new Error(`Invalid SKILL.md frontmatter line: ${line}`);
+    }
+
+    return [line.slice(0, separator), line.slice(separator + 2)];
+  });
+
+  return {
+    frontmatter: new Map(entries),
+    body: match[2],
+  };
+};
+
+const skillDocument = async (): Promise<SkillDocument> => {
+  const [skill] = linteljsPluginEmitter(DEFAULT_ANSWERS);
+
+  return parseSkill(skill === undefined ? '' : await shippedAssetsReader(skill.content));
+};
+
+// The skill every agent is routed to first, so each line an agent has to act on is held here by its text.
+describe('SKILL.md', () => {
+  it('has the exact required frontmatter', async () => {
+    const { frontmatter } = await skillDocument();
+    const description = "Apply this project's LintelJS structure, type-safety, testing, "
+      + 'and verification standards to every coding task.';
+
+    expect(Object.fromEntries(frontmatter)).toEqual({
+      name: 'linteljs',
+      description,
+    });
+  });
+
+  it.each([
+    ['repository structure', 'Read `references/repo-structure.md` before adding, moving, or renaming files.'],
+    ['typed source', 'Read `references/type-standards.md` before editing typed source.'],
+    [
+      'Zod schemas and APIs',
+      'Also read `references/type-standards-zod.md` when it exists and the work touches schemas or API code.',
+    ],
+    ['framework state', 'Before changing state, read each emitted framework state reference in `references/`.'],
+    ['tests', 'Read `references/testing.md` before editing tests, mocks, or test setup.'],
+    [
+      'hook guardrail review',
+      'Treat hooks as guardrails, not a security sandbox, and review every command before running it.',
+    ],
+    ['check', 'Run the package-manager `check` command before declaring implementation work complete.'],
+    ['lint fix', 'Run the package-manager `lint:fix` command, not lint without fixes.'],
+  ])('routes %s work', async (_label, text) => {
+    expect((await skillDocument()).body).toContain(text);
+  });
+
+  it.each([
+    'git stash',
+    'git reset',
+    '--no-verify',
+    '--amend',
+    'git add -A',
+    'git add .',
+  ])('bans %s', async (operation) => {
+    expect((await skillDocument()).body).toContain(`\`${operation}\``);
+  });
+
+  // With --amend banned, the default has to be set before the first commit; the same line both adapters carry.
+  it('states the commit trailer policy directly after the git bans', async () => {
+    const trailers = '- Commit messages carry no `Co-Authored-By` or tool-attribution trailers.';
+    const { body } = await skillDocument();
+
+    expect(body).toContain(trailers);
+    expect(body.indexOf('- Never use `git stash`')).toBeLessThan(body.indexOf(trailers));
+  });
+});
+
 const HOOK_ASSETS = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
-const COMMAND_PARSER = 'commandParser.js';
 const HOOK_SCRIPTS = [
   'eslint-fix-warning.sh',
   'git-safety-guard.sh',
@@ -208,17 +322,6 @@ const bashPayload = (cwd: string, command: string): BashHookPayload => {
     tool_input: { command },
   };
 };
-
-const BASH_PAYLOADS: BashPayloadCase[] = [
-  {
-    label: 'Claude',
-    payload: bashPayload,
-  },
-  {
-    label: 'Codex',
-    payload: bashPayload,
-  },
-];
 
 const BANNED_GIT_COMMANDS: CommandProbe[] = [
   {
@@ -616,8 +719,24 @@ const ESLINT_ALLOWED_COMMANDS: CommandProbe[] = [
   },
 ];
 
+const isHookOutput = (value: unknown): value is HookOutput => {
+  return isJsonObject(value)
+    && (!('decision' in value) || value.decision === 'block')
+    && (!('reason' in value) || typeof value.reason === 'string');
+};
+
 const parseHookOutput = (text: string): HookOutput => {
-  return JSON.parse(text) as HookOutput;
+  const parsed: unknown = JSON.parse(text);
+
+  if (!isHookOutput(parsed)) {
+    throw new Error(`Not a hook output: ${text}`);
+  }
+
+  return parsed;
+};
+
+const isPath = (value: unknown): value is string => {
+  return typeof value === 'string';
 };
 
 /**
@@ -695,7 +814,9 @@ describe('portable hook assets', () => {
     }
 
     return readFileSync(checkerLog, 'utf8').trim().split('\n').filter(Boolean).map((line) => {
-      return JSON.parse(line) as string;
+      const parsed: unknown = JSON.parse(line);
+
+      return isPath(parsed) ? parsed : `not a path: ${line}`;
     });
   };
 
@@ -743,15 +864,14 @@ describe('portable hook assets', () => {
     expect(runHook('eslint-fix-warning.sh', bashPayload(cwd, command))).toBe('');
   });
 
-  describe.each(BASH_PAYLOADS)('$label Bash payload', ({ payload }) => {
-    it.each(BANNED_GIT_COMMANDS)('denies $label', ({ command }) => {
-      expect(JSON.parse(runHook('git-safety-guard.sh', payload(cwd, command))))
-        .toEqual(GIT_DENIAL);
-    });
+  // Claude Code and Codex hand the hook the same Bash payload, so one run of each command answers for both.
+  it.each(BANNED_GIT_COMMANDS)('denies $label', ({ command }) => {
+    expect(JSON.parse(runHook('git-safety-guard.sh', bashPayload(cwd, command))))
+      .toEqual(GIT_DENIAL);
+  });
 
-    it.each(ALLOWED_GIT_COMMANDS)('allows $label', ({ command }) => {
-      expect(runHook('git-safety-guard.sh', payload(cwd, command))).toBe('');
-    });
+  it.each(ALLOWED_GIT_COMMANDS)('allows $label', ({ command }) => {
+    expect(runHook('git-safety-guard.sh', bashPayload(cwd, command))).toBe('');
   });
 
   it.each(HOOK_SCRIPTS)('ignores malformed JSON in %s', (script) => {
@@ -908,15 +1028,5 @@ describe('portable hook assets', () => {
       tool_input: '*** Update File: src/app.md',
     })).toBe('');
     expect(checkedPaths()).toEqual([]);
-  });
-
-  it('ships every hook script with an executable mode', () => {
-    for (const script of HOOK_SCRIPTS) {
-      expect(statSync(join(HOOK_ASSETS, script)).mode & 0o111).toBe(0o111);
-    }
-  });
-
-  it('ships the shared parser as a non-executable Node asset', () => {
-    expect(statSync(join(HOOK_ASSETS, COMMAND_PARSER)).mode & 0o111).toBe(0);
   });
 });

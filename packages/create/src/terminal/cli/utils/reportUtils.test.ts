@@ -17,6 +17,7 @@ import {
 } from '../constants';
 
 import {
+  nextSteps,
   say,
   stageLine,
   stageReport,
@@ -140,6 +141,41 @@ describe('stepsPlan', () => {
     expect(plan.split('\n').filter((line) => {
       return line.endsWith('(skipped)');
     })).toHaveLength(2);
+  });
+});
+
+// What is left to do once every stage has run: enter the directory it made, install what it skipped, run the gate.
+describe('nextSteps', () => {
+  const INSTALL_SKIPPED: CliOptions = {
+    ...OPTIONS,
+    skip: ['install', 'fix'],
+  };
+
+  it('enters the directory a named create made, then the steps it skipped', () => {
+    expect(nextSteps('demo-app', INSTALL_SKIPPED, 'pnpm'))
+      .toBe('\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
+  });
+
+  it.each<[string, CliOptions, string]>([
+    ['an existing directory', {
+      ...INSTALL_SKIPPED,
+      existing: true,
+    }, 'demo-app'],
+    ['the directory it stands in', INSTALL_SKIPPED, ''],
+  ])('enters nothing for %s', (_case, options, name) => {
+    expect(nextSteps(name, options, 'pnpm')).toBe('\nDone. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
+  });
+
+  it('leaves only the gate once it installed', () => {
+    expect(nextSteps('', OPTIONS, 'pnpm')).toBe('\nDone. Next:\n  pnpm check');
+  });
+
+  // npm needs `run` before a script; yarn 1 is installed and run by the command it answers to.
+  it.each([
+    ['npm', 'npm install\n  npm run lint:fix\n  npm run check'],
+    ['yarn-classic', 'yarn install\n  yarn run lint:fix\n  yarn run check'],
+  ] as const)('spells each command the way %s runs it', (manager, commands) => {
+    expect(nextSteps('', INSTALL_SKIPPED, manager)).toBe(`\nDone. Next:\n  ${commands}`);
   });
 });
 
@@ -280,6 +316,13 @@ describe('stageReport on a terminal', () => {
 
     asTerminal(undefined);
 
-    expect(stageReport(OPTIONS).output).toBe('inherit');
+    // Behind a pipe the report prints its plan as it is built, which is not this test's to show.
+    let output = '';
+
+    printed(() => {
+      ({ output } = stageReport(OPTIONS));
+    });
+
+    expect(output).toBe('inherit');
   });
 });

@@ -9,6 +9,19 @@ import { DEFAULT_ANSWERS } from '#answers';
 import { adapterArtifact, emitAgentAdapter } from './adapterUtils';
 
 describe('emitAgentAdapter', () => {
+  // The one body CLAUDE.md, AGENTS.md, Copilot's instructions and Cursor's rule all carry.
+  it('points at the skill, the gate and the git bans, and nothing else', () => {
+    expect(emitAgentAdapter(DEFAULT_ANSWERS)).toBe(`# LintelJS project
+
+- Follow \`plugins/linteljs/skills/linteljs/SKILL.md\` for project structure, types, state, and tests.
+- Read \`package.json\` for exact scripts and dependency versions.
+- Run \`pnpm check\` before declaring implementation work complete.
+- Run \`pnpm lint:fix\`, not lint without fixes.
+- Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.
+- Commit messages carry no \`Co-Authored-By\` or tool-attribution trailers.
+`);
+  });
+
   // npm is the one manager that needs `run` before a script name, and every command line in the file carries it.
   it('spells every script the way the chosen manager runs it', () => {
     const adapter = emitAgentAdapter({

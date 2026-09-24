@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { copilotArtifacts } from './copilotInstructionsEmitter';
+import { copilotArtifacts, copilotInstructionsEmitter } from './copilotInstructionsEmitter';
 
 import {
   answersFor,
@@ -13,6 +13,14 @@ import {
   transformOf,
   UNSCOPED,
 } from '#mocks/agentRules';
+
+describe('copilotInstructionsEmitter', () => {
+  it('writes the Copilot files only where Copilot was chosen', () => {
+    expect(copilotInstructionsEmitter(answersFor(['claude-code', 'codex', 'cursor']))).toEqual([]);
+    expect(targets(copilotInstructionsEmitter(answersFor(['copilot']))))
+      .toEqual(targets(copilotArtifacts(answersFor(['copilot']))));
+  });
+});
 
 describe('copilotArtifacts', () => {
   it('writes the repository-wide file and one path-scoped rule per source', () => {

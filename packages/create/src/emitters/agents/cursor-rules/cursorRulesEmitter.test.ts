@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { cursorArtifacts } from './cursorRulesEmitter';
+import { cursorArtifacts, cursorRulesEmitter } from './cursorRulesEmitter';
 
 import {
   answersFor,
@@ -13,6 +13,14 @@ import {
   transformOf,
   UNSCOPED,
 } from '#mocks/agentRules';
+
+describe('cursorRulesEmitter', () => {
+  it('writes the Cursor rules only where Cursor was chosen', () => {
+    expect(cursorRulesEmitter(answersFor(['claude-code', 'codex', 'copilot']))).toEqual([]);
+    expect(targets(cursorRulesEmitter(answersFor(['cursor']))))
+      .toEqual(targets(cursorArtifacts(answersFor(['cursor']))));
+  });
+});
 
 describe('cursorArtifacts', () => {
   it('writes every rule under .cursor/rules with the mdc suffix', () => {

@@ -4,7 +4,10 @@ import {
   it,
 } from 'vitest';
 
-import { emitCodexMarketplace } from './codexMarketplaceEmitter';
+import { type Answers, DEFAULT_ANSWERS } from '#answers';
+import { shippedAssetsReader } from '#disk';
+
+import { codexMarketplaceEmitter, emitCodexMarketplace } from './codexMarketplaceEmitter';
 
 describe('emitCodexMarketplace', () => {
   it('declares LintelJS first and all selected plugins with exact policies', () => {
@@ -113,5 +116,56 @@ describe('emitCodexMarketplace', () => {
         { name: 'ponytail' },
       ],
     });
+  });
+});
+
+describe('codexMarketplaceEmitter', () => {
+  const CODEX: Answers = {
+    ...DEFAULT_ANSWERS,
+    agents: ['codex'],
+    plugins: ['frontend-design', 'ponytail'],
+  };
+
+  it('writes nothing unless Codex was chosen', () => {
+    expect(codexMarketplaceEmitter(DEFAULT_ANSWERS)).toEqual([]);
+  });
+
+  // The adapter is the project's once it exists; the marketplace is linteljs's, rewritten from the answers each run.
+  it('writes the adapter, the marketplace of the chosen plugins and the plugin manifest', () => {
+    const artifacts = codexMarketplaceEmitter(CODEX);
+
+    expect(artifacts.map(({ target, preserve }) => {
+      return [target, preserve];
+    })).toEqual([
+      ['AGENTS.md', true],
+      ['.agents/plugins/marketplace.json', undefined],
+      ['plugins/linteljs/.codex-plugin/plugin.json', undefined],
+    ]);
+    expect(artifacts[1]?.content).toEqual({ text: emitCodexMarketplace(CODEX.plugins) });
+  });
+
+  // Hooks come through conventional discovery, so the manifest names none.
+  it('ships the exact minimal local plugin metadata', async () => {
+    const [, , plugin] = codexMarketplaceEmitter(CODEX);
+    const longDescription = "Applies the generated project's LintelJS structure, typing, testing, "
+      + 'and verification standards.';
+
+    expect(plugin === undefined ? '' : await shippedAssetsReader(plugin.content)).toBe(`{
+  "name": "linteljs",
+  "version": "1.0.0",
+  "description": "LintelJS project standards and safety hooks",
+  "author": { "name": "Faran Ali" },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "LintelJS",
+    "shortDescription": "Project structure, type-safety, and verification rules",
+    "longDescription": "${longDescription}",
+    "developerName": "Faran Ali",
+    "category": "Developer Tools",
+    "capabilities": ["Instructions", "Lifecycle hooks"],
+    "defaultPrompt": ["Apply this project's LintelJS standards to my task."]
+  }
+}
+`);
   });
 });

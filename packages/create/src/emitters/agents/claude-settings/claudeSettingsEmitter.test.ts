@@ -5,6 +5,7 @@ import {
 } from 'vitest';
 
 import { type Answers, DEFAULT_ANSWERS } from '#answers';
+import { shippedAssetsReader } from '#disk';
 
 import { claudeSettingsEmitter, emitClaudeSettings } from './claudeSettingsEmitter';
 
@@ -94,6 +95,62 @@ describe('emitClaudeSettings', () => {
 });
 
 describe('claudeSettingsEmitter', () => {
+  const CLAUDE: Answers = {
+    ...DEFAULT_ANSWERS,
+    agents: ['claude-code'],
+  };
+
+  it('writes nothing unless Claude Code was chosen', () => {
+    expect(claudeSettingsEmitter({
+      ...DEFAULT_ANSWERS,
+      agents: ['codex'],
+    })).toEqual([]);
+  });
+
+  /*
+   * The adapter is the project's once it exists; the settings file is linteljs's, and it is the one merge `sync` may
+   * still remove, since the whole file exists because this host was selected.
+   */
+  it('writes the adapter, the settings and the plugin manifests, and owns all but the adapter', () => {
+    expect(claudeSettingsEmitter(CLAUDE).map(({
+      target,
+      preserve,
+      removable,
+    }) => {
+      return [target, preserve, removable];
+    })).toEqual([
+      ['CLAUDE.md', true, undefined],
+      ['.claude/settings.json', undefined, true],
+      ['plugins/linteljs/.claude-plugin/plugin.json', undefined, undefined],
+      ['plugins/linteljs/.claude-plugin/marketplace.json', undefined, undefined],
+    ]);
+  });
+
+  // Hooks come through conventional discovery, so neither manifest names them.
+  it('ships the exact minimal local plugin metadata', async () => {
+    const [, , plugin, marketplace] = claudeSettingsEmitter(CLAUDE);
+
+    expect(plugin === undefined ? '' : await shippedAssetsReader(plugin.content)).toBe(`{
+  "name": "linteljs",
+  "version": "1.0.0",
+  "description": "LintelJS project standards and safety hooks",
+  "author": { "name": "Faran Ali" }
+}
+`);
+    expect(marketplace === undefined ? '' : await shippedAssetsReader(marketplace.content)).toBe(`{
+  "name": "linteljs",
+  "owner": { "name": "Faran Ali" },
+  "plugins": [
+    {
+      "name": "linteljs",
+      "source": "./",
+      "description": "LintelJS project standards and safety hooks"
+    }
+  ]
+}
+`);
+  });
+
   // Through the artifact, so what is on disk is what the merge is handed.
   it('merges the settings a running project already holds, and writes its own where there are none', () => {
     const answers: Answers = {

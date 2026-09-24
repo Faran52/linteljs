@@ -1,6 +1,10 @@
 import { stdout } from 'node:process';
 
-import { STAGES } from '#config/constants';
+import {
+  MANAGER_BINARIES,
+  RUN_PREFIX,
+  STAGES,
+} from '#config/constants';
 import { type RunOutput, type Stage } from '#config/types';
 
 import {
@@ -10,6 +14,7 @@ import {
   STAGE_WIDTH,
 } from '../constants';
 
+import type { PackageManager } from '#answers';
 import type { PipelineOptions } from '#pipeline';
 import type { CliOptions } from './argvUtils';
 
@@ -50,6 +55,17 @@ export const stageLine = (stage: Stage, writes: number, notice: string, millisec
   }).join(', ');
 
   return `${stage.padEnd(STAGE_WIDTH)}  ${summary}`.trimEnd();
+};
+
+// What to do next, once every stage has run: enter the directory, install what was skipped, run the gate.
+export const nextSteps = (name: string, options: CliOptions, packageManager: PackageManager): string => {
+  const run = RUN_PREFIX[packageManager];
+  const enter = options.existing || name === '' ? [] : [`  cd ${name}`];
+  const install = options.skip.includes('install')
+    ? [`  ${MANAGER_BINARIES[packageManager]} install`, `  ${run} lint:fix`]
+    : [];
+
+  return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
 };
 
 // The stages this run will execute, before the first one starts: a stage that is skipped is easier to read here
