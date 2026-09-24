@@ -4,28 +4,28 @@ export default defineConfig({
   /**
    * One entry per subpath in package.json `exports`. A subpath with no entry here typechecks fine and 404s at install
    * time, so `scripts/smoke/smokeScript.ts` resolves every one against the built `dist` before publish. Keyed, not an
-   * array: an array preserves `src/frameworks/` in the output path, while `exports` points at a flat
-   * `./dist/react.mjs`.
+   * array: an array preserves `src/frameworks/react/` in the output path, while `exports` points at a flat
+   * `./dist/react.mjs`, so the source nests by subject and the output stays flat.
    */
   entry: {
     index: 'src/index.ts',
-    base: 'src/base.ts',
+    base: 'src/layers/base/baseLayer.ts',
     defineConfig: 'src/defineConfig.ts',
-    typescript: 'src/typescript.ts',
-    vitest: 'src/vitest.ts',
-    html: 'src/html.ts',
-    astro: 'src/astro.ts',
-    react: 'src/frameworks/react.ts',
-    reactNative: 'src/frameworks/reactNative.ts',
-    next: 'src/frameworks/next.ts',
-    vue: 'src/frameworks/vue.ts',
-    nuxt: 'src/frameworks/nuxt.ts',
-    svelte: 'src/frameworks/svelte.ts',
-    solid: 'src/frameworks/solid.ts',
-    angular: 'src/frameworks/angular.ts',
-    tanstackQuery: 'src/libraries/tanstackQuery.ts',
-    tanstackRouter: 'src/libraries/tanstackRouter.ts',
-    tailwind: 'src/libraries/tailwind.ts',
+    typescript: 'src/layers/typescript/typescriptLayer.ts',
+    vitest: 'src/layers/vitest/vitestLayer.ts',
+    html: 'src/layers/html/htmlLayer.ts',
+    astro: 'src/frameworks/astro/astroFramework.ts',
+    react: 'src/frameworks/react/reactFramework.ts',
+    reactNative: 'src/frameworks/react-native/reactNativeFramework.ts',
+    next: 'src/frameworks/next/nextFramework.ts',
+    vue: 'src/frameworks/vue/vueFramework.ts',
+    nuxt: 'src/frameworks/nuxt/nuxtFramework.ts',
+    svelte: 'src/frameworks/svelte/svelteFramework.ts',
+    solid: 'src/frameworks/solid/solidFramework.ts',
+    angular: 'src/frameworks/angular/angularFramework.ts',
+    tanstackQuery: 'src/libraries/tanstack-query/tanstackQueryLibrary.ts',
+    tanstackRouter: 'src/libraries/tanstack-router/tanstackRouterLibrary.ts',
+    tailwind: 'src/libraries/tailwind/tailwindLibrary.ts',
   },
   /**
    * ESM only. `@eslint-react/eslint-plugin`, and it will not be the last, publishes no `require` condition at

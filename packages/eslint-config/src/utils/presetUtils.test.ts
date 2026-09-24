@@ -4,7 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import base from '../base';
+import base from '../layers/base/baseLayer';
 
 import { presetOf } from './presetUtils';
 
@@ -70,7 +70,7 @@ describe('base: resolver', () => {
     expect(settings).toHaveProperty('import-x/parsers');
   });
 
-  // Opt-in, never a default; see base.ts for the measurement.
+  // Opt-in, never a default; see baseLayer.ts for the measurement.
   it('passes through the conditions a project asks for', () => {
     const conditionNames = ['import', 'types'];
     const settings = resolverSettingsOf(base({ resolver: { conditionNames } }));

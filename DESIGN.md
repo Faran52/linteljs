@@ -378,6 +378,25 @@ One thing the restructure bought that was not the point of it. `vitest.config.ts
 seen, and the suites that followed them covered every branch with nothing added. The exclusion has
 since gone altogether; "Coverage thresholds" below says why.
 
+### `eslint-config` takes the same shape
+
+The layers sat half flat: five loose at `src/`, the rest loose in `frameworks/` and `libraries/`,
+with Astro at the root though it is a framework, and nothing held the layout. The reason given for
+flat, that each file is a tsdown entry backing an `exports` subpath, did not hold: the entries are
+keyed, so `dist/react.mjs` is flat whatever path backs it. They are subjects now,
+`layers/<name>/<name>Layer.ts`, `frameworks/<name>/<name>Framework.ts` and
+`libraries/<name>/<name>Library.ts`, and the base layer's two private builders moved under
+`layers/base/utils/`.
+
+The suffix is on the file and not the export. `baseLayer.ts` exports `base`, because the export is
+what a consumer imports and renaming it would be a breaking change bought for symmetry. The packed
+file list and every `.d.mts` matched before and after, apart from the `//#region` source paths and
+the hashed chunk names, which are private and follow the source module's name.
+
+`src/meta.test.ts` holds the three groups and holds the tsdown entries to `exports` one to one. An
+`exports` subpath with no entry built, typechecked and published before; the smoke script caught it
+only against a packed tarball.
+
 ### The starter tree mirrors the project it seeds
 
 Fifty-three files sat flat under each target, with the structure that matters encoded in filenames

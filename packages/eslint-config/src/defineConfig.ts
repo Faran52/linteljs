@@ -1,5 +1,5 @@
-import { base } from './base';
-import { typescript } from './typescript';
+import { base } from './layers/base/baseLayer';
+import { typescript } from './layers/typescript/typescriptLayer';
 
 import type {
   DefineConfigOptions,
@@ -20,7 +20,7 @@ interface LibraryOptions {
 // Loaded on demand: each plugin is an optional peer.
 const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   'react': async () => {
-    const { react, reactGroup } = await import('./frameworks/react');
+    const { react, reactGroup } = await import('./frameworks/react/reactFramework');
 
     return {
       layer: react(),
@@ -29,8 +29,8 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'next': async () => {
-    const { react } = await import('./frameworks/react');
-    const { next, nextGroup } = await import('./frameworks/next');
+    const { react } = await import('./frameworks/react/reactFramework');
+    const { next, nextGroup } = await import('./frameworks/next/nextFramework');
 
     return {
       layer: [...react(), ...next()],
@@ -39,7 +39,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'react-native': async () => {
-    const { reactNative, reactNativeGroup } = await import('./frameworks/reactNative');
+    const { reactNative, reactNativeGroup } = await import('./frameworks/react-native/reactNativeFramework');
 
     return {
       layer: reactNative(),
@@ -48,7 +48,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'vue': async () => {
-    const { vue, vueGroup } = await import('./frameworks/vue');
+    const { vue, vueGroup } = await import('./frameworks/vue/vueFramework');
 
     return {
       layer: vue(),
@@ -57,8 +57,8 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'nuxt': async () => {
-    const { vue } = await import('./frameworks/vue');
-    const { nuxt, nuxtGroup } = await import('./frameworks/nuxt');
+    const { vue } = await import('./frameworks/vue/vueFramework');
+    const { nuxt, nuxtGroup } = await import('./frameworks/nuxt/nuxtFramework');
 
     return {
       layer: [...vue(), ...nuxt()],
@@ -67,7 +67,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'svelte': async () => {
-    const { svelte, svelteGroup } = await import('./frameworks/svelte');
+    const { svelte, svelteGroup } = await import('./frameworks/svelte/svelteFramework');
 
     return {
       layer: svelte(),
@@ -76,7 +76,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'solid': async () => {
-    const { solid, solidGroup } = await import('./frameworks/solid');
+    const { solid, solidGroup } = await import('./frameworks/solid/solidFramework');
 
     return {
       layer: solid(),
@@ -85,7 +85,7 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
   },
 
   'angular': async () => {
-    const { angular, angularGroup } = await import('./frameworks/angular');
+    const { angular, angularGroup } = await import('./frameworks/angular/angularFramework');
 
     return {
       layer: angular(),
@@ -96,36 +96,36 @@ const FRAMEWORKS: Record<Framework, () => Promise<FrameworkParts>> = {
 
 const LIBRARIES: Record<LibraryLayer, (options: LibraryOptions) => Promise<Layer>> = {
   'tanstack-query': async () => {
-    const { tanstackQuery } = await import('./libraries/tanstackQuery');
+    const { tanstackQuery } = await import('./libraries/tanstack-query/tanstackQueryLibrary');
 
     return tanstackQuery();
   },
   'tanstack-router': async () => {
-    const { tanstackRouter } = await import('./libraries/tanstackRouter');
+    const { tanstackRouter } = await import('./libraries/tanstack-router/tanstackRouterLibrary');
 
     return tanstackRouter();
   },
   'tailwind': async ({ tailwindEntryPoint }) => {
-    const { tailwind } = await import('./libraries/tailwind');
+    const { tailwind } = await import('./libraries/tailwind/tailwindLibrary');
 
     return tailwind(tailwindEntryPoint);
   },
 };
 
 const vitestLayer = async (): Promise<Layer> => {
-  const { vitest } = await import('./vitest');
+  const { vitest } = await import('./layers/vitest/vitestLayer');
 
   return vitest();
 };
 
 const htmlLayer = async (): Promise<Layer> => {
-  const { html } = await import('./html');
+  const { html } = await import('./layers/html/htmlLayer');
 
   return html();
 };
 
 const astroLayer = async (): Promise<Layer> => {
-  const { astro } = await import('./astro');
+  const { astro } = await import('./frameworks/astro/astroFramework');
 
   return astro();
 };

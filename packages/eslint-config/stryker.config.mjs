@@ -11,8 +11,8 @@ const config = {
   plugins: ['@stryker-mutator/vitest-runner'],
   reporters: ['html', 'json', 'clear-text', 'progress'],
 
-  // Measured against `all` on vue.ts and importSortUtils.ts: 98 of 111 mutants static, identical verdicts, same wall
-  // time. `perTest` keeps the killing test named for the rest.
+  // Measured against `all` on vueFramework.ts and importSortUtils.ts: 98 of 111 mutants static, identical verdicts,
+  // same wall time. `perTest` keeps the killing test named for the rest.
   coverageAnalysis: 'perTest',
 
   // The barrel and the types hold no logic worth mutating.

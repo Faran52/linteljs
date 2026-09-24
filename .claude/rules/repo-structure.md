@@ -180,12 +180,19 @@ aliases it duplicates instead of importing carry a comment saying so.
   the directory listing equals the registry and that no `index.ts` survives in a rule directory, so a
   half-renamed directory fails rather than sitting unnoticed.
 
-- **`eslint-config` is one file per layer, not a ring.** `base.ts` exports `base`, `typescript.ts`
-  exports `typescript`; `frameworks/` and `libraries/` group the layers that come in sets.
-  `defineConfig.ts` composes them and owns the ordering, which is load-bearing. Flat rather than
-  foldered because each layer file is a tsdown entry backing a published `exports` subpath, which
-  `scripts/smoke/smokeScript.ts` resolves against the packed tarball. `config/globs.ts` holds the extension
-  tables six of them read: a table several modules share is not a helper, so it is not in `utils/`.
+- **`eslint-config` takes the subject shape, grouped by what a layer is.** `layers/<name>/<name>Layer.ts`
+  for `base`, `typescript`, `vitest` and `html`, `frameworks/<name>/<name>Framework.ts` for the nine
+  frameworks, `libraries/<name>/<name>Library.ts` for the three libraries, each with its suite beside
+  it and a `utils/` only where one subject alone reads the helper: `layers/base/utils/` holds the
+  naming and import-sort builders. The suffix is on the file and not the export, so `baseLayer.ts`
+  still exports `base`. `defineConfig.ts` composes them and owns the ordering, which is
+  load-bearing; it sits at the root with `index.ts` and `types.ts` as the package's own entry
+  points. Nesting costs the published surface nothing: tsdown's entries are keyed, so
+  `dist/react.mjs` is flat whatever path backs it, and `scripts/smoke/smokeScript.ts` resolves every
+  `exports` subpath against the packed tarball. `src/meta.test.ts` holds the tree and holds the
+  tsdown entries one to one against `exports`. `config/globs.ts` holds the extension tables several
+  layers read, and `frameworks/utils/` and `utils/` hold what several subjects read: a table several
+  modules share is not a helper, so it is not in `utils/`.
 
 - **`create/templates/` sits outside `src/`** and is laid out as the project it lands in:
   `project/` is the tree a generated project receives, `starter-source/` the per-target starters,

@@ -7,19 +7,19 @@ import {
   it,
 } from 'vitest';
 
-import base from './base';
 import { defineConfig } from './defineConfig';
-import angular from './frameworks/angular';
-import next from './frameworks/next';
-import react from './frameworks/react';
-import reactNative from './frameworks/reactNative';
-import solid from './frameworks/solid';
-import svelte from './frameworks/svelte';
-import vue from './frameworks/vue';
-import html from './html';
-import tanstackQuery from './libraries/tanstackQuery';
-import typescript from './typescript';
-import vitest from './vitest';
+import angular from './frameworks/angular/angularFramework';
+import next from './frameworks/next/nextFramework';
+import react from './frameworks/react/reactFramework';
+import reactNative from './frameworks/react-native/reactNativeFramework';
+import solid from './frameworks/solid/solidFramework';
+import svelte from './frameworks/svelte/svelteFramework';
+import vue from './frameworks/vue/vueFramework';
+import base from './layers/base/baseLayer';
+import html from './layers/html/htmlLayer';
+import typescript from './layers/typescript/typescriptLayer';
+import vitest from './layers/vitest/vitestLayer';
+import tanstackQuery from './libraries/tanstack-query/tanstackQueryLibrary';
 
 import type {
   DefineConfigOptions,

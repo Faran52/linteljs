@@ -15,7 +15,7 @@ export type NamingMap = Record<string, NamingRule>;
 
 export interface ResolverOptions {
   project?: string;
-  // Export-map conditions in resolution order; unset by default, see `base.ts` for why reordering is not safe.
+  // Export-map conditions in resolution order; unset by default, see `baseLayer.ts` for why reordering is not safe.
   conditionNames?: string[];
   // Silences the resolver's notice on a `project` glob.
   noWarnOnMultipleProjects?: boolean;

@@ -96,9 +96,14 @@ combinations.
   `fragments/` holds the pieces joined into one file, which have no destination of their own and so
   keep an explicit list; `schemas/` is a mirror of the repository's own `schemas/` published under a
   raw URL rather than copied anywhere, which `answers/utils/schemaUtils.test.ts` holds against it.
-- `packages/eslint-config/src/`: the layers, flat because each file is a tsdown entry backing a
-  published `exports` subpath. `base` is shared, `typescript` turns the program on, `frameworks/`
-  and `libraries/` add their own, `config/` holds the glob tables several layers read.
+- `packages/eslint-config/src/`: the layers, in the same subject shape as create's rings.
+  `layers/<name>/<name>Layer.ts` for `base`, `typescript`, `vitest` and `html`,
+  `frameworks/<name>/<name>Framework.ts` and `libraries/<name>/<name>Library.ts` for the rest. The
+  file names carry the suffix and the exports do not: `baseLayer.ts` exports `base`. Each entry backs
+  a published `exports` subpath through a keyed tsdown entry, so `dist/` stays flat however deep the
+  source sits. `index.ts`, `defineConfig.ts` and `types.ts` are the package's own entry points at the
+  root, `config/` holds the glob tables several layers read, and `src/meta.test.ts` holds the tree
+  and the tsdown entries to it.
 - `packages/eslint-plugin/src/rules/`: one directory per rule, named for its `kebab-case` id and
   holding `<camelCaseExport>.ts`, its test beside it, and `README.md`. The directory name is the id,
   so the id is spelled once. `index` is a barrel and nothing else, which is why the rule is not one:

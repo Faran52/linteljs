@@ -10,8 +10,8 @@ import type { Layer } from '../../types';
 export const reactGroup: string[] = ['^react$', '^react-dom$', '^react/', '^react-', '^@react'];
 
 /**
- * Everything React that assumes no DOM, in its own module rather than in `react.ts`. A module-scope import runs when
- * the module loads, so composing this from `react.ts` would make a React Native project resolve
+ * Everything React that assumes no DOM, in its own module rather than in `reactFramework.ts`. A module-scope import
+ * runs when the module loads, so composing this from `reactFramework.ts` would make a React Native project resolve
  * `eslint-plugin-jsx-a11y-x`, which it no longer installs, and ESLint would die on ERR_MODULE_NOT_FOUND before
  * reading a rule. Measured end to end on all four package managers.
  */

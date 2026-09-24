@@ -10,9 +10,9 @@ import {
   RINGS,
   WORLDS,
 } from './packages/create/src/rings';
-import base from './packages/eslint-config/src/base';
-import typescript from './packages/eslint-config/src/typescript';
-import vitest from './packages/eslint-config/src/vitest';
+import base from './packages/eslint-config/src/layers/base/baseLayer';
+import typescript from './packages/eslint-config/src/layers/typescript/typescriptLayer';
+import vitest from './packages/eslint-config/src/layers/vitest/vitestLayer';
 
 const ring = (name: string): string => {
   return `packages/create/src/${name}`;

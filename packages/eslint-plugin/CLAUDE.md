@@ -148,8 +148,9 @@ missing options column passes. Edit it by hand and read it back.
 There are two presets and there is no third. `recommended` carries the rules with
 `meta.docs.recommended`, `all` carries every rule, and a rule's subject lives in its id rather than
 in a preset name: `native-*` is React Native accessibility and `react-*` is React. A group of
-rules a layer wants is named by that layer, which is what `frameworks/reactNative.ts` does with the
-five accessibility rules and `frameworks/utils/reactCoreUtils.ts` with the three React ones.
+rules a layer wants is named by that layer, which is what
+`frameworks/react-native/reactNativeFramework.ts` does with the five accessibility rules and
+`frameworks/utils/reactCoreUtils.ts` with the three React ones.
 
 ## 3b. Comments
 

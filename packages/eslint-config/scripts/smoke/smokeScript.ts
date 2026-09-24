@@ -75,32 +75,31 @@ const GROUP_EXPORTS = {
   './angular': 'angularGroup',
 };
 
-// Each layer file needs both its subpath and its barrel export; the directory is the list. Not es-toolkit's
-// `kebabCase`, which splits digits: `i18next` would become `i-18-next`.
-const kebab = (name: string): string => {
-  return name.replace(/[A-Z]/gu, (letter: string) => {
-    return `-${letter.toLowerCase()}`;
+// Each layer directory needs both its subpath, which is its kebab name, and its barrel export, which is that name in
+// camelCase; the directories are the list.
+const camel = (name: string): string => {
+  return name.replace(/-([a-z])/gu, (_match, letter: string) => {
+    return letter.toUpperCase();
   });
 };
 
-const layerNames = ['src/frameworks', 'src/libraries'].flatMap((dir) => {
+const layerDirs = ['src/layers', 'src/frameworks', 'src/libraries'].flatMap((dir) => {
   return readdirSync(join(root, dir), { withFileTypes: true })
     .filter((entry) => {
-      return entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.test.ts');
+      return entry.isDirectory() && entry.name !== 'utils';
     })
     .map((entry) => {
-      return entry.name.slice(0, -'.ts'.length);
+      return entry.name;
     });
 });
 
-assert.ok(layerNames.length > 1, 'no layer modules found under src/frameworks or src/libraries');
+assert.ok(layerDirs.length > 1, 'no layer directories found under src/layers, src/frameworks or src/libraries');
 
-for (const name of layerNames) {
-  assert.ok(
-    subpaths.includes(`./${kebab(name)}`),
-    `src/**/${name}.ts has no "./${kebab(name)}" entry in exports`,
-  );
+for (const dir of layerDirs) {
+  assert.ok(subpaths.includes(`./${dir}`), `src/**/${dir}/ has no "./${dir}" entry in exports`);
 }
+
+const layerNames = layerDirs.map(camel);
 
 const specifiers = subpaths.map((subpath) => {
   return {
