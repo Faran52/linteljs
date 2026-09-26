@@ -17,6 +17,8 @@ when a version's change lives in a sibling it is described there instead:
   script's indentation.
 - `interface-order` takes `{ trimBlankLines: boolean }`, default `true`: the fix empties whitespace-only lines
   inside the declarations it moves. `false` moves the text byte for byte.
+- `export-specifier-newline` keeps a trailing comma on the last specifier's line. The fix used to push it
+  to column 0 ahead of the closing brace.
 - A crash on a lookup the parse should guarantee now names the lookup that failed and asks for the parser in
   the issue.
 

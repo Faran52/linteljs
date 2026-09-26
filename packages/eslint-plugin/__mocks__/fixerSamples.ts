@@ -1,6 +1,9 @@
+import { runInNewContext } from 'node:vm';
+
 import * as astroParser from 'astro-eslint-parser';
 import { Linter } from 'eslint';
 import svelteParser from 'svelte-eslint-parser';
+import ts from 'typescript';
 import tseslint from 'typescript-eslint';
 import vueParser from 'vue-eslint-parser';
 
@@ -40,11 +43,11 @@ export const FIXER_SAMPLES: FixerSample[] = [
     /**
      * The corpus carried a `'use client'` sample and a React one, and never the two together, so nothing saw
      * the insert land above a directive. An import ahead of it stops it being a directive at all.
-     * Flat on purpose: the indentation check counts lines at column 0 and any honest new top-level
-     * statement trips it, so a sample about an insert has to carry no indentation of its own.
+     * Indented on purpose: an honest new top-level statement in a file holding indented lines is what the
+     * indentation check has to let through.
      */
     name: 'React global under a use client directive',
-    code: "'use client';\n\ninterface Props { children?: React.ReactNode }\n\nexport type { Props };\n",
+    code: "'use client';\n\ninterface Props {\n  children?: React.ReactNode;\n}\n\nexport type { Props };\n",
     typescript: true,
     filename: 'panel.tsx',
   },
@@ -824,6 +827,44 @@ export const tokensIn = (code: string, typescript = false, filename?: string): s
   });
 };
 
+const OPENERS = new Set(['(', '{', '[']);
+const BRACKET_CLOSERS = new Set([')', '}', ']']);
+
+// For each line, the line that opened the innermost bracket still open when it starts, or `undefined` at the top
+// level. Only punctuators count: a template's `${` is part of its template token.
+export const openerLinesIn = (code: string, typescript = false, filename?: string): (number | undefined)[] => {
+  const brackets = astOf(code, typescript, filename).tokens.filter((token) => {
+    return token.type === 'Punctuator' && (OPENERS.has(token.value) || BRACKET_CLOSERS.has(token.value));
+  });
+  const lineCount = code.split('\n').length;
+  const openers: (number | undefined)[] = [];
+  const open: number[] = [];
+
+  // Every line up to a bracket's own is recorded before that bracket moves the stack.
+  const recordThrough = (line: number): void => {
+    while (openers.length <= line) {
+      openers.push(open.at(-1));
+    }
+  };
+
+  for (const token of brackets) {
+    const line = token.loc.start.line - 1;
+
+    recordThrough(line);
+
+    if (OPENERS.has(token.value)) {
+      open.push(line);
+    }
+    else {
+      open.pop();
+    }
+  }
+
+  recordThrough(lineCount - 1);
+
+  return openers;
+};
+
 // Each comment as its own text, sorted; counting `//` occurrences cannot tell one note from two sharing a line.
 export const commentsIn = (code: string, typescript = false, filename?: string): string[] => {
   return astOf(code, typescript, filename).comments.map((comment) => {
@@ -849,6 +890,37 @@ export const fixWith = (sample: FixerSample, ruleName?: string): string => {
       })),
     },
   ], sample.filename).output;
+};
+
+/**
+ * What running a sample throws, or `undefined` when it runs clean. TypeScript and modules go through `transpileModule`
+ * to CommonJS first; a `.cjs` runs as written, since the transpiler would add the `'use strict'` its sloppy-mode
+ * samples exist to be without. The context holds `module` and `exports` and nothing else, so a sample reaching an
+ * import, a host global or a name it never declares throws before any fix is involved.
+ */
+export const runtimeErrorIn = (code: string, filename = ''): string | undefined => {
+  const script = filename.endsWith('.cjs')
+    ? code
+    : ts.transpileModule(code, {
+      fileName: filename.endsWith('x') ? 'sample.tsx' : 'sample.ts',
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+      },
+    }).outputText;
+  const module = { exports: {} };
+
+  try {
+    runInNewContext(script, {
+      module,
+      exports: module.exports,
+    }, { timeout: 1000 });
+
+    return undefined;
+  }
+  catch (error) {
+    return String(error);
+  }
 };
 
 // Samples the given parser accepts, so a fixture never fails on its own input.

@@ -276,6 +276,9 @@ describe('base: quality', () => {
 
     await expect(ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts'))
       .resolves.not.toContain('sonarjs/code-eval');
+    // A workspace keeps one `__mocks__/` per package, below the config's own root.
+    await expect(ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts'))
+      .resolves.not.toContain('sonarjs/code-eval');
     await expect(ruleIdsFor(base(), code, 'src/runner.ts'))
       .resolves.toContain('sonarjs/code-eval');
   });

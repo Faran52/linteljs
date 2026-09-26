@@ -49,7 +49,13 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
 
         const { outer: indent, inner } = indentsAt(node);
         const openBrace = sourceCode.getTokenBefore(first);
-        const closeBrace = sourceCode.getTokenAfter(last);
+        // Past a trailing comma, which stays on the last specifier's line rather than moving down with the brace.
+        const closeBrace = mustFind(sourceCode.getTokenAfter(last, {
+          filter: (token) => {
+            return token.value !== ',';
+          },
+        }), 'the brace closing an export');
+        const beforeCloseBrace = sourceCode.getTokenBefore(closeBrace);
 
         // The open-brace splice belongs to the first report, not to specifier index 1.
         const shared: SharedLine[] = [];
@@ -86,7 +92,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
               yield split;
 
               if (pair.isLast) {
-                yield* spliceOntoNewline(fixer, sourceCode.getLastToken(last), closeBrace, indent, eol);
+                yield* spliceOntoNewline(fixer, beforeCloseBrace, closeBrace, indent, eol);
               }
             },
           });

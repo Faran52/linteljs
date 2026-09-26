@@ -890,7 +890,9 @@ is not a fake of it. The reference repo had three rules off over one line, and t
 on for free once the fixture stopped reaching for `new Function(`return ${expression}`)()` and used
 `node:vm` instead, which is the API whose semantics actually match: the expression is an expression,
 not a function body, and `runInThisContext` evaluates it as one. Only the hotspot survived that, and
-only inside `__mocks__/`, which is where this standard already puts fakes. `no-implied-eval` stays on
+only inside `__mocks__/`, which is where this standard already puts fakes. At any depth: a workspace
+keeps one per package, and `@linteljs/eslint-plugin`'s fixer corpus runs each sample in `node:vm` to
+prove a fix still runs. `no-implied-eval` stays on
 everywhere including there, because `setTimeout('...')` is a defect and no fixture needs it.
 
 ## What `sync` may delete, and why the project holds the list

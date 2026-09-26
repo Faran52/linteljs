@@ -5,8 +5,10 @@ import {
   type FixerSample,
   fixWith,
   isSfcSample,
+  openerLinesIn,
   parseableSamples,
   parseErrorsIn,
+  runtimeErrorIn,
   tokensIn,
 } from '@mocks/fixerSamples';
 import {
@@ -97,22 +99,93 @@ describe.each(ruleNames)('%s comments', (name) => {
   });
 });
 
-const linesAtMargin = (code: string): number => {
-  return code.split(/\r?\n/).filter((line) => {
-    return line.trim() !== '' && !/^[\t ]/.test(line);
-  }).length;
+const isIndented = (line: string): boolean => {
+  return /^[\t ]/.test(line);
 };
 
-describe.each(ruleNames)('%s indentation', (name) => {
-  const indented = parseableSamples().filter((sample) => {
-    return /^[\t ]+\S/m.test(sample.code);
-  }).map((sample) => {
-    return [sample.name, sample] as const;
+/**
+ * The lines a fix left at the wrong indent. A line that survives the fix has to survive at its own indent. A new one at
+ * column 0 is stranded inside brackets, unless it is a closer under a bracket opened at column 0, and stranded ahead
+ * of a line that was already indented, which is a statement landing at the margin of a component's script. A new
+ * top-level statement among top-level neighbours is none of these, which is why an inserted import passes where
+ * counting the lines at the margin could not tell it from a dropped indent.
+ */
+const lostIndents = (sample: FixerSample, fixed: string): string[] => {
+  const before = sample.code.split(/\r?\n/);
+  const after = fixed.split(/\r?\n/);
+  const texts = new Set(before.map((line) => {
+    return line.trim();
+  }));
+  const survivors = new Set(after.map((line) => {
+    return line.trim();
+  }));
+  const openers = openerLinesIn(fixed, sample.typescript, sample.filename);
+
+  const moved = before.filter((line) => {
+    return isIndented(line) && survivors.has(line.trim()) && !after.includes(line);
+  });
+  const stranded = after.filter((line, index) => {
+    if (line.trim() === '' || isIndented(line) || texts.has(line.trim())) {
+      return false;
+    }
+
+    const opener = openers[index];
+
+    if (opener !== undefined) {
+      return !/^[)\]}]/.test(line) || isIndented(after[opener] ?? '');
+    }
+
+    const next = after.findIndex((sibling, at) => {
+      return at > index && sibling.trim() !== '';
+    });
+    // With no line left, `next` is -1 and the empty string is never indented.
+    const sibling = after[next] ?? '';
+
+    return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
   });
 
-  // A fix landing at column 0 inside indented code drops that indentation.
-  it.each(indented)('writes nothing new at column 0 in %s', (_label, sample: FixerSample) => {
-    expect(linesAtMargin(fixWith(sample, name))).toBeLessThanOrEqual(linesAtMargin(sample.code));
+  return [...moved, ...stranded];
+};
+
+describe('the indentation check', () => {
+  const sample = {
+    name: 'a function body',
+    code: 'function run() {\n  const value = 1;\n\n  return value;\n}\n',
+  };
+
+  it('lets an inserted top-level statement through', () => {
+    expect(lostIndents(sample, `import { helper } from 'mod';\n\n${sample.code}`)).toEqual([]);
+  });
+
+  it('catches a line that lost its indent', () => {
+    expect(lostIndents(sample, 'function run() {\nconst value = 1;\n\n  return value;\n}\n'))
+      .toEqual(['  const value = 1;']);
+  });
+
+  it('catches a line split out at column 0 inside brackets', () => {
+    expect(lostIndents(sample, 'function run() {\n  const value =\n1;\n\n  return value;\n}\n')).toEqual(['1;']);
+  });
+
+  it('catches a closer at column 0 under a bracket opened on an indented line', () => {
+    expect(lostIndents(sample, 'function run() {\n  const value = [\n    1,\n];\n\n  return value;\n}\n'))
+      .toEqual(['];']);
+  });
+
+  it('catches a new statement at column 0 ahead of an indented sibling', () => {
+    const script = {
+      name: 'a component script',
+      code: '<script lang="ts">\n  const state = 0;\n</script>\n',
+      filename: 'Script.svelte',
+    };
+
+    expect(lostIndents(script, "<script lang=\"ts\">\nimport { x } from 'mod';\n  const state = 0;\n</script>\n"))
+      .toEqual(["import { x } from 'mod';"]);
+  });
+});
+
+describe.each(ruleNames)('%s indentation', (name) => {
+  it.each(samples)('keeps every indent in %s', (_label, sample: FixerSample) => {
+    expect(lostIndents(sample, fixWith(sample, name))).toEqual([]);
   });
 });
 
@@ -141,9 +214,34 @@ describe.each(namesIn('reorder'))('%s tokens', (name) => {
   });
 });
 
+/**
+ * A fix that parses, settles and keeps every comment can still leave a program that throws the moment it runs: an
+ * arrow `const` read in its dead zone is exactly that. So every sample that runs clean as written has to run clean
+ * fixed. A component file has no one script to run, and a sample that throws as written, on an import or a name it
+ * never declares, proves nothing either way, so both sit out.
+ */
+const runnable = samples.filter(([, sample]) => {
+  return !isSfcSample(sample) && runtimeErrorIn(sample.code, sample.filename) === undefined;
+});
+
+// An unchanged sample is already known to run.
+const runtimeErrorAfter = (sample: FixerSample, fixed: string): string | undefined => {
+  return fixed === sample.code ? undefined : runtimeErrorIn(fixed, sample.filename);
+};
+
+describe.each(ruleNames)('%s runtime', (name) => {
+  it.each(runnable)('still runs %s', (_label, sample: FixerSample) => {
+    expect(runtimeErrorAfter(sample, fixWith(sample, name))).toBeUndefined();
+  });
+});
+
 describe('the whole plugin at once', () => {
   it.each(samples)('leaves %s parseable', (_label, sample: FixerSample) => {
     expect(parseErrorsIn(fixWith(sample), sample.typescript, sample.filename)).toEqual([]);
+  });
+
+  it.each(runnable)('still runs %s', (_label, sample: FixerSample) => {
+    expect(runtimeErrorAfter(sample, fixWith(sample))).toBeUndefined();
   });
 
   it.each(samples)('settles on %s', (_label, sample: FixerSample) => {

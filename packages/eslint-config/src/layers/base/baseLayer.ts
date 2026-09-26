@@ -220,10 +220,10 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
 
     // `code-eval` is a hotspot with no clean state, and a fake of `inspectedWindow.eval` has to execute a string.
-    // Fixtures only; `no-implied-eval` stays on even there.
+    // Fixtures only, at whatever depth a package keeps its `__mocks__/`; `no-implied-eval` stays on even there.
     {
       name: '@linteljs/base/fixtures',
-      files: [`__mocks__/**/*.{${SCRIPT_EXTENSIONS}}`],
+      files: [`**/__mocks__/**/*.{${SCRIPT_EXTENSIONS}}`],
       rules: { 'sonarjs/code-eval': 'off' },
     },
 

@@ -50,6 +50,12 @@ jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
       errors: [{ messageId: 'specifiersOnNewline' }],
     },
     {
+      // The brace splice used to hang off the last name and push the trailing comma to column 0 ahead of the brace.
+      code: "export { alpha, bravo, } from 'mod';",
+      output: "export {\n  alpha,\n  bravo,\n} from 'mod';",
+      errors: [{ messageId: 'specifiersOnNewline' }],
+    },
+    {
       // The open-brace splice belongs to the first report, not to specifier index 1.
       code: "export { alpha,\n  bravo, charlie } from 'mod';",
       output: "export {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
