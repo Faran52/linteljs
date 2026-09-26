@@ -15,7 +15,8 @@ import { tokens } from '../../../styles/tokens.stylex';
  */
 const sheet = stylex.create({
   button: {
-    padding: '0.4375rem 0.9375rem',
+    paddingBlock: '0.4375rem',
+    paddingInline: '0.9375rem',
     fontSize: tokens.textUi,
     fontWeight: 540,
     color: tokens.primaryForeground,

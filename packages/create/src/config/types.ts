@@ -95,8 +95,8 @@ export type Framework
     | 'solid'
     | 'angular';
 
-// The three with a layer behind them; `emitters/always/eslint-config/constants.ts` holds the emit-order table.
-export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind';
+// The four with a layer behind them; `emitters/always/eslint-config/constants.ts` holds the emit-order table.
+export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind' | 'stylex';
 
 interface ResolverOptions {
   project?: string;

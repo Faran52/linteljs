@@ -187,6 +187,11 @@ describe('emitEslintConfig', () => {
       data: 'tanstack-query',
     })))
       .toContain("libraries: ['tanstack-query', 'tailwind'],");
+    expect(emitEslintConfig(answersFor({
+      libraries: [],
+      styling: 'stylex',
+    })))
+      .toContain("libraries: ['stylex'],");
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
   });
 
@@ -195,7 +200,6 @@ describe('emitEslintConfig', () => {
     expect(emitEslintConfig(answersFor({
       libraries: [],
       data: 'rtk-query',
-      styling: 'stylex',
       router: 'react-router',
     }))).not.toContain('libraries:');
   });

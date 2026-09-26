@@ -194,14 +194,14 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
     /*
-     * The build plugin and its peer. `@stylexjs/stylex` is the runtime the answer installs; this is what compiles
-     * `defineVars` and the style calls into CSS, and without it the emitted config imports a module the project
-     * never installed. `unplugin` is a real peer that nothing installs on its behalf.
+     * The lint layer's plugin, the build plugin and its peer. `@stylexjs/stylex` is the runtime; the build plugin
+     * compiles `defineVars` and the style calls into CSS, and without it the emitted config imports a module the
+     * project never installed. `unplugin` is a real peer that nothing installs on its behalf.
      *
      * Not keyed off `vite`: Astro and Nuxt own their Vite config rather than emitting one and still take the
      * plugin through it. `stylexBuild` on the record is what names a target that compiles some other way.
      */
-    stylex: target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin'],
+    stylex: ['@stylexjs/eslint-plugin', ...target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin']],
   };
   const dataDev: Record<Data, string[]> = {
     'tanstack-query': ['@tanstack/eslint-plugin-query'],

@@ -98,6 +98,8 @@ const eslintFor = async (target: (typeof targets)[number]): Promise<ESLint> => {
     framework: record.framework,
     astro: record.astro === true,
     vitest: true,
+    // Its rules act only on a file importing `@stylexjs/stylex`, so the other starters are untouched by it.
+    libraries: ['stylex'],
   });
 
   return new ESLint({

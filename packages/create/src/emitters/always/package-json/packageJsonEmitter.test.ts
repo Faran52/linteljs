@@ -487,10 +487,11 @@ describe('buildDevDependencies', () => {
    * The emitted vite config imports `@stylexjs/unplugin/vite`, so a project that answers StyleX and does not
    * install it fails its own lint on an unresolved import before it fails its build on uncompiled styles.
    */
-  it('installs the stylex build plugin and its peer', () => {
+  it('installs the stylex lint plugin, the build plugin and its peer', () => {
     const devDependencies = buildDevDependencies(answersFor({ styling: 'stylex' }));
 
     expect(devDependencies).toHaveProperty('@stylexjs/unplugin');
+    expect(devDependencies).toHaveProperty('@stylexjs/eslint-plugin');
     expect(devDependencies).toHaveProperty('unplugin');
     expect(devDependencies).not.toHaveProperty('@stylexjs/babel-plugin');
   });
@@ -506,6 +507,7 @@ describe('buildDevDependencies', () => {
     }));
 
     expect(devDependencies).toHaveProperty('@stylexjs/babel-plugin');
+    expect(devDependencies).toHaveProperty('@stylexjs/eslint-plugin');
     expect(devDependencies).toHaveProperty('@stylexjs/postcss-plugin');
     expect(devDependencies).toHaveProperty('@stylexjs/unplugin');
   });

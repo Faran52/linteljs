@@ -24,7 +24,8 @@ const sheet = stylex.create({
 
   control: {
     width: '100%',
-    padding: '0.5rem 0.625rem',
+    paddingBlock: '0.5rem',
+    paddingInline: '0.625rem',
     fontSize: tokens.textUi,
     color: tokens.foreground,
     backgroundColor: tokens.card,

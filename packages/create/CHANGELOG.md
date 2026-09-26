@@ -8,6 +8,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- A project answering `styling: stylex` is linted for StyleX: `eslint.config.js` asks for
+  `libraries: ['stylex']` and `package.json` installs `@stylexjs/eslint-plugin`, as Tailwind already had.
+  Before, nothing checked the shorthands StyleX compiles to no CSS. A `sync` writes both.
 - StyleX runs through `@stylexjs/unplugin/vite`, the package's own Vite adapter, bound to a typed `stylex` in
   a TypeScript config. The `createUnplugin(unpluginFactory).vite(...)` form it replaces skipped the adapter's
   `generateBundle`, so a production build shipped StyleX class names with no rules in its CSS. `vite.config.ts`,

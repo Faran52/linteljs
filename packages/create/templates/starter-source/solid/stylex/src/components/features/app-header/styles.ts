@@ -18,9 +18,12 @@ const sheet = stylex.create({
     gap: '1rem',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0.75rem 1.125rem',
+    paddingBlock: '0.75rem',
+    paddingInline: '1.125rem',
     backgroundColor: tokens.card,
-    borderBottom: `1px solid ${tokens.border}`,
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: tokens.border,
   },
 
   // The name is whatever was typed, so it truncates rather than pushing the nav off.
@@ -42,7 +45,8 @@ const sheet = stylex.create({
   },
 
   tab: {
-    padding: '0.3125rem 0.625rem',
+    paddingBlock: '0.3125rem',
+    paddingInline: '0.625rem',
     fontSize: tokens.textUi,
     color: {
       'default': tokens.mutedForeground,

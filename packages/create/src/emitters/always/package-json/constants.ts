@@ -106,6 +106,7 @@ export const VERSIONS: Record<string, string> = {
   'eslint-plugin-astro': '^3.2.1',
   'eslint-plugin-jsx-a11y-x': '^0.2.0',
   'eslint-plugin-better-tailwindcss': '^4.7.0',
+  '@stylexjs/eslint-plugin': '^0.19.1',
   'eslint-plugin-solid': '^0.18.0',
   'eslint-plugin-svelte': '^3.23.0',
   '@vitejs/plugin-vue': '^6.0.9',

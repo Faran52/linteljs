@@ -9,6 +9,7 @@ export const LIBRARY_LAYERS = [
   'tanstack-query',
   'tanstack-router',
   'tailwind',
+  'stylex',
 ] as const satisfies readonly LibraryLayer[];
 
 // The subpath, not the barrel, which loads all six framework layers.
