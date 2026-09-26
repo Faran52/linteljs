@@ -21,7 +21,7 @@
     "test:coverage": "vitest run --coverage",
     "test:isolated": "tsx scripts/isolated-coverage/isolatedCoverageScript.ts",
     "build": "pnpm -r build",
-    "check": "pnpm lint && pnpm lint:types && pnpm lint:starters && pnpm lint:css && pnpm typecheck && pnpm test:coverage && pnpm build",
+    "check": "pnpm build && pnpm lint && pnpm lint:types && pnpm lint:starters && pnpm lint:css && pnpm typecheck && pnpm test:coverage",
     "prepare": "husky"
   },
   "devDependencies": {

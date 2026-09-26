@@ -40,8 +40,9 @@ else. It exists because pnpm's `test` shorthand exits 0 in a package that has no
 green having run nothing. Coverage stays a root-only gate: the thresholds are keyed per package in the root config
 and a package-level `--coverage` would answer a narrower question.
 
-`pnpm check` chains `lint && lint:types && lint:starters && lint:css && typecheck && test:coverage && build`,
-the chain a generated project gets plus `lint:starters`, which lints the shipped starter source. `lint:css` passes on an empty glob rather than being absent: this
+`pnpm check` chains `build && lint && lint:types && lint:starters && lint:css && typecheck && test:coverage`:
+the chain a generated project gets plus `lint:starters`, which lints the shipped starter source, with `build`
+first because the packages typecheck against each other's built declarations, which a fresh checkout lacks. `lint:css` passes on an empty glob rather than being absent: this
 workspace has no CSS today, and a repo that ships the gate to ten targets should run it. The
 end-to-end suite is 209 cases, each a real generate, install and gate: per target, enough answer
 combinations to cover every *pair* of answers, the package manager among the axes, with every
