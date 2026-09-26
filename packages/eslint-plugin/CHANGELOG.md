@@ -19,6 +19,10 @@ when a version's change lives in a sibling it is described there instead:
   inside the declarations it moves. `false` moves the text byte for byte.
 - `export-specifier-newline` keeps a trailing comma on the last specifier's line. The fix used to push it
   to column 0 ahead of the closing brace.
+- `prefer-arrow-functions` no longer converts a function whose only mentions sit below it inside another
+  function declaration that is itself called earlier, as in `run(); function helper() {} function run() {
+  helper(); }`, nor one called from a later `case` of the `switch` declaring it. Both conversions threw
+  `ReferenceError`.
 - A crash on a lookup the parse should guarantee now names the lookup that failed and asks for the parser in
   the issue.
 

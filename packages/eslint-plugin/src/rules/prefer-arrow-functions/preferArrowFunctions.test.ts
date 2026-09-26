@@ -452,6 +452,57 @@ class Holder {
       ],
     },
     {
+      // The same two hops with `helper` declared first: its one mention sits below it, inside `run`, and `run`
+      // is hoisted and called on line one, so the mention still runs before `helper` exists.
+      code: 'run();\n\nfunction helper() {\n  return 1;\n}\n\nfunction run() {\n  helper();\n}',
+      output: null,
+      errors: [
+        { messageId: 'preferArrowHoisted' },
+        { messageId: 'preferArrowHoisted' },
+      ],
+    },
+    {
+      // Three hops, through a function that is itself only mentioned from inside another.
+      code: 'start();\n\nfunction helper() {\n  return 1;\n}\n\nfunction run() {\n  helper();\n}\n\n'
+        + 'function start() {\n  run();\n}',
+      output: null,
+      errors: [
+        { messageId: 'preferArrowHoisted' },
+        { messageId: 'preferArrowHoisted' },
+        { messageId: 'preferArrowHoisted' },
+      ],
+    },
+    {
+      // `run` is called only after `helper` is declared, so `helper` converts, and the mutual recursion does not
+      // loop the walk. `run` is mentioned inside `helper`, above its own declaration, so it declines as before.
+      code: 'function helper(n) {\n  return n && run(n - 1);\n}\n\nfunction run(n) {\n  return helper(n);\n}\n\n'
+        + 'run(2);',
+      output: 'const helper = (n) => {\n  return n && run(n - 1);\n};\n\nfunction run(n) {\n  return helper(n);\n}\n\n'
+        + 'run(2);',
+      errors: [
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrowHoisted' },
+      ],
+    },
+    {
+      // The anonymous default export holds the mention but has no name, so nothing in this module can call it
+      // early, and it declares no variable at all for the walk to follow.
+      code: 'function helper() {\n  return 1;\n}\n\nexport default function () {\n  return helper();\n}',
+      output: 'const helper = () => {\n  return 1;\n};\n\nexport default () => {\n  return helper();\n};',
+      errors: [
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrow' },
+      ],
+    },
+    {
+      // A later case of a switch can be jumped to without the earlier case running, so a `const` there is
+      // still in its dead zone whatever the text order says.
+      code: 'switch (key) {\n  case 0:\n    function helper() {\n      return 1;\n    }\n    break;\n'
+        + '  case 1:\n    helper();\n}',
+      output: null,
+      errors: [{ messageId: 'preferArrowHoisted' }],
+    },
+    {
       // Referenced from the top level before the declaration, which does run first, so this one
       // stays a declaration and says why.
       code: 'const eager = greet();\n\nfunction greet() {\n  return 1;\n}',

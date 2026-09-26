@@ -5,6 +5,7 @@ import {
   sourceCodeOf,
 } from '../../utils/compatUtils.ts';
 import {
+  FUNCTION_TYPES,
   mustFind,
   optionsOf,
   rangeOf,
@@ -55,6 +56,11 @@ const nameVariableOf = (context: RuleContext, fn: FunctionLike): Scope.Variable 
 // A method's value is a `function` and stops the walk as one, so only an arrow in a class field needs marking.
 const isClassMemberValue = (fn: FunctionLike): boolean => {
   return fn.parent.type === 'PropertyDefinition';
+};
+
+// An identifier is never the Program, and ESLint 5 on links every node in a full pass before any listener.
+const parentOf = (reference: Scope.Reference): RuleNode => {
+  return mustFind((reference.identifier as RuleNode).parent, 'the parent of a reference to the function');
 };
 
 const buildFrame = (fn: FunctionLike): FunctionFrame => {
@@ -122,13 +128,59 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       fn: FunctionLike,
       nameVariable: Scope.Variable,
     ): boolean => {
-      const [declarationStart] = rangeOf(fn);
+      const [declarationStart, declarationEnd] = rangeOf(fn);
+      const [blockStart, blockEnd] = rangeOf(fn.parent);
+      const walked = new Set<RuleNode>([fn]);
 
-      // Any earlier mention, wherever it sits. A reference inside another function only looks safe: that
-      // function may itself be called above this declaration, and the dead zone is then two hops away.
-      return nameVariable.references.some((reference) => {
-        return rangeOf(reference.identifier)[0] < declarationStart;
-      });
+      const contains = (node: RuleNode, start: number, end: number): boolean => {
+        const [nodeStart, nodeEnd] = rangeOf(node);
+
+        return nodeStart <= start && nodeEnd >= end;
+      };
+
+      // The outermost function holding the reference below the one scope both share. The Program holds `fn`,
+      // so the walk always stops before it runs out of parents.
+      const outermostFunctionOf = (reference: Scope.Reference): RuleNode | undefined => {
+        let outermost: RuleNode | undefined;
+
+        let node = parentOf(reference);
+
+        while (!contains(node, declarationStart, declarationEnd)) {
+          outermost = FUNCTION_TYPES.has(node.type) ? node : outermost;
+          node = mustFind(node.parent, 'the parent of a node below the Program');
+        }
+
+        return outermost;
+      };
+
+      // Any earlier mention, wherever it sits. A later one inside a function declaration only looks safe: that
+      // declaration is hoisted too, and may be called above this one, so its own mentions are judged the same way.
+      const runsEarly = (reference: Scope.Reference): boolean => {
+        const [referenceStart, referenceEnd] = rangeOf(reference.identifier);
+
+        if (referenceStart < declarationStart) {
+          return true;
+        }
+
+        // A later `case` is reached by jumping past this one, so the text order says nothing there.
+        if (fn.parent.type === 'SwitchCase' && (referenceStart < blockStart || referenceEnd > blockEnd)) {
+          return true;
+        }
+
+        const outermost = outermostFunctionOf(reference);
+
+        if (outermost?.type !== 'FunctionDeclaration' || walked.has(outermost)) {
+          return false;
+        }
+
+        walked.add(outermost);
+
+        // The name comes first when there is one. An anonymous default export has none, and any parameter standing
+        // in for it is only mentioned inside the function already walked, so it can never answer true.
+        return declaredVariablesOf(context, outermost)[0]?.references.some(runsEarly) ?? false;
+      };
+
+      return nameVariable.references.some(runsEarly);
     };
 
     // A `function` binding is writable, constructible and carries a `prototype`; an arrow on a `const` has none.
@@ -138,8 +190,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return true;
         }
 
-        // An identifier is never the Program, and ESLint 5 on links every node in a full pass before any listener.
-        const parent = mustFind((reference.identifier as RuleNode).parent, 'the parent of a reference to the function');
+        const parent = parentOf(reference);
 
         if (parent.type === 'NewExpression' && parent.callee === reference.identifier) {
           return true;

@@ -188,6 +188,13 @@ function helper() {}` is the commonest script shape there is, and converting `he
 the file finishes loading. Nothing in a lint rule can prove when a function is called, so a textual
 reference above the declaration is enough to decline, wherever it sits.
 
+A reference below the declaration is not automatically safe either. When it sits inside another
+function declaration, that declaration is hoisted too, so the rule asks the same question of it:
+`run(); function helper() {} function run() { helper(); }` declines `helper`, because `run` is
+called above it. The walk follows any number of such hops. A reference in a later `case` of a
+`switch` than the declaration also declines, since a jump to that case skips the one that would
+initialise the `const`.
+
 That defect is why this rule exists in its current shape. The version this was ported from
 converted such a function and turned working code into a `ReferenceError`.
 

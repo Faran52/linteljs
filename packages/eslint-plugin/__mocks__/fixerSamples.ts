@@ -230,6 +230,17 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'function called before its declaration through another function',
     code: 'run();\n\nfunction run() {\n  helper();\n}\n\nfunction helper() {\n  return 1;\n}\n',
   },
+  // The same two hops with the helper written first, so its one mention sits below it and reads as safe.
+  {
+    name: 'function declared before a hoisted caller that runs first',
+    code: 'run();\n\nfunction helper() {\n  return 1;\n}\n\nfunction run() {\n  helper();\n}\n',
+  },
+  // A jump to a later case skips the one holding the declaration, so a `const` there is never initialised.
+  {
+    name: 'function declared in one switch case and called from a later one',
+    code: 'const key = 1;\n\nswitch (key) {\n  case 0:\n    function helper() {\n      return 1;\n    }\n    break;\n'
+      + '  case 1:\n    helper();\n}\n',
+  },
 
   {
     name: 'hook dependencies with a comment',
