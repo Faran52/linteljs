@@ -5,8 +5,8 @@ import type { ComponentPaths } from '../utils/styleUtils';
  * Every file the template writes whatever was answered. No `scaffold` on this record: the tree is this
  * repository's own, so nothing is fetched and the whole of `src/` comes from `templates/starter-source/vue/`.
  *
- * The router is unconditional here, as it was when `create-vue` installed it: a Vue application routes, and this
- * target asks no router question to answer otherwise.
+ * The router is unconditional here: a Vue application routes, and this target asks no router question to answer
+ * otherwise.
  */
 export const ALWAYS: readonly string[] = [
   'src/main.ts',

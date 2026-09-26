@@ -82,9 +82,7 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     '/** short */ a',
     // Merged into a block, this line's `*/` would close it early and spill the rest as code.
     '// alpha\n// bravo `*/` charlie\n// delta\nexport const value = 1;\n',
-    // A tag makes the block machine-read, and every reader of one stops at `/**`: under `checkJs` the first
-    // line is the annotation itself, TypeScript takes the pragma from a block comment only, and an editor
-    // strikes nothing through for a `// @deprecated`.
+    // A tag makes the block machine-read, and every reader of one stops at `/**`.
     "/** @type {import('tailwindcss').Config} */\nexport default {};\n",
     '/** @jsxImportSource @emotion/react */\nexport const value = 1;\n',
     '/** @deprecated use `other` instead */\nexport const old = 1;\n',

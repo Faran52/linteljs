@@ -209,7 +209,7 @@ describe.each(RINGED)('$name', (ring) => {
 
   /**
    * `index.ts` is the ring's public surface: the rings outside it reach it through the barrel rather than into a
-   * file. An export nothing out there reads is not a surface, it is a leftover, and four had accumulated.
+   * file. An export nothing out there reads is not a surface, it is a leftover.
    */
   it('exports nothing the rings outside it never take from it', () => {
     const barrel = readFileSync(join(ringDir, 'index.ts'), 'utf8');
@@ -278,7 +278,7 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
    * worth checking about one is always a fact about the code that reads it, which is where that assertion goes.
    *
    * One suite, too. A second file for part of a subject means a reader comparing the halves opens two, and the
-   * halves drift: two suites for `emitters/` each carried a helper called `targetsOf` doing different things.
+   * halves drift.
    */
   it('holds nothing but its entry, its constants and a utils directory', () => {
     const allowed = new RegExp(`^(${entry}\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
@@ -331,7 +331,7 @@ describe.each(RINGED.flatMap(subjectsIn).filter((subject) => {
  * A module-level value that is not a function is a constant, and a module holding more than two is carrying a table
  * its readers cannot see. `constants.ts` beside the entry is where those go, which is why the file that holds them
  * is exempt here, along with the two that are types or a barrel and the three registries, which are tables by
- * definition. Before the constants moved this named thirteen files; a fourteenth is a table in the wrong place.
+ * definition.
  */
 it('keeps every module to two constants, so a third is a constants.ts', () => {
   const exempt = new Set(['constants.ts', 'types.ts', 'index.ts', 'rings.ts']);

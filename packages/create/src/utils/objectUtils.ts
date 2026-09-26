@@ -3,9 +3,8 @@
  * a `package.json` it merges into, a manifest, an agent settings file. Each caller narrows to its own shape and
  * declares that in its own return type; what they share is the question of whether there is an object there at all.
  *
- * The prototype is the whole check. Four of the five guards this replaced also tested `!Array.isArray(value)`,
- * which never decided anything: an array's prototype is `Array.prototype`, so it is already refused, as is a class
- * instance and an `Object.create(null)` record.
+ * The prototype is the whole check: an array's prototype is `Array.prototype`, so it is already refused, as is a
+ * class instance and an `Object.create(null)` record.
  */
 export const isJsonObject = (value: unknown): value is object => {
   return typeof value === 'object'

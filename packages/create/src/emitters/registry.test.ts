@@ -104,9 +104,9 @@ describe('buildArtifacts', () => {
   });
 
   /**
-   * What replaced the `source` a record used to carry beside each `target`: the asset is derived from the
-   * destination now, so the derivation is what has to be held against disk. Every answer that opens a starter file
-   * is asked for, since a browser and a router each pick a different asset for one destination.
+   * The asset is derived from the destination, so the derivation is what has to be held against disk. Every answer
+   * that opens a starter file is asked for, since a browser and a router each pick a different asset for one
+   * destination.
    */
   it.each(TARGET_IDS)('resolves every seeded starter for %s', async (target) => {
     const cases: HostedAnswers[] = [

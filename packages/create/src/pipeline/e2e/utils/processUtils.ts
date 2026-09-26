@@ -20,7 +20,7 @@ export interface RunResult {
 export const registry = inject('registry');
 
 // `agent` is the one thing a case puts back: `LAUNCHER_KEYS` strips the launcher's own `npm_config_user_agent` below,
-// and the CLI now reads its manager from that variable, so a case that wants a manager says so by naming one.
+// and the CLI reads its manager from that variable, so a case that wants a manager says so by naming one.
 export const run = async (
   command: string,
   args: string[],
@@ -46,10 +46,9 @@ export const run = async (
     const child = spawn(command, args, {
       cwd,
       /**
-       * `spawnSync` was handed `input: ''`, which closed every child's stdin; `spawn`'s default leaves it an open
-       * pipe that is never written and never ended, so anything that reads stdin waits for ever. `pipelineRun.ts`
-       * spawns the install with `stdio: 'inherit'`, so that dead pipe is inherited all the way down. Nothing
-       * prompts today; `ignore` is what keeps that true when some upstream tool grows a question.
+       * `spawn`'s default stdin is an open pipe never ended, so anything reading it waits for ever, and
+       * `pipelineRun.ts` hands it down through `stdio: 'inherit'`. `ignore` keeps an upstream prompt from hanging a
+       * case.
        */
       stdio: ['ignore', 'pipe', 'pipe'],
       /**
@@ -82,10 +81,8 @@ export const run = async (
          * Split by what each directory remembers. A cache of bytes is keyed by the bytes and persists. A cache of
          * *which versions exist* starts empty every run, because `registry.ts` publishes a version no run has used
          * before and a manifest cached last run does not list it: the range resolves to the previous run's build and
-         * the `why` assertion catches it. Publishing a unique version ends the other staleness, where one version was
-         * republished with different bytes and bun reported `Integrity check failed`, but not this one.
-         * npm's cacache is integrity-keyed and needs neither treatment; bun's is pruned of `@linteljs` by
-         * `registry.ts` at the start of a run, which is the same split spelled by hand.
+         * the `why` assertion catches it. npm's cacache is integrity-keyed and needs neither treatment; bun's is
+         * pruned of `@linteljs` by `registry.ts` at the start of a run, which is the same split spelled by hand.
          */
         npm_config_cache: join(registry.cacheDir, 'npm'),
         pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),

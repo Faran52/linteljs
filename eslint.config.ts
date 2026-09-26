@@ -28,14 +28,11 @@ const aliases = Object.fromEntries(RINGS.flatMap((name) => {
 
 const config = [
   /**
-   * An escape hatch this workspace does not use should not be available. Every directive is inert under this, so an
-   * `eslint-disable` cannot suppress: the rule it names fires anyway and the comment is reported as having no effect.
-   * The one live directive in the repo was on `execFileSync('pnpm', ...)` in maintainer tooling and is now a named
-   * exemption in `@linteljs/workspace/scripts` instead, which is where this repo keeps the ones it means.
+   * An escape hatch this workspace does not use should not be available: every directive is inert, so an
+   * `eslint-disable` is reported as having no effect. The exemptions this repo means are named blocks below.
    *
-   * Root, not `base`: a generated project is already held to this by `scripts/checkBannedPatterns.ts`, which refuses
-   * the directive at write time and on commit, and putting it in the layer would make every existing consumer's
-   * directives inert on upgrade. docs/DESIGN.md: `noInlineConfig`
+   * Root, not `base`: a generated project is held to this by `scripts/checkBannedPatterns.ts`, and in the layer it
+   * would make every existing consumer's directives inert on upgrade. docs/DESIGN.md: `noInlineConfig`
    */
   { linterOptions: { noInlineConfig: true } },
 

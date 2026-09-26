@@ -305,17 +305,14 @@ export const svelteTarget: TargetRecord = {
       covers: 'src/lib/apis/contact/api.ts',
     },
   ],
-  // `svelte-kit sync` first, since the tsconfig it writes is extended. `--fail-on-warnings`: accessibility
-  // diagnostics are compiler warnings, and `eslint-plugin-svelte` v3 carries no a11y rule at all.
-  /*
-   * The three a scaffolder used to write. `vite dev` rather than `vite`, which is what SvelteKit's own template
-   * runs: the kit's plugin owns the dev server.
-   */
   build: 'vite build',
+  // `vite dev` rather than `vite`, which is what SvelteKit's own template runs: the kit's plugin owns the dev server.
   extraScripts: {
     dev: 'vite dev',
     preview: 'vite preview',
   },
+  // `svelte-kit sync` first, since the tsconfig it writes is extended. `--fail-on-warnings`: accessibility
+  // diagnostics are compiler warnings, and `eslint-plugin-svelte` v3 carries no a11y rule at all.
   typecheck: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings',
   prepare: 'svelte-kit sync',
   routerMock: 'fragments/test-setup/setupTests.svelteRouter.ts',

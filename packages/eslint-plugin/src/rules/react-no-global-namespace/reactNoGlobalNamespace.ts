@@ -212,11 +212,8 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           ];
         }
 
-        /**
-         * Beside the first named specifier, rather than by rewriting the statement's text. Rewriting it guessed at
-         * the quote style and at whether there was a list to join, and produced `import * as R, { X } from 'react'`
-         * and `import type { type X }`, neither of which parses.
-         */
+        // Beside the first named specifier, rather than by rewriting the statement's text, which guesses at the quote
+        // style and can write `import * as R, { X } from 'react'` or `import type { type X }`, neither of which parses.
         return [
           fixer.insertTextBeforeRange(rangeOf(mergeable), `${specifier}, `),
           ...replaced,

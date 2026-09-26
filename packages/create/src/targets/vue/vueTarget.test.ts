@@ -39,12 +39,9 @@ const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
 };
 
 describe('vueTarget', () => {
-  // This target owns its tree, so nothing is fetched and no generator decides what it is born with.
-
   /*
-   * Unconditional, as it was when `create-vue` installed it: a Vue application routes, and this target asks no
-   * router question to answer otherwise. So the header links rather than swapping from state, and there is one
-   * spelling of it rather than one per router.
+   * Unconditional: a Vue application routes, and this target asks no router question to answer otherwise. So the
+   * header links rather than swapping from state, and there is one spelling of it rather than one per router.
    */
   it('routes whatever was answered', () => {
     expect(destinationsFor()).toContain('src/router/index.ts');

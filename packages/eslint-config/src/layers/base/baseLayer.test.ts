@@ -338,12 +338,8 @@ describe('base: linteljs rules', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/interface-order');
   });
 
-  /**
-   * Derived from the plugin's own registry rather than named, which is the whole point of the pair below: the
-   * restatement listed two of the three `language: 'typescript'` rules, so `no-inline-object-types` was off in
-   * every `.vue` and `.svelte` script block from the day it shipped and nothing said so. Naming the rules here
-   * is what let a third be missed, so a fourth is covered the day it is written.
-   */
+  // Derived from the plugin's own registry rather than named, so a new `language: 'typescript'` rule is covered the
+  // day it is written instead of staying off in every `.vue` and `.svelte` script block.
   const TYPESCRIPT_RULE_IDS = Object.entries(lintelRules)
     .filter(([, rule]) => {
       return rule.meta.docs.language === 'typescript';
@@ -356,11 +352,8 @@ describe('base: linteljs rules', () => {
     expect(TYPESCRIPT_RULE_IDS.length).toBeGreaterThan(1);
   });
 
-  /**
-   * They read TypeScript nodes, so they are restated over the SFC extensions the plugin's own preset cannot reach.
-   * That restatement used to run over every script extension, which listed them as enabled on a `.js` file where
-   * they can match nothing. A rule enabled where it cannot fire is a claim about the config that is not true.
-   */
+  // Restated over the SFC extensions the plugin's own preset cannot reach, not over `.js`, where a rule enabled but
+  // unable to fire is a claim about the config that is not true.
   it('leaves every TypeScript-only rule off a plain .js file', async () => {
     const names = await ruleNamesFor(base(), 'src/lib/utils/sample.js');
 

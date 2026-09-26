@@ -94,7 +94,7 @@ describe('mergeClaudeSettings', () => {
     expect(merged.includeCoAuthoredBy).toBe(false);
   });
 
-  // The failure this exists to stop: one sync used to take all three of these with it.
+  // The failure this exists to stop: a sync taking all three of these with it.
   it('keeps the keys the project owns', () => {
     const merged = parsedMerge(THEIRS);
 

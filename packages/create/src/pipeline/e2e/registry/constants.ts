@@ -1,11 +1,8 @@
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-/**
- * Walked up to `pnpm-workspace.yaml` rather than counted in `..`. A fixed depth was silently wrong the moment this
- * file moved one directory, and nothing caught it: the end-to-end suite is the only thing that reads `ROOT` and it
- * is excluded from `pnpm check`, so the next gate to run it was CI.
- */
+// Walked up to `pnpm-workspace.yaml` rather than counted in `..`, so moving this file cannot silently break `ROOT`:
+// only the end-to-end suite reads it, and `pnpm check` excludes that.
 const workspaceRootFrom = (from: string): string => {
   let directory = from;
 

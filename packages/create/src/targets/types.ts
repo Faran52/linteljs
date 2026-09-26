@@ -33,6 +33,13 @@ export interface StarterTest {
   source?: string;
 }
 
+export interface ConditionalStyle {
+  path: string;
+  when: (answers: Answers) => boolean;
+}
+
+export type StarterStyle = string | ConditionalStyle;
+
 /**
  * Copied once at birth; the project owns it from then on.
  *
@@ -41,13 +48,6 @@ export interface StarterTest {
  * path rather than a second string that can disagree with it. `starterSourceEmitter` does the derivation and
  * `registry.test.ts` holds every derived path against what is on disk.
  */
-export interface ConditionalStyle {
-  path: string;
-  when: (answers: Answers) => boolean;
-}
-
-export type StarterStyle = string | ConditionalStyle;
-
 export interface StarterFile {
   target: string;
   /**
@@ -69,11 +69,10 @@ export interface StarterFile {
    * The asset path, where it differs from the destination. Absent is the ordinary case, and the ordinary case is
    * that the two are the same: a subject directory is named for the file it writes.
    *
-   * It exists for one thing, and one thing is the whole of the argument for it. A file shared across every target
-   * has to satisfy every target's naming rule at once, and two of those rules disagree: Angular names every source
-   * file in kebab and the other nine name theirs in camel. So `fetchExtended.ts` is the asset and Angular receives
-   * it as `fetch-extended.ts`, which is the same file spelled the way each project already spells its own, the way
-   * `Mark.tsx` is `AppMark.vue` on Vue.
+   * A file shared across every target has to satisfy every target's naming rule at once, and two of those rules
+   * disagree: Angular names every source file in kebab and the other nine name theirs in camel. So
+   * `fetchExtended.ts` is the asset and Angular receives it as `fetch-extended.ts`, the way `Mark.tsx` is
+   * `AppMark.vue` on Vue.
    */
   source?: string;
 }
@@ -150,16 +149,16 @@ export interface TsconfigDelta {
   dropsPaths?: true;
 }
 
-// One record per target, so emitters stay free of `switch (target)`.
 // A factory instead of `defineConfig`; Astro alone, whose Vite options come through `getViteConfig`.
 interface VitestFactory {
   imports: string[];
   call: string;
 }
 
+// One record per target, so emitters stay free of `switch (target)`.
 export interface TargetRecord {
   id: TargetId;
-  // The module the emitted `index.html` loads. Absent where a generator still writes that document.
+  // The module the emitted `index.html` loads.
   /*
    * Explicitly `| undefined` so a record built by overlay can clear it. React Router's framework mode is the case:
    * it takes the base React record and has no document of its own, and the emitter reads this rather than `html`.
@@ -264,7 +263,7 @@ export interface TargetRecord {
   reactRouterProject?: true;
   // Angular's CLI reads its whole build from `angular.json`, which is keyed by the project's name.
   angularProject?: true;
-  // The build script. Required: every target owns its own build now that no generator writes one.
+  // The build script. Required: every target owns its own build.
   build: string;
   // Runs on install before `husky`; SvelteKit's `svelte-kit sync` writes the tsconfig the emitted one extends.
   prepare?: string;

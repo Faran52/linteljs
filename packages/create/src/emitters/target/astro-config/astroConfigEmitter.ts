@@ -8,7 +8,6 @@ import { emitted } from '../../utils/artifactUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
 // Astro's Vite options live here, so there is no `vite.config.ts`. `.mjs` is the name `astro check` looks for first.
-// Null for every other target.
 
 interface Integration {
   specifier: string;

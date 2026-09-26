@@ -2,11 +2,8 @@ import type { AnswerRecord } from '../../types';
 
 export type Library = keyof typeof librariesAnswer.values;
 
-/**
- * Only what a dependency alone can be. Anything that changes what is emitted is its own field, which is why the
- * form library left in 1.7.0 and `styling` and `data` left in v2: each was a single select hiding inside a
- * multi select, which left the full library set an illegal value of itself.
- */
+// Only what a dependency alone can be. Anything that changes what is emitted is its own field: a single select
+// hiding inside a multi select leaves the full library set an illegal value of itself.
 export const librariesAnswer = {
   key: 'libraries',
   flag: 'libraries',

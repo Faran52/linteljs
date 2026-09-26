@@ -105,12 +105,8 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
 
         const value = answer ?? opts.initialValues;
 
-        /**
-         * Not `Array.isArray`: its `arg is any[]` predicate widens every other member of the union away too, which
-         * is what was turning the spread below into an unsafe one. An array is the only member of this union that
-         * is `typeof 'object'`, so ruling everything else out that way keeps `value` typed as the array it already
-         * is, with no cast.
-         */
+        // Not `Array.isArray`: its `arg is any[]` predicate widens the union away and makes the spread below unsafe.
+        // An array is the only member that is `typeof 'object'`, so this keeps `value` typed with no cast.
         if (typeof value !== 'object') {
           return Promise.resolve(CANCEL);
         }

@@ -1,5 +1,5 @@
 // Where a member begins and ends once surrounding comments are counted, and what that says
-// about the block's layout. `index.ts` decides and fixes; nothing here reports.
+// about the block's layout. `memberNewline.ts` decides and fixes; nothing here reports.
 import { adjacentPairs, sameLine } from '../../../utils/layoutUtils.ts';
 import {
   mustFind,

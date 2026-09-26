@@ -291,7 +291,6 @@ describe('composeConfig', () => {
       framework: 'react',
       ignores: ['generated/**'],
       // `generated/**/*.ts` is in the map so the ignore below is the only thing that can silence that path.
-      // Without it `check-file` never covered `generated/` and the assertion passed whether `ignores` arrived or not.
       naming: {
         'src/**/*.ts': 'CAMEL_CASE',
         'generated/**/*.ts': 'CAMEL_CASE',
@@ -309,15 +308,9 @@ describe('composeConfig', () => {
 });
 
 /**
- * Two plugins enabling the same rule name is one defect reported twice, with two wordings, and where both carry a
- * fixer it is two fixers on one range. It went unseen because every check in this suite named the pair it already
- * knew about: `@eslint-react` 5 republishing the whole `react-hooks` 7 rule set put twelve names under two ids in
- * every React project, and `typescript.test.ts` checked three owners of unused code while sonarjs had grown a
- * fourth. This asserts the property instead, over the widest composition each framework can be given, so the next
- * plugin to republish somebody else's rules fails here on the day it is bumped.
- *
- * `--fix` is the sharp end: `unused-imports/no-unused-vars` and `sonarjs/no-unused-vars` both reported the same
- * unused binding and both wanted the range.
+ * Two plugins enabling the same rule name is one defect reported twice, and where both carry a fixer, two fixers on
+ * one range. Asserted as a property over the widest composition each framework can be given, rather than per known
+ * pair, so the next plugin to republish somebody else's rules fails here on the day it is bumped.
  */
 const namesUnderTwoIds = (ruleIds: string[]): string[] => {
   const idsByName = new Map<string, string[]>();

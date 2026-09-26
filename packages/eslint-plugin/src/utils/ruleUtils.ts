@@ -22,8 +22,7 @@ export interface AncestorReader {
   getAncestors(node: Ancestor): Ancestor[];
 }
 
-// Where the parse put something. Taken from ESLint's own token type rather than written out again: a node, a token
-// and a comment all carry the same shape, and four rules had described it under six names between them.
+// Where the parse put something. ESLint's own token type, since a node, a token and a comment share the shape.
 export type NodeLocation = AST.Token['loc'];
 
 // A parsed thing carrying a source range; shaped rather than RuleNode so a test can call rangeOf({}) with no cast.

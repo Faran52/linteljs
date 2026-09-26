@@ -42,7 +42,7 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 };
 
 /**
- * Character for character: both READMEs quote it. An ordinary literal, not `String.raw`, since the emitted file now
+ * Character for character: both READMEs quote it. An ordinary literal, not `String.raw`, since the emitted file
  * carries a `String.raw` of its own and a raw fixture cannot hold the backticks that tag needs.
  */
 const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/compose-config';
@@ -540,8 +540,7 @@ describe('folderNaming', () => {
   });
 });
 
-// Concatenated without deduplication, so a target repeating a shared entry published it twice. Astro and the
-// extension both did.
+// A target repeating a shared entry must not publish it twice.
 describe('ignores', () => {
   const ignoresOf = (answers: Answers): string[] => {
     const list = /ignores: (\[[^\]]*\])/su.exec(emitEslintConfig(answers))?.[1] ?? '[]';

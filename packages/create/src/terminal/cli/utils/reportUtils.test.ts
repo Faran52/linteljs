@@ -225,7 +225,7 @@ describe('stageReport on a terminal', () => {
     expect(output).toContain('\u2713 standard  2 files, 0.1s');
   });
 
-  // Nothing else writes to this terminal now, so the two stages that spawn a binary spin like the rest.
+  // Nothing else writes to this terminal, so the two stages that spawn a binary spin like the rest.
   it('spins for a stage that spawns a binary, and says what it said', () => {
     asTerminal(true);
 

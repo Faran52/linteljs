@@ -34,11 +34,8 @@ import type {
 } from '@answers/types';
 import type { TargetRecord } from '@targets/types';
 
-/**
- * The four value-bearing kinds `askAnswer` dispatches on, which is now every kind a record can be asked in: `store`
- * was the one `boolean` and became an optional choice when it grew past yes-or-no. `list` and `map` carry no
- * `prompt` on any of today's records, both being hand-edited only, so neither reaches `askAnswer` either.
- */
+// The four value-bearing kinds `askAnswer` dispatches on. `list` and `map` carry no `prompt` on any record, both
+// being hand-edited only, so neither reaches `askAnswer`.
 type PromptableRecord
   = ChoiceRecord
     | MultiRecord

@@ -3,10 +3,8 @@ import type { AnswerRecord } from '../../types';
 export type Data = keyof typeof dataAnswer.values;
 
 /**
- * Its own field for the third time this pattern has appeared, after the form library and `styling`: TanStack Query
- * and RTK Query are the same job, so at most one is installed and a single select is what refuses the other. What
- * stays in `libraries` after this is `zod`, `es-toolkit`, `ts-pattern` and `t3-env`, which gives that answer the
- * definition it lacked: a library is a thing that is only a dependency.
+ * Its own field, like the form library and `styling`: TanStack Query and RTK Query are the same job, so at most one
+ * is installed and a single select is what refuses the other.
  *
  * Redux for client state with TanStack Query for server state is a real architecture, so `tanstack-query` is
  * offered with every store. Only `rtk-query` carries a constraint, and it is the store's rather than the target's.

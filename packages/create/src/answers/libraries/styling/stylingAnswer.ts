@@ -3,9 +3,8 @@ import type { AnswerRecord } from '../../types';
 export type Styling = keyof typeof stylingAnswer.values;
 
 /**
- * Its own field rather than a member of `libraries`, for the reason the form library left in 1.7.0: at most one of
- * these is ever installed, and a single select is what says so. It is what `libraries` was hiding a single select
- * inside, which left the full library set illegal as a value of itself.
+ * Its own field rather than a member of `libraries`: at most one of these is ever installed, and a single select
+ * is what says so.
  *
  * Absent is a real answer rather than an omission. A project with no utility system still receives the tokens and
  * the starter stylesheet, which is one file every target shares.

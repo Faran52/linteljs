@@ -3,7 +3,7 @@ import { type ProjectShape } from '@config/types';
 import { allPresent } from '../../utils/fsUtils';
 
 /**
- * The one place a directory is read for the files `artifacts/` has more than one spelling of.
+ * The one place a directory is read for the files `emitters/` has more than one spelling of.
  * Discovered rather than asked: writing the target's default beside a project's own left a second entry nothing
  * imported.
  */

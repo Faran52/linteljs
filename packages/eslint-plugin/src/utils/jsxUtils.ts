@@ -16,7 +16,7 @@ export interface JsxName {
   property?: JsxName | undefined;
 }
 
-// What a `Literal` node can hold. Named rather than spelled out at each of its three sites.
+// What a `Literal` node can hold.
 export type LiteralValue = string | number | boolean | null | undefined;
 
 // The expression fields these rules read. A `Literal` carries `value`, an `Identifier` carries `name`, and the two

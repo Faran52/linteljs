@@ -10,7 +10,7 @@ import { emitted } from '../../utils/artifactUtils';
  * has to know what the project is called.
  *
  * `lang` is set rather than left empty. An empty one tells a screen reader the language is unknown, which is worse
- * than omitting it, and it is a defect this CLI used to repair in somebody else's template.
+ * than omitting it.
  */
 export const emitHtmlEntry = (name: string, entry: string): string => {
   return [

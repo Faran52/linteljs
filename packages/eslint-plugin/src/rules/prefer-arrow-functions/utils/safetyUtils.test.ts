@@ -28,7 +28,7 @@ interface ParseOptions {
   script?: boolean;
 }
 
-// Driven directly with real parsed function nodes, the same way index.ts reaches them.
+// Driven directly with real parsed function nodes, the same way the rule reaches them.
 
 const isFunctionLike = (node: RuleNode): node is FunctionLike => {
   return node.type === 'ArrowFunctionExpression'

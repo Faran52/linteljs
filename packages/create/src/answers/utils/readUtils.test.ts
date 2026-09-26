@@ -89,7 +89,7 @@ describe('readAnswer', () => {
 });
 
 describe('unaskedValueOf', () => {
-  // The kinds that are optional in `Answers` answer nothing, `store` among them since it stopped being a yes or no.
+  // The kinds that are optional in `Answers` answer nothing, `store` among them.
   it('answers nothing for a kind a target never asks', () => {
     expect(unaskedValueOf(ANSWERS.store)).toBeUndefined();
     expect(unaskedValueOf(ANSWERS.router)).toBeUndefined();

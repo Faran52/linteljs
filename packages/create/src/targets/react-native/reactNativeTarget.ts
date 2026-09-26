@@ -179,7 +179,7 @@ export const reactNativeTarget: TargetRecord = {
   typecheck: 'tsc --noEmit',
   // `eas build` needs a remote account, so an export of every platform stands in; none needs Xcode or the Android SDK.
   build: 'expo export',
-  // The four a scaffolder used to write; `expo lint` is declined, since this standard's linter is the emitted one.
+  // `expo lint` is declined, since this standard's linter is the emitted one.
   extraScripts: {
     start: 'expo start',
     android: 'expo start --android',

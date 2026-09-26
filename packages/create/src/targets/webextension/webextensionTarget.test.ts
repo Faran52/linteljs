@@ -151,7 +151,6 @@ describe('the surfaces axis', () => {
       });
   });
 
-  // A popup's page and entry come from the Vite scaffold.
   // The popup is the surface every extension has, so choosing it alone adds nothing the default did not carry.
   it('adds no surface file for a popup, which every project already is', () => {
     const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles.map((file) => {

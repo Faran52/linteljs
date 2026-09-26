@@ -189,7 +189,7 @@ describe.each(ruleNames)('%s indentation', (name) => {
   });
 });
 
-// Read off the rule rather than off a domain taxonomy: what a fixer may do to the tokens is the fixer's own property.
+// Read off the rule: what a fixer may do to the tokens is the fixer's own property.
 const namesIn = (shape: FixShape): string[] => {
   return Object.entries(rules).filter(([, rule]) => {
     return rule.meta.docs.fixShape === shape;

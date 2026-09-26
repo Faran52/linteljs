@@ -40,12 +40,8 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'widget.ts',
   },
   {
-    /**
-     * The corpus carried a `'use client'` sample and a React one, and never the two together, so nothing saw
-     * the insert land above a directive. An import ahead of it stops it being a directive at all.
-     * Indented on purpose: an honest new top-level statement in a file holding indented lines is what the
-     * indentation check has to let through.
-     */
+    // An import ahead of `'use client'` stops it being a directive at all. Indented on purpose: a new top-level
+    // statement in a file holding indented lines is what the indentation check has to let through.
     name: 'React global under a use client directive',
     code: "'use client';\n\ninterface Props {\n  children?: React.ReactNode;\n}\n\nexport type { Props };\n",
     typescript: true,
@@ -295,8 +291,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'two slash lines stay separate',
     code: '// alpha\n// bravo\nconst value = 1;\n',
   },
-  // A tagged block is read by a tool, and every reader of one stops at `/**`. None of these three survives
-  // becoming a `//` line, and none of them was in the corpus when the rule was rewriting all of them.
+  // A tagged block is read by a tool, and every reader of one stops at `/**`, so none of these survives as `//`.
   {
     name: 'jsdoc type annotation on a config file',
     code: "/** @type {import('tailwindcss').Config} */\nmodule.exports = {};\n",

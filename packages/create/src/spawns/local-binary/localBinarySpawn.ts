@@ -19,8 +19,8 @@ export type LocalBinaryRun = NotRun | Ran;
  * because before `install` has run there is nothing there to fix and that is not an error: `spawn` reports it as
  * ENOENT, so no separate presence check is needed.
  *
- * Asynchronous, like every other spawn in this ring. `spawnSync` held the event loop for as long as `eslint --fix`
- * took, which is what left the terminal's spinner frozen on the one stage that runs it.
+ * Asynchronous, like every other spawn in this ring: `spawnSync` would hold the event loop for as long as
+ * `eslint --fix` takes and freeze the terminal's spinner.
  */
 export const localBinarySpawn = async (cwd: string, name: string, args: string[]): Promise<LocalBinaryRun | null> => {
   return await new Promise<LocalBinaryRun | null>((settle) => {

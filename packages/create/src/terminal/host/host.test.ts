@@ -156,7 +156,7 @@ describe('hostOf: the Node a project records', () => {
 });
 
 describe('hosted', () => {
-  // The manager question is gone, so whatever the answers carried is replaced rather than kept.
+  // The manager is never asked, so whatever the answers carried is replaced rather than kept.
   it('records the host over whatever manager the answers carried', () => {
     expect(hosted({
       ...DEFAULT_ANSWERS,

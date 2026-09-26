@@ -92,18 +92,15 @@ export interface Answers {
 // by the time anything is written it is always there.
 export type HostedAnswers = Answers & Required<Pick<Answers, 'nodeVersion'>>;
 
-/**
- * `extends Answers`, so a config plans directly. `utils/configUtils.ts`'s parser is the only list and refuses an
- * unknown property by name: `run/cli` once rebuilt `Answers` field by field and replanned a devtools-panel project
- * as a popup one.
- */
+// `extends Answers`, so a config plans directly. `utils/configUtils.ts`'s parser is the only list and refuses an
+// unknown property by name.
 export interface LinteljsConfig extends Answers {
   $schema: typeof CONFIG_SCHEMA_URL;
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
 }
 
 // One line per record, insertion order the ask order and the order a config's keys are written in. `plugins` sits
-// beside `agents` rather than with the never-asked tail, which is where today's hand-written config writer left it.
+// beside `agents` rather than with the never-asked tail.
 export const ANSWERS = {
   target: targetAnswer,
   browser: browserAnswer,

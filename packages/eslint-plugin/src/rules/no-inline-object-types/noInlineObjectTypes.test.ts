@@ -139,11 +139,7 @@ tsRuleTester.run('no-inline-object-types: allowIn', noInlineObjectTypes, {
   ],
 });
 
-/**
- * The corpus: every position a `TSTypeLiteral` can occupy, so the rule is pinned by where a shape appears rather
- * than by the handful of sites that happened to exist when it was written. A position missing from here is a
- * position nobody has decided about.
- */
+// The corpus: every position a `TSTypeLiteral` can occupy. A position missing from here is one nobody has decided.
 tsRuleTester.run('no-inline-object-types: every position', noInlineObjectTypes, {
   valid: [
     // Nodes that look like a literal and are not one.
@@ -270,10 +266,8 @@ tsRuleTester.run('no-inline-object-types: every position', noInlineObjectTypes, 
 });
 
 /**
- * The rest of the grammar. Every position here was found by parsing a probe file and reading back what the rule
- * reported, rather than by listing what came to mind: the `export` and parenthesised forms below are in the valid
- * list because the parser hands the literal straight to the alias in both, which is a fact about the parser rather
- * than a decision this rule makes, and one a parser upgrade could take away.
+ * The rest of the grammar, found by parsing a probe file. The `export` and parenthesised forms are valid because the
+ * parser hands the literal straight to the alias in both: a fact about the parser that an upgrade could take away.
  */
 tsRuleTester.run('no-inline-object-types: the rest of the grammar', noInlineObjectTypes, {
   valid: [

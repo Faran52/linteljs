@@ -277,10 +277,6 @@ describe('patchPackageJson', () => {
     });
   });
 
-  /*
-   * Declared rather than inherited, since nothing writes a manifest for most targets any more. Without it yarn 1
-   * warns about a missing license on every install and refuses to enable workspaces.
-   */
   // Expo Router is the entry, where every other target's bundler finds its own.
   it('names the entry only for the target whose runtime reads it', () => {
     expect(patchPackageJson({}, answersFor({ target: 'react-native' }))).toHaveProperty('main', 'expo-router/entry');
@@ -327,7 +323,7 @@ describe('buildDependencies', () => {
    * What each store brings: its own packages, and the one that binds it to the framework rendering it. The bindings
    * are why this is a table rather than a name on the target: TanStack ships one package per framework, Astro's
    * binding is the hosted framework's rather than Astro's, and a binding with no core beside it installs cleanly and
-   * fails at the first import. Pinia is pinned since `create-vue` crossed over, with the devtools pinia 4 peers on.
+   * fails at the first import. Pinia brings the devtools pinia 4 peers on.
    */
   it.each<[TargetId, HostedFramework | undefined, Store, string[]]>([
     ['react', undefined, 'zustand', ['zustand']],
@@ -704,7 +700,7 @@ describe('packageJsonEmitter', () => {
     expect(patched.dependencies?.['date-fns']).toBe('^4.1.0');
     // A merge, not an overwrite, for the dev tools a project declared too.
     expect(patched.devDependencies?.['some-tool']).toBe('^1.0.0');
-    // Owned since this target crossed over: nothing fetches React any more, so this CLI is what installs it.
+    // Nothing fetches React, so this CLI is what installs it.
     expect(patched.dependencies?.['react']).toBe(VERSIONS['react']);
     expect(patched.scripts?.['dev']).toBe('vite');
     expect(patched.scripts?.['lint']).toBe('eslint .');

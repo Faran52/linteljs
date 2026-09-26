@@ -114,7 +114,7 @@ export const angularTarget: TargetRecord = {
     },
   ],
   typecheck: 'tsc --noEmit',
-  // The two a scaffolder used to write; `ng test` is declined, since this standard's runner is vitest.
+  // `ng test` is declined, since this standard's runner is vitest.
   build: 'ng build',
   extraScripts: { dev: 'ng serve' },
   devDependencies: ['angular-eslint', '@angular/cli', '@angular/build', '@angular/compiler-cli'],

@@ -38,9 +38,7 @@ vi.mock('./processUtils', () => {
 
 /*
  * Every answer the CLI names a flag for has to reach the CLI, or the suite generates a project from answers it
- * never gave and asserts against the ones it meant. That is not hypothetical: `styling` and `data` were added in
- * v2 and this list was not, so five cases per target generated plain CSS and no data layer while claiming
- * otherwise, and the only thing that caught it was the config they wrote back.
+ * never gave and asserts against the ones it meant.
  *
  * A record with no `flag` is one no prompt asks and no argument sets: the package manager comes from the user
  * agent, and the rest are recorded off the machine that ran the CLI.

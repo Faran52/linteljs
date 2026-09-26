@@ -89,8 +89,7 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'manager/yarnrc': yarnrcEmitter,
 };
 
-// What a `create` run plants and `sync` never touches. The split is not new: it is what the stage runners were
-// expressing by writing these outside the artifact list, said once.
+// What a `create` run plants and `sync` never touches.
 export const SEED_EMITTERS: Record<string, Emitter> = {
   'always/linteljs-config': linteljsConfigEmitter,
   'always/readme': readmeEmitter,
@@ -104,8 +103,8 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
 
 /**
  * Every file this CLI owns some or all of, which both `create` and `sync` write from. A merge belongs here, not in
- * a stage: the `peerDependencyRules` allowance of 1.2.0 reached new projects and no old one while it was
- * stage-only. One line per emitter and no branch: whether a file is written is the emitter's own question.
+ * a stage, or it reaches new projects and no old one. One line per emitter and no branch: whether a file is written
+ * is the emitter's own question.
  */
 export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
   const artifacts = Object.values(BUILD_EMITTERS).flatMap((emit) => {

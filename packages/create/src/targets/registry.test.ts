@@ -46,9 +46,8 @@ const recordFor = (target: TargetId): TargetRecord => {
 };
 
 /**
- * Every asset a record still names by hand. The starter is not among them any more: a record names the destination
- * and `starterSourceEmitter` derives the asset from it, so `emitters/registry.test.ts` holds that half against disk
- * through the emitter rather than through the record.
+ * Every asset a record names by hand. Not the starter: a record names the destination and `starterSourceEmitter`
+ * derives the asset from it, so `emitters/registry.test.ts` holds that half against disk through the emitter.
  */
 const assetPathsOf = (target: TargetRecord): string[] => {
   return [

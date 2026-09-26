@@ -53,8 +53,6 @@ export const mergeStyleEntry = (
  * The style entry is the one file that knows every stylesheet a project has, so it is where each is imported from
  * rather than from a component. Angular scopes through `ViewEncapsulation`, Svelte scopes a `<style>` block and Vue
  * has `<style scoped>`, so a colocated stylesheet only reaches its element when the import is global.
- *
- * Tailwind generates nothing until a stylesheet imports it; only create-next-app writes that line itself.
  */
 export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Artifact[] => {
   const target = targetFor(answers);

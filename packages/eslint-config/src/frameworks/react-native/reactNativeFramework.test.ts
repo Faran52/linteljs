@@ -64,11 +64,9 @@ describe('reactNative', () => {
   });
 
   /**
-   * The defect this guards: `reactNative()` used to compose `reactCore` out of `reactFramework.ts`, whose
-   * module-scope `import jsxA11y from 'eslint-plugin-jsx-a11y-x'` runs on load. A React Native project no longer
-   * installs that package, so ESLint died on ERR_MODULE_NOT_FOUND before reading a rule, on all four package
-   * managers. It cannot be caught by running the layer here, where the package is installed either way, so the guard
-   * reads the source.
+   * `reactFramework.ts` imports `eslint-plugin-jsx-a11y-x` at module scope, which a React Native project does not
+   * install, so reaching it kills ESLint with ERR_MODULE_NOT_FOUND. The package is installed here either way, so
+   * the guard reads the source.
    */
   it('reaches no module that imports the web accessibility plugin', async () => {
     const here = dirname(fileURLToPath(import.meta.url));

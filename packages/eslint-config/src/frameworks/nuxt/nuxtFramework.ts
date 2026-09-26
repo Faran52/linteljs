@@ -24,10 +24,7 @@ export const nuxt = (): Layer => {
       name: '@linteljs/nuxt/route-files',
       files: ROUTE_FILES,
       rules: {
-        /*
-         * A page's filename is its URL. `pages/index.vue` is `/` and `pages/about.vue` is `/about`, so the name
-         * is decided by the router rather than chosen, and the rule has nothing to improve.
-         */
+        // A page's filename is its URL, so the router decides the name and the rule has nothing to improve.
         'vue/multi-word-component-names': 'off',
       },
     },

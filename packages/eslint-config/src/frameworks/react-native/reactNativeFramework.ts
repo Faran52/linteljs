@@ -20,11 +20,8 @@ export const reactNative = (): Layer => {
       name: '@linteljs/react-native/accessibility',
       // `reactCore()` above registers the plugin over the same files.
       files: SCRIPT_FILES,
-      /**
-       * Named rather than taken as a preset. Each is an opt-out, so `recommended` does not carry them, and the
-       * subject lives in the id now rather than in a preset name. This layer is the only thing that ever wanted
-       * the group, which is what made a published preset for it hard to justify.
-       */
+      // Named rather than taken as a preset: each is an opt-out, so `recommended` does not carry them, and this
+      // layer is the only one that wants the group.
       rules: {
         '@linteljs/native-accessible-name': 'error',
         '@linteljs/native-no-nested-touchables': 'error',

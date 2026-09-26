@@ -51,8 +51,7 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
   };
 };
 
-// A fresh run records the host: the manager question is gone, so `packageManager` on the answers is a placeholder
-// until here.
+// A fresh run records the host: `packageManager` on the answers is a placeholder until here.
 export const hosted = (answers: Answers, host: Host): HostedAnswers => {
   return {
     ...answers,

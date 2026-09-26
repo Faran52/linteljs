@@ -53,7 +53,7 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).not.toContain('old();');
   });
 
-  // The defect the block reader was written for: a reason quoting `arr[0];` used to end the block early.
+  // The defect the block reader was written for: a reason quoting `arr[0];` ending the block early.
   it('reads a multi-line block to its own closing bracket, not to a semicolon inside a reason', () => {
     const skipped = [
       'const PROJECT_SKIPPED: string[] = [',

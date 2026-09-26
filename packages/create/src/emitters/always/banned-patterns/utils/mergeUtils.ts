@@ -1,7 +1,7 @@
 // Preserving the checker froze the pattern list, emitting it deleted the project's blocks; so the shipped file
 // supplies everything and the project's `PROJECT_SKIPPED` and `PROJECT_BANNED` are lifted back over it.
 
-// The declaration through its closing `];`, read as whole lines since a reason quoting `arr[0];` ended it early.
+// The declaration through its closing `];`, read as whole lines since a reason quoting `arr[0];` would end it early.
 const blockOf = (source: string, name: string): string | null => {
   const opening = source.indexOf(`const ${name}`);
 

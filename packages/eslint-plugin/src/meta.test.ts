@@ -470,9 +470,8 @@ describe('documentation', () => {
   });
 
   /**
-   * 1.6.0 removed the category presets and seven documents went on pointing at one. Every page in
-   * the package is read, not just the root README: `scripts/build/rule-docs/ruleDocsBuild.ts` publishes each rule's
-   * own README under `docs/`, so a stale preset name there ships too.
+   * Every page in the package, not just the root README: `scripts/build/rule-docs/ruleDocsBuild.ts` publishes each
+   * rule's own README under `docs/`, so a stale preset name there ships too.
    */
   it('names no preset outside the two the plugin ships, in any of its docs', () => {
     const presets: string[] = [...PRESET_NAMES];

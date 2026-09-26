@@ -106,7 +106,7 @@ describe('mergePnpmWorkspace', () => {
   it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {
     const existing = "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n  'custom-pkg': true\n";
 
-    // Angular, because it is one of the two targets that still caps a peer: the list is untouched and the block
+    // Angular, because it is the one target that caps a peer: the list is untouched and the block
     // follows it. A target that caps nothing gets the list alone, which the emitter's own suite holds.
     expect(mergePnpmWorkspace(existing, answersFor({ target: 'angular' })).startsWith(existing)).toBe(true);
     expect(mergePnpmWorkspace(existing, answersFor({ target: 'angular' }))).toContain('peerDependencyRules:');
@@ -148,9 +148,8 @@ describe('mergePnpmWorkspace: peerDependencyRules', () => {
   });
 
   /**
-   * The common case, and the one that used to be impossible: nothing this project installs caps a peer, so the file
-   * is the build list alone. Measured before it was removed: no lockfile here has `eslint-plugin-import` or
-   * `eslint-plugin-jsx-a11y` in it, the layers take the two forks, and `eslint-plugin-astro` peers the fork itself.
+   * The common case: nothing this project installs caps a peer, so the file is the build list alone. The layers take
+   * the two forks, and `eslint-plugin-astro` peers the fork itself.
    */
   it('writes no rules block for a target with nothing capped', () => {
     for (const target of ['vue', 'next', 'astro', 'react-native'] as const) {

@@ -189,11 +189,8 @@ const value = thing;`,
   ],
 });
 
-/**
- * svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so the rule once saw no declaration in
- * a component and said nothing. Each script is its own list now, and the fix writes at the indent the script body
- * is written at rather than at column 0.
- */
+// svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so each script is its own list and the
+// fix writes at the script body's indent rather than at column 0.
 const component = (...script: string[]): string => {
   return ['<script lang="ts">', ...script.map((line) => {
     return line === '' ? '' : `  ${line}`;

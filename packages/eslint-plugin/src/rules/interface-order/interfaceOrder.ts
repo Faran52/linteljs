@@ -150,8 +150,7 @@ export const interfaceOrder = createRule('interface-order', {
     type: 'layout',
     docs: {
       language: 'typescript',
-      // On by default from 2.0. It is still the only rule that relocates declarations, and comment placement is
-      // still a judgement call, which is why the fix is `reorder` and why it reports rather than rewrites freely.
+      // The only rule that relocates declarations, and comment placement is a judgement call, so the fix is `reorder`.
       recommended: true,
       fixShape: 'reorder',
       description: 'Keep top-level interfaces and type aliases together, after imports and before runtime code.',
@@ -241,8 +240,7 @@ export const interfaceOrder = createRule('interface-order', {
         check(node.body);
       },
 
-      // svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so the list above holds no
-      // declaration at all there and the rule said nothing about a Svelte component.
+      // svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so each script is its own list.
       'SvelteScriptElement:exit': (node: ScriptElement) => {
         check(node.body);
       },

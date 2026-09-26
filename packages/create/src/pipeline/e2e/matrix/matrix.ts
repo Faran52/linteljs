@@ -46,11 +46,9 @@ export interface E2eCase {
  * `testing: none` on angular and on react-native, `customTypes.d.ts` is `typeSafety: relaxed` on angular, and the
  * rolldown peer is React on yarn 1. So the suite covers every *pair* of answers rather than every combination.
  *
- * The package manager is one of the axes. It used to be a family of its own, every target on every manager at full
- * dependency pressure, sized for the scaffolders each manager launched (`bun create` refusing a second registry port,
- * a scaffolder misreading npm's output). Those are gone: what a manager changes now is how it resolves the
- * dependency set a target and its libraries emit, and the files the CLI writes for it, which is a pair of the manager
- * with each of those answers. Every multi-select stays at its full value in every case.
+ * The package manager is one of the axes: what a manager changes is how it resolves the dependency set a target and
+ * its libraries emit, and the files the CLI writes for it, which is a pair of the manager with each of those
+ * answers. Every multi-select stays at its full value in every case.
  *
  * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
  * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the

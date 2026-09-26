@@ -381,7 +381,6 @@ export const nextTarget: TargetRecord = {
   ],
   // `next typegen` first: the template's route types are declared into `.next/types` only after a build.
   typecheck: 'next typegen && tsc --noEmit',
-  // The three a scaffolder used to write.
   build: 'next build',
   extraScripts: {
     dev: 'next dev',

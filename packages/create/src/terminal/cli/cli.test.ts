@@ -58,8 +58,8 @@ const RULE = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 let project = '';
 let entered = '';
 
-// `parseCliArgs` reads `process.cwd()`. The agent is stubbed rather than inherited: the manager is no longer asked
-// or flagged, so what the suite runs under would otherwise decide what every case records.
+// `parseCliArgs` reads `process.cwd()`. The agent is stubbed rather than inherited: the manager is neither asked
+// nor flagged, so what the suite runs under would otherwise decide what every case records.
 beforeEach(async () => {
   vi.stubEnv('npm_config_user_agent', 'pnpm/12.5.1 npm/? node/? darwin arm64');
   entered = processCwd();

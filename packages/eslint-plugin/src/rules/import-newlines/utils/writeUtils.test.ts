@@ -88,7 +88,7 @@ describe('writeImport', () => {
     expect(writeImport(sourceCode, node, null, '\n')).toBe("import alpha from 'mod';");
   });
 
-  // This emitter has no guard for a side-effect import; index.ts's early return is what prevents reaching it. Pinned so
+  // This emitter has no guard for a side-effect import; the rule's early return prevents reaching it. Pinned so
   // that guard is not deleted as dead code.
   it('writes an unparseable statement for an import with no specifiers, which callers must guard against', () => {
     const { sourceCode, node } = importNodeFrom("import 'mod';");

@@ -232,8 +232,7 @@ describe('stage timing', () => {
 
 /**
  * One route to disk. Every file this CLI owns is an `Artifact` and reaches the project through `artifactWriter`,
- * which is what lets `sync` see the same set and what stops this file growing a branch per artifact. `rewrite` and
- * `repair` still write directly, and are a different operation: they edit source a scaffolder already wrote.
+ * which is what lets `sync` see the same set and what stops this file growing a branch per artifact.
  */
 describe('the pipeline as a writer', () => {
   it('puts every file it owns on disk through artifactWriter and nothing else', async () => {

@@ -30,7 +30,6 @@ export const vueTarget: TargetRecord = {
   framework: 'vue',
   html: true,
   sfcExtension: 'vue',
-  // Pinia carries no dependency here, because create-vue installs it itself.
   stores: ['pinia', 'tanstack-store'],
   ignores: [],
   naming: sfcNaming('vue'),
@@ -237,10 +236,7 @@ export const vueTarget: TargetRecord = {
       covers: 'src/lib/store/counter.ts',
     },
   ],
-  /*
-   * The three a scaffolder used to write. Nothing fetches this target any more, so `pnpm check` chaining `build`
-   * would find no such script and a project would fail its own gate at birth.
-   */
+  // Nothing fetches this target, so without `build` here `pnpm check` would fail the project's own gate at birth.
   build: 'vite build',
   extraScripts: {
     dev: 'vite',

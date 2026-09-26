@@ -35,9 +35,9 @@ export const astroTarget: TargetBuilder = (answers) => {
     astro: true,
     // The html layer's parser cannot read a template's frontmatter fence.
     html: false,
-    // `.astro/` is the generated types and content cache.
     // Atoms outlive an island, which is the state problem Astro actually has.
     stores: ['nanostores'],
+    // `.astro/` is the generated types and content cache.
     ignores: ['.astro/**'],
     // `COMPONENT` admits both `Card.astro` and the lowercase `index.astro` a route has to be; `pages` is the route
     // directory.

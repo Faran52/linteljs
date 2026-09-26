@@ -7,7 +7,7 @@ import {
 import { argumentError, parseCliArgs } from './argvUtils';
 
 describe('parseCliArgs', () => {
-  // There is no scaffold stage to skip any more: the flag says the directory is a repository that already exists.
+  // The flag says the directory is a repository that already exists.
   it('reads --existing as an existing directory', () => {
     expect(parseCliArgs(['--existing']).existing).toBe(true);
     expect(parseCliArgs([]).existing).toBe(false);

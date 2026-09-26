@@ -197,10 +197,8 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     /**
      * Every `language: 'typescript'` rule the plugin publishes, restated over the SFC extensions its own preset
-     * cannot reach: that preset scopes itself to the four TypeScript extensions, so a `<script lang="ts">` block
-     * never saw one. Over `TYPED_FILES` rather than the script globs: on a `.js` file they match nothing and were
-     * listed as enabled anyway, which contradicts the language scoping every other TypeScript rule here gets.
-     * `base.test.ts` derives the list from the registry, so a fourth cannot be missed the way the third was.
+     * cannot reach: that preset scopes itself to the four TypeScript extensions. Over `TYPED_FILES` rather than the
+     * script globs, since on a `.js` file they match nothing. `base.test.ts` derives the list from the registry.
      */
     {
       name: '@linteljs/base/typescript-rules',

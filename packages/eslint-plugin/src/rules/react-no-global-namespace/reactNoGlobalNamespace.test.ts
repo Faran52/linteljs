@@ -91,10 +91,7 @@ function build() {
       errors: [{ messageId: 'globalNamespace' }],
     },
 
-    /**
-     * `'use client'` is a directive only while nothing precedes it. The insert used to go before the first
-     * statement, which put the import above the directive and left Next's compiler refusing the file.
-     */
+    // `'use client'` is a directive only while nothing precedes it; an import above it makes Next refuse the file.
     {
       code: "'use client';\n\ninterface Props { children?: React.ReactNode }",
       output: "'use client';\n\nimport { type ReactNode } from 'react';\n\ninterface Props { children?: ReactNode }",
@@ -103,8 +100,7 @@ function build() {
 
     /**
      * Only a string literal opening the file is a directive. typescript-eslint gives every ExpressionStatement a
-     * `directive` key, and reading the key alone skipped `run();` as if it were one: the import landed after it,
-     * and a file of nothing but expression statements found no statement at all and threw.
+     * `directive` key, so the key alone would skip `run();` as one, and throw on a file of nothing else.
      */
     {
       code: 'run();\nconst element: React.ReactNode = 1;',
@@ -159,7 +155,7 @@ function build() {
       errors: [{ messageId: 'globalNamespace' }],
     },
 
-    // Double quotes, because the merge used to rebuild the statement and had to guess the style.
+    // Double quotes: the merge joins the list rather than rebuilding the statement, so the style survives.
     {
       code: 'import { useState } from "react";\nlet value: React.ReactNode;',
       output: 'import { type ReactNode, useState } from "react";\nlet value: ReactNode;',
@@ -242,9 +238,8 @@ tsxRuleTester.run('react-no-global-namespace: markup', reactNoGlobalNamespace, {
     },
 
     /**
-     * The name is imported, but as a type, so `<Fragment>` against it is a value TypeScript refuses. Reading
-     * the name alone counted that as already imported and rewrote both tags. The name is taken either way,
-     * which leaves nothing to write: reported with no fix.
+     * The name is imported, but as a type, so `<Fragment>` against it is a value TypeScript refuses. The name is
+     * taken either way, which leaves nothing to write: reported with no fix.
      */
     {
       code: "import type { Fragment } from 'react';\nconst el = <React.Fragment />;",
@@ -298,10 +293,8 @@ jsRuleTester.run('react-no-global-namespace: values', reactNoGlobalNamespace, {
 });
 
 /**
- * svelte-eslint-parser puts each `<script>` in `Program.body` as an element. The import once went before the first
- * of those, which is above the `<script>` tag: markup text, parseable, and a component that no longer imports what
- * it calls. Now it goes inside the script that holds the reference, and a reference in the template, where no import
- * can go, is reported with no fix.
+ * svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so the import goes inside the script
+ * holding the reference. A reference in the template, where no import can go, is reported with no fix.
  */
 svelteRuleTester.run('react-no-global-namespace: svelte', reactNoGlobalNamespace, {
   valid: [],

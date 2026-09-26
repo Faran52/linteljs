@@ -1,4 +1,4 @@
-// Emitter: import statement in, replacement text out. A string, not a fix, so `index.ts` can measure it first.
+// Emitter: import statement in, replacement text out. A string, not a fix, so `importNewlines.ts` can measure it first.
 import {
   type NodeLocation,
   rebuildLosesComments,

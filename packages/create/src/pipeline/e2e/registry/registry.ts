@@ -51,10 +51,9 @@ declare module 'vitest' {
 }
 
 /**
- * bun's cache is the one that cannot tell "these bytes" from "these versions exist", so the suite used to throw the
- * whole thing away every run and re-download every dependency of every bun case. Only `@linteljs/*` is republished
- * under a version a cached manifest cannot know about, so only `@linteljs/*` has to go. Anything this misses fails
- * loudly rather than quietly: `verifyLintOutput` asserts the resolved version is this run's.
+ * bun's cache is the one that cannot tell "these bytes" from "these versions exist". Only `@linteljs/*` is
+ * republished under a version a cached manifest cannot know about, so only `@linteljs/*` has to go. Anything this
+ * misses fails loudly rather than quietly: `verifyLintOutput` asserts the resolved version is this run's.
  */
 const pruneBunCache = (): void => {
   const cache = join(CACHE_DIR, 'bun');
@@ -150,9 +149,8 @@ const runVersion = (base: string): string => {
 };
 
 /**
- * A version no run has published before. The suite used to republish one version with different bytes, so every
- * directory recording which tarball a version resolved to had to start empty, which is what kept bun's whole cache
- * and yarn's metadata cold on every run. A version published once can never go stale, so all of them persist.
+ * A version no run has published before. A version published once can never go stale, so every directory recording
+ * which tarball a version resolved to can persist.
  * `workspace:*` between the three resolves to whatever is published, so they move together.
  */
 const publishedAs = (version: string, publish: () => void): void => {

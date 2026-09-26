@@ -133,12 +133,8 @@ const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
   }
 };
 
-/**
- * Every single select v1 kept inside `libraries`, lifted into the field v2 gave it: the form library, the styling
- * system and the data layer. Three of them because a multi select was the wrong shape for all three, and one
- * migration because v2 is the first version any of them exists in. Its own function so `configFrom` stays a list
- * of reads.
- */
+// Every single select v1 kept inside `libraries`, lifted into the field v2 gave it: the form library, the styling
+// system and the data layer. Its own function so `configFrom` stays a list of reads.
 const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject => {
   const fromV1 = schemaVersion === 1;
 

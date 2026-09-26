@@ -354,9 +354,8 @@ const baseReactTarget: TargetRecord = {
     }),
   ],
   /*
-   * Every suite covers a file this repository wrote, so none of them gates on the file existing any more, and
-   * `covers` is what keeps a suite out of a project whose answers never wrote its subject. The generated project
-   * gates at 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
+   * `covers` keeps a suite out of a project whose answers never wrote its subject. The generated project gates at
+   * 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
    */
   starterTests: [
     ...mockTests(true),
@@ -464,10 +463,7 @@ const baseReactTarget: TargetRecord = {
       covers: 'src/lib/apis/contact/api.ts',
     },
   ],
-  /*
-   * The three a scaffolder used to write. Nothing fetches this target any more, so `pnpm check` chaining `build`
-   * would find no such script and a project would fail its own gate at birth.
-   */
+  // Nothing fetches this target, so without `build` here `pnpm check` would fail the project's own gate at birth.
   build: 'vite build',
   extraScripts: {
     dev: 'vite',
@@ -476,7 +472,7 @@ const baseReactTarget: TargetRecord = {
   typecheck: 'tsc --noEmit',
   /*
    * Read off `PARTS` rather than restated: this target installs the same framework a host installs, and the only
-   * difference is that it owns the build, which is what `vite` is here for. Nothing fetches these any more, so a
+   * difference is that it owns the build, which is what `vite` is here for. Nothing fetches these, so a
    * name missing from this list is a project with no React in it.
    */
   testDevDependencies: PARTS.react.testDevDependencies,

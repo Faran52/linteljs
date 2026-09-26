@@ -144,8 +144,7 @@ export const parsePackageJson = (text: string): PackageJson => {
   return parsed;
 };
 
-// Sorted and de-duped like a package manager writes back. Throws on a missing entry: a silent skip is how
-// @types/node vanished before.
+// Sorted and de-duped like a package manager writes back. Throws on a missing entry rather than silently dropping it.
 export const versioned = (names: string[], pins: Record<string, string> = {}): Record<string, string> => {
   const result: Record<string, string> = {};
 
@@ -273,9 +272,8 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...packageJson,
     type: 'module',
     /*
-     * Declared rather than inherited. A generated project is an application, and a scaffolder used to write this;
-     * without it yarn 1 warns about a missing license on every install and refuses workspaces, and npm would
-     * publish the thing by accident.
+     * Declared rather than inherited. A generated project is an application: without it yarn 1 warns about a
+     * missing license on every install and refuses workspaces, and npm would publish the thing by accident.
      */
     private: true,
     ...(target.packageMain === undefined ? {} : { main: target.packageMain }),

@@ -12,7 +12,7 @@ export const reactGroup: string[] = ['^react$', '^react-dom$', '^react/', '^reac
 /**
  * Everything React that assumes no DOM, in its own module rather than in `reactFramework.ts`. A module-scope import
  * runs when the module loads, so composing this from `reactFramework.ts` would make a React Native project resolve
- * `eslint-plugin-jsx-a11y-x`, which it no longer installs, and ESLint would die on ERR_MODULE_NOT_FOUND before
+ * `eslint-plugin-jsx-a11y-x`, which it does not install, and ESLint would die on ERR_MODULE_NOT_FOUND before
  * reading a rule. Measured end to end on all four package managers.
  */
 export const reactCore = (): Layer => {

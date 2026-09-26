@@ -20,8 +20,7 @@ import {
 // Keyed by `keyof ComposeConfigOptions`, so a renamed option fails to compile here rather than in a project.
 type OptionRow = [keyof ComposeConfigOptions, string];
 
-// Which answer turns each layer on. None of the four is a `library` any more: the router, the styling system and
-// the data layer each became a field of its own, so the gate is the answer that installs the package behind it.
+// Which answer turns each layer on: the answer that installs the package behind it.
 const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
   'tanstack-query': (answers) => {
     return answers.data === 'tanstack-query';

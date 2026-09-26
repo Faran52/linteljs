@@ -36,7 +36,7 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 };
 
 describe('emitPnpmWorkspace', () => {
-  // One list for every manager now: the measured names and the two carried as insurance, sorted.
+  // One list for every manager: the measured names and the two carried as insurance, sorted.
   it('allows the four builds every target approves, sorted', () => {
     expect(allowBuildsBlock(answersFor({ target: 'svelte' }))).toBe(
       'allowBuilds:\n'
@@ -97,9 +97,8 @@ describe('emitPnpmWorkspace', () => {
 });
 
 /**
- * None left. All three allowances this table used to carry were for plugins nothing installs any more: the layers
- * take `import-x` and `jsx-a11y-x`, `eslint-plugin-solid` admits eslint 10, and `eslint-plugin-astro` 3.2 peers the
- * fork itself rather than only the plugin it replaced. Measured against the lockfiles rather than assumed: neither
+ * No plugin needs an allowance: the layers take `import-x` and `jsx-a11y-x`, `eslint-plugin-solid` admits eslint 10,
+ * and `eslint-plugin-astro` 3.2 peers the fork itself. Measured against the lockfiles: neither
  * `eslint-plugin-import` nor `eslint-plugin-jsx-a11y` appears in this workspace's or a generated project's.
  */
 describe('peerDependencyRules', () => {

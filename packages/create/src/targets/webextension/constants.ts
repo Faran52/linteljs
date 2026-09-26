@@ -30,8 +30,8 @@ export const CRX: PluginSpec = {
 };
 
 /**
- * Every file the popup is, which is every project: the manifest always names one. No `scaffold` on this record any
- * more, so `index.html` is emitted from `htmlEntry` and everything under it is written here.
+ * Every file the popup is, which is every project: the manifest always names one. No `scaffold` on this record, so
+ * `index.html` is emitted from `htmlEntry` and everything under it is written here.
  *
  * A popup is a panel a few hundred pixels wide that closes when it loses focus, so it carries no nav and no second
  * page. The extension's other surfaces are its other entries, and a surface answer is what adds them.

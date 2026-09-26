@@ -196,7 +196,6 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     // crx builds only pages the manifest names; the panel is opened at runtime, so it goes in `rollupOptions.input`.
     ...(hasSurface(answers, 'devtools-panel') ? { viteInputs: { panel: 'panel.html' } } : {}),
     typecheck: 'tsc --noEmit',
-    // The three a scaffolder used to write.
     build: 'vite build',
     extraScripts: {
       dev: 'vite',

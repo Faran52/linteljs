@@ -1,7 +1,7 @@
 import type { HostedAnswers } from '@answers/registry';
 
 /**
- * The vocabulary every ring shares: `emitters/` builds an artifact, `files/` applies it, `pipeline/` sequences
+ * The vocabulary every ring shares: `emitters/` builds an artifact, `disk/` writes it, `pipeline/` sequences
  * them by stage and `terminal/` names a stage on `--skip`. No ring owns any of it, so it sits below all of them
  * rather than inside the one that happens to construct it most often.
  */
