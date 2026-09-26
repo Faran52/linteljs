@@ -97,8 +97,8 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   A helper sits at the level of its readers and no higher, in every ring. One subject reads it, it
   is `<subject>/utils/` and the suite holds it private there. Several subjects read it, it is the
-  group's or the ring's `utils/`: `pipeline/utils/sourceUtils.ts` is there because both the rewrite
-  and the repair pass walk the same tree, and `terminal/utils/nameUtils.ts` because `cli/` and
+  group's or the ring's `utils/`: `spawns/utils/binaryUtils.ts` is there because `gitSpawn` and
+  `nodeSpawn` both resolve a binary on PATH, and `terminal/utils/nameUtils.ts` because `cli/` and
   `prompts/` both validate a project name.
 
   Inside `emitters/` the group is the answer that decides whether its emitters write anything, with
@@ -119,8 +119,9 @@ aliases it duplicates instead of importing carry a comment saying so.
   member of it and an emitter would have to leave itself out of its own input.
 
   `emitters/utils/` is what every subject in that ring reads: `artifactUtils.ts` builds the three
-  content shapes, `managedUtils.ts` derives the record `registry.ts` appends, and `shapeUtils.ts`
-  picks a project's own spelling of a file. The dependency ranges are
+  content shapes, `managedUtils.ts` derives the record `registry.ts` appends, `shapeUtils.ts`
+  picks a project's own spelling of a file, `importUtils.ts` sorts the imports a config writes,
+  `stylingUtils.ts` spells the styling plugin, and `aliasUtils.ts` derives the path aliases. The dependency ranges are
   `always/package-json/constants.ts`, a table one subject owns.
 
   `src/config/` is data, and only data, in two files: `types.ts` is the vocabulary every ring
@@ -131,7 +132,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   itself proves nothing, and what is worth checking about one is a fact about the code that reads
   it.
 
-  `src/utils/` is the innermost ring and holds only what more than one ring reads. `jsonUtils.ts`'s
+  `src/utils/` is the innermost ring and holds only what more than one ring reads. `objectUtils.ts`'s
   `isJsonObject` is five guards in four rings that had each written it out; each still declares its
   own narrowed shape, since a `package.json` and a manifest are not the same thing, and what they
   share is the question of whether a parsed value is an object at all. `objectUtils.ts`'s `valuesOf`
@@ -166,7 +167,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   renamed file or a typo'd key fails rather than silently shadowing another answer's flag.
 
   `utils/` is where the ring's shared readers live: `readUtils.ts` turns a parsed JSON value into a
-  typed one, one function per kind, and carries the v1-to-v2 migration; `recordUtils.ts` is
+  typed one, one function per kind; `migrationUtils.ts` carries the v1-to-v2 migration; `recordUtils.ts` is
   `onlyFor`, `registry.ts`'s one reader that needs a record's own `values` rather than a parsed one;
   `configUtils.ts` is `parseLinteljsConfig` and everything under it, kept out of `registry.ts` so the
   list and the parsing of a whole file stay two files rather than one that does both;

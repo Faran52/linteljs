@@ -58,14 +58,15 @@ combinations.
   `config/` is data and only data, the types, constants and tables no ring owns, `targets/` is what
   linteljs knows (one record per target, the registry, the naming policy),
   `emitters/` turns the two into file text, `terminal/` reads argv and the terminal, `disk/` reads
-  and writes files, `spawns/` runs binaries, `pipeline/` sequences them. The direction points inward
+  and writes files, `spawns/` runs binaries, `pipeline/` sequences them, and `utils/`, the innermost,
+  holds only what more than one ring reads. The direction points inward
   only, enforced by `import-x/no-restricted-paths` in the root `eslint.config.ts`, and which folder a
   module belongs to is decided by the world it reaches into rather than by judgement: `node:fs`
   means `disk/`, `node:child_process` means `spawns/`, argv and the terminal mean `terminal/`,
   enforced by `no-restricted-imports` in the same file. The emitters stay free of `switch (target)`.
   `packages/create/src/rings.ts` is the one list of the rings and their direction; the root
   `eslint.config.ts` builds its zones from it and `src/meta.test.ts` holds the tree to it.
-- **Every ring has the same shape, and `src/meta.test.ts` holds the five that carry no registry.** A
+- **Every ring has the same shape, and `src/meta.test.ts` holds the rings that carry no registry.** A
   ring is named for what its members are, or for the world it reaches when the world is the
   membership test. A subject is a kebab-case directory holding one entry named for it in camelCase,
   its suite, a `constants.ts` for a table it alone owns, and a `utils/` for helpers only it reads.

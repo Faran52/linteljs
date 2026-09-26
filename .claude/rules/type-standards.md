@@ -80,9 +80,9 @@ boundary legal is that it is *narrowed before use*, and no regex can see that. A
 `unknown` and answers `string[]` is either a careful extraction or an escape hatch, and only reading
 it tells you which. Two conclusions follow:
 
-- Where the narrowing can be spelled as a predicate, spell it that way. `next.ts` carried
-  `versionOf(parsed: unknown): string | undefined` and now carries `isVersioned(parsed): parsed is
-  { version: string }` over an annotated parse, which is both granted shapes and no exemption.
+- Where the narrowing can be spelled as a predicate, spell it that way. `fixPass.ts` narrows
+  ESLint's JSON output with `isFixReport(value): value is EslintFixResult[]` over an annotated
+  parse, which is both granted shapes and no exemption.
 - Where it genuinely cannot, the file joins the skip list, with its reason in the table above.
   `meta.test.ts` is that case, and widening a pattern to cover it would grant the escape hatch
   everywhere to spare one file a line.
