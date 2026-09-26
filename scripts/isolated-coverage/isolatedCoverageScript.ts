@@ -29,12 +29,12 @@ import { parseArgs } from 'node:util';
 
 import PQueue from 'p-queue';
 
-import config from '../../vitest.config.ts';
 import {
   log,
   logDebug,
   logError,
-} from '../utils/loggerUtils.ts';
+} from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
+import config from '../../vitest.config.ts';
 
 import {
   COVERED_BY_SHOWN,

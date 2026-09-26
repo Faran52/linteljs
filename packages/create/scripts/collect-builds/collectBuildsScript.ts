@@ -17,13 +17,13 @@ import process, { env, execPath } from 'node:process';
 
 import { Semaphore } from 'es-toolkit';
 
+import { startRegistry } from '../../src/pipeline/e2e/registry/registry';
+import { answerFlags } from '../../src/pipeline/e2e/utils/workspaceUtils';
 import {
   log,
   logError,
   logWarn,
-} from '../../../../scripts/utils/loggerUtils.ts';
-import { startRegistry } from '../../src/pipeline/e2e/registry/registry';
-import { answerFlags } from '../../src/pipeline/e2e/utils/workspaceUtils';
+} from '../../templates/project/scripts/utils/loggerUtils.ts';
 
 import {
   type Collected,

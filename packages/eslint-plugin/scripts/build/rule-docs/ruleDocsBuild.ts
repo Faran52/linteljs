@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { log } from '../../../../../scripts/utils/loggerUtils.ts';
+import { log } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
 const root = resolve(import.meta.dirname, '../../..');
 const rulesDir = join(root, 'src', 'rules');

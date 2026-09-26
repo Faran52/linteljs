@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import {
   afterEach,
   describe,
@@ -50,13 +47,5 @@ describe('loggerUtils', () => {
 
     expect(out).toHaveBeenCalledWith('[DEBUG] shown');
     expect(error).toHaveBeenCalledTimes(3);
-  });
-
-  // The workspace runs the copy generated projects receive, so the two cannot drift.
-  it('is the file the workspace root runs', () => {
-    const root = join(import.meta.dirname, '../../../../../..');
-
-    expect(readFileSync(join(root, 'scripts/utils/loggerUtils.ts'), 'utf8'))
-      .toBe(readFileSync(join(import.meta.dirname, 'loggerUtils.ts'), 'utf8'));
   });
 });

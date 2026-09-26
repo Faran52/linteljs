@@ -17,8 +17,8 @@ import {
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { log } from '../../../../../scripts/utils/loggerUtils.ts';
 import { unpackTarball } from '../../../../../scripts/utils/processUtils.ts';
+import { log } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
   fatalOf,
   lintResultOf,

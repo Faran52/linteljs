@@ -133,9 +133,11 @@ its own. No target selects it; it ships because the standard for a library is pa
 The enforcement half is installed too, and is the same set a generated project receives:
 `.claude/settings.json` running the shipped plugin hooks straight from
 `packages/create/templates/project/plugins/linteljs/hooks/`, `.husky/pre-commit` and `commit-msg`,
-`lint-staged.config.js`, `commitlint.config.js`, and `scripts/checkBannedPatterns.ts` with
-`scripts/typecheckStaged.ts`. The checker's `PROJECT_SKIPPED` carries this workspace's exemptions
-with a reason each; `type-standards.md` explains them.
+`lint-staged.config.js` and `commitlint.config.js`. lint-staged runs the shipped
+`typecheckStaged.ts` from `packages/create/templates/project/scripts/` too. The floor is the one
+file at the generated path, `scripts/checkBannedPatterns.ts`, because the hook looks for it there: it
+drops this workspace's exemptions from its arguments and runs the shipped checker over the rest;
+`type-standards.md` explains each exemption.
 
 ## Verification
 

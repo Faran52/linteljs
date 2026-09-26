@@ -185,7 +185,7 @@ const config = [
   },
   {
     name: '@linteljs/workspace/scripts-logger',
-    files: ['scripts/utils/loggerUtils.ts', 'packages/create/templates/project/scripts/utils/loggerUtils.ts'],
+    files: ['packages/create/templates/project/scripts/utils/loggerUtils.ts'],
     rules: { 'no-console': 'off' },
   },
 

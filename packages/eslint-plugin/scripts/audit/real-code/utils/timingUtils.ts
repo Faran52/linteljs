@@ -1,6 +1,6 @@
 import { orderBy, sum } from 'es-toolkit';
 
-import { log, logWarn } from '../../../../../../scripts/utils/loggerUtils.ts';
+import { log, logWarn } from '../../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
 export interface Timing {
   bytes: number;

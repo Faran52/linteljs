@@ -6,7 +6,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { log } from '../../../../../scripts/utils/loggerUtils.ts';
+import { log } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
 const manifest = join(import.meta.dirname, '../../../dist/package.json');
 

@@ -10,7 +10,7 @@ const config = {
     return [
       `node scripts/checkBannedPatterns.ts ${files}`,
       `eslint ${files} --fix`,
-      `node scripts/typecheckStaged.ts ${files}`,
+      `node packages/create/templates/project/scripts/typecheckStaged.ts ${files}`,
     ];
   },
   '*.css': ['stylelint --fix'],

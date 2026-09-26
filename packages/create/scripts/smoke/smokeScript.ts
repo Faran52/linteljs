@@ -13,8 +13,8 @@ import {
 import { join, resolve } from 'node:path';
 import { execPath } from 'node:process';
 
-import { log } from '../../../../scripts/utils/loggerUtils.ts';
 import { run, unpackTarball } from '../../../../scripts/utils/processUtils.ts';
+import { log } from '../../templates/project/scripts/utils/loggerUtils.ts';
 
 const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');

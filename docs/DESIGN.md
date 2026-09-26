@@ -1350,10 +1350,10 @@ upgrade: a breaking change for enforcement the project already has.
 
 ### `@linteljs/workspace/scripts`
 
-Every script under `scripts/` and `packages/*/scripts/` reports through `scripts/utils/loggerUtils.ts`, the copy of
-what a generated project receives at the same path. So this block turns `no-console` *on* for every method, `warn`
-and `error` included, with options given since severity alone inherits the layer's `allow`, and
-`@linteljs/workspace/scripts-logger` turns it off for the two copies of the logger alone. `base()` still stands the
+Every script under `scripts/` and `packages/*/scripts/` reports through the logger a generated project receives,
+`packages/create/templates/project/scripts/utils/loggerUtils.ts`. So this block turns `no-console` *on* for every
+method, `warn` and `error` included, with options given since severity alone inherits the layer's `allow`, and
+`@linteljs/workspace/scripts-logger` turns it off for that logger alone. `base()` still stands the
 rule down under `scripts/` for a consumer, a published default that is not this repository's to narrow.
 `release/run-rules/runRulesRelease.ts` writes to `process.stdout` instead: it runs in a container holding only the
 plugin's own `dist/` and `scripts/`, with no logger above them.

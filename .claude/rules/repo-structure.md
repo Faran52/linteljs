@@ -41,9 +41,11 @@ aliases it duplicates instead of importing carry a comment saying so.
   `release/compat-matrix/constants.ts`. A group with no name of its own, the root `scripts/` and a
   package's flat `scripts/`, suffixes `Script`: `scripts/lint-starters/lintStartersScript.ts`. A helper
   several scripts read sits in the nearest shared `utils/`, the root `scripts/utils/` for all three
-  packages. Every script runs as `tsx <path>`, which resolves the `@` aliases from the tsconfig in the
-  working directory. `checkBannedPatterns.ts` and `typecheckStaged.ts` stay flat at `scripts/` and on
-  plain `node`: they mirror the paths a generated project receives, which its hooks and lint-staged call.
+  packages; the logger they all report through is the shipped one under
+  `create/templates/project/scripts/utils/`, not a copy. Every script runs as `tsx <path>`, which
+  resolves the `@` aliases from the tsconfig in the working directory. `checkBannedPatterns.ts` stays
+  flat at `scripts/` and on plain `node`: the banned-pattern hook looks for it at the path a generated
+  project receives, and it runs the shipped checker less this workspace's exemptions.
 
 - **`create` is one folder per responsibility, and membership is decided rather than chosen.** The
   standard leaves the ring count open; this package has nine folders, and a lint rule rather than

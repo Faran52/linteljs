@@ -20,8 +20,8 @@ import {
 } from 'node:path';
 import { execPath } from 'node:process';
 
-import { log } from '../../../../scripts/utils/loggerUtils.ts';
 import { run, unpackTarball } from '../../../../scripts/utils/processUtils.ts';
+import { log } from '../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
 // The two fields this reads out of the packed `package.json`.
 interface PackedManifest {

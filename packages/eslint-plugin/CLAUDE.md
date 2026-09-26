@@ -53,7 +53,8 @@ local-only. That version is not the source of truth any more. This repo owns the
   third-party code. Each script is the ring shape below: `audit/real-code/realCodeAudit.ts`, its own
   `utils/*Utils.ts` and `constants.ts`, and what several scripts in a group read in the group's `utils/`.
   `tsconfig.json` includes `scripts/**/*.ts`, so they are typechecked and type-aware linted like
-  anything else, and they report through the root `scripts/utils/loggerUtils.ts`.
+  anything else, and they report through the shipped
+  `create/templates/project/scripts/utils/loggerUtils.ts`.
   `release/run-rules/runRulesRelease.ts` is the exception twice over: CI builds it with tsdown into a `.mjs` on the
   host, `--target node14`, and runs that on a bare `node:14-alpine`, so its syntax is what Node 14 parses, and it writes
   to `process.stdout`, since nothing above the package is copied in. `stryker.config.mjs` stays

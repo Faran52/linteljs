@@ -14,7 +14,7 @@ import { ESLint } from 'eslint';
 import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 
-import { log, logError } from '../../../../../scripts/utils/loggerUtils.ts';
+import { log, logError } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
 interface Finding {
   file: string;

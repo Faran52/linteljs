@@ -12,8 +12,8 @@ import { join, resolve } from 'node:path';
 import process, { execPath } from 'node:process';
 import { promisify } from 'node:util';
 
-import { log, logError } from '../../../../../scripts/utils/loggerUtils.ts';
 import { packTarball } from '../../../../../scripts/utils/processUtils.ts';
+import { log, logError } from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
   fatalOf,
   lintResultOf,

@@ -19,7 +19,7 @@ import {
   log,
   logError,
   logWarn,
-} from '../../../../../scripts/utils/loggerUtils.ts';
+} from '../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import {
   isTypeScript,
   nameFor,

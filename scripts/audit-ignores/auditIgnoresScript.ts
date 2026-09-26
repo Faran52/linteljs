@@ -21,7 +21,7 @@ import {
 } from 'node:path';
 import process from 'node:process';
 
-import { log, logError } from '../utils/loggerUtils.ts';
+import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
 // The two counter maps v8's JSON report carries per file. Only the zeros are read.
 interface FileCoverage {

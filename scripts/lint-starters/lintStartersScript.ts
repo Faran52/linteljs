@@ -19,8 +19,8 @@ import { ESLint } from 'eslint';
 import { ANSWERS, DEFAULT_ANSWERS } from '../../packages/create/src/answers';
 import { targetFor } from '../../packages/create/src/targets';
 import { valuesOf } from '../../packages/create/src/utils/objectUtils';
+import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 import { composeConfig } from '../../packages/eslint-config/src/compose-config/composeConfig';
-import { log, logError } from '../utils/loggerUtils.ts';
 
 import {
   destinationsFor,
