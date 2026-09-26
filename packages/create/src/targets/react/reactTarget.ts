@@ -544,7 +544,14 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
     // React Router's own server entry reads it to tell a crawler from a browser.
     'isbot',
   ],
-  devDependencies: [...PARTS.react.devDependencies, 'vite', '@react-router/dev'],
+  // Less the compiler, which only `react()` runs and `reactRouter()` stands in for outside the test run.
+  devDependencies: [
+    ...PARTS.react.devDependencies.filter((name) => {
+      return name !== 'oxc-transform-react';
+    }),
+    'vite',
+    '@react-router/dev',
+  ],
 };
 
 export const reactTarget: TargetBuilder = (answers) => {

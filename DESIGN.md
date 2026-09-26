@@ -730,6 +730,28 @@ written whatever manager ran it. It ships no vitest template for Solid 2, so the
 `eslint-config` switches on the version rather than forking. Until then the target stays on the Vite `solid-ts`
 scaffold at 1.9.
 
+### The React Compiler runs natively
+
+React, the extension's React host and Astro's React host run the React Compiler as `oxc-transform-react`, the
+Rust port oxc merged, through `@vitejs/plugin-react`'s own `compiler` option: `react({ compiler: ... })` on a Vite
+config, and the same option on `@astrojs/react`, which passes it through. It replaced a Babel pass,
+`@rolldown/plugin-babel` running `reactCompilerPreset()` with `babel-plugin-react-compiler` and `@babel/core`
+behind it, and on Astro a `babel` option `@astrojs/react` 7 refuses outright: the config load fails with "The
+@astrojs/react babel option has been removed". Three packages and a yarn extension left with it.
+
+Measured 2026-09-26 on built bundles, counting the memo cache calls the compiler writes, `(0, x.c)(n)` from
+`react/compiler-runtime`: the React target's starter has five under Babel and six natively, and none with the
+compiler off; an Astro island carries `c(6)` both ways and none off. So the compiler is proven to run, not only to
+build. `@vitejs/plugin-react` marks the native compiler experimental, and both it and `@astrojs/react` peer
+`oxc-transform-react ^0.145.0`, which on a zero major admits 0.145 alone, so a project installs 0.145 while 0.151 is
+out. The Babel pass is the fallback if a release breaks: the plugin still exports `reactCompilerPreset()`.
+
+The `VITEST` guard stays on both, since the memo cache leaves one branch per component no suite reaches. Next
+keeps its own switch, which in 16.3 still runs `babel-plugin-react-compiler` through its Babel loader; the
+starter leaves it off, like everything else in `next.config.ts`. React Router's framework mode builds through
+`reactRouter()` rather than `react()`, so it installs no compiler. React Native keeps Expo's own path through
+`babel-preset-expo`.
+
 ## Package manager files
 
 pnpm reads the approved install scripts from `allowBuilds` in `pnpm-workspace.yaml`; bun reads
@@ -745,10 +767,9 @@ dependency wherever vitest is. Without `nodeLinker: node-modules` yarn's PnP bre
 TypeScript resolver and `check` fails with 46 errors.
 
 `.yarnrc.yml` answers a peer with `packageExtensions` and never with `logFilters`. Measured by
-emptying the filter list and running the yarn half of the suite. `@rolldown/plugin-babel` peering on
-`rolldown`, `@vue/test-utils` on `@vue/compiler-dom` and `eslint-plugin-vuejs-accessibility` on
-`globals` are requests the project has no business answering, each already supplied by a tree it does
-not own, so each is marked optional on the package that asks. `postcss-html` on `postcss` is the one
+emptying the filter list and running the yarn half of the suite. `@vue/test-utils` peering on
+`@vue/compiler-dom` and `eslint-plugin-vuejs-accessibility` on `globals` are requests the project
+has no business answering, each already supplied by a tree it does not own, so each is marked optional on the package that asks. `postcss-html` on `postcss` is the one
 answered by supplying it: stylelint 17 dropped its own postcss, so nothing in a generated project
 declares one and `postcss-html` reaches whatever `postcss-safe-parser` happens to hoist. Marking that
 optional leaves YN0002 printing, measured on a bare project at the versions pinned here, and resting
@@ -1068,7 +1089,7 @@ interfaces. Reporting is the honest answer for all five.
 ### React Native follows the Expo SDK's pins, not react-native's latest
 
 react-native, react, Reanimated, worklets and the Expo modules a project installs sit at exactly what the SDK's own
-template pins, `expo-template-default@sdk-57` at 57.0.26: react-native 0.86.3, react 19.2.3, Reanimated 4.5.1,
+template pins, `expo-template-default@sdk-57` at 57.0.27: react-native 0.86.3, react 19.2.3, Reanimated 4.5.1,
 worklets 0.10.1. No Expo SDK is ever tested against 0.87, which was npm's latest; SDK 58 goes to 0.88, and this
 target moves with it. react and `@types/react` are pinned on the target record rather than in `VERSIONS`, since
 every other target is on 19.3.
@@ -1078,8 +1099,9 @@ all five managers: a `customConditions` naming `react-native-legacy-deep-imports
 declare `TextStyle` and `ViewStyle` as aliases that Expo's `interface` augmentation shadows; a `getPolyfills`
 override in `metro.config.js` for the `rn-get-polyfills` 0.87 deleted and SDK 57 still reads; and a native-only
 `build`, because the web bundler reads that module where no override reaches. 0.86.3 serves the legacy types
-under `types` and still ships the module. The template is pinned at 57.0.26 rather than 57.0.27 because the
-latter's floors were hours old, and pnpm 12's default `minimumReleaseAge` refuses a version under two days.
+under `types` and still ships the module. A template release moves the target only once every floor it names is two
+days old, since pnpm 12's default `minimumReleaseAge` refuses anything younger; 57.0.27 raised `expo`,
+`expo-router` and `expo-linking` by a patch each and left the rest as 57.0.26 had them.
 
 ### React Native carries one upstream workaround
 

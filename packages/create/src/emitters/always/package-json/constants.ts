@@ -12,16 +12,15 @@ export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest.
   '@analogjs/vite-plugin-angular': '^2.7.2',
   '@astrojs/check': '^0.9.10',
-  '@astrojs/react': '^6.0.6',
+  '@astrojs/react': '^7.0.0',
   '@astrojs/solid-js': '^7.0.2',
   '@astrojs/svelte': '^9.0.1',
   '@astrojs/vue': '^7.0.3',
-  '@babel/core': '^8.0.6',
   'vite': '^8.3.0',
-  '@commitlint/cli': '^21.2.2',
-  '@commitlint/config-conventional': '^21.2.2',
+  '@commitlint/cli': '^21.2.3',
+  '@commitlint/config-conventional': '^21.2.3',
   '@crxjs/vite-plugin': '^2.7.1',
-  '@eslint-react/eslint-plugin': '^5.20.0',
+  '@eslint-react/eslint-plugin': '^5.20.8',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
   /*
@@ -29,22 +28,22 @@ export const VERSIONS: Record<string, string> = {
    * purpose: an application on signals and `provideBrowserGlobalErrorListeners` is zoneless, which is Angular 20's
    * own default and what `ng new` stopped writing.
    */
-  '@angular/common': '^22.1.0',
-  '@angular/compiler': '^22.1.0',
-  '@angular/core': '^22.1.0',
-  '@angular/forms': '^22.1.0',
-  '@angular/platform-browser': '^22.1.0',
-  '@angular/router': '^22.1.0',
+  '@angular/common': '^22.2.0',
+  '@angular/compiler': '^22.2.0',
+  '@angular/core': '^22.2.0',
+  '@angular/forms': '^22.2.0',
+  '@angular/platform-browser': '^22.2.0',
+  '@angular/router': '^22.2.0',
   /*
    * Held on 22.1: 22.2.0 turned `SourceFileCache` from a `Map` subclass into a class holding one, and
    * `@analogjs/vite-plugin-angular` 2.7.2 (and its 2.8 beta) still calls `cache.has` on it, so every vitest run on
    * an angular project died at startup. Lift the tilde once an analog release reads the new shape.
    */
-  '@angular/build': '~22.1.8',
-  '@angular/cli': '^22.1.8',
-  '@angular/compiler-cli': '^22.1.0',
-  'rxjs': '~7.8.0',
-  'tslib': '^2.3.0',
+  '@angular/build': '~22.1.9',
+  '@angular/cli': '^22.2.0',
+  '@angular/compiler-cli': '^22.2.0',
+  'rxjs': '~7.8.2',
+  'tslib': '^2.8.1',
   // Both halves of NgRx 22, released together and peering `@angular/core ^22.0.0`, which is what `ng new` writes.
   '@ngrx/signals': '^22.0.1',
   '@ngrx/store': '^22.0.1',
@@ -58,7 +57,6 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/solid-store': '^0.11.1',
   '@tanstack/svelte-store': '^0.12.1',
   '@tanstack/vue-store': '^0.11.1',
-  '@rolldown/plugin-babel': '^0.2.4',
   '@stylexjs/babel-plugin': '^0.19.1',
   '@stylexjs/postcss-plugin': '^0.19.1',
   '@stylexjs/stylex': '^0.19.1',
@@ -72,12 +70,12 @@ export const VERSIONS: Record<string, string> = {
   // The PostCSS half, for a target with no vite.config.ts; same release train as the plugin.
   '@tailwindcss/postcss': '^4.3.3',
   '@tailwindcss/vite': '^4.3.3',
-  '@tanstack/angular-query-experimental': '^5.103.1',
-  '@tanstack/eslint-plugin-query': '^5.103.1',
-  '@tanstack/react-query': '^5.103.1',
-  '@tanstack/solid-query': '^5.103.1',
-  '@tanstack/svelte-query': '^6.2.1',
-  '@tanstack/vue-query': '^5.103.1',
+  '@tanstack/angular-query-experimental': '^5.103.2',
+  '@tanstack/eslint-plugin-query': '^5.103.2',
+  '@tanstack/react-query': '^5.103.2',
+  '@tanstack/solid-query': '^5.103.2',
+  '@tanstack/svelte-query': '^6.2.4',
+  '@tanstack/vue-query': '^5.103.2',
   // An unbundled peer of the React binding; inherited, pnpm leaves the first render() unresolved.
   '@testing-library/dom': '^10.4.2',
   '@testing-library/react': '^16.3.3',
@@ -89,17 +87,19 @@ export const VERSIONS: Record<string, string> = {
   '@types/react': '^19.3.0',
   '@types/react-dom': '^19.3.0',
   '@vitejs/plugin-react': '^6.1.1',
+  // The React Compiler's Rust port, which the plugin above runs natively. Held to 0.145 although 0.151 is out:
+  // that plugin and `@astrojs/react` both peer `^0.145.0`, which on a zero major admits 0.145 alone.
+  'oxc-transform-react': '^0.145.0',
   '@vitest/coverage-v8': '^5.0.1',
   '@vitest/eslint-plugin': '^1.6.27',
   '@vue/test-utils': '^2.5.1',
   'angular-eslint': '^22.5.0',
-  'astro': '^7.3.3',
+  'astro': '^7.3.4',
   'astro-eslint-parser': '^3.1.0',
-  'babel-plugin-react-compiler': '^1.0.0',
   'eslint': ESLINT_RANGE,
   // The plugin, not `eslint-config-next`, which bundles plugins the layers already cover; see eslint-config's
   // `frameworks/next/`.
-  '@next/eslint-plugin-next': '^16.3.5',
+  '@next/eslint-plugin-next': '^16.3.6',
   // The sibling package; `versions.test.ts` fails the moment they diverge.
   '@linteljs/eslint-config': '^1.6.0',
   'eslint-plugin-react-hooks': '^7.1.1',
@@ -109,25 +109,25 @@ export const VERSIONS: Record<string, string> = {
   'eslint-plugin-solid': '^0.18.0',
   'eslint-plugin-svelte': '^3.23.0',
   '@vitejs/plugin-vue': '^6.0.9',
-  'eslint-plugin-vue': '^10.11.0',
+  'eslint-plugin-vue': '^10.11.1',
   'eslint-plugin-vuejs-accessibility': '^2.6.0',
   'happy-dom': '^20.14.5',
   'husky': '^9.1.7',
   'lint-staged': '^17.5.1',
   'postcss-html': '^2.0.0',
   // Next owns its own build, its own router and its own document; nothing else installs it.
-  'next': '^16.3.5',
+  'next': '^16.3.6',
   /*
    * Expo's runtime and the modules a tab layout measures itself with, at exactly what the SDK's own template pins:
    * Expo tests them together and a mismatched one is what `expo-doctor` exists to find. DESIGN.md has why.
    */
-  'expo': '~57.0.24',
+  'expo': '~57.0.25',
   'react-native': '0.86.3',
   // react-native's cli plugin peers its own release exactly and worklets peers `*`; declared, both resolve to it.
   '@react-native/metro-config': '0.86.3',
-  'expo-router': '~57.0.22',
+  'expo-router': '~57.0.23',
   'expo-constants': '~57.0.19',
-  'expo-linking': '~57.0.10',
+  'expo-linking': '~57.0.11',
   'expo-status-bar': '~57.0.1',
   'react-native-safe-area-context': '~5.7.0',
   'react-native-screens': '~4.26.0',
@@ -178,11 +178,11 @@ export const VERSIONS: Record<string, string> = {
   // Vue's meta-framework, which brings its own Vite, its own Nitro server and its own tsconfigs.
   'nuxt': '^4.5.2',
   // nuxt 4.5's own peer range, which is the release its builder is tested on.
-  'rolldown': '~1.2.1',
+  'rolldown': '~1.2.10',
   // A Vue application routes, and this target asks no router question to answer otherwise.
   'vue-router': '^5.3.1',
   'pinia': '^4.0.3',
-  '@vue/devtools-api': '^8.1.5',
+  '@vue/devtools-api': '^8.2.1',
   'vue-eslint-parser': '^10.4.1',
   'vue-tsc': '^3.3.11',
   'zod': '^4.6.5',
@@ -192,7 +192,7 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/angular-form': '^1.33.5',
   '@tanstack/eslint-plugin-router': '^1.162.0',
   '@tanstack/react-form': '^1.33.5',
-  '@tanstack/react-router': '^1.170.38',
+  '@tanstack/react-router': '^1.170.39',
   '@tanstack/solid-form': '^1.33.5',
   '@tanstack/svelte-form': '^1.33.5',
   '@tanstack/vue-form': '^1.33.5',
@@ -335,11 +335,11 @@ export const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
  * npm reads `allowScripts`. Yarn is absent because it runs install scripts by default and has nothing to approve.
  *
  * One list for all three, not a shared pair plus an npm-only pair. Measured with
- * `pnpm --filter @linteljs/create collect:builds`, which installs the maximal dependency set of all seventeen target
+ * `pnpm --filter @linteljs/create collect:builds`, which installs the maximal dependency set of all eighteen target
  * and hosted-framework combinations against pnpm and npm and reports what each would refuse to build:
  *
  * - `unrs-resolver` every target reaches, through `eslint-import-resolver-typescript`.
- * - `fsevents` npm 12 refuses on eleven of the seventeen, as an optional dependency of the watchers in each tree.
+ * - `fsevents` npm 12 refuses on eleven of the eighteen, as an optional dependency of the watchers in each tree.
  *   npm 11 only warns, so it reports nothing and this entry looks dead on the version a project declares.
  * - `sharp` and `@swc/core` no combination reaches, on either manager, and both stay. Measured: an allowance for a
  *   package that is not installed is silent on pnpm and on npm 12, down to a name no registry has, so each costs a

@@ -46,21 +46,11 @@ describe('emitYarnrc', () => {
     expect(output).toContain('  "@commitlint/load@*":\n');
   });
 
-  // React installs the babel plugin; astro drops it, so the entry follows the dependency rather than the target.
-  it('marks rolldown optional only where the babel plugin is installed', () => {
-    const react = emitYarnrc(answersFor({}));
-
-    expect(react).toContain(
-      '  "@rolldown/plugin-babel@*":\n    peerDependenciesMeta:\n      rolldown:\n        optional: true\n',
-    );
-    expect(react).not.toContain('@tanstack/react-form');
-    expect(emitYarnrc(answersFor({ target: 'astro' }))).not.toContain('rolldown');
-  });
-
   it('hands react-dom to the form store only when TanStack Form is chosen', () => {
     const output = emitYarnrc(answersFor({ form: 'tanstack-form' }));
 
     expect(output).toContain('  "@tanstack/react-form@*":\n    peerDependencies:\n      react-dom: "*"\n');
+    expect(emitYarnrc(answersFor({}))).not.toContain('@tanstack/react-form');
   });
 
   // Angular and Astro both drag the wasm binding in, and a target installing neither must not carry it.

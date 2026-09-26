@@ -47,7 +47,7 @@ describe('emitAstroConfig', () => {
 
   // One integration per hosted framework, by Astro's own package names.
   it.each<[HostedFramework, string, string]>([
-    ['react', '@astrojs/react', 'react(reactCompiler)'],
+    ['react', '@astrojs/react', 'react({ compiler: process.env.VITEST === undefined })'],
     ['vue', '@astrojs/vue', 'vue()'],
     ['svelte', '@astrojs/svelte', 'svelte()'],
     ['solid', '@astrojs/solid-js', 'solid()'],
@@ -60,8 +60,8 @@ describe('emitAstroConfig', () => {
   });
 
   /**
-   * The React Compiler is installed for a react island, so the config wires it: plain Babel options through the
-   * `@astrojs/react` passthrough, since its Rolldown preset form fails the build with `Unknown option: .preset`.
+   * The React Compiler is installed for a react island, so the config wires it through `@astrojs/react`'s own
+   * `compiler` option. Its old `babel` option fails the config load since 7, so there is no Babel pass and no prelude.
    */
   it('wires the react compiler for a react island', () => {
     const output = emitAstroConfig(answersFor({
@@ -73,28 +73,21 @@ describe('emitAstroConfig', () => {
       "import { defineConfig } from 'astro/config';\n"
       + "import react from '@astrojs/react';\n"
       + '\n'
-      + '// The React Compiler as plain Babel options through @astrojs/react; a Rolldown preset fails here with\n'
-      + '// `Unknown option: .preset`, and without the guard the memo cache leaves a branch uncovered per component.\n'
-      + 'const reactCompiler = process.env.VITEST === undefined\n'
-      + "  ? { babel: { plugins: ['babel-plugin-react-compiler'] } }\n"
-      + '  : {};\n'
-      + '\n'
       + 'export default defineConfig({\n'
-      + '  integrations: [react(reactCompiler)],\n'
+      + '  integrations: [react({ compiler: process.env.VITEST === undefined })],\n'
       + '});\n',
     );
   });
 
   // The guard keeps the memo cache out of the test run, where it would leave one branch uncovered per component.
-  it('keeps the compiler out of the test run through the vitest guard', () => {
+  it('keeps the compiler out of the test run through the vitest guard, beside a styling plugin', () => {
     const output = emitAstroConfig(answersFor({
       hostedFramework: 'react',
       libraries: [],
       styling: 'tailwind',
     }));
 
-    expect(output).toContain('const reactCompiler = process.env.VITEST === undefined');
-    expect(output).toContain('integrations: [react(reactCompiler)],');
+    expect(output).toContain('integrations: [react({ compiler: process.env.VITEST === undefined })],');
     expect(output).toContain('vite: { plugins: [tailwindcss()] },');
   });
 
@@ -104,8 +97,7 @@ describe('emitAstroConfig', () => {
     (hostedFramework) => {
       const output = emitAstroConfig(answersFor({ hostedFramework }));
 
-      expect(output).not.toContain('reactCompiler');
-      expect(output).not.toContain('babel-plugin-react-compiler');
+      expect(output).not.toContain('compiler');
     },
   );
 

@@ -13,22 +13,13 @@ import { stylingPlugin } from '../../utils/stylingUtils';
 interface Integration {
   specifier: string;
   call: string;
-  compiler?: string[];
 }
 
 const INTEGRATIONS: Record<HostedFramework, Integration> = {
-  // Plain Babel options, not `reactCompilerPreset()`: `@astrojs/react` fails the build on the preset form with
-  // `Unknown option: .preset`. The guard keeps the memo cache out of the test run's coverage.
+  // The React Compiler, passed through to `@vitejs/plugin-react`; the guard keeps its memo cache out of coverage.
   react: {
     specifier: '@astrojs/react',
-    call: 'react(reactCompiler)',
-    compiler: [
-      '// The React Compiler as plain Babel options through @astrojs/react; a Rolldown preset fails here with',
-      '// `Unknown option: .preset`, and without the guard the memo cache leaves a branch uncovered per component.',
-      `const reactCompiler = ${OUTSIDE_TESTS}`,
-      "  ? { babel: { plugins: ['babel-plugin-react-compiler'] } }",
-      '  : {};',
-    ],
+    call: `react({ compiler: ${OUTSIDE_TESTS} })`,
   },
   vue: {
     specifier: '@astrojs/vue',
@@ -49,13 +40,6 @@ const BINDING: Record<HostedFramework, string> = {
   vue: 'vue',
   svelte: 'svelte',
   solid: 'solid',
-};
-
-// Only React emits anything here.
-const compilerPrelude = (framework: HostedFramework | undefined): string => {
-  const lines = framework === undefined ? undefined : INTEGRATIONS[framework].compiler;
-
-  return lines === undefined ? '' : `${lines.join('\n')}\n\n`;
 };
 
 export const emitAstroConfig = (answers: Answers): string | null => {
@@ -83,7 +67,7 @@ export const emitAstroConfig = (answers: Answers): string | null => {
 
   return `${imports}
 
-${compilerPrelude(framework)}export default defineConfig({
+export default defineConfig({
 ${integrations}${vite}});
 `;
 };

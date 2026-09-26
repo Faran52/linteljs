@@ -106,13 +106,12 @@ describe('the hosted framework axis', () => {
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
   });
 
-  // The build plugin would install and never be imported; the Babel two stay, since `@astrojs/react` loads them.
+  // The build plugin would install and never be imported; the compiler stays, as the optional peer that plugin loads.
   it('leaves the react build plugin to the targets that own a vite config', () => {
     const { devDependencies } = recordFor({ hostedFramework: 'react' });
 
     expect(devDependencies).not.toContain('@vitejs/plugin-react');
-    expect(devDependencies).toContain('babel-plugin-react-compiler');
-    expect(devDependencies).toContain('@babel/core');
+    expect(devDependencies).toContain('oxc-transform-react');
   });
 
   it('brings the framework itself and its testing library beside astro', () => {
@@ -161,12 +160,6 @@ describe('the hosted framework axis', () => {
   it('adds no tailwind adapter of its own', () => {
     expect(recordFor({ styling: 'tailwind' }).devDependencies).not.toContain('@tailwindcss/vite');
     expect(recordFor({ styling: 'tailwind' }).devDependencies).not.toContain('@tailwindcss/postcss');
-  });
-
-  // Nothing in an Astro scaffold typechecks against `@babel/core`: the wiring lives in `astroTarget.config.mjs`.
-  it('ships no babel type stub even when react is hosted', () => {
-    expect(recordFor({ hostedFramework: 'react' }).devDependencies).not.toContain('@types/babel__core');
-    expect(recordFor({ hostedFramework: 'react' }).devDependencies).toContain('@babel/core');
   });
 });
 

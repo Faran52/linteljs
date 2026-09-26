@@ -28,17 +28,11 @@ export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 // Stands `useNavigate` in for a suite that mounts no router; every React binding and Solid's take the same one.
 export const ROUTER_MOCK = 'fragments/test-setup/setupTests.router.ts';
 
-// The one spelling of React's build wiring, read by the React target and every host.
+// The one spelling of React's build wiring, read by the React target and every host. The compiler is the Rust port
+// `oxc-transform-react`, which the plugin runs natively; DESIGN.md has why it replaced the Babel pass.
 export const REACT_VITE_PLUGIN: PluginSpec = {
-  imports: [
-    "import react, { reactCompilerPreset } from '@vitejs/plugin-react';",
-    "import babel from '@rolldown/plugin-babel';",
-  ],
-  calls: [
-    `...(${OUTSIDE_TESTS}\n`
-    + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'
-    + '      : [react()])',
-  ],
+  imports: ["import react from '@vitejs/plugin-react';"],
+  calls: [`react({ compiler: ${OUTSIDE_TESTS} })`],
 };
 
 export const PARTS: Record<HostedFramework, FrameworkParts> = {
@@ -52,9 +46,7 @@ export const PARTS: Record<HostedFramework, FrameworkParts> = {
       'eslint-plugin-jsx-a11y-x',
       'eslint-plugin-react-hooks',
       '@vitejs/plugin-react',
-      '@rolldown/plugin-babel',
-      '@babel/core',
-      'babel-plugin-react-compiler',
+      'oxc-transform-react',
       '@types/react',
       '@types/react-dom',
     ],

@@ -28,12 +28,6 @@ export const PEER_EXTENSIONS: Record<string, string> = {
       "@types/node": "*"
       typescript: "*"
 `,
-  // Vite 8 bundles rolldown rather than exposing it.
-  '@rolldown/plugin-babel': `  "@rolldown/plugin-babel@*":
-    peerDependenciesMeta:
-      rolldown:
-        optional: true
-`,
   '@tanstack/react-form': `  "@tanstack/react-form@*":
     peerDependencies:
       react-dom: "*"

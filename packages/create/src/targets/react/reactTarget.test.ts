@@ -55,6 +55,13 @@ describe('reactTarget', () => {
     expect(recordFor({ router: 'react-router' }).htmlEntry).toBe('src/main.tsx');
   });
 
+  // Only `react()` runs the compiler, and framework mode builds through `reactRouter()` instead.
+  it('installs the compiler only where react() builds', () => {
+    expect(recordFor().devDependencies).toContain('oxc-transform-react');
+    expect(recordFor({ router: 'react-router-framework' }).devDependencies).not.toContain('oxc-transform-react');
+    expect(recordFor({ router: 'react-router-framework' }).devDependencies).toContain('@vitejs/plugin-react');
+  });
+
   /*
    * The entry is one file whatever was answered: it mounts `App`, and `App` is what a router replaces. Keeping the
    * router out of the entry is what stops it multiplying with the store, which also needs an ancestor.

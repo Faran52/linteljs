@@ -147,10 +147,9 @@ export const astroTarget: TargetBuilder = (answers) => {
       'eslint-plugin-astro',
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
-      // Less the build plugin: `@astrojs/react` brings its own `@vitejs/plugin-react`, and the compiler rides its
-      // Babel passthrough, which is what still loads the Babel packages.
+      // Less the build plugin, which `@astrojs/react` brings; the compiler stays, as that plugin's optional peer.
       ...(hosted?.devDependencies ?? []).filter((name) => {
-        return name !== '@vitejs/plugin-react' && name !== '@rolldown/plugin-babel';
+        return name !== '@vitejs/plugin-react';
       }),
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),

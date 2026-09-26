@@ -2,7 +2,7 @@
  * Every build script a generated project can meet, in one pass. pnpm aborts on an unlisted `postinstall`, and
  * `vue-demi` surfaced as combination 1,187 of 1,200 in the end-to-end matrix. This installs each target's maximal
  * dependency set with `allowBuilds` emptied and prints what belongs in the record or `SHARED_ALLOWED_BUILDS`.
- * Seventeen real installs per manager, so run it after a dependency bump.
+ * Eighteen real installs per manager, so run it after a dependency bump.
  *
  * Usage: pnpm --filter @linteljs/create collect:builds   (COLLECT_CONCURRENCY, default 4)
  */

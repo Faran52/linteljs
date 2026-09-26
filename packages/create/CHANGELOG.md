@@ -116,6 +116,18 @@ when a version's change lives in a sibling it is described there instead:
   peers `<6.1.0`, and the two tilde pins keep theirs: `test-renderer` until an Expo SDK ships React 19.3, and the
   compiler for the same reason as above. `eslint-plugin-sonarjs` and `typescript-eslint` move to the catalog, where
   a dependency more than one package uses belongs.
+- A second pass moves 31 more emitted ranges to the newest release older than two days, among them Angular 22.2,
+  Next 16.3.6, Astro 7.3.4, `@astrojs/react` 7 and the TanStack Query bindings. React Native follows Expo SDK 57's
+  template to 57.0.27, which moves `expo`, `expo-router` and `expo-linking` a patch each; the metro config it
+  declares and the yarn extension for `react-native-css` were measured again and are both still needed. Three
+  stay behind, each on a blocker rather than a choice: `@angular/build` stays on 22.1, now 22.1.9, until an
+  `@analogjs/vite-plugin-angular` release old enough to take reads 22.2's cache; `unplugin` stays on 2, which
+  `@stylexjs/unplugin` 0.19.1, its newest, peers; TypeScript stays on 6.0, which `typescript-eslint` peers.
+- **The React Compiler runs natively.** React, the extension's React host and Astro's React host pass
+  `compiler` to `@vitejs/plugin-react` and install `oxc-transform-react`, the compiler's Rust port, in place of a
+  Babel pass through `@rolldown/plugin-babel`, `babel-plugin-react-compiler` and `@babel/core`, which are gone.
+  On Astro this is what `@astrojs/react` 7 requires: it refuses the `babel` option the compiler used to ride and
+  fails the config load. React Router's framework mode no longer installs a compiler it never ran.
 - The questionnaire shows every option rather than a window of seven, which is what inquirer pages to by default and
   what hid two of the nine frameworks behind a scroll. `es-toolkit` is selected by default beside Tailwind.
 - **A generated project carries no peer overrides it does not need.** The three this CLI used to write are gone,

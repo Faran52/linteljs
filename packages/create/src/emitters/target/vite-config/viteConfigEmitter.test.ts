@@ -44,12 +44,9 @@ describe('emitViteConfig', () => {
   // it leaves one branch no suite can reach in every component.
   it.each<[string, AnswerOverrides, string[], string]>([
     ['react', { target: 'react' }, [
-      "import babel from '@rolldown/plugin-babel';",
-      "import react, { reactCompilerPreset } from '@vitejs/plugin-react';",
+      "import react from '@vitejs/plugin-react';",
       "import { defineConfig } from 'vite';",
-    ], '    ...(process.env.VITEST === undefined\n'
-    + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'
-    + '      : [react()]),'],
+    ], '    react({ compiler: process.env.VITEST === undefined }),'],
     ['react in framework mode', {
       target: 'react',
       router: 'react-router-framework',
@@ -84,8 +81,8 @@ describe('emitViteConfig', () => {
   });
 
   /**
-   * The compiler is passed via Babel options to `@vitejs/plugin-react`. The VITEST guard keeps its memo cache out of
-   * the test run, where it would leave one branch uncovered in every component.
+   * The compiler is `@vitejs/plugin-react`'s own `compiler` option, which runs `oxc-transform-react`. The VITEST
+   * guard keeps its memo cache out of the test run, where it would leave one branch uncovered in every component.
    */
   it('declares the compiler in the plugin call', () => {
     const react = configFor({
@@ -94,15 +91,12 @@ describe('emitViteConfig', () => {
     }) ?? '';
 
     expect(react).toBe(
-      "import babel from '@rolldown/plugin-babel';\n"
-      + "import react, { reactCompilerPreset } from '@vitejs/plugin-react';\n"
+      "import react from '@vitejs/plugin-react';\n"
       + "import { defineConfig } from 'vite';\n"
       + '\n'
       + 'export default defineConfig({\n'
       + '  plugins: [\n'
-      + '    ...(process.env.VITEST === undefined\n'
-      + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'
-      + '      : [react()]),\n'
+      + '    react({ compiler: process.env.VITEST === undefined }),\n'
       + '  ],\n'
       + '  resolve: { tsconfigPaths: true },\n'
       + '  server: { port: 3000 },\n'
