@@ -145,24 +145,21 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       fn: FunctionLike,
       nameVariable: Scope.Variable,
     ): boolean => {
-      const [declarationStart, declarationEnd] = rangeOf(fn);
-      const [blockStart, blockEnd] = rangeOf(fn.parent);
-      const walked = new Set<RuleNode>([fn]);
+      const [declarationStart] = rangeOf(fn);
+      const [, blockEnd] = rangeOf(fn.parent);
+      const walked = new Set<RuleNode>();
 
-      const contains = (node: RuleNode, start: number, end: number): boolean => {
-        const [nodeStart, nodeEnd] = rangeOf(node);
-
-        return nodeStart <= start && nodeEnd >= end;
-      };
-
-      // The outermost function holding the reference below the one scope both share. The Program holds `fn`,
-      // so the walk always stops before it runs out of parents.
+      /**
+       * The outermost function holding the reference below the one scope both share. The Program holds `fn`,
+       * so the walk always stops before it runs out of parents. Ranges nest and the reference starts inside or
+       * after `fn`, so the first ancestor starting no later than `fn` is `fn` or one holding it.
+       */
       const outermostFunctionOf = (reference: Scope.Reference): RuleNode | undefined => {
         let outermost: RuleNode | undefined;
 
         let node = parentOf(reference);
 
-        while (!contains(node, declarationStart, declarationEnd)) {
+        while (rangeOf(node)[0] > declarationStart) {
           outermost = FUNCTION_TYPES.has(node.type) ? node : outermost;
           node = mustFind(node.parent, 'the parent of a node below the Program');
         }
@@ -179,8 +176,9 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return true;
         }
 
-        // A later `case` is reached by jumping past this one, so the text order says nothing there.
-        if (fn.parent.type === 'SwitchCase' && (referenceStart < blockStart || referenceEnd > blockEnd)) {
+        // A later `case` is reached by jumping past this one, so the text order says nothing there. An earlier one
+        // already answered above.
+        if (fn.parent.type === 'SwitchCase' && referenceEnd > blockEnd) {
           return true;
         }
 

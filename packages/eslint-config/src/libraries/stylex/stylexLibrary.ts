@@ -5,21 +5,16 @@ import { SCRIPT_AND_SFC_FILES } from '../../config/constants';
 import type { ESLint, Rule } from 'eslint';
 import type { Layer } from '../../types';
 
-// StyleX 0.19 compiles each of these to no CSS at all, without an error. Measured against its Babel plugin.
+/**
+ * StyleX 0.19 compiles each of these to no CSS at all, without an error. Measured against its Babel plugin. It drops
+ * `border` and the eight one-sided border shorthands too, and `valid-styles` refuses those itself while
+ * `banPropsForLegacy` is off, so a limit here would never be read.
+ */
 const DROPPED_SHORTHANDS = [
   'animation',
   'background',
-  'border',
   'borderBlock',
-  'borderBlockEnd',
-  'borderBlockStart',
-  'borderBottom',
   'borderInline',
-  'borderInlineEnd',
-  'borderInlineStart',
-  'borderLeft',
-  'borderRight',
-  'borderTop',
 ];
 
 const VALID_IMPORTS = ['stylex', '@stylexjs/stylex'];

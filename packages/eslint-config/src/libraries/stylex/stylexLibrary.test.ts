@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import {
+  ownBlockNames,
   ruleIdsFor,
   ruleIdsForFile,
   SFC_FIXTURES,
@@ -40,6 +41,28 @@ const moduleWith = (rules: string, preamble: string[] = []): string => {
   ].join('\n');
 };
 
+const lintCard = async (code: string, fix: boolean): Promise<ESLint.LintResult | undefined> => {
+  const eslint = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: layer,
+    fix,
+    fixTypes: ['problem'],
+  });
+  const [result] = await eslint.lintText(code, { filePath: 'src/components/card/styles.ts' });
+
+  return result;
+};
+
+const fixed = async (code: string): Promise<string | undefined> => {
+  return (await lintCard(code, true))?.output;
+};
+
+const lint = async (code: string): Promise<string[]> => {
+  return (await lintCard(code, false))?.messages.map((message) => {
+    return `${message.ruleId ?? ''}: ${message.message.split('\n').at(-1) ?? ''}`;
+  }) ?? [];
+};
+
 describe('stylex', () => {
   // `allowRawCSSVars` waves a `var()` value through the rule's own check, which is where this bites.
   it('reports a shorthand StyleX compiles to nothing, even around a custom property', async () => {
@@ -53,17 +76,41 @@ describe('stylex', () => {
   });
 
   it('splits a multi-value shorthand under --fix-type problem', async () => {
-    const eslint = new ESLint({
-      overrideConfigFile: true,
-      overrideConfig: layer,
-      fix: true,
-      fixTypes: ['problem'],
-    });
-    const [result] = await eslint.lintText(moduleWith("padding: '1px 2px'"), {
-      filePath: 'src/components/card/styles.ts',
-    });
+    await expect(fixed(moduleWith("padding: '1px 2px'"))).resolves.toContain("paddingBlock: '1px'");
+  });
 
-    expect(result?.output).toContain("paddingBlock: '1px'");
+  it('splits into physical longhands and drops !important', async () => {
+    const output = await fixed(moduleWith("margin: '1px 2px 3px 4px !important'"));
+
+    expect(output).toContain("marginRight: '2px',");
+    expect(output).not.toContain('!important');
+  });
+
+  // With `banPropsForLegacy` on, the rule rewrites it as `borderBottom` longhands, another side in vertical text.
+  it('leaves a logical border shorthand to be fixed by hand', async () => {
+    await expect(fixed(moduleWith("borderBlockEnd: '1px solid red'"))).resolves.toBeUndefined();
+  });
+
+  it.each(['animation', 'background', 'borderBlock', 'borderInline'])('says why %s is refused', async (prop) => {
+    const messages = await lint(moduleWith(`${prop}: 'var(--card)'`));
+
+    expect(messages).toContain('@stylexjs/valid-styles: StyleX drops this shorthand with no error. Use the longhands.');
+  });
+
+  it('reads the legacy stylex import too', async () => {
+    const code = moduleWith("background: 'var(--card)'").replace("'@stylexjs/stylex'", "'stylex'");
+
+    await expect(ruleIdsFor(layer, code, 'src/components/card/styles.ts')).resolves.toContain('@stylexjs/valid-styles');
+  });
+
+  it('takes a custom property as a key', async () => {
+    const ruleIds = await ruleIdsFor(layer, moduleWith("'--card-gap': '4px'"), 'src/components/card/styles.ts');
+
+    expect(ruleIds.some(startsWith('@stylexjs/'))).toBe(false);
+  });
+
+  it('names its one block', () => {
+    expect(ownBlockNames(stylex())).toEqual(['@linteljs/stylex']);
   });
 
   it('reports a style nothing reads', async () => {
@@ -81,8 +128,11 @@ describe('stylex', () => {
   });
 
   it('reports a pseudo-class written the legacy way, as a key of its own', async () => {
-    await expect(ruleIdsFor(layer, moduleWith("color: 'red', ':hover': { color: 'blue' }"), 'src/card/styles.ts'))
-      .resolves.toContain('@stylexjs/no-legacy-contextual-styles');
+    const code = moduleWith("color: 'red', ':hover': { color: 'blue' }");
+    const ruleIds = await ruleIdsFor(layer, code, 'src/card/styles.ts');
+
+    expect(ruleIds).toContain('@stylexjs/no-legacy-contextual-styles');
+    expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 
   it('reports className beside a spread of stylex.props', async () => {
@@ -106,6 +156,20 @@ describe('stylex', () => {
 
     await expect(ruleIdsFor(layer, code, 'src/styles/tokens.ts'))
       .resolves.toContain('@stylexjs/enforce-extension');
+    await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
+      .resolves.not.toContain('@stylexjs/enforce-extension');
+  });
+
+  it('keeps a .stylex.ts file to its tokens', async () => {
+    const code = `${IMPORT}\n\nexport const tokens = stylex.defineVars({ primary: 'red' });\nexport const other = 1;\n`;
+
+    await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
+      .resolves.toContain('@stylexjs/enforce-extension');
+  });
+
+  it('takes constants in a .stylex.ts file', async () => {
+    const code = `${IMPORT}\n\nexport const sizes = stylex.defineConsts({ small: '4px' });\n`;
+
     await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
       .resolves.not.toContain('@stylexjs/enforce-extension');
   });

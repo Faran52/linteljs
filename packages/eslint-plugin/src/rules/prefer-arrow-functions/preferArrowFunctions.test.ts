@@ -128,6 +128,8 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       "const sheet = stylex['create']({ box: (width) => ({ width }) });",
       'const sheet = other.create({ box: (width) => ({ width }) });',
       'const sheet = stylex.keyframes({ box: (width) => ({ width }) });',
+      // Not a property value, and a statement straight under the Program has no third ancestor to read.
+      '(width) => ({ width });',
     ].map((code) => {
       return {
         code,
@@ -519,6 +521,39 @@ class Holder {
         + '  case 1:\n    helper();\n}',
       output: null,
       errors: [{ messageId: 'preferArrowHoisted' }],
+    },
+    {
+      // Within its own case the text order holds, up to a mention ending exactly where the case does.
+      code: 'switch (key) {\n  case 0:\n    function helper() {\n      return 1;\n    }\n    handler = helper\n}',
+      output: 'switch (key) {\n  case 0:\n    const helper = () => {\n      return 1;\n    };\n    handler = helper\n}',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      // Only a `case` is jumped past: a mention after the export statement holding the declaration runs later.
+      code: 'export function greet() {\n  return 1;\n}\n\ngreet();',
+      output: 'export const greet = () => {\n  return 1;\n};\n\ngreet();',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      // `run` holds the mention and is mentioned nowhere, so nothing calls it early.
+      code: 'function helper() {\n  return 1;\n}\n\nfunction run() {\n  return helper();\n}',
+      output: 'const helper = () => {\n  return 1;\n};\n\nconst run = () => {\n  return helper();\n};',
+      errors: [
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrow' },
+      ],
+    },
+    {
+      // `run` and `loop` mention each other below `helper`, which the walk follows once each.
+      code: 'function helper() {\n  return 1;\n}\n\nfunction run(n) {\n  return helper() + loop(n);\n}\n\n'
+        + 'function loop(n) {\n  return n && run(n - 1);\n}',
+      output: 'const helper = () => {\n  return 1;\n};\n\nconst run = (n) => {\n  return helper() + loop(n);\n};\n\n'
+        + 'function loop(n) {\n  return n && run(n - 1);\n}',
+      errors: [
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrowHoisted' },
+      ],
     },
     {
       // Referenced from the top level before the declaration, which does run first, so this one
