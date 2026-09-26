@@ -4,7 +4,11 @@ import {
   it,
 } from 'vitest';
 
-import { isJsonObject, valuesOf } from './objectUtils';
+import {
+  isJsonObject,
+  isValueOf,
+  valuesOf,
+} from './objectUtils';
 
 /**
  * Five guards in four rings read off this one, and each declares its own narrowed shape, so none of their suites
@@ -44,5 +48,24 @@ describe('valuesOf', () => {
       react: 'React',
       vue: 'Vue',
     })).toEqual(['react', 'vue']);
+  });
+});
+
+describe('isValueOf', () => {
+  const MANAGERS = {
+    pnpm: 'pnpm',
+    yarn: 'yarn',
+  };
+
+  it('takes a key the record carries', () => {
+    expect(isValueOf('pnpm', MANAGERS)).toBe(true);
+  });
+
+  it('refuses a name the record does not carry', () => {
+    expect(isValueOf('deno', MANAGERS)).toBe(false);
+  });
+
+  it.each(['toString', 'constructor'])('refuses %s, which every object inherits', (name) => {
+    expect(isValueOf(name, MANAGERS)).toBe(false);
   });
 });

@@ -23,3 +23,9 @@ export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
     return key in values;
   });
 };
+
+// Whether a string read off the outside world is one of a record's own keys, narrowed to that key's union. Own
+// rather than `in`, which takes `toString` for a key of every record.
+export const isValueOf = <V extends string>(value: string, values: Record<V, unknown>): value is V => {
+  return Object.hasOwn(values, value);
+};

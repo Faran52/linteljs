@@ -3,21 +3,7 @@ import { type Artifact } from '@config/types';
 import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
-import { projectSpelling } from '../../utils/shapeUtils';
-
 import { mergeChecker } from './utils/mergeUtils';
-
-// `.tsx` on the React family, where a rendering setup needs JSX (read off `jsx`, since Solid and Vue set `preserve`).
-// Newest first: `run/` asks which one a project already holds.
-export const SETUP_TESTS_CANDIDATES = ['__mocks__/setupTests.tsx', '__mocks__/setupTests.ts'];
-
-export const setupTestsPath = (answers: Answers, present: readonly string[] = []): string => {
-  const own = targetFor(answers).tsconfig.jsx === 'react-jsx'
-    ? '__mocks__/setupTests.tsx'
-    : '__mocks__/setupTests.ts';
-
-  return projectSpelling(own, present);
-};
 
 // Throws: a silent miss on a drifted anchor would ship the strict floor to a relaxed project.
 const replaceAnchored = (source: string, anchor: string, replacement: string): string => {

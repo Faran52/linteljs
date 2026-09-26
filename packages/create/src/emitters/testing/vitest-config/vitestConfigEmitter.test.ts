@@ -19,7 +19,7 @@ import {
   type Testing,
 } from '@answers';
 
-import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
+import { setupTestsPath } from '../../utils/shapeUtils';
 
 import { emitVitestConfig, vitestConfigEmitter } from './vitestConfigEmitter';
 

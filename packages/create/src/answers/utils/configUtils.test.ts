@@ -302,6 +302,12 @@ describe('parseLinteljsConfig', () => {
       config({ target: 'ember' }),
       /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
     ],
+    // Every object inherits `toString`, so a key test that walks the prototype would take it for a target.
+    [
+      'a target named for an inherited property',
+      config({ target: 'toString' }),
+      /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
+    ],
     ['an unknown testing choice', config({ testing: 'jest' }), /testing must be one of: vitest, none/],
     [
       'an unknown package manager',

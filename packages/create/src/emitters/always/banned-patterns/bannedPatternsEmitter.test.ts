@@ -19,11 +19,7 @@ import {
 } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
 
-import {
-  bannedPatternsEmitter,
-  checkerArtifact,
-  setupTestsPath,
-} from './bannedPatternsEmitter';
+import { bannedPatternsEmitter, checkerArtifact } from './bannedPatternsEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
@@ -60,24 +56,6 @@ describe('bannedPatternsEmitter', () => {
     expect(bannedPatternsEmitter(answersFor({})).map(({ target }) => {
       return target;
     })).toEqual(['scripts/checkBannedPatterns.ts']);
-  });
-});
-
-describe('setupTestsPath', () => {
-  // Read off `jsx`, since Solid and Vue set `preserve` and render without a React transform.
-  it.each<[TargetId, string]>([
-    ['react', '__mocks__/setupTests.tsx'],
-    ['next', '__mocks__/setupTests.tsx'],
-    ['vue', '__mocks__/setupTests.ts'],
-    ['solid', '__mocks__/setupTests.ts'],
-  ])('names the %s setup file %s', (target, path) => {
-    expect(setupTestsPath(answersFor({ target }))).toBe(path);
-  });
-
-  // A project that already holds the other spelling keeps it rather than gaining a second setup file.
-  it('keeps the spelling a project already holds', () => {
-    expect(setupTestsPath(answersFor({ target: 'react' }), ['__mocks__/setupTests.ts']))
-      .toBe('__mocks__/setupTests.ts');
   });
 });
 

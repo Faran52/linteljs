@@ -1,3 +1,4 @@
+import { captureFixer } from '@mocks/captureFixer';
 import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import { Linter } from 'eslint';
 import {
@@ -7,12 +8,11 @@ import {
 } from 'vitest';
 
 import { importNewlines } from '../rules/import-newlines/importNewlines.ts';
-import { type Fixer, mustFind } from '../utils/ruleUtils.ts';
 
 import {
   adjacentPairs,
+  commaToNewline,
   fitsOnLine,
-  fixCommaToNewline,
   gapIsBlank,
   getIndent,
   getIndentStep,
@@ -21,8 +21,7 @@ import {
   sameLine,
   spliceOntoNewline,
 } from './layoutUtils.ts';
-
-import type { Rule } from 'eslint';
+import { mustFind } from './ruleUtils.ts';
 
 const stepFor = (code: string): string => {
   return getIndentStep(sourceCodeFrom(code).sourceCode);
@@ -234,48 +233,6 @@ describe('sameLine', () => {
   });
 });
 
-// A real Rule.RuleFixer, captured from a throwaway rule rather than stubbed, since a stub would
-// test the stub, not the real object.
-const captureFixer = (): Fixer => {
-  let captured: Fixer | undefined;
-
-  const capture: Rule.RuleModule = {
-    meta: { fixable: 'whitespace' },
-    create: (context) => {
-      return {
-        Identifier: (node) => {
-          context.report({
-            node,
-            message: 'probe',
-            fix: (fixer) => {
-              captured = fixer;
-
-              return null;
-            },
-          });
-        },
-      };
-    },
-  };
-
-  new Linter().verify('const alpha = 1;\n', [
-    {
-      plugins: { probe: { rules: { capture } } },
-      languageOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
-      rules: { 'probe/capture': 'error' },
-    },
-  ]);
-
-  if (!captured) {
-    throw new Error('no fixer captured');
-  }
-
-  return captured;
-};
-
 describe('spliceOntoNewline', () => {
   const fixer = captureFixer();
 
@@ -310,26 +267,18 @@ describe('spliceOntoNewline', () => {
   });
 });
 
-describe('fixCommaToNewline', () => {
-  it('moves the element onto a line of its own at the given indent', () => {
+describe('commaToNewline', () => {
+  it('replaces the gap after the comma with a line break and the given indent', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
     const second = mustFind(
       sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
       'the token before the closing bracket',
     );
 
-    expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')?.text).toBe('\n  ');
-  });
-
-  // Reflowing over a comment in the gap would delete it, so there is no fix to offer.
-  it('offers no fix when a comment sits between the comma and the element', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, /* kept */ two];\n');
-    const second = mustFind(
-      sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
-      'the token before the closing bracket',
-    );
-
-    expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')).toBeNull();
+    expect(commaToNewline(sourceCode, captureFixer(), second, '  ')).toEqual({
+      range: [19, 20],
+      text: '\n  ',
+    });
   });
 });
 

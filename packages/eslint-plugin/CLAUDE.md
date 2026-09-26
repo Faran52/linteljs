@@ -120,8 +120,10 @@ why that file is shaped the way it is rather than driving everything through a r
 Code one rule owns stays in that rule's own `utils/` subdirectory. Splitting it out into
 `src/utils` used to be the wrong move for a single-consumer helper, and out of a flat `rules/` it
 broke one-rule-per-file; a `utils/` beside the rule is where it belongs, because a helper sitting
-as a sibling of the rule reads like a second rule. Four rules carry one today:
+as a sibling of the rule reads like a second rule. Five rules carry one today:
 
+- `destructuring-property-newline/utils/commaUtils.ts`, the comma-to-newline fix that declines when a
+  comment sits in the gap it would reflow.
 - `prefer-arrow-functions/utils/writeUtils.ts`, the emitter (function node in, arrow text out), and
   `utils/safetyUtils.ts`, the layer that decides whether a rewrite is allowed at all.
 - `import-newlines/utils/writeUtils.ts`, the same emitter split: statement in, replacement text

@@ -3,8 +3,8 @@ import { type Artifact, type ProjectShape } from '@config/types';
 import { type Answers, hasTests } from '@answers';
 import { targetFor } from '@targets';
 
-import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { joined } from '../../utils/artifactUtils';
+import { setupTestsPath } from '../../utils/shapeUtils';
 
 import type { TargetRecord } from '@targets/types';
 

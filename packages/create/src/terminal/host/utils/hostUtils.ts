@@ -4,7 +4,7 @@ import {
   NODE_FLOOR,
 } from '@config/constants';
 
-import { valuesOf } from '@utils/objectUtils';
+import { isValueOf } from '@utils/objectUtils';
 import { rankOf } from '@utils/versionUtils';
 
 import type { PackageManager } from '@answers';
@@ -14,8 +14,11 @@ export interface DetectedManager {
   version: string | undefined;
 }
 
-// What an agent's first token can say, which is a command rather than an id: derived, so a sixth manager is one row.
-const AGENT_NAMES = new Set<string>(valuesOf(MANAGER_BINARIES));
+// What an agent's first token can say, which is a command rather than an id: an id that is its own command, so
+// `yarn-classic` is refused and a sixth manager is one row.
+const isAgentName = (name: string): name is PackageManager => {
+  return isValueOf(name, MANAGER_BINARIES) && MANAGER_BINARIES[name] === name;
+};
 
 /**
  * The first token of `npm_config_user_agent`, read the way every scaffolder reads it:
@@ -31,7 +34,7 @@ export const managerFromUserAgent = (userAgent: string | undefined): DetectedMan
   const token = userAgent.replace(/ .*/su, '');
   const name = token.replace(/\/.*/su, '');
 
-  if (!AGENT_NAMES.has(name)) {
+  if (!isAgentName(name)) {
     return undefined;
   }
 
@@ -43,7 +46,7 @@ export const managerFromUserAgent = (userAgent: string | undefined): DetectedMan
    * yarn a fresh project gets and the one a `dlx` forwards to.
    */
   return {
-    name: name === 'yarn' && /^1\.\d+\.\d+$/u.test(version) ? 'yarn-classic' : name as PackageManager,
+    name: name === 'yarn' && /^1\.\d+\.\d+$/u.test(version) ? 'yarn-classic' : name,
     version: /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined,
   };
 };

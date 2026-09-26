@@ -45,6 +45,12 @@ describe('managerFromUserAgent', () => {
     expect(managerFromUserAgent('deno/2.0 node/? darwin arm64')).toBeUndefined();
   });
 
+  // An agent names a command, and `yarn-classic` is an id no binary answers to; `toString` is on every object.
+  it('answers nothing for an id that is not its own command, or a name every object inherits', () => {
+    expect(managerFromUserAgent('yarn-classic/1.22.22 npm/? node/?')).toBeUndefined();
+    expect(managerFromUserAgent('toString/1.0.0 npm/? node/?')).toBeUndefined();
+  });
+
   // A manager that names itself without a version still names itself: the version is asked of the binary instead.
   it('answers the name alone where the token carries no version', () => {
     expect(managerFromUserAgent('pnpm/? npm/? node/?')).toEqual({

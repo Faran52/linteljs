@@ -2,9 +2,9 @@ import { type Artifact, type ProjectShape } from '@config/types';
 
 import { targetFor } from '@targets';
 
-import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
+import { setupTestsPath } from '../../utils/shapeUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
 import type { Answers } from '@answers';

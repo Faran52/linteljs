@@ -170,19 +170,3 @@ export const commaToNewline = (
 
   return fixer.replaceTextRange([comma.range[1], currentToken.range[0]], `${lineTerminatorOf(sourceCode)}${indent}`);
 };
-
-// Null when anything is written in the gap: reflowing over a comment there would delete it silently.
-export const fixCommaToNewline = (
-  sourceCode: SourceCode,
-  fixer: Fixer,
-  currentToken: AST.Token,
-  indent: string,
-): Rule.Fix | null => {
-  const comma = mustFind(sourceCode.getTokenBefore(currentToken), 'the separator before a list element');
-
-  if (!gapIsBlank(sourceCode, comma.range[1], currentToken.range[0])) {
-    return null;
-  }
-
-  return commaToNewline(sourceCode, fixer, currentToken, indent);
-};

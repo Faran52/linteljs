@@ -6,7 +6,13 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { projectSpelling } from './shapeUtils';
+import {
+  type Answers,
+  DEFAULT_ANSWERS,
+  type TargetId,
+} from '@answers';
+
+import { projectSpelling, setupTestsPath } from './shapeUtils';
 
 describe('projectSpelling', () => {
   const CANDIDATES = ['src/styles/global.css', 'src/style.css'];
@@ -26,5 +32,29 @@ describe('projectSpelling', () => {
   it('takes the default when the project holds none of them', () => {
     expect(projectSpelling('src/style.css', [])).toBe('src/style.css');
     expect(projectSpelling('src/style.css', EMPTY_PROJECT.styleEntries)).toBe('src/style.css');
+  });
+});
+
+describe('setupTestsPath', () => {
+  const answersFor = (target: TargetId): Answers => {
+    return {
+      ...DEFAULT_ANSWERS,
+      target,
+    };
+  };
+
+  // Read off `jsx`, since Solid and Vue set `preserve` and render without a React transform.
+  it.each<[TargetId, string]>([
+    ['react', '__mocks__/setupTests.tsx'],
+    ['next', '__mocks__/setupTests.tsx'],
+    ['vue', '__mocks__/setupTests.ts'],
+    ['solid', '__mocks__/setupTests.ts'],
+  ])('names the %s setup file %s', (target, path) => {
+    expect(setupTestsPath(answersFor(target))).toBe(path);
+  });
+
+  // A project that already holds the other spelling keeps it rather than gaining a second setup file.
+  it('keeps the spelling a project already holds', () => {
+    expect(setupTestsPath(answersFor('react'), ['__mocks__/setupTests.ts'])).toBe('__mocks__/setupTests.ts');
   });
 });

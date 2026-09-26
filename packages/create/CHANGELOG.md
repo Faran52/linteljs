@@ -8,6 +8,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- A `linteljs.config.json` whose single choice names a property every object inherits, such as
+  `"target": "toString"`, is refused as an unknown value instead of being accepted.
 - A recorded `resolveConditions` writes the `resolver` option of `eslint.config.ts` as a block, so a long
   `conditionNames` list no longer runs its closing brace past `max-len`. Astro's `coverageExclude` drops
   `src/config/linteljs.ts`, which `src/config/**` already covered. A `sync` rewrites both.

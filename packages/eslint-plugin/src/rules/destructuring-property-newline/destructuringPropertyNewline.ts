@@ -2,7 +2,6 @@ import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
-  fixCommaToNewline,
   indentReader,
   sameLine,
 } from '../../utils/layoutUtils.ts';
@@ -12,6 +11,8 @@ import {
   type ObjectPatternNode,
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
+
+import { fixCommaToNewline } from './utils/commaUtils.ts';
 
 // A member of either pattern; the array-pattern side carries holes in `[, , third]` as nulls, hence the null.
 type PatternMember

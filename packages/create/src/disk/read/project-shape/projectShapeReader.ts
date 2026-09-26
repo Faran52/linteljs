@@ -1,7 +1,5 @@
 import { type ProjectShape } from '@config/types';
 
-import { SETUP_TESTS_CANDIDATES } from '@emitters/always/banned-patterns/bannedPatternsEmitter';
-
 import { allPresent } from '../../utils/fsUtils';
 
 /**
@@ -23,6 +21,9 @@ export const STYLE_ENTRY_CANDIDATES = [
   'src/app.css',
   'src/style.css',
 ];
+
+// The two spellings `setupTestsPath` writes, newest first.
+const SETUP_TESTS_CANDIDATES = ['__mocks__/setupTests.tsx', '__mocks__/setupTests.ts'];
 
 export const projectShapeReader = async (cwd: string): Promise<ProjectShape> => {
   const [setupTests, styleEntries] = await Promise.all([

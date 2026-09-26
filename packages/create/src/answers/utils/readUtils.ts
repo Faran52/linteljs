@@ -1,4 +1,8 @@
-import { isJsonObject, valuesOf } from '@utils/objectUtils';
+import {
+  isJsonObject,
+  isValueOf,
+  valuesOf,
+} from '@utils/objectUtils';
 
 import type { AliasMap } from '@config/types';
 import type {
@@ -44,10 +48,6 @@ export const refuseDuplicates = (values: string[], field: string): void => {
   if (new Set(values).size !== values.length) {
     throw new Error(`${field} must not contain duplicate values`);
   }
-};
-
-export const isValueOf = <V extends string>(value: string, values: Record<V, unknown>): value is V => {
-  return value in values;
 };
 
 const choiceValue = <V extends string>(

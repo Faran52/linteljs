@@ -1,6 +1,6 @@
-import { valuesOf } from '@utils/objectUtils';
+import { isValueOf, valuesOf } from '@utils/objectUtils';
 
-import { isJsonArray, isValueOf } from './readUtils';
+import { isJsonArray } from './readUtils';
 
 import type { JsonValue } from './readUtils';
 
