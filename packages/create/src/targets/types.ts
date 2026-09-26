@@ -25,12 +25,6 @@ export interface StarterTest {
    * link changes the suite with it.
    */
   when?: (answers: Answers) => boolean;
-  /**
-   * Anything else the suite imports that another answer decides, so it is skipped without those too. Vue's
-   * `App` suite is the case: it mounts through the real router rather than a stub, so `src/router/index.ts` has to
-   * be there even though the suite is not about it.
-   */
-  needs?: string[];
   // The directory between the target and the path, where several spellings fill one destination.
   variant?: string;
   // The tree this suite comes from, when it is not this target's own. See `StarterFile`.
@@ -165,8 +159,6 @@ interface VitestFactory {
 
 export interface TargetRecord {
   id: TargetId;
-  // Where the values this CLI recorded are written for the starter to read: the name, the stack and the answers.
-  recordModule: string;
   // The module the emitted `index.html` loads. Absent where a generator still writes that document.
   /*
    * Explicitly `| undefined` so a record built by overlay can clear it. React Router's framework mode is the case:
@@ -189,15 +181,11 @@ export interface TargetRecord {
   html: boolean;
   // A file type, so it stacks with a hosted framework.
   astro?: true;
-  // Decides both whether `vite.config.ts` is written and whether `vite/client` lands in tsconfig `types`.
-  vite: boolean;
   // Drives the stylelint syntax, the `lint:css` glob, coverage and the `type-standards.md` frontmatter.
   sfcExtension?: 'vue' | 'svelte';
   // The scaffolder's own stylesheet, quoted as the tailwind layer's `entryPoint`. Absent on Svelte, which ships none.
   // Every target has one, so the emitters never ask whether there is a stylesheet to import into.
   styleEntry: string;
-  // Where a page lives, printed by `scripts/starter-trees/starterTreesScript.ts`.
-  routeUnit: string;
   // Absent, the question is not asked. The order is the offer's: the first is what a config migrated from v2 lands on.
   stores?: readonly Store[];
   // Absent, the question is not asked.
@@ -218,8 +206,9 @@ export interface TargetRecord {
   // Shared aliases this target lacks, so none names a directory that is not there.
   omitAliases?: string[];
   tsconfig: TsconfigDelta;
-  // Required and empty on the three targets that own no vite config, which return before it is read.
-  vitePlugin: PluginSpec;
+  // What `vite.config.ts` registers. Absent where the target owns no Vite config, which decides both whether that
+  // file is written and whether `vite/client` lands in tsconfig `types`.
+  vitePlugin?: PluginSpec;
   // Only a non-Vite target can need one.
   vitestPlugin?: PluginSpec;
   vitestFactory?: VitestFactory;

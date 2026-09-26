@@ -18,18 +18,19 @@ const plain = (range: string | undefined): string | undefined => {
 // machine. A row whose version is unknown is left out rather than printed empty.
 export const stackRows = (answers: HostedAnswers, versions: Record<string, string>): [string, string][] => {
   const target = targetFor(answers);
-  const framework = target.framework === undefined ? [] : [[target.framework, plain(versions[target.framework])]];
-
-  return [
+  const framework: [string, string | undefined][] = target.framework === undefined
+    ? []
+    : [[target.framework, plain(versions[target.framework])]];
+  const rows: [string, string | undefined][] = [
     ['linteljs', plain(versions['@linteljs/eslint-config'])],
     ...framework,
     ['typescript', plain(versions['typescript'])],
     ['node', answers.nodeVersion],
     [answers.packageManager, answers.packageManagerVersion],
-  ].flatMap(([name, version]) => {
-    return name === undefined || version === undefined
-      ? []
-      : [[`name: '${name}'`, `version: '${version}'`] satisfies [string, string]];
+  ];
+
+  return rows.flatMap(([name, version]) => {
+    return version === undefined ? [] : [[`name: '${name}'`, `version: '${version}'`] satisfies [string, string]];
   });
 };
 

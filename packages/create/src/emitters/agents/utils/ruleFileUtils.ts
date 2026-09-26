@@ -13,7 +13,8 @@ export const globsOf = (source: string): string => {
   return listed === undefined
     ? ''
     : listed.split('\n').flatMap((line) => {
-        return /^ {2}- "(.+)"$/u.exec(line)?.[1] ?? [];
+        // `PATHS` has already held every line to `  - "..."`, so the quotes are all that is left to read.
+        return /"(.+)"/u.exec(line)?.[1] ?? [];
       }).join(',');
 };
 

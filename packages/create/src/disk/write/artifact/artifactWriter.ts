@@ -37,9 +37,9 @@ export const artifactWriter = async (
     return false;
   }
 
-  // A transform too: the checker is copied and still carries the project's own blocks.
-  const reads = 'merge' in artifact.content || 'transform' in artifact.content;
-  const current = reads ? await readIfPresent(path) : null;
+  // Read for every artifact, though only a merge or a transform uses it: the checker is copied and still carries the
+  // project's own blocks.
+  const current = await readIfPresent(path);
 
   await projectFileWriter(cwd, artifact.target, await shippedAssetsReader(artifact.content, current));
 

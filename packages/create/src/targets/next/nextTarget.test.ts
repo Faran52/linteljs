@@ -41,7 +41,7 @@ describe('nextTarget', () => {
 
   // Next owns the build, so there is no vite config for a plugin to go in.
   it('carries no vite build', () => {
-    expect(nextTarget.vite).toBe(false);
+    expect(nextTarget.vitePlugin).toBeUndefined();
     expect(nextTarget.build).toBe('next build');
   });
 
@@ -57,7 +57,7 @@ describe('nextTarget', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query', 'rtk-query']),
   // StyleX compiles through Babel and PostCSS here, so both configs ship with it and only with it.

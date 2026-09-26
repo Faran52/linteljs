@@ -110,11 +110,16 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['tailwindEntryPoint', quote(`./${target.styleEntry}`)]);
   }
 
-  // Only where recorded; `@linteljs/eslint-config` explains why the order is not a safe default.
+  /*
+   * Only where recorded; `@linteljs/eslint-config` explains why the order is not a safe default. A block, so the
+   * line `arrayLiteral` measures is the line written: inline, the closing ` }` ran a list it kept past `max-len`.
+   */
   const { resolveConditions } = answers;
 
   if (resolveConditions !== undefined) {
-    rows.push(['resolver', `{ conditionNames: ${arrayLiteral('conditionNames', resolveConditions, 2)} }`]);
+    const conditions = arrayLiteral('conditionNames', resolveConditions, 2);
+
+    rows.push(['resolver', `{\n${indentOf(2)}conditionNames: ${conditions},\n${indentOf(1)}}`]);
   }
 
   // The project's own last.

@@ -64,6 +64,9 @@ describe('an entry that already imports tailwind another way', () => {
     ['the url form', '@import url("tailwindcss");\n'],
     ['the url form with a source restriction', '@import url("tailwindcss") source(none);\n'],
     ['single quotes inside url', "@import url('tailwindcss');\n"],
+    ['a space inside url', '@import url( "tailwindcss");\n'],
+    ['more than one space', '@import  "tailwindcss";\n'],
+    ['a subpath', '@import "tailwindcss/preflight.css";\n'],
   ])('leaves %s alone', (_label, current) => {
     expect(mergeStyleEntry(current)).toBe(current);
   });
@@ -92,6 +95,8 @@ describe('the stylesheets a starter ships', () => {
     expect(text).toContain('@import "./styles/tokens.css";');
     expect(text).toContain('@import "./styles/base.css";');
     expect(text).toContain('@import "./components/features/app-header/AppHeader.css";');
+    // The theme is Tailwind's, so a project without it imports none.
+    expect(text).not.toContain('theme.css');
   });
 
   // A stylesheet gated on an answer is imported exactly where the answer ships its component.
@@ -117,6 +122,8 @@ describe('the stylesheets a starter ships', () => {
     expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";'])).toBe(first);
     expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']))
       .toBe(`@import "./c.css";\n\n${first}`);
+    expect(mergeStyleEntry('.a {}\n', ['@import "./c.css";', '@import "./d.css";']))
+      .toBe('@import "./c.css";\n@import "./d.css";\n\n.a {}\n');
   });
 });
 
@@ -138,9 +145,14 @@ describe('the tailwind answer', () => {
       styling: 'tailwind',
     }), EMPTY_PROJECT)[0]);
 
-    expect(text).toContain('@import "nativewind/theme";');
-    expect(text).not.toContain(TAILWIND_IMPORT);
-    expect(text).not.toContain('theme.css";');
+    // The block alone, and nothing for a theme the target does not name.
+    expect(text).toBe([
+      '@import "tailwindcss/theme.css" layer(theme);',
+      '@import "tailwindcss/preflight.css" layer(base);',
+      '@import "tailwindcss/utilities.css";',
+      '@import "nativewind/theme";',
+      '',
+    ].join('\n'));
   });
 });
 

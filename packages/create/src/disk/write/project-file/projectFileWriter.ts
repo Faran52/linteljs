@@ -2,6 +2,7 @@ import { constants } from 'node:fs';
 import { mkdir, open } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
+import { hasCode } from '../../utils/fsUtils';
 import { safeProjectPath } from '../../utils/pathUtils';
 
 export const projectFileWriter = async (
@@ -24,14 +25,14 @@ export const projectFileWriter = async (
     );
 
     try {
-      await file.writeFile(text, 'utf8');
+      await file.writeFile(text);
     }
     finally {
       await file.close();
     }
   }
   catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ELOOP') {
+    if (hasCode(error, 'ELOOP')) {
       throw new Error(`Refusing to write ${target}: target is a symbolic link`);
     }
 

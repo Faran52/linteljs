@@ -130,7 +130,15 @@ describe('starter tests', () => {
     ['react', 'src/App.test.tsx', 'src/App.tsx'],
     ['webextension', 'src/counter.test.ts', 'src/counter.ts'],
   ])('gates the %s suite %s on the file it covers', (target, suite, covers) => {
-    expect(artifactFor({ target }, suite)?.requires?.[0]).toBe(covers);
+    const artifact = artifactFor({ target }, suite);
+
+    expect(artifact?.requires?.[0]).toBe(covers);
+    // The suite's own asset, under its target's tree.
+    expect(artifact?.content).toEqual({ sources: [`starter-source/${target}/${suite}`] });
+  });
+
+  it('gates a suite that needs nothing else on the file it covers alone', () => {
+    expect(artifactFor({ target: 'webextension' }, 'src/counter.test.ts')?.requires).toEqual(['src/counter.ts']);
   });
 
   // With no store there is no counter, so the gate is what keeps its suite from covering nothing.

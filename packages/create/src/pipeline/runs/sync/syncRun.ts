@@ -1,4 +1,8 @@
-import { dirname, join } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+} from 'node:path';
 
 import { MANAGED_PATH } from '@config/constants';
 
@@ -53,8 +57,8 @@ const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
     },
   );
 
-  // Without git, the status is reported with no diff rather than failing sync.
-  return result.error === undefined ? result.stdout : '';
+  // Without git, or with a diff past spawnSync's buffer, the status is reported with no diff rather than failing sync.
+  return 'stdout' in result && result.error === undefined ? result.stdout : '';
 };
 
 // A closed list of exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
@@ -80,7 +84,7 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
 
   const project = await projectShapeReader(cwd);
 
-  for (const artifact of buildArtifacts(answers, project)) {
+  for (const artifact of buildArtifacts(answers, project, basename(cwd))) {
     expected.add(artifact.target);
 
     // This run's own bookkeeping, rewritten whenever it applies anything, so it is not a file to report or choose.
@@ -178,7 +182,7 @@ export const applySync = async (
   // previous run recorded rather than what this one is about to.
   const candidates = await obsoleteCandidates(cwd);
 
-  for (const artifact of buildArtifacts(answers, project)) {
+  for (const artifact of buildArtifacts(answers, project, basename(cwd))) {
     expected.add(artifact.target);
 
     // Rewritten whenever this run applies anything, and never reported: it is bookkeeping, not a file the caller

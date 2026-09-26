@@ -122,13 +122,10 @@ export const webextensionTarget: TargetBuilder = (answers) => {
 
   return {
     id: 'webextension',
-    recordModule: 'src/config/linteljs.ts',
     htmlEntry: 'src/main.ts',
     hostsBrowser: true,
     hostsFramework: true,
     html: true,
-    vite: true,
-    routeUnit: 'manifest.json, whose entries name every surface',
     ignores: [],
     // With a framework the component is marked by its extension; without one, by living under `components/`: a
     // component is marked by directory rather than by a `.tsx` extension.
@@ -170,9 +167,9 @@ export const webextensionTarget: TargetBuilder = (answers) => {
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    starterFiles: [...mockFiles(), ...surfaceFiles(answers, answers.browser)],
+    starterFiles: [...mockFiles(false), ...surfaceFiles(answers, answers.browser)],
     starterTests: [
-      ...mockTests(),
+      ...mockTests(false),
       {
         target: 'src/counter.test.ts',
         covers: 'src/counter.ts',

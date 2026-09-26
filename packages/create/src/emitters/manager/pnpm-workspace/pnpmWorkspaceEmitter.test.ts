@@ -61,12 +61,46 @@ describe('mergePnpmWorkspace', () => {
     expect(merged).toContain(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
   });
 
-  it('drops the ignoredBuiltDependencies block a scaffolder wrote', () => {
+  it('drops the ignoredBuiltDependencies block a scaffolder wrote, list and all', () => {
     const existing = 'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
-    const merged = mergePnpmWorkspace(existing, answersFor({}));
 
-    expect(merged).not.toContain('ignoredBuiltDependencies');
-    expect(merged).toContain('onlyBuiltDependencies:\n  - foo\n');
+    expect(mergePnpmWorkspace(existing, answersFor({})))
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+  });
+
+  // A blank line inside a YAML list does not end it, so it does not end the drop either.
+  it('drops a superseded list across a blank line inside it', () => {
+    const existing = 'ignoredBuiltDependencies:\n  - sharp\n\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
+
+    expect(mergePnpmWorkspace(existing, answersFor({})))
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+  });
+
+  it('drops a superseded key written as an inline list', () => {
+    expect(mergePnpmWorkspace('ignoredBuiltDependencies: [sharp]\nonlyBuiltDependencies:\n  - foo\n', answersFor({})))
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+  });
+
+  it('closes the gap the blank lines opening a file would leave under the prepended block', () => {
+    expect(mergePnpmWorkspace('\n\nonlyBuiltDependencies:\n  - foo\n', answersFor({})))
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+  });
+
+  // An indented or dashed line before any key is not a key, so nothing ahead of the first one is dropped.
+  it('keeps the document marker a file opens with when it has nothing to add', () => {
+    const existing = "---\nallowBuilds:\n  'some-native': true\n";
+
+    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(existing);
+  });
+
+  // Only a key at the start of a line is the block; a comment naming it is not.
+  it('adds both blocks to a file that only mentions them in a comment', () => {
+    const merged = mergePnpmWorkspace('# allowBuilds: and peerDependencyRules: are added\n', answersFor({
+      target: 'angular',
+    }));
+
+    expect(merged).toMatch(/^allowBuilds:/mu);
+    expect(merged).toMatch(/^peerDependencyRules:/mu);
   });
 
   it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {

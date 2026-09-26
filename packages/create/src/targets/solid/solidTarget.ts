@@ -30,12 +30,9 @@ import type { StarterFile, TargetRecord } from '../types';
 
 export const solidTarget: TargetRecord = {
   id: 'solid',
-  recordModule: 'src/config/linteljs.ts',
   htmlEntry: 'src/index.tsx',
   framework: 'solid',
   html: true,
-  vite: true,
-  routeUnit: 'src/pages/<kebab>/{Name}Page.tsx',
   // Solid's own stores cover a component; this is for what crosses one.
   stores: ['tanstack-store'],
   ignores: [],
@@ -74,7 +71,7 @@ export const solidTarget: TargetRecord = {
   // Without these, vitest resolves the server build and a rendered component has no reactive owner.
   testConditions: ['development', 'browser'],
   starterFiles: [
-    ...mockFiles(),
+    ...mockFiles(true),
     ...componentStyles(),
     // Solid writes the `class` spelling, which `stylex.attrs` answers with; the other SFC targets take these.
     ...componentStyleModules(),
@@ -211,12 +208,11 @@ export const solidTarget: TargetRecord = {
    * 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
    */
   starterTests: [
-    ...mockTests(),
+    ...mockTests(true),
     ...accessorTests(ACCESSORS),
     {
       target: 'src/App.test.tsx',
       covers: 'src/App.tsx',
-      needs: ['src/lib/providers/StoreProvider.tsx', 'src/lib/providers/DataProvider.tsx'],
     },
     // The page that holds the counter: its button is a child of that file and nothing else renders it.
     {
@@ -225,14 +221,12 @@ export const solidTarget: TargetRecord = {
       when: (answers) => {
         return !hasStore(answers);
       },
-      needs: ['src/lib/providers/StoreProvider.tsx'],
     },
     {
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
       when: hasStore,
       variant: 'with-store',
-      needs: ['src/lib/providers/StoreProvider.tsx'],
     },
     {
       target: 'src/pages/contact/ContactPage.test.tsx',
@@ -245,7 +239,6 @@ export const solidTarget: TargetRecord = {
     {
       target: 'src/lib/apis/contact/api.test.tsx',
       covers: 'src/lib/apis/contact/api.ts',
-      needs: ['src/lib/providers/DataProvider.tsx'],
     },
     {
       target: 'src/components/ui/button/Button.test.tsx',
@@ -262,7 +255,6 @@ export const solidTarget: TargetRecord = {
     {
       target: 'src/lib/store/counter.test.tsx',
       covers: 'src/lib/store/counter.ts',
-      needs: ['src/lib/providers/StoreProvider.tsx'],
     },
   ],
   /*

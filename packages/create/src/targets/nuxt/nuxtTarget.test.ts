@@ -25,13 +25,13 @@ describe('nuxtTarget', () => {
   // Nuxt renders the document and owns Vite, so neither an `index.html` nor a vite config is this CLI's to write.
   it('writes no document and no vite config of its own', () => {
     expect(nuxtTarget.html).toBe(false);
-    expect(nuxtTarget.vite).toBe(false);
+    expect(nuxtTarget.vitePlugin).toBeUndefined();
   });
 });
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(false),
   ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],

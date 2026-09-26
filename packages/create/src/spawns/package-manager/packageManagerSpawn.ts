@@ -11,10 +11,7 @@ import type { PackageManager } from '@answers';
  * to decide.
  */
 export const packageManagerSpawn = (pm: PackageManager): string | undefined => {
-  const result = spawnSync(MANAGER_BINARIES[pm], ['--version'], {
-    encoding: 'utf8',
-    stdio: 'pipe',
-  });
+  const result = spawnSync(MANAGER_BINARIES[pm], ['--version'], { encoding: 'utf8' });
 
   return result.status === 0 ? result.stdout.trim() : undefined;
 };

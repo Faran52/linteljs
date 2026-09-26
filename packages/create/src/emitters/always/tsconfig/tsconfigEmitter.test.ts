@@ -39,6 +39,14 @@ interface AnswerOverrides {
   router?: Router;
 }
 
+// The keys a target's own tsconfig delta decides, over the shared base.
+interface TypesSource {
+  extends?: string;
+  include: string[];
+  jsx?: string;
+  jsxImportSource?: string;
+}
+
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
@@ -49,14 +57,66 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 };
 
 describe('buildTsconfig', () => {
+  // The shared standard whole, as a React project receives it: every other case here is a delta from this one.
   it('carries the shared base', () => {
-    const { compilerOptions } = buildTsconfig(answersFor({}));
+    const expected = {
+      compilerOptions: {
+        rootDir: '.',
+        target: 'esnext',
+        lib: ['dom', 'dom.iterable', 'esnext'],
+        useDefineForClassFields: true,
+        jsx: 'react-jsx',
+        module: 'esnext',
+        moduleResolution: 'bundler',
+        resolveJsonModule: true,
+        allowImportingTsExtensions: true,
+        isolatedModules: true,
+        moduleDetection: 'force',
+        importHelpers: true,
+        verbatimModuleSyntax: true,
+        noEmit: true,
+        incremental: true,
+        strict: true,
+        noUncheckedIndexedAccess: true,
+        exactOptionalPropertyTypes: true,
+        noImplicitOverride: true,
+        noFallthroughCasesInSwitch: true,
+        allowUnreachableCode: false,
+        allowUnusedLabels: false,
+        erasableSyntaxOnly: true,
+        allowJs: true,
+        checkJs: false,
+        skipLibCheck: true,
+        esModuleInterop: true,
+        forceConsistentCasingInFileNames: true,
+        types: ['node', 'vite/client', 'vitest/globals'],
+        paths: {
+          '@components/*': ['./src/components/*'],
+          '@ui/*': ['./src/components/ui/*'],
+          '@features/*': ['./src/components/features/*'],
+          '@lib/*': ['./src/lib/*'],
+          '@store/*': ['./src/lib/store/*'],
+          '@hooks/*': ['./src/lib/hooks/*'],
+          '@utils/*': ['./src/lib/utils/*'],
+          '@services/*': ['./src/lib/services/*'],
+          '@config/*': ['./src/config/*'],
+          '@mocks/*': ['./__mocks__/*'],
+        },
+      },
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
+      exclude: ['node_modules', 'dist', 'build', 'coverage'],
+    };
 
-    expect(compilerOptions.strict).toBe(true);
-    expect(compilerOptions.noUncheckedIndexedAccess).toBe(true);
-    expect(compilerOptions.exactOptionalPropertyTypes).toBe(true);
-    expect(compilerOptions.erasableSyntaxOnly).toBe(true);
-    expect(compilerOptions.useDefineForClassFields).toBe(true);
+    // Strict: an optional key the target leaves unset is absent, not present and undefined.
+    expect(buildTsconfig(answersFor({ target: 'react' }))).toStrictEqual(expected);
+    expect(emitTsconfig(answersFor({ target: 'react' }))).toBe(`${JSON.stringify(expected, null, 2)}\n`);
+  });
+
+  it('adds no include of its own for tailwind on a target that declares none', () => {
+    expect(buildTsconfig(answersFor({
+      target: 'react',
+      styling: 'tailwind',
+    })).include).toEqual(['**/*.ts', '**/*.tsx', '**/*.mts']);
   });
 
   it('leaves unused-locals to the unused-imports rule', () => {
@@ -73,13 +133,77 @@ describe('buildTsconfig', () => {
     expect(compilerOptions).not.toHaveProperty('erasableSyntaxOnly');
   });
 
-  it('applies the jsx delta per target', () => {
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.jsx).toBe('react-jsx');
-    expect(buildTsconfig(answersFor({ target: 'solid' })).compilerOptions.jsx).toBe('preserve');
-    expect(buildTsconfig(answersFor({ target: 'solid' })).compilerOptions.jsxImportSource)
-      .toBe('solid-js');
-    expect(buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions)
-      .not.toHaveProperty('jsx');
+  // Where each target's own types come from: the config it extends, what it adds to `include`, and its JSX mode.
+  it.each<[string, AnswerOverrides, TypesSource]>([
+    ['react', { target: 'react' }, {
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
+      jsx: 'react-jsx',
+    }],
+    ['react in framework mode', {
+      target: 'react',
+      router: 'react-router-framework',
+    }, {
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '.react-router/types/**/*'],
+      jsx: 'react-jsx',
+    }],
+    ['next', { target: 'next' }, {
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts', 'next-env.d.ts', '.next/types/**/*.ts', '.next/dev/types/**/*.ts'],
+      jsx: 'react-jsx',
+    }],
+    ['vue', { target: 'vue' }, {
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.vue'],
+      jsx: 'preserve',
+    }],
+    ['nuxt', { target: 'nuxt' }, {
+      extends: './.nuxt/tsconfig.app.json',
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.vue', '.nuxt/nuxt.d.ts'],
+      jsx: 'preserve',
+    }],
+    ['svelte', { target: 'svelte' }, {
+      extends: './.svelte-kit/tsconfig.json',
+      include: [
+        '**/*.ts', '**/*.tsx', '**/*.mts',
+        '**/*.svelte',
+        '.svelte-kit/ambient.d.ts',
+        '.svelte-kit/env.d.ts',
+        '.svelte-kit/non-ambient.d.ts',
+        '.svelte-kit/types/**/$types.d.ts',
+      ],
+    }],
+    ['solid', { target: 'solid' }, {
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
+      jsx: 'preserve',
+      jsxImportSource: 'solid-js',
+    }],
+    ['angular', { target: 'angular' }, { include: ['**/*.ts', '**/*.tsx', '**/*.mts'] }],
+    ['astro', { target: 'astro' }, {
+      extends: 'astro/tsconfigs/strict',
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '.astro/types.d.ts', '**/*.astro'],
+    }],
+    ['webextension', { target: 'webextension' }, { include: ['**/*.ts', '**/*.tsx', '**/*.mts'] }],
+    ['react-native', { target: 'react-native' }, {
+      extends: 'expo/tsconfig.base',
+      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '.expo/types/**/*.ts', 'expo-env.d.ts'],
+      jsx: 'react-jsx',
+    }],
+  ])('reads %s its own way', (_label, overrides, expected) => {
+    const {
+      extends: base,
+      include,
+      compilerOptions,
+    } = buildTsconfig(answersFor(overrides));
+
+    expect({
+      extends: base,
+      include,
+      jsx: compilerOptions.jsx,
+      jsxImportSource: compilerOptions.jsxImportSource,
+    }).toStrictEqual({
+      extends: undefined,
+      jsx: undefined,
+      jsxImportSource: undefined,
+      ...expected,
+    });
   });
 
   it('declares every key Next would otherwise inject', () => {
@@ -96,13 +220,21 @@ describe('buildTsconfig', () => {
       .toEqual(['node', 'vite/client']);
   });
 
-  it('declares vite/client only for the targets that build with vite', () => {
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.types)
-      .toContain('vite/client');
-    expect(buildTsconfig(answersFor({ target: 'next' })).compilerOptions.types)
-      .not.toContain('vite/client');
-    expect(buildTsconfig(answersFor({ target: 'angular' })).compilerOptions.types)
-      .not.toContain('vite/client');
+  // `types` is the whole allow-list once it names anything: `vite/client` only where Vite builds, and a target's
+  // own ambient types after the shared ones.
+  it.each<[TargetId, string[]]>([
+    ['react', ['node', 'vite/client', 'vitest/globals']],
+    ['next', ['node', 'vitest/globals']],
+    ['vue', ['node', 'vite/client', 'vitest/globals']],
+    ['nuxt', ['node', 'vitest/globals']],
+    ['svelte', ['node', 'vite/client', 'vitest/globals']],
+    ['solid', ['node', 'vite/client', 'vitest/globals']],
+    ['angular', ['node', 'vitest/globals']],
+    ['astro', ['node', 'vitest/globals', 'astro/client']],
+    ['webextension', ['node', 'vite/client', 'vitest/globals', 'chrome']],
+    ['react-native', ['node', 'vitest/globals']],
+  ])('declares the ambient types %s builds against', (target, types) => {
+    expect(buildTsconfig(answersFor({ target })).compilerOptions.types).toEqual(types);
   });
 
   it('allows the ts extension the shipped scripts import with, by rewrite where ngtsc drops noEmit', () => {
@@ -273,6 +405,15 @@ describe('alias coupling', () => {
     }
   });
 
+  // Expo's own two, the assets outside `src/` among them, and the hooks where Expo keeps them rather than under `lib/`.
+  it("resolves react native's hooks and Expo's aliases where its tree keeps them", () => {
+    const { paths } = buildTsconfig(answersFor({ target: 'react-native' })).compilerOptions;
+
+    expect(paths?.['@hooks/*']).toEqual(['./src/hooks/*']);
+    expect(paths?.['@/assets/*']).toEqual(['./assets/*']);
+    expect(paths?.['@/*']).toEqual(['./src/*']);
+  });
+
   // An alias naming a directory the target's repo-structure.md does not describe is a dead end.
   it("matches the extension target's own documented layout", () => {
     const { paths } = buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions;
@@ -294,22 +435,6 @@ describe('alias coupling', () => {
     expect(config.compilerOptions.paths?.['$lib']).toEqual(['./src/lib']);
     expect(config.compilerOptions.paths?.['$lib/*']).toEqual(['./src/lib/*']);
     expect(buildTsconfig(answersFor({ target: 'react' })).extends).toBeUndefined();
-  });
-});
-
-// `types` is the whole allow-list once it names anything.
-describe('ambient types', () => {
-  it("names the target's own alongside the shared ones", () => {
-    const config = buildTsconfig(answersFor({ target: 'webextension' }));
-
-    expect(config.compilerOptions.types).toContain('chrome');
-    expect(config.compilerOptions.types).toContain('node');
-    expect(config.compilerOptions.types).toContain('vite/client');
-  });
-
-  it('adds none to a target that declares none', () => {
-    expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.types)
-      .not.toContain('chrome');
   });
 });
 

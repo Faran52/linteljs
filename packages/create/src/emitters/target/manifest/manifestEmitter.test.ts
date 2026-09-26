@@ -58,14 +58,21 @@ describe('emitManifest', () => {
     expect(emitManifest(answersFor({ target: 'astro' }), 'demo-app')).toBeNull();
   });
 
+  // The permissions are the project's own security surface: a template guessing at them is how an extension over-asks.
   it('names the project and ships an empty permission surface', () => {
-    const manifest = manifestFor();
-
-    expect(manifest.manifest_version).toBe(3);
-    expect(manifest.name).toBe('demo-app');
-    // The project's own security surface. A template guessing at it is how an extension over-asks.
-    expect(manifest.permissions).toEqual([]);
-    expect(manifest.host_permissions).toEqual([]);
+    expect(manifestFor()).toStrictEqual({
+      manifest_version: 3,
+      name: 'demo-app',
+      version: '0.1.0',
+      description: 'demo-app, a browser extension.',
+      action: { default_popup: 'index.html' },
+      background: {
+        service_worker: 'src/background/index.ts',
+        type: 'module',
+      },
+      permissions: [],
+      host_permissions: [],
+    });
   });
 
   /**
@@ -125,9 +132,9 @@ describe('emitManifest', () => {
   });
 
   // The read half, whose throw is the only way a caller learns the file was not what it claimed.
-  it('refuses text that is not a manifest object', () => {
+  it.each(['[]', '{}'])('refuses %s, which is not a manifest object', (text) => {
     expect(() => {
-      return parseManifest('[]');
+      return parseManifest(text);
     }).toThrow('manifest.json does not contain a JSON object');
   });
 
@@ -151,9 +158,13 @@ describe('manifestEmitter', () => {
   it('plants one manifest, named for the project, on a project being born', () => {
     const artifacts = manifestEmitter(answersFor(), EMPTY_PROJECT, 'demo-app');
 
-    expect(artifacts.map(({ target, seed }) => {
-      return [target, seed];
-    })).toEqual([['manifest.json', true]]);
+    expect(artifacts.map(({
+      stage,
+      target,
+      seed,
+    }) => {
+      return [stage, target, seed];
+    })).toEqual([['standard', 'manifest.json', true]]);
     expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
   });
 

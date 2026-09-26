@@ -160,10 +160,10 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     options = parseCliArgs(argv);
   }
   catch (error) {
-    // `parseArgs` throws a `TypeError` and nothing else. The check is kept because it is how an `unknown` catch
-    // binding reaches `message` without a cast, and the rethrow it needs is the arm no argv can take.
+    // `parseArgs` throws a `TypeError`, and `process.cwd()` an `Error` once the directory it stood in is gone. The
+    // check is how an `unknown` catch binding reaches `message` without a cast; nothing here throws a non-Error.
     /* v8 ignore next 3 */
-    if (!(error instanceof TypeError)) {
+    if (!(error instanceof Error)) {
       throw error;
     }
 

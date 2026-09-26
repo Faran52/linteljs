@@ -59,10 +59,36 @@ describe('localBinarySpawn', () => {
     await writeFile(join(bin, 'probe'), '#!/bin/sh\necho ok\n', 'utf8');
     await chmod(join(bin, 'probe'), 0o644);
 
+    await expect(localBinarySpawn(cwd, 'probe', [])).resolves.toEqual({ failed: true });
+  });
+
+  // Output arrives in as many chunks as the binary flushes, and the report is read whole.
+  it('reads output that arrives in more than one piece as one', async () => {
+    const bin = join(cwd, 'node_modules', '.bin');
+
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'probe'), '#!/bin/sh\nprintf one\nsleep 0.2\nprintf two\n', 'utf8');
+    await chmod(join(bin, 'probe'), 0o755);
+
     await expect(localBinarySpawn(cwd, 'probe', [])).resolves.toEqual({
-      status: null,
-      stdout: '',
-      failed: true,
+      failed: false,
+      status: 0,
+      stdout: 'onetwo',
+    });
+  });
+
+  // Closed rather than inherited: a binary waiting on its input would otherwise wait on nobody.
+  it("closes the binary's input, so one reading it cannot hang the run", async () => {
+    const bin = join(cwd, 'node_modules', '.bin');
+
+    await mkdir(bin, { recursive: true });
+    await writeFile(join(bin, 'probe'), '#!/bin/sh\ncat > /dev/null\necho read\n', 'utf8');
+    await chmod(join(bin, 'probe'), 0o755);
+
+    await expect(localBinarySpawn(cwd, 'probe', [])).resolves.toEqual({
+      failed: false,
+      status: 0,
+      stdout: 'read\n',
     });
   });
 });

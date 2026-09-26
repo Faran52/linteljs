@@ -4,12 +4,18 @@ import {
   constants,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import {
+  dirname,
+  join,
+  normalize,
+  relative,
+} from 'node:path';
 import { execPath } from 'node:process';
 
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
@@ -19,7 +25,8 @@ import {
   it,
 } from 'vitest';
 
-import { MANAGED_PATH } from '@config/constants';
+import { EMPTY_PROJECT, MANAGED_PATH } from '@config/constants';
+import { type Artifact } from '@config/types';
 
 import { valuesOf } from '@utils/objectUtils';
 
@@ -38,7 +45,10 @@ import {
   shippedAssetsReader,
   TEMPLATES_ROOT,
 } from '@disk';
+import { targetCases } from '@pipeline/e2e/matrix/matrix';
+import { targetFor } from '@targets';
 
+import { buildAliases } from './always/utils/aliasUtils';
 import { buildArtifacts, seedArtifacts } from './registry';
 
 interface AnswerOverrides {
@@ -67,7 +77,7 @@ const answersFor = (overrides: AnswerOverrides): HostedAnswers => {
 
 // The empty string where the answers emit no such artifact.
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
-  const artifact = buildArtifacts(answersFor(overrides)).find((candidate) => {
+  const artifact = buildArtifacts(answersFor(overrides), EMPTY_PROJECT, 'demo-app').find((candidate) => {
     return candidate.target === target;
   });
 
@@ -79,7 +89,7 @@ describe('buildArtifacts', () => {
     const artifacts = buildArtifacts(answersFor({
       target,
       libraries: ['zod'],
-    }));
+    }), EMPTY_PROJECT, 'demo-app');
 
     await Promise.all(artifacts.flatMap((artifact) => {
       // Only a copied artifact names files on disk.
@@ -129,6 +139,15 @@ describe('buildArtifacts', () => {
       });
     });
 
+    // One spelling per destination under each answer set: a variant and its base exclude each other by `when`.
+    for (const answers of cases) {
+      const targets = seedArtifacts(answers, 'demo-app').map((artifact) => {
+        return artifact.target;
+      });
+
+      expect(targets).toEqual([...new Set(targets)]);
+    }
+
     await Promise.all([...new Set(sources)].map(async (source) => {
       await access(join(TEMPLATES_ROOT, source), constants.R_OK);
     }));
@@ -143,12 +162,242 @@ describe('buildArtifacts', () => {
       agents: valuesOf(ANSWERS.agents.values),
       libraries: ['zod'],
     });
-    const paths = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers)].map((artifact) => {
+    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const paths = artifacts.map((artifact) => {
       return artifact.target;
     });
 
     expect(paths.filter((path, index) => {
       return paths.indexOf(path) !== index;
+    })).toEqual([]);
+  });
+});
+
+/*
+ * The project the answers write, held together as one: every file it imports is one it writes, every package it
+ * imports is one it declares, every stylesheet its entry imports is there, every coverage exclusion names a file it
+ * has, and every starter asset reaches some project. Read over the legal answer sets the end-to-end suite installs,
+ * each also with MSW and without Zod, the two answers that suite always leaves at one value. A record that names a
+ * path or a package wrongly is otherwise found only by an install or a build that cannot resolve it.
+ */
+describe('the project the answers write', () => {
+  interface Project {
+    answers: HostedAnswers;
+    artifacts: Artifact[];
+    // What reaches disk: a starter suite whose subject is not written is skipped, as `artifactWriter` skips it.
+    written: Set<string>;
+    textOf: (path: string) => Promise<string>;
+  }
+
+  const SCRIPT = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/u;
+  // A static `from 'x'` or `import 'x'`, and a dynamic `import('x')`. Every starter and emitted file quotes singly.
+  const SPECIFIER = /(?:from |import ?\(?)'([^']+)'/gu;
+  // Relative paths, Node's builtins and a framework's virtual modules (`$app/`, `#imports`, `astro:`, `~/`).
+  const NOT_A_PACKAGE = /^(?:\.|\/|node:|#|~|\$|astro:|virtual:)/u;
+  // What a bundler tries after the path as written; `.js` names the `.ts` beside it under `bundler` resolution.
+  const RESOLVED = ['', '.ts', '.tsx', '.vue', '.svelte', '.astro', '/index.ts'];
+
+  const projectsFor = (target: TargetId): Project[] => {
+    return targetCases(target).flatMap(({ answers: chosen }) => {
+      return [chosen, {
+        ...chosen,
+        mocking: 'msw' as const,
+        libraries: [],
+      }];
+    }).map((chosen) => {
+      const answers = answersFor(chosen);
+      const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+      const listed = new Set(artifacts.map(({ target: path }) => {
+        return path;
+      }));
+
+      return {
+        answers,
+        artifacts,
+        written: new Set(artifacts.filter(({ requires = [] }) => {
+          return requires.every((path) => {
+            return listed.has(path);
+          });
+        }).map(({ target: path }) => {
+          return path;
+        })),
+        textOf: async (path) => {
+          const artifact = artifacts.find(({ target: candidate }) => {
+            return candidate === path;
+          });
+
+          return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+        },
+      };
+    });
+  };
+
+  const scriptsOf = async (project: Project): Promise<[string, string][]> => {
+    return await Promise.all([...project.written].filter((path) => {
+      return SCRIPT.test(path);
+    }).map(async (path): Promise<[string, string]> => {
+      return [path, await project.textOf(path)];
+    }));
+  };
+
+  const specifiersIn = (text: string): string[] => {
+    return [...text.matchAll(SPECIFIER)].map(([, specifier = '']) => {
+      return specifier;
+    });
+  };
+
+  // `tsconfig` `paths`, exact before wildcard, as TypeScript and Vite both resolve them.
+  const aliasedPath = (answers: HostedAnswers, specifier: string): string | undefined => {
+    const aliases = {
+      ...buildAliases(answers),
+      ...targetFor(answers).extraAliases,
+    };
+    const exact = aliases[specifier];
+
+    if (exact !== undefined) {
+      return normalize(exact);
+    }
+
+    const wildcard = Object.keys(aliases).find((alias) => {
+      return alias.endsWith('/*') && specifier.startsWith(alias.slice(0, -1));
+    });
+
+    return wildcard === undefined
+      ? undefined
+      : normalize((aliases[wildcard] ?? '').replace('*', specifier.slice(wildcard.length - 1)));
+  };
+
+  it.each(TARGET_IDS)('imports no file of its own that a %s project does not write', async (target) => {
+    const unresolved = new Set<string>();
+
+    for (const project of projectsFor(target)) {
+      for (const [path, text] of await scriptsOf(project)) {
+        for (const specifier of specifiersIn(text)) {
+          const base = specifier.startsWith('.')
+            ? normalize(join(dirname(path), specifier.replace(/\.js$/u, '')))
+            : aliasedPath(project.answers, specifier);
+
+          if (base !== undefined && !RESOLVED.some((extension) => {
+            return project.written.has(`${base}${extension}`);
+          })) {
+            unresolved.add(`${path} imports ${specifier}`);
+          }
+        }
+      }
+    }
+
+    expect([...unresolved]).toEqual([]);
+  });
+
+  const declaredIn = async (project: Project): Promise<Set<string>> => {
+    return new Set([...(await project.textOf('package.json')).matchAll(/^ {4}"([^"]+)": "/gmu)].map(([, name = '']) => {
+      return name;
+    }));
+  };
+
+  const packageOf = (specifier: string): string => {
+    const [scope = '', name = ''] = specifier.split('/');
+
+    return specifier.startsWith('@') ? `${scope}/${name}` : scope;
+  };
+
+  it.each(TARGET_IDS)('declares every package a %s project imports', async (target) => {
+    const undeclared = new Set<string>();
+
+    for (const project of projectsFor(target)) {
+      const declared = await declaredIn(project);
+
+      for (const [path, text] of await scriptsOf(project)) {
+        for (const specifier of specifiersIn(text)) {
+          if (!NOT_A_PACKAGE.test(specifier)
+            && aliasedPath(project.answers, specifier) === undefined
+            && !declared.has(packageOf(specifier))) {
+            undeclared.add(`${path} imports ${specifier}`);
+          }
+        }
+      }
+    }
+
+    expect([...undeclared]).toEqual([]);
+  });
+
+  // A relative import is a file the project writes; any other is a package it declares, Tailwind's own among them.
+  it.each(TARGET_IDS)('writes or declares every stylesheet the %s style entry imports', async (target) => {
+    const missing = new Set<string>();
+
+    for (const project of projectsFor(target)) {
+      const { styleEntry } = targetFor(project.answers);
+      const declared = await declaredIn(project);
+
+      for (const [, specifier = ''] of (await project.textOf(styleEntry)).matchAll(/@import "([^"]*)"/gu)) {
+        const found = specifier.startsWith('.')
+          ? project.written.has(normalize(join(dirname(styleEntry), specifier)))
+          : declared.has(packageOf(specifier));
+
+        if (!found) {
+          missing.add(`${styleEntry} imports ${specifier}`);
+        }
+      }
+    }
+
+    expect([...missing]).toEqual([]);
+  });
+
+  it.each(TARGET_IDS)('excludes from the %s coverage only files the project writes', (target) => {
+    const stale = new Set<string>();
+
+    for (const project of projectsFor(target)) {
+      for (const path of targetFor(project.answers).coverageExclude ?? []) {
+        if (!path.includes('*') && !project.written.has(path)) {
+          stale.add(path);
+        }
+      }
+    }
+
+    expect([...stale]).toEqual([]);
+  });
+
+  // A suite gated on a file no answer writes is a suite no project ever gets.
+  it.each(TARGET_IDS)('writes every %s starter suite under some answers', (target) => {
+    const projects = projectsFor(target);
+    const suites = new Set(projects.flatMap(({ artifacts }) => {
+      return artifacts.filter(({ requires }) => {
+        return requires !== undefined;
+      }).map(({ target: path }) => {
+        return path;
+      });
+    }));
+
+    expect([...suites].filter((suite) => {
+      return !projects.some(({ written }) => {
+        return written.has(suite);
+      });
+    })).toEqual([]);
+  });
+
+  // Each asset is read from a file, and every file under `starter-source/` is read by some project.
+  it('reads every starter asset some project is written from, and no other', async () => {
+    const sources = new Set(TARGET_IDS.flatMap((target) => {
+      return projectsFor(target).flatMap(({ artifacts }) => {
+        return artifacts.flatMap(({ content }) => {
+          return 'sources' in content ? content.sources : [];
+        });
+      });
+    }));
+    const assets = (await readdir(join(TEMPLATES_ROOT, 'starter-source'), {
+      withFileTypes: true,
+      recursive: true,
+    })).filter((entry) => {
+      return entry.isFile();
+    }).map((entry) => {
+      return relative(TEMPLATES_ROOT, join(entry.parentPath, entry.name));
+    });
+
+    expect([...sources].filter((source) => {
+      return source.startsWith('starter-source/') && !assets.includes(source);
+    })).toEqual([]);
+    expect(assets.filter((asset) => {
+      return !sources.has(asset);
     })).toEqual([]);
   });
 });
@@ -164,7 +413,7 @@ describe('the emitted checker against the emitted starter code', () => {
         target,
         libraries: [],
         data: 'tanstack-query',
-      })).flatMap((artifact) => {
+      }), EMPTY_PROJECT, 'demo-app').flatMap((artifact) => {
         return 'text' in artifact.content || artifact.target === CHECKER
           ? []
           : [{

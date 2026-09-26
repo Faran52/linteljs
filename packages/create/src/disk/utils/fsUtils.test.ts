@@ -20,7 +20,7 @@ import {
   allPresent,
   entryExists,
   exists,
-  isAbsence,
+  hasCode,
   isExecutableFile,
   readIfPresent,
 } from './fsUtils';
@@ -38,12 +38,14 @@ afterEach(async () => {
   });
 });
 
-describe('isAbsence', () => {
-  it('recognises only the missing-path failure', () => {
-    expect(isAbsence(Object.assign(new Error('gone'), { code: 'ENOENT' }))).toBe(true);
-    expect(isAbsence(Object.assign(new Error('denied'), { code: 'EACCES' }))).toBe(false);
-    expect(isAbsence(new Error('no code at all'))).toBe(false);
-    expect(isAbsence('not even an error')).toBe(false);
+describe('hasCode', () => {
+  it('recognises only an error carrying that code', () => {
+    expect(hasCode(Object.assign(new Error('gone'), { code: 'ENOENT' }), 'ENOENT')).toBe(true);
+    expect(hasCode(Object.assign(new Error('denied'), { code: 'EACCES' }), 'ENOENT')).toBe(false);
+    expect(hasCode(new Error('no code at all'), 'ENOENT')).toBe(false);
+    expect(hasCode('not even an error', 'ENOENT')).toBe(false);
+    // The code alone is not enough: only an `Error` is a failure Node reported.
+    expect(hasCode({ code: 'ENOENT' }, 'ENOENT')).toBe(false);
   });
 });
 

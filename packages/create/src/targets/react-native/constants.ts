@@ -30,6 +30,5 @@ export const ACCESSORS: AccessorNames = {
   directory: 'src/hooks',
   query: 'useExtendedQuery',
   mutation: 'useExtendedMutation',
-  extension: 'ts',
   testSuffix: '.test.ts',
 };

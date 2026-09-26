@@ -1,12 +1,18 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 
-export interface LocalBinaryRun {
+// The binary is there and did not run: a broken shim, or no permission to execute it. Nothing ran, so nothing printed.
+interface NotRun {
+  failed: true;
+}
+
+interface Ran {
+  failed: false;
   status: number | null;
   stdout: string;
-  // The binary is there and did not run: a broken shim, or no permission to execute it.
-  failed: boolean;
 }
+
+export type LocalBinaryRun = NotRun | Ran;
 
 /**
  * A binary the project installed into its own `node_modules`. An absent one answers `null` rather than a failure,
@@ -32,20 +38,14 @@ export const localBinarySpawn = async (cwd: string, name: string, args: string[]
     // A spawn that never started emits `error` and no `close`, so this settles rather than waiting for one. ENOENT is
     // the binary being absent, which is an answer; anything else is a binary that is there and would not run.
     child.on('error', (error) => {
-      settle('code' in error && error.code === 'ENOENT'
-        ? null
-        : {
-            status: null,
-            stdout: out.join(''),
-            failed: true,
-          });
+      settle('code' in error && error.code === 'ENOENT' ? null : { failed: true });
     });
 
     child.on('close', (status) => {
       settle({
+        failed: false,
         status,
         stdout: out.join(''),
-        failed: false,
       });
     });
   });

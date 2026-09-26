@@ -15,6 +15,7 @@ import {
   type TargetId,
 } from '@answers';
 
+import { HEAD } from './constants';
 import { emitYarnrc, yarnrcEmitter } from './yarnrcEmitter';
 
 interface AnswerOverrides {
@@ -79,9 +80,15 @@ describe('emitYarnrc', () => {
   it('discards both peer codes only for a target that declares an allowance', () => {
     const angular = emitYarnrc(answersFor({ target: 'angular' }));
 
-    expect(angular).toContain('  - code: "YN0086"\n    level: "discard"\n');
-    // The code yarn actually emits for the clash; the summary alone left it printing.
-    expect(angular).toContain('  - code: "YN0060"\n    level: "discard"\n');
+    // The code yarn actually emits for the clash, YN0060, with its YN0086 summary: the summary alone left it printing.
+    expect(angular).toContain([
+      'logFilters:',
+      '  - code: "YN0086"',
+      '    level: "discard"',
+      '  - code: "YN0060"',
+      '    level: "discard"',
+      'packageExtensions:',
+    ].join('\n'));
     expect(emitYarnrc(answersFor({}))).not.toContain('YN0086');
     expect(emitYarnrc(answersFor({}))).not.toContain('YN0060');
     // Measured without it: React Native's peers are all answered by packageExtensions, so it filters nothing.
@@ -90,6 +97,15 @@ describe('emitYarnrc', () => {
 
   // Hard peers no emitted manifest answers. Written only where the dependent is installed: yarn reports YN0068 for a
   // rule that matches nothing, so `react-native-css` rides with the tailwind answer that brings it.
+  // Every entry nests under the one key, however many packages bring one.
+  it('writes every extension under packageExtensions', () => {
+    const [, extensions = ''] = emitYarnrc(answersFor({ target: 'nuxt' })).split('packageExtensions:\n');
+
+    expect(extensions.trimEnd().split('\n').filter((line) => {
+      return !line.startsWith('  ');
+    })).toEqual([]);
+  });
+
   it('writes the peer extensions for the packages the project installs', () => {
     const native = emitYarnrc(answersFor({ target: 'react-native' }));
     const styled = emitYarnrc(answersFor({
@@ -125,7 +141,7 @@ describe('emitYarnrc', () => {
 
   // yarn refuses the install outright on a `logFilters` key with nothing under it.
   it('omits the logFilters key entirely for a target with no allowance', () => {
-    expect(emitYarnrc(answersFor({}))).not.toContain('logFilters');
+    expect(emitYarnrc(answersFor({})).startsWith(`${HEAD}packageExtensions:\n`)).toBe(true);
     expect(emitYarnrc(answersFor({ target: 'angular' }))).toContain('logFilters:\n');
   });
 

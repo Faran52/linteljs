@@ -28,6 +28,7 @@ describe('isValidProjectName', () => {
   });
 
   it('describes the rule it enforces, for the message the question shows', () => {
-    expect(PROJECT_NAME_RULE).toContain('npm package name');
+    expect(PROJECT_NAME_RULE).toBe("a valid npm package name: lowercase letters, digits, '.', '-' and '_' only, "
+      + 'starting with a letter or digit, at most 214 characters, and not a reserved npm name');
   });
 });

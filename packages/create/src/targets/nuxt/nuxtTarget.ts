@@ -28,14 +28,10 @@ import type { StarterFile, TargetRecord } from '../types';
  */
 export const nuxtTarget: TargetRecord = {
   id: 'nuxt',
-  recordModule: 'src/config/linteljs.ts',
   framework: 'nuxt',
   // No `index.html`: Nuxt renders the document, and there is no entry for one to point at.
   html: false,
-  // Nuxt owns Vite internally, so there is no `vite.config.ts` for this CLI to write.
-  vite: false,
   sfcExtension: 'vue',
-  routeUnit: 'src/pages/, whose files are the routes',
   /*
    * Declared so the dependency is installed and the question is asked, with no counter module yet: this target
    * ships the pages and not the store demo. The same recorded gap astro, webextension and angular carry on `form`.
@@ -69,11 +65,7 @@ export const nuxtTarget: TargetRecord = {
   ],
   tailwindTheme: '../styles/theme.css',
   nuxtProject: true,
-  // Owns no vite config, so nothing reads this.
-  vitePlugin: {
-    imports: [],
-    calls: [],
-  },
+  // Nuxt owns Vite internally, so there is no `vite.config.ts` for this CLI to write, and no `vitePlugin`.
   // Vitest runs outside Nuxt's own build, so the SFC transform has to be named for it.
   vitestPlugin: {
     imports: ["import vue from '@vitejs/plugin-vue';"],
@@ -96,7 +88,7 @@ export const nuxtTarget: TargetRecord = {
     dropsPaths: true,
   },
   starterFiles: [
-    ...mockFiles(),
+    ...mockFiles(false),
     ...componentStyles(COMPONENTS),
     // Solid writes the `class` spelling these take; Vue renames two of the four, so each carries its own path.
     ...componentStyleModules('solid', COMPONENTS),
@@ -134,7 +126,7 @@ export const nuxtTarget: TargetRecord = {
     },
   ],
   starterTests: [
-    ...mockTests(),
+    ...mockTests(false),
     ...accessorTests(ACCESSORS, {
       shared: 'vue',
       names: SOURCE_ACCESSORS,

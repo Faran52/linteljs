@@ -8,13 +8,7 @@ import {
   vi,
 } from 'vitest';
 
-import { STAGES } from '@config/constants';
-
-import {
-  SPINNER_FRAMES,
-  SPINNER_INTERVAL,
-  STAGE_LABELS,
-} from '../constants';
+import { SPINNER_FRAMES, SPINNER_INTERVAL } from '../constants';
 
 import {
   nextSteps,
@@ -126,9 +120,11 @@ describe('stepsPlan', () => {
     expect(stepsPlan(OPTIONS).split('\n')).toEqual([
       '',
       'Steps:',
-      ...STAGES.map((stage, index) => {
-        return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}`;
-      }),
+      '  1. lint: eslint and stylelint config',
+      '  2. package: package.json, tsconfig and the manager files',
+      '  3. standard: hooks, agent files, test setup and starter tests',
+      '  4. install',
+      '  5. fix: eslint and stylelint --fix',
     ]);
   });
 

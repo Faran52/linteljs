@@ -8,6 +8,7 @@ import {
   type Answers,
   type Data,
   DEFAULT_ANSWERS,
+  type HostedFramework,
   type Library,
   type Router,
   type Styling,
@@ -18,6 +19,7 @@ import { emitViteConfig, viteConfigEmitter } from './viteConfigEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
+  hostedFramework?: HostedFramework;
   libraries?: Library[];
   router?: Router;
   styling?: Styling;
@@ -38,11 +40,47 @@ describe('emitViteConfig', () => {
     expect(configFor({ target: 'angular' })).toBeNull();
   });
 
-  it('imports and calls the framework plugin', () => {
-    const react = configFor({ target: 'react' }) ?? '';
+  // Everything above the config, and the plugins it registers. Solid's hot reloading stays out of the test run, where
+  // it leaves one branch no suite can reach in every component.
+  it.each<[string, AnswerOverrides, string[], string]>([
+    ['react', { target: 'react' }, [
+      "import babel from '@rolldown/plugin-babel';",
+      "import react, { reactCompilerPreset } from '@vitejs/plugin-react';",
+      "import { defineConfig } from 'vite';",
+    ], '    ...(process.env.VITEST === undefined\n'
+    + '      ? [babel({ presets: [reactCompilerPreset()] }), react()]\n'
+    + '      : [react()]),'],
+    ['react in framework mode', {
+      target: 'react',
+      router: 'react-router-framework',
+    }, [
+      "import { reactRouter } from '@react-router/dev/vite';",
+      "import react from '@vitejs/plugin-react';",
+      "import { defineConfig } from 'vite';",
+    ], '    ...(process.env.VITEST === undefined ? [reactRouter()] : [react()]),'],
+    ['vue', { target: 'vue' }, [
+      "import vue from '@vitejs/plugin-vue';",
+      "import { defineConfig } from 'vite';",
+    ], '    vue(),'],
+    ['svelte', { target: 'svelte' }, [
+      "import adapter from '@sveltejs/adapter-auto';",
+      "import { sveltekit } from '@sveltejs/kit/vite';",
+      "import { defineConfig } from 'vite';",
+    ], '    sveltekit({ adapter: adapter() }),'],
+    ['solid', { target: 'solid' }, [
+      "import solid from 'vite-plugin-solid';",
+      "import { defineConfig } from 'vite';",
+    ], '    solid({ hot: process.env.VITEST === undefined }),'],
+    ['webextension', { target: 'webextension' }, [
+      "import { crx } from '@crxjs/vite-plugin';",
+      "import { defineConfig } from 'vite';",
+      "import manifest from './manifest.json' with { type: 'json' };",
+    ], '    crx({ manifest }),'],
+  ])('registers the plugins %s builds with', (_label, overrides, imports, plugins) => {
+    const config = configFor(overrides) ?? '';
 
-    expect(react).toContain("import react, { reactCompilerPreset } from '@vitejs/plugin-react';");
-    expect(react).toContain('  ? [babel({ presets: [reactCompilerPreset()] }), react()]');
+    expect(config.slice(0, config.indexOf('\nexport default')).split('\n').filter(Boolean)).toEqual(imports);
+    expect(/ {2}plugins: \[\n([\s\S]*?)\n {2}\],/u.exec(config)?.[1]).toBe(plugins);
   });
 
   /**
@@ -96,6 +134,21 @@ describe('emitViteConfig', () => {
     expect(extension).toContain('    crx({ manifest }),');
   });
 
+  // The hosted framework's own plugin, ahead of the manifest's.
+  it.each<[HostedFramework, string, string]>([
+    ['vue', "import vue from '@vitejs/plugin-vue';", 'vue()'],
+    ['svelte', "import { svelte } from '@sveltejs/vite-plugin-svelte';", 'svelte()'],
+    ['solid', "import solid from 'vite-plugin-solid';", 'solid({ hot: process.env.VITEST === undefined })'],
+  ])('builds an extension hosting %s through its framework plugin', (hostedFramework, line, call) => {
+    const config = configFor({
+      target: 'webextension',
+      hostedFramework,
+    }) ?? '';
+
+    expect(config).toContain(line);
+    expect(config).toContain(`plugins: [\n    ${call},\n    crx({ manifest }),\n  ],`);
+  });
+
   it('stacks tailwind after whatever plugin the target already had', () => {
     expect(configFor({
       target: 'webextension',
@@ -109,6 +162,12 @@ describe('emitViteConfig', () => {
       styling: 'tailwind',
     }) ?? '')
       .toContain('plugins: [\n    vue(),\n    tailwindcss(),\n  ],');
+    expect(configFor({
+      target: 'vue',
+      libraries: [],
+      styling: 'tailwind',
+    }) ?? '')
+      .toContain("import tailwindcss from '@tailwindcss/vite';");
   });
 
   it('leaves tailwind out when it was not chosen', () => {
@@ -200,12 +259,5 @@ describe('viteConfigEmitter', () => {
       ...DEFAULT_ANSWERS,
       target: 'next',
     })).toEqual([]);
-  });
-});
-
-// Hot reloading leaves one branch no test can reach in every component.
-describe('the test run', () => {
-  it('keeps solid hot reloading out of it', () => {
-    expect(configFor({ target: 'solid' })).toContain('solid({ hot: process.env.VITEST === undefined })');
   });
 });

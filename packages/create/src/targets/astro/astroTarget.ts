@@ -31,13 +31,10 @@ export const astroTarget: TargetBuilder = (answers) => {
 
   return {
     id: 'astro',
-    recordModule: 'src/config/linteljs.ts',
     hostsFramework: true,
     astro: true,
     // The html layer's parser cannot read a template's frontmatter fence.
     html: false,
-    vite: false,
-    routeUnit: 'src/pages/, whose files are the routes',
     // `.astro/` is the generated types and content cache.
     // Atoms outlive an island, which is the state problem Astro actually has.
     stores: ['nanostores'],
@@ -58,7 +55,7 @@ export const astroTarget: TargetBuilder = (answers) => {
      * way to take these back into the measurement; until then a module only a page imports sits at zero and says
      * nothing about whether the project works.
      */
-    coverageExclude: ['src/config/**', 'src/config/linteljs.ts'],
+    coverageExclude: ['src/config/**'],
     styleEntry: 'src/styles/global.css',
     starterStyles: [
       './tokens.css',
@@ -91,10 +88,6 @@ export const astroTarget: TargetBuilder = (answers) => {
       include: ['.astro/types.d.ts', '**/*.astro'],
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
-    vitePlugin: {
-      imports: [],
-      calls: [],
-    },
     // No `vite.config.ts` to merge, so the test run borrows Astro's resolved config.
     vitestFactory: {
       imports: [
@@ -112,7 +105,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     prepare: 'astro sync',
     publicDirectory: 'public',
     starterFiles: [
-      ...mockFiles(),
+      ...mockFiles(false),
       ...componentStyles(),
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling from `stylex.attrs`.
       ...componentStyleModules('solid'),
@@ -140,7 +133,7 @@ export const astroTarget: TargetBuilder = (answers) => {
      * and `/about/` as the same page, and a header comparing the strings would mark neither.
      */
     starterTests: [
-      ...mockTests(),
+      ...mockTests(false),
       {
         target: 'src/lib/utils/currentPath.test.ts',
         covers: 'src/lib/utils/currentPath.ts',

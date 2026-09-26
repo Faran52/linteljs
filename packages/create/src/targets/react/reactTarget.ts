@@ -23,7 +23,6 @@ import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 import {
   ALWAYS,
   DECLARATIVE_ROUTERS,
-  PROVIDERS,
   REACT_ACCESSORS,
   ROUTERS,
   SHARED,
@@ -49,7 +48,6 @@ const hasRouter = (answers: Answers): boolean => {
 
 const baseReactTarget: TargetRecord = {
   id: 'react',
-  recordModule: 'src/config/linteljs.ts',
   htmlEntry: 'src/main.tsx',
   starterStyles: [
     './styles/tokens.css',
@@ -72,8 +70,6 @@ const baseReactTarget: TargetRecord = {
   tailwindTheme: './styles/theme.css',
   framework: 'react',
   html: true,
-  vite: true,
-  routeUnit: 'src/pages/<kebab>/{Name}Page.tsx',
   stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   routers: ROUTERS,
   ignores: [],
@@ -257,7 +253,7 @@ const baseReactTarget: TargetRecord = {
         return answers.store !== 'redux-toolkit';
       },
     },
-    ...mockFiles(),
+    ...mockFiles(true),
     ...componentStyles(),
     ...rtkFiles(),
     // React calls it a hook, and the record says where its own live.
@@ -363,7 +359,7 @@ const baseReactTarget: TargetRecord = {
    * gates at 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
    */
   starterTests: [
-    ...mockTests(),
+    ...mockTests(true),
     ...rtkTests(),
     ...accessorTests(REACT_ACCESSORS),
     {
@@ -372,7 +368,6 @@ const baseReactTarget: TargetRecord = {
       when: (answers) => {
         return !hasRouter(answers);
       },
-      needs: PROVIDERS,
     },
     // With a router the header renders links rather than buttons and `App` takes no page, so the suite changes
     // with it. One variant for both routers: what they change about this file is the same.
@@ -383,7 +378,6 @@ const baseReactTarget: TargetRecord = {
         return hasRouter(answers) && !isFrameworkMode(answers);
       },
       variant: 'with-router',
-      needs: PROVIDERS,
     },
     // Framework mode's four, one per module it adds that is not the document.
     ...([
@@ -404,12 +398,10 @@ const baseReactTarget: TargetRecord = {
       covers: 'src/routes/home.tsx',
       when: isFrameworkMode,
       variant: 'react-router-framework',
-      needs: PROVIDERS,
     },
     {
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
-      needs: PROVIDERS,
     },
     {
       target: 'src/pages/about/AboutPage.test.tsx',
@@ -466,12 +458,10 @@ const baseReactTarget: TargetRecord = {
     {
       target: 'src/lib/store/counter.test.tsx',
       covers: 'src/lib/store/counter.ts',
-      needs: ['src/lib/providers/StoreProvider.tsx'],
     },
     {
       target: 'src/lib/apis/contact/api.test.tsx',
       covers: 'src/lib/apis/contact/api.ts',
-      needs: ['src/lib/providers/DataProvider.tsx', 'src/lib/providers/StoreProvider.tsx'],
     },
   ],
   /*
@@ -555,7 +545,6 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
     'isbot',
   ],
   devDependencies: [...PARTS.react.devDependencies, 'vite', '@react-router/dev'],
-  routeUnit: 'src/routes/, declared in src/routes.ts',
 };
 
 export const reactTarget: TargetBuilder = (answers) => {

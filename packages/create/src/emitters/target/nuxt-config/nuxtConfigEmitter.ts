@@ -40,14 +40,9 @@ export const emitNuxtConfig = (answers: Answers): string => {
   const tailwind = answers.styling === 'tailwind';
   const stylex = answers.styling === 'stylex';
 
-  /*
-   * StyleX first, which its own documentation asks for: after the framework plugin it breaks Fast Refresh.
-   * `useCSSLayers` keeps its atomic rules from outranking a hand-written one by specificity alone.
-   */
-  const vitePlugins = [
-    ...(stylex ? ['createUnplugin(stylex).vite({ useCSSLayers: true })'] : []),
-    ...(tailwind ? ['tailwindcss()'] : []),
-  ];
+  // One styling answer, so one plugin at most. `useCSSLayers` keeps StyleX's atomic rules from outranking a
+  // hand-written one by specificity alone.
+  const vitePlugin = stylex ? 'createUnplugin(stylex).vite({ useCSSLayers: true })' : 'tailwindcss()';
 
   return [
     "import { join } from 'node:path';",
@@ -81,13 +76,13 @@ export const emitNuxtConfig = (answers: Answers): string => {
      * `postcss-import` ahead of anything named in its own `postcss` key, and that reads `@import "tailwindcss"`
      * off disk and fails, where Tailwind 4 resolves that import itself.
      */
-    ...(vitePlugins.length === 0
-      ? []
-      : [
+    ...(stylex || tailwind
+      ? [
           '  vite: {',
-          `    plugins: [${vitePlugins.join(', ')}],`,
+          `    plugins: [${vitePlugin}],`,
           '  },',
-        ]),
+        ]
+      : []),
     '});',
     '',
   ].join('\n');

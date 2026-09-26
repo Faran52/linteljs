@@ -33,5 +33,8 @@ describe('ruleArtifacts', () => {
     expect(artifacts[0]?.stage).toBe('standard');
     expect(transformOf(artifacts, '.rules/repo-structure.mdc')(RULE, null))
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
+    // However many blank lines a rule leaves under its frontmatter, the body starts at its first line of text.
+    expect(transformOf(artifacts, '.rules/repo-structure.mdc')(RULE.replace('---\n\n#', '---\n\n\n#'), null))
+      .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
   });
 });

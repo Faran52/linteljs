@@ -15,23 +15,32 @@ export const nextStep = (answers: Answers): string => {
   return `next: ${MANAGER_BINARIES[answers.packageManager]} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
 };
 
-// `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed.
-const parseFixReport = (stdout: string): number => {
+// ESLint's JSON formatter answers one result per file linted.
+const isFixReport = (value: unknown): value is EslintFixResult[] => {
+  return Array.isArray(value);
+};
+
+const fixReportIn = (stdout: string): EslintFixResult[] | null => {
   try {
     const parsed: unknown = JSON.parse(stdout);
 
-    if (!Array.isArray(parsed)) {
-      return 0;
-    }
-
-    return parsed.filter((result: EslintFixResult) => {
-      return result.output !== undefined;
-    }).length;
+    return isFixReport(parsed) ? parsed : null;
   }
   catch {
     // Unparseable formatter output is not worth failing a generate over.
-    return 0;
+    return null;
   }
+};
+
+// `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed.
+const parseFixReport = (stdout: string): number => {
+  const report = fixReportIn(stdout);
+
+  return report === null
+    ? 0
+    : report.filter((result) => {
+      return result.output !== undefined;
+    }).length;
 };
 
 // Silent about its count: stylelint's JSON report names files, not which it rewrote.
@@ -49,9 +58,9 @@ export const fixPass = async (
   answers: Answers,
   onNotice?: (message: string) => void,
 ): Promise<void> => {
-  const report = onNotice ?? (() => {
-    return undefined;
-  });
+  const report = (message: string): void => {
+    onNotice?.(message);
+  };
   const result = await localBinarySpawn(cwd, 'eslint', ['.', '--fix', '--format', 'json']);
 
   if (result === null) {

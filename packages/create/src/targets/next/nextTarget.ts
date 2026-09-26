@@ -36,12 +36,9 @@ const STORES: readonly Store[] = ['zustand', 'redux-toolkit', 'tanstack-store'];
 
 export const nextTarget: TargetRecord = {
   id: 'next',
-  recordModule: 'src/config/linteljs.ts',
   framework: 'next',
   // The App Router owns the document, so there is no index.html to lint and none to write.
   html: false,
-  vite: false,
-  routeUnit: 'src/app/',
   stores: STORES,
   ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
   naming: componentNaming('app'),
@@ -84,10 +81,6 @@ export const nextTarget: TargetRecord = {
     },
   ],
   tailwindTheme: '../styles/theme.css',
-  vitePlugin: {
-    imports: [],
-    calls: [],
-  },
   tsconfig: {
     jsx: 'react-jsx',
     plugins: [{ name: 'next' }],
@@ -98,7 +91,7 @@ export const nextTarget: TargetRecord = {
   coverageExclude: ['src/app/layout.tsx'],
   publicDirectory: 'public',
   starterFiles: [
-    ...mockFiles(),
+    ...mockFiles(true),
     ...componentStyles(),
     // Next takes React's `className` spelling, which is what `stylex.props` answers with.
     ...componentStyleModules('react'),
@@ -315,7 +308,7 @@ export const nextTarget: TargetRecord = {
    * ships with. A suite whose subject is React's is React's too.
    */
   starterTests: [
-    ...mockTests(),
+    ...mockTests(true),
     ...accessorTests(ACCESSORS, {
       shared: 'react',
       names: SOURCE_ACCESSORS,
@@ -333,7 +326,6 @@ export const nextTarget: TargetRecord = {
       covers: 'src/app/page.tsx',
       when: hasStore,
       variant: 'with-store',
-      needs: ['src/lib/providers/StoreProvider.tsx'],
     },
     {
       target: 'src/app/about/page.test.tsx',
@@ -346,7 +338,6 @@ export const nextTarget: TargetRecord = {
     {
       target: 'src/app/contact/page.test.tsx',
       covers: 'src/app/contact/page.tsx',
-      needs: ['src/lib/providers/StoreProvider.tsx', 'src/lib/providers/DataProvider.tsx'],
     },
     {
       target: 'src/components/features/app-header/AppHeader.test.tsx',
@@ -380,13 +371,11 @@ export const nextTarget: TargetRecord = {
     {
       target: 'src/lib/store/counter.test.tsx',
       covers: 'src/lib/store/counter.ts',
-      needs: ['src/lib/providers/StoreProvider.tsx'],
       shared: 'react',
     },
     {
       target: 'src/lib/apis/contact/api.test.tsx',
       covers: 'src/lib/apis/contact/api.ts',
-      needs: ['src/lib/providers/DataProvider.tsx', 'src/lib/providers/StoreProvider.tsx'],
       shared: 'react',
     },
   ],

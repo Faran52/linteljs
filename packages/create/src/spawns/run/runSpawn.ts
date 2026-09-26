@@ -15,7 +15,8 @@ export const runSpawn = async (
   command: string,
   args: string[],
   cwd: string,
-  output: RunOutput = 'inherit',
+  // Inherited unless captured.
+  output?: RunOutput,
 ): Promise<void> => {
   await new Promise<void>((settle, fail) => {
     const captured: string[] = [];

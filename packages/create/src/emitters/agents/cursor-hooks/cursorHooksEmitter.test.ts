@@ -81,12 +81,30 @@ describe('mergeCursorHooks', () => {
   it.each([
     ['text that is not JSON', '{'],
     ['JSON that is no object', '[]'],
+    ['JSON that is a string', '"hooks"'],
     ['no hooks key', '{"version":1}'],
     ['hooks that are no object', '{"hooks":[]}'],
   ])('reads %s as no hooks of the project\'s own', (_label, current) => {
     expect(JSON.parse(mergeCursorHooks(current))).toEqual({
       version: 1,
       hooks: OURS,
+    });
+  });
+
+  // Only a string command can name this CLI's hooks directory, so anything else is the project's to keep.
+  it("keeps a project's hook that carries no command string", () => {
+    const current = JSON.stringify({
+      hooks: {
+        stop: [{ prompt: 'check the diff' }, { command: 42 }],
+      },
+    });
+
+    expect(JSON.parse(mergeCursorHooks(current))).toEqual({
+      version: 1,
+      hooks: {
+        stop: [{ prompt: 'check the diff' }, { command: 42 }],
+        ...OURS,
+      },
     });
   });
 
@@ -134,6 +152,7 @@ describe('cursorHooksEmitter', () => {
     const [artifact, ...rest] = cursorHooksEmitter(answersFor(['cursor']));
 
     expect(rest).toEqual([]);
+    expect(artifact?.stage).toBe('standard');
     expect(artifact?.target).toBe('.cursor/hooks.json');
     expect(artifact?.removable).toBe(true);
     expect(artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '')

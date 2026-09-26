@@ -40,6 +40,5 @@ export const ACCESSORS: AccessorNames = {
   directory: 'src/lib/services',
   query: 'extended-query',
   mutation: 'extended-mutation',
-  extension: 'ts',
   testSuffix: '.spec.ts',
 };

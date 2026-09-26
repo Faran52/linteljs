@@ -77,8 +77,9 @@ describe('referenceArtifacts', () => {
       return await shippedAssetsReader(content);
     }));
 
+    // Stripped to nothing: every rule's body opens on its heading or on the italic line that says where it ships.
     for (const text of contents) {
-      expect(text).not.toMatch(/^---\npaths:/u);
+      expect(text).toMatch(/^[#*]/u);
     }
   });
 
@@ -99,13 +100,14 @@ describe('referenceArtifacts', () => {
     ['vue', 'vue-reactivity.md'],
     ['svelte', 'svelte-reactivity.md'],
   ])('gives %s its own reactivity rule and no react-state', (target, rule) => {
-    expect(targetsOf({ target })).toContain(reference(rule));
+    expect(sourcesOf(find({ target }, reference(rule)))).toEqual([`fragments/claude-rules/${rule}`]);
     expect(targetsOf({ target })).not.toContain(reference('react-state.md'));
   });
 
   it('emits the zod rule only with zod', () => {
     expect(targetsOf({ libraries: [] })).not.toContain(reference('type-standards-zod.md'));
-    expect(targetsOf({ libraries: ['zod'] })).toContain(reference('type-standards-zod.md'));
+    expect(sourcesOf(find({ libraries: ['zod'] }, reference('type-standards-zod.md'))))
+      .toEqual(['fragments/claude-rules/type-standards-zod.md']);
   });
 
   it('drops the testing rule when there is nothing to govern', () => {

@@ -54,7 +54,6 @@ export const VERSIONS: Record<string, string> = {
   'nanostores': '^1.5.3',
   '@reduxjs/toolkit': '^2.12.0',
   'react-redux': '^9.3.0',
-  '@tanstack/angular-store': '^0.11.1',
   '@tanstack/react-store': '^0.11.1',
   '@tanstack/solid-store': '^0.11.1',
   '@tanstack/svelte-store': '^0.12.1',
@@ -299,7 +298,6 @@ export const STORE_BINDINGS: Partial<Record<Store, Partial<Record<Framework, str
     'vue': '@tanstack/vue-store',
     'svelte': '@tanstack/svelte-store',
     'solid': '@tanstack/solid-store',
-    'angular': '@tanstack/angular-store',
   },
   'nanostores': {
     react: '@nanostores/react',

@@ -19,12 +19,6 @@ export const ALWAYS: readonly string[] = [
   'src/components/ui/mark/Mark.tsx',
 ];
 
-// Both slots the entry wraps the application in, which the suites that render a page wrap it in too.
-export const PROVIDERS: string[] = [
-  'src/lib/providers/StoreProvider.tsx',
-  'src/lib/providers/DataProvider.tsx',
-];
-
 // The same bytes on every target: the tokens, the stylesheets and the page tables have no framework in them, so
 // they are written once under `starter-source/shared/` and every target takes that copy.
 export const SHARED: readonly string[] = [
@@ -42,6 +36,5 @@ export const REACT_ACCESSORS: AccessorNames = {
   directory: 'src/lib/hooks',
   query: 'useExtendedQuery',
   mutation: 'useExtendedMutation',
-  extension: 'ts',
   testSuffix: '.test.ts',
 };

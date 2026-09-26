@@ -20,10 +20,11 @@ interface SchemaProperty {
   type?: 'array' | 'boolean' | 'object' | 'string';
   const?: number | string;
   enum?: readonly string[];
-  description?: string;
+  // `| undefined`: the schema is only ever serialised, and `JSON.stringify` writes no key for an undefined value.
+  description?: string | undefined;
   items?: SchemaProperty;
   minLength?: number;
-  minItems?: number;
+  minItems?: number | undefined;
   pattern?: string;
   uniqueItems?: boolean;
   propertyNames?: SchemaPropertyNames;
@@ -32,14 +33,14 @@ interface SchemaProperty {
 
 // `browser` is the one required-kind answer a config may still omit: `configFrom` defaults it to `'chrome'` for a
 // config written before the extension axes existed, so the schema does not demand it either.
-const REQUIRED_KINDS = new Set(['boolean', 'choice', 'multi']);
+const REQUIRED_KINDS = new Set(['choice', 'multi']);
 
 const isRequired = (key: AnswerKey, record: AnswerRecord): boolean => {
   return key !== 'browser' && REQUIRED_KINDS.has(record.kind);
 };
 
 const withDescription = (record: AnswerRecord): Partial<SchemaProperty> => {
-  return record.description === undefined ? {} : { description: record.description };
+  return { description: record.description };
 };
 
 // A scalar choice: `choice` and `optionalChoice` share this shape, one required and one not.
@@ -71,7 +72,7 @@ const enumListProperty = (record: MultiRecord | OptionalMultiRecord): SchemaProp
     type: 'array',
     ...withDescription(record),
     items: { enum: valuesOf(record.values) },
-    ...(record.minimum === undefined ? {} : { minItems: record.minimum }),
+    minItems: record.minimum,
     uniqueItems: true,
   };
 };

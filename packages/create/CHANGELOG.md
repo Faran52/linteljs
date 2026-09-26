@@ -8,6 +8,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- A recorded `resolveConditions` writes the `resolver` option of `eslint.config.ts` as a block, so a long
+  `conditionNames` list no longer runs its closing brace past `max-len`. Astro's `coverageExclude` drops
+  `src/config/linteljs.ts`, which `src/config/**` already covered. A `sync` rewrites both.
 - The `create-linteljs` and `create` binaries are built by tsdown from `bin/createLinteljs.ts` into
   `dist/create-linteljs.mjs`, replacing the hand-written `bin/create-linteljs.js` shim. The package no longer
   ships a `bin/` directory.

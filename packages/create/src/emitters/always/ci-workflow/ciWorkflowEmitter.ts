@@ -11,8 +11,8 @@ import type { HostedAnswers, PackageManager } from '@answers';
 // `check` and its workflow called the old name for two days while `sync` reported it up to date.
 
 interface ManagerSetup {
-  // Before `setup-node`, for a manager the runner does not ship.
-  before: string[];
+  // The step before `setup-node`, for a manager the runner does not ship.
+  before?: string;
   // Absent where `setup-node` does not know the manager.
   cache?: string;
   install: string;
@@ -27,29 +27,26 @@ const nodeVersion = (answers: HostedAnswers): string => {
 // Third-party actions are pinned to a commit, since a tag can move; GitHub's own go by major tag.
 const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
   'pnpm': {
-    before: ['- uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10'],
+    before: '- uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10',
     cache: 'pnpm',
     install: 'pnpm install --frozen-lockfile',
   },
   // The only install that refuses to edit the lockfile.
   'npm': {
-    before: [],
     cache: 'npm',
     install: 'npm ci',
   },
   'yarn': {
-    before: [],
     cache: 'yarn',
     install: 'yarn install --immutable',
   },
   'yarn-classic': {
-    before: [],
     cache: 'yarn',
     install: 'yarn install --frozen-lockfile',
   },
   // `setup-node` fails outright on a `cache` value it does not know.
   'bun': {
-    before: ['- uses: oven-sh/setup-bun@v2'],
+    before: '- uses: oven-sh/setup-bun@v2',
     install: 'bun install --frozen-lockfile',
   },
 };
@@ -57,9 +54,7 @@ const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
 export const emitCiWorkflow = (answers: HostedAnswers): string => {
   const setup = MANAGER_SETUP[answers.packageManager];
 
-  const before = setup.before.map((step) => {
-    return `      ${step}\n\n`;
-  }).join('');
+  const before = setup.before === undefined ? '' : `      ${setup.before}\n\n`;
 
   const cache = setup.cache === undefined ? '' : `\n          cache: ${setup.cache}`;
 

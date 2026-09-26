@@ -11,58 +11,79 @@ import { type HostedAnswers } from '@answers';
 
 import { angularConfigEmitter, emitAngularConfig } from './angularConfigEmitter';
 
-// The slice of `angular.json` these cases read.
-interface ServeConfiguration {
-  buildTarget: string;
-}
-
-interface Serve {
-  configurations: Record<string, ServeConfiguration>;
-}
-
-interface Architect {
-  serve: Serve;
-}
-
-interface AngularProject {
-  architect: Architect;
-}
-
-interface AngularCli {
-  packageManager: string;
-}
-
-interface AngularJson {
-  cli: AngularCli;
-  projects: Record<string, AngularProject>;
-}
-
-const isAngularJson = (value: unknown): value is AngularJson => {
-  return typeof value === 'object' && value !== null && 'projects' in value && 'cli' in value;
-};
-
-const parsed = (text: string): AngularJson => {
-  const value: unknown = JSON.parse(text);
-
-  if (!isAngularJson(value)) {
-    throw new Error('not an angular.json');
-  }
-
-  return value;
-};
-
 describe('emitAngularConfig', () => {
-  // Every `buildTarget` names the project, which is why the file is written rather than copied.
-  it('keys the project and every build target by the project name', () => {
-    const config = parsed(emitAngularConfig('demo-app', 'pnpm'));
-
-    expect(Object.keys(config.projects)).toEqual(['demo-app']);
-    expect(config.projects['demo-app']?.architect.serve.configurations['development']?.buildTarget)
-      .toBe('demo-app:build:development');
+  /*
+   * The whole file, because every value in it is read by the Angular CLI and nothing here runs that CLI: the
+   * end-to-end suite builds, serves and tests a project with exactly this document. Every `buildTarget` names the
+   * project, which is why the file is written rather than copied.
+   */
+  it('writes the Angular CLI project file, keyed by the project name', () => {
+    expect(JSON.parse(emitAngularConfig('demo-app', 'pnpm'))).toStrictEqual({
+      $schema: './node_modules/@angular/cli/lib/config/schema.json',
+      version: 1,
+      cli: { packageManager: 'pnpm' },
+      newProjectRoot: 'projects',
+      projects: {
+        'demo-app': {
+          projectType: 'application',
+          schematics: {},
+          root: '',
+          sourceRoot: 'src',
+          prefix: 'app',
+          architect: {
+            build: {
+              builder: '@angular/build:application',
+              options: {
+                browser: 'src/main.ts',
+                tsConfig: 'tsconfig.app.json',
+                index: 'src/index.html',
+                assets: [{
+                  glob: '**/*',
+                  input: 'public',
+                }],
+                styles: ['src/styles.css'],
+              },
+              configurations: {
+                production: {
+                  budgets: [
+                    {
+                      type: 'initial',
+                      maximumWarning: '500kB',
+                      maximumError: '1MB',
+                    },
+                    {
+                      type: 'anyComponentStyle',
+                      maximumWarning: '4kB',
+                      maximumError: '8kB',
+                    },
+                  ],
+                  outputHashing: 'all',
+                },
+                development: {
+                  optimization: false,
+                  extractLicenses: false,
+                  sourceMap: true,
+                },
+              },
+              defaultConfiguration: 'production',
+            },
+            serve: {
+              builder: '@angular/build:dev-server',
+              configurations: {
+                production: { buildTarget: 'demo-app:build:production' },
+                development: { buildTarget: 'demo-app:build:development' },
+              },
+              defaultConfiguration: 'development',
+            },
+            test: { builder: '@angular/build:unit-test' },
+          },
+        },
+      },
+    });
   });
 
   it('names the package manager the project was created with', () => {
-    expect(parsed(emitAngularConfig('demo-app', 'yarn')).cli.packageManager).toBe('yarn');
+    expect(emitAngularConfig('demo-app', 'yarn')).toContain('"cli": {\n    "packageManager": "yarn"\n  }');
   });
 });
 

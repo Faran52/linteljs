@@ -1,6 +1,9 @@
+import { execFileSync } from 'node:child_process';
 import {
+  lstat,
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   readlink,
   rm,
@@ -16,6 +19,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import {
@@ -29,6 +33,16 @@ import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsCon
 
 import { linteljsConfigReader } from './linteljsConfigReader';
 
+// The real `lstat` unless a case stands in for it: the two races it guards against happen between it and `open`.
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>();
+
+  return {
+    ...actual,
+    lstat: vi.fn(actual.lstat),
+  };
+});
+
 let cwd = '';
 let external = '';
 
@@ -38,6 +52,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.mocked(lstat).mockRestore();
   await rm(cwd, {
     recursive: true,
     force: true,
@@ -131,6 +146,63 @@ describe('linteljsConfigReader', () => {
     await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
 
     await expect(linteljsConfigReader(cwd)).resolves.toHaveProperty('target', DEFAULT_ANSWERS.target);
+  });
+
+  it('closes the file it reads', async () => {
+    await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
+
+    const before = (await readdir('/dev/fd')).length;
+
+    await linteljsConfigReader(cwd);
+    await linteljsConfigReader(cwd);
+
+    expect(await readdir('/dev/fd')).toHaveLength(before);
+  });
+
+  // Opening a named pipe blocks until something writes to it, so the entry is refused before it is opened.
+  it('rejects a named pipe without opening it', async () => {
+    execFileSync('/usr/bin/mkfifo', [join(cwd, CONFIG_PATH)]);
+
+    await expect(linteljsConfigReader(cwd)).rejects.toThrow('linteljs.config.json must be a regular file');
+  });
+
+  // Only absence is "not found": a config that is there and cannot be read says why.
+  it('passes on a failure to read that is not absence', async () => {
+    vi.mocked(lstat).mockRejectedValueOnce(Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' }));
+
+    await expect(linteljsConfigReader(cwd)).rejects.toThrow('EACCES: permission denied');
+  });
+
+  /*
+   * An entry swapped between the `lstat` and the `open`: the check reads a regular file, and what is opened is not
+   * one. The descriptor is asked again, and `O_NOFOLLOW` refuses a link with the message a named one gets.
+   */
+  describe('an entry swapped after it was checked', () => {
+    const checkedAsRegular = async (): Promise<void> => {
+      const regular = await lstat(join(external, 'regular.json'));
+
+      vi.mocked(lstat).mockResolvedValue(regular);
+    };
+
+    beforeEach(async () => {
+      await writeFile(join(external, 'regular.json'), '{}', 'utf8');
+    });
+
+    it('refuses a directory it opened', async () => {
+      await mkdir(join(cwd, CONFIG_PATH));
+      await checkedAsRegular();
+
+      await expect(linteljsConfigReader(cwd)).rejects.toThrow(/^linteljs\.config\.json must be a regular file$/u);
+    });
+
+    it('refuses a symbolic link it was about to follow', async () => {
+      await symlink(join(external, 'regular.json'), join(cwd, CONFIG_PATH));
+      await checkedAsRegular();
+
+      await expect(linteljsConfigReader(cwd)).rejects.toThrow(
+        'linteljs.config.json must be a regular file; symbolic links are not allowed',
+      );
+    });
   });
 
   it('rejects a directory without a LintelJS config', async () => {

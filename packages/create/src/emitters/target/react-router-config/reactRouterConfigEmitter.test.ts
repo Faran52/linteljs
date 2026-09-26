@@ -23,7 +23,15 @@ const targetsOf = (overrides: Partial<Answers>): string[] => {
 
 describe('reactRouterConfigEmitter', () => {
   it('writes only for framework mode, which is the one answer that reads the file', () => {
-    expect(targetsOf({ router: 'react-router-framework' })).toEqual(['react-router.config.ts']);
+    expect(reactRouterConfigEmitter({
+      ...HOSTED_DEFAULTS,
+      target: 'react',
+      router: 'react-router-framework',
+    }, EMPTY_PROJECT, 'demo-app')).toEqual([{
+      stage: 'package',
+      target: 'react-router.config.ts',
+      content: { text: emitReactRouterConfig() },
+    }]);
     expect(targetsOf({ router: 'react-router' })).toEqual([]);
     expect(targetsOf({})).toEqual([]);
   });
@@ -33,7 +41,15 @@ describe('reactRouterConfigEmitter', () => {
    * glob this CLI emits reads `src/`.
    */
   it('names src as the source root, so nothing downstream learns a second one', () => {
-    expect(emitReactRouterConfig()).toContain("appDirectory: 'src'");
-    expect(emitReactRouterConfig()).toContain('ssr: true');
+    expect(emitReactRouterConfig()).toBe([
+      "import type { Config } from '@react-router/dev/config';",
+      '',
+      'export default {',
+      '  // `src`, not the default `app`: one source root, the same as every other target this CLI writes.',
+      "  appDirectory: 'src',",
+      '  ssr: true,',
+      '} satisfies Config;',
+      '',
+    ].join('\n'));
   });
 });

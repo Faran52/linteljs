@@ -4,6 +4,8 @@ import { EMPTY_PROJECT } from '@config/constants';
 
 import { type Answers, type HostedAnswers } from '@answers';
 
+import { VERSIONS } from '../package-json/constants';
+
 import { emitLinteljsRecord, linteljsRecordEmitter } from './linteljsRecordEmitter';
 
 const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
@@ -13,13 +15,72 @@ const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   };
 };
 
-describe('emitLinteljsRecord', () => {
-  it('names the project, since the starter renders it', () => {
-    expect(emitLinteljsRecord(answersFor(), 'my-app')).toContain("export const NAME = 'my-app';");
-  });
+// The pinned ranges move with every bump, so the page's versions are read off the table rather than restated.
+const recorded = (name: string): string => {
+  return (VERSIONS[name] ?? '').replace(/^[\^~]/u, '');
+};
 
-  it('carries the framework the target renders with', () => {
-    expect(emitLinteljsRecord(answersFor(), 'my-app')).toContain("name: 'react'");
+describe('emitLinteljsRecord', () => {
+  // The module whole, since the starter imports it by these names: the project, its stack, what was answered.
+  it('names the project and carries the framework the target renders with', () => {
+    expect(emitLinteljsRecord(answersFor({ packageManagerVersion: '12.4.1' }), 'my-app')).toBe(`\
+// Written once by @linteljs/create. Yours from here; the starter Version page is its only reader.
+export const NAME = 'my-app';
+
+export const STACK = [
+  {
+    name: 'linteljs',
+    version: '${recorded('@linteljs/eslint-config')}',
+  },
+  {
+    name: 'react',
+    version: '${recorded('react')}',
+  },
+  {
+    name: 'typescript',
+    version: '${recorded('typescript')}',
+  },
+  {
+    name: 'node',
+    version: '26.9.0',
+  },
+  {
+    name: 'pnpm',
+    version: '12.4.1',
+  },
+] as const;
+
+export const ANSWERS = [
+  {
+    label: 'Framework',
+    value: 'react',
+  },
+  {
+    label: 'Browser',
+    value: 'chrome',
+  },
+  {
+    label: 'Testing',
+    value: 'vitest',
+  },
+  {
+    label: 'Libraries',
+    value: 'es-toolkit',
+  },
+  {
+    label: 'Type safety',
+    value: 'strict',
+  },
+  {
+    label: 'AI agents',
+    value: 'claude-code',
+  },
+  {
+    label: 'AI plugins',
+    value: 'ponytail, context7, frontend-design',
+  },
+] as const;
+`);
   });
 
   /*
@@ -54,11 +115,11 @@ describe('emitLinteljsRecord', () => {
 });
 
 describe('linteljsRecordEmitter', () => {
-  it('writes it where the record says, for a target that owns its template', () => {
-    expect(linteljsRecordEmitter(answersFor(), EMPTY_PROJECT, 'my-app').map((artifact) => {
-      return artifact.target;
-    })).toEqual(['src/config/linteljs.ts']);
+  it('writes it where every starter reads it', () => {
+    expect(linteljsRecordEmitter(answersFor(), EMPTY_PROJECT, 'my-app')).toEqual([{
+      stage: 'standard',
+      target: 'src/config/linteljs.ts',
+      content: { text: emitLinteljsRecord(answersFor(), 'my-app') },
+    }]);
   });
-
-  // Nothing would import it: that target's starter is still the generator's own.
 });

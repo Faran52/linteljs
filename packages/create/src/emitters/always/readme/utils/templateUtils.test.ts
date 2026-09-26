@@ -36,9 +36,9 @@ describe('fillSlots', () => {
 
   it('throws naming the label and every slot left unfilled', () => {
     expect(() => {
-      return fillSlots('{{A}} {{B}}', { A: 'one' }, 'CLAUDE.md');
+      return fillSlots('{{A}} {{B}} {{C}}', { A: 'one' }, 'CLAUDE.md');
     }).toThrow(
-      'CLAUDE.md template has unfilled slots: {{B}}',
+      'CLAUDE.md template has unfilled slots: {{B}}, {{C}}',
     );
   });
 

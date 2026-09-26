@@ -68,6 +68,75 @@ describe('emitCiWorkflow', () => {
       .toContain('bun install --frozen-lockfile');
   });
 
+  // The steps whole for every manager: which the runner carries, which setup-node caches for, and how each installs.
+  it.each<[PackageManager, string]>([
+    ['npm', `    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run check
+`],
+    ['bun', `    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run check
+`],
+    ['pnpm', `    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm check
+`],
+    ['yarn', `    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: yarn
+
+      - run: yarn install --immutable
+
+      - run: yarn check
+`],
+    ['yarn-classic', `    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn run check
+`],
+  ])('writes the steps a %s project runs', (packageManager, steps) => {
+    expect(emitCiWorkflow(answersFor({ packageManager })).endsWith(steps)).toBe(true);
+  });
+
   // The runner ships neither, and setup-node caches for neither.
   it('sets the two managers up that the runner does not carry', () => {
     expect(emitCiWorkflow(answersFor({ packageManager: 'pnpm' }))).toContain('pnpm/action-setup@');

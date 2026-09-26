@@ -307,7 +307,8 @@ const askAnswer = async (
     case 'optionalMulti': {
       const offered = offeredValuesOf(record.values, target, answered);
 
-      return await askMulti(prompter, message, offered, [], false, describeFrom(record.values));
+      // Required when asked, though a config may omit it: an extension with no surface has a manifest naming nothing.
+      return await askMulti(prompter, message, offered, [], true, describeFrom(record.values));
     }
   }
 };

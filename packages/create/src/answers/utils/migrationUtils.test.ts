@@ -9,8 +9,9 @@ describe('migrateLifted', () => {
   });
 
   it('leaves a config alone when its libraries name none of the lifted values', () => {
+    // Strict: nothing lifted writes no field, rather than one set to `undefined` over what the file already had.
     expect(migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values))
-      .toEqual({ libraries: ['zod'] });
+      .toStrictEqual({ libraries: ['zod'] });
   });
 
   it('lifts the one value listed out of libraries and into its own field', () => {

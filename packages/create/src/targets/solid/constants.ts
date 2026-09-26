@@ -25,6 +25,5 @@ export const ACCESSORS: AccessorNames = {
   directory: 'src/lib/primitives',
   query: 'createExtendedQuery',
   mutation: 'createExtendedMutation',
-  extension: 'ts',
   testSuffix: '.test.ts',
 };

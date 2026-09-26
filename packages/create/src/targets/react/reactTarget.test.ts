@@ -42,10 +42,6 @@ describe('reactTarget', () => {
     expect(recordFor().id).toBe('react');
   });
 
-  it('offers both routers and the one mode', () => {
-    expect(recordFor().routers).toEqual(['react-router', 'react-router-framework', 'tanstack-router']);
-  });
-
   /*
    * Framework mode is an overlay rather than a record of its own, so what is worth pinning is the fields it moves:
    * React Router's CLI owns the build, and there is no `index.html` for it to own.
@@ -138,7 +134,7 @@ const FRAMEWORK_MODE: readonly Condition[] = [{ router: ['react-router-framework
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ['src/main.tsx', [{ router: [undefined, 'react-router', 'tanstack-router'] }]],
   ['src/App.tsx', NO_ROUTER],

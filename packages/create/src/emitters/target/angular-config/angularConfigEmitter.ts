@@ -9,8 +9,8 @@ import { emitted } from '../../utils/artifactUtils';
  * rather than copied because it is keyed by the project's name: every `buildTarget` names it, so a template with a
  * placeholder in it would be a placeholder in four places.
  *
- * `tsconfig.json`, not `tsconfig.app.json`: this CLI emits one tsconfig and the build reads that. The second one
- * existed to narrow the build away from the specs, which `files` does here instead.
+ * The build reads the starter's `tsconfig.app.json`, which extends the one tsconfig this CLI emits and narrows the
+ * build to `src/main.ts`, away from the specs.
  */
 export const emitAngularConfig = (name: string, packageManager: string): string => {
   const config = {

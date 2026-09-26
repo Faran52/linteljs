@@ -50,8 +50,8 @@ describe('the browser axis', () => {
   });
 
   it('keeps crx as the bundler for both browsers', () => {
-    expect(recordFor({ browser: 'chrome' }).vitePlugin.calls).toContain('crx({ manifest })');
-    expect(recordFor({ browser: 'firefox' }).vitePlugin.calls).toContain('crx({ manifest })');
+    expect(recordFor({ browser: 'chrome' }).vitePlugin?.calls).toContain('crx({ manifest })');
+    expect(recordFor({ browser: 'firefox' }).vitePlugin?.calls).toContain('crx({ manifest })');
   });
 
   // Equal length is the assertion: a browser contributes its ambient types and nothing else, so neither costs more
@@ -188,10 +188,8 @@ describe('the hosted framework axis', () => {
   });
 
   it('runs the framework plugin ahead of crx', () => {
-    const { calls } = recordFor({ hostedFramework: 'solid' }).vitePlugin;
-
-    expect(calls.indexOf('solid({ hot: process.env.VITEST === undefined })'))
-      .toBeLessThan(calls.indexOf('crx({ manifest })'));
+    expect(recordFor({ hostedFramework: 'solid' }).vitePlugin?.calls)
+      .toEqual(['solid({ hot: process.env.VITEST === undefined })', 'crx({ manifest })']);
   });
 
   // A vanilla scaffold installs no framework.
@@ -226,7 +224,7 @@ describe('the host slots', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(false),
   ['src/styles/theme.css@tailwind', TAILWIND],
 ];
 

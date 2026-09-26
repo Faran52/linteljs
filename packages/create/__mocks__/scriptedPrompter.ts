@@ -115,6 +115,11 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
           return Promise.resolve(CANCEL);
         }
 
+        // A real prompt will not submit a required question empty, so a script that tries answered nothing.
+        if (opts.required && value.length === 0) {
+          throw new Error(`${opts.message} needs at least one choice`);
+        }
+
         return Promise.resolve([...value]);
       },
       isCancel: (value): value is symbol => {

@@ -11,6 +11,7 @@ import {
   type Answers,
   type Data,
   DEFAULT_ANSWERS,
+  type HostedFramework,
   type Library,
   type Router,
   type Styling,
@@ -23,6 +24,7 @@ import { emitEslintConfig, eslintConfigEmitter } from './eslintConfigEmitter';
 
 interface AnswerOverrides {
   target?: TargetId;
+  hostedFramework?: HostedFramework;
   testing?: Testing;
   libraries?: Library[];
   router?: Router;
@@ -225,7 +227,28 @@ describe('emitEslintConfig', () => {
       resolveConditions: ['import', 'require', 'node', 'default'],
     });
 
-    expect(output).toContain("resolver: { conditionNames: ['import', 'require', 'node', 'default'] },");
+    expect(output).toContain("  resolver: {\n    conditionNames: ['import', 'require', 'node', 'default'],\n  },");
+  });
+
+  // 121 characters inline, one past `max-len`, so the list breaks: measured on the line it is written on.
+  it('breaks the resolver conditions onto their own lines once they would run past max-len', () => {
+    const conditions = ['1', '2', '3', '4', '5'].map((digit) => {
+      return `condition-name-${digit}`;
+    });
+    const output = emitEslintConfig({
+      ...answersFor({}),
+      resolveConditions: conditions,
+    });
+
+    expect(output).toContain([
+      '  resolver: {',
+      '    conditionNames: [',
+      ...conditions.map((condition) => {
+        return `      '${condition}',`;
+      }),
+      '    ],',
+      '  },',
+    ].join('\n'));
   });
 
   it('emits no resolver at all where none was recorded', () => {
@@ -274,56 +297,236 @@ describe('emitEslintConfig', () => {
     );
   });
 
+  // A list exactly as long as `max-len` allows stays on its line.
+  it('keeps a list that is exactly max-len long on one line', () => {
+    const line = emitEslintConfig({
+      ...answersFor({ target: 'react' }),
+      ignores: ['generated/very-long-name/**'],
+    }).split('\n').find((candidate) => {
+      return candidate.startsWith('  ignores:');
+    });
+
+    expect(line).toHaveLength(120);
+    expect(line?.endsWith("'generated/very-long-name/**'],")).toBe(true);
+  });
+
+  // A project's own ignore is text a user typed, so a quote in it is escaped rather than ending the string.
+  it('escapes a quote inside a value', () => {
+    expect(emitEslintConfig({
+      ...answersFor({}),
+      ignores: ["it's/**"],
+    })).toContain("'it\\'s/**'");
+  });
+
+  // A file type rather than a framework, so the layer is asked for beside the hosted one.
+  it('asks for the astro layer on astro alone', () => {
+    expect(emitEslintConfig(answersFor({ target: 'astro' }))).toContain('  astro: true,\n');
+    expect(emitEslintConfig(answersFor({ target: 'react' }))).not.toContain('astro');
+  });
+
   it('turns the typescript layer on for every target', () => {
     for (const target of TARGET_IDS) {
       expect(emitEslintConfig(answersFor({ target }))).toContain('typescript: true,');
     }
   });
+});
 
-  // check-file applies every matching key, so App.test.ts beside App.vue could satisfy camelCase and PascalCase both.
-  it('excludes tests, specs and declarations from the script convention', () => {
-    const vue = emitEslintConfig(answersFor({ target: 'vue' }));
+/*
+ * Every target's naming policy as its config writes it, hosted frameworks included: which file kinds take which case,
+ * where a framework's own route spelling is exempt, and which folders a router's `[slug]` and `(group)` may name.
+ * Nothing but a badly named file can tell one policy from another, and the starters are named well, so the policy is
+ * held here as written.
+ */
+describe('the naming policy', () => {
+  it.each<[string, AnswerOverrides, string]>([
+    ['react', { target: 'react' }, `  naming: {
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['next', { target: 'next' }, `  naming: {
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['vue', { target: 'vue' }, `  naming: {
+    'src/**/*.vue': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+    ['nuxt', { target: 'nuxt' }, `  naming: {
+    'src/**/*.vue': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['svelte', { target: 'svelte' }, `  naming: {
+    'src/**/*.svelte': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(routes)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['solid', { target: 'solid' }, `  naming: {
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['angular', { target: 'angular' }, `  naming: {
+    'src/**/!(*.d).ts': 'KEBAB_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+    ['astro', { target: 'astro' }, `  naming: {
+    'src/**/*.astro': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['webextension', { target: 'webextension' }, `  naming: {
+    'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(components)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+    ['react-native', { target: 'react-native' }, `  naming: {
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['astro hosting react', {
+      target: 'astro',
+      hostedFramework: 'react',
+    }, `  naming: {
+    'src/**/*.astro': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['webextension hosting react', {
+      target: 'webextension',
+      hostedFramework: 'react',
+    }, `  naming: {
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+    ['astro hosting vue', {
+      target: 'astro',
+      hostedFramework: 'vue',
+    }, `  naming: {
+    'src/**/*.astro': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+    'src/**/*.vue': '!([a-z]*[A-Z]*)',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['webextension hosting vue', {
+      target: 'webextension',
+      hostedFramework: 'vue',
+    }, `  naming: {
+    'src/**/*.vue': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+    ['astro hosting svelte', {
+      target: 'astro',
+      hostedFramework: 'svelte',
+    }, `  naming: {
+    'src/**/*.astro': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+    'src/**/*.svelte': '!([a-z]*[A-Z]*)',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['webextension hosting svelte', {
+      target: 'webextension',
+      hostedFramework: 'svelte',
+    }, `  naming: {
+    'src/**/*.svelte': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+    ['astro hosting solid', {
+      target: 'astro',
+      hostedFramework: 'solid',
+    }, `  naming: {
+    'src/**/*.astro': '!([a-z]*[A-Z]*)',
+    'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+  },
+  folderNaming: {
+    'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
+  },`],
+    ['webextension hosting solid', {
+      target: 'webextension',
+      hostedFramework: 'solid',
+    }, `  naming: {
+    'src/**/*.tsx': '!([a-z]*[A-Z]*)',
+    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
+  },
+  folderNaming: {
+    'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
+  },`],
+  ])('names files and folders the %s way', (_label, overrides, block) => {
+    const config = emitEslintConfig(answersFor(overrides));
 
-    expect(vue).toContain("'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',");
-    expect(vue).toContain("'src/**/*.d.ts':");
-  });
-
-  // `+page.server.ts` is the framework's spelling, not camelCase.
-  it('exempts a route directory the framework names, and only where there is one', () => {
-    expect(emitEslintConfig(answersFor({ target: 'next' })))
-      .toContain("'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',");
-
-    expect(emitEslintConfig(answersFor({ target: 'svelte' })))
-      .toContain("'src/!(routes)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',");
-
-    expect(emitEslintConfig(answersFor({ target: 'react' })))
-      .not.toContain("'src/!(");
+    expect(config.slice(config.indexOf('  naming: {'), config.indexOf('\n});'))).toBe(block);
   });
 });
 
 describe('folderNaming', () => {
-  it('asks for kebab-case folders on every target', () => {
-    for (const target of TARGET_IDS) {
-      expect(emitEslintConfig(answersFor({ target }))).toContain('folderNaming: {');
-    }
-  });
-
-  // `[slug]` and `(tabs)` are not kebab-case; the React family, Solid and Svelte admit them via a raw glob.
-  it('permits a router segment only where a router names one', () => {
-    const routed = ['react', 'next', 'solid', 'react-native', 'svelte'] as const;
-    const plain = ['vue', 'angular', 'webextension'] as const;
-
-    for (const target of routed) {
-      expect(emitEslintConfig(answersFor({ target }))).toContain(String.raw`|__tests__|\[*\]|`);
-    }
-    for (const target of plain) {
-      const emitted = emitEslintConfig(answersFor({ target }));
-
-      expect(emitted).toContain("'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)'");
-      expect(emitted).not.toContain(String.raw`\\[`);
-    }
-  });
-
   // `String.raw` carries a backslash verbatim, so the emitted text equals the glob the policy declared.
   it('emits the glob raw, so the file parses back to the pattern it declared', () => {
     const emitted = emitEslintConfig(answersFor({ target: 'react-native' }));
@@ -336,13 +539,40 @@ describe('folderNaming', () => {
 // Concatenated without deduplication, so a target repeating a shared entry published it twice. Astro and the
 // extension both did.
 describe('ignores', () => {
+  const ignoresOf = (answers: Answers): string[] => {
+    const list = /ignores: (\[[^\]]*\])/su.exec(emitEslintConfig(answers))?.[1] ?? '[]';
+
+    return [...list.matchAll(/'([^']+)'/gu)].map(([, entry = '']) => {
+      return entry;
+    });
+  };
+
+  // What each framework generates or owns and nothing of its own should lint: build output, caches, native shells.
+  it.each<[TargetId, string[]]>([
+    ['react', []],
+    ['next', ['.next/**', 'out/**', 'next-env.d.ts']],
+    ['vue', []],
+    ['nuxt', ['.nuxt/**', '.output/**']],
+    ['svelte', ['.svelte-kit/**', 'src/app.html']],
+    ['solid', []],
+    ['angular', ['.angular/**']],
+    ['astro', ['.astro/**']],
+    ['webextension', []],
+    ['react-native', ['.expo/**', 'android/**', 'ios/**', 'expo-env.d.ts']],
+  ])('ignores what %s generates on top of the shared entries', (target, own) => {
+    expect(ignoresOf(answersFor({ target })).slice(5)).toEqual(own);
+  });
+
+  it('ignores what React Router generates in framework mode', () => {
+    expect(ignoresOf(answersFor({
+      target: 'react',
+      router: 'react-router-framework',
+    })).slice(5)).toEqual(['.react-router/**', 'build/**']);
+  });
+
   it('never repeats an entry for any target', () => {
     const duplicated = TARGET_IDS.flatMap((target) => {
-      const emitted = emitEslintConfig(answersFor({ target }));
-      const list = /ignores: (\[[^\]]*\])/s.exec(emitted)?.[1] ?? '[]';
-      const entries = [...list.matchAll(/'([^']+)'/g)].map(([, entry]) => {
-        return entry ?? '';
-      });
+      const entries = ignoresOf(answersFor({ target }));
       const seen = entries.filter((entry, index) => {
         return entries.indexOf(entry) !== index;
       });

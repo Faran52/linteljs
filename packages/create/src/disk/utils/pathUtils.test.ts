@@ -51,6 +51,12 @@ describe('safeProjectPath', () => {
 
   it('refuses a target that climbs out of the project', async () => {
     await expect(safeProjectPath(cwd, '../x')).rejects.toThrow('must be a relative path');
+    await expect(safeProjectPath(cwd, '..')).rejects.toThrow('must be a relative path');
+  });
+
+  // The root itself is a directory, never a file to write.
+  it.each(['', '.'])('refuses %j, which names the project root', async (target) => {
+    await expect(safeProjectPath(cwd, target)).rejects.toThrow('must be a relative path');
   });
 
   // Refused rather than followed: a scaffolder leaving a link behind would otherwise write outside the project.

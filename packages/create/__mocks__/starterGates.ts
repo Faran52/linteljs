@@ -65,8 +65,12 @@ export const TAILWIND: readonly Condition[] = [{ styling: ['tailwind'] }];
 export const STYLEX: readonly Condition[] = [{ styling: ['stylex'] }];
 export const NOT_STYLEX: readonly Condition[] = [{ styling: [undefined, 'tailwind'] }];
 
-// The api edge every target shares. React Native has no dev server to serve a worker, so it writes none.
-export const mswGates = (servesAWorker = true): GateRow[] => {
+/**
+ * The api edge every target shares. React Native has no dev server to serve a worker, so it writes none; a target
+ * with no contact page has no endpoint for a form's handlers to answer, so its handlers are the bare pair whatever
+ * was answered.
+ */
+export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
   const msw: readonly Condition[] = [{ mocking: ['msw'] }];
   const bare: readonly Condition[] = [{
     mocking: ['msw'],
@@ -80,10 +84,17 @@ export const mswGates = (servesAWorker = true): GateRow[] => {
   return [
     ...servesAWorker ? [['__mocks__/msw/browser.ts', msw] as const] : [],
     ['__mocks__/msw/node.ts', msw],
-    ['__mocks__/msw/handlers.ts', bare],
-    ['__mocks__/msw/handlers.ts@with-form', withForm],
-    ['__mocks__/msw/handlers.test.ts', bare],
-    ['__mocks__/msw/handlers.test.ts@with-form', withForm],
+    ...contact
+      ? [
+          ['__mocks__/msw/handlers.ts', bare],
+          ['__mocks__/msw/handlers.ts@with-form', withForm],
+          ['__mocks__/msw/handlers.test.ts', bare],
+          ['__mocks__/msw/handlers.test.ts@with-form', withForm],
+        ] as const
+      : [
+          ['__mocks__/msw/handlers.ts', msw],
+          ['__mocks__/msw/handlers.test.ts', msw],
+        ] as const,
   ];
 };
 

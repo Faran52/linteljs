@@ -9,7 +9,7 @@ import {
   parseLinteljsConfig,
 } from '@answers';
 
-import { entryExists } from '../../utils/fsUtils';
+import { entryExists, hasCode } from '../../utils/fsUtils';
 
 // `linteljs.config.json`, or the `linteljs.config.json` a version through 1.6.0 wrote. The older name is read and
 // never written, so the first `create` or `sync` after an upgrade records the new one and `sync` clears the old.
@@ -37,8 +37,7 @@ export const linteljsConfigReader = async (cwd: string): Promise<LinteljsConfig>
     const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
 
     try {
-      // Asks the descriptor, catching a swap after the `lstat`; no test can stage the race.
-      /* v8 ignore next 3 */
+      // Asks the descriptor, catching a swap after the `lstat`.
       if (!(await file.stat()).isFile()) {
         throw new Error('linteljs.config.json must be a regular file');
       }
@@ -50,13 +49,12 @@ export const linteljsConfigReader = async (cwd: string): Promise<LinteljsConfig>
     }
   }
   catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+    if (hasCode(error, 'ENOENT')) {
       throw new Error('linteljs.config.json was not found; this is not a LintelJS-managed project');
     }
 
     // The same race, answered with the message a named link gets.
-    /* v8 ignore next 3 */
-    if (error instanceof Error && 'code' in error && error.code === 'ELOOP') {
+    if (hasCode(error, 'ELOOP')) {
       throw new Error('linteljs.config.json must be a regular file; symbolic links are not allowed');
     }
 

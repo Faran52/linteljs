@@ -50,8 +50,8 @@ describe('gitSpawn', () => {
       },
     );
 
-    expect(result.stdout).toContain('-one');
-    expect(result.stdout).toContain('+two');
+    expect(result).toHaveProperty('stdout', expect.stringContaining('-one'));
+    expect(result).toHaveProperty('stdout', expect.stringContaining('+two'));
   });
 
   it('reports a failing command through its exit status rather than throwing', () => {

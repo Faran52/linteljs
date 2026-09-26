@@ -34,6 +34,7 @@ describe('cursorArtifacts', () => {
   it('carries the adapter as an always-applied rule', () => {
     const [always] = cursorArtifacts(answersFor(['cursor']));
 
+    expect(always?.stage).toBe('standard');
     expect(always?.content).toHaveProperty('text', expect.stringContaining('alwaysApply: true'));
     expect(always?.preserve).toBe(true);
   });

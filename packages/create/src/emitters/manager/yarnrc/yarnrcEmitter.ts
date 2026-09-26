@@ -23,8 +23,9 @@ const logFiltersBlock = (codes: string[]): string => {
 export const emitYarnrc = (answers: Answers): string => {
   const target = targetFor(answers);
   const installed = [...Object.keys(buildDependencies(answers)), ...Object.keys(buildDevDependencies(answers))];
-  const blocks = [...new Set(installed.flatMap((name) => {
-    return PEER_EXTENSIONS[name] === undefined ? [] : [PEER_EXTENSIONS[name]];
+  // A package with no extension looks up `undefined`, which `join` writes as nothing.
+  const blocks = [...new Set(installed.map((name) => {
+    return PEER_EXTENSIONS[name];
   }))].join('');
 
   /**

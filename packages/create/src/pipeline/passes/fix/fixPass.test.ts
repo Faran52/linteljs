@@ -109,6 +109,22 @@ describe('fixPass', () => {
     expect(notices).toEqual([notice]);
   });
 
+  // The stand-in reports a fix only when asked exactly as a real eslint must be, for the count to exist at all.
+  it('runs eslint over the whole project, fixing, with the JSON formatter', async () => {
+    await plantEslint([
+      'const asked = process.argv.slice(2).join(" ");',
+      'console.log(asked === ". --fix --format json" ? \'[{"output":"a"}]\' : "[]");',
+    ].join('\n'));
+
+    const notices: string[] = [];
+
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+      notices.push(message);
+    });
+
+    expect(notices).toEqual(['eslint --fix: 1 file changed']);
+  });
+
   it('survives eslint output that is not parseable JSON, counting nothing fixed', async () => {
     await plantEslint('console.log("not json");\nprocess.exit(0);\n');
 

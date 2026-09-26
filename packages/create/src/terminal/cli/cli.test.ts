@@ -155,6 +155,20 @@ describe('main: what it prints and what it returns', () => {
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
+  // `process.cwd()` throws once the directory the shell stands in is deleted, which is a refusal and not a crash.
+  it('fails with one line when the directory it stands in is gone', async () => {
+    const gone = join(project, 'gone');
+
+    await mkdir(gone);
+    chdir(gone);
+    await rm(gone, { recursive: true });
+
+    const { code, errors } = await runMain(['my-app']);
+
+    expect(code).toBe(1);
+    expect(errors).toEqual([expect.stringContaining('ENOENT')]);
+  });
+
   // `mkdir demo-app && cd demo-app && create --yes` scaffolds into it under its own name.
   it('scaffolds into the directory it stands in when --yes gave no name', async () => {
     const named = join(project, 'demo-app');

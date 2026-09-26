@@ -42,16 +42,23 @@ const hooksOf = (entry: [string, unknown]): HookList => {
   })];
 };
 
-const theirHooks = (text: string | null): HookList[] => {
+// The file where it parses to an object. Text that is not JSON holds no hooks, and nor does no file, read as `null`.
+const parsedObject = (text: string | null): object | null => {
   try {
-    const parsed: unknown = JSON.parse(text ?? '{}');
-    const hooks = isJsonObject(parsed) && 'hooks' in parsed ? parsed.hooks : undefined;
+    const parsed: unknown = JSON.parse(String(text));
 
-    return isJsonObject(hooks) ? Object.entries(hooks).map(hooksOf) : [];
+    return isJsonObject(parsed) ? parsed : null;
   }
   catch {
-    return [];
+    return null;
   }
+};
+
+const theirHooks = (text: string | null): HookList[] => {
+  const parsed = parsedObject(text);
+  const hooks = parsed !== null && 'hooks' in parsed ? parsed.hooks : undefined;
+
+  return isJsonObject(hooks) ? Object.entries(hooks).map(hooksOf) : [];
 };
 
 export const mergeCursorHooks = (current: string | null): string => {

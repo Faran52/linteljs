@@ -8,7 +8,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 import {
@@ -28,6 +28,7 @@ import { exists } from '@disk';
 import {
   applySync,
   planSync,
+  type SyncEntry,
   type SyncResult,
 } from './syncRun';
 
@@ -69,12 +70,16 @@ const applyPending = async (answers: HostedAnswers): Promise<SyncResult> => {
   }));
 };
 
-const statusOf = async (answers: HostedAnswers, target: string): Promise<string | undefined> => {
+const entryOf = async (answers: HostedAnswers, target: string): Promise<SyncEntry | undefined> => {
   const { entries } = await planSync(cwd, answers);
 
   return entries.find((entry) => {
     return entry.target === target;
-  })?.status;
+  });
+};
+
+const statusOf = async (answers: HostedAnswers, target: string): Promise<string | undefined> => {
+  return (await entryOf(answers, target))?.status;
 };
 
 describe('planSync', () => {
@@ -83,18 +88,23 @@ describe('planSync', () => {
 
     expect(plan.entries.length).toBeGreaterThan(0);
     expect(plan.entries.every((entry) => {
-      return entry.status === 'missing';
+      return entry.status === 'missing' && entry.diff === '';
     })).toBe(true);
     expect(plan.pending).toEqual(plan.entries);
   });
 
-  // The recorded config is what sync plans from, so it is the project's own bytes and never a file to rewrite.
-  it('never plans the recorded config', async () => {
+  /*
+   * The recorded config is what sync plans from, so it is the project's own bytes and never a file to rewrite. The
+   * record of what linteljs owns is rewritten by every apply, so it is bookkeeping rather than a file to choose.
+   */
+  it('never plans the recorded config or its own record', async () => {
     const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
-
-    expect(entries.map(({ target }) => {
+    const targets = entries.map(({ target }) => {
       return target;
-    })).not.toContain(CONFIG_PATH);
+    });
+
+    expect(targets).not.toContain(CONFIG_PATH);
+    expect(targets).not.toContain(MANAGED_PATH);
   });
 
   it('marks a written artifact unchanged and leaves it out of pending', async () => {
@@ -106,6 +116,7 @@ describe('planSync', () => {
     });
 
     expect(entry?.status).toBe('unchanged');
+    expect(entry?.diff).toBe('');
     expect(plan.pending.some((candidate) => {
       return candidate.target === 'eslint.config.js';
     })).toBe(false);
@@ -144,6 +155,19 @@ describe('planSync', () => {
     }
   });
 
+  // Past spawnSync's one-megabyte buffer git's output is cut mid-hunk, and half a diff reads as the whole of one.
+  it('reports a changed file without a diff when the diff outgrows what git can hand back', async () => {
+    await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
+    await writeFile(join(cwd, TYPE_STANDARDS), 'local edit\n'.repeat(200_000), 'utf8');
+
+    const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries.find(({ target }) => {
+      return target === TYPE_STANDARDS;
+    });
+
+    expect(entry?.status).toBe('changed');
+    expect(entry?.diff).toBe('');
+  });
+
   it('marks a locally edited artifact changed and carries a diff of the edit', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
     await writeFile(join(cwd, 'eslint.config.js'), '// edited locally\n', 'utf8');
@@ -163,7 +187,11 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md']);
     await writeFile(join(cwd, 'CLAUDE.md'), '# our own instructions\n', 'utf8');
 
-    expect(await statusOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toBe('unchanged');
+    expect(await entryOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toEqual({
+      target: 'CLAUDE.md',
+      status: 'unchanged',
+      diff: '',
+    });
 
     await rm(join(cwd, 'CLAUDE.md'));
 
@@ -397,6 +425,23 @@ describe('applySync', () => {
     expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'))).toBe(true);
   });
 
+  // `sync` is handed no name, so a manifest it has to write from nothing takes the directory's, as `--existing` does.
+  it('names a package.json it writes from nothing after the directory', async () => {
+    await applySync(cwd, HOSTED_DEFAULTS, ['package.json']);
+
+    expect(JSON.parse(await readFile(join(cwd, 'package.json'), 'utf8'))).toHaveProperty('name', basename(cwd));
+  });
+
+  // Planned and applied are two moments: a file deleted in between is already where the apply wanted it.
+  it('does not fail on an obsolete file that vanished after it was planned', async () => {
+    await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
+    await rm(join(cwd, '.claude/settings.json'));
+
+    const { removed } = await applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);
+
+    expect(removed).toEqual(['.claude/settings.json']);
+  });
+
   it('removes nothing it was not given, even where the plan called it obsolete', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
 
@@ -416,6 +461,22 @@ describe('applySync', () => {
     // The same walk up reaches these, and they still hold the shared skill and hooks.
     expect(await exists(join(cwd, 'plugins/linteljs'))).toBe(true);
     expect(await exists(join(cwd, 'plugins'))).toBe(true);
+  });
+
+  // `retired/` is met first, from the shallow file, and only empties once the deep chain below it is gone.
+  it('drops a directory whose emptying waits on a deeper one met after it', async () => {
+    const retired = ['retired/a.md', 'retired/deep/er/b.md'];
+
+    await applyPending(HOSTED_DEFAULTS);
+    await writeFile(join(cwd, MANAGED_PATH), `${JSON.stringify({ removable: retired })}\n`, 'utf8');
+    await mkdir(join(cwd, 'retired/deep/er'), { recursive: true });
+
+    for (const target of retired) {
+      await writeFile(join(cwd, target), '# retired\n', 'utf8');
+    }
+
+    expect((await applyPending(HOSTED_DEFAULTS)).removed).toEqual(retired);
+    expect(await exists(join(cwd, 'retired'))).toBe(false);
   });
 
   it('keeps a directory a project put its own file in', async () => {

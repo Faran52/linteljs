@@ -54,7 +54,7 @@ describe('reactNativeTarget', () => {
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   // No dev server to serve a worker from, so no browser half.
-  ...mswGates(false),
+  ...mswGates(false, false),
   // The render helper every screen suite takes, so only a project with tests has one.
   ['__mocks__/renderScreen.tsx', [{ testing: ['vitest'] }]],
   // NativeWind is wired through Metro and its own type stub, and the layout imports its stylesheet.

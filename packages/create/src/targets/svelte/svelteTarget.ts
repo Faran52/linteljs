@@ -33,12 +33,9 @@ import type {
 
 export const svelteTarget: TargetRecord = {
   id: 'svelte',
-  recordModule: 'src/config/linteljs.ts',
   framework: 'svelte',
   html: true,
-  vite: true,
   sfcExtension: 'svelte',
-  routeUnit: 'src/routes/',
   // Runes cover component state; a store is for what crosses components.
   stores: ['tanstack-store'],
   /*
@@ -111,7 +108,7 @@ export const svelteTarget: TargetRecord = {
   coverageExclude: ['src/routes/+layout.svelte'],
   publicDirectory: 'static',
   starterFiles: [
-    ...mockFiles(),
+    ...mockFiles(true),
     ...componentStyles(),
     // Solid writes the `class` spelling `stylex.attrs` answers with, which is the one a Svelte template spreads.
     ...componentStyleModules('solid'),
@@ -258,11 +255,10 @@ export const svelteTarget: TargetRecord = {
    * ships with, and `covers` is what keeps a suite out of a project whose answers never wrote its subject.
    */
   starterTests: [
-    ...mockTests(),
+    ...mockTests(true),
     ...accessorTests(ACCESSORS).map((test): StarterTest => {
       return {
         ...test,
-        needs: ['__mocks__/WithExtendedQuery.svelte', '__mocks__/WithExtendedMutation.svelte'],
       };
     }),
     {
@@ -283,7 +279,6 @@ export const svelteTarget: TargetRecord = {
       covers: 'src/routes/+page.svelte',
       when: hasStore,
       variant: 'with-store',
-      needs: ['src/lib/store/counter.ts'],
     },
     {
       target: 'src/routes/about/page.test.ts',
@@ -300,7 +295,6 @@ export const svelteTarget: TargetRecord = {
     {
       target: 'src/routes/contact/page.test.ts',
       covers: 'src/routes/contact/+page.svelte',
-      needs: ['__mocks__/WithData.svelte'],
     },
     {
       target: 'src/components/ui/text-input/TextInput.test.ts',

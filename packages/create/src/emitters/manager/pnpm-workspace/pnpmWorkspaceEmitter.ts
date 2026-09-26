@@ -10,10 +10,8 @@ import {
 
 import type { Answers } from '@answers';
 
-const SUPERSEDED_KEYS = [
-  // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
-  'ignoredBuiltDependencies',
-];
+// create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
+const SUPERSEDED_KEY = 'ignoredBuiltDependencies:';
 
 // Line-based: a YAML round-trip would reformat every line the user wrote.
 export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
@@ -29,9 +27,7 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
     const isTopLevel = line !== '' && !/^[\s-]/.test(line);
 
     if (isTopLevel) {
-      dropping = SUPERSEDED_KEYS.some((key) => {
-        return line.startsWith(`${key}:`);
-      });
+      dropping = line.startsWith(SUPERSEDED_KEY);
     }
 
     if (!dropping) {

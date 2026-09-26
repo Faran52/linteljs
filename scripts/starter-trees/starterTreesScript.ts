@@ -16,6 +16,8 @@ import { targetFor } from '../../packages/create/src/targets';
 import { valuesOf } from '../../packages/create/src/utils/objectUtils';
 import { log } from '../utils/loggerUtils.ts';
 
+import { ROUTE_UNIT } from './constants.ts';
+
 // Every target's generated tree as one HTML page, read off the emitters so it is the list `create` writes.
 interface Branch {
   readonly directories: Map<string, Branch>;
@@ -154,12 +156,11 @@ const targets = valuesOf(ANSWERS.target.values);
 
 const sections = targets.map((target) => {
   const { html, count } = treeFor(target);
-  const record = targetFor(answersFor(target));
 
   return `
 <section class="target">
   <h2>${escape(target)}<span class="count">${String(count)} files</span></h2>
-  <p class="tnote">${escape(record.routeUnit)}</p>
+  <p class="tnote">${escape(ROUTE_UNIT[target])}</p>
   <div class="tree">${html}</div>
 </section>`;
 }).join('');

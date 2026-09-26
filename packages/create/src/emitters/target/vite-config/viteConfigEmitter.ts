@@ -10,13 +10,9 @@ import { sortedImports } from '../../utils/importUtils';
 
 export const emitViteConfig = (answers: Answers): string | null => {
   // Read off the record, so a host composes both plugins without this emitter knowing which.
-  const {
-    vite,
-    vitePlugin,
-    viteInputs,
-  } = targetFor(answers);
+  const { vitePlugin, viteInputs } = targetFor(answers);
 
-  if (!vite) {
+  if (vitePlugin === undefined) {
     return null;
   }
 

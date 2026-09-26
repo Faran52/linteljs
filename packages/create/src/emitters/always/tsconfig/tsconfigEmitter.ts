@@ -64,7 +64,7 @@ const typesFor = (answers: Answers): string[] => {
 
   return [
     'node',
-    ...(target.vite ? ['vite/client'] : []),
+    ...(target.vitePlugin === undefined ? [] : ['vite/client']),
     // Named, so a project that declined a suite does not typecheck against ambient `describe`.
     ...(answers.testing === 'vitest' ? ['vitest/globals'] : []),
     ...target.tsconfig.types ?? [],

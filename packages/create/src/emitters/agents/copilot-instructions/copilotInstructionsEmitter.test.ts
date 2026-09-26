@@ -45,6 +45,7 @@ describe('copilotArtifacts', () => {
   it('installs the repository-wide file once and never rewrites it', () => {
     const [instructions] = copilotArtifacts(answersFor(['copilot']));
 
+    expect(instructions?.stage).toBe('standard');
     expect(instructions?.preserve).toBe(true);
   });
 

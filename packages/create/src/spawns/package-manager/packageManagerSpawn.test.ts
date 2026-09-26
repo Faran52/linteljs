@@ -37,9 +37,7 @@ describe('packageManagerSpawn', () => {
     spawn.mockReturnValueOnce(exit(0, '12.5.1\n'));
 
     expect(packageManagerSpawn('pnpm')).toBe('12.5.1');
-    expect(spawn.mock.calls.map(([command, args]) => {
-      return [command, ...args ?? []].join(' ');
-    })).toEqual(['pnpm --version']);
+    expect(spawn.mock.calls).toEqual([['pnpm', ['--version'], { encoding: 'utf8' }]]);
   });
 
   // Not on PATH is not a failure here: the refusal, and its wording, belong to `terminal/`.

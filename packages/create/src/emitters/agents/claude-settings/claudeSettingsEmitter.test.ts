@@ -65,15 +65,15 @@ describe('emitClaudeSettings', () => {
     });
   });
 
-  it('declares the shared official marketplace once for one official plugin', () => {
-    const output = emitClaudeSettings(['context7']);
+  it.each(['context7', 'frontend-design'] as const)('declares the official marketplace for %s alone', (plugin) => {
+    const output = emitClaudeSettings([plugin]);
     const settings: unknown = JSON.parse(output);
 
     expect(settings).toEqual({
       includeCoAuthoredBy: false,
       enabledPlugins: {
         'linteljs@linteljs': true,
-        'context7@claude-plugins-official': true,
+        [`${plugin}@claude-plugins-official`]: true,
       },
       extraKnownMarketplaces: {
         'linteljs': {

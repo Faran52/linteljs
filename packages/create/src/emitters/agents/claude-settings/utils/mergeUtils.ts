@@ -22,14 +22,11 @@ const isClaudeSettings = (value: unknown): value is ClaudeSettings => {
   return isJsonObject(value);
 };
 
-// Invalid project settings read as absent, so a sync is never blocked by an editable file.
+// Invalid project settings read as absent, so a sync is never blocked by an editable file. No file reads as JSON
+// `null`, which is no settings either.
 const settingsIn = (text: string | null): ClaudeSettings => {
-  if (text === null) {
-    return {};
-  }
-
   try {
-    const value: unknown = JSON.parse(text);
+    const value: unknown = JSON.parse(String(text));
 
     return isClaudeSettings(value) ? value : {};
   }

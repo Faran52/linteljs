@@ -57,7 +57,7 @@ describe('svelteTarget', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query']),
   // The harness a contact suite mounts its form in, so only a form with tests needs it.

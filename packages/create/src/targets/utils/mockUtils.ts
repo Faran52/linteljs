@@ -14,14 +14,14 @@ export interface AccessorNames {
   readonly directory: string;
   readonly query: string;
   readonly mutation: string;
-  readonly extension: string;
   // `.spec.ts` on Angular, whose CLI names every suite that way, and `.test.ts` everywhere else.
   readonly testSuffix: string;
 }
 
 /*
  * Where a target takes another's accessors rather than writing its own: Next takes React's to the byte, and React
- * Native takes the same bytes to a different directory, which is what `source` is for.
+ * Native takes the same bytes to a different directory, which is what `source` is for. The entry names are the
+ * source's too, so one name serves both ends of the path.
  */
 export interface AccessorSource {
   readonly shared: TargetId;
@@ -30,6 +30,11 @@ export interface AccessorSource {
 
 const usesMsw = (answers: Answers): boolean => {
   return answers.mocking === 'msw';
+};
+
+// Whether a contact page is written for the handlers to answer: a form, on a target that writes the page.
+const answersContact = (contact: boolean, answers: Answers): boolean => {
+  return contact && answers.form !== undefined;
 };
 
 /**
@@ -41,9 +46,14 @@ const usesMsw = (answers: Answers): boolean => {
  * source, and being outside `src/` takes them out of the coverage include rather than needing an exemption.
  *
  * The handlers come in two spellings for one reason: the contact endpoint answers a page that exists only where a
- * form does, and a handler for a route nobody generated is a handler nobody can reach.
+ * form does, on a target that writes one, and a handler for a route nobody generated is a handler nobody can reach.
+ * `contact` is that target: the with-form handlers import the contact schemas, which only its own starter writes.
  */
-export const mockFiles = (servesAWorker = true, adapter = 'src/lib/utils/fetchExtended.ts'): StarterFile[] => {
+export const mockFiles = (
+  contact: boolean,
+  servesAWorker = true,
+  adapter = 'src/lib/utils/fetchExtended.ts',
+): StarterFile[] => {
   return [
     /*
      * Unconditional. Every project gets one place that speaks HTTP, whether or not it answered a query library or
@@ -79,23 +89,25 @@ export const mockFiles = (servesAWorker = true, adapter = 'src/lib/utils/fetchEx
     {
       target: '__mocks__/msw/handlers.ts',
       when: (answers) => {
-        return usesMsw(answers) && answers.form === undefined;
+        return usesMsw(answers) && !answersContact(contact, answers);
       },
       shared: true,
     },
-    {
-      target: '__mocks__/msw/handlers.ts',
-      when: (answers) => {
-        return usesMsw(answers) && answers.form !== undefined;
-      },
-      variant: 'with-form',
-      shared: true,
-    },
+    ...contact
+      ? [{
+        target: '__mocks__/msw/handlers.ts',
+        when: (answers) => {
+          return usesMsw(answers) && answers.form !== undefined;
+        },
+        variant: 'with-form',
+        shared: true,
+      } satisfies StarterFile]
+      : [],
   ];
 };
 
 // Each suite follows the file it covers, so the handler pair is picked the same way the handlers are.
-export const mockTests = (adapter = 'src/lib/utils/fetchExtended'): StarterTest[] => {
+export const mockTests = (contact: boolean, adapter = 'src/lib/utils/fetchExtended'): StarterTest[] => {
   return [
     {
       target: `${adapter}.test.ts`,
@@ -107,19 +119,21 @@ export const mockTests = (adapter = 'src/lib/utils/fetchExtended'): StarterTest[
       target: '__mocks__/msw/handlers.test.ts',
       covers: '__mocks__/msw/handlers.ts',
       when: (answers) => {
-        return usesMsw(answers) && answers.form === undefined;
+        return usesMsw(answers) && !answersContact(contact, answers);
       },
       shared: true,
     },
-    {
-      target: '__mocks__/msw/handlers.test.ts',
-      covers: '__mocks__/msw/handlers.ts',
-      when: (answers) => {
-        return usesMsw(answers) && answers.form !== undefined;
-      },
-      variant: 'with-form',
-      shared: true,
-    },
+    ...contact
+      ? [{
+        target: '__mocks__/msw/handlers.test.ts',
+        covers: '__mocks__/msw/handlers.ts',
+        when: (answers) => {
+          return usesMsw(answers) && answers.form !== undefined;
+        },
+        variant: 'with-form',
+        shared: true,
+      } satisfies StarterTest]
+      : [],
   ];
 };
 
@@ -127,37 +141,28 @@ const usesQueryLibrary = (answers: Answers): boolean => {
   return answers.data === 'tanstack-query';
 };
 
-const accessorPath = (names: AccessorNames, entry: string, suffix = ''): string => {
+// Where an accessor sits, less its extension: the module adds `.ts`, being a hook and never a component, and its
+// suite adds the target's own test suffix.
+const accessorStem = (names: AccessorNames, entry: string): string => {
   const kebab = entry.replaceAll(/(?<=[a-z])(?=[A-Z])/g, '-').toLowerCase();
 
-  return `${names.directory}/${kebab}/${entry}${suffix}.${names.extension}`;
-};
-
-/*
- * The two entries paired with their asset, so nothing indexes an array and no reader needs a fallback for an
- * index that cannot be out of range. Where a target writes its own, the two halves of each pair are the same.
- */
-const pairedWith = (names: AccessorNames, from?: AccessorSource): readonly (readonly [string, string])[] => {
-  return [
-    [names.query, from === undefined ? names.query : from.names.query],
-    [names.mutation, from === undefined ? names.mutation : from.names.mutation],
-  ];
+  return `${names.directory}/${kebab}/${entry}`;
 };
 
 export const accessorFiles = (
   names: AccessorNames,
   from?: AccessorSource,
 ): StarterFile[] => {
-  return pairedWith(names, from).map(([entry, sourceEntry]): StarterFile => {
+  return [names.query, names.mutation].map((entry): StarterFile => {
     return {
-      target: accessorPath(names, entry),
+      target: `${accessorStem(names, entry)}.ts`,
       when: usesQueryLibrary,
       variant: 'tanstack-query',
       ...(from === undefined
         ? {}
         : {
             shared: from.shared,
-            source: accessorPath(from.names, sourceEntry),
+            source: `${accessorStem(from.names, entry)}.ts`,
           }),
     };
   });
@@ -167,25 +172,20 @@ export const accessorTests = (
   names: AccessorNames,
   from?: AccessorSource,
 ): StarterTest[] => {
-  return pairedWith(names, from).map(([entry, sourceEntry]): StarterTest => {
-    // The suite sits beside its subject under the same directory, and takes its own extension: a hook is a `.ts`.
-    const source = accessorPath(names, entry);
-    const withoutExtension = source.slice(0, -names.extension.length - 1);
-
-    const fromPath = from === undefined ? source : accessorPath(from.names, sourceEntry);
-    const fromExtension = from === undefined ? names.extension : from.names.extension;
-    const fromWithout = fromPath.slice(0, -fromExtension.length - 1);
+  return [names.query, names.mutation].map((entry): StarterTest => {
+    // The suite sits beside its subject under the same directory.
+    const stem = accessorStem(names, entry);
 
     return {
-      target: `${withoutExtension}${names.testSuffix}`,
-      covers: source,
+      target: `${stem}${names.testSuffix}`,
+      covers: `${stem}.ts`,
       when: usesQueryLibrary,
       variant: 'tanstack-query',
       ...(from === undefined
         ? {}
         : {
             shared: from.shared,
-            source: `${fromWithout}${from.names.testSuffix}`,
+            source: `${accessorStem(from.names, entry)}${from.names.testSuffix}`,
           }),
     };
   });

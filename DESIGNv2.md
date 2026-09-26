@@ -1077,8 +1077,8 @@ them contradict Vue's record outright, and the one that looks like it does turns
 - **`tsconfig.json` is `files: []` and four project references into `.nuxt/`.** Solution style, which
   no other target uses and which `tsconfigEmitter` does not write. `tsc --noEmit` against it
   typechecks nothing, so `typecheck` cannot be Vue's `vue-tsc --noEmit` either.
-- **There is no vite config.** Nuxt owns Vite internally, so `vite: true` and the whole
-  `vitePlugin` slot have nothing to attach to.
+- **There is no vite config.** Nuxt owns Vite internally, so the record carries no
+  `vitePlugin`: there is nothing for one to attach to.
 - **`postinstall: nuxt prepare`** generates `.nuxt/` before anything can typecheck, which is the same
   shape as SvelteKit's `svelte-kit sync` and the reason that field exists.
 

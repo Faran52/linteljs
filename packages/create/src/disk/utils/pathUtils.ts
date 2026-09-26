@@ -8,7 +8,7 @@ import {
   sep,
 } from 'node:path';
 
-import { isAbsence } from './fsUtils';
+import { hasCode } from './fsUtils';
 
 // The one gate every write goes through: a target outside the project, or reached through a symbolic link a
 // scaffolder left behind, is refused rather than followed.
@@ -41,7 +41,7 @@ export const safeProjectPath = async (cwd: string, target: string): Promise<stri
       }
     }
     catch (error) {
-      if (isAbsence(error)) {
+      if (hasCode(error, 'ENOENT')) {
         break;
       }
 

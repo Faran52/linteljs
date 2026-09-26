@@ -160,6 +160,23 @@ describe('the mocking answer', () => {
     expect(allowedBuildNames(answersFor({}))).not.toContain('msw');
   });
 
+  // The directory each dev server serves as it is, which is where a browser fetches the worker from.
+  it.each<[TargetId, string]>([
+    ['react', 'public'],
+    ['next', 'public'],
+    ['vue', 'public'],
+    ['nuxt', 'public'],
+    ['svelte', 'static'],
+    ['solid', 'public'],
+    ['angular', 'public'],
+    ['astro', 'public'],
+  ])('puts the %s worker in %s', (target, directory) => {
+    expect(patchPackageJson({}, answersFor({
+      target,
+      mocking: 'msw',
+    }))).toMatchObject({ msw: { workerDirectory: [directory] } });
+  });
+
   // The served directory, which is where a browser fetches the worker from and differs per target.
   it('names the worker directory for a target that serves one, and omits the key otherwise', () => {
     expect(patchPackageJson({}, answersFor({
@@ -195,6 +212,30 @@ describe('patchPackageJson', () => {
     );
   });
 
+  // What @linteljs/eslint-config replaces, and the two create-vue installs for a config and an environment it replaced.
+  it('drops every package the standard supersedes from the tools a project declared', () => {
+    const superseded = [
+      'prettier',
+      'eslint-config-prettier',
+      'eslint-plugin-prettier',
+      '@eslint/js',
+      'globals',
+      'typescript-eslint',
+      'eslint-plugin-react-refresh',
+      'oxlint',
+      'vite-plugin-vue-devtools',
+      'jsdom',
+    ];
+    const declared = Object.fromEntries(superseded.map((name) => {
+      return [name, '^1.0.0'];
+    }));
+    const patched = patchPackageJson({ devDependencies: declared }, answersFor({}));
+
+    expect(superseded.filter((name) => {
+      return name in (patched.devDependencies ?? {});
+    })).toEqual([]);
+  });
+
   // Three declarations of one fact: the exact version corepack and pnpm switch to, the floor that was tested, and
   // the field npm and pnpm refuse the install over.
   it('sets type, and declares the recorded manager version three ways', () => {
@@ -205,8 +246,9 @@ describe('patchPackageJson', () => {
 
     expect(patched.type).toBe('module');
     expect(patched.packageManager).toBe('pnpm@12.5.1');
+    // 22.18 is the first Node that strips types by default, which the shipped `scripts/*.ts` and hooks run on.
     expect(patched.engines).toEqual({
-      node: NODE_ENGINE,
+      node: '>=22.18',
       pnpm: `>=${MANAGER_FLOORS.pnpm}`,
     });
     expect(patched.devEngines).toEqual({
@@ -239,6 +281,12 @@ describe('patchPackageJson', () => {
    * Declared rather than inherited, since nothing writes a manifest for most targets any more. Without it yarn 1
    * warns about a missing license on every install and refuses to enable workspaces.
    */
+  // Expo Router is the entry, where every other target's bundler finds its own.
+  it('names the entry only for the target whose runtime reads it', () => {
+    expect(patchPackageJson({}, answersFor({ target: 'react-native' }))).toHaveProperty('main', 'expo-router/entry');
+    expect(patchPackageJson({}, answersFor({}))).not.toHaveProperty('main');
+  });
+
   it('marks every generated project private', () => {
     expect(patchPackageJson({}, answersFor({})).private).toBe(true);
     expect(patchPackageJson({ private: false }, answersFor({})).private).toBe(true);
@@ -362,14 +410,31 @@ describe('buildDependencies', () => {
     }))).toHaveProperty('@t3-oss/env-nextjs');
   });
 
-  it('installs the two runtime-only libraries as plain dependencies', () => {
+  it('installs the three runtime libraries as plain dependencies', () => {
     const { dependencies, devDependencies } = patchPackageJson({}, answersFor({
-      libraries: ['es-toolkit', 'ts-pattern'],
+      libraries: ['es-toolkit', 'ts-pattern', 'zod'],
     }));
 
     expect(dependencies).toHaveProperty('es-toolkit');
     expect(dependencies).toHaveProperty('ts-pattern');
+    expect(dependencies).toHaveProperty('zod');
     expect(devDependencies).not.toHaveProperty('es-toolkit');
+  });
+
+  it('installs the StyleX runtime the styles call', () => {
+    expect(buildDependencies(answersFor({ styling: 'stylex' }))).toHaveProperty('@stylexjs/stylex');
+  });
+
+  // RTK Query is `@reduxjs/toolkit`, which the Redux store it requires already installs.
+  it('installs nothing for RTK Query beyond its store', () => {
+    const redux = answersFor({ store: 'redux-toolkit' });
+    const withQuery = answersFor({
+      store: 'redux-toolkit',
+      data: 'rtk-query',
+    });
+
+    expect(buildDependencies(withQuery)).toEqual(buildDependencies(redux));
+    expect(buildDevDependencies(withQuery)).toEqual(buildDevDependencies(redux));
   });
 
   // expo-router's peers, which yarn reports missing, and the Reanimated `react-native-css` requires unannounced.
@@ -469,6 +534,8 @@ describe('buildDevDependencies', () => {
   // PostCSS installed with nothing to load it.
   it.each<[TargetId, string, string]>([
     ['astro', '@tailwindcss/vite', '@tailwindcss/postcss'],
+    // Nuxt runs `postcss-import` ahead of its own PostCSS plugins, which cannot resolve `@import "tailwindcss"`.
+    ['nuxt', '@tailwindcss/vite', '@tailwindcss/postcss'],
     ['next', '@tailwindcss/postcss', '@tailwindcss/vite'],
     ['angular', '@tailwindcss/postcss', '@tailwindcss/vite'],
     ['react-native', '@tailwindcss/postcss', '@tailwindcss/vite'],
@@ -483,12 +550,23 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty(other);
   });
 
-  it.each<[TargetId, boolean]>([
-    ['angular', false],
-    ['next', false],
-    ['react', true],
-  ])('installs the html plugins for %s only where the html layer is composed: %s', (target, composed) => {
-    expect(Object.hasOwn(buildDevDependencies(answersFor({ target })), '@html-eslint/eslint-plugin')).toBe(composed);
+  it.each<[string, AnswerOverrides, boolean]>([
+    ['react', { target: 'react' }, true],
+    ['react in framework mode', {
+      target: 'react',
+      router: 'react-router-framework',
+    }, false],
+    ['next', { target: 'next' }, false],
+    ['vue', { target: 'vue' }, true],
+    ['nuxt', { target: 'nuxt' }, false],
+    ['svelte', { target: 'svelte' }, true],
+    ['solid', { target: 'solid' }, true],
+    ['angular', { target: 'angular' }, false],
+    ['astro', { target: 'astro' }, false],
+    ['webextension', { target: 'webextension' }, true],
+    ['react-native', { target: 'react-native' }, false],
+  ])('installs the html plugins for %s only where the html layer is composed: %s', (_label, overrides, composed) => {
+    expect(Object.hasOwn(buildDevDependencies(answersFor(overrides)), '@html-eslint/eslint-plugin')).toBe(composed);
   });
 
   it('installs the tanstack query lint plugin beside the query library', () => {
@@ -510,6 +588,15 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('jest-expo');
   });
 
+  // A DOM accessibility plugin has nothing to fire on in React Native; the other two React plugins still apply.
+  it('installs the react lint plugins on react native, less the accessibility one', () => {
+    const devDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
+
+    expect(devDependencies).toHaveProperty('@eslint-react/eslint-plugin');
+    expect(devDependencies).toHaveProperty('eslint-plugin-react-hooks');
+    expect(devDependencies).not.toHaveProperty('eslint-plugin-jsx-a11y-x');
+  });
+
   // The cli plugin inside react-native peers its own release exactly; any other and every manager reports the clash.
   it('declares the metro-config of react-native\'s own release, on React Native alone', () => {
     expect(buildDevDependencies(answersFor({ target: 'react-native' }))['@react-native/metro-config'])
@@ -518,6 +605,48 @@ describe('buildDevDependencies', () => {
   });
 
   // nuxt 4.5 peers rolldown outright, and its builder and devtools peer vite; only pnpm and bun install them unasked.
+  // `@astrojs/react` brings its own React plugin, and the compiler rides its Babel passthrough.
+  it('installs neither the React plugin nor its Rolldown preset for an Astro React island', () => {
+    const devDependencies = buildDevDependencies(answersFor({
+      target: 'astro',
+      hostedFramework: 'react',
+    }));
+
+    expect(devDependencies).toHaveProperty('@astrojs/react');
+    expect(devDependencies).not.toHaveProperty('@vitejs/plugin-react');
+    expect(devDependencies).not.toHaveProperty('@rolldown/plugin-babel');
+  });
+
+  /*
+   * The shared four, then what each toolchain's own tree runs on install, which pnpm otherwise refuses: Astro's and
+   * Angular's builds pull esbuild, and Vue's query layer pulls vue-demi, hosted or not.
+   */
+  it.each<[string, AnswerOverrides, string[]]>([
+    ['react', { target: 'react' }, []],
+    ['next', { target: 'next' }, []],
+    ['vue', { target: 'vue' }, ['vue-demi']],
+    ['nuxt', { target: 'nuxt' }, ['better-sqlite3', 'esbuild', 'vue-demi']],
+    ['svelte', { target: 'svelte' }, []],
+    ['solid', { target: 'solid' }, []],
+    ['angular', { target: 'angular' }, ['@parcel/watcher', 'esbuild', 'lmdb', 'msgpackr-extract']],
+    ['astro', { target: 'astro' }, ['esbuild']],
+    ['an Astro site hosting vue', {
+      target: 'astro',
+      hostedFramework: 'vue',
+    }, ['esbuild', 'vue-demi']],
+    ['webextension', { target: 'webextension' }, []],
+    ['an extension hosting vue', {
+      target: 'webextension',
+      hostedFramework: 'vue',
+    }, ['vue-demi']],
+    ['react-native', { target: 'react-native' }, ['esbuild']],
+  ])('allows the builds %s runs', (_label, overrides, own) => {
+    expect(allowedBuildNames(answersFor(overrides))).toEqual([...own, '@swc/core', 'fsevents', 'sharp', 'unrs-resolver']
+      .sort((left, right) => {
+        return left.localeCompare(right, 'en');
+      }));
+  });
+
   it('names the peers nuxt asks the project for', () => {
     const nuxt = buildDevDependencies(answersFor({ target: 'nuxt' }));
 

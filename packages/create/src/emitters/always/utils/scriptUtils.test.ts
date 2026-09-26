@@ -4,10 +4,7 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
-
 import {
-  ANSWERS,
   type Answers,
   type Data,
   DEFAULT_ANSWERS,
@@ -27,8 +24,6 @@ interface AnswerOverrides {
   data?: Data;
 }
 
-const TARGET_IDS = valuesOf(ANSWERS.target.values);
-
 const answersFor = (overrides: AnswerOverrides): Answers => {
   return {
     ...DEFAULT_ANSWERS,
@@ -37,16 +32,6 @@ const answersFor = (overrides: AnswerOverrides): Answers => {
 };
 
 describe('buildScripts', () => {
-  it('emits the target typecheck variant', () => {
-    expect(buildScripts(answersFor({ target: 'vue' }))['typecheck']).toBe('vue-tsc --noEmit');
-    // `--fail-on-warnings` is load-bearing, not decoration: Svelte reports accessibility as a compiler warning, and
-    // without the flag `svelte-check` prints it and exits 0.
-    expect(buildScripts(answersFor({ target: 'svelte' }))['typecheck']).toBe(
-      'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings',
-    );
-    expect(buildScripts(answersFor({ target: 'react' }))['typecheck']).toBe('tsc --noEmit');
-  });
-
   it('chains check through every gate the answers enable', () => {
     expect(buildScripts(answersFor({})).check).toBe(
       'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck'
@@ -66,30 +51,122 @@ describe('buildScripts', () => {
     expect(buildScripts(answersFor({ target }))['lint:types']).toBe('node scripts/checkBannedPatterns.ts src');
   });
 
+  // `lint:fix` is the step every next-step message names, so it has to be the fixing run and not the gate.
+  it('gives the linter a fix script beside its gate', () => {
+    expect(buildScripts(answersFor({}))).toMatchObject({
+      'lint': 'eslint .',
+      'lint:fix': 'eslint . --fix',
+    });
+  });
+
   // The fixing counterpart to `lint:fix`, over the same glob the gate reads; stylelint exits 2 on an empty match.
   it('gives css a fix script beside its gate', () => {
-    expect(buildScripts(answersFor({}))['lint:css:fix'])
-      .toBe('stylelint "src/**/*.css" --fix --allow-empty-input');
-    expect(buildScripts(answersFor({ target: 'vue' }))['lint:css:fix'])
-      .toBe('stylelint "src/**/*.{css,vue}" --fix --allow-empty-input');
+    expect(buildScripts(answersFor({}))).toMatchObject({
+      'lint:css': 'stylelint "src/**/*.css" --allow-empty-input',
+      'lint:css:fix': 'stylelint "src/**/*.css" --fix --allow-empty-input',
+    });
+    expect(buildScripts(answersFor({ target: 'vue' }))).toMatchObject({
+      'lint:css': 'stylelint "src/**/*.{css,vue}" --allow-empty-input',
+      'lint:css:fix': 'stylelint "src/**/*.{css,vue}" --fix --allow-empty-input',
+    });
   });
 
   /*
    * Every target declares its own now that no generator writes one, so there is no case where `build` is absent
    * and `check` chains a script that does not exist. React Native's is the one with a reason of its own: its `eas
-   * build` needs an account, so `expo export` is the local Metro bundle instead (measurements in DESIGN.md).
+   * build` needs an account, so `expo export` is the local Metro bundle instead (measurements in DESIGN.md). The
+   * rest are each toolchain's own commands, which only a real project can run.
    */
-  it('writes the build script every record carries', () => {
-    for (const target of TARGET_IDS) {
-      expect([target, buildScripts(answersFor({ target }))['build']]).not.toEqual([target, undefined]);
-    }
+  it.each<[TargetId, Record<string, string>]>([
+    ['react', {
+      typecheck: 'tsc --noEmit',
+      build: 'vite build',
+      dev: 'vite',
+      preview: 'vite preview',
+      prepare: 'husky',
+    }],
+    ['next', {
+      typecheck: 'next typegen && tsc --noEmit',
+      build: 'next build',
+      dev: 'next dev',
+      start: 'next start',
+      prepare: 'husky',
+    }],
+    ['vue', {
+      typecheck: 'vue-tsc --noEmit',
+      build: 'vite build',
+      dev: 'vite',
+      preview: 'vite preview',
+      prepare: 'husky',
+    }],
+    ['nuxt', {
+      typecheck: 'nuxt typecheck',
+      build: 'nuxt build',
+      dev: 'nuxt dev',
+      preview: 'nuxt preview',
+      generate: 'nuxt generate',
+      prepare: 'nuxt prepare && husky',
+    }],
+    ['svelte', {
+      // `--fail-on-warnings` is load-bearing: Svelte reports accessibility as a compiler warning, and without the
+      // flag `svelte-check` prints it and exits 0.
+      typecheck: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings',
+      build: 'vite build',
+      dev: 'vite dev',
+      preview: 'vite preview',
+      prepare: 'svelte-kit sync && husky',
+    }],
+    ['solid', {
+      typecheck: 'tsc --noEmit',
+      build: 'vite build',
+      dev: 'vite',
+      preview: 'vite preview',
+      prepare: 'husky',
+    }],
+    ['angular', {
+      typecheck: 'tsc --noEmit',
+      build: 'ng build',
+      dev: 'ng serve',
+      prepare: 'husky',
+    }],
+    ['astro', {
+      typecheck: 'astro sync && astro check',
+      build: 'astro build',
+      prepare: 'astro sync && husky',
+    }],
+    ['webextension', {
+      typecheck: 'tsc --noEmit',
+      build: 'vite build',
+      dev: 'vite',
+      preview: 'vite preview',
+      prepare: 'husky',
+    }],
+    ['react-native', {
+      typecheck: 'tsc --noEmit',
+      build: 'expo export',
+      start: 'expo start',
+      android: 'expo start --android',
+      ios: 'expo start --ios',
+      web: 'expo start --web',
+      prepare: 'husky',
+    }],
+  ])('writes the scripts %s runs its own toolchain with', (target, own) => {
+    expect(buildScripts(answersFor({ target }))).toMatchObject(own);
+  });
 
-    expect(buildScripts(answersFor({ target: 'react-native' }))['build'])
-      .toBe('expo export');
-    expect(buildScripts(answersFor({ target: 'react' }))['build']).toBe('vite build');
-    expect(buildScripts(answersFor({ target: 'svelte' }))['dev']).toBe('vite dev');
-    expect(buildScripts(answersFor({ target: 'next' }))['build']).toBe('next build');
-    expect(buildScripts(answersFor({ target: 'angular' }))['build']).toBe('ng build');
+  // Framework mode hands the build, the dev server and the type generation to React Router's own CLI.
+  it('writes the scripts React Router runs in framework mode', () => {
+    expect(buildScripts({
+      ...answersFor({ target: 'react' }),
+      router: 'react-router-framework',
+    })).toMatchObject({
+      typecheck: 'react-router typegen && tsc --noEmit',
+      build: 'react-router build',
+      dev: 'react-router dev',
+      start: 'react-router-serve ./build/server/index.js',
+      preview: 'react-router-serve ./build/server/index.js',
+      prepare: 'react-router typegen && husky',
+    });
   });
 
   // Naming vitest in a project with no suite is a `check` that fails on command-not-found.

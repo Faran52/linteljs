@@ -51,10 +51,10 @@ const quoted = (values: string[]): string => {
   }).join(', ');
 };
 
-// One entry per line: `max-len` has no fixer.
-const excludeList = (exclude: string[]): string => {
+// One entry per line: `max-len` has no fixer. Two levels below the block, which the merged config nests one deeper.
+const excludeList = (exclude: string[], indent: string): string => {
   return exclude.map((value) => {
-    return `\n        '${value}',`;
+    return `\n${indent}    '${value}',`;
   }).join('');
 };
 
@@ -62,7 +62,7 @@ const coverageBlock = (include: string, exclude: string[], indent: string): stri
   return `${indent}coverage: {
 ${indent}  provider: 'v8',
 ${indent}  include: ['${include}'],
-${indent}  exclude: [${excludeList(exclude)}
+${indent}  exclude: [${excludeList(exclude, indent)}
 ${indent}  ],
 ${indent}  thresholds: {
 ${indent}    lines: 100,
@@ -128,7 +128,10 @@ import { defineConfig } from 'vitest/config';
 const platform = (name: string, extensions: string[], include: string[]) => {
   return {
     plugins: [react(), reactNative()],
-    resolve: { tsconfigPaths: true, extensions },
+    resolve: {
+      tsconfigPaths: true,
+      extensions,
+    },
     test: {
       name,
       include,
@@ -220,7 +223,7 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
     return platformProjects(target.testPlatforms, include, exclude, setup);
   }
 
-  if (target.vite) {
+  if (target.vitePlugin !== undefined) {
     return mergedConfig(testBlock(include, exclude, setup, '    ', target.testPool), target.testConditions);
   }
 

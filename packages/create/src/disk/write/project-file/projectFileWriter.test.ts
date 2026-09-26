@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   readlink,
   rm,
@@ -36,6 +37,17 @@ afterEach(async () => {
 });
 
 describe('projectFileWriter', () => {
+  // A descriptor left open lingers until garbage collection, and a run writes dozens of files.
+  it('closes every file it opens', async () => {
+    const before = (await readdir('/dev/fd')).length;
+
+    for (const text of ['one\n', 'two\n', 'three\n']) {
+      await projectFileWriter(cwd, 'file.txt', text);
+    }
+
+    expect(await readdir('/dev/fd')).toHaveLength(before);
+  });
+
   it('creates parent directories and overwrites a regular file', async () => {
     await projectFileWriter(cwd, 'nested/file.txt', 'first\n');
     await projectFileWriter(cwd, 'nested/file.txt', 'second\n');

@@ -34,15 +34,12 @@ const isTailwind = (answers: Answers): boolean => {
 // `eslint-config-expo` bundles plugins that collide with `base()`.
 export const reactNativeTarget: TargetRecord = {
   id: 'react-native',
-  recordModule: 'src/config/linteljs.ts',
   expoProject: true,
   // expo-router owns the entry: the routes are `src/app/`, so there is no root `App.tsx` for Expo's default to find.
   packageMain: 'expo-router/entry',
   framework: 'react-native',
   // No document for the html layer; the template does ship CSS, so `lint:css` has a real glob.
   html: false,
-  vite: false,
-  routeUnit: 'src/app/',
   stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
   ignores: [
     '.expo/**',
@@ -75,10 +72,6 @@ export const reactNativeTarget: TargetRecord = {
     // project it checks; named here, there is nothing for it to write.
     tsconfigInclude: ['nativewind-env.d.ts'],
   },
-  vitePlugin: {
-    imports: [],
-    calls: [],
-  },
   tsconfig: {
     jsx: 'react-jsx',
     extends: 'expo/tsconfig.base',
@@ -106,7 +99,7 @@ export const reactNativeTarget: TargetRecord = {
   coverageExclude: ['src/app/_layout.tsx', 'src/config/routes.ts'],
   starterFiles: [
     // No dev server, so no browser worker: the handlers reach the test run alone.
-    ...mockFiles(false),
+    ...mockFiles(false, false),
     ...accessorFiles(ACCESSORS, {
       shared: 'react',
       names: SOURCE_ACCESSORS,
@@ -159,7 +152,7 @@ export const reactNativeTarget: TargetRecord = {
    * `expo export` died on `expect is not defined` when a suite sat there.
    */
   starterTests: [
-    ...mockTests(),
+    ...mockTests(false),
     /*
      * Its own suites, where the hooks themselves are React's. Those suites import `@testing-library/react`, and
      * this target renders through a native test renderer with no DOM behind it.

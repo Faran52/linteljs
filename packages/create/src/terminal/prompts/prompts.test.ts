@@ -18,7 +18,7 @@ import {
 
 import { DEFAULT_ANSWERS } from '@answers';
 
-import { NOTHING_ANSWERED_MESSAGE, RUN_CANCELLED_MESSAGE } from './constants';
+import { NOTHING_ANSWERED_MESSAGE } from './constants';
 import {
   ask,
   type Asked,
@@ -110,6 +110,13 @@ describe('ask', () => {
     expect(result.answers.surfaces).toEqual(['devtools-panel']);
   });
 
+  it('will not take the surfaces question left untouched, which ticks none', async () => {
+    await expect(askWith([
+      'demo-app', 'webextension', 'firefox', undefined, 'solid',
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+    ])).rejects.toThrow('Surfaces needs at least one choice');
+  });
+
   it('asks neither axis on a target that hosts neither', async () => {
     const { recorded } = await askWith([
       'demo-app', 'react', undefined, undefined, undefined,
@@ -153,7 +160,7 @@ describe('ask', () => {
     const asking = ask(recorded.prompter);
 
     await expect(asking).rejects.toBeInstanceOf(RunCancelled);
-    await expect(asking).rejects.toThrow(RUN_CANCELLED_MESSAGE);
+    await expect(asking).rejects.toThrow(new Error('Cancelled: nothing was written.'));
   });
 
   it('uses every default when each prompt is left blank', async () => {
@@ -288,7 +295,7 @@ describe('the store question', () => {
   // The extension is the one target with no stores: MV3 state belongs in `chrome.storage`.
   it('is not asked on a target without a store slot', async () => {
     const { result, recorded } = await askWith([
-      'demo-app', 'webextension', undefined, undefined, undefined, undefined, undefined, undefined,
+      'demo-app', 'webextension', undefined, ['popup'], undefined, undefined, undefined, undefined,
       undefined, undefined, undefined, undefined, undefined, undefined]);
 
     expect(result.answers.store).toBeUndefined();

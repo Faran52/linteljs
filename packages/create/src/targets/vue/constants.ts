@@ -31,7 +31,6 @@ export const ACCESSORS: AccessorNames = {
   directory: 'src/lib/composables',
   query: 'useExtendedQuery',
   mutation: 'useExtendedMutation',
-  extension: 'ts',
   testSuffix: '.test.ts',
 };
 

@@ -63,7 +63,14 @@ describe('mergeChecker', () => {
     ].join('\n');
     const current = withBlocks(skipped, 'const PROJECT_BANNED: Banned[] = [];');
 
-    expect(mergeChecker(SHIPPED, current)).toContain(skipped);
+    // Whole, so the block is lifted to its bracket and not a line past it.
+    expect(mergeChecker(SHIPPED, current)).toBe(current);
+  });
+
+  it('finds a block however near the top of the file it opens', () => {
+    const current = "\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];\n";
+
+    expect(mergeChecker(SHIPPED, current)).toContain("const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
   });
 
   // `String.replace` reads `$&` and `$'` in a string replacement as the match and the text after it.
@@ -80,8 +87,9 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).toBe(SHIPPED);
   });
 
+  // A `null` in the shipped text, as the real checker has, is not a block to replace.
   it('leaves the project block behind when the shipped file no longer declares it', () => {
-    const shipped = 'const BASE_SKIPPED = [];\n\nexport const run = () => {};';
+    const shipped = 'const BASE_SKIPPED = [];\n\nexport const run = () => null;';
     const current = withBlocks(
       "const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];",
       'const PROJECT_BANNED: Banned[] = [];',

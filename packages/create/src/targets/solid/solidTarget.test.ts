@@ -48,7 +48,7 @@ describe('solidTarget', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query']),
   ['src/pages/routes.tsx', WITHOUT_FORM],

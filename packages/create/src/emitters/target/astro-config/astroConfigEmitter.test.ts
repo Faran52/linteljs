@@ -54,7 +54,8 @@ describe('emitAstroConfig', () => {
   ])('registers the %s integration', (hostedFramework, specifier, call) => {
     const output = emitAstroConfig(answersFor({ hostedFramework }));
 
-    expect(output).toContain(`from '${specifier}';`);
+    // Bound under the name the call uses.
+    expect(output).toContain(`import ${call.slice(0, call.indexOf('('))} from '${specifier}';`);
     expect(output).toContain(`integrations: [${call}],`);
   });
 
@@ -136,23 +137,27 @@ describe('emitAstroConfig', () => {
 
   /*
    * StyleX reaches this target through the Vite config it owns rather than one this CLI emits, so the plugin is
-   * named here instead. First, which its own documentation asks for: after the framework plugin it breaks Fast
-   * Refresh.
+   * named here instead.
    */
-  it('names the stylex plugin first among the vite plugins', () => {
+  it('names the stylex plugin among the vite plugins', () => {
     const config = emitAstroConfig(answersFor({ styling: 'stylex' }));
 
     expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
-    expect(config).toContain('createUnplugin(stylex).vite({ useCSSLayers: true })');
+    expect(config).toContain("import { createUnplugin } from 'unplugin';");
+    expect(config).toContain('  vite: { plugins: [createUnplugin(stylex).vite({ useCSSLayers: true })] },\n');
   });
 });
 
 // The build configs are the project's after the first write: both reference repos rewrote their vite config wholesale.
 describe('astroConfigEmitter', () => {
   it('hands the config to the project after the first write', () => {
-    expect(astroConfigEmitter(answersFor()).map(({ target, preserve }) => {
-      return [target, preserve];
-    })).toEqual([['astro.config.mjs', true]]);
+    expect(astroConfigEmitter(answersFor()).map(({
+      stage,
+      target,
+      preserve,
+    }) => {
+      return [stage, target, preserve];
+    })).toEqual([['standard', 'astro.config.mjs', true]]);
   });
 
   it('writes nothing for a target that is not astro', () => {

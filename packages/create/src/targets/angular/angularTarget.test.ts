@@ -45,7 +45,7 @@ describe('angularTarget', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(false),
   // No style modules: Angular takes no StyleX, and its components carry their stylesheets alone.
   ...componentStyleGates('mark/Mark', 'button/Button', false),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],

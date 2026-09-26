@@ -26,13 +26,10 @@ import type { StarterFile, TargetRecord } from '../types';
 
 export const vueTarget: TargetRecord = {
   id: 'vue',
-  recordModule: 'src/config/linteljs.ts',
   htmlEntry: 'src/main.ts',
   framework: 'vue',
   html: true,
-  vite: true,
   sfcExtension: 'vue',
-  routeUnit: 'src/views/, routed from src/router/',
   // Pinia carries no dependency here, because create-vue installs it itself.
   stores: ['pinia', 'tanstack-store'],
   ignores: [],
@@ -69,7 +66,7 @@ export const vueTarget: TargetRecord = {
     include: ['**/*.vue'],
   },
   starterFiles: [
-    ...mockFiles(),
+    ...mockFiles(true),
     ...componentStyles(COMPONENTS),
     // Solid writes the `class` spelling these take; Vue renames two of the four, so each carries its own path.
     ...componentStyleModules('solid', COMPONENTS),
@@ -205,17 +202,11 @@ export const vueTarget: TargetRecord = {
    * 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
    */
   starterTests: [
-    ...mockTests(),
+    ...mockTests(true),
     ...accessorTests(ACCESSORS),
     {
       target: 'src/App.test.ts',
       covers: 'src/App.vue',
-      needs: [
-        'src/router/index.ts',
-        'src/views/routes.ts',
-        'src/lib/providers/installStore.ts',
-        'src/lib/providers/installData.ts',
-      ],
     },
     {
       target: 'src/components/ui/app-button/AppButton.test.ts',
@@ -232,7 +223,6 @@ export const vueTarget: TargetRecord = {
     {
       target: 'src/lib/apis/contact/api.test.ts',
       covers: 'src/lib/apis/contact/api.ts',
-      needs: ['src/lib/providers/installData.ts'],
     },
     {
       target: 'src/lib/providers/installStore.test.ts',
@@ -245,7 +235,6 @@ export const vueTarget: TargetRecord = {
     {
       target: 'src/lib/store/counter.test.ts',
       covers: 'src/lib/store/counter.ts',
-      needs: ['src/lib/providers/installStore.ts'],
     },
   ],
   /*

@@ -10,9 +10,9 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 
-// Absence only: a permission error stays an error.
-interface NotFound {
-  code: 'ENOENT';
+// A Node failure, which carries the code it failed with.
+interface CodedError extends Error {
+  code: string;
 }
 
 /**
@@ -39,9 +39,9 @@ export const isExecutableFile = (path: string): boolean => {
   }
 };
 
-// Absence only: a permission error stays an error.
-export const isAbsence = (error: unknown): error is Error & NotFound => {
-  return error instanceof Error && 'code' in error && error.code === 'ENOENT';
+// A Node failure by its code: `ENOENT` for absence, so a permission error stays an error, and `ELOOP` for a link.
+export const hasCode = (error: unknown, code: string): error is CodedError => {
+  return error instanceof Error && 'code' in error && error.code === code;
 };
 
 // Presence for an async caller; an unreachable path reads as absent, since nothing here decides what to overwrite.
@@ -64,7 +64,7 @@ export const entryExists = async (path: string): Promise<boolean> => {
     return true;
   }
   catch (error) {
-    if (isAbsence(error)) {
+    if (hasCode(error, 'ENOENT')) {
       return false;
     }
 
@@ -78,7 +78,7 @@ export const readIfPresent = async (path: string): Promise<string | null> => {
     return await readFile(path, 'utf8');
   }
   catch (error) {
-    if (isAbsence(error)) {
+    if (hasCode(error, 'ENOENT')) {
       return null;
     }
 

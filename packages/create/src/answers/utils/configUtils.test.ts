@@ -27,7 +27,7 @@ interface ConfigOverrides {
   router?: string;
   store?: boolean | string;
   typeSafety?: string;
-  agents?: string | string[];
+  agents?: string | string[] | undefined;
   plugins?: string | (string | number)[];
   unexpected?: boolean | object;
   // An answer this version does not have, which an older config still carries.
@@ -44,9 +44,10 @@ const config = (overrides: ConfigOverrides = {}): string => {
 };
 
 describe('parseLinteljsConfig', () => {
+  // Strict: an optional answer the file leaves out is a key never written, not one written `undefined`.
   it('reads the current envelope and every answer', () => {
     expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS)))
-      .toEqual({
+      .toStrictEqual({
         $schema: CONFIG_SCHEMA_URL,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         ...DEFAULT_ANSWERS,
@@ -160,6 +161,8 @@ describe('parseLinteljsConfig', () => {
       aliases: {
         '@engine': './src/lib/engine/index.ts',
         '@workers/*': './src/workers/*',
+        // SvelteKit's own sigil.
+        '$lib': './src/lib',
       },
     };
 
@@ -321,6 +324,8 @@ describe('parseLinteljsConfig', () => {
       /typeSafety must be one of: strict, relaxed/,
     ],
     ['a non-array agent list', config({ agents: 'codex' }), /agents must be an array/],
+    // A list answer is required like a single choice, so leaving it out is refused rather than read as none.
+    ['a missing agent list', config({ agents: undefined }), /agents must be an array/],
     [
       'an unknown agent',
       config({ agents: ['windsurf'] }),
@@ -467,17 +472,31 @@ describe('a version-one config', () => {
     expect(parseLinteljsConfig(v1({ store: false }))).not.toHaveProperty('store');
   });
 
+  // A yes on a target that has since stopped offering a store is no answer at all.
+  it('carries no store where the target no longer offers one', () => {
+    expect(parseLinteljsConfig(v1({
+      target: 'webextension',
+      store: true,
+    }))).not.toHaveProperty('store');
+  });
+
+  // Only a yes or no is the v1 spelling; a store already named is read as written.
+  it('keeps a store a version-one file already names', () => {
+    expect(parseLinteljsConfig(v1({ store: 'redux-toolkit' })).store).toBe('redux-toolkit');
+  });
+
   it.each([
     ['tanstack-form', 'vue'],
     ['react-hook-form', 'react'],
-  ])('lifts %s out of libraries, and tailwind with it', (form, target) => {
+  ])('lifts %s out of libraries, and tailwind and tanstack-query with it', (form, target) => {
     const parsed = parseLinteljsConfig(v1({
       target,
-      libraries: [form, 'tailwind'],
+      libraries: [form, 'tailwind', 'tanstack-query'],
     }));
 
     expect(parsed.form).toBe(form);
     expect(parsed.styling).toBe('tailwind');
+    expect(parsed.data).toBe('tanstack-query');
     expect(parsed.libraries).toEqual([]);
   });
 

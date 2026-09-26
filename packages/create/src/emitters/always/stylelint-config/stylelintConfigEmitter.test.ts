@@ -12,13 +12,63 @@ import { emitStylelintConfig, stylelintConfigEmitter } from './stylelintConfigEm
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
+// The file whole at its two extremes: the bare standard, and a single-file-component target with tailwind.
+const PLAIN = `const config = {
+  extends: [
+    'stylelint-config-standard',
+    'stylelint-config-recess-order',
+  ],
+  rules: {
+    'import-notation': 'string',
+  },
+  overrides: [
+    {
+      files: ['**/*.module.css'],
+      rules: {
+        'selector-class-pattern': '^[a-z][a-zA-Z0-9]*$',
+      },
+    },
+  ],
+};
+
+export default config;
+`;
+
+const SFC_WITH_TAILWIND = `const config = {
+  extends: [
+    'stylelint-config-standard',
+    'stylelint-config-recess-order',
+    'stylelint-config-tailwindcss',
+  ],
+  rules: {
+    'import-notation': 'string',
+    'nesting-selector-no-missing-scoping-root': null,
+  },
+  overrides: [
+    {
+      files: ['**/*.vue'],
+      customSyntax: 'postcss-html',
+    },
+    {
+      files: ['**/*.module.css'],
+      rules: {
+        'selector-class-pattern': '^[a-z][a-zA-Z0-9]*$',
+      },
+    },
+  ],
+};
+
+export default config;
+`;
+
 describe('emitStylelintConfig', () => {
   it('extends the standard and the property order', () => {
-    const config = emitStylelintConfig(DEFAULT_ANSWERS);
-
-    expect(config).toContain("'stylelint-config-standard',");
-    expect(config).toContain("'stylelint-config-recess-order',");
-    expect(config).toContain('export default config;');
+    expect(emitStylelintConfig(DEFAULT_ANSWERS)).toBe(PLAIN);
+    expect(emitStylelintConfig({
+      ...DEFAULT_ANSWERS,
+      target: 'vue',
+      styling: 'tailwind',
+    })).toBe(SFC_WITH_TAILWIND);
   });
 
   // Without it every `@apply` in the project is an unknown-at-rule error, so the entry follows the tailwind answer

@@ -13,31 +13,55 @@ const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   };
 };
 
+/*
+ * The document whole. The project name is in the title, which is why it is written rather than copied; the language
+ * is declared, since an empty one tells a screen reader it is unknown; the entry the record names loads from the root
+ * into the `#root` every starter mounts on.
+ */
 describe('emitHtmlEntry', () => {
-  it('carries the project name into the title, which is why it is written rather than copied', () => {
-    expect(emitHtmlEntry('my-app', 'src/main.tsx')).toContain('<title>my-app</title>');
-  });
-
-  it('loads the entry the record names, from the root', () => {
-    expect(emitHtmlEntry('my-app', 'src/main.tsx'))
-      .toContain('<script type="module" src="/src/main.tsx"></script>');
-  });
-
-  // An empty one tells a screen reader the language is unknown, which is worse than omitting it.
-  it('declares a language rather than an empty one', () => {
-    expect(emitHtmlEntry('my-app', 'src/main.tsx')).toContain('<html lang="en">');
+  it('writes the document a bundler serves, titled for the project and loading its entry', () => {
+    expect(emitHtmlEntry('my-app', 'src/main.tsx')).toBe([
+      '<!doctype html>',
+      '<html lang="en">',
+      '  <head>',
+      '    <meta charset="UTF-8" />',
+      '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+      '    <title>my-app</title>',
+      '  </head>',
+      '  <body>',
+      '    <div id="root"></div>',
+      '    <script type="module" src="/src/main.tsx"></script>',
+      '  </body>',
+      '</html>',
+      '',
+    ].join('\n'));
   });
 });
 
 describe('htmlEntryEmitter', () => {
-  it('writes the document for a target that owns its template', () => {
-    expect(htmlEntryEmitter(answersFor(), EMPTY_PROJECT, 'my-app').map((artifact) => {
-      return artifact.target;
-    })).toEqual(['index.html']);
-  });
-
-  // react-native rather than any other: it crosses over last, so this stops moving target by target as each one does.
-  it('writes nothing for a target with no document of its own', () => {
-    expect(htmlEntryEmitter(answersFor({ target: 'react-native' }), EMPTY_PROJECT, 'my-app')).toEqual([]);
+  // Only where a bundler serves the page: a framework that renders its own document gets none.
+  it.each<[string, Partial<Answers>, string | undefined]>([
+    ['react', { target: 'react' }, 'src/main.tsx'],
+    ['react in framework mode', {
+      target: 'react',
+      router: 'react-router-framework',
+    }, undefined],
+    ['next', { target: 'next' }, undefined],
+    ['vue', { target: 'vue' }, 'src/main.ts'],
+    ['nuxt', { target: 'nuxt' }, undefined],
+    ['svelte', { target: 'svelte' }, undefined],
+    ['solid', { target: 'solid' }, 'src/index.tsx'],
+    ['angular', { target: 'angular' }, undefined],
+    ['astro', { target: 'astro' }, undefined],
+    ['webextension', { target: 'webextension' }, 'src/main.ts'],
+    ['react-native', { target: 'react-native' }, undefined],
+  ])('writes the document %s serves, loading its own entry', (_label, overrides, entry) => {
+    expect(htmlEntryEmitter(answersFor(overrides), EMPTY_PROJECT, 'my-app')).toEqual(entry === undefined
+      ? []
+      : [{
+          stage: 'standard',
+          target: 'index.html',
+          content: { text: emitHtmlEntry('my-app', entry) },
+        }]);
   });
 });

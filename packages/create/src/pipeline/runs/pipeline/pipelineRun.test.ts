@@ -123,6 +123,26 @@ describe('runPipeline against a directory that already exists', () => {
     expect(await readFile(join(cwd, 'README.md'), 'utf8')).toContain('# demo-app');
   });
 
+  // A stage writes its own artifacts and no other's, so a skipped stage leaves its files unwritten.
+  it('writes nothing of a stage it was told to skip', async () => {
+    const written: string[] = [];
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({}),
+      existing: true,
+      skip: ['lint', 'install', 'fix'],
+      onWrite: (path) => {
+        written.push(path);
+      },
+    });
+
+    expect(written).toContain('package.json');
+    expect(written).not.toContain('eslint.config.js');
+    expect(await exists(join(cwd, 'eslint.config.js'))).toBe(false);
+  });
+
   // Seeded first, in the same stage, so the recorded answers and the dependencies they imply agree.
   it('records the answers it was given before the package.json they imply', async () => {
     const answers = answersFor({
@@ -166,6 +186,24 @@ describe('a project being born', () => {
 });
 
 describe('stage timing', () => {
+  // Numbered by place in the whole run, so a skipped stage leaves a gap rather than renumbering the rest.
+  it('numbers each stage it runs by its place among all of them', async () => {
+    const started: [Stage, number, number][] = [];
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({}),
+      existing: true,
+      skip: ['package', 'install', 'fix'],
+      onStage: (stage, index, total) => {
+        started.push([stage, index, total]);
+      },
+    });
+
+    expect(started).toEqual([['lint', 1, 5], ['standard', 3, 5]]);
+  });
+
   it('reports each stage by the time it took rather than a clock reading', async () => {
     const took: number[] = [];
     const started = performance.now();
@@ -240,11 +278,20 @@ describe('the stages that shell out', () => {
     return notices;
   };
 
-  it('installs with the package manager the answers named, inside the project', async () => {
+  it('installs with the manager the answers named, inside the project, with a listener or without', async () => {
     await planted('yarn', 0);
 
     expect(await installNotices('yarn')).toEqual(['installing with yarn']);
     expect(await invocations()).toEqual([`${await realpath(cwd)} install`]);
+
+    await pipelineRun({
+      name: 'demo-app',
+      cwd,
+      answers: answersFor({ packageManager: 'yarn' }),
+      skip: ['lint', 'package', 'standard', 'fix'],
+    });
+
+    expect(await invocations()).toHaveLength(2);
   });
 
   it('names yarn 1 by the command it runs', async () => {

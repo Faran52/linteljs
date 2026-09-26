@@ -38,7 +38,7 @@ describe('the astro record', () => {
   // Astro renders the document itself, so there is no `index.html` and its own config is what a vite config would be.
   it('owns its document and its build', () => {
     expect(recordFor().html).toBe(false);
-    expect(recordFor().vite).toBe(false);
+    expect(recordFor().vitePlugin).toBeUndefined();
     expect(recordFor().build).toBe('astro build');
   });
 });
@@ -48,11 +48,7 @@ describe('the build it owns', () => {
   it('owns no vite config and borrows the resolved one for tests', () => {
     const record = recordFor();
 
-    expect(record.vite).toBe(false);
-    expect(record.vitePlugin).toEqual({
-      imports: [],
-      calls: [],
-    });
+    expect(record.vitePlugin).toBeUndefined();
     expect(record.vitestFactory?.call).toBe('getViteConfig');
     // The second import is what makes `test` a legal key for `astro check`.
     expect(record.vitestFactory?.imports).toEqual([
@@ -176,7 +172,7 @@ describe('the hosted framework axis', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(false),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['../components/ui/button/Button.css', PRESSABLE],

@@ -91,14 +91,11 @@ export const emitAstroConfig = (answers: Answers): string | null => {
 
   /*
    * Vite plugins, not integrations: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro
-   * one. StyleX first, which its own documentation asks for, and `useCSSLayers` so its atomic rules cannot
-   * outrank a hand-written one by specificity alone.
+   * one. One styling answer, so one plugin at most; `useCSSLayers` so StyleX's atomic rules cannot outrank a
+   * hand-written one by specificity alone.
    */
-  const plugins = [
-    ...(stylex ? ['createUnplugin(stylex).vite({ useCSSLayers: true })'] : []),
-    ...(tailwind ? ['tailwindcss()'] : []),
-  ];
-  const vite = plugins.length === 0 ? '' : `  vite: { plugins: [${plugins.join(', ')}] },\n`;
+  const plugin = stylex ? 'createUnplugin(stylex).vite({ useCSSLayers: true })' : 'tailwindcss()';
+  const vite = stylex || tailwind ? `  vite: { plugins: [${plugin}] },\n` : '';
 
   return `${imports}
 

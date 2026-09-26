@@ -160,4 +160,10 @@ describe('artifactWriter', () => {
     await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
     expect((await stat(join(cwd, 'hook.sh'))).mode & 0o111).toBe(0o111);
   });
+
+  // Only what a hook runner invokes directly: a config is data, and an executable bit on it is noise in a diff.
+  it('leaves an ordinary artifact without an execute bit', async () => {
+    await expect(artifactWriter(cwd, emitted('standard', 'notes.md', '# notes\n'))).resolves.toBe(true);
+    expect((await stat(join(cwd, 'notes.md'))).mode & 0o111).toBe(0);
+  });
 });

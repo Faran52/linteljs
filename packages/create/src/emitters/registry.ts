@@ -107,11 +107,7 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
  * a stage: the `peerDependencyRules` allowance of 1.2.0 reached new projects and no old one while it was
  * stage-only. One line per emitter and no branch: whether a file is written is the emitter's own question.
  */
-export const buildArtifacts = (
-  answers: HostedAnswers,
-  project: ProjectShape = EMPTY_PROJECT,
-  name = '',
-): Artifact[] => {
+export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
   const artifacts = Object.values(BUILD_EMITTERS).flatMap((emit) => {
     return emit(answers, project, name);
   });

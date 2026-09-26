@@ -150,6 +150,111 @@ describe('TARGETS', () => {
 
     expect(missing.filter(Boolean)).toEqual([]);
   });
+
+  // A suite is written only once its subject is on disk, so one naming a module its target never writes never ships.
+  it.each(axisCases())('has every suite on %s cover a file the target writes', (_label, answers) => {
+    const { starterFiles, starterTests } = targetFor(answers);
+    const written = new Set(starterFiles.map(({ target }) => {
+      return target;
+    }));
+
+    expect(starterTests.filter(({ covers }) => {
+      return !written.has(covers);
+    })).toEqual([]);
+  });
+});
+
+/*
+ * What each target offers and what it is held to, which the questionnaire, the config parser and the agent rules all
+ * read off the record. The order of the stores is the offer's: the first is what a version-one yes lands on.
+ */
+describe('what each target offers', () => {
+  it.each<[TargetId, string[] | undefined, string[] | undefined]>([
+    [
+      'react',
+      ['zustand', 'redux-toolkit', 'tanstack-store'],
+      ['react-router', 'react-router-framework', 'tanstack-router'],
+    ],
+    ['next', ['zustand', 'redux-toolkit', 'tanstack-store'], undefined],
+    ['vue', ['pinia', 'tanstack-store'], undefined],
+    ['nuxt', ['pinia', 'tanstack-store'], undefined],
+    ['svelte', ['tanstack-store'], undefined],
+    ['solid', ['tanstack-store'], undefined],
+    ['angular', ['ngrx-signals', 'ngrx-store'], undefined],
+    ['astro', ['nanostores'], undefined],
+    ['webextension', undefined, undefined],
+    ['react-native', ['zustand', 'redux-toolkit', 'tanstack-store'], undefined],
+  ])('offers %s its own stores and routers', (target, stores, routers) => {
+    const record = recordFor(target);
+
+    expect([record.stores, record.routers]).toEqual([stores, routers]);
+  });
+
+  // A host takes both from the framework it hosts; the test conditions pick the browser build a component mounts.
+  it.each<[string, Answers, string[], string[] | undefined]>([
+    ['react', {
+      ...DEFAULT_ANSWERS,
+      target: 'react',
+    }, ['react-state.md', 'hooks-order.md'], undefined],
+    ['next', {
+      ...DEFAULT_ANSWERS,
+      target: 'next',
+    }, ['react-state.md', 'hooks-order.md'], undefined],
+    ['vue', {
+      ...DEFAULT_ANSWERS,
+      target: 'vue',
+    }, ['vue-reactivity.md'], undefined],
+    ['nuxt', {
+      ...DEFAULT_ANSWERS,
+      target: 'nuxt',
+    }, ['vue-reactivity.md'], undefined],
+    ['svelte', {
+      ...DEFAULT_ANSWERS,
+      target: 'svelte',
+    }, ['svelte-reactivity.md'], ['browser']],
+    ['solid', {
+      ...DEFAULT_ANSWERS,
+      target: 'solid',
+    }, ['solid-reactivity.md'], ['development', 'browser']],
+    ['angular', {
+      ...DEFAULT_ANSWERS,
+      target: 'angular',
+    }, [], undefined],
+    ['astro', {
+      ...DEFAULT_ANSWERS,
+      target: 'astro',
+    }, [], undefined],
+    ['react-native', {
+      ...DEFAULT_ANSWERS,
+      target: 'react-native',
+    }, ['react-state.md', 'hooks-order.md'], undefined],
+    ...HOSTED_FRAMEWORKS.flatMap((hostedFramework): [string, Answers, string[], string[] | undefined][] => {
+      const rules = {
+        react: ['react-state.md', 'hooks-order.md'],
+        vue: ['vue-reactivity.md'],
+        svelte: ['svelte-reactivity.md'],
+        solid: ['solid-reactivity.md'],
+      }[hostedFramework];
+      const conditions = {
+        react: undefined,
+        vue: undefined,
+        svelte: ['browser'],
+        solid: ['development', 'browser'],
+      }[hostedFramework];
+
+      return (['astro', 'webextension'] as const).map((target): [string, Answers, string[], string[] | undefined] => {
+        return [`${target} hosting ${hostedFramework}`, {
+          ...DEFAULT_ANSWERS,
+          target,
+          hostedFramework,
+        }, rules, conditions];
+      });
+    }),
+  ])('holds %s to its own state rules and test conditions', (_label, answers, rules, conditions) => {
+    const record = targetFor(answers);
+
+    expect([record.stateRules, record.testConditions]).toEqual([rules, conditions]);
+  });
 });
 
 describe('targetFor', () => {

@@ -22,39 +22,44 @@ const VERSIONS = {
 };
 
 describe('stackRows', () => {
-  it('states the version as recorded, without the range it was written with', () => {
-    expect(stackRows(answersFor(), VERSIONS)).toContainEqual([
-      "name: 'linteljs'",
-      "version: '1.6.0'",
-    ]);
-    expect(stackRows(answersFor(), VERSIONS)).toContainEqual([
-      "name: 'typescript'",
-      "version: '5.9.3'",
+  it('states the version as recorded, without the range it was written with, in the order a reader wants', () => {
+    expect(stackRows(answersFor({ packageManagerVersion: '12.4.1' }), VERSIONS)).toEqual([
+      ["name: 'linteljs'", "version: '1.6.0'"],
+      ["name: 'react'", "version: '19.3.0'"],
+      ["name: 'typescript'", "version: '5.9.3'"],
+      ["name: 'node'", "version: '26.9.0'"],
+      ["name: 'pnpm'", "version: '12.4.1'"],
     ]);
   });
 
   // The extension hosting nothing is the case: there is no framework to name, so no row is printed for one.
   it('prints no framework row for a target that renders with none', () => {
-    const rows = stackRows(answersFor({ target: 'webextension' }), VERSIONS);
-
-    expect(rows.map(([name]) => {
-      return name;
-    })).not.toContain("name: 'react'");
+    expect(stackRows(answersFor({ target: 'webextension' }), VERSIONS)).toEqual([
+      ["name: 'linteljs'", "version: '1.6.0'"],
+      ["name: 'typescript'", "version: '5.9.3'"],
+      ["name: 'node'", "version: '26.9.0'"],
+    ]);
   });
 
-  // A version this table does not carry is left out rather than printed empty.
+  // A version this table does not carry is left out rather than printed empty, and so is a manager never recorded.
   it('leaves out a row whose version is unknown', () => {
-    expect(stackRows(answersFor(), {}).map(([name]) => {
-      return name;
-    })).not.toContain("name: 'linteljs'");
+    expect(stackRows(answersFor(), {})).toEqual([["name: 'node'", "version: '26.9.0'"]]);
   });
 });
 
 describe('answerRows', () => {
-  it('prints an answer a prompt asked', () => {
-    expect(answerRows(answersFor({ store: 'zustand' }), ANSWERS)).toContainEqual([
-      "label: 'State store'",
-      "value: 'zustand'",
+  // `packageManager` holds a string no prompt asked for, so a row with no label would print for it.
+  it('prints the answers a prompt asked, and nothing else', () => {
+    expect(answerRows(answersFor({ store: 'zustand' }), ANSWERS)).toEqual([
+      ["label: 'Framework'", "value: 'react'"],
+      // Every config holds a browser, since the key is required; a slot decides the question, not the row.
+      ["label: 'Browser'", "value: 'chrome'"],
+      ["label: 'Testing'", "value: 'vitest'"],
+      ["label: 'Libraries'", "value: 'es-toolkit'"],
+      ["label: 'State store'", "value: 'zustand'"],
+      ["label: 'Type safety'", "value: 'strict'"],
+      ["label: 'AI agents'", "value: 'claude-code'"],
+      ["label: 'AI plugins'", "value: 'ponytail, context7, frontend-design'"],
     ]);
   });
 

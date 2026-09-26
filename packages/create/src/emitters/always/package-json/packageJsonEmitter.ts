@@ -81,7 +81,7 @@ export interface PackageJson {
  * import itself, which is what the Vite plugin does and the PostCSS one cannot be reached in time to.
  */
 const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
-  return target.vite || target.astro === true || target.nuxtProject === true;
+  return target.vitePlugin !== undefined || target.astro === true || target.nuxtProject === true;
 };
 
 const tailwindDevDependencies = (target: TargetRecord): string[] => {
@@ -180,7 +180,7 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
   const { store } = answers;
 
   if (store !== undefined) {
-    const binding = target.framework === undefined ? undefined : STORE_BINDINGS[store]?.[target.framework];
+    const binding = target.framework && STORE_BINDINGS[store]?.[target.framework];
 
     names.push(...STORE_DEPENDENCIES[store], ...binding === undefined ? [] : [binding]);
   }

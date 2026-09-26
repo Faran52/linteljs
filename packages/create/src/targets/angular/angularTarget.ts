@@ -17,12 +17,9 @@ import type { StarterFile, TargetRecord } from '../types';
 
 export const angularTarget: TargetRecord = {
   id: 'angular',
-  recordModule: 'src/config/linteljs.ts',
   angularProject: true,
   framework: 'angular',
   html: false,
-  vite: false,
-  routeUnit: 'src/app/',
   // SignalStore over classic @ngrx/store; measurements in DESIGN.md.
   stores: ['ngrx-signals', 'ngrx-store'],
   ignores: ['.angular/**'],
@@ -68,10 +65,6 @@ export const angularTarget: TargetRecord = {
     },
   ],
   tailwindTheme: './styles/theme.css',
-  vitePlugin: {
-    imports: [],
-    calls: [],
-  },
   tsconfig: {
     useDefineForClassFields: false,
     dropsErasableSyntaxOnly: true,
@@ -87,7 +80,7 @@ export const angularTarget: TargetRecord = {
   publicDirectory: 'public',
   starterFiles: [
     // Kebab, because every source file this target writes is: the asset is the same bytes as the other nine.
-    ...mockFiles(true, 'src/lib/utils/fetch-extended.ts'),
+    ...mockFiles(false, true, 'src/lib/utils/fetch-extended.ts'),
     ...componentStyles(),
     ...accessorFiles(ACCESSORS),
     ...ALWAYS.map((target): StarterFile => {
@@ -113,12 +106,11 @@ export const angularTarget: TargetRecord = {
    * each route covers the shell, the header, the mark and all three pages at once.
    */
   starterTests: [
-    ...mockTests('src/lib/utils/fetch-extended'),
+    ...mockTests(false, 'src/lib/utils/fetch-extended'),
     ...accessorTests(ACCESSORS),
     {
       target: 'src/app/app.spec.ts',
       covers: 'src/app/app.ts',
-      needs: ['src/app/app.routes.ts'],
     },
   ],
   typecheck: 'tsc --noEmit',

@@ -1,7 +1,6 @@
 import { type Emitter } from '@config/types';
 
 import { ANSWERS, type HostedAnswers } from '@answers';
-import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { VERSIONS } from '../package-json/constants';
@@ -38,8 +37,9 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
   ].join('\n');
 };
 
-export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
-  const { recordModule } = targetFor(answers);
+// Where the starter reads the values this CLI recorded, the same on every target.
+export const RECORD_MODULE = 'src/config/linteljs.ts';
 
-  return [emitted('standard', recordModule, emitLinteljsRecord(answers, name))];
+export const linteljsRecordEmitter: Emitter = (answers, _project, name) => {
+  return [emitted('standard', RECORD_MODULE, emitLinteljsRecord(answers, name))];
 };

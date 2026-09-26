@@ -42,6 +42,7 @@ describe('nodeSpawn', () => {
     spawn.mockReturnValueOnce(exit(0, 'v26.9.0\n'));
 
     expect(nodeSpawn()).toBe('26.9.0');
+    expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), ['--version'], { encoding: 'utf8' });
   });
 
   // The case this exists for: bun running the CLI on a machine with no Node at all.

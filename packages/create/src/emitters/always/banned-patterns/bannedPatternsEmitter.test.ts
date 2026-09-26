@@ -90,7 +90,7 @@ describe('checkerArtifact', () => {
   it('throws when the type-safety anchor has drifted out of the shipped checker', () => {
     expect(() => {
       return transformOf(answersFor({ typeSafety: 'relaxed' }))('// a checker with no anchor\n', null);
-    }).toThrow('no longer contains the anchor');
+    }).toThrow("no longer contains the anchor: const TYPE_SAFETY: TypeSafety = 'strict';");
   });
 
   // `.astro` stays out: the checker reads script and SFC files only.

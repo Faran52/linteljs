@@ -9,9 +9,9 @@ export function projectSpelling(
   own: string | undefined,
   present: readonly string[],
 ): string | undefined {
-  if (own !== undefined && present.includes(own)) {
-    return own;
-  }
+  const kept = present.find((path) => {
+    return path === own;
+  });
 
-  return present[0] ?? own;
+  return kept ?? present[0] ?? own;
 }

@@ -19,11 +19,91 @@ const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   };
 };
 
+// The file whole, with no styling and with StyleX: the text is what Nuxt reads, and nothing here runs Nuxt.
+const PLAIN = `import { join } from 'node:path';
+
+import { defineNuxtConfig } from 'nuxt/config';
+
+export default defineNuxtConfig({
+  compatibilityDate: '2025-07-15',
+  // \`src/\`, not Nuxt 4's own \`app/\`: one source root, the same as every other target this CLI writes.
+  srcDir: 'src/',
+  devtools: { enabled: false },
+  css: ['~/styles/main.css'],
+  // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
+  alias: {
+    '@components': join(import.meta.dirname, 'src/components'),
+    '@components/*': join(import.meta.dirname, 'src/components/*'),
+    '@ui': join(import.meta.dirname, 'src/components/ui'),
+    '@ui/*': join(import.meta.dirname, 'src/components/ui/*'),
+    '@features': join(import.meta.dirname, 'src/components/features'),
+    '@features/*': join(import.meta.dirname, 'src/components/features/*'),
+    '@lib': join(import.meta.dirname, 'src/lib'),
+    '@lib/*': join(import.meta.dirname, 'src/lib/*'),
+    '@store': join(import.meta.dirname, 'src/lib/store'),
+    '@store/*': join(import.meta.dirname, 'src/lib/store/*'),
+    '@composables': join(import.meta.dirname, 'src/lib/composables'),
+    '@composables/*': join(import.meta.dirname, 'src/lib/composables/*'),
+    '@utils': join(import.meta.dirname, 'src/lib/utils'),
+    '@utils/*': join(import.meta.dirname, 'src/lib/utils/*'),
+    '@services': join(import.meta.dirname, 'src/lib/services'),
+    '@services/*': join(import.meta.dirname, 'src/lib/services/*'),
+    '@config': join(import.meta.dirname, 'src/config'),
+    '@config/*': join(import.meta.dirname, 'src/config/*'),
+    '@mocks': join(import.meta.dirname, '__mocks__'),
+    '@mocks/*': join(import.meta.dirname, '__mocks__/*'),
+  },
+});
+`;
+
+const WITH_STYLEX = `import { join } from 'node:path';
+
+import { unpluginFactory as stylex } from '@stylexjs/unplugin';
+import { createUnplugin } from 'unplugin';
+import { defineNuxtConfig } from 'nuxt/config';
+
+export default defineNuxtConfig({
+  compatibilityDate: '2025-07-15',
+  // \`src/\`, not Nuxt 4's own \`app/\`: one source root, the same as every other target this CLI writes.
+  srcDir: 'src/',
+  devtools: { enabled: false },
+  css: ['~/styles/main.css'],
+  // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
+  alias: {
+    '@components': join(import.meta.dirname, 'src/components'),
+    '@components/*': join(import.meta.dirname, 'src/components/*'),
+    '@ui': join(import.meta.dirname, 'src/components/ui'),
+    '@ui/*': join(import.meta.dirname, 'src/components/ui/*'),
+    '@features': join(import.meta.dirname, 'src/components/features'),
+    '@features/*': join(import.meta.dirname, 'src/components/features/*'),
+    '@lib': join(import.meta.dirname, 'src/lib'),
+    '@lib/*': join(import.meta.dirname, 'src/lib/*'),
+    '@store': join(import.meta.dirname, 'src/lib/store'),
+    '@store/*': join(import.meta.dirname, 'src/lib/store/*'),
+    '@composables': join(import.meta.dirname, 'src/lib/composables'),
+    '@composables/*': join(import.meta.dirname, 'src/lib/composables/*'),
+    '@utils': join(import.meta.dirname, 'src/lib/utils'),
+    '@utils/*': join(import.meta.dirname, 'src/lib/utils/*'),
+    '@services': join(import.meta.dirname, 'src/lib/services'),
+    '@services/*': join(import.meta.dirname, 'src/lib/services/*'),
+    '@config': join(import.meta.dirname, 'src/config'),
+    '@config/*': join(import.meta.dirname, 'src/config/*'),
+    '@mocks': join(import.meta.dirname, '__mocks__'),
+    '@mocks/*': join(import.meta.dirname, '__mocks__/*'),
+  },
+  vite: {
+    plugins: [createUnplugin(stylex).vite({ useCSSLayers: true })],
+  },
+});
+`;
+
 describe('nuxtConfigEmitter', () => {
   it('writes only for the target that reads the file', () => {
-    expect(nuxtConfigEmitter(answersFor(), EMPTY_PROJECT, 'demo-app').map((artifact) => {
-      return artifact.target;
-    })).toEqual(['nuxt.config.ts']);
+    expect(nuxtConfigEmitter(answersFor(), EMPTY_PROJECT, 'demo-app')).toEqual([{
+      stage: 'package',
+      target: 'nuxt.config.ts',
+      content: { text: PLAIN },
+    }]);
     expect(nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app')).toEqual([]);
   });
 
@@ -32,11 +112,7 @@ describe('nuxtConfigEmitter', () => {
    * reads `src/`; and a project's own aliases reach Nuxt's generated paths through `alias` rather than `paths`.
    */
   it('names src as the source root and carries the aliases', () => {
-    const config = emitNuxtConfig(answersFor());
-
-    expect(config).toContain("srcDir: 'src/'");
-    expect(config).toContain("'@config': join(import.meta.dirname, 'src/config'),");
-    expect(config).toContain("'@config/*': join(import.meta.dirname, 'src/config/*'),");
+    expect(emitNuxtConfig(answersFor())).toBe(PLAIN);
   });
 
   /*
@@ -53,13 +129,9 @@ describe('nuxtConfigEmitter', () => {
 
   /*
    * StyleX reaches this target through the Vite config it owns rather than one this CLI emits, so the plugin is
-   * named here instead. First, which its own documentation asks for: after the framework plugin it breaks Fast
-   * Refresh.
+   * named here instead.
    */
-  it('names the stylex plugin first among the vite plugins', () => {
-    const config = emitNuxtConfig(answersFor({ styling: 'stylex' }));
-
-    expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
-    expect(config).toContain('createUnplugin(stylex).vite({ useCSSLayers: true })');
+  it('names the stylex plugin among the vite plugins', () => {
+    expect(emitNuxtConfig(answersFor({ styling: 'stylex' }))).toBe(WITH_STYLEX);
   });
 });

@@ -92,7 +92,7 @@ describe('vueTarget', () => {
 
 // Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
-  ...mswGates(),
+  ...mswGates(true),
   ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
   ...contactGates(['tanstack-query']),
   ['src/views/routes.ts', WITHOUT_FORM],

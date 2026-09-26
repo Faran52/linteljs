@@ -46,31 +46,16 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   const artifacts: Artifact[] = [];
 
   /*
-   * At most one spelling of a destination, and the record is read in order, so a variant is written where it
-   * applies and the base where none does. Two that both apply is a record defect rather than a last-one-wins
-   * race, and it fails here rather than leaving whichever the loop reached second on disk.
+   * At most one spelling of a destination: a variant and the base it varies from exclude each other by their own
+   * `when`. `registry.test.ts` holds every answer set that opens a variant to one artifact per destination.
    *
    * Never a test helper the testing answer declined: a test artifact is what `testing: none` is declining.
    */
-  const written = new Set<string>();
-
   for (const file of target.starterFiles) {
     if (!applies(file, answers)) {
       continue;
     }
 
-    /*
-     * Unreachable while every record is correct, which is the point of it: a variant and the base it varies from
-     * are mutually exclusive by their own `when`, so two reaching here at once is a record that forgot to exclude
-     * one. `registry.test.ts` walks every answer set a target reaches and would fail here rather than leave
-     * whichever the loop met second on disk.
-     */
-    /* v8 ignore next 3 */
-    if (written.has(file.target)) {
-      throw new Error(`${target.id} has two starter files for ${file.target} under one answer set`);
-    }
-
-    written.add(file.target);
     artifacts.push({
       ...joined(file.target, [sourceOf(target.id, file)]),
       seed: true,
@@ -84,17 +69,10 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
         continue;
       }
 
-      // The same guard, for the same reason: a suite and the variant it varies from exclude each other by `when`.
-      /* v8 ignore next 3 */
-      if (written.has(test.target)) {
-        throw new Error(`${target.id} has two starter files for ${test.target} under one answer set`);
-      }
-
-      written.add(test.target);
       artifacts.push({
         ...joined(test.target, [sourceOf(target.id, test)]),
         seed: true,
-        requires: [test.covers, ...test.needs ?? []],
+        requires: [test.covers],
       });
     }
   }
