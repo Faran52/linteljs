@@ -43,7 +43,7 @@ type Host = 'claude' | 'copilot' | 'cursor';
 
 export type HookScript = 'bannedPatternGuardHook.ts' | 'eslintFixWarningHook.ts' | 'gitSafetyGuardHook.ts';
 
-export const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
+const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
 
 // Claude Code and Codex hand a shell hook the same payload, so one shape answers for both hosts.
 export const commandPayload = (command: string, tool: 'Bash' | 'PowerShell' = 'Bash'): CommandHookPayload => {

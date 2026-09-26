@@ -73,7 +73,7 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   },
 };
 
-export const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
+const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
   // Proves the install resolved the workspace versions rather than anything published. One `why` per package: yarn 1
   // names a dependent without its version, so only a package's own answer carries it on every manager.
   const version = registry.version.replaceAll('.', String.raw`\.`);

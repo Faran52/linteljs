@@ -89,8 +89,6 @@ export const LABELLED_BY_PROPS = ['accessibilityLabelledBy', 'aria-labelledby'] 
 
 export const HINT_PROPS = ['accessibilityHint'] as const;
 
-export const ROLE_PROPS = ['accessibilityRole', 'role'] as const;
-
 // Props through which an element handles a touch itself, so it is operated whatever it is named.
 const TOUCH_HANDLER_PROPS = [
   'onPress',

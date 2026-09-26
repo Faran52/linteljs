@@ -13,7 +13,7 @@ const CLOSERS = new Set([')', '}', ']', '>']);
 const OPENERS = new Set(['{', '(', '[']);
 const BLOCK_CLOSERS = new Set(['}', ')', ']']);
 
-export const describeToken = (token: Token): string => {
+const describeToken = (token: Token): string => {
   return `${token.type} ${JSON.stringify(token.value)}`;
 };
 

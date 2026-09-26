@@ -1,23 +1,6 @@
 import { createRule } from '../../types.ts';
 import { scopeOf } from '../../utils/compatUtils.ts';
-
-import type { Scope } from 'eslint';
-
-// Resolves a name against the scope chain, innermost first: the declarator's own scope alone finds nothing once
-// the destructure sits inside a function or block, and walking up also gets shadowing right for free.
-const resolveVariable = (scope: Scope.Scope, name: string): Scope.Variable | null => {
-  for (let current: Scope.Scope | null = scope; current; current = current.upper) {
-    const found = current.variables.find((variable) => {
-      return variable.name === name;
-    });
-
-    if (found) {
-      return found;
-    }
-  }
-
-  return null;
-};
+import { resolveVariable } from '../../utils/ruleUtils.ts';
 
 export const noImportNamespaceDestructure = createRule('no-import-namespace-destructure', {
   meta: {

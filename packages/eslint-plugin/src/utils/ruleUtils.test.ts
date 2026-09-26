@@ -12,6 +12,7 @@ import {
   optionsOf,
   rangeOf,
   rebuildLosesComments,
+  resolveVariable,
 } from './ruleUtils.ts';
 
 import type { Rule } from 'eslint';
@@ -122,5 +123,30 @@ describe('rebuildLosesComments', () => {
 
     expect(rebuildLosesComments(commented.sourceCode, commented.firstNode('ObjectExpression'))).toBe(true);
     expect(rebuildLosesComments(bare.sourceCode, bare.firstNode('ObjectExpression'))).toBe(false);
+  });
+});
+
+describe('resolveVariable', () => {
+  const nested = sourceCodeFrom([
+    'const outer = 1;',
+    'const shadowed = 2;',
+    'const run = () => {',
+    '  const shadowed = 3;',
+    '  return shadowed;',
+    '};',
+    '',
+  ].join('\n'));
+  const scope = nested.sourceCode.getScope(nested.firstNode('ReturnStatement'));
+
+  it('walks up the scope chain to a binding declared outside the reference', () => {
+    expect(resolveVariable(scope, 'outer')?.scope.type).toBe('module');
+  });
+
+  it('answers the innermost binding when a name is shadowed', () => {
+    expect(resolveVariable(scope, 'shadowed')?.scope).toBe(scope);
+  });
+
+  it('answers null for a name no scope declares', () => {
+    expect(resolveVariable(scope, 'missing')).toBeNull();
   });
 });

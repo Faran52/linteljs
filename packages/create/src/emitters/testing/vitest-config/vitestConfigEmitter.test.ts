@@ -340,11 +340,16 @@ describe('the styling system', () => {
 
 describe('the router', () => {
   it('keeps the route table out of coverage', () => {
-    const config = configFor({ router: 'tanstack-router' }) ?? '';
-
-    expect(config).toContain("'src/routes/**'");
-    expect(config).toContain("'src/routeTree.gen.ts'");
+    expect(configFor({ router: 'react-router' })).toContain("'src/routes/**'");
     expect(configFor({})).not.toContain('src/routes/**');
+  });
+
+  // TanStack Router is code-based: no `src/routes/` and no generated `routeTree.gen.ts` to exclude.
+  it('excludes nothing for TanStack Router', () => {
+    const config = configFor({ router: 'tanstack-router' });
+
+    expect(config).not.toContain('src/routes/**');
+    expect(config).not.toContain('routeTree');
   });
 });
 
@@ -393,7 +398,7 @@ describe('the coverage surface', () => {
     ['react in framework mode', {
       target: 'react',
       router: 'react-router-framework',
-    }, ['src/root.tsx', 'src/routes/**', 'src/routeTree.gen.ts']],
+    }, ['src/root.tsx', 'src/routes/**']],
     ['next', { target: 'next' }, ['src/app/layout.tsx']],
     ['vue', { target: 'vue' }, []],
     ['nuxt', { target: 'nuxt' }, []],

@@ -23,6 +23,7 @@ import {
   logWarn,
 } from '../../../../scripts/utils/loggerUtils.ts';
 import { startRegistry } from '../../src/pipeline/e2e/registry/registry';
+import { answerFlags } from '../../src/pipeline/e2e/utils/workspaceUtils';
 
 import {
   type Collected,
@@ -30,7 +31,7 @@ import {
   PASSES,
   run,
 } from './utils/passesUtils.ts';
-import { flagsFor, probes } from './utils/probesUtils.ts';
+import { probes } from './utils/probesUtils.ts';
 
 import type { E2eCase } from '../../src/pipeline/e2e/matrix/matrix';
 import type { E2eRegistry } from '../../src/pipeline/e2e/registry/registry';
@@ -52,7 +53,7 @@ const collectOne = async (
   mkdirSync(root, { recursive: true });
 
   // `--no-install`, so the manifests exist before the allowance is stripped out of them.
-  const flags = [registry.cliBin, name, ...flagsFor(answers), '--no-install'];
+  const flags = [registry.cliBin, name, ...answerFlags(answers), '--no-install'];
   const created = await run(execPath, flags, root, registry, agent);
 
   try {

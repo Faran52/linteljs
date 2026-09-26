@@ -8,6 +8,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- `vitest.config.ts` no longer excludes `src/routeTree.gen.ts` from coverage, and a TanStack Router project no
+  longer excludes `src/routes/**`: its routes are built in `App.tsx` and no generated tree is written. The
+  TanStack Router prompt hint says so instead of promising file routes.
 - A project answering `styling: stylex` is linted for StyleX: `eslint.config.js` asks for
   `libraries: ['stylex']` and `package.json` installs `@stylexjs/eslint-plugin`, as Tailwind already had.
   Before, nothing checked the shorthands StyleX compiles to no CSS. A `sync` writes both.

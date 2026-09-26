@@ -26,8 +26,6 @@ export interface AncestorReader {
 // and a comment all carry the same shape, and four rules had described it under six names between them.
 export type NodeLocation = AST.Token['loc'];
 
-export type Position = NodeLocation['start'];
-
 // A parsed thing carrying a source range; shaped rather than RuleNode so a test can call rangeOf({}) with no cast.
 export interface Ranged {
   range?: AST.Range | undefined;
@@ -110,6 +108,22 @@ export const rangeOf = (node: Ranged): AST.Range => {
 // context.options is unknown[]; the one cast, sound since ESLint rejects a meta.schema mismatch before any visitor.
 export const optionsOf = <T>(context: RuleContext): Partial<T> => {
   return (context.options[0] ?? {}) as Partial<T>;
+};
+
+// Resolves a name against the scope chain, innermost first: a node's own scope finds nothing once the reference
+// sits inside a function or block, and walking up also gets shadowing right for free.
+export const resolveVariable = (scope: Scope.Scope, name: string): Scope.Variable | null => {
+  for (let current: Scope.Scope | null = scope; current; current = current.upper) {
+    const found = current.variables.find((variable) => {
+      return variable.name === name;
+    });
+
+    if (found) {
+      return found;
+    }
+  }
+
+  return null;
 };
 
 // Whether a rebuild would drop a comment inside node; four rules can't carry one, so each reports without a fix.

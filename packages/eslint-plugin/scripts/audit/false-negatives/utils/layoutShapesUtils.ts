@@ -25,7 +25,7 @@ const DEFAULT_MAX_ITEMS = 2;
 const DEFAULT_MAX_LINE_LENGTH = 120;
 const DEFAULT_MAX_PROPERTIES = 2;
 
-export const PROBE_ALIAS = 'linteljsProbeAlias';
+const PROBE_ALIAS = 'linteljsProbeAlias';
 
 const namedImports = (node: AstNode): AstNode[] => {
   return (node.specifiers ?? []).filter((specifier) => {

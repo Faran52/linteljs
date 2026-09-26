@@ -52,20 +52,3 @@ export const probes = (): E2eCase[] => {
     });
   });
 };
-
-export const flagsFor = (answers: Answers): string[] => {
-  return [
-    '--target', answers.target,
-    '--testing', answers.testing,
-    '--type-safety', answers.typeSafety,
-    '--libraries', answers.libraries.join(','),
-    '--agents', answers.agents.join(','),
-    '--plugins', answers.plugins.join(','),
-    ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
-    ...(answers.hostedFramework === undefined ? [] : ['--hosted', answers.hostedFramework]),
-    ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
-    ...(answers.form === undefined ? [] : ['--form', answers.form]),
-    ...(answers.router === undefined ? [] : ['--router', answers.router]),
-    ...(answers.store === undefined ? [] : ['--store', answers.store]),
-  ];
-};

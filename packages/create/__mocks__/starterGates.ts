@@ -63,7 +63,6 @@ export const NOT_TANSTACK_QUERY: readonly Condition[] = [{ data: [undefined, 'rt
 export const RTK_QUERY: readonly Condition[] = [{ data: ['rtk-query'] }];
 export const TAILWIND: readonly Condition[] = [{ styling: ['tailwind'] }];
 export const STYLEX: readonly Condition[] = [{ styling: ['stylex'] }];
-export const NOT_STYLEX: readonly Condition[] = [{ styling: [undefined, 'tailwind'] }];
 
 /**
  * The api edge every target shares. React Native has no dev server to serve a worker, so it writes none; a target

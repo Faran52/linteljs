@@ -13,6 +13,7 @@ import {
   type NamedNode,
   type Ranged,
   rangeOf,
+  resolveVariable,
   type RuleNode,
   type TypedNode,
 } from '../../utils/ruleUtils.ts';
@@ -20,7 +21,7 @@ import {
 import { globalNamespaceTags } from './utils/elementUtils.ts';
 import { nameOf } from './utils/nameUtils.ts';
 
-import type { AST, Scope } from 'eslint';
+import type { AST } from 'eslint';
 
 // `TSQualifiedName` is absent from ESLint's ESTree types, so the two fields this rule reads are described
 // structurally and narrowed by a predicate. A real parsed node satisfies it, and no cast is needed to say so.
@@ -90,22 +91,6 @@ const isQualified = (node: RuleNode): node is RuleNode & Qualified => {
 // `TypedNode` rather than `RuleNode`: this walks `ast.body`, whose members ESLint types as ESTree statements.
 const isImport = (node: TypedNode): node is TypedNode & ImportNode => {
   return node.type === 'ImportDeclaration' && 'source' in node && 'specifiers' in node;
-};
-
-// Resolves a name against the scope chain, innermost first. `noImportNamespaceDestructure` walks the same way, and
-// for the same reason: the node's own scope finds nothing once the reference sits inside a function or block.
-const resolveVariable = (scope: Scope.Scope, name: string): Scope.Variable | null => {
-  for (let current: Scope.Scope | null = scope; current; current = current.upper) {
-    const found = current.variables.find((variable) => {
-      return variable.name === name;
-    });
-
-    if (found) {
-      return found;
-    }
-  }
-
-  return null;
 };
 
 export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {

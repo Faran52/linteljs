@@ -11,7 +11,7 @@ interface MarketplaceRef {
 }
 
 // Only the keys this CLI owns are typed; spreads keep every project-owned setting.
-export interface ClaudeSettings {
+interface ClaudeSettings {
   // Explicitly `| undefined`: `exactOptionalPropertyTypes` separates a missing key from one set to undefined.
   includeCoAuthoredBy?: boolean | undefined;
   enabledPlugins?: Record<string, boolean>;

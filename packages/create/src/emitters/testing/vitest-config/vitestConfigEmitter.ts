@@ -205,11 +205,11 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
 
   const target = targetFor(answers);
   const include = coverageInclude(target.sfcExtension);
-  // A route table is configuration; the generated tree is the plugin's.
+  // React Router's route table is configuration; TanStack Router builds its tree in `App.tsx`.
   const exclude = [
     ...SHARED_COVERAGE_EXCLUDE,
     ...target.coverageExclude ?? [],
-    ...(answers.router === undefined ? [] : ['src/routes/**', 'src/routeTree.gen.ts']),
+    ...(answers.router === undefined || answers.router === 'tanstack-router' ? [] : ['src/routes/**']),
   ];
 
   if (target.testPlatforms !== undefined) {

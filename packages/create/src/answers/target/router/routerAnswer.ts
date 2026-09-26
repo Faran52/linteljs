@@ -39,7 +39,7 @@ export const routerAnswer = {
     },
     'tanstack-router': {
       label: 'TanStack Router',
-      hint: 'Type-safe file routes under src/routes/',
+      hint: 'Type-safe routes built in src/App.tsx',
       only: (target) => {
         return target.routers?.includes('tanstack-router') === true;
       },

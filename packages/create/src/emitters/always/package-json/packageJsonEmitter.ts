@@ -325,7 +325,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   };
 };
 
-export const emitPackageJson = (existing: PackageJson, answers: Answers): string => {
+const emitPackageJson = (existing: PackageJson, answers: Answers): string => {
   return `${JSON.stringify(patchPackageJson(existing, answers), null, 2)}\n`;
 };
 

@@ -88,7 +88,7 @@ interface EslintParser {
 // Keys holding no child worth walking. Tokens carry a `type` and would otherwise be walked as nodes.
 const NOT_CHILDREN = new Set(['comments', 'loc', 'parent', 'range', 'tokens']);
 
-export const isAstNode = (value: unknown): value is AstNode => {
+const isAstNode = (value: unknown): value is AstNode => {
   return typeof value === 'object' && value !== null && 'type' in value && typeof value.type === 'string'
     && 'range' in value && Array.isArray(value.range);
 };

@@ -5,7 +5,7 @@ import { rules } from '../../../src/rules/index.ts';
 import type { Linter } from 'eslint';
 import type { LintelRuleModule } from '../../../src/types.ts';
 
-export const RULES = new Map<string, LintelRuleModule>(Object.entries(rules));
+const RULES = new Map<string, LintelRuleModule>(Object.entries(rules));
 export const RULE_IDS = [...RULES.keys()];
 
 export const moduleOf = (id: string): LintelRuleModule => {

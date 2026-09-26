@@ -104,8 +104,8 @@ it.
 
 Code shared *between* rules lives in five modules under `src/utils`, and a helper belongs to
 exactly one of them: `ruleUtils.ts` for the names ESLint's rule API is reached through (the node
-type aliases, `mustFind`, `rangeOf`, `optionsOf`, `rebuildLosesComments`, `FUNCTION_TYPES`),
-`layoutUtils.ts` for anything that reads or writes whitespace, `promiseChainUtils.ts` for the
+type aliases, `mustFind`, `rangeOf`, `optionsOf`, `rebuildLosesComments`, `resolveVariable`,
+`FUNCTION_TYPES`), `layoutUtils.ts` for anything that reads or writes whitespace, `promiseChainUtils.ts` for the
 fluent-chain walk the two promise rules share, `compatUtils.ts` for anything that reads an
 accessor ESLint moved between majors, and `jsxUtils.ts` for reading a JSX element: its name, its
 attributes, the value behind one, and the walk down its children. Each has a colocated test file.
