@@ -6,7 +6,7 @@ import { targetFor } from '@targets';
 import { joined } from '../../utils/artifactUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 
-import type { TargetRecord } from '@targets/types';
+import type { TargetRecord } from '@targets';
 
 // Import-free fragments after the target setup, so Angular's imports stay first.
 const setupSources = (answers: Answers, target: TargetRecord): string[] => {

@@ -48,8 +48,8 @@ import {
 import { targetCases } from '@pipeline/e2e/matrix/matrix';
 import { targetFor } from '@targets';
 
-import { buildAliases } from './always/utils/aliasUtils';
 import { buildArtifacts, seedArtifacts } from './registry';
+import { buildAliases } from './utils/aliasUtils';
 
 interface AnswerOverrides {
   agents?: Agent[];

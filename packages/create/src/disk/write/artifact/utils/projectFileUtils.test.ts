@@ -19,9 +19,9 @@ import {
   it,
 } from 'vitest';
 
-import { readIfPresent } from '../../utils/fsUtils';
+import { readIfPresent } from '../../../utils/fsUtils';
 
-import { projectFileWriter } from './projectFileWriter';
+import { projectFileWriter } from './projectFileUtils';
 
 let cwd = '';
 

@@ -6,7 +6,7 @@ import { isJsonObject } from '@utils/objectUtils';
 
 import { readIfPresent } from '../../utils/fsUtils';
 
-type JsonValue = null | boolean | number | string | object;
+import type { JsonValue } from '@answers';
 
 interface ManagedRecord {
   removable?: JsonValue;

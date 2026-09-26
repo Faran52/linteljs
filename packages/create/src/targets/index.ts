@@ -1,3 +1,4 @@
+export { OUTSIDE_TESTS } from './constants';
 export {
   targetFor,
   TARGETS,
@@ -7,6 +8,7 @@ export type {
   StarterFile,
   StarterTest,
   TargetRecord,
+  TestPlatform,
   TsconfigDelta,
   TsconfigPlugin,
 } from './types';

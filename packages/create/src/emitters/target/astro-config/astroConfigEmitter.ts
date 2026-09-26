@@ -1,8 +1,7 @@
 import { type Artifact } from '@config/types';
 
 import { type Answers, type HostedFramework } from '@answers';
-import { targetFor } from '@targets';
-import { OUTSIDE_TESTS } from '@targets/constants';
+import { OUTSIDE_TESTS, targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';

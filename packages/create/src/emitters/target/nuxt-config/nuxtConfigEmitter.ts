@@ -2,7 +2,7 @@ import { type Artifact, type Emitter } from '@config/types';
 
 import { targetFor } from '@targets';
 
-import { buildAliases } from '../../always/utils/aliasUtils';
+import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';

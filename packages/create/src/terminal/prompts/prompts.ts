@@ -9,14 +9,21 @@ import { valuesOf } from '@utils/objectUtils';
 
 import {
   type AnswerKey,
+  type AnswerRecord,
   ANSWERS,
   type Answers,
+  type ChoiceRecord,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
+  type JsonValue,
+  type MultiRecord,
+  type OptionalChoiceRecord,
+  type OptionalMultiRecord,
   parseLinteljsConfig,
+  unaskedValueOf,
+  type ValueRecord,
 } from '@answers';
-import { type JsonValue, unaskedValueOf } from '@answers/utils/readUtils';
 import { targetFor } from '@targets';
 
 import { PROJECT_NAME_RULE } from '../constants';
@@ -24,15 +31,7 @@ import { isValidProjectName } from '../utils/nameUtils';
 
 import { ANSWER_KEYS, RUN_CANCELLED_MESSAGE } from './constants';
 
-import type {
-  AnswerRecord,
-  ChoiceRecord,
-  MultiRecord,
-  OptionalChoiceRecord,
-  OptionalMultiRecord,
-  ValueRecord,
-} from '@answers/types';
-import type { TargetRecord } from '@targets/types';
+import type { TargetRecord } from '@targets';
 
 // The four value-bearing kinds `askAnswer` dispatches on. `list` and `map` carry no `prompt` on any record, both
 // being hand-edited only, so neither reaches `askAnswer`.

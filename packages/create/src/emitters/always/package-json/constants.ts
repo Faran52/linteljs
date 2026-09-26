@@ -1,5 +1,4 @@
-import type { Router } from '@answers';
-import type { Store } from '@answers/target/store/storeAnswer';
+import type { Router, Store } from '@answers';
 import type { Framework } from '@config/types';
 
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the

@@ -10,7 +10,8 @@ import {
   readIfPresent,
 } from '../../utils/fsUtils';
 import { safeProjectPath } from '../../utils/pathUtils';
-import { projectFileWriter } from '../project-file/projectFileWriter';
+
+import { projectFileWriter } from './utils/projectFileUtils';
 
 // `seed` says the project is being born, so its seed artifacts are planted. A `preserve` file that already exists is
 // the project's on every run, born or not.

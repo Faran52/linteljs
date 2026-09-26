@@ -27,6 +27,17 @@ export { type Store } from './target/store/storeAnswer';
 export { type Surface } from './target/surfaces/surfacesAnswer';
 export { type TargetId } from './target/target/targetAnswer';
 export { type Testing } from './testing/testing/testingAnswer';
+export type {
+  AnswerRecord,
+  ChoiceRecord,
+  ListRecord,
+  MapRecord,
+  MultiRecord,
+  OptionalChoiceRecord,
+  OptionalMultiRecord,
+  TextRecord,
+  ValueRecord,
+} from './types';
 export { type TypeSafety } from './typesafety/type-safety/typeSafetyAnswer';
 export {
   browsersOf,
@@ -36,4 +47,8 @@ export {
   rendersWithReact,
 } from './utils/answerUtils';
 export { parseLinteljsConfig } from './utils/configUtils';
+export {
+  type JsonValue,
+  unaskedValueOf,
+} from './utils/readUtils';
 export { onlyFor } from './utils/recordUtils';

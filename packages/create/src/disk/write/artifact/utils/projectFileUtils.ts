@@ -2,8 +2,8 @@ import { constants } from 'node:fs';
 import { mkdir, open } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { hasCode } from '../../utils/fsUtils';
-import { safeProjectPath } from '../../utils/pathUtils';
+import { hasCode } from '../../../utils/fsUtils';
+import { safeProjectPath } from '../../../utils/pathUtils';
 
 export const projectFileWriter = async (
   cwd: string,

@@ -8,7 +8,7 @@ import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
 
 import type { Answers } from '@answers';
-import type { PluginSpec, TestPlatform } from '@targets/types';
+import type { PluginSpec, TestPlatform } from '@targets';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
 // on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.

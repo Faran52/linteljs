@@ -20,8 +20,8 @@ import {
 } from '@answers';
 
 import { emitNuxtConfig } from '../../target/nuxt-config/nuxtConfigEmitter';
+import { buildAliases } from '../../utils/aliasUtils';
 import { emitEslintConfig } from '../eslint-config/eslintConfigEmitter';
-import { buildAliases } from '../utils/aliasUtils';
 
 import {
   buildTsconfig,

@@ -1,13 +1,13 @@
 import { valuesOf } from '@utils/objectUtils';
 
-import { type AnswerKey, ANSWERS } from '@answers';
-
-import type {
-  AnswerRecord,
-  ListRecord,
-  MapRecord,
-  TextRecord,
-} from '@answers/types';
+import {
+  type AnswerKey,
+  type AnswerRecord,
+  ANSWERS,
+  type ListRecord,
+  type MapRecord,
+  type TextRecord,
+} from '@answers';
 
 type FlaggableRecord = Exclude<AnswerRecord, ListRecord | MapRecord | TextRecord>;
 

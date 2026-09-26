@@ -1,6 +1,6 @@
 import { MANAGER_BINARIES, RUN_PREFIX } from '@config/constants';
 
-import { styleGlob } from '@emitters/always/utils/scriptUtils';
+import { styleGlob } from '@emitters';
 import { localBinarySpawn } from '@spawns';
 
 import type { Answers } from '@answers';

@@ -7,8 +7,8 @@ import {
 import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
+import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
-import { buildAliases } from '../utils/aliasUtils';
 
 import {
   BASE_IGNORES,

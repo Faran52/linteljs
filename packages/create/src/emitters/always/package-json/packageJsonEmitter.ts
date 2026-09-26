@@ -42,7 +42,7 @@ import {
   VERSIONS,
 } from './constants';
 
-import type { TargetRecord } from '@targets/types';
+import type { TargetRecord } from '@targets';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 

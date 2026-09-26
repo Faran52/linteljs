@@ -1,3 +1,4 @@
+export { styleGlob } from './always/utils/scriptUtils';
 export {
   buildArtifacts,
   seedArtifacts,
