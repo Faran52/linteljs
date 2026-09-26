@@ -41,6 +41,7 @@ export { base } from './layers/base/baseLayer';
 export { html } from './layers/html/htmlLayer';
 export { typescript } from './layers/typescript/typescriptLayer';
 export { vitest } from './layers/vitest/vitestLayer';
+export { stylex } from './libraries/stylex/stylexLibrary';
 export { tailwind } from './libraries/tailwind/tailwindLibrary';
 export { tanstackQuery } from './libraries/tanstack-query/tanstackQueryLibrary';
 export { tanstackRouter } from './libraries/tanstack-router/tanstackRouterLibrary';

@@ -106,4 +106,9 @@ export const LIBRARIES: Record<LibraryLayer, (options: LibraryOptions) => Promis
 
     return tailwind(tailwindEntryPoint);
   },
+  'stylex': async () => {
+    const { stylex } = await import('../../libraries/stylex/stylexLibrary');
+
+    return stylex();
+  },
 };

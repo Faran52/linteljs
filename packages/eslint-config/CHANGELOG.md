@@ -8,6 +8,14 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- `stylex()` is published at `./stylex`, on the barrel, and as `libraries: ['stylex']` in
+  `composeConfig`, with `@stylexjs/eslint-plugin` as an optional peer. It validates styles in every
+  script, `.vue`, `.svelte` and `.astro` file, and bans `background`, `border` and its side and
+  logical forms, and `animation`: StyleX 0.19 compiles each to no CSS without an error, and a `var()`
+  value skips the plugin's own check. It also reports multi-value shorthands, unused styles, legacy
+  pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens defined
+  outside a `.stylex.ts` file. `valid-styles` calls `context.getScope()`, which ESLint removed, on an
+  identifier in a numeric property, so the layer gives it one rather than letting the run throw.
 - **Breaking: `defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The
   `./define-config` subpath is gone and `DefineConfigOptions` is `ComposeConfigOptions`. ESLint's own
   `eslint/config`, Vite, Vitest, Astro and Nuxt each export a `defineConfig` that returns what it is given,

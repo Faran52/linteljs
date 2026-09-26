@@ -360,6 +360,9 @@ importers:
       '@stryker-mutator/vitest-runner':
         specifier: 'catalog:'
         version: 10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.1)
+      '@stylexjs/eslint-plugin':
+        specifier: ^0.19.1
+        version: 0.19.1
       '@tanstack/eslint-plugin-query':
         specifier: ^5.103.2
         version: 5.103.2(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -995,6 +998,10 @@ packages:
     peerDependenciesMeta:
       css-tree:
         optional: true
+
+  '@csstools/css-tokenizer@3.0.4':
+    resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
+    engines: {node: '>=18'}
 
   '@csstools/css-tokenizer@4.0.1':
     resolution: {integrity: sha512-bPlN9S9O1A0euCpEWE4qnvB5YDuyYVsUTrxSgmAM1Is0j4tICHoVyOVAXfWMP/kS9ZrjvyIXWV2PmomiAXXqOw==}
@@ -1891,6 +1898,12 @@ packages:
       '@stryker-mutator/core': 10.0.0
       vitest: '>=2.0.0'
 
+  '@stylexjs/eslint-plugin@0.19.1':
+    resolution: {integrity: sha512-875KpR4M71F5rTSTfDoGWbs09u8atZvVGWBN5bWt3svIEmuNwTMRZGdY8iHiaPrL+W49/tifc6pouKcn3t8d+A==}
+
+  '@stylexjs/shared@0.19.1':
+    resolution: {integrity: sha512-oFBtW0NPNLJOT1gLweWRNKrIJHjJMwOmSV7fgd6ewok4fwb/Nh95PEaYGKu+ZONk0nNghjLFfOwiIsxJdvh3TQ==}
+
   '@stylistic/eslint-plugin@5.10.0':
     resolution: {integrity: sha512-nPK52ZHvot8Ju/0A4ucSX1dcPV2/1clx0kLcH5wDmrE4naKso7TUC/voUyU1O9OTKTrR6MYip6LP0ogEMQ9jPQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1983,13 +1996,6 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       '@typescript-eslint/parser': ^8.70.1
-      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-      typescript: '>=4.8.4 <6.1.0'
-
-  '@typescript-eslint/parser@8.70.0':
-    resolution: {integrity: sha512-zYvrmj9Yxd63UGaXw+kdt6A0F0s0qveJyuatIM77bYC2DE4pgmg7a50u8LR7PRtXd0x+h+Tl3eXabGm06SWd3Q==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-    peerDependencies:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.1.0'
 
@@ -6000,6 +6006,8 @@ snapshots:
     optionalDependencies:
       css-tree: 3.2.1
 
+  '@csstools/css-tokenizer@3.0.4': {}
+
   '@csstools/css-tokenizer@4.0.1': {}
 
   '@csstools/media-query-list-parser@5.0.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.1))(@csstools/css-tokenizer@4.0.1)':
@@ -6780,6 +6788,15 @@ snapshots:
       tslib: 2.8.1
       vitest: 5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
+  '@stylexjs/eslint-plugin@0.19.1':
+    dependencies:
+      '@csstools/css-tokenizer': 3.0.4
+      '@stylexjs/shared': 0.19.1
+      micromatch: 4.0.8
+      postcss-value-parser: 4.2.0
+
+  '@stylexjs/shared@0.19.1': {}
+
   '@stylistic/eslint-plugin@5.10.0(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))':
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -6893,18 +6910,6 @@ snapshots:
       ignore: 7.0.9
       natural-compare: 1.4.0
       ts-api-utils: 2.5.0(typescript@6.0.3)
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/parser@8.70.0(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)':
-    dependencies:
-      '@typescript-eslint/scope-manager': 8.70.0
-      '@typescript-eslint/types': 8.70.0
-      '@typescript-eslint/typescript-estree': 8.70.0(supports-color@10.2.2)(typescript@6.0.3)
-      '@typescript-eslint/visitor-keys': 8.70.0
-      debug: 4.4.3(supports-color@10.2.2)
-      eslint: 10.11.0(jiti@2.7.0)(supports-color@10.2.2)
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color

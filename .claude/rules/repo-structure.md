@@ -186,7 +186,7 @@ aliases it duplicates instead of importing carry a comment saying so.
 
 - **`eslint-config` takes the subject shape, grouped by what a layer is.** `layers/<name>/<name>Layer.ts`
   for `base`, `typescript`, `vitest` and `html`, `frameworks/<name>/<name>Framework.ts` for the nine
-  frameworks, `libraries/<name>/<name>Library.ts` for the three libraries, each with its suite beside
+  frameworks, `libraries/<name>/<name>Library.ts` for the four libraries, each with its suite beside
   it and a `utils/` only where one subject alone reads the helper: `layers/base/utils/` holds the
   naming and import-sort builders. The suffix is on the file and not the export, so `baseLayer.ts`
   still exports `base`. `compose-config/composeConfig.ts` composes them and owns the ordering,

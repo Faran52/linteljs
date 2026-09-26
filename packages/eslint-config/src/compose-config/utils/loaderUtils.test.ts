@@ -12,6 +12,7 @@ import { reactNative, reactNativeGroup } from '../../frameworks/react-native/rea
 import { solid, solidGroup } from '../../frameworks/solid/solidFramework';
 import { svelte, svelteGroup } from '../../frameworks/svelte/svelteFramework';
 import { vue, vueGroup } from '../../frameworks/vue/vueFramework';
+import { stylex } from '../../libraries/stylex/stylexLibrary';
 import { tailwind } from '../../libraries/tailwind/tailwindLibrary';
 import { tanstackQuery } from '../../libraries/tanstack-query/tanstackQueryLibrary';
 import { tanstackRouter } from '../../libraries/tanstack-router/tanstackRouterLibrary';
@@ -89,6 +90,7 @@ describe('LIBRARIES', () => {
   it('loads each library layer', async () => {
     await expect(LIBRARIES['tanstack-query']({})).resolves.toEqual(tanstackQuery());
     await expect(LIBRARIES['tanstack-router']({})).resolves.toEqual(tanstackRouter());
+    await expect(LIBRARIES.stylex({})).resolves.toEqual(stylex());
   });
 
   // The entry point is the one option a loader passes on, and without it the plugin guesses at the stylesheet.

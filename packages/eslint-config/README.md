@@ -37,7 +37,7 @@ Each layer switch is off unless you enable it.
 | `vitest` | Enables rules for `*.test.*` and `*.spec.*` files. |
 | `html` | Enables the HTML layer. |
 | `astro` | Enables Astro rules for `.astro` templates. It stacks with a framework layer rather than replacing one. |
-| `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'` and `'tailwind'`. |
+| `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
 | `tailwindEntryPoint` | Path to the CSS file that contains `@import "tailwindcss"`, passed to the Tailwind layer. Ignored unless `libraries` includes `'tailwind'`. |
 | `ignores`, `naming`, `folderNaming`, `aliases`, `resolver` | Passed through to `base` under the same names. |
 
@@ -98,6 +98,7 @@ choice for a project config.
 | `tanstackQuery()` | `/tanstack-query` | TanStack Query recommended rules. | `@tanstack/eslint-plugin-query` |
 | `tanstackRouter()` | `/tanstack-router` | TanStack Router recommended rules. | `@tanstack/eslint-plugin-router` |
 | `tailwind()` | `/tailwind` | Tailwind class-order, duplicate, and conflict checks. | `eslint-plugin-better-tailwindcss` |
+| `stylex()` | `/stylex` | StyleX style validation, including a ban on the shorthands StyleX compiles to no CSS, plus multi-value shorthands, unused styles, legacy pseudo-class keys, `className` beside `stylex.props`, and tokens outside a `.stylex.ts` file. | `@stylexjs/eslint-plugin` |
 
 Framework and library plugins are optional peer dependencies. Install the peers for layers you enable; the
 column above names them per layer.

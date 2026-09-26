@@ -26,6 +26,7 @@ export default defineConfig({
     tanstackQuery: 'src/libraries/tanstack-query/tanstackQueryLibrary.ts',
     tanstackRouter: 'src/libraries/tanstack-router/tanstackRouterLibrary.ts',
     tailwind: 'src/libraries/tailwind/tailwindLibrary.ts',
+    stylex: 'src/libraries/stylex/stylexLibrary.ts',
   },
   /**
    * ESM only. `@eslint-react/eslint-plugin`, and it will not be the last, publishes no `require` condition at

@@ -143,6 +143,12 @@
         "default": "./dist/tailwind.mjs"
       }
     },
+    "./stylex": {
+      "import": {
+        "types": "./dist/stylex.d.mts",
+        "default": "./dist/stylex.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "dependencies": {
@@ -163,6 +169,7 @@
     "@next/eslint-plugin-next": "^16.3.6",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
+    "@stylexjs/eslint-plugin": "^0.19.1",
     "@tanstack/eslint-plugin-query": "^5.103.2",
     "@tanstack/eslint-plugin-router": "^1.162.0",
     "@types/node": "catalog:",
@@ -196,6 +203,7 @@
     "@html-eslint/eslint-plugin": ">=0.35",
     "@html-eslint/parser": ">=0.35",
     "@next/eslint-plugin-next": ">=15",
+    "@stylexjs/eslint-plugin": ">=0.19",
     "@tanstack/eslint-plugin-query": ">=5",
     "@tanstack/eslint-plugin-router": ">=1",
     "@vitest/eslint-plugin": ">=1",
@@ -225,6 +233,9 @@
       "optional": true
     },
     "@next/eslint-plugin-next": {
+      "optional": true
+    },
+    "@stylexjs/eslint-plugin": {
       "optional": true
     },
     "@tanstack/eslint-plugin-query": {
@@ -285,6 +296,7 @@
     "svelte",
     "typescript",
     "vue",
-    "tailwindcss"
+    "tailwindcss",
+    "stylex"
   ]
 }

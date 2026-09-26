@@ -207,6 +207,24 @@ describe('composeConfig', () => {
     expect(block?.settings).toEqual({ 'better-tailwindcss': { entryPoint: './src/app/globals.css' } });
   });
 
+  it('composes the stylex layer through the same door', async () => {
+    const code = [
+      "import * as stylex from '@stylexjs/stylex';",
+      '',
+      "const sheet = stylex.create({ card: { background: 'var(--card)' } });",
+      '',
+      'export const styles = { card: stylex.props(sheet.card) };',
+      '',
+    ].join('\n');
+    const config = await composeConfig({
+      framework: 'react',
+      libraries: ['stylex'],
+    });
+
+    await expect(ruleIdsFor(config, code, 'src/components/card/styles.ts'))
+      .resolves.toContain('@stylexjs/valid-styles');
+  });
+
   it('puts vue underneath nuxt rather than beside it', async () => {
     const config = await composeConfig({ framework: 'nuxt' });
 
@@ -348,6 +366,7 @@ const WIDEST: ComposeConfigOptions = {
     'tanstack-query',
     'tanstack-router',
     'tailwind',
+    'stylex',
   ],
 };
 
