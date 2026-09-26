@@ -6,85 +6,46 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 
-## Unreleased
+## 2.0.0
 
-- `prefer-arrow-functions` no longer asks for an explicit `return` in a StyleX dynamic style, an arrow
-  that is a property value inside `stylex.create()`. The compiler takes only the expression body and
-  failed the build on the block the fix wrote.
-- **Breaking: Node `>=14.0.0`.** The floor was 12. The bundle now targets `node14`, so it keeps optional
-  chaining and nullish coalescing, and CI runs ESLint 5, 6 and 7 against it on a bare `node:14-alpine`.
-- `react-no-global-namespace` fixes a Svelte component correctly: the `react` import goes inside the
-  `<script>` holding the reference, at its indent, rather than above the tag, and a reference in the markup
-  is reported with no fix.
-- `interface-order` checks each Svelte `<script>`, where it used to report nothing, and its fix keeps the
-  script's indentation.
-- `interface-order` takes `{ trimBlankLines: boolean }`, default `true`: the fix empties whitespace-only lines
-  inside the declarations it moves. `false` moves the text byte for byte.
-- `export-specifier-newline` keeps a trailing comma on the last specifier's line. The fix used to push it
-  to column 0 ahead of the closing brace.
-- `prefer-arrow-functions` no longer converts a function whose only mentions sit below it inside another
-  function declaration that is itself called earlier, as in `run(); function helper() {} function run() {
-  helper(); }`, nor one called from a later `case` of the `switch` declaring it. Both conversions threw
-  `ReferenceError`.
-- A crash on a lookup the parse should guarantee now names the lookup that failed and asks for the parser in
-  the issue.
+### Breaking
 
-- **Breaking: `interface-order` is now in `recommended`.** It was opt-out through 1.x on the grounds
-  that it asks for a house layout rather than making a claim about a type. A shared config is a house
-  layout, and every project `@linteljs/create` writes already received the rule through `base`, so
-  leaving it out of the preset only hid the position from a consumer composing the plugin directly.
-  A project with a different convention will report on upgrade. The rule still reports rather than
-  rewriting freely, and its fix is still `reorder`.
+- **Node `>=14.0.0`**, up from 12. The bundle targets `node14`; CI runs ESLint 5, 6 and 7 on `node:14-alpine`.
+- **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. Its message ids
+  `consistNewline` and `multilineProperty` are now `membersOnNewline` and `multilineMember`, and the messages say
+  "Members". Options and fixes are unchanged.
+- **The category presets are gone.** `configs.layout`, `ordering`, `imports`, `functions` and `promises` (and their
+  `flat/` forms) are replaced by `configs.all` and `configs['flat/all']`, which carry every rule. Name the rules you
+  want, or take `all` and turn off what you do not. `configs.recommended` stays.
+- **`meta.docs.category` is replaced by `meta.docs.fixShape`**, and the exports `RULE_CATEGORIES` and `RuleCategory`
+  by `FIX_SHAPES` and `FixShape`: `whitespace` leaves the tokens identical, `reorder` only reorders them, absent
+  may rewrite code.
+- **`recommended` gains three rules**, so a project on it reports more on upgrade: `interface-order`,
+  `no-eslint-disable` and `no-inline-object-types` (below).
 
-- **Breaking: `newline-destructuring` is now `member-newline`.** The rule governs destructuring
-  patterns, interface bodies and type literals, so two thirds of the old name described something it
-  does not do, and it sat beside `destructuring-property-newline` reading as a near-duplicate of a
-  rule it does not overlap. Rename the id wherever it is configured. Nothing else about the rule
-  changed: the same shapes are reported, with the same fixes and the same options.
-- **Breaking: two of that rule's message ids changed.** `consistNewline` is now `membersOnNewline`,
-  matching `destructuring-property-newline`'s `propertiesOnNewline` and dropping a truncation that
-  read as a typo, and `multilineProperty` is now `multilineMember`. `mustSplit` and
-  `noBlankBetween` are unchanged, so JSON and SARIF output naming those two still matches.
-- All four of that rule's messages say "Members" where they said "Properties". An interface body has
-  members, and reporting one as a property was wrong. The `{{maxProperties}}` placeholder keeps its
-  name, because it is the option name and the option is not renamed.
-- **Breaking: the five `react-native-*` rules are now `native-*`.** `react-native-accessible-name` is
-  `native-accessible-name`, `react-native-no-nested-touchables` is `native-no-nested-touchables`,
-  `react-native-valid-accessibility-actions` is `native-valid-accessibility-actions`,
-  `react-native-valid-accessibility-role` is `native-valid-accessibility-role`, and
-  `react-native-valid-accessibility-state` is `native-valid-accessibility-state`. Under the old prefix
-  they sorted among the `react-*` rules and read as React rules. Rename the ids wherever they are
-  configured. Nothing else about the rules changed: the same elements are reported, with the same
-  messages and the same options.
-- `react-no-global-namespace` recognises a directive by its string value. typescript-eslint gives
-  every expression statement a `directive` key, so a file of plain statements was read as one long
-  prologue: `React.createElement('div');` alone crashed the rule, and after a leading `run();` the
-  import was inserted below it.
-- `no-inline-object-types` no longer treats a literal outside any generic as an argument to one
-  named `''`, so `allowIn: ['']` stops silencing it everywhere.
+### Added
 
-## 1.6.0
+- `no-eslint-disable` reports `eslint-disable`, `eslint-disable-line` and `eslint-disable-next-line` directives.
+  Report-only. `allowRules` names rule ids a directive may carry; a bare directive is never allowed.
+- `no-inline-object-types` (TypeScript only) reports a type literal with members anywhere but directly under a type
+  alias. `allowIn` names generics whose arguments may stay inline, such as `Extract`.
+- `react-no-global-namespace` reports `React.X` resolved through `@types/react`'s global namespace, in a type, a value
+  or a JSX tag such as `<React.Fragment>`. Fixable: imports the name from `react`, merging into an existing import,
+  and in Svelte inside the `<script>` holding the reference. Outside `recommended`; the React layers enable it.
+- Five React Native accessibility rules: `native-accessible-name`, `native-no-nested-touchables`,
+  `native-valid-accessibility-actions`, `native-valid-accessibility-role` and `native-valid-accessibility-state`.
+  Outside `recommended`; the `react-native` layer of `@linteljs/eslint-config` enables them.
+- `interface-order` takes `{ trimBlankLines: boolean }`, default `true`: the fix empties whitespace-only lines inside
+  the declarations it moves. `false` moves the text byte for byte.
 
-New rule, `react-no-global-namespace`. `@types/react` declares `React` as a global namespace so JSX
-resolves without an import, which makes `children?: React.ReactNode` compile in a file that never
-imports React. It is not a type error and nothing else reports it, so a file stops saying where its
-types come from and nobody finds out. Fixable: the name is imported from `react` and the member
-access replaced, merging into an existing import rather than duplicating it. Outside `recommended`
-and enabled by the React layer in `@linteljs/eslint-config`.
+### Fixed
 
-**Breaking: the category presets are gone.** `meta.docs.category` had eight values and each one
-published a preset, so `imports`, `types` and `suppression` were one-rule presets and
-`accessibility` was exactly the rules whose id begins `react-native-`, both directions. A rule's
-subject is in its id now, the way `@stylistic` carries `jsx-*`, and the presets carry the level
-alone. `configs.recommended` is unchanged; `configs.all` replaces the eight, carrying every rule
-including the opt-outs. Name the rules you want, or take `all` and turn off what you do not.
-
-`meta.docs.category` is replaced by `meta.docs.fixShape`, which says what a fixer may do to the
-token stream rather than what a rule is about: `whitespace` leaves the tokens identical, `reorder`
-keeps the same tokens in a different order, and absent means it may rewrite code. It has one reader,
-the fixer-safety suite, which is what the category was doing for it before.
-
-1.5.4 was cut and never published.
+- `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.
+- `export-specifier-newline` keeps a trailing comma on the last specifier's line instead of pushing it to column 0.
+- `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later `case` of
+  its `switch`, both of which threw `ReferenceError`, and no longer asks for a block body in a StyleX dynamic style
+  inside `stylex.create()`, which the compiler refuses.
+- A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
 
 ## 1.5.3
 

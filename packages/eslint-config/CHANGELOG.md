@@ -6,64 +6,51 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/create`](../create/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
-## Unreleased
+## 2.0.0
 
-- `stylex()` is published at `./stylex`, on the barrel, and as `libraries: ['stylex']` in
-  `composeConfig`, with `@stylexjs/eslint-plugin` as an optional peer. It validates styles in every
-  script, `.vue`, `.svelte` and `.astro` file, and bans `background`, `border` and its side and
-  logical forms, and `animation`: StyleX 0.19 compiles each to no CSS without an error, and a `var()`
-  value skips the plugin's own check. It also reports multi-value shorthands, unused styles, legacy
-  pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens defined
-  outside a `.stylex.ts` file. `valid-styles` calls `context.getScope()`, which ESLint removed, on an
-  identifier in a numeric property, so the layer gives it one rather than letting the run throw.
-- **Breaking: `defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The
-  `./define-config` subpath is gone and `DefineConfigOptions` is `ComposeConfigOptions`. ESLint's own
-  `eslint/config`, Vite, Vitest, Astro and Nuxt each export a `defineConfig` that returns what it is given,
-  and a project imports several of them, so an editor's auto-import could pick the wrong one. This one is an
-  async function that picks and joins the layers its options ask for, and is now named for that.
-- `astro` names typescript-eslint's parser for `.astro` frontmatter and its `<script>` blocks. The
-  plugin looked for it from the working directory, which a project that has it only through this
-  package may not resolve under pnpm or Yarn PnP, and then fell back to espree without a word: every
-  `interface` in a frontmatter was a parse error.
-- `sonarjs/code-eval` stands down under a `__mocks__/` at any depth, not only at the root. A workspace
-  keeps one per package, and the grant never reached any of them.
-- `vitest/expect-expect` counts `expectTypeOf` and `assertType`. A suite that asserts only over types
-  has no `expect` call in it and was reported as having no assertions.
-- One owner per rule name. Twelve names were enabled under two ids at once, so a React project
-  reported every hook defect and every unused binding twice, with two wordings, and where both
-  carried a fixer both wanted the same range. `@eslint-react` 5 republishes the whole `react-hooks`
-  7 rule set under its own prefix, so its nine copies are off and `eslint-plugin-react-hooks` owns
-  them: it also carries `refs`, `globals`, `immutability` and the four React Compiler rules that
-  `@eslint-react` has no copy of. `sonarjs/no-unused-vars`, `sonarjs/no-array-delete` and
-  `sonarjs/prefer-regexp-exec` are off for the same reason, behind `unused-imports` and
-  `typescript-eslint`.
-- `@linteljs/no-inline-object-types` reaches a `<script lang="ts">` block. The plugin's preset scopes
-  a TypeScript-only rule to the four TypeScript extensions, and `base` restated two of the three, so
-  the rule was off in every `.vue` and `.svelte` file.
-- `reactNative()` is published: a `./react-native` subpath, a build entry, and `reactNative` and
-  `reactNativeGroup` on the barrel. `nuxt`, `nuxtGroup` and `tailwind` join the barrel too, and
-  `scripts/smoke.ts` now holds every layer in `frameworks/` and `libraries/` to having both a
-  subpath and a barrel export.
-- `vue/multi-word-component-names` is no longer restated; `vue/flat/recommended` already sets it to
-  error.
-- An alias whose `paths` key has its wildcard mid-key, such as `@features/*/api`, sorts into its
-  alias bucket. The pattern kept a literal `*`, matched nothing, and the imports sorted with the
-  packages.
-- `svelte()` no longer parses a `.svelte.js` rune module with typescript-eslint and the project
-  service. The type-aware rules are off for every `.js` file, so it bought nothing, and a
-  `.svelte.js` outside every tsconfig failed to parse.
+### Breaking
 
-## 1.6.0
+- **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
+  subpath is gone and `DefineConfigOptions` is `ComposeConfigOptions`. Change the import; the options are the same.
+- **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
+  `eslint-plugin-jsx-a11y`. Install the new peer and rename `jsx-a11y/*` overrides to `jsx-a11y-x/*`.
+- **`typescript` `>=5` is a required peer.**
+- **`base` reports more.** The plugin's `recommended` now carries `@linteljs/no-eslint-disable` and
+  `@linteljs/no-inline-object-types`, and reaches `.vue` and `.svelte` files as well as scripts.
+  `@stylistic/jsx-max-props-per-line` allows two props on a one-line tag, and `es-toolkit/compat` is a restricted
+  import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
 
-1.5.4 was cut and never published; its notes are folded in here.
+### Added
 
-- `tanstackRouter()` at `/tanstack-router`, composed through `libraries: ['tanstack-router']`, over
-  `@tanstack/eslint-plugin-router` as an optional peer.
-- `resolver.noWarnOnMultipleProjects` passes through to the import resolver, for a workspace whose
-  `project` is a glob.
-- `typescript-eslint` moves to 8.70.0, `@next/eslint-plugin-next` to 16.3.5, `angular-eslint` to
-  22.5.0, `eslint-plugin-vue` to 10.11.0, `@tanstack/eslint-plugin-query` to 5.102.8,
-  `eslint-plugin-solid` to 0.16.1 and `stylelint-config-standard` to ^40.0.0.
+- New layers, each on its own subpath, on the barrel, and in `composeConfig`: `reactNative()` at `./react-native`
+  and `nuxt()` at `./nuxt` (`framework: 'react-native'` and `'nuxt'`), `tanstackRouter()` at `./tanstack-router`
+  and `stylex()` at `./stylex` (`libraries: ['tanstack-router']` and `['stylex']`), over the optional peers
+  `@tanstack/eslint-plugin-router` and `@stylexjs/eslint-plugin`. `nuxtGroup`, `reactNativeGroup` and `tailwind`
+  join the barrel too.
+- `reactNative()` runs the hooks and component rules React has, without the DOM accessibility ones, plus the five
+  `@linteljs/native-*` rules.
+- `stylex()` validates styles in scripts, `.vue`, `.svelte` and `.astro` files, bans the shorthands StyleX compiles
+  to no CSS (`background`, `border` and its side and logical forms, `animation`), and reports unused styles, legacy
+  pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens outside a `.stylex.ts` file.
+- The React layers enable `@linteljs/react-no-global-namespace`.
+- `resolver.noWarnOnMultipleProjects` passes through to the import resolver, for a workspace whose `project` is a
+  glob.
+- `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
+
+### Fixed
+
+- One owner per rule name. `@eslint-react`'s nine copies of the `react-hooks` rules are off, so a React project no
+  longer reports every hook defect twice; `sonarjs/no-unused-vars`, `sonarjs/no-array-delete` and
+  `sonarjs/prefer-regexp-exec` are off behind `unused-imports` and `typescript-eslint`.
+- `astro` names typescript-eslint's parser for `.astro` frontmatter and `<script>` blocks rather than resolving it
+  from the working directory, which under pnpm or Yarn PnP fell back to espree and failed on every `interface`.
+- `svelte()` no longer parses a `.svelte.js` rune module with typescript-eslint, which failed outside every tsconfig.
+- An alias whose `paths` key has its wildcard mid-key, such as `@features/*/api`, sorts into its alias bucket.
+- `sonarjs/code-eval` stands down under a `__mocks__/` at any depth, not only at the root.
+- `vuejs-accessibility/label-has-for` accepts a label bound by `for` alone, and Angular's
+  `@typescript-eslint/no-extraneous-class` allows a decorated class.
+- `vue/multi-word-component-names` is no longer restated over `vue/flat/recommended`.
+- `typescript-eslint` moves to ^8.70.1 and `eslint-plugin-sonarjs` to ^4.2.1.
 
 ## 1.5.3
 

@@ -6,218 +6,73 @@ when a version's change lives in a sibling it is described there instead:
 - [`@linteljs/eslint-config`](../eslint-config/CHANGELOG.md)
 - [`@linteljs/eslint-plugin`](../eslint-plugin/CHANGELOG.md)
 
-## Unreleased
+## 2.0.0
 
-- `vitest.config.ts` no longer excludes `src/routeTree.gen.ts` from coverage, and a TanStack Router project no
-  longer excludes `src/routes/**`: its routes are built in `App.tsx` and no generated tree is written. The
-  TanStack Router prompt hint says so instead of promising file routes.
-- A project answering `styling: stylex` is linted for StyleX: `eslint.config.js` asks for
-  `libraries: ['stylex']` and `package.json` installs `@stylexjs/eslint-plugin`, as Tailwind already had.
-  Before, nothing checked the shorthands StyleX compiles to no CSS. A `sync` writes both.
-- StyleX runs through `@stylexjs/unplugin/vite`, the package's own Vite adapter, bound to a typed `stylex` in
-  a TypeScript config. The `createUnplugin(unpluginFactory).vite(...)` form it replaces skipped the adapter's
-  `generateBundle`, so a production build shipped StyleX class names with no rules in its CSS. `vite.config.ts`,
-  `astro.config.mjs` and `vitest.config.ts` are written at birth only, so an existing project swaps the two
-  imports and the plugin call by hand; a `sync` rewrites `nuxt.config.ts`.
-- A `linteljs.config.json` whose single choice names a property every object inherits, such as
-  `"target": "toString"`, is refused as an unknown value instead of being accepted.
-- A recorded `resolveConditions` writes the `resolver` option of `eslint.config.ts` as a block, so a long
-  `conditionNames` list no longer runs its closing brace past `max-len`. Astro's `coverageExclude` drops
-  `src/config/linteljs.ts`, which `src/config/**` already covered. A `sync` rewrites both.
-- The `create-linteljs` and `create` binaries are built by tsdown from `bin/createLinteljs.ts` into
-  `dist/create-linteljs.mjs`, replacing the hand-written `bin/create-linteljs.js` shim. The package no longer
-  ships a `bin/` directory.
-- **The agent hooks are TypeScript, run by `node` with no shell script around them.**
-  `plugins/linteljs/hooks/` holds `hooks.json`, `gitSafetyGuardHook.ts`, `eslintFixWarningHook.ts`,
-  `bannedPatternGuardHook.ts` and the parser both command guards share, `utils/commandParserUtils.ts`. The three
-  `.sh` hooks and `commandParser.ts` are gone, and `sync` removes them, and the older `commandParser.js`, from
-  an existing project through its recorded `managed.json`. The same `hooks.json` serves Claude Code and Codex on
-  macOS, Linux and Windows: both substitute `${CLAUDE_PLUGIN_ROOT}` before a shell runs the line. Codex runs a
-  cached copy of the plugin, so reinstall it in Codex after a `sync` that changes `plugins/linteljs/`.
-- **Cursor and Copilot run the agent hooks too.** Choosing Cursor writes `.cursor/hooks.json`, which runs the git
-  guard before each shell command and the eslint warning after it; it is merged, so a project's own Cursor hooks
-  survive a `sync`. Choosing Copilot writes `.github/hooks/linteljs.json`, which Copilot CLI and the cloud agent
-  run for the git guard, the eslint warning and the banned-pattern check. Both are recorded in `managed.json`, so
-  `sync` updates them and removes them when the agent is dropped. The scripts are the same for all four hosts:
-  `utils/hostUtils.ts` reads which host called from the payload and answers in its format, and under Cursor the
-  copy loaded from Claude Code's hooks stays silent, so no guard runs twice. Cursor gets no banned-pattern hook,
-  since it documents no edited path on an event that can answer the agent.
-- **The command guards read PowerShell.** They match `Bash|PowerShell`, and Claude Code's PowerShell tool is read
-  in its own quoting. `cmd /c`, `pwsh -Command` and `Invoke-Expression` are unwrapped like `sh -c`, and a
-  command they cannot read is denied by the git guard, as unreadable bash already was. `--no-verify` is now
-  denied on any git subcommand, not only `commit`. Each denial names the command it stopped and what to run
-  instead, and a hook prints nothing but the decision JSON.
-- **`lint:types` is `node scripts/checkBannedPatterns.ts src`**, replacing a Unix-only `find` pipeline. The
-  checker walks a directory itself, past `node_modules` and dot-directories, for the extensions `create` writes
-  into it, and still takes files as lint-staged and the hook pass them. `.astro` left the list: the checker never
-  read it.
-- **The Node floor of a generated project is `>=22.18`**, up from `>=22`, the first release that strips types by
-  default. The shipped scripts, the hooks and `lint-staged.config.js` run TypeScript as plain `node file.ts`,
-  with no `--experimental-strip-types`. The CLI's own floor stays `22.13.0`.
-- React Native projects declare `@react-native/metro-config` at react-native's own version, so pnpm resolves
-  one copy and needs no peer allowance; a new metro-config release no longer brings back a peer warning. Yarn 4
-  installs are clean through `packageExtensions` for Expo SDK 57's own tree, and React Native's `.yarnrc.yml`
-  no longer discards YN0060 and YN0086.
-- **Breaking: the generated `eslint.config.js` imports `composeConfig` from
-  `@linteljs/eslint-config/compose-config`**, the new name of `defineConfig`. `sync` rewrites the file in an
-  existing project.
-- **React Native follows Expo SDK 57's own pins.** react-native `0.86.3`, react and react-dom `19.2.3`,
-  `@types/react` `~19.2.2`, Reanimated `4.5.1` and worklets `0.10.1`, as `expo-template-default@sdk-57` pins
-  them, instead of react-native 0.87 from npm latest, which no Expo SDK is tested against. SDK 58 moves the
-  target to 0.88. The 0.87 workarounds go with it: the tsconfig no longer sets `customConditions`,
-  `metro.config.js` is written only under Tailwind and no longer overrides `getPolyfills`,
-  `@react-native/js-polyfills` is no longer installed, and `build` is `expo export` for every platform, web
-  included.
-- Generated projects get `scripts/utils/loggerUtils.ts`, and `checkBannedPatterns.ts` and `typecheckStaged.ts`
-  report through it: `[ERROR]` lines on stderr, and a stack trace under `DEBUG=true`. The tsconfig sets
-  `allowImportingTsExtensions` (Angular: `rewriteRelativeImportExtensions`), so a script can import
-  `./utils/loggerUtils.ts` by the name Node's type stripping needs.
-- **Breaking: `--skip-scaffold` is now `--existing`, and `--fresh` is now `--seed`.** No scaffolder runs any
-  more, so both were named for a stage that is gone. `--existing` runs in the directory that already exists
-  rather than making `<name>/`; `--seed` plants the starter and seed files a new project is born with.
-- A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is
-  left alone on every run. A `create` into an existing directory, and `--existing --seed`, used to replace the
-  project's own copy, a rule written for a scaffolder's default that was about to be superseded.
-- The closing summary, the install notice and the fix pass's next step name Yarn 1 by the command it answers to,
-  `yarn`, rather than the id `yarn-classic`.
-- **Generated projects that failed their own `check` now pass it.** Found by the end-to-end suite on real installs:
-  - The React Router `AppHeader` read `style` off a plain-CSS `styles.ts` that never declared it, a
-    `no-unsafe-return` on every router answer. The plain-CSS shape now matches StyleX's.
-  - RTK Query's contact `queryFn` returned a bare string as its error; it now returns a `FetchBaseQueryError`.
-  - Angular's `@angular/build` is held on `~22.1.8`: 22.2.0 changed `SourceFileCache`, and
-    `@analogjs/vite-plugin-angular` 2.7 still calls `cache.has` on it, so every vitest run died at startup.
-  - React Native installs `react-native-reanimated`, `react-native-worklets` and `react-native-gesture-handler`,
-    which expo-router peers and `react-native-css` requires, at Expo SDK 57's pins.
-    Under Tailwind, `nativewind-env.d.ts` is in the tsconfig `include`, so NativeWind no longer rewrites the
-    tsconfig during `check`.
-- **Installs report no unmet or stale peers.** Nuxt declares `rolldown` and `vite`, pinia brings
-  `@vue/devtools-api`, and `.yarnrc.yml` writes a package extension only when its package is installed, which
-  also covers nuxt's devtools and `@tanstack/eslint-plugin-router`.
-- **Yarn 1 is a manager rather than a refusal.** It is recorded as `yarn-classic`, told apart from Yarn 4 by the
-  agent's major and, where there is no agent, by whether `yarn.lock` opens with `# yarn lockfile v1`. A classic
-  project declares `yarn@1.22.22`, installs in CI with `--frozen-lockfile`, reaches its own scripts through
-  `yarn run`, and gets no `.yarnrc.yml`, which is Berry's file. What it cannot do is gate its install scripts:
-  no Yarn 1 setting expresses that, and `DESIGN.md` says so rather than leaving it to be discovered.
-- The package provides a `create` binary beside `create-linteljs`, which is what `yarn create @linteljs` looks
-  for on Yarn 1, and what `@angular/create` ships for the same reason.
-- **Breaking: the package manager is no longer asked or flagged.** `--pm` and the questionnaire's manager
-  question are gone. The manager that runs `create` is the project's, recorded in `linteljs.config.json`
-  with its exact version, and read from `npm_config_user_agent`, else a lockfile already in the directory,
-  else npm. One below its floor is refused with the reason rather than installed behind you: pnpm 10.26,
-  npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is pointed at `yarn dlx @linteljs/create my-app`, which Yarn 1
-  forwards to a modern Yarn on its own.
-- A generated project declares that manager three ways: `packageManager` with the exact version, `engines`
-  with the floor, and `devEngines.packageManager` with `onFail: "error"`, which npm 11 and pnpm enforce.
-  Bun gets `engines.bun` and no `packageManager`, since neither corepack nor pnpm's switch knows Bun.
-- **The Node floor is `>=22`**, down from `>=26.8.2`. A generated project means it: the two shipped `scripts/*.ts`
-  run under `--experimental-strip-types`, which exists from 22.6.0, so every 22 can run them. The CLI itself refuses
-  below 22.13.0, which is what its own prompt library supports. CI runs on the major that ran `create`, recorded
-  beside the manager.
-- React Native scaffolds through `create-expo` 5 under whichever manager ran `create`. It no longer forces
-  npm, and npm is no longer pinned to 11 for every target. Four of that template's components declare their
-  props as an unnamed shape, which the standard's own `no-inline-object-types` refuses, so the starter fixes
-  name them: `ThemedView`, `ThemedText`, `ExternalLink` and `Collapsible`.
-- The `fix` stage spins like the rest of them. `eslint --fix` was spawned synchronously, which held the event loop
-  for the ten seconds it took and froze the line it was drawn on; every spawn in the CLI is asynchronous now.
-- The README's `minimumReleaseAge` override is spelled the way pnpm's CLI takes it. `--config.minimumReleaseAge=0`
-  is silently ignored as a flag, measured: the same range resolved to the older version with it and the newer one
-  without it, which is the camel-case key `pnpm-workspace.yaml` wants rather than the kebab-case one the CLI does.
-- Dependencies move to the newest release older than two days, in this workspace and in what a generated project
-  receives: 41 of the 98 ranges the emitter ships. TypeScript stays on 6.0.x, because `typescript-eslint` 8.70 still
-  peers `<6.1.0`, and the two tilde pins keep theirs: `test-renderer` until an Expo SDK ships React 19.3, and the
-  compiler for the same reason as above. `eslint-plugin-sonarjs` and `typescript-eslint` move to the catalog, where
-  a dependency more than one package uses belongs.
-- A second pass moves 31 more emitted ranges to the newest release older than two days, among them Angular 22.2,
-  Next 16.3.6, Astro 7.3.4, `@astrojs/react` 7 and the TanStack Query bindings. React Native follows Expo SDK 57's
-  template to 57.0.27, which moves `expo`, `expo-router` and `expo-linking` a patch each; the metro config it
-  declares and the yarn extension for `react-native-css` were measured again and are both still needed. Three
-  stay behind, each on a blocker rather than a choice: `@angular/build` stays on 22.1, now 22.1.9, until an
-  `@analogjs/vite-plugin-angular` release old enough to take reads 22.2's cache; `unplugin` stays on 2, which
-  `@stylexjs/unplugin` 0.19.1, its newest, peers; TypeScript stays on 6.0, which `typescript-eslint` peers.
-- **The React Compiler runs natively.** React, the extension's React host and Astro's React host pass
-  `compiler` to `@vitejs/plugin-react` and install `oxc-transform-react`, the compiler's Rust port, in place of a
-  Babel pass through `@rolldown/plugin-babel`, `babel-plugin-react-compiler` and `@babel/core`, which are gone.
-  On Astro this is what `@astrojs/react` 7 requires: it refuses the `babel` option the compiler used to ride and
-  fails the config load. React Router's framework mode no longer installs a compiler it never ran.
-- The questionnaire shows every option rather than a window of seven, which is what inquirer pages to by default and
-  what hid two of the nine frameworks behind a scroll. `es-toolkit` is selected by default beside Tailwind.
-- **A generated project carries no peer overrides it does not need.** The three this CLI used to write are gone,
-  each measured dead rather than assumed: the layers take `eslint-plugin-import-x` and `eslint-plugin-jsx-a11y-x`,
-  `eslint-plugin-solid` admits eslint 10, and `eslint-plugin-astro` 3.2 peers the fork itself, so neither plugin they
-  allowed appears in a lockfile any more. What is left is two, both a target's own and both still refused upstream:
-  Angular's `@angular/build` peers vitest 4 against the 5 a project installs, and React Native's cli plugin pins a
-  metro config to the patch. Every other project's `pnpm-workspace.yaml` is now the build list alone.
-- **The state store is a choice rather than a yes or no.** React, Next and React Native offer Zustand, Redux Toolkit
-  (with RTK Query) and TanStack Store; Vue offers Pinia and TanStack Store; Svelte and Solid offer TanStack Store,
-  which is what crosses components where their own state does not; Angular offers both NgRx shapes; Astro offers
-  Nano Stores, whose atoms outlive an island. The extension still offers none, since MV3 state belongs in
-  `chrome.storage`. A config written by 1.5 carries `store: true`, which now reads as the one store that target had.
-- **A run on a terminal is one line per stage**, named for the stage and spinning while it works, left behind
-  saying what it wrote or what it said and how long it took. Nothing else writes there: the scaffolder and the
-  install hand their output back rather than printing it, so a failing one carries what it printed into the error
-  instead of scrolling past. Behind a pipe nothing changed, and that is deliberate: the plan of six steps with the
-  skipped ones marked, a line per file, a line per stage, and both binaries writing straight through, which is what
-  a CI log and the end-to-end suite read.
-- **The questionnaire is one line per question**, asked over `@inquirer/prompts` rather than `@clack/prompts`: a
-  question and the answer given to it sit together rather than one under the other, which is how the run below them
-  reads too. The answers, their order and every value written are unchanged. The prompter stays behind this
-  package's own interface, which is why one file changed and the questionnaire's own suite did not.
-- A run names the scaffolder it is about to fetch, and `npm create` now fetches it without asking. `npm create` is
-  `npm exec`, which stops at `Ok to proceed?` on a terminal; behind a pipe it warned and carried on, which is why no
-  end-to-end case ever saw it.
-- `assets/` is now `templates/` in the published tarball, laid out as the project it lands in rather than by
-  the emitter that reads it. No emitted file changed: a hash of every artifact of all 98 end-to-end cases,
-  5220 of them, is identical before and after.
+### Breaking
 
-## 1.6.0
+- **No official scaffolder runs.** Every target writes linteljs's own starter tree, and the `scaffold` stage is
+  gone: `--skip` takes `lint`, `package`, `standard`, `install` and `fix`.
+- **`--skip-scaffold` is now `--existing`, and `--fresh` is now `--seed`.** `--existing` runs in the directory that
+  already exists rather than making `<name>/`; `--seed` plants the starter and seed files a new project gets.
+- **The package manager is no longer asked.** The manager that runs `create` is the project's, read from
+  `npm_config_user_agent`, else a lockfile in the directory, else npm, and recorded with its exact version. One
+  below its floor is refused: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2.
+- **The recorded answers are `linteljs.config.json`, schema version 2.** A `lintel.config.json` is still read, and
+  the next `create` or `sync` writes the new name and removes the old one. A v1 file is migrated on read: the form
+  library, `tailwind` and `tanstack-query` move out of `libraries` into `form`, `styling` and `data`, and
+  `store: true` becomes the target's first store.
+- **The generated `eslint.config.js` imports `composeConfig` from `@linteljs/eslint-config/compose-config`.**
+  `sync` rewrites the file.
+- **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and three `*Hook.ts`
+  scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
+  after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.
 
-1.5.4 was cut and never published; its notes are folded in here.
+### Added
 
-- Five more libraries: es-toolkit, ts-pattern, t3-env (`@t3-oss/env-nextjs` on Next), TanStack Form
-  and React Hook Form. The two form libraries are one choice, asked as a radio after the libraries
-  list; React Hook Form is offered only where the target renders with React, and beside Zod it brings
-  `@hookform/resolvers`. TanStack Query and Form bind to the framework a host renders with, so an Astro
-  site hosting React now installs `@tanstack/react-query` rather than the lint plugin alone.
-- A Router question on React (Vite): React Router in its declarative form, or TanStack Router
-  file-based with its Vite plugin, its ESLint layer and a committed `src/routeTree.gen.ts`. Either
-  replaces `src/main.tsx` and writes `src/routes/`; the route table is out of coverage.
-- Tailwind on React Native is NativeWind 5 on Tailwind 4: `nativewind`, `react-native-css`,
-  `metro.config.js`, `nativewind-env.d.ts`, and NativeWind's imports in `src/global.css`.
-- Every answer is a flag: `--target`, `--pm`, `--testing`, `--type-safety`, `--libraries`, `--router`,
-  `--store`, `--agents`, `--plugins`, `--browser`, `--hosted`, `--surfaces`. An answer flag makes the run
-  non-interactive; a wrong value gets the config parser's message. A run opens with the version, names
-  each stage as it starts with what it does, indents what it wrote under it, and ends with the next
-  commands, including the install when it was skipped. `--version` prints the version; `sync` opens
-  with how many files would change. The interactive AI-agents default is Claude Code, as `--yes` and the
-  README already said.
-- Tailwind is a default library. `eslint-plugin-react-compiler` is gone: `eslint-plugin-react-hooks` 7
-  ships the compiler rules, so the extra plugin doubled them and pinned an rc. The React (Vite) build
-  uses `@vitejs/plugin-react` 6 with `reactCompilerPreset` through `@rolldown/plugin-babel`; the SWC
-  plugin and its `@swc/core` build approval are gone. Expo's `app.json` gets
-  `experiments.reactCompiler: true`.
-- A missing pnpm or Yarn is installed through corepack, which Node 26 no longer bundles. A missing Bun
-  is reported with where to get it, since corepack does not know it.
-- Found by driving every target for real: Vue with TanStack Query could not install on pnpm
-  (`vue-demi`'s build script was not approved); an extension or Astro site hosting React imported
-  `@rolldown/plugin-babel` without installing it; Next on npm could not run `check` because
-  `legacy-peer-deps` installs no peers and `vite` is vitest's; React Native's `metro.config.js` failed
-  its own lint and its color-scheme starter had an empty arrow; Angular's build peered on vitest 4; the
-  extension's manifest import lacked its `with { type: 'json' }`; `vite.config.ts` and
-  `vitest.config.ts` were emitted in a shape the fix pass then rewrote. All fixed, and an answer a
-  target never asks for (`--router` on Vue, `--store` on Svelte, `react-hook-form` off React) is
-  refused by the config parser with the target named.
-- On Yarn the husky install and a target's own install step (`svelte-kit sync`) run from `postinstall`,
-  since Yarn 2+ never runs `prepare`: measured on SvelteKit, whose lint had 31 unresolved imports because
-  `.svelte-kit/tsconfig.json` was never written.
-- `stylelint-order` is an explicit dev dependency: `stylelint-config-recess-order` peers on it and pnpm
-  does not install it alone. npm projects get `.npmrc`, Yarn projects `.yarnrc.yml`, and Bun projects
-  `trustedDependencies` in package.json, which is the list bun reads for install scripts. `npm create` gets the `--` its scaffolders need to see their flags.
-- The AI plugins question is skipped when no agent was chosen; agents may be empty.
-- `eslint-plugin-vue` moves to 10.11.0, `@next/eslint-plugin-next` to 16.3.5, `angular-eslint` to
-  22.5.0, `@types/node` to 26.5.1, `@rolldown/plugin-babel` to 0.2.4, and the catalog (`eslint`,
-  `tsdown`, `vitest`, `@vitest/coverage-v8`) to its latest compatible releases.
-- The end-to-end suite is one file per target, each across all four package managers, with shard
-  support.
+- Nuxt is a target.
+- Every answer is a flag, and one makes the run non-interactive: `--target`, `--browser`, `--surfaces`, `--hosted`,
+  `--store`, `--router`, `--testing`, `--type-safety`, `--libraries`, `--styling`, `--data`, `--form`, `--mocking`,
+  `--agents`, `--plugins`. `--version` prints the version.
+- New answers. `styling`: Tailwind (NativeWind 5 on React Native) or StyleX, linted by the `stylex` layer and built
+  through `@stylexjs/unplugin/vite`. `data`: TanStack Query, bound to the framework, or RTK Query beside Redux
+  Toolkit. `form`: TanStack Form, or React Hook Form where the target renders with React. `mocking`: MSW. `router`
+  on React (Vite): React Router or TanStack Router, both declared in code with no generated route tree, or React
+  Router's framework mode, with its own build, route modules and generated types. `libraries`
+  adds es-toolkit (the default), ts-pattern and t3-env beside Zod.
+- The state store is a choice: Zustand, Redux Toolkit or TanStack Store on React, Next and React Native; Pinia or
+  TanStack Store on Vue and Nuxt; TanStack Store on Svelte and Solid; NgRx Signals or NgRx Store on Angular; Nano
+  Stores on Astro.
+- `sync` removes what a deselected answer left behind, from the record in `plugins/linteljs/managed.json`.
+- Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
+  `.github/hooks/linteljs.json`, both removed by `sync` when the agent is dropped. The command guards read
+  PowerShell as well as Bash, and `--no-verify` is denied on any git subcommand.
+- Generated projects get `scripts/utils/loggerUtils.ts`, and `lint:types` is `node scripts/checkBannedPatterns.ts
+  src`, which runs on every platform. The tsconfig sets `allowImportingTsExtensions` (Angular:
+  `rewriteRelativeImportExtensions`).
+- A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with
+  `onFail: "error"`; Bun gets `engines.bun` only. Its Node floor is `>=22.18`, down from `>=26.8.1`, and the CLI's
+  own is `22.13.0`. CI runs the Node major that ran `create`.
+- Yarn 1 is a manager, recorded as `yarn-classic`, with no `.yarnrc.yml` and no install-script gating. The package
+  also provides a `create` binary, which `yarn create @linteljs` looks for.
+- The React Compiler runs natively through `@vitejs/plugin-react`'s `compiler` and `oxc-transform-react`, with no
+  Babel pass; Expo's `app.json` sets `experiments.reactCompiler`. `eslint-plugin-react-compiler` is gone, since
+  `eslint-plugin-react-hooks` 7 carries its rules.
+- The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
+  question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
+  pipe it prints a line per file and per stage as before.
+- React Native follows Expo SDK 57's own pins (react-native 0.86.3) and declares `@react-native/metro-config`.
+- Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
+
+### Fixed
+
+- A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
+  alone on every run.
+- On Yarn, husky and a target's own setup (`svelte-kit sync`) run from `postinstall`, since Yarn 2+ never runs
+  `prepare`.
+- `stylelint-order` is an explicit dev dependency, since `stylelint-config-recess-order` peers on it.
+- A config whose single choice names an inherited property, such as `"target": "toString"`, is refused.
+- A recorded `resolveConditions` writes the `resolver` option as a block, within `max-len`.
+- The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
 
 ## 1.5.3
 
