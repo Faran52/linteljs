@@ -5,7 +5,7 @@ import { targetFor } from '@targets';
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
-import { stylingPlugin } from '../../utils/stylingUtils';
+import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
 
 import type { Answers } from '@answers';
 import type { PluginSpec, TestPlatform } from '@targets/types';
@@ -180,14 +180,17 @@ ${conditions}${block}
  * through it, and this is the shape for one that has none: Next compiles through Babel and PostCSS, which a
  * vitest run never reaches, so without the plugin every suite fails on an uncompiled `defineVars`.
  */
-const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: PluginSpec): string => {
+const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: StylingPlugin): string => {
   const calls = [...stylex.calls, ...vitestPlugin?.calls ?? []];
   const pluginImports = sortedImports([...vitestPlugin?.imports ?? [], ...stylex.imports]);
   const plugins = calls.length === 0 ? '' : `  plugins: [${calls.join(', ')}],\n`;
   const prelude = pluginImports === '' ? '' : `${pluginImports}\n`;
+  const declarations = stylex.declarations.map((line) => {
+    return `\n${line}\n`;
+  }).join('');
 
   return `${prelude}import { defineConfig } from 'vitest/config';
-
+${declarations}
 export default defineConfig({
 ${plugins}  resolve: { tsconfigPaths: true },
 ${block}

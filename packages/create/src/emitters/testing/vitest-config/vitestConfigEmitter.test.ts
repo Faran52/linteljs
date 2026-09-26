@@ -242,9 +242,14 @@ describe('emitVitestConfig', () => {
       styling: 'stylex',
     });
 
-    expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
-    expect(config).toContain("import { createUnplugin } from 'unplugin';");
-    expect(config).toContain('plugins: [createUnplugin(stylex).vite({ useCSSLayers: true })]');
+    expect(config).toContain("import stylexVite from '@stylexjs/unplugin/vite';");
+    expect(config).toContain(`import { defineConfig } from 'vitest/config';
+
+const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
+
+export default defineConfig({
+  plugins: [stylex({ useCSSLayers: true })],
+`);
     // Nuxt names a compiler plugin of its own, and StyleX goes first beside it.
     const nuxt = configFor({
       target: 'nuxt',
@@ -252,7 +257,7 @@ describe('emitVitestConfig', () => {
     });
 
     expect(nuxt).toContain("import vue from '@vitejs/plugin-vue';");
-    expect(nuxt).toContain('  plugins: [createUnplugin(stylex).vite({ useCSSLayers: true }), vue()],\n');
+    expect(nuxt).toContain('  plugins: [stylex({ useCSSLayers: true }), vue()],\n');
   });
   it('writes nothing when testing is declined', () => {
     expect(configFor({ testing: 'none' })).toBeNull();

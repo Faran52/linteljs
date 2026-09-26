@@ -173,26 +173,31 @@ describe('emitViteConfig', () => {
 
   /*
    * First in the list, which is what StyleX's own documentation asks for: placed after the framework plugin it
-   * breaks Fast Refresh. Built from the raw factory rather than imported from `@stylexjs/unplugin/vite`, because
-   * every pre-built factory that package ships is typed `=> any` and a project that put one in `plugins` would
-   * fail its own `no-unsafe-assignment`.
+   * breaks Fast Refresh. The package's own Vite adapter, since the generic unplugin build of its factory writes no
+   * CSS into a production bundle, bound to a typed name because the adapter itself is typed `=> any`.
    */
-  it('adds the stylex plugin before the framework one, through the one export it types', () => {
-    const react = configFor({
-      target: 'react',
-      libraries: [],
-      styling: 'stylex',
-    }) ?? '';
-
-    expect(react).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
-    expect(react).toContain("import { createUnplugin } from 'unplugin';");
-    expect(react).not.toContain('@stylexjs/unplugin/vite');
+  it('adds the stylex plugin before the framework one, through its typed vite adapter', () => {
     expect(configFor({
       target: 'vue',
       libraries: [],
       styling: 'stylex',
-    }) ?? '')
-      .toContain('plugins: [\n    createUnplugin(stylex).vite({ useCSSLayers: true }),\n    vue(),\n  ],');
+    })).toBe(`import { type UserOptions } from '@stylexjs/unplugin';
+import stylexVite from '@stylexjs/unplugin/vite';
+import vue from '@vitejs/plugin-vue';
+import { type VitePlugin } from 'unplugin';
+import { defineConfig } from 'vite';
+
+const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
+
+export default defineConfig({
+  plugins: [
+    stylex({ useCSSLayers: true }),
+    vue(),
+  ],
+  resolve: { tsconfigPaths: true },
+  server: { port: 3000 },
+});
+`);
   });
 
   it('leaves stylex out when it was not chosen', () => {

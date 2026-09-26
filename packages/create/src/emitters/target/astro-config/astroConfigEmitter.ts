@@ -48,7 +48,7 @@ export const emitAstroConfig = (answers: Answers): string | null => {
   }
 
   const framework = answers.hostedFramework;
-  const styling = stylingPlugin(answers.styling);
+  const styling = stylingPlugin(answers.styling, 'js');
 
   const imports = [
     "import { defineConfig } from 'astro/config';",

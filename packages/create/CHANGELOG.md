@@ -8,6 +8,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- StyleX runs through `@stylexjs/unplugin/vite`, the package's own Vite adapter, bound to a typed `stylex` in
+  a TypeScript config. The `createUnplugin(unpluginFactory).vite(...)` form it replaces skipped the adapter's
+  `generateBundle`, so a production build shipped StyleX class names with no rules in its CSS. `vite.config.ts`,
+  `astro.config.mjs` and `vitest.config.ts` are written at birth only, so an existing project swaps the two
+  imports and the plugin call by hand; a `sync` rewrites `nuxt.config.ts`.
 - A `linteljs.config.json` whose single choice names a property every object inherits, such as
   `"target": "toString"`, is refused as an unknown value instead of being accepted.
 - A recorded `resolveConditions` writes the `resolver` option of `eslint.config.ts` as a block, so a long

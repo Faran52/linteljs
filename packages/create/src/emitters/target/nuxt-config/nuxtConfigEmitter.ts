@@ -4,6 +4,7 @@ import { targetFor } from '@targets';
 
 import { buildAliases } from '../../always/utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
+import { sortedImports } from '../../utils/importUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
 import type { Answers } from '@answers';
@@ -43,9 +44,11 @@ export const emitNuxtConfig = (answers: Answers): string => {
   return [
     "import { join } from 'node:path';",
     '',
-    ...styling.imports,
-    "import { defineNuxtConfig } from 'nuxt/config';",
+    sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"]),
     '',
+    ...styling.declarations.flatMap((line) => {
+      return [line, ''];
+    }),
     'export default defineNuxtConfig({',
     "  compatibilityDate: '2025-07-15',",
     "  // `src/`, not Nuxt 4's own `app/`: one source root, the same as every other target this CLI writes.",

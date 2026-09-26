@@ -1,3 +1,6 @@
+// A quoted run of StyleX atomic class names, as its compiler writes them into the built JS and HTML.
+export const STYLEX_CLASSES = /(?<=["'`])x[a-z0-9]{4,9}(?: x[a-z0-9]{4,9})*(?=["'`])/g;
+
 // What an install prints that says nothing about the project this suite generated.
 
 /**

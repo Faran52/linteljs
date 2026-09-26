@@ -58,9 +58,12 @@ export default defineNuxtConfig({
 
 const WITH_STYLEX = `import { join } from 'node:path';
 
-import { unpluginFactory as stylex } from '@stylexjs/unplugin';
-import { createUnplugin } from 'unplugin';
+import { type UserOptions } from '@stylexjs/unplugin';
+import stylexVite from '@stylexjs/unplugin/vite';
 import { defineNuxtConfig } from 'nuxt/config';
+import { type VitePlugin } from 'unplugin';
+
+const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -92,7 +95,7 @@ export default defineNuxtConfig({
     '@mocks/*': join(import.meta.dirname, '__mocks__/*'),
   },
   vite: {
-    plugins: [createUnplugin(stylex).vite({ useCSSLayers: true })],
+    plugins: [stylex({ useCSSLayers: true })],
   },
 });
 `;

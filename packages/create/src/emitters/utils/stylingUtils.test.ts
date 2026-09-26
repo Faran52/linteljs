@@ -10,24 +10,36 @@ describe('stylingPlugin', () => {
   it('runs tailwind through its own vite plugin', () => {
     expect(stylingPlugin('tailwind')).toEqual({
       imports: ["import tailwindcss from '@tailwindcss/vite';"],
+      declarations: [],
       calls: ['tailwindcss()'],
     });
   });
 
-  // The raw factory, since every pre-built one `@stylexjs/unplugin` ships is typed `=> any`.
-  it('runs stylex through the typed unplugin factory, in css layers', () => {
+  // The package's own Vite adapter, whose `generateBundle` writes the CSS, given the type its `=> any` withholds.
+  it('runs stylex through its own vite adapter, typed, in css layers', () => {
     expect(stylingPlugin('stylex')).toEqual({
       imports: [
-        "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
-        "import { createUnplugin } from 'unplugin';",
+        "import { type UserOptions } from '@stylexjs/unplugin';",
+        "import stylexVite from '@stylexjs/unplugin/vite';",
+        "import { type VitePlugin } from 'unplugin';",
       ],
-      calls: ['createUnplugin(stylex).vite({ useCSSLayers: true })'],
+      declarations: ['const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;'],
+      calls: ['stylex({ useCSSLayers: true })'],
+    });
+  });
+
+  it('takes the stylex adapter bare in a javascript config, which nothing type-lints', () => {
+    expect(stylingPlugin('stylex', 'js')).toEqual({
+      imports: ["import stylex from '@stylexjs/unplugin/vite';"],
+      declarations: [],
+      calls: ['stylex({ useCSSLayers: true })'],
     });
   });
 
   it('adds nothing without a styling answer', () => {
     expect(stylingPlugin(undefined)).toEqual({
       imports: [],
+      declarations: [],
       calls: [],
     });
   });

@@ -1,4 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  globSync,
+  readFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 import { expect } from 'vitest';
@@ -21,7 +25,11 @@ import {
   workspace,
 } from '../utils/workspaceUtils';
 
-import { DEPRECATION, YARN_CLASSIC_UPSTREAM } from './constants';
+import {
+  DEPRECATION,
+  STYLEX_CLASSES,
+  YARN_CLASSIC_UPSTREAM,
+} from './constants';
 
 import type { E2eCase } from '../matrix/matrix';
 
@@ -90,6 +98,31 @@ export const verifyLintOutput = async (pm: PackageManager, project: string): Pro
   expect(outcome(await runPm(pm, ['check'], project), 'check')).toBe('check: ok');
 };
 
+/**
+ * The StyleX classes the built JS and HTML name that no built stylesheet defines. Every build directory a target
+ * writes is read, server halves included, since a class a server render emits needs its rule as much. A build that
+ * drops the atomic rules still passes `check`, which is how this once shipped. A build naming no class passes: the
+ * extension's starter has no StyleX component.
+ */
+const missingStylexRules = (project: string): string => {
+  const files = globSync('{dist,build,.output,.svelte-kit/output,.next}/**/*.{js,mjs,html,css}', { cwd: project });
+  const joined = (css: boolean): string => {
+    return files.filter((file) => {
+      return file.endsWith('.css') === css;
+    }).map((file) => {
+      return readFileSync(join(project, file), 'utf8');
+    }).join('\n');
+  };
+  const styles = joined(true);
+  const classes = new Set((joined(false).match(STYLEX_CLASSES) ?? []).flatMap((run) => {
+    return run.split(' ');
+  }));
+
+  return [...classes].filter((name) => {
+    return !new RegExp(String.raw`\.${name}\b`).test(styles);
+  }).join(' ');
+};
+
 export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => {
   const root = join(workspace, label.replaceAll(' ', '-'));
   const name = answers.target;
@@ -114,4 +147,8 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
     .not.toHaveProperty('linteljs');
 
   await verifyLintOutput(answers.packageManager, project);
+
+  if (answers.styling === 'stylex') {
+    expect(missingStylexRules(project)).toBe('');
+  }
 };

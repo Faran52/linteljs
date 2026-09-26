@@ -134,9 +134,10 @@ describe('emitAstroConfig', () => {
   it('names the stylex plugin among the vite plugins', () => {
     const config = emitAstroConfig(answersFor({ styling: 'stylex' }));
 
-    expect(config).toContain("import { unpluginFactory as stylex } from '@stylexjs/unplugin';");
-    expect(config).toContain("import { createUnplugin } from 'unplugin';");
-    expect(config).toContain('  vite: { plugins: [createUnplugin(stylex).vite({ useCSSLayers: true })] },\n');
+    // The adapter bare: a `.mjs` config takes no annotation, and nothing type-lints it.
+    expect(config).toContain("import stylex from '@stylexjs/unplugin/vite';");
+    expect(config).not.toContain("from 'unplugin';");
+    expect(config).toContain('  vite: { plugins: [stylex({ useCSSLayers: true })] },\n');
   });
 });
 

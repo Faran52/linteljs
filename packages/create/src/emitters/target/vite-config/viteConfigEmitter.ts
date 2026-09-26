@@ -43,9 +43,13 @@ export const emitViteConfig = (answers: Answers): string | null => {
     ? ''
     : `  build: { rollupOptions: { input: { ${entries} } } },\n`;
 
+  const declarations = styling.declarations.map((line) => {
+    return `${line}\n\n`;
+  }).join('');
+
   return `${imports}
 
-export default defineConfig({
+${declarations}export default defineConfig({
   plugins: [
 ${plugins}  ],
 ${inputs}  resolve: { tsconfigPaths: true },
