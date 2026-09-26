@@ -26,8 +26,8 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.2.2",
-    "@commitlint/config-conventional": "^21.2.2",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "@types/chrome": "^0.3.0",
     "@types/firefox-webext-browser": "^143.0.0",
     "@types/node": "catalog:",
@@ -45,7 +45,7 @@
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "verdaccio": "^6.10.3",
+    "verdaccio": "^6.10.4",
     "vitest": "catalog:"
   }
 }
