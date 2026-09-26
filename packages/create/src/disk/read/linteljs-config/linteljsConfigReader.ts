@@ -11,7 +11,7 @@ import {
 
 import { entryExists, hasCode } from '../../utils/fsUtils';
 
-// `linteljs.config.json`, or the `linteljs.config.json` a version through 1.6.0 wrote. The older name is read and
+// `linteljs.config.json`, or the `lintel.config.json` a version through 1.5.3 wrote. The older name is read and
 // never written, so the first `create` or `sync` after an upgrade records the new one and `sync` clears the old.
 const configPath = async (cwd: string): Promise<string> => {
   return await entryExists(join(cwd, CONFIG_PATH))

@@ -159,7 +159,7 @@ the directory's, so `mkdir my-app && cd my-app && create --yes` needs nothing el
 A run numbers each stage as it starts and ends with what to do next:
 
 ```text
-@linteljs/create 1.6.0
+@linteljs/create 2.0.0
 [1/5] lint: eslint and stylelint config
 ...
 [3/5] standard: hooks, agent files, test setup and starter tests

@@ -129,7 +129,7 @@ describe('linteljsConfigReader', () => {
       .rejects.toThrow('linteljs.config.json must be a regular file');
   });
 
-  // Every version through 1.6.0 wrote `linteljs.config.json`, so an upgraded project is still found.
+  // Every version through 1.5.3 wrote `lintel.config.json`, so an upgraded project is still found.
   it('reads the name older versions wrote when the current one is absent', async () => {
     await writeFile(join(cwd, LEGACY_CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
 

@@ -134,8 +134,8 @@ const createVersion = (): string => {
 };
 
 /**
- * Unique, increasing, and inside the `^1.6.0` a generated project asks for. Not a prerelease: `1.6.0-e2e.x` sorts
- * below `1.6.0` and satisfies no caret, so every install would resolve nothing. A patch of the current second
+ * Unique, increasing, and inside the `^2.0.0` a generated project asks for. Not a prerelease: `2.0.0-e2e.x` sorts
+ * below `2.0.0` and satisfies no caret, so every install would resolve nothing. A patch of the current second
  * satisfies the range and is always the highest, so `maxSatisfying` picks this run's build.
  */
 const runVersion = (base: string): string => {

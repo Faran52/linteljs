@@ -100,7 +100,7 @@ export const VERSIONS: Record<string, string> = {
   // `frameworks/next/`.
   '@next/eslint-plugin-next': '^16.3.6',
   // The sibling package; `versions.test.ts` fails the moment they diverge.
-  '@linteljs/eslint-config': '^1.6.0',
+  '@linteljs/eslint-config': '^2.0.0',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.2.1',
   'eslint-plugin-jsx-a11y-x': '^0.2.0',

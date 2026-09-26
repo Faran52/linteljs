@@ -16,7 +16,7 @@ const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
 };
 
 const VERSIONS = {
-  '@linteljs/eslint-config': '^1.6.0',
+  '@linteljs/eslint-config': '^2.0.0',
   'react': '^19.3.0',
   'typescript': '~5.9.3',
 };
@@ -24,7 +24,7 @@ const VERSIONS = {
 describe('stackRows', () => {
   it('states the version as recorded, without the range it was written with, in the order a reader wants', () => {
     expect(stackRows(answersFor({ packageManagerVersion: '12.4.1' }), VERSIONS)).toEqual([
-      ["name: 'linteljs'", "version: '1.6.0'"],
+      ["name: 'linteljs'", "version: '2.0.0'"],
       ["name: 'react'", "version: '19.3.0'"],
       ["name: 'typescript'", "version: '5.9.3'"],
       ["name: 'node'", "version: '26.9.0'"],
@@ -35,7 +35,7 @@ describe('stackRows', () => {
   // The extension hosting nothing is the case: there is no framework to name, so no row is printed for one.
   it('prints no framework row for a target that renders with none', () => {
     expect(stackRows(answersFor({ target: 'webextension' }), VERSIONS)).toEqual([
-      ["name: 'linteljs'", "version: '1.6.0'"],
+      ["name: 'linteljs'", "version: '2.0.0'"],
       ["name: 'typescript'", "version: '5.9.3'"],
       ["name: 'node'", "version: '26.9.0'"],
     ]);

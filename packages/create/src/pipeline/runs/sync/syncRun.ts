@@ -49,7 +49,7 @@ const entryOf = (target: string, status: SyncStatus, diff = ''): SyncEntry => {
   };
 };
 
-// What the last run recorded as its own, plus the one name no run writes any more: versions through 1.6.0 kept the
+// What the last run recorded as its own, plus the one name no run writes any more: versions through 1.5.3 kept the
 // answers in `lintel.config.json`, so an upgraded project carries a file this one replaced.
 const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
   return [...await managedPathsReader(cwd), LEGACY_CONFIG_PATH];
