@@ -19,7 +19,7 @@ export default defineConfig({
         '**/e2e/utils/**',
       ],
       // A gate, not an aspiration: a number that has to come down is a regression, not a new
-      // baseline. One key per package, on purpose. DESIGN.md: Coverage thresholds
+      // baseline. One key per package, on purpose. docs/DESIGN.md: Coverage thresholds
       thresholds: {
         'packages/eslint-plugin/src/**': {
           statements: 100,

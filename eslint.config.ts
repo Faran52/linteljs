@@ -1,6 +1,6 @@
 /**
  * The workspace lints itself with its own layers, imported from source rather than `dist`, so linting never
- * needs a build first; jiti loads this TypeScript config. Every exemption below names its DESIGN.md heading
+ * needs a build first; jiti loads this TypeScript config. Every exemption below names its docs/DESIGN.md heading
  * under "Workspace lint exemptions", which holds the measurement that earned it; one without is one to delete.
  */
 import {
@@ -35,12 +35,12 @@ const config = [
    *
    * Root, not `base`: a generated project is already held to this by `scripts/checkBannedPatterns.ts`, which refuses
    * the directive at write time and on commit, and putting it in the layer would make every existing consumer's
-   * directives inert on upgrade. DESIGN.md: `noInlineConfig`
+   * directives inert on upgrade. docs/DESIGN.md: `noInlineConfig`
    */
   { linterOptions: { noInlineConfig: true } },
 
   ...base({
-    // DESIGN.md: Ignores
+    // docs/DESIGN.md: Ignores
     ignores: [
       '**/dist/**',
       '**/coverage/**',
@@ -58,14 +58,14 @@ const config = [
       'packages/*/src/**/*.ts': 'CAMEL_CASE',
       // The TypeScript a generated project receives, the plugin's hooks included.
       'packages/create/templates/project/{scripts,plugins}/**/*.ts': 'CAMEL_CASE',
-      // DESIGN.md: `'**/utils/*.ts': '*Utils'`
+      // docs/DESIGN.md: `'**/utils/*.ts': '*Utils'`
       '**/utils/*.ts': '*Utils',
     },
     folderNaming: {
       'packages/*/src/**/': 'KEBAB_CASE',
     },
     aliases,
-    // DESIGN.md: `resolver: { project: 'packages/*/tsconfig.json' }`
+    // docs/DESIGN.md: `resolver: { project: 'packages/*/tsconfig.json' }`
     resolver: {
       project: 'packages/*/tsconfig.json',
       noWarnOnMultipleProjects: true,
@@ -74,7 +74,7 @@ const config = [
   ...typescript(),
   ...vitest(),
 
-  // `@linteljs/create`'s direction, made mechanical. DESIGN.md: `@linteljs/workspace/create-rings`
+  // `@linteljs/create`'s direction, made mechanical. docs/DESIGN.md: `@linteljs/workspace/create-rings`
   {
     name: '@linteljs/workspace/create-rings',
     files: ['packages/create/src/**'],
@@ -106,7 +106,7 @@ const config = [
    * The `es-toolkit/compat` pattern is repeated here rather than inherited. `base` bans it for every project and
    * for this one, and two config objects naming one rule do not merge their options: this block is the last to
    * name `no-restricted-imports` for these files, so what it replaces is the layer's own ban.
-   * DESIGN.md: `@linteljs/workspace/create-worlds`
+   * docs/DESIGN.md: `@linteljs/workspace/create-worlds`
    */
   {
     name: '@linteljs/workspace/create-worlds',
@@ -135,7 +135,7 @@ const config = [
   /**
    * `config/` is data and only data: the types, constants and tables no ring owns. A function belongs to a `utils/`
    * at the level of its readers, which is what keeps this folder free of a suite and free of coverage.
-   * DESIGN.md: `@linteljs/workspace/create-config-data`
+   * docs/DESIGN.md: `@linteljs/workspace/create-config-data`
    */
   {
     name: '@linteljs/workspace/create-config-data',
@@ -149,7 +149,7 @@ const config = [
   },
 
   // A `utils/` module is helpers, and a long one is two categories in one drawer.
-  // DESIGN.md: `@linteljs/workspace/utils-size`
+  // docs/DESIGN.md: `@linteljs/workspace/utils-size`
   {
     name: '@linteljs/workspace/utils-size',
     files: ['packages/*/src/**/utils/*Utils.ts'],
@@ -163,7 +163,7 @@ const config = [
   },
 
   // A ceiling far above anything here, so the longest function stays a fact.
-  // DESIGN.md: `@linteljs/workspace/function-size`
+  // docs/DESIGN.md: `@linteljs/workspace/function-size`
   {
     name: '@linteljs/workspace/function-size',
     files: ['packages/*/src/**/*.ts'],
@@ -177,7 +177,7 @@ const config = [
   },
 
   // Every script reports through `loggerUtils.ts`. Options given, since severity alone inherits the layer's `allow`.
-  // DESIGN.md: `@linteljs/workspace/scripts`
+  // docs/DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts',
     files: ['scripts/**', 'packages/*/scripts/**'],
@@ -193,7 +193,7 @@ const config = [
   },
 
   // `sonarjs/different-types-comparison` cannot read an AST identity check. Named file by file, so
-  // a seventh site has to be added on purpose. DESIGN.md: `@linteljs/workspace/ast-identity`
+  // another site has to be added on purpose. docs/DESIGN.md: `@linteljs/workspace/ast-identity`
   {
     name: '@linteljs/workspace/ast-identity',
     files: [
@@ -207,7 +207,7 @@ const config = [
   },
 
   // `sonarjs/no-empty-test-file` cannot see cases `RuleTester.run()` registers at module scope.
-  // Scoped to that directory alone. DESIGN.md: `@linteljs/workspace/rule-tester`
+  // Scoped to that directory alone. docs/DESIGN.md: `@linteljs/workspace/rule-tester`
   {
     name: '@linteljs/workspace/rule-tester',
     files: ['packages/eslint-plugin/src/rules/**/*.test.ts'],
@@ -216,7 +216,8 @@ const config = [
     },
   },
 
-  // The e2e files pass `runE2eCase` by reference, out of the rule's reach. DESIGN.md: `@linteljs/workspace/e2e-test`
+  // The e2e files pass `runE2eCase` by reference, out of the rule's reach.
+  // docs/DESIGN.md: `@linteljs/workspace/e2e-test`
   {
     name: '@linteljs/workspace/e2e-test',
     files: ['packages/create/src/pipeline/e2e/targets/*.e2e.test.ts'],

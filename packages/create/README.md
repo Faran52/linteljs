@@ -134,9 +134,8 @@ What the router brings, on React (Vite):
 
 - **React Router** in declarative form: `src/routes/router.tsx` holds the table, `src/main.tsx` mounts the
   provider. A page lives in `src/pages/<kebab>/{Name}Page.tsx` and is named in the table once.
-- **TanStack Router** in file-based form: `src/routes/__root.tsx` and `src/routes/index.tsx`, the Vite plugin
-  ahead of React's, its ESLint rules, and a committed `src/routeTree.gen.ts` the plugin regenerates on every
-  run. The tree is generated code: ESLint, coverage and the banned-pattern checker all skip it.
+- **TanStack Router** in code-based form: `src/App.tsx` builds the route tree from the same route list the
+  header reads, so there is no `routes/` directory, no generated tree and no build plugin.
 
 Both routers' `useNavigate` is mocked in the test setup, so a navigation asserts without a mounted router.
 
@@ -237,7 +236,7 @@ Code's hooks stays silent, so no guard runs twice.
 
 Copied configuration drifts: a project silently loses a rule while its config still looks like the others.
 Lintel puts shared rules in `@linteljs/eslint-config`, keeps generated files reviewable through `sync`, and
-leaves framework scaffolding to each official generator. [DESIGN.md](https://github.com/Faran52/linteljs/blob/main/DESIGN.md)
+leaves framework scaffolding to each official generator. [docs/DESIGN.md](https://github.com/Faran52/linteljs/blob/main/docs/DESIGN.md)
 carries the reasoning, including the non-goals.
 
 ## Related packages

@@ -57,7 +57,7 @@ It plans from `linteljs.config.json`, so it never guesses a framework or overrid
 
 Copied configuration drifts quietly: a missing setting can disable a rule while two config files still look
 alike. Lintel keeps the shared rules in a published package and the generated files explicit, so an update
-arrives as a reviewable diff. [DESIGN.md](DESIGN.md) carries the reasoning, including the non-goals.
+arrives as a reviewable diff. [docs/DESIGN.md](docs/DESIGN.md) carries the reasoning, including the non-goals.
 
 ## Development
 

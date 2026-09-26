@@ -13,7 +13,7 @@ export const packageManagerAnswer = {
     'npm': { label: 'npm' },
     'yarn': { label: 'Yarn' },
     // Yarn 1 is a different manager wearing the same command: no `.yarnrc.yml`, no `dlx`, and install scripts it
-    // cannot gate. `DESIGN.md` carries what a classic project does not get.
+    // cannot gate. `docs/DESIGN.md` carries what a classic project does not get.
     'yarn-classic': { label: 'Yarn Classic' },
     'bun': { label: 'Bun' },
   },

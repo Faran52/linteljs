@@ -19,7 +19,7 @@ import {
 import type { StarterFile, TargetRecord } from '../types';
 
 /*
- * Vue's meta-framework, and a target rather than a mode on `vue` for the reason `DESIGNv2.md` records: Vue asks no
+ * Vue's meta-framework, and a target rather than a mode on `vue` for the reason `docs/DESIGN.md` records: Vue asks no
  * router question and no mode question, so there is no axis to hang it off, and a mode would branch in every
  * field. What it shares with Vue it takes from Vue's own tree rather than a copy.
  *

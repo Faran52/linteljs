@@ -55,7 +55,7 @@ describe('the browser axis', () => {
   });
 
   // Equal length is the assertion: a browser contributes its ambient types and nothing else, so neither costs more
-  // than the other. DESIGN.md: the extension target ships no browser runner.
+  // than the other. docs/DESIGN.md: the extension target ships no browser runner.
   it('brings only the types each browser needs, and the same count for both', () => {
     const firefox = recordFor({ browser: 'firefox' }).devDependencies;
     const chrome = recordFor({ browser: 'chrome' }).devDependencies;

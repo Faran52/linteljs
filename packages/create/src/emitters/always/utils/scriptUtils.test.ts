@@ -74,7 +74,7 @@ describe('buildScripts', () => {
   /*
    * Every target declares its own now that no generator writes one, so there is no case where `build` is absent
    * and `check` chains a script that does not exist. React Native's is the one with a reason of its own: its `eas
-   * build` needs an account, so `expo export` is the local Metro bundle instead (measurements in DESIGN.md). The
+   * build` needs an account, so `expo export` is the local Metro bundle instead (measurements in docs/DESIGN.md). The
    * rest are each toolchain's own commands, which only a real project can run.
    */
   it.each<[TargetId, Record<string, string>]>([

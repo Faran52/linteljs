@@ -7,7 +7,7 @@ paths:
 
 `packages/create/templates/fragments/claude-rules/type-standards.md` is the standard. It is the file this
 workspace publishes, so it is the file this workspace is held to: read it, not a copy of it. A
-second copy here is the drift `DESIGN.md` exists to argue against.
+second copy here is the drift `docs/DESIGN.md` exists to argue against.
 
 What follows is only where this repository differs, and why.
 
@@ -35,7 +35,7 @@ What follows is only where this repository differs, and why.
   `@linteljs/eslint-config` and so shipped to every generated project rather than held here alone.
   The strict entry or the standard library. `/compat` exists to ease a lodash migration this
   workspace never had, and its looser signatures are what a call reaches for when the honest answer
-  is that es-toolkit does not cover the case. `DESIGN.md` carries the measurement.
+  is that es-toolkit does not cover the case. `docs/DESIGN.md` carries the measurement.
 
 ## The mechanical floor
 

@@ -120,7 +120,7 @@ export const VERSIONS: Record<string, string> = {
   'next': '^16.3.6',
   /*
    * Expo's runtime and the modules a tab layout measures itself with, at exactly what the SDK's own template pins:
-   * Expo tests them together and a mismatched one is what `expo-doctor` exists to find. DESIGN.md has why.
+   * Expo tests them together and a mismatched one is what `expo-doctor` exists to find. docs/DESIGN.md has why.
    */
   'expo': '~57.0.25',
   'react-native': '0.86.3',

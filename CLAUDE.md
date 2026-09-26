@@ -17,10 +17,10 @@ that package.
   against this repository before it reaches anyone else. A change to a layer is a change to this
   repo's own gate.
 - Nothing goes in `eslint.config.ts` at the root that belongs in a layer. Every exemption there
-  carries a measurement, kept under "Workspace lint exemptions" in `DESIGN.md` and named by a
+  carries a measurement, kept under "Workspace lint exemptions" in `docs/DESIGN.md` and named by a
   one-line pointer at the block itself. "It would be noisy otherwise" is not a reason, and an
   exemption whose measurement is missing from that section is one to delete.
-- `DESIGN.md` holds the decisions that are not visible in the code, including the non-goals. Read
+- `docs/DESIGN.md` holds the decisions that are not visible in the code, including the non-goals. Read
   it before re-adding something it rules out.
 
 ## Commands
@@ -40,15 +40,15 @@ else. It exists because pnpm's `test` shorthand exits 0 in a package that has no
 green having run nothing. Coverage stays a root-only gate: the thresholds are keyed per package in the root config
 and a package-level `--coverage` would answer a narrower question.
 
-`pnpm check` chains `lint && lint:css && typecheck && test:coverage && build`, which is the same
-chain a generated project gets. `lint:css` passes on an empty glob rather than being absent: this
-workspace has no CSS today, and a repo that ships the gate to nine targets should run it. The
+`pnpm check` chains `lint && lint:types && lint:starters && lint:css && typecheck && test:coverage && build`,
+the chain a generated project gets plus `lint:starters`, which lints the shipped starter source. `lint:css` passes on an empty glob rather than being absent: this
+workspace has no CSS today, and a repo that ships the gate to ten targets should run it. The
 end-to-end suite is 209 cases, each a real generate, install and gate: per target, enough answer
 combinations to cover every *pair* of answers, the package manager among the axes, with every
 multi-select at its full value. It is excluded from `check` and from the default test run because
 every case hits the network. `E2E_PM` runs one manager's cases on whatever binary of it is on PATH,
 and a yarn of the wrong major fails the run; unset, it runs every manager the machine answers for.
-Widen it with `E2E_CONCURRENCY`, and run the whole cross product with `E2E_FULL=1`; `DESIGN.md`
+Widen it with `E2E_CONCURRENCY`, and run the whole cross product with `E2E_FULL=1`; `docs/DESIGN.md`
 carries why the split is by manager rather than vitest's own `--shard`, and why pairs rather than
 combinations.
 
@@ -116,7 +116,7 @@ combinations.
   the root `eslint.config.ts` maps `**/utils/*.ts` to the `*Utils` glob, so a helper module under
   any other name fails `pnpm lint`. A rule's private helpers sit under its own `utils/` for this
   reason: there the suffix is enforced rather than asked for. This is the workspace's own convention and
-  `@linteljs/create` deliberately does not ship it to generated projects; DESIGN.md carries that as a
+  `@linteljs/create` deliberately does not ship it to generated projects; docs/DESIGN.md carries that as a
   non-goal.
 
 ## The standard this repo holds itself to
@@ -124,7 +124,7 @@ combinations.
 The rule files under `packages/create/templates/fragments/claude-rules/` are the published standard.
 `.claude/rules/` adopts the three that apply to a workspace of libraries and records where this
 repo differs: `type-standards.md`, `testing.md` and `repo-structure.md`. Read them before writing
-code here. The per-target rule files do not apply, because this is not one of the nine targets: a
+code here. The per-target rule files do not apply, because this is not one of the ten targets: a
 state rule for React or Svelte reactivity has nothing to govern in a package of ESLint rules.
 `repo-structure.library.md` is published for a package that is imported rather than run, which is
 what these three are, so this workspace's structure rule adopts it rather than asserting a shape of

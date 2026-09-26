@@ -30,7 +30,7 @@ export const stylingAnswer = {
       /**
        * Angular templates are HTML, so there is no spread site for `stylex.props`, and StyleX documents every
        * bundler it supports without documenting that one. React Native reaches native only through
-       * `react-strict-dom`, which its own maintainers call not production ready; `DESIGN.md` already refused
+       * `react-strict-dom`, which its own maintainers call not production ready; `docs/DESIGN.md` already refused
        * NativeWind 4 for pinning that target to an older Tailwind, and this is the same call.
        */
       only: (target) => {

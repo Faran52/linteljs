@@ -20,7 +20,7 @@ export const angularTarget: TargetRecord = {
   angularProject: true,
   framework: 'angular',
   html: false,
-  // SignalStore over classic @ngrx/store; measurements in DESIGN.md.
+  // SignalStore over classic @ngrx/store; measurements in docs/DESIGN.md.
   stores: ['ngrx-signals', 'ngrx-store'],
   ignores: ['.angular/**'],
   /**

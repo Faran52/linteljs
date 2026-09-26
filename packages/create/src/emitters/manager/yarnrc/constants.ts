@@ -83,7 +83,7 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     peerDependencies:
       vue: "*"
 `,
-  // stylelint 17 dropped postcss, so nothing declares one. Optional leaves YN0002 printing; DESIGN.md has why.
+  // stylelint 17 dropped postcss, so nothing declares one. Optional leaves YN0002 printing; docs/DESIGN.md has why.
   'postcss-html': `  "postcss-html@*":
     dependencies:
       postcss: "^8.5.0"

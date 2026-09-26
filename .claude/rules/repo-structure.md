@@ -8,7 +8,7 @@ paths:
 
 `packages/create/templates/fragments/claude-rules/repo-structure.library.md` is the standard. It is the file this
 workspace publishes, so it is the file this workspace is held to: read it, not a copy of it. A second
-copy here is the drift `DESIGN.md` exists to argue against.
+copy here is the drift `docs/DESIGN.md` exists to argue against.
 
 The nine per-target rule files describe applications and do not apply. This is not one of the nine
 targets, and `pages/` has nothing to hold in a package of ESLint rules.
@@ -32,7 +32,7 @@ aliases it duplicates instead of importing carry a comment saying so.
 - **`*Utils` on every file in a `utils/` directory.** `ruleUtils.ts` and `checkFileUtils.ts` rather
   than `ruleApi.ts` and `checkFile.ts`. The `naming` map in the root `eslint.config.ts` maps
   `**/utils/*.ts` to the `*Utils` glob, so a helper under any other name fails `pnpm lint`. This is
-  the workspace's own convention and `@linteljs/create` deliberately does not ship it; `DESIGN.md`
+  the workspace's own convention and `@linteljs/create` deliberately does not ship it; `docs/DESIGN.md`
   carries that as a non-goal, which is why it is absent from the published standard.
 
 - **Scripts take the ring shape too.** Each script is a kebab-case directory holding one entry named

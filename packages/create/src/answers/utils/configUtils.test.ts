@@ -289,7 +289,7 @@ describe('parseLinteljsConfig', () => {
   it.each([
     ['a non-object value', '[]', /linteljs\.config\.json must be a JSON object/],
     ['an unexpected property', config({ unexpected: true }), /unexpected property: unexpected/],
-    // DESIGN.md's "No JavaScript output" rests on this refusal.
+    // docs/DESIGN.md's "No JavaScript output" rests on this refusal.
     ['a project recorded as javascript', config({ typescript: false }), /unexpected property: typescript/],
     ['a different schema URL', config({ $schema: 'https://example.com/schema.json' }), /\$schema must be/],
     [

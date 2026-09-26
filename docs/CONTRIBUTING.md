@@ -48,14 +48,15 @@ the package name into text, which is why it can be built and tested before that 
   `frameworks/` or `libraries/`, holding an entry named for it with the group's suffix
   (`frameworks/react/reactFramework.ts` exports `react`) and its test beside it.
   `compose-config/composeConfig.ts` composes them and owns the ordering.
-- **`packages/create`** is the scaffolder, in three rings: `model/` is what the user chose,
-  `artifacts/` turns answers into file text, `run/` touches disk and argv. The direction points
-  inward only, enforced by `import-x/no-restricted-paths`.
+- **`packages/create`** is the scaffolder, in rings listed once in `src/rings.ts`: `answers/`,
+  `config/`, `targets/` and `utils/` inside, `emitters/` turning answers into file text, and
+  `disk/`, `spawns/`, `terminal/` and `pipeline/` outside. The direction points inward only,
+  enforced by `import-x/no-restricted-paths`.
 
 ## Where the reasons live
 
-`DESIGN.md` holds the decisions that are not visible in the code, including the non-goals. Read it
-before re-adding something it rules out; its contents list says which of its three parts you want.
+`docs/DESIGN.md` holds the decisions that are not visible in the code, including the non-goals. Read it
+before re-adding something it rules out; its contents list says which of its three audiences you are.
 
 The two `CLAUDE.md` files are the working rules for this repository, written for an agent but
 accurate for a person. `.claude/rules/` holds the standard this repository publishes and adopts for
@@ -81,5 +82,5 @@ descriptions.
 ## Releasing
 
 Maintainers only, and it is one push. Bump the three package versions and the two constants that
-mirror them, then push a branch named for the version. `DESIGN.md` has the whole ritual and the
+mirror them, then push a branch named for the version. `docs/DESIGN.md` has the whole ritual and the
 reasons behind it.

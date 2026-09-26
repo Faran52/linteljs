@@ -29,7 +29,7 @@ export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 export const ROUTER_MOCK = 'fragments/test-setup/setupTests.router.ts';
 
 // The one spelling of React's build wiring, read by the React target and every host. The compiler is the Rust port
-// `oxc-transform-react`, which the plugin runs natively; DESIGN.md has why it replaced the Babel pass.
+// `oxc-transform-react`, which the plugin runs natively; docs/DESIGN.md has why it replaced the Babel pass.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: ["import react from '@vitejs/plugin-react';"],
   calls: [`react({ compiler: ${OUTSIDE_TESTS} })`],
