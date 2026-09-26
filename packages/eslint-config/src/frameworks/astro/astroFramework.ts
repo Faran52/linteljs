@@ -34,6 +34,19 @@ export const astro = (): Layer => {
   return [
     ...recommended,
     ...a11y,
+    // The plugin looks for typescript-eslint from `process.cwd()` and falls back to espree and `.js` virtual files
+    // when that fails, which a project that has it only through this package can hit. Named here instead.
+    {
+      name: '@linteljs/astro/typescript',
+      files: ASTRO_FILES,
+      languageOptions: { parserOptions: { parser: tseslint.parser } },
+      processor: 'astro/client-side-ts',
+    },
+    {
+      name: '@linteljs/astro/typescript-scripts',
+      files: ['**/*.astro/*.ts'],
+      languageOptions: { parser: tseslint.parser },
+    },
     // After `typescript()`, which is why `composeConfig` composes this layer last.
     {
       ...tseslint.configs.disableTypeChecked,

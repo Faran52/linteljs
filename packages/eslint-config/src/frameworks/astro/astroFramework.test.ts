@@ -6,6 +6,7 @@ import {
   startsWith,
 } from '@mocks/lintText';
 import { layerWithoutConfig } from '@mocks/presets';
+import tseslint from 'typescript-eslint';
 import {
   describe,
   expect,
@@ -77,8 +78,34 @@ describe('astro', () => {
     expect(enabled).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
+  // The plugin's own lookup runs from `process.cwd()`, which the pnpm `.bin` shims widen through NODE_PATH, so a lint
+  // under this suite parses the frontmatter either way. Only the layer's own blocks say it no longer depends on that.
+  it('names the TypeScript parser for a template and its virtual scripts', () => {
+    const typed = astro().filter(({ name }) => {
+      return name?.startsWith('@linteljs/astro/typescript');
+    });
+
+    expect(typed).toEqual([
+      {
+        name: '@linteljs/astro/typescript',
+        files: ['**/*.astro'],
+        languageOptions: { parserOptions: { parser: tseslint.parser } },
+        processor: 'astro/client-side-ts',
+      },
+      {
+        name: '@linteljs/astro/typescript-scripts',
+        files: ['**/*.astro/*.ts'],
+        languageOptions: { parser: tseslint.parser },
+      },
+    ]);
+  });
+
   it('names every block it writes', () => {
-    expect(ownBlockNames(astro())).toEqual(['@linteljs/astro/untyped']);
+    expect(ownBlockNames(astro())).toEqual([
+      '@linteljs/astro/typescript',
+      '@linteljs/astro/typescript-scripts',
+      '@linteljs/astro/untyped',
+    ]);
   });
 
   it.each([

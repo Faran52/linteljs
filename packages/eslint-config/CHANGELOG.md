@@ -13,6 +13,10 @@ when a version's change lives in a sibling it is described there instead:
   `eslint/config`, Vite, Vitest, Astro and Nuxt each export a `defineConfig` that returns what it is given,
   and a project imports several of them, so an editor's auto-import could pick the wrong one. This one is an
   async function that picks and joins the layers its options ask for, and is now named for that.
+- `astro` names typescript-eslint's parser for `.astro` frontmatter and its `<script>` blocks. The
+  plugin looked for it from the working directory, which a project that has it only through this
+  package may not resolve under pnpm or Yarn PnP, and then fell back to espree without a word: every
+  `interface` in a frontmatter was a parse error.
 - `sonarjs/code-eval` stands down under a `__mocks__/` at any depth, not only at the root. A workspace
   keeps one per package, and the grant never reached any of them.
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`. A suite that asserts only over types
