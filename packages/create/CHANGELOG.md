@@ -67,6 +67,8 @@ when a version's change lives in a sibling it is described there instead:
 
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
   alone on every run.
+- On Yarn inside CI, the first install writes its lockfile. Yarn 4 turns immutable installs on under CI and refused
+  the lockfile a new project has to create.
 - On Yarn, husky and a target's own setup (`svelte-kit sync`) run from `postinstall`, since Yarn 2+ never runs
   `prepare`.
 - `stylelint-order` is an explicit dev dependency, since `stylelint-config-recess-order` peers on it.

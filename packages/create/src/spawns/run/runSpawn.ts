@@ -24,10 +24,12 @@ export const runSpawn = async (
       cwd,
       stdio: output === 'capture' ? ['ignore', 'pipe', 'pipe'] : 'inherit',
       shell: false,
-      // Angular's CLI otherwise prompts for analytics with no flag to decline.
+      // Angular's CLI otherwise prompts for analytics with no flag to decline. Yarn 4 turns immutable installs on
+      // under CI, which refuses the lockfile a new project's first install has to write.
       env: {
         ...env,
         NG_CLI_ANALYTICS: 'false',
+        YARN_ENABLE_IMMUTABLE_INSTALLS: 'false',
       },
     });
 

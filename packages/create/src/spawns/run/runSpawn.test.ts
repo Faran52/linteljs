@@ -48,6 +48,12 @@ describe('runSpawn', () => {
       .resolves.toBeUndefined();
   });
 
+  it('lets yarn write the lockfile a first install creates, even under CI', async () => {
+    const script = 'process.exit(process.env.YARN_ENABLE_IMMUTABLE_INSTALLS === "false" ? 0 : 1)';
+
+    await expect(runSpawn('node', ['-e', script], cwd)).resolves.toBeUndefined();
+  });
+
   it('settles on a clean exit with its output captured, saying nothing itself', async () => {
     await expect(runSpawn('node', ['-e', 'console.log("scaffolded")'], cwd, 'capture'))
       .resolves.toBeUndefined();
