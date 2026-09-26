@@ -5,6 +5,7 @@ import { targetFor } from '@targets';
 import { setupTestsPath } from '../../always/banned-patterns/bannedPatternsEmitter';
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
+import { stylingPlugin } from '../../utils/stylingUtils';
 
 import type { Answers } from '@answers';
 import type { PluginSpec, TestPlatform } from '@targets/types';
@@ -179,20 +180,9 @@ ${conditions}${block}
  * through it, and this is the shape for one that has none: Next compiles through Babel and PostCSS, which a
  * vitest run never reaches, so without the plugin every suite fails on an uncompiled `defineVars`.
  */
-const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: boolean): string => {
-  const calls = [
-    ...(stylex ? ['createUnplugin(stylex).vite({ useCSSLayers: true })'] : []),
-    ...vitestPlugin?.calls ?? [],
-  ];
-  const pluginImports = sortedImports([
-    ...vitestPlugin?.imports ?? [],
-    ...(stylex
-      ? [
-          "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
-          "import { createUnplugin } from 'unplugin';",
-        ]
-      : []),
-  ]);
+const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: PluginSpec): string => {
+  const calls = [...stylex.calls, ...vitestPlugin?.calls ?? []];
+  const pluginImports = sortedImports([...vitestPlugin?.imports ?? [], ...stylex.imports]);
   const plugins = calls.length === 0 ? '' : `  plugins: [${calls.join(', ')}],\n`;
   const prelude = pluginImports === '' ? '' : `${pluginImports}\n`;
 
@@ -239,7 +229,9 @@ ${block}
 `;
   }
 
-  return standaloneConfig(block, target.vitestPlugin, answers.styling === 'stylex');
+  const stylex = stylingPlugin(answers.styling === 'stylex' ? 'stylex' : undefined);
+
+  return standaloneConfig(block, target.vitestPlugin, stylex);
 };
 
 // Birth only, for the same reason `vite.config.ts` is. The excludes name this CLI's layout guesses, which a

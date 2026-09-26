@@ -17,12 +17,10 @@ interface CodedError extends Error {
 
 /**
  * The filesystem itself, re-exported rather than reached for directly everywhere. `node:fs` is importable from
- * `files/` alone, enforced in the root `eslint.config.ts`, so this is the one place the rest of the package
+ * `disk/` alone, enforced in the root `eslint.config.ts`, so this is the one place the rest of the package
  * substitutes when it needs to run without touching a disk.
  */
 export {
-  mkdir,
-  readFile,
   rm,
   rmdir,
 } from 'node:fs/promises';

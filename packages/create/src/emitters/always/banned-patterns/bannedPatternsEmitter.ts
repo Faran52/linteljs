@@ -29,7 +29,7 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
 };
 
 // `.astro` is left out: the checker reads script and SFC files only, so listing it scanned nothing.
-export const scannedExtensions = (answers: Answers): string[] => {
+const scannedExtensions = (answers: Answers): string[] => {
   const { sfcExtension } = targetFor(answers);
 
   return ['.ts', '.tsx', ...(sfcExtension === undefined ? [] : [`.${sfcExtension}`])];

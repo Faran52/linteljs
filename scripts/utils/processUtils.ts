@@ -15,7 +15,7 @@ export const run = (command: string, args: string[], cwd: string): string => {
   });
 };
 
-export const emptyDir = (dir: string): void => {
+const emptyDir = (dir: string): void => {
   rmSync(dir, {
     recursive: true,
     force: true,

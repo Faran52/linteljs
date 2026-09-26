@@ -4,6 +4,7 @@ import { targetFor } from '@targets';
 
 import { buildAliases } from '../../always/utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
+import { stylingPlugin } from '../../utils/stylingUtils';
 
 import type { Answers } from '@answers';
 
@@ -37,28 +38,12 @@ export const emitNuxtConfig = (answers: Answers): string => {
     ];
   });
 
-  const tailwind = answers.styling === 'tailwind';
-  const stylex = answers.styling === 'stylex';
-
-  // One styling answer, so one plugin at most. `useCSSLayers` keeps StyleX's atomic rules from outranking a
-  // hand-written one by specificity alone.
-  const vitePlugin = stylex ? 'createUnplugin(stylex).vite({ useCSSLayers: true })' : 'tailwindcss()';
+  const styling = stylingPlugin(answers.styling);
 
   return [
     "import { join } from 'node:path';",
     '',
-    ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
-    /*
-     * The raw factory through `unplugin`, for the reason `vite.config.ts` takes it that way: every pre-built
-     * factory `@stylexjs/unplugin` ships is typed `=> any`, and one of those in `plugins` fails the project's own
-     * lint.
-     */
-    ...(stylex
-      ? [
-          "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
-          "import { createUnplugin } from 'unplugin';",
-        ]
-      : []),
+    ...styling.imports,
     "import { defineNuxtConfig } from 'nuxt/config';",
     '',
     'export default defineNuxtConfig({',
@@ -76,13 +61,13 @@ export const emitNuxtConfig = (answers: Answers): string => {
      * `postcss-import` ahead of anything named in its own `postcss` key, and that reads `@import "tailwindcss"`
      * off disk and fails, where Tailwind 4 resolves that import itself.
      */
-    ...(stylex || tailwind
-      ? [
+    ...(styling.calls.length === 0
+      ? []
+      : [
           '  vite: {',
-          `    plugins: [${vitePlugin}],`,
+          `    plugins: [${styling.calls.join(', ')}],`,
           '  },',
-        ]
-      : []),
+        ]),
     '});',
     '',
   ].join('\n');

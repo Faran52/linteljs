@@ -18,12 +18,6 @@ interface ManagerSetup {
   install: string;
 }
 
-// The major of the Node that made the project, so CI runs what it was built on. A bare major cannot resolve below
-// `engines.node`, which is a major too.
-const nodeVersion = (answers: HostedAnswers): string => {
-  return String(majorOf(answers.nodeVersion));
-};
-
 // Third-party actions are pinned to a commit, since a tag can move; GitHub's own go by major tag.
 const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
   'pnpm': {
@@ -58,6 +52,10 @@ export const emitCiWorkflow = (answers: HostedAnswers): string => {
 
   const cache = setup.cache === undefined ? '' : `\n          cache: ${setup.cache}`;
 
+  // The major of the Node that made the project, so CI runs what it was built on. A bare major cannot resolve below
+  // `engines.node`, which is a major too.
+  const nodeMajor = String(majorOf(answers.nodeVersion));
+
   return `# The gate in front of every push, written by @linteljs/create. It runs exactly what \`${
     RUN_PREFIX[answers.packageManager]
   } check\`
@@ -80,7 +78,7 @@ jobs:
 
 ${before}      - uses: actions/setup-node@v7
         with:
-          node-version: ${nodeVersion(answers)}${cache}
+          node-version: ${nodeMajor}${cache}
 
       - run: ${setup.install}
 

@@ -176,7 +176,7 @@ export const fixCommaToNewline = (
   sourceCode: SourceCode,
   fixer: Fixer,
   currentToken: AST.Token,
-  indent = '',
+  indent: string,
 ): Rule.Fix | null => {
   const comma = mustFind(sourceCode.getTokenBefore(currentToken), 'the separator before a list element');
 

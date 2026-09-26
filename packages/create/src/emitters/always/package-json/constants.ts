@@ -6,7 +6,7 @@ import type { Framework } from '@config/types';
 // `catalog:` version in `pnpm-workspace.yaml`; `versions.test.ts` gates it.
 
 // Named, because `emitPnpmWorkspace` needs the major and a table lookup has an `undefined` arm no answer reaches.
-export const ESLINT_RANGE = '^10.11.0';
+const ESLINT_RANGE = '^10.11.0';
 
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest.

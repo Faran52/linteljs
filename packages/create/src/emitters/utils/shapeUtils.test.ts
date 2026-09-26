@@ -27,10 +27,4 @@ describe('projectSpelling', () => {
     expect(projectSpelling('src/style.css', [])).toBe('src/style.css');
     expect(projectSpelling('src/style.css', EMPTY_PROJECT.styleEntries)).toBe('src/style.css');
   });
-
-  // A target declaring no entry of its own still keeps whatever the project has.
-  it('answers a project file for a target with no default, and undefined for neither', () => {
-    expect(projectSpelling(undefined, CANDIDATES)).toBe('src/styles/global.css');
-    expect(projectSpelling(undefined, [])).toBeUndefined();
-  });
 });

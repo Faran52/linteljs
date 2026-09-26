@@ -17,31 +17,23 @@ import type { TargetRecord } from './types';
 // seven fixed records ignore the argument, so emitters read one shape.
 export type TargetBuilder = (answers: Answers) => TargetRecord;
 
+const fixed = (record: TargetRecord): TargetBuilder => {
+  return () => {
+    return record;
+  };
+};
+
 export const TARGETS: Record<TargetId, TargetBuilder> = {
   'react': reactTarget,
-  'next': () => {
-    return nextTarget;
-  },
-  'vue': () => {
-    return vueTarget;
-  },
-  'nuxt': () => {
-    return nuxtTarget;
-  },
-  'svelte': () => {
-    return svelteTarget;
-  },
-  'solid': () => {
-    return solidTarget;
-  },
-  'angular': () => {
-    return angularTarget;
-  },
+  'next': fixed(nextTarget),
+  'vue': fixed(vueTarget),
+  'nuxt': fixed(nuxtTarget),
+  'svelte': fixed(svelteTarget),
+  'solid': fixed(solidTarget),
+  'angular': fixed(angularTarget),
   'astro': astroTarget,
   'webextension': webextensionTarget,
-  'react-native': () => {
-    return reactNativeTarget;
-  },
+  'react-native': fixed(reactNativeTarget),
 };
 
 export const targetFor = (answers: Answers): TargetRecord => {

@@ -5,6 +5,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
+import { stylingPlugin } from '../../utils/stylingUtils';
 
 // For the five Vite targets. `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
 
@@ -16,36 +17,16 @@ export const emitViteConfig = (answers: Answers): string | null => {
     return null;
   }
 
-  const tailwind = answers.styling === 'tailwind';
-  const stylex = answers.styling === 'stylex';
+  const styling = stylingPlugin(answers.styling);
+  const imports = sortedImports(["import { defineConfig } from 'vite';", ...vitePlugin.imports, ...styling.imports]);
 
-  const imports = sortedImports([
-    "import { defineConfig } from 'vite';",
-    ...vitePlugin.imports,
-    ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
-    /*
-     * The raw factory through `unplugin`, not `@stylexjs/unplugin/vite`. Every pre-built factory that package
-     * ships is typed `=> any`, so the shorter import puts an `any` in `plugins` and the project fails its own
-     * lint; `unpluginFactory` is the one export it types properly.
-     */
-    ...(stylex
-      ? [
-          "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
-          "import { createUnplugin } from 'unplugin';",
-        ]
-      : []),
-  ]);
-
-  const calls = [
-    /*
-     * StyleX first, which is what its own documentation asks for: placed after the framework plugin it breaks
-     * Fast Refresh. `useCSSLayers` is its documented default for new projects and is what keeps the generated
-     * atomic rules from outranking a hand-written one by specificity alone.
-     */
-    ...(stylex ? ['createUnplugin(stylex).vite({ useCSSLayers: true })'] : []),
-    ...vitePlugin.calls,
-    ...(tailwind ? ['tailwindcss()'] : []),
-  ];
+  /*
+   * StyleX first, which is what its own documentation asks for: placed after the framework plugin it breaks
+   * Fast Refresh. Tailwind goes last.
+   */
+  const calls = answers.styling === 'stylex'
+    ? [...styling.calls, ...vitePlugin.calls]
+    : [...vitePlugin.calls, ...styling.calls];
 
   // One entry per line: React's compiler call plus tailwind joined is 128 characters, over the emitted `max-len`.
   const plugins = calls.map((call) => {

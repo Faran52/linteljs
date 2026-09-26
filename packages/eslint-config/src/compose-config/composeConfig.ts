@@ -4,7 +4,6 @@ import { typescript } from '../layers/typescript/typescriptLayer';
 import { FRAMEWORKS, LIBRARIES } from './utils/loaderUtils';
 
 import type { ComposeConfigOptions, Layer } from '../types';
-import type { FrameworkParts } from './utils/loaderUtils';
 
 const loadVitest = async (): Promise<Layer> => {
   const { vitest } = await import('../layers/vitest/vitestLayer');
@@ -37,30 +36,13 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     ...baseOptions
   } = options;
 
-  let parts: FrameworkParts | undefined;
-  let vitestRules: Layer = [];
-  let htmlRules: Layer = [];
-  let astroRules: Layer = [];
-
-  if (framework !== undefined) {
-    parts = await FRAMEWORKS[framework]();
-  }
-
+  const parts = framework === undefined ? undefined : await FRAMEWORKS[framework]();
   const libraryLayers = await Promise.all(libraries.map(async (library) => {
     return LIBRARIES[library]({ tailwindEntryPoint });
   }));
-
-  if (withVitest === true) {
-    vitestRules = await loadVitest();
-  }
-
-  if (withHtml === true) {
-    htmlRules = await loadHtml();
-  }
-
-  if (withAstro === true) {
-    astroRules = await loadAstro();
-  }
+  const vitestRules = withVitest === true ? await loadVitest() : [];
+  const htmlRules = withHtml === true ? await loadHtml() : [];
+  const astroRules = withAstro === true ? await loadAstro() : [];
 
   return [
     ...base(parts === undefined

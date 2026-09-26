@@ -4,13 +4,13 @@ import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
 import { merged } from '../../utils/artifactUtils';
+import { projectSpelling } from '../../utils/shapeUtils';
 
 import {
   IMPORTS_TAILWIND,
   STYLEX_AT_RULE,
   TAILWIND_IMPORT,
 } from './constants';
-import { styleEntryPath } from './utils/pathUtils';
 
 /**
  * Each import is added only where the file does not already have it, so a `sync` adds what is missing and repeats
@@ -57,8 +57,9 @@ export const mergeStyleEntry = (
  * Tailwind generates nothing until a stylesheet imports it; only create-next-app writes that line itself.
  */
 export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Artifact[] => {
-  const entry = styleEntryPath(answers, project.styleEntries);
   const target = targetFor(answers);
+  // The target's own where present, the project's otherwise, and the target's default at birth.
+  const entry = projectSpelling(target.styleEntry, project.styleEntries);
   const tailwind = answers.styling === 'tailwind';
   const stylex = answers.styling === 'stylex';
   const imports = [

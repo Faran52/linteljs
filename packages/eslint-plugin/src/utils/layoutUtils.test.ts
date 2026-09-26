@@ -311,15 +311,14 @@ describe('spliceOntoNewline', () => {
 });
 
 describe('fixCommaToNewline', () => {
-  // Both callers pass an indent today; nothing else pins what the default writes, so this test does.
-  it('writes a bare line break when no indent is given', () => {
+  it('moves the element onto a line of its own at the given indent', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
     const second = mustFind(
       sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
       'the token before the closing bracket',
     );
 
-    expect(fixCommaToNewline(sourceCode, captureFixer(), second)?.text).toBe('\n');
+    expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')?.text).toBe('\n  ');
   });
 
   // Reflowing over a comment in the gap would delete it, so there is no fix to offer.
@@ -330,7 +329,7 @@ describe('fixCommaToNewline', () => {
       'the token before the closing bracket',
     );
 
-    expect(fixCommaToNewline(sourceCode, captureFixer(), second)).toBeNull();
+    expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')).toBeNull();
   });
 });
 

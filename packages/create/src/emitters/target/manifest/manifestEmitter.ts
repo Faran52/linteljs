@@ -1,7 +1,5 @@
 import { type Artifact, type ProjectShape } from '@config/types';
 
-import { isJsonObject } from '@utils/objectUtils';
-
 import {
   type Answers,
   type Browser,
@@ -52,21 +50,6 @@ export interface Manifest {
   background?: EventPage | ServiceWorker;
   devtools_page?: string;
 }
-
-const isManifest = (value: unknown): value is Manifest => {
-  return isJsonObject(value) && 'manifest_version' in value;
-};
-
-// The read half; a guard beats a cast, and the throw names the file.
-export const parseManifest = (text: string): Manifest => {
-  const parsed: unknown = JSON.parse(text);
-
-  if (!isManifest(parsed)) {
-    throw new Error('manifest.json does not contain a JSON object');
-  }
-
-  return parsed;
-};
 
 const backgroundFor = (browser: Browser): ServiceWorker | EventPage => {
   return browser === 'firefox'

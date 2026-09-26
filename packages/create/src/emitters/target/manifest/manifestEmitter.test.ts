@@ -6,6 +6,8 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
+import { isJsonObject } from '@utils/objectUtils';
+
 import {
   type Answers,
   type Browser,
@@ -21,7 +23,6 @@ import {
   emitManifest,
   type Manifest,
   manifestEmitter,
-  parseManifest,
 } from './manifestEmitter';
 
 interface AnswerOverrides {
@@ -32,6 +33,21 @@ interface AnswerOverrides {
   styling?: Styling;
   data?: Data;
 }
+
+const isManifest = (value: unknown): value is Manifest => {
+  return isJsonObject(value) && 'manifest_version' in value;
+};
+
+// The emitted text read back; a guard beats a cast, and the throw names the file.
+const parseManifest = (text: string): Manifest => {
+  const parsed: unknown = JSON.parse(text);
+
+  if (!isManifest(parsed)) {
+    throw new Error('manifest.json does not contain a JSON object');
+  }
+
+  return parsed;
+};
 
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {
   return {
@@ -129,13 +145,6 @@ describe('emitManifest', () => {
     expect(manifest.action).toBeDefined();
     expect(manifest.background).toBeDefined();
     expect(manifest.devtools_page).toBe('devtools.html');
-  });
-
-  // The read half, whose throw is the only way a caller learns the file was not what it claimed.
-  it.each(['[]', '{}'])('refuses %s, which is not a manifest object', (text) => {
-    expect(() => {
-      return parseManifest(text);
-    }).toThrow('manifest.json does not contain a JSON object');
   });
 
   // Read by a person and committed to a repository, so it is indented and ends in a newline like every other artifact.

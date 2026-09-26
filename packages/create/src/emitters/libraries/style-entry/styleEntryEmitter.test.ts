@@ -6,7 +6,16 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { valuesOf } from '@utils/objectUtils';
+
+import {
+  ANSWERS,
+  type Answers,
+  DEFAULT_ANSWERS,
+  type TargetId,
+} from '@answers';
+import { STYLE_ENTRY_CANDIDATES } from '@disk';
+import { targetFor } from '@targets';
 
 import { STYLEX_AT_RULE, TAILWIND_IMPORT } from './constants';
 import { mergeStyleEntry, styleEntryEmitter } from './styleEntryEmitter';
@@ -24,6 +33,47 @@ const answersFor = (overrides: Partial<Answers>): Answers => {
 const contentOf = (artifact: Artifact | undefined): string => {
   return artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '';
 };
+
+// Tailwind, so every target writes an entry whatever its starter stylesheets.
+const entryPathOf = (target: TargetId, styleEntries: string[]): string | undefined => {
+  return styleEntryEmitter(answersFor({
+    target,
+    styling: 'tailwind',
+  }), {
+    ...EMPTY_PROJECT,
+    styleEntries,
+  })[0]?.target;
+};
+
+describe('the entry path', () => {
+  it("takes the project's own entry over the target's default", () => {
+    expect(entryPathOf('webextension', ['src/styles/tailwind.css'])).toBe('src/styles/tailwind.css');
+  });
+
+  it('falls back to the target default when the project has none', () => {
+    expect(entryPathOf('webextension', [])).toBe('src/style.css');
+    expect(entryPathOf('next', [])).toBe('src/app/globals.css');
+  });
+
+  // A default missing from the candidates is an entry that can never be found, so a second is written beside it.
+  it('can discover every default a target declares', () => {
+    const declared = valuesOf(ANSWERS.target.values).map((target) => {
+      return targetFor(answersFor({ target })).styleEntry;
+    });
+
+    expect(declared.length).toBeGreaterThan(0);
+    expect(STYLE_ENTRY_CANDIDATES).toEqual(expect.arrayContaining(declared));
+  });
+
+  // A project keeping a `styles/global.css` beside the standard's entry was read as the second of the two.
+  it("takes the target's own entry over another the project also has", () => {
+    expect(entryPathOf('webextension', ['src/styles/global.css', 'src/style.css'])).toBe('src/style.css');
+  });
+
+  it('takes the discovered one when the target default is absent', () => {
+    expect(entryPathOf('webextension', ['src/styles/global.css'])).toBe('src/styles/global.css');
+  });
+});
 
 describe('mergeStyleEntry', () => {
   // Svelte's case: there is no stylesheet on disk, so this is the whole file.

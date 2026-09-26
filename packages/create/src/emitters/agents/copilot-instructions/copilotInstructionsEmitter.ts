@@ -1,17 +1,13 @@
 import { type Artifact } from '@config/types';
 
-import { emitted } from '../../utils/artifactUtils';
-import { emitAgentAdapter } from '../utils/adapterUtils';
+import { adapterArtifact } from '../utils/adapterUtils';
 import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 
 import type { Answers } from '@answers';
 
 export const copilotArtifacts = (answers: Answers): Artifact[] => {
   return [
-    {
-      ...emitted('standard', '.github/copilot-instructions.md', emitAgentAdapter(answers)),
-      preserve: true,
-    },
+    adapterArtifact('.github/copilot-instructions.md', answers),
     // `**` where the rule lists no paths: it governs any file, which is what Copilot reads that glob as.
     ...ruleArtifacts(answers, '.github/instructions', '.instructions.md', (source) => {
       const globs = globsOf(source);

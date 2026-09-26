@@ -5,6 +5,7 @@ import { targetFor } from '@targets';
 import { OUTSIDE_TESTS } from '@targets/constants';
 
 import { emitted } from '../../utils/artifactUtils';
+import { stylingPlugin } from '../../utils/stylingUtils';
 
 // Astro's Vite options live here, so there is no `vite.config.ts`. `.mjs` is the name `astro check` looks for first.
 // Null for every other target.
@@ -63,39 +64,22 @@ export const emitAstroConfig = (answers: Answers): string | null => {
   }
 
   const framework = answers.hostedFramework;
-  const tailwind = answers.styling === 'tailwind';
-  const stylex = answers.styling === 'stylex';
+  const styling = stylingPlugin(answers.styling);
 
   const imports = [
     "import { defineConfig } from 'astro/config';",
     ...(framework === undefined
       ? []
       : [`import ${BINDING[framework]} from '${INTEGRATIONS[framework].specifier}';`]),
-    ...(tailwind ? ["import tailwindcss from '@tailwindcss/vite';"] : []),
-    /*
-     * The raw factory through `unplugin`, for the reason `vite.config.ts` takes it that way: every pre-built
-     * factory `@stylexjs/unplugin` ships is typed `=> any`, and one of those in `plugins` fails the project's
-     * own lint.
-     */
-    ...(stylex
-      ? [
-          "import { unpluginFactory as stylex } from '@stylexjs/unplugin';",
-          "import { createUnplugin } from 'unplugin';",
-        ]
-      : []),
+    ...styling.imports,
   ].join('\n');
 
   const integrations = framework === undefined
     ? ''
     : `  integrations: [${INTEGRATIONS[framework].call}],\n`;
 
-  /*
-   * Vite plugins, not integrations: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro
-   * one. One styling answer, so one plugin at most; `useCSSLayers` so StyleX's atomic rules cannot outrank a
-   * hand-written one by specificity alone.
-   */
-  const plugin = stylex ? 'createUnplugin(stylex).vite({ useCSSLayers: true })' : 'tailwindcss()';
-  const vite = stylex || tailwind ? `  vite: { plugins: [${plugin}] },\n` : '';
+  // Vite plugins, not integrations: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro one.
+  const vite = styling.calls.length === 0 ? '' : `  vite: { plugins: [${styling.calls.join(', ')}] },\n`;
 
   return `${imports}
 

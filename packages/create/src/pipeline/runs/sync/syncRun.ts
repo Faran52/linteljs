@@ -41,6 +41,14 @@ export interface SyncResult {
 
 // Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
 
+const entryOf = (target: string, status: SyncStatus, diff = ''): SyncEntry => {
+  return {
+    target,
+    status,
+    diff,
+  };
+};
+
 // What the last run recorded as its own, plus the one name no run writes any more: versions through 1.6.0 kept the
 // answers in `lintel.config.json`, so an upgraded project carries a file this one replaced.
 const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
@@ -67,11 +75,7 @@ const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry
 
   for (const target of await obsoleteCandidates(cwd)) {
     if (!expected.has(target) && await entryExists(join(cwd, target))) {
-      entries.push({
-        target,
-        status: 'obsolete',
-        diff: '',
-      });
+      entries.push(entryOf(target, 'obsolete'));
     }
   }
 
@@ -96,39 +100,21 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
     const current = await readIfPresent(path);
 
     if (current === null) {
-      entries.push({
-        target: artifact.target,
-        status: 'missing',
-        diff: '',
-      });
+      entries.push(entryOf(artifact.target, 'missing'));
       continue;
     }
 
     // Reporting an edit here would invite a `--force` that undoes it.
     if (artifact.preserve === true) {
-      entries.push({
-        target: artifact.target,
-        status: 'unchanged',
-        diff: '',
-      });
+      entries.push(entryOf(artifact.target, 'unchanged'));
       continue;
     }
 
     const shipped = await shippedAssetsReader(artifact.content, current);
 
-    entries.push(
-      current === shipped
-        ? {
-            target: artifact.target,
-            status: 'unchanged',
-            diff: '',
-          }
-        : {
-            target: artifact.target,
-            status: 'changed',
-            diff: diffOf(artifact.target, shipped, cwd),
-          },
-    );
+    entries.push(current === shipped
+      ? entryOf(artifact.target, 'unchanged')
+      : entryOf(artifact.target, 'changed', diffOf(artifact.target, shipped, cwd)));
   }
 
   entries.push(...await obsoleteIn(cwd, expected));

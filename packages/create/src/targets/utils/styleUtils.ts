@@ -21,11 +21,11 @@ interface AssetPath {
 }
 
 // StyleX compiles a component's styles at build time, so under it a component's stylesheet does not ship.
-export const isStylex = (answers: Answers): boolean => {
+const isStylex = (answers: Answers): boolean => {
   return answers.styling === 'stylex';
 };
 
-export const COMPONENT_PATHS: ComponentPaths = {
+const COMPONENT_PATHS: ComponentPaths = {
   header: 'src/components/features/app-header/AppHeader',
   mark: 'src/components/ui/mark/Mark',
   button: 'src/components/ui/button/Button',
