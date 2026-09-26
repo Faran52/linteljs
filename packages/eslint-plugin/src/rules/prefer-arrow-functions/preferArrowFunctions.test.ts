@@ -115,8 +115,26 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       code: 'var x;\n\nfunction x() {}',
       languageOptions: { sourceType: 'script' },
     },
+
+    // A StyleX dynamic style: its compiler refuses the block body the explicit-return fix would write.
+    'const sheet = stylex.create({\n  box: (width) => ({ width }),\n});',
   ],
   invalid: [
+    // Only `stylex.create` is compiled; the same shape anywhere else is an ordinary arrow.
+    ...[
+      'const sheet = { box: (width) => ({ width }) };',
+      'const sheet = create({ box: (width) => ({ width }) });',
+      'const sheet = this.create({ box: (width) => ({ width }) });',
+      "const sheet = stylex['create']({ box: (width) => ({ width }) });",
+      'const sheet = other.create({ box: (width) => ({ width }) });',
+      'const sheet = stylex.keyframes({ box: (width) => ({ width }) });',
+    ].map((code) => {
+      return {
+        code,
+        output: code.replace('(width) => ({ width })', '(width) => { return { width } }'),
+        errors: [{ messageId: 'preferExplicit' }],
+      };
+    }),
     {
       // `x` is declared twice, so it stays a function; the enclosing, singly bound `component` still converts.
       code: 'function component() {\n  function x(a) {\n    a.foo();\n  }\n\n  function x() {}\n\n  return x;\n}',

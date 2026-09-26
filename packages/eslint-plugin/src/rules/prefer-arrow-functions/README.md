@@ -170,6 +170,10 @@ Also left alone, for the same reason in each case:
 A statement carrying a comment inside the range the fix would rewrite is reported without a fix,
 since the rebuilt arrow has nowhere to put it.
 
+The explicit-return half leaves an arrow alone when it is a property value inside `stylex.create()`.
+StyleX compiles that call at build time and takes a dynamic style only as `(width) => ({ width })`,
+so the block body would fail the build.
+
 ## Notes
 
 ### Hoisting

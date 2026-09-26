@@ -711,6 +711,14 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: '---\n// nothing yet\n---\n',
     filename: 'stub.astro',
   },
+  {
+    // The StyleX compiler reads a dynamic style's expression body and refuses a block, so no fixer may write one.
+    name: 'a StyleX dynamic style',
+    code: "import * as stylex from '@stylexjs/stylex';\n\n"
+      + 'export const sheet = stylex.create({\n  box: (width: number) => ({ width }),\n});\n',
+    typescript: true,
+    filename: 'styles.ts',
+  },
 ];
 
 const linter = new Linter();

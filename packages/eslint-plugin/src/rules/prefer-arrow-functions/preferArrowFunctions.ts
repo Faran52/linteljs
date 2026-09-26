@@ -63,6 +63,23 @@ const parentOf = (reference: Scope.Reference): RuleNode => {
   return mustFind((reference.identifier as RuleNode).parent, 'the parent of a reference to the function');
 };
 
+// StyleX compiles `stylex.create` at build time and takes a dynamic style only as `(x) => ({ ... })`: the block
+// body the fix writes fails that build with `Unsupported expression`.
+const isStylexStyle = (fn: FunctionLike): boolean => {
+  if (fn.parent.type !== 'Property') {
+    return false;
+  }
+
+  const call = mustFind(fn.parent.parent.parent, 'the parent of an object literal');
+
+  return call.type === 'CallExpression'
+    && call.callee.type === 'MemberExpression'
+    && call.callee.object.type === 'Identifier'
+    && call.callee.object.name === 'stylex'
+    && call.callee.property.type === 'Identifier'
+    && call.callee.property.name === 'create';
+};
+
 const buildFrame = (fn: FunctionLike): FunctionFrame => {
   return {
     node: fn,
@@ -338,6 +355,10 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         },
 
       'ArrowFunctionExpression[body.type!="BlockStatement"]:exit': (fn: FunctionLike) => {
+        if (isStylexStyle(fn)) {
+          return;
+        }
+
         reportFix(fn, 'preferExplicit', writeArrowFunction(sourceCode, fn, isTsx));
       },
     };

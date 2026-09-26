@@ -8,6 +8,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ## Unreleased
 
+- `prefer-arrow-functions` no longer asks for an explicit `return` in a StyleX dynamic style, an arrow
+  that is a property value inside `stylex.create()`. The compiler takes only the expression body and
+  failed the build on the block the fix wrote.
 - **Breaking: Node `>=14.0.0`.** The floor was 12. The bundle now targets `node14`, so it keeps optional
   chaining and nullish coalescing, and CI runs ESLint 5, 6 and 7 against it on a bare `node:14-alpine`.
 - `react-no-global-namespace` fixes a Svelte component correctly: the `react` import goes inside the
