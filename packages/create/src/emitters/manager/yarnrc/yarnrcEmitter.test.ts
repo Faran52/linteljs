@@ -54,6 +54,21 @@ describe('emitYarnrc', () => {
     expect(emitYarnrc(answersFor({}))).not.toContain('@tanstack/react-form');
   });
 
+  // Measured on yarn 4: each left a YN0086 on an Angular project choosing TanStack Form and Query.
+  it('answers the peers beneath the Angular TanStack packages only when they are chosen', () => {
+    const chosen = emitYarnrc(answersFor({
+      target: 'angular',
+      form: 'tanstack-form',
+      data: 'tanstack-query',
+    }));
+    const bare = emitYarnrc(answersFor({ target: 'angular' }));
+
+    expect(chosen).toContain('  "@tanstack/angular-form@*":\n    peerDependencies:\n      "@angular/common": "*"\n');
+    expect(chosen).toContain('  "goober@*":\n    peerDependenciesMeta:\n      csstype:\n        optional: true\n');
+    expect(bare).not.toContain('@tanstack/angular-form');
+    expect(bare).not.toContain('goober');
+  });
+
   // Angular and Astro both drag the wasm binding in, and a target installing neither must not carry it.
   it('writes the toolchain entries each of angular, astro and next needs', () => {
     const angular = emitYarnrc(answersFor({ target: 'angular' }));
@@ -65,25 +80,6 @@ describe('emitYarnrc', () => {
     expect(astro).toContain('  "@napi-rs/wasm-runtime@*":\n');
     expect(emitYarnrc(answersFor({ target: 'next' }))).toContain('  "@next/eslint-plugin-next@*":\n');
     expect(emitYarnrc(answersFor({}))).not.toContain('@napi-rs/wasm-runtime');
-  });
-
-  // The one peer yarn cannot be told about: `@angular/build` peers vitest 4 and the standard installs 5.
-  it('discards both peer codes only for a target that declares an allowance', () => {
-    const angular = emitYarnrc(answersFor({ target: 'angular' }));
-
-    // The code yarn actually emits for the clash, YN0060, with its YN0086 summary: the summary alone left it printing.
-    expect(angular).toContain([
-      'logFilters:',
-      '  - code: "YN0086"',
-      '    level: "discard"',
-      '  - code: "YN0060"',
-      '    level: "discard"',
-      'packageExtensions:',
-    ].join('\n'));
-    expect(emitYarnrc(answersFor({}))).not.toContain('YN0086');
-    expect(emitYarnrc(answersFor({}))).not.toContain('YN0060');
-    // Measured without it: React Native's peers are all answered by packageExtensions, so it filters nothing.
-    expect(emitYarnrc(answersFor({ target: 'react-native' }))).not.toContain('logFilters');
   });
 
   // Hard peers no emitted manifest answers. Written only where the dependent is installed: yarn reports YN0068 for a
@@ -135,10 +131,13 @@ describe('emitYarnrc', () => {
     expect(emitYarnrc(answersFor({}))).not.toContain('eslint-plugin-router');
   });
 
-  // yarn refuses the install outright on a `logFilters` key with nothing under it.
-  it('omits the logFilters key entirely for a target with no allowance', () => {
-    expect(emitYarnrc(answersFor({})).startsWith(`${HEAD}packageExtensions:\n`)).toBe(true);
-    expect(emitYarnrc(answersFor({ target: 'angular' }))).toContain('logFilters:\n');
+  // No `logFilters`: a peer problem on any target prints rather than being discarded.
+  it('discards no warning code on any target', () => {
+    for (const target of ['react', 'angular', 'react-native'] as const) {
+      const output = emitYarnrc(answersFor({ target }));
+
+      expect(output.startsWith(`${HEAD}packageExtensions:\n`)).toBe(true);
+    }
   });
 
   // Measured on vue and svelte: three YN0002 warnings for peers a tree the project does not own supplies.

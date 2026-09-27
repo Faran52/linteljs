@@ -280,8 +280,6 @@ export interface TargetRecord {
   allowBuilds: string[];
   // Read before `VERSIONS`, for a target whose platform pins a release every other target has moved past.
   versions?: Record<string, string>;
-  // `dependent>peer` pairs pnpm may satisfy with the version named, beyond the eslint ones every project carries.
-  peerAllowances?: Record<string, string>;
   // Relative to `templates/fragments/claude-rules/`.
   stateRules: string[];
   // Overridden only where a test environment is needed.

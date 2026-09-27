@@ -815,9 +815,11 @@ peer with `packageExtensions`, never `logFilters`. `@vue/test-utils` peering on 
 supplied by a tree the project does not own. `postcss-html` on `postcss` is answered by supplying it: stylelint 17
 dropped its own postcss, so `postcss-html` would rest on whatever `postcss-safe-parser` hoists, and marking it
 optional leaves YN0002 printing. A blanket `YN0002`/`YN0060` discard would also stop the suite's no-warnings
-assertion firing on yarn, since with nothing printed yarn never reports `Done with warnings`. The only filter left
-is the one a target earns by declaring `peerAllowances`, Angular alone, where `@angular/build` requests a vitest the
-standard exceeds; yarn reports that as `YN0060` with a `YN0086` summary, so the allowance discards both.
+assertion firing on yarn, since with nothing printed yarn never reports `Done with warnings`. No target filters
+anything: the last, Angular's discard of `@angular/build` peering vitest 4, went when `@angular/build` 22.2 admitted
+vitest 5, and pnpm's `peerDependencyRules` block went with it. The discard had also hidden two `YN0086`s on
+Angular, `@tanstack/angular-store` asking `@tanstack/angular-form` for `@angular/common` and `goober` asking the
+query devtools for `csstype`, which `packageExtensions` now answers.
 
 ### The executor's manager and Node
 

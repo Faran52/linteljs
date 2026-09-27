@@ -2,22 +2,14 @@ import { type Answers, type Artifact } from '@config/types';
 
 import { merged } from '../../utils/artifactUtils';
 
-import {
-  allowBuildsBlock,
-  emitPnpmWorkspace,
-  peerRulesBlock,
-} from './utils/emitUtils';
+import { allowBuildsBlock } from './utils/emitUtils';
 
 // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
 const SUPERSEDED_KEY = 'ignoredBuiltDependencies:';
 
 // Line-based: a YAML round-trip would reformat every line the user wrote.
 export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
-  if (existing === null) {
-    return emitPnpmWorkspace(answers);
-  }
-
-  const lines = existing.split('\n');
+  const lines = (existing ?? '').split('\n');
   const kept: string[] = [];
   let dropping = false;
 
@@ -37,15 +29,11 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
     .join('\n')
     .replace(/^\n+/, '');
 
-  // Each block on its own, since a project that predates one already has the other; a present block is the project's.
-  const head = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
-
-  if (/^peerDependencyRules:/m.test(head)) {
-    return head;
-  }
+  // A present block is the project's.
+  const merged = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
 
   // `trimEnd`: an anchored `\n+$` is the shape `sonarjs/super-linear-regex` reports.
-  return `${head.trimEnd()}\n${peerRulesBlock(answers)}`;
+  return `${merged.trimEnd()}\n`;
 };
 
 // Only where it means something; discarding it breaks an install that already wrote into it.

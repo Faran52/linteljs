@@ -7,9 +7,6 @@ import {
 // Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
 // `catalog:` version in `pnpm-workspace.yaml`; `utils/packageJsonUtils.test.ts` gates it.
 
-// Named, because `emitPnpmWorkspace` needs the major and a table lookup has an `undefined` arm no answer reaches.
-const ESLINT_RANGE = '^10.11.0';
-
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest.
   '@analogjs/vite-plugin-angular': '^2.7.5',
@@ -94,7 +91,7 @@ export const VERSIONS: Record<string, string> = {
   'angular-eslint': '^22.5.0',
   'astro': '^7.3.5',
   'astro-eslint-parser': '^3.2.0',
-  'eslint': ESLINT_RANGE,
+  'eslint': '^10.11.0',
   // The plugin, not `eslint-config-next`, which bundles plugins the layers already cover; see eslint-config's
   // `frameworks/next/`.
   '@next/eslint-plugin-next': '^16.3.6',

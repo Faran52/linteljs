@@ -32,6 +32,17 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     peerDependencies:
       react-dom: "*"
 `,
+  // `@tanstack/angular-store` beneath it peers the `@angular/common` every Angular project installs.
+  '@tanstack/angular-form': `  "@tanstack/angular-form@*":
+    peerDependencies:
+      "@angular/common": "*"
+`,
+  // Its devtools bundle `goober`, whose `csstype` peer is types only and nothing in the project reads.
+  '@tanstack/angular-query-experimental': `  "goober@*":
+    peerDependenciesMeta:
+      csstype:
+        optional: true
+`,
   // Every React Native project installs it for Reanimated, and it hard-peers a babel nothing declares.
   'react-native-worklets': `  "react-native-worklets@*":
     dependencies:

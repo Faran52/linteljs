@@ -68,6 +68,9 @@ when a version's change lives in a sibling it is described there instead:
 - **The starter source, hooks and scripts put each chained call on its own line**, the shape
   `@linteljs/chain-call-newline` asks for, so a new project passes its own lint. Starter tests read a named value
   rather than a chain.
+- An Angular project's `pnpm-workspace.yaml` loses its `peerDependencyRules` block and its `.yarnrc.yml` its
+  `logFilters`, since `@angular/build` 22.2 admits vitest 5. No target discards a peer warning any more; the two
+  the filter hid on Yarn, under TanStack Form and TanStack Query, are answered in `packageExtensions`.
 
 ### Fixed
 

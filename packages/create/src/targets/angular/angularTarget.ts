@@ -133,8 +133,6 @@ export const angularTarget: TargetRecord = {
   // Only the emitted `vitest.config.ts` calls the compiler plugin.
   testDevDependencies: ['@analogjs/vite-plugin-angular'],
   allowBuilds: ['@parcel/watcher', 'esbuild', 'lmdb', 'msgpackr-extract'],
-  // `@angular/build` peers on vitest 4 while the gate runs vitest 5.
-  peerAllowances: { '@angular/build>vitest': '5' },
   stateRules: [],
   testSetup: 'fragments/test-setup/setupTests.angular.ts',
 };
