@@ -1266,13 +1266,18 @@ have. The notice carries no finding, so silencing it changes nothing `pnpm lint`
 
 `answers/`, `config/`, `targets/` and `utils/` are the inner rings and reach nothing outward. `emitters/` turns
 answers into file text and may read the inner rings but not `disk/`, `pipeline/`, `spawns/` or `terminal/`. The
-direction only ever points inward. The zones are built from `INNER_RINGS`, `MIDDLE_RINGS` and `OUTER_RINGS` in
-`packages/create/src/rings.ts`, the one list of the rings, so a new ring is a line there rather than an edit here.
+direction only ever points inward. Among the inner four it points one way too, in `INNER_RINGS` order: `answers/`,
+`targets/`, `utils/`, `config/`, each reading only those after it. The zones are built from `INNER_RINGS`,
+`MIDDLE_RINGS` and `OUTER_RINGS` in `packages/create/src/rings.ts`, the one list of the rings, so a new ring is a line
+there rather than an edit here.
 
 A route around it through the package barrel is not a third zone: `src/index.ts` re-exports from the outer rings, so
 an inner ring importing it is a cycle, which `import-x/no-cycle` in `base` already reports. It lives in the
 workspace config rather than a layer because the ring names are this package's, not the standard's, and it is scoped
-to source: a test arranges and asserts across rings by nature.
+to source: a test arranges and asserts across rings by nature. The inner order alone also holds in the suites,
+through `@linteljs/workspace/create-rings-tests`, with one exemption: a `targets/` suite may take its answer fixtures
+(`DEFAULT_ANSWERS`, `ANSWERS`) from the `answers/` barrel and nothing deeper. Five suites do; the records under test
+are built from answers, and a copy of the defaults in `__mocks__/` would be a second spelling of them.
 
 ### `@linteljs/workspace/create-worlds`
 

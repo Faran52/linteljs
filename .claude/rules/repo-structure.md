@@ -185,8 +185,8 @@ aliases it duplicates instead of importing carry a comment saying so.
   cannot drift from what a config actually accepts.
 
   `answers/utils/configUtils.ts` value-imports `targetFor` from the `targets/` barrel for the `slot`
-  and `only` checks its parser needs. `create-rings` only stops an inner ring reaching an outer one;
-  the order among the inner four is held by the imports themselves.
+  and `only` checks its parser needs. `create-rings` holds the inner four to that order as well as
+  stopping an inner ring reaching an outer one.
 
 - **`eslint-plugin` groups by rule id, not by ring.** `src/rules/<kebab-rule-id>/` holds the rule
   file named for its single export, its test, and `README.md`. The directory name is the id, so the

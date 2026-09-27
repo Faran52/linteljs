@@ -1,4 +1,4 @@
-import { DEFAULT_ANSWERS } from '@answers';
+import { answersFor } from '@mocks/answersFor';
 
 import {
   browsersOf,
@@ -8,8 +8,6 @@ import {
   rendersWithReact,
   surfacesOf,
 } from './answerUtils';
-
-import type { Answers } from '@config/types';
 
 describe('rendersWithReact', () => {
   it('holds for every framework that renders with React', () => {
@@ -23,11 +21,10 @@ describe('rendersWithReact', () => {
 
 describe('hasLibrary', () => {
   it('reads the chosen libraries', () => {
-    const answers: Answers = {
-      ...DEFAULT_ANSWERS,
+    const answers = answersFor({
       libraries: ['zod'],
       styling: 'tailwind',
-    };
+    });
 
     expect(hasLibrary(answers, 'zod')).toBe(true);
     expect(hasLibrary(answers, 'ts-pattern')).toBe(false);
@@ -36,20 +33,16 @@ describe('hasLibrary', () => {
 
 describe('surfacesOf', () => {
   it('answers what was chosen, and the pair an older config means by saying nothing', () => {
-    expect(surfacesOf({
-      ...DEFAULT_ANSWERS,
-      surfaces: ['devtools-panel'],
-    })).toEqual(['devtools-panel']);
-    expect(surfacesOf(DEFAULT_ANSWERS)).toEqual(['popup', 'background']);
+    const chosen = answersFor({ surfaces: ['devtools-panel'] });
+
+    expect(surfacesOf(chosen)).toEqual(['devtools-panel']);
+    expect(surfacesOf(answersFor())).toEqual(['popup', 'background']);
   });
 });
 
 describe('hasSurface', () => {
   it('reads the chosen surfaces', () => {
-    const answers: Answers = {
-      ...DEFAULT_ANSWERS,
-      surfaces: ['devtools-panel'],
-    };
+    const answers = answersFor({ surfaces: ['devtools-panel'] });
 
     expect(hasSurface(answers, 'devtools-panel')).toBe(true);
     expect(hasSurface(answers, 'popup')).toBe(false);
@@ -58,21 +51,19 @@ describe('hasSurface', () => {
 
 describe('browsersOf', () => {
   it('leads with the primary browser and carries it once', () => {
-    expect(browsersOf({
-      ...DEFAULT_ANSWERS,
+    const both = answersFor({
       browser: 'firefox',
       browsers: ['chrome', 'firefox'],
-    })).toEqual(['firefox', 'chrome']);
-    expect(browsersOf(DEFAULT_ANSWERS)).toEqual(['chrome']);
+    });
+
+    expect(browsersOf(both)).toEqual(['firefox', 'chrome']);
+    expect(browsersOf(answersFor())).toEqual(['chrome']);
   });
 });
 
 describe('hasTests', () => {
   it('holds for every testing answer but none', () => {
-    expect(hasTests(DEFAULT_ANSWERS)).toBe(true);
-    expect(hasTests({
-      ...DEFAULT_ANSWERS,
-      testing: 'none',
-    })).toBe(false);
+    expect(hasTests(answersFor())).toBe(true);
+    expect(hasTests(answersFor({ testing: 'none' }))).toBe(false);
   });
 });

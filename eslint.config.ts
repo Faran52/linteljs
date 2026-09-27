@@ -14,6 +14,13 @@ import base from './packages/eslint-config/src/layers/base/baseLayer';
 import typescript from './packages/eslint-config/src/layers/typescript/typescriptLayer';
 import vitest from './packages/eslint-config/src/layers/vitest/vitestLayer';
 
+interface Zone {
+  target: string;
+  from: string[];
+  except?: string[];
+  message: string;
+}
+
 const ring = (name: string): string => {
   return `packages/create/src/${name}`;
 };
@@ -25,6 +32,22 @@ const aliases = Object.fromEntries(RINGS.flatMap((name) => {
 
   return name === 'config' || name === 'utils' ? [subpath] : [[`@${name}`, ring(name)], subpath];
 }));
+
+// Each inner ring may read only the inner rings after it in `INNER_RINGS`, which is the order the four point in.
+const innerZones = (exceptBarrel: boolean): Zone[] => {
+  return INNER_RINGS
+    .slice(1)
+    .map((name, index) => {
+      const before = INNER_RINGS.slice(0, index + 1);
+
+      return {
+        target: ring(name),
+        from: before.map(ring),
+        ...(exceptBarrel && name === 'targets' ? { except: ['./index.ts'] } : {}),
+        message: `The inner rings point answers/, targets/, utils/, config/. ${name}/ reads only those after it.`,
+      };
+    });
+};
 
 const config = [
   /**
@@ -89,9 +112,18 @@ const config = [
             from: OUTER_RINGS.map(ring),
             message: 'emitters/ turns answers into text. Disk, argv and terminals live outside it.',
           },
+          ...innerZones(false),
         ],
       }],
     },
+  },
+
+  // The inner order holds in the suites too, bar a targets suite taking its answer fixtures from the answers barrel.
+  // docs/DESIGN.md: `@linteljs/workspace/create-rings`
+  {
+    name: '@linteljs/workspace/create-rings-tests',
+    files: ['packages/create/src/**/*.test.ts'],
+    rules: { 'import-x/no-restricted-paths': ['error', { zones: innerZones(true) }] },
   },
 
   /**
