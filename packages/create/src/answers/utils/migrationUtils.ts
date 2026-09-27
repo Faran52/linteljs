@@ -1,8 +1,6 @@
 import { isValueOf, valuesOf } from '@utils/objectUtils';
 
-import { isJsonArray } from './readUtils';
-
-import type { JsonValue } from './readUtils';
+import { isJsonArray, type JsonValue } from './readUtils';
 
 /**
  * Every version so far has lifted one single select out of `libraries` into a field of its own: v1 kept the form

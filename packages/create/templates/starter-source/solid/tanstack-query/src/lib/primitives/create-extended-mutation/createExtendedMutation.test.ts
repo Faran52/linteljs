@@ -1,4 +1,4 @@
-import { createComponent } from 'solid-js';
+import { createComponent, type JSX } from 'solid-js';
 import { render, waitFor } from '@solidjs/testing-library';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query';
@@ -11,10 +11,11 @@ import {
   vi,
 } from 'vitest';
 
-import { createExtendedMutation } from './createExtendedMutation';
-
-import type { JSX } from 'solid-js';
-import type { ExtendedMutationOptions, ExtendedMutationResult } from './createExtendedMutation';
+import {
+  createExtendedMutation,
+  type ExtendedMutationOptions,
+  type ExtendedMutationResult,
+} from './createExtendedMutation';
 
 interface Accepted {
   readonly status: string;

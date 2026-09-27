@@ -24,6 +24,7 @@ import {
   isTypeScript,
   nameFor,
   parseOrNull,
+  type Program,
 } from '../utils/astUtils.ts';
 import {
   countMatches,
@@ -39,13 +40,14 @@ import {
   RULE_IDS,
 } from '../utils/lintUtils.ts';
 
-import { indexAst } from './utils/editUtils.ts';
-import { SHAPES, TS_ONLY_RULES } from './utils/shapesUtils.ts';
+import { indexAst, type State } from './utils/editUtils.ts';
+import {
+  type Shape,
+  SHAPES,
+  TS_ONLY_RULES,
+} from './utils/shapesUtils.ts';
 
-import type { Program } from '../utils/astUtils.ts';
 import type { OptionValue } from '../utils/optionUtils.ts';
-import type { State } from './utils/editUtils.ts';
-import type { Shape } from './utils/shapesUtils.ts';
 
 interface ActiveShape extends Shape {
   key: string;

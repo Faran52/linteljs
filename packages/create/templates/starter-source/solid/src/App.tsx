@@ -1,10 +1,12 @@
-import { createSignal, Show } from 'solid-js';
+import {
+  createSignal,
+  type JSX,
+  Show,
+} from 'solid-js';
 
 import { AppHeader } from './components/features/app-header/AppHeader';
 import { NAME } from './config/linteljs';
 import { ROUTES } from './pages/routes';
-
-import type { JSX } from 'solid-js';
 
 export interface AppProps {
   readonly initialPage?: string;

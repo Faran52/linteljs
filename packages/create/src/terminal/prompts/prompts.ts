@@ -24,14 +24,12 @@ import {
   unaskedValueOf,
   type ValueRecord,
 } from '@answers';
-import { targetFor } from '@targets';
+import { targetFor, type TargetRecord } from '@targets';
 
 import { PROJECT_NAME_RULE } from '../constants';
 import { isValidProjectName } from '../utils/nameUtils';
 
 import { ANSWER_KEYS, RUN_CANCELLED_MESSAGE } from './constants';
-
-import type { TargetRecord } from '@targets';
 
 // The four value-bearing kinds `askAnswer` dispatches on. `list` and `map` carry no `prompt` on any record, both
 // being hand-edited only, so neither reaches `askAnswer`.

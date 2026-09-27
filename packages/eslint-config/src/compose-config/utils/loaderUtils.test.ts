@@ -17,10 +17,13 @@ import { tailwind } from '../../libraries/tailwind/tailwindLibrary';
 import { tanstackQuery } from '../../libraries/tanstack-query/tanstackQueryLibrary';
 import { tanstackRouter } from '../../libraries/tanstack-router/tanstackRouterLibrary';
 
-import { FRAMEWORKS, LIBRARIES } from './loaderUtils';
+import {
+  type FrameworkParts,
+  FRAMEWORKS,
+  LIBRARIES,
+} from './loaderUtils';
 
 import type { Framework } from '../../types';
-import type { FrameworkParts } from './loaderUtils';
 
 // What each framework loads: its own layer and import group, with the framework a meta-framework sits on underneath.
 const FRAMEWORK_PARTS: [Framework, () => FrameworkParts][] = [

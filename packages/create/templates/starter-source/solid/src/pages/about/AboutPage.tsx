@@ -1,8 +1,6 @@
-import { For } from 'solid-js';
+import { For, type JSX } from 'solid-js';
 
 import { GATE, STANDARD_PATHS } from '../../config/standard';
-
-import type { JSX } from 'solid-js';
 
 export const AboutPage = (): JSX.Element => {
   return (

@@ -1,6 +1,5 @@
-import { Linter } from 'eslint';
+import { Linter, type Rule } from 'eslint';
 
-import type { Rule } from 'eslint';
 import type { RuleNode, SourceCode } from '../src/utils/ruleUtils.ts';
 
 type Parser = NonNullable<Linter.LanguageOptions['parser']>;

@@ -49,6 +49,7 @@ import {
   attribute,
   describeGap,
   entriesOf,
+  type FileCoverage,
   gapOf,
   hitsOf,
   isData,
@@ -56,8 +57,6 @@ import {
 } from './utils/coverageUtils.ts';
 import { coverageRun, listTests } from './utils/runUtils.ts';
 import { isBarrel } from './utils/sourceUtils.ts';
-
-import type { FileCoverage } from './utils/coverageUtils.ts';
 
 const root = cwd();
 const { values } = parseArgs({

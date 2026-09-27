@@ -25,6 +25,7 @@ import {
   FIXTURE,
   flatConfig,
   legacyConfig,
+  type Major,
   MAJORS,
   TS_EXPECTED,
   TS_FIXTURE,
@@ -32,8 +33,6 @@ import {
   tsFlatConfig,
   tsLegacyConfig,
 } from './constants.ts';
-
-import type { Major } from './constants.ts';
 
 interface Outcome {
   failures: string[];

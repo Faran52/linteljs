@@ -1,9 +1,12 @@
 import { createForm } from '@tanstack/svelte-form';
 
-import type { ContactValues } from '$lib/apis/contact';
 import type { TextInputProps } from '../../components/ui/text-input/types';
 
-import { useSubmitContact, validateContact } from '$lib/apis/contact';
+import {
+  type ContactValues,
+  useSubmitContact,
+  validateContact,
+} from '$lib/apis/contact';
 
 // What this library hands a validator and a submit, named because an inline shape cannot be referenced.
 interface ContactSubmission {

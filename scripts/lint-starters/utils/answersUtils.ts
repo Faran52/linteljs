@@ -1,14 +1,14 @@
 import {
   ANSWERS,
+  type Answers,
   DEFAULT_ANSWERS,
   onlyFor,
+  type TargetId,
 } from '../../../packages/create/src/answers';
 import { RECORD_MODULE } from '../../../packages/create/src/emitters/always/linteljs-record/linteljsRecordEmitter';
 import { starterSourceEmitter } from '../../../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
 import { targetFor } from '../../../packages/create/src/targets';
 import { valuesOf } from '../../../packages/create/src/utils/objectUtils';
-
-import type { Answers, TargetId } from '../../../packages/create/src/answers';
 
 // Every answer set that opens a starter file. One cannot reach everything: a browser picks one background spelling,
 // a router one entry, a form, store or data layer its own module beside a shared page.

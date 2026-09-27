@@ -1,10 +1,8 @@
-import { For } from 'solid-js';
+import { For, type JSX } from 'solid-js';
 
 import { ROUTES } from '../../../pages/routes';
 
 import { styles } from './styles';
-
-import type { JSX } from 'solid-js';
 
 export interface AppHeaderProps {
   readonly name: string;

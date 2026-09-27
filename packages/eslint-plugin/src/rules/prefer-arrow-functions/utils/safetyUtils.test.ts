@@ -1,4 +1,4 @@
-import { Linter } from 'eslint';
+import { Linter, type Rule } from 'eslint';
 import tseslint from 'typescript-eslint';
 import {
   describe,
@@ -12,7 +12,6 @@ import {
   sitsInUnsafePosition,
 } from './safetyUtils.ts';
 
-import type { Rule } from 'eslint';
 import type { RuleNode, SourceCode } from '../../../utils/ruleUtils.ts';
 import type { FunctionLike } from './writeUtils.ts';
 

@@ -11,9 +11,11 @@ import {
   vi,
 } from 'vitest';
 
-import { useExtendedQuery } from './useExtendedQuery';
-
-import type { ExtendedQueryOptions, ExtendedQueryResult } from './useExtendedQuery';
+import {
+  type ExtendedQueryOptions,
+  type ExtendedQueryResult,
+  useExtendedQuery,
+} from './useExtendedQuery';
 
 interface Version {
   readonly status: string;

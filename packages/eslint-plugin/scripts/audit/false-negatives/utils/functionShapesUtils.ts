@@ -1,7 +1,13 @@
-import { listOf, nodeOf } from '../../utils/astUtils.ts';
+import {
+  type AstNode,
+  listOf,
+  nodeOf,
+} from '../../utils/astUtils.ts';
 import { countMatches } from '../../utils/corpusUtils.ts';
 
 import {
+  type Build,
+  type Candidate,
   climb,
   commentsIn,
   escapeName,
@@ -9,15 +15,9 @@ import {
   nodesOf,
   pickFirst,
   replaced,
+  type State,
   textOf,
   unsafeToReflow,
-} from './editUtils.ts';
-
-import type { AstNode } from '../../utils/astUtils.ts';
-import type {
-  Build,
-  Candidate,
-  State,
 } from './editUtils.ts';
 
 interface ArrowDeclaration {

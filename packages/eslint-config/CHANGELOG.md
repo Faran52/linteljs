@@ -39,6 +39,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `import-x/no-duplicates` merges with `prefer-inline`, so two imports of one module become one import with an inline
+  `type` on each type-only name. Its default fix put values inside `import type { … }`, which fails to compile.
 - One owner per rule name. `@eslint-react`'s nine copies of the `react-hooks` rules are off, so a React project no
   longer reports every hook defect twice; `sonarjs/no-unused-vars`, `sonarjs/no-array-delete` and
   `sonarjs/prefer-regexp-exec` are off behind `unused-imports` and `typescript-eslint`.

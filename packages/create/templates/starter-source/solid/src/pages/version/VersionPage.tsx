@@ -1,8 +1,6 @@
-import { For } from 'solid-js';
+import { For, type JSX } from 'solid-js';
 
 import { ANSWERS, STACK } from '../../config/linteljs';
-
-import type { JSX } from 'solid-js';
 
 /*
  * What was recorded at birth, rather than what is resolved now. A browser cannot read its machine's Node or

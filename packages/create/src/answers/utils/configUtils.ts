@@ -11,11 +11,18 @@ import {
   SCHEMA_URLS,
   type SchemaVersion,
 } from '../constants';
-import { ANSWERS, DEFAULT_ANSWERS } from '../registry';
+import {
+  type AnswerKey,
+  ANSWERS,
+  type Answers,
+  DEFAULT_ANSWERS,
+  type LinteljsConfig,
+} from '../registry';
 
 import { migratedStore, migrateLifted } from './migrationUtils';
 import {
   isJsonArray,
+  type JsonValue,
   readAnswer,
   unaskedValueOf,
 } from './readUtils';
@@ -23,13 +30,7 @@ import { onlyFor } from './recordUtils';
 
 import type { TargetRecord } from '@targets/types';
 import type { Library } from '../libraries/libraries/librariesAnswer';
-import type {
-  AnswerKey,
-  Answers,
-  LinteljsConfig,
-} from '../registry';
 import type { AnswerRecord } from '../types';
-import type { JsonValue } from './readUtils';
 
 type ConfigObject = Partial<Record<keyof typeof EXPECTED, JsonValue>>;
 

@@ -17,7 +17,7 @@ import process, { env, execPath } from 'node:process';
 
 import { Semaphore } from 'es-toolkit';
 
-import { startRegistry } from '../../src/pipeline/e2e/registry/registry';
+import { type E2eRegistry, startRegistry } from '../../src/pipeline/e2e/registry/registry';
 import { answerFlags } from '../../src/pipeline/e2e/utils/workspaceUtils';
 import {
   log,
@@ -34,7 +34,6 @@ import {
 import { probes } from './utils/probesUtils.ts';
 
 import type { E2eCase } from '../../src/pipeline/e2e/matrix/matrix';
-import type { E2eRegistry } from '../../src/pipeline/e2e/registry/registry';
 
 const MANAGERS: Collected[] = ['pnpm', 'npm'];
 const CONCURRENCY = Number(env['COLLECT_CONCURRENCY'] ?? 4);

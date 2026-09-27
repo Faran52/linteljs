@@ -142,7 +142,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         }],
 
         'import-x/no-unresolved': 'error',
-        'import-x/no-duplicates': 'error',
+        'import-x/no-duplicates': ['error', { 'prefer-inline': true }],
         'import-x/first': 'error',
         'import-x/newline-after-import': 'error',
         'import-x/no-cycle': 'error',

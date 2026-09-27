@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type FC, useState } from 'react';
 
 import {
   fireEvent,
@@ -11,7 +11,6 @@ import { StoreProvider } from '../../providers/StoreProvider';
 
 import { useSubmitContact } from './api';
 
-import type { FC } from 'react';
 import type { ContactValues } from './schemas';
 
 interface ProbeProps {

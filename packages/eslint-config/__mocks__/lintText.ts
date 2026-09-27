@@ -1,8 +1,7 @@
 import { join } from 'node:path';
 
-import { ESLint } from 'eslint';
+import { ESLint, type Linter } from 'eslint';
 
-import type { Linter } from 'eslint';
 import type { Layer } from '../src/types';
 
 /**

@@ -1,4 +1,4 @@
-import { Linter } from 'eslint';
+import { Linter, type Rule } from 'eslint';
 import {
   describe,
   expect,
@@ -17,8 +17,6 @@ import {
   type PropertyNode,
   startTokenOf,
 } from './boundaryUtils.ts';
-
-import type { Rule } from 'eslint';
 
 // Every node in the snippet, in document order, with `parent` intact: `.properties` on the node carries
 // `@types/estree`'s shape rather than `RuleNode`'s, so the parent link is the cast-free way to the members.

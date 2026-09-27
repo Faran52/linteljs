@@ -1,4 +1,8 @@
-import { createElement } from 'react';
+import {
+  createElement,
+  type FC,
+  type ReactNode,
+} from 'react';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
@@ -12,8 +16,6 @@ import {
 } from 'vitest';
 
 import { useExtendedQuery } from './useExtendedQuery';
-
-import type { FC, ReactNode } from 'react';
 
 interface Version {
   readonly status: string;

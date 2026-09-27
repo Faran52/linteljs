@@ -22,7 +22,7 @@ import {
   type Library,
   type Styling,
 } from '@answers';
-import { targetFor } from '@targets';
+import { targetFor, type TargetRecord } from '@targets';
 
 import { merged } from '../../utils/artifactUtils';
 import { buildScripts } from '../utils/scriptUtils';
@@ -41,8 +41,6 @@ import {
   TANSTACK_QUERY_BINDINGS,
   VERSIONS,
 } from './constants';
-
-import type { TargetRecord } from '@targets';
 
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 

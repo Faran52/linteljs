@@ -1,19 +1,18 @@
 import { runInNewContext } from 'node:vm';
 
 import * as astroParser from 'astro-eslint-parser';
-import { Linter } from 'eslint';
+import {
+  type AST,
+  Linter,
+  type Rule,
+  type SourceCode,
+} from 'eslint';
 import svelteParser from 'svelte-eslint-parser';
 import ts from 'typescript';
 import tseslint from 'typescript-eslint';
 import vueParser from 'vue-eslint-parser';
 
 import { rules } from '../src/rules/index.ts';
-
-import type {
-  AST,
-  Rule,
-  SourceCode,
-} from 'eslint';
 
 // A corpus aimed at fixers: a rule's own suite pins what its fix produces, not that the result parses.
 export interface FixerSample {

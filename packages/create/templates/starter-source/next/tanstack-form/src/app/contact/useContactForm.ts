@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { type SubmitEventHandler, useState } from 'react';
 
 import { useForm, useSelector } from '@tanstack/react-form';
 
-import { useSubmitContact, validateContact } from '../../lib/apis/contact';
+import {
+  type ContactValues,
+  useSubmitContact,
+  validateContact,
+} from '../../lib/apis/contact';
 
-import type { SubmitEventHandler } from 'react';
 import type { TextInputProps } from '../../components/ui';
-import type { ContactValues } from '../../lib/apis/contact';
 
 export interface ContactFields {
   email: TextInputProps;

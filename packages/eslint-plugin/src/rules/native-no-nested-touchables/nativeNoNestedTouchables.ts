@@ -10,9 +10,7 @@ import {
   openingOf,
   TOUCHABLE_COMPONENTS,
 } from '../../utils/jsxUtils.ts';
-import { optionsOf } from '../../utils/ruleUtils.ts';
-
-import type { RuleNode } from '../../utils/ruleUtils.ts';
+import { optionsOf, type RuleNode } from '../../utils/ruleUtils.ts';
 
 interface Options {
   components: string[];

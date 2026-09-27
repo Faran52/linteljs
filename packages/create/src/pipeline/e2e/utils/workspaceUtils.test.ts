@@ -5,15 +5,17 @@ import {
   vi,
 } from 'vitest';
 
-import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
+import {
+  ANSWERS,
+  DEFAULT_ANSWERS,
+  type PackageManager,
+} from '@answers';
 
 import {
   answerFlags,
   managersToRun,
   versionFrom,
 } from './workspaceUtils';
-
-import type { PackageManager } from '@answers';
 
 // A machine carrying yarn 1 and no bun, the way a developer's often does; npm adds its update notice.
 const ANSWERED: Record<string, string> = {

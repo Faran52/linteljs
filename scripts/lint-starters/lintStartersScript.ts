@@ -14,7 +14,7 @@ import {
 import { join, relative } from 'node:path';
 import process, { argv } from 'node:process';
 
-import { ESLint } from 'eslint';
+import { ESLint, type Linter } from 'eslint';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '../../packages/create/src/answers';
 import { targetFor } from '../../packages/create/src/targets';
@@ -28,8 +28,6 @@ import {
   writtenPaths,
 } from './utils/answersUtils.ts';
 import { unresolvedNames } from './utils/programUtils.ts';
-
-import type { Linter } from 'eslint';
 
 const TEMPLATES = 'packages/create/templates';
 const STARTERS = `${TEMPLATES}/starter-source`;

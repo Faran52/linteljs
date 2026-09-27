@@ -28,10 +28,9 @@ import { ANSWERS } from '@answers';
 import { BUILD_EMITTERS, SEED_EMITTERS } from '@emitters/registry';
 import { TARGETS } from '@targets/registry';
 
-import { RINGS } from './rings';
+import { type Ring, RINGS } from './rings';
 
 import type { AnswerRecord } from '@answers/types';
-import type { Ring } from './rings';
 
 interface RingShape {
   name: Ring;

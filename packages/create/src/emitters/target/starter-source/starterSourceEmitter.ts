@@ -5,11 +5,13 @@ import {
   hasTests,
   type TargetId,
 } from '@answers';
-import { targetFor } from '@targets';
+import {
+  type StarterFile,
+  type StarterTest,
+  targetFor,
+} from '@targets';
 
 import { joined } from '../../utils/artifactUtils';
-
-import type { StarterFile, StarterTest } from '@targets';
 
 // A file or a suite is written where its own `when` holds; absent is always.
 const applies = (file: StarterFile | StarterTest, answers: Answers): boolean => {

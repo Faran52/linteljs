@@ -1,6 +1,5 @@
-import { Linter } from 'eslint';
+import { Linter, type Rule } from 'eslint';
 
-import type { Rule } from 'eslint';
 import type { Fixer } from '../src/utils/ruleUtils.ts';
 
 // A real Rule.RuleFixer, captured from a throwaway rule rather than stubbed, since a stub would

@@ -1,6 +1,8 @@
-import { index, route } from '@react-router/dev/routes';
-
-import type { RouteConfig } from '@react-router/dev/routes';
+import {
+  index,
+  route,
+  type RouteConfig,
+} from '@react-router/dev/routes';
 
 /*
  * The route table React Router reads at build time to generate each module's types, which is why the paths are

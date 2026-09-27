@@ -1,12 +1,17 @@
-import { useState } from 'react';
-import { useController, useForm } from 'react-hook-form';
+import { type SubmitEventHandler, useState } from 'react';
+import {
+  type Control,
+  useController,
+  useForm,
+} from 'react-hook-form';
 
-import { useSubmitContact, validateContact } from '../../lib/apis/contact';
+import {
+  type ContactValues,
+  useSubmitContact,
+  validateContact,
+} from '../../lib/apis/contact';
 
-import type { SubmitEventHandler } from 'react';
-import type { Control } from 'react-hook-form';
 import type { TextInputProps } from '../../components/ui';
-import type { ContactValues } from '../../lib/apis/contact';
 
 export interface ContactFields {
   email: TextInputProps;

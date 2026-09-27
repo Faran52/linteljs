@@ -1,6 +1,8 @@
-import { listOf } from '../../utils/astUtils.ts';
+import { type AstNode, listOf } from '../../utils/astUtils.ts';
 
 import {
+  type Build,
+  type Candidate,
   fullySplit,
   insertBlankLine,
   joinRange,
@@ -10,14 +12,8 @@ import {
   separatedByPunctuation,
   spansLines,
   splitBraces,
+  type State,
   textOf,
-} from './editUtils.ts';
-
-import type { AstNode } from '../../utils/astUtils.ts';
-import type {
-  Build,
-  Candidate,
-  State,
 } from './editUtils.ts';
 
 // The defaults the rules ship, which these edits have to cross.

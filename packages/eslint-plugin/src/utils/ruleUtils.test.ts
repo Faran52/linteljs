@@ -1,5 +1,5 @@
 import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
-import { Linter } from 'eslint';
+import { Linter, type Rule } from 'eslint';
 import {
   describe,
   expect,
@@ -14,8 +14,6 @@ import {
   rebuildLosesComments,
   resolveVariable,
 } from './ruleUtils.ts';
-
-import type { Rule } from 'eslint';
 
 interface ProbeOptions {
   max: number;

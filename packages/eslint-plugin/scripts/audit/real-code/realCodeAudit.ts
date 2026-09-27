@@ -24,11 +24,14 @@ import {
   nameFor,
   parse,
   parseOrNull,
+  type Program,
+  type Token,
 } from '../utils/astUtils.ts';
 import {
   filesUnder,
   isFirstSighting,
   messageOf,
+  type SkipReason,
   skipReason,
   sourcesFrom,
 } from '../utils/corpusUtils.ts';
@@ -37,7 +40,11 @@ import {
   moduleOf,
   RULE_IDS,
 } from '../utils/lintUtils.ts';
-import { configurationsFor } from '../utils/optionUtils.ts';
+import {
+  type Configuration,
+  configurationsFor,
+  type OptionValue,
+} from '../utils/optionUtils.ts';
 
 import {
   commentDiff,
@@ -49,17 +56,16 @@ import {
 import {
   atReport,
   AUDIT_RULES,
+  type Finding,
   hoistedProbe,
   judge,
   shapesOf,
 } from './utils/reportShapeUtils.ts';
-import { showTiming } from './utils/timingUtils.ts';
-
-import type { Program, Token } from '../utils/astUtils.ts';
-import type { SkipReason } from '../utils/corpusUtils.ts';
-import type { Configuration, OptionValue } from '../utils/optionUtils.ts';
-import type { Finding } from './utils/reportShapeUtils.ts';
-import type { Dominant, Timing } from './utils/timingUtils.ts';
+import {
+  type Dominant,
+  showTiming,
+  type Timing,
+} from './utils/timingUtils.ts';
 
 type Flavour = 'js' | 'ts';
 

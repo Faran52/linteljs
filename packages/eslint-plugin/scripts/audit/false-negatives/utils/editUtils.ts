@@ -1,6 +1,8 @@
-import { childrenOf } from '../../utils/astUtils.ts';
-
-import type { AstNode, Program } from '../../utils/astUtils.ts';
+import {
+  type AstNode,
+  childrenOf,
+  type Program,
+} from '../../utils/astUtils.ts';
 
 export interface State {
   ast: Program;

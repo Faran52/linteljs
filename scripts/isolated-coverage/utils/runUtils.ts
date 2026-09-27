@@ -11,9 +11,7 @@ import {
   THRESHOLD_OFF,
 } from '../constants.ts';
 
-import { isCoverageReport } from './coverageUtils.ts';
-
-import type { CoverageReport } from './coverageUtils.ts';
+import { type CoverageReport, isCoverageReport } from './coverageUtils.ts';
 
 // A run that wrote a report, one that wrote none, or one killed at the deadline.
 export type RunOutcome = CoverageReport | 'failed' | 'timed out';

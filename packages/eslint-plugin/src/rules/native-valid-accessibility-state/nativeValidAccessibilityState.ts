@@ -3,12 +3,11 @@ import {
   attributesOf,
   expressionOf,
   findProp,
+  type JsxProperty,
   keyNameOf,
   propertiesOf,
 } from '../../utils/jsxUtils.ts';
 import { mustFind, type RuleNode } from '../../utils/ruleUtils.ts';
-
-import type { JsxProperty } from '../../utils/jsxUtils.ts';
 
 // `AccessibilityState` from react-native 0.87.1, `Libraries/Components/View/ViewAccessibility.d.ts`. A key outside
 // this set is dropped silently, so the state never reaches VoiceOver or TalkBack.

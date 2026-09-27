@@ -11,9 +11,11 @@ import {
   vi,
 } from 'vitest';
 
-import { useExtendedMutation } from './useExtendedMutation';
-
-import type { ExtendedMutationOptions, ExtendedMutationResult } from './useExtendedMutation';
+import {
+  type ExtendedMutationOptions,
+  type ExtendedMutationResult,
+  useExtendedMutation,
+} from './useExtendedMutation';
 
 interface Accepted {
   readonly status: string;

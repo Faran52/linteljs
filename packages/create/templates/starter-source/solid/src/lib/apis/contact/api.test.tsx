@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { createSignal, type JSX } from 'solid-js';
 import {
   fireEvent,
   render,
@@ -9,7 +9,6 @@ import { DataProvider } from '../../providers/DataProvider';
 
 import { useSubmitContact } from './api';
 
-import type { JSX } from 'solid-js';
 import type { ContactValues } from './schemas';
 
 interface ProbeProps {

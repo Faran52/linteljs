@@ -4,10 +4,13 @@ import {
   it,
 } from 'vitest';
 
-import { globalNamespaceTags } from './elementUtils.ts';
+import {
+  globalNamespaceTags,
+  type JsxElementNode,
+  type JsxTagName,
+} from './elementUtils.ts';
 
 import type { TypedNode } from '../../../utils/ruleUtils.ts';
-import type { JsxElementNode, JsxTagName } from './elementUtils.ts';
 
 // The one field a fixture tag carries, named because the plugin's own rule wants it named.
 interface NamedTag {

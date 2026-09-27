@@ -1,12 +1,14 @@
-import { createSignal } from 'solid-js';
+import { type Accessor, createSignal } from 'solid-js';
 
 import { createForm } from '@tanstack/solid-form';
 
-import { useSubmitContact, validateContact } from '../../lib/apis/contact';
+import {
+  type ContactValues,
+  useSubmitContact,
+  validateContact,
+} from '../../lib/apis/contact';
 
-import type { Accessor } from 'solid-js';
 import type { TextInputProps } from '../../components/ui';
-import type { ContactValues } from '../../lib/apis/contact';
 
 // What this library hands a validator and a submit; named because `createForm` takes its options through a getter
 // and TypeScript has no contextual type to infer them from there.

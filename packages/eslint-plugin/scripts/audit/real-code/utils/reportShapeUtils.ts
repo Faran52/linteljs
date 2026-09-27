@@ -1,8 +1,12 @@
-import { nodeOf, walkAst } from '../../utils/astUtils.ts';
+import {
+  type AstNode,
+  nodeOf,
+  type Program,
+  walkAst,
+} from '../../utils/astUtils.ts';
 
 import type { Linter, Rule } from 'eslint';
 import type { AncestorReader } from '../../../../src/utils/ruleUtils.ts';
-import type { AstNode, Program } from '../../utils/astUtils.ts';
 
 export interface Finding {
   category: string;

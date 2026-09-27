@@ -1,4 +1,4 @@
-import { createComponent } from 'solid-js';
+import { createComponent, type JSX } from 'solid-js';
 import { render, waitFor } from '@solidjs/testing-library';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query';
@@ -11,10 +11,11 @@ import {
   vi,
 } from 'vitest';
 
-import { createExtendedQuery } from './createExtendedQuery';
-
-import type { JSX } from 'solid-js';
-import type { ExtendedQueryOptions, ExtendedQueryResult } from './createExtendedQuery';
+import {
+  createExtendedQuery,
+  type ExtendedQueryOptions,
+  type ExtendedQueryResult,
+} from './createExtendedQuery';
 
 interface Version {
   readonly status: string;
