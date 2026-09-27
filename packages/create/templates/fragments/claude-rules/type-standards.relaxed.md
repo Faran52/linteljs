@@ -1,5 +1,3 @@
-*Shipped verbatim into generated projects.*
-
 ## Relaxed type safety
 
 This project was generated with `typeSafety: relaxed`, and where this section contradicts the

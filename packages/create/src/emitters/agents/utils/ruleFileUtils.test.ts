@@ -15,8 +15,13 @@ import { globsOf, ruleArtifacts } from './ruleFileUtils';
 
 describe('globsOf', () => {
   it('reads the shared paths list as one glob string, and an absent one as empty', () => {
-    expect(globsOf(RULE)).toBe('src/**/*.{ts,tsx},tsconfig.json');
+    expect(globsOf(RULE)).toBe('src/**/*.ts,src/**/*.tsx,tsconfig.json');
     expect(globsOf('# No frontmatter here.\n')).toBe('');
+  });
+
+  it('expands every brace group, since both tools split the string on its commas', () => {
+    expect(globsOf('---\npaths:\n  - "**/*.{test,spec}.{ts,tsx}"\n---\n'))
+      .toBe('**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx');
   });
 });
 

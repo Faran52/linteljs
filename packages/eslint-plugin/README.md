@@ -67,9 +67,10 @@ export default [
 ```
 
 There are two presets and no others. A rule's subject is in its id rather than in a preset name:
-the five `native-*` rules are React Native accessibility, and `react-no-global-namespace` is
-React. Those are opt-outs, so `recommended` does not carry them; name the ones you want, or take
-`all` and turn off what you do not.
+the five `native-*` rules are React Native accessibility, and `react-no-global-namespace`,
+`no-duplicate-jsx-props`, `prefer-destructured-props` and `sort-hook-dependencies` are for React-style
+components. Those nine are opt-outs, so `recommended` does not carry them; name the ones you want, or
+take `all` and turn off what you do not.
 
 ```js
 export default [
@@ -95,9 +96,6 @@ export default [
   },
 ];
 ```
-
-`union-newline` is in `recommended`. `interface-order` is not, but the `base` layer in
-`@linteljs/eslint-config` turns it on. Without that layer, take `flat/all` or name the rule.
 
 ## Rules
 
@@ -152,8 +150,8 @@ from JavaScript files.
 ## Adding a rule
 
 Each rule owns one directory under `src/rules/`, holding its implementation, its tests and its README. The
-six steps for adding one are in the package's
-[CLAUDE.md](https://github.com/Faran52/linteljs/blob/main/packages/eslint-plugin/CLAUDE.md).
+steps for adding one are in
+[`.claude/skills/add-eslint-rule/SKILL.md`](https://github.com/Faran52/linteljs/blob/main/.claude/skills/add-eslint-rule/SKILL.md).
 
 ## License
 

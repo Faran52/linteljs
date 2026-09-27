@@ -1,8 +1,21 @@
 import { type Answers, type Artifact } from '@config/types';
 
-import { ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
+import { forAnswers, ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
+
+// Both tools split a multi-glob on commas, so a brace group's own comma would cut a glob in half.
+const expanded = (glob: string): string[] => {
+  const group = /\{([^{}]+)\}/u.exec(glob);
+
+  return group?.[1] === undefined
+    ? [glob]
+    : group[1]
+        .split(',')
+        .flatMap((alternative) => {
+          return expanded(`${glob.slice(0, group.index)}${alternative}${glob.slice(group.index + group[0].length)}`);
+        });
+};
 
 // Empty where the rule carries no `paths:` list.
 export const globsOf = (source: string): string => {
@@ -16,6 +29,7 @@ export const globsOf = (source: string): string => {
         // `PATHS` has already held every line to `  - "..."`.
           return /"(.+)"/u.exec(line)?.[1] ?? [];
         })
+        .flatMap(expanded)
         .join(',');
 };
 
@@ -44,7 +58,7 @@ export const ruleArtifacts = (
         content: {
           sources,
           transform: (source: string) => {
-            return `${frontmatter(source)}${withoutFrontmatter(source)}`;
+            return `${frontmatter(source)}${withoutFrontmatter(forAnswers(answers, source))}`;
           },
         },
       };

@@ -23,7 +23,7 @@ export const STANDARD_PATHS = [
     holds: 'The layers, imported from @linteljs/eslint-config',
   },
   {
-    path: '.claude/rules/',
+    path: 'plugins/linteljs/skills/linteljs/',
     holds: 'The rules your coding agent reads before it writes',
   },
   {

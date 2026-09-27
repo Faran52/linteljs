@@ -11,6 +11,7 @@ import {
   type Artifact,
   type Data,
   type Library,
+  type Router,
   type Styling,
   type TargetId,
   type Testing,
@@ -22,7 +23,11 @@ import { valuesOf } from '@utils/objectUtils';
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
-import { linteljsPluginEmitter, referenceArtifacts } from './linteljsPluginEmitter';
+import {
+  forAnswers,
+  linteljsPluginEmitter,
+  referenceArtifacts,
+} from './linteljsPluginEmitter';
 
 interface AnswerOverrides {
   agents?: Agent[];
@@ -32,6 +37,7 @@ interface AnswerOverrides {
   typeSafety?: TypeSafety;
   styling?: Styling;
   data?: Data;
+  router?: Router;
 }
 
 interface SkillDocument {
@@ -58,7 +64,10 @@ describe('referenceArtifacts', () => {
   it('names the repo structure source after the target', () => {
     const artifact = find({ target: 'svelte' }, reference('repo-structure.md'));
 
-    expect(sourcesOf(artifact)).toEqual(['fragments/claude-rules/repo-structure.svelte.md']);
+    expect(sourcesOf(artifact)).toEqual([
+      'fragments/claude-rules/repo-structure.svelte.md',
+      'fragments/claude-rules/repo-structure.standard.md',
+    ]);
   });
 
   it('removes Claude path frontmatter from every emitted reference', async () => {
@@ -128,6 +137,50 @@ describe('referenceArtifacts', () => {
     expect(relaxed).toContain('## Relaxed type safety');
     expect(relaxed).toContain('## Types');
   });
+
+  it('keeps a gated layout line only for the answer that writes its folder', async () => {
+    const plain = await textOf({ target: 'react' }, 'repo-structure.md');
+    const routed = await textOf({
+      target: 'react',
+      router: 'react-router',
+    }, 'repo-structure.md');
+
+    expect(plain).not.toContain('routes/router.tsx');
+    expect(routed).toContain('\n  routes/router.tsx  the react-router route table\n');
+    expect(routed).not.toContain('<!-- when');
+  });
+
+  it.each<[string, Partial<Answers>]>([
+    ['store', { store: 'zustand' }],
+    ['no-store', {}],
+    ['background', {}],
+    ['devtools-panel', { surfaces: ['devtools-panel'] }],
+    ['tanstack-query', { data: 'tanstack-query' }],
+    ['rtk-query', { data: 'rtk-query' }],
+    ['tanstack-router', { router: 'tanstack-router' }],
+    ['react-router', { router: 'react-router' }],
+    ['react-router-framework', { router: 'react-router-framework' }],
+  ])('reads the %s condition off the answers', (condition, answers) => {
+    const source = `kept\ngated <!-- when ${condition} -->`;
+
+    expect(forAnswers(answersFor(answers), source)).toBe('kept\ngated');
+    const opposite = answers.store === undefined ? answersFor({ store: 'zustand' }) : answersFor();
+
+    expect(forAnswers({
+      ...opposite,
+      surfaces: ['popup'],
+    }, source)).toBe('kept');
+  });
+
+  it('refuses a condition no answer decides', () => {
+    expect(() => {
+      return forAnswers(DEFAULT_ANSWERS, 'line <!-- when tailwind -->');
+    }).toThrow('Unknown rule condition: tailwind');
+  });
+
+  it.each(valuesOf(ANSWERS.target.values))('leaves no condition marker in the %s structure rule', async (target) => {
+    expect(await textOf({ target }, 'repo-structure.md')).not.toContain('<!--');
+  });
 });
 
 const targetsOf = (answers: Answers): string[] => {
@@ -196,8 +249,8 @@ const skillDocument = async (): Promise<SkillDocument> => {
 describe('SKILL.md', () => {
   it('has the exact required frontmatter', async () => {
     const { frontmatter } = await skillDocument();
-    const description = "Apply this project's LintelJS structure, type-safety, testing, "
-      + 'and verification standards to every coding task.';
+    const description = "This project's LintelJS rules for file placement, types, framework state and tests. "
+      + 'Use before adding, moving, renaming or editing any source file, state, test, mock or test setup.';
 
     expect(Object.fromEntries(frontmatter)).toEqual({
       name: 'linteljs',
@@ -206,40 +259,19 @@ describe('SKILL.md', () => {
   });
 
   it.each([
-    ['repository structure', 'Read `references/repo-structure.md` before adding, moving, or renaming files.'],
-    ['typed source', 'Read `references/type-standards.md` before editing typed source.'],
-    [
-      'Zod schemas and APIs',
-      'Also read `references/type-standards-zod.md` when it exists and the work touches schemas or API code.',
-    ],
-    ['framework state', 'Before changing state, read each emitted framework state reference in `references/`.'],
-    ['tests', 'Read `references/testing.md` before editing tests, mocks, or test setup.'],
-    [
-      'hook guardrail review',
-      'Treat hooks as guardrails, not a security sandbox, and review every command before running it.',
-    ],
-    ['check', 'Run the package-manager `check` command before declaring implementation work complete.'],
-    ['lint fix', 'Run the package-manager `lint:fix` command, not lint without fixes.'],
+    ['repository structure', 'Adding, moving, renaming or importing a file: `references/repo-structure.md`.'],
+    ['typed source', 'Editing typed source: `references/type-standards.md`'],
+    ['Zod schemas and APIs', '`references/type-standards-zod.md` when it exists'],
+    ['framework state', 'Changing state: each framework state reference in `references/`.'],
+    ['tests', 'Editing tests, mocks or test setup: `references/testing.md`, when it exists.'],
   ])('routes %s work', async (_label, text) => {
     expect((await skillDocument()).body).toContain(text);
   });
 
-  it.each([
-    'git stash',
-    'git reset',
-    '--no-verify',
-    '--amend',
-    'git add -A',
-    'git add .',
-  ])('bans %s', async (operation) => {
-    expect((await skillDocument()).body).toContain(`\`${operation}\``);
-  });
-
-  it('states the commit trailer policy directly after the git bans', async () => {
-    const trailers = '- Commit messages carry no `Co-Authored-By` or tool-attribution trailers.';
+  it('points at the adapter rather than repeating it', async () => {
     const { body } = await skillDocument();
 
-    expect(body).toContain(trailers);
-    expect(body.indexOf('- Never use `git stash`')).toBeLessThan(body.indexOf(trailers));
+    expect(body).toContain('The gate, the git bans and the commit rules are in the project\'s `CLAUDE.md`');
+    expect(body).not.toContain('git stash');
   });
 });

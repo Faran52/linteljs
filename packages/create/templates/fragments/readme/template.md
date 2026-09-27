@@ -1,6 +1,7 @@
 # {{PROJECT_NAME}}
 
-{{TARGET_LABEL}}, scaffolded with [linteljs](https://www.npmjs.com/package/@linteljs/create).
+{{TARGET_LABEL}}, scaffolded with [linteljs](https://www.npmjs.com/package/@linteljs/create). Needs Node 22.18 or
+newer.
 
 ## Commands
 
@@ -12,36 +13,35 @@
 {{TEST_ROWS}}| build | `{{RUN}} build` |
 | full gate | `{{RUN}} check` |
 
-`check` chains `{{CHECK_CHAIN}}`. It passes on a project one minute old, and coverage thresholds
-are 100% rather than a number that moves. `package.json` is canonical for the rest, including
-whatever the framework's own generator named its development server script.
+`check` chains `{{CHECK_CHAIN}}`. It passes on a new project, and coverage thresholds are 100%. `package.json`
+is canonical for the rest, the development server script included.
 
 ## Where the standard lives
 
-`eslint.config.js` composes layers from `@linteljs/eslint-config` and holds no rule logic of its own.
-Fix a rule in that package and every project picks it up on update; do not add rules here that
-belong in a layer. `stylelint.config.js` and `tsconfig.json` are emitted the same way.
+- `eslint.config.js` composes layers from `@linteljs/eslint-config` and holds no rule logic of its own, so a
+  rule fixed there reaches this project on update. `stylelint.config.js` and `tsconfig.json` are emitted the
+  same way.
+- The rules a linter cannot enforce (placement, import direction, types, state, tests) are in
+  `plugins/linteljs/skills/linteljs/references/`, copied to `.github/instructions/` for Copilot and
+  `.cursor/rules/` for Cursor when you chose them. Each chosen agent's own file (`CLAUDE.md`, `AGENTS.md`,
+  `.github/copilot-instructions.md`, `.cursor/rules/linteljs.mdc`) points at them and is yours to edit.
+- `npx @linteljs/create sync` diffs every linteljs-owned file against the installed CLI's version and writes
+  nothing until you pass `--force`.
 
-`CLAUDE.md` and `.claude/rules/` carry the parts a linter cannot enforce: placement, import
-direction, and how state works in this framework. `npx @linteljs/create sync` re-copies them from the
-installed CLI, showing a diff and refusing to overwrite anything you have edited.
+## Hooks
 
-Git hooks run `scripts/checkBannedPatterns.ts`, `eslint --fix`, `stylelint --fix` and a typecheck
-filtered to the staged files, and commit messages go through commitlint. They install with
-`{{RUN}} install`.
+Git hooks run `scripts/checkBannedPatterns.ts`, `eslint --fix`, `stylelint --fix` and a typecheck of the staged
+files, and commitlint checks each message. They install with `{{RUN}} install`.
 
-Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, warn when eslint runs
-without `--fix`, and run `scripts/checkBannedPatterns.ts` over each file an agent writes. Claude Code
-and Codex load them through the linteljs plugin and run them with Node 22.18 or newer. Codex skips
-plugin hooks until you trust them: run `/hooks` in Codex and trust the linteljs entries. Codex also
-runs its own cached copy of the plugin, so after `sync` changes anything under `plugins/linteljs/`,
-reinstall the linteljs plugin in Codex to pick the change up.
+Agent hooks live in `plugins/linteljs/hooks/`: they deny banned git operations, warn when eslint runs without
+`--fix`, and run `scripts/checkBannedPatterns.ts` over each file an agent writes.
 
-Cursor and Copilot run the same scripts from their own hooks files, written when you choose them.
-Cursor reads `.cursor/hooks.json` once you trust the workspace: the git guard runs before each shell
-command and the eslint warning after it. Cursor documents no file path for an agent's edit on an
-event that can answer the agent, so there the banned-pattern check runs on commit only. If Claude
-Code is chosen too, Cursor may also load Claude Code's copy of the hooks (Cursor Settings, Agents,
-Third-Party Imports); that copy stays silent under Cursor, so each guard answers once. Copilot CLI
-and the Copilot cloud agent read `.github/hooks/linteljs.json` with nothing to enable, and report
-the eslint warning and the banned-pattern findings after the tool runs.
+- **Claude Code and Codex** load them through the linteljs plugin. Codex skips plugin hooks until you trust
+  them (`/hooks` in Codex), and runs a cached copy of the plugin, so reinstall it after a `sync` that changes
+  `plugins/linteljs/`.
+- **Cursor** reads `.cursor/hooks.json` once you trust the workspace: the git guard before each shell command,
+  the eslint warning after it. Cursor gives a hook no path for an agent's edit, so the banned-pattern check runs
+  on commit only. With Claude Code chosen too, Cursor may also load Claude Code's hooks (Cursor Settings,
+  Agents, Third-Party Imports); that copy stays silent under Cursor, so each guard answers once.
+- **Copilot** CLI and cloud agent read `.github/hooks/linteljs.json` with nothing to enable, and report the eslint
+  warning and the banned-pattern findings after the tool runs.

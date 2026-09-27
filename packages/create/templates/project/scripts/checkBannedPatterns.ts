@@ -250,7 +250,7 @@ for (const file of files) {
 }
 
 if (failed) {
-  logError('Fix the source: build the real type, from its owner. See .claude/rules/type-standards.md.');
+  logError('Fix the source: build the real type, from its owner. See type-standards.md under plugins/linteljs/.');
   exit(1);
 }
 

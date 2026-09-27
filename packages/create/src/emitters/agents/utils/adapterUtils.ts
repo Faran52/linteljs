@@ -9,7 +9,7 @@ export const emitAgentAdapter = (answers: Answers): string => {
 
   return `# LintelJS project
 
-- Follow \`plugins/linteljs/skills/linteljs/SKILL.md\` for project structure, types, state, and tests.
+- Before a change, follow \`plugins/linteljs/skills/linteljs/SKILL.md\`: it names the rule file for that kind of change.
 - Read \`package.json\` for exact scripts and dependency versions.
 - Run \`${run} check\` before declaring implementation work complete.
 - Run \`${run} lint:fix\`, not lint without fixes.

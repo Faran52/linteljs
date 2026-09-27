@@ -82,7 +82,7 @@ choice for a project config.
 | Export | Subpath | Purpose | Optional peers to install |
 | --- | --- | --- | --- |
 | `composeConfig(options?)` | `/compose-config` | Loads requested layers and orders them. | Those of the layers it loads. |
-| `base(options?)` | `/base` | Shared style, imports, unused imports, naming, complexity, and Lintel rules. It works for JavaScript on its own. Beyond the plugin's `recommended`, `base` enables `@linteljs/interface-order` everywhere and widens `@linteljs/union-newline`; the other three Lintel rules outside `recommended` arrive with `react()` and `solid()`. | None. Its plugins are dependencies of this package. |
+| `base(options?)` | `/base` | Shared style, imports, unused imports, naming, complexity, and Lintel rules. It works for JavaScript on its own. On top of the plugin's `recommended`, `base` extends its three TypeScript-only rules to `.vue` and `.svelte` files; the four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
 | `typescript()` | `/typescript` | Strict type-aware rules and an untyped tail for JavaScript and HTML. | None. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |

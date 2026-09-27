@@ -1,17 +1,16 @@
 ---
 name: linteljs
-description: Apply this project's LintelJS structure, type-safety, testing, and verification standards to every coding task.
+description: This project's LintelJS rules for file placement, types, framework state and tests. Use before adding, moving, renaming or editing any source file, state, test, mock or test setup.
 ---
 
 # LintelJS
 
-- Read `references/repo-structure.md` before adding, moving, or renaming files.
-- Read `references/type-standards.md` before editing typed source. Also read `references/type-standards-zod.md` when it exists and the work touches schemas or API code.
-- Before changing state, read each emitted framework state reference in `references/`.
-- Read `references/testing.md` before editing tests, mocks, or test setup.
-- Read `package.json` for exact scripts and dependency versions.
-- Treat hooks as guardrails, not a security sandbox, and review every command before running it.
-- Run the package-manager `check` command before declaring implementation work complete.
-- Run the package-manager `lint:fix` command, not lint without fixes.
-- Never use `git stash`, `git reset`, `--no-verify`, `--amend`, `git add -A`, or `git add .`.
-- Commit messages carry no `Co-Authored-By` or tool-attribution trailers.
+Read the reference for a change before making it:
+
+- Adding, moving, renaming or importing a file: `references/repo-structure.md`.
+- Editing typed source: `references/type-standards.md`, and `references/type-standards-zod.md` when it exists
+  and the change touches schemas or API code.
+- Changing state: each framework state reference in `references/`.
+- Editing tests, mocks or test setup: `references/testing.md`, when it exists.
+
+The gate, the git bans and the commit rules are in the project's `CLAUDE.md` or `AGENTS.md`.

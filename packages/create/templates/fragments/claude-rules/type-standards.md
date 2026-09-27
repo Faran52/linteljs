@@ -1,7 +1,5 @@
 # Type and Code Standards
 
-*Shipped verbatim into generated projects; this workspace's own copy lives under .claude/rules/*.
-
 Load before any type tracing, code authoring, or test work.
 
 What ESLint already enforces is not repeated here. `@linteljs/eslint-config` owns line length, quote
@@ -9,10 +7,8 @@ style, brace style, import order, filename and folder case, unused imports, and 
 style, because a second copy of those rules in prose only rots. This file carries what a linter cannot
 see.
 
-Nothing here is framework-specific. How props are read, and whether reading them a particular way
-severs reactivity, is the framework's own rule file: this one shipped React's answer to every
-target, and following it in Solid or Vue produces a component that renders once and then silently
-stops updating.
+Nothing here is framework-specific: how props are read, and what severs reactivity, is the framework's own
+state rule.
 
 ## Components
 

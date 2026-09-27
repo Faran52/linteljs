@@ -37,7 +37,7 @@ describe('copilotArtifacts', () => {
     );
 
     expect(transform(RULE, null))
-      .toBe('---\napplyTo: "src/**/*.{ts,tsx},tsconfig.json"\n---\n\n# Repository Structure\n\nBody.\n');
+      .toBe('---\napplyTo: "src/**/*.ts,src/**/*.tsx,tsconfig.json"\n---\n\n# Repository Structure\n\nBody.\n');
   });
 
   it('installs the repository-wide file once and never rewrites it', () => {

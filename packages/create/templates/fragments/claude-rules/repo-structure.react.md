@@ -5,8 +5,6 @@ paths:
   - "vite.config.ts"
 ---
 
-*Shipped verbatim into generated projects; this workspace's own copy lives under .claude/rules/*.
-
 # Repository Structure
 
 Use this rule when adding, moving, renaming, or importing a source file.
@@ -38,7 +36,9 @@ src/
     hooks/        cross-cutting hooks
     apis/         endpoint definitions and schemas
   pages/<kebab>/  {Name}Page.tsx and its private slots
-  routes/         route table: react-router's `router.tsx`, or TanStack's one file per route
+  pages/routes.tsx  ROUTES, the one list of pages the header and the router read
+  routes/router.tsx  the react-router route table <!-- when react-router -->
+  root.tsx  routes.ts  routes/  framework mode's shell, route table and route modules <!-- when react-router-framework -->
 ```
 
 ## Placement

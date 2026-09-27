@@ -5,8 +5,6 @@ paths:
   - "vite.config.ts"
 ---
 
-*Shipped verbatim into generated projects; this workspace's own copy lives under .claude/rules/*.
-
 # Repository Structure
 
 Use this rule when adding, moving, renaming, or importing a source file.
@@ -31,19 +29,18 @@ src/
     ui/           primitives, reusable by nature
     features/     reusable domain features
   lib/
-    store/        cross-cutting state, via createStore from solid-js/store
+    store/        cross-cutting state
     utils/        pure helpers, no domain type in the signature
     services/     domain logic, may never touch HTTP
     providers/    context providers
     primitives/   createX, reactive state owners
     apis/         endpoint definitions and schemas
   pages/<kebab>/  {Name}Page.tsx and its private slots
+  pages/routes.tsx  ROUTES, the one list of pages the header and the router read
 ```
 
-On SolidStart the route unit is `src/routes/` instead of `src/pages/`; nothing else moves.
-
-The store is Solid's own: `createStore` from `solid-js/store`, which ships inside `solid-js`. No
-store library is installed, so do not add one for state a module in `lib/store/` can already hold.
+The store is Solid's own: `createStore` from `solid-js/store`, which ships inside `solid-js`. No <!-- when no-store -->
+store library is installed, so do not add one for state a module in `lib/store/` can already hold. <!-- when no-store -->
 
 ## Placement
 

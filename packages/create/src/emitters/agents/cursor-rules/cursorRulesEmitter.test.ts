@@ -42,7 +42,8 @@ describe('cursorArtifacts', () => {
     const output = transformOf(cursorArtifacts(answersFor(['cursor'])), '.cursor/rules/repo-structure.mdc')(RULE, null);
 
     expect(output).toBe(
-      '---\ndescription: Repository Structure\nglobs: src/**/*.{ts,tsx},tsconfig.json\nalwaysApply: false\n---\n\n'
+      '---\ndescription: Repository Structure\nglobs: src/**/*.ts,src/**/*.tsx,tsconfig.json\n'
+      + 'alwaysApply: false\n---\n\n'
       + '# Repository Structure\n\nBody.\n',
     );
   });

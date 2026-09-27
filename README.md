@@ -3,61 +3,44 @@
 [![npm](https://img.shields.io/npm/v/@linteljs/create.svg)](https://www.npmjs.com/package/@linteljs/create)
 [![ci](https://github.com/Faran52/linteljs/actions/workflows/ci.yml/badge.svg)](https://github.com/Faran52/linteljs/actions/workflows/ci.yml)
 
-Lint, type-check, and test standards for TypeScript projects, shipped as three packages: a scaffolder, a
-shared ESLint flat config, and the custom rules behind it.
+Lint, type-check and test standards for TypeScript projects, shipped as three packages: a scaffolder, a shared
+ESLint flat config, and the custom rules behind it.
 
 ```bash
-npm create @linteljs
+npm create @linteljs my-app
+cd my-app
+npm run check
 ```
 
-The scaffolder runs the framework's own generator first, then layers the linteljs standard on top. The result
-is a project with ESLint flat config, TypeScript settings, git hooks, test setup, and coding-agent rules,
-ready for React, Next.js, Vue, Svelte, Solid, Angular, Astro, React Native through Expo, and Manifest V3 web
-extensions.
-
-Other package managers, the long forms, and the Yarn 1 caveat are in the
-[create package README](packages/create).
-
-## The gate
-
-Every generated project starts with a single command:
-
-```bash
-npm check
-```
-
-It runs linting, CSS linting, type-checking, coverage, and the build. Coverage thresholds are 100%.
+The scaffolder writes a starter app with its tests, ESLint flat config, TypeScript settings, git hooks, and
+coding-agent rules and hooks, for React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through
+Expo, and Manifest V3 web extensions. `check` runs lint, the banned-pattern check, CSS lint, the typecheck,
+coverage at 100%, and the build, and it passes on the first run. Generated projects need Node 22.18 or newer.
 
 ## Packages
 
 | Package | Use it for |
 | --- | --- |
-| [`@linteljs/create`](packages/create) | Start a project or bring an existing one under the standard. Nine targets, eight libraries and two React routers as answers. |
-| [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers. |
-| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the custom rules behind the config. |
+| [`@linteljs/create`](packages/create) | Start a project, or bring an existing one under the standard. Every package manager, option and flag is in its README. |
+| [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers, by hand or through `composeConfig`. |
+| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the 23 rules behind the config on their own. |
 
 ## Existing projects
 
-Lintel applies to an existing repository too, in place:
-
 ```bash
 npx @linteljs/create --existing
-```
-
-Later, review what an update would change before it touches anything:
-
-```bash
 npx @linteljs/create sync
 ```
 
-`sync` diffs Lintel-owned files against the versions on disk and writes nothing until `--force` is passed.
-It plans from `linteljs.config.json`, so it never guesses a framework or overrides recorded choices.
+`--existing` applies the standard in place. `sync` diffs every linteljs-owned file against the current version
+and writes nothing until you pass `--force`. It plans from `linteljs.config.json`, so it never guesses a framework
+or overrides a recorded choice.
 
 ## Why
 
-Copied configuration drifts quietly: a missing setting can disable a rule while two config files still look
-alike. Lintel keeps the shared rules in a published package and the generated files explicit, so an update
-arrives as a reviewable diff. [docs/DESIGN.md](docs/DESIGN.md) carries the reasoning, including the non-goals.
+Copied configuration drifts quietly: a missing setting disables a rule while two config files still look alike.
+linteljs keeps the shared rules in a published package and the generated files explicit, so an update arrives as
+a reviewable diff. [docs/DESIGN.md](docs/DESIGN.md) carries the reasoning, including the non-goals.
 
 ## Development
 
@@ -66,9 +49,8 @@ pnpm install
 pnpm check
 ```
 
-Requires Node 26.10.0+ and pnpm 12. `pnpm check` runs the same chain a generated project gets. The networked
-end-to-end suite is separate: `pnpm --filter @linteljs/create test:e2e` scaffolds every target for real and
-runs each generated gate.
+Needs Node 26.10.0+ and pnpm 12.6+. [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) covers the rest, including the
+networked end-to-end suite (`pnpm --filter @linteljs/create test:e2e`).
 
 ## License
 

@@ -5,92 +5,40 @@ paths:
 
 # Type and Code Standards
 
-`packages/create/templates/fragments/claude-rules/type-standards.md` is the standard. It is the file this
-workspace publishes, so it is the file this workspace is held to: read it, not a copy of it. A
-second copy here is the drift `docs/DESIGN.md` exists to argue against.
-
-What follows is only where this repository differs, and why.
+`packages/create/templates/fragments/claude-rules/type-standards.md` is the standard: read it there, not in a
+copy. Below is only where this workspace differs.
 
 ## Deviations
 
-- **Components.** The section on components describes an application. There are none here; these
-  are three libraries. Everything else in that file applies unchanged.
-- **`Partial<T>`.** A valid utility type, not gated by the mechanical floor. Use it where it is
-  the real shape (`optionsOf<T>` returning options that are genuinely partial until schema
-  defaults apply, a rule record ESLint itself types that way), not to paper over a type you have
-  not built.
-- **`node:fs/promises` over sync `node:fs`.** Preferred wherever the calling context is or can be
-  async. Sync calls stay only where the contract is synchronous: a resolver feeding `spawnSync`,
-  ESLint layer construction, and the small spawned gate scripts.
-- **`unknown`.** Permitted where the standard permits it: the input of a narrowing type guard (and
-  the guard's own type, where a helper such as `parsedAs` takes one), the `JSON.parse` result that
-  guard exists to narrow, and a dynamic `import()` namespace, which is the same boundary.
-  `scripts/checkBannedPatterns.ts` recognises those spellings and nothing else,
-  which is narrower than the prose grant on purpose: see below for what it cannot enforce.
-- **Casts.** Five survive in `eslint-plugin`, listed in that package's `CLAUDE.md`.
-  Each narrows an ESLint node to the shape the traversal actually hands over. No new ones, and
-  `utils/compatUtils.ts` deliberately needed none: it describes both ESLint shapes as one interface
-  with every member optional, which a real context satisfies structurally.
-
-- **`es-toolkit/compat` is banned**, in every package, enforced by `base` in
-  `@linteljs/eslint-config` and so shipped to every generated project rather than held here alone.
-  The strict entry or the standard library. `/compat` exists to ease a lodash migration this
-  workspace never had, and its looser signatures are what a call reaches for when the honest answer
-  is that es-toolkit does not cover the case. `docs/DESIGN.md` carries the measurement.
+- **Components.** That section describes an application; these are three libraries. The rest applies unchanged.
+- **`Partial<T>`** is fine where it is the real shape (`optionsOf<T>` before schema defaults apply, a rule record
+  ESLint types that way), never to paper over a type you have not built.
+- **`node:fs/promises` over sync `node:fs`** wherever the caller is or can be async. Sync stays only where the
+  contract is synchronous: a resolver feeding `spawnSync`, ESLint layer construction, the spawned gate scripts.
+- **`unknown`** only where the standard grants it: a narrowing guard's input (and the guard type a helper such as
+  `parsedAs` takes), the `JSON.parse` result it narrows, a dynamic `import()` namespace. Where the narrowing can
+  be a predicate, write it as one (`isFixReport` in `fixPass.ts`, handed to `parsedAs` in
+  `packages/create/src/utils/objectUtils.ts`).
+- **Casts.** Five survive in `eslint-plugin`, listed in that package's `CLAUDE.md`. Add none.
+- **`es-toolkit/compat` is banned** everywhere, enforced by the `base` layer. Use the strict entry or the
+  standard library.
 
 ## The mechanical floor
 
-The floor this repository publishes, `packages/create/templates/project/scripts/checkBannedPatterns.ts`,
-runs here the same three ways it runs in a generated project: `lint-staged` on commit, the
-plugin's `bannedPatternGuardHook.ts` at write time, and `lint:types` in `check`. All three reach it
-through `scripts/checkBannedPatterns.ts`, the path the hook looks for, which drops the files below
-from its arguments and runs the shipped checker over the rest. It is not a copy, so the floor here
-is the floor a generated project gets, and its `SKIPPED` list is where this repository's exemptions
-live.
+`scripts/checkBannedPatterns.ts` runs the shipped `packages/create/templates/project/scripts/checkBannedPatterns.ts`
+over this workspace less its `SKIPPED` list, from the same three places a generated project runs it: lint-staged,
+the `bannedPatternGuardHook.ts` hook, and `lint:types` in `check`. It is a floor; the rule file is the standard.
 
-It is a floor, not the standard. The rule file is the standard.
+### Exempt files
 
-### Exempt files, and why
-
-Every entry is a library implementing somebody else's interface, which is the case the standard
-was not written for. In an application `unknown` is almost always the escape hatch; in a plugin
-it is the upstream contract.
+Each implements somebody else's interface, where `unknown` is the upstream contract rather than an escape hatch.
 
 | file | reason |
 | --- | --- |
-| `eslint-config/src/utils/presetUtils.ts` | `Extract<PluginConfig, { rules?: unknown }>` is a type-level wildcard picking the flat arm out of a union. No value is typed `unknown`, so there is nothing to narrow. |
-| `eslint-plugin/src/meta.test.ts` | `readJson` answers `Record<string, unknown>`, which is what a JSON file read back for comparison is, and `ruleIdsIn` narrows the `any` that `ESLint.calculateConfigForFile` returns. Both are the prose grant, and neither is a shape a regex can confirm. |
-| `create/templates/project/scripts/checkBannedPatterns.test.ts` | Holds banned directives as fixture strings. Directive patterns are `raw: true` by design, so a fixture cannot be told from a violation. Covered by `BASE_SKIPPED`, not listed. |
-| `create/templates/project/src/typings/` | Shipped template text, the same tree `eslint.config.ts` ignores, written against the relaxed floor on purpose. |
+| `eslint-config/src/utils/presetUtils.ts` | `Extract<PluginConfig, { rules?: unknown }>` is a type-level wildcard; no value is typed `unknown`. |
+| `eslint-plugin/src/meta.test.ts` | `readJson` answers `Record<string, unknown>` and `ruleIdsIn` narrows the `any` from `ESLint.calculateConfigForFile`. Both are granted in prose; no regex can confirm them. |
+| `create/templates/project/src/typings/` | Shipped template text, written against the relaxed floor on purpose. |
 
-A whole-file skip is coarser than these cases deserve, and it is the only granularity the checker
-offers. Adding a file here hides every future violation in it, so the list is worth re-reading
-whenever one of these files grows.
-
-### What the checker can and cannot enforce
-
-The standard grants `unknown` at any boundary with no upstream type and names two spellings: a
-narrowing guard's parameter, and the `JSON.parse` result it narrows. A dynamic `import()` namespace is
-the same boundary under a third spelling, so `DYNAMIC_IMPORT` now grants it too, in the shipped
-checker and with a case in its suite. That closed the one gap that really was a missing
-pattern, and it took `ruleModules.test.ts` off the list above once its own `unknown` pipeline was
-folded into a guard.
-
-The rest is not a missing pattern and should not be written as one. What makes a value at such a
-boundary legal is that it is *narrowed before use*, and no regex can see that. A helper that takes
-`unknown` and answers `string[]` is either a careful extraction or an escape hatch, and only reading
-it tells you which. Two conclusions follow:
-
-- Where the narrowing can be spelled as a predicate, spell it that way. `fixPass.ts` narrows
-  ESLint's JSON output with `isFixReport(value): value is EslintFixResult[]`, handed to
-  `utils/objectUtils.ts`'s `parsedAs` over an annotated parse, which is granted shapes and no
-  exemption.
-- Where it genuinely cannot, the file joins the skip list, with its reason in the table above.
-  `meta.test.ts` is that case, and widening a pattern to cover it would grant the escape hatch
-  everywhere to spare one file a line.
-
-An earlier version of this section called all three shapes checker bugs. One was.
-
-`emitters/registry.test.ts` runs the emitted checker over the emitted starter code for every target.
-`check` runs the checker too, through `lint:types`, here and in a generated project, and so does every
-end-to-end case's gate.
+`create/templates/project/scripts/checkBannedPatterns.test.ts` holds banned directives as fixtures and is skipped
+by the shipped checker's own `BASE_SKIPPED`. A whole-file skip hides every future violation in that file, so do
+not add one where a predicate would do, and re-read the list when a listed file grows.

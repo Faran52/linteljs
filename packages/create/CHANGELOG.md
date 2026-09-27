@@ -73,13 +73,24 @@ when a version's change lives in a sibling it is described there instead:
   the filter hid on Yarn, under TanStack Form and TanStack Query, are answered in `packageExtensions`.
 - A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only. The `crx({ manifest })` call and the
   manifest it reads are unchanged.
+- The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on file
+  carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule files
+  drop their "shipped verbatim" note.
 
 ### Fixed
 
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
   alone on every run.
-- The emitted `CLAUDE.md`, `AGENTS.md`, Copilot instructions and Cursor rules tell an agent that comments are minimal:
-  a short why, or none, and none in tests.
+- The emitted type standard tells an agent that comments are minimal: a short why, or none, and none in tests.
+- The emitted structure rule describes the folders the answers write: a router's route table, a store, the query
+  wrappers, RTK Query's `lib/apis/` and the MSW handlers appear only for the answers that produce them. React Native's
+  rule keeps route suites out of `src/app/` and names `src/config/`, not `src/constants/`; Solid's no longer mentions
+  SolidStart; the web extension's names `src/popup/`.
+- The emitted structure rule gains a shared section for every target: files under 500 lines, one subject directory
+  per component, page or hook, helpers in a `utils/` at the level of their readers, `constants.ts` as data only, and
+  what `typings/`, `lib/providers/`, `lib/services/` and `lib/apis/` hold.
+- Copilot `applyTo` and Cursor `globs` expand brace groups, since both tools split the value on commas and
+  `src/**/*.{ts,tsx}` was read as two broken globs.
 - The starter source writes one import per module, with an inline `type` on each type-only name, which is what the
   base layer's `import-x/no-duplicates` now asks for.
 - An Astro project gets `dev` and `preview` scripts, like every other target.

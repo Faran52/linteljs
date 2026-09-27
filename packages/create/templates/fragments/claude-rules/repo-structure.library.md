@@ -5,9 +5,6 @@ paths:
   - "package.json"
 ---
 
-*The standard for a package that is imported rather than run. The nine per-target files describe
-applications; this one describes a library, and this workspace's own copy lives under .claude/rules/*.
-
 # Repository Structure
 
 Use this rule when adding, moving, renaming, or importing a source file in a library.
