@@ -16,11 +16,8 @@ describe.
 
 ## Deviations
 
-- **Comments are allowed, and wanted.** The standard bans them in tests. That rule came from a
-  private app. This repo is public and people read its tests to learn how a rule is built, so
-  comment where the reason is not on the screen: why a fixture is shaped that way, why a branch
-  exists, what a fix deliberately does not do. Do not narrate. `packages/eslint-plugin/CLAUDE.md`
-  is the long form of this.
+- **Comments are minimal.** A short why, or none: only where the reason is not on the screen, such as why a
+  fixture is shaped that way. Never narrate. `packages/eslint-plugin/CLAUDE.md` says the same.
 - **No DOM, no jest-dom, no RTL.** Nothing here renders. The "behaviour" a test asserts is what a
   rule reports, what a fixer emits, and what an emitter writes.
 - **Coverage.** The 100% bar holds for all three packages, on statements, branches, functions and
@@ -37,7 +34,7 @@ describe.
   real text through a real `ESLint` (`packages/eslint-config/__mocks__/lintText.ts`), never by
   reading the config object back.
 - `__mocks__/fixerSamples.ts` is a shared corpus run against **every** rule. A fixer defect belongs
-  there as well as in the rule's own suite: one nasty input then covers all fourteen rules.
+  there as well as in the rule's own suite: one nasty input then covers every rule.
 - `packages/create/src/pipeline/e2e/**/*.e2e.test.ts` files are excluded from the default run by their
   `.e2e.` infix. One file holds every target: the cases come from `matrix.ts`, which enumerates them
   rather than listing them, so a new answer is covered the day the model gains it and not the day
