@@ -38,8 +38,10 @@ before that package publishes. The types it redeclares are held equal by `packag
 - **`*Utils.ts` on every file in a `utils/` directory** (`ruleUtils.ts`, not `ruleApi.ts`). Caught by the
   `naming` map in the root `eslint.config.ts` (`**/utils/*.ts` to `*Utils`). A workspace convention only;
   `docs/DESIGN.md` lists shipping it as a non-goal.
-- **Size.** A `*Utils.ts` stays under 200 lines (`@linteljs/workspace/utils-size`) and a function under 500
-  (`@linteljs/workspace/function-size`). Keep any code file under 500 lines; no lint rule checks that yet.
+- **Size**, counted in lines of code with blanks and comments free: a function at most 350, a code file 500, a
+  component file (`.tsx`, `.jsx`, `.vue`, `.svelte`, `.astro`) 350, a file under `utils/` 800. Tests, `__mocks__/`
+  and e2e are exempt. Caught by `max-lines` and `max-lines-per-function` in the `base` layer, the same limits a
+  generated project gets; `docs/DESIGN.md` carries the measurement.
 - **Coverage is 100% on all four metrics** in all three packages. Delete an unreachable line rather than
   ignore it; the one exception is a `/* v8 ignore */` on a defensive branch argued in the comment beside it,
   audited by `pnpm audit:ignores`.

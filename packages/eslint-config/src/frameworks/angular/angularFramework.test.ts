@@ -1,4 +1,5 @@
 import {
+  codeLines,
   ownBlockNames,
   ruleIdsFor,
   sortsAheadOfPackages,
@@ -24,6 +25,32 @@ describe('angular', () => {
       .resolves.not.toContain('@typescript-eslint/no-extraneous-class');
     await expect(ruleIdsFor([...base(), ...angular()], bare, 'src/app/bag.ts'))
       .resolves.toContain('@typescript-eslint/no-extraneous-class');
+  });
+
+  it('caps a component class file at 500 lines of code', async () => {
+    const component = (lines: number): string => {
+      return `@Component({ selector: 'app-big' })\nexport class Big {}\n${codeLines(lines - 2)}`;
+    };
+    const atLimit = await ruleIdsFor([...base(), ...angular()], component(500), 'src/app/big.component.ts');
+    const overLimit = await ruleIdsFor([...base(), ...angular()], component(501), 'src/app/big.component.ts');
+
+    expect(atLimit).not.toContain(null);
+    expect(atLimit).not.toContain('max-lines');
+    expect(overLimit).toContain('max-lines');
+  });
+
+  it('caps a component method at 350 lines', async () => {
+    const component = (lines: number): string => {
+      const method = `  run(): void {\n${codeLines(lines - 2, '    ')}  }\n`;
+
+      return `@Component({ selector: 'app-big' })\nexport class Big {\n${method}}\n`;
+    };
+    const atLimit = await ruleIdsFor([...base(), ...angular()], component(350), 'src/app/big.component.ts');
+    const overLimit = await ruleIdsFor([...base(), ...angular()], component(351), 'src/app/big.component.ts');
+
+    expect(atLimit).not.toContain(null);
+    expect(atLimit).not.toContain('max-lines-per-function');
+    expect(overLimit).toContain('max-lines-per-function');
   });
 
   it('reports on a template', async () => {

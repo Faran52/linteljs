@@ -1,3 +1,11 @@
+import {
+  copyFile,
+  mkdtemp,
+  realpath,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { ESLint, type Linter } from 'eslint';
@@ -102,6 +110,51 @@ export const ruleIdsForFile = async (config: Layer, filePath: string): Promise<(
     .map((message) => {
       return message.ruleId;
     });
+};
+
+// On disk beside a tsconfig because `projectService` reads the file; outside `__mocks__/` so no glob exempts it.
+export const ruleIdsForSfc = async (config: Layer, code: string, fileName: string): Promise<(string | null)[]> => {
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'linteljs-sfc-')));
+
+  try {
+    await copyFile(join(SFC_FIXTURES, 'tsconfig.json'), join(root, 'tsconfig.json'));
+    await writeFile(join(root, fileName), code);
+
+    const eslint = new ESLint({
+      cwd: root,
+      overrideConfigFile: true,
+      overrideConfig: config,
+    });
+    const [result] = await eslint.lintFiles([fileName]);
+
+    if (!result) {
+      throw new Error(`ESLint returned no result for ${fileName}`);
+    }
+
+    return result.messages
+      .map((message) => {
+        return message.ruleId;
+      });
+  }
+  finally {
+    await rm(root, {
+      recursive: true,
+      force: true,
+    });
+  }
+};
+
+// `count` lines of code, one statement each, so `max-lines` counts exactly `count`.
+export const codeLines = (count: number, indent = ''): string => {
+  return Array.from({ length: count }, (_, index) => {
+    return `${indent}console.warn(${String(index)});\n`;
+  })
+    .join('');
+};
+
+// An arrow function spanning exactly `lines` lines, its head and closing brace included.
+export const functionOf = (lines: number): string => {
+  return `export const run = () => {\n${codeLines(lines - 2, '  ')}};\n`;
 };
 
 export const sortsAheadOfPackages = async (config: Layer, specifier: string): Promise<boolean> => {

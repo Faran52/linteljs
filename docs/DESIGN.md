@@ -257,6 +257,28 @@ leaving it out of `recommended` would only hide that from a consumer composing t
 a different convention reports on upgrade, which is why the fix is `reorder` and report-only rather than a free
 rewrite. `base` restates it over `TYPED_FILES` to reach a `<script lang="ts">` block the plugin's own preset cannot.
 
+### Size limits count code, and a suite has none
+
+`base` caps a function at 350 lines (`max-lines-per-function`) and a file at 500 (`max-lines`), 350 for a component
+file (`**/*.{tsx,jsx,vue,svelte}`) and 800 for anything under a `utils/` directory. Both count code only
+(`skipBlankLines`, `skipComments`), so a comment is never the line that tips a file over. A React or Solid
+component is a function and meets the function cap; a `.vue`, `.svelte` or `.astro` component is a file and meets
+the file cap, template and script counted together, and a function in its script meets the function cap. An
+Angular component class is a `.ts` file, so the 500 cap holds it and the function cap holds each method. A `utils/`
+module is a drawer of small helpers rather than one subject, which is why it gets the most room; the glob is
+`**/utils/**` rather than `*Utils.ts` because a generated project's `lib/utils/` does not carry the suffix.
+
+`**/*.{test,spec}.*`, `**/__mocks__/**` and `**/e2e/**` are exempt from both: a suite is a list of cases, and a
+`describe` callback is as long as the list. `astro()` states the `.astro` limits itself, because naming `.astro`
+in `base` would make ESLint lint `.astro` files in a project that has no parser for them.
+
+The numbers govern this workspace too. Measured the way the rules count, in non-test source: the longest file is
+`create/src/targets/react/reactTarget.ts` at 483 lines, the longest `utils/` module
+`eslint-plugin/scripts/audit/false-negatives/utils/functionShapesUtils.ts` at 475, and the longest function
+`base` itself at 180. The workspace kept its own 200-line cap on `*Utils.ts` and a 500-line function cap before
+the layer carried any; both are gone, since a workspace-only number would be a second standard the published one
+does not state.
+
 ## Targets
 
 Ten: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, and a Manifest V3
@@ -1327,21 +1349,6 @@ table is a fact about the code that reads it. `src/types.test.ts` pins the types
 The selector is `ArrowFunctionExpression`, `FunctionDeclaration` and `FunctionExpression`, not `TSFunctionType`. A
 function *type* is vocabulary and stays: `Emitter`, `MergedText.merge` and `CopiedAssets.transform` describe a shape
 a ring implements rather than behaviour this folder owns.
-
-### `@linteljs/workspace/utils-size`
-
-A `utils/` module is the helpers one level of readers shares, and a long one is two categories in one drawer.
-Measured the way the rule counts, without blank lines or comments: the largest are
-`eslint-plugin/src/utils/jsxUtils.ts` at 190 lines, `create/src/answers/utils/configUtils.ts` at 180 and
-`create/src/targets/utils/mockUtils.ts` at 155. The limit is 200, so the largest has ten lines of headroom. A table
-belongs in a `constants.ts`, and a `utils/` file growing past 200 usually means one has moved in.
-
-### `@linteljs/workspace/function-size`
-
-A ceiling far above anything here, so that stays a fact rather than a habit. Measured: the longest function in
-non-test source is 160 lines (`memberNewline.ts`, `preferArrowFunctions.ts`), then 138. The longest anywhere is 272,
-a `describe` callback in `answers/utils/configUtils.test.ts`, and a suite is a list rather than a function, which is
-why the limit is 500. A 500-line function is never the answer to anything here.
 
 ### `noInlineConfig`
 

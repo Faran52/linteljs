@@ -152,32 +152,6 @@ const config = [
     },
   },
 
-  // docs/DESIGN.md: `@linteljs/workspace/utils-size`
-  {
-    name: '@linteljs/workspace/utils-size',
-    files: ['packages/*/src/**/utils/*Utils.ts'],
-    rules: {
-      'max-lines': ['error', {
-        max: 200,
-        skipBlankLines: true,
-        skipComments: true,
-      }],
-    },
-  },
-
-  // docs/DESIGN.md: `@linteljs/workspace/function-size`
-  {
-    name: '@linteljs/workspace/function-size',
-    files: ['packages/*/src/**/*.ts'],
-    rules: {
-      'max-lines-per-function': ['error', {
-        max: 500,
-        skipBlankLines: true,
-        skipComments: true,
-      }],
-    },
-  },
-
   // Options given, since severity alone inherits the layer's `allow`. docs/DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts',

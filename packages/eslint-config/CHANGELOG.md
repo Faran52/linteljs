@@ -23,6 +23,9 @@ when a version's change lives in a sibling it is described there instead:
   per line; its fix does it for you.
   `@stylistic/jsx-max-props-per-line` allows two props on a one-line tag, and `es-toolkit/compat` is a restricted
   import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
+- **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350 and
+  `max-lines` at 500, 350 for a `.tsx`, `.jsx`, `.vue` or `.svelte` file and 800 under a `utils/` directory.
+  `astro()` holds `.astro` files to the same 350. Tests, `__mocks__/` and `e2e/` are exempt from both.
 
 ### Added
 

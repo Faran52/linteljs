@@ -27,6 +27,15 @@ import type { BaseOptions, Layer } from '../../types';
 // `<script lang="ts">` blocks in SFCs are TypeScript the TypeScript globs miss.
 const TYPED_FILES = [`**/*.{${TYPESCRIPT_EXTENSIONS},vue,svelte}`];
 
+// `astro()` caps `.astro` itself: naming it here would pull `.astro` into a project that has no parser for it.
+const COMPONENT_FILES = ['**/*.{tsx,jsx,vue,svelte}'];
+
+const SIZE_EXEMPT_FILES = [
+  '**/*.{test,spec}.*',
+  '**/__mocks__/**',
+  '**/e2e/**',
+];
+
 // `process.cwd()` off the global so a test can replace it; this file resolves from `node_modules`.
 const gitignored = (): Layer => {
   const path = join(process.cwd(), '.gitignore');
@@ -178,6 +187,19 @@ export const base = (options: BaseOptions = {}): Layer => {
 
         'sonarjs/cognitive-complexity': ['error', 15],
 
+        // Counted as code: blank lines and comments are free.
+        'max-lines': ['error', {
+          max: 500,
+          skipBlankLines: true,
+          skipComments: true,
+        }],
+        'max-lines-per-function': ['error', {
+          max: 350,
+          skipBlankLines: true,
+          skipComments: true,
+          IIFEs: false,
+        }],
+
         'no-console': ['error', { allow: ['warn', 'error'] }],
       },
     },
@@ -205,6 +227,41 @@ export const base = (options: BaseOptions = {}): Layer => {
       name: '@linteljs/base/fixtures',
       files: [`**/__mocks__/**/*.{${SCRIPT_EXTENSIONS}}`],
       rules: { 'sonarjs/code-eval': 'off' },
+    },
+
+    {
+      name: '@linteljs/base/component-size',
+      files: COMPONENT_FILES,
+      rules: {
+        'max-lines': ['error', {
+          max: 350,
+          skipBlankLines: true,
+          skipComments: true,
+        }],
+      },
+    },
+
+    // A `utils/` module is a drawer of small helpers, so it may run longer than a subject's entry.
+    {
+      name: '@linteljs/base/utils-size',
+      files: [`**/utils/**/*.{${SCRIPT_EXTENSIONS}}`],
+      rules: {
+        'max-lines': ['error', {
+          max: 800,
+          skipBlankLines: true,
+          skipComments: true,
+        }],
+      },
+    },
+
+    // A suite is a list of cases rather than a function.
+    {
+      name: '@linteljs/base/test-size',
+      files: SIZE_EXEMPT_FILES,
+      rules: {
+        'max-lines': 'off',
+        'max-lines-per-function': 'off',
+      },
     },
 
     ...buildNaming(naming, folderNaming),

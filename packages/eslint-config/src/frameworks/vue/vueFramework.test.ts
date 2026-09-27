@@ -1,9 +1,12 @@
 import { join } from 'node:path';
 
 import {
+  codeLines,
+  functionOf,
   messagesForFile,
   ownBlockNames,
   ruleIdsForFile,
+  ruleIdsForSfc,
   SFC_FIXTURES,
   sortsAheadOfPackages,
   startsWith,
@@ -93,6 +96,29 @@ describe('vue', () => {
       '@linteljs/vue',
       '@linteljs/vue/sfc-import-seam',
     ]);
+  });
+
+  it('caps a component file at 350 lines of code, template and script together', async () => {
+    const component = (lines: number): string => {
+      return `<template>\n  <main />\n</template>\n\n<script setup>\n${codeLines(lines - 5)}</script>\n`;
+    };
+    const atLimit = await ruleIdsForSfc([...base(), ...vue()], component(350), 'Big.vue');
+    const overLimit = await ruleIdsForSfc([...base(), ...vue()], component(351), 'Big.vue');
+
+    expect(atLimit).not.toContain(null);
+    expect(atLimit).not.toContain('max-lines');
+    expect(overLimit).toContain('max-lines');
+  });
+
+  it('caps a function in a component script at 350 lines', async () => {
+    const component = (lines: number): string => {
+      return `<script>\n${functionOf(lines)}</script>\n`;
+    };
+    const atLimit = await ruleIdsForSfc([...base(), ...vue()], component(350), 'Big.vue');
+    const overLimit = await ruleIdsForSfc([...base(), ...vue()], component(351), 'Big.vue');
+
+    expect(atLimit).not.toContain('max-lines-per-function');
+    expect(overLimit).toContain('max-lines-per-function');
   });
 
   it.each([

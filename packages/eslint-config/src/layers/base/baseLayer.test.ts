@@ -10,7 +10,9 @@ import process from 'node:process';
 
 import { rules as lintelRules } from '@linteljs/eslint-plugin';
 import {
+  codeLines,
   enabledRuleIdsFor,
+  functionOf,
   ownBlockNames,
   ruleIdsFor,
   ruleIdsForFile,
@@ -218,6 +220,9 @@ describe('base: ignores', () => {
         '@linteljs/base/typescript-rules',
         '@linteljs/base/scripts',
         '@linteljs/base/fixtures',
+        '@linteljs/base/component-size',
+        '@linteljs/base/utils-size',
+        '@linteljs/base/test-size',
         '@linteljs/base/naming',
       ]);
     }
@@ -510,5 +515,83 @@ describe('base: presets', () => {
     const layer = await layerWithoutConfig('@linteljs/eslint-plugin', 'flat/recommended', loadBase);
 
     expect(layer).toThrow('@linteljs/flat/recommended is not published');
+  });
+});
+
+describe('base: size', () => {
+  const FILE_RULE = 'max-lines';
+  const FUNCTION_RULE = 'max-lines-per-function';
+
+  it.each([
+    ['src/app/format.ts', 500],
+    ['src/app/format.js', 500],
+    ['src/components/button/Button.tsx', 350],
+    ['src/components/button/Button.jsx', 350],
+    ['src/lib/utils/formatUtils.ts', 800],
+    ['src/lib/utils/format.ts', 800],
+    ['packages/core/src/rules/utils/nested/jsxUtils.ts', 800],
+  ])('caps %s at %i lines of code', async (path, max) => {
+    const atLimit = await ruleIdsFor(base(), codeLines(max), path);
+    const overLimit = await ruleIdsFor(base(), codeLines(max + 1), path);
+
+    expect(atLimit).not.toContain(FILE_RULE);
+    expect(overLimit).toContain(FILE_RULE);
+  });
+
+  it('counts neither blank lines nor comments', async () => {
+    const padded = `${codeLines(500)}\n\n// a note\n/*\n * a block\n */\n`;
+    const ruleIds = await ruleIdsFor(base(), padded, 'src/app/format.ts');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain(FILE_RULE);
+  });
+
+  it.each([
+    'src/app/run.ts',
+    'src/app/run.js',
+    'src/lib/utils/runUtils.ts',
+  ])('caps a function in %s at 350 lines', async (path) => {
+    const atLimit = await ruleIdsFor(base(), functionOf(350), path);
+    const overLimit = await ruleIdsFor(base(), functionOf(351), path);
+
+    expect(atLimit).not.toContain(FUNCTION_RULE);
+    expect(overLimit).toContain(FUNCTION_RULE);
+  });
+
+  it('caps a component at 350 lines, because a component is a function', async () => {
+    const component = (lines: number): string => {
+      return `export const Page = () => {\n${codeLines(lines - 3, '  ')}  return <main />;\n};\n`;
+    };
+    const atLimit = await ruleIdsFor(base(), component(350), 'src/pages/page/Page.tsx');
+    const overLimit = await ruleIdsFor(base(), component(351), 'src/pages/page/Page.tsx');
+
+    expect(atLimit).not.toContain(FUNCTION_RULE);
+    expect(overLimit).toContain(FUNCTION_RULE);
+  });
+
+  it('does not count a function\'s blank lines or comments', async () => {
+    const padded = functionOf(350)
+      .replace('{\n', '{\n\n  // a note\n\n');
+    const ruleIds = await ruleIdsFor(base(), padded, TS_FILE);
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain(FUNCTION_RULE);
+  });
+
+  it.each([
+    'src/app/format.test.ts',
+    'src/app/format.spec.tsx',
+    'src/app/format.e2e.test.ts',
+    '__mocks__/handlers.ts',
+    'src/__mocks__/fixtures/big.ts',
+    'e2e/checkout.ts',
+    'packages/create/src/pipeline/e2e/runner/runner.ts',
+  ])('holds neither limit on the test file %s', async (path) => {
+    const code = `${codeLines(900)}${functionOf(400)}`;
+    const ruleIds = await ruleIdsFor(base(), code, path);
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain(FILE_RULE);
+    expect(ruleIds).not.toContain(FUNCTION_RULE);
   });
 });

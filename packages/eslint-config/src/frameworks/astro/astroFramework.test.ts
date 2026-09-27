@@ -1,5 +1,7 @@
 import {
+  codeLines,
   enabledRuleIdsFor,
+  functionOf,
   ownBlockNames,
   ruleIdsFor,
   ruleNamesFor,
@@ -101,9 +103,33 @@ describe('astro', () => {
   it('names every block it writes', () => {
     expect(ownBlockNames(astro())).toEqual([
       '@linteljs/astro/typescript',
+      '@linteljs/astro/component-size',
       '@linteljs/astro/typescript-scripts',
       '@linteljs/astro/untyped',
     ]);
+  });
+
+  it('caps a component file at 350 lines of code, frontmatter and template together', async () => {
+    const component = (lines: number): string => {
+      return `---\n${codeLines(lines - 3)}---\n\n<main></main>\n`;
+    };
+    const atLimit = await ruleIdsFor([...base(), ...astro()], component(350), 'src/components/Big.astro');
+    const overLimit = await ruleIdsFor([...base(), ...astro()], component(351), 'src/components/Big.astro');
+
+    expect(atLimit).not.toContain(null);
+    expect(atLimit).not.toContain('max-lines');
+    expect(overLimit).toContain('max-lines');
+  });
+
+  it('caps a function in the frontmatter at 350 lines', async () => {
+    const component = (lines: number): string => {
+      return `---\n${functionOf(lines)}---\n`;
+    };
+    const atLimit = await ruleIdsFor([...base(), ...astro()], component(350), 'src/components/Big.astro');
+    const overLimit = await ruleIdsFor([...base(), ...astro()], component(351), 'src/components/Big.astro');
+
+    expect(atLimit).not.toContain('max-lines-per-function');
+    expect(overLimit).toContain('max-lines-per-function');
   });
 
   it.each([

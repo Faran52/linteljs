@@ -1,11 +1,14 @@
 import { join } from 'node:path';
 
 import {
+  codeLines,
   enabledRuleIdsFor,
+  functionOf,
   messagesForFile,
   ownBlockNames,
   ruleIdsFor,
   ruleIdsForFile,
+  ruleIdsForSfc,
   SFC_FIXTURES,
   sortsAheadOfPackages,
   startsWith,
@@ -106,6 +109,29 @@ describe('svelte', () => {
       '@linteljs/svelte/route-filenames',
       '@linteljs/svelte',
     ]);
+  });
+
+  it('caps a component file at 350 lines of code, markup and script together', async () => {
+    const component = (lines: number): string => {
+      return `<script>\n${codeLines(lines - 3)}</script>\n\n<main></main>\n`;
+    };
+    const atLimit = await ruleIdsForSfc([...base(), ...svelte()], component(350), 'Big.svelte');
+    const overLimit = await ruleIdsForSfc([...base(), ...svelte()], component(351), 'Big.svelte');
+
+    expect(atLimit).not.toContain(null);
+    expect(atLimit).not.toContain('max-lines');
+    expect(overLimit).toContain('max-lines');
+  });
+
+  it('caps a function in a component script at 350 lines', async () => {
+    const component = (lines: number): string => {
+      return `<script>\n${functionOf(lines)}</script>\n`;
+    };
+    const atLimit = await ruleIdsForSfc([...base(), ...svelte()], component(350), 'Big.svelte');
+    const overLimit = await ruleIdsForSfc([...base(), ...svelte()], component(351), 'Big.svelte');
+
+    expect(atLimit).not.toContain('max-lines-per-function');
+    expect(overLimit).toContain('max-lines-per-function');
   });
 
   it.each([
