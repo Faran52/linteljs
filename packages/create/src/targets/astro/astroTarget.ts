@@ -87,6 +87,10 @@ export const astroTarget: TargetBuilder = (answers) => {
     // `astro sync` first, since the types `astro check` reads are generated.
     typecheck: 'astro sync && astro check',
     build: 'astro build',
+    extraScripts: {
+      dev: 'astro dev',
+      preview: 'astro preview',
+    },
     prepare: 'astro sync',
     publicDirectory: 'public',
     starterFiles: [

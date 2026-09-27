@@ -38,6 +38,15 @@ describe('the astro record', () => {
     expect(recordFor().vitePlugin).toBeUndefined();
     expect(recordFor().build).toBe('astro build');
   });
+
+  it('runs its dev server and preview the way every other target does', () => {
+    const scripts = recordFor().extraScripts;
+
+    expect(scripts).toEqual({
+      dev: 'astro dev',
+      preview: 'astro preview',
+    });
+  });
 });
 
 describe('the build it owns', () => {

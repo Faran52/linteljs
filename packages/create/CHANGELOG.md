@@ -82,6 +82,7 @@ when a version's change lives in a sibling it is described there instead:
   a short why, or none, and none in tests.
 - The starter source writes one import per module, with an inline `type` on each type-only name, which is what the
   base layer's `import-x/no-duplicates` now asks for.
+- An Astro project gets `dev` and `preview` scripts, like every other target.
 - A pnpm project's `pnpm-workspace.yaml` sets `minimumReleaseAge: 2880` and exempts `@linteljs/*`, so a fresh
   linteljs release installs the day it ships; a project's own `minimumReleaseAge` is left alone.
 - On Yarn inside CI, the first install writes its lockfile. Yarn 4 turns immutable installs on under CI and refused
