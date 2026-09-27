@@ -715,6 +715,38 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
     filename: 'styles.ts',
   },
+  {
+    // A break before `.` must not end a statement: no semicolons, a number head, and a block callback to reindent.
+    name: 'chained calls without semicolons',
+    code: 'const items = [3, 1, 2]\nconst joined = items.map((item) => {\n  return item * 2\n})'
+      + '.filter(Boolean).join()\nconst fixed = 1 .toFixed(2).trim()\n',
+  },
+  {
+    name: 'chained calls with a comment between links',
+    code: "const items = [1];\nconst out = items /* keep */.map(String).join('');\n"
+      + "const end = items.map(String) // end\n  .join('');\n",
+  },
+  {
+    name: 'chained calls in a template literal and an optional chain',
+    code: "const values = [1, 2];\nconst empty = null;\nconst text = `${values.map(String).join(', ')}`;\n"
+      + "const none = empty?.map(String).join('');\n",
+  },
+  {
+    name: 'chained calls under CRLF',
+    code: "const rows = [1];\r\nconst out = rows.map(String).join('');\r\n",
+    crlf: true,
+  },
+  {
+    name: 'chained calls in a JSX attribute',
+    code: "const rows = [1];\nexport const view = <List items={rows.map(String).join('')} />;\n",
+    typescript: true,
+    filename: 'view.tsx',
+  },
+  {
+    name: 'chained calls in a svelte template',
+    code: "<script>\n  const rows = [1, 2];\n</script>\n\n<p>{rows.map(String).join(', ')}</p>\n",
+    filename: 'Chain.svelte',
+  },
 ];
 
 const linter = new Linter();

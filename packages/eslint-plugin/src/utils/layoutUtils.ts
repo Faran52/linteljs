@@ -51,7 +51,9 @@ export const sameLine = (
 
 // Token lookups skip comments, so a range a fixer is about to replace can still hold one.
 export const gapIsBlank = (sourceCode: SourceCode, from: number, to: number): boolean => {
-  return sourceCode.text.slice(from, to).trim().length === 0;
+  return sourceCode.text
+    .slice(from, to)
+    .trim().length === 0;
 };
 
 // Reads the line's indentation, not the node's column: an ObjectPattern starts after `const `.
@@ -85,7 +87,7 @@ export const lineTerminatorOf = (sourceCode: SourceCode): string => {
 };
 
 // Lines inside a multi-line token (a template body) are content, not indentation, so the indent scan skips them.
-const linesInsideTokens = (sourceCode: SourceCode): Set<number> => {
+export const linesInsideTokens = (sourceCode: SourceCode): Set<number> => {
   const inside = new Set<number>();
 
   for (const { loc } of sourceCode.ast.tokens) {

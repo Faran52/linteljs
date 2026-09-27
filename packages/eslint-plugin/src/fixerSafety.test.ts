@@ -114,11 +114,12 @@ const isIndented = (line: string): boolean => {
 };
 
 /**
- * The lines a fix left at the wrong indent. A line that survives the fix has to survive at its own indent. A new one at
- * column 0 is stranded inside brackets, unless it is a closer under a bracket opened at column 0, and stranded ahead
- * of a line that was already indented, which is a statement landing at the margin of a component's script. A new
- * top-level statement among top-level neighbours is none of these, which is why an inserted import passes where
- * counting the lines at the margin could not tell it from a dropped indent.
+ * The lines a fix left at the wrong indent. A line that survives the fix has to survive at its own indent or deeper,
+ * since a call moved onto its own line carries its callback a step right. A new one at column 0 is stranded inside
+ * brackets, unless it is a closer under a bracket opened at column 0, and stranded ahead of a line that was already
+ * indented, which is a statement landing at the margin of a component's script. A new top-level statement among
+ * top-level neighbours is none of these, which is why an inserted import passes where counting the lines at the
+ * margin could not tell it from a dropped indent.
  */
 const lostIndents = (sample: FixerSample, fixed: string): string[] => {
   const before = sample.code.split(/\r?\n/);
@@ -137,9 +138,18 @@ const lostIndents = (sample: FixerSample, fixed: string): string[] => {
   const survivors = new Set(afterLines);
   const openers = openerLinesIn(fixed, sample.typescript, sample.filename);
 
+  const keptOrDeeper = (line: string): boolean => {
+    const indent = line.slice(0, line.length - line.trimStart().length);
+
+    return after
+      .some((fixedLine) => {
+        return fixedLine.trim() === line.trim() && fixedLine.startsWith(indent);
+      });
+  };
+
   const moved = before
     .filter((line) => {
-      return isIndented(line) && survivors.has(line.trim()) && !after.includes(line);
+      return isIndented(line) && survivors.has(line.trim()) && !keptOrDeeper(line);
     });
   const stranded = after
     .filter((line, index) => {
@@ -179,6 +189,12 @@ describe('the indentation check', () => {
   it('catches a line that lost its indent', () => {
     expect(lostIndents(sample, 'function run() {\nconst value = 1;\n\n  return value;\n}\n'))
       .toEqual(['  const value = 1;']);
+  });
+
+  it('lets a surviving line move deeper', () => {
+    const deeper = lostIndents(sample, 'function run() {\n    const value = 1;\n\n  return value;\n}\n');
+
+    expect(deeper).toEqual([]);
   });
 
   it('catches a line split out at column 0 inside brackets', () => {

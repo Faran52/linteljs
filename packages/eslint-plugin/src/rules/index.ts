@@ -1,3 +1,4 @@
+import { chainCallNewline } from './chain-call-newline/chainCallNewline.ts';
 import { commentDelimiter } from './comment-delimiter/commentDelimiter.ts';
 import { destructuringPropertyNewline } from './destructuring-property-newline/destructuringPropertyNewline.ts';
 import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifierNewline.ts';
@@ -30,6 +31,7 @@ export type RuleName = keyof typeof rules;
 // The rule registry: a new rule needs only an entry here, since configs and contract tests are generated from it
 // (the README table is hand-edited). Each key also names the directory its rule lives in.
 export const rules = {
+  'chain-call-newline': chainCallNewline,
   'comment-delimiter': commentDelimiter,
   'destructuring-property-newline': destructuringPropertyNewline,
   'export-specifier-newline': exportSpecifierNewline,

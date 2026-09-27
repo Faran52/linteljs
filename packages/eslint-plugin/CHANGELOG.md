@@ -20,11 +20,16 @@ when a version's change lives in a sibling it is described there instead:
 - **`meta.docs.category` is replaced by `meta.docs.fixShape`**, and the exports `RULE_CATEGORIES` and `RuleCategory`
   by `FIX_SHAPES` and `FixShape`: `whitespace` leaves the tokens identical, `reorder` only reorders them, absent
   may rewrite code.
-- **`recommended` gains three rules**, so a project on it reports more on upgrade: `interface-order`,
-  `no-eslint-disable` and `no-inline-object-types` (below).
+- **`recommended` gains four rules**, so a project on it reports more on upgrade: `chain-call-newline`,
+  `interface-order`, `no-eslint-disable` and `no-inline-object-types` (below).
 
 ### Added
 
+- `chain-call-newline` puts each call in a member chain on its own line once the chain has two calls after its
+  head, or one call taking a callback with a block body. The head keeps a namespace call, so
+  `Object.keys(x).map(fn)` and `expect(x).toBe(y)` stay on one line. Fixable (whitespace): breaks before each `.`
+  and moves the callback's lines a step right; reports without a fix past `maxLineLength` (default `120`) or
+  with a comment in the way.
 - `no-eslint-disable` reports `eslint-disable`, `eslint-disable-line` and `eslint-disable-next-line` directives.
   Report-only. `allowRules` names rule ids a directive may carry; a bare directive is never allowed.
 - `no-inline-object-types` (TypeScript only) reports a type literal with members anywhere but directly under a type

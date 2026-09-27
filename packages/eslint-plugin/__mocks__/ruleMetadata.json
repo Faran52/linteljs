@@ -1,4 +1,30 @@
 {
+  "chain-call-newline": {
+    "messages": {
+      "callOnNewline": "Put each call in this chain on its own line."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "maxLineLength": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 120
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "layout",
+    "fixable": "whitespace",
+    "docs": {
+      "fixShape": "whitespace",
+      "language": "universal",
+      "recommended": true,
+      "description": "Put each call on its own line once a chain has two calls or a callback with a body."
+    }
+  },
   "comment-delimiter": {
     "messages": {
       "useSlashes": "Use `//` lines for a JSDoc block of one or two lines.",

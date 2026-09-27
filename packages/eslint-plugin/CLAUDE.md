@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-`@linteljs/eslint-plugin`. A published ESLint plugin: 22 rules for vertical layout, comment shape,
+`@linteljs/eslint-plugin`. A published ESLint plugin: 23 rules for vertical layout, comment shape,
 import hygiene, modern idioms in TypeScript and React, and React Native accessibility. Public repo,
 published to npm, so everything in it is outward-facing.
 
