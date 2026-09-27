@@ -59,5 +59,3 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     ...astroRules,
   ];
 };
-
-export default composeConfig;

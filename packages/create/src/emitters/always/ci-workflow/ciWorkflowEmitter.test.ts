@@ -5,11 +5,11 @@ import {
   it,
 } from 'vitest';
 
-import { type PackageManager } from '@answers';
-
 import { buildScripts } from '../utils/scriptUtils';
 
 import { ciWorkflowEmitter, emitCiWorkflow } from './ciWorkflowEmitter';
+
+import type { PackageManager } from '@config/types';
 
 describe('emitCiWorkflow', () => {
   it('runs the same gate the project runs locally', () => {

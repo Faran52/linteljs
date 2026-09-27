@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 import { MANAGER_BINARIES } from '@config/constants';
 
-import type { PackageManager } from '@answers';
+import type { PackageManager } from '@config/types';
 
 /**
  * What the manager answers when asked its own version, or `undefined` when it is not on PATH. Presence and version

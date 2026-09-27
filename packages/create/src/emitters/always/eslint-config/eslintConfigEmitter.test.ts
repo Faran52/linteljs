@@ -7,20 +7,21 @@ import {
 
 import { valuesOf } from '@utils/objectUtils';
 
-import {
-  ANSWERS,
-  type Answers,
-  type Data,
-  type HostedFramework,
-  type Library,
-  type Router,
-  type Styling,
-  type TargetId,
-  type Testing,
-} from '@answers';
-import { FOLDER_ROUTED } from '@targets/constants';
+import { ANSWERS } from '@answers';
+import { FOLDER_ROUTED } from '@targets';
 
 import { emitEslintConfig, eslintConfigEmitter } from './eslintConfigEmitter';
+
+import type {
+  Answers,
+  Data,
+  HostedFramework,
+  Library,
+  Router,
+  Styling,
+  TargetId,
+  Testing,
+} from '@config/types';
 
 interface AnswerOverrides {
   target?: TargetId;

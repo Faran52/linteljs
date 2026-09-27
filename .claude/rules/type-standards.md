@@ -22,9 +22,10 @@ What follows is only where this repository differs, and why.
 - **`node:fs/promises` over sync `node:fs`.** Preferred wherever the calling context is or can be
   async. Sync calls stay only where the contract is synchronous: a resolver feeding `spawnSync`,
   ESLint layer construction, and the small spawned gate scripts.
-- **`unknown`.** Permitted where the standard permits it: the input of a narrowing type guard, the
-  `JSON.parse` result that guard exists to narrow, and a dynamic `import()` namespace, which is the
-  same boundary. `scripts/checkBannedPatterns.ts` recognises those three spellings and nothing else,
+- **`unknown`.** Permitted where the standard permits it: the input of a narrowing type guard (and
+  the guard's own type, where a helper such as `parsedAs` takes one), the `JSON.parse` result that
+  guard exists to narrow, and a dynamic `import()` namespace, which is the same boundary.
+  `scripts/checkBannedPatterns.ts` recognises those spellings and nothing else,
   which is narrower than the prose grant on purpose: see below for what it cannot enforce.
 - **Casts.** Five survive in `eslint-plugin`, listed in that package's `CLAUDE.md`.
   Each narrows an ESLint node to the shape the traversal actually hands over. No new ones, and
@@ -81,8 +82,9 @@ boundary legal is that it is *narrowed before use*, and no regex can see that. A
 it tells you which. Two conclusions follow:
 
 - Where the narrowing can be spelled as a predicate, spell it that way. `fixPass.ts` narrows
-  ESLint's JSON output with `isFixReport(value): value is EslintFixResult[]` over an annotated
-  parse, which is both granted shapes and no exemption.
+  ESLint's JSON output with `isFixReport(value): value is EslintFixResult[]`, handed to
+  `utils/objectUtils.ts`'s `parsedAs` over an annotated parse, which is granted shapes and no
+  exemption.
 - Where it genuinely cannot, the file joins the skip list, with its reason in the table above.
   `meta.test.ts` is that case, and widening a pattern to cover it would grant the escape hatch
   everywhere to spare one file a line.

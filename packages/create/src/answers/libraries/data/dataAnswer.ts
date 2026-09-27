@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Data = keyof typeof dataAnswer.values;
+import type { Data } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 /**
  * Its own field, like the form library and `styling`: TanStack Query and RTK Query are the same job, so at most one
@@ -32,4 +31,4 @@ export const dataAnswer = {
       },
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<Data>;

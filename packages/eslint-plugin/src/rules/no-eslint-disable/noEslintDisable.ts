@@ -1,6 +1,9 @@
-import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
-import { optionsOf, type RuleContext } from '../../utils/ruleUtils.ts';
+import {
+  createRule,
+  optionsOf,
+  type RuleContext,
+} from '../../utils/ruleUtils.ts';
 
 interface NoEslintDisableOptions {
   allowRules: string[];

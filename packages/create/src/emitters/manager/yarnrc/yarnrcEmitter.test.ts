@@ -4,19 +4,20 @@ import {
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type Form,
-  type Library,
-  type Router,
-  type Styling,
-  type TargetId,
-} from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { HEAD } from './constants';
 import { emitYarnrc, yarnrcEmitter } from './yarnrcEmitter';
+
+import type {
+  Answers,
+  Data,
+  Form,
+  Library,
+  Router,
+  Styling,
+  TargetId,
+} from '@config/types';
 
 interface AnswerOverrides {
   target?: TargetId;

@@ -11,14 +11,15 @@ import {
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type Browser,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-} from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { webextensionTarget } from './webextensionTarget';
+
+import type {
+  Answers,
+  Browser,
+  HostedFramework,
+} from '@config/types';
 
 const extensionAnswers = (overrides: Partial<Answers> = {}): Answers => {
   return {

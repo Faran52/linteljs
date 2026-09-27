@@ -1,7 +1,6 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
 import {
-  type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,

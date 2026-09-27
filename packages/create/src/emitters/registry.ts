@@ -2,6 +2,7 @@ import { EMPTY_PROJECT, MANAGED_PATH } from '@config/constants';
 import {
   type Artifact,
   type Emitter,
+  type HostedAnswers,
   type ProjectShape,
 } from '@config/types';
 
@@ -45,8 +46,6 @@ import { vitestConfigEmitter } from './testing/vitest-config/vitestConfigEmitter
 import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter';
 import { emitted } from './utils/artifactUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
-
-import type { HostedAnswers } from '@answers';
 
 /**
  * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once

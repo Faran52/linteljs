@@ -7,7 +7,7 @@ import {
 import { isValueOf } from '@utils/objectUtils';
 import { rankOf } from '@utils/versionUtils';
 
-import type { PackageManager } from '@answers';
+import type { PackageManager } from '@config/types';
 
 export interface DetectedManager {
   name: PackageManager;

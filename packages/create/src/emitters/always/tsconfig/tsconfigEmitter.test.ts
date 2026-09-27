@@ -7,18 +7,7 @@ import {
 
 import { valuesOf } from '@utils/objectUtils';
 
-import {
-  ANSWERS,
-  type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-  type Library,
-  type Router,
-  type Styling,
-  type TargetId,
-  type Testing,
-} from '@answers';
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
 import { emitNuxtConfig } from '../../target/nuxt-config/nuxtConfigEmitter';
 import { buildAliases } from '../../utils/aliasUtils';
@@ -29,6 +18,17 @@ import {
   emitTsconfig,
   tsconfigEmitter,
 } from './tsconfigEmitter';
+
+import type {
+  Answers,
+  Data,
+  HostedFramework,
+  Library,
+  Router,
+  Styling,
+  TargetId,
+  Testing,
+} from '@config/types';
 
 interface AnswerOverrides {
   hostedFramework?: HostedFramework;

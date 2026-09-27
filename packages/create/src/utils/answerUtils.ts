@@ -1,8 +1,10 @@
-import type { Framework } from '@config/types';
-import type { Library } from '../libraries/libraries/librariesAnswer';
-import type { Answers } from '../registry';
-import type { Browser } from '../target/browser/browserAnswer';
-import type { Surface } from '../target/surfaces/surfacesAnswer';
+import type {
+  Answers,
+  Browser,
+  Framework,
+  Library,
+  Surface,
+} from '@config/types';
 
 // What an older config means by saying nothing.
 const DEFAULT_SURFACES: Surface[] = ['popup', 'background'];

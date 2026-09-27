@@ -2,9 +2,9 @@ import { hostedAnswersFor } from '@mocks/answersFor';
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers } from '@answers';
-
 import { emitHtmlEntry, htmlEntryEmitter } from './htmlEntryEmitter';
+
+import type { Answers } from '@config/types';
 
 /*
  * The document whole. The project name is in the title, which is why it is written rather than copied; the language

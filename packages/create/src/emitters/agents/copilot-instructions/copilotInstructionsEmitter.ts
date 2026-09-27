@@ -1,9 +1,7 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
 import { adapterArtifact } from '../utils/adapterUtils';
 import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
-
-import type { Answers } from '@answers';
 
 export const copilotArtifacts = (answers: Answers): Artifact[] => {
   return [

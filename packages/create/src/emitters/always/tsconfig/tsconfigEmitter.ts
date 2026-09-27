@@ -1,13 +1,11 @@
 import { mapValues } from 'es-toolkit';
 
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
 import { targetFor, type TsconfigPlugin } from '@targets';
 
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
-
-import type { Answers } from '@answers';
 
 // `noUnusedLocals`/`noUnusedParameters` are absent: `unused-imports` owns that, and both would double-report.
 

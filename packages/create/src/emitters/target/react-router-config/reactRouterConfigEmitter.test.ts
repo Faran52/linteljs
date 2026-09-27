@@ -7,9 +7,9 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers } from '@answers';
-
 import { emitReactRouterConfig, reactRouterConfigEmitter } from './reactRouterConfigEmitter';
+
+import type { Answers } from '@config/types';
 
 const targetsOf = (overrides: Partial<Answers>): string[] => {
   return reactRouterConfigEmitter({

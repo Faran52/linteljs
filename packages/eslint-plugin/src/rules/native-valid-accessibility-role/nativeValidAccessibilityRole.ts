@@ -1,11 +1,9 @@
-import { createRule } from '../../types.ts';
 import {
   attributesOf,
   findProp,
   literalValueOf,
 } from '../../utils/jsxUtils.ts';
-
-import type { RuleNode } from '../../utils/ruleUtils.ts';
+import { createRule, type RuleNode } from '../../utils/ruleUtils.ts';
 
 /**
  * `AccessibilityRole` from react-native 0.87.1, `Libraries/Components/View/ViewAccessibility.d.ts`. Read off the

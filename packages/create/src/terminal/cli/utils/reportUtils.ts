@@ -5,7 +5,11 @@ import {
   RUN_PREFIX,
   STAGES,
 } from '@config/constants';
-import { type RunOutput, type Stage } from '@config/types';
+import {
+  type PackageManager,
+  type RunOutput,
+  type Stage,
+} from '@config/types';
 
 import {
   SPINNER_FRAMES,
@@ -14,7 +18,6 @@ import {
   STAGE_WIDTH,
 } from '../constants';
 
-import type { PackageManager } from '@answers';
 import type { PipelineOptions } from '@pipeline';
 import type { CliOptions } from './argvUtils';
 

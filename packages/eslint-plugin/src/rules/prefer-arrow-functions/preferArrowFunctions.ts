@@ -1,10 +1,10 @@
-import { createRule } from '../../types.ts';
 import {
   declaredVariablesOf,
   physicalFilenameOf,
   sourceCodeOf,
 } from '../../utils/compatUtils.ts';
 import {
+  createRule,
   FUNCTION_TYPES,
   mustFind,
   optionsOf,

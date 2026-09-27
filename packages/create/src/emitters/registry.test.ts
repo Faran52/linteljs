@@ -26,20 +26,20 @@ import {
 } from 'vitest';
 
 import { EMPTY_PROJECT, MANAGED_PATH } from '@config/constants';
-import { type Artifact } from '@config/types';
-
-import { valuesOf } from '@utils/objectUtils';
-
 import {
   type Agent,
-  ANSWERS,
+  type Artifact,
   type Data,
   type HostedAnswers,
   type Library,
   type PackageManager,
   type TargetId,
   type Testing,
-} from '@answers';
+} from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS } from '@answers';
 import {
   managedPathsReader,
   shippedAssetsReader,

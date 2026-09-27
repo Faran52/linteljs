@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import {
   ancestorsOf,
   physicalFilenameOf,
@@ -7,6 +6,7 @@ import {
 } from '../../utils/compatUtils.ts';
 import { getIndent, type Located } from '../../utils/layoutUtils.ts';
 import {
+  createRule,
   type Fixer,
   isDirective,
   mustFind,

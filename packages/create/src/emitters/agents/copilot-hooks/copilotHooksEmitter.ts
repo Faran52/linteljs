@@ -1,8 +1,6 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
 import { emitted } from '../../utils/artifactUtils';
-
-import type { Answers } from '@answers';
 
 interface CopilotHook {
   type: 'command';

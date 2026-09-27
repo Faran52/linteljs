@@ -4,19 +4,15 @@ import { answersFor } from '@mocks/answersFor';
 
 import { valuesOf } from '@utils/objectUtils';
 
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import {
-  ANSWERS,
-  type Answers,
-  DEFAULT_ANSWERS,
-  type TargetId,
-} from '@answers';
+  type StarterFile,
+  type StarterTest,
+  type TargetBuilder,
+  type TargetRecord,
+} from '@targets';
 
-import type { TargetBuilder } from '@targets/registry';
-import type {
-  StarterFile,
-  StarterTest,
-  TargetRecord,
-} from '@targets/types';
+import type { Answers, TargetId } from '@config/types';
 
 export type Condition = {
   readonly [K in keyof Answers]?: typeof ANSWERED | readonly Answers[K][];

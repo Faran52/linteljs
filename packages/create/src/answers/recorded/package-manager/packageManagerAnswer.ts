@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type PackageManager = keyof typeof packageManagerAnswer.values;
+import type { PackageManager } from '@config/types';
+import type { ChoiceRecord } from '../../types';
 
 // Never asked: the manager that invoked the CLI, detected from the host. The default is the placeholder that
 // detection overwrites before anything reads it.
@@ -18,4 +17,4 @@ export const packageManagerAnswer = {
     'bun': { label: 'Bun' },
   },
   default: 'pnpm',
-} as const satisfies AnswerRecord;
+} as const satisfies ChoiceRecord<PackageManager>;

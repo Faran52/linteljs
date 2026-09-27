@@ -1,4 +1,4 @@
-import { hasLibrary } from '@answers/utils/answerUtils';
+import { hasLibrary } from '@utils/answerUtils';
 
 import {
   FOLDER_ROUTED,
@@ -28,7 +28,7 @@ import {
   SHARED,
 } from './constants';
 
-import type { Answers } from '@answers/registry';
+import type { Answers } from '@config/types';
 import type { TargetBuilder } from '../registry';
 import type {
   StarterFile,

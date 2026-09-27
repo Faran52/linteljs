@@ -20,16 +20,16 @@ import {
   vi,
 } from 'vitest';
 
-import { type Stage } from '@config/types';
-
 import {
   type Agent,
-  CONFIG_PATH,
   type Library,
   type PackageManager,
   type Plugin,
+  type Stage,
   type TargetId,
-} from '@answers';
+} from '@config/types';
+
+import { CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 

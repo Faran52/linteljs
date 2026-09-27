@@ -5,22 +5,21 @@ import {
   it,
 } from 'vitest';
 
-import { type Artifact } from '@config/types';
-
-import { valuesOf } from '@utils/objectUtils';
-
 import {
   type Agent,
-  ANSWERS,
   type Answers,
+  type Artifact,
   type Data,
-  DEFAULT_ANSWERS,
   type Library,
   type Styling,
   type TargetId,
   type Testing,
   type TypeSafety,
-} from '@answers';
+} from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
 import { linteljsPluginEmitter, referenceArtifacts } from './linteljsPluginEmitter';

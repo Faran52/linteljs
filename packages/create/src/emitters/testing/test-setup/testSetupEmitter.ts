@@ -1,6 +1,11 @@
-import { type Artifact, type ProjectShape } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type ProjectShape,
+} from '@config/types';
 
-import { type Answers, hasTests } from '@answers';
+import { hasTests } from '@utils/answerUtils';
+
 import { targetFor, type TargetRecord } from '@targets';
 
 import { joined } from '../../utils/artifactUtils';

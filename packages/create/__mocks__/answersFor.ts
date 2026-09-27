@@ -1,10 +1,8 @@
 import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
 
-import {
-  type Answers,
-  DEFAULT_ANSWERS,
-  type HostedAnswers,
-} from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
+
+import type { Answers, HostedAnswers } from '@config/types';
 
 export const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   return {

@@ -1,11 +1,12 @@
-import { type Artifact, type ProjectShape } from '@config/types';
-
 import {
   type Answers,
+  type Artifact,
   type Browser,
-  browsersOf,
-  hasSurface,
-} from '@answers';
+  type ProjectShape,
+} from '@config/types';
+
+import { browsersOf, hasSurface } from '@utils/answerUtils';
+
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';

@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
@@ -8,7 +7,11 @@ import {
   sameLine,
   spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
-import { mustFind, rebuildLosesComments } from '../../utils/ruleUtils.ts';
+import {
+  createRule,
+  mustFind,
+  rebuildLosesComments,
+} from '../../utils/ruleUtils.ts';
 
 import type { AST } from 'eslint';
 

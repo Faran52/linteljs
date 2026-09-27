@@ -14,13 +14,11 @@ import {
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-} from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { astroTarget } from './astroTarget';
+
+import type { Answers, HostedFramework } from '@config/types';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
   return {

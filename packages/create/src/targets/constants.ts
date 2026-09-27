@@ -1,5 +1,9 @@
-import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
-import type { AliasMap, NamingMap } from '@config/types';
+import {
+  type AliasMap,
+  type HostedFramework,
+  type NamingMap,
+} from '@config/types';
+
 import type { FrameworkParts, PluginSpec } from './types';
 
 // The glob vocabulary `check-file` is given, and the three shapes the naming tables on the records compose out

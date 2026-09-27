@@ -1,5 +1,5 @@
-import { createRule } from '../../types.ts';
 import {
+  createRule,
   mustFind,
   optionsOf,
   type RuleNode,

@@ -1,11 +1,11 @@
+import { type HostedFramework, type NamingMap } from '@config/types';
+
 import {
   COMPONENT,
   DECLARATION,
   PARTS,
 } from '../constants';
 
-import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
-import type { NamingMap } from '@config/types';
 import type { FrameworkParts } from '../types';
 
 export const partsFor = (framework: HostedFramework): FrameworkParts => {

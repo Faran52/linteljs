@@ -12,6 +12,8 @@ when a version's change lives in a sibling it is described there instead:
 
 - **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
   subpath is gone and `DefineConfigOptions` is `ComposeConfigOptions`. Change the import; the options are the same.
+  It is a named export only: `import { composeConfig } from '@linteljs/eslint-config/compose-config'`, with no
+  default export beside it.
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
   `eslint-plugin-jsx-a11y`. Install the new peer and rename `jsx-a11y/*` overrides to `jsx-a11y-x/*`.
 - **`typescript` `>=5` is a required peer.**

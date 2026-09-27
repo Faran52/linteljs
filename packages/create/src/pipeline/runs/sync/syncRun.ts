@@ -6,7 +6,7 @@ import {
 
 import { MANAGED_PATH } from '@config/constants';
 
-import { type HostedAnswers, LEGACY_CONFIG_PATH } from '@answers';
+import { LEGACY_CONFIG_PATH } from '@answers';
 import {
   artifactWriter,
   entryExists,
@@ -20,6 +20,8 @@ import {
 } from '@disk';
 import { buildArtifacts } from '@emitters';
 import { gitSpawn } from '@spawns';
+
+import type { HostedAnswers } from '@config/types';
 
 export type SyncStatus = 'unchanged' | 'changed' | 'missing' | 'obsolete';
 

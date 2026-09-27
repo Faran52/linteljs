@@ -1,7 +1,6 @@
 import { hasForm, pressable } from './gateUtils';
 
-import type { Answers } from '@answers/registry';
-import type { TargetId } from '@answers/target/target/targetAnswer';
+import type { Answers, TargetId } from '@config/types';
 import type { StarterFile } from '../types';
 
 /*

@@ -1,5 +1,8 @@
-import type { PackageManager } from '@answers/recorded/package-manager/packageManagerAnswer';
-import type { ProjectShape, Stage } from './types';
+import {
+  type PackageManager,
+  type ProjectShape,
+  type Stage,
+} from './types';
 
 /**
  * The floors a generated project's own files need, refused below rather than installed, so a downstream tool does

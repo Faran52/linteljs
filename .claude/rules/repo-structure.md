@@ -53,9 +53,9 @@ aliases it duplicates instead of importing carry a comment saying so.
 
   ```
   answers/    what the user chose. Reaches targets/ for the slot check.
-  targets/    what linteljs knows: the records, the registry, the naming policy. Reaches nothing.
-  config/     data and only data: the types, constants and tables no ring owns.
-  utils/      what every ring hand-rolled otherwise. Reaches nothing.
+  targets/    what linteljs knows: the records, the registry, the naming policy. Reaches utils/ and config/.
+  config/     data and only data: the types, constants and tables no ring owns. Reaches nothing.
+  utils/      what every ring hand-rolled otherwise. Reaches config/'s types.
   emitters/   answers + targets into file text. Reaches nothing.
   terminal/   argv and the terminal.
   disk/       reading and writing files.
@@ -113,20 +113,22 @@ aliases it duplicates instead of importing carry a comment saying so.
   directory fails.
 
   A module that writes no file is not an emitter. `registry.ts` holds the two lists and the reading
-  of each, and `index.ts` is the barrel the outer rings take the ring through; nothing else sits at
-  that root. `buildArtifacts` appends one artifact of its own, the record of what it owns that
-  `plugins/linteljs/managed.json` carries, because that is a fact about the list rather than a
+  of each, `index.ts` is the barrel the outer rings take the ring through, and `constants.ts` holds
+  the tables several subjects read; nothing else sits at that root. `buildArtifacts` appends one
+  artifact of its own, the record of what it owns that `plugins/linteljs/managed.json` carries, because that is a fact about the list rather than a
   member of it and an emitter would have to leave itself out of its own input.
 
   `emitters/utils/` is what every subject in that ring reads: `artifactUtils.ts` builds the three
   content shapes, `managedUtils.ts` derives the record `registry.ts` appends, `shapeUtils.ts`
   picks a project's own spelling of a file, `importUtils.ts` sorts the imports a config writes,
-  `stylingUtils.ts` spells the styling plugin, and `aliasUtils.ts` derives the path aliases. The dependency ranges are
-  `always/package-json/constants.ts`, a table one subject owns.
+  `stylingUtils.ts` spells the styling plugin, `aliasUtils.ts` derives the path aliases, and `packageJsonUtils.ts`
+  derives a project's dependencies, which `package-json/`, `yarnrc/` and `pnpm-workspace/` all read. The
+  dependency ranges, `VERSIONS`, and the tables that derivation reads are the ring's `constants.ts`; what only
+  `package-json/` reads, `SUPERSEDED`, stays in that subject's own.
 
   `src/config/` is data, and only data, in two files: `types.ts` is the vocabulary every ring
-  shares, being the artifact and its stages, the emitter signature and the shape of a project on
-  disk; `constants.ts` is every value, being the stage order, the empty project, the managed path,
+  shares, being the answer unions and `Answers`, the artifact and its stages, the emitter signature
+  and the shape of a project on disk; `constants.ts` is every value, being the stage order, the empty project, the managed path,
   the engines a project declares and how each manager is asked to run a script. A function goes to a `utils/` at the level of its readers rather than sitting
   beside the type it builds, so nothing in `src/config/` carries a suite: a table asserted equal to
   itself proves nothing, and what is worth checking about one is a fact about the code that reads
@@ -138,7 +140,15 @@ aliases it duplicates instead of importing carry a comment saying so.
   share is the question of whether a parsed value is an object at all. `objectUtils.ts`'s `valuesOf`
   is the same story: a record's own `values` needed it first, and it carries nothing record-shaped,
   so every ring that reads a `Record`'s keys as a typed union reaches for it now instead of writing
-  its own `Object.keys(...) as V[]`.
+  its own `Object.keys(...) as V[]`. `parsedAs` is the parse-or-null four JSON readers each wrote out,
+  taking the reader's own guard. `answerUtils.ts` is the small predicates over `Answers` that targets
+  and emitters both read, `hasLibrary`, `hasSurface` and the rest.
+
+  The four inner rings point one way: `answers/` reads `targets/`, `targets/` reads `utils/` and
+  `config/`, `utils/` reads `config/`'s types, and `config/` reads nothing. That is why the answer
+  unions and `Answers` sit in `config/types.ts` rather than beside their records: a target record
+  reads answers and an answer's `slot` reads a target, and each record `satisfies` its own union so
+  the two spellings cannot drift. `answers/registry.test.ts` holds `Answers` to one field per record.
 
   Beyond the standard's direction rule, the emitters stay free of `switch (target)`: the per-target
   record carries the difference, which is why `targets/<id>/<id>Target.ts` is the file that grows.
@@ -158,7 +168,7 @@ aliases it duplicates instead of importing carry a comment saying so.
   since a label is data the prompt and the schema both read rather than a terminal concern.
 
   `registry.ts` holds `ANSWERS`, one line per record in ask order, and only what derives from the
-  list itself: `AnswerKey`, `Answers`, `LinteljsConfig` and `DEFAULT_ANSWERS`, the same shape
+  list itself: `AnswerKey`, `LinteljsConfig` and `DEFAULT_ANSWERS`, the same shape
   `538fa34` gave `targets/registry.ts`. It is code rather than a table, so `registry.test.ts` holds each
   record filed under its own key and `DEFAULT_ANSWERS` to a config the parser accepts. `constants.ts` holds the schema URLs and the config path, and
   `index.ts` is the barrel the outer rings take the ring through. `meta.test.ts` holds the files to
@@ -172,12 +182,11 @@ aliases it duplicates instead of importing carry a comment saying so.
   `configUtils.ts` is `parseLinteljsConfig` and everything under it, kept out of `registry.ts` so the
   list and the parsing of a whole file stay two files rather than one that does both;
   `schemaUtils.ts` generates the published JSON schema from the records themselves, so the schema
-  cannot drift from what a config actually accepts; `answerUtils.ts` is the small predicates more
-  than one emitter reads, `hasLibrary`, `hasSurface` and the rest.
+  cannot drift from what a config actually accepts.
 
-  `answers/utils/configUtils.ts` value-imports `targetFor` from `targets/` for the `slot` and `only`
-  checks its parser needs, which is the one edge `create-rings` allows: both are inner rings, and the
-  rule only stops an inner ring reaching an outer one.
+  `answers/utils/configUtils.ts` value-imports `targetFor` from the `targets/` barrel for the `slot`
+  and `only` checks its parser needs. `create-rings` only stops an inner ring reaching an outer one;
+  the order among the inner four is held by the imports themselves.
 
 - **`eslint-plugin` groups by rule id, not by ring.** `src/rules/<kebab-rule-id>/` holds the rule
   file named for its single export, its test, and `README.md`. The directory name is the id, so the

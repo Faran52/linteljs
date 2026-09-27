@@ -9,7 +9,6 @@ import { valuesOf } from '@utils/objectUtils';
 
 import {
   ANSWERS,
-  type Answers,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
@@ -18,6 +17,8 @@ import {
 import { targetFor } from '@targets';
 
 import { targetCases } from './matrix';
+
+import type { Answers } from '@config/types';
 
 // Only the answers are read, so the cases arrive as the narrowest thing that carries them.
 interface Answered {

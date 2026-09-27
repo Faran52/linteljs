@@ -1,3 +1,8 @@
+export {
+  FIX_SHAPES,
+  RULE_LANGUAGES,
+  TYPESCRIPT_FILES,
+} from './constants.ts';
 export type {
   LegacyPreset,
   LintelConfigs,
@@ -15,9 +20,4 @@ export type {
   FixShape,
   LintelRuleModule,
   RuleLanguage,
-} from './types.ts';
-export {
-  FIX_SHAPES,
-  RULE_LANGUAGES,
-  TYPESCRIPT_FILES,
 } from './types.ts';

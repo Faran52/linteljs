@@ -186,16 +186,12 @@
     "eslint-plugin-vue": "^10.11.1",
     "eslint-plugin-vuejs-accessibility": "^2.6.0",
     "next": "^16.3.6",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "svelte": "catalog:",
     "svelte-eslint-parser": "catalog:",
     "tailwindcss": "^4.3.3",
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "vue": "^3.5.43",
     "vue-eslint-parser": "catalog:"
   },
   "peerDependencies": {

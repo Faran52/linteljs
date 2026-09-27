@@ -1,10 +1,11 @@
-import { type Artifact } from '@config/types';
-
 import {
   type Answers,
-  hasTests,
+  type Artifact,
   type TargetId,
-} from '@answers';
+} from '@config/types';
+
+import { hasTests } from '@utils/answerUtils';
+
 import {
   type StarterFile,
   type StarterTest,

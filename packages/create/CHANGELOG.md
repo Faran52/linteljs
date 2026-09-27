@@ -78,6 +78,8 @@ when a version's change lives in a sibling it is described there instead:
 - `stylelint-order` is an explicit dev dependency, since `stylelint-config-recess-order` peers on it.
 - A config whose single choice names an inherited property, such as `"target": "toString"`, is refused.
 - A recorded `resolveConditions` writes the `resolver` option as a block, within `max-len`.
+- The emitted `checkBannedPatterns.ts` accepts a type guard's own type, `(value: unknown) => value is T`, as a
+  parameter or an alias, so a parse helper that takes its guard as an argument passes the floor.
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
 
 ## 1.5.3

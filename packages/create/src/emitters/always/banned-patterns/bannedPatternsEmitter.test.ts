@@ -8,14 +8,15 @@ import {
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type TargetId,
-  type TypeSafety,
-} from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
 
 import { bannedPatternsEmitter, checkerArtifact } from './bannedPatternsEmitter';
+
+import type {
+  Answers,
+  TargetId,
+  TypeSafety,
+} from '@config/types';
 
 // The file the artifact copies from, read the way `shippedAssetsReader` reads it.
 const SHIPPED = join(TEMPLATES_ROOT, 'project/scripts/checkBannedPatterns.ts');

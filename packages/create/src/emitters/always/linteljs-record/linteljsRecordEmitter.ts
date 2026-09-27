@@ -1,9 +1,9 @@
-import { type Emitter } from '@config/types';
+import { type Emitter, type HostedAnswers } from '@config/types';
 
-import { ANSWERS, type HostedAnswers } from '@answers';
+import { ANSWERS } from '@answers';
 
+import { VERSIONS } from '../../constants';
 import { emitted } from '../../utils/artifactUtils';
-import { VERSIONS } from '../package-json/constants';
 
 import { answerRows, stackRows } from './utils/recordUtils';
 

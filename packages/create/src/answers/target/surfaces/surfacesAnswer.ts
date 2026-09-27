@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Surface = keyof typeof surfacesAnswer.values;
+import type { Surface } from '@config/types';
+import type { OptionalMultiRecord } from '../../types';
 
 // `minimum` stays unset: the interactive prompt requires one pick on its own, but a config or flag may still say
 // `surfaces: []`, which is what an older config means by having none of this at all.
@@ -27,4 +26,4 @@ export const surfacesAnswer = {
       hint: 'A tab inside the browser\'s developer tools',
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalMultiRecord<Surface>;

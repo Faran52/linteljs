@@ -1,10 +1,10 @@
 import {
+  type Answers,
   type Artifact,
   type ComposeConfigOptions,
   type LibraryLayer,
 } from '@config/types';
 
-import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
 import { buildAliases } from '../../utils/aliasUtils';

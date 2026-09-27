@@ -1,10 +1,7 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
-import {
-  type Answers,
-  hasLibrary,
-  hasTests,
-} from '@answers';
+import { hasLibrary, hasTests } from '@utils/answerUtils';
+
 import { targetFor } from '@targets';
 
 import { copied } from '../../utils/artifactUtils';

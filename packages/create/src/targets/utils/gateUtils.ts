@@ -1,4 +1,4 @@
-import type { Answers } from '@answers/registry';
+import type { Answers } from '@config/types';
 
 // The gates several records read, one answer each, which is what keeps a starter a sum rather than a product.
 export const hasStore = (answers: Answers): boolean => {

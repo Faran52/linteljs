@@ -1,4 +1,6 @@
-import { DEFAULT_ANSWERS, type HostedAnswers } from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
+
+import type { HostedAnswers } from '@config/types';
 
 // What a run hands the stages: `DEFAULT_ANSWERS` records no Node, and every route fills one before writing.
 export const HOSTED_DEFAULTS: HostedAnswers = {

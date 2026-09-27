@@ -5,13 +5,15 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import {
   coveringSubset,
   pairsOf,
   type PairwiseCase,
 } from './pairwiseUtils';
+
+import type { Answers } from '@config/types';
 
 const caseFor = (overrides: Partial<Answers>): PairwiseCase => {
   return {

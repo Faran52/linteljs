@@ -1,4 +1,4 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
 import { merged } from '../../utils/artifactUtils';
 
@@ -7,8 +7,6 @@ import {
   emitPnpmWorkspace,
   peerRulesBlock,
 } from './utils/emitUtils';
-
-import type { Answers } from '@answers';
 
 // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
 const SUPERSEDED_KEY = 'ignoredBuiltDependencies:';

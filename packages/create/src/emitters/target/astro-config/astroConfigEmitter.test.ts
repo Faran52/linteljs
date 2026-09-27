@@ -4,17 +4,18 @@ import {
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-  type Library,
-  type Styling,
-  type TargetId,
-} from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { astroConfigEmitter, emitAstroConfig } from './astroConfigEmitter';
+
+import type {
+  Answers,
+  Data,
+  HostedFramework,
+  Library,
+  Styling,
+  TargetId,
+} from '@config/types';
 
 interface AnswerOverrides {
   target?: TargetId;

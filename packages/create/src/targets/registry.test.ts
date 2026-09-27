@@ -8,23 +8,23 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
-
 import {
-  ANSWERS,
   type Answers,
   type Browser,
-  DEFAULT_ANSWERS,
+  type Framework,
   type HostedFramework,
   type Surface,
   type TargetId,
-} from '@answers';
+} from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
-import { buildDevDependencies } from '@emitters/always/package-json/packageJsonEmitter';
+import { buildDevDependencies } from '@emitters';
 
 import { targetFor, TARGETS } from './registry';
 
-import type { Framework } from '@config/types';
 import type { TargetRecord } from './types';
 
 // Every reachable combination, labelled so a failure names the combination rather than only the target.

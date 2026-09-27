@@ -3,11 +3,6 @@ import { env, versions } from 'node:process';
 
 import { NODE_FLOOR } from '@config/constants';
 
-import {
-  type Answers,
-  type HostedAnswers,
-  type PackageManager,
-} from '@answers';
 import { entryExists, readIfPresent } from '@disk';
 import { nodeSpawn, packageManagerSpawn } from '@spawns';
 
@@ -20,6 +15,12 @@ import {
   unversionedRefusal,
   yarnFromLockfile,
 } from './utils/hostUtils';
+
+import type {
+  Answers,
+  HostedAnswers,
+  PackageManager,
+} from '@config/types';
 
 export interface Host {
   packageManager: PackageManager;

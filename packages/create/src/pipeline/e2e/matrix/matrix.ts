@@ -1,17 +1,23 @@
 import { env } from 'node:process';
 
 import {
-  ANSWERS,
   type Answers,
-  DEFAULT_ANSWERS,
   type Form,
+  type Framework,
   type HostedFramework,
-  onlyFor,
-  rendersWithReact,
   type Router,
   type TargetId,
+} from '@config/types';
+
+import { rendersWithReact } from '@utils/answerUtils';
+
+import {
+  type AnswerRecord,
+  ANSWERS,
+  DEFAULT_ANSWERS,
+  onlyFor,
 } from '@answers';
-import { targetFor } from '@targets';
+import { targetFor, type TargetRecord } from '@targets';
 
 import {
   AGENTS,
@@ -28,10 +34,6 @@ import {
   TYPE_SAFETY_CHOICES,
 } from './constants';
 import { coveringSubset } from './utils/pairwiseUtils';
-
-import type { AnswerRecord } from '@answers/types';
-import type { Framework } from '@config/types';
-import type { TargetRecord } from '@targets/types';
 
 export interface E2eCase {
   label: string;

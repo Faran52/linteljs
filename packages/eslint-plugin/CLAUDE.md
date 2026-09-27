@@ -78,7 +78,7 @@ Five steps. The type system catches a missed one in the first two, and `src/meta
 the rest.
 
 1. `src/rules/<kebab-case>/<camelCaseExport>.ts`, built with `createRule('<kebab-case>', { ... })` from
-   `src/types.ts`. `language` and `recommended` are compulsory. `fixShape` is optional and only for
+   `src/utils/ruleUtils.ts`. `language` and `recommended` are compulsory. `fixShape` is optional and only for
    a rule with a fixer: it says what that fixer may do to the token stream, and `fixerSafety.test.ts`
    is what holds it to the claim.
 2. One line in the `rules` object in `src/rules/index.ts`.
@@ -104,12 +104,13 @@ surviving mutant. Imported inside the test body it is one ordinary failure with 
 it.
 
 Code shared *between* rules lives in five modules under `src/utils`, and a helper belongs to
-exactly one of them: `ruleUtils.ts` for the names ESLint's rule API is reached through (the node
-type aliases, `mustFind`, `rangeOf`, `optionsOf`, `rebuildLosesComments`, `resolveVariable`,
-`FUNCTION_TYPES`), `layoutUtils.ts` for anything that reads or writes whitespace, `promiseChainUtils.ts` for the
+exactly one of them: `ruleUtils.ts` for the names ESLint's rule API is reached through (`createRule`,
+`docsUrl`, the node type aliases, `mustFind`, `rangeOf`, `optionsOf`, `rebuildLosesComments`,
+`resolveVariable`, `FUNCTION_TYPES`), `layoutUtils.ts` for anything that reads or writes whitespace, `promiseChainUtils.ts` for the
 fluent-chain walk the two promise rules share, `compatUtils.ts` for anything that reads an
 accessor ESLint moved between majors, and `jsxUtils.ts` for reading a JSX element: its name, its
-attributes, the value behind one, and the walk down its children. Each has a colocated test file.
+attributes, the value behind one, and the walk down its children. Each has a colocated test file. `src/types.ts` holds types only, and the published tables
+`FIX_SHAPES`, `RULE_LANGUAGES` and `TYPESCRIPT_FILES` are data in `src/constants.ts`.
 
 `jsxUtils.ts` is where the five React Native accessibility rules get their node shapes. JSX is
 absent from ESLint's ESTree types, so it describes what those rules read as structural interfaces

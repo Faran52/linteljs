@@ -1,11 +1,8 @@
+import { TYPESCRIPT_FILES } from './constants.ts';
 import { type RuleName, rules } from './rules/index.ts';
-import {
-  type LintelRuleModule,
-  type RuleLanguage,
-  TYPESCRIPT_FILES,
-} from './types.ts';
 
 import type { ESLint, Linter } from 'eslint';
+import type { LintelRuleModule, RuleLanguage } from './types.ts';
 
 // Two, and the level is the only axis. A rule's domain is carried by its id, the way `native-*` and
 // `@stylistic`'s `jsx-*` do, rather than by a field generating a preset per value.

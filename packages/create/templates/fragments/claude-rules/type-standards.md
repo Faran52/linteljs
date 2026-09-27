@@ -27,8 +27,8 @@ stops updating.
 - Never `any`, `unknown`, or `Record<string, unknown>`.
   - Carve-out: `unknown` only at a genuinely dynamic boundary with no upstream type, and only in a
     shape that shows the narrowing. Three of those are a guard's input
-    `(value: unknown): value is X`, the `JSON.parse` payload it narrows, and a dynamic `import()`
-    namespace. It must narrow before use. If an upstream type exists, type the input instead.
+    `(value: unknown): value is X` (or the guard's own type, `(value: unknown) => value is X`, where
+    a helper takes one), the `JSON.parse` payload it narrows, and a dynamic `import()` namespace. It must narrow before use. If an upstream type exists, type the input instead.
   - The fourth is a **caught value**: `catch` binds `unknown` by language rule under
     `useUnknownInCatchVariables`, so a single-argument helper turning a throw into something
     readable, `(error: unknown): string`, has no other parameter type available. Granted for the

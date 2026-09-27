@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Agent = keyof typeof agentsAnswer.values;
+import type { Agent } from '@config/types';
+import type { MultiRecord } from '../../types';
 
 export const agentsAnswer = {
   key: 'agents',
@@ -26,4 +25,4 @@ export const agentsAnswer = {
     },
   },
   default: ['claude-code'],
-} as const satisfies AnswerRecord;
+} as const satisfies MultiRecord<Agent>;

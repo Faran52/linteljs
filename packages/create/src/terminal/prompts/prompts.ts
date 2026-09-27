@@ -11,7 +11,6 @@ import {
   type AnswerKey,
   type AnswerRecord,
   ANSWERS,
-  type Answers,
   type ChoiceRecord,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
@@ -30,6 +29,8 @@ import { PROJECT_NAME_RULE } from '../constants';
 import { isValidProjectName } from '../utils/nameUtils';
 
 import { ANSWER_KEYS, RUN_CANCELLED_MESSAGE } from './constants';
+
+import type { Answers } from '@config/types';
 
 // The four value-bearing kinds `askAnswer` dispatches on. `list` and `map` carry no `prompt` on any record, both
 // being hand-edited only, so neither reaches `askAnswer`.

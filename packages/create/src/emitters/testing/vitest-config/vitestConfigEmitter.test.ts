@@ -8,20 +8,20 @@ import { EMPTY_PROJECT } from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
 
-import {
-  ANSWERS,
-  type Data,
-  DEFAULT_ANSWERS,
-  type Router,
-  type Styling,
-  type Surface,
-  type TargetId,
-  type Testing,
-} from '@answers';
+import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
 
 import { setupTestsPath } from '../../utils/shapeUtils';
 
 import { emitVitestConfig, vitestConfigEmitter } from './vitestConfigEmitter';
+
+import type {
+  Data,
+  Router,
+  Styling,
+  Surface,
+  TargetId,
+  Testing,
+} from '@config/types';
 
 interface AnswerOverrides {
   target?: TargetId;

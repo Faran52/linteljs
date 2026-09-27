@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type HostedFramework = keyof typeof hostedFrameworkAnswer.values;
+import type { HostedFramework } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 export const hostedFrameworkAnswer = {
   key: 'hostedFramework',
@@ -33,4 +32,4 @@ export const hostedFrameworkAnswer = {
       hint: 'Fine-grained signals',
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<HostedFramework>;

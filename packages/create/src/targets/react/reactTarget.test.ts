@@ -23,11 +23,13 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { COMPONENT } from '../constants';
 
 import { reactTarget } from './reactTarget';
+
+import type { Answers } from '@config/types';
 
 const recordFor = (overrides: Partial<Answers> = {}): ReturnType<typeof reactTarget> => {
   return reactTarget({

@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import {
   asElement,
   descendantElements,
@@ -10,7 +9,11 @@ import {
   openingOf,
   TOUCHABLE_COMPONENTS,
 } from '../../utils/jsxUtils.ts';
-import { optionsOf, type RuleNode } from '../../utils/ruleUtils.ts';
+import {
+  createRule,
+  optionsOf,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 interface Options {
   components: string[];

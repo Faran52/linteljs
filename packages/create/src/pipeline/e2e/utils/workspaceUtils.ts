@@ -18,7 +18,7 @@ import {
   type RunResult,
 } from './processUtils';
 
-import type { Answers, PackageManager } from '@answers';
+import type { Answers, PackageManager } from '@config/types';
 
 export const workspace = mkdtempSync(join(tmpdir(), 'linteljs-e2e-'));
 

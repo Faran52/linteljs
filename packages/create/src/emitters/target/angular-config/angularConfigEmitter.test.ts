@@ -7,9 +7,9 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type HostedAnswers } from '@answers';
-
 import { angularConfigEmitter, emitAngularConfig } from './angularConfigEmitter';
+
+import type { HostedAnswers } from '@config/types';
 
 describe('emitAngularConfig', () => {
   /*

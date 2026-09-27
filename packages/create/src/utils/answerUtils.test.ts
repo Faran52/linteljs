@@ -1,4 +1,4 @@
-import { type Answers, DEFAULT_ANSWERS } from '../registry';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import {
   browsersOf,
@@ -8,6 +8,8 @@ import {
   rendersWithReact,
   surfacesOf,
 } from './answerUtils';
+
+import type { Answers } from '@config/types';
 
 describe('rendersWithReact', () => {
   it('holds for every framework that renders with React', () => {

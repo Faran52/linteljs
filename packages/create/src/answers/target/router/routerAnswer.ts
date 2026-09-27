@@ -1,8 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-// Named ahead of the record rather than derived from `values` below: `TargetRecord.routers` is typed with this,
-// and a value's own `only` reads `target.routers`, which would otherwise need this file's own export to resolve.
-export type Router = 'react-router' | 'react-router-framework' | 'tanstack-router';
+import type { Router } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 export const routerAnswer = {
   key: 'router',
@@ -45,4 +42,4 @@ export const routerAnswer = {
       },
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<Router>;

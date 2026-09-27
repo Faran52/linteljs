@@ -4,10 +4,12 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
 import { codexMarketplaceEmitter, emitCodexMarketplace } from './codexMarketplaceEmitter';
+
+import type { Answers } from '@config/types';
 
 describe('emitCodexMarketplace', () => {
   it('declares LintelJS first and all selected plugins with exact policies', () => {

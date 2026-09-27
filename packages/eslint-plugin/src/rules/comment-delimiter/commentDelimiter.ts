@@ -1,7 +1,7 @@
-import { createRule } from '../../types.ts';
 import { physicalFilenameOf, sourceCodeOf } from '../../utils/compatUtils.ts';
 import { lineTerminatorOf } from '../../utils/layoutUtils.ts';
 import {
+  createRule,
   type Fixer,
   mustFind,
   rangeOf,

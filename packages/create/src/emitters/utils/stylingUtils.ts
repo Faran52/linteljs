@@ -1,4 +1,4 @@
-import type { Styling } from '@answers';
+import type { Styling } from '@config/types';
 import type { PluginSpec } from '@targets';
 
 // A styling plugin, with the statements that sit between a config's imports and its `export default`.

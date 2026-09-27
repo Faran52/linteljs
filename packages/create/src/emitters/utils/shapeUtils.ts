@@ -1,5 +1,6 @@
-import { type Answers } from '@answers';
 import { targetFor } from '@targets';
+
+import type { Answers } from '@config/types';
 
 // The target's own spelling where present, the project's first otherwise: a project keeping `styles/global.css`
 // beside the standard's entry was once read as the earlier-sorting one.

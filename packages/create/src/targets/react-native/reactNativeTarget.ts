@@ -1,4 +1,4 @@
-import { hasTests } from '@answers/utils/answerUtils';
+import { hasTests } from '@utils/answerUtils';
 
 import {
   COMMON_REACT_PLUGINS,
@@ -22,7 +22,7 @@ import {
   SHARED,
 } from './constants';
 
-import type { Answers } from '@answers/registry';
+import type { Answers } from '@config/types';
 import type { StarterFile, TargetRecord } from '../types';
 
 // Metro has no Tailwind pipeline of its own, so all three ship only with the answer that brings NativeWind.

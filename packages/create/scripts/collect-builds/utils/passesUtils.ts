@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { env, execPath } from 'node:process';
 
-import { parsePackageJson } from '../../../src/emitters/always/package-json/packageJsonEmitter';
+import { parsePackageJson } from '../../../src/emitters';
 import { logWarn } from '../../../templates/project/scripts/utils/loggerUtils.ts';
 
 import type { E2eRegistry } from '../../../src/pipeline/e2e/registry/registry';

@@ -1,6 +1,6 @@
-import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
+  createRule,
   type NamedNode,
   optionsOf,
   rebuildLosesComments,

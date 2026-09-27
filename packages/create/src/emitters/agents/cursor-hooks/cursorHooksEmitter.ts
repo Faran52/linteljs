@@ -1,10 +1,8 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
-import { isJsonObject } from '@utils/objectUtils';
+import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
 import { merged } from '../../utils/artifactUtils';
-
-import type { Answers } from '@answers';
 
 type HookList = [string, object[]];
 
@@ -42,20 +40,8 @@ const hooksOf = (entry: [string, unknown]): HookList => {
   })];
 };
 
-// The file where it parses to an object. Text that is not JSON holds no hooks, and nor does no file, read as `null`.
-const parsedObject = (text: string | null): object | null => {
-  try {
-    const parsed: unknown = JSON.parse(String(text));
-
-    return isJsonObject(parsed) ? parsed : null;
-  }
-  catch {
-    return null;
-  }
-};
-
 const theirHooks = (text: string | null): HookList[] => {
-  const parsed = parsedObject(text);
+  const parsed = parsedAs(text, isJsonObject);
   const hooks = parsed !== null && 'hooks' in parsed ? parsed.hooks : undefined;
 
   return isJsonObject(hooks) ? Object.entries(hooks).map(hooksOf) : [];

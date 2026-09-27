@@ -1,4 +1,5 @@
-import type { AnswerRecord } from '../../types';
+import type { Browser } from '@config/types';
+import type { OptionalMultiRecord } from '../../types';
 
 // Never asked: a fixed pair, packaged into a manifest each, so there is nothing to prompt beyond the primary
 // `browser`. Hand-edited into `linteljs.config.json` when a project needs the second one.
@@ -22,4 +23,4 @@ export const browsersAnswer = {
       hint: 'MV3 event page, loaded from about:debugging',
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalMultiRecord<Browser>;

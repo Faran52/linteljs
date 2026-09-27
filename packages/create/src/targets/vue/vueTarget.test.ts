@@ -20,9 +20,11 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { vueTarget } from './vueTarget';
+
+import type { Answers } from '@config/types';
 
 const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
   const answers: Answers = {

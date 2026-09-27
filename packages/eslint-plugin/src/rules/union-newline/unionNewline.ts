@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
@@ -8,6 +7,7 @@ import {
   sameLine,
 } from '../../utils/layoutUtils.ts';
 import {
+  createRule,
   mustFind,
   optionsOf,
   type RuleNode,

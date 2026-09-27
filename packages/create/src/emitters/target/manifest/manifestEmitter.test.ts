@@ -8,14 +8,7 @@ import { EMPTY_PROJECT } from '@config/constants';
 
 import { isJsonObject } from '@utils/objectUtils';
 
-import {
-  type Answers,
-  type Browser,
-  type Data,
-  DEFAULT_ANSWERS,
-  type Styling,
-  type Surface,
-} from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 
 import { starterSourceEmitter } from '../starter-source/starterSourceEmitter';
 
@@ -24,6 +17,14 @@ import {
   type Manifest,
   manifestEmitter,
 } from './manifestEmitter';
+
+import type {
+  Answers,
+  Browser,
+  Data,
+  Styling,
+  Surface,
+} from '@config/types';
 
 interface AnswerOverrides {
   browser?: Answers['browser'];

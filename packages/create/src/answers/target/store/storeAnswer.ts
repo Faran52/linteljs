@@ -1,15 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-// Named ahead of the record for the same reason as `Router`: `TargetRecord.stores` is typed with this, and each
-// value's own `only` reads `target.stores`, which would otherwise need this file's own export to resolve.
-export type Store
-  = 'zustand'
-    | 'redux-toolkit'
-    | 'tanstack-store'
-    | 'pinia'
-    | 'ngrx-signals'
-    | 'ngrx-store'
-    | 'nanostores';
+import type { Store } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 // A target offers the stores its framework's people actually reach for; the record says what each one is.
 export const storeAnswer = {
@@ -75,4 +65,4 @@ export const storeAnswer = {
       },
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<Store>;

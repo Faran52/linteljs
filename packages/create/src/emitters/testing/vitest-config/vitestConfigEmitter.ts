@@ -1,4 +1,8 @@
-import { type Artifact, type ProjectShape } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type ProjectShape,
+} from '@config/types';
 
 import {
   type PluginSpec,
@@ -10,8 +14,6 @@ import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
-
-import type { Answers } from '@answers';
 
 // Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
 // on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.

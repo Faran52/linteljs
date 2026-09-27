@@ -7,12 +7,8 @@ import { join } from 'node:path';
 
 import { expect } from 'vitest';
 
-import {
-  CONFIG_PATH,
-  type PackageManager,
-  parseLinteljsConfig,
-} from '@answers';
-import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
+import { CONFIG_PATH, parseLinteljsConfig } from '@answers';
+import { parsePackageJson } from '@emitters';
 
 import {
   outcome,
@@ -31,6 +27,7 @@ import {
   YARN_CLASSIC_UPSTREAM,
 } from './constants';
 
+import type { PackageManager } from '@config/types';
 import type { E2eCase } from '../matrix/matrix';
 
 // What each manager prints when an install was not clean.

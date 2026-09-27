@@ -6,12 +6,10 @@ import {
 import { stdin } from 'node:process';
 
 import {
-  type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_ANSWERS,
-  type HostedAnswers,
   parseLinteljsConfig,
 } from '@answers';
 import { entryExists, linteljsConfigReader } from '@disk';
@@ -48,6 +46,8 @@ import {
   say,
   stageReport,
 } from './utils/reportUtils';
+
+import type { Answers, HostedAnswers } from '@config/types';
 
 // What `askedFrom` answers once the host has filled what it records.
 interface HostedAsk {

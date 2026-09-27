@@ -5,13 +5,13 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers } from '@answers';
-
 import {
   type ComponentPaths,
   componentStyleModules,
   componentStyles,
 } from './styleUtils';
+
+import type { Answers } from '@config/types';
 
 // Vue's spelling: two of the four renamed, so their destinations stop being the asset's own path.
 const RENAMED: ComponentPaths = {

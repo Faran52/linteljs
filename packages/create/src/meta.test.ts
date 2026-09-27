@@ -25,13 +25,11 @@ import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
 
-import { ANSWERS } from '@answers';
+import { type AnswerRecord, ANSWERS } from '@answers';
 import { BUILD_EMITTERS, SEED_EMITTERS } from '@emitters/registry';
-import { TARGETS } from '@targets/registry';
+import { TARGETS } from '@targets';
 
 import { type Ring, RINGS } from './rings';
-
-import type { AnswerRecord } from '@answers/types';
 
 interface RingShape {
   name: Ring;
@@ -213,7 +211,7 @@ describe.each(RINGED)('$name', (ring) => {
    */
   it('exports nothing the rings outside it never take from it', () => {
     const barrel = readFileSync(join(ringDir, 'index.ts'), 'utf8');
-    const exported = [...barrel.matchAll(/export \{([^}]*)\} from/gu)].flatMap(([, names]) => {
+    const exported = [...barrel.matchAll(/export (?:type )?\{([^}]*)\} from/gu)].flatMap(([, names]) => {
       return (names ?? '').split(',');
     }).map((name) => {
       return name.replace('type ', '').trim();

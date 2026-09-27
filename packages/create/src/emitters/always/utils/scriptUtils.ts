@@ -1,7 +1,10 @@
 import { RUN_PREFIX } from '@config/constants';
 
-import { type Answers, hasTests } from '@answers';
+import { hasTests } from '@utils/answerUtils';
+
 import { targetFor } from '@targets';
+
+import type { Answers } from '@config/types';
 
 // `check` is named in the return type so callers need no unreachable `?? ''`.
 interface CheckScript {

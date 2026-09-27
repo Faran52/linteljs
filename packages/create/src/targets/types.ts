@@ -1,12 +1,12 @@
-import type { Answers } from '@answers/registry';
-import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
-import type { Router } from '@answers/target/router/routerAnswer';
-import type { Store } from '@answers/target/store/storeAnswer';
-import type { TargetId } from '@answers/target/target/targetAnswer';
-import type {
-  AliasMap,
-  Framework,
-  NamingMap,
+import {
+  type AliasMap,
+  type Answers,
+  type Framework,
+  type HostedFramework,
+  type NamingMap,
+  type Router,
+  type Store,
+  type TargetId,
 } from '@config/types';
 
 export interface TsconfigPlugin {

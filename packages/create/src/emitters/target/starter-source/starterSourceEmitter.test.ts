@@ -5,20 +5,20 @@ import {
   it,
 } from 'vitest';
 
-import { valuesOf } from '@utils/objectUtils';
-
 import {
-  ANSWERS,
   type Answers,
+  type Artifact,
   type Browser,
   type Router,
   type TargetId,
-} from '@answers';
+} from '@config/types';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
 import { starterSourceEmitter } from './starterSourceEmitter';
-
-import type { Artifact } from '@config/types';
 
 const targetsFor = (overrides: Partial<Answers> = {}): string[] => {
   return starterSourceEmitter(answersFor(overrides)).map(({ target }) => {

@@ -5,9 +5,9 @@ import {
   it,
 } from 'vitest';
 
-import { type TargetId } from '@answers';
-
 import { buildScripts } from './scriptUtils';
+
+import type { TargetId } from '@config/types';
 
 describe('buildScripts', () => {
   it('chains check through every gate the answers enable', () => {

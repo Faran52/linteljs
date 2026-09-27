@@ -1,8 +1,8 @@
 import { targetFor } from '@targets';
 
-import { allowedBuildNames } from '../../../always/package-json/packageJsonEmitter';
+import { allowedBuildNames } from '../../../utils/packageJsonUtils';
 
-import type { Answers } from '@answers';
+import type { Answers } from '@config/types';
 
 // No `packages:` key: the file exists for `allowBuilds`, where a denied build fails with ERR_PNPM_IGNORED_BUILDS.
 export const allowBuildsBlock = (answers: Answers): string => {

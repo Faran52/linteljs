@@ -1,6 +1,9 @@
-import { type Artifact } from '@config/types';
+import {
+  type Answers,
+  type Artifact,
+  type HostedFramework,
+} from '@config/types';
 
-import { type Answers, type HostedFramework } from '@answers';
 import { OUTSIDE_TESTS, targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';

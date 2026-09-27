@@ -1,9 +1,11 @@
 import { MANAGER_BINARIES, RUN_PREFIX } from '@config/constants';
 
+import { parsedAs } from '@utils/objectUtils';
+
 import { styleGlob } from '@emitters';
 import { localBinarySpawn } from '@spawns';
 
-import type { Answers } from '@answers';
+import type { Answers } from '@config/types';
 
 interface EslintFixResult {
   // Present exactly when the file was fixed.
@@ -20,21 +22,10 @@ const isFixReport = (value: unknown): value is EslintFixResult[] => {
   return Array.isArray(value);
 };
 
-const fixReportIn = (stdout: string): EslintFixResult[] | null => {
-  try {
-    const parsed: unknown = JSON.parse(stdout);
-
-    return isFixReport(parsed) ? parsed : null;
-  }
-  catch {
-    // Unparseable formatter output is not worth failing a generate over.
-    return null;
-  }
-};
-
-// `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed.
+// `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed. Unparseable
+// formatter output counts nothing rather than failing a generate.
 const parseFixReport = (stdout: string): number => {
-  const report = fixReportIn(stdout);
+  const report = parsedAs(stdout, isFixReport);
 
   return report === null
     ? 0

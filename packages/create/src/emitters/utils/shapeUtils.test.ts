@@ -7,9 +7,9 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type TargetId } from '@answers';
-
 import { projectSpelling, setupTestsPath } from './shapeUtils';
+
+import type { TargetId } from '@config/types';
 
 describe('projectSpelling', () => {
   const CANDIDATES = ['src/styles/global.css', 'src/style.css'];

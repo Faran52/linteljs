@@ -1,4 +1,4 @@
-import type { PackageManager } from '@answers';
+import type { PackageManager } from '@config/types';
 
 /**
  * Every manager, and every install the CLI spawns, reads the workspace registry from its environment. What

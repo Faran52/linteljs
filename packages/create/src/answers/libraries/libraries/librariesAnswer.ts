@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Library = keyof typeof librariesAnswer.values;
+import type { Library } from '@config/types';
+import type { MultiRecord } from '../../types';
 
 // Only what a dependency alone can be. Anything that changes what is emitted is its own field: a single select
 // hiding inside a multi select leaves the full library set an illegal value of itself.
@@ -28,4 +27,4 @@ export const librariesAnswer = {
     },
   },
   default: ['es-toolkit'],
-} as const satisfies AnswerRecord;
+} as const satisfies MultiRecord<Library>;

@@ -1,6 +1,5 @@
-import { type Artifact } from '@config/types';
+import { type Answers, type Artifact } from '@config/types';
 
-import { type Answers } from '@answers';
 import { targetFor } from '@targets';
 
 import { mergeChecker } from './utils/mergeUtils';

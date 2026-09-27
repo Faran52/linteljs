@@ -31,6 +31,9 @@ const NARROWING_GUARD = /:\s*unknown\b[^)]*\)\s*:\s*\w+\s+is\s/;
 const PARSED_JSON = /:\s*unknown\s*=\s*JSON\.parse\(/;
 const DYNAMIC_IMPORT = /:\s*unknown\s*=\s*await import\(/;
 
+// A guard's own type, as a parameter or an alias: only a real predicate on that one parameter satisfies it.
+const GUARD_TYPE = /\(\s*(\w+)\s*:\s*unknown\s*\)\s*=>\s*\1\s+is\s/;
+
 // A caught value has no distinct type, so the grant keys on the three conventional names and a single parameter.
 const CAUGHT_VALUE = /\(\s*(?:error|cause|reason)\s*:\s*unknown\s*\)/;
 
@@ -72,7 +75,7 @@ const STRICT_ONLY: BannedPattern[] = [
   {
     name: ': unknown',
     re: /:\s*unknown\b/,
-    allowed: [NARROWING_GUARD, PARSED_JSON, DYNAMIC_IMPORT, CAUGHT_VALUE, CAUGHT_IN_CHAIN],
+    allowed: [NARROWING_GUARD, GUARD_TYPE, PARSED_JSON, DYNAMIC_IMPORT, CAUGHT_VALUE, CAUGHT_IN_CHAIN],
   },
   {
     name: '=> unknown',

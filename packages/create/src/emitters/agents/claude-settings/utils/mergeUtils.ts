@@ -1,4 +1,4 @@
-import { isJsonObject } from '@utils/objectUtils';
+import { isJsonObject, parsedAs } from '@utils/objectUtils';
 
 interface MarketplaceLocation {
   source: string;
@@ -25,14 +25,7 @@ const isClaudeSettings = (value: unknown): value is ClaudeSettings => {
 // Invalid project settings read as absent, so a sync is never blocked by an editable file. No file reads as JSON
 // `null`, which is no settings either.
 const settingsIn = (text: string | null): ClaudeSettings => {
-  try {
-    const value: unknown = JSON.parse(String(text));
-
-    return isClaudeSettings(value) ? value : {};
-  }
-  catch {
-    return {};
-  }
+  return parsedAs(text, isClaudeSettings) ?? {};
 };
 
 export const mergeClaudeSettings = (emitted: string, current: string | null): string => {

@@ -1,4 +1,4 @@
-import { type PackageManager } from '@answers';
+import type { PackageManager } from '@config/types';
 
 /**
  * The lockfile a directory already has, for a run with no user agent: `--existing` and `sync` on a project

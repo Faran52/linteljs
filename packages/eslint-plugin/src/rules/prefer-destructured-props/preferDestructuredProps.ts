@@ -1,6 +1,6 @@
-import { createRule } from '../../types.ts';
 import { declaredVariablesOf } from '../../utils/compatUtils.ts';
 import {
+  createRule,
   type FunctionNode,
   type MemberExpressionNode,
   mustFind,

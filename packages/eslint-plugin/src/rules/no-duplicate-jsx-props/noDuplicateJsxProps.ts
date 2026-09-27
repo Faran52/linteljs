@@ -1,10 +1,13 @@
-import { createRule } from '../../types.ts';
 import {
   attributesOf,
   elementNameOf,
   type JsxAttribute,
 } from '../../utils/jsxUtils.ts';
-import { mustFind, type RuleNode } from '../../utils/ruleUtils.ts';
+import {
+  createRule,
+  mustFind,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 // The full text, so a namespaced name compares whole: `xlink:href` never matches plain `href`,
 // and `xlink:href` matches only itself.

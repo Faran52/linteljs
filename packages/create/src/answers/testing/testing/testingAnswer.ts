@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Testing = keyof typeof testingAnswer.values;
+import type { Testing } from '@config/types';
+import type { ChoiceRecord } from '../../types';
 
 export const testingAnswer = {
   key: 'testing',
@@ -18,4 +17,4 @@ export const testingAnswer = {
     },
   },
   default: 'vitest',
-} as const satisfies AnswerRecord;
+} as const satisfies ChoiceRecord<Testing>;

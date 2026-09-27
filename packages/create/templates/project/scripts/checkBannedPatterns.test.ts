@@ -63,6 +63,9 @@ describe('the carve-out the rule file grants', () => {
   it.each([
     ['a narrowing type guard', 'const isTarget = (value: unknown): value is Target => {\n  return true;\n};\n'],
     ['the parsed payload it narrows', 'const parsed: unknown = JSON.parse(text);\n'],
+    // A parse helper taking the guard as an argument: the parameter's type is itself a predicate.
+    ['a guard parameter', 'const parsedAs = <T>(text: string, guard: (value: unknown) => value is T): T | null => {\n'],
+    ['a guard type alias', 'type Guard<T> = (value: unknown) => value is T;\n'],
     // `import()` with a computed path is typed `any`, so binding the namespace as `unknown` is the stronger read.
     ['a dynamic import namespace', 'const loaded: unknown = await import(`./rules/${name}.ts`);\n'],
     // `catch` binds `unknown` by language rule, so a helper turning a throw into a message has no other parameter type.
@@ -82,6 +85,14 @@ describe('the carve-out the rule file grants', () => {
 
   it('still blocks an unknown binding with no boundary behind it', async () => {
     expect(await check('const loaded: unknown = other;\n')).toContain('[: unknown]');
+  });
+
+  // The guard-type grant holds only where the predicate names the parameter typed `unknown`.
+  it.each([
+    ['a callback answering a boolean', 'const f = (run: (value: unknown) => boolean): void => {\n'],
+    ['a predicate on another name', 'const f = (run: (value: unknown) => other is T): void => {\n'],
+  ])('still blocks %s', async (_label, source) => {
+    expect(await check(source)).toContain('[: unknown]');
   });
 
   /**

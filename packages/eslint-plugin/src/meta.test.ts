@@ -10,18 +10,15 @@ import {
   it,
 } from 'vitest';
 
+import { FIX_SHAPES, TYPESCRIPT_FILES } from './constants';
 import plugin, {
   configs,
   PLUGIN_NAME,
   rules,
 } from './index';
-import {
-  docsUrl,
-  FIX_SHAPES,
-  type LintelRuleModule,
-  type RuleLanguage,
-  TYPESCRIPT_FILES,
-} from './types';
+import { docsUrl } from './utils/ruleUtils';
+
+import type { LintelRuleModule, RuleLanguage } from './types';
 
 const root = join(import.meta.dirname, '..');
 

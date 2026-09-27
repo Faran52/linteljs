@@ -9,7 +9,7 @@ import { MANAGER_BINARIES } from '@config/constants';
 
 import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
 
-import type { PackageManager } from '@answers';
+import type { PackageManager } from '@config/types';
 
 export interface RunResult {
   status: number;

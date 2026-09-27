@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { env } from 'node:process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
+import { parsePackageJson } from '@emitters';
 
 import {
   CACHE_DIR,

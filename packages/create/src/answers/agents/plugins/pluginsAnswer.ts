@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Plugin = keyof typeof pluginsAnswer.values;
+import type { Plugin } from '@config/types';
+import type { MultiRecord } from '../../types';
 
 export const pluginsAnswer = {
   key: 'plugins',
@@ -25,4 +24,4 @@ export const pluginsAnswer = {
     },
   },
   default: ['ponytail', 'context7', 'frontend-design'],
-} as const satisfies AnswerRecord;
+} as const satisfies MultiRecord<Plugin>;

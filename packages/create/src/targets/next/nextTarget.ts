@@ -1,4 +1,4 @@
-import { hasLibrary } from '@answers/utils/answerUtils';
+import { hasLibrary } from '@utils/answerUtils';
 
 import {
   COMMON_REACT_PLUGINS,
@@ -29,7 +29,7 @@ import {
   SHARED,
 } from './constants';
 
-import type { Store } from '@answers/target/store/storeAnswer';
+import type { Store } from '@config/types';
 import type { StarterFile, TargetRecord } from '../types';
 
 const STORES: readonly Store[] = ['zustand', 'redux-toolkit', 'tanstack-store'];

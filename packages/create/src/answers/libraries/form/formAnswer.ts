@@ -1,8 +1,7 @@
-import { rendersWithReact } from '../../utils/answerUtils';
+import { rendersWithReact } from '@utils/answerUtils';
 
-import type { AnswerRecord } from '../../types';
-
-export type Form = keyof typeof formAnswer.values;
+import type { Form } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 export const formAnswer = {
   key: 'form',
@@ -26,4 +25,4 @@ export const formAnswer = {
       },
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<Form>;

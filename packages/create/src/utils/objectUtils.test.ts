@@ -7,6 +7,7 @@ import {
 import {
   isJsonObject,
   isValueOf,
+  parsedAs,
   valuesOf,
 } from './objectUtils';
 
@@ -67,5 +68,23 @@ describe('isValueOf', () => {
 
   it.each(['toString', 'constructor'])('refuses %s, which every object inherits', (name) => {
     expect(isValueOf(name, MANAGERS)).toBe(false);
+  });
+});
+
+describe('parsedAs', () => {
+  const isList = (value: unknown): value is string[] => {
+    return Array.isArray(value);
+  };
+
+  it('answers the parsed value the guard accepts', () => {
+    expect(parsedAs('["a"]', isList)).toEqual(['a']);
+  });
+
+  it.each([
+    ['a value the guard refuses', '{}'],
+    ['text that is not JSON', '{'],
+    ['no file', null],
+  ])('answers null for %s', (_label, text) => {
+    expect(parsedAs(text, isList)).toBeNull();
   });
 });

@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import {
   attributesOf,
   elementsOf,
@@ -9,7 +8,11 @@ import {
   keyNameOf,
   propertiesOf,
 } from '../../utils/jsxUtils.ts';
-import { mustFind, type RuleNode } from '../../utils/ruleUtils.ts';
+import {
+  createRule,
+  mustFind,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 // `AccessibilityActionName` from react-native 0.87.1. These six are announced by the platform under a name it
 // already has words for; any other name is the app's own and is read out verbatim unless a label supplies better.

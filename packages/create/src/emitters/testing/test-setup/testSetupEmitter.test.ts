@@ -9,14 +9,14 @@ import {
 
 import {
   type Answers,
-  DEFAULT_ANSWERS,
+  type ProjectShape,
   type TargetId,
-} from '@answers';
+} from '@config/types';
+
+import { DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader, TEMPLATES_ROOT } from '@disk';
 
 import { testSetupEmitter } from './testSetupEmitter';
-
-import type { ProjectShape } from '@config/types';
 
 // A project that holds neither spelling, so the target's own is the one written.
 const FRESH: ProjectShape = {

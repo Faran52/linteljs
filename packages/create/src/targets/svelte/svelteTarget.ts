@@ -1,4 +1,4 @@
-import { hasLibrary, hasTests } from '@answers/utils/answerUtils';
+import { hasLibrary, hasTests } from '@utils/answerUtils';
 
 import {
   FOLDER_ROUTED,

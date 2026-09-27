@@ -31,7 +31,6 @@ import {
 } from 'vitest';
 
 import {
-  type Answers,
   CONFIG_PATH,
   CONFIG_SCHEMA_URL,
   CURRENT_SCHEMA_VERSION,
@@ -39,13 +38,15 @@ import {
   parseLinteljsConfig,
 } from '@answers';
 import { exists } from '@disk';
+import { parsePackageJson } from '@emitters';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
-import { parsePackageJson } from '@emitters/always/package-json/packageJsonEmitter';
 
 import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
+
+import type { Answers } from '@config/types';
 
 interface Run {
   code: number;

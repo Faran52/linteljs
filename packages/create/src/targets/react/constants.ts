@@ -1,4 +1,4 @@
-import type { Router } from '@answers/target/router/routerAnswer';
+import type { Router } from '@config/types';
 import type { AccessorNames } from '../utils/mockUtils';
 
 // The only target with a `routers` slot, so it supports every router the vocabulary has.

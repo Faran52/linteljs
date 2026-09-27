@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
@@ -7,6 +6,7 @@ import {
   type Located,
 } from '../../utils/layoutUtils.ts';
 import {
+  createRule,
   isDirective,
   mustFind,
   optionsOf,

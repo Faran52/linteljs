@@ -1,4 +1,4 @@
-import type { Answers } from './registry';
+import type { Answers } from '@config/types';
 
 // Every version a config may declare: the one that migrates, and the one written today.
 export type SchemaVersion = 1 | typeof CURRENT_SCHEMA_VERSION;

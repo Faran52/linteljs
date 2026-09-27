@@ -1,6 +1,5 @@
-import { createRule } from '../../types.ts';
 import { scopeOf } from '../../utils/compatUtils.ts';
-import { resolveVariable } from '../../utils/ruleUtils.ts';
+import { createRule, resolveVariable } from '../../utils/ruleUtils.ts';
 
 export const noImportNamespaceDestructure = createRule('no-import-namespace-destructure', {
   meta: {

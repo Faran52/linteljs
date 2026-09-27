@@ -5,13 +5,13 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers } from '@answers';
-
 import {
   hasForm,
   hasStore,
   pressable,
 } from './gateUtils';
+
+import type { Answers } from '@config/types';
 
 describe('the starter gates', () => {
   it.each<[string, Partial<Answers>, boolean, boolean, boolean]>([

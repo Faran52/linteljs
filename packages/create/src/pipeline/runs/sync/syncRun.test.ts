@@ -22,7 +22,7 @@ import {
 
 import { MANAGED_PATH } from '@config/constants';
 
-import { CONFIG_PATH, type HostedAnswers } from '@answers';
+import { CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
 
 import {
@@ -31,6 +31,8 @@ import {
   type SyncEntry,
   type SyncResult,
 } from './syncRun';
+
+import type { HostedAnswers } from '@config/types';
 
 const HUSKY_HOOK = '.husky/pre-commit';
 const TYPE_STANDARDS = 'plugins/linteljs/skills/linteljs/references/type-standards.md';

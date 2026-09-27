@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Mocking = keyof typeof mockingAnswer.values;
+import type { Mocking } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 /**
  * Its own field for the same reason `styling` and `data` are: at most one mocking layer is ever installed, and a
@@ -26,4 +25,4 @@ export const mockingAnswer = {
       hint: 'Handlers that answer real requests, in the browser and in tests',
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<Mocking>;

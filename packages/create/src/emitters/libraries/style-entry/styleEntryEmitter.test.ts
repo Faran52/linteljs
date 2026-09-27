@@ -6,21 +6,20 @@ import {
 } from 'vitest';
 
 import { EMPTY_PROJECT } from '@config/constants';
+import {
+  type Answers,
+  type Artifact,
+  type TargetId,
+} from '@config/types';
 
 import { valuesOf } from '@utils/objectUtils';
 
-import {
-  ANSWERS,
-  type Answers,
-  type TargetId,
-} from '@answers';
+import { ANSWERS } from '@answers';
 import { STYLE_ENTRY_CANDIDATES } from '@disk';
 import { targetFor } from '@targets';
 
 import { STYLEX_AT_RULE, TAILWIND_IMPORT } from './constants';
 import { mergeStyleEntry, styleEntryEmitter } from './styleEntryEmitter';
-
-import type { Artifact } from '@config/types';
 
 // The merge is a function on the artifact, so the text is read by running it over an absent file.
 const contentOf = (artifact: Artifact | undefined): string => {

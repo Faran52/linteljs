@@ -10,7 +10,7 @@ import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 
 import { ALWAYS, SHARED } from './constants';
 
-import type { HostedFramework } from '@answers/target/hosted-framework/hostedFrameworkAnswer';
+import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
 import type { StarterFile } from '../types';
 

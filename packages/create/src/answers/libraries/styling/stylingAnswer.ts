@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Styling = keyof typeof stylingAnswer.values;
+import type { Styling } from '@config/types';
+import type { OptionalChoiceRecord } from '../../types';
 
 /**
  * Its own field rather than a member of `libraries`: at most one of these is ever installed, and a single select
@@ -37,4 +36,4 @@ export const stylingAnswer = {
       },
     },
   },
-} as const satisfies AnswerRecord;
+} as const satisfies OptionalChoiceRecord<Styling>;

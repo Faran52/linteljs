@@ -1,5 +1,5 @@
-import type { TargetRecord } from '@targets/types';
-import type { Answers } from './registry';
+import type { Answers } from '@config/types';
+import type { TargetRecord } from '@targets';
 
 // Display only: the persisted value is never the label or the hint.
 export interface ValueRecord {

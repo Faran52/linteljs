@@ -8,7 +8,7 @@ interface World {
 
 export type Ring = (typeof RINGS)[number];
 
-// Reach nothing outside their own set, apart from `answers/utils/configUtils.ts` reading `targets/`.
+// Reach nothing outside their own set, and within it point one way: answers, targets, utils, config.
 export const INNER_RINGS = ['answers', 'config', 'targets', 'utils'] as const;
 
 // Turns answers and targets into file text; reaches inward only.

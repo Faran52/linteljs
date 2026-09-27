@@ -1,6 +1,5 @@
-import type { AnswerRecord } from '../../types';
-
-export type Browser = keyof typeof browserAnswer.values;
+import type { Browser } from '@config/types';
+import type { ChoiceRecord } from '../../types';
 
 export const browserAnswer = {
   key: 'browser',
@@ -22,4 +21,4 @@ export const browserAnswer = {
     },
   },
   default: 'chrome',
-} as const satisfies AnswerRecord;
+} as const satisfies ChoiceRecord<Browser>;

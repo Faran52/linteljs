@@ -5,8 +5,6 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers } from '@answers';
-
 import {
   accessorFiles,
   type AccessorNames,
@@ -16,6 +14,8 @@ import {
   rtkFiles,
   rtkTests,
 } from './mockUtils';
+
+import type { Answers } from '@config/types';
 
 const HOOKS: AccessorNames = {
   directory: 'src/lib/hooks',

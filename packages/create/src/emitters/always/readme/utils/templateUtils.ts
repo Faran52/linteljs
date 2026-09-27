@@ -1,12 +1,12 @@
 import { RUN_PREFIX } from '@config/constants';
 
-import {
-  ANSWERS,
-  type Answers,
-  hasTests,
-} from '@answers';
+import { hasTests } from '@utils/answerUtils';
+
+import { ANSWERS } from '@answers';
 
 import { buildScripts } from '../../utils/scriptUtils';
+
+import type { Answers } from '@config/types';
 
 // An unfilled slot throws: an intact `{{RUN}}` in a generated CLAUDE.md reads as documentation.
 

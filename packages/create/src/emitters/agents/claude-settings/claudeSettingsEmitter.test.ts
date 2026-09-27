@@ -4,10 +4,12 @@ import {
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { DEFAULT_ANSWERS } from '@answers';
 import { shippedAssetsReader } from '@disk';
 
 import { claudeSettingsEmitter, emitClaudeSettings } from './claudeSettingsEmitter';
+
+import type { Answers } from '@config/types';
 
 describe('emitClaudeSettings', () => {
   it('enables every selected plugin with its required marketplace', () => {

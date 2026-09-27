@@ -1,5 +1,5 @@
-import type { TargetRecord } from '@targets/types';
-import type { Answers } from '../registry';
+import type { Answers } from '@config/types';
+import type { TargetRecord } from '@targets';
 import type { AnswerRecord, ValueRecord } from '../types';
 
 /**

@@ -1,11 +1,13 @@
 import { RUN_PREFIX } from '@config/constants';
-import { type Artifact } from '@config/types';
+import {
+  type Artifact,
+  type HostedAnswers,
+  type PackageManager,
+} from '@config/types';
 
 import { majorOf } from '@utils/versionUtils';
 
 import { emitted } from '../../utils/artifactUtils';
-
-import type { HostedAnswers, PackageManager } from '@answers';
 
 // The one workflow this standard owns, emitted rather than preserved because it is the gate: a reference repo renamed
 // `check` and its workflow called the old name for two days while `sync` reported it up to date.

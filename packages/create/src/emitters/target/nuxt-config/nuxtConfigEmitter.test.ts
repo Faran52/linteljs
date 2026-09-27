@@ -7,9 +7,9 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers, type HostedAnswers } from '@answers';
-
 import { emitNuxtConfig, nuxtConfigEmitter } from './nuxtConfigEmitter';
+
+import type { Answers, HostedAnswers } from '@config/types';
 
 const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   return {

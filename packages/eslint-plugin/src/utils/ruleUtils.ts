@@ -3,6 +3,7 @@ import type {
   Rule,
   Scope,
 } from 'eslint';
+import type { LintelRuleDefinition, LintelRuleModule } from '../types.ts';
 
 export type RuleNode = Rule.Node;
 
@@ -128,4 +129,28 @@ export const resolveVariable = (scope: Scope.Scope, name: string): Scope.Variabl
 // Whether a rebuild would drop a comment inside node; four rules can't carry one, so each reports without a fix.
 export const rebuildLosesComments = (sourceCode: SourceCode, node: CommentHost): boolean => {
   return sourceCode.getCommentsInside(node).length > 0;
+};
+
+// tree/, not blob/: GitHub renders a directory's README below the listing, landing on doc and source at once.
+const DOCS_BASE = 'https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules';
+
+export const docsUrl = (ruleName: string): string => {
+  return `${DOCS_BASE}/${ruleName}`;
+};
+
+// The only supported way to declare a rule: derives the docs URL and makes language and recommended compulsory.
+export const createRule = (
+  name: string,
+  definition: LintelRuleDefinition,
+): LintelRuleModule => {
+  return {
+    ...definition,
+    meta: {
+      ...definition.meta,
+      docs: {
+        ...definition.meta.docs,
+        url: docsUrl(name),
+      },
+    },
+  };
 };

@@ -129,10 +129,13 @@ export const check = async (subpath, namespace) => {
     return;
   }
 
-  assert.equal(typeof namespace.default, 'function', label + ': default export is not a function');
+  // \`compose-config\` exports its function by name only, and answers a promise where a layer answers an array.
+  const entry = subpath === './compose-config' ? namespace.composeConfig : namespace.default;
 
-  // \`compose-config\` answers a promise and a layer an array; awaiting covers both.
-  const configs = await namespace.default();
+  assert.equal(typeof entry, 'function', label + ': entry export is not a function');
+  assert.equal(subpath === './compose-config', namespace.default === undefined, label + ': default export');
+
+  const configs = await entry();
 
   assert.ok(Array.isArray(configs), label + ': layer() did not return an array');
   assert.ok(configs.length > 0, label + ': layer() returned an empty array');

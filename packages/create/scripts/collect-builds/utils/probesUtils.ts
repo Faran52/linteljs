@@ -1,13 +1,12 @@
-import {
-  ANSWERS,
-  type Answers,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-  type TargetId,
-} from '../../../src/answers';
+import { ANSWERS, DEFAULT_ANSWERS } from '../../../src/answers';
 import { targetFor } from '../../../src/targets';
 import { valuesOf } from '../../../src/utils/objectUtils';
 
+import type {
+  Answers,
+  HostedFramework,
+  TargetId,
+} from '../../../src/config/types';
 import type { E2eCase } from '../../../src/pipeline/e2e/matrix/matrix';
 
 // Everything installable on, so one run per target is enough. The axes left at default only replace a package.

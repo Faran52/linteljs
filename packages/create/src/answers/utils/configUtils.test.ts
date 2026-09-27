@@ -1,3 +1,5 @@
+import { surfacesOf } from '@utils/answerUtils';
+
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
 import {
@@ -5,10 +7,11 @@ import {
   CONFIG_SCHEMA_URL_V1,
   CURRENT_SCHEMA_VERSION,
 } from '../constants';
-import { type Answers, DEFAULT_ANSWERS } from '../registry';
+import { DEFAULT_ANSWERS } from '../registry';
 
-import { surfacesOf } from './answerUtils';
 import { parseLinteljsConfig } from './configUtils';
+
+import type { Answers } from '@config/types';
 
 interface ConfigOverrides {
   $schema?: string;

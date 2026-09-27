@@ -1,6 +1,6 @@
-import { createRule } from '../../types.ts';
 import { ancestorReaderOf } from '../../utils/compatUtils.ts';
 import { isAwaitedOrAsyncReturn } from '../../utils/promiseChainUtils.ts';
+import { createRule } from '../../utils/ruleUtils.ts';
 
 export const preferTryCatch = createRule('prefer-try-catch', {
   meta: {

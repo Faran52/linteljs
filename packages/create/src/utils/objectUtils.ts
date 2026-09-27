@@ -28,3 +28,15 @@ export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
 export const isValueOf = <V extends string>(value: string, values: Record<V, unknown>): value is V => {
   return Object.hasOwn(values, value);
 };
+
+// Text parsed and narrowed in one step. Text that is not JSON, or `null` for no file, answers `null` like a mismatch.
+export const parsedAs = <T>(text: string | null, guard: (value: unknown) => value is T): T | null => {
+  try {
+    const parsed: unknown = JSON.parse(String(text));
+
+    return guard(parsed) ? parsed : null;
+  }
+  catch {
+    return null;
+  }
+};

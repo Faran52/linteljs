@@ -2,7 +2,7 @@ import { hostedAnswersFor } from '@mocks/answersFor';
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { VERSIONS } from '../package-json/constants';
+import { VERSIONS } from '../../constants';
 
 import { emitLinteljsRecord, linteljsRecordEmitter } from './linteljsRecordEmitter';
 

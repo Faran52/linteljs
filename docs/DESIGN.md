@@ -97,7 +97,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   screens, logos and images, and each needed a hand-kept reason to be declined. Do not build one without first
   overturning this.
 - **Latest version of each framework only.** No version matrix. `VERSIONS` in
-  `emitters/always/package-json/constants.ts` is the table that says what latest means, framework runtimes
+  `emitters/constants.ts` is the table that says what latest means, framework runtimes
   included; nothing arrives from a generator's own `package.json`.
 - **No JavaScript output.** `@linteljs/create` generates TypeScript, and there is no question about it. The
   standard it ships is typed end to end: `type-standards.md` is written against a compiler,
@@ -1106,7 +1106,7 @@ means releases go through pnpm; a bare `npm publish` would ship the protocol ver
 
 `@linteljs/create`'s `VERSIONS` table is deliberately **not** on the catalog. It names versions for somebody else's
 project, and the two move for different reasons. The one coupling that matters, that a generated project is never
-handed something older than the layers it installs were built against, is gated by `packageJsonEmitter.test.ts`
+handed something older than the layers it installs were built against, is gated by `packageJsonUtils.test.ts`
 against the catalog.
 
 ## The end-to-end matrix
@@ -1215,9 +1215,9 @@ git switch -c v1.2.0 && git push -u origin v1.2.0
   mid-release always resolves a complete tree.
 - **A version bump touches five files.** The three `package.json`s, `packages/eslint-plugin/src/plugin.ts`, which
   hand-writes `meta.version` because ESLint reads it off the plugin object, and
-  `packages/create/src/emitters/always/package-json/constants.ts`, which pins the range generated projects get for
+  `packages/create/src/emitters/constants.ts`, which pins the range generated projects get for
   `@linteljs/eslint-config`. Both are held against `package.json` by a test (`meta.test.ts`,
-  `packageJsonEmitter.test.ts`), so a missed one fails `pnpm check`. The three `CHANGELOG.md` files change by hand.
+  `packageJsonUtils.test.ts`), so a missed one fails `pnpm check`. The three `CHANGELOG.md` files change by hand.
 
 ## Workspace lint exemptions
 

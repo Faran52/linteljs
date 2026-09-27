@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import {
   ancestorReaderOf,
   ancestorsOf,
@@ -6,6 +5,7 @@ import {
 } from '../../utils/compatUtils.ts';
 import { isAwaitedOrAsyncReturn } from '../../utils/promiseChainUtils.ts';
 import {
+  createRule,
   type MemberExpressionNode,
   optionsOf,
   type RuleNode,

@@ -1,4 +1,3 @@
-import { createRule } from '../../types.ts';
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
@@ -8,6 +7,7 @@ import {
   spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
 import {
+  createRule,
   type Fixer,
   mustFind,
   type ObjectPatternNode,
