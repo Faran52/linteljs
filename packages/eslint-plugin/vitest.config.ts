@@ -11,7 +11,7 @@ const config: ViteUserConfig = {
     watch: false,
     pool: 'threads',
     testTimeout: 30000,
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
   },
 };
 
