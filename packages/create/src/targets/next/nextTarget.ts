@@ -170,7 +170,7 @@ export const nextTarget: TargetRecord = {
       when: (answers) => {
         return !pressable(answers);
       },
-      shared: 'react',
+      shared: true,
     },
     {
       target: 'src/components/ui/index.ts',
@@ -178,13 +178,13 @@ export const nextTarget: TargetRecord = {
         return hasStore(answers) && !hasForm(answers);
       },
       variant: 'with-store',
-      shared: 'react',
+      shared: true,
     },
     {
       target: 'src/components/ui/index.ts',
       when: hasForm,
       variant: 'with-form',
-      shared: 'react',
+      shared: true,
     },
     // A form brings its route, its binding, its control and the layer it submits through.
     {

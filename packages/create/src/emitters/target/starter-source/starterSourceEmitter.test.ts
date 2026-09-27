@@ -286,13 +286,13 @@ describe('the starter source', () => {
    * One file per answer rather than one per combination: the page and its hook are the same in every data layer,
    * and the api is what varies. Asserting the asset rather than the destination is what says which spelling won.
    */
-  it.each<[TargetId, string]>([
-    ['react', 'react'],
-    ['solid', 'solid'],
-    ['vue', 'vue'],
-    ['svelte', 'svelte'],
-    ['next', 'react'],
-  ])('takes the %s api spelling the data answer asks for', (target, root) => {
+  it.each<[TargetId, string, string]>([
+    ['react', 'react', 'react'],
+    ['solid', 'shared', 'solid'],
+    ['vue', 'shared', 'vue'],
+    ['svelte', 'shared', 'svelte'],
+    ['next', 'react', 'react'],
+  ])('takes the %s api spelling the data answer asks for', (target, root, queryRoot) => {
     const apiFor = (overrides: Partial<Answers>): string | undefined => {
       return sourcesByTarget({
         target,
@@ -303,7 +303,7 @@ describe('the starter source', () => {
 
     expect(apiFor({})).toBe(`starter-source/${root}/src/lib/apis/contact/api.ts`);
     expect(apiFor({ data: 'tanstack-query' }))
-      .toBe(`starter-source/${root}/tanstack-query/src/lib/apis/contact/api.ts`);
+      .toBe(`starter-source/${queryRoot}/tanstack-query/src/lib/apis/contact/api.ts`);
   });
 
   // RTK Query's middleware is what gives an endpoint its cache, so the store it rides has to register it.
@@ -353,9 +353,9 @@ describe('the starter source', () => {
       })['src/components/ui/index.ts'];
     };
 
-    expect(barrelFor({})).toBe('starter-source/solid/src/components/ui/index.ts');
-    expect(barrelFor({ store: 'tanstack-store' })).toBe('starter-source/solid/with-store/src/components/ui/index.ts');
-    expect(barrelFor({ form: 'tanstack-form' })).toBe('starter-source/solid/with-form/src/components/ui/index.ts');
+    expect(barrelFor({})).toBe('starter-source/shared/src/components/ui/index.ts');
+    expect(barrelFor({ store: 'tanstack-store' })).toBe('starter-source/shared/with-store/src/components/ui/index.ts');
+    expect(barrelFor({ form: 'tanstack-form' })).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
   });
 
   /*
@@ -393,18 +393,18 @@ describe('the starter source', () => {
         .toBe('starter-source/next/tanstack-query/src/lib/providers/DataProvider.tsx');
     });
 
-    it('takes react\'s barrel in the spelling the answers reach', () => {
+    it('takes the shared barrel in the spelling the answers reach', () => {
       const barrel = 'src/components/ui/index.ts';
 
-      expect(sourceOf({}, barrel)).toBe('starter-source/react/with-form/src/components/ui/index.ts');
+      expect(sourceOf({}, barrel)).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
       expect(sourcesByTarget({ target: 'next' })[barrel])
-        .toBe('starter-source/react/src/components/ui/index.ts');
+        .toBe('starter-source/shared/src/components/ui/index.ts');
       const source = sourcesByTarget({
         target: 'next',
         store: 'zustand',
       })[barrel];
 
-      expect(source).toBe('starter-source/react/with-store/src/components/ui/index.ts');
+      expect(source).toBe('starter-source/shared/with-store/src/components/ui/index.ts');
     });
 
     // A store makes the home route a client component, which is a different file rather than a directive added.

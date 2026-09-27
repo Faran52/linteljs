@@ -103,7 +103,6 @@ export const vueTarget: TargetRecord = {
       'src/views/useContactForm.ts',
       'src/components/ui/text-input/TextInput.vue',
       'src/components/ui/text-input/types.ts',
-      'src/lib/apis/contact/index.ts',
     ] as const)
       .map((target): StarterFile => {
         return {
@@ -112,10 +111,16 @@ export const vueTarget: TargetRecord = {
         };
       }),
     {
+      target: 'src/lib/apis/contact/index.ts',
+      when: hasForm,
+      shared: true,
+    },
+    {
       target: 'src/lib/apis/contact/api.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
+      shared: true,
     },
     {
       target: 'src/lib/apis/contact/api.ts',

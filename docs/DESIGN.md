@@ -339,7 +339,8 @@ project that wants the generated tree adds the plugin and the directory.
 
 **`shared` names a tree, not a flag.** `StarterFile.shared` is `true | TargetId`: `true` is
 `starter-source/shared/`, the framework-free tree (tokens, stylesheets, page tables, validation rules, the fetch
-adapter), and a target id is that target's tree, so Next reads `shared: 'react'` for the primitives, stores and
+adapter, and any file two frameworks write to the byte, such as a barrel or the contact api with no data layer),
+and a target id is that target's tree, so Next reads `shared: 'react'` for the primitives, stores and
 api modules it renders identically. Anything with a framework in it is not shared: React's `className` is not
 Vue's `class`, React destructures props and Solid may not, and React's route element is a node where Solid's has to
 be a function.

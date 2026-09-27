@@ -140,6 +140,7 @@ const baseReactTarget: TargetRecord = {
       when: (answers) => {
         return !hasStore(answers) && answers.form === undefined;
       },
+      shared: true,
     },
     {
       target: 'src/components/ui/index.ts',
@@ -147,6 +148,7 @@ const baseReactTarget: TargetRecord = {
         return hasStore(answers) && answers.form === undefined;
       },
       variant: 'with-store',
+      shared: true,
     },
     {
       target: 'src/components/ui/index.ts',
@@ -154,6 +156,7 @@ const baseReactTarget: TargetRecord = {
         return answers.form !== undefined;
       },
       variant: 'with-form',
+      shared: true,
     },
     // A form brings its page, its control and the layer it submits through.
     ...([

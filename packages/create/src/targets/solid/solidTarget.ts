@@ -103,6 +103,7 @@ export const solidTarget: TargetRecord = {
       when: (answers) => {
         return !hasStore(answers) && !hasForm(answers);
       },
+      shared: true,
     },
     {
       target: 'src/components/ui/index.ts',
@@ -110,6 +111,7 @@ export const solidTarget: TargetRecord = {
         return hasStore(answers) && !hasForm(answers);
       },
       variant: 'with-store',
+      shared: true,
     },
     // A button is what a store or a form gives the page to press; neither, and nothing presses anything.
     {
@@ -121,7 +123,6 @@ export const solidTarget: TargetRecord = {
       'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
-      'src/lib/apis/contact/index.ts',
     ] as const)
       .map((target): StarterFile => {
         return {
@@ -130,10 +131,16 @@ export const solidTarget: TargetRecord = {
         };
       }),
     {
+      target: 'src/lib/apis/contact/index.ts',
+      when: hasForm,
+      shared: true,
+    },
+    {
       target: 'src/lib/apis/contact/api.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
+      shared: true,
     },
     {
       target: 'src/lib/apis/contact/api.ts',
@@ -164,6 +171,7 @@ export const solidTarget: TargetRecord = {
       target: 'src/components/ui/index.ts',
       when: hasForm,
       variant: 'with-form',
+      shared: true,
     },
     // One route list, read by the header and the no-router switch alike. A form adds Contact to it and both
     // readers follow, so neither needs a second spelling.

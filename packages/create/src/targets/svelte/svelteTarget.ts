@@ -165,7 +165,6 @@ export const svelteTarget: TargetRecord = {
       'src/routes/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.svelte',
       'src/components/ui/text-input/types.ts',
-      'src/lib/apis/contact/index.ts',
     ] as const)
       .map((target): StarterFile => {
         return {
@@ -173,6 +172,11 @@ export const svelteTarget: TargetRecord = {
           when: hasForm,
         };
       }),
+    {
+      target: 'src/lib/apis/contact/index.ts',
+      when: hasForm,
+      shared: true,
+    },
     // The data slot is a component on this target, so a suite that needs it around its subject needs one too.
     {
       target: '__mocks__/WithData.svelte',
@@ -185,6 +189,7 @@ export const svelteTarget: TargetRecord = {
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
+      shared: true,
     },
     {
       target: 'src/lib/apis/contact/api.ts',
