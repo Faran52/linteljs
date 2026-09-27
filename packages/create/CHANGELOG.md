@@ -71,6 +71,8 @@ when a version's change lives in a sibling it is described there instead:
 - An Angular project's `pnpm-workspace.yaml` loses its `peerDependencyRules` block and its `.yarnrc.yml` its
   `logFilters`, since `@angular/build` 22.2 admits vitest 5. No target discards a peer warning any more; the two
   the filter hid on Yarn, under TanStack Form and TanStack Query, are answered in `packageExtensions`.
+- A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only. The `crx({ manifest })` call and the
+  manifest it reads are unchanged.
 
 ### Fixed
 

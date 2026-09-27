@@ -18,7 +18,7 @@ export const VERSIONS: Record<string, string> = {
   'vite': '^8.3.1',
   '@commitlint/cli': '^21.2.3',
   '@commitlint/config-conventional': '^21.2.3',
-  '@crxjs/vite-plugin': '^2.7.1',
+  '@crxjs/vite-plugin': '^3.0.0',
   '@eslint-react/eslint-plugin': '^5.20.8',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
