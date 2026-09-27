@@ -66,6 +66,8 @@ describe('the carve-out the rule file grants', () => {
     // A parse helper taking the guard as an argument: the parameter's type is itself a predicate.
     ['a guard parameter', 'const parsedAs = <T>(text: string, guard: (value: unknown) => value is T): T | null => {\n'],
     ['a guard type alias', 'type Guard<T> = (value: unknown) => value is T;\n'],
+    // A staged file is checked before any formatter runs, so the shape holds however it is spaced.
+    ['a guard type spaced any way', 'type Guard<T> = ( value :unknown )=>value  is T;\n'],
     // `import()` with a computed path is typed `any`, so binding the namespace as `unknown` is the stronger read.
     ['a dynamic import namespace', 'const loaded: unknown = await import(`./rules/${name}.ts`);\n'],
     // `catch` binds `unknown` by language rule, so a helper turning a throw into a message has no other parameter type.
