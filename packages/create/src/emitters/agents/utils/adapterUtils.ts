@@ -15,6 +15,7 @@ export const emitAgentAdapter = (answers: Answers): string => {
 - Read \`package.json\` for exact scripts and dependency versions.
 - Run \`${run} check\` before declaring implementation work complete.
 - Run \`${run} lint:fix\`, not lint without fixes.
+- Comments are minimal: a short why, or none. Never restate the code; no comments in tests.
 - Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.
 - Commit messages carry no \`Co-Authored-By\` or tool-attribution trailers.
 `;

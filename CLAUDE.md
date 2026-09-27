@@ -159,4 +159,5 @@ Claim nothing that has not been run.
   files by explicit path.
 - Commit messages are conventional commits and carry no trailers: no `Co-Authored-By:`, no session
   or tool footer, whatever a harness default suggests.
+- Comments are minimal: a short why, or none. Never restate the code or narrate history.
 - No em-dashes in code comments, JSDoc, docs, README, commit messages or rule descriptions.

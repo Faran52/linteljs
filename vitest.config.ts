@@ -22,28 +22,8 @@ export default defineConfig({
         '**/e2e/targets/**',
         '**/e2e/utils/**',
       ],
-      // A gate, not an aspiration: a number that has to come down is a regression, not a new
-      // baseline. One key per package, on purpose. docs/DESIGN.md: Coverage thresholds
-      thresholds: {
-        'packages/eslint-plugin/src/**': {
-          statements: 100,
-          branches: 100,
-          functions: 100,
-          lines: 100,
-        },
-        'packages/eslint-config/src/**': {
-          statements: 100,
-          branches: 100,
-          functions: 100,
-          lines: 100,
-        },
-        'packages/create/src/**': {
-          statements: 100,
-          branches: 100,
-          functions: 100,
-          lines: 100,
-        },
-      },
+      // docs/DESIGN.md: Coverage thresholds
+      thresholds: { 100: true },
     },
   },
 });

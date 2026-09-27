@@ -161,10 +161,9 @@ rules a layer wants is named by that layer, which is what
 The testing standard this workspace ships (`packages/create/templates/fragments/claude-rules/testing.standard.md`)
 bans comments in tests. That rule came from a private app and **does not apply here**. This repo is public and people will read it to learn how a rule is built, so:
 
-- Comment where the reason is not on the screen: why a fixture is shaped that way, why a branch
-  exists, what a fix deliberately does not do.
+- Comments are minimal: a short why, or none. Only where the reason is not on the screen: why a fixture
+  is shaped that way, why a branch exists, what a fix deliberately does not do.
 - Do not narrate. A comment restating the line below it gets deleted.
-- Not every line, not every test. Enough that a stranger can follow the intent.
 
 Everything else in that standard stands, in particular no casts and no test that cannot fail.
 

@@ -1394,9 +1394,9 @@ because it matches calls inside the body and there is no call. Off for that dire
 A gate, not an aspiration. The root config is what gates: a package's own `vitest.config.ts` coverage block is
 ignored once the run comes through `projects`.
 
-One key per package rather than a global block, because a glob key takes its files out of the global thresholds,
-so a package dropped from the list would stop being gated without failing anything. Named one by one, it has to be
-removed on purpose.
+One global block at 100% rather than a key per package. A glob key takes its files out of the global thresholds, so
+with keys a folder nobody named stays ungated; with one global block every file in `coverage.include` is held, and a
+file joins the gate the moment it is included.
 
 The end-to-end harness (`e2e/registry/`, `e2e/runner/`, `e2e/targets/`, `e2e/utils/` and the files at `e2e/`'s top
 level) is excluded: it spawns, publishes and needs the registry, so it runs only under `test:e2e`, and a helper there

@@ -10,13 +10,14 @@ import { adapterArtifact, emitAgentAdapter } from './adapterUtils';
 
 describe('emitAgentAdapter', () => {
   // The one body CLAUDE.md, AGENTS.md, Copilot's instructions and Cursor's rule all carry.
-  it('points at the skill, the gate and the git bans, and nothing else', () => {
+  it('points at the skill, the gate, the comment rule and the git bans, and nothing else', () => {
     expect(emitAgentAdapter(DEFAULT_ANSWERS)).toBe(`# LintelJS project
 
 - Follow \`plugins/linteljs/skills/linteljs/SKILL.md\` for project structure, types, state, and tests.
 - Read \`package.json\` for exact scripts and dependency versions.
 - Run \`pnpm check\` before declaring implementation work complete.
 - Run \`pnpm lint:fix\`, not lint without fixes.
+- Comments are minimal: a short why, or none. Never restate the code; no comments in tests.
 - Never use \`git stash\`, \`git reset\`, \`--no-verify\`, \`--amend\`, \`git add -A\`, or \`git add .\`.
 - Commit messages carry no \`Co-Authored-By\` or tool-attribution trailers.
 `);
