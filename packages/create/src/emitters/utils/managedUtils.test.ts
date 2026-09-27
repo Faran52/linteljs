@@ -4,52 +4,35 @@ import {
   it,
 } from 'vitest';
 
+import { emitted, merged } from './artifactUtils';
 import { managedRecord, removableIn } from './managedUtils';
-
-import type { Artifact } from '@config/types';
-
-const emittedAt = (target: string): Artifact => {
-  return {
-    stage: 'standard',
-    target,
-    content: { text: '' },
-  };
-};
-
-const mergedAt = (target: string): Artifact => {
-  return {
-    stage: 'standard',
-    target,
-    content: {
-      merge: () => {
-        return '';
-      },
-    },
-  };
-};
 
 describe('removableIn', () => {
   it('takes what this CLI writes whole', () => {
-    expect(removableIn([emittedAt('eslint.config.js')])).toEqual(['eslint.config.js']);
+    expect(removableIn([emitted('standard', 'eslint.config.js', '')])).toEqual(['eslint.config.js']);
   });
 
   // The project's from the moment it has one, so a deselected answer leaves it rather than deleting it.
   it('leaves a preserved artifact out', () => {
     expect(removableIn([{
-      ...emittedAt('CLAUDE.md'),
+      ...emitted('standard', 'CLAUDE.md', ''),
       preserve: true,
     }])).toEqual([]);
   });
 
   // `pnpm-workspace.yaml` and a tailwind style entry carry lines nobody else wrote a copy of.
   it('leaves a merge out', () => {
-    expect(removableIn([mergedAt('pnpm-workspace.yaml')])).toEqual([]);
+    expect(removableIn([merged('standard', 'pnpm-workspace.yaml', () => {
+      return '';
+    })])).toEqual([]);
   });
 
   // The whole file exists because a host was selected, which is what the flag says.
   it('takes a merge that says it is removable', () => {
     expect(removableIn([{
-      ...mergedAt('.claude/settings.json'),
+      ...merged('standard', '.claude/settings.json', () => {
+        return '';
+      }),
       removable: true,
     }])).toEqual(['.claude/settings.json']);
   });

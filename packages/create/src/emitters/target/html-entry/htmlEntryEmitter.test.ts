@@ -1,17 +1,10 @@
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+import { hostedAnswersFor } from '@mocks/answersFor';
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import { type Answers, type HostedAnswers } from '@answers';
+import { type Answers } from '@answers';
 
 import { emitHtmlEntry, htmlEntryEmitter } from './htmlEntryEmitter';
-
-const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
-  return {
-    ...HOSTED_DEFAULTS,
-    ...overrides,
-  };
-};
 
 /*
  * The document whole. The project name is in the title, which is why it is written rather than copied; the language
@@ -56,7 +49,7 @@ describe('htmlEntryEmitter', () => {
     ['webextension', { target: 'webextension' }, 'src/main.ts'],
     ['react-native', { target: 'react-native' }, undefined],
   ])('writes the document %s serves, loading its own entry', (_label, overrides, entry) => {
-    expect(htmlEntryEmitter(answersFor(overrides), EMPTY_PROJECT, 'my-app')).toEqual(entry === undefined
+    expect(htmlEntryEmitter(hostedAnswersFor(overrides), EMPTY_PROJECT, 'my-app')).toEqual(entry === undefined
       ? []
       : [{
           stage: 'standard',

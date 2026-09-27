@@ -1,3 +1,4 @@
+import { alphabetically } from '@mocks/fixerSamples';
 import { moduleNameOf, ruleDirectories } from '@mocks/ruleTree';
 import {
   describe,
@@ -7,16 +8,10 @@ import {
 
 import { rules } from './index.ts';
 
-const alphabetically = (values: string[]): string[] => {
-  return values.toSorted((left, right) => {
-    return left.localeCompare(right);
-  });
-};
-
 describe('rules', () => {
   // Both sorted lists, so a rule with no directory and a directory nothing registers both fail.
   it('registers exactly the rules that have a directory', () => {
-    expect(alphabetically(Object.keys(rules))).toEqual(alphabetically(ruleDirectories));
+    expect(Object.keys(rules).toSorted(alphabetically)).toEqual(ruleDirectories.toSorted(alphabetically));
   });
 
   // The id is the directory, so an entry wired to a sibling's module is a rule published under the wrong name.

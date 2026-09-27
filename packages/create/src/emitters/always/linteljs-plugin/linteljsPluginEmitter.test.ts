@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -38,13 +39,6 @@ interface SkillDocument {
   frontmatter: Map<string, string>;
   body: string;
 }
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 const find = (overrides: AnswerOverrides, target: string): Artifact | undefined => {
   return referenceArtifacts(answersFor(overrides)).find((artifact) => {

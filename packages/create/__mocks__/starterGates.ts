@@ -1,5 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 
+import { answersFor } from '@mocks/answersFor';
+
 import { valuesOf } from '@utils/objectUtils';
 
 import {
@@ -10,7 +12,11 @@ import {
 } from '@answers';
 
 import type { TargetBuilder } from '@targets/registry';
-import type { TargetRecord } from '@targets/types';
+import type {
+  StarterFile,
+  StarterTest,
+  TargetRecord,
+} from '@targets/types';
 
 export type Condition = {
   readonly [K in keyof Answers]?: typeof ANSWERED | readonly Answers[K][];
@@ -326,6 +332,17 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
       return undefined;
     },
   };
+};
+
+// `<destination> <variant>` for every entry whose gate holds, which is what the emitter goes on to write.
+export const pickedBy = (entries: (StarterFile | StarterTest)[], overrides: Partial<Answers> = {}): string[] => {
+  const answers = answersFor(overrides);
+
+  return entries.filter((entry) => {
+    return entry.when === undefined || entry.when(answers);
+  }).map((entry) => {
+    return `${entry.target} ${entry.variant ?? 'base'}`;
+  });
 };
 
 export const byKey = (rows: readonly GateRow[]): string[] => {

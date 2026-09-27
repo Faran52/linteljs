@@ -5,6 +5,7 @@ import {
   relative,
 } from 'node:path';
 
+import { byName } from '@mocks/byName';
 import {
   directoriesIn,
   entriesIn,
@@ -398,9 +399,6 @@ describe('answers records', () => {
  * floor is one nothing can refuse, and either way the one that is missing is found at a spawn rather than here.
  */
 it('gives every package manager both a floor and a command', () => {
-  const byName = (left: string, right: string): number => {
-    return left.localeCompare(right, 'en');
-  };
   const commands = Object.keys(MANAGER_BINARIES).toSorted(byName);
 
   expect(commands).toEqual(Object.keys(MANAGER_FLOORS).toSorted(byName));

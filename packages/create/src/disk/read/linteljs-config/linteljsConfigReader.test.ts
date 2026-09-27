@@ -31,6 +31,8 @@ import {
 } from '@answers';
 import { emitLinteljsConfig } from '@emitters/always/linteljs-config/linteljsConfigEmitter';
 
+import { readIfPresent } from '../../utils/fsUtils';
+
 import { linteljsConfigReader } from './linteljsConfigReader';
 
 // The real `lstat` unless a case stands in for it: the two races it guards against happen between it and `open`.
@@ -62,19 +64,6 @@ afterEach(async () => {
     force: true,
   });
 });
-
-const readOptional = async (path: string): Promise<string | null> => {
-  try {
-    return await readFile(path, 'utf8');
-  }
-  catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      return null;
-    }
-
-    throw error;
-  }
-};
 
 describe('linteljsConfigReader', () => {
   it('reads a valid config file', async () => {
@@ -119,7 +108,7 @@ describe('linteljsConfigReader', () => {
       'linteljs.config.json must be a regular file; symbolic links are not allowed',
     );
     await expect(readlink(path)).resolves.toBe(target);
-    await expect(readOptional(target)).resolves.toBe(original);
+    await expect(readIfPresent(target)).resolves.toBe(original);
   });
 
   it('rejects a non-regular config entry before trying to read it', async () => {

@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import { alphabetically } from '@mocks/fixerSamples';
 import { moduleNameOf, rulesDir } from '@mocks/ruleTree';
 import { ESLint, type Linter } from 'eslint';
 import {
@@ -53,18 +54,11 @@ const readJson = (path: string): Record<string, unknown> => {
   return { ...parsed };
 };
 
-// Bare `sort()` orders by UTF-16 and mutates the receiver; `toSorted` with `localeCompare` avoids
-// rewriting an array every other test reads.
-const alphabetically = (values: string[]): string[] => {
-  return values.toSorted((left, right) => {
-    return left.localeCompare(right);
-  });
-};
-
+// `toSorted` rather than `sort()`, which would rewrite an array every other test reads.
 const enabledIn = (preset: Linter.Config[]): string[] => {
-  return alphabetically(preset.flatMap((config) => {
+  return preset.flatMap((config) => {
     return Object.keys(config.rules ?? {});
-  }));
+  }).toSorted(alphabetically);
 };
 
 const PRESET_NAMES = ['recommended', 'all'] as const;
@@ -79,9 +73,9 @@ const packageJson = readJson('package.json');
 const ruleNames = Object.keys(rules);
 const ruleCases: [string, LintelRuleModule][] = Object.entries(rules);
 const prefixed = (names: string[]): string[] => {
-  return alphabetically(names.map((name) => {
+  return names.map((name) => {
     return `${PLUGIN_NAME}/${name}`;
-  }));
+  }).toSorted(alphabetically);
 };
 
 // Reads the registry forwards rather than slicing the prefix off each id and looking it up, which would need a cast.
@@ -136,9 +130,9 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   // Equality both ways: a missing README fails, and so do a leftover `index.ts`, half a rename and a helper outside
   // `utils/`. The `*Utils` suffix inside it is the root config's `**/utils/*.ts` naming map, so it is not repeated.
   it('holds its rule, its suite, its doc and nothing else but helpers under utils', () => {
-    expect(alphabetically(filesIn(name).filter((file) => {
+    expect(filesIn(name).filter((file) => {
       return !/^utils\/[^/]+\.ts$/.test(file);
-    }))).toEqual(alphabetically(requiredFiles(name)));
+    }).toSorted(alphabetically)).toEqual(requiredFiles(name).toSorted(alphabetically));
   });
 
   it('declares a valid rule type', () => {
@@ -185,7 +179,7 @@ describe('rule metadata', () => {
   const expected = readJson('__mocks__/ruleMetadata.json');
 
   it('covers exactly the registered rules', () => {
-    expect(alphabetically(Object.keys(expected))).toEqual(alphabetically(ruleNames));
+    expect(Object.keys(expected).toSorted(alphabetically)).toEqual(ruleNames.toSorted(alphabetically));
   });
 
   it.each(ruleCases)('matches the recorded surface for "%s"', (name, rule) => {
@@ -212,12 +206,12 @@ describe('configs', () => {
   // Pins the preset key set exhaustively, so an added or removed key shows up here rather than
   // as a shape nobody notices until a consumer spreads it.
   it('exposes both shapes of every preset and nothing else', () => {
-    expect(alphabetically(Object.keys(configs))).toEqual(alphabetically([
+    expect(Object.keys(configs).toSorted(alphabetically)).toEqual([
       ...PRESET_NAMES,
       ...PRESET_NAMES.map((name) => {
         return `flat/${name}`;
       }),
-    ]));
+    ].toSorted(alphabetically));
 
     for (const [, preset] of allPresets) {
       expect(Array.isArray(preset)).toBe(true);
@@ -379,9 +373,9 @@ describe('language scoping, resolved by eslint', () => {
       overrideConfig: configs['flat/recommended'],
     });
 
-    return alphabetically(ruleIdsIn(await eslint.calculateConfigForFile(filename)).filter((id) => {
+    return ruleIdsIn(await eslint.calculateConfigForFile(filename)).filter((id) => {
       return id.startsWith(`${PLUGIN_NAME}/`);
-    }));
+    }).toSorted(alphabetically);
   };
 
   it('has at least one TypeScript-only rule to prove the split with', () => {
@@ -466,7 +460,7 @@ describe('documentation', () => {
   // Equality, not containment: `react-no-global-namespace` once shipped two rows and a containment check passed it.
   // A table nobody generates also drifts out of order one edit at a time.
   it('lists every rule in the README table once, in rule id order', () => {
-    expect(tableRows(readFileSync(join(root, 'README.md'), 'utf8'))).toEqual(alphabetically(ruleNames));
+    expect(tableRows(readFileSync(join(root, 'README.md'), 'utf8'))).toEqual(ruleNames.toSorted(alphabetically));
   });
 
   /**

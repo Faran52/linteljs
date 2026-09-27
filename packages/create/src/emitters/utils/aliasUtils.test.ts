@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -6,33 +7,11 @@ import {
 
 import { valuesOf } from '@utils/objectUtils';
 
-import {
-  ANSWERS,
-  type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type Library,
-  type Styling,
-  type TargetId,
-} from '@answers';
+import { ANSWERS } from '@answers';
 
 import { buildAliases } from './aliasUtils';
 
-interface AnswerOverrides {
-  target?: TargetId;
-  libraries?: Library[];
-  styling?: Styling;
-  data?: Data;
-}
-
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 describe('buildAliases', () => {
   it('builds the default React alias map, ordered as the spine reads top-down', () => {

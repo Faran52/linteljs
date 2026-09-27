@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -5,35 +6,10 @@ import {
 } from 'vitest';
 
 import {
-  type Answers,
-  type Browser,
-  type Data,
-  DEFAULT_ANSWERS,
-  type HostedFramework,
-  type Styling,
-  type TargetId,
-} from '@answers';
-
-import {
   allowBuildsBlock,
   emitPnpmWorkspace,
   peerRulesBlock,
 } from './emitUtils';
-
-interface AnswerOverrides {
-  target?: TargetId;
-  browser?: Browser;
-  hostedFramework?: HostedFramework;
-  styling?: Styling;
-  data?: Data;
-}
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 describe('emitPnpmWorkspace', () => {
   // One list for every manager: the measured names and the two carried as insurance, sorted.

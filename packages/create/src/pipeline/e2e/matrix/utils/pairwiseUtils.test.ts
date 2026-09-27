@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -14,10 +15,7 @@ import {
 
 const caseFor = (overrides: Partial<Answers>): PairwiseCase => {
   return {
-    answers: {
-      ...DEFAULT_ANSWERS,
-      ...overrides,
-    },
+    answers: answersFor(overrides),
   };
 };
 

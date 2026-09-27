@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -11,7 +12,6 @@ import { valuesOf } from '@utils/objectUtils';
 import {
   ANSWERS,
   type Answers,
-  DEFAULT_ANSWERS,
   type TargetId,
 } from '@answers';
 import { STYLE_ENTRY_CANDIDATES } from '@disk';
@@ -21,13 +21,6 @@ import { STYLEX_AT_RULE, TAILWIND_IMPORT } from './constants';
 import { mergeStyleEntry, styleEntryEmitter } from './styleEntryEmitter';
 
 import type { Artifact } from '@config/types';
-
-const answersFor = (overrides: Partial<Answers>): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 // The merge is a function on the artifact, so the text is read by running it over an absent file.
 const contentOf = (artifact: Artifact | undefined): string => {

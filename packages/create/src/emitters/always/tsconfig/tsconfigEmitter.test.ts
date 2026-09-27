@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -48,13 +49,6 @@ interface TypesSource {
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 describe('buildTsconfig', () => {
   // The shared standard whole, as a React project receives it: every other case here is a delta from this one.

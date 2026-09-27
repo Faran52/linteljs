@@ -1,10 +1,11 @@
+import { pickedBy } from '@mocks/starterGates';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers } from '@answers';
 
 import {
   accessorFiles,
@@ -15,26 +16,6 @@ import {
   rtkFiles,
   rtkTests,
 } from './mockUtils';
-
-import type { StarterFile, StarterTest } from '../types';
-
-const answersFor = (overrides: Partial<Answers> = {}): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
-
-// `<destination> <variant>` for every entry whose gate holds, which is what the emitter goes on to write.
-const pickedBy = (entries: (StarterFile | StarterTest)[], overrides: Partial<Answers> = {}): string[] => {
-  const answers = answersFor(overrides);
-
-  return entries.filter((entry) => {
-    return entry.when === undefined || entry.when(answers);
-  }).map((entry) => {
-    return `${entry.target} ${entry.variant ?? 'base'}`;
-  });
-};
 
 const HOOKS: AccessorNames = {
   directory: 'src/lib/hooks',

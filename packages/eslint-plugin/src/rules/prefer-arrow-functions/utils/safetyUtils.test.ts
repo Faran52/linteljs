@@ -1,3 +1,4 @@
+import { alphabetically } from '@mocks/fixerSamples';
 import { Linter, type Rule } from 'eslint';
 import tseslint from 'typescript-eslint';
 import {
@@ -82,20 +83,14 @@ const parseFunction = (code: string, options: ParseOptions = {}): ParsedFunction
 
 describe('SAFE_DECLARATION_PARENTS', () => {
   it('lists exactly the statement positions a declaration is legal in', () => {
-    const alphabetically = (values: string[]): string[] => {
-      return values.toSorted((left, right) => {
-        return left.localeCompare(right);
-      });
-    };
-
-    expect(alphabetically([...SAFE_DECLARATION_PARENTS])).toEqual(alphabetically([
+    expect([...SAFE_DECLARATION_PARENTS].toSorted(alphabetically)).toEqual([
       'BlockStatement',
       'ExportNamedDeclaration',
       'Program',
       'StaticBlock',
       'SwitchCase',
       'TSModuleBlock',
-    ]));
+    ].toSorted(alphabetically));
   });
 });
 

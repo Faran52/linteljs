@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 
+import { spawnExit } from '@mocks/spawnExit';
 import {
   afterEach,
   beforeEach,
@@ -17,18 +18,6 @@ vi.mock('node:child_process', () => {
 
 const spawn = vi.mocked(spawnSync);
 
-// Only `status` and `stdout` are read; the rest of `SpawnSyncReturns` never is.
-const exit = (status: number, stdout = ''): ReturnType<typeof spawnSync> => {
-  return {
-    status,
-    stdout,
-    stderr: '',
-    pid: 0,
-    output: [],
-    signal: null,
-  };
-};
-
 beforeEach(() => {
   spawn.mockReset();
 });
@@ -39,7 +28,7 @@ afterEach(() => {
 
 describe('nodeSpawn', () => {
   it('answers the version it printed, with the v stripped', () => {
-    spawn.mockReturnValueOnce(exit(0, 'v26.9.0\n'));
+    spawn.mockReturnValueOnce(spawnExit(0, 'v26.9.0\n'));
 
     expect(nodeSpawn()).toBe('26.9.0');
     expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), ['--version'], { encoding: 'utf8' });
@@ -54,7 +43,7 @@ describe('nodeSpawn', () => {
   });
 
   it('answers nothing where the one it found would not run', () => {
-    spawn.mockReturnValueOnce(exit(1));
+    spawn.mockReturnValueOnce(spawnExit(1));
 
     expect(nodeSpawn()).toBeUndefined();
   });

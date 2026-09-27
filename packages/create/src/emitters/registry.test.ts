@@ -18,7 +18,7 @@ import {
 } from 'node:path';
 import { execPath } from 'node:process';
 
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+import { hostedAnswersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -68,16 +68,9 @@ interface ScannedArtifact {
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-const answersFor = (overrides: AnswerOverrides): HostedAnswers => {
-  return {
-    ...HOSTED_DEFAULTS,
-    ...overrides,
-  };
-};
-
 // The empty string where the answers emit no such artifact.
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
-  const artifact = buildArtifacts(answersFor(overrides), EMPTY_PROJECT, 'demo-app').find((candidate) => {
+  const artifact = buildArtifacts(hostedAnswersFor(overrides), EMPTY_PROJECT, 'demo-app').find((candidate) => {
     return candidate.target === target;
   });
 
@@ -86,7 +79,7 @@ const textFor = async (overrides: AnswerOverrides, target: string): Promise<stri
 
 describe('buildArtifacts', () => {
   it.each(TARGET_IDS)('resolves every artifact for %s', async (target) => {
-    const artifacts = buildArtifacts(answersFor({
+    const artifacts = buildArtifacts(hostedAnswersFor({
       target,
       libraries: ['zod'],
     }), EMPTY_PROJECT, 'demo-app');
@@ -110,21 +103,21 @@ describe('buildArtifacts', () => {
    */
   it.each(TARGET_IDS)('resolves every seeded starter for %s', async (target) => {
     const cases: HostedAnswers[] = [
-      answersFor({ target }),
+      hostedAnswersFor({ target }),
       {
-        ...answersFor({ target }),
+        ...hostedAnswersFor({ target }),
         browser: 'firefox',
       },
       {
-        ...answersFor({ target }),
+        ...hostedAnswersFor({ target }),
         router: 'react-router',
       },
       {
-        ...answersFor({ target }),
+        ...hostedAnswersFor({ target }),
         router: 'tanstack-router',
       },
       {
-        ...answersFor({
+        ...hostedAnswersFor({
           target,
           libraries: [],
         }),
@@ -157,7 +150,7 @@ describe('buildArtifacts', () => {
 
   // Two emitters writing one path would race, and the later write would win without anyone choosing it.
   it.each(TARGET_IDS)('names each path once across both lists for %s', (target) => {
-    const answers = answersFor({
+    const answers = hostedAnswersFor({
       target,
       agents: valuesOf(ANSWERS.agents.values),
       libraries: ['zod'],
@@ -205,7 +198,7 @@ describe('the project the answers write', () => {
         libraries: [],
       }];
     }).map((chosen) => {
-      const answers = answersFor(chosen);
+      const answers = hostedAnswersFor(chosen);
       const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
       const listed = new Set(artifacts.map(({ target: path }) => {
         return path;
@@ -409,7 +402,7 @@ describe('the emitted checker against the emitted starter code', () => {
   // A composed artifact is only scannable once composed.
   const scannedFor = async (target: TargetId): Promise<ScannedArtifact[]> => {
     const files = [
-      ...buildArtifacts(answersFor({
+      ...buildArtifacts(hostedAnswersFor({
         target,
         libraries: [],
         data: 'tanstack-query',
@@ -425,7 +418,7 @@ describe('the emitted checker against the emitted starter code', () => {
       }),
       // Through `seedArtifacts` rather than off the record: the record names the destination and the emitter derives
       // the asset from it, so reading the record directly would scan a path nothing writes.
-      ...seedArtifacts(answersFor({ target }), 'demo-app').flatMap((artifact) => {
+      ...seedArtifacts(hostedAnswersFor({ target }), 'demo-app').flatMap((artifact) => {
         return 'sources' in artifact.content
           ? artifact.content.sources.map((source) => {
               return {

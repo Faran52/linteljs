@@ -1,3 +1,5 @@
+import { hasForm } from './gateUtils';
+
 import type { Answers } from '@answers/registry';
 import type { TargetId } from '@answers/target/target/targetAnswer';
 import type { StarterFile, StarterTest } from '../types';
@@ -34,7 +36,7 @@ const usesMsw = (answers: Answers): boolean => {
 
 // Whether a contact page is written for the handlers to answer: a form, on a target that writes the page.
 const answersContact = (contact: boolean, answers: Answers): boolean => {
-  return contact && answers.form !== undefined;
+  return contact && hasForm(answers);
 };
 
 /**

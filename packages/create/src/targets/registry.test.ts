@@ -1,6 +1,7 @@
 import { access, constants } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { byName } from '@mocks/byName';
 import {
   describe,
   expect,
@@ -124,10 +125,6 @@ describe('TARGETS', () => {
   });
 
   it('holds exactly the nine known targets, no more and no fewer', () => {
-    const byName = (left: string, right: string): number => {
-      return left.localeCompare(right, 'en');
-    };
-
     expect(Object.keys(TARGETS).sort(byName)).toEqual([...TARGET_IDS].sort(byName));
   });
 

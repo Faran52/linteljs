@@ -1,23 +1,17 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers } from '@answers';
 
 import {
   hasForm,
   hasStore,
   pressable,
 } from './gateUtils';
-
-const answersFor = (overrides: Partial<Answers>): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 describe('the starter gates', () => {
   it.each<[string, Partial<Answers>, boolean, boolean, boolean]>([

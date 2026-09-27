@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -6,11 +7,7 @@ import {
 
 import { EMPTY_PROJECT } from '@config/constants';
 
-import {
-  type Answers,
-  DEFAULT_ANSWERS,
-  type TargetId,
-} from '@answers';
+import { type TargetId } from '@answers';
 
 import { projectSpelling, setupTestsPath } from './shapeUtils';
 
@@ -36,13 +33,6 @@ describe('projectSpelling', () => {
 });
 
 describe('setupTestsPath', () => {
-  const answersFor = (target: TargetId): Answers => {
-    return {
-      ...DEFAULT_ANSWERS,
-      target,
-    };
-  };
-
   // Read off `jsx`, since Solid and Vue set `preserve` and render without a React transform.
   it.each<[TargetId, string]>([
     ['react', '__mocks__/setupTests.tsx'],
@@ -50,11 +40,13 @@ describe('setupTestsPath', () => {
     ['vue', '__mocks__/setupTests.ts'],
     ['solid', '__mocks__/setupTests.ts'],
   ])('names the %s setup file %s', (target, path) => {
-    expect(setupTestsPath(answersFor(target))).toBe(path);
+    expect(setupTestsPath(answersFor({ target }))).toBe(path);
   });
 
   // A project that already holds the other spelling keeps it rather than gaining a second setup file.
   it('keeps the spelling a project already holds', () => {
-    expect(setupTestsPath(answersFor('react'), ['__mocks__/setupTests.ts'])).toBe('__mocks__/setupTests.ts');
+    const answers = answersFor({ target: 'react' });
+
+    expect(setupTestsPath(answers, ['__mocks__/setupTests.ts'])).toBe('__mocks__/setupTests.ts');
   });
 });

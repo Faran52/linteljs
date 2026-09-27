@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -10,7 +11,6 @@ import {
   ANSWERS,
   type Answers,
   type Browser,
-  DEFAULT_ANSWERS,
   type Router,
   type TargetId,
 } from '@answers';
@@ -19,13 +19,6 @@ import { shippedAssetsReader } from '@disk';
 import { starterSourceEmitter } from './starterSourceEmitter';
 
 import type { Artifact } from '@config/types';
-
-const answersFor = (overrides: Partial<Answers> = {}): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 const targetsFor = (overrides: Partial<Answers> = {}): string[] => {
   return starterSourceEmitter(answersFor(overrides)).map(({ target }) => {

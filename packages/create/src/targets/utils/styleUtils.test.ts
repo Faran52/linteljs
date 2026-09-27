@@ -1,32 +1,17 @@
+import { pickedBy } from '@mocks/starterGates';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import { type Answers, DEFAULT_ANSWERS } from '@answers';
+import { type Answers } from '@answers';
 
 import {
   type ComponentPaths,
   componentStyleModules,
   componentStyles,
 } from './styleUtils';
-
-import type { StarterFile } from '../types';
-
-// `<destination> <variant>` for every entry whose gate holds, which is what the emitter goes on to write.
-const pickedBy = (entries: StarterFile[], overrides: Partial<Answers> = {}): string[] => {
-  const answers: Answers = {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-
-  return entries.filter((entry) => {
-    return entry.when === undefined || entry.when(answers);
-  }).map((entry) => {
-    return `${entry.target} ${entry.variant ?? 'base'}`;
-  });
-};
 
 // Vue's spelling: two of the four renamed, so their destinations stop being the asset's own path.
 const RENAMED: ComponentPaths = {

@@ -1,3 +1,4 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -10,7 +11,6 @@ import {
   ANSWERS,
   type Answers,
   type Data,
-  DEFAULT_ANSWERS,
   type HostedFramework,
   type Library,
   type Router,
@@ -33,13 +33,6 @@ interface AnswerOverrides {
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 /**
  * Character for character: both READMEs quote it. An ordinary literal, not `String.raw`, since the emitted file

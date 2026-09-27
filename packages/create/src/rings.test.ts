@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join, matchesGlob } from 'node:path';
 
+import { byName } from '@mocks/byName';
 import { directoriesIn, modulesIn } from '@mocks/ringShape';
 import { expect, it } from 'vitest';
 
@@ -74,9 +75,5 @@ it.each(Object.entries(WORLDS))('keeps what reaches %s inside that ring', (name,
 });
 
 it('lists the directories under src/', () => {
-  const byName = (left: string, right: string): number => {
-    return left.localeCompare(right, 'en');
-  };
-
   expect(directoriesIn(import.meta.dirname).toSorted(byName)).toStrictEqual([...RINGS].toSorted(byName));
 });

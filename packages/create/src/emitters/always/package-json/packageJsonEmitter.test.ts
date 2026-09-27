@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -77,13 +78,6 @@ const storeFor = (target: TargetId): Partial<Answers> => {
   }).stores ?? [];
 
   return store === undefined ? {} : { store };
-};
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
 };
 
 // What a scaffolder leaves on disk before this package edits it.

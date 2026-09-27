@@ -1,35 +1,13 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type PackageManager,
-  type Styling,
-  type TargetId,
-  type Testing,
-} from '@answers';
+import { type TargetId } from '@answers';
 
 import { buildScripts } from './scriptUtils';
-
-interface AnswerOverrides {
-  target?: TargetId;
-  testing?: Testing;
-  packageManager?: PackageManager;
-  styling?: Styling;
-  data?: Data;
-}
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 describe('buildScripts', () => {
   it('chains check through every gate the answers enable', () => {

@@ -9,7 +9,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
+import { hostedAnswersFor } from '@mocks/answersFor';
 import { plantBinary } from '@mocks/plantBinary';
 import {
   afterEach,
@@ -25,7 +25,6 @@ import { type Stage } from '@config/types';
 import {
   type Agent,
   CONFIG_PATH,
-  type HostedAnswers,
   type Library,
   type PackageManager,
   type Plugin,
@@ -45,13 +44,6 @@ interface AnswerOverrides {
   agents?: Agent[];
   plugins?: Plugin[];
 }
-
-const answersFor = (overrides: AnswerOverrides): HostedAnswers => {
-  return {
-    ...HOSTED_DEFAULTS,
-    ...overrides,
-  };
-};
 
 let cwd = '';
 
@@ -74,7 +66,7 @@ const generate = async (overrides: AnswerOverrides): Promise<string[]> => {
   await pipelineRun({
     name: 'demo-app',
     cwd,
-    answers: answersFor(overrides),
+    answers: hostedAnswersFor(overrides),
     existing: true,
     skip: ['install'],
     onWrite: (path) => {
@@ -130,7 +122,7 @@ describe('runPipeline against a directory that already exists', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       existing: true,
       skip: ['lint', 'install', 'fix'],
       onWrite: (path) => {
@@ -145,7 +137,7 @@ describe('runPipeline against a directory that already exists', () => {
 
   // Seeded first, in the same stage, so the recorded answers and the dependencies they imply agree.
   it('records the answers it was given before the package.json they imply', async () => {
-    const answers = answersFor({
+    const answers = hostedAnswersFor({
       target: 'svelte',
       libraries: ['zod'],
       agents: ['codex'],
@@ -173,7 +165,7 @@ describe('a project being born', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       skip: ['install', 'fix'],
       ...born,
       onWrite: (path) => {
@@ -193,7 +185,7 @@ describe('stage timing', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       existing: true,
       skip: ['package', 'install', 'fix'],
       onStage: (stage, index, total) => {
@@ -211,7 +203,7 @@ describe('stage timing', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       existing: true,
       skip: ['install', 'fix'],
       onStageDone: (_stage, milliseconds) => {
@@ -267,7 +259,7 @@ describe('the stages that shell out', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({ packageManager }),
+      answers: hostedAnswersFor({ packageManager }),
       skip: ['lint', 'package', 'standard', 'fix'],
       onNotice: (message) => {
         notices.push(message);
@@ -286,7 +278,7 @@ describe('the stages that shell out', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({ packageManager: 'yarn' }),
+      answers: hostedAnswersFor({ packageManager: 'yarn' }),
       skip: ['lint', 'package', 'standard', 'fix'],
     });
 
@@ -314,7 +306,7 @@ describe('the repository the hooks install into', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       skip: ['lint', 'package', 'install', 'fix'],
       onNotice: (message) => {
         notices.push(message);
@@ -360,7 +352,7 @@ describe('the repository the hooks install into', () => {
     await expect(pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       skip: ['lint', 'package', 'install', 'fix'],
     })).resolves.toBeUndefined();
   });
@@ -375,7 +367,7 @@ describe('the fix stage', () => {
     await pipelineRun({
       name: 'demo-app',
       cwd,
-      answers: answersFor({}),
+      answers: hostedAnswersFor({}),
       skip,
       onNotice: (message) => {
         notices.push(message);
@@ -415,6 +407,6 @@ describe('what create and sync each discover about a project', () => {
   it('leaves sync nothing to report on a project it has just written', async () => {
     await generate({});
 
-    expect((await planSync(cwd, answersFor({}))).pending).toEqual([]);
+    expect((await planSync(cwd, hostedAnswersFor({}))).pending).toEqual([]);
   });
 });

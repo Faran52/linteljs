@@ -1,36 +1,12 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type Browser,
-  type Data,
-  DEFAULT_ANSWERS,
-  type PackageManager,
-  type Styling,
-  type TargetId,
-} from '@answers';
-
 import { mergePnpmWorkspace, pnpmWorkspaceEmitter } from './pnpmWorkspaceEmitter';
 import { allowBuildsBlock, emitPnpmWorkspace } from './utils/emitUtils';
-
-interface AnswerOverrides {
-  target?: TargetId;
-  packageManager?: PackageManager;
-  browser?: Browser;
-  styling?: Styling;
-  data?: Data;
-}
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 describe('pnpmWorkspaceEmitter', () => {
   it('owns the workspace file only under pnpm', () => {

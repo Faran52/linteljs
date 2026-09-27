@@ -1,26 +1,11 @@
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
 
-import {
-  type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type Styling,
-  type TargetId,
-  type Testing,
-} from '@answers';
-
 import { fillSlots, sharedSlots } from './templateUtils';
-
-interface AnswerOverrides {
-  target?: TargetId;
-  testing?: Testing;
-  styling?: Styling;
-  data?: Data;
-}
 
 describe('fillSlots', () => {
   it('replaces every slot with its value', () => {
@@ -48,13 +33,6 @@ describe('fillSlots', () => {
 });
 
 describe('sharedSlots', () => {
-  const answersFor = (overrides: AnswerOverrides): Answers => {
-    return {
-      ...DEFAULT_ANSWERS,
-      ...overrides,
-    };
-  };
-
   it('names the project, the target label and the package manager run prefix', () => {
     const slots = sharedSlots('demo-app', answersFor({ target: 'react' }));
 

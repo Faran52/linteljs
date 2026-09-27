@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { answersFor } from '@mocks/answersFor';
 import {
   describe,
   expect,
@@ -9,36 +10,15 @@ import {
 
 import {
   type Answers,
-  type Data,
-  DEFAULT_ANSWERS,
-  type Router,
-  type Styling,
   type TargetId,
-  type Testing,
   type TypeSafety,
 } from '@answers';
 import { TEMPLATES_ROOT } from '@disk';
 
 import { bannedPatternsEmitter, checkerArtifact } from './bannedPatternsEmitter';
 
-interface AnswerOverrides {
-  target?: TargetId;
-  typeSafety?: TypeSafety;
-  router?: Router;
-  testing?: Testing;
-  styling?: Styling;
-  data?: Data;
-}
-
 // The file the artifact copies from, read the way `shippedAssetsReader` reads it.
 const SHIPPED = join(TEMPLATES_ROOT, 'project/scripts/checkBannedPatterns.ts');
-
-const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
-    ...DEFAULT_ANSWERS,
-    ...overrides,
-  };
-};
 
 const transformOf = (answers: Answers): ((source: string, current: string | null) => string) => {
   const { content } = checkerArtifact(answers);
