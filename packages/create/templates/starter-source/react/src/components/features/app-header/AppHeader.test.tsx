@@ -26,6 +26,7 @@ describe('AppHeader', () => {
       />,
     );
 
+    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
     expect(screen.getByText('my-app')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Home' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'About' })).toBeTruthy();

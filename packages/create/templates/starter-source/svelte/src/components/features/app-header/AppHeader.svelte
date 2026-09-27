@@ -14,6 +14,7 @@
 
 <!-- Real links, because SvelteKit routes whatever was answered. -->
 <header {...styles.header}>
+  <p {...styles.starterLabel}>LintelJS Starter</p>
   <p {...styles.brand}>{name}</p>
   <nav {...styles.tabs} aria-label="Main">
     {#each PAGES as entry (entry.id)}

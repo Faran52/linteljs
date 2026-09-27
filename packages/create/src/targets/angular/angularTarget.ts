@@ -90,6 +90,14 @@ export const angularTarget: TargetRecord = {
       variant: 'tailwind',
       shared: true,
     },
+    // The Angular builder runs Tailwind 4 only through a PostCSS config, and reads JSON alone.
+    {
+      target: '.postcssrc.json',
+      when: (answers) => {
+        return answers.styling === 'tailwind';
+      },
+      variant: 'tailwind',
+    },
   ],
   // The header is outside the outlet, so opening each route covers the shell and every page.
   starterTests: [

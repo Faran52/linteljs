@@ -17,8 +17,20 @@ const sheet = stylex.create({
     borderBottomColor: tokens.border,
   },
 
+  starterLabel: {
+    flex: 'none',
+    margin: 0,
+    fontSize: tokens.textEyebrow,
+    fontWeight: 620,
+    color: tokens.primary,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    whiteSpace: 'nowrap',
+  },
+
   // The name is whatever was typed, so it truncates rather than pushing the nav off.
   brand: {
+    flex: '1',
     minWidth: 0,
     margin: 0,
     overflow: 'hidden',
@@ -66,6 +78,7 @@ const sheet = stylex.create({
 
 export const styles = {
   header: stylex.props(sheet.header),
+  starterLabel: stylex.props(sheet.starterLabel),
   brand: stylex.props(sheet.brand),
   tabs: stylex.props(sheet.tabs),
 

@@ -77,6 +77,8 @@ export interface TailwindSlot {
   dependencies: string[];
   devDependencies: string[];
   tsconfigInclude?: string[];
+  // Forced on the whole tree through the manager's own override field.
+  overrides?: string[];
 }
 
 export interface TsconfigDelta {

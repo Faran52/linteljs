@@ -18,15 +18,12 @@ describe('renderPopup', () => {
     expect(root.querySelector('svg[role="img"]')).not.toBeNull();
   });
 
-  it('counts up when its button is pressed', () => {
+  it('points at the gate, as every home page does', () => {
     const root = open();
 
-    expect(root.querySelector('.count')?.textContent).toBe('0');
+    const hint = root.querySelector('.hint')?.textContent;
 
-    root
-      .querySelector('button')
-      ?.click();
-
-    expect(root.querySelector('.count')?.textContent).toBe('1');
+    expect(hint).toBe('Run pnpm check for lint, types, tests and build.');
+    expect(root.querySelector('button')).toBeNull();
   });
 });

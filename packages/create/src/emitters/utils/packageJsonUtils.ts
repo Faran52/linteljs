@@ -140,6 +140,12 @@ export const versioned = (names: string[], pins: Record<string, string> = {}): R
   return result;
 };
 
+export const buildOverrides = (answers: Answers): Record<string, string> => {
+  const overrides = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides : undefined;
+
+  return versioned(overrides ?? []);
+};
+
 export const buildDependencies = (answers: Answers): Record<string, string> => {
   const target = targetFor(answers);
   const names = [

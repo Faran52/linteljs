@@ -17,6 +17,7 @@ describe('layout', () => {
   it('names the project and links every page, around what it routes', () => {
     render(Layout, { children: routed });
 
+    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
     expect(screen.getByText(NAME)).toBeTruthy();
     expect(screen.getByRole('link', { name: 'About' })).toBeTruthy();
     expect(screen.getByText('routed')).toBeTruthy();

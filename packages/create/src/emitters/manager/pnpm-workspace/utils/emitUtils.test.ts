@@ -5,7 +5,18 @@ import {
   it,
 } from 'vitest';
 
-import { allowBuildsBlock } from './emitUtils';
+import { allowBuildsBlock, overridesBlock } from './emitUtils';
+
+describe('overridesBlock', () => {
+  it('quotes each name and version, one per line', () => {
+    const block = overridesBlock({
+      '@scope/a': '1.0.0',
+      'b': '2.0.0',
+    });
+
+    expect(block).toBe("overrides:\n  '@scope/a': '1.0.0'\n  'b': '2.0.0'\n");
+  });
+});
 
 describe('allowBuildsBlock', () => {
   it('allows the four builds every target approves, sorted', () => {

@@ -16,6 +16,7 @@ import {
   allowedBuildNames,
   buildDependencies,
   buildDevDependencies,
+  buildOverrides,
   type PackageJson,
   parsePackageJson,
 } from '../../utils/packageJsonUtils';
@@ -54,6 +55,9 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   // `yarn-classic` is yarn 1 and declares itself `yarn`.
   const binary = MANAGER_BINARIES[pm];
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];
+  const overrides = buildOverrides(answers);
+  // pnpm reads its overrides from `pnpm-workspace.yaml`; yarn names the field `resolutions`.
+  const overrideField = pm === 'npm' || pm === 'bun' ? 'overrides' : 'resolutions';
 
   return {
     ...packageJson,
@@ -87,6 +91,14 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     // Never empty: `qs` is read by `http.ts`, which every project receives.
     dependencies,
     devDependencies,
+    ...(Object.keys(overrides).length === 0 || pm === 'pnpm'
+      ? {}
+      : {
+          [overrideField]: {
+            ...existing[overrideField],
+            ...overrides,
+          },
+        }),
     // bun blocks every install script it has not been told about, and reads the list from here.
     ...(answers.packageManager === 'bun' ? { trustedDependencies: allowedBuildNames(answers) } : {}),
     // npm 12 blocks every unlisted install script and reads the list from here, not `.npmrc`.

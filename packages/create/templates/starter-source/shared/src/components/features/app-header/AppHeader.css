@@ -10,8 +10,20 @@
   border-bottom: 1px solid var(--border);
 }
 
+.starter-label {
+  flex: none;
+  margin: 0;
+  font-size: var(--text-eyebrow);
+  font-weight: 620;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
 /* The name is whatever was typed, so it truncates rather than pushing the nav off. */
 .brand {
+  flex: 1;
   min-width: 0;
   margin: 0;
   overflow: hidden;

@@ -40,6 +40,7 @@ const GATES: GateRow[] = [
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
+  ['.postcssrc.json@tailwind', TAILWIND],
   ['./components/ui/button/Button.css', PRESSABLE],
   ['./components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/lib/services/extended-query/extended-query.spec.ts@tanstack-query', TANSTACK_QUERY],

@@ -5,11 +5,13 @@ import {
 } from 'react-native';
 
 import { GATE, STANDARD_PATHS } from '../config/standard';
-import { layout, text } from '../styles/starter';
+import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
 
 const AboutScreen = (): ReactNode => {
+  const { layout, text } = useStarterStyles();
+
   return (
     <ScrollView style={layout.screen}>
       <Text style={text.pageTitle}>About</Text>

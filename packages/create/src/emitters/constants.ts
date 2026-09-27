@@ -177,6 +177,8 @@ export const VERSIONS: Record<string, string> = {
   'react-hook-form': '^7.88.0',
   // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version.
   'react-native-css': '3.1.0-rc.0',
+  // NativeWind 5's documented pin: react-native-css fails to deserialize global.css under 1.32 and 1.33.
+  'lightningcss': '1.30.1',
   'react-router': '^8.4.0',
   // Pinned with the router: React Router releases them as one version.
   '@react-router/dev': '^8.4.0',

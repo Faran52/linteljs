@@ -121,7 +121,7 @@ it('writes the angular entry with its rejection value typed', async () => {
 describe('starter tests', () => {
   it.each<[TargetId, string, string]>([
     ['react', 'src/App.test.tsx', 'src/App.tsx'],
-    ['webextension', 'src/counter.test.ts', 'src/counter.ts'],
+    ['webextension', 'src/popup/renderPopup.test.ts', 'src/popup/renderPopup.ts'],
   ])('gates the %s suite %s on the file it covers', (target, suite, covers) => {
     const artifact = artifactFor({ target }, suite);
 
@@ -130,7 +130,9 @@ describe('starter tests', () => {
   });
 
   it('gates a suite that needs nothing else on the file it covers alone', () => {
-    expect(artifactFor({ target: 'webextension' }, 'src/counter.test.ts')?.requires).toEqual(['src/counter.ts']);
+    const requires = artifactFor({ target: 'webextension' }, 'src/popup/renderPopup.test.ts')?.requires;
+
+    expect(requires).toEqual(['src/popup/renderPopup.ts']);
   });
 
   it('gates the store suite on a counter only a store writes', () => {

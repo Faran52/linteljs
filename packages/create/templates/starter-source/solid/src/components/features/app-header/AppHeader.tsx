@@ -14,6 +14,7 @@ export interface AppHeaderProps {
 export const AppHeader = (props: AppHeaderProps): JSX.Element => {
   return (
     <header {...styles.header}>
+      <p {...styles.starterLabel}>LintelJS Starter</p>
       <p {...styles.brand}>{props.name}</p>
       <nav {...styles.tabs} aria-label="Main">
         <For each={ROUTES}>

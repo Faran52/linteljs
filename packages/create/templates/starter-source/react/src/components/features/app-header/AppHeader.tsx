@@ -18,6 +18,7 @@ export const AppHeader: FC<AppHeaderProps> = ({
 }) => {
   return (
     <header {...styles.header}>
+      <p {...styles.starterLabel}>LintelJS Starter</p>
       <p {...styles.brand}>{name}</p>
       <nav {...styles.tabs} aria-label="Main">
         {ROUTES

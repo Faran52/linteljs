@@ -2,11 +2,13 @@ import { Text, View } from 'react-native';
 
 import { Mark } from '../components/ui/mark/Mark';
 import { NAME } from '../config/linteljs';
-import { layout, text } from '../styles/starter';
+import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
 
 const HomeScreen = (): ReactNode => {
+  const { layout, text } = useStarterStyles();
+
   return (
     <View style={[layout.screen, layout.hero]}>
       <Mark />

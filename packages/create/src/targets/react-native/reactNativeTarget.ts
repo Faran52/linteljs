@@ -67,6 +67,7 @@ export const reactNativeTarget: TargetRecord = {
     devDependencies: ['postcss'],
     // NativeWind otherwise adds this to `include` on the first bundle, which is `check` rewriting what it checks.
     tsconfigInclude: ['nativewind-env.d.ts'],
+    overrides: ['lightningcss'],
   },
   tsconfig: {
     jsx: 'react-jsx',
@@ -129,6 +130,11 @@ export const reactNativeTarget: TargetRecord = {
       when: isTailwind,
       variant: 'tailwind',
     },
+    {
+      target: 'postcss.config.mjs',
+      when: isTailwind,
+      variant: 'tailwind',
+    },
   ],
   // expo-router treats every file under the route root as a route; `expo export` died on a suite there.
   starterTests: [
@@ -151,6 +157,10 @@ export const reactNativeTarget: TargetRecord = {
     {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
+    },
+    {
+      target: 'src/styles/starter.test.ts',
+      covers: 'src/styles/starter.ts',
     },
   ],
   typecheck: 'tsc --noEmit',

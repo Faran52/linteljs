@@ -1,18 +1,27 @@
 import { Tabs } from 'expo-router';
 
 import { PAGES } from '../config/routes';
-import { colors, layout } from '../styles/starter';
+import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
 
 const RootLayout = (): ReactNode => {
+  const { colors, layout } = useStarterStyles();
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerTitle: 'LintelJS Starter',
+        headerTitleAlign: 'left',
+        headerStyle: layout.header,
+        headerTintColor: colors.foreground,
+        headerShadowVisible: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: layout.tabBar,
+        tabBarIconStyle: { display: 'none' },
+        tabBarLabelStyle: { fontSize: 15 },
+        tabBarItemStyle: { justifyContent: 'center' },
         sceneStyle: layout.scene,
       }}
     >

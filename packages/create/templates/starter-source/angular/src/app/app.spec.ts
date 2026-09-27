@@ -26,6 +26,7 @@ describe('App', () => {
   it('names the project and links every page the route list names', async () => {
     const root = await open('/');
 
+    expect(root.querySelector('.starter-label')?.textContent).toBe('LintelJS Starter');
     expect(root.querySelector('.brand')?.textContent).toContain(NAME);
     expect(root.querySelectorAll('.tab')).toHaveLength(PAGES.length);
   });

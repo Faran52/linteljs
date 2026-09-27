@@ -5,12 +5,14 @@ import {
 } from 'react-native';
 
 import { ANSWERS, STACK } from '../config/linteljs';
-import { layout, text } from '../styles/starter';
+import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
 
 // What was recorded at birth: a device cannot read the machine that generated the project.
 const VersionScreen = (): ReactNode => {
+  const { layout, text } = useStarterStyles();
+
   return (
     <ScrollView style={layout.screen}>
       <Text style={text.pageTitle}>Version</Text>

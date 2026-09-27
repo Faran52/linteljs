@@ -1,32 +1,34 @@
 /*
- * Dark mode is a class, not a media query: an application offering the choice must set it.
+ * Each colour is `light-dark()`, so the page follows the system and a `.light` or `.dark` class pins it instead.
  * Each group keeps a heading: stylelint allows a blank line before a custom property only after a comment.
  */
 
 :root {
+  color-scheme: light dark;
+
   /* Motion, so no stylesheet writes its own milliseconds. */
   --motion-fast: 160ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 
   /* Surfaces and the text on them. */
-  --background: #faf9f7;
-  --card: #fff;
-  --foreground: #1c1b19;
-  --foreground-2: #3d3a35;
-  --muted: #f2f0ec;
-  --muted-foreground: #6f6b64;
-  --faint: #8a857d;
-  --dim: #a8a29a;
-  --border: #e7e3dd;
-  --hair: #f0ece7;
-  --input: #e7e3dd;
+  --background: light-dark(#faf9f7, #1f2128);
+  --card: light-dark(#fff, #262932);
+  --foreground: light-dark(#1c1b19, #f0ede7);
+  --foreground-2: light-dark(#3d3a35, #c9c5bd);
+  --muted: light-dark(#f2f0ec, #2e313a);
+  --muted-foreground: light-dark(#6f6b64, #8e8a82);
+  --faint: light-dark(#8a857d, #78746d);
+  --dim: light-dark(#a8a29a, #5a5750);
+  --border: light-dark(#e7e3dd, #32343c);
+  --hair: light-dark(#f0ece7, #2a2c34);
+  --input: light-dark(#e7e3dd, #32343c);
 
   /* The brand, and the three states that answer back. */
-  --primary: #a8541c;
-  --primary-foreground: #fff;
+  --primary: light-dark(#a8541c, #e8a05c);
+  --primary-foreground: light-dark(#fff, #241505);
   --ring: var(--primary);
-  --ok: #1f7a6d;
-  --destructive: #b23a32;
+  --ok: light-dark(#1f7a6d, #2f9e8f);
+  --destructive: light-dark(#b23a32, #d2544b);
 
   /* Radii, by role rather than by size. */
   --radius-xs: 4px;
@@ -45,23 +47,10 @@
   --text-metric: 1.063rem;
 }
 
-.dark {
-  /* Surfaces and the text on them. */
-  --background: #1f2128;
-  --card: #262932;
-  --foreground: #f0ede7;
-  --foreground-2: #c9c5bd;
-  --muted: #2e313a;
-  --muted-foreground: #8e8a82;
-  --faint: #78746d;
-  --dim: #5a5750;
-  --border: #32343c;
-  --hair: #2a2c34;
-  --input: #32343c;
+.light {
+  color-scheme: light;
+}
 
-  /* The brand, and the three states that answer back. */
-  --primary: #e8a05c;
-  --primary-foreground: #241505;
-  --ok: #2f9e8f;
-  --destructive: #d2544b;
+.dark {
+  color-scheme: dark;
 }

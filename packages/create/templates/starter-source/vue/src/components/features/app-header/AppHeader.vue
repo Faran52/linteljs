@@ -17,6 +17,9 @@ const route = useRoute();
 
 <template>
   <header v-bind="styles.header">
+    <p v-bind="styles.starterLabel">
+      LintelJS Starter
+    </p>
     <p v-bind="styles.brand">
       {{ name }}
     </p>

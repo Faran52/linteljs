@@ -179,6 +179,40 @@ describe('patchPackageJson', () => {
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
   });
 
+  it.each([
+    ['npm', 'overrides'],
+    ['bun', 'overrides'],
+    ['yarn', 'resolutions'],
+    ['yarn-classic', 'resolutions'],
+  ] as const)('pins lightningcss for NativeWind under %s in %s, keeping its own', (packageManager, field) => {
+    const patched = patchPackageJson({ [field]: { 'left-pad': '1.0.0' } }, answersFor({
+      target: 'react-native',
+      styling: 'tailwind',
+      packageManager,
+    }));
+
+    expect(patched[field]).toEqual({
+      'left-pad': '1.0.0',
+      'lightningcss': VERSIONS['lightningcss'],
+    });
+  });
+
+  it('writes no override field under pnpm, nor without NativeWind', () => {
+    const pnpm = patchPackageJson({}, answersFor({
+      target: 'react-native',
+      styling: 'tailwind',
+      packageManager: 'pnpm',
+    }));
+    const plain = patchPackageJson({}, answersFor({
+      target: 'react-native',
+      packageManager: 'npm',
+    }));
+
+    expect(pnpm).not.toHaveProperty('overrides');
+    expect(pnpm).not.toHaveProperty('resolutions');
+    expect(plain).not.toHaveProperty('overrides');
+  });
+
   it('approves every build for npm, keeps what the scaffolder approved, and writes nothing elsewhere', () => {
     const npm = patchPackageJson({ allowScripts: { 'some-native': true } }, answersFor({
       target: 'angular',

@@ -1,8 +1,13 @@
 import { type Answers, type Artifact } from '@config/types';
 
 import { merged } from '../../utils/artifactUtils';
+import { buildOverrides } from '../../utils/packageJsonUtils';
 
-import { allowBuildsBlock, RELEASE_AGE_BLOCK } from './utils/emitUtils';
+import {
+  allowBuildsBlock,
+  overridesBlock,
+  RELEASE_AGE_BLOCK,
+} from './utils/emitUtils';
 
 // create-next-app opts out of exactly the builds linteljs opts into; left in, pnpm refuses the install.
 const SUPERSEDED_KEY = 'ignoredBuiltDependencies:';
@@ -32,9 +37,12 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
   const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
   const hasAgePolicy = /^minimumReleaseAge:/m.test(withBuilds);
   const withAge = hasAgePolicy ? withBuilds : `${withBuilds.trimEnd()}\n\n${RELEASE_AGE_BLOCK}`;
+  const overrides = buildOverrides(answers);
+  const keepsOverrides = Object.keys(overrides).length === 0 || /^overrides:/m.test(withAge);
+  const withOverrides = keepsOverrides ? withAge : `${withAge.trimEnd()}\n\n${overridesBlock(overrides)}`;
 
   // `trimEnd`: an anchored `\n+$` is the shape `sonarjs/super-linear-regex` reports.
-  return `${withAge.trimEnd()}\n`;
+  return `${withOverrides.trimEnd()}\n`;
 };
 
 // Discarding it breaks an install that already wrote into it.

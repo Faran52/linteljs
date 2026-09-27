@@ -40,5 +40,15 @@
   --text-metric: var(--text-metric);
 }
 
-/* The class the tokens switch on, so `dark:` utilities and the token block agree about what dark means. */
-@custom-variant dark (&:where(.dark, .dark *));
+/* The condition the tokens switch on: the system, unless a `.light` or `.dark` class pins it. */
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:not(:where(.light, .light *)) {
+      @slot;
+    }
+  }
+}

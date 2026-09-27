@@ -58,6 +58,7 @@ const GATES: GateRow[] = [
   ...contactGates(['tanstack-query', 'rtk-query']),
   ['.babelrc@stylex', STYLEX],
   ['postcss.config.mjs@stylex', STYLEX],
+  ['postcss.config.mjs@tailwind', TAILWIND],
   ['src/config/routes.ts', WITHOUT_FORM],
   ['src/config/routes.ts@with-form', WITH_FORM],
   ['src/app/page.tsx', WITHOUT_STORE],

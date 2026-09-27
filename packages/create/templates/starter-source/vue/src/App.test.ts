@@ -20,8 +20,12 @@ describe('App', () => {
     const drawn = app
       .find('svg[role="img"]')
       .exists();
+    const header = app
+      .find('header')
+      .text();
 
     expect(drawn).toBe(true);
+    expect(header).toContain('LintelJS Starter');
   });
 
   it('links to every page the route list names', async () => {

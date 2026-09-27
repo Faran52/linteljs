@@ -19,6 +19,7 @@ export const AppHeader = ({ name }: AppHeaderProps): ReactNode => {
 
   return (
     <header {...styles.header}>
+      <p {...styles.starterLabel}>LintelJS Starter</p>
       <p {...styles.brand}>{name}</p>
       <nav {...styles.tabs} aria-label="Main">
         {PAGES

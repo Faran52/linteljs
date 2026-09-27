@@ -96,6 +96,19 @@ when a version's change lives in a sibling it is described there instead:
 - An Astro project gets `dev` and `preview` scripts, like every other target.
 - Vue and the web extension popup mount on `#root`, the element their `index.html` carries; they mounted on `#app`
   and rendered nothing.
+- The starter follows the system colour scheme. Each colour token is `light-dark()` under `color-scheme: light dark`,
+  a `.light` or `.dark` class pins either, and Tailwind's `dark:` variant matches the same condition. React Native
+  reads the same token values for light and dark through `useColorScheme`.
+- A Next or React Native project answering `tailwind` gets a `postcss.config.mjs` and an Angular one a
+  `.postcssrc.json`, so Tailwind runs. Without them the raw `@theme`, `@custom-variant` and `@utility` reached the
+  bundler, which warned on each request.
+- A React Native project answering `tailwind` pins `lightningcss` to 1.30.1, NativeWind 5's documented version,
+  through the manager's own override field; under 1.32 and 1.33 react-native-css failed the Android bundle.
+- Every starter header carries a "LintelJS Starter" label at its left, and React Native turns on the tab
+  navigator's header to show it.
+- The web extension popup drops its counter, which no store answer put there, and shows the gate hint every other
+  home page shows.
+- React Native's mark animates like the web one, through Reanimated, and holds still under reduced motion.
 - A pnpm project's `pnpm-workspace.yaml` sets `minimumReleaseAge: 2880` and exempts `@linteljs/*`, so a fresh
   linteljs release installs the day it ships; a project's own `minimumReleaseAge` is left alone.
 - On Yarn inside CI, the first install writes its lockfile. Yarn 4 turns immutable installs on under CI and refused

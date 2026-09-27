@@ -27,6 +27,7 @@ describe('App', () => {
       return <App />;
     });
 
+    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
     expect(screen.getByRole('img', { name: 'linteljs' })).toBeTruthy();
   });
 

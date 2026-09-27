@@ -9,6 +9,7 @@ interface ElementProps {
 
 export const styles = {
   header: { className: 'header' },
+  starterLabel: { className: 'starter-label' },
   brand: { className: 'brand' },
   tabs: { className: 'tabs' },
 

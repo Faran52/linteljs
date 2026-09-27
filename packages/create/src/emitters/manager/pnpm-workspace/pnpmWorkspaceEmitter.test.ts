@@ -96,6 +96,31 @@ describe('mergePnpmWorkspace', () => {
   });
 });
 
+describe('the NativeWind lightningcss pin', () => {
+  const nativewind = answersFor({
+    target: 'react-native',
+    styling: 'tailwind',
+  });
+
+  it('appends the override block for react-native with tailwind', () => {
+    const merged = mergePnpmWorkspace(null, nativewind);
+
+    expect(merged).toContain("\n\noverrides:\n  'lightningcss': '1.30.1'\n");
+  });
+
+  it('leaves an overrides block the project wrote alone', () => {
+    const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\noverrides:\n  left-pad: 1.0.0\n";
+
+    expect(mergePnpmWorkspace(existing, nativewind)).toBe(existing);
+  });
+
+  it('writes no override without NativeWind', () => {
+    const merged = mergePnpmWorkspace(null, answersFor({ target: 'react-native' }));
+
+    expect(merged).not.toContain('overrides:');
+  });
+});
+
 it('adds allowBuilds to a next scaffold that has none', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 

@@ -38,10 +38,14 @@ describe('AppHeader', () => {
   it('names the project and links every page on the one route list', async () => {
     const header = await open('/');
 
+    const label = header
+      .find('.starter-label')
+      .text();
     const name = header
-      .find('header p')
+      .find('.brand')
       .text();
 
+    expect(label).toBe('LintelJS Starter');
     expect(name).toBe('my-app');
     expect(header.findAll('nav a')).toHaveLength(PAGES.length);
   });

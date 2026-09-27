@@ -16,6 +16,9 @@ const route = useRoute();
 <!-- `NuxtLink` prefetches a route and keeps the address bar honest. -->
 <template>
   <header class="header">
+    <p class="starter-label">
+      LintelJS Starter
+    </p>
     <p class="brand">
       {{ name }}
     </p>

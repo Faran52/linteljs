@@ -13,6 +13,19 @@ vi.mock('react-native-screens', async () => {
   };
 });
 
+// Reanimated reaches its native worklets at import, and so does the mock it ships; a view stands in.
+vi.mock('react-native-reanimated', async () => {
+  const { View } = await vi.importActual<typeof import('react-native')>('react-native');
+
+  return {
+    default: { View },
+    cubicBezier: vi.fn(),
+    useReducedMotion: vi.fn(() => {
+      return false;
+    }),
+  };
+});
+
 // Node's `Request` refuses the relative fetch Expo resolves against its dev server at runtime.
 const NodeRequest = globalThis.Request;
 

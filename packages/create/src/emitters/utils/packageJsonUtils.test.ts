@@ -21,6 +21,7 @@ import {
   allowedBuildNames,
   buildDependencies,
   buildDevDependencies,
+  buildOverrides,
   parsePackageJson,
   versioned,
 } from './packageJsonUtils';
@@ -122,6 +123,25 @@ describe('the mocking answer', () => {
   it('allows the install script that copies the worker', () => {
     expect(allowedBuildNames(answersFor({ mocking: 'msw' }))).toContain('msw');
     expect(allowedBuildNames(answersFor({}))).not.toContain('msw');
+  });
+});
+
+describe('buildOverrides', () => {
+  it('pins lightningcss where NativeWind compiles the styles', () => {
+    const overrides = buildOverrides(answersFor({
+      target: 'react-native',
+      styling: 'tailwind',
+    }));
+
+    expect(overrides).toEqual({ lightningcss: VERSIONS['lightningcss'] });
+  });
+
+  it('pins nothing for Tailwind on the web or for React Native without it', () => {
+    const web = buildOverrides(answersFor({ styling: 'tailwind' }));
+    const plain = buildOverrides(answersFor({ target: 'react-native' }));
+
+    expect(web).toEqual({});
+    expect(plain).toEqual({});
   });
 });
 
@@ -479,6 +499,7 @@ const PINNED_TIGHTER: Record<string, string> = {
   'expo-linking': '~',
   'expo-router': '~',
   'expo-status-bar': '~',
+  'lightningcss': '',
   'react-native': '',
   'react-native-css': '',
   'react-native-gesture-handler': '~',

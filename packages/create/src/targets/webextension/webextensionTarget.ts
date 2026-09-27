@@ -44,11 +44,6 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
       source: 'src/components/ui/mark/Mark.css',
       shared: true,
     },
-    {
-      target: 'src/popup/button.css',
-      source: 'src/components/ui/button/Button.css',
-      shared: true,
-    },
   ];
 
   if (hasSurface(answers, 'background')) {
@@ -124,12 +119,11 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     extraAliases: { '@model/*': './src/lib/model/*' },
     omitAliases: ['@store/*'],
     styleEntry: 'src/style.css',
-    // Beside their markup: the mark is a string in `lib/` and the popup builds its button node by node.
+    // Beside its markup: the mark is a string in `lib/`.
     starterStyles: [
       './styles/tokens.css',
       './styles/base.css',
       './lib/mark.css',
-      './popup/button.css',
     ],
     tailwindTheme: './styles/theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
@@ -149,10 +143,6 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     starterFiles: [...mockFiles(false), ...surfaceFiles(answers, answers.browser)],
     starterTests: [
       ...mockTests(false),
-      {
-        target: 'src/counter.test.ts',
-        covers: 'src/counter.ts',
-      },
       {
         target: 'src/popup/renderPopup.test.ts',
         covers: 'src/popup/renderPopup.ts',

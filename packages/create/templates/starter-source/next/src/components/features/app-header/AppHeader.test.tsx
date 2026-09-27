@@ -9,6 +9,7 @@ describe('AppHeader', () => {
   it('names the project and links every page the route list names', () => {
     render(<AppHeader name="my-app" />);
 
+    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
     expect(screen.getByText('my-app')).toBeTruthy();
 
     for (const { label } of PAGES) {

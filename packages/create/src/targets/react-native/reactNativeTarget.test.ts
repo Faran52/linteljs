@@ -46,6 +46,7 @@ const GATES: GateRow[] = [
   ['__mocks__/renderScreen.tsx', [{ testing: ['vitest'] }]],
   ['metro.config.js@tailwind', TAILWIND],
   ['nativewind-env.d.ts@tailwind', TAILWIND],
+  ['postcss.config.mjs@tailwind', TAILWIND],
   ['src/app/_layout.tsx', [{ styling: [undefined, 'stylex'] }]],
   ['src/app/_layout.tsx@tailwind', TAILWIND],
   ['src/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],

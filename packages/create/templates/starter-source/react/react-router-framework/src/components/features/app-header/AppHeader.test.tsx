@@ -14,6 +14,7 @@ describe('AppHeader', () => {
       </MemoryRouter>,
     );
 
+    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
     expect(screen.getByText('my-app')).toBeTruthy();
 
     for (const { label, path } of ROUTES) {

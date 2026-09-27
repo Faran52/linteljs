@@ -13,6 +13,7 @@ const here = Astro.url.pathname;
 
 <!-- Real links: Astro renders each page on the server. -->
 <header {...styles.header}>
+  <p {...styles.starterLabel}>LintelJS Starter</p>
   <p {...styles.brand}>{name}</p>
   <nav {...styles.tabs} aria-label="Main">
     {PAGES.map((page) => (

@@ -100,6 +100,13 @@ export const nextTarget: TargetRecord = {
           variant: 'stylex',
         };
       }),
+    {
+      target: 'postcss.config.mjs',
+      when: (answers) => {
+        return answers.styling === 'tailwind';
+      },
+      variant: 'tailwind',
+    },
     ...accessorFiles(ACCESSORS, {
       shared: 'react',
       names: SOURCE_ACCESSORS,

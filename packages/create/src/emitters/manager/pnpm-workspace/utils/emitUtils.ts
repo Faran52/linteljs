@@ -16,3 +16,13 @@ export const allowBuildsBlock = (answers: Answers): string => {
 
   return `allowBuilds:\n${entries}\n`;
 };
+
+export const overridesBlock = (overrides: Record<string, string>): string => {
+  const entries = Object.entries(overrides)
+    .map(([name, version]) => {
+      return `  '${name}': '${version}'`;
+    })
+    .join('\n');
+
+  return `overrides:\n${entries}\n`;
+};
