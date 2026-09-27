@@ -171,6 +171,32 @@ describe('buildArtifacts', () => {
   });
 });
 
+describe('the page a target serves', () => {
+  it.each(TARGET_IDS)('mounts %s on the element its index.html carries', async (target) => {
+    const answers = hostedAnswersFor({ target });
+    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const page = artifacts
+      .find((artifact) => {
+        return artifact.target === 'index.html';
+      });
+
+    if (page === undefined) {
+      return;
+    }
+
+    const html = await shippedAssetsReader(page.content);
+    const rootId = /<div id="([^"]+)"><\/div>/u.exec(html)?.[1];
+    const entryPath = /<script type="module" src="\/([^"]+)"><\/script>/u.exec(html)?.[1];
+    const entry = artifacts
+      .find((artifact) => {
+        return artifact.target === entryPath;
+      });
+    const entryText = entry === undefined ? '' : await shippedAssetsReader(entry.content);
+
+    expect(entryText).toMatch(new RegExp(`['"]#?${String(rootId)}['"]`, 'u'));
+  });
+});
+
 describe('the project the answers write', () => {
   interface Project {
     answers: HostedAnswers;

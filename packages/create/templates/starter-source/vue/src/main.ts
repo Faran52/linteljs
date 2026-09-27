@@ -13,4 +13,4 @@ installStore(app);
 installData(app);
 app
   .use(router)
-  .mount('#app');
+  .mount('#root');
