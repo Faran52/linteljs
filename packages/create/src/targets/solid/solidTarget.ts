@@ -76,15 +76,17 @@ export const solidTarget: TargetRecord = {
     // Solid writes the `class` spelling, which `stylex.attrs` answers with; the other SFC targets take these.
     ...componentStyleModules(),
     ...accessorFiles(ACCESSORS),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     {
       target: 'src/pages/home/HomePage.tsx',
       when: (answers) => {
@@ -120,12 +122,13 @@ export const solidTarget: TargetRecord = {
       'src/pages/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
       'src/lib/apis/contact/index.ts',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: hasForm,
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: hasForm,
+        };
+      }),
     {
       target: 'src/lib/apis/contact/api.ts',
       when: (answers) => {

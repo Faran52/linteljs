@@ -83,14 +83,16 @@ const parseFunction = (code: string, options: ParseOptions = {}): ParsedFunction
 
 describe('SAFE_DECLARATION_PARENTS', () => {
   it('lists exactly the statement positions a declaration is legal in', () => {
-    expect([...SAFE_DECLARATION_PARENTS].toSorted(alphabetically)).toEqual([
+    const expected = [
       'BlockStatement',
       'ExportNamedDeclaration',
       'Program',
       'StaticBlock',
       'SwitchCase',
       'TSModuleBlock',
-    ].toSorted(alphabetically));
+    ].toSorted(alphabetically);
+
+    expect([...SAFE_DECLARATION_PARENTS].toSorted(alphabetically)).toEqual(expected);
   });
 });
 

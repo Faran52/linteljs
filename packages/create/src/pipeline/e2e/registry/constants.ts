@@ -39,6 +39,7 @@ export const CACHE_DIR = join(ROOT, '.e2e-cache');
 // What the registry proxies everything outside `@linteljs/*` to, unless `E2E_UPSTREAM` names another.
 export const UPSTREAM = 'https://registry.npmjs.org/';
 
-export const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin'].map((name) => {
-  return join(ROOT, 'packages', name, 'package.json');
-});
+export const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin']
+  .map((name) => {
+    return join(ROOT, 'packages', name, 'package.json');
+  });

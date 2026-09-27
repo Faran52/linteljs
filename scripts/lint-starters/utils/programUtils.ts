@@ -68,11 +68,12 @@ const resolvesElsewhere = (diagnostic: ts.Diagnostic, { placed, covered }: Place
   const wanted = withoutExtension(join(dirname(destination), specifier));
 
   // A directory specifier resolves to its `index`.
-  return [...covered.get(asset.split('/')[1] ?? '') ?? []].some((path) => {
-    const declared = withoutExtension(path);
+  return [...covered.get(asset.split('/')[1] ?? '') ?? []]
+    .some((path) => {
+      const declared = withoutExtension(path);
 
-    return declared === wanted || declared === join(wanted, 'index');
-  });
+      return declared === wanted || declared === join(wanted, 'index');
+    });
 };
 
 const diagnose = (files: string[], types: string[], placement: Placement): string[] => {
@@ -81,28 +82,33 @@ const diagnose = (files: string[], types: string[], placement: Placement): strin
     types,
   });
 
-  return ts.getPreEmitDiagnostics(program).filter((diagnostic) => {
-    return UNRESOLVED.has(diagnostic.code)
-      && diagnostic.file !== undefined
-      && (diagnostic.code !== 2307 || !resolvesElsewhere(diagnostic, placement));
-  }).map((diagnostic) => {
-    const line = diagnostic.file?.getLineAndCharacterOfPosition(diagnostic.start ?? 0).line ?? 0;
-    const text = ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ');
+  return ts.getPreEmitDiagnostics(program)
+    .filter((diagnostic) => {
+      return UNRESOLVED.has(diagnostic.code)
+        && diagnostic.file !== undefined
+        && (diagnostic.code !== 2307 || !resolvesElsewhere(diagnostic, placement));
+    })
+    .map((diagnostic) => {
+      const line = diagnostic.file?.getLineAndCharacterOfPosition(diagnostic.start ?? 0).line ?? 0;
+      const text = ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ');
 
-    return `${assetOf(diagnostic.file?.fileName ?? '')}:${String(line + 1)} TS${String(diagnostic.code)}  ${text}`;
-  });
+      return `${assetOf(diagnostic.file?.fileName ?? '')}:${String(line + 1)} TS${String(diagnostic.code)}  ${text}`;
+    });
 };
 
 export const unresolvedNames = (root: string, files: string[], placement: Placement): string[] => {
-  return SCOPES.flatMap(([scope, types]) => {
-    const own = files.filter((file) => {
-      const match = SCOPES.find(([prefix]) => {
-        return prefix !== '' && file.startsWith(join(root, prefix));
-      });
+  return SCOPES
+    .flatMap(([scope, types]) => {
+      const own = files
+        .filter((file) => {
+          const match = SCOPES
+            .find(([prefix]) => {
+              return prefix !== '' && file.startsWith(join(root, prefix));
+            });
 
-      return (match?.[0] ?? '') === scope;
+          return (match?.[0] ?? '') === scope;
+        });
+
+      return own.length === 0 ? [] : diagnose(own, types, placement);
     });
-
-    return own.length === 0 ? [] : diagnose(own, types, placement);
-  });
 };

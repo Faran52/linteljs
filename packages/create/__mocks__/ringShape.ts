@@ -4,11 +4,13 @@ import { join, relative } from 'node:path';
 // What `emitters/meta.test.ts` and `answers/meta.test.ts` both check: a ring's groups sit on disk where its own
 // registry says they do, and its barrel carries nothing the rest of the package does not actually import.
 export const directoriesIn = (path: string): string[] => {
-  return readdirSync(path, { withFileTypes: true }).filter((entry) => {
-    return entry.isDirectory();
-  }).map((entry) => {
-    return entry.name;
-  });
+  return readdirSync(path, { withFileTypes: true })
+    .filter((entry) => {
+      return entry.isDirectory();
+    })
+    .map((entry) => {
+      return entry.name;
+    });
 };
 
 export const entriesIn = (path: string): string[] => {
@@ -20,11 +22,13 @@ export const modulesIn = (path: string): string[] => {
   return readdirSync(path, {
     withFileTypes: true,
     recursive: true,
-  }).filter((entry) => {
-    return entry.isFile();
-  }).map((entry) => {
-    return relative(path, join(entry.parentPath, entry.name));
-  });
+  })
+    .filter((entry) => {
+      return entry.isFile();
+    })
+    .map((entry) => {
+      return relative(path, join(entry.parentPath, entry.name));
+    });
 };
 
 // The entry is named for the directory it sits in, which is why the path is spelled once.
@@ -38,11 +42,13 @@ export const sourcesUnder = (path: string): string[] => {
   return readdirSync(path, {
     withFileTypes: true,
     recursive: true,
-  }).filter((entry) => {
-    return entry.isFile() && entry.name.endsWith('.ts');
-  }).map((entry) => {
-    return join(entry.parentPath, entry.name);
-  });
+  })
+    .filter((entry) => {
+      return entry.isFile() && entry.name.endsWith('.ts');
+    })
+    .map((entry) => {
+      return join(entry.parentPath, entry.name);
+    });
 };
 
 /**

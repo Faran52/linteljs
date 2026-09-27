@@ -414,11 +414,13 @@ describe('the router and the form libraries', () => {
    * hides the question without refusing the value, and a hand-written config would otherwise pass.
    */
   it('refuses rtk-query without the Redux store that ships it', () => {
-    expect(parseLinteljsConfig(emitLinteljsConfig({
+    const parsed = parseLinteljsConfig(emitLinteljsConfig({
       ...DEFAULT_ANSWERS,
       store: 'redux-toolkit',
       data: 'rtk-query',
-    }))).toMatchObject({ data: 'rtk-query' });
+    }));
+
+    expect(parsed).toMatchObject({ data: 'rtk-query' });
 
     expect(() => {
       return parseLinteljsConfig(emitLinteljsConfig({
@@ -469,10 +471,12 @@ describe('a version-one config', () => {
     ['angular', 'ngrx-signals'],
     ['vue', 'pinia'],
   ])('lands a yes on the first store %s offers', (target, store) => {
-    expect(parseLinteljsConfig(v1({
+    const landed = parseLinteljsConfig(v1({
       target,
       store: true,
-    })).store).toBe(store);
+    })).store;
+
+    expect(landed).toBe(store);
   });
 
   it('carries no store where the config said no', () => {
@@ -481,10 +485,12 @@ describe('a version-one config', () => {
 
   // A yes on a target that has since stopped offering a store is no answer at all.
   it('carries no store where the target no longer offers one', () => {
-    expect(parseLinteljsConfig(v1({
+    const parsed = parseLinteljsConfig(v1({
       target: 'webextension',
       store: true,
-    }))).not.toHaveProperty('store');
+    }));
+
+    expect(parsed).not.toHaveProperty('store');
   });
 
   // Only a yes or no is the v1 spelling; a store already named is read as written.
@@ -579,10 +585,12 @@ describe('answers a target never asks for', () => {
 
   // Next and React Native are their own `framework` values, and both render with React.
   it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
-    expect(parseLinteljsConfig(config({
+    const form = parseLinteljsConfig(config({
       target,
       form: 'react-hook-form',
-    })).form).toBe('react-hook-form');
+    })).form;
+
+    expect(form).toBe('react-hook-form');
   });
 
   it.each(['vue', 'svelte', 'solid', 'angular'])('still refuses react-hook-form on %s', (target) => {
@@ -595,16 +603,21 @@ describe('answers a target never asks for', () => {
   });
 
   it('accepts the same answers where the target asks for them', () => {
-    expect(parseLinteljsConfig(config({
+    const form = parseLinteljsConfig(config({
       target: 'astro',
       hostedFramework: 'react',
       form: 'react-hook-form',
-    })).form).toBe('react-hook-form');
-    expect(parseLinteljsConfig(config({
+    })).form;
+
+    expect(form).toBe('react-hook-form');
+
+    const router = parseLinteljsConfig(config({
       target: 'react',
       router: 'tanstack-router',
       store: 'redux-toolkit',
-    })).router).toBe('tanstack-router');
+    })).router;
+
+    expect(router).toBe('tanstack-router');
   });
 });
 

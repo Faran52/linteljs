@@ -54,13 +54,15 @@ export const lintResultOf = async (args: string[], cwd: string): Promise<LintRes
 };
 
 export const ruleIdsOf = (result: LintResult): (string | null)[] => {
-  return result.messages.map((message) => {
-    return message.ruleId;
-  });
+  return result.messages
+    .map((message) => {
+      return message.ruleId;
+    });
 };
 
 export const fatalOf = (result: LintResult): LintMessage[] => {
-  return result.messages.filter((message) => {
-    return message.fatal === true;
-  });
+  return result.messages
+    .filter((message) => {
+      return message.fatal === true;
+    });
 };

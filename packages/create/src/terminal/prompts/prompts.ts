@@ -130,13 +130,14 @@ export const inquirerPrompter: Prompter = {
       default: initialValue,
       // Every option on screen: the default window is seven, which hid the last two frameworks behind a scroll.
       pageSize: Math.max(options.length, 1),
-      choices: options.map((option) => {
-        return {
-          value: option.value,
-          name: option.label,
-          ...(option.hint === undefined ? {} : { description: option.hint }),
-        };
-      }),
+      choices: options
+        .map((option) => {
+          return {
+            value: option.value,
+            name: option.label,
+            ...(option.hint === undefined ? {} : { description: option.hint }),
+          };
+        }),
     }));
   },
   multiselect: async ({
@@ -149,14 +150,15 @@ export const inquirerPrompter: Prompter = {
       message,
       required,
       pageSize: Math.max(options.length, 1),
-      choices: options.map((option) => {
-        return {
-          value: option.value,
-          name: option.label,
-          ...(option.hint === undefined ? {} : { description: option.hint }),
-          checked: initialValues.includes(option.value),
-        };
-      }),
+      choices: options
+        .map((option) => {
+          return {
+            value: option.value,
+            name: option.label,
+            ...(option.hint === undefined ? {} : { description: option.hint }),
+            checked: initialValues.includes(option.value),
+          };
+        }),
     }));
   },
   text: async ({ message, validate }) => {
@@ -187,12 +189,13 @@ const askChoice = async <T extends string>(
   initialValue: T,
   describe: (choice: T) => Described,
 ): Promise<T> => {
-  const options: PromptOption[] = choices.map((choice) => {
-    return {
-      value: choice,
-      ...describe(choice),
-    };
-  });
+  const options: PromptOption[] = choices
+    .map((choice) => {
+      return {
+        value: choice,
+        ...describe(choice),
+      };
+    });
 
   const answer = await prompter.select({
     message,
@@ -214,12 +217,13 @@ const askMulti = async <T extends string>(
   required: boolean,
   describe: (choice: T) => Described,
 ): Promise<T[]> => {
-  const options: PromptOption[] = choices.map((choice) => {
-    return {
-      value: choice,
-      ...describe(choice),
-    };
-  });
+  const options: PromptOption[] = choices
+    .map((choice) => {
+      return {
+        value: choice,
+        ...describe(choice),
+      };
+    });
 
   const answer = await prompter.multiselect({
     message,
@@ -230,9 +234,10 @@ const askMulti = async <T extends string>(
 
   const selected = unwrap(prompter, answer);
 
-  return choices.filter((choice) => {
-    return selected.includes(choice);
-  });
+  return choices
+    .filter((choice) => {
+      return selected.includes(choice);
+    });
 };
 
 const askName = async (prompter: Prompter): Promise<string> => {
@@ -256,9 +261,10 @@ const offeredValuesOf = <V extends string>(
   target: TargetRecord,
   answered: Answers,
 ): V[] => {
-  return valuesOf(values).filter((value) => {
-    return values[value].only === undefined || values[value].only(target, answered);
-  });
+  return valuesOf(values)
+    .filter((value) => {
+      return values[value].only === undefined || values[value].only(target, answered);
+    });
 };
 
 // A record's own values, described the way `askChoice`/`askMulti` want: both already carry `label` and `hint`.

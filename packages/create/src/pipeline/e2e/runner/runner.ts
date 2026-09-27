@@ -34,16 +34,18 @@ import type { E2eCase } from '../matrix/matrix';
 const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   'pnpm': (output) => {
     // `Request took` and the speed notice are this suite's own registry on a cold fetch, not the project.
-    return (output.match(/^.*(?:\bWARN\b|Ignored build scripts).*$/gm) ?? []).filter((line) => {
-      return !line.includes('Request took')
-        && !line.includes('Tarball download average speed')
-        && !DEPRECATION.test(line);
-    });
+    return (output.match(/^.*(?:\bWARN\b|Ignored build scripts).*$/gm) ?? [])
+      .filter((line) => {
+        return !line.includes('Request took')
+          && !line.includes('Tarball download average speed')
+          && !DEPRECATION.test(line);
+      });
   },
   'npm': (output) => {
-    return (output.match(/^npm (?:warn|WARN).*$/gm) ?? []).filter((line) => {
-      return !DEPRECATION.test(line);
-    });
+    return (output.match(/^npm (?:warn|WARN).*$/gm) ?? [])
+      .filter((line) => {
+        return !DEPRECATION.test(line);
+      });
   },
   /*
    * Yarn's summary decides; then every coded line counts but the ones that only narrate a cold install: YN0000 the
@@ -51,22 +53,25 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
    */
   'yarn': (output) => {
     return output.includes('Done with warnings')
-      ? (output.match(/^.*YN0(?!000|007|013|085)\d{3}.*$/gm) ?? []).filter((line) => {
-          return !DEPRECATION.test(line);
-        })
+      ? (output.match(/^.*YN0(?!000|007|013|085)\d{3}.*$/gm) ?? [])
+          .filter((line) => {
+            return !DEPRECATION.test(line);
+          })
       : [];
   },
   // Yarn 1 has no codes: every line it wants read starts with the word.
   'yarn-classic': (output) => {
-    return (output.match(/^warning .*$/gm) ?? []).filter((line) => {
-      return !DEPRECATION.test(line) && !YARN_CLASSIC_UPSTREAM.test(line);
-    });
+    return (output.match(/^warning .*$/gm) ?? [])
+      .filter((line) => {
+        return !DEPRECATION.test(line) && !YARN_CLASSIC_UPSTREAM.test(line);
+      });
   },
   'bun': (output) => {
-    return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? []).filter((line) => {
+    return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? [])
+      .filter((line) => {
       // `Slow filesystem` names this suite's own cache directory, which is a fact about the machine, not the project.
-      return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');
-    });
+        return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');
+      });
   },
 };
 
@@ -104,20 +109,28 @@ const verifyLintOutput = async (pm: PackageManager, project: string): Promise<vo
 const missingStylexRules = (project: string): string => {
   const files = globSync('{dist,build,.output,.svelte-kit/output,.next}/**/*.{js,mjs,html,css}', { cwd: project });
   const joined = (css: boolean): string => {
-    return files.filter((file) => {
-      return file.endsWith('.css') === css;
-    }).map((file) => {
-      return readFileSync(join(project, file), 'utf8');
-    }).join('\n');
+    return files
+      .filter((file) => {
+        return file.endsWith('.css') === css;
+      })
+      .map((file) => {
+        return readFileSync(join(project, file), 'utf8');
+      })
+      .join('\n');
   };
   const styles = joined(true);
-  const classes = new Set((joined(false).match(STYLEX_CLASSES) ?? []).flatMap((run) => {
-    return run.split(' ');
-  }));
+  const classNames = (joined(false).match(STYLEX_CLASSES) ?? [])
+    .flatMap((run) => {
+      return run.split(' ');
+    });
 
-  return [...classes].filter((name) => {
-    return !new RegExp(String.raw`\.${name}\b`).test(styles);
-  }).join(' ');
+  const classes = new Set(classNames);
+
+  return [...classes]
+    .filter((name) => {
+      return !new RegExp(String.raw`\.${name}\b`).test(styles);
+    })
+    .join(' ');
 };
 
 export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => {

@@ -147,11 +147,13 @@ describe('buildDependencies', () => {
     ['angular', undefined, 'ngrx-store', ['@ngrx/store']],
     ['astro', 'react', 'nanostores', ['nanostores', '@nanostores/react']],
   ])('installs what %s needs for %s %s: %j', (target, hostedFramework, store, packages) => {
-    expect(Object.keys(buildDependencies(answersFor({
+    const dependencyNames = Object.keys(buildDependencies(answersFor({
       target,
       ...(hostedFramework === undefined ? {} : { hostedFramework }),
       store,
-    })))).toEqual(expect.arrayContaining(packages));
+    })));
+
+    expect(dependencyNames).toEqual(expect.arrayContaining(packages));
   });
 
   it('installs no store where none was chosen', () => {
@@ -161,34 +163,41 @@ describe('buildDependencies', () => {
 
   // Svelte reads a nanostores atom through its own store contract, so there is no binding package to install.
   it('installs no binding where the framework needs none', () => {
-    expect(Object.keys(buildDependencies(answersFor({
+    const nanostores = Object.keys(buildDependencies(answersFor({
       target: 'astro',
       hostedFramework: 'svelte',
       store: 'nanostores',
-    }))).filter((name) => {
-      return name.startsWith('@nanostores/');
-    })).toEqual([]);
+    })))
+      .filter((name) => {
+        return name.startsWith('@nanostores/');
+      });
+
+    expect(nanostores).toEqual([]);
   });
 
   it.each<[TargetId, HostedFramework | undefined, string]>([
     ['vue', undefined, '@tanstack/vue-query'],
     ['astro', 'react', '@tanstack/react-query'],
   ])('binds tanstack query to %s %s: %s', (target, hostedFramework, binding) => {
-    expect(buildDependencies(answersFor({
+    const dependencies = buildDependencies(answersFor({
       target,
       ...(hostedFramework === undefined ? {} : { hostedFramework }),
       libraries: [],
       data: 'tanstack-query',
-    }))).toHaveProperty(binding);
+    }));
+
+    expect(dependencies).toHaveProperty(binding);
   });
 
   it('installs no TanStack binding for the one target that has none', () => {
     // `qs` alone, which `http.ts` reads and every project receives: no binding was added beside it.
-    expect(Object.keys(buildDependencies(answersFor({
+    const dependencyNames = Object.keys(buildDependencies(answersFor({
       target: 'webextension',
       libraries: [],
       data: 'tanstack-query',
-    })))).toEqual(['qs']);
+    })));
+
+    expect(dependencyNames).toEqual(['qs']);
   });
 
   it('binds the form library per framework, and the zod resolver only beside zod', () => {
@@ -210,10 +219,13 @@ describe('buildDependencies', () => {
 
   it('gives Next its own t3-env package and every other target the core one', () => {
     expect(buildDependencies(answersFor({ libraries: ['t3-env'] }))).toHaveProperty('@t3-oss/env-core');
-    expect(buildDependencies(answersFor({
+
+    const dependencies = buildDependencies(answersFor({
       target: 'next',
       libraries: ['t3-env'],
-    }))).toHaveProperty('@t3-oss/env-nextjs');
+    }));
+
+    expect(dependencies).toHaveProperty('@t3-oss/env-nextjs');
   });
 
   it('installs the three runtime libraries as plain dependencies', () => {
@@ -275,10 +287,13 @@ describe('buildDependencies', () => {
     expect(buildDependencies(native)).toHaveProperty('nativewind');
     expect(buildDependencies(native)).toHaveProperty('react-native-css');
     expect(buildDevDependencies(native)).toHaveProperty('postcss');
-    expect(buildDependencies(answersFor({
+
+    const dependencies = buildDependencies(answersFor({
       libraries: [],
       styling: 'tailwind',
-    }))).not.toHaveProperty('nativewind');
+    }));
+
+    expect(dependencies).not.toHaveProperty('nativewind');
   });
 });
 
@@ -378,11 +393,13 @@ describe('buildDevDependencies', () => {
   });
 
   it('installs the tanstack query lint plugin beside the query library', () => {
-    expect(buildDevDependencies(answersFor({
+    const devDependencies = buildDevDependencies(answersFor({
       target: 'vue',
       libraries: [],
       data: 'tanstack-query',
-    }))).toHaveProperty('@tanstack/eslint-plugin-query');
+    }));
+
+    expect(devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
   });
 
   // React Native loads through an adapter; it is still vitest underneath, and naming jest would fail its gate.
@@ -449,10 +466,12 @@ describe('buildDevDependencies', () => {
     }, ['vue-demi']],
     ['react-native', { target: 'react-native' }, ['esbuild']],
   ])('allows the builds %s runs', (_label, overrides, own) => {
-    expect(allowedBuildNames(answersFor(overrides))).toEqual([...own, '@swc/core', 'fsevents', 'sharp', 'unrs-resolver']
+    const expected = [...own, '@swc/core', 'fsevents', 'sharp', 'unrs-resolver']
       .sort((left, right) => {
         return left.localeCompare(right, 'en');
-      }));
+      });
+
+    expect(allowedBuildNames(answersFor(overrides))).toEqual(expected);
   });
 
   it('names the peers nuxt asks the project for', () => {
@@ -587,31 +606,40 @@ const catalogEntries = (): [string, string][] => {
 
 // So `^10.8.1` and `~10.8.1` compare as numbers.
 const floorOf = (range: string): number[] => {
-  return range.replace(/^[\^~]/, '').replace(/-rc\.\d+/, '').split('.').map(Number);
+  return range
+    .replace(/^[\^~]/, '')
+    .replace(/-rc\.\d+/, '')
+    .split('.')
+    .map(Number);
 };
 
 const atLeast = (range: string, minimum: string): boolean => {
   const left = floorOf(range);
   const right = floorOf(minimum);
 
-  return left.every((part, index) => {
-    const other = right[index] ?? 0;
+  return left
+    .every((part, index) => {
+      const other = right[index] ?? 0;
 
-    return part === other || part > other || left.slice(0, index).some((earlier, at) => {
-      return earlier > (right[at] ?? 0);
+      return part === other || part > other || left
+        .slice(0, index)
+        .some((earlier, at) => {
+          return earlier > (right[at] ?? 0);
+        });
     });
-  });
 };
 
 // Every entry VERSIONS ships older than the range it is held to, which is the empty list when nothing drifted.
 const staleAgainst = (entries: [string, string][], source: string): string[] => {
-  return entries.filter(([name, range]) => {
-    const shipped = VERSIONS[name];
+  return entries
+    .filter(([name, range]) => {
+      const shipped = VERSIONS[name];
 
-    return shipped !== undefined && !atLeast(shipped, range);
-  }).map(([name, range]) => {
-    return `${name}: VERSIONS has ${String(VERSIONS[name])}, ${source} has ${range}`;
-  });
+      return shipped !== undefined && !atLeast(shipped, range);
+    })
+    .map(([name, range]) => {
+      return `${name}: VERSIONS has ${String(VERSIONS[name])}, ${source} has ${range}`;
+    });
 };
 
 // A range older than what `@linteljs/eslint-config` declares hands a project a plugin its config never ran against;
@@ -620,9 +648,10 @@ const configDependencies = (): [string, string][] => {
   const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
   const { devDependencies } = parsePackageJson(readFileSync(path, 'utf8'));
 
-  return Object.entries(devDependencies ?? {}).filter(([, range]) => {
-    return range !== 'catalog:';
-  });
+  return Object.entries(devDependencies ?? {})
+    .filter(([, range]) => {
+      return range !== 'catalog:';
+    });
 };
 
 // Each list is checked non-empty first, so an unreadable source fails rather than passing vacuously.

@@ -25,9 +25,10 @@ export const stackRows = (answers: HostedAnswers, versions: Record<string, strin
     [answers.packageManager, answers.packageManagerVersion],
   ];
 
-  return rows.flatMap(([name, version]) => {
-    return version === undefined ? [] : [[`name: '${name}'`, `version: '${version}'`] satisfies [string, string]];
-  });
+  return rows
+    .flatMap(([name, version]) => {
+      return version === undefined ? [] : [[`name: '${name}'`, `version: '${version}'`] satisfies [string, string]];
+    });
 };
 
 /**
@@ -51,12 +52,13 @@ const printable = (value: Answers[AnswerKey]): string | undefined => {
 };
 
 export const answerRows = (answers: Answers, records: Record<AnswerKey, AnswerRecord>): [string, string][] => {
-  return valuesOf(records).flatMap((key: AnswerKey) => {
-    const record = records[key];
-    const printed = printable(answers[key]);
+  return valuesOf(records)
+    .flatMap((key: AnswerKey) => {
+      const record = records[key];
+      const printed = printable(answers[key]);
 
-    return record.prompt === undefined || printed === undefined
-      ? []
-      : [[`label: '${record.prompt}'`, `value: '${printed}'`] satisfies [string, string]];
-  });
+      return record.prompt === undefined || printed === undefined
+        ? []
+        : [[`label: '${record.prompt}'`, `value: '${printed}'`] satisfies [string, string]];
+    });
 };

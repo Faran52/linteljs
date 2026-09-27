@@ -18,9 +18,10 @@ export const isJsonObject = (value: unknown): value is object => {
  * Generic enough that every ring reaches for it, from a record's own `values` to a test fixture's.
  */
 export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
-  return Object.keys(values).filter((key): key is V => {
-    return key in values;
-  });
+  return Object.keys(values)
+    .filter((key): key is V => {
+      return key in values;
+    });
 };
 
 // Whether a string read off the outside world is one of a record's own keys, narrowed to that key's union. Own

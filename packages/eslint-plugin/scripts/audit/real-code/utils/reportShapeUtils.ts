@@ -54,13 +54,16 @@ export const hoistedProbe: Rule.RuleModule = {
         const [variable] = sourceCode.getDeclaredVariables(node);
         const start = node.range?.[0] ?? 0;
 
-        const early = variable?.references.some((reference) => {
+        const early = variable?.references
+          .some((reference) => {
           // A call from inside another function body does not run at that point; `no-use-before-define` agrees.
-          return (reference.identifier.range?.[0] ?? start) < start
-            && !reader.getAncestors(reference.identifier).some((ancestor) => {
-              return FUNCTION_LIKE.has(ancestor.type);
-            });
-        }) ?? false;
+            return (reference.identifier.range?.[0] ?? start) < start
+              && !reader
+                .getAncestors(reference.identifier)
+                .some((ancestor) => {
+                  return FUNCTION_LIKE.has(ancestor.type);
+                });
+          }) ?? false;
 
         if (early) {
           context.report({

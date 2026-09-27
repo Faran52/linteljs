@@ -19,11 +19,12 @@ const describeToken = (token: Token): string => {
 
 // Trailing commas dropped: collapsing a list takes one with it, and a missing separator would fail to parse first.
 const comparable = (tokens: Token[]): Token[] => {
-  return tokens.filter((token, index) => {
-    const next = tokens.at(index + 1);
+  return tokens
+    .filter((token, index) => {
+      const next = tokens.at(index + 1);
 
-    return !(token.value === ',' && next !== undefined && CLOSERS.has(next.value));
-  });
+      return !(token.value === ',' && next !== undefined && CLOSERS.has(next.value));
+    });
 };
 
 export const orderedDiff = (beforeTokens: Token[], afterTokens: Token[]): string | undefined => {
@@ -67,15 +68,19 @@ export const multisetDiff = (before: Token[], after: Token[]): string | undefine
 
 // A block's leading `*` is delimiter, so `comment-delimiter` turning `//` lines into a block is not a loss.
 const contentLinesOf = (comments: Token[]): string[] => {
-  return comments.flatMap((comment) => {
-    return comment.value.split('\n').map((line) => {
-      const trimmed = line.trim();
+  return comments
+    .flatMap((comment) => {
+      return comment.value
+        .split('\n')
+        .map((line) => {
+          const trimmed = line.trim();
 
-      return comment.type === 'Block' && trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
-    }).filter((line) => {
-      return line !== '';
+          return comment.type === 'Block' && trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
+        })
+        .filter((line) => {
+          return line !== '';
+        });
     });
-  });
 };
 
 export const commentDiff = (before: Token[], after: Token[]): string | undefined => {
@@ -122,20 +127,21 @@ const nameAfter = (tokens: Token[], from: number): Token | undefined => {
 const commentAnchors = ({ tokens, comments }: Parsed): string[] => {
   let index = 0;
 
-  return comments.map((comment) => {
-    while (index < tokens.length && (tokens[index]?.range[1] ?? Infinity) <= comment.range[0]) {
-      index += 1;
-    }
+  return comments
+    .map((comment) => {
+      while (index < tokens.length && (tokens[index]?.range[1] ?? Infinity) <= comment.range[0]) {
+        index += 1;
+      }
 
-    const previous = tokens.at(index - 1);
-    const trails = index > 0 && previous?.loc.end.line === comment.loc.start.line
-      && !OPENERS.has(previous.value);
-    const heads = trails ? undefined : nameAfter(tokens, index);
-    const anchor = heads ?? nameBefore(tokens, index - 1);
+      const previous = tokens.at(index - 1);
+      const trails = index > 0 && previous?.loc.end.line === comment.loc.start.line
+        && !OPENERS.has(previous.value);
+      const heads = trails ? undefined : nameAfter(tokens, index);
+      const anchor = heads ?? nameBefore(tokens, index - 1);
 
-    return `${JSON.stringify(comment.value)} written ${heads ? 'before' : 'after'} `
-      + (anchor ? describeToken(anchor) : 'no name');
-  });
+      return `${JSON.stringify(comment.value)} written ${heads ? 'before' : 'after'} `
+        + (anchor ? describeToken(anchor) : 'no name');
+    });
 };
 
 export const commentMoveDiff = (before: Parsed, after: Parsed): string | undefined => {

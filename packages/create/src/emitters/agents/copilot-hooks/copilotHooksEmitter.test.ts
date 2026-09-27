@@ -57,16 +57,24 @@ describe('copilotHooksEmitter', () => {
   it('runs only hook scripts the plugin tree ships', async () => {
     const [artifact] = copilotHooksEmitter(answersFor(['copilot']));
     const text = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
-    const shipped = new Set(linteljsPluginEmitter(DEFAULT_ANSWERS).map(({ target }) => {
-      return target;
-    }));
-    const scripts = [...text.matchAll(/node ([^"\s]+)"/gu)].map((match) => {
-      return match[1];
-    });
+    const pluginTargets = linteljsPluginEmitter(DEFAULT_ANSWERS)
+      .map(({ target }) => {
+        return target;
+      });
+
+    const shipped = new Set(pluginTargets);
+    const scripts = [...text.matchAll(/node ([^"\s]+)"/gu)]
+      .map((match) => {
+        return match[1];
+      });
 
     expect(scripts).toHaveLength(3);
-    expect(scripts.every((script) => {
-      return script !== undefined && shipped.has(script);
-    })).toBe(true);
+
+    const allShipped = scripts
+      .every((script) => {
+        return script !== undefined && shipped.has(script);
+      });
+
+    expect(allShipped).toBe(true);
   });
 });

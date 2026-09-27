@@ -36,9 +36,10 @@ const planted = (modules: Record<string, Rule.RuleModule>): AuditContext => {
 };
 
 const categoriesOf = (context: AuditContext, source: string, names: string[]): string[] => {
-  return evaluate(context, source, 'file.ts', names).findings.map(({ category }) => {
-    return category;
-  });
+  return evaluate(context, source, 'file.ts', names).findings
+    .map(({ category }) => {
+      return category;
+    });
 };
 
 describe('evaluate', () => {
@@ -166,14 +167,20 @@ describe('evaluate', () => {
       return text.replace('1; //', '1;  //');
     });
 
-    expect(categoriesOf(planted({ 'prefer-arrow-functions': moves }), source.replace('1; ', '1;  '),
-      ['prefer-arrow-functions'])).toStrictEqual([]);
-    expect(evaluate(planted({
+    const categories = categoriesOf(planted({ 'prefer-arrow-functions': moves }), source.replace('1; ', '1;  '),
+      ['prefer-arrow-functions']);
+
+    expect(categories).toStrictEqual([]);
+
+    const ruleSets = evaluate(planted({
       'union-newline': widens,
       'member-newline': moves,
-    }), source, 'file.ts', ['union-newline', 'member-newline']).findings.map(({ rules }) => {
-      return rules;
-    })).toStrictEqual([['member-newline', 'union-newline']]);
+    }), source, 'file.ts', ['union-newline', 'member-newline']).findings
+      .map(({ rules }) => {
+        return rules;
+      });
+
+    expect(ruleSets).toStrictEqual([['member-newline', 'union-newline']]);
   });
 
   it('reports a CRLF file gaining a bare line ending', () => {
@@ -199,11 +206,14 @@ describe('narrow', () => {
     const { fixed, findings: [finding] } = evaluate(context, source, 'file.ts', ['union-newline']);
 
     expect(finding).toBeDefined();
-    expect(narrow(context, source, fixed, 'file.ts', finding ?? {
+
+    const narrowed = narrow(context, source, fixed, 'file.ts', finding ?? {
       category: '',
       detail: '',
       rules: [],
-    })).toStrictEqual([UNION, 'minimal reproduction']);
+    });
+
+    expect(narrowed).toStrictEqual([UNION, 'minimal reproduction']);
   });
 
   it('answers the changed hunk when no slice reproduces it', () => {
@@ -232,11 +242,13 @@ describe('narrow', () => {
       }),
     });
 
-    expect(narrow(context, UNION, `${UNION}|`, 'file.ts', {
+    const narrowed = narrow(context, UNION, `${UNION}|`, 'file.ts', {
       category: 'unparseable',
       detail: '',
       rules: ['union-newline'],
-    })).toStrictEqual(['\n', 'minimal reproduction']);
+    });
+
+    expect(narrowed).toStrictEqual(['\n', 'minimal reproduction']);
   });
 });
 

@@ -40,9 +40,10 @@ interface SkillDocument {
 }
 
 const find = (overrides: AnswerOverrides, target: string): Artifact | undefined => {
-  return referenceArtifacts(answersFor(overrides)).find((artifact) => {
-    return artifact.target === target;
-  });
+  return referenceArtifacts(answersFor(overrides))
+    .find((artifact) => {
+      return artifact.target === target;
+    });
 };
 
 const sourcesOf = (artifact: Artifact | undefined): string[] => {
@@ -66,9 +67,12 @@ describe('referenceArtifacts', () => {
       target: 'react',
       libraries: ['zod'],
     });
-    const contents = await Promise.all(artifacts.map(async ({ content }) => {
-      return await shippedAssetsReader(content);
-    }));
+    const reads = artifacts
+      .map(async ({ content }) => {
+        return await shippedAssetsReader(content);
+      });
+
+    const contents = await Promise.all(reads);
 
     // Stripped to nothing: every rule's body opens on its heading or on the italic line that says where it ships.
     for (const text of contents) {
@@ -77,9 +81,10 @@ describe('referenceArtifacts', () => {
   });
 
   const targetsOf = (overrides: AnswerOverrides): string[] => {
-    return referenceArtifacts(answersFor(overrides)).map(({ target }) => {
-      return target;
-    });
+    return referenceArtifacts(answersFor(overrides))
+      .map(({ target }) => {
+        return target;
+      });
   };
 
   const textOf = async (overrides: AnswerOverrides, name: string): Promise<string> => {
@@ -128,9 +133,10 @@ describe('referenceArtifacts', () => {
 });
 
 const targetsOf = (answers: Answers): string[] => {
-  return linteljsPluginEmitter(answers).map(({ target }) => {
-    return target;
-  });
+  return linteljsPluginEmitter(answers)
+    .map(({ target }) => {
+      return target;
+    });
 };
 
 describe('linteljsPluginEmitter', () => {
@@ -142,11 +148,13 @@ describe('linteljsPluginEmitter', () => {
 
   // `hooks.json` runs each hook through `node`, so none needs to be executable.
   it('ships the hooks and the parser and host adapter they share', () => {
-    const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS).filter(({ target }) => {
-      return target.startsWith('plugins/linteljs/hooks/');
-    }).map(({ target, executable }) => {
-      return [target, executable];
-    });
+    const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS)
+      .filter(({ target }) => {
+        return target.startsWith('plugins/linteljs/hooks/');
+      })
+      .map(({ target, executable }) => {
+        return [target, executable];
+      });
 
     expect(hooks).toEqual([
       ['plugins/linteljs/hooks/hooks.json', undefined],
@@ -166,15 +174,17 @@ const parseSkill = (text: string): SkillDocument => {
     throw new Error('SKILL.md must contain closed YAML frontmatter and a body');
   }
 
-  const entries = match[1].split('\n').map((line): [string, string] => {
-    const separator = line.indexOf(': ');
+  const entries = match[1]
+    .split('\n')
+    .map((line): [string, string] => {
+      const separator = line.indexOf(': ');
 
-    if (separator === -1) {
-      throw new Error(`Invalid SKILL.md frontmatter line: ${line}`);
-    }
+      if (separator === -1) {
+        throw new Error(`Invalid SKILL.md frontmatter line: ${line}`);
+      }
 
-    return [line.slice(0, separator), line.slice(separator + 2)];
-  });
+      return [line.slice(0, separator), line.slice(separator + 2)];
+    });
 
   return {
     frontmatter: new Map(entries),

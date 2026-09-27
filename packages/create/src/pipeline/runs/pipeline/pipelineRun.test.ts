@@ -349,12 +349,14 @@ describe('the repository the hooks install into', () => {
     expect(notices[0]).toContain('git was not found on PATH');
     expect(await exists(join(cwd, '.git'))).toBe(false);
 
-    await expect(pipelineRun({
+    const run = pipelineRun({
       name: 'demo-app',
       cwd,
       answers: hostedAnswersFor({}),
       skip: ['lint', 'package', 'install', 'fix'],
-    })).resolves.toBeUndefined();
+    });
+
+    await expect(run).resolves.toBeUndefined();
   });
 });
 
@@ -374,9 +376,10 @@ describe('the fix stage', () => {
       },
     });
 
-    return notices.filter((notice) => {
-      return !notice.startsWith('git init:') && !notice.startsWith('no git repository');
-    });
+    return notices
+      .filter((notice) => {
+        return !notice.startsWith('git init:') && !notice.startsWith('no git repository');
+      });
   };
 
   // The stages only add eslint to package.json, so a run with no install has no binary to fix with.

@@ -28,7 +28,8 @@ export const managedPathsReader = async (cwd: string): Promise<string[]> => {
     return [];
   }
 
-  return record.removable.filter((entry) => {
-    return typeof entry === 'string';
-  });
+  return record.removable
+    .filter((entry) => {
+      return typeof entry === 'string';
+    });
 };

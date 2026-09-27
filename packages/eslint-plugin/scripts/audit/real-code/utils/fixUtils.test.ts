@@ -43,9 +43,13 @@ describe('auditConfig', () => {
     const config = auditConfig(auditContext());
 
     expect(config.length).toBeGreaterThan(0);
-    expect(config.every((entry) => {
-      return entry.rules?.['probe/hoisted'] === 'error' && entry.plugins?.['probe'] !== undefined;
-    })).toBe(true);
+
+    const allProbed = config
+      .every((entry) => {
+        return entry.rules?.['probe/hoisted'] === 'error' && entry.plugins?.['probe'] !== undefined;
+      });
+
+    expect(allProbed).toBe(true);
   });
 });
 

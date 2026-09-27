@@ -123,9 +123,10 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
 
   return {
     entries,
-    pending: entries.filter((entry) => {
-      return entry.status !== 'unchanged';
-    }),
+    pending: entries
+      .filter((entry) => {
+        return entry.status !== 'unchanged';
+      }),
   };
 };
 
@@ -143,9 +144,10 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
   }
 
   // A child path is always longer than its parent, so length descending is depth-first.
-  const deepestFirst = [...directories].sort((left, right) => {
-    return right.length - left.length;
-  });
+  const deepestFirst = [...directories]
+    .sort((left, right) => {
+      return right.length - left.length;
+    });
 
   for (const directory of deepestFirst) {
     try {

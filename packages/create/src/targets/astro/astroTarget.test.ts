@@ -127,9 +127,13 @@ describe('the hosted framework axis', () => {
     for (const record of records) {
       expect(record.dependencies).toContain('astro');
       expect(record.devDependencies).not.toContain('astro');
-      expect(record.devDependencies.filter((name) => {
-        return name === 'astro';
-      })).toHaveLength(0);
+
+      const astroEntries = record.devDependencies
+        .filter((name) => {
+          return name === 'astro';
+        });
+
+      expect(astroEntries).toHaveLength(0);
     }
   });
 

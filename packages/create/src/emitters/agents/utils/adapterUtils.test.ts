@@ -48,13 +48,17 @@ describe('adapterArtifact', () => {
 
 // `yarn check` on 1.x is yarn's own lockfile check, so a classic project reaches its gate through `run`.
 it('sends a classic project through run, where berry needs none', () => {
-  expect(emitAgentAdapter({
+  const classic = emitAgentAdapter({
     ...DEFAULT_ANSWERS,
     packageManager: 'yarn-classic',
-  })).toContain('`yarn run check`');
+  });
 
-  expect(emitAgentAdapter({
+  expect(classic).toContain('`yarn run check`');
+
+  const berry = emitAgentAdapter({
     ...DEFAULT_ANSWERS,
     packageManager: 'yarn',
-  })).toContain('`yarn check`');
+  });
+
+  expect(berry).toContain('`yarn check`');
 });

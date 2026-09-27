@@ -22,12 +22,13 @@ const scopedTo = (configs: Linter.Config[], files?: string[]): Linter.Config[] =
     return configs;
   }
 
-  return configs.map((config) => {
-    return {
-      ...config,
-      files: config.files ?? files,
-    };
-  });
+  return configs
+    .map((config) => {
+      return {
+        ...config,
+        files: config.files ?? files,
+      };
+    });
 };
 
 // Normalises the three shapes `Plugin.configs` holds; `files` fills any entry with no glob of its own.

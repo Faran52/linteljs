@@ -34,9 +34,12 @@ const transformOf = (answers: Answers): ((source: string, current: string | null
 // Guards against anchor drift: a silent miss would ship the wrong floor.
 describe('bannedPatternsEmitter', () => {
   it('writes the checker and nothing else', () => {
-    expect(bannedPatternsEmitter(answersFor({})).map(({ target }) => {
-      return target;
-    })).toEqual(['scripts/checkBannedPatterns.ts']);
+    const targets = bannedPatternsEmitter(answersFor({}))
+      .map(({ target }) => {
+        return target;
+      });
+
+    expect(targets).toEqual(['scripts/checkBannedPatterns.ts']);
   });
 });
 

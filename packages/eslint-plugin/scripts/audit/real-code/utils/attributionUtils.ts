@@ -70,9 +70,10 @@ const attributeTokens = (
     const detail = breaks(subset);
 
     if (detail !== undefined) {
-      const culprits = subset.filter((rule) => {
-        return breaks([rule]) !== undefined;
-      });
+      const culprits = subset
+        .filter((rule) => {
+          return breaks([rule]) !== undefined;
+        });
 
       return {
         category: 'token loss',
@@ -105,9 +106,10 @@ const attributeCommentMoves = (
     return undefined;
   }
 
-  const culprits = subset.filter((rule) => {
-    return moves([rule]) !== undefined;
-  });
+  const culprits = subset
+    .filter((rule) => {
+      return moves([rule]) !== undefined;
+    });
 
   return {
     category: 'comment moved',
@@ -172,9 +174,10 @@ const inspect = (
           rules: names,
           detail: endings,
         },
-  ].filter((finding) => {
-    return finding !== undefined;
-  });
+  ]
+    .filter((finding) => {
+      return finding !== undefined;
+    });
 };
 
 // `parsed` spares a caller that already holds the AST a second parse.
@@ -231,9 +234,10 @@ export const narrow = (
   };
 
   for (const pad of [0, 1, 2, 4, 8, 16, 32]) {
-    if (evaluate(context, slice(pad), name, finding.rules).findings.some((candidate) => {
-      return candidate.category === finding.category;
-    })) {
+    if (evaluate(context, slice(pad), name, finding.rules).findings
+      .some((candidate) => {
+        return candidate.category === finding.category;
+      })) {
       return [slice(pad), 'minimal reproduction'];
     }
   }
@@ -249,11 +253,13 @@ export const attribute = (
   names: string[],
   category: string,
 ): string[] => {
-  return names.filter((rule) => {
-    return evaluate(context, source, name, [rule]).findings.some((finding) => {
-      return finding.category === category;
+  return names
+    .filter((rule) => {
+      return evaluate(context, source, name, [rule]).findings
+        .some((finding) => {
+          return finding.category === category;
+        });
     });
-  });
 };
 
 // Each rule alone with an empty pass subtracted, since the parse is most of a large file's cost. Slowest files only.
@@ -269,19 +275,20 @@ export const dominantRule = (context: AuditContext, file: string): Dominant => {
   };
   const baseline = timed([]);
 
-  return context.activeRules.reduce((worst, rule) => {
-    const ms = timed([rule]) - baseline;
+  return context.activeRules
+    .reduce((worst, rule) => {
+      const ms = timed([rule]) - baseline;
 
-    return ms > worst.ms
-      ? {
-          baseline,
-          ms,
-          rule,
-        }
-      : worst;
-  }, {
-    baseline,
-    ms: -Infinity,
-    rule: 'none',
-  });
+      return ms > worst.ms
+        ? {
+            baseline,
+            ms,
+            rule,
+          }
+        : worst;
+    }, {
+      baseline,
+      ms: -Infinity,
+      rule: 'none',
+    });
 };

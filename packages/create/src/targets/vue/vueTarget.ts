@@ -70,15 +70,17 @@ export const vueTarget: TargetRecord = {
     // Solid writes the `class` spelling these take; Vue renames two of the four, so each carries its own path.
     ...componentStyleModules('solid', COMPONENTS),
     ...accessorFiles(ACCESSORS),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     {
       target: 'src/views/HomeView.vue',
       when: (answers) => {
@@ -102,12 +104,13 @@ export const vueTarget: TargetRecord = {
       'src/components/ui/text-input/TextInput.vue',
       'src/components/ui/text-input/types.ts',
       'src/lib/apis/contact/index.ts',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: hasForm,
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: hasForm,
+        };
+      }),
     {
       target: 'src/lib/apis/contact/api.ts',
       when: (answers) => {
@@ -164,15 +167,16 @@ export const vueTarget: TargetRecord = {
       },
       variant: 'pinia',
     },
-    ...(['pinia', 'tanstack-store'] as const).map((store): StarterFile => {
-      return {
-        target: 'src/lib/store/counter.ts',
-        when: (answers) => {
-          return answers.store === store;
-        },
-        variant: store,
-      };
-    }),
+    ...(['pinia', 'tanstack-store'] as const)
+      .map((store): StarterFile => {
+        return {
+          target: 'src/lib/store/counter.ts',
+          when: (answers) => {
+            return answers.store === store;
+          },
+          variant: store,
+        };
+      }),
     {
       target: 'src/lib/providers/installData.ts',
       when: (answers) => {

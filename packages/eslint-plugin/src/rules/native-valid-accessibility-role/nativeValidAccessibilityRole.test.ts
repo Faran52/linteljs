@@ -24,12 +24,14 @@ const ARIA_ROLES = [
 
 tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRole, {
   valid: [
-    ...ACCESSIBILITY_ROLES.map((role) => {
-      return `const view = <View accessibilityRole="${role}" />;`;
-    }),
-    ...ARIA_ROLES.map((role) => {
-      return `const view = <View role="${role}" />;`;
-    }),
+    ...ACCESSIBILITY_ROLES
+      .map((role) => {
+        return `const view = <View accessibilityRole="${role}" />;`;
+      }),
+    ...ARIA_ROLES
+      .map((role) => {
+        return `const view = <View role="${role}" />;`;
+      }),
     'const view = <View accessibilityRole="button" role="button" />;',
     // A value computed at runtime is unreadable rather than wrong, and so is an element standing in for one.
     'const view = <View accessibilityRole=<Role /> />;',

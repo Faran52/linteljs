@@ -29,9 +29,10 @@ export const hasSurface = (answers: Answers, surface: Surface): boolean => {
 
 // `browser` first, so the primary one keeps writing `manifest.json`.
 export const browsersOf = (answers: Answers): Browser[] => {
-  const extra = (answers.browsers ?? []).filter((browser) => {
-    return browser !== answers.browser;
-  });
+  const extra = (answers.browsers ?? [])
+    .filter((browser) => {
+      return browser !== answers.browser;
+    });
 
   return [answers.browser, ...extra];
 };

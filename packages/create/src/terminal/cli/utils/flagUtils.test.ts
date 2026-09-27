@@ -18,20 +18,28 @@ import {
 const FLAGGED = flaggedAnswers();
 
 const lineFor = (flag: string): string => {
-  return answerUsage(FLAGGED).split('\n').find((line) => {
-    return line.startsWith(`  --${flag} `);
-  }) ?? '';
+  return answerUsage(FLAGGED)
+    .split('\n')
+    .find((line) => {
+      return line.startsWith(`  --${flag} `);
+    }) ?? '';
 };
 
 describe('flaggedAnswers', () => {
   // The recorded answers are read off the machine or hand-edited, so none of them is a flag.
   it('carries every answer with a flag, under its own key, and none without', () => {
-    expect(FLAGGED.find(({ key }) => {
+    const typeSafetyFlag = FLAGGED.find(({ key }) => {
       return key === 'typeSafety';
-    })?.flag).toBe('type-safety');
-    expect(FLAGGED.map(({ key }) => {
-      return key;
-    })).not.toContain('nodeVersion');
+    })?.flag;
+
+    expect(typeSafetyFlag).toBe('type-safety');
+
+    const keys = FLAGGED
+      .map(({ key }) => {
+        return key;
+      });
+
+    expect(keys).not.toContain('nodeVersion');
   });
 });
 

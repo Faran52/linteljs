@@ -12,9 +12,10 @@ export const mergeGitignore = (existing: string | null): string => {
   // Either line ending, or a Windows checkout's trailing `\r` gets the entry appended again.
   const lines = current.split(/\r?\n/);
 
-  const missing = LINTEL_IGNORED.filter((entry) => {
-    return !lines.includes(entry);
-  });
+  const missing = LINTEL_IGNORED
+    .filter((entry) => {
+      return !lines.includes(entry);
+    });
 
   if (missing.length === 0) {
     return current;

@@ -135,12 +135,15 @@ const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<voi
     return;
   }
 
+  const targets = pending
+    .map((entry) => {
+      return entry.target;
+    });
+
   const { written, removed } = await applySync(
     options.cwd,
     answers,
-    pending.map((entry) => {
-      return entry.target;
-    }),
+    targets,
   );
 
   for (const target of written) {

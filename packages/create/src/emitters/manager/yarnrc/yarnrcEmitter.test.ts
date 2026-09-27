@@ -92,9 +92,14 @@ describe('emitYarnrc', () => {
   it('writes every extension under packageExtensions', () => {
     const [, extensions = ''] = emitYarnrc(answersFor({ target: 'nuxt' })).split('packageExtensions:\n');
 
-    expect(extensions.trimEnd().split('\n').filter((line) => {
-      return !line.startsWith('  ');
-    })).toEqual([]);
+    const topLevel = extensions
+      .trimEnd()
+      .split('\n')
+      .filter((line) => {
+        return !line.startsWith('  ');
+      });
+
+    expect(topLevel).toEqual([]);
   });
 
   it('writes the peer extensions for the packages the project installs', () => {
@@ -164,9 +169,11 @@ describe('yarnrcEmitter', () => {
       target: '.yarnrc.yml',
       content: { text: emitYarnrc(answersFor({})) },
     }]);
-    expect(yarnrcEmitter({
+    const artifacts = yarnrcEmitter({
       ...DEFAULT_ANSWERS,
       packageManager: 'yarn-classic',
-    })).toEqual([]);
+    });
+
+    expect(artifacts).toEqual([]);
   });
 });

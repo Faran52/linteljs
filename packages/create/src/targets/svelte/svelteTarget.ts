@@ -132,15 +132,17 @@ export const svelteTarget: TargetRecord = {
           variant: 'tanstack-query',
         };
       }),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     {
       target: 'src/routes/+page.svelte',
       when: (answers) => {
@@ -164,12 +166,13 @@ export const svelteTarget: TargetRecord = {
       'src/components/ui/text-input/TextInput.svelte',
       'src/components/ui/text-input/types.ts',
       'src/lib/apis/contact/index.ts',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: hasForm,
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: hasForm,
+        };
+      }),
     // The data slot is a component on this target, so a suite that needs it around its subject needs one too.
     {
       target: '__mocks__/WithData.svelte',
@@ -256,11 +259,12 @@ export const svelteTarget: TargetRecord = {
    */
   starterTests: [
     ...mockTests(true),
-    ...accessorTests(ACCESSORS).map((test): StarterTest => {
-      return {
-        ...test,
-      };
-    }),
+    ...accessorTests(ACCESSORS)
+      .map((test): StarterTest => {
+        return {
+          ...test,
+        };
+      }),
     {
       target: 'src/routes/layout.test.ts',
       covers: 'src/routes/+layout.svelte',

@@ -50,15 +50,18 @@ const indentOf = (level: number): string => {
 };
 
 const arrayLiteral = (key: string, values: string[], level = 1): string => {
-  const inline = `[${values.map(quote).join(', ')}]`;
+  const inline = `[${values
+    .map(quote)
+    .join(', ')}]`;
 
   if (`${indentOf(level)}${key}: ${inline},`.length <= MAX_LINE) {
     return inline;
   }
 
-  const entries = values.map((value) => {
-    return `${indentOf(level + 1)}${quote(value)},`;
-  });
+  const entries = values
+    .map((value) => {
+      return `${indentOf(level + 1)}${quote(value)},`;
+    });
 
   return `[\n${entries.join('\n')}\n${indentOf(level)}]`;
 };
@@ -99,9 +102,10 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['astro', 'true']);
   }
 
-  const layers = LIBRARY_LAYERS.filter((layer) => {
-    return LAYER_ANSWERS[layer](answers);
-  });
+  const layers = LIBRARY_LAYERS
+    .filter((layer) => {
+      return LAYER_ANSWERS[layer](answers);
+    });
 
   if (layers.length > 0) {
     rows.push(['libraries', arrayLiteral('libraries', layers)]);

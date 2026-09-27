@@ -29,9 +29,10 @@ const parseFixReport = (stdout: string): number => {
 
   return report === null
     ? 0
-    : report.filter((result) => {
-      return result.output !== undefined;
-    }).length;
+    : report
+      .filter((result) => {
+        return result.output !== undefined;
+      }).length;
 };
 
 // Silent about its count: stylelint's JSON report names files, not which it rewrote.

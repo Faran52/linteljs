@@ -86,15 +86,20 @@ const messages = linter.verify(FIXTURE, {
   },
   rules,
 });
-const reported = new Set(messages.map((message) => {
-  return message.ruleId;
-}));
-const fatal = messages.filter((message) => {
-  return message.fatal === true;
-});
-const missing = EXPECTED.filter((name) => {
-  return !reported.has(`@linteljs/${name}`);
-});
+const ruleIds = messages
+  .map((message) => {
+    return message.ruleId;
+  });
+
+const reported = new Set(ruleIds);
+const fatal = messages
+  .filter((message) => {
+    return message.fatal === true;
+  });
+const missing = EXPECTED
+  .filter((name) => {
+    return !reported.has(`@linteljs/${name}`);
+  });
 
 if (fatal.length > 0) {
   throw new Error(`fatal: ${JSON.stringify(fatal)}`);

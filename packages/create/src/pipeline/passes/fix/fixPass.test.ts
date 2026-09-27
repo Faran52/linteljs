@@ -56,19 +56,21 @@ describe('nextStep', () => {
   });
 
   it('uses run for a package manager whose script form needs it', () => {
-    expect(nextStep({
+    const step = nextStep({
       ...DEFAULT_ANSWERS,
       packageManager: 'bun',
-    }))
-      .toBe('next: bun install && bun run lint:fix');
+    });
+
+    expect(step).toBe('next: bun install && bun run lint:fix');
   });
 
   it('names yarn 1 by the command it answers to', () => {
-    expect(nextStep({
+    const step = nextStep({
       ...DEFAULT_ANSWERS,
       packageManager: 'yarn-classic',
-    }))
-      .toBe('next: yarn install && yarn run lint:fix');
+    });
+
+    expect(step).toBe('next: yarn install && yarn run lint:fix');
   });
 });
 

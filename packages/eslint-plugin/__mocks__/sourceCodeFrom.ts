@@ -60,9 +60,12 @@ export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => 
   return {
     sourceCode,
     firstNode: (type: string): RuleNode => {
-      return of(nodes.find((node) => {
-        return node.type === type;
-      }), type);
+      const found = nodes
+        .find((node) => {
+          return node.type === type;
+        });
+
+      return of(found, type);
     },
     lastNode: (type: string): RuleNode => {
       return of(nodes.findLast((node) => {

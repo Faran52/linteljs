@@ -25,9 +25,10 @@ export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 
 // A block name has no lint behaviour, so the layer itself is the only place to read one.
 export const ownBlockNames = (layer: Layer): string[] => {
-  return layer.flatMap(({ name }) => {
-    return name?.startsWith('@linteljs/') ? [name] : [];
-  });
+  return layer
+    .flatMap(({ name }) => {
+      return name?.startsWith('@linteljs/') ? [name] : [];
+    });
 };
 
 export const startsWith = (prefix: string) => {
@@ -79,9 +80,10 @@ export const ruleIdsFor = async (config: Layer, code: string, filePath: string):
     throw new Error(`ESLint returned no result for ${filePath}`);
   }
 
-  return result.messages.map((message) => {
-    return message.ruleId;
-  });
+  return result.messages
+    .map((message) => {
+      return message.ruleId;
+    });
 };
 
 // Messages, not rule ids: a parse error has no rule id, and that is the evidence a layer order broke the parser.
@@ -102,9 +104,10 @@ export const messagesForFile = async (config: Layer, filePath: string): Promise<
 export const ruleIdsForFile = async (config: Layer, filePath: string): Promise<(string | null)[]> => {
   const messages = await messagesForFile(config, filePath);
 
-  return messages.map((message) => {
-    return message.ruleId;
-  });
+  return messages
+    .map((message) => {
+      return message.ruleId;
+    });
 };
 
 // Whether `specifier` sorts into a bucket of its own ahead of the packages. The blank line between it and a package

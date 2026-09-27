@@ -97,9 +97,10 @@ describe('the surfaces axis', () => {
   // The popup is every project's, and the default adds a background to it.
   it('defaults to a popup and a background', () => {
     const record = recordFor();
-    const targets = record.starterFiles.map((file) => {
-      return file.target;
-    });
+    const targets = record.starterFiles
+      .map((file) => {
+        return file.target;
+      });
 
     expect(targets).toContain('src/popup/renderPopup.ts');
     expect(targets).toContain('src/background/onInstalled.ts');
@@ -110,9 +111,10 @@ describe('the surfaces axis', () => {
   // A devtools panel is two pages; crx cannot know about the second, so it needs a Rollup input of its own.
   it('ships both devtools pages and gives the panel a build input', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
-    const targets = record.starterFiles.map((file) => {
-      return file.target;
-    });
+    const targets = record.starterFiles
+      .map((file) => {
+        return file.target;
+      });
 
     for (const page of [
       'devtools.html',
@@ -142,21 +144,23 @@ describe('the surfaces axis', () => {
     ['chrome'],
     ['firefox'],
   ])('marks %s as the browser its devtools registration is written for', (browser) => {
-    expect(recordFor({
+    const starterFiles = recordFor({
       browser,
       surfaces: ['devtools-panel'],
-    }).starterFiles)
-      .toContainEqual({
-        target: 'src/devtools/index.ts',
-        variant: browser,
-      });
+    }).starterFiles;
+
+    expect(starterFiles).toContainEqual({
+      target: 'src/devtools/index.ts',
+      variant: browser,
+    });
   });
 
   // The popup is the surface every extension has, so choosing it alone adds nothing the default did not carry.
   it('adds no surface file for a popup, which every project already is', () => {
-    const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles.map((file) => {
-      return file.target;
-    });
+    const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles
+      .map((file) => {
+        return file.target;
+      });
 
     expect(popupOnly).toContain('src/popup/renderPopup.ts');
     expect(popupOnly).not.toContain('src/background/onInstalled.ts');

@@ -16,9 +16,10 @@ export interface Configuration {
 const EXTRA_HOOK_NAMES = ['useLayoutEffect', 'useImperativeHandle'];
 
 const isStringList = (value: unknown): value is string[] => {
-  return Array.isArray(value) && value.every((item) => {
-    return typeof item === 'string';
-  });
+  return Array.isArray(value) && value
+    .every((item) => {
+      return typeof item === 'string';
+    });
 };
 
 const isScalar = (value: unknown): value is boolean | number | string => {
@@ -54,13 +55,15 @@ export const configurationsFor = (rule: string): Configuration[] => {
   const { schema } = moduleOf(rule).meta;
   const [first] = Array.isArray(schema) ? schema : [];
 
-  return Object.entries(first?.properties ?? {}).flatMap(([option, property]) => {
-    return valuesFor(property).map((value) => {
-      return {
-        label: `${rule} { ${option}: ${JSON.stringify(value)} }`,
-        options: { [rule]: { [option]: value } },
-        rule,
-      };
+  return Object.entries(first?.properties ?? {})
+    .flatMap(([option, property]) => {
+      return valuesFor(property)
+        .map((value) => {
+          return {
+            label: `${rule} { ${option}: ${JSON.stringify(value)} }`,
+            options: { [rule]: { [option]: value } },
+            rule,
+          };
+        });
     });
-  });
 };

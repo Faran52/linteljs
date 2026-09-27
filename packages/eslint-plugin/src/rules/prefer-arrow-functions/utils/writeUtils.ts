@@ -66,9 +66,11 @@ const renderReturnType = (sourceCode: SourceCode, fn: FunctionLike): string => {
 };
 
 const renderParams = (sourceCode: SourceCode, fn: FunctionLike): string => {
-  return fn.params.map((param) => {
-    return sourceCode.getText(param);
-  }).join(', ');
+  return fn.params
+    .map((param) => {
+      return sourceCode.getText(param);
+    })
+    .join(', ');
 };
 
 const renderBody = (sourceCode: SourceCode, fn: FunctionLike): string => {

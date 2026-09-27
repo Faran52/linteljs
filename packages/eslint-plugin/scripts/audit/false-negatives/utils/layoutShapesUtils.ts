@@ -24,9 +24,10 @@ const DEFAULT_MAX_PROPERTIES = 2;
 const PROBE_ALIAS = 'linteljsProbeAlias';
 
 const namedImports = (node: AstNode): AstNode[] => {
-  return (node.specifiers ?? []).filter((specifier) => {
-    return specifier.type === 'ImportSpecifier';
-  });
+  return (node.specifiers ?? [])
+    .filter((specifier) => {
+      return specifier.type === 'ImportSpecifier';
+    });
 };
 
 const oneLine = (node: AstNode): boolean => {
@@ -85,9 +86,10 @@ export const importBlankLineCase = importCase((_, named, state) => {
 });
 
 const hasRest = (properties: AstNode[]): boolean => {
-  return properties.some((property) => {
-    return property.type === 'RestElement';
-  });
+  return properties
+    .some((property) => {
+      return property.type === 'RestElement';
+    });
 };
 
 // Over the threshold on one line is `mustSplit` unconditionally. A rest element drops the threshold to one.
@@ -172,9 +174,10 @@ export const patternGapCase = (type: string, fromStart: boolean): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, type), (node) => {
       const raw = node.properties ?? node.elements ?? [];
-      const members = raw.filter((member) => {
-        return member !== null;
-      });
+      const members = raw
+        .filter((member) => {
+          return member !== null;
+        });
       const index = fromStart ? 1 : members.length - 1;
       const [previous, current] = [members[index - 1], members[index]];
 
@@ -248,9 +251,12 @@ const PLAIN_TYPES = new Set([
  */
 export const unionWithMemberCase = (member: string): Build => {
   return (state) => {
-    return pickFirst([...PLAIN_TYPES].flatMap((type) => {
-      return nodesOf(state, type);
-    }), (node) => {
+    const candidates = [...PLAIN_TYPES]
+      .flatMap((type) => {
+        return nodesOf(state, type);
+      });
+
+    return pickFirst(candidates, (node) => {
       return UNION_SAFE_PARENTS.has(node.parent?.type ?? '')
         ? replaced(state, node.range[0], node.range[1], `${textOf(state, node)} | ${member}`)
         : undefined;
@@ -311,9 +317,10 @@ const relocateType = (state: State, node: AstNode): Candidate | undefined => {
 
 // Where the fix puts the moved block back: after imports, after a directive prologue, or at the top.
 const headerKindOf = (body: AstNode[]): string => {
-  if (body.some((entry) => {
-    return entry.type === 'ImportDeclaration';
-  })) {
+  if (body
+    .some((entry) => {
+      return entry.type === 'ImportDeclaration';
+    })) {
     return 'imports';
   }
 
@@ -326,9 +333,10 @@ const DIRECTIVE = "'use strict';\n\n";
 export const typeBelowRuntimeCase = (header: string): Build => {
   return (state) => {
     const { body } = state.ast;
-    const hasRuntime = body.some((entry) => {
-      return !isHeader(entry) && !isTypeDeclaration(entry);
-    });
+    const hasRuntime = body
+      .some((entry) => {
+        return !isHeader(entry) && !isTypeDeclaration(entry);
+      });
 
     if (headerKindOf(body) !== (header === 'directive' ? 'none' : header) || !hasRuntime) {
       return undefined;

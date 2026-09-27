@@ -23,9 +23,10 @@ export const allowBuildsBlock = (answers: Answers): string => {
  * Nothing to allow is the common case, and pnpm rejects a `peerDependencyRules` key with an empty map under it.
  */
 export const peerRulesBlock = (answers: Answers): string => {
-  const entries = Object.entries(targetFor(answers).peerAllowances ?? {}).map(([pair, version]) => {
-    return `    '${pair}': '${version}'`;
-  });
+  const entries = Object.entries(targetFor(answers).peerAllowances ?? {})
+    .map(([pair, version]) => {
+      return `    '${pair}': '${version}'`;
+    });
 
   return entries.length === 0 ? '' : `\npeerDependencyRules:\n  allowedVersions:\n${entries.join('\n')}\n`;
 };

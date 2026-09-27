@@ -106,9 +106,10 @@ const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean
   }
 
   return [
-    (fix ? [] : expectedFor(typescript)).filter((id) => {
-      return !ruleIdsOf(result).includes(id);
-    }),
+    (fix ? [] : expectedFor(typescript))
+      .filter((id) => {
+        return !ruleIdsOf(result).includes(id);
+      }),
     result.output ?? '',
   ];
 };
@@ -153,12 +154,16 @@ const check = async (major: Major, tarball: string): Promise<Outcome> => {
 // The packed tarball, since an entry missing from `files` or an `exports` map resolving only here is what a consumer
 // meets and a matrix over source cannot.
 const tarball = packTarball(pkgDir, matrixDir);
-const outcomes = await Promise.all(MAJORS.map(async (major) => {
-  return await check(major, tarball);
-}));
-const failures = outcomes.flatMap((outcome) => {
-  return outcome.failures;
-});
+const checks = MAJORS
+  .map(async (major) => {
+    return await check(major, tarball);
+  });
+
+const outcomes = await Promise.all(checks);
+const failures = outcomes
+  .flatMap((outcome) => {
+    return outcome.failures;
+  });
 
 // Byte-identical to the newest major, which the unit suite pins.
 for (const [slot, label] of [[0, 'javascript'], [1, 'typescript']] as const) {
@@ -171,9 +176,13 @@ for (const [slot, label] of [[0, 'javascript'], [1, 'typescript']] as const) {
   }
 }
 
-log(outcomes.map(({ failures: failed, line }) => {
-  return `  ${failed.length === 0 ? 'ok' : 'FAILED'}  ${line}`;
-}).join('\n'));
+const summary = outcomes
+  .map(({ failures: failed, line }) => {
+    return `  ${failed.length === 0 ? 'ok' : 'FAILED'}  ${line}`;
+  })
+  .join('\n');
+
+log(summary);
 
 if (failures.length > 0) {
   logError(`${String(failures.length)} failure(s) across ${String(MAJORS.length)} majors:\n  ${failures.join('\n  ')}`);

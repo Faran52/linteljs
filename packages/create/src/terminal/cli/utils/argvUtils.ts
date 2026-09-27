@@ -34,9 +34,10 @@ export interface CliOptions {
 }
 
 const list = (flag: string[]): string[] => {
-  return flag.flatMap((value) => {
-    return value.split(',');
-  });
+  return flag
+    .flatMap((value) => {
+      return value.split(',');
+    });
 };
 
 // `values[record.flag]` to `{ [record.key]: ... }`. `CLI_OPTIONS` declares every answer flag a string and a list one
@@ -59,9 +60,10 @@ const answerFlagsFrom = (values: Record<string, boolean
 };
 
 const isStage = (value: string): value is Stage => {
-  return STAGES.some((stage) => {
-    return stage === value;
-  });
+  return STAGES
+    .some((stage) => {
+      return stage === value;
+    });
 };
 
 export const parseCliArgs = (argv: string[]): CliOptions => {
@@ -77,9 +79,10 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
   const [first = '', ...unexpectedArguments] = positionals;
   const command = first === 'sync' ? 'sync' : 'create';
   const skip: Stage[] = values.skip.filter(isStage);
-  const unknownSkips = values.skip.filter((value) => {
-    return !isStage(value);
-  });
+  const unknownSkips = values.skip
+    .filter((value) => {
+      return !isStage(value);
+    });
 
   // `parseArgs` has no `--no-` negation, so the flag is declared under its literal name.
   if (values['no-install']) {

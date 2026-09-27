@@ -24,9 +24,10 @@ const layer = [...base(), ...react(), ...tailwind(), ...CWD_SETTINGS];
 
 // By name: the preset ahead of it may grow a block.
 const ownBlockOf = (built: Layer): Layer[number] => {
-  const block = built.find((entry) => {
-    return entry.name === '@linteljs/tailwind';
-  });
+  const block = built
+    .find((entry) => {
+      return entry.name === '@linteljs/tailwind';
+    });
 
   if (block === undefined) {
     throw new Error('the tailwind layer no longer carries a @linteljs/tailwind block');

@@ -30,11 +30,14 @@ const axesOf = (answers: Answers): string[] => {
 export const pairsOf = (answers: Answers): string[] => {
   const axes = axesOf(answers);
 
-  return axes.flatMap((left, index) => {
-    return axes.slice(index + 1).map((right) => {
-      return `${left}|${right}`;
+  return axes
+    .flatMap((left, index) => {
+      return axes
+        .slice(index + 1)
+        .map((right) => {
+          return `${left}|${right}`;
+        });
     });
-  });
 };
 
 /**
@@ -43,25 +46,31 @@ export const pairsOf = (answers: Answers): string[] => {
  * once; the greedy only counts which of them are still uncovered.
  */
 export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
-  const scored = cases.map((item) => {
-    return {
-      item,
-      pairs: pairsOf(item.answers),
-    };
-  });
-  const uncovered = new Set(scored.flatMap(({ pairs }) => {
-    return pairs;
-  }));
+  const scored = cases
+    .map((item) => {
+      return {
+        item,
+        pairs: pairsOf(item.answers),
+      };
+    });
+  const scoredPairs = scored
+    .flatMap(({ pairs }) => {
+      return pairs;
+    });
+
+  const uncovered = new Set(scoredPairs);
   const gainOf = (pairs: string[]): number => {
-    return pairs.filter((pair) => {
-      return uncovered.has(pair);
-    }).length;
+    return pairs
+      .filter((pair) => {
+        return uncovered.has(pair);
+      }).length;
   };
   // Ties go to the earlier case, which keeps the cover stable, so a label names the same case every run.
   const leader = (): Scored<T> | undefined => {
-    return scored.reduce<Scored<T> | undefined>((best, candidate) => {
-      return best === undefined || gainOf(candidate.pairs) > gainOf(best.pairs) ? candidate : best;
-    }, undefined);
+    return scored
+      .reduce<Scored<T> | undefined>((best, candidate) => {
+        return best === undefined || gainOf(candidate.pairs) > gainOf(best.pairs) ? candidate : best;
+      }, undefined);
   };
   const chosen: T[] = [];
 

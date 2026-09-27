@@ -26,10 +26,12 @@ const FRESH: ProjectShape = {
 
 describe('testSetupEmitter', () => {
   it('writes nothing for a project that asked for no tests', () => {
-    expect(testSetupEmitter({
+    const artifacts = testSetupEmitter({
       ...DEFAULT_ANSWERS,
       testing: 'none',
-    }, FRESH)).toEqual([]);
+    }, FRESH);
+
+    expect(artifacts).toEqual([]);
   });
 
   // Preserved, so a project keeps the mocks it added to the file after the first run.
@@ -145,23 +147,31 @@ describe('the shipped test setup', () => {
 
   it('appends the query defaults only when tanstack-query was chosen', async () => {
     expect(await setupFor({})).not.toContain('TEST_QUERY_OPTIONS');
-    expect(await setupFor({
+
+    const withoutQuery = await setupFor({
       libraries: ['zod'],
       styling: 'tailwind',
-    })).not.toContain('TEST_QUERY_OPTIONS');
-    expect(await setupFor({
+    });
+
+    expect(withoutQuery).not.toContain('TEST_QUERY_OPTIONS');
+
+    const withQuery = await setupFor({
       libraries: [],
       data: 'tanstack-query',
-    })).toContain('TEST_QUERY_OPTIONS');
+    });
+
+    expect(withQuery).toContain('TEST_QUERY_OPTIONS');
   });
 
   // Angular and React Native are the two whose setup is not the shared file.
   it.each<TargetId>(['angular', 'react-native'])('appends them on %s too', async (target) => {
-    expect(await setupFor({
+    const setup = await setupFor({
       target,
       libraries: [],
       data: 'tanstack-query',
-    })).toContain('TEST_QUERY_OPTIONS');
+    });
+
+    expect(setup).toContain('TEST_QUERY_OPTIONS');
   });
 
   it('keeps the target own setup ahead of both fragments', async () => {

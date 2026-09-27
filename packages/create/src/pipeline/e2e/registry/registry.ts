@@ -61,9 +61,10 @@ const pruneBunCache = (): void => {
   mkdirSync(cache, { recursive: true });
 
   // A scope directory, a flattened `@linteljs%2f*` entry and a `.npm` manifest beside it all carry the scope.
-  for (const name of readdirSync(cache).filter((entry) => {
-    return entry.includes('@linteljs');
-  })) {
+  for (const name of readdirSync(cache)
+    .filter((entry) => {
+      return entry.includes('@linteljs');
+    })) {
     rmSync(join(cache, name), {
       recursive: true,
       force: true,
@@ -154,12 +155,13 @@ const runVersion = (base: string): string => {
  * `workspace:*` between the three resolves to whatever is published, so they move together.
  */
 const publishedAs = (version: string, publish: () => void): void => {
-  const originals = WORKSPACE_MANIFESTS.map((path) => {
-    return {
-      path,
-      text: readFileSync(path, 'utf8'),
-    };
-  });
+  const originals = WORKSPACE_MANIFESTS
+    .map((path) => {
+      return {
+        path,
+        text: readFileSync(path, 'utf8'),
+      };
+    });
 
   try {
     for (const { path, text } of originals) {

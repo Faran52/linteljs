@@ -72,9 +72,10 @@ const arrayOfChoices = <V extends string>(
     throw new Error(`${key} must be an array`);
   }
 
-  const choices = value.map((item) => {
-    return choiceValue(item, key, values);
-  });
+  const choices = value
+    .map((item) => {
+      return choiceValue(item, key, values);
+    });
 
   if (choices.length < minimum) {
     throw new Error(`${key} must contain at least ${String(minimum)} value`);
@@ -92,13 +93,14 @@ const stringList = (value: JsonValue | undefined, key: string): string[] => {
     throw new Error(`${key} must be a non-empty array`);
   }
 
-  const names = value.map((item) => {
-    if (typeof item !== 'string' || item === '') {
-      throw new Error(`${key} must contain only non-empty strings`);
-    }
+  const names = value
+    .map((item) => {
+      if (typeof item !== 'string' || item === '') {
+        throw new Error(`${key} must contain only non-empty strings`);
+      }
 
-    return item;
-  });
+      return item;
+    });
 
   refuseDuplicates(names, key);
 
@@ -134,9 +136,10 @@ const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
     }
   }
 
-  return Object.fromEntries(entries.map(([alias, directory]) => {
-    return [alias, String(directory)];
-  }));
+  return Object.fromEntries(entries
+    .map(([alias, directory]) => {
+      return [alias, String(directory)];
+    }));
 };
 
 /**

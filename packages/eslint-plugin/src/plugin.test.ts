@@ -39,20 +39,27 @@ describe('rules', () => {
     const ids = Object.keys(linteljs.rules ?? {});
 
     expect(ids).toEqual(Object.keys(rules));
-    expect(ids.some((id) => {
-      return id.startsWith(`${PLUGIN_NAME}/`);
-    })).toBe(false);
+
+    const anyOwn = ids
+      .some((id) => {
+        return id.startsWith(`${PLUGIN_NAME}/`);
+      });
+
+    expect(anyOwn).toBe(false);
   });
 });
 
 describe('recommended preset', () => {
-  const recommendedIds = Object.entries(rules).filter(([, rule]) => {
-    return rule.meta.docs.recommended;
-  }).map(([id]) => {
-    return `${PLUGIN_NAME}/${id}`;
-  }).toSorted((left, right) => {
-    return left.localeCompare(right);
-  });
+  const recommendedIds = Object.entries(rules)
+    .filter(([, rule]) => {
+      return rule.meta.docs.recommended;
+    })
+    .map(([id]) => {
+      return `${PLUGIN_NAME}/${id}`;
+    })
+    .toSorted((left, right) => {
+      return left.localeCompare(right);
+    });
 
   it('has both a recommended and an opt-out rule to prove the split with', () => {
     expect(recommendedIds.length).toBeGreaterThan(0);
@@ -63,22 +70,26 @@ describe('recommended preset', () => {
     // TypeScript-only recommended rules live in the override, not the top-level `rules`.
     const enabled = [
       ...Object.keys(configs.recommended.rules),
-      ...configs.recommended.overrides.flatMap((override) => {
-        return Object.keys(override.rules);
-      }),
-    ].toSorted((left, right) => {
-      return left.localeCompare(right);
-    });
+      ...configs.recommended.overrides
+        .flatMap((override) => {
+          return Object.keys(override.rules);
+        }),
+    ]
+      .toSorted((left, right) => {
+        return left.localeCompare(right);
+      });
 
     expect(enabled).toEqual(recommendedIds);
   });
 
   it('enables exactly those ids across the flat blocks', () => {
-    const enabled = configs['flat/recommended'].flatMap((block) => {
-      return Object.keys(block.rules ?? {});
-    }).toSorted((left, right) => {
-      return left.localeCompare(right);
-    });
+    const enabled = configs['flat/recommended']
+      .flatMap((block) => {
+        return Object.keys(block.rules ?? {});
+      })
+      .toSorted((left, right) => {
+        return left.localeCompare(right);
+      });
 
     expect(enabled).toEqual(recommendedIds);
   });

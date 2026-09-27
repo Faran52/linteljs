@@ -106,9 +106,10 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
  * is the emitter's own question.
  */
 export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
-  const artifacts = Object.values(BUILD_EMITTERS).flatMap((emit) => {
-    return emit(answers, project, name);
-  });
+  const artifacts = Object.values(BUILD_EMITTERS)
+    .flatMap((emit) => {
+      return emit(answers, project, name);
+    });
 
   /**
    * The record last, because it is a fact about the list rather than a member of it: every path above that this CLI
@@ -128,7 +129,8 @@ export const seedArtifacts = (
   name: string,
   project: ProjectShape = EMPTY_PROJECT,
 ): Artifact[] => {
-  return Object.values(SEED_EMITTERS).flatMap((emit) => {
-    return emit(answers, project, name);
-  });
+  return Object.values(SEED_EMITTERS)
+    .flatMap((emit) => {
+      return emit(answers, project, name);
+    });
 };

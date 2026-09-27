@@ -121,9 +121,10 @@ const esmConfig = (pluginPath: string): string => {
     '',
     'export default [',
     '  { plugins: { \'@linteljs\': linteljs }, rules: {',
-    ...expectedRuleIds.map((id) => {
-      return `    ${JSON.stringify(id)}: 'error',`;
-    }),
+    ...expectedRuleIds
+      .map((id) => {
+        return `    ${JSON.stringify(id)}: 'error',`;
+      }),
     '  } },',
     '];',
     '',
@@ -136,9 +137,10 @@ const cjsConfig = (pluginPath: string): string => {
     '',
     'module.exports = [',
     '  { plugins: { \'@linteljs\': linteljs }, rules: {',
-    ...expectedRuleIds.map((id) => {
-      return `    ${JSON.stringify(id)}: 'error',`;
-    }),
+    ...expectedRuleIds
+      .map((id) => {
+        return `    ${JSON.stringify(id)}: 'error',`;
+      }),
     '  } },',
     '];',
     '',
@@ -190,8 +192,11 @@ for (const [label, shape] of entries) {
   assert.ok(shape.meta?.name, `${label}: no \`meta.name\``);
   assert.ok(shape.meta.version, `${label}: no \`meta.version\``);
 
+  const configNames = Object.keys(shape.configs)
+    .sort(alphabetically);
+
   assert.deepEqual(
-    Object.keys(shape.configs).sort(alphabetically),
+    configNames,
     expectedPresetNames,
     `${label}: published preset names changed`,
   );
@@ -209,17 +214,24 @@ for (const [label, shape] of entries) {
 
     // A TypeScript-only preset carries everything in `overrides`; what matters is that it enables something.
     const enabled = Object.keys(preset.rules ?? {}).length
-      + (preset.overrides ?? []).reduce((total: number, override) => {
-        return total + Object.keys(override.rules ?? {}).length;
-      }, 0);
+      + (preset.overrides ?? [])
+        .reduce((total: number, override) => {
+          return total + Object.keys(override.rules ?? {}).length;
+        }, 0);
 
     assert.ok(enabled > 0, `${label}: configs.${presetName} enables nothing`);
   }
 }
 
+const cjsRules = Object.keys(cjsNamespace.rules)
+  .sort(alphabetically);
+
+const esmRules = Object.keys(esmDefault.rules)
+  .sort(alphabetically);
+
 assert.deepEqual(
-  Object.keys(cjsNamespace.rules).sort(alphabetically),
-  Object.keys(esmDefault.rules).sort(alphabetically),
+  cjsRules,
+  esmRules,
   'ESM and CJS entry points expose different rule sets',
 );
 
@@ -262,13 +274,18 @@ for (const file of readdirSync(distDir)) {
 log('no dangling sourcemap, no runtime dependency, no API newer than the declared Node floor');
 
 // One doc per rule at the path every version has published, which the move into `src/rules/` once dropped.
-const packedDocs = readdirSync(join(pkgDir, 'docs', 'rules')).sort(alphabetically);
+const packedDocs = readdirSync(join(pkgDir, 'docs', 'rules'))
+  .sort(alphabetically);
+
+const ruleDocs = Object.keys(esmDefault.rules)
+  .sort(alphabetically)
+  .map((id) => {
+    return `${id}.md`;
+  });
 
 assert.deepEqual(
   packedDocs,
-  Object.keys(esmDefault.rules).sort(alphabetically).map((id) => {
-    return `${id}.md`;
-  }),
+  ruleDocs,
   'docs/rules does not carry exactly one file per published rule',
 );
 

@@ -74,10 +74,12 @@ export default config;
 
 describe('emitEslintConfig', () => {
   it('reproduces the frozen contract file for default React answers', () => {
-    expect(emitEslintConfig(answersFor({
+    const config = emitEslintConfig(answersFor({
       target: 'react',
       libraries: [],
-    }))).toBe(CANONICAL_REACT);
+    }));
+
+    expect(config).toBe(CANONICAL_REACT);
   });
 
   // The barrel pulls in all six framework layers.
@@ -150,9 +152,11 @@ describe('emitEslintConfig', () => {
   // React Native's eight ignores on one line came to 133 characters and self-reported a finding.
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {
     for (const target of TARGET_IDS) {
-      const tooLong = emitEslintConfig(answersFor({ target })).split('\n').filter((line) => {
-        return line.length > 120;
-      });
+      const tooLong = emitEslintConfig(answersFor({ target }))
+        .split('\n')
+        .filter((line) => {
+          return line.length > 120;
+        });
 
       expect({
         target,
@@ -165,37 +169,46 @@ describe('emitEslintConfig', () => {
   });
 
   it('asks for a library layer only when its library was selected', () => {
-    expect(emitEslintConfig(answersFor({
+    const withQuery = emitEslintConfig(answersFor({
       libraries: [],
       data: 'tanstack-query',
-    })))
-      .toContain("libraries: ['tanstack-query'],");
-    expect(emitEslintConfig(answersFor({
+    }));
+
+    expect(withQuery).toContain("libraries: ['tanstack-query'],");
+
+    const withTailwind = emitEslintConfig(answersFor({
       libraries: [],
       styling: 'tailwind',
-    })))
-      .toContain("libraries: ['tailwind'],");
-    expect(emitEslintConfig(answersFor({
+    }));
+
+    expect(withTailwind).toContain("libraries: ['tailwind'],");
+
+    const withBoth = emitEslintConfig(answersFor({
       libraries: [],
       styling: 'tailwind',
       data: 'tanstack-query',
-    })))
-      .toContain("libraries: ['tanstack-query', 'tailwind'],");
-    expect(emitEslintConfig(answersFor({
+    }));
+
+    expect(withBoth).toContain("libraries: ['tanstack-query', 'tailwind'],");
+
+    const withStylex = emitEslintConfig(answersFor({
       libraries: [],
       styling: 'stylex',
-    })))
-      .toContain("libraries: ['stylex'],");
+    }));
+
+    expect(withStylex).toContain("libraries: ['stylex'],");
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
   });
 
   // Each layer is its one answer value: the other value of the same answer installs a package with no layer behind it.
   it('asks for no layer for the other value of the answer that gates it', () => {
-    expect(emitEslintConfig(answersFor({
+    const config = emitEslintConfig(answersFor({
       libraries: [],
       data: 'rtk-query',
       router: 'react-router',
-    }))).not.toContain('libraries:');
+    }));
+
+    expect(config).not.toContain('libraries:');
   });
 
   // The scaffolder's own path lets the plugin read the project's theme rather than Tailwind's defaults.
@@ -210,12 +223,13 @@ describe('emitEslintConfig', () => {
     // `sv create --template minimal` ships no stylesheet.
     ['svelte', './src/app.css'],
   ])('names %s tailwind entry point as its stylesheet', (target, entry) => {
-    expect(emitEslintConfig(answersFor({
+    const config = emitEslintConfig(answersFor({
       target,
       libraries: [],
       styling: 'tailwind',
-    })))
-      .toContain(`tailwindEntryPoint: '${entry}',`);
+    }));
+
+    expect(config).toContain(`tailwindEntryPoint: '${entry}',`);
   });
 
   // Recorded rather than asked, so needing it costs a line rather than an override block.
@@ -230,9 +244,10 @@ describe('emitEslintConfig', () => {
 
   // 121 characters inline, one past `max-len`, so the list breaks: measured on the line it is written on.
   it('breaks the resolver conditions onto their own lines once they would run past max-len', () => {
-    const conditions = ['1', '2', '3', '4', '5'].map((digit) => {
-      return `condition-name-${digit}`;
-    });
+    const conditions = ['1', '2', '3', '4', '5']
+      .map((digit) => {
+        return `condition-name-${digit}`;
+      });
     const output = emitEslintConfig({
       ...answersFor({}),
       resolveConditions: conditions,
@@ -241,9 +256,10 @@ describe('emitEslintConfig', () => {
     expect(output).toContain([
       '  resolver: {',
       '    conditionNames: [',
-      ...conditions.map((condition) => {
-        return `      '${condition}',`;
-      }),
+      ...conditions
+        .map((condition) => {
+          return `      '${condition}',`;
+        }),
       '    ],',
       '  },',
     ].join('\n'));
@@ -254,10 +270,12 @@ describe('emitEslintConfig', () => {
   });
 
   it('names no tailwind entry point when tailwind was not selected', () => {
-    expect(emitEslintConfig(answersFor({
+    const config = emitEslintConfig(answersFor({
       libraries: [],
       data: 'tanstack-query',
-    }))).not.toContain('tailwindEntryPoint');
+    }));
+
+    expect(config).not.toContain('tailwindEntryPoint');
   });
 
   it('omits the html layer where there is no markup for it to lint', () => {
@@ -300,9 +318,11 @@ describe('emitEslintConfig', () => {
     const line = emitEslintConfig({
       ...answersFor({ target: 'react' }),
       ignores: ['generated/very-long-name/**'],
-    }).split('\n').find((candidate) => {
-      return candidate.startsWith('  ignores:');
-    });
+    })
+      .split('\n')
+      .find((candidate) => {
+        return candidate.startsWith('  ignores:');
+      });
 
     expect(line).toHaveLength(120);
     expect(line?.endsWith("'generated/very-long-name/**'],")).toBe(true);
@@ -310,10 +330,12 @@ describe('emitEslintConfig', () => {
 
   // A project's own ignore is text a user typed, so a quote in it is escaped rather than ending the string.
   it('escapes a quote inside a value', () => {
-    expect(emitEslintConfig({
+    const config = emitEslintConfig({
       ...answersFor({}),
       ignores: ["it's/**"],
-    })).toContain("'it\\'s/**'");
+    });
+
+    expect(config).toContain("'it\\'s/**'");
   });
 
   // A file type rather than a framework, so the layer is asked for beside the hosted one.
@@ -539,9 +561,10 @@ describe('ignores', () => {
   const ignoresOf = (answers: Answers): string[] => {
     const list = /ignores: (\[[^\]]*\])/su.exec(emitEslintConfig(answers))?.[1] ?? '[]';
 
-    return [...list.matchAll(/'([^']+)'/gu)].map(([, entry = '']) => {
-      return entry;
-    });
+    return [...list.matchAll(/'([^']+)'/gu)]
+      .map(([, entry = '']) => {
+        return entry;
+      });
   };
 
   // What each framework generates or owns and nothing of its own should lint: build output, caches, native shells.
@@ -568,16 +591,19 @@ describe('ignores', () => {
   });
 
   it('never repeats an entry for any target', () => {
-    const duplicated = TARGET_IDS.flatMap((target) => {
-      const entries = ignoresOf(answersFor({ target }));
-      const seen = entries.filter((entry, index) => {
-        return entries.indexOf(entry) !== index;
-      });
+    const duplicated = TARGET_IDS
+      .flatMap((target) => {
+        const entries = ignoresOf(answersFor({ target }));
+        const seen = entries
+          .filter((entry, index) => {
+            return entries.indexOf(entry) !== index;
+          });
 
-      return seen.map((entry) => {
-        return `${target}: ${entry}`;
+        return seen
+          .map((entry) => {
+            return `${target}: ${entry}`;
+          });
       });
-    });
 
     expect(duplicated).toEqual([]);
   });

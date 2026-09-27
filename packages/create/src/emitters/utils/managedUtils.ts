@@ -6,13 +6,15 @@ import type { Artifact } from '@config/types';
  * `.cursor/hooks.json` are the merges that say otherwise: each file exists because a host was selected.
  */
 export const removableIn = (artifacts: Artifact[]): string[] => {
-  return artifacts.filter((artifact) => {
-    const owned = !('merge' in artifact.content) || artifact.removable === true;
+  return artifacts
+    .filter((artifact) => {
+      const owned = !('merge' in artifact.content) || artifact.removable === true;
 
-    return artifact.preserve !== true && owned;
-  }).map((artifact) => {
-    return artifact.target;
-  });
+      return artifact.preserve !== true && owned;
+    })
+    .map((artifact) => {
+      return artifact.target;
+    });
 };
 
 /**
@@ -22,8 +24,9 @@ export const removableIn = (artifacts: Artifact[]): string[] => {
  */
 export const managedRecord = (removable: string[]): string => {
   return `${JSON.stringify({
-    removable: [...removable].toSorted((left, right) => {
-      return left.localeCompare(right, 'en');
-    }),
+    removable: [...removable]
+      .toSorted((left, right) => {
+        return left.localeCompare(right, 'en');
+      }),
   }, null, 2)}\n`;
 };

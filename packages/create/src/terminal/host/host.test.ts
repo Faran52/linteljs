@@ -158,10 +158,12 @@ describe('hostOf: the Node a project records', () => {
 describe('hosted', () => {
   // The manager is never asked, so whatever the answers carried is replaced rather than kept.
   it('records the host over whatever manager the answers carried', () => {
-    expect(hosted({
+    const recorded = hosted({
       ...DEFAULT_ANSWERS,
       packageManager: 'npm',
-    }, HOST)).toMatchObject(HOST);
+    }, HOST);
+
+    expect(recorded).toMatchObject(HOST);
   });
 });
 
@@ -186,11 +188,13 @@ describe('filled', () => {
   });
 
   it("keeps the versions a config already recorded rather than the machine's", () => {
-    expect(filled({
+    const completed = filled({
       ...DEFAULT_ANSWERS,
       packageManagerVersion: '10.30.0',
       nodeVersion: '24.11.0',
-    }, HOST)).toMatchObject({
+    }, HOST);
+
+    expect(completed).toMatchObject({
       packageManagerVersion: '10.30.0',
       nodeVersion: '24.11.0',
     });

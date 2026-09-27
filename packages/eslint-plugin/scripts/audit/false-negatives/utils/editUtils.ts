@@ -55,9 +55,10 @@ export const textOf = (state: State, node: AstNode): string => {
 };
 
 export const commentsIn = (state: State, from: number, to: number): boolean => {
-  return state.ast.comments.some((comment) => {
-    return comment.range[1] > from && comment.range[0] < to;
-  });
+  return state.ast.comments
+    .some((comment) => {
+      return comment.range[1] > from && comment.range[0] < to;
+    });
 };
 
 // A comment, a template literal and a string continuation all make a reflow unsafe or a case the rule declines.
@@ -77,9 +78,12 @@ export const unsafeToReflow = (state: State, from: number, to: number): string |
 
 // Split and trim rather than `/[ \t]*\r?\n[ \t]*/g`, which is super-linear on a long run of indentation.
 const collapse = (text: string): string => {
-  return text.split(/\r?\n/).map((line) => {
-    return line.trim();
-  }).join(' ');
+  return text
+    .split(/\r?\n/)
+    .map((line) => {
+      return line.trim();
+    })
+    .join(' ');
 };
 
 export const replaced = (state: State, from: number, to: number, text: string): Candidate => {
@@ -108,11 +112,12 @@ export const spansLines = (first: AstNode, last: AstNode): boolean => {
 
 // Every member on a line of its own, which is what these rules call correct.
 export const fullySplit = (members: AstNode[]): boolean => {
-  return members.every((member, index) => {
-    const previous = members[index - 1];
+  return members
+    .every((member, index) => {
+      const previous = members[index - 1];
 
-    return previous === undefined || spansLines(previous, member);
-  });
+      return previous === undefined || spansLines(previous, member);
+    });
 };
 
 export const climb = (node: AstNode, matches: (ancestor: AstNode) => boolean): AstNode | undefined => {
@@ -178,26 +183,29 @@ export const splitBraces = (state: State, members: AstNode[]): Candidate | undef
     return undefined;
   }
 
-  const text = members.map((member) => {
-    return textOf(state, member);
-  }).join(',\n  ');
+  const text = members
+    .map((member) => {
+      return textOf(state, member);
+    })
+    .join(',\n  ');
 
   return replaced(state, open, close + 1, `{\n  ${text}\n}`);
 };
 
 // Members held apart by newlines alone would join into `{ a: string b: number }`, a broken edit rather than a case.
 export const separatedByPunctuation = (state: State, members: AstNode[]): boolean => {
-  return members.every((member, index) => {
-    const next = members[index + 1];
+  return members
+    .every((member, index) => {
+      const next = members[index + 1];
 
-    if (next === undefined) {
-      return true;
-    }
+      if (next === undefined) {
+        return true;
+      }
 
-    const gap = state.source.slice(member.range[1], next.range[0]).trim();
+      const gap = state.source.slice(member.range[1], next.range[0]).trim();
 
-    return /[;,]$/.test(textOf(state, member)) || gap.startsWith(';') || gap.startsWith(',');
-  });
+      return /[;,]$/.test(textOf(state, member)) || gap.startsWith(';') || gap.startsWith(',');
+    });
 };
 
 export const escapeName = (name: string): string => {

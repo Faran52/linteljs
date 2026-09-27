@@ -24,10 +24,12 @@ describe('presetOf', () => {
 
   // A preset's own glob wins; `files` fills only an entry that names none.
   it('scopes every entry with no glob of its own to the files given', () => {
-    expect(presetOf([{ name: 'probe/one' }, {
+    const preset = presetOf([{ name: 'probe/one' }, {
       name: 'probe/two',
       files: ['**/*.vue'],
-    }], 'probe', ['**/*.ts'])).toEqual([{
+    }], 'probe', ['**/*.ts']);
+
+    expect(preset).toEqual([{
       name: 'probe/one',
       files: ['**/*.ts'],
     }, {

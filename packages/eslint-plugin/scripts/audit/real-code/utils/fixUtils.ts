@@ -23,15 +23,17 @@ export const pluginConfig = (context: AuditContext, names: string[]): Linter.Con
   }
 
   const config = configFor(
-    Object.fromEntries(names.map((name) => {
-      return [name, moduleOf(name)];
-    })),
-    Object.fromEntries(names.map((name) => {
-      const options = context.options[name];
-      const entry: Linter.RuleEntry = options === undefined ? 'error' : ['error', options];
+    Object.fromEntries(names
+      .map((name) => {
+        return [name, moduleOf(name)];
+      })),
+    Object.fromEntries(names
+      .map((name) => {
+        const options = context.options[name];
+        const entry: Linter.RuleEntry = options === undefined ? 'error' : ['error', options];
 
-      return [`@linteljs/${name}`, entry];
-    })),
+        return [`@linteljs/${name}`, entry];
+      })),
     // Files disable rules this config never loads, and ESLint 9+ deletes such a comment when left on.
     { reportUnusedDisableDirectives: 'off' },
   );
@@ -42,19 +44,20 @@ export const pluginConfig = (context: AuditContext, names: string[]): Linter.Con
 };
 
 export const auditConfig = (context: AuditContext): Linter.Config[] => {
-  return pluginConfig(context, AUDIT_RULES).map((entry) => {
-    return {
-      ...entry,
-      plugins: {
-        ...entry.plugins,
-        probe: { rules: { hoisted: hoistedProbe } },
-      },
-      rules: {
-        ...entry.rules,
-        'probe/hoisted': 'error' as const,
-      },
-    };
-  });
+  return pluginConfig(context, AUDIT_RULES)
+    .map((entry) => {
+      return {
+        ...entry,
+        plugins: {
+          ...entry.plugins,
+          probe: { rules: { hoisted: hoistedProbe } },
+        },
+        rules: {
+          ...entry.rules,
+          'probe/hoisted': 'error' as const,
+        },
+      };
+    });
 };
 
 export const fix = (context: AuditContext, source: string, name: string, names: string[]): string => {
@@ -85,9 +88,10 @@ export const parsedFix = (
 };
 
 export const subsetOf = (candidates: string[], names: string[]): string[] => {
-  return candidates.filter((rule) => {
-    return names.includes(rule);
-  });
+  return candidates
+    .filter((rule) => {
+      return names.includes(rule);
+    });
 };
 
 export const emptyCounts = (): Counts => {

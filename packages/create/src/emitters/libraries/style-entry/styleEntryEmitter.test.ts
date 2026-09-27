@@ -49,9 +49,10 @@ describe('the entry path', () => {
 
   // A default missing from the candidates is an entry that can never be found, so a second is written beside it.
   it('can discover every default a target declares', () => {
-    const declared = valuesOf(ANSWERS.target.values).map((target) => {
-      return targetFor(answersFor({ target })).styleEntry;
-    });
+    const declared = valuesOf(ANSWERS.target.values)
+      .map((target) => {
+        return targetFor(answersFor({ target })).styleEntry;
+      });
 
     expect(declared.length).toBeGreaterThan(0);
     expect(STYLE_ENTRY_CANDIDATES).toEqual(expect.arrayContaining(declared));

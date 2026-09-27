@@ -210,9 +210,12 @@ describe('base: ignores', () => {
         naming: { 'src/**/*.ts': 'CAMEL_CASE' },
       }));
 
-      expect(names.filter((name) => {
-        return name.startsWith('@linteljs/base');
-      })).toEqual([
+      const baseBlocks = names
+        .filter((name) => {
+          return name.startsWith('@linteljs/base');
+        });
+
+      expect(baseBlocks).toEqual([
         '@linteljs/base/gitignore',
         '@linteljs/base/ignores',
         '@linteljs/base/typescript-syntax',
@@ -237,9 +240,10 @@ describe('base: ignores', () => {
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
 
     try {
-      const gitignoreEntries = base().filter((entry) => {
-        return entry.name === '@linteljs/base/gitignore';
-      });
+      const gitignoreEntries = base()
+        .filter((entry) => {
+          return entry.name === '@linteljs/base/gitignore';
+        });
 
       expect(gitignoreEntries).toEqual([]);
       await expect(ruleIdsFor(base(), doubleQuoted, built)).resolves.toContain('@stylistic/quotes');
@@ -406,9 +410,10 @@ describe('base: resolver options', () => {
   const RESOLVER_DEFAULTS = { alwaysTryTypes: true };
 
   const settingsOf = (layer: Layer) => {
-    return layer.find((block) => {
-      return block.settings?.['import-x/resolver'] !== undefined;
-    })?.settings;
+    return layer
+      .find((block) => {
+        return block.settings?.['import-x/resolver'] !== undefined;
+      })?.settings;
   };
 
   it('tries declaration files by default, and keeps the upstream parser settings', () => {
@@ -446,12 +451,14 @@ describe('base: resolver options', () => {
   });
 
   it('passes noWarnOnMultipleProjects through only when asked', () => {
-    expect(settingsOf(base({
+    const settings = settingsOf(base({
       resolver: {
         project: 'packages/*/tsconfig.json',
         noWarnOnMultipleProjects: true,
       },
-    }))).toMatchObject({
+    }));
+
+    expect(settings).toMatchObject({
       'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,

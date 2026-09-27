@@ -96,37 +96,42 @@ export const nextTarget: TargetRecord = {
     // Next takes React's `className` spelling, which is what `stylex.props` answers with.
     ...componentStyleModules('react'),
     // The two halves of the Babel and PostCSS path, which is how StyleX reaches a build Vite does not own.
-    ...(['.babelrc', 'postcss.config.mjs'] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: (answers) => {
-          return answers.styling === 'stylex';
-        },
-        variant: 'stylex',
-      };
-    }),
+    ...(['.babelrc', 'postcss.config.mjs'] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: (answers) => {
+            return answers.styling === 'stylex';
+          },
+          variant: 'stylex',
+        };
+      }),
     ...accessorFiles(ACCESSORS, {
       shared: 'react',
       names: SOURCE_ACCESSORS,
     }),
     ...rtkFiles(),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
-    ...FROM_REACT.filter((target) => {
-      return !target.includes('text-input') && !target.includes('apis');
-    }).map((target): StarterFile => {
-      return {
-        target,
-        shared: 'react',
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
+    ...FROM_REACT
+      .filter((target) => {
+        return !target.includes('text-input') && !target.includes('apis');
+      })
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: 'react',
+        };
+      }),
     // One page list, read by the header; the routes directory is the other half and a form adds a folder to it.
     {
       target: 'src/config/routes.ts',
@@ -186,25 +191,27 @@ export const nextTarget: TargetRecord = {
       target: 'src/app/contact/page.tsx',
       when: hasForm,
     },
-    ...(['tanstack-form', 'react-hook-form'] as const).map((form): StarterFile => {
-      return {
-        target: 'src/app/contact/useContactForm.ts',
-        when: (answers) => {
-          return answers.form === form;
-        },
-        variant: form,
-      };
-    }),
+    ...(['tanstack-form', 'react-hook-form'] as const)
+      .map((form): StarterFile => {
+        return {
+          target: 'src/app/contact/useContactForm.ts',
+          when: (answers) => {
+            return answers.form === form;
+          },
+          variant: form,
+        };
+      }),
     ...([
       'src/components/ui/text-input/TextInput.tsx',
       'src/lib/apis/contact/index.ts',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: hasForm,
-        shared: 'react',
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: hasForm,
+          shared: 'react',
+        };
+      }),
     {
       target: 'src/lib/apis/contact/api.ts',
       when: (answers) => {
@@ -212,16 +219,17 @@ export const nextTarget: TargetRecord = {
       },
       shared: 'react',
     },
-    ...(['tanstack-query', 'rtk-query'] as const).map((data): StarterFile => {
-      return {
-        target: 'src/lib/apis/contact/api.ts',
-        when: (answers) => {
-          return hasForm(answers) && answers.data === data;
-        },
-        variant: data,
-        shared: 'react',
-      };
-    }),
+    ...(['tanstack-query', 'rtk-query'] as const)
+      .map((data): StarterFile => {
+        return {
+          target: 'src/lib/apis/contact/api.ts',
+          when: (answers) => {
+            return hasForm(answers) && answers.data === data;
+          },
+          variant: data,
+          shared: 'react',
+        };
+      }),
     // One rule set, read by the form that binds it and the api that refuses on it.
     {
       target: 'src/lib/apis/contact/schemas.ts',
@@ -266,16 +274,17 @@ export const nextTarget: TargetRecord = {
       variant: 'tanstack-query',
     },
     // The markup is the same for every store, so only the module behind `useCounter` varies by which one.
-    ...(['zustand', 'tanstack-store'] as const).map((store): StarterFile => {
-      return {
-        target: 'src/lib/store/counter.ts',
-        when: (answers) => {
-          return answers.store === store;
-        },
-        variant: store,
-        shared: 'react',
-      };
-    }),
+    ...(['zustand', 'tanstack-store'] as const)
+      .map((store): StarterFile => {
+        return {
+          target: 'src/lib/store/counter.ts',
+          when: (answers) => {
+            return answers.store === store;
+          },
+          variant: store,
+          shared: 'react',
+        };
+      }),
     // The Redux store is the one place RTK Query has to be registered, since its middleware is what makes it work.
     {
       target: 'src/lib/store/counter.ts',

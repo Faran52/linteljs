@@ -66,9 +66,10 @@ const propertiesOf = (code: string): ParsedProperties => {
     throw new Error(`snippet did not parse: ${code}`);
   }
 
-  const pattern = nodes.find((node) => {
-    return node.type === 'ObjectPattern';
-  });
+  const pattern = nodes
+    .find((node) => {
+      return node.type === 'ObjectPattern';
+    });
 
   if (!pattern) {
     throw new Error(`no object pattern in snippet: ${code}`);

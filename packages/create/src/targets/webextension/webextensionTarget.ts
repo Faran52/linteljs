@@ -29,15 +29,17 @@ import type { StarterFile } from '../types';
 // A surface decides what the manifest names and whether the build needs an input the manifest does not give it.
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
-    ...POPUP.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...POPUP
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     {
       target: 'src/styles/theme.css',
       when: (current) => {

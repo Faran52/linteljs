@@ -128,17 +128,25 @@ describe('mergeCursorHooks', () => {
   });
 
   it('runs only hook scripts the plugin tree ships', () => {
-    const shipped = new Set(linteljsPluginEmitter(DEFAULT_ANSWERS).map(({ target }) => {
-      return target;
-    }));
-    const scripts = [...JSON.stringify(CURSOR_HOOKS).matchAll(/node ([^"\s]+)"/gu)].map((match) => {
-      return match[1];
-    });
+    const pluginTargets = linteljsPluginEmitter(DEFAULT_ANSWERS)
+      .map(({ target }) => {
+        return target;
+      });
+
+    const shipped = new Set(pluginTargets);
+    const scripts = [...JSON.stringify(CURSOR_HOOKS).matchAll(/node ([^"\s]+)"/gu)]
+      .map((match) => {
+        return match[1];
+      });
 
     expect(scripts).toHaveLength(2);
-    expect(scripts.every((script) => {
-      return script !== undefined && shipped.has(script);
-    })).toBe(true);
+
+    const allShipped = scripts
+      .every((script) => {
+        return script !== undefined && shipped.has(script);
+      });
+
+    expect(allShipped).toBe(true);
   });
 });
 

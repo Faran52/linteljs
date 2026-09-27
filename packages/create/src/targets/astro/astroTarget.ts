@@ -109,15 +109,17 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyles(),
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling from `stylex.attrs`.
       ...componentStyleModules('solid'),
-      ...ALWAYS.map((target): StarterFile => {
-        return { target };
-      }),
-      ...SHARED.map((target): StarterFile => {
-        return {
-          target,
-          shared: true,
-        };
-      }),
+      ...ALWAYS
+        .map((target): StarterFile => {
+          return { target };
+        }),
+      ...SHARED
+        .map((target): StarterFile => {
+          return {
+            target,
+            shared: true,
+          };
+        }),
       {
         target: 'src/styles/theme.css',
         when: (current) => {
@@ -148,9 +150,10 @@ export const astroTarget: TargetBuilder = (answers) => {
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
       // Less the build plugin, which `@astrojs/react` brings; the compiler stays, as that plugin's optional peer.
-      ...(hosted?.devDependencies ?? []).filter((name) => {
-        return name !== '@vitejs/plugin-react';
-      }),
+      ...(hosted?.devDependencies ?? [])
+        .filter((name) => {
+          return name !== '@vitejs/plugin-react';
+        }),
     ],
     ...(hosted === undefined ? {} : { testDevDependencies: [...hosted.testDevDependencies] }),
     // Astro's build pulls esbuild, whose install script pnpm refuses without this (ERR_PNPM_IGNORED_BUILDS).

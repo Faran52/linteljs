@@ -49,10 +49,12 @@ describe('runOptionSweep', () => {
   it('warns and answers no findings when no rule in the run takes an option', () => {
     const printed = captured();
 
-    expect(runOptionSweep(auditContext({
+    const sweep = runOptionSweep(auditContext({
       activeRules: ['comment-delimiter'],
       files: [clean],
-    }))).toBe(0);
+    }));
+
+    expect(sweep).toBe(0);
     expect(printed()).toContain('nothing to sweep');
   });
 

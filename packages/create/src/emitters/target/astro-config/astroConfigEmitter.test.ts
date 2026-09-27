@@ -145,19 +145,24 @@ describe('emitAstroConfig', () => {
 // The build configs are the project's after the first write: both reference repos rewrote their vite config wholesale.
 describe('astroConfigEmitter', () => {
   it('hands the config to the project after the first write', () => {
-    expect(astroConfigEmitter(answersFor()).map(({
-      stage,
-      target,
-      preserve,
-    }) => {
-      return [stage, target, preserve];
-    })).toEqual([['standard', 'astro.config.mjs', true]]);
+    const shapes = astroConfigEmitter(answersFor())
+      .map(({
+        stage,
+        target,
+        preserve,
+      }) => {
+        return [stage, target, preserve];
+      });
+
+    expect(shapes).toEqual([['standard', 'astro.config.mjs', true]]);
   });
 
   it('writes nothing for a target that is not astro', () => {
-    expect(astroConfigEmitter({
+    const artifacts = astroConfigEmitter({
       ...DEFAULT_ANSWERS,
       target: 'react',
-    })).toEqual([]);
+    });
+
+    expect(artifacts).toEqual([]);
   });
 });

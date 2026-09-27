@@ -21,18 +21,20 @@ export const answersFor = (agents: Agent[]): Answers => {
 };
 
 export const targets = (artifacts: Artifact[]): string[] => {
-  return artifacts.map((artifact) => {
-    return artifact.target;
-  });
+  return artifacts
+    .map((artifact) => {
+      return artifact.target;
+    });
 };
 
 export const transformOf = (
   artifacts: Artifact[],
   target: string,
 ): ((source: string, current: string | null) => string) => {
-  const found = artifacts.find((artifact) => {
-    return artifact.target === target;
-  });
+  const found = artifacts
+    .find((artifact) => {
+      return artifact.target === target;
+    });
 
   if (found === undefined || !('sources' in found.content) || found.content.transform === undefined) {
     throw new Error(`no transform for ${target}`);

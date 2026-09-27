@@ -33,12 +33,15 @@ export const run = async (
    * `ERR_PNPM_OTHER_PM_EXPECTED`. Set under `pnpm run` and not `pnpm exec`, which is why it passed one way and
    * failed the other. `npm_config_registry` and the cache paths below are this suite's own and stay.
    */
-  const parentEnv = Object.fromEntries(Object.entries(env).filter(([key]) => {
-    return !LAUNCHER_KEYS.has(key)
-      && !key.startsWith('npm_package_')
-      && !key.startsWith('npm_lifecycle_')
-      && !key.startsWith('VITEST');
-  }));
+  const inherited = Object.entries(env)
+    .filter(([key]) => {
+      return !LAUNCHER_KEYS.has(key)
+        && !key.startsWith('npm_package_')
+        && !key.startsWith('npm_lifecycle_')
+        && !key.startsWith('VITEST');
+    });
+
+  const parentEnv = Object.fromEntries(inherited);
 
   // `spawn` rather than `spawnSync`: a case is one `it.concurrent`, and a synchronous spawn blocks the event loop
   // for the whole install, so every case in a file would run one at a time however high `maxConcurrency` is set.
@@ -154,9 +157,10 @@ export const outcome = (result: RunResult, label: string): string => {
 };
 
 export const runPm = async (pm: PackageManager, args: string[], project: string): Promise<RunResult> => {
-  const mapped = args.flatMap((arg) => {
-    return SPELLINGS[pm][arg] ?? [arg];
-  });
+  const mapped = args
+    .flatMap((arg) => {
+      return SPELLINGS[pm][arg] ?? [arg];
+    });
 
   return run(MANAGER_BINARIES[pm], mapped, project);
 };

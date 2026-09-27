@@ -45,9 +45,10 @@ vi.mock('./processUtils', () => {
  */
 describe('answerFlags', () => {
   it('passes a flag for every answer the CLI names one for', () => {
-    const named = Object.values(ANSWERS).flatMap((record) => {
-      return 'flag' in record ? [`--${record.flag}`] : [];
-    });
+    const named = Object.values(ANSWERS)
+      .flatMap((record) => {
+        return 'flag' in record ? [`--${record.flag}`] : [];
+      });
     // Two sets, since a browser is asked only of the extension and a router only of the targets that offer one.
     const passed = new Set([
       ...answerFlags({
@@ -68,9 +69,12 @@ describe('answerFlags', () => {
       }),
     ]);
 
-    expect(named.filter((flag) => {
-      return !passed.has(flag);
-    })).toEqual([]);
+    const unpassed = named
+      .filter((flag) => {
+        return !passed.has(flag);
+      });
+
+    expect(unpassed).toEqual([]);
   });
 });
 

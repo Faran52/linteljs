@@ -48,9 +48,10 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
 
   const record = (message: string, options: PromptOption[]): void => {
     calls.push(message);
-    labels[message] = options.map((option) => {
-      return option.label ?? option.value;
-    });
+    labels[message] = options
+      .map((option) => {
+        return option.label ?? option.value;
+      });
   };
 
   const next = (): ScriptedAnswer | typeof CANCEL | undefined => {

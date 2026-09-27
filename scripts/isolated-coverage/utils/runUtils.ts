@@ -21,9 +21,10 @@ interface ListedTest {
 }
 
 const isListedTests = (value: unknown): value is ListedTest[] => {
-  return Array.isArray(value) && value.every((entry: unknown) => {
-    return typeof entry === 'object' && entry !== null && 'file' in entry && typeof entry.file === 'string';
-  });
+  return Array.isArray(value) && value
+    .every((entry: unknown) => {
+      return typeof entry === 'object' && entry !== null && 'file' in entry && typeof entry.file === 'string';
+    });
 };
 
 // Every test file the workspace's projects collect, as absolute paths: vitest's own include and exclude decide.
@@ -34,9 +35,10 @@ export const listTests = (cwd: string): string[] => {
     throw new Error('vitest list answered something other than a list of files');
   }
 
-  return listed.map(({ file }) => {
-    return file;
-  });
+  return listed
+    .map(({ file }) => {
+      return file;
+    });
 };
 
 /**
@@ -59,11 +61,13 @@ export const coverageRun = async (
     '--coverage.enabled',
     '--coverage.reporter=json',
     `--coverage.reportsDirectory=${reportsDirectory}`,
-    ...thresholdKeys.flatMap((key) => {
-      return THRESHOLD_METRICS.map((metric) => {
-        return `--coverage.thresholds.${key}.${metric}=${String(THRESHOLD_OFF)}`;
-      });
-    }),
+    ...thresholdKeys
+      .flatMap((key) => {
+        return THRESHOLD_METRICS
+          .map((metric) => {
+            return `--coverage.thresholds.${key}.${metric}=${String(THRESHOLD_OFF)}`;
+          });
+      }),
   ], {
     cwd,
     stdio: 'ignore',

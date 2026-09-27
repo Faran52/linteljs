@@ -122,9 +122,10 @@ export const tsLegacyConfig = JSON.stringify({
     sourceType: 'module',
   },
   plugins: ['@linteljs'],
-  rules: Object.fromEntries(TS_EXPECTED.map((id) => {
-    return [id, 'error'];
-  })),
+  rules: Object.fromEntries(TS_EXPECTED
+    .map((id) => {
+      return [id, 'error'];
+    })),
 }, null, 2);
 
 export const tsFlatConfig = [
@@ -137,9 +138,10 @@ export const tsFlatConfig = [
   '    languageOptions: { parser },',
   "    plugins: { '@linteljs': linteljs },",
   '    rules: {',
-  ...TS_EXPECTED.map((id) => {
-    return `      ${JSON.stringify(id)}: 'error',`;
-  }),
+  ...TS_EXPECTED
+    .map((id) => {
+      return `      ${JSON.stringify(id)}: 'error',`;
+    }),
   '    },',
   '  },',
   "  { linterOptions: { reportUnusedDisableDirectives: 'off' } },",

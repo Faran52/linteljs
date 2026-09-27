@@ -70,17 +70,20 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
   // Reversed and found rather than `findLastIndex`, which needs Node 18 and this package declares a floor of 14.
-  const fromEnd = [...body].reverse().findIndex((statement) => {
-    return statement.type === 'ImportDeclaration' || isDirective(statement);
-  });
+  const fromEnd = [...body]
+    .reverse()
+    .findIndex((statement) => {
+      return statement.type === 'ImportDeclaration' || isDirective(statement);
+    });
 
   return fromEnd === -1 ? -1 : body.length - 1 - fromEnd;
 };
 
 const findFirstRuntimeIndex = (body: ProgramEntry[], afterIndex: number): number => {
-  return body.findIndex((entry, index) => {
-    return index > afterIndex && !isTypeDeclaration(entry);
-  });
+  return body
+    .findIndex((entry, index) => {
+      return index > afterIndex && !isTypeDeclaration(entry);
+    });
 };
 
 // Everything between the header and the first runtime node is a type declaration by definition, so the anchor is the
@@ -110,12 +113,14 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
   const previousEndLine = mustFind(previous.loc, 'the location of the previous declaration').end.line;
   const between = sourceCode.getCommentsBefore(typeNode);
 
-  const firstOwned = between.find((comment) => {
-    return startLineOf(comment) > previousEndLine;
-  });
-  const staysBehind = between.filter((comment) => {
-    return startLineOf(comment) <= previousEndLine;
-  });
+  const firstOwned = between
+    .find((comment) => {
+      return startLineOf(comment) > previousEndLine;
+    });
+  const staysBehind = between
+    .filter((comment) => {
+      return startLineOf(comment) <= previousEndLine;
+    });
   const lastRetained = staysBehind[staysBehind.length - 1];
 
   const [startPos] = rangeOf(firstOwned ?? typeNode);
@@ -206,7 +211,9 @@ export const interfaceOrder = createRule('interface-order', {
           // in a script file, and whatever the `<script>` body is written at in a component.
           const first = mustFind(firstStatement, 'the first statement of the list');
           const indent = getIndent(sourceCode, first);
-          const joinedTypes = cuts.map(movedText).join(`${eol}${eol}${indent}`);
+          const joinedTypes = cuts
+            .map(movedText)
+            .join(`${eol}${eol}${indent}`);
 
           if (insertAfterNode) {
             // After the anchor's own trailing note, not between the two.

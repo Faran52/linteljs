@@ -68,18 +68,20 @@ const uncoveredIn = (file: string): number => {
     throw new Error(`no coverage recorded for ${file}`);
   }
 
-  return [...Object.values(metrics.s), ...Object.values(metrics.b).flat()].filter((count) => {
-    return count === 0;
-  }).length;
+  return [...Object.values(metrics.s), ...Object.values(metrics.b).flat()]
+    .filter((count) => {
+      return count === 0;
+    }).length;
 };
 
 const findings: string[] = [];
 let checked = 0;
 
 try {
-  for (const file of globSync('packages/*/src/**/*.ts').filter((path) => {
-    return !path.endsWith('.test.ts');
-  })) {
+  for (const file of globSync('packages/*/src/**/*.ts')
+    .filter((path) => {
+      return !path.endsWith('.test.ts');
+    })) {
     const original = readFileSync(file, 'utf8');
     const lines = original.split('\n');
 

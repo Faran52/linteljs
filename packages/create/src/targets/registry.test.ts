@@ -53,9 +53,10 @@ const recordFor = (target: TargetId): TargetRecord => {
 const assetPathsOf = (target: TargetRecord): string[] => {
   return [
     ...(target.testSetup === undefined ? [] : [target.testSetup]),
-    ...target.stateRules.map((rule) => {
-      return `fragments/claude-rules/${rule}`;
-    }),
+    ...target.stateRules
+      .map((rule) => {
+        return `fragments/claude-rules/${rule}`;
+      }),
     // `ruleArtifacts` derives both from the id, so a target added without them emits a path to nothing.
     `fragments/claude-rules/repo-structure.${target.id}.md`,
     `fragments/claude-rules/testing.${target.id}.md`,
@@ -75,7 +76,9 @@ const caseFor = (
     ...(hostedFramework === undefined ? {} : { hostedFramework }),
     ...(surface === undefined ? {} : { surfaces: [surface] }),
   };
-  const label = [base.target, browser, hostedFramework, surface].filter(Boolean).join(' on ');
+  const label = [base.target, browser, hostedFramework, surface]
+    .filter(Boolean)
+    .join(' on ');
 
   return [label, answers];
 };
@@ -125,7 +128,10 @@ describe('TARGETS', () => {
   });
 
   it('holds exactly the nine known targets, no more and no fewer', () => {
-    expect(Object.keys(TARGETS).sort(byName)).toEqual([...TARGET_IDS].sort(byName));
+    const registered = Object.keys(TARGETS)
+      .sort(byName);
+
+    expect(registered).toEqual([...TARGET_IDS].sort(byName));
   });
 
   // Both axes reach into `assets/`; under the defaults alone this never opened a Firefox or an island file.
@@ -133,16 +139,19 @@ describe('TARGETS', () => {
     const paths = assetPathsOf(targetFor(answers));
 
     // The whole list, so a run names every missing file at once.
-    const missing = await Promise.all(paths.map(async (path) => {
-      try {
-        await access(join(TEMPLATES_ROOT, path), constants.R_OK);
+    const missingChecks = paths
+      .map(async (path) => {
+        try {
+          await access(join(TEMPLATES_ROOT, path), constants.R_OK);
 
-        return '';
-      }
-      catch {
-        return path;
-      }
-    }));
+          return '';
+        }
+        catch {
+          return path;
+        }
+      });
+
+    const missing = await Promise.all(missingChecks);
 
     expect(missing.filter(Boolean)).toEqual([]);
   });
@@ -150,13 +159,19 @@ describe('TARGETS', () => {
   // A suite is written only once its subject is on disk, so one naming a module its target never writes never ships.
   it.each(axisCases())('has every suite on %s cover a file the target writes', (_label, answers) => {
     const { starterFiles, starterTests } = targetFor(answers);
-    const written = new Set(starterFiles.map(({ target }) => {
-      return target;
-    }));
+    const starterTargets = starterFiles
+      .map(({ target }) => {
+        return target;
+      });
 
-    expect(starterTests.filter(({ covers }) => {
-      return !written.has(covers);
-    })).toEqual([]);
+    const written = new Set(starterTargets);
+
+    const uncovering = starterTests
+      .filter(({ covers }) => {
+        return !written.has(covers);
+      });
+
+    expect(uncovering).toEqual([]);
   });
 });
 
@@ -224,28 +239,30 @@ describe('what each target offers', () => {
       ...DEFAULT_ANSWERS,
       target: 'react-native',
     }, ['react-state.md', 'hooks-order.md'], undefined],
-    ...HOSTED_FRAMEWORKS.flatMap((hostedFramework): [string, Answers, string[], string[] | undefined][] => {
-      const rules = {
-        react: ['react-state.md', 'hooks-order.md'],
-        vue: ['vue-reactivity.md'],
-        svelte: ['svelte-reactivity.md'],
-        solid: ['solid-reactivity.md'],
-      }[hostedFramework];
-      const conditions = {
-        react: undefined,
-        vue: undefined,
-        svelte: ['browser'],
-        solid: ['development', 'browser'],
-      }[hostedFramework];
+    ...HOSTED_FRAMEWORKS
+      .flatMap((hostedFramework): [string, Answers, string[], string[] | undefined][] => {
+        const rules = {
+          react: ['react-state.md', 'hooks-order.md'],
+          vue: ['vue-reactivity.md'],
+          svelte: ['svelte-reactivity.md'],
+          solid: ['solid-reactivity.md'],
+        }[hostedFramework];
+        const conditions = {
+          react: undefined,
+          vue: undefined,
+          svelte: ['browser'],
+          solid: ['development', 'browser'],
+        }[hostedFramework];
 
-      return (['astro', 'webextension'] as const).map((target): [string, Answers, string[], string[] | undefined] => {
-        return [`${target} hosting ${hostedFramework}`, {
-          ...DEFAULT_ANSWERS,
-          target,
-          hostedFramework,
-        }, rules, conditions];
-      });
-    }),
+        return (['astro', 'webextension'] as const)
+          .map((target): [string, Answers, string[], string[] | undefined] => {
+            return [`${target} hosting ${hostedFramework}`, {
+              ...DEFAULT_ANSWERS,
+              target,
+              hostedFramework,
+            }, rules, conditions];
+          });
+      }),
   ])('holds %s to its own state rules and test conditions', (_label, answers, rules, conditions) => {
     const record = targetFor(answers);
 
@@ -275,9 +292,10 @@ const LAYER_PLUGINS: Record<Framework, string[]> = {
   // `composeConfig` composes `react()` ahead of `next()`.
   'next': [...REACT_PLUGINS, '@next/eslint-plugin-next'],
   // `reactNative()` composes `reactCore()`, which is `react()` without the accessibility preset.
-  'react-native': REACT_PLUGINS.filter((name) => {
-    return name !== 'eslint-plugin-jsx-a11y-x';
-  }),
+  'react-native': REACT_PLUGINS
+    .filter((name) => {
+      return name !== 'eslint-plugin-jsx-a11y-x';
+    }),
   'solid': ['eslint-plugin-solid', 'eslint-plugin-jsx-a11y-x'],
   'vue': ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
   // `composeConfig` composes `vue()` ahead of `nuxt()`, which brings no plugin of its own.
@@ -291,9 +309,10 @@ describe('a framework layer and the plugins it loads', () => {
     const { framework } = targetFor(answers);
     const installed = Object.keys(buildDevDependencies(answers));
 
-    const missing = (framework === undefined ? [] : LAYER_PLUGINS[framework]).filter((name) => {
-      return !installed.includes(name);
-    });
+    const missing = (framework === undefined ? [] : LAYER_PLUGINS[framework])
+      .filter((name) => {
+        return !installed.includes(name);
+      });
 
     expect({
       label,

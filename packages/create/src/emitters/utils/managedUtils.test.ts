@@ -14,10 +14,12 @@ describe('removableIn', () => {
 
   // The project's from the moment it has one, so a deselected answer leaves it rather than deleting it.
   it('leaves a preserved artifact out', () => {
-    expect(removableIn([{
+    const removable = removableIn([{
       ...emitted('standard', 'CLAUDE.md', ''),
       preserve: true,
-    }])).toEqual([]);
+    }]);
+
+    expect(removable).toEqual([]);
   });
 
   // `pnpm-workspace.yaml` and a tailwind style entry carry lines nobody else wrote a copy of.

@@ -134,9 +134,13 @@ describe('stepsPlan', () => {
       skip: ['lint'],
     });
 
-    expect(plan.split('\n').filter((line) => {
-      return line.endsWith('(skipped)');
-    })).toHaveLength(2);
+    const skipped = plan
+      .split('\n')
+      .filter((line) => {
+        return line.endsWith('(skipped)');
+      });
+
+    expect(skipped).toHaveLength(2);
   });
 });
 

@@ -97,9 +97,10 @@ if (sources.length === 0) {
 }
 
 const shapedRules = Object.keys(SHAPES);
-const unshapedRules = RULE_IDS.filter((rule) => {
-  return !shapedRules.includes(rule);
-});
+const unshapedRules = RULE_IDS
+  .filter((rule) => {
+    return !shapedRules.includes(rule);
+  });
 
 // Said on every run, so a rule with no shapes is a visible gap rather than a quiet one.
 if (unshapedRules.length > 0) {
@@ -107,24 +108,27 @@ if (unshapedRules.length > 0) {
 }
 
 const selectedRules = flags.rule === undefined ? shapedRules : [flags.rule];
-const activeShapes: ActiveShape[] = selectedRules.flatMap((rule) => {
-  const shapes = SHAPES[rule];
+const activeShapes: ActiveShape[] = selectedRules
+  .flatMap((rule) => {
+    const shapes = SHAPES[rule];
 
-  if (shapes === undefined) {
-    logError(`No shapes for: ${rule}. Add one to SHAPES or drop --rule.`);
-    process.exit(1);
-  }
+    if (shapes === undefined) {
+      logError(`No shapes for: ${rule}. Add one to SHAPES or drop --rule.`);
+      process.exit(1);
+    }
 
-  return shapes.map((entry) => {
-    return {
-      ...entry,
-      key: `${rule} :: ${entry.shape}`,
-      rule,
-    };
+    return shapes
+      .map((entry) => {
+        return {
+          ...entry,
+          key: `${rule} :: ${entry.shape}`,
+          rule,
+        };
+      });
+  })
+  .filter((entry) => {
+    return flags.shape === undefined || entry.shape.includes(flags.shape);
   });
-}).filter((entry) => {
-  return flags.shape === undefined || entry.shape.includes(flags.shape);
-});
 
 if (activeShapes.length === 0) {
   logError(`no shape matches: ${flags.shape ?? ''}`);
@@ -173,24 +177,29 @@ const reportsFor = (source: string, name: string, entry: ActiveShape): Reports =
   const messages = linter.verify(source, ruleConfig(entry.rule, entry.options), name);
 
   return {
-    fatal: messages.some((message) => {
-      return message.fatal === true;
-    }),
-    count: messages.filter((message) => {
-      return message.ruleId === `@linteljs/${entry.rule}`;
-    }).length,
+    fatal: messages
+      .some((message) => {
+        return message.fatal === true;
+      }),
+    count: messages
+      .filter((message) => {
+        return message.ruleId === `@linteljs/${entry.rule}`;
+      }).length,
   };
 };
 
-const stats = new Map(activeShapes.map((entry): [string, Stats] => {
-  return [entry.key, {
-    attempts: 0,
-    cases: 0,
-    misses: 0,
-    seen: 0,
-    skips: new Map(),
-  }];
-}));
+const statsEntries = activeShapes
+  .map((entry): [string, Stats] => {
+    return [entry.key, {
+      attempts: 0,
+      cases: 0,
+      misses: 0,
+      seen: 0,
+      skips: new Map(),
+    }];
+  });
+
+const stats = new Map(statsEntries);
 
 const statsOf = (entry: ActiveShape): Stats => {
   const found = stats.get(entry.key);
@@ -269,9 +278,11 @@ const attempt = (entry: ActiveShape, file: string, state: State, name: string, c
     `  ${file}`,
     '  the file was silent for this rule, the edit below broke it, and it stayed silent',
     '  transformed source:',
-    ...snippetAt(candidate.source, candidate.offset).split('\n').map((line) => {
-      return `    ${line}`;
-    }),
+    ...snippetAt(candidate.source, candidate.offset)
+      .split('\n')
+      .map((line) => {
+        return `    ${line}`;
+      }),
   ].join('\n'));
 };
 
@@ -284,9 +295,10 @@ const counts = {
 const seen = new Set<string>();
 
 const shapesStillHungry = (): ActiveShape[] => {
-  return activeShapes.filter((entry) => {
-    return statsOf(entry).cases < casesWanted;
-  });
+  return activeShapes
+    .filter((entry) => {
+      return statsOf(entry).cases < casesWanted;
+    });
 };
 
 // A disable comment would suppress the report waited for; `noInlineConfig` covers it, this keeps the counts honest.
@@ -347,9 +359,10 @@ const check = (file: string, hungry: ActiveShape[]): void => {
 
 log([
   `up to ${String(maxFiles)} files, one from each source in turn, under:`,
-  ...sources.map((dir) => {
-    return `    ${dir}`;
-  }),
+  ...sources
+    .map((dir) => {
+      return `    ${dir}`;
+    }),
   `rules: ${selectedRules.join(', ')}`,
   `shapes: ${String(activeShapes.length)} distinct ways of breaking them`,
   `target: ${String(casesWanted)} transformed cases per shape`,
@@ -392,35 +405,43 @@ log(`${String(counts.scanned)} of ${String(visited)} files linted, skipped ${Str
   + 'parser rejected');
 
 // `attempted` counts edits built; `skipped` also counts candidates declined before any edit, so it can be larger.
-const report = selectedRules.flatMap((rule) => {
-  const shapes = activeShapes.filter((entry) => {
-    return entry.rule === rule;
+const report = selectedRules
+  .flatMap((rule) => {
+    const shapes = activeShapes
+      .filter((entry) => {
+        return entry.rule === rule;
+      });
+
+    return shapes.length === 0
+      ? []
+      : [`@linteljs/${rule}`, ...shapes
+          .flatMap((entry) => {
+            const bucket = statsOf(entry);
+
+            return [
+              `  ${describeShape(entry)}`,
+              `    ${String(bucket.attempts)} attempted, ${String(sum([...bucket.skips.values()]))} skipped, `
+              + `${String(bucket.cases)} expected, ${String(bucket.seen)} seen, ${String(bucket.misses)} missed`,
+              ...orderBy([...bucket.skips], [1], ['desc'])
+                .map(([reason, count]) => {
+                  return `    skipped ${String(count)}: ${reason}`;
+                }),
+            ];
+          })];
   });
-
-  return shapes.length === 0
-    ? []
-    : [`@linteljs/${rule}`, ...shapes.flatMap((entry) => {
-        const bucket = statsOf(entry);
-
-        return [
-          `  ${describeShape(entry)}`,
-          `    ${String(bucket.attempts)} attempted, ${String(sum([...bucket.skips.values()]))} skipped, `
-          + `${String(bucket.cases)} expected, ${String(bucket.seen)} seen, ${String(bucket.misses)} missed`,
-          ...orderBy([...bucket.skips], [1], ['desc']).map(([reason, count]) => {
-            return `    skipped ${String(count)}: ${reason}`;
-          }),
-        ];
-      })];
-});
 
 log(['per shape: attempted, skipped, expected, seen, missed', ...report].join('\n'));
 
-const missed = sum(activeShapes.map((entry) => {
-  return statsOf(entry).misses;
-}));
-const starved = activeShapes.filter((entry) => {
-  return statsOf(entry).cases === 0;
-}).length;
+const misses = activeShapes
+  .map((entry) => {
+    return statsOf(entry).misses;
+  });
+
+const missed = sum(misses);
+const starved = activeShapes
+  .filter((entry) => {
+    return statsOf(entry).cases === 0;
+  }).length;
 
 if (starved > 0) {
   logError(`${String(starved)} shape(s) got no transformed case at all. That is not a pass; widen the corpus.`);

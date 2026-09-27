@@ -22,23 +22,29 @@ import { rules } from './rules/index.ts';
 import type { FixShape } from './types.ts';
 
 const ruleNames = Object.keys(rules);
-const samples = parseableSamples().map((sample) => {
-  return [sample.name, sample] as const;
-});
+const samples = parseableSamples()
+  .map((sample) => {
+    return [sample.name, sample] as const;
+  });
 
 /**
  * `parseableSamples` drops a sample its parser rejects, so a component parser wired up wrong would leave every
  * assertion below holding over nothing for Vue, Svelte and Astro. Each has to parse before any rule reads it.
  */
 describe('the corpus', () => {
-  const sfc = FIXER_SAMPLES.filter(isSfcSample).map((sample) => {
-    return [sample.name, sample] as const;
-  });
+  const sfc = FIXER_SAMPLES
+    .filter(isSfcSample)
+    .map((sample) => {
+      return [sample.name, sample] as const;
+    });
 
   it('holds samples for every component parser', () => {
-    expect(new Set(sfc.map(([, sample]) => {
-      return sample.filename?.replace(/^.*\./, '');
-    }))).toEqual(new Set(['astro', 'svelte', 'vue']));
+    const extensions = sfc
+      .map(([, sample]) => {
+        return sample.filename?.replace(/^.*\./, '');
+      });
+
+    expect(new Set(extensions)).toEqual(new Set(['astro', 'svelte', 'vue']));
   });
 
   it.each(sfc)('parses %s', (_label, sample: FixerSample) => {
@@ -64,11 +70,13 @@ describe.each(ruleNames)('%s', (name) => {
 });
 
 describe.each(ruleNames)('%s line endings', (name) => {
-  const windows = parseableSamples().filter((sample) => {
-    return sample.crlf === true;
-  }).map((sample) => {
-    return [sample.name, sample] as const;
-  });
+  const windows = parseableSamples()
+    .filter((sample) => {
+      return sample.crlf === true;
+    })
+    .map((sample) => {
+      return [sample.name, sample] as const;
+    });
 
   // A fix that writes bare \n into a CRLF file leaves mixed endings behind.
   it.each(windows)('keeps CRLF intact on %s', (_label, sample: FixerSample) => {
@@ -78,11 +86,13 @@ describe.each(ruleNames)('%s line endings', (name) => {
 
 // A fixer that cannot carry a comment across must decline the fix, not delete the comment.
 describe.each(ruleNames)('%s comments', (name) => {
-  const commented = parseableSamples().filter((sample) => {
-    return sample.code.includes('/*') || sample.code.includes('//');
-  }).map((sample) => {
-    return [sample.name, sample] as const;
-  });
+  const commented = parseableSamples()
+    .filter((sample) => {
+      return sample.code.includes('/*') || sample.code.includes('//');
+    })
+    .map((sample) => {
+      return [sample.name, sample] as const;
+    });
 
   it.each(commented)('keeps every comment in %s', (_label, sample: FixerSample) => {
     const before = (sample.code.match(/\/\*|\/\//g) ?? []).length;
@@ -113,36 +123,45 @@ const isIndented = (line: string): boolean => {
 const lostIndents = (sample: FixerSample, fixed: string): string[] => {
   const before = sample.code.split(/\r?\n/);
   const after = fixed.split(/\r?\n/);
-  const texts = new Set(before.map((line) => {
-    return line.trim();
-  }));
-  const survivors = new Set(after.map((line) => {
-    return line.trim();
-  }));
+  const beforeLines = before
+    .map((line) => {
+      return line.trim();
+    });
+
+  const texts = new Set(beforeLines);
+  const afterLines = after
+    .map((line) => {
+      return line.trim();
+    });
+
+  const survivors = new Set(afterLines);
   const openers = openerLinesIn(fixed, sample.typescript, sample.filename);
 
-  const moved = before.filter((line) => {
-    return isIndented(line) && survivors.has(line.trim()) && !after.includes(line);
-  });
-  const stranded = after.filter((line, index) => {
-    if (line.trim() === '' || isIndented(line) || texts.has(line.trim())) {
-      return false;
-    }
-
-    const opener = openers[index];
-
-    if (opener !== undefined) {
-      return !/^[)\]}]/.test(line) || isIndented(after[opener] ?? '');
-    }
-
-    const next = after.findIndex((sibling, at) => {
-      return at > index && sibling.trim() !== '';
+  const moved = before
+    .filter((line) => {
+      return isIndented(line) && survivors.has(line.trim()) && !after.includes(line);
     });
-    // With no line left, `next` is -1 and the empty string is never indented.
-    const sibling = after[next] ?? '';
+  const stranded = after
+    .filter((line, index) => {
+      if (line.trim() === '' || isIndented(line) || texts.has(line.trim())) {
+        return false;
+      }
 
-    return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
-  });
+      const opener = openers[index];
+
+      if (opener !== undefined) {
+        return !/^[)\]}]/.test(line) || isIndented(after[opener] ?? '');
+      }
+
+      const next = after
+        .findIndex((sibling, at) => {
+          return at > index && sibling.trim() !== '';
+        });
+      // With no line left, `next` is -1 and the empty string is never indented.
+      const sibling = after[next] ?? '';
+
+      return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
+    });
 
   return [...moved, ...stranded];
 };
@@ -191,11 +210,13 @@ describe.each(ruleNames)('%s indentation', (name) => {
 
 // Read off the rule: what a fixer may do to the tokens is the fixer's own property.
 const namesIn = (shape: FixShape): string[] => {
-  return Object.entries(rules).filter(([, rule]) => {
-    return rule.meta.docs.fixShape === shape;
-  }).map(([name]) => {
-    return name;
-  });
+  return Object.entries(rules)
+    .filter(([, rule]) => {
+      return rule.meta.docs.fixShape === shape;
+    })
+    .map(([name]) => {
+      return name;
+    });
 };
 
 // Only the token stream, not the text, can tell a code change from a whitespace one.
@@ -209,8 +230,13 @@ describe.each(namesIn('whitespace'))('%s tokens', (name) => {
 // Ordering rules move tokens on purpose, so only the multiset has to match, not the order.
 describe.each(namesIn('reorder'))('%s tokens', (name) => {
   it.each(samples)('keeps every token in %s', (_label, sample: FixerSample) => {
-    expect(tokensIn(fixWith(sample, name), sample.typescript, sample.filename).sort(alphabetically))
-      .toEqual(tokensIn(sample.code, sample.typescript, sample.filename).sort(alphabetically));
+    const fixedTokens = tokensIn(fixWith(sample, name), sample.typescript, sample.filename)
+      .sort(alphabetically);
+
+    const originalTokens = tokensIn(sample.code, sample.typescript, sample.filename)
+      .sort(alphabetically);
+
+    expect(fixedTokens).toEqual(originalTokens);
   });
 });
 
@@ -220,9 +246,10 @@ describe.each(namesIn('reorder'))('%s tokens', (name) => {
  * fixed. A component file has no one script to run, and a sample that throws as written, on an import or a name it
  * never declares, proves nothing either way, so both sit out.
  */
-const runnable = samples.filter(([, sample]) => {
-  return !isSfcSample(sample) && runtimeErrorIn(sample.code, sample.filename) === undefined;
-});
+const runnable = samples
+  .filter(([, sample]) => {
+    return !isSfcSample(sample) && runtimeErrorIn(sample.code, sample.filename) === undefined;
+  });
 
 // An unchanged sample is already known to run.
 const runtimeErrorAfter = (sample: FixerSample, fixed: string): string | undefined => {

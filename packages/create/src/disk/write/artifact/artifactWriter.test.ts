@@ -81,10 +81,12 @@ describe('artifactWriter', () => {
     await symlink(dangling, join(cwd, 'dangling.md'));
 
     for (const target of ['live.md', 'dangling.md']) {
-      await expect(artifactWriter(cwd, {
+      const written = artifactWriter(cwd, {
         ...emitted('standard', target, 'shipped\n'),
         preserve: true,
-      })).resolves.toBe(false);
+      });
+
+      await expect(written).resolves.toBe(false);
     }
 
     await expect(readlink(join(cwd, 'live.md'))).resolves.toBe(live);

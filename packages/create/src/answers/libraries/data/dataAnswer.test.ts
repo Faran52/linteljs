@@ -16,13 +16,18 @@ describe('dataAnswer', () => {
       target: 'react',
     });
 
-    expect(dataAnswer.values['rtk-query'].only(react, {
+    const withRedux = dataAnswer.values['rtk-query'].only(react, {
       ...DEFAULT_ANSWERS,
       store: 'redux-toolkit',
-    })).toBe(true);
-    expect(dataAnswer.values['rtk-query'].only(react, {
+    });
+
+    expect(withRedux).toBe(true);
+
+    const withZustand = dataAnswer.values['rtk-query'].only(react, {
       ...DEFAULT_ANSWERS,
       store: 'zustand',
-    })).toBe(false);
+    });
+
+    expect(withZustand).toBe(false);
   });
 });

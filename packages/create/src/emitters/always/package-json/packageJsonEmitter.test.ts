@@ -58,25 +58,30 @@ describe('the mocking answer', () => {
     ['angular', 'public'],
     ['astro', 'public'],
   ])('puts the %s worker in %s', (target, directory) => {
-    expect(patchPackageJson({}, answersFor({
+    const patched = patchPackageJson({}, answersFor({
       target,
       mocking: 'msw',
-    }))).toMatchObject({ msw: { workerDirectory: [directory] } });
+    }));
+
+    expect(patched).toMatchObject({ msw: { workerDirectory: [directory] } });
   });
 
   // The served directory, which is where a browser fetches the worker from and differs per target.
   it('names the worker directory for a target that serves one, and omits the key otherwise', () => {
-    expect(patchPackageJson({}, answersFor({
+    const onReact = patchPackageJson({}, answersFor({
       target: 'react',
       mocking: 'msw',
-    })))
-      .toMatchObject({ msw: { workerDirectory: ['public'] } });
+    }));
+
+    expect(onReact).toMatchObject({ msw: { workerDirectory: ['public'] } });
     expect(patchPackageJson({}, answersFor({ target: 'react' }))).not.toHaveProperty('msw');
-    expect(patchPackageJson({}, answersFor({
+
+    const onNative = patchPackageJson({}, answersFor({
       target: 'react-native',
       mocking: 'msw',
-    })))
-      .not.toHaveProperty('msw');
+    }));
+
+    expect(onNative).not.toHaveProperty('msw');
   });
 });
 
@@ -113,14 +118,18 @@ describe('patchPackageJson', () => {
       'vite-plugin-vue-devtools',
       'jsdom',
     ];
-    const declared = Object.fromEntries(superseded.map((name) => {
-      return [name, '^1.0.0'];
-    }));
+    const declared = Object.fromEntries(superseded
+      .map((name) => {
+        return [name, '^1.0.0'];
+      }));
     const patched = patchPackageJson({ devDependencies: declared }, answersFor({}));
 
-    expect(superseded.filter((name) => {
-      return name in (patched.devDependencies ?? {});
-    })).toEqual([]);
+    const kept = superseded
+      .filter((name) => {
+        return name in (patched.devDependencies ?? {});
+      });
+
+    expect(kept).toEqual([]);
   });
 
   // Three declarations of one fact: the exact version corepack and pnpm switch to, the floor that was tested, and

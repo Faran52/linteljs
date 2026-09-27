@@ -79,9 +79,12 @@ const FRAMEWORK_PARTS: [Framework, () => FrameworkParts][] = [
 
 describe('FRAMEWORKS', () => {
   it('loads every framework named below', () => {
-    expect(Object.keys(FRAMEWORKS)).toEqual(FRAMEWORK_PARTS.map(([framework]) => {
-      return framework;
-    }));
+    const withParts = FRAMEWORK_PARTS
+      .map(([framework]) => {
+        return framework;
+      });
+
+    expect(Object.keys(FRAMEWORKS)).toEqual(withParts);
   });
 
   it.each(FRAMEWORK_PARTS)('loads %s', async (framework, parts) => {

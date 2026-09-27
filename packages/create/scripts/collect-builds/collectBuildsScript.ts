@@ -73,46 +73,54 @@ const collectOne = async (
 };
 
 const sorted = (names: Iterable<string>): string => {
-  const list = [...new Set(names)].sort((left, right) => {
-    return left.localeCompare(right, 'en');
-  });
+  const list = [...new Set(names)]
+    .sort((left, right) => {
+      return left.localeCompare(right, 'en');
+    });
 
   return list.length === 0
     ? '  (none)'
-    : list.map((name) => {
-        return `  '${name}'`;
-      }).join('\n');
+    : list
+        .map((name) => {
+          return `  '${name}'`;
+        })
+        .join('\n');
 };
 
 const report = (found: [string, Record<Collected, string[]>][]): void => {
-  const rows = found.map(([label, { pnpm, npm }]) => {
-    const extra = npm.filter((name) => {
-      return !pnpm.includes(name);
-    });
+  const rows = found
+    .map(([label, { pnpm, npm }]) => {
+      const extra = npm
+        .filter((name) => {
+          return !pnpm.includes(name);
+        });
 
-    return {
-      label,
-      pnpm,
-      extra,
-    };
-  });
+      return {
+        label,
+        pnpm,
+        extra,
+      };
+    });
 
   log([
     `  ${'target'.padEnd(28)}${'pnpm'.padEnd(46)}npm only`,
-    ...rows.map(({
-      label,
-      pnpm,
-      extra,
-    }) => {
-      return `  ${label.padEnd(28)}${(pnpm.join(', ') || '(none)').padEnd(46)}${extra.join(', ') || '-'}`;
-    }),
+    ...rows
+      .map(({
+        label,
+        pnpm,
+        extra,
+      }) => {
+        return `  ${label.padEnd(28)}${(pnpm.join(', ') || '(none)').padEnd(46)}${extra.join(', ') || '-'}`;
+      }),
   ].join('\n'));
-  log(`Union, for allowBuilds:\n${sorted(found.flatMap(([, { pnpm, npm }]) => {
-    return [...pnpm, ...npm];
-  }))}`);
-  log(`Blocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${sorted(rows.flatMap(({ extra }) => {
-    return extra;
-  }))}`);
+  log(`Union, for allowBuilds:\n${sorted(found
+    .flatMap(([, { pnpm, npm }]) => {
+      return [...pnpm, ...npm];
+    }))}`);
+  log(`Blocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${sorted(rows
+    .flatMap(({ extra }) => {
+      return extra;
+    }))}`);
 };
 
 const main = async (): Promise<void> => {
@@ -122,29 +130,38 @@ const main = async (): Promise<void> => {
 
   try {
     // The CLI reads its manager from `npm_config_user_agent`, so a pass names one the way a real run does.
-    const agents = new Map(await Promise.all(MANAGERS.map(async (pm): Promise<[Collected, string]> => {
-      const version = (await run(pm, ['--version'], workspace, registry)).trim();
+    const agentLookups = MANAGERS
+      .map(async (pm): Promise<[Collected, string]> => {
+        const version = (await run(pm, ['--version'], workspace, registry)).trim();
 
-      return [pm, `${pm}/${version} npm/? node/? collect`];
-    })));
+        return [pm, `${pm}/${version} npm/? node/? collect`];
+      });
 
-    const found = await Promise.all(probes().map(async (probe) => {
-      const [pnpm, npm] = await Promise.all(MANAGERS.map(async (pm) => {
-        await semaphore.acquire();
+    const agents = new Map(await Promise.all(agentLookups));
 
-        try {
-          return await collectOne(probe, pm, workspace, registry, agents.get(pm) ?? pm);
-        }
-        finally {
-          semaphore.release();
-        }
-      }));
+    const collections = probes()
+      .map(async (probe) => {
+        const collected = MANAGERS
+          .map(async (pm) => {
+            await semaphore.acquire();
 
-      return [probe.label, {
-        pnpm: pnpm ?? [],
-        npm: npm ?? [],
-      }] satisfies [string, Record<Collected, string[]>];
-    }));
+            try {
+              return await collectOne(probe, pm, workspace, registry, agents.get(pm) ?? pm);
+            }
+            finally {
+              semaphore.release();
+            }
+          });
+
+        const [pnpm, npm] = await Promise.all(collected);
+
+        return [probe.label, {
+          pnpm: pnpm ?? [],
+          npm: npm ?? [],
+        }] satisfies [string, Record<Collected, string[]>];
+      });
+
+    const found = await Promise.all(collections);
 
     report(found);
   }

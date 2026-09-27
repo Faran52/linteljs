@@ -57,13 +57,17 @@ describe('astro', () => {
 
   // The jsx-a11y preset repeats the four base entries of `recommended`; only its rule entry is new.
   it('carries each base entry of the plugin once', () => {
-    const names = astro().flatMap(({ name }) => {
-      return name === undefined ? [] : [name];
-    });
+    const names = astro()
+      .flatMap(({ name }) => {
+        return name === undefined ? [] : [name];
+      });
 
-    expect(names.filter((name) => {
-      return name.startsWith('astro/base');
-    })).toEqual(['astro/base/plugin', 'astro/base', 'astro/base/javascript', 'astro/base/typescript']);
+    const astroBase = names
+      .filter((name) => {
+        return name.startsWith('astro/base');
+      });
+
+    expect(astroBase).toEqual(['astro/base/plugin', 'astro/base', 'astro/base/javascript', 'astro/base/typescript']);
   });
 
   // The virtual scripts the plugin extracts sit in no tsconfig, so a type-aware rule there would fail to start.
@@ -81,9 +85,10 @@ describe('astro', () => {
   // The plugin's own lookup runs from `process.cwd()`, which the pnpm `.bin` shims widen through NODE_PATH, so a lint
   // under this suite parses the frontmatter either way. Only the layer's own blocks say it no longer depends on that.
   it('names the TypeScript parser for a template and its virtual scripts', () => {
-    const typed = astro().filter(({ name }) => {
-      return name?.startsWith('@linteljs/astro/typescript');
-    });
+    const typed = astro()
+      .filter(({ name }) => {
+        return name?.startsWith('@linteljs/astro/typescript');
+      });
 
     expect(typed).toEqual([
       {

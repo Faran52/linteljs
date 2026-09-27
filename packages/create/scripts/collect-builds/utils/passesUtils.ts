@@ -91,9 +91,12 @@ export const PASSES: Record<Collected, Pass> = {
 
       return names === undefined
         ? []
-        : names.trim().split('\n').map((line) => {
-            return line.trim();
-          });
+        : names
+            .trim()
+            .split('\n')
+            .map((line) => {
+              return line.trim();
+            });
     },
   },
   npm: {
@@ -118,9 +121,10 @@ export const PASSES: Record<Collected, Pass> = {
         const parsed: unknown = JSON.parse(listing.slice(opening));
 
         return isScriptListing(parsed)
-          ? parsed.allowScripts.map((entry) => {
-              return entry.name;
-            })
+          ? parsed.allowScripts
+              .map((entry) => {
+                return entry.name;
+              })
           : [];
       }
       catch {

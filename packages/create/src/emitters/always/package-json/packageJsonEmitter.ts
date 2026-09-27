@@ -26,10 +26,13 @@ import { SUPERSEDED } from './constants';
 // Patches rather than writes: the scaffolder's dependencies, name and scripts survive.
 
 const withoutSuperseded = (dependencies: Record<string, string>): Record<string, string> => {
-  return Object.fromEntries(
-    Object.entries(dependencies).filter(([name]) => {
+  const kept = Object.entries(dependencies)
+    .filter(([name]) => {
       return !SUPERSEDED.includes(name);
-    }),
+    });
+
+  return Object.fromEntries(
+    kept,
   );
 };
 
@@ -100,9 +103,10 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       ? {
           allowScripts: {
             ...existing.allowScripts,
-            ...Object.fromEntries(allowedBuildNames(answers).map((name) => {
-              return [name, true];
-            })),
+            ...Object.fromEntries(allowedBuildNames(answers)
+              .map((name) => {
+                return [name, true];
+              })),
           },
         }
       : {}),

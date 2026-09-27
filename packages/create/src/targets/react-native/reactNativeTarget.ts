@@ -105,15 +105,17 @@ export const reactNativeTarget: TargetRecord = {
       names: SOURCE_ACCESSORS,
     }),
     ...rtkFiles(),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     /*
      * The root layout is the one file the styling answer changes, because it is where the stylesheet is imported
      * and Metro has no CSS pipeline without NativeWind to give it one.
@@ -210,9 +212,10 @@ export const reactNativeTarget: TargetRecord = {
   ],
   // Not `COMMON_REACT_PLUGINS`: the accessibility plugin in that list cannot fire on React Native.
   devDependencies: [
-    ...COMMON_REACT_PLUGINS.filter((name) => {
-      return name !== 'eslint-plugin-jsx-a11y-x';
-    }),
+    ...COMMON_REACT_PLUGINS
+      .filter((name) => {
+        return name !== 'eslint-plugin-jsx-a11y-x';
+      }),
     '@types/react',
     '@react-native/metro-config',
   ],

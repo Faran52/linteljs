@@ -60,17 +60,23 @@ describe('answerRows', () => {
       label,
       "value: 'codex, cursor'",
     ]);
-    expect(answerRows(hostedAnswersFor({ agents: [] }), ANSWERS).map(([row]) => {
-      return row;
-    })).not.toContain(label);
+    const labels = answerRows(hostedAnswersFor({ agents: [] }), ANSWERS)
+      .map(([row]) => {
+        return row;
+      });
+
+    expect(labels).not.toContain(label);
   });
 
   // `aliases` is a map and carries no prompt, so a page never has to render one.
   it('prints nothing for an answer no prompt asks', () => {
     const rows = answerRows(hostedAnswersFor({ aliases: { '@app/*': './src/*' } }), ANSWERS);
 
-    expect(rows.every(([label]) => {
-      return !label.includes('@app');
-    })).toBe(true);
+    const noneScoped = rows
+      .every(([label]) => {
+        return !label.includes('@app');
+      });
+
+    expect(noneScoped).toBe(true);
   });
 });

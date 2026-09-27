@@ -81,18 +81,21 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
           return;
         }
 
-        const names = elements.map((element) => {
-          return element.name;
-        });
-        const sorted = [...names].sort(
-          (a, b) => {
-            return direction * a.localeCompare(b, 'en', { numeric: true });
-          },
-        );
+        const names = elements
+          .map((element) => {
+            return element.name;
+          });
+        const sorted = [...names]
+          .sort(
+            (a, b) => {
+              return direction * a.localeCompare(b, 'en', { numeric: true });
+            },
+          );
 
-        const isSorted = names.every((name, index) => {
-          return name === sorted[index];
-        });
+        const isSorted = names
+          .every((name, index) => {
+            return name === sorted[index];
+          });
 
         if (isSorted) {
           return;

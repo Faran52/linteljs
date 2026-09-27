@@ -107,12 +107,13 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
       form: ANSWERED,
       data: [undefined],
     }]],
-    ...dataLayers.map((data): GateRow => {
-      return [`src/lib/apis/contact/api.ts@${data}`, [{
-        form: ANSWERED,
-        data: [data],
-      }]];
-    }),
+    ...dataLayers
+      .map((data): GateRow => {
+        return [`src/lib/apis/contact/api.ts@${data}`, [{
+          form: ANSWERED,
+          data: [data],
+        }]];
+      }),
     ['src/lib/apis/contact/schemas.ts', [{
       form: ANSWERED,
       libraries: [[]],
@@ -136,28 +137,31 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
     ['src/components/ui/text-input/TextInput', WITH_FORM],
   ];
   const under = (ships: readonly Condition[], styling: NonNullable<Condition['styling']>): Condition[] => {
-    return ships.map((condition) => {
-      return {
-        ...condition,
-        styling,
-      };
-    });
+    return ships
+      .map((condition) => {
+        return {
+          ...condition,
+          styling,
+        };
+      });
   };
 
   return [
-    ...components.map(([path, ships]): GateRow => {
-      return [`${path}.css`, under(ships, [undefined, 'tailwind'])];
-    }),
+    ...components
+      .map(([path, ships]): GateRow => {
+        return [`${path}.css`, under(ships, [undefined, 'tailwind'])];
+      }),
     ...modules
       ? [
-          ...components.flatMap(([path, ships]): GateRow[] => {
-            const styles = `${path.slice(0, path.lastIndexOf('/'))}/styles.ts`;
+          ...components
+            .flatMap(([path, ships]): GateRow[] => {
+              const styles = `${path.slice(0, path.lastIndexOf('/'))}/styles.ts`;
 
-            return [
-              [styles, under(ships, [undefined, 'tailwind'])],
-              [`${styles}@stylex`, under(ships, ['stylex'])],
-            ];
-          }),
+              return [
+                [styles, under(ships, [undefined, 'tailwind'])],
+                [`${styles}@stylex`, under(ships, ['stylex'])],
+              ];
+            }),
           ['src/styles/tokens.stylex.ts@stylex', STYLEX] as const,
         ]
       : [],
@@ -168,9 +172,10 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
 const answered = <K extends keyof Answers>(key: K, values: Answers[K][], unanswered = true): Partial<Answers>[] => {
   return [
     ...unanswered ? [{}] : [],
-    ...values.map((value): Partial<Answers> => {
-      return { [key]: value };
-    }),
+    ...values
+      .map((value): Partial<Answers> => {
+        return { [key]: value };
+      }),
   ];
 };
 
@@ -199,23 +204,27 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
     ...hostsBrowser === true
       ? [
           answered('browser', valuesOf(ANSWERS.browser.values), false),
-          answered('surfaces', [[], ...valuesOf(ANSWERS.surfaces.values).map((surface) => {
-            return [surface];
-          })]),
+          answered('surfaces', [[], ...valuesOf(ANSWERS.surfaces.values)
+            .map((surface) => {
+              return [surface];
+            })]),
         ]
       : [],
   ];
 
-  return axes.reduce<Answers[]>((sets, overrides) => {
-    return sets.flatMap((answers) => {
-      return overrides.map((override): Answers => {
-        return {
-          ...answers,
-          ...override,
-        };
-      });
-    });
-  }, [base]);
+  return axes
+    .reduce<Answers[]>((sets, overrides) => {
+      return sets
+        .flatMap((answers) => {
+          return overrides
+            .map((override): Answers => {
+              return {
+                ...answers,
+                ...override,
+              };
+            });
+        });
+    }, [base]);
 };
 
 const keyOf = (path: string, variant: string | undefined): string => {
@@ -226,16 +235,18 @@ const keyOf = (path: string, variant: string | undefined): string => {
 const gatesOf = (record: TargetRecord): Map<string, Gate> => {
   const gates = new Map<string, Gate>();
   const entries: [string, Gate | undefined][] = [
-    ...[...record.starterFiles, ...record.starterTests].map(({
-      target,
-      variant,
-      when,
-    }): [string, Gate | undefined] => {
-      return [keyOf(target, variant), when];
-    }),
-    ...(record.starterStyles ?? []).map((style): [string, Gate | undefined] => {
-      return typeof style === 'string' ? [style, undefined] : [style.path, style.when];
-    }),
+    ...[...record.starterFiles, ...record.starterTests]
+      .map(({
+        target,
+        variant,
+        when,
+      }): [string, Gate | undefined] => {
+        return [keyOf(target, variant), when];
+      }),
+    ...(record.starterStyles ?? [])
+      .map((style): [string, Gate | undefined] => {
+        return typeof style === 'string' ? [style, undefined] : [style.path, style.when];
+      }),
   ];
 
   for (const [key, when] of entries) {
@@ -258,45 +269,54 @@ const writtenBy = (record: TargetRecord, answers: Answers): string[] => {
   return [
     ...record.starterFiles,
     ...answers.testing === 'none' ? [] : record.starterTests,
-  ].filter((file) => {
-    return file.when === undefined || file.when(answers);
-  }).map((file) => {
-    return file.target;
-  });
+  ]
+    .filter((file) => {
+      return file.when === undefined || file.when(answers);
+    })
+    .map((file) => {
+      return file.target;
+    });
 };
 
 const holds = (conditions: readonly Condition[], answers: Answers): boolean => {
   const given = new Map<string, unknown>(Object.entries(answers));
 
-  return conditions.some((condition) => {
-    return Object.entries(condition).every(([key, allowed]) => {
-      const value = given.get(key);
+  return conditions
+    .some((condition) => {
+      return Object.entries(condition)
+        .every(([key, allowed]) => {
+          const value = given.get(key);
 
-      return allowed === ANSWERED
-        ? value !== undefined
-        : allowed.some((option) => {
-            return isDeepStrictEqual(option, value);
-          });
+          return allowed === ANSWERED
+            ? value !== undefined
+            : allowed
+                .some((option) => {
+                  return isDeepStrictEqual(option, value);
+                });
+        });
     });
-  });
 };
 
 const describeAnswers = (answers: Answers): string => {
-  return JSON.stringify(Object.fromEntries(Object.entries(answers).filter(([key, value]) => {
-    return AXES.has(key) && value !== undefined;
-  })));
+  const onAxes = Object.entries(answers)
+    .filter(([key, value]) => {
+      return AXES.has(key) && value !== undefined;
+    });
+
+  return JSON.stringify(Object.fromEntries(onAxes));
 };
 
 export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk => {
-  const walked = answerSets(builder, target).map((answers) => {
-    const record = builder(answers);
+  const walked = answerSets(builder, target)
+    .map((answers) => {
+      const record = builder(answers);
 
-    return {
-      answers,
-      record,
-      gates: gatesOf(record),
-    };
-  });
+      return {
+        answers,
+        record,
+        gates: gatesOf(record),
+      };
+    });
   const twice = new Set<string>();
 
   for (const { answers, record } of walked) {
@@ -309,12 +329,16 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
     }
   }
 
-  return {
-    gated: [...new Set(walked.flatMap(({ gates }) => {
+  const gatedPaths = walked
+    .flatMap(({ gates }) => {
       return [...gates.keys()];
-    }))].toSorted((left, right) => {
-      return left.localeCompare(right);
-    }),
+    });
+
+  return {
+    gated: [...new Set(gatedPaths)]
+      .toSorted((left, right) => {
+        return left.localeCompare(right);
+      }),
     twice: [...twice],
     mismatchOf: (key, conditions) => {
       for (const { answers, gates } of walked) {
@@ -334,17 +358,21 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
 export const pickedBy = (entries: (StarterFile | StarterTest)[], overrides: Partial<Answers> = {}): string[] => {
   const answers = answersFor(overrides);
 
-  return entries.filter((entry) => {
-    return entry.when === undefined || entry.when(answers);
-  }).map((entry) => {
-    return `${entry.target} ${entry.variant ?? 'base'}`;
-  });
+  return entries
+    .filter((entry) => {
+      return entry.when === undefined || entry.when(answers);
+    })
+    .map((entry) => {
+      return `${entry.target} ${entry.variant ?? 'base'}`;
+    });
 };
 
 export const byKey = (rows: readonly GateRow[]): string[] => {
-  return rows.map(([key]) => {
-    return key;
-  }).toSorted((left, right) => {
-    return left.localeCompare(right);
-  });
+  return rows
+    .map(([key]) => {
+      return key;
+    })
+    .toSorted((left, right) => {
+      return left.localeCompare(right);
+    });
 };

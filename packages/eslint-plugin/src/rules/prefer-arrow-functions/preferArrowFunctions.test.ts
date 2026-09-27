@@ -130,13 +130,14 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       'const sheet = stylex.keyframes({ box: (width) => ({ width }) });',
       // Not a property value, and a statement straight under the Program has no third ancestor to read.
       '(width) => ({ width });',
-    ].map((code) => {
-      return {
-        code,
-        output: code.replace('(width) => ({ width })', '(width) => { return { width } }'),
-        errors: [{ messageId: 'preferExplicit' }],
-      };
-    }),
+    ]
+      .map((code) => {
+        return {
+          code,
+          output: code.replace('(width) => ({ width })', '(width) => { return { width } }'),
+          errors: [{ messageId: 'preferExplicit' }],
+        };
+      }),
     {
       // `x` is declared twice, so it stays a function; the enclosing, singly bound `component` still converts.
       code: 'function component() {\n  function x(a) {\n    a.foo();\n  }\n\n  function x() {}\n\n  return x;\n}',

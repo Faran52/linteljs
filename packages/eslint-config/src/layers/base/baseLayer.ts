@@ -71,15 +71,16 @@ export const base = (options: BaseOptions = {}): Layer => {
       : []),
 
     // Read once, through `presetOf`, so a release without the preset fails with its name rather than a TypeError.
-    ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript').map((preset) => {
-      return {
-        ...preset,
-        settings: {
-          ...preset.settings,
-          'import-x/resolver': importResolver,
-        },
-      };
-    }),
+    ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript')
+      .map((preset) => {
+        return {
+          ...preset,
+          settings: {
+            ...preset.settings,
+            'import-x/resolver': importResolver,
+          },
+        };
+      }),
 
     {
       name: '@linteljs/base/typescript-syntax',

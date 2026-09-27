@@ -96,22 +96,25 @@ export const nuxtTarget: TargetRecord = {
       shared: 'vue',
       names: SOURCE_ACCESSORS,
     }),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     // Vue's own views, verbatim: the same markup renders the same page, so it is the same bytes.
-    ...FROM_VUE.map((target): StarterFile => {
-      return {
-        target,
-        shared: 'vue',
-      };
-    }),
+    ...FROM_VUE
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: 'vue',
+        };
+      }),
     {
       target: 'src/views/HomeView.vue',
     },

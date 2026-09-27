@@ -64,26 +64,33 @@ export default config;
 describe('emitStylelintConfig', () => {
   it('extends the standard and the property order', () => {
     expect(emitStylelintConfig(DEFAULT_ANSWERS)).toBe(PLAIN);
-    expect(emitStylelintConfig({
+
+    const config = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       target: 'vue',
       styling: 'tailwind',
-    })).toBe(SFC_WITH_TAILWIND);
+    });
+
+    expect(config).toBe(SFC_WITH_TAILWIND);
   });
 
   // Without it every `@apply` in the project is an unknown-at-rule error, so the entry follows the tailwind answer
   // rather than being fixed either way.
   it('teaches stylelint the tailwind at-rules only when tailwind was chosen', () => {
-    expect(emitStylelintConfig({
+    const plain = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       libraries: [],
-    })).not.toContain('stylelint-config-tailwindcss');
-    expect(emitStylelintConfig({
+    });
+
+    expect(plain).not.toContain('stylelint-config-tailwindcss');
+
+    const withTailwind = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       libraries: [],
       styling: 'tailwind',
-    }))
-      .toContain("'stylelint-config-tailwindcss',");
+    });
+
+    expect(withTailwind).toContain("'stylelint-config-tailwindcss',");
   });
 
   // Stylelint reads a `.vue` or `.svelte` file as plain CSS unless handed a syntax that knows where the `<style>` block
@@ -105,15 +112,19 @@ describe('emitStylelintConfig', () => {
   });
 
   it('hands no SFC syntax to a target with no single-file component', () => {
-    expect(emitStylelintConfig({
+    const onReact = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       target: 'react',
-    })).not.toContain('postcss-html');
-    expect(emitStylelintConfig({
+    });
+
+    expect(onReact).not.toContain('postcss-html');
+
+    const onExtension = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       target: 'webextension',
-    }))
-      .not.toContain('postcss-html');
+    });
+
+    expect(onExtension).not.toContain('postcss-html');
   });
 
   // A CSS module's classes are camelCase JS properties, so the kebab-case demand can't be met; it's the one finding
@@ -139,12 +150,14 @@ describe('the import notation', () => {
   it('pins the string form for every project, whatever styles it', () => {
     for (const target of TARGET_IDS) {
       for (const styling of [undefined, 'tailwind', 'stylex'] as const) {
-        expect(emitStylelintConfig({
+        const config = emitStylelintConfig({
           ...DEFAULT_ANSWERS,
           libraries: [],
           target,
           ...(styling === undefined ? {} : { styling }),
-        })).toContain("'import-notation': 'string',");
+        });
+
+        expect(config).toContain("'import-notation': 'string',");
       }
     }
   });
@@ -153,20 +166,22 @@ describe('the import notation', () => {
 // A Tailwind 4 `@custom-variant` body is a bare `&` rule by design, which stylelint reads as dangling.
 describe('the tailwind nesting carve-out', () => {
   it('stands the scoping-root rule down for a tailwind project', () => {
-    expect(emitStylelintConfig({
+    const config = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       libraries: [],
       styling: 'tailwind',
-    }))
-      .toContain("'nesting-selector-no-missing-scoping-root': null,");
+    });
+
+    expect(config).toContain("'nesting-selector-no-missing-scoping-root': null,");
   });
 
   it('leaves it on for a project with no tailwind', () => {
-    expect(emitStylelintConfig({
+    const config = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
       libraries: [],
-    }))
-      .not.toContain('nesting-selector-no-missing-scoping-root');
+    });
+
+    expect(config).not.toContain('nesting-selector-no-missing-scoping-root');
   });
 });
 

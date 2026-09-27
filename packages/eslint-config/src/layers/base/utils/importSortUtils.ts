@@ -47,25 +47,34 @@ const unknownAliasesIn = (aliases: string[]): string[] => {
   const known = new Set(ALIAS_BUCKETS.flat());
 
   // `'@engine'` and `'@engine/*'` are one alias.
-  const patterns = new Set(aliases.filter((alias) => {
-    return !known.has(aliasNameOf(alias));
-  }).map(patternFor));
+  const unknownPatterns = aliases
+    .filter((alias) => {
+      return !known.has(aliasNameOf(alias));
+    })
+    .map(patternFor);
 
-  return [...patterns].sort((left, right) => {
-    return left.localeCompare(right);
-  });
+  const patterns = new Set(unknownPatterns);
+
+  return [...patterns]
+    .sort((left, right) => {
+      return left.localeCompare(right);
+    });
 };
 
 const knownAliasGroups = (aliases: string[]): string[][] => {
   const declared = new Set(aliases.map(aliasNameOf));
 
-  return ALIAS_BUCKETS.map((bucket) => {
-    return bucket.filter((name) => {
-      return declared.has(name);
-    }).map(patternFor);
-  }).filter((bucket) => {
-    return bucket.length > 0;
-  });
+  return ALIAS_BUCKETS
+    .map((bucket) => {
+      return bucket
+        .filter((name) => {
+          return declared.has(name);
+        })
+        .map(patternFor);
+    })
+    .filter((bucket) => {
+      return bucket.length > 0;
+    });
 };
 
 export const buildGroups = (aliases: AliasMap = {}, frameworkGroup?: string[]): string[][] => {

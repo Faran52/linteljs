@@ -117,14 +117,16 @@ export const managersToRun = async (requested: string | undefined): Promise<Pack
   if (requested === undefined) {
     const read = await Promise.allSettled(PACKAGE_MANAGERS.map(versionOf));
 
-    return PACKAGE_MANAGERS.filter((_pm, index) => {
-      return read[index]?.status === 'fulfilled';
-    });
+    return PACKAGE_MANAGERS
+      .filter((_pm, index) => {
+        return read[index]?.status === 'fulfilled';
+      });
   }
 
-  const pm = PACKAGE_MANAGERS.find((manager) => {
-    return manager === requested;
-  });
+  const pm = PACKAGE_MANAGERS
+    .find((manager) => {
+      return manager === requested;
+    });
 
   if (pm === undefined) {
     throw new Error(`E2E_PM is ${requested}, and is one of ${PACKAGE_MANAGERS.join(', ')} or unset`);

@@ -57,9 +57,10 @@ mkdirSync(dirname(linkPath), { recursive: true });
 symlinkSync(pkgDir, linkPath, 'dir');
 
 // `./package.json` is a plain string target with no layer behind it.
-const subpaths = Object.keys(manifest.exports).filter((subpath) => {
-  return subpath !== './package.json';
-});
+const subpaths = Object.keys(manifest.exports)
+  .filter((subpath) => {
+    return subpath !== './package.json';
+  });
 assert.ok(subpaths.length > 1, 'exports map has no layer subpaths');
 
 // The sort bucket each framework layer publishes. `@linteljs/create` writes `base({ frameworkGroup: reactGroup })`,
@@ -83,15 +84,16 @@ const camel = (name: string): string => {
   });
 };
 
-const layerDirs = ['src/layers', 'src/frameworks', 'src/libraries'].flatMap((dir) => {
-  return readdirSync(join(root, dir), { withFileTypes: true })
-    .filter((entry) => {
-      return entry.isDirectory() && entry.name !== 'utils';
-    })
-    .map((entry) => {
-      return entry.name;
-    });
-});
+const layerDirs = ['src/layers', 'src/frameworks', 'src/libraries']
+  .flatMap((dir) => {
+    return readdirSync(join(root, dir), { withFileTypes: true })
+      .filter((entry) => {
+        return entry.isDirectory() && entry.name !== 'utils';
+      })
+      .map((entry) => {
+        return entry.name;
+      });
+  });
 
 assert.ok(layerDirs.length > 1, 'no layer directories found under src/layers, src/frameworks or src/libraries');
 
@@ -101,12 +103,13 @@ for (const dir of layerDirs) {
 
 const layerNames = layerDirs.map(camel);
 
-const specifiers = subpaths.map((subpath) => {
-  return {
-    subpath,
-    specifier: manifest.name + subpath.slice(1),
-  };
-});
+const specifiers = subpaths
+  .map((subpath) => {
+    return {
+      subpath,
+      specifier: manifest.name + subpath.slice(1),
+    };
+  });
 
 const checks = `
 import assert from 'node:assert/strict';
@@ -154,9 +157,10 @@ writeFileSync(join(smokeDir, 'checks.mjs'), checks);
 const esmProbe = [
   "import { check } from './checks.mjs';",
   '',
-  ...specifiers.map(({ subpath, specifier }) => {
-    return `await check(${JSON.stringify(subpath)}, await import(${JSON.stringify(specifier)}));`;
-  }),
+  ...specifiers
+    .map(({ subpath, specifier }) => {
+      return `await check(${JSON.stringify(subpath)}, await import(${JSON.stringify(specifier)}));`;
+    }),
   '',
 ].join('\n');
 

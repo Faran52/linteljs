@@ -33,18 +33,22 @@ const parsed = sourceCodeFrom([
 
 describe('isDirective', () => {
   it('answers for a statement carrying a string directive', () => {
-    expect(isDirective({
+    const directive = isDirective({
       type: 'ExpressionStatement',
       directive: 'use client',
-    })).toBe(true);
+    });
+
+    expect(directive).toBe(true);
   });
 
   // typescript-eslint's shape for `run();`: the key is present and undefined, so the key alone would answer wrongly.
   it('declines a statement whose directive key is undefined, or absent', () => {
-    expect(isDirective({
+    const directive = isDirective({
       type: 'ExpressionStatement',
       directive: undefined,
-    })).toBe(false);
+    });
+
+    expect(directive).toBe(false);
     expect(isDirective({ type: 'VariableDeclaration' })).toBe(false);
   });
 });

@@ -70,15 +70,20 @@ describe('reactNative', () => {
    */
   it('reaches no module that imports the web accessibility plugin', async () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const sources = await Promise.all(['reactNativeFramework.ts', '../utils/reactCoreUtils.ts'].map(async (name) => {
-      return await readFile(join(here, name), 'utf8');
-    }));
-
-    const specifiers = sources.flatMap((source) => {
-      return [...source.matchAll(/from '([^']+)'/gu)].map(([, specifier]) => {
-        return specifier;
+    const reads = ['reactNativeFramework.ts', '../utils/reactCoreUtils.ts']
+      .map(async (name) => {
+        return await readFile(join(here, name), 'utf8');
       });
-    });
+
+    const sources = await Promise.all(reads);
+
+    const specifiers = sources
+      .flatMap((source) => {
+        return [...source.matchAll(/from '([^']+)'/gu)]
+          .map(([, specifier]) => {
+            return specifier;
+          });
+      });
 
     expect(specifiers.length).toBeGreaterThan(0);
     expect(specifiers).not.toContain('eslint-plugin-jsx-a11y-x');

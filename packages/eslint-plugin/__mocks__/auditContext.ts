@@ -69,25 +69,31 @@ export const textRule = (transform: (text: string) => string): Rule.RuleModule =
 };
 
 const orderings = (names: string[]): string[][] => {
-  return names.flatMap((name, index) => {
-    const rest = names.filter((_, other) => {
-      return other !== index;
-    });
+  return names
+    .flatMap((name, index) => {
+      const rest = names
+        .filter((_, other) => {
+          return other !== index;
+        });
 
-    return [[name], ...orderings(rest).map((tail) => {
-      return [name, ...tail];
-    })];
-  });
+      return [[name], ...orderings(rest)
+        .map((tail) => {
+          return [name, ...tail];
+        })];
+    });
 };
 
 // The shape `configFor` builds, over modules that need not carry the published docs a real rule does.
 export const configOf = (modules: Record<string, Rule.RuleModule>): Linter.Config[] => {
+  const ruleEntries = Object.keys(modules)
+    .map((name): [string, Linter.RuleEntry] => {
+      return [`@linteljs/${name}`, 'error'];
+    });
+
   const shared = {
     linterOptions: { reportUnusedDisableDirectives: 'off' as const },
     plugins: { '@linteljs': { rules: modules } },
-    rules: Object.fromEntries(Object.keys(modules).map((name): [string, Linter.RuleEntry] => {
-      return [`@linteljs/${name}`, 'error'];
-    })),
+    rules: Object.fromEntries(ruleEntries),
   };
 
   return [
@@ -112,12 +118,16 @@ export const plantRules = (
   options: Record<string, Record<string, OptionValue>> = {},
 ): void => {
   for (const names of orderings(Object.keys(modules))) {
-    context.configCache.set(`${names.join(',')}|${JSON.stringify(options)}`, configOf(Object.fromEntries(
-      Object.entries(modules).filter(([name]) => {
+    const ordered = Object.entries(modules)
+      .filter(([name]) => {
         return names.includes(name);
-      }).toSorted(([left], [right]) => {
+      })
+      .toSorted(([left], [right]) => {
         return names.indexOf(left) - names.indexOf(right);
-      }),
+      });
+
+    context.configCache.set(`${names.join(',')}|${JSON.stringify(options)}`, configOf(Object.fromEntries(
+      ordered,
     )));
   }
 };
@@ -131,8 +141,10 @@ export const captured = (): (() => string) => {
   ];
 
   return () => {
-    return spies.flatMap((spy) => {
-      return spy.mock.calls.map(String);
-    }).join('\n');
+    return spies
+      .flatMap((spy) => {
+        return spy.mock.calls.map(String);
+      })
+      .join('\n');
   };
 };

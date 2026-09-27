@@ -35,19 +35,21 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
 
 // The plain targets, plus each hosting target once per framework it can host and once without.
 export const probes = (): E2eCase[] => {
-  return valuesOf(ANSWERS.target.values).flatMap((target) => {
-    const hosts = targetFor({
-      ...DEFAULT_ANSWERS,
-      target,
-    }).hostsFramework === true
-      ? [undefined, ...valuesOf(ANSWERS.hostedFramework.values)]
-      : [undefined];
+  return valuesOf(ANSWERS.target.values)
+    .flatMap((target) => {
+      const hosts = targetFor({
+        ...DEFAULT_ANSWERS,
+        target,
+      }).hostsFramework === true
+        ? [undefined, ...valuesOf(ANSWERS.hostedFramework.values)]
+        : [undefined];
 
-    return hosts.map((hostedFramework) => {
-      return {
-        label: hostedFramework === undefined ? target : `${target} hosting ${hostedFramework}`,
-        answers: maximal(target, hostedFramework),
-      };
+      return hosts
+        .map((hostedFramework) => {
+          return {
+            label: hostedFramework === undefined ? target : `${target} hosting ${hostedFramework}`,
+            answers: maximal(target, hostedFramework),
+          };
+        });
     });
-  });
 };

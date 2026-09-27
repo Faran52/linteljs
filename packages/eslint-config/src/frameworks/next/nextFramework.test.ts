@@ -37,15 +37,17 @@ describe('next', () => {
   });
 
   it('carries the whole core-web-vitals set', () => {
-    const rules = Object.keys(next()[0]?.rules ?? {}).filter(startsWith('@next/next/'));
+    const rules = Object.keys(next()[0]?.rules ?? {})
+      .filter(startsWith('@next/next/'));
 
     expect(rules).toHaveLength(22);
   });
 
   it('adds only the next/image mapping on top of the accessibility react() enables', () => {
-    const a11y = Object.keys(next()[0]?.rules ?? {}).filter((rule) => {
-      return rule.startsWith('jsx-a11y-x/');
-    });
+    const a11y = Object.keys(next()[0]?.rules ?? {})
+      .filter((rule) => {
+        return rule.startsWith('jsx-a11y-x/');
+      });
 
     expect(a11y).toEqual(['jsx-a11y-x/alt-text']);
   });
@@ -65,16 +67,20 @@ describe('next', () => {
   });
 
   it('registers only the next plugin', () => {
-    expect(next().flatMap((entry) => {
-      return Object.keys(entry.plugins ?? {});
-    })).toEqual(['@next/next']);
+    const plugins = next()
+      .flatMap((entry) => {
+        return Object.keys(entry.plugins ?? {});
+      });
+
+    expect(plugins).toEqual(['@next/next']);
   });
 
   // Each of the three stopped its `eslint` peer range at 9; dropping them took three peer allowances out.
   it('registers none of the plugins the replaced config bundled', () => {
-    const registered = next().flatMap((entry) => {
-      return Object.keys(entry.plugins ?? {});
-    });
+    const registered = next()
+      .flatMap((entry) => {
+        return Object.keys(entry.plugins ?? {});
+      });
 
     expect(registered).not.toContain('react');
     expect(registered).not.toContain('react-hooks');
@@ -91,17 +97,19 @@ describe('next', () => {
 
   // Structural: pnpm dedupes the plugin here, so the "Cannot redefine plugin" a consumer would hit is not reproducible.
   it('registers no @typescript-eslint plugin of its own', () => {
-    const registrations = next().filter((entry) => {
-      return entry.plugins !== undefined && '@typescript-eslint' in entry.plugins;
-    });
+    const registrations = next()
+      .filter((entry) => {
+        return entry.plugins !== undefined && '@typescript-eslint' in entry.plugins;
+      });
 
     expect(registrations).toEqual([]);
   });
 
   it('claims no parser', () => {
-    const parsers = next().filter((entry) => {
-      return entry.languageOptions?.['parser'] !== undefined;
-    });
+    const parsers = next()
+      .filter((entry) => {
+        return entry.languageOptions?.['parser'] !== undefined;
+      });
 
     expect(parsers).toEqual([]);
   });

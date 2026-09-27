@@ -159,30 +159,36 @@ describe('emitManifest', () => {
 
 describe('manifestEmitter', () => {
   const manifestsFor = (overrides: AnswerOverrides): Record<string, Manifest> => {
-    return Object.fromEntries(manifestEmitter(answersFor(overrides), EMPTY_PROJECT, 'demo-app').map((artifact) => {
-      return [artifact.target, parseManifest('text' in artifact.content ? artifact.content.text : '')];
-    }));
+    return Object.fromEntries(manifestEmitter(answersFor(overrides), EMPTY_PROJECT, 'demo-app')
+      .map((artifact) => {
+        return [artifact.target, parseManifest('text' in artifact.content ? artifact.content.text : '')];
+      }));
   };
 
   // Birth only: a manifest's permissions and store metadata are the project's to keep.
   it('plants one manifest, named for the project, on a project being born', () => {
     const artifacts = manifestEmitter(answersFor(), EMPTY_PROJECT, 'demo-app');
 
-    expect(artifacts.map(({
-      stage,
-      target,
-      seed,
-    }) => {
-      return [stage, target, seed];
-    })).toEqual([['standard', 'manifest.json', true]]);
+    const shapes = artifacts
+      .map(({
+        stage,
+        target,
+        seed,
+      }) => {
+        return [stage, target, seed];
+      });
+
+    expect(shapes).toEqual([['standard', 'manifest.json', true]]);
     expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
   });
 
   it('writes none for a target that hosts no browser', () => {
-    expect(manifestEmitter({
+    const artifacts = manifestEmitter({
       ...DEFAULT_ANSWERS,
       target: 'react',
-    }, EMPTY_PROJECT, 'demo-app')).toEqual([]);
+    }, EMPTY_PROJECT, 'demo-app');
+
+    expect(artifacts).toEqual([]);
   });
 
   // Chrome rejects `browser_specific_settings` and AMO requires it, so a project shipping to both stores gets two.
@@ -208,8 +214,11 @@ describe('manifestEmitter', () => {
     })['manifest.json']?.background ?? { scripts: [] };
     const entry = 'service_worker' in background ? background.service_worker : background.scripts[0];
 
-    expect(starterSourceEmitter(answers).map(({ target }) => {
-      return target;
-    })).toEqual(expect.arrayContaining([entry, 'src/background/onInstalled.ts']));
+    const targets = starterSourceEmitter(answers)
+      .map(({ target }) => {
+        return target;
+      });
+
+    expect(targets).toEqual(expect.arrayContaining([entry, 'src/background/onInstalled.ts']));
   });
 });

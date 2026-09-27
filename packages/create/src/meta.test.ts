@@ -86,7 +86,8 @@ const SHAPES: RingShape[] = [
       typesafety: 'Answer',
     },
     registry: () => {
-      return Object.keys(ANSWERS).map(kebab);
+      return Object.keys(ANSWERS)
+        .map(kebab);
     },
   },
   {
@@ -148,50 +149,64 @@ const SHAPES: RingShape[] = [
 const subjectsIn = (ring: RingShape): Subject[] => {
   const ringDir = join(srcDir, ring.name);
 
-  return Object.entries(ring.suffixes).flatMap(([group, suffix]) => {
-    const groupDir = join(ringDir, group);
+  return Object.entries(ring.suffixes)
+    .flatMap(([group, suffix]) => {
+      const groupDir = join(ringDir, group);
 
-    return directoriesIn(groupDir).filter((name) => {
-      return !SHARED.has(name) && !(group === '' && name in ring.suffixes);
-    }).map((name) => {
-      return {
-        ring: ring.name,
-        group,
-        name,
-        path: join(groupDir, name),
-        entry: entryNameOf(name, suffix),
-        registered: ring.registry !== undefined,
-      };
+      return directoriesIn(groupDir)
+        .filter((name) => {
+          return !SHARED.has(name) && !(group === '' && name in ring.suffixes);
+        })
+        .map((name) => {
+          return {
+            ring: ring.name,
+            group,
+            name,
+            path: join(groupDir, name),
+            entry: entryNameOf(name, suffix),
+            registered: ring.registry !== undefined,
+          };
+        });
     });
-  });
 };
 
 // A registry keyed by `<group>/<name>` says so in its own keys, so nothing has to declare which spelling it uses.
 const keyOf = (subject: Subject, registered: string[]): string => {
-  return registered.some((key) => {
-    return key.includes('/');
-  })
+  return registered
+    .some((key) => {
+      return key.includes('/');
+    })
     ? `${subject.group}/${subject.name}`
     : subject.name;
 };
 
-const RINGED = SHAPES.filter((ring) => {
-  return ring.files === undefined;
-});
+const RINGED = SHAPES
+  .filter((ring) => {
+    return ring.files === undefined;
+  });
 
 const packageSources = sourcesUnder(srcDir);
 
 it('holds the same rings as rings.ts', () => {
-  expect(SHAPES.map((ring) => {
-    return ring.name;
-  })).toEqual([...RINGS].toSorted((left, right) => {
-    return left.localeCompare(right, 'en');
-  }));
+  const shapeNames = SHAPES
+    .map((ring) => {
+      return ring.name;
+    });
+
+  const sortedRings = [...RINGS]
+    .toSorted((left, right) => {
+      return left.localeCompare(right, 'en');
+    });
+
+  expect(shapeNames).toEqual(sortedRings);
 });
 
-describe.each(SHAPES.filter((ring) => {
-  return ring.files === true;
-}))('$name', (ring) => {
+const fileRings = SHAPES
+  .filter((ring) => {
+    return ring.files === true;
+  });
+
+describe.each(fileRings)('$name', (ring) => {
   // Two files and one file, read by path. A directory here would be a subject, and a subject would need a registry.
   it('holds no subject', () => {
     expect(directoriesIn(join(srcDir, ring.name))).toEqual([]);
@@ -211,49 +226,68 @@ describe.each(RINGED)('$name', (ring) => {
    */
   it('exports nothing the rings outside it never take from it', () => {
     const barrel = readFileSync(join(ringDir, 'index.ts'), 'utf8');
-    const exported = [...barrel.matchAll(/export (?:type )?\{([^}]*)\} from/gu)].flatMap(([, names]) => {
-      return (names ?? '').split(',');
-    }).map((name) => {
-      return name.replace('type ', '').trim();
-    }).filter((name) => {
-      return name !== '';
-    });
+    const exported = [...barrel.matchAll(/export (?:type )?\{([^}]*)\} from/gu)]
+      .flatMap(([, names]) => {
+        return (names ?? '').split(',');
+      })
+      .map((name) => {
+        return name.replace('type ', '').trim();
+      })
+      .filter((name) => {
+        return name !== '';
+      });
 
     expect(exported.length).toBeGreaterThan(0);
 
     const taken = takenFromBarrel(ringDir, ring.name);
 
-    expect(exported.filter((name) => {
-      return !taken.has(name);
-    })).toEqual([]);
+    const untaken = exported
+      .filter((name) => {
+        return !taken.has(name);
+      });
+
+    expect(untaken).toEqual([]);
   });
 });
 
-describe.each(RINGED.filter((ring) => {
-  return ring.registry !== undefined;
-}))('$name registry', (ring) => {
-  const registered = ring.registry?.() ?? [];
-  const keys = subjectsIn(ring).map((subject) => {
-    return keyOf(subject, registered);
+const registeredRings = RINGED
+  .filter((ring) => {
+    return ring.registry !== undefined;
   });
+
+describe.each(registeredRings)('$name registry', (ring) => {
+  const registered = ring.registry?.() ?? [];
+  const keys = subjectsIn(ring)
+    .map((subject) => {
+      return keyOf(subject, registered);
+    });
 
   // Read off disk rather than probed, so a directory nobody registered is caught as well as the reverse.
   it('names every subject directory', () => {
-    expect(keys.filter((key) => {
-      return !registered.includes(key);
-    })).toEqual([]);
+    const unregistered = keys
+      .filter((key) => {
+        return !registered.includes(key);
+      });
+
+    expect(unregistered).toEqual([]);
   });
 
   it('names nothing that is not a subject directory', () => {
-    expect(registered.filter((key) => {
-      return !keys.includes(key);
-    })).toEqual([]);
+    const orphaned = registered
+      .filter((key) => {
+        return !keys.includes(key);
+      });
+
+    expect(orphaned).toEqual([]);
   });
 
   it('holds exactly one subject per key', () => {
-    expect(keys.filter((key, index) => {
-      return keys.indexOf(key) !== index;
-    })).toEqual([]);
+    const duplicates = keys
+      .filter((key, index) => {
+        return keys.indexOf(key) !== index;
+      });
+
+    expect(duplicates).toEqual([]);
   });
 });
 
@@ -281,15 +315,21 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
   it('holds nothing but its entry, its constants and a utils directory', () => {
     const allowed = new RegExp(`^(${entry}\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
 
-    expect(entriesIn(path).filter((file) => {
-      return file !== 'utils' && !allowed.test(file);
-    })).toEqual([]);
+    const strays = entriesIn(path)
+      .filter((file) => {
+        return file !== 'utils' && !allowed.test(file);
+      });
+
+    expect(strays).toEqual([]);
   });
 
   it('suffixes every private helper and puts it under utils', () => {
-    expect(modulesIn(path).filter((file) => {
-      return file.includes('/') && !/^utils\/[a-z][A-Za-z]*Utils(\.test)?\.ts$/u.test(file);
-    })).toEqual([]);
+    const misplaced = modulesIn(path)
+      .filter((file) => {
+        return file.includes('/') && !/^utils\/[a-z][A-Za-z]*Utils(\.test)?\.ts$/u.test(file);
+      });
+
+    expect(misplaced).toEqual([]);
   });
 
   /**
@@ -298,17 +338,22 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
    * because a helper that quietly gained a second consumer still passes every other assertion here.
    */
   it('keeps every module under its utils private to itself', () => {
-    const helpers = modulesIn(path).filter((file) => {
-      return file.startsWith('utils/') && !file.endsWith('.test.ts');
-    });
-
-    expect(helpers.filter((helper) => {
-      const specifier = `${relative(srcDir, path)}/${helper.replace(/\.ts$/u, '')}`;
-
-      return packageSources.some((source) => {
-        return !source.startsWith(path) && readFileSync(source, 'utf8').includes(specifier);
+    const helpers = modulesIn(path)
+      .filter((file) => {
+        return file.startsWith('utils/') && !file.endsWith('.test.ts');
       });
-    })).toEqual([]);
+
+    const leaked = helpers
+      .filter((helper) => {
+        const specifier = `${relative(srcDir, path)}/${helper.replace(/\.ts$/u, '')}`;
+
+        return packageSources
+          .some((source) => {
+            return !source.startsWith(path) && readFileSync(source, 'utf8').includes(specifier);
+          });
+      });
+
+    expect(leaked).toEqual([]);
   });
 });
 
@@ -317,9 +362,13 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
  * annotates its type, so the character after the name is a colon as often as a space. An unregistered subject is a
  * module named for its directory and may export more than one thing: `pipeline/runs/sync/` plans and applies.
  */
-describe.each(RINGED.flatMap(subjectsIn).filter((subject) => {
-  return subject.registered;
-}))('$ring/$name', ({ path, entry }) => {
+const registeredSubjects = RINGED
+  .flatMap(subjectsIn)
+  .filter((subject) => {
+    return subject.registered;
+  });
+
+describe.each(registeredSubjects)('$ring/$name', ({ path, entry }) => {
   it('exports that entry under the same name', () => {
     expect(readFileSync(join(path, `${entry}.ts`), 'utf8')).toMatch(new RegExp(`export const ${entry}[ :]`, 'u'));
   });
@@ -335,25 +384,30 @@ it('keeps every module to two constants, so a third is a constants.ts', () => {
   const exempt = new Set(['constants.ts', 'types.ts', 'index.ts', 'rings.ts']);
   const registries = new Set(['answers/registry.ts', 'emitters/registry.ts', 'targets/registry.ts']);
 
-  const carrying = sourcesUnder(srcDir).filter((path) => {
-    return !path.endsWith('.test.ts')
-      && !exempt.has(basename(path))
-      && !registries.has(relative(srcDir, path));
-  }).filter((path) => {
-    const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);
+  const carrying = sourcesUnder(srcDir)
+    .filter((path) => {
+      return !path.endsWith('.test.ts')
+        && !exempt.has(basename(path))
+        && !registries.has(relative(srcDir, path));
+    })
+    .filter((path) => {
+      const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);
 
-    return source.statements.filter((statement) => {
-      return ts.isVariableStatement(statement) && statement.declarationList.declarations.some((declaration) => {
-        const { initializer } = declaration;
+      return source.statements
+        .filter((statement) => {
+          return ts.isVariableStatement(statement) && statement.declarationList.declarations
+            .some((declaration) => {
+              const { initializer } = declaration;
 
-        return initializer !== undefined
-          && !ts.isArrowFunction(initializer)
-          && !ts.isFunctionExpression(initializer);
-      });
-    }).length > 2;
-  }).map((path) => {
-    return relative(srcDir, path);
-  });
+              return initializer !== undefined
+                && !ts.isArrowFunction(initializer)
+                && !ts.isFunctionExpression(initializer);
+            });
+        }).length > 2;
+    })
+    .map((path) => {
+      return relative(srcDir, path);
+    });
 
   expect(carrying).toEqual([]);
 });
@@ -369,26 +423,35 @@ it.skipIf(instrumented)('leaves the emitter assembler nothing to branch on', () 
 describe('answers records', () => {
   const keys = valuesOf(ANSWERS);
   // Widened once: `flag` is optional on the base record, and reading it off the union of the seventeen is not.
-  const records: readonly AnswerRecord[] = keys.map((key) => {
-    return ANSWERS[key];
-  });
+  const records: readonly AnswerRecord[] = keys
+    .map((key) => {
+      return ANSWERS[key];
+    });
 
   it('carries the registry key on the record itself', () => {
-    expect(keys.filter((key) => {
-      return ANSWERS[key].key !== key;
-    })).toEqual([]);
+    const misfiled = keys
+      .filter((key) => {
+        return ANSWERS[key].key !== key;
+      });
+
+    expect(misfiled).toEqual([]);
   });
 
   it('names each flag once', () => {
-    const flags = records.map((record) => {
-      return record.flag;
-    }).filter((flag): flag is string => {
-      return flag !== undefined;
-    });
+    const flags = records
+      .map((record) => {
+        return record.flag;
+      })
+      .filter((flag): flag is string => {
+        return flag !== undefined;
+      });
 
-    expect(flags.filter((flag, index) => {
-      return flags.indexOf(flag) !== index;
-    })).toEqual([]);
+    const duplicates = flags
+      .filter((flag, index) => {
+        return flags.indexOf(flag) !== index;
+      });
+
+    expect(duplicates).toEqual([]);
   });
 });
 
@@ -397,8 +460,16 @@ describe('answers records', () => {
  * floor is one nothing can refuse, and either way the one that is missing is found at a spawn rather than here.
  */
 it('gives every package manager both a floor and a command', () => {
-  const commands = Object.keys(MANAGER_BINARIES).toSorted(byName);
+  const commands = Object.keys(MANAGER_BINARIES)
+    .toSorted(byName);
 
-  expect(commands).toEqual(Object.keys(MANAGER_FLOORS).toSorted(byName));
-  expect(commands).toEqual(valuesOf(ANSWERS.packageManager.values).toSorted(byName));
+  const floored = Object.keys(MANAGER_FLOORS)
+    .toSorted(byName);
+
+  expect(commands).toEqual(floored);
+
+  const managers = valuesOf(ANSWERS.packageManager.values)
+    .toSorted(byName);
+
+  expect(commands).toEqual(managers);
 });

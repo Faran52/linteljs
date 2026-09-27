@@ -154,42 +154,44 @@ export const accessorFiles = (
   names: AccessorNames,
   from?: AccessorSource,
 ): StarterFile[] => {
-  return [names.query, names.mutation].map((entry): StarterFile => {
-    return {
-      target: `${accessorStem(names, entry)}.ts`,
-      when: usesQueryLibrary,
-      variant: 'tanstack-query',
-      ...(from === undefined
-        ? {}
-        : {
-            shared: from.shared,
-            source: `${accessorStem(from.names, entry)}.ts`,
-          }),
-    };
-  });
+  return [names.query, names.mutation]
+    .map((entry): StarterFile => {
+      return {
+        target: `${accessorStem(names, entry)}.ts`,
+        when: usesQueryLibrary,
+        variant: 'tanstack-query',
+        ...(from === undefined
+          ? {}
+          : {
+              shared: from.shared,
+              source: `${accessorStem(from.names, entry)}.ts`,
+            }),
+      };
+    });
 };
 
 export const accessorTests = (
   names: AccessorNames,
   from?: AccessorSource,
 ): StarterTest[] => {
-  return [names.query, names.mutation].map((entry): StarterTest => {
+  return [names.query, names.mutation]
+    .map((entry): StarterTest => {
     // The suite sits beside its subject under the same directory.
-    const stem = accessorStem(names, entry);
+      const stem = accessorStem(names, entry);
 
-    return {
-      target: `${stem}${names.testSuffix}`,
-      covers: `${stem}.ts`,
-      when: usesQueryLibrary,
-      variant: 'tanstack-query',
-      ...(from === undefined
-        ? {}
-        : {
-            shared: from.shared,
-            source: `${accessorStem(from.names, entry)}${from.names.testSuffix}`,
-          }),
-    };
-  });
+      return {
+        target: `${stem}${names.testSuffix}`,
+        covers: `${stem}.ts`,
+        when: usesQueryLibrary,
+        variant: 'tanstack-query',
+        ...(from === undefined
+          ? {}
+          : {
+              shared: from.shared,
+              source: `${accessorStem(from.names, entry)}${from.names.testSuffix}`,
+            }),
+      };
+    });
 };
 
 /*

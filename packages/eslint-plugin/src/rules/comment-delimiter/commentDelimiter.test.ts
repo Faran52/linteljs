@@ -46,9 +46,10 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       '/// <reference lib="dom" />',
       '///<reference lib="dom" />',
       '///   <reference lib="dom" />',
-    ].map((directive) => {
-      return `// alpha\n// bravo\n${directive}\n// charlie\n// delta\n`;
-    }),
+    ]
+      .map((directive) => {
+        return `// alpha\n// bravo\n${directive}\n// charlie\n// delta\n`;
+      }),
     // An empty JSDoc block has no body to move into `//` lines.
     '/** */\nexport const value = 1;\n',
     {
@@ -70,12 +71,13 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       'src/sample.spec.mts',
       'src\\sample.test.js',
       'src/__tests__',
-    ].map((filename) => {
-      return {
-        code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
-        filename,
-      };
-    }),
+    ]
+      .map((filename) => {
+        return {
+          code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
+          filename,
+        };
+      }),
     // A short block with code after it on the same line is a trailing note, and moving it would move the code.
     '/** short */ const value = 1;',
     // One character of code after it on a last line with no newline still shares the line.
@@ -95,27 +97,29 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       '// bravo #! here',
       '// bravo /// <reference lib="dom" />',
       '// bravo // eslint-disable',
-    ].map((line) => {
-      return {
-        code: `// alpha\n${line}\n// charlie\nexport const value = 1;`,
-        output: `/**\n * alpha\n * ${line.slice(3)}\n * charlie\n */\nexport const value = 1;`,
-        errors: [{ messageId: 'useJsdoc' as const }],
-      };
-    }),
+    ]
+      .map((line) => {
+        return {
+          code: `// alpha\n${line}\n// charlie\nexport const value = 1;`,
+          output: `/**\n * alpha\n * ${line.slice(3)}\n * charlie\n */\nexport const value = 1;`,
+          errors: [{ messageId: 'useJsdoc' as const }],
+        };
+      }),
     // A name that only resembles a test file is ordinary source, so its comments are judged.
     ...[
       'src/contest.ts',
       'src/sample.test.ts.snap',
       'src/my__tests__/sample.ts',
       'src/__tests__x/sample.ts',
-    ].map((filename) => {
-      return {
-        code: '// alpha\n// bravo\n// charlie\nexport const value = 1;',
-        filename,
-        output: '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;',
-        errors: [{ messageId: 'useJsdoc' as const }],
-      };
-    }),
+    ]
+      .map((filename) => {
+        return {
+          code: '// alpha\n// bravo\n// charlie\nexport const value = 1;',
+          filename,
+          output: '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;',
+          errors: [{ messageId: 'useJsdoc' as const }],
+        };
+      }),
     {
       // A continuation line with no leading star keeps its first character.
       code: '/**\n First.\n * Second.\n */\nexport const value = 1;',

@@ -103,9 +103,10 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
   return [
     // `http.ts` ships on every project and `qs` is what it builds a querystring with.
     'qs',
-    ...answers.libraries.flatMap((library) => {
-      return runtime[library];
-    }),
+    ...answers.libraries
+      .flatMap((library) => {
+        return runtime[library];
+      }),
     ...(answers.styling === undefined ? [] : styling[answers.styling]),
     ...(answers.data === undefined ? [] : data[answers.data]),
     ...(answers.form === undefined ? [] : forms[answers.form]),
@@ -130,9 +131,10 @@ export const parsePackageJson = (text: string): PackageJson => {
 export const versioned = (names: string[], pins: Record<string, string> = {}): Record<string, string> => {
   const result: Record<string, string> = {};
 
-  const sorted = uniq(names).sort((left, right) => {
-    return left.localeCompare(right, 'en');
-  });
+  const sorted = uniq(names)
+    .sort((left, right) => {
+      return left.localeCompare(right, 'en');
+    });
 
   for (const name of sorted) {
     const version = pins[name] ?? VERSIONS[name];
@@ -216,7 +218,8 @@ export const allowedBuildNames = (answers: Answers): string[] => {
    */
   const mocking = answers.mocking === 'msw' ? ['msw'] : [];
 
-  return uniq([...ALLOWED_BUILDS, ...mocking, ...targetFor(answers).allowBuilds]).sort((left, right) => {
-    return left.localeCompare(right, 'en');
-  });
+  return uniq([...ALLOWED_BUILDS, ...mocking, ...targetFor(answers).allowBuilds])
+    .sort((left, right) => {
+      return left.localeCompare(right, 'en');
+    });
 };

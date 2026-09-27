@@ -71,9 +71,11 @@ describe('buildAliases', () => {
   });
 
   it('drops @mocks when testing is declined', () => {
-    expect(buildAliases({
+    const aliases = buildAliases({
       ...answersFor({}),
       testing: 'none',
-    })['@mocks/*']).toBeUndefined();
+    })['@mocks/*'];
+
+    expect(aliases).toBeUndefined();
   });
 });

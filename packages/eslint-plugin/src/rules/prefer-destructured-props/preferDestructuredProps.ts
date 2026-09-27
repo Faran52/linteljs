@@ -87,9 +87,12 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
         }
 
         // A parameter always declares its own binding.
-        const propsVariable = mustFind(declaredVariablesOf(context, node).find((variable) => {
-          return variable.name === firstParam.name;
-        }), 'the variable a props parameter declares');
+        const declared = declaredVariablesOf(context, node)
+          .find((variable) => {
+            return variable.name === firstParam.name;
+          });
+
+        const propsVariable = mustFind(declared, 'the variable a props parameter declares');
 
         const { references } = propsVariable;
 
@@ -97,9 +100,10 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
           return;
         }
 
-        if (references.some((reference) => {
-          return memberObjects.get(spanOf(reference.identifier)) !== true;
-        })) {
+        if (references
+          .some((reference) => {
+            return memberObjects.get(spanOf(reference.identifier)) !== true;
+          })) {
           return;
         }
 

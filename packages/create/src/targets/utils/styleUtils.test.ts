@@ -32,9 +32,12 @@ describe('componentStyles', () => {
       form: 'tanstack-form',
     }, []],
   ])('ships the stylesheets of the components written under %s', (_case, overrides, components) => {
-    expect(pickedBy(componentStyles(), overrides).map((picked) => {
-      return picked.slice(picked.lastIndexOf('/') + 1, picked.indexOf('.css'));
-    })).toEqual(components);
+    const stylesheetNames = pickedBy(componentStyles(), overrides)
+      .map((picked) => {
+        return picked.slice(picked.lastIndexOf('/') + 1, picked.indexOf('.css'));
+      });
+
+    expect(stylesheetNames).toEqual(components);
   });
 
   it('reads a renamed component from the shared asset under its own name', () => {
@@ -54,10 +57,12 @@ describe('componentStyleModules', () => {
       'src/components/features/app-header/styles.ts base',
       'src/components/ui/mark/styles.ts base',
     ]);
-    expect(pickedBy(componentStyleModules(), {
+    const picked = pickedBy(componentStyleModules(), {
       styling: 'stylex',
       store: 'zustand',
-    })).toEqual([
+    });
+
+    expect(picked).toEqual([
       'src/components/features/app-header/styles.ts stylex',
       'src/components/ui/mark/styles.ts stylex',
       'src/components/ui/button/styles.ts stylex',

@@ -25,11 +25,13 @@ export const astro = (): Layer => {
     astroPlugin.configs['flat/jsx-a11y-recommended'],
     'astro/flat/jsx-a11y-recommended',
     ASTRO_FILES,
-  ).filter((entry) => {
-    return Object.keys(entry.rules ?? {}).some((rule) => {
-      return rule.startsWith('astro/jsx-a11y/');
+  )
+    .filter((entry) => {
+      return Object.keys(entry.rules ?? {})
+        .some((rule) => {
+          return rule.startsWith('astro/jsx-a11y/');
+        });
     });
-  });
 
   return [
     ...recommended,

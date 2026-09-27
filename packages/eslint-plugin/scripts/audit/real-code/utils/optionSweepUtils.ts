@@ -73,19 +73,21 @@ export const runOptionSweep = (context: AuditContext): number => {
   log([
     `${String(files.length)} files sampled, against ${String(configurations.length)} configurations read off `
     + 'meta.schema:',
-    ...configurations.map(({ label }) => {
-      return `    ${label}`;
-    }),
+    ...configurations
+      .map(({ label }) => {
+        return `    ${label}`;
+      }),
   ].join('\n'));
 
-  const counters = configurations.map((configuration): SweepCounter => {
-    return {
-      changed: 0,
-      configuration,
-      findings: 0,
-      scanned: 0,
-    };
-  });
+  const counters = configurations
+    .map((configuration): SweepCounter => {
+      return {
+        changed: 0,
+        configuration,
+        findings: 0,
+        scanned: 0,
+      };
+    });
   let hits = 0;
 
   for (const [index, file] of files.entries()) {
@@ -105,15 +107,16 @@ export const runOptionSweep = (context: AuditContext): number => {
 
   log([
     'per configuration: files linted, files changed by the fixer, findings',
-    ...counters.map(({
-      changed,
-      configuration,
-      findings,
-      scanned,
-    }) => {
-      return `  ${String(scanned).padStart(6)} ${String(changed).padStart(6)} `
-        + `${String(findings).padStart(4)}  ${configuration.label}`;
-    }),
+    ...counters
+      .map(({
+        changed,
+        configuration,
+        findings,
+        scanned,
+      }) => {
+        return `  ${String(scanned).padStart(6)} ${String(changed).padStart(6)} `
+          + `${String(findings).padStart(4)}  ${configuration.label}`;
+      }),
   ].join('\n'));
 
   if (hits === 0) {

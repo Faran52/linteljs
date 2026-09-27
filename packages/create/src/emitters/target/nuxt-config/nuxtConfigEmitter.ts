@@ -31,15 +31,16 @@ export const emitNuxtConfig = (answers: Answers): string => {
    * rewrites its own aliases to `../src` on the way in and passes anything already relative through untouched, so
    * a literal `./src/lib/utils` here lands as `.nuxt/src/lib/utils`, which is a directory no project has.
    */
-  const aliases = Object.entries(buildAliases(answers)).flatMap(([alias, directory]) => {
-    const prefix = alias.replace('/*', '');
-    const root = directory.replace('/*', '').replace('./', '');
+  const aliases = Object.entries(buildAliases(answers))
+    .flatMap(([alias, directory]) => {
+      const prefix = alias.replace('/*', '');
+      const root = directory.replace('/*', '').replace('./', '');
 
-    return [
-      `    '${prefix}': join(import.meta.dirname, '${root}'),`,
-      `    '${prefix}/*': join(import.meta.dirname, '${root}/*'),`,
-    ];
-  });
+      return [
+        `    '${prefix}': join(import.meta.dirname, '${root}'),`,
+        `    '${prefix}/*': join(import.meta.dirname, '${root}/*'),`,
+      ];
+    });
 
   const styling = stylingPlugin(answers.styling);
 
@@ -48,9 +49,10 @@ export const emitNuxtConfig = (answers: Answers): string => {
     '',
     sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"]),
     '',
-    ...styling.declarations.flatMap((line) => {
-      return [line, ''];
-    }),
+    ...styling.declarations
+      .flatMap((line) => {
+        return [line, ''];
+      }),
     'export default defineNuxtConfig({',
     "  compatibilityDate: '2025-07-15',",
     "  // `src/`, not Nuxt 4's own `app/`: one source root, the same as every other target this CLI writes.",

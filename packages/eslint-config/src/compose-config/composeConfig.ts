@@ -37,9 +37,12 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
   } = options;
 
   const parts = framework === undefined ? undefined : await FRAMEWORKS[framework]();
-  const libraryLayers = await Promise.all(libraries.map(async (library) => {
-    return LIBRARIES[library]({ tailwindEntryPoint });
-  }));
+  const loading = libraries
+    .map(async (library) => {
+      return LIBRARIES[library]({ tailwindEntryPoint });
+    });
+
+  const libraryLayers = await Promise.all(loading);
   const vitestRules = withVitest === true ? await loadVitest() : [];
   const htmlRules = withHtml === true ? await loadHtml() : [];
   const astroRules = withAstro === true ? await loadAstro() : [];

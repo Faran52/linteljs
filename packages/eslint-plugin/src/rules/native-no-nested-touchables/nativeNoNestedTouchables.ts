@@ -59,9 +59,10 @@ export const nativeNoNestedTouchables = createRule('native-no-nested-touchables'
           return;
         }
 
-        const nested = descendantElements(element).find((descendant) => {
-          return isInteractive(descendant, touchables);
-        });
+        const nested = descendantElements(element)
+          .find((descendant) => {
+            return isInteractive(descendant, touchables);
+          });
 
         if (nested) {
           context.report({

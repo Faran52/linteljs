@@ -11,7 +11,10 @@ import { rules } from './index.ts';
 describe('rules', () => {
   // Both sorted lists, so a rule with no directory and a directory nothing registers both fail.
   it('registers exactly the rules that have a directory', () => {
-    expect(Object.keys(rules).toSorted(alphabetically)).toEqual(ruleDirectories.toSorted(alphabetically));
+    const ruleIds = Object.keys(rules)
+      .toSorted(alphabetically);
+
+    expect(ruleIds).toEqual(ruleDirectories.toSorted(alphabetically));
   });
 
   // The id is the directory, so an entry wired to a sibling's module is a rule published under the wrong name.

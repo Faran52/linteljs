@@ -62,15 +62,22 @@ describe('coveringSubset', () => {
       }),
     ];
 
-    const covered = new Set(coveringSubset(every).flatMap((item) => {
-      return pairsOf(item.answers);
-    }));
+    const coveredPairs = coveringSubset(every)
+      .flatMap((item) => {
+        return pairsOf(item.answers);
+      });
 
-    expect(every.flatMap((item) => {
-      return pairsOf(item.answers);
-    }).filter((pair) => {
-      return !covered.has(pair);
-    })).toEqual([]);
+    const covered = new Set(coveredPairs);
+
+    const uncovered = every
+      .flatMap((item) => {
+        return pairsOf(item.answers);
+      })
+      .filter((pair) => {
+        return !covered.has(pair);
+      });
+
+    expect(uncovered).toEqual([]);
   });
 
   it('drops a case whose pairs another already covers', () => {

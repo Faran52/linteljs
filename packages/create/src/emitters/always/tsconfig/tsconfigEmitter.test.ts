@@ -107,10 +107,12 @@ describe('buildTsconfig', () => {
   });
 
   it('adds no include of its own for tailwind on a target that declares none', () => {
-    expect(buildTsconfig(answersFor({
+    const include = buildTsconfig(answersFor({
       target: 'react',
       styling: 'tailwind',
-    })).include).toEqual(['**/*.ts', '**/*.tsx', '**/*.mts']);
+    })).include;
+
+    expect(include).toEqual(['**/*.ts', '**/*.tsx', '**/*.mts']);
   });
 
   it('leaves unused-locals to the unused-imports rule', () => {
@@ -267,10 +269,13 @@ describe('buildTsconfig', () => {
 
     expect(styled).toContain('nativewind-env.d.ts');
     expect(buildTsconfig(answersFor({ target: 'react-native' })).include).not.toContain('nativewind-env.d.ts');
-    expect(buildTsconfig(answersFor({
+
+    const include = buildTsconfig(answersFor({
       target: 'react',
       styling: 'tailwind',
-    })).include).not.toContain('nativewind-env.d.ts');
+    })).include;
+
+    expect(include).not.toContain('nativewind-env.d.ts');
   });
 
   it('drops noEmit only on angular, whose vitest compiler has to emit', () => {
@@ -282,9 +287,10 @@ describe('buildTsconfig', () => {
 
 // The alias list feeds tsconfig paths, the import-sort buckets and the resolver; hand-kept copies drifted.
 describe('alias coupling', () => {
-  for (const target of TARGET_IDS.filter((id) => {
-    return id !== 'nuxt';
-  })) {
+  for (const target of TARGET_IDS
+    .filter((id) => {
+      return id !== 'nuxt';
+    })) {
     for (const withZod of [true, false]) {
       const libraries: Library[] = withZod ? ['zod'] : [];
       const label = `${target}${withZod ? ' with zod' : ''}`;
@@ -310,10 +316,13 @@ describe('alias coupling', () => {
         const body = config.replaceAll(/^import .*$/gm, '');
         const emitted = body.match(/'[@$][\w-]*(?:\/[\w-]+)*(?:\/\*)?'/g) ?? [];
 
-        expect(emitted).toEqual(
-          Object.keys(aliases).map((alias) => {
+        const quotedAliases = Object.keys(aliases)
+          .map((alias) => {
             return `'${alias}'`;
-          }),
+          });
+
+        expect(emitted).toEqual(
+          quotedAliases,
         );
       });
     }
@@ -386,9 +395,10 @@ describe('alias coupling', () => {
   });
 
   it('gives them to no other target', () => {
-    const others = TARGET_IDS.filter((target) => {
-      return target !== 'next';
-    });
+    const others = TARGET_IDS
+      .filter((target) => {
+        return target !== 'next';
+      });
 
     for (const target of others) {
       // `?? {}` for nuxt, whose tsconfig declares no paths at all: absent is the strongest form of not having one.
@@ -459,11 +469,12 @@ describe('a hosted framework brings its own JSX settings', () => {
   });
 
   it('adds none for a single-file-component framework, or for no framework at all', () => {
-    expect(buildTsconfig(answersFor({
+    const compilerOptions = buildTsconfig(answersFor({
       target: 'webextension',
       hostedFramework: 'vue',
-    })).compilerOptions)
-      .not.toHaveProperty('jsx');
+    })).compilerOptions;
+
+    expect(compilerOptions).not.toHaveProperty('jsx');
     expect(buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions)
       .not.toHaveProperty('jsx');
   });

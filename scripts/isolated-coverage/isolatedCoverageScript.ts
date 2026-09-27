@@ -79,15 +79,18 @@ if (!Number.isInteger(timeoutSeconds) || timeoutSeconds < 1) {
 }
 
 // The glob-keyed thresholds, read rather than restated, so each run can switch them off.
-const thresholdKeys = Object.entries(config.test?.coverage?.thresholds ?? {}).filter(([, value]) => {
-  return typeof value === 'object';
-}).map(([key]) => {
-  return key;
-});
+const thresholdKeys = Object.entries(config.test?.coverage?.thresholds ?? {})
+  .filter(([, value]) => {
+    return typeof value === 'object';
+  })
+  .map(([key]) => {
+    return key;
+  });
 
-const tests = listTests(root).toSorted((left, right) => {
-  return left.localeCompare(right);
-});
+const tests = listTests(root)
+  .toSorted((left, right) => {
+    return left.localeCompare(right);
+  });
 const reports = mkdtempSync(join(tmpdir(), REPORTS_PREFIX));
 const started = performance.now();
 const queue = new PQueue({ concurrency });
@@ -99,37 +102,41 @@ const failed: string[] = [];
 const timedOut: string[] = [];
 
 try {
-  await Promise.all(tests.map(async (test, index) => {
-    return queue.add(async () => {
-      const report = await coverageRun(
-        root,
-        relative(root, test),
-        join(reports, String(index)),
-        thresholdKeys,
-        timeoutSeconds * 1000,
-      );
+  const runs = tests
+    .map(async (test, index) => {
+      return queue.add(async () => {
+        const report = await coverageRun(
+          root,
+          relative(root, test),
+          join(reports, String(index)),
+          thresholdKeys,
+          timeoutSeconds * 1000,
+        );
 
-      logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
+        logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
 
-      if (report === 'timed out') {
-        timedOut.push(test);
+        if (report === 'timed out') {
+          timedOut.push(test);
 
-        return;
-      }
+          return;
+        }
 
-      if (report === 'failed') {
-        failed.push(test);
+        if (report === 'failed') {
+          failed.push(test);
 
-        return;
-      }
+          return;
+        }
 
-      hitsByTest.set(test, new Map(Object.entries(report).map(([file, coverage]) => {
-        maps.set(file, coverage);
+        hitsByTest.set(test, new Map(Object.entries(report)
+          .map(([file, coverage]) => {
+            maps.set(file, coverage);
 
-        return [file, hitsOf(coverage)];
-      })));
+            return [file, hitsOf(coverage)];
+          })));
+      });
     });
-  }));
+
+  await Promise.all(runs);
 }
 finally {
   rmSync(reports, {
@@ -144,9 +151,10 @@ const seconds = Math.round((performance.now() - started) / 1000);
 const labelOf = (test: string): string => {
   const name = basename(test);
 
-  return tests.filter((other) => {
-    return basename(other) === name;
-  }).length === 1
+  return tests
+    .filter((other) => {
+      return basename(other) === name;
+    }).length === 1
     ? name
     : relative(root, test);
 };
@@ -160,37 +168,49 @@ const claimOf = (test: string): string => {
   return join(dirname(test), `${basename(test).split('.')[0] ?? ''}${SOURCE_SUFFIX}`);
 };
 
-const noSource = tests.filter((test) => {
-  return !existsSync(sourceOf(test));
-});
-const documented = noSource.filter((test) => {
-  return DOCUMENTED_SUITES.includes(basename(test));
-});
-const orphaned = noSource.filter((test) => {
-  return !DOCUMENTED_SUITES.includes(basename(test));
-});
-const outOfScope = tests.filter((test) => {
-  return existsSync(sourceOf(test)) && !maps.has(sourceOf(test));
-});
-const paired = new Map(tests.filter((test) => {
-  return maps.has(sourceOf(test));
-}).map((test) => {
-  return [sourceOf(test), test];
-}));
+const noSource = tests
+  .filter((test) => {
+    return !existsSync(sourceOf(test));
+  });
+const documented = noSource
+  .filter((test) => {
+    return DOCUMENTED_SUITES.includes(basename(test));
+  });
+const orphaned = noSource
+  .filter((test) => {
+    return !DOCUMENTED_SUITES.includes(basename(test));
+  });
+const outOfScope = tests
+  .filter((test) => {
+    return existsSync(sourceOf(test)) && !maps.has(sourceOf(test));
+  });
+const paired = new Map(tests
+  .filter((test) => {
+    return maps.has(sourceOf(test));
+  })
+  .map((test) => {
+    return [sourceOf(test), test];
+  }));
 const claimants = Map.groupBy(tests, claimOf);
-const claimedTwice = [...claimants].filter(([, claiming]) => {
-  return claiming.length > 1;
-}).map(([source, claiming]) => {
-  return `${relative(root, source)}  claimed by: ${claiming.map(labelOf).join(', ')}`;
-});
+const claimedTwice = [...claimants]
+  .filter(([, claiming]) => {
+    return claiming.length > 1;
+  })
+  .map(([source, claiming]) => {
+    return `${relative(root, source)}  claimed by: ${claiming
+      .map(labelOf)
+      .join(', ')}`;
+  });
 
 // The gap of `file` against every run but its own, as the lines the report prints.
 const explain = (file: string, coverage: FileCoverage, gap: string[], own?: string): string[] => {
-  const others = new Map([...hitsByTest].filter(([test]) => {
-    return test !== own;
-  }).map(([test, hits]) => {
-    return [labelOf(test), hits.get(file) ?? new Set<string>()];
-  }));
+  const others = new Map([...hitsByTest]
+    .filter(([test]) => {
+      return test !== own;
+    })
+    .map(([test, hits]) => {
+      return [labelOf(test), hits.get(file) ?? new Set<string>()];
+    }));
   const { coveredBy, uncovered } = attribute(gap, others);
   const shown = coveredBy.length > COVERED_BY_SHOWN
     ? [...coveredBy.slice(0, COVERED_BY_SHOWN), `and ${String(coveredBy.length - COVERED_BY_SHOWN)} more`]
@@ -210,16 +230,18 @@ const impure: string[] = [];
 const data: string[] = [];
 let barrels = 0;
 
-for (const [file, coverage] of [...maps].toSorted(([left], [right]) => {
-  return left.localeCompare(right);
-})) {
+for (const [file, coverage] of [...maps]
+  .toSorted(([left], [right]) => {
+    return left.localeCompare(right);
+  })) {
   const test = paired.get(file);
   const path = relative(root, file);
 
   if (basename(file) === DATA_FILE && !isData(coverage)) {
-    impure.push(`${path}  ${describeGap(coverage, entriesOf(coverage).filter((key) => {
-      return !key.startsWith('s:');
-    }))}`);
+    impure.push(`${path}  ${describeGap(coverage, entriesOf(coverage)
+      .filter((key) => {
+        return !key.startsWith('s:');
+      }))}`);
     continue;
   }
 
@@ -283,8 +305,9 @@ log(`${String(paired.size)} pairs, ${String(short.length)} short, ${String(untes
   + `${String(documented.length)} documented exceptions, ${String(outOfScope.length)} out of scope; `
   + `${String(tests.length)} runs at concurrency ${String(concurrency)} in ${String(seconds)}s`);
 
-if ([short, untested, impure, claimedTwice, orphaned, failed, timedOut].some((found) => {
-  return found.length > 0;
-})) {
+if ([short, untested, impure, claimedTwice, orphaned, failed, timedOut]
+  .some((found) => {
+    return found.length > 0;
+  })) {
   process.exit(1);
 }

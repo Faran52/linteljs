@@ -67,28 +67,32 @@ const hasThisParameter = (fn: FunctionLike): boolean => {
 // A non-strict `function` may bind a name twice where an arrow may not. Identifiers only is
 // exhaustive: any other param makes the list non-simple, and repeating a name there is a SyntaxError.
 const hasDuplicateParameters = (fn: FunctionLike): boolean => {
-  const names = fn.params.flatMap((param) => {
-    return param.type === 'Identifier' ? [param.name] : [];
-  });
+  const names = fn.params
+    .flatMap((param) => {
+      return param.type === 'Identifier' ? [param.name] : [];
+    });
 
   return new Set(names).size !== names.length;
 };
 
 const containsToken = (sourceCode: SourceCode, node: RuleNode, type: string, value: string): boolean => {
-  return sourceCode.getTokens(node).some((token) => {
-    return token.type === type && token.value === value;
-  });
+  return sourceCode
+    .getTokens(node)
+    .some((token) => {
+      return token.type === type && token.value === value;
+    });
 };
 
 // `node.arguments.length` is an Identifier too, so only a `.`/`?.` in front rules it out. Paired
 // rather than indexed, since a function opens on `function`, `async` or `(`, never on `arguments`.
 const readsArgumentsObject = (sourceCode: SourceCode, fn: FunctionLike): boolean => {
-  return [...adjacentPairs(sourceCode.getTokens(fn))].some(([before, token]) => {
-    return token.type === 'Identifier'
-      && token.value === 'arguments'
-      && before.value !== '.'
-      && before.value !== '?.';
-  });
+  return [...adjacentPairs(sourceCode.getTokens(fn))]
+    .some(([before, token]) => {
+      return token.type === 'Identifier'
+        && token.value === 'arguments'
+        && before.value !== '.'
+        && before.value !== '?.';
+    });
 };
 
 // `new.target` has no arrow equivalent, so match its three-token sequence.
@@ -103,13 +107,15 @@ const NEW_DOT_TARGET: [string, string][] = [
 const containsNewDotTarget = (sourceCode: SourceCode, node: RuleNode): boolean => {
   const tokens = sourceCode.getTokens(node);
 
-  return tokens.some((_, index) => {
-    return NEW_DOT_TARGET.every(([type, value], offset) => {
-      const token = mustFind(tokens[index + offset], 'a token of a `new.target` sequence');
+  return tokens
+    .some((_, index) => {
+      return NEW_DOT_TARGET
+        .every(([type, value], offset) => {
+          const token = mustFind(tokens[index + offset], 'a token of a `new.target` sequence');
 
-      return token.type === type && token.value === value;
+          return token.type === type && token.value === value;
+        });
     });
-  });
 };
 
 export const isSafeToConvert = (

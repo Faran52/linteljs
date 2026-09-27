@@ -101,9 +101,13 @@ describe('runFixPass', () => {
       + '0 minified or bundled, 0 oversized, 1 duplicates, 1 the parser rejected');
     expect(printed()).toContain('JavaScript: 1 files linted, 0 changed by a fixer, 0 findings\n  skipped: 1 compiled');
     expect(printed()).toContain('every fix parsed, converged');
-    expect(context.timings.map(({ file }) => {
-      return file;
-    })).toStrictEqual([clean, script]);
+
+    const timedFiles = context.timings
+      .map(({ file }) => {
+        return file;
+      });
+
+    expect(timedFiles).toStrictEqual([clean, script]);
   });
 
   it('reports every finding, names the culprit, and tallies them', () => {
@@ -127,13 +131,17 @@ describe('runFixPass', () => {
     const output = printed();
 
     expect(found).toBe(context.findings.length);
-    expect(context.findings.map(({
-      category,
-      file,
-      rules,
-    }) => {
-      return `${category} ${file} ${rules.join(',')}`;
-    })).toStrictEqual([
+
+    const summaries = context.findings
+      .map(({
+        category,
+        file,
+        rules,
+      }) => {
+        return `${category} ${file} ${rules.join(',')}`;
+      });
+
+    expect(summaries).toStrictEqual([
       `report shape ${reported} prefer-await-to-then`,
       `token loss ${swapped} union-newline`,
       `comment loss ${dropped} member-newline`,

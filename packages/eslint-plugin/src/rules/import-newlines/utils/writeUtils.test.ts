@@ -43,31 +43,34 @@ describe('writeImport', () => {
   it('splits a named clause across the given indents', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, {
+    const written = writeImport(sourceCode, node, {
       outer: '',
       inner: '  ',
-    }, '\n'))
-      .toBe("import {\n  alpha,\n  bravo\n} from 'mod';");
+    }, '\n');
+
+    expect(written).toBe("import {\n  alpha,\n  bravo\n} from 'mod';");
   });
 
   it('anchors the split at the outer indent it is given', () => {
     const { sourceCode, node } = importNodeFrom("  import { alpha, bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, {
+    const written = writeImport(sourceCode, node, {
       outer: '  ',
       inner: '    ',
-    }, '\n'))
-      .toBe("import {\n    alpha,\n    bravo\n  } from 'mod';");
+    }, '\n');
+
+    expect(written).toBe("import {\n    alpha,\n    bravo\n  } from 'mod';");
   });
 
   it('writes the line terminator it is given rather than assuming LF', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, {
+    const written = writeImport(sourceCode, node, {
       outer: '',
       inner: '  ',
-    }, '\r\n'))
-      .toBe("import {\r\n  alpha,\r\n  bravo\r\n} from 'mod';");
+    }, '\r\n');
+
+    expect(written).toBe("import {\r\n  alpha,\r\n  bravo\r\n} from 'mod';");
   });
 
   it('keeps a default import ahead of the named clause', () => {
@@ -109,21 +112,24 @@ describe('writeImport', () => {
       "import { alpha, bravo } from 'mod' with { type: 'json' };",
     );
 
-    expect(writeImport(sourceCode, node, {
+    const written = writeImport(sourceCode, node, {
       outer: '',
       inner: '  ',
-    }, '\n'))
-      .toBe("import {\n  alpha,\n  bravo\n} from 'mod' with { type: 'json' };");
+    }, '\n');
+
+    expect(written).toBe("import {\n  alpha,\n  bravo\n} from 'mod' with { type: 'json' };");
   });
 
   // A comment inside the braces cannot be carried across a rebuild assembled from specifier text alone.
   it('returns null when a comment sits inside the statement', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, /* keep */ bravo } from 'mod';");
 
-    expect(writeImport(sourceCode, node, {
+    const written = writeImport(sourceCode, node, {
       outer: '',
       inner: '  ',
-    }, '\n')).toBeNull();
+    }, '\n');
+
+    expect(written).toBeNull();
   });
 
   // The same rebuild path serves the collapse check, so a comment declines it too, not only the split.

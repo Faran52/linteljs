@@ -23,11 +23,15 @@ const DIRECTIVE = /^\s*eslint-(?:disable-next-line|disable-line|disable)(?=\s|$)
 const DESCRIPTION = /\s--\s[\s\S]*/;
 
 const rulesNamedBy = (tail: string): string[] => {
-  return tail.replace(DESCRIPTION, '').split(',').map((name) => {
-    return name.trim();
-  }).filter((name) => {
-    return name !== '';
-  });
+  return tail
+    .replace(DESCRIPTION, '')
+    .split(',')
+    .map((name) => {
+      return name.trim();
+    })
+    .filter((name) => {
+      return name !== '';
+    });
 };
 
 export const noEslintDisable = createRule('no-eslint-disable', {
@@ -76,9 +80,10 @@ export const noEslintDisable = createRule('no-eslint-disable', {
            * form that turns the whole file off.
            */
           const named = rulesNamedBy(tail);
-          const allowed = named.length > 0 && named.every((name) => {
-            return allowRules.has(name);
-          });
+          const allowed = named.length > 0 && named
+            .every((name) => {
+              return allowRules.has(name);
+            });
 
           if (!allowed) {
             context.report({

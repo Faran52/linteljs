@@ -26,16 +26,18 @@ export interface PatternAnalysis {
 // The comments above a member, not the trailing comment of the member before it: `getCommentsBefore`
 // returns both, so a same-line note would otherwise be misattributed.
 const leadingCommentsOf = (sourceCode: SourceCode, member: RuleNode) => {
-  return sourceCode.getCommentsBefore(member).filter((comment) => {
+  return sourceCode
+    .getCommentsBefore(member)
+    .filter((comment) => {
     // Every member sits inside braces, so a comment above one has at least the `{` before it.
-    const previousToken = mustFind(
-      sourceCode.getTokenBefore(comment),
-      'the token before a comment above a type member',
-    );
+      const previousToken = mustFind(
+        sourceCode.getTokenBefore(comment),
+        'the token before a comment above a type member',
+      );
 
-    // A brace has nothing to trail, so a comment written straight after `{` heads the first member.
-    return previousToken.value === '{' || !sameLine(previousToken, comment);
-  });
+      // A brace has nothing to trail, so a comment written straight after `{` heads the first member.
+      return previousToken.value === '{' || !sameLine(previousToken, comment);
+    });
 };
 
 // A member's first line, counting a doc comment above it as its own rather than as a blank line above the member.
@@ -79,9 +81,10 @@ export const analyzeProperties = (
     hasBlankBetween: false,
     // Every member, not only the ones the pairwise walk below reaches as `current`: a block
     // whose last member spans lines is as open as one whose first does.
-    hasMultilineProperty: properties.some((property) => {
-      return property.loc.end.line !== property.loc.start.line;
-    }),
+    hasMultilineProperty: properties
+      .some((property) => {
+        return property.loc.end.line !== property.loc.start.line;
+      }),
   };
 
   for (const [previous, property] of adjacentPairs(properties)) {

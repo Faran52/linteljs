@@ -53,9 +53,11 @@ export const stageLine = (stage: Stage, writes: number, notice: string, millisec
   const wrote = writes > 0 ? `${String(writes)} ${files}` : notice;
   const took = milliseconds === undefined ? '' : `${(milliseconds / 1000).toFixed(1)}s`;
 
-  const summary = [wrote, took].filter((part) => {
-    return part !== '';
-  }).join(', ');
+  const summary = [wrote, took]
+    .filter((part) => {
+      return part !== '';
+    })
+    .join(', ');
 
   return `${stage.padEnd(STAGE_WIDTH)}  ${summary}`.trimEnd();
 };
@@ -74,12 +76,13 @@ export const nextSteps = (name: string, options: CliOptions, packageManager: Pac
 // The stages this run will execute, before the first one starts: a stage that is skipped is easier to read here
 // than to notice missing from the numbered lines underneath.
 export const stepsPlan = (options: CliOptions): string => {
-  const lines = STAGES.map((stage, index) => {
+  const lines = STAGES
+    .map((stage, index) => {
     // The rule `pipelineRun` applies: with lint skipped there is nothing of ours to fix against.
-    const skipped = options.skip.includes(stage) || (stage === 'fix' && options.skip.includes('lint'));
+      const skipped = options.skip.includes(stage) || (stage === 'fix' && options.skip.includes('lint'));
 
-    return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;
-  });
+      return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;
+    });
 
   return ['', 'Steps:', ...lines].join('\n');
 };

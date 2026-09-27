@@ -114,9 +114,10 @@ export const optionsOf = <T>(context: RuleContext): Partial<T> => {
 // sits inside a function or block, and walking up also gets shadowing right for free.
 export const resolveVariable = (scope: Scope.Scope, name: string): Scope.Variable | null => {
   for (let current: Scope.Scope | null = scope; current; current = current.upper) {
-    const found = current.variables.find((variable) => {
-      return variable.name === name;
-    });
+    const found = current.variables
+      .find((variable) => {
+        return variable.name === name;
+      });
 
     if (found) {
       return found;

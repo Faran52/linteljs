@@ -65,9 +65,11 @@ const arrowNameIsFunctionOnly = (state: State, name: string): boolean => {
 
 const writeFunction = (state: State, arrow: AstNode, head: string): string => {
   const body = nodeOf(arrow.body);
-  const params = (arrow.params ?? []).map((param) => {
-    return textOf(state, param);
-  }).join(', ');
+  const params = (arrow.params ?? [])
+    .map((param) => {
+      return textOf(state, param);
+    })
+    .join(', ');
   const returnType = arrow.returnType ? textOf(state, arrow.returnType) : '';
 
   return `${arrow.async === true ? 'async ' : ''}${head}(${params})${returnType} ${body ? textOf(state, body) : ''}`;
@@ -335,9 +337,10 @@ const shadowsName = (state: State, node: AstNode, name: string): boolean => {
   const named = new RegExp(String.raw`\b${escaped}\b`);
 
   for (let current: AstNode | undefined = node; current && current.type !== 'Program'; current = current.parent) {
-    if (declares.test(textOf(state, current)) || (current.params ?? []).some((param) => {
-      return named.test(textOf(state, param));
-    })) {
+    if (declares.test(textOf(state, current)) || (current.params ?? [])
+      .some((param) => {
+        return named.test(textOf(state, param));
+      })) {
       return true;
     }
   }
@@ -347,9 +350,10 @@ const shadowsName = (state: State, node: AstNode, name: string): boolean => {
 
 const namespaceImportOf = (node: AstNode): AstNode | undefined => {
   return node.parent?.type === 'Program'
-    ? node.specifiers?.find((specifier) => {
-        return specifier.type === 'ImportNamespaceSpecifier';
-      })
+    ? node.specifiers
+        ?.find((specifier) => {
+          return specifier.type === 'ImportNamespaceSpecifier';
+        })
     : undefined;
 };
 
@@ -400,9 +404,10 @@ const compareNames = (left: string, right: string): number => {
 const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefined => {
   const last = node.arguments?.at(-1);
   const elements = last?.elements ?? [];
-  const names = elements.flatMap((element) => {
-    return element?.type === 'Identifier' && element.name !== undefined ? [element.name] : [];
-  });
+  const names = elements
+    .flatMap((element) => {
+      return element?.type === 'Identifier' && element.name !== undefined ? [element.name] : [];
+    });
 
   if (node.callee?.type !== 'Identifier' || !hooks.includes(node.callee.name ?? '') || last?.type !== 'ArrayExpression'
     || elements.length < 2 || names.length !== elements.length) {
@@ -444,14 +449,15 @@ export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build =>
 // A first parameter the rule already accepts: every property a plain shorthand, so every exclusion is this one check.
 const propsPatternNames = (pattern: AstNode | undefined): string[] | undefined => {
   const properties = pattern?.type === 'ObjectPattern' ? pattern.properties ?? [] : [];
-  const names = properties.flatMap((property) => {
-    const value = nodeOf(property.value);
+  const names = properties
+    .flatMap((property) => {
+      const value = nodeOf(property.value);
 
-    return property.type === 'Property' && property.computed !== true && property.shorthand === true
-      && value?.type === 'Identifier' && value.name !== undefined
-      ? [value.name]
-      : [];
-  });
+      return property.type === 'Property' && property.computed !== true && property.shorthand === true
+        && value?.type === 'Identifier' && value.name !== undefined
+        ? [value.name]
+        : [];
+    });
 
   return properties.length > 0 && names.length === properties.length ? names : undefined;
 };
@@ -547,22 +553,25 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
     return undefined;
   }
 
-  if (nodesOf(state, 'ExportSpecifier').some((specifier) => {
-    return names.includes(specifier.local?.name ?? '') || names.includes(specifier.exported?.name ?? '');
-  })) {
+  if (nodesOf(state, 'ExportSpecifier')
+    .some((specifier) => {
+      return names.includes(specifier.local?.name ?? '') || names.includes(specifier.exported?.name ?? '');
+    })) {
     state.skip('a prop name is also an export specifier');
 
     return undefined;
   }
 
-  const candidates = nodesOf(state, 'Identifier').filter((node) => {
-    return names.includes(node.name ?? '') && node.range[0] >= body.range[0] && node.range[1] <= body.range[1];
-  });
+  const candidates = nodesOf(state, 'Identifier')
+    .filter((node) => {
+      return names.includes(node.name ?? '') && node.range[0] >= body.range[0] && node.range[1] <= body.range[1];
+    });
 
   // In source order, so the first offending use names the skip.
-  const offending = candidates.find((node) => {
-    return isDeclaringUse(node) || isObjectShorthandValue(node);
-  });
+  const offending = candidates
+    .find((node) => {
+      return isDeclaringUse(node) || isObjectShorthandValue(node);
+    });
 
   if (offending) {
     state.skip(isDeclaringUse(offending)
@@ -572,9 +581,10 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
     return undefined;
   }
 
-  const references = candidates.filter((node) => {
-    return !isNonReference(node);
-  });
+  const references = candidates
+    .filter((node) => {
+      return !isNonReference(node);
+    });
 
   // No member read to force means no violation the rule would report.
   if (references.length === 0) {
@@ -588,20 +598,25 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
       to: firstParam.range[1] - base,
       text: PROBE_PROPS,
     },
-    ...references.map((node) => {
-      return {
-        from: node.range[0] - base,
-        to: node.range[1] - base,
-        text: `${PROBE_PROPS}.${node.name ?? ''}`,
-      };
-    }),
-  ].sort((left, right) => {
-    return right.from - left.from;
-  });
+    ...references
+      .map((node) => {
+        return {
+          from: node.range[0] - base,
+          to: node.range[1] - base,
+          text: `${PROBE_PROPS}.${node.name ?? ''}`,
+        };
+      }),
+  ]
+    .sort((left, right) => {
+      return right.from - left.from;
+    });
 
-  return replaced(state, fn.range[0], fn.range[1], edits.reduce((text, edit) => {
-    return text.slice(0, edit.from) + edit.text + text.slice(edit.to);
-  }, textOf(state, fn)));
+  const rewritten = edits
+    .reduce((text, edit) => {
+      return text.slice(0, edit.from) + edit.text + text.slice(edit.to);
+    }, textOf(state, fn));
+
+  return replaced(state, fn.range[0], fn.range[1], rewritten);
 };
 
 // `const Widget = ({ alpha, bravo }) => ...`

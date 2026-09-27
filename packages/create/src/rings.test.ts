@@ -17,23 +17,29 @@ it('names every ring once', () => {
 
 // The pipeline sequences the other three and reaches no world of its own.
 it('gives every outer ring but the pipeline a world', () => {
-  expect(Object.keys(WORLDS)).toStrictEqual(OUTER_RINGS.filter((ring) => {
-    return ring !== 'pipeline';
-  }));
+  const owningRings = OUTER_RINGS
+    .filter((ring) => {
+      return ring !== 'pipeline';
+    });
+
+  expect(Object.keys(WORLDS)).toStrictEqual(owningRings);
 });
 
 // Every module the root `eslint.config.ts` holds to WORLDS, and what each imports: the tests and the e2e harness are
 // exempt there, so they are here.
 const importsBySource = (): [string, string[]][] => {
-  return modulesIn(import.meta.dirname).filter((path) => {
-    return path.endsWith('.ts') && !path.endsWith('.test.ts') && !path.startsWith('pipeline/e2e/');
-  }).map((path) => {
-    const text = readFileSync(join(import.meta.dirname, path), 'utf8');
+  return modulesIn(import.meta.dirname)
+    .filter((path) => {
+      return path.endsWith('.ts') && !path.endsWith('.test.ts') && !path.startsWith('pipeline/e2e/');
+    })
+    .map((path) => {
+      const text = readFileSync(join(import.meta.dirname, path), 'utf8');
 
-    return [path, [...text.matchAll(/(?:from|import) '([^']+)';/gu)].map(([, specifier = '']) => {
-      return specifier;
-    })];
-  });
+      return [path, [...text.matchAll(/(?:from|import) '([^']+)';/gu)]
+        .map(([, specifier = '']) => {
+          return specifier;
+        })];
+    });
 };
 
 /*
@@ -44,36 +50,50 @@ it.each(Object.entries(WORLDS))('keeps what reaches %s inside that ring', (name,
   const sources = importsBySource();
   const worldRings = Object.keys(WORLDS);
   const reaching = (specifiers: string[]): string[] => {
-    return specifiers.filter((specifier) => {
-      return world.group.some((pattern) => {
-        return matchesGlob(specifier, pattern);
+    return specifiers
+      .filter((specifier) => {
+        return world.group
+          .some((pattern) => {
+            return matchesGlob(specifier, pattern);
+          });
       });
-    });
   };
 
-  expect(sources.filter(([path, specifiers]) => {
-    return !worldRings.some((ring) => {
-      return path.startsWith(`${ring}/`);
-    }) && reaching(specifiers).length > 0;
-  })).toEqual([]);
+  const reachingOutside = sources
+    .filter(([path, specifiers]) => {
+      return !worldRings
+        .some((ring) => {
+          return path.startsWith(`${ring}/`);
+        }) && reaching(specifiers).length > 0;
+    });
 
-  const own = sources.filter(([path]) => {
-    return path.startsWith(`${name}/`);
-  }).flatMap(([, specifiers]) => {
-    return specifiers;
-  });
+  expect(reachingOutside).toEqual([]);
+
+  const own = sources
+    .filter(([path]) => {
+      return path.startsWith(`${name}/`);
+    })
+    .flatMap(([, specifiers]) => {
+      return specifiers;
+    });
 
   expect(reaching(own).length).toBeGreaterThan(0);
 
   for (const pattern of world.group) {
-    expect(own.some((specifier) => {
-      return matchesGlob(specifier, pattern);
-    })).toBe(true);
+    const matched = own
+      .some((specifier) => {
+        return matchesGlob(specifier, pattern);
+      });
+
+    expect(matched).toBe(true);
   }
 
   expect(world.message).toContain(`${name}/`);
 });
 
 it('lists the directories under src/', () => {
-  expect(directoriesIn(import.meta.dirname).toSorted(byName)).toStrictEqual([...RINGS].toSorted(byName));
+  const ringDirectories = directoriesIn(import.meta.dirname)
+    .toSorted(byName);
+
+  expect(ringDirectories).toStrictEqual([...RINGS].toSorted(byName));
 });

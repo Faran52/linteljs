@@ -81,9 +81,10 @@ const recordFor = (target: TargetId, variant: Partial<Answers>): TargetRecord =>
 
 // `react-hook-form` binds React, so a non-React target is offered the other one alone. `undefined` is no form library.
 const formsFor = (framework: Framework | undefined): (Form | undefined)[] => {
-  return [undefined, ...FORMS.filter((form) => {
-    return rendersWithReact(framework) || form !== 'react-hook-form';
-  })];
+  return [undefined, ...FORMS
+    .filter((form) => {
+      return rendersWithReact(framework) || form !== 'react-hook-form';
+    })];
 };
 
 // The values an optional choice offers here, read through the same predicate the prompt and the parser use, so the
@@ -94,11 +95,12 @@ const offered = <V extends string>(
   target: TargetRecord,
   answered: Answers,
 ): (V | undefined)[] => {
-  return [undefined, ...values.filter((value) => {
-    const only = onlyFor(record, value);
+  return [undefined, ...values
+    .filter((value) => {
+      const only = onlyFor(record, value);
 
-    return only === undefined || only(target, answered);
-  })];
+      return only === undefined || only(target, answered);
+    })];
 };
 
 const hostedFor = (record: TargetRecord): (HostedFramework | undefined)[] => {
@@ -119,11 +121,13 @@ const across = <T>(
   valuesFor: (variant: Partial<Answers>) => T[],
   apply: (variant: Partial<Answers>, value: T) => Partial<Answers>,
 ): Partial<Answers>[] => {
-  return variants.flatMap((variant) => {
-    return valuesFor(variant).map((value) => {
-      return apply(variant, value);
+  return variants
+    .flatMap((variant) => {
+      return valuesFor(variant)
+        .map((value) => {
+          return apply(variant, value);
+        });
     });
-  });
 };
 
 // Every axis that can vary, in a fixed order, so two cases can never share a label or the directory named after it.
@@ -250,14 +254,15 @@ const everyCase = (target: TargetId): E2eCase[] => {
       ...variant,
       packageManager,
     };
-  }).map((variant) => {
-    return asCase({
-      ...DEFAULT_ANSWERS,
-      ...everyMultiSelect(target),
-      ...variant,
-      target,
+  })
+    .map((variant) => {
+      return asCase({
+        ...DEFAULT_ANSWERS,
+        ...everyMultiSelect(target),
+        ...variant,
+        target,
+      });
     });
-  });
 };
 
 export const targetCases = (target: TargetId): E2eCase[] => {

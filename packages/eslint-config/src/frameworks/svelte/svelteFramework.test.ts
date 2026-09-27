@@ -87,9 +87,12 @@ describe('svelte', () => {
   it('parses a .svelte.ts rune module', async () => {
     const messages = await messagesForFile([...base(), ...svelte()], join(SFC_FIXTURES, 'counter.svelte.ts'));
 
-    expect(messages.filter((message) => {
-      return message.fatal === true;
-    })).toEqual([]);
+    const fatal = messages
+      .filter((message) => {
+        return message.fatal === true;
+      });
+
+    expect(fatal).toEqual([]);
   });
 
   it.each([

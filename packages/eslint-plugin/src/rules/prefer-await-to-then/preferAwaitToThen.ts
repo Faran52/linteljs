@@ -49,19 +49,21 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
     const strict = optionsOf<PreferAwaitToThenOptions>(context).strict ?? false;
 
     const isInsideYieldOrAwait = (node: RuleNode): boolean => {
-      return ancestorsOf(context, node).some(
-        (parent) => {
-          return parent.type === 'AwaitExpression' || parent.type === 'YieldExpression';
-        },
-      );
+      return ancestorsOf(context, node)
+        .some(
+          (parent) => {
+            return parent.type === 'AwaitExpression' || parent.type === 'YieldExpression';
+          },
+        );
     };
 
     const isInsideConstructor = (node: RuleNode): boolean => {
-      return ancestorsOf(context, node).some(
-        (parent) => {
-          return parent.type === 'MethodDefinition' && parent.kind === 'constructor';
-        },
-      );
+      return ancestorsOf(context, node)
+        .some(
+          (parent) => {
+            return parent.type === 'MethodDefinition' && parent.kind === 'constructor';
+          },
+        );
     };
 
     const isTopLevelScoped = (node: RuleNode): boolean => {

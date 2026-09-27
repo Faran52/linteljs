@@ -55,21 +55,25 @@ const filesIn = (dir: string): string[] => {
   return readdirSync(dir, {
     recursive: true,
     withFileTypes: true,
-  }).filter((entry) => {
-    return entry.isFile();
-  }).map((entry) => {
-    return join(entry.parentPath, entry.name).slice(dir.length + 1);
-  });
+  })
+    .filter((entry) => {
+      return entry.isFile();
+    })
+    .map((entry) => {
+      return join(entry.parentPath, entry.name).slice(dir.length + 1);
+    });
 };
 
 const packed = new Set(filesIn(join(pkgDir, 'templates')));
 const shipped = filesIn(join(root, 'templates'));
-const leaked = shipped.filter((name) => {
-  return EXCLUDED.test(name) && packed.has(name);
-});
-const missing = shipped.filter((name) => {
-  return !EXCLUDED.test(name) && !packed.has(name);
-});
+const leaked = shipped
+  .filter((name) => {
+    return EXCLUDED.test(name) && packed.has(name);
+  });
+const missing = shipped
+  .filter((name) => {
+    return !EXCLUDED.test(name) && !packed.has(name);
+  });
 
 assert.deepEqual(leaked, [], `excluded by \`files\` but packed:\n  ${leaked.join('\n  ')}`);
 assert.deepEqual(missing, [], `assets in the repo that \`files\` did not pack:\n  ${missing.join('\n  ')}`);

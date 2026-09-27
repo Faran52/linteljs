@@ -22,13 +22,15 @@ const sfcOverride = (extension: string): StyleOverride => {
 };
 
 const overridesFor = (overrides: StyleOverride[]): string => {
-  const blocks = overrides.map(({ files, body }) => {
-    const lines = body.map((line) => {
-      return `      ${line}`;
-    });
+  const blocks = overrides
+    .map(({ files, body }) => {
+      const lines = body
+        .map((line) => {
+          return `      ${line}`;
+        });
 
-    return `    {\n      files: ['${files}'],\n${lines.join('\n')}\n    },`;
-  });
+      return `    {\n      files: ['${files}'],\n${lines.join('\n')}\n    },`;
+    });
 
   return `\n  overrides: [\n${blocks.join('\n')}\n  ],`;
 };

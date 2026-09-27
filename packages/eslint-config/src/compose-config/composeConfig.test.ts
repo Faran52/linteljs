@@ -100,13 +100,19 @@ describe('composeConfig', () => {
     });
     const messages = await messagesForFile(config, join(SFC_FIXTURES, fixture));
 
-    expect(messages.filter((message) => {
-      return message.fatal === true;
-    })).toEqual([]);
+    const fatal = messages
+      .filter((message) => {
+        return message.fatal === true;
+      });
 
-    expect(messages.some((message) => {
-      return message.ruleId?.startsWith(prefix) ?? false;
-    })).toBe(true);
+    expect(fatal).toEqual([]);
+
+    const reported = messages
+      .some((message) => {
+        return message.ruleId?.startsWith(prefix) ?? false;
+      });
+
+    expect(reported).toBe(true);
   });
 
   it('puts react underneath next rather than beside it', async () => {
@@ -200,9 +206,10 @@ describe('composeConfig', () => {
       libraries: ['tailwind'],
       tailwindEntryPoint: './src/app/globals.css',
     });
-    const block = config.find(({ name }) => {
-      return name === '@linteljs/tailwind';
-    });
+    const block = config
+      .find(({ name }) => {
+        return name === '@linteljs/tailwind';
+      });
 
     expect(block?.settings).toEqual({ 'better-tailwindcss': { entryPoint: './src/app/globals.css' } });
   });
@@ -247,11 +254,12 @@ describe('composeConfig', () => {
   it('composes the html layer on request and not otherwise', async () => {
     const code = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 
-    await expect(ruleIdsFor(await composeConfig({
+    const ruleIds = ruleIdsFor(await composeConfig({
       html: true,
       typescript: true,
-    }), code, 'index.html'))
-      .resolves.toContain('@html-eslint/require-img-alt');
+    }), code, 'index.html');
+
+    await expect(ruleIds).resolves.toContain('@html-eslint/require-img-alt');
     await expect(ruleIdsFor(await composeConfig({ typescript: true }), code, 'index.html'))
       .resolves.not.toContain('@html-eslint/require-img-alt');
   });
@@ -259,11 +267,12 @@ describe('composeConfig', () => {
   it('composes the astro layer on request and not otherwise', async () => {
     const page = "---\nconst title = 'Home';\n---\n\n<img src='/a.png' />\n";
 
-    await expect(ruleIdsFor(await composeConfig({
+    const ruleIds = ruleIdsFor(await composeConfig({
       astro: true,
       typescript: true,
-    }), page, 'src/pages/index.astro'))
-      .resolves.toContain('astro/jsx-a11y/alt-text');
+    }), page, 'src/pages/index.astro');
+
+    await expect(ruleIds).resolves.toContain('astro/jsx-a11y/alt-text');
     await expect(ruleIdsFor(await composeConfig({ typescript: true }), page, 'src/pages/index.astro'))
       .resolves.not.toContain('astro/jsx-a11y/alt-text');
   });
@@ -274,16 +283,24 @@ describe('composeConfig', () => {
       framework: 'solid',
       typescript: true,
     });
-    const rules = config.flatMap((entry) => {
-      return Object.keys(entry.rules ?? {});
-    });
+    const rules = config
+      .flatMap((entry) => {
+        return Object.keys(entry.rules ?? {});
+      });
 
-    expect(rules.some((rule) => {
-      return rule.startsWith('astro/');
-    })).toBe(true);
-    expect(rules.some((rule) => {
-      return rule.startsWith('solid/');
-    })).toBe(true);
+    const hasAstro = rules
+      .some((rule) => {
+        return rule.startsWith('astro/');
+      });
+
+    expect(hasAstro).toBe(true);
+
+    const hasSolid = rules
+      .some((rule) => {
+        return rule.startsWith('solid/');
+      });
+
+    expect(hasSolid).toBe(true);
   });
 
   it('passes the base options through under the names base already uses', async () => {
@@ -326,9 +343,11 @@ const namesUnderTwoIds = (ruleIds: string[]): string[] => {
       return ids.length > 1;
     })
     .map((ids) => {
-      return [...ids].sort((left, right) => {
-        return left.localeCompare(right);
-      }).join(' + ');
+      return [...ids]
+        .sort((left, right) => {
+          return left.localeCompare(right);
+        })
+        .join(' + ');
     });
 };
 
@@ -384,9 +403,10 @@ describe('one owner per rule name', () => {
       framework,
     });
 
-    const duplicated = namesUnderTwoIds(await enabledRuleIdsFor(config, filePath)).filter((pair) => {
-      return !LOOKALIKES.includes(pair);
-    });
+    const duplicated = namesUnderTwoIds(await enabledRuleIdsFor(config, filePath))
+      .filter((pair) => {
+        return !LOOKALIKES.includes(pair);
+      });
 
     expect(duplicated).toEqual([]);
   });
@@ -428,9 +448,10 @@ describe('composition', () => {
   });
 
   it('composes every framework layer at once, which is what proves the plugin identities are shared', () => {
-    const everything = LAYERS.flatMap(([, layer]) => {
-      return layer();
-    });
+    const everything = LAYERS
+      .flatMap(([, layer]) => {
+        return layer();
+      });
 
     expect(() => {
       composes([...base(), ...typescript(), ...everything, ...next(), ...tanstackQuery(), ...vitest(), ...html()]);

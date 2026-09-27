@@ -25,10 +25,14 @@ const filesUnder = (path: string): string[] => {
     : [path];
 };
 
-const files = argv.slice(2).flatMap(filesUnder).filter((file) => {
-  return !SKIPPED.some((fragment) => {
-    return file.includes(fragment);
+const files = argv
+  .slice(2)
+  .flatMap(filesUnder)
+  .filter((file) => {
+    return !SKIPPED
+      .some((fragment) => {
+        return file.includes(fragment);
+      });
   });
-});
 
 process.exitCode = spawnSync(execPath, [SHIPPED, ...files], { stdio: 'inherit' }).status ?? 1;

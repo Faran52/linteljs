@@ -43,12 +43,13 @@ function build() {
     },
 
     // And the other way round: the extension alone, with no `declare` to go on, in each of its three spellings.
-    ...['props.d.ts', 'props.d.cts', 'props.d.mts'].map((filename) => {
-      return {
-        code: 'interface Props { children: React.ReactNode }',
-        filename,
-      };
-    }),
+    ...['props.d.ts', 'props.d.cts', 'props.d.mts']
+      .map((filename) => {
+        return {
+          code: 'interface Props { children: React.ReactNode }',
+          filename,
+        };
+      }),
 
     // One `declare` makes the file a script whatever sits beside it, so a plain statement does not undo it.
     {

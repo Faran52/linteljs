@@ -22,11 +22,12 @@ export const widestFor = (target: TargetId): Answers[] => {
   };
   const record = targetFor(widest);
 
-  const forms = valuesOf(ANSWERS.form.values).filter((form) => {
-    const only = onlyFor(ANSWERS.form, form);
+  const forms = valuesOf(ANSWERS.form.values)
+    .filter((form) => {
+      const only = onlyFor(ANSWERS.form, form);
 
-    return only === undefined || only(record, widest);
-  });
+      return only === undefined || only(record, widest);
+    });
 
   return [
     widest,
@@ -34,19 +35,20 @@ export const widestFor = (target: TargetId): Answers[] => {
       ...widest,
       browser: 'firefox',
     },
-    ...forms.flatMap((form): Answers[] => {
-      return [
-        {
-          ...widest,
-          form,
-        },
-        {
-          ...widest,
-          form,
-          libraries: [],
-        },
-      ];
-    }),
+    ...forms
+      .flatMap((form): Answers[] => {
+        return [
+          {
+            ...widest,
+            form,
+          },
+          {
+            ...widest,
+            form,
+            libraries: [],
+          },
+        ];
+      }),
     // Two StyleX modules ship only beside a form or a store.
     {
       ...widest,
@@ -66,42 +68,51 @@ export const widestFor = (target: TargetId): Answers[] => {
       store: 'redux-toolkit',
       data: 'rtk-query',
     },
-    ...(record.stores ?? []).map((store): Answers => {
-      return {
-        ...widest,
-        store,
-      };
-    }),
-    ...(record.routers ?? []).map((router): Answers => {
-      return {
-        ...widest,
-        router,
-      };
-    }),
+    ...(record.stores ?? [])
+      .map((store): Answers => {
+        return {
+          ...widest,
+          store,
+        };
+      }),
+    ...(record.routers ?? [])
+      .map((router): Answers => {
+        return {
+          ...widest,
+          router,
+        };
+      }),
   ];
 };
 
 // `<asset> -> <destination>` through the emitter, so a mirror that drifts from the pipeline shows as an unplaced file.
 export const destinationsFor = (every: Answers[]): Map<string, string> => {
-  return new Map(every.flatMap((answers) => {
-    return starterSourceEmitter(answers).flatMap((artifact) => {
-      return 'sources' in artifact.content
-        ? artifact.content.sources.map((source): [string, string] => {
-            return [source, artifact.target];
-          })
-        : [];
-    });
-  }));
+  return new Map(every
+    .flatMap((answers) => {
+      return starterSourceEmitter(answers)
+        .flatMap((artifact) => {
+          return 'sources' in artifact.content
+            ? artifact.content.sources
+                .map((source): [string, string] => {
+                  return [source, artifact.target];
+                })
+            : [];
+        });
+    }));
 };
 
 // Every path a relative import may reach: what the target writes, what each starter test covers, and the record module.
 export const writtenPaths = (every: Answers[]): Set<string> => {
-  return new Set(every.flatMap((answers) => {
-    return [
-      RECORD_MODULE,
-      ...starterSourceEmitter(answers).flatMap((artifact) => {
-        return [artifact.target, ...artifact.requires ?? []];
-      }),
-    ];
-  }));
+  const destinations = every
+    .flatMap((answers) => {
+      return [
+        RECORD_MODULE,
+        ...starterSourceEmitter(answers)
+          .flatMap((artifact) => {
+            return [artifact.target, ...artifact.requires ?? []];
+          }),
+      ];
+    });
+
+  return new Set(destinations);
 };

@@ -11,14 +11,19 @@ describe('onlyFor', () => {
   it('answers the predicate the chosen value carries', () => {
     const only = onlyFor(formAnswer, 'react-hook-form');
 
-    expect(only?.(targetFor({
+    const onReact = only?.(targetFor({
       ...DEFAULT_ANSWERS,
       target: 'react',
-    }), DEFAULT_ANSWERS)).toBe(true);
-    expect(only?.(targetFor({
+    }), DEFAULT_ANSWERS);
+
+    expect(onReact).toBe(true);
+
+    const onVue = only?.(targetFor({
       ...DEFAULT_ANSWERS,
       target: 'vue',
-    }), DEFAULT_ANSWERS)).toBe(false);
+    }), DEFAULT_ANSWERS);
+
+    expect(onVue).toBe(false);
   });
 
   // The second argument is why this is a predicate rather than a target check: `rtk-query` is legal or not by
@@ -30,14 +35,19 @@ describe('onlyFor', () => {
       target: 'react',
     });
 
-    expect(only?.(target, {
+    const withRedux = only?.(target, {
       ...DEFAULT_ANSWERS,
       store: 'redux-toolkit',
-    })).toBe(true);
-    expect(only?.(target, {
+    });
+
+    expect(withRedux).toBe(true);
+
+    const withZustand = only?.(target, {
       ...DEFAULT_ANSWERS,
       store: 'zustand',
-    })).toBe(false);
+    });
+
+    expect(withZustand).toBe(false);
   });
 
   it('answers undefined where there is no predicate to answer with', () => {

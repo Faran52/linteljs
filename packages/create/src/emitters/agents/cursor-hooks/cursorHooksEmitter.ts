@@ -35,16 +35,20 @@ const hooksOf = (entry: [string, unknown]): HookList => {
   const [event, list] = entry;
   const hooks = Array.isArray(list) ? list.filter(isJsonObject) : [];
 
-  return [event, hooks.filter((hook) => {
-    return !isOurs(hook);
-  })];
+  return [event, hooks
+    .filter((hook) => {
+      return !isOurs(hook);
+    })];
 };
 
 const theirHooks = (text: string | null): HookList[] => {
   const parsed = parsedAs(text, isJsonObject);
   const hooks = parsed !== null && 'hooks' in parsed ? parsed.hooks : undefined;
 
-  return isJsonObject(hooks) ? Object.entries(hooks).map(hooksOf) : [];
+  return isJsonObject(hooks)
+    ? Object.entries(hooks)
+        .map(hooksOf)
+    : [];
 };
 
 export const mergeCursorHooks = (current: string | null): string => {
@@ -54,9 +58,10 @@ export const mergeCursorHooks = (current: string | null): string => {
     hooks.set(event, [...hooks.get(event) ?? [], ...ours]);
   }
 
-  const kept = [...hooks].filter(([, list]) => {
-    return list.length > 0;
-  });
+  const kept = [...hooks]
+    .filter(([, list]) => {
+      return list.length > 0;
+    });
 
   return `${JSON.stringify({
     version: 1,

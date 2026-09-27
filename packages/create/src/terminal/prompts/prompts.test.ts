@@ -111,10 +111,12 @@ describe('ask', () => {
   });
 
   it('will not take the surfaces question left untouched, which ticks none', async () => {
-    await expect(askWith([
+    const asked = askWith([
       'demo-app', 'webextension', 'firefox', undefined, 'solid',
       undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-    ])).rejects.toThrow('Surfaces needs at least one choice');
+    ]);
+
+    await expect(asked).rejects.toThrow('Surfaces needs at least one choice');
   });
 
   it('asks neither axis on a target that hosts neither', async () => {
@@ -136,9 +138,13 @@ describe('ask', () => {
 
     expect(result.answers.target).toBe('angular');
     expect(result.answers.store).toBe('ngrx-store');
-    expect(recorded.calls.some((message) => {
-      return message.includes('typescript');
-    })).toBe(false);
+
+    const mentionsTypescript = recorded.calls
+      .some((message) => {
+        return message.includes('typescript');
+      });
+
+    expect(mentionsTypescript).toBe(false);
   });
 
   it('throws before the first answer when the terminal is already gone', async () => {
@@ -522,11 +528,13 @@ describe('inquirerPrompter', () => {
   it('rethrows anything that is not an exit', async () => {
     vi.mocked(select).mockRejectedValue(new Error('stdin is not a terminal'));
 
-    await expect(inquirerPrompter.select({
+    const selected = inquirerPrompter.select({
       message: 'Framework',
       initialValue: 'react',
       options: [],
-    })).rejects.toThrow('stdin is not a terminal');
+    });
+
+    await expect(selected).rejects.toThrow('stdin is not a terminal');
   });
 
   it('knows a value from the cancel symbol', () => {

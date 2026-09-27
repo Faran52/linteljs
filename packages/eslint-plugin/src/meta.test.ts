@@ -27,11 +27,13 @@ const filesIn = (ruleName: string): string[] => {
   return readdirSync(join(rulesDir, ruleName), {
     withFileTypes: true,
     recursive: true,
-  }).filter((entry) => {
-    return entry.isFile();
-  }).map((entry) => {
-    return relative(join(rulesDir, ruleName), join(entry.parentPath, entry.name));
-  });
+  })
+    .filter((entry) => {
+      return entry.isFile();
+    })
+    .map((entry) => {
+      return relative(join(rulesDir, ruleName), join(entry.parentPath, entry.name));
+    });
 };
 
 // What every rule directory owes: the rule, its suite, and the page GitHub renders via `meta.docs.url`.
@@ -53,37 +55,45 @@ const readJson = (path: string): Record<string, unknown> => {
 
 // `toSorted` rather than `sort()`, which would rewrite an array every other test reads.
 const enabledIn = (preset: Linter.Config[]): string[] => {
-  return preset.flatMap((config) => {
-    return Object.keys(config.rules ?? {});
-  }).toSorted(alphabetically);
+  return preset
+    .flatMap((config) => {
+      return Object.keys(config.rules ?? {});
+    })
+    .toSorted(alphabetically);
 };
 
 const PRESET_NAMES = ['recommended', 'all'] as const;
 
-const recommendedNames = Object.entries(rules).filter(([, rule]) => {
-  return rule.meta.docs.recommended;
-}).map(([name]) => {
-  return name;
-});
+const recommendedNames = Object.entries(rules)
+  .filter(([, rule]) => {
+    return rule.meta.docs.recommended;
+  })
+  .map(([name]) => {
+    return name;
+  });
 
 const packageJson = readJson('package.json');
 const ruleNames = Object.keys(rules);
 const ruleCases: [string, LintelRuleModule][] = Object.entries(rules);
 const prefixed = (names: string[]): string[] => {
-  return names.map((name) => {
-    return `${PLUGIN_NAME}/${name}`;
-  }).toSorted(alphabetically);
+  return names
+    .map((name) => {
+      return `${PLUGIN_NAME}/${name}`;
+    })
+    .toSorted(alphabetically);
 };
 
 // Reads the registry forwards rather than slicing the prefix off each id and looking it up, which would need a cast.
 const languagesOf = (ids: string[]): RuleLanguage[] => {
   const enabled = new Set(ids);
 
-  return ruleCases.filter(([name]) => {
-    return enabled.has(`${PLUGIN_NAME}/${name}`);
-  }).map(([, rule]) => {
-    return rule.meta.docs.language;
-  });
+  return ruleCases
+    .filter(([name]) => {
+      return enabled.has(`${PLUGIN_NAME}/${name}`);
+    })
+    .map(([, rule]) => {
+      return rule.meta.docs.language;
+    });
 };
 
 describe('plugin shape', () => {
@@ -127,9 +137,16 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   // Equality both ways: a missing README fails, and so do a leftover `index.ts`, half a rename and a helper outside
   // `utils/`. The `*Utils` suffix inside it is the root config's `**/utils/*.ts` naming map, so it is not repeated.
   it('holds its rule, its suite, its doc and nothing else but helpers under utils', () => {
-    expect(filesIn(name).filter((file) => {
-      return !/^utils\/[^/]+\.ts$/.test(file);
-    }).toSorted(alphabetically)).toEqual(requiredFiles(name).toSorted(alphabetically));
+    const ownFiles = filesIn(name)
+      .filter((file) => {
+        return !/^utils\/[^/]+\.ts$/.test(file);
+      })
+      .toSorted(alphabetically);
+
+    const required = requiredFiles(name)
+      .toSorted(alphabetically);
+
+    expect(ownFiles).toEqual(required);
   });
 
   it('declares a valid rule type', () => {
@@ -164,9 +181,12 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
 
     // Collected rather than asserted inside the `if`, since a conditional `expect` passes
     // silently when the branch never runs.
-    expect(schema.filter((entry) => {
-      return entry.type === 'object' && entry.additionalProperties !== false;
-    })).toEqual([]);
+    const open = schema
+      .filter((entry) => {
+        return entry.type === 'object' && entry.additionalProperties !== false;
+      });
+
+    expect(open).toEqual([]);
   });
 });
 
@@ -176,7 +196,10 @@ describe('rule metadata', () => {
   const expected = readJson('__mocks__/ruleMetadata.json');
 
   it('covers exactly the registered rules', () => {
-    expect(Object.keys(expected).toSorted(alphabetically)).toEqual(ruleNames.toSorted(alphabetically));
+    const expectedIds = Object.keys(expected)
+      .toSorted(alphabetically);
+
+    expect(expectedIds).toEqual(ruleNames.toSorted(alphabetically));
   });
 
   it.each(ruleCases)('matches the recorded surface for "%s"', (name, rule) => {
@@ -196,19 +219,26 @@ describe('rule metadata', () => {
 });
 
 describe('configs', () => {
-  const allPresets = PRESET_NAMES.map((name) => {
-    return [name, configs[`flat/${name}`]] as const;
-  });
+  const allPresets = PRESET_NAMES
+    .map((name) => {
+      return [name, configs[`flat/${name}`]] as const;
+    });
 
   // Pins the preset key set exhaustively, so an added or removed key shows up here rather than
   // as a shape nobody notices until a consumer spreads it.
   it('exposes both shapes of every preset and nothing else', () => {
-    expect(Object.keys(configs).toSorted(alphabetically)).toEqual([
+    const configNames = Object.keys(configs)
+      .toSorted(alphabetically);
+
+    const presetNames = [
       ...PRESET_NAMES,
-      ...PRESET_NAMES.map((name) => {
-        return `flat/${name}`;
-      }),
-    ].toSorted(alphabetically));
+      ...PRESET_NAMES
+        .map((name) => {
+          return `flat/${name}`;
+        }),
+    ].toSorted(alphabetically);
+
+    expect(configNames).toEqual(presetNames);
 
     for (const [, preset] of allPresets) {
       expect(Array.isArray(preset)).toBe(true);
@@ -229,9 +259,10 @@ describe('configs', () => {
        * Both halves, because a preset can be entirely TypeScript-only and then carries nothing in `rules`. The
        * property under test is that a preset enables something, not where it enables it.
        */
-      const enabled = Object.keys(preset.rules).length + preset.overrides.reduce((total, override) => {
-        return total + Object.keys(override.rules).length;
-      }, 0);
+      const enabled = Object.keys(preset.rules).length + preset.overrides
+        .reduce((total, override) => {
+          return total + Object.keys(override.rules).length;
+        }, 0);
 
       expect(enabled).toBeGreaterThan(0);
     }
@@ -251,9 +282,12 @@ describe('configs', () => {
       const blocks = configs[`flat/${name}`];
       const expected = [`${PLUGIN_NAME}/${name}`, `${PLUGIN_NAME}/${name}/typescript`];
 
-      expect(blocks.map((block) => {
-        return block.name;
-      })).toEqual(expected.slice(0, blocks.length));
+      const blockNames = blocks
+        .map((block) => {
+          return block.name;
+        });
+
+      expect(blockNames).toEqual(expected.slice(0, blocks.length));
     }
   });
 
@@ -261,9 +295,12 @@ describe('configs', () => {
   // enabling nothing is unexplainable. Keyed off the flat twin's block count, not a second list naming them.
   it('carries an eslintrc override exactly where the flat preset carries a second block', () => {
     // Guards against the loop below passing vacuously: some preset has to carry a TypeScript-only block at all.
-    expect(PRESET_NAMES.some((name) => {
-      return configs[`flat/${name}`].length === 2;
-    })).toBe(true);
+    const anyTwo = PRESET_NAMES
+      .some((name) => {
+        return configs[`flat/${name}`].length === 2;
+      });
+
+    expect(anyTwo).toBe(true);
 
     for (const name of PRESET_NAMES) {
       expect(configs[name].overrides).toHaveLength(configs[`flat/${name}`].length - 1);
@@ -312,17 +349,20 @@ describe('configs', () => {
 
   it('puts TypeScript-only rules behind a files glob and nothing else', () => {
     // One assertion over every block, since an `expect` inside a branch reports nothing when that branch never runs.
-    const misplaced = allPresets.flatMap(([, preset]) => {
-      return preset;
-    }).filter((config) => {
-      const languages = [...new Set(languagesOf(Object.keys(config.rules ?? {})))];
+    const misplaced = allPresets
+      .flatMap(([, preset]) => {
+        return preset;
+      })
+      .filter((config) => {
+        const languages = [...new Set(languagesOf(Object.keys(config.rules ?? {})))];
 
-      return config.files
-        ? languages.length !== 1 || languages[0] !== 'typescript'
-        : languages.includes('typescript');
-    }).map((config) => {
-      return config.name;
-    });
+        return config.files
+          ? languages.length !== 1 || languages[0] !== 'typescript'
+          : languages.includes('typescript');
+      })
+      .map((config) => {
+        return config.name;
+      });
 
     expect(misplaced).toEqual([]);
   });
@@ -330,11 +370,13 @@ describe('configs', () => {
   // Checks the glob's contents, not just its presence, since `**/*.ts` alone would pass while
   // leaving a rule off in `.tsx`.
   it('scopes those blocks to the TypeScript extensions and nothing else', () => {
-    const globs = allPresets.flatMap(([, preset]) => {
-      return preset;
-    }).flatMap((config) => {
-      return config.files ?? [];
-    });
+    const globs = allPresets
+      .flatMap(([, preset]) => {
+        return preset;
+      })
+      .flatMap((config) => {
+        return config.files ?? [];
+      });
 
     expect([...new Set(globs)]).toEqual([...TYPESCRIPT_FILES]);
   });
@@ -342,11 +384,13 @@ describe('configs', () => {
 
 // Asserts on ESLint's own resolved config, not our data structure, since what matters is what a file actually gets.
 describe('language scoping, resolved by eslint', () => {
-  const typescriptOnly = ruleCases.filter(([, rule]) => {
-    return rule.meta.docs.language === 'typescript';
-  }).map(([name]) => {
-    return `${PLUGIN_NAME}/${name}`;
-  });
+  const typescriptOnly = ruleCases
+    .filter(([, rule]) => {
+      return rule.meta.docs.language === 'typescript';
+    })
+    .map(([name]) => {
+      return `${PLUGIN_NAME}/${name}`;
+    });
 
   // `calculateConfigForFile` returns `any`, so ids are read out through this guard rather than
   // spread untyped into the assertions.
@@ -370,9 +414,11 @@ describe('language scoping, resolved by eslint', () => {
       overrideConfig: configs['flat/recommended'],
     });
 
-    return ruleIdsIn(await eslint.calculateConfigForFile(filename)).filter((id) => {
-      return id.startsWith(`${PLUGIN_NAME}/`);
-    }).toSorted(alphabetically);
+    return ruleIdsIn(await eslint.calculateConfigForFile(filename))
+      .filter((id) => {
+        return id.startsWith(`${PLUGIN_NAME}/`);
+      })
+      .toSorted(alphabetically);
   };
 
   it('has at least one TypeScript-only rule to prove the split with', () => {
@@ -386,9 +432,10 @@ describe('language scoping, resolved by eslint', () => {
       expect(enabled).not.toContain(id);
     }
 
-    expect(enabled).toHaveLength(recommendedNames.length - typescriptOnly.filter((id) => {
-      return recommendedNames.includes(id.slice(PLUGIN_NAME.length + 1));
-    }).length);
+    expect(enabled).toHaveLength(recommendedNames.length - typescriptOnly
+      .filter((id) => {
+        return recommendedNames.includes(id.slice(PLUGIN_NAME.length + 1));
+      }).length);
   });
 
   it.each(['example.ts', 'example.tsx', 'example.mts', 'example.cts'])(
@@ -402,9 +449,10 @@ describe('language scoping, resolved by eslint', () => {
 // The rule ids the hand-edited README table names, in the order it names them. A row opens with the
 // id as a linked code span, which nothing else in the file does.
 const tableRows = (readme: string): string[] => {
-  return [...readme.matchAll(/^\| \[`@linteljs\/([a-z][a-z0-9-]*)`\]/gm)].flatMap((match) => {
-    return match[1] ?? [];
-  });
+  return [...readme.matchAll(/^\| \[`@linteljs\/([a-z][a-z0-9-]*)`\]/gm)]
+    .flatMap((match) => {
+      return match[1] ?? [];
+    });
 };
 
 describe('documentation', () => {
@@ -420,17 +468,19 @@ describe('documentation', () => {
   it.each(ruleCases)('documents every option "%s" actually accepts', (name, rule) => {
     // flatMap over every schema entry; a rule with no schema contributes nothing, landing it on
     // the "## Options None." branch below.
-    const optionNames = (Array.isArray(rule.meta.schema) ? rule.meta.schema : []).flatMap((entry) => {
-      return Object.keys(entry.properties ?? {});
-    });
+    const optionNames = (Array.isArray(rule.meta.schema) ? rule.meta.schema : [])
+      .flatMap((entry) => {
+        return Object.keys(entry.properties ?? {});
+      });
     const doc = readFileSync(join(rulesDir, name, 'README.md'), 'utf8');
 
     // Both halves fold into one unconditional assertion, so neither branch can be skipped silently.
     const undocumented = optionNames.length === 0
       ? [/## Options\s+None\./.test(doc) ? '' : '## Options None.']
-      : optionNames.map((option) => {
-          return doc.includes(`\`${option}\``) ? '' : option;
-        });
+      : optionNames
+          .map((option) => {
+            return doc.includes(`\`${option}\``) ? '' : option;
+          });
 
     expect(undocumented.filter(Boolean)).toEqual([]);
   });
@@ -449,9 +499,13 @@ describe('documentation', () => {
     ];
 
     expect(doc.split('\n')[0]).toBe(`# ${PLUGIN_NAME}/${name}`);
-    expect(bullets.filter((bullet) => {
-      return !doc.includes(bullet);
-    })).toEqual([]);
+
+    const undocumented = bullets
+      .filter((bullet) => {
+        return !doc.includes(bullet);
+      });
+
+    expect(undocumented).toEqual([]);
   });
 
   // Equality, not containment: `react-no-global-namespace` once shipped two rows and a containment check passed it.
@@ -466,17 +520,26 @@ describe('documentation', () => {
    */
   it('names no preset outside the two the plugin ships, in any of its docs', () => {
     const presets: string[] = [...PRESET_NAMES];
-    const named = new Set(ruleNames.map((name) => {
-      return join(rulesDir, name, 'README.md');
-    }).concat(join(root, 'README.md')).flatMap((path) => {
-      return [...readFileSync(path, 'utf8').matchAll(/\bflat\/([a-z][a-z-]*)/g)].flatMap((match) => {
-        return match[1] ?? [];
+    const linked = ruleNames
+      .map((name) => {
+        return join(rulesDir, name, 'README.md');
+      })
+      .concat(join(root, 'README.md'))
+      .flatMap((path) => {
+        return [...readFileSync(path, 'utf8').matchAll(/\bflat\/([a-z][a-z-]*)/g)]
+          .flatMap((match) => {
+            return match[1] ?? [];
+          });
       });
-    }));
 
-    expect([...named].filter((preset) => {
-      return !presets.includes(preset);
-    })).toEqual([]);
+    const named = new Set(linked);
+
+    const unknownPresets = [...named]
+      .filter((preset) => {
+        return !presets.includes(preset);
+      });
+
+    expect(unknownPresets).toEqual([]);
   });
 
   it('keeps the README free of em-dashes', () => {

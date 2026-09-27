@@ -21,26 +21,30 @@ import { shippedAssetsReader } from '@disk';
 import { starterSourceEmitter } from './starterSourceEmitter';
 
 const targetsFor = (overrides: Partial<Answers> = {}): string[] => {
-  return starterSourceEmitter(answersFor(overrides)).map(({ target }) => {
-    return target;
-  });
+  return starterSourceEmitter(answersFor(overrides))
+    .map(({ target }) => {
+      return target;
+    });
 };
 
 const artifactFor = (overrides: Partial<Answers>, target: string): Artifact | undefined => {
-  return starterSourceEmitter(answersFor(overrides)).find((artifact) => {
-    return artifact.target === target;
-  });
+  return starterSourceEmitter(answersFor(overrides))
+    .find((artifact) => {
+      return artifact.target === target;
+    });
 };
 
 // `<destination> -> <asset>`, which is the whole of what this emitter decides.
 const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> => {
-  return Object.fromEntries(starterSourceEmitter(answersFor(overrides)).flatMap((artifact) => {
-    return 'sources' in artifact.content
-      ? artifact.content.sources.map((source) => {
-          return [artifact.target, source];
-        })
-      : [];
-  }));
+  return Object.fromEntries(starterSourceEmitter(answersFor(overrides))
+    .flatMap((artifact) => {
+      return 'sources' in artifact.content
+        ? artifact.content.sources
+            .map((source) => {
+              return [artifact.target, source];
+            })
+        : [];
+    }));
 };
 
 /**
@@ -59,12 +63,13 @@ describe('the asset a destination derives', () => {
     ['webextension', 'chrome'],
     ['webextension', 'firefox'],
   ])('puts the %s starter under the browser it is written for: %s', (target, browser) => {
-    expect(sourcesByTarget({
+    const source = sourcesByTarget({
       target,
       browser,
       surfaces: ['background'],
-    })['src/background/index.ts'])
-      .toBe(`starter-source/webextension/${browser}/src/background/index.ts`);
+    })['src/background/index.ts'];
+
+    expect(source).toBe(`starter-source/webextension/${browser}/src/background/index.ts`);
   });
 
   // Three spellings of `App` fill one destination, so the destination alone cannot say which file to copy.
@@ -72,11 +77,12 @@ describe('the asset a destination derives', () => {
     'react-router',
     'tanstack-router',
   ])('puts the react starter under the router that asked for it: %s', (router) => {
-    expect(sourcesByTarget({
+    const source = sourcesByTarget({
       target: 'react',
       router,
-    })['src/App.tsx'])
-      .toBe(`starter-source/react/${router}/src/App.tsx`);
+    })['src/App.tsx'];
+
+    expect(source).toBe(`starter-source/react/${router}/src/App.tsx`);
   });
 
   it('takes the base spelling of a varying file when no answer opens a variant', () => {
@@ -89,25 +95,31 @@ describe('the asset a destination derives', () => {
     'metro.config.js',
     'nativewind-env.d.ts',
   ])('writes the react native %s under tailwind alone, from the tailwind tree', (file) => {
-    expect(sourcesByTarget({
+    const withTailwind = sourcesByTarget({
       target: 'react-native',
       libraries: [],
       styling: 'tailwind',
-    })[file])
-      .toBe(`starter-source/react-native/tailwind/${file}`);
-    expect(sourcesByTarget({
+    })[file];
+
+    expect(withTailwind).toBe(`starter-source/react-native/tailwind/${file}`);
+
+    const withoutTailwind = sourcesByTarget({
       target: 'react-native',
       libraries: [],
-    })[file])
-      .toBeUndefined();
+    })[file];
+
+    expect(withoutTailwind).toBeUndefined();
   });
 });
 
 // Birth only: a project owns its own source from its first run, so `--existing` without `--seed` plants none of it.
 it.each(valuesOf(ANSWERS.target.values))('plants every %s starter only on a project being born', (target) => {
-  expect(starterSourceEmitter(answersFor({ target })).filter(({ seed }) => {
-    return seed !== true;
-  })).toEqual([]);
+  const unseeded = starterSourceEmitter(answersFor({ target }))
+    .filter(({ seed }) => {
+      return seed !== true;
+    });
+
+  expect(unseeded).toEqual([]);
 });
 
 // `ng new` leaves the rejection value implicitly `any`, which plain TypeScript refuses.
@@ -148,9 +160,12 @@ describe('starter tests', () => {
   });
 
   it('writes none when testing is declined', () => {
-    expect(starterSourceEmitter(answersFor({ testing: 'none' })).filter(({ requires }) => {
-      return requires !== undefined;
-    })).toEqual([]);
+    const requiring = starterSourceEmitter(answersFor({ testing: 'none' }))
+      .filter(({ requires }) => {
+        return requires !== undefined;
+      });
+
+    expect(requiring).toEqual([]);
   });
 });
 
@@ -221,10 +236,12 @@ describe('the starter source', () => {
       'src/components/ui/button/Button.tsx',
     ]],
   ])('writes the %s page, its binding, its control and its button only with a form', (target, files) => {
-    expect(targetsFor({
+    const targets = targetsFor({
       target,
       form: 'tanstack-form',
-    })).toEqual(expect.arrayContaining(files));
+    });
+
+    expect(targets).toEqual(expect.arrayContaining(files));
     expect(targetsFor({ target })).not.toContain(files[0]);
   });
 
@@ -236,10 +253,12 @@ describe('the starter source', () => {
     // The nav list has no framework in it, so it is the shared copy in both spellings.
     ['next', 'src/config/routes.ts', 'shared'],
   ])('adds contact to the one %s route list', (target, routes, root) => {
-    expect(sourcesByTarget({
+    const source = sourcesByTarget({
       target,
       form: 'tanstack-form',
-    })[routes]).toBe(`starter-source/${root}/with-form/${routes}`);
+    })[routes];
+
+    expect(source).toBe(`starter-source/${root}/with-form/${routes}`);
     expect(sourcesByTarget({ target })[routes]).toBe(`starter-source/${root}/${routes}`);
   });
 
@@ -308,15 +327,20 @@ describe('the starter source', () => {
    * its subject needs one of its own. It is a test helper, so a project that declined tests receives none.
    */
   it('writes the svelte data wrapper only for a form with a suite', () => {
-    expect(targetsFor({
+    const withSuite = targetsFor({
       target: 'svelte',
       form: 'tanstack-form',
-    })).toContain('__mocks__/WithData.svelte');
-    expect(targetsFor({
+    });
+
+    expect(withSuite).toContain('__mocks__/WithData.svelte');
+
+    const withoutSuite = targetsFor({
       target: 'svelte',
       form: 'tanstack-form',
       testing: 'none',
-    })).not.toContain('__mocks__/WithData.svelte');
+    });
+
+    expect(withoutSuite).not.toContain('__mocks__/WithData.svelte');
     expect(targetsFor({ target: 'svelte' })).not.toContain('__mocks__/WithData.svelte');
   });
 
@@ -375,20 +399,22 @@ describe('the starter source', () => {
       expect(sourceOf({}, barrel)).toBe('starter-source/react/with-form/src/components/ui/index.ts');
       expect(sourcesByTarget({ target: 'next' })[barrel])
         .toBe('starter-source/react/src/components/ui/index.ts');
-      expect(sourcesByTarget({
+      const source = sourcesByTarget({
         target: 'next',
         store: 'zustand',
-      })[barrel])
-        .toBe('starter-source/react/with-store/src/components/ui/index.ts');
+      })[barrel];
+
+      expect(source).toBe('starter-source/react/with-store/src/components/ui/index.ts');
     });
 
     // A store makes the home route a client component, which is a different file rather than a directive added.
     it('takes the home route the store answer asks for', () => {
-      expect(sourcesByTarget({
+      const source = sourcesByTarget({
         target: 'next',
         store: 'zustand',
-      })['src/app/page.tsx'])
-        .toBe('starter-source/next/with-store/src/app/page.tsx');
+      })['src/app/page.tsx'];
+
+      expect(source).toBe('starter-source/next/with-store/src/app/page.tsx');
       expect(sourceOf({}, 'src/app/page.tsx')).toBe('starter-source/next/src/app/page.tsx');
     });
 

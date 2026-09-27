@@ -28,9 +28,10 @@ export const packTarball = (packageDir: string, outDir: string): string => {
   emptyDir(outDir);
   run('pnpm', ['pack', '--pack-destination', outDir], packageDir);
 
-  const tarball = readdirSync(outDir).find((file) => {
-    return file.endsWith('.tgz');
-  });
+  const tarball = readdirSync(outDir)
+    .find((file) => {
+      return file.endsWith('.tgz');
+    });
 
   if (tarball === undefined) {
     throw new Error(`pnpm pack wrote no tarball into ${outDir}`);

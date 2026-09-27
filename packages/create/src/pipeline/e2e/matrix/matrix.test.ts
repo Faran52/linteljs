@@ -44,21 +44,28 @@ const pairsOf = (answers: Answers): string[] => {
     data: answers.data,
     testing: answers.testing,
     typeSafety: answers.typeSafety,
-  }).map(([axis, value]) => {
-    return `${axis}=${value ?? '-'}`;
-  });
-
-  return axes.flatMap((left, index) => {
-    return axes.slice(index + 1).map((right) => {
-      return `${left}&${right}`;
+  })
+    .map(([axis, value]) => {
+      return `${axis}=${value ?? '-'}`;
     });
-  });
+
+  return axes
+    .flatMap((left, index) => {
+      return axes
+        .slice(index + 1)
+        .map((right) => {
+          return `${left}&${right}`;
+        });
+    });
 };
 
 const coveredBy = (cases: Answered[]): Set<string> => {
-  return new Set(cases.flatMap((item) => {
-    return pairsOf(item.answers);
-  }));
+  const coveredPairs = cases
+    .flatMap((item) => {
+      return pairsOf(item.answers);
+    });
+
+  return new Set(coveredPairs);
 };
 
 const everyCase = (target: (typeof TARGET_IDS)[number]): Answered[] => {
@@ -96,21 +103,24 @@ describe('targetCases', () => {
   it('covers every pair of answers the full enumeration reaches', () => {
     for (const target of TARGET_IDS) {
       const covered = coveredBy(targetCases(target));
-      const missing = [...coveredBy(everyCase(target))].filter((pair) => {
-        return !covered.has(pair);
-      });
+      const missing = [...coveredBy(everyCase(target))]
+        .filter((pair) => {
+          return !covered.has(pair);
+        });
 
       expect(`${target}: ${missing.join(', ')}`).toBe(`${target}: `);
     }
   });
 
   it('is a fraction of the cross product it covers', () => {
-    const reduced = TARGET_IDS.reduce((total, target) => {
-      return total + targetCases(target).length;
-    }, 0);
-    const every = TARGET_IDS.reduce((total, target) => {
-      return total + everyCase(target).length;
-    }, 0);
+    const reduced = TARGET_IDS
+      .reduce((total, target) => {
+        return total + targetCases(target).length;
+      }, 0);
+    const every = TARGET_IDS
+      .reduce((total, target) => {
+        return total + everyCase(target).length;
+      }, 0);
 
     expect(every).toBeGreaterThan(reduced * 3);
   });
@@ -119,9 +129,10 @@ describe('targetCases', () => {
   // hours.
   it('keeps the combination behind every defect the matrix has found', () => {
     const has = (target: (typeof TARGET_IDS)[number], match: (answers: Answers) => boolean): boolean => {
-      return targetCases(target).some((item) => {
-        return match(item.answers);
-      });
+      return targetCases(target)
+        .some((item) => {
+          return match(item.answers);
+        });
     };
 
     expect(has('astro', (answers) => {
@@ -149,12 +160,13 @@ describe('targetCases', () => {
 
   // Through the config parser, which is what refuses a combination the prompt would never offer.
   it('enumerates only answers the CLI accepts', () => {
-    for (const { label, answers } of everyTargetsCases().map((item) => {
-      return {
-        label: JSON.stringify(item.answers),
-        answers: item.answers,
-      };
-    })) {
+    for (const { label, answers } of everyTargetsCases()
+      .map((item) => {
+        return {
+          label: JSON.stringify(item.answers),
+          answers: item.answers,
+        };
+      })) {
       expect([label, accepts(answers)]).toEqual([label, true]);
     }
   });
@@ -167,9 +179,12 @@ describe('targetCases', () => {
   it('offers a form library exactly where the CLI accepts one', () => {
     for (const target of TARGET_IDS) {
       const cases = everyCase(target);
-      const hosts = [...new Set(cases.map(({ answers }) => {
-        return answers.hostedFramework;
-      }))];
+      const hosted = cases
+        .map(({ answers }) => {
+          return answers.hostedFramework;
+        });
+
+      const hosts = [...new Set(hosted)];
 
       for (const hostedFramework of hosts) {
         for (const form of valuesOf(ANSWERS.form.values)) {
@@ -179,9 +194,10 @@ describe('targetCases', () => {
             ...(hostedFramework === undefined ? {} : { hostedFramework }),
             form,
           });
-          const offered = cases.some(({ answers }) => {
-            return answers.hostedFramework === hostedFramework && answers.form === form;
-          });
+          const offered = cases
+            .some(({ answers }) => {
+              return answers.hostedFramework === hostedFramework && answers.form === form;
+            });
 
           expect([target, hostedFramework, form, offered]).toEqual([target, hostedFramework, form, accepted]);
         }
@@ -192,25 +208,31 @@ describe('targetCases', () => {
   // `exactOptionalPropertyTypes` holds an unset answer to absent, and so does every reader of a parsed config.
   it('leaves an unset answer out rather than setting it to undefined', () => {
     for (const { answers } of everyTargetsCases()) {
-      expect(Object.entries(answers).filter(([, value]) => {
-        return value === undefined;
-      })).toEqual([]);
+      const unset = Object.entries(answers)
+        .filter(([, value]) => {
+          return value === undefined;
+        });
+
+      expect(unset).toEqual([]);
     }
   });
 
   it('offers every value of every single-select axis, and none on each optional one', () => {
-    const answered = everyTargetsCases().map(({ answers }) => {
-      return answers;
-    });
-    const seen = (read: (answers: Answers) => string | undefined): (string | undefined)[] => {
-      return [...new Set(answered.map(read))].toSorted((left, right) => {
-        return (left ?? '').localeCompare(right ?? '');
+    const answered = everyTargetsCases()
+      .map(({ answers }) => {
+        return answers;
       });
+    const seen = (read: (answers: Answers) => string | undefined): (string | undefined)[] => {
+      return [...new Set(answered.map(read))]
+        .toSorted((left, right) => {
+          return (left ?? '').localeCompare(right ?? '');
+        });
     };
     const all = (values: readonly string[], optional: boolean): (string | undefined)[] => {
-      return [...(optional ? [undefined] : []), ...values].toSorted((left, right) => {
-        return (left ?? '').localeCompare(right ?? '');
-      });
+      return [...(optional ? [undefined] : []), ...values]
+        .toSorted((left, right) => {
+          return (left ?? '').localeCompare(right ?? '');
+        });
     };
 
     expect(seen(({ packageManager }) => {
@@ -273,9 +295,10 @@ describe('targetCases', () => {
         answers.store,
         answers.styling,
         answers.data,
-      ].filter((part) => {
-        return part !== undefined;
-      });
+      ]
+        .filter((part) => {
+          return part !== undefined;
+        });
 
       expect(label).toBe(expected.join(' '));
     }
@@ -283,35 +306,48 @@ describe('targetCases', () => {
 
   it('runs every target on every package manager', () => {
     for (const target of TARGET_IDS) {
-      const managers = new Set(targetCases(target).map((item) => {
-        return item.answers.packageManager;
-      }));
+      const ran = targetCases(target)
+        .map((item) => {
+          return item.answers.packageManager;
+        });
 
-      expect([target, [...managers].sort((left, right) => {
-        return left.localeCompare(right);
-      })]).toEqual([target, valuesOf(ANSWERS.packageManager.values).toSorted((left, right) => {
-        return left.localeCompare(right);
-      })]);
+      const managers = new Set(ran);
+
+      expect([target, [...managers]
+        .sort((left, right) => {
+          return left.localeCompare(right);
+        })]).toEqual([target, valuesOf(ANSWERS.packageManager.values)
+        .toSorted((left, right) => {
+          return left.localeCompare(right);
+        })]);
     }
   });
 
   it('gives every case its own label, which names the directory it runs in', () => {
-    const labels = TARGET_IDS.flatMap((target) => {
-      return targetCases(target).map((item) => {
-        return item.label;
+    const labels = TARGET_IDS
+      .flatMap((target) => {
+        return targetCases(target)
+          .map((item) => {
+            return item.label;
+          });
       });
-    });
 
     expect(new Set(labels).size).toBe(labels.length);
   });
 
   it('is stable, so a label names the same case twice running', () => {
     for (const target of TARGET_IDS) {
-      expect(targetCases(target).map((item) => {
-        return item.label;
-      })).toEqual(targetCases(target).map((item) => {
-        return item.label;
-      }));
+      const firstLabels = targetCases(target)
+        .map((item) => {
+          return item.label;
+        });
+
+      const secondLabels = targetCases(target)
+        .map((item) => {
+          return item.label;
+        });
+
+      expect(firstLabels).toEqual(secondLabels);
     }
   });
 });

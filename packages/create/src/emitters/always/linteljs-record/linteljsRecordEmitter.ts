@@ -17,9 +17,11 @@ import { answerRows, stackRows } from './utils/recordUtils';
  */
 export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string => {
   const rows = (entries: [string, string][]): string => {
-    return entries.map(([left, right]) => {
-      return `  {\n    ${left},\n    ${right},\n  },`;
-    }).join('\n');
+    return entries
+      .map(([left, right]) => {
+        return `  {\n    ${left},\n    ${right},\n  },`;
+      })
+      .join('\n');
   };
 
   return [

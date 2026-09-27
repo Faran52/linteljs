@@ -51,9 +51,10 @@ const byLanguage = (
   selected: [RuleName, LintelRuleModule][],
   language: RuleLanguage,
 ): [RuleName, LintelRuleModule][] => {
-  return selected.filter(([, rule]) => {
-    return rule.meta.docs.language === language;
-  });
+  return selected
+    .filter(([, rule]) => {
+      return rule.meta.docs.language === language;
+    });
 };
 
 const toRuleRecord = (
@@ -93,9 +94,10 @@ const definePreset = (
 
 // `recommended` carries only rules with `meta.docs.recommended` set; `all` is every rule, which is the one way in
 // for a rule that ships off by default.
-const recommendedEntries = ruleEntries.filter(([, rule]) => {
-  return rule.meta.docs.recommended;
-});
+const recommendedEntries = ruleEntries
+  .filter(([, rule]) => {
+    return rule.meta.docs.recommended;
+  });
 
 const presets: [PresetName, [RuleName, LintelRuleModule][]][] = [
   ['recommended', recommendedEntries],

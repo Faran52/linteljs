@@ -77,7 +77,12 @@ describe('emitViteConfig', () => {
   ])('registers the plugins %s builds with', (_label, overrides, imports, plugins) => {
     const config = configFor(overrides) ?? '';
 
-    expect(config.slice(0, config.indexOf('\nexport default')).split('\n').filter(Boolean)).toEqual(imports);
+    const importLines = config
+      .slice(0, config.indexOf('\nexport default'))
+      .split('\n')
+      .filter(Boolean);
+
+    expect(importLines).toEqual(imports);
     expect(/ {2}plugins: \[\n([\s\S]*?)\n {2}\],/u.exec(config)?.[1]).toBe(plugins);
   });
 
@@ -114,9 +119,13 @@ describe('emitViteConfig', () => {
       styling: 'tailwind',
     }) ?? '';
 
-    expect(react.split('\n').every((line) => {
-      return line.length <= 120;
-    })).toBe(true);
+    const withinWidth = react
+      .split('\n')
+      .every((line) => {
+        return line.length <= 120;
+      });
+
+    expect(withinWidth).toBe(true);
   });
 
   // `crx` is not a framework plugin but occupies the same slot: it turns a vanilla build into an extension build by
@@ -145,31 +154,31 @@ describe('emitViteConfig', () => {
   });
 
   it('stacks tailwind after whatever plugin the target already had', () => {
-    expect(configFor({
+    const onExtension = configFor({
       target: 'webextension',
       libraries: [],
       styling: 'tailwind',
-    }) ?? '')
-      .toContain('plugins: [\n    crx({ manifest }),\n    tailwindcss(),\n  ],');
-    expect(configFor({
+    }) ?? '';
+
+    expect(onExtension).toContain('plugins: [\n    crx({ manifest }),\n    tailwindcss(),\n  ],');
+
+    const onVue = configFor({
       target: 'vue',
       libraries: [],
       styling: 'tailwind',
-    }) ?? '')
-      .toContain('plugins: [\n    vue(),\n    tailwindcss(),\n  ],');
-    expect(configFor({
-      target: 'vue',
-      libraries: [],
-      styling: 'tailwind',
-    }) ?? '')
-      .toContain("import tailwindcss from '@tailwindcss/vite';");
+    }) ?? '';
+
+    expect(onVue).toContain('plugins: [\n    vue(),\n    tailwindcss(),\n  ],');
+    expect(onVue).toContain("import tailwindcss from '@tailwindcss/vite';");
   });
 
   it('leaves tailwind out when it was not chosen', () => {
-    expect(configFor({
+    const config = configFor({
       target: 'vue',
       libraries: [],
-    }) ?? '').not.toContain('tailwind');
+    }) ?? '';
+
+    expect(config).not.toContain('tailwind');
   });
 
   /*
@@ -178,11 +187,13 @@ describe('emitViteConfig', () => {
    * CSS into a production bundle, bound to a typed name because the adapter itself is typed `=> any`.
    */
   it('adds the stylex plugin before the framework one, through its typed vite adapter', () => {
-    expect(configFor({
+    const config = configFor({
       target: 'vue',
       libraries: [],
       styling: 'stylex',
-    })).toBe(`import { type UserOptions } from '@stylexjs/unplugin';
+    });
+
+    expect(config).toBe(`import { type UserOptions } from '@stylexjs/unplugin';
 import stylexVite from '@stylexjs/unplugin/vite';
 import vue from '@vitejs/plugin-vue';
 import { type VitePlugin } from 'unplugin';
@@ -202,10 +213,12 @@ export default defineConfig({
   });
 
   it('leaves stylex out when it was not chosen', () => {
-    expect(configFor({
+    const config = configFor({
       target: 'vue',
       libraries: [],
-    }) ?? '').not.toContain('stylex');
+    }) ?? '';
+
+    expect(config).not.toContain('stylex');
   });
 });
 
@@ -248,16 +261,21 @@ describe('the router', () => {
 describe('viteConfigEmitter', () => {
   // Both reference repos rewrote `vite.config.ts` wholesale, so it is the project's after the first write.
   it('hands the config to the project after the first write', () => {
-    expect(viteConfigEmitter(DEFAULT_ANSWERS).map(({ target, preserve }) => {
-      return [target, preserve];
-    })).toEqual([['vite.config.ts', true]]);
+    const shapes = viteConfigEmitter(DEFAULT_ANSWERS)
+      .map(({ target, preserve }) => {
+        return [target, preserve];
+      });
+
+    expect(shapes).toEqual([['vite.config.ts', true]]);
   });
 
   // Next owns its bundler, so there is no vite config for this CLI to write.
   it('writes nothing for a target whose build is not vite', () => {
-    expect(viteConfigEmitter({
+    const artifacts = viteConfigEmitter({
       ...DEFAULT_ANSWERS,
       target: 'next',
-    })).toEqual([]);
+    });
+
+    expect(artifacts).toEqual([]);
   });
 });

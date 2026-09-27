@@ -16,18 +16,21 @@ const targetsOf = (overrides: Partial<Answers>): string[] => {
     ...HOSTED_DEFAULTS,
     target: 'react',
     ...overrides,
-  }, EMPTY_PROJECT, 'demo-app').map((artifact) => {
-    return artifact.target;
-  });
+  }, EMPTY_PROJECT, 'demo-app')
+    .map((artifact) => {
+      return artifact.target;
+    });
 };
 
 describe('reactRouterConfigEmitter', () => {
   it('writes only for framework mode, which is the one answer that reads the file', () => {
-    expect(reactRouterConfigEmitter({
+    const artifacts = reactRouterConfigEmitter({
       ...HOSTED_DEFAULTS,
       target: 'react',
       router: 'react-router-framework',
-    }, EMPTY_PROJECT, 'demo-app')).toEqual([{
+    }, EMPTY_PROJECT, 'demo-app');
+
+    expect(artifacts).toEqual([{
       stage: 'package',
       target: 'react-router.config.ts',
       content: { text: emitReactRouterConfig() },

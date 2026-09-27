@@ -58,18 +58,19 @@ const at = (target: string, asset: string): AssetPath => {
  * atomic classes instead.
  */
 export const componentStyles = (paths: ComponentPaths = COMPONENT_PATHS): StarterFile[] => {
-  return COMPONENTS.map(([key, ships]): StarterFile => {
-    const target = `${paths[key]}.css`;
+  return COMPONENTS
+    .map(([key, ships]): StarterFile => {
+      const target = `${paths[key]}.css`;
 
-    return {
-      target,
-      when: (answers) => {
-        return ships(answers) && !isStylex(answers);
-      },
-      shared: true,
-      ...at(target, `${COMPONENT_PATHS[key]}.css`),
-    };
-  });
+      return {
+        target,
+        when: (answers) => {
+          return ships(answers) && !isStylex(answers);
+        },
+        shared: true,
+        ...at(target, `${COMPONENT_PATHS[key]}.css`),
+      };
+    });
 };
 
 const directoryOf = (path: string): string => {
@@ -104,28 +105,30 @@ export const componentStyleModules = (
     shared: true,
   };
 
-  return COMPONENTS.flatMap(([key, ships]): StarterFile[] => {
-    const target = `${directoryOf(paths[key])}/styles.ts`;
-    const asset = at(target, `${directoryOf(COMPONENT_PATHS[key])}/styles.ts`);
+  return COMPONENTS
+    .flatMap(([key, ships]): StarterFile[] => {
+      const target = `${directoryOf(paths[key])}/styles.ts`;
+      const asset = at(target, `${directoryOf(COMPONENT_PATHS[key])}/styles.ts`);
 
-    return [
-      {
-        target,
-        when: (answers) => {
-          return ships(answers) && !isStylex(answers);
+      return [
+        {
+          target,
+          when: (answers) => {
+            return ships(answers) && !isStylex(answers);
+          },
+          ...shared,
+          ...asset,
         },
-        ...shared,
-        ...asset,
-      },
-      {
-        target,
-        when: (answers) => {
-          return ships(answers) && isStylex(answers);
+        {
+          target,
+          when: (answers) => {
+            return ships(answers) && isStylex(answers);
+          },
+          variant: 'stylex',
+          ...shared,
+          ...asset,
         },
-        variant: 'stylex',
-        ...shared,
-        ...asset,
-      },
-    ];
-  }).concat(tokens);
+      ];
+    })
+    .concat(tokens);
 };

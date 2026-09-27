@@ -39,7 +39,9 @@ const rootOf = (id: TargetId, shared: true | TargetId | undefined): string => {
 const sourceOf = (id: TargetId, file: StarterFile | StarterTest): string => {
   const asset = file.source ?? file.target;
 
-  return ['starter-source', rootOf(id, file.shared), file.variant, asset].filter(Boolean).join('/');
+  return ['starter-source', rootOf(id, file.shared), file.variant, asset]
+    .filter(Boolean)
+    .join('/');
 };
 
 // Source no scaffolder wrote, and the tests that cover it. Birth only: a project owns its own source from its

@@ -44,34 +44,40 @@ const SHARED_ROOT = 'shared';
 const fixing = argv.includes('--fix');
 const targets = valuesOf(ANSWERS.target.values);
 
-const unknown = readdirSync(STARTERS).filter((name) => {
-  return name !== SHARED_ROOT && !targets.some((target) => {
-    return target === name;
+const unknown = readdirSync(STARTERS)
+  .filter((name) => {
+    return name !== SHARED_ROOT && !targets
+      .some((target) => {
+        return target === name;
+      });
   });
-});
 
 if (unknown.length > 0) {
   logError(`Not a target, so never linted: ${unknown.join(', ')}`);
   process.exit(1);
 }
 
-const answerSets = new Map(targets.map((target) => {
-  return [target, widestFor(target)];
-}));
+const answerSets = new Map(targets
+  .map((target) => {
+    return [target, widestFor(target)];
+  }));
 
 const placement = {
-  placed: new Map([...answerSets.values()].flatMap((every) => {
-    return [...destinationsFor(every)];
-  })),
-  covered: new Map([...answerSets].map(([target, every]) => {
-    return [target, writtenPaths(every)];
-  })),
+  placed: new Map([...answerSets.values()]
+    .flatMap((every) => {
+      return [...destinationsFor(every)];
+    })),
+  covered: new Map([...answerSets]
+    .map(([target, every]) => {
+      return [target, writtenPaths(every)];
+    })),
 };
 
 const filesOf = (target: string, pattern: string): string[] => {
-  return globSync(pattern, { cwd: join(STARTERS, target) }).map((path) => {
-    return join(STARTERS, target, path);
-  });
+  return globSync(pattern, { cwd: join(STARTERS, target) })
+    .map((path) => {
+      return join(STARTERS, target, path);
+    });
 };
 
 // Two rules cannot run on text at a path nothing on disk holds.
@@ -148,25 +154,35 @@ for (const target of targets) {
   linters.push([target, await eslintFor(target)]);
 }
 
-const results = await Promise.all(linters.map(async ([target, eslint]) => {
-  return await lintTarget(target, eslint);
-}));
-const findings = results.flatMap(([found]) => {
-  return found;
-});
-const unplaced = results.flatMap(([, , , missing]) => {
-  return missing;
-});
-const fixable = results.reduce((total, [, count]) => {
-  return total + count;
-}, 0);
-const checked = results.reduce((total, [, , count]) => {
-  return total + count;
-}, 0);
+const lints = linters
+  .map(async ([target, eslint]) => {
+    return await lintTarget(target, eslint);
+  });
 
-const unresolved = unresolvedNames(STARTERS, targets.flatMap((target) => {
-  return filesOf(target, SCRIPT_GLOB);
-}), placement);
+const results = await Promise.all(lints);
+const findings = results
+  .flatMap(([found]) => {
+    return found;
+  });
+const unplaced = results
+  .flatMap(([, , , missing]) => {
+    return missing;
+  });
+const fixable = results
+  .reduce((total, [, count]) => {
+    return total + count;
+  }, 0);
+const checked = results
+  .reduce((total, [, , count]) => {
+    return total + count;
+  }, 0);
+
+const scripts = targets
+  .flatMap((target) => {
+    return filesOf(target, SCRIPT_GLOB);
+  });
+
+const unresolved = unresolvedNames(STARTERS, scripts, placement);
 
 for (const finding of [...findings, ...unresolved]) {
   logError(finding);

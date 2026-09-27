@@ -22,9 +22,10 @@ const ALIASES: AliasMap = {
 };
 
 const indexOfPattern = (groups: string[][], pattern: string): number => {
-  return groups.findIndex((group) => {
-    return group.includes(pattern);
-  });
+  return groups
+    .findIndex((group) => {
+      return group.includes(pattern);
+    });
 };
 
 describe('buildGroups', () => {
@@ -91,9 +92,11 @@ describe('buildGroups', () => {
       '@engine': './src/engine',
       '@utils/*': './src/utils/*',
     });
-    const engine = new RegExp(groups.flat().find((pattern) => {
-      return pattern.startsWith('^@engine');
-    }) ?? '');
+    const engine = new RegExp(groups
+      .flat()
+      .find((pattern) => {
+        return pattern.startsWith('^@engine');
+      }) ?? '');
 
     expect(indexOfPattern(groups, '^@engine(?:/|$)')).toBeGreaterThan(-1);
     expect(engine.exec('@engine')).not.toBeNull();
@@ -103,9 +106,11 @@ describe('buildGroups', () => {
 
   it('matches a bare alias in a named bucket too', () => {
     const utils = new RegExp(
-      buildGroups({ '@utils': './src/utils' }).flat().find((pattern) => {
-        return pattern.startsWith('^@utils');
-      }) ?? '',
+      buildGroups({ '@utils': './src/utils' })
+        .flat()
+        .find((pattern) => {
+          return pattern.startsWith('^@utils');
+        }) ?? '',
     );
 
     expect(utils.exec('@utils')).not.toBeNull();
@@ -134,9 +139,10 @@ describe('buildGroups', () => {
       '@ui', '@features', '@components',
       '@mocks',
     ];
-    const aliases = Object.fromEntries([...named, '@widgets'].map((name) => {
-      return [`${name}/*`, `./src/${name.slice(1)}/*`];
-    }));
+    const aliases = Object.fromEntries([...named, '@widgets']
+      .map((name) => {
+        return [`${name}/*`, `./src/${name.slice(1)}/*`];
+      }));
     const pattern = (name: string): string => {
       return `^${name}(?:/|$)`;
     };

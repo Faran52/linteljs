@@ -13,18 +13,23 @@ const logFiltersBlock = (codes: string[]): string => {
     return '';
   }
 
-  return `logFilters:\n${codes.map((code) => {
-    return `  - code: "${code}"\n    level: "discard"\n`;
-  }).join('')}`;
+  return `logFilters:\n${codes
+    .map((code) => {
+      return `  - code: "${code}"\n    level: "discard"\n`;
+    })
+    .join('')}`;
 };
 
 export const emitYarnrc = (answers: Answers): string => {
   const target = targetFor(answers);
   const installed = [...Object.keys(buildDependencies(answers)), ...Object.keys(buildDevDependencies(answers))];
   // A package with no extension looks up `undefined`, which `join` writes as nothing.
-  const blocks = [...new Set(installed.map((name) => {
-    return PEER_EXTENSIONS[name];
-  }))].join('');
+  const peerExtensions = installed
+    .map((name) => {
+      return PEER_EXTENSIONS[name];
+    });
+
+  const blocks = [...new Set(peerExtensions)].join('');
 
   /**
    * A target naming `peerAllowances` knowingly exceeds a peer's range, and yarn can express no per-package allowance:

@@ -53,25 +53,31 @@ const audit = (
 ): AuditFinding[] => {
   const reports = context.linter.verify(source, config, name);
 
-  if (reports.some((report) => {
-    return report.fatal === true;
-  })) {
+  if (reports
+    .some((report) => {
+      return report.fatal === true;
+    })) {
     return [];
   }
 
-  const probed = new Set(reports.filter((report) => {
-    return report.ruleId === 'probe/hoisted';
-  }).map(atReport));
-  const own = reports.flatMap((report) => {
-    const { ruleId } = report;
+  const hoisted = reports
+    .filter((report) => {
+      return report.ruleId === 'probe/hoisted';
+    })
+    .map(atReport);
 
-    return ruleId?.startsWith('@linteljs/') === true
-      ? [{
-          report,
-          ruleId,
-        }]
-      : [];
-  });
+  const probed = new Set(hoisted);
+  const own = reports
+    .flatMap((report) => {
+      const { ruleId } = report;
+
+      return ruleId?.startsWith('@linteljs/') === true
+        ? [{
+            report,
+            ruleId,
+          }]
+        : [];
+    });
   const shapes = shapesOf(ast);
 
   for (const { ruleId } of own) {
@@ -82,16 +88,17 @@ const audit = (
     context.auditVolume.push([own.length, file]);
   }
 
-  return own.flatMap(({ report }) => {
-    const finding = judge(report, shapes, probed);
+  return own
+    .flatMap(({ report }) => {
+      const finding = judge(report, shapes, probed);
 
-    return finding === undefined
-      ? []
-      : [{
-          ...finding,
-          line: report.line,
-        }];
-  });
+      return finding === undefined
+        ? []
+        : [{
+            ...finding,
+            line: report.line,
+          }];
+    });
 };
 
 const check = (context: AuditContext, config: Linter.Config[], file: string): void => {
@@ -154,9 +161,10 @@ const check = (context: AuditContext, config: Linter.Config[], file: string): vo
 };
 
 const tally = (findings: Located[], keyOf: (finding: Located) => string): string[] => {
-  return orderBy(Object.entries(countBy(findings, keyOf)), [1], ['desc']).map(([key, count]) => {
-    return `  ${String(count)}  ${key}`;
-  });
+  return orderBy(Object.entries(countBy(findings, keyOf)), [1], ['desc'])
+    .map(([key, count]) => {
+      return `  ${String(count)}  ${key}`;
+    });
 };
 
 // Answers the number of findings, which the caller turns into the exit code.
@@ -169,16 +177,18 @@ export const runFixPass = (context: AuditContext): number => {
     sources,
   } = context;
   const config = auditConfig(context);
-  const typescript = files.filter((file) => {
-    return flavourOf(file) === 'ts';
-  }).length;
+  const typescript = files
+    .filter((file) => {
+      return flavourOf(file) === 'ts';
+    }).length;
 
   log([
     `${String(files.length)} files (${String(typescript)} TypeScript, ${String(files.length - typescript)} `
     + 'JavaScript) under:',
-    ...sources.map((dir) => {
-      return `    ${dir}`;
-    }),
+    ...sources
+      .map((dir) => {
+        return `    ${dir}`;
+      }),
     `rules: ${activeRules.join(', ')}`,
     `audit: ${AUDIT_RULES.join(', ')}`,
   ].join('\n'));
@@ -215,9 +225,10 @@ export const runFixPass = (context: AuditContext): number => {
 
   for (const [flavour, label] of [['ts', 'TypeScript'], ['js', 'JavaScript']] as const) {
     const bucket = counts[flavour];
-    const hits = findings.filter((finding) => {
-      return finding.flavour === flavour;
-    }).length;
+    const hits = findings
+      .filter((finding) => {
+        return finding.flavour === flavour;
+      }).length;
 
     log(`${label}: ${String(bucket.scanned)} files linted, ${String(bucket.changed)} changed by a fixer, `
       + `${String(hits)} findings\n  skipped: ${String(bucket.compiled)} compiled, ${String(bucket.minified)} `
@@ -228,13 +239,16 @@ export const runFixPass = (context: AuditContext): number => {
   // Volume is not a defect, but one rule owning a file's reports is worth a look.
   log([
     'reports across the corpus:',
-    ...orderBy([...context.auditCounts], [1], ['desc']).map(([ruleId, count]) => {
-      return `  ${String(count).padStart(7)}  ${ruleId}`;
-    }),
+    ...orderBy([...context.auditCounts], [1], ['desc'])
+      .map(([ruleId, count]) => {
+        return `  ${String(count).padStart(7)}  ${ruleId}`;
+      }),
     'busiest files:',
-    ...orderBy(context.auditVolume, [0], ['desc']).slice(0, 5).map(([count, file]) => {
-      return `  ${String(count).padStart(7)}  ${file}`;
-    }),
+    ...orderBy(context.auditVolume, [0], ['desc'])
+      .slice(0, 5)
+      .map(([count, file]) => {
+        return `  ${String(count).padStart(7)}  ${file}`;
+      }),
   ].join('\n'));
 
   showTiming(context.timings, wallMs, (file) => {

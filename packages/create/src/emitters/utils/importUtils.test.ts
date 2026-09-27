@@ -9,12 +9,14 @@ import { sortedImports } from './importUtils';
 describe('sortedImports', () => {
   // The order `simple-import-sort` fixes to, so an emitted config passes its own project's first lint.
   it('sorts packages by specifier, then the project files after a blank line', () => {
-    expect(sortedImports([
+    const sorted = sortedImports([
       "import local from './local';",
       "import vue from '@vitejs/plugin-vue';",
       "import { defineConfig } from 'vite';",
       "import alias from './alias';",
-    ])).toBe([
+    ]);
+
+    expect(sorted).toBe([
       "import vue from '@vitejs/plugin-vue';",
       "import { defineConfig } from 'vite';",
       '',

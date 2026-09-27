@@ -52,16 +52,20 @@ const coverageInclude = (sfcExtension?: string): string => {
 };
 
 const quoted = (values: string[]): string => {
-  return values.map((value) => {
-    return `'${value}'`;
-  }).join(', ');
+  return values
+    .map((value) => {
+      return `'${value}'`;
+    })
+    .join(', ');
 };
 
 // One entry per line: `max-len` has no fixer. Two levels below the block, which the merged config nests one deeper.
 const excludeList = (exclude: string[], indent: string): string => {
-  return exclude.map((value) => {
-    return `\n${indent}    '${value}',`;
-  }).join('');
+  return exclude
+    .map((value) => {
+      return `\n${indent}    '${value}',`;
+    })
+    .join('');
 };
 
 const coverageBlock = (include: string, exclude: string[], indent: string): string => {
@@ -117,15 +121,16 @@ const platformProjects = (
   setup: string,
 ): string => {
   // One argument per line: the extension lists run past `max-len`.
-  const entries = platforms.map((platform) => {
-    const lines = [
-      `        '${platform.name}',`,
-      `        [${quoted(platform.extensions)}],`,
-      `        [${quoted(platform.include)}],`,
-    ];
+  const entries = platforms
+    .map((platform) => {
+      const lines = [
+        `        '${platform.name}',`,
+        `        [${quoted(platform.extensions)}],`,
+        `        [${quoted(platform.include)}],`,
+      ];
 
-    return `      platform(\n${lines.join('\n')}\n      ),`;
-  });
+      return `      platform(\n${lines.join('\n')}\n      ),`;
+    });
 
   return `import { reactNative } from '@srsholmes/vitest-react-native';
 import react from '@vitejs/plugin-react';
@@ -190,9 +195,11 @@ const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, s
   const pluginImports = sortedImports([...vitestPlugin?.imports ?? [], ...stylex.imports]);
   const plugins = calls.length === 0 ? '' : `  plugins: [${calls.join(', ')}],\n`;
   const prelude = pluginImports === '' ? '' : `${pluginImports}\n`;
-  const declarations = stylex.declarations.map((line) => {
-    return `\n${line}\n`;
-  }).join('');
+  const declarations = stylex.declarations
+    .map((line) => {
+      return `\n${line}\n`;
+    })
+    .join('');
 
   return `${prelude}import { defineConfig } from 'vitest/config';
 ${declarations}

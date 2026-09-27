@@ -78,31 +78,37 @@ describe('elementNameOf', () => {
   });
 
   it('reads a plain identifier', () => {
-    expect(elementNameOf({
+    const elementName = elementNameOf({
       type: 'JSXIdentifier',
       name: 'Pressable',
-    })).toBe('Pressable');
+    });
+
+    expect(elementName).toBe('Pressable');
   });
 
   // The last part, so `Animated.Image` is checked as an `Image`.
   it('reads the last part of a qualified name', () => {
-    expect(elementNameOf({
+    const elementName = elementNameOf({
       type: 'JSXMemberExpression',
       property: {
         type: 'JSXIdentifier',
         name: 'Image',
       },
-    })).toBe('Image');
+    });
+
+    expect(elementName).toBe('Image');
   });
 
   it('reads the local half of a namespaced name', () => {
-    expect(elementNameOf({
+    const elementName = elementNameOf({
       type: 'JSXNamespacedName',
       name: {
         type: 'JSXIdentifier',
         name: 'rect',
       },
-    })).toBe('rect');
+    });
+
+    expect(elementName).toBe('rect');
   });
 });
 
@@ -139,25 +145,29 @@ describe('literalValueOf', () => {
 
   // `<View accessible />` is `accessible={true}`, which is the shape most of these rules key on.
   it('reads a bare attribute as true', () => {
-    expect(literalValueOf({
+    const literal = literalValueOf({
       type: 'JSXAttribute',
       name: named,
-    })).toBe(true);
+    });
+
+    expect(literal).toBe(true);
   });
 
   it('reads a string attribute', () => {
-    expect(literalValueOf({
+    const literal = literalValueOf({
       type: 'JSXAttribute',
       name: named,
       value: {
         type: 'Literal',
         value: 'yes',
       },
-    })).toBe('yes');
+    });
+
+    expect(literal).toBe('yes');
   });
 
   it('reads a literal inside braces', () => {
-    expect(literalValueOf({
+    const literal = literalValueOf({
       type: 'JSXAttribute',
       name: named,
       value: {
@@ -167,12 +177,14 @@ describe('literalValueOf', () => {
           value: false,
         },
       },
-    })).toBe(false);
+    });
+
+    expect(literal).toBe(false);
   });
 
   // Unreadable rather than absent: a value computed at runtime is the caller's to get right.
   it('answers undefined for a value computed at runtime', () => {
-    expect(literalValueOf({
+    const literal = literalValueOf({
       type: 'JSXAttribute',
       name: named,
       value: {
@@ -182,7 +194,9 @@ describe('literalValueOf', () => {
           name: 'flag',
         },
       },
-    })).toBeUndefined();
+    });
+
+    expect(literal).toBeUndefined();
   });
 });
 
@@ -190,7 +204,7 @@ describe('expressionOf', () => {
   it('answers the expression inside the braces', () => {
     const expression = { type: 'ObjectExpression' };
 
-    expect(expressionOf({
+    const found = expressionOf({
       type: 'JSXAttribute',
       name: {
         type: 'JSXIdentifier',
@@ -200,11 +214,13 @@ describe('expressionOf', () => {
         type: 'JSXExpressionContainer',
         expression,
       },
-    })).toBe(expression);
+    });
+
+    expect(found).toBe(expression);
   });
 
   it('answers undefined when the value is not in braces', () => {
-    expect(expressionOf({
+    const expression = expressionOf({
       type: 'JSXAttribute',
       name: {
         type: 'JSXIdentifier',
@@ -214,7 +230,9 @@ describe('expressionOf', () => {
         type: 'Literal',
         value: 'disabled',
       },
-    })).toBeUndefined();
+    });
+
+    expect(expression).toBeUndefined();
   });
 });
 
@@ -241,23 +259,27 @@ describe('keyNameOf', () => {
   });
 
   it('reads an identifier key', () => {
-    expect(keyNameOf({
+    const keyName = keyNameOf({
       type: 'Property',
       key: {
         type: 'Identifier',
         name: 'disabled',
       },
-    })).toBe('disabled');
+    });
+
+    expect(keyName).toBe('disabled');
   });
 
   it('reads a string-literal key', () => {
-    expect(keyNameOf({
+    const keyName = keyNameOf({
       type: 'Property',
       key: {
         type: 'Literal',
         value: 'disabled',
       },
-    })).toBe('disabled');
+    });
+
+    expect(keyName).toBe('disabled');
   });
 });
 
@@ -273,18 +295,20 @@ describe('isHidden', () => {
       },
     }, false],
   ])('reads %s', (_label, value, hidden) => {
-    expect(isHidden([{
+    const answered = isHidden([{
       type: 'JSXAttribute',
       name: {
         type: 'JSXIdentifier',
         name: 'aria-hidden',
       },
       ...value === undefined ? {} : { value },
-    }])).toBe(hidden);
+    }]);
+
+    expect(answered).toBe(hidden);
   });
 
   it('reads importantForAccessibility=no-hide-descendants as hidden', () => {
-    expect(isHidden([{
+    const hidden = isHidden([{
       type: 'JSXAttribute',
       name: {
         type: 'JSXIdentifier',
@@ -294,12 +318,14 @@ describe('isHidden', () => {
         type: 'Literal',
         value: 'no-hide-descendants',
       },
-    }])).toBe(true);
+    }]);
+
+    expect(hidden).toBe(true);
   });
 
   // The other three values leave the element reachable, so they are not this rule's business.
   it('leaves the other importantForAccessibility values alone', () => {
-    expect(isHidden([{
+    const hidden = isHidden([{
       type: 'JSXAttribute',
       name: {
         type: 'JSXIdentifier',
@@ -309,7 +335,9 @@ describe('isHidden', () => {
         type: 'Literal',
         value: 'yes',
       },
-    }])).toBe(false);
+    }]);
+
+    expect(hidden).toBe(false);
   });
 });
 
@@ -345,10 +373,12 @@ describe('descendantElements', () => {
       children: [{ type: 'JSXExpressionContainer' }, outer],
     };
 
-    expect(descendantElements({
+    const descendants = descendantElements({
       type: 'JSXElement',
       children: [fragment],
-    })).toEqual([outer, inner]);
+    });
+
+    expect(descendants).toEqual([outer, inner]);
   });
 });
 
@@ -365,10 +395,12 @@ describe('hasTextContent', () => {
 
   // A parsed `JSXText` always carries its text, so the empty-string fallback is reachable from here alone.
   it('reads a text child carrying no text as silent', () => {
-    expect(hasTextContent({
+    const hasText = hasTextContent({
       type: 'JSXElement',
       children: [{ type: 'JSXText' }],
-    })).toBe(false);
+    });
+
+    expect(hasText).toBe(false);
   });
 
   // A container holds a value this cannot read, so it counts as text unless it is the empty `{}`.
@@ -393,9 +425,11 @@ describe('hasTextContent', () => {
       }],
     }], true],
   ])('reads %s', (_label, children, text) => {
-    expect(hasTextContent({
+    const hasText = hasTextContent({
       type: 'JSXElement',
       children,
-    })).toBe(text);
+    });
+
+    expect(hasText).toBe(text);
   });
 });

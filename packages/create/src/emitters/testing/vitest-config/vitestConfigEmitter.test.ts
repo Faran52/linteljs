@@ -366,10 +366,12 @@ describe('vitestConfigEmitter', () => {
   });
 
   it('writes nothing when testing is declined', () => {
-    expect(vitestConfigEmitter({
+    const artifacts = vitestConfigEmitter({
       ...DEFAULT_ANSWERS,
       testing: 'none',
-    }, EMPTY_PROJECT)).toEqual([]);
+    }, EMPTY_PROJECT);
+
+    expect(artifacts).toEqual([]);
   });
 });
 
@@ -419,9 +421,12 @@ describe('the coverage surface', () => {
   ])('leaves out of coverage on %s only what it cannot execute', (_label, overrides, excluded) => {
     const [, block = ''] = /coverage: \{[\s\S]*?exclude: \[([^\]]*)\]/u.exec(configFor(overrides) ?? '') ?? [];
 
-    expect([...block.matchAll(/'([^']+)'/gu)].map(([, entry]) => {
-      return entry;
-    })).toEqual([
+    const entries = [...block.matchAll(/'([^']+)'/gu)]
+      .map(([, entry]) => {
+        return entry;
+      });
+
+    expect(entries).toEqual([
       '**/*.test.*',
       '**/*.d.ts',
       'src/typings/**',

@@ -674,22 +674,24 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'client.ts',
   },
   // Nothing to walk: a rule that assumes a first statement, a first token or a comment's neighbour meets none here.
-  ...['empty.js', 'empty.ts', 'Empty.vue', 'Empty.svelte', 'empty.astro'].map((filename) => {
-    return {
-      name: `an empty ${filename}`,
-      code: '',
-      typescript: filename.endsWith('.ts'),
-      filename,
-    };
-  }),
-  ...['notes.js', 'notes.ts'].map((filename) => {
-    return {
-      name: `a comment-only ${filename}`,
-      code: '// one note\n/* and a block */\n',
-      typescript: filename.endsWith('.ts'),
-      filename,
-    };
-  }),
+  ...['empty.js', 'empty.ts', 'Empty.vue', 'Empty.svelte', 'empty.astro']
+    .map((filename) => {
+      return {
+        name: `an empty ${filename}`,
+        code: '',
+        typescript: filename.endsWith('.ts'),
+        filename,
+      };
+    }),
+  ...['notes.js', 'notes.ts']
+    .map((filename) => {
+      return {
+        name: `a comment-only ${filename}`,
+        code: '// one note\n/* and a block */\n',
+        typescript: filename.endsWith('.ts'),
+        filename,
+      };
+    }),
   {
     name: 'a comment-only vue script',
     code: '<script setup lang="ts">\n// nothing yet\n</script>\n',
@@ -731,9 +733,10 @@ const SFC_PARSERS: [string, Linter.Parser][] = [
 ];
 
 const sfcParserFor = (filename?: string): Linter.Parser | undefined => {
-  return SFC_PARSERS.find(([extension]) => {
-    return filename?.endsWith(extension) ?? false;
-  })?.[1];
+  return SFC_PARSERS
+    .find(([extension]) => {
+      return filename?.endsWith(extension) ?? false;
+    })?.[1];
 };
 
 // The component parsers nest typescript-eslint for the script inside, which reads plain JavaScript as well.
@@ -829,15 +832,17 @@ const CLOSERS = new Set([')', '}', ']', '>']);
 export const tokensIn = (code: string, typescript = false, filename?: string): string[] => {
   const { tokens } = astOf(code, typescript, filename);
 
-  return tokens.filter((token, index) => {
+  return tokens
+    .filter((token, index) => {
     // `at`, not an index read: the last token has no next, but ESLint's
     // `Token[]` is typed as if every index were populated.
-    const next = tokens.at(index + 1);
+      const next = tokens.at(index + 1);
 
-    return !(token.value === ',' && next && CLOSERS.has(next.value));
-  }).map((token) => {
-    return `${token.type} ${token.value}`;
-  });
+      return !(token.value === ',' && next && CLOSERS.has(next.value));
+    })
+    .map((token) => {
+      return `${token.type} ${token.value}`;
+    });
 };
 
 const OPENERS = new Set(['(', '{', '[']);
@@ -846,9 +851,10 @@ const BRACKET_CLOSERS = new Set([')', '}', ']']);
 // For each line, the line that opened the innermost bracket still open when it starts, or `undefined` at the top
 // level. Only punctuators count: a template's `${` is part of its template token.
 export const openerLinesIn = (code: string, typescript = false, filename?: string): (number | undefined)[] => {
-  const brackets = astOf(code, typescript, filename).tokens.filter((token) => {
-    return token.type === 'Punctuator' && (OPENERS.has(token.value) || BRACKET_CLOSERS.has(token.value));
-  });
+  const brackets = astOf(code, typescript, filename).tokens
+    .filter((token) => {
+      return token.type === 'Punctuator' && (OPENERS.has(token.value) || BRACKET_CLOSERS.has(token.value));
+    });
   const lineCount = code.split('\n').length;
   const openers: (number | undefined)[] = [];
   const open: number[] = [];
@@ -880,17 +886,22 @@ export const openerLinesIn = (code: string, typescript = false, filename?: strin
 
 // Each comment as its own text, sorted; counting `//` occurrences cannot tell one note from two sharing a line.
 export const commentsIn = (code: string, typescript = false, filename?: string): string[] => {
-  return astOf(code, typescript, filename).comments.map((comment) => {
-    return `${comment.type} ${JSON.stringify(comment.value)}`;
-  }).sort(alphabetically);
+  return astOf(code, typescript, filename).comments
+    .map((comment) => {
+      return `${comment.type} ${JSON.stringify(comment.value)}`;
+    })
+    .sort(alphabetically);
 };
 
 // Runs `--fix` to completion with one rule, or the whole plugin when omitted.
 export const fixWith = (sample: FixerSample, ruleName?: string): string => {
   // Filtered out of the registry rather than looked up by name, which would need a cast to prove the key existed.
-  const active = Object.fromEntries(Object.entries(rules).filter(([name]) => {
-    return ruleName === undefined || name === ruleName;
-  }));
+  const selected = Object.entries(rules)
+    .filter(([name]) => {
+      return ruleName === undefined || name === ruleName;
+    });
+
+  const active = Object.fromEntries(selected);
   const enabled = Object.keys(active);
 
   return linter.verifyAndFix(sample.code, [
@@ -898,9 +909,10 @@ export const fixWith = (sample: FixerSample, ruleName?: string): string => {
       ...filesFor(sample.filename),
       plugins: { '@linteljs': { rules: active } },
       languageOptions: languageOptionsFor(sample),
-      rules: Object.fromEntries(enabled.map((name) => {
-        return [`@linteljs/${name}`, 'error' as const];
-      })),
+      rules: Object.fromEntries(enabled
+        .map((name) => {
+          return [`@linteljs/${name}`, 'error' as const];
+        })),
     },
   ], sample.filename).output;
 };
@@ -938,7 +950,8 @@ export const runtimeErrorIn = (code: string, filename = ''): string | undefined 
 
 // Samples the given parser accepts, so a fixture never fails on its own input.
 export const parseableSamples = (): FixerSample[] => {
-  return FIXER_SAMPLES.filter((sample) => {
-    return parseErrorsIn(sample.code, sample.typescript ?? false, sample.filename).length === 0;
-  });
+  return FIXER_SAMPLES
+    .filter((sample) => {
+      return parseErrorsIn(sample.code, sample.typescript ?? false, sample.filename).length === 0;
+    });
 };

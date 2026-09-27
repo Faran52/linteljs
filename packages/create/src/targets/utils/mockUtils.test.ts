@@ -53,22 +53,31 @@ describe('mockFiles', () => {
   it('writes the bare handlers under a form where the target writes no contact page', () => {
     const files = mockFiles(false);
 
-    expect(pickedBy(files, {
+    const picked = pickedBy(files, {
       mocking: 'msw',
       form: 'tanstack-form',
-    })).toContain('__mocks__/msw/handlers.ts base');
-    expect(files.filter(({ variant }) => {
-      return variant === 'with-form';
-    })).toEqual([]);
+    });
+
+    expect(picked).toContain('__mocks__/msw/handlers.ts base');
+
+    const withForm = files
+      .filter(({ variant }) => {
+        return variant === 'with-form';
+      });
+
+    expect(withForm).toEqual([]);
   });
 
   // React Native has no dev server to serve a worker from, so it carries no entry for one at all.
   it('leaves the browser worker out for a target that serves none, and lands the adapter where it is asked', () => {
     const files = mockFiles(true, false, 'src/lib/utils/fetch-extended.ts');
 
-    expect(files.map(({ target }) => {
-      return target;
-    })).not.toContain('__mocks__/msw/browser.ts');
+    const targets = files
+      .map(({ target }) => {
+        return target;
+      });
+
+    expect(targets).not.toContain('__mocks__/msw/browser.ts');
     expect(files[0]).toEqual({
       target: 'src/lib/utils/fetch-extended.ts',
       source: 'src/lib/utils/fetchExtended.ts',
@@ -98,13 +107,19 @@ describe('mockTests', () => {
   it('covers the bare handlers under a form where the target writes no contact page', () => {
     const tests = mockTests(false);
 
-    expect(pickedBy(tests, {
+    const picked = pickedBy(tests, {
       mocking: 'msw',
       form: 'tanstack-form',
-    })).toContain('__mocks__/msw/handlers.test.ts base');
-    expect(tests.filter(({ variant }) => {
-      return variant === 'with-form';
-    })).toEqual([]);
+    });
+
+    expect(picked).toContain('__mocks__/msw/handlers.test.ts base');
+
+    const withForm = tests
+      .filter(({ variant }) => {
+        return variant === 'with-form';
+      });
+
+    expect(withForm).toEqual([]);
   });
 
   it('names the suite after the adapter it covers', () => {
@@ -127,13 +142,15 @@ describe('accessorFiles', () => {
 
   // React Native takes React's bytes into its own directory, which is what `source` records.
   it('reads another target\'s accessor where one is taken', () => {
-    expect(accessorFiles({
+    const files = accessorFiles({
       ...HOOKS,
       directory: 'src/hooks',
     }, {
       shared: 'react',
       names: HOOKS,
-    })[0]).toMatchObject({
+    })[0];
+
+    expect(files).toMatchObject({
       target: 'src/hooks/use-extended-query/useExtendedQuery.ts',
       variant: 'tanstack-query',
       shared: 'react',
@@ -153,12 +170,14 @@ describe('accessorTests', () => {
 
   // Angular names its suites `.spec.ts` and its files in kebab.
   it('names a suite with the target\'s own suffix', () => {
-    expect(accessorTests({
+    const tests = accessorTests({
       directory: 'src/lib/services',
       query: 'extended-query',
       mutation: 'extended-mutation',
       testSuffix: '.spec.ts',
-    })[1]).toMatchObject({
+    })[1];
+
+    expect(tests).toMatchObject({
       target: 'src/lib/services/extended-mutation/extended-mutation.spec.ts',
       covers: 'src/lib/services/extended-mutation/extended-mutation.ts',
     });
@@ -166,13 +185,15 @@ describe('accessorTests', () => {
 
   // React Native takes React's suites into its own directory, as it takes the accessors they cover.
   it('reads another target\'s suite where one is taken', () => {
-    expect(accessorTests({
+    const tests = accessorTests({
       ...HOOKS,
       directory: 'src/hooks',
     }, {
       shared: 'react',
       names: HOOKS,
-    })).toMatchObject([{
+    });
+
+    expect(tests).toMatchObject([{
       target: 'src/hooks/use-extended-query/useExtendedQuery.test.ts',
       covers: 'src/hooks/use-extended-query/useExtendedQuery.ts',
       shared: 'react',

@@ -37,13 +37,17 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
     return fromAgent;
   }
 
-  const present = await Promise.all(LOCKFILES.map(async ([lockfile, name]) => {
-    return await entryExists(join(cwd, lockfile)) ? name : undefined;
-  }));
+  const lookups = LOCKFILES
+    .map(async ([lockfile, name]) => {
+      return await entryExists(join(cwd, lockfile)) ? name : undefined;
+    });
 
-  const found = present.find((name) => {
-    return name !== undefined;
-  }) ?? 'npm';
+  const present = await Promise.all(lookups);
+
+  const found = present
+    .find((name) => {
+      return name !== undefined;
+    }) ?? 'npm';
 
   return {
     // `yarn.lock` names yarn without saying which one, and the two are different managers here.

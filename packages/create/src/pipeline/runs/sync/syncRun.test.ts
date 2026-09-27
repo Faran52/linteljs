@@ -67,17 +67,21 @@ afterEach(async () => {
 const applyPending = async (answers: HostedAnswers): Promise<SyncResult> => {
   const { pending } = await planSync(cwd, answers);
 
-  return await applySync(cwd, answers, pending.map((entry) => {
-    return entry.target;
-  }));
+  const targets = pending
+    .map((entry) => {
+      return entry.target;
+    });
+
+  return await applySync(cwd, answers, targets);
 };
 
 const entryOf = async (answers: HostedAnswers, target: string): Promise<SyncEntry | undefined> => {
   const { entries } = await planSync(cwd, answers);
 
-  return entries.find((entry) => {
-    return entry.target === target;
-  });
+  return entries
+    .find((entry) => {
+      return entry.target === target;
+    });
 };
 
 const statusOf = async (answers: HostedAnswers, target: string): Promise<string | undefined> => {
@@ -89,9 +93,13 @@ describe('planSync', () => {
     const plan = await planSync(cwd, HOSTED_DEFAULTS);
 
     expect(plan.entries.length).toBeGreaterThan(0);
-    expect(plan.entries.every((entry) => {
-      return entry.status === 'missing' && entry.diff === '';
-    })).toBe(true);
+
+    const allMissing = plan.entries
+      .every((entry) => {
+        return entry.status === 'missing' && entry.diff === '';
+      });
+
+    expect(allMissing).toBe(true);
     expect(plan.pending).toEqual(plan.entries);
   });
 
@@ -101,9 +109,10 @@ describe('planSync', () => {
    */
   it('never plans the recorded config or its own record', async () => {
     const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
-    const targets = entries.map(({ target }) => {
-      return target;
-    });
+    const targets = entries
+      .map(({ target }) => {
+        return target;
+      });
 
     expect(targets).not.toContain(CONFIG_PATH);
     expect(targets).not.toContain(MANAGED_PATH);
@@ -113,15 +122,20 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
 
     const plan = await planSync(cwd, HOSTED_DEFAULTS);
-    const entry = plan.entries.find((candidate) => {
-      return candidate.target === 'eslint.config.js';
-    });
+    const entry = plan.entries
+      .find((candidate) => {
+        return candidate.target === 'eslint.config.js';
+      });
 
     expect(entry?.status).toBe('unchanged');
     expect(entry?.diff).toBe('');
-    expect(plan.pending.some((candidate) => {
-      return candidate.target === 'eslint.config.js';
-    })).toBe(false);
+
+    const pendsConfig = plan.pending
+      .some((candidate) => {
+        return candidate.target === 'eslint.config.js';
+      });
+
+    expect(pendsConfig).toBe(false);
   });
 
   // A copied rule rather than an emitted config, and a full project around it, every other file of which is unchanged.
@@ -131,9 +145,12 @@ describe('planSync', () => {
 
     const { pending } = await planSync(cwd, HOSTED_DEFAULTS);
 
-    expect(pending.map(({ target, status }) => {
-      return [target, status];
-    })).toEqual([[TYPE_STANDARDS, 'changed']]);
+    const statuses = pending
+      .map(({ target, status }) => {
+        return [target, status];
+      });
+
+    expect(statuses).toEqual([[TYPE_STANDARDS, 'changed']]);
     expect(pending[0]?.diff).toContain('local edit');
     expect(await readFile(join(cwd, TYPE_STANDARDS), 'utf8')).toBe('# local edit\n');
   });
@@ -145,9 +162,10 @@ describe('planSync', () => {
     vi.stubEnv('PATH', '');
 
     try {
-      const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries.find(({ target }) => {
-        return target === TYPE_STANDARDS;
-      });
+      const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries
+        .find(({ target }) => {
+          return target === TYPE_STANDARDS;
+        });
 
       expect(entry?.status).toBe('changed');
       expect(entry?.diff).toBe('');
@@ -162,9 +180,10 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
     await writeFile(join(cwd, TYPE_STANDARDS), 'local edit\n'.repeat(200_000), 'utf8');
 
-    const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries.find(({ target }) => {
-      return target === TYPE_STANDARDS;
-    });
+    const entry = (await planSync(cwd, HOSTED_DEFAULTS)).entries
+      .find(({ target }) => {
+        return target === TYPE_STANDARDS;
+      });
 
     expect(entry?.status).toBe('changed');
     expect(entry?.diff).toBe('');
@@ -175,9 +194,10 @@ describe('planSync', () => {
     await writeFile(join(cwd, 'eslint.config.js'), '// edited locally\n', 'utf8');
 
     const plan = await planSync(cwd, HOSTED_DEFAULTS);
-    const entry = plan.entries.find((candidate) => {
-      return candidate.target === 'eslint.config.js';
-    });
+    const entry = plan.entries
+      .find((candidate) => {
+        return candidate.target === 'eslint.config.js';
+      });
 
     expect(entry?.status).toBe('changed');
     expect(entry?.diff).toContain('edited locally');
@@ -212,16 +232,24 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
 
     const { entries, pending } = await planSync(cwd, CODEX_ONLY);
-    const obsolete = entries.filter((entry) => {
-      return entry.status === 'obsolete';
-    });
+    const obsolete = entries
+      .filter((entry) => {
+        return entry.status === 'obsolete';
+      });
 
-    expect(obsolete.map((entry) => {
-      return entry.target;
-    })).toEqual(CLAUDE_ONLY);
-    expect(obsolete.every((entry) => {
-      return entry.diff === '';
-    })).toBe(true);
+    const obsoleteTargets = obsolete
+      .map((entry) => {
+        return entry.target;
+      });
+
+    expect(obsoleteTargets).toEqual(CLAUDE_ONLY);
+
+    const allEmpty = obsolete
+      .every((entry) => {
+        return entry.diff === '';
+      });
+
+    expect(allEmpty).toBe(true);
     expect(pending).toEqual(expect.arrayContaining(obsolete));
   });
 
@@ -230,11 +258,13 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md', '.claude/settings.json']);
     await writeFile(join(cwd, '.claude/notes.md'), '# ours\n', 'utf8');
 
-    const obsolete = (await planSync(cwd, CODEX_ONLY)).entries.filter((entry) => {
-      return entry.status === 'obsolete';
-    }).map((entry) => {
-      return entry.target;
-    });
+    const obsolete = (await planSync(cwd, CODEX_ONLY)).entries
+      .filter((entry) => {
+        return entry.status === 'obsolete';
+      })
+      .map((entry) => {
+        return entry.target;
+      });
 
     expect(obsolete).toEqual(['.claude/settings.json']);
     expect(obsolete).not.toContain('CLAUDE.md');
@@ -243,9 +273,12 @@ describe('planSync', () => {
   it('reports nothing obsolete for a path the project never had', async () => {
     const plan = await planSync(cwd, CODEX_ONLY);
 
-    expect(plan.entries.some((entry) => {
-      return entry.status === 'obsolete';
-    })).toBe(false);
+    const anyObsolete = plan.entries
+      .some((entry) => {
+        return entry.status === 'obsolete';
+      });
+
+    expect(anyObsolete).toBe(false);
   });
 });
 
@@ -274,9 +307,12 @@ describe('applySync', () => {
 
     const { pending } = await planSync(cwd, HOSTED_DEFAULTS);
 
-    expect(pending.map(({ target, status }) => {
-      return [target, status];
-    })).toEqual([['eslint.config.js', 'changed'], ['tsconfig.json', 'missing']]);
+    const statuses = pending
+      .map(({ target, status }) => {
+        return [target, status];
+      });
+
+    expect(statuses).toEqual([['eslint.config.js', 'changed'], ['tsconfig.json', 'missing']]);
 
     const { written } = await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js', 'tsconfig.json']);
 
@@ -407,11 +443,15 @@ describe('applySync', () => {
 
     const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
 
-    expect(entries.filter(({ status }) => {
-      return status === 'obsolete';
-    }).map(({ target }) => {
-      return target;
-    })).toEqual(retired);
+    const obsoleteTargets = entries
+      .filter(({ status }) => {
+        return status === 'obsolete';
+      })
+      .map(({ target }) => {
+        return target;
+      });
+
+    expect(obsoleteTargets).toEqual(retired);
 
     const { removed } = await applyPending(HOSTED_DEFAULTS);
 

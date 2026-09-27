@@ -11,10 +11,13 @@ export const globsOf = (source: string): string => {
 
   return listed === undefined
     ? ''
-    : listed.split('\n').flatMap((line) => {
+    : listed
+        .split('\n')
+        .flatMap((line) => {
         // `PATHS` has already held every line to `  - "..."`, so the quotes are all that is left to read.
-        return /"(.+)"/u.exec(line)?.[1] ?? [];
-      }).join(',');
+          return /"(.+)"/u.exec(line)?.[1] ?? [];
+        })
+        .join(',');
 };
 
 const withoutFrontmatter = (source: string): string => {
@@ -37,16 +40,17 @@ export const ruleArtifacts = (
   suffix: string,
   frontmatter: (source: string) => string,
 ): Artifact[] => {
-  return ruleSources(answers).map(({ name, sources }) => {
-    return {
-      stage: 'standard',
-      target: `${directory}/${named(name, suffix)}`,
-      content: {
-        sources,
-        transform: (source: string) => {
-          return `${frontmatter(source)}${withoutFrontmatter(source)}`;
+  return ruleSources(answers)
+    .map(({ name, sources }) => {
+      return {
+        stage: 'standard',
+        target: `${directory}/${named(name, suffix)}`,
+        content: {
+          sources,
+          transform: (source: string) => {
+            return `${frontmatter(source)}${withoutFrontmatter(source)}`;
+          },
         },
-      },
-    };
-  });
+      };
+    });
 };

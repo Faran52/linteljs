@@ -40,14 +40,19 @@ describe('emitPnpmWorkspace', () => {
    * hosting Vue.
    */
   it("takes a hosted framework's build allowance into the host", () => {
-    expect(allowBuildsBlock(answersFor({
+    const onAstro = allowBuildsBlock(answersFor({
       target: 'astro',
       hostedFramework: 'vue',
-    }))).toContain("'vue-demi': true");
-    expect(allowBuildsBlock(answersFor({
+    }));
+
+    expect(onAstro).toContain("'vue-demi': true");
+
+    const onExtension = allowBuildsBlock(answersFor({
       target: 'webextension',
       hostedFramework: 'vue',
-    }))).toContain("'vue-demi': true");
+    }));
+
+    expect(onExtension).toContain("'vue-demi': true");
   });
 
   it('names no framework build where the host hosts none', () => {
@@ -120,9 +125,11 @@ describe('react native allowances', () => {
   });
 
   it('mutes no deprecation for a firefox extension either', () => {
-    expect(emitPnpmWorkspace(answersFor({
+    const workspace = emitPnpmWorkspace(answersFor({
       target: 'webextension',
       browser: 'firefox',
-    }))).not.toContain('allowedDeprecatedVersions');
+    }));
+
+    expect(workspace).not.toContain('allowedDeprecatedVersions');
   });
 });

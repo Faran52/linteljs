@@ -7,9 +7,10 @@ import type { NamingMap } from '../../../types';
 export const buildNaming = (naming?: NamingMap, folderNaming?: NamingMap): Linter.Config[] => {
   const files = [
     ...Object.keys(naming ?? {}),
-    ...Object.keys(folderNaming ?? {}).map((glob) => {
-      return `${glob}*`;
-    }),
+    ...Object.keys(folderNaming ?? {})
+      .map((glob) => {
+        return `${glob}*`;
+      }),
   ];
 
   if (files.length === 0) {

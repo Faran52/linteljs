@@ -12,13 +12,18 @@ describe('pluginsAnswer', () => {
   });
 
   it('is asked only once an agent has been chosen', () => {
-    expect(pluginsAnswer.askedWhen({
+    const withoutAgent = pluginsAnswer.askedWhen({
       ...DEFAULT_ANSWERS,
       agents: [],
-    })).toBe(false);
-    expect(pluginsAnswer.askedWhen({
+    });
+
+    expect(withoutAgent).toBe(false);
+
+    const withAgent = pluginsAnswer.askedWhen({
       ...DEFAULT_ANSWERS,
       agents: ['claude-code'],
-    })).toBe(true);
+    });
+
+    expect(withAgent).toBe(true);
   });
 });

@@ -64,12 +64,13 @@ describe('projectShapeReader', () => {
 
 // Every target declares one, and the reader has to know every spelling it might meet.
 const targetDefaults = (): string[] => {
-  return TARGET_IDS.map((target) => {
-    return TARGETS[target]({
-      ...DEFAULT_ANSWERS,
-      target,
-    }).styleEntry;
-  });
+  return TARGET_IDS
+    .map((target) => {
+      return TARGETS[target]({
+        ...DEFAULT_ANSWERS,
+        target,
+      }).styleEntry;
+    });
 };
 
 /**
@@ -84,9 +85,12 @@ describe('STYLE_ENTRY_CANDIDATES', () => {
 
   // Add a target whose stylesheet nobody added here and `projectShapeReader` would never look for it.
   it('looks for every stylesheet a target writes', () => {
-    expect(targetDefaults().filter((entry) => {
-      return !STYLE_ENTRY_CANDIDATES.includes(entry);
-    })).toEqual([]);
+    const outsideCandidates = targetDefaults()
+      .filter((entry) => {
+        return !STYLE_ENTRY_CANDIDATES.includes(entry);
+      });
+
+    expect(outsideCandidates).toEqual([]);
   });
 
   it('carries no duplicate, which would make the order behind it unreachable', () => {

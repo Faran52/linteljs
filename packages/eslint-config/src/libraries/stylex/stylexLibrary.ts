@@ -84,12 +84,13 @@ export const stylex = (): Layer => {
         allowRawCSSVars: true,
         allowOuterPseudoAndMedia: false,
         banPropsForLegacy: false,
-        propLimits: Object.fromEntries(DROPPED_SHORTHANDS.map((prop) => {
-          return [prop, {
-            limit: null,
-            reason: 'StyleX drops this shorthand with no error. Use the longhands.',
-          }];
-        })),
+        propLimits: Object.fromEntries(DROPPED_SHORTHANDS
+          .map((prop) => {
+            return [prop, {
+              limit: null,
+              reason: 'StyleX drops this shorthand with no error. Use the longhands.',
+            }];
+          })),
       }],
       '@stylexjs/valid-shorthands': ['error', {
         validImports: VALID_IMPORTS,

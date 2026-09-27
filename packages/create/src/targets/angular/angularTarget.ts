@@ -83,15 +83,17 @@ export const angularTarget: TargetRecord = {
     ...mockFiles(false, true, 'src/lib/utils/fetch-extended.ts'),
     ...componentStyles(),
     ...accessorFiles(ACCESSORS),
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     {
       target: 'src/styles/theme.css',
       when: (answers) => {

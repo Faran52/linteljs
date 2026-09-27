@@ -192,9 +192,10 @@ const value = thing;`,
 // svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so each script is its own list and the
 // fix writes at the script body's indent rather than at column 0.
 const component = (...script: string[]): string => {
-  return ['<script lang="ts">', ...script.map((line) => {
-    return line === '' ? '' : `  ${line}`;
-  }), '</script>', '', '<p>{count}</p>', ''].join('\n');
+  return ['<script lang="ts">', ...script
+    .map((line) => {
+      return line === '' ? '' : `  ${line}`;
+    }), '</script>', '', '<p>{count}</p>', ''].join('\n');
 };
 
 svelteRuleTester.run('interface-order: svelte', interfaceOrder, {

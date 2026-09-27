@@ -340,9 +340,10 @@ describe('main: sync', () => {
     await generated();
 
     const references = join(project, 'plugins/linteljs/skills/linteljs/references');
-    const [first = '', second = ''] = (await readdir(references)).toSorted((left, right) => {
-      return left.localeCompare(right, 'en');
-    });
+    const [first = '', second = ''] = (await readdir(references))
+      .toSorted((left, right) => {
+        return left.localeCompare(right, 'en');
+      });
 
     await writeFile(join(references, first), '# local edit\n', 'utf8');
 

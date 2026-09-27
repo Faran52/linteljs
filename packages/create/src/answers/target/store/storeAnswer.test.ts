@@ -33,13 +33,18 @@ describe('storeAnswer', () => {
       target: 'react',
     });
 
-    expect(storeAnswer.values[store].only({
+    const listed = storeAnswer.values[store].only({
       ...react,
       stores: [store],
-    })).toBe(true);
-    expect(storeAnswer.values[store].only({
+    });
+
+    expect(listed).toBe(true);
+
+    const unlisted = storeAnswer.values[store].only({
       ...react,
       stores: [],
-    })).toBe(false);
+    });
+
+    expect(unlisted).toBe(false);
   });
 });

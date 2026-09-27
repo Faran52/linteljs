@@ -45,10 +45,12 @@ describe('isJsonObject', () => {
 
 describe('valuesOf', () => {
   it('answers the keys a record carries, in the order it declares them', () => {
-    expect(valuesOf({
+    const values = valuesOf({
       react: 'React',
       vue: 'Vue',
-    })).toEqual(['react', 'vue']);
+    });
+
+    expect(values).toEqual(['react', 'vue']);
   });
 });
 

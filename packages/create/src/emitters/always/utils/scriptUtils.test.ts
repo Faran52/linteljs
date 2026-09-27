@@ -134,10 +134,12 @@ describe('buildScripts', () => {
 
   // Framework mode hands the build, the dev server and the type generation to React Router's own CLI.
   it('writes the scripts React Router runs in framework mode', () => {
-    expect(buildScripts({
+    const scripts = buildScripts({
       ...answersFor({ target: 'react' }),
       router: 'react-router-framework',
-    })).toMatchObject({
+    });
+
+    expect(scripts).toMatchObject({
       typecheck: 'react-router typegen && tsc --noEmit',
       build: 'react-router build',
       dev: 'react-router dev',

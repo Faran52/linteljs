@@ -93,9 +93,10 @@ const ANSWER_KEYS = valuesOf(ANSWERS);
 // call's own `key` turns out to name.
 const chosenValuesOf = (value: Answers[AnswerKey]): string[] => {
   if (Array.isArray(value)) {
-    return value.filter((item): item is string => {
-      return typeof item === 'string';
-    });
+    return value
+      .filter((item): item is string => {
+        return typeof item === 'string';
+      });
   }
 
   return typeof value === 'string' ? [value] : [];
@@ -206,9 +207,10 @@ const configFrom = (raw: ConfigObject): LinteljsConfig => {
   const schemaVersion = schemaVersionOf(raw.schemaVersion);
   const parsed = lifted(raw, schemaVersion);
 
-  const unexpected = Object.keys(parsed).find((key) => {
-    return !expectedKeys.includes(key);
-  });
+  const unexpected = Object.keys(parsed)
+    .find((key) => {
+      return !expectedKeys.includes(key);
+    });
 
   if (unexpected !== undefined) {
     throw new Error(`linteljs.config.json has unexpected property: ${unexpected}`);

@@ -105,20 +105,21 @@ export const emitManifest = (
  * the project's to keep.
  */
 export const manifestEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
-  return browsersOf(answers).flatMap((browser) => {
-    const manifest = emitManifest(answers, name, browser);
+  return browsersOf(answers)
+    .flatMap((browser) => {
+      const manifest = emitManifest(answers, name, browser);
 
-    if (manifest === null) {
-      return [];
-    }
+      if (manifest === null) {
+        return [];
+      }
 
-    return [{
-      ...emitted(
-        'standard',
-        browser === answers.browser ? 'manifest.json' : `manifest.${browser}.json`,
-        manifest,
-      ),
-      seed: true,
-    } satisfies Artifact];
-  });
+      return [{
+        ...emitted(
+          'standard',
+          browser === answers.browser ? 'manifest.json' : `manifest.${browser}.json`,
+          manifest,
+        ),
+        seed: true,
+      } satisfies Artifact];
+    });
 };

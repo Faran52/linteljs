@@ -123,22 +123,26 @@ if (!sonarjs.rules) {
 
 const installed = Object.keys(sonarjs.rules);
 const expected = Object.keys(SECURITY_RULES);
-const missing = expected.filter((name) => {
-  return !installed.includes(name);
-});
+const missing = expected
+  .filter((name) => {
+    return !installed.includes(name);
+  });
 
 // A rule this scan believes it runs but the plugin no longer has would show up as a clean report, the worst outcome.
 if (missing.length > 0) {
   logError(`eslint-plugin-sonarjs no longer ships ${String(missing.length)} rule(s) this scan expects:\n${
-    missing.map((name) => {
-      return `  sonarjs/${name}  (${String(SECURITY_RULES[name])})`;
-    }).join('\n')}\nThe plugin renamed or dropped them. Update SECURITY_RULES, do not delete the line.`);
+    missing
+      .map((name) => {
+        return `  sonarjs/${name}  (${String(SECURITY_RULES[name])})`;
+      })
+      .join('\n')}\nThe plugin renamed or dropped them. Update SECURITY_RULES, do not delete the line.`);
   process.exit(1);
 }
 
-const rules = Object.fromEntries(expected.map((name) => {
-  return [`sonarjs/${name}`, 'error' as const];
-}));
+const rules = Object.fromEntries(expected
+  .map((name) => {
+    return [`sonarjs/${name}`, 'error' as const];
+  }));
 
 const eslint = new ESLint({
   cwd: root,
@@ -172,35 +176,41 @@ const results = await eslint.lintFiles(['src', 'scripts']);
 
 log(`scanned ${String(results.length)} files under src/ and scripts/`);
 
-const findings = results.flatMap((result) => {
-  return result.messages.map((message): Finding => {
-    return {
-      file: relative(root, result.filePath),
-      line: message.line,
-      rule: message.ruleId,
-      text: message.message,
-      fatal: Boolean(message.fatal),
-    };
+const findings = results
+  .flatMap((result) => {
+    return result.messages
+      .map((message): Finding => {
+        return {
+          file: relative(root, result.filePath),
+          line: message.line,
+          rule: message.ruleId,
+          text: message.message,
+          fatal: Boolean(message.fatal),
+        };
+      });
   });
-});
 
 // A file that failed to parse produced no findings, which reads as clean. It is not.
-const fatal = findings.filter((finding) => {
-  return finding.fatal;
-});
+const fatal = findings
+  .filter((finding) => {
+    return finding.fatal;
+  });
 
 if (fatal.length > 0) {
-  logError(`Parse failures. These files were not scanned at all:\n${fatal.map((finding) => {
-    return `  ${finding.file}:${String(finding.line)}  ${finding.text}`;
-  }).join('\n')}`);
+  logError(`Parse failures. These files were not scanned at all:\n${fatal
+    .map((finding) => {
+      return `  ${finding.file}:${String(finding.line)}  ${finding.text}`;
+    })
+    .join('\n')}`);
   process.exit(1);
 }
 
 // `noInlineConfig` makes ESLint emit a rule-less warning for every disable comment it ignored: the setting
 // working, not a finding, so it is dropped here. The suppressed rule still reports, the point of the flag.
-const reported = findings.filter((finding) => {
-  return finding.rule !== null;
-});
+const reported = findings
+  .filter((finding) => {
+    return finding.rule !== null;
+  });
 
 const byRule = countBy(reported, (finding) => {
   return String(finding.rule);
@@ -215,16 +225,21 @@ const lineOf = ({
 };
 
 if (reported.length > 0) {
-  log(`findings by rule:\n${Object.entries(byRule).sort(([left], [right]) => {
-    return left.localeCompare(right);
-  }).map(([rule, count]) => {
-    return `  ${String(count)}  ${rule}`;
-  }).join('\n')}`);
+  log(`findings by rule:\n${Object.entries(byRule)
+    .sort(([left], [right]) => {
+      return left.localeCompare(right);
+    })
+    .map(([rule, count]) => {
+      return `  ${String(count)}  ${rule}`;
+    })
+    .join('\n')}`);
 }
 
 // No allowlist: none is needed today, and a finding worth accepting deserves the argument in review, not here.
 if (reported.length > 0) {
-  logError(`${String(reported.length)} finding(s):\n${reported.map(lineOf).join('\n')}`);
+  logError(`${String(reported.length)} finding(s):\n${reported
+    .map(lineOf)
+    .join('\n')}`);
   process.exit(1);
 }
 

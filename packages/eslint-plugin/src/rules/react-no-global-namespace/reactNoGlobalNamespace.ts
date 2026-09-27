@@ -59,9 +59,10 @@ interface ImportNode {
 
 // A named specifier is the only thing a fix can sit beside; a default or namespace one has no list to join.
 const namedSpecifiers = (node: ImportNode): ImportSpecifier[] => {
-  return node.specifiers.filter((specifier) => {
-    return specifier.type === 'ImportSpecifier';
-  });
+  return node.specifiers
+    .filter((specifier) => {
+      return specifier.type === 'ImportSpecifier';
+    });
 };
 
 const NAMESPACE = 'React';
@@ -73,10 +74,11 @@ const DECLARATION_FILE = /\.d\.[cm]?ts$/;
 // A value reach needs a value binding. `import type { Fragment } from 'react'` and `import { type Fragment }`
 // both bind a type, and `<Fragment>` against one is a value TypeScript refuses. A type reach takes either.
 const bindsUsably = (node: ImportNode, name: string, isType: boolean): boolean => {
-  return node.specifiers.some((specifier) => {
-    return specifier.local.name === name
-      && (isType || (node.importKind !== 'type' && specifier.importKind !== 'type'));
-  });
+  return node.specifiers
+    .some((specifier) => {
+      return specifier.local.name === name
+        && (isType || (node.importKind !== 'type' && specifier.importKind !== 'type'));
+    });
 };
 
 const isAmbient = (node: TypedNode & Ambient): boolean => {
@@ -141,9 +143,12 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
      * script to take an import, so it gets no fix.
      */
     const importAnchor = (member: RuleNode): (Located & Ranged) | undefined => {
-      const first = mustFind(source.ast.body.find((entry) => {
-        return !isDirective(entry);
-      }), 'the first statement past the prologue');
+      const firstStatement = source.ast.body
+        .find((entry) => {
+          return !isDirective(entry);
+        });
+
+      const first = mustFind(firstStatement, 'the first statement past the prologue');
       const firstType: string = first.type;
 
       if (!firstType.startsWith('Svelte')) {
@@ -151,11 +156,12 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       }
 
       const chain = [...ancestorsOf(context, member), member];
-      const script = chain.findIndex((node) => {
-        const type: string = node.type;
+      const script = chain
+        .findIndex((node) => {
+          const type: string = node.type;
 
-        return type === 'SvelteScriptElement';
-      });
+          return type === 'SvelteScriptElement';
+        });
 
       return script === -1 ? undefined : chain[script + 1];
     };
@@ -189,9 +195,10 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         const specifier = isType ? `type ${name}` : name;
 
         // A range each, because a JSX element carries the reach twice and both tags have to move together.
-        const replaced = targets.map((target) => {
-          return fixer.replaceTextRange(target, name);
-        });
+        const replaced = targets
+          .map((target) => {
+            return fixer.replaceTextRange(target, name);
+          });
 
         if (alreadyImported) {
           return replaced;

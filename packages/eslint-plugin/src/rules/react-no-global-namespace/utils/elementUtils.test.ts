@@ -42,10 +42,12 @@ const tag = (object: string, property: string): NamedTag => {
 
 describe('globalNamespaceTags', () => {
   it('answers both tags where the element has a closing one', () => {
-    expect(globalNamespaceTags(element({
+    const tags = globalNamespaceTags(element({
       openingElement: tag('React', 'Fragment'),
       closingElement: tag('React', 'Fragment'),
-    }), 'React')).toHaveLength(2);
+    }), 'React');
+
+    expect(tags).toHaveLength(2);
   });
 
   it('answers the opening tag alone where the element is self-closing', () => {

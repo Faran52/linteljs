@@ -144,18 +144,20 @@ export const elementNameOf = (name: JsxName | undefined): string => {
 };
 
 export const hasSpread = (attributes: JsxAttributeLike[]): boolean => {
-  return attributes.some((attribute) => {
-    return attribute.type === 'JSXSpreadAttribute';
-  });
+  return attributes
+    .some((attribute) => {
+      return attribute.type === 'JSXSpreadAttribute';
+    });
 };
 
 export const findProp = (
   attributes: JsxAttributeLike[],
   names: readonly string[],
 ): JsxAttribute | undefined => {
-  return attributes.find((attribute): attribute is JsxAttribute => {
-    return attribute.type === 'JSXAttribute' && names.includes(elementNameOf(attribute.name));
-  });
+  return attributes
+    .find((attribute): attribute is JsxAttribute => {
+      return attribute.type === 'JSXAttribute' && names.includes(elementNameOf(attribute.name));
+    });
 };
 
 export const hasProp = (attributes: JsxAttributeLike[], names: readonly string[]): boolean => {
@@ -259,11 +261,12 @@ export const isInteractive = (
 
 // Depth-first over every element below `node`, so a control nested inside layout views is still found.
 export const descendantElements = (node: JsxChild | JsxElement): JsxChild[] => {
-  return (node.children ?? []).flatMap((child) => {
-    return child.type === 'JSXElement'
-      ? [child, ...descendantElements(child)]
-      : descendantElements(child);
-  });
+  return (node.children ?? [])
+    .flatMap((child) => {
+      return child.type === 'JSXElement'
+        ? [child, ...descendantElements(child)]
+        : descendantElements(child);
+    });
 };
 
 /**
@@ -274,16 +277,17 @@ export const descendantElements = (node: JsxChild | JsxElement): JsxChild[] => {
  * costs a missed report, while assuming it does not costs a false one on the commonest pattern in the language.
  */
 export const hasTextContent = (node: JsxChild | JsxElement): boolean => {
-  return (node.children ?? []).some((child) => {
-    if (child.type === 'JSXText') {
-      return (child.value ?? '').trim() !== '';
-    }
+  return (node.children ?? [])
+    .some((child) => {
+      if (child.type === 'JSXText') {
+        return (child.value ?? '').trim() !== '';
+      }
 
-    // A container always holds an expression, `{}` included as JSXEmptyExpression.
-    if (child.type === 'JSXExpressionContainer') {
-      return mustFind(child.expression, 'the expression of a JSX expression container').type !== 'JSXEmptyExpression';
-    }
+      // A container always holds an expression, `{}` included as JSXEmptyExpression.
+      if (child.type === 'JSXExpressionContainer') {
+        return mustFind(child.expression, 'the expression of a JSX expression container').type !== 'JSXEmptyExpression';
+      }
 
-    return hasTextContent(child);
-  });
+      return hasTextContent(child);
+    });
 };

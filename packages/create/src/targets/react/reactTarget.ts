@@ -81,15 +81,17 @@ const baseReactTarget: TargetRecord = {
   vitePlugin: REACT_VITE_PLUGIN,
   tsconfig: { jsx: 'react-jsx' },
   starterFiles: [
-    ...ALWAYS.map((target): StarterFile => {
-      return { target };
-    }),
-    ...SHARED.map((target): StarterFile => {
-      return {
-        target,
-        shared: true,
-      };
-    }),
+    ...ALWAYS
+      .map((target): StarterFile => {
+        return { target };
+      }),
+    ...SHARED
+      .map((target): StarterFile => {
+        return {
+          target,
+          shared: true,
+        };
+      }),
     /*
      * Every styled component's rules as a module beside it, both spellings. `AppHeader.tsx` varies by router
      * alone and not by router times styling, which is the copy-per-combination this repository refuses.
@@ -158,14 +160,15 @@ const baseReactTarget: TargetRecord = {
       'src/pages/contact/ContactPage.tsx',
       'src/components/ui/text-input/TextInput.tsx',
       'src/lib/apis/contact/index.ts',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: (answers) => {
-          return answers.form !== undefined;
-        },
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: (answers) => {
+            return answers.form !== undefined;
+          },
+        };
+      }),
     /*
      * One submit shape across all three, so the form hook is written once: a plain call with no data layer, a
      * mutation under TanStack Query, and a generated endpoint under RTK Query, which keeps its own `createApi`
@@ -177,15 +180,16 @@ const baseReactTarget: TargetRecord = {
         return answers.form !== undefined && answers.data === undefined;
       },
     },
-    ...(['tanstack-query', 'rtk-query'] as const).map((data): StarterFile => {
-      return {
-        target: 'src/lib/apis/contact/api.ts',
-        when: (answers) => {
-          return answers.form !== undefined && answers.data === data;
-        },
-        variant: data,
-      };
-    }),
+    ...(['tanstack-query', 'rtk-query'] as const)
+      .map((data): StarterFile => {
+        return {
+          target: 'src/lib/apis/contact/api.ts',
+          when: (answers) => {
+            return answers.form !== undefined && answers.data === data;
+          },
+          variant: data,
+        };
+      }),
     // TanStack Query is the one data layer needing an ancestor; RTK Query rides the Redux provider beside it.
     {
       target: 'src/lib/providers/DataProvider.tsx',
@@ -217,15 +221,16 @@ const baseReactTarget: TargetRecord = {
       variant: 'zod',
       shared: true,
     },
-    ...(['tanstack-form', 'react-hook-form'] as const).map((form): StarterFile => {
-      return {
-        target: 'src/pages/contact/useContactForm.ts',
-        when: (answers) => {
-          return answers.form === form;
-        },
-        variant: form,
-      };
-    }),
+    ...(['tanstack-form', 'react-hook-form'] as const)
+      .map((form): StarterFile => {
+        return {
+          target: 'src/pages/contact/useContactForm.ts',
+          when: (answers) => {
+            return answers.form === form;
+          },
+          variant: form,
+        };
+      }),
     // A button is what a store or a form gives the page to press; neither, and nothing presses anything.
     {
       target: 'src/components/ui/button/Button.tsx',
@@ -275,15 +280,16 @@ const baseReactTarget: TargetRecord = {
       variant: 'redux-toolkit',
     },
     // The markup is the same for every store, so only the module behind `useCounter` varies by which one.
-    ...(['zustand', 'tanstack-store'] as const).map((store): StarterFile => {
-      return {
-        target: 'src/lib/store/counter.ts',
-        when: (answers) => {
-          return answers.store === store;
-        },
-        variant: store,
-      };
-    }),
+    ...(['zustand', 'tanstack-store'] as const)
+      .map((store): StarterFile => {
+        return {
+          target: 'src/lib/store/counter.ts',
+          when: (answers) => {
+            return answers.store === store;
+          },
+          variant: store,
+        };
+      }),
     // The Redux store is the one place RTK Query has to be registered, since its middleware is what makes it work.
     {
       target: 'src/lib/store/counter.ts',
@@ -300,35 +306,37 @@ const baseReactTarget: TargetRecord = {
       variant: 'rtk-query',
     },
     // A router replaces the entry and routes the same pages, and renders the header's tabs as real links.
-    ...DECLARATIVE_ROUTERS.flatMap((router): StarterFile[] => {
-      const chosen = (answers: Answers): boolean => {
-        return answers.router === router;
-      };
+    ...DECLARATIVE_ROUTERS
+      .flatMap((router): StarterFile[] => {
+        const chosen = (answers: Answers): boolean => {
+          return answers.router === router;
+        };
 
-      return [
-        {
-          target: 'src/App.tsx',
-          when: chosen,
-          variant: router,
-        },
-        {
-          target: 'src/components/features/app-header/AppHeader.tsx',
-          when: chosen,
-          variant: router,
-        },
-      ];
-    }),
+        return [
+          {
+            target: 'src/App.tsx',
+            when: chosen,
+            variant: router,
+          },
+          {
+            target: 'src/components/features/app-header/AppHeader.tsx',
+            when: chosen,
+            variant: router,
+          },
+        ];
+      }),
     ...([
       'src/routes/router.tsx',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: (answers) => {
-          return answers.router === 'react-router';
-        },
-        variant: 'react-router',
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: (answers) => {
+            return answers.router === 'react-router';
+          },
+          variant: 'react-router',
+        };
+      }),
     /*
      * Framework mode's own five. The header is the `react-router` one verbatim, because `NavLink` off `ROUTES` is
      * the same in both, and there is no `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's
@@ -345,13 +353,14 @@ const baseReactTarget: TargetRecord = {
       'src/routes/home.tsx',
       'src/routes/about.tsx',
       'src/routes/version.tsx',
-    ] as const).map((target): StarterFile => {
-      return {
-        target,
-        when: isFrameworkMode,
-        variant: 'react-router-framework',
-      };
-    }),
+    ] as const)
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: isFrameworkMode,
+          variant: 'react-router-framework',
+        };
+      }),
   ],
   /*
    * `covers` keeps a suite out of a project whose answers never wrote its subject. The generated project gates at
@@ -383,14 +392,15 @@ const baseReactTarget: TargetRecord = {
       ['src/routes.test.ts', 'src/routes.ts'],
       ['src/routes/about.test.tsx', 'src/routes/about.tsx'],
       ['src/routes/version.test.tsx', 'src/routes/version.tsx'],
-    ] as const).map(([target, covers]): StarterTest => {
-      return {
-        target,
-        covers,
-        when: isFrameworkMode,
-        variant: 'react-router-framework',
-      };
-    }),
+    ] as const)
+      .map(([target, covers]): StarterTest => {
+        return {
+          target,
+          covers,
+          when: isFrameworkMode,
+          variant: 'react-router-framework',
+        };
+      }),
     // Home is the one that carries the counter, so its suite wraps the two providers the document wraps.
     {
       target: 'src/routes/home.test.tsx',
@@ -542,9 +552,10 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
   ],
   // Less the compiler, which only `react()` runs and `reactRouter()` stands in for outside the test run.
   devDependencies: [
-    ...PARTS.react.devDependencies.filter((name) => {
-      return name !== 'oxc-transform-react';
-    }),
+    ...PARTS.react.devDependencies
+      .filter((name) => {
+        return name !== 'oxc-transform-react';
+      }),
     'vite',
     '@react-router/dev',
   ],

@@ -87,9 +87,10 @@ export const emitCodexMarketplace = (plugins: Plugin[]): string => {
   const marketplace = {
     name: 'linteljs',
     interface: { displayName: 'LintelJS project plugins' },
-    plugins: [LOCAL_LINTEL, ...plugins.map((plugin) => {
-      return THIRD_PARTY[plugin];
-    })],
+    plugins: [LOCAL_LINTEL, ...plugins
+      .map((plugin) => {
+        return THIRD_PARTY[plugin];
+      })],
   };
 
   return `${JSON.stringify(marketplace, null, 2)}\n`;

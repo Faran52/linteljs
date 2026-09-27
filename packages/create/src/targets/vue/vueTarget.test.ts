@@ -33,11 +33,13 @@ const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
     ...overrides,
   };
 
-  return vueTarget.starterFiles.filter((file) => {
-    return file.when === undefined || file.when(answers);
-  }).map((file) => {
-    return file.target;
-  });
+  return vueTarget.starterFiles
+    .filter((file) => {
+      return file.when === undefined || file.when(answers);
+    })
+    .map((file) => {
+      return file.target;
+    });
 };
 
 describe('vueTarget', () => {
@@ -47,9 +49,13 @@ describe('vueTarget', () => {
    */
   it('routes whatever was answered', () => {
     expect(destinationsFor()).toContain('src/router/index.ts');
-    expect(vueTarget.starterFiles.filter((file) => {
-      return file.target === 'src/components/features/app-header/AppHeader.vue';
-    })).toHaveLength(1);
+
+    const headers = vueTarget.starterFiles
+      .filter((file) => {
+        return file.target === 'src/components/features/app-header/AppHeader.vue';
+      });
+
+    expect(headers).toHaveLength(1);
   });
 
   it('takes one store module per store it offers, and none without one', () => {
@@ -67,10 +73,11 @@ describe('vueTarget', () => {
         ...(store === undefined ? {} : { store }),
       };
 
-      return vueTarget.starterFiles.find((file) => {
-        return file.target === 'src/lib/providers/installStore.ts'
-          && (file.when === undefined || file.when(answers));
-      })?.variant;
+      return vueTarget.starterFiles
+        .find((file) => {
+          return file.target === 'src/lib/providers/installStore.ts'
+            && (file.when === undefined || file.when(answers));
+        })?.variant;
     };
 
     expect(installs('pinia')).toBe('pinia');

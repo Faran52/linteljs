@@ -51,9 +51,10 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
     const reportAction = (node: RuleNode, action: JsxExpression): void => {
       const properties = propertiesOf(action);
       const keys = properties.map(keyNameOf);
-      const named = properties.find((property) => {
-        return keyNameOf(property) === 'name';
-      });
+      const named = properties
+        .find((property) => {
+          return keyNameOf(property) === 'name';
+        });
 
       for (const key of keys) {
         if (key !== undefined && !ACTION_KEYS.includes(key)) {

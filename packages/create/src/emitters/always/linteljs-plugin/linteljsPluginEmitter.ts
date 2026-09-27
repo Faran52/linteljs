@@ -35,12 +35,13 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
       name: 'repo-structure.md',
       sources: [`fragments/claude-rules/repo-structure.${target.id}.md`],
     },
-    ...target.stateRules.map((rule) => {
-      return {
-        name: rule,
-        sources: [`fragments/claude-rules/${rule}`],
-      };
-    }),
+    ...target.stateRules
+      .map((rule) => {
+        return {
+          name: rule,
+          sources: [`fragments/claude-rules/${rule}`],
+        };
+      }),
   ];
 
   if (hasLibrary(answers, 'zod')) {
@@ -64,16 +65,17 @@ export const ruleSources = (answers: Answers): RuleSource[] => {
 };
 
 export const referenceArtifacts = (answers: Answers): Artifact[] => {
-  return ruleSources(answers).map(({ name, sources }) => {
-    return {
-      stage: 'standard',
-      target: reference(name),
-      content: {
-        sources,
-        transform: withoutClaudePaths,
-      },
-    };
-  });
+  return ruleSources(answers)
+    .map(({ name, sources }) => {
+      return {
+        stage: 'standard',
+        target: reference(name),
+        content: {
+          sources,
+          transform: withoutClaudePaths,
+        },
+      };
+    });
 };
 
 // The plugin tree every agent reads, written whichever agents were chosen: Claude and Codex load it as a plugin,

@@ -45,9 +45,10 @@ export const migrateLifted = <
 
   return {
     ...parsed,
-    libraries: listed.filter((library) => {
-      return !isLifted(library);
-    }),
+    libraries: listed
+      .filter((library) => {
+        return !isLifted(library);
+      }),
     [field]: only,
   };
 };

@@ -69,9 +69,10 @@ export const nativeValidAccessibilityRole = createRule('native-valid-accessibili
           }
 
           // Compared rather than looked up, so a non-string literal matches nothing and needs no check of its own.
-          if (!valid.some((role) => {
-            return role === value;
-          })) {
+          if (!valid
+            .some((role) => {
+              return role === value;
+            })) {
             context.report({
               node,
               messageId: 'invalidRole',

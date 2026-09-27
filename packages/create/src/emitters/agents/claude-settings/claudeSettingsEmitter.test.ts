@@ -103,10 +103,12 @@ describe('claudeSettingsEmitter', () => {
   };
 
   it('writes nothing unless Claude Code was chosen', () => {
-    expect(claudeSettingsEmitter({
+    const artifacts = claudeSettingsEmitter({
       ...DEFAULT_ANSWERS,
       agents: ['codex'],
-    })).toEqual([]);
+    });
+
+    expect(artifacts).toEqual([]);
   });
 
   /*
@@ -114,13 +116,16 @@ describe('claudeSettingsEmitter', () => {
    * still remove, since the whole file exists because this host was selected.
    */
   it('writes the adapter, the settings and the plugin manifests, and owns all but the adapter', () => {
-    expect(claudeSettingsEmitter(CLAUDE).map(({
-      target,
-      preserve,
-      removable,
-    }) => {
-      return [target, preserve, removable];
-    })).toEqual([
+    const written = claudeSettingsEmitter(CLAUDE)
+      .map(({
+        target,
+        preserve,
+        removable,
+      }) => {
+        return [target, preserve, removable];
+      });
+
+    expect(written).toEqual([
       ['CLAUDE.md', true, undefined],
       ['.claude/settings.json', undefined, true],
       ['plugins/linteljs/.claude-plugin/plugin.json', undefined, undefined],
@@ -159,9 +164,10 @@ describe('claudeSettingsEmitter', () => {
       ...DEFAULT_ANSWERS,
       agents: ['claude-code'],
     };
-    const settings = claudeSettingsEmitter(answers).find(({ target }) => {
-      return target === '.claude/settings.json';
-    });
+    const settings = claudeSettingsEmitter(answers)
+      .find(({ target }) => {
+        return target === '.claude/settings.json';
+      });
     const merge = settings !== undefined && 'merge' in settings.content
       ? settings.content.merge
       : () => {

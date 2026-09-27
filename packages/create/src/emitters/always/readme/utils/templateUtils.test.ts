@@ -9,10 +9,12 @@ import { fillSlots, sharedSlots } from './templateUtils';
 
 describe('fillSlots', () => {
   it('replaces every slot with its value', () => {
-    expect(fillSlots('{{A}} and {{B}}', {
+    const filled = fillSlots('{{A}} and {{B}}', {
       A: 'one',
       B: 'two',
-    }, 'label')).toBe('one and two');
+    }, 'label');
+
+    expect(filled).toBe('one and two');
   });
 
   it('replaces a slot repeated more than once', () => {

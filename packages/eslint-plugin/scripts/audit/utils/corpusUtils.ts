@@ -25,11 +25,13 @@ const DEFAULT_SOURCES = [
 ];
 
 export const sourcesFrom = (given: string[]): string[] => {
-  return (given.length > 0 ? given : DEFAULT_SOURCES).map((dir) => {
-    return resolve(dir);
-  }).filter((dir) => {
-    return existsSync(dir);
-  });
+  return (given.length > 0 ? given : DEFAULT_SOURCES)
+    .map((dir) => {
+      return resolve(dir);
+    })
+    .filter((dir) => {
+      return existsSync(dir);
+    });
 };
 
 // Symlinks are neither file nor directory, which keeps cycles out. Inside a `node_modules` source, nested ones stay.
@@ -65,16 +67,19 @@ export const interleave = function* (dirs: string[]): Generator<string> {
   let live = dirs.map(filesUnder);
 
   while (live.length > 0) {
-    const round = live.map((files) => {
-      return files.next();
-    });
+    const round = live
+      .map((files) => {
+        return files.next();
+      });
 
-    yield* round.flatMap((step) => {
-      return step.done === true ? [] : [step.value];
-    });
-    live = live.filter((_, index) => {
-      return round[index]?.done !== true;
-    });
+    yield* round
+      .flatMap((step) => {
+        return step.done === true ? [] : [step.value];
+      });
+    live = live
+      .filter((_, index) => {
+        return round[index]?.done !== true;
+      });
   }
 };
 
@@ -92,9 +97,10 @@ export const skipReason = (source: string): SkipReason | undefined => {
   }
 
   const lines = source.split('\n');
-  const longest = lines.reduce((widest, line) => {
-    return Math.max(widest, line.length);
-  }, 0);
+  const longest = lines
+    .reduce((widest, line) => {
+      return Math.max(widest, line.length);
+    }, 0);
 
   return source.length / lines.length > 200 || longest > MAX_LINE ? 'minified' : undefined;
 };

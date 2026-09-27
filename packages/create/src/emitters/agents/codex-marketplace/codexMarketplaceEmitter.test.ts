@@ -136,13 +136,16 @@ describe('codexMarketplaceEmitter', () => {
   it('writes the adapter, the marketplace of the chosen plugins and the plugin manifest', () => {
     const artifacts = codexMarketplaceEmitter(CODEX);
 
-    expect(artifacts.map(({
-      stage,
-      target,
-      preserve,
-    }) => {
-      return [stage, target, preserve];
-    })).toEqual([
+    const shapes = artifacts
+      .map(({
+        stage,
+        target,
+        preserve,
+      }) => {
+        return [stage, target, preserve];
+      });
+
+    expect(shapes).toEqual([
       ['standard', 'AGENTS.md', true],
       ['standard', '.agents/plugins/marketplace.json', undefined],
       ['standard', 'plugins/linteljs/.codex-plugin/plugin.json', undefined],

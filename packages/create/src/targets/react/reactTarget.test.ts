@@ -69,15 +69,22 @@ describe('reactTarget', () => {
    * router out of the entry is what stops it multiplying with the store, which also needs an ancestor.
    */
   it('ships one entry, and an App per router it offers plus one for no router', () => {
-    expect(recordFor().starterFiles.filter((file) => {
-      return file.target === 'src/main.tsx';
-    })).toHaveLength(1);
+    const mains = recordFor().starterFiles
+      .filter((file) => {
+        return file.target === 'src/main.tsx';
+      });
 
-    expect(recordFor().starterFiles.filter((file) => {
-      return file.target === 'src/App.tsx';
-    }).map((file) => {
-      return file.variant;
-    })).toEqual([undefined, 'react-router', 'tanstack-router']);
+    expect(mains).toHaveLength(1);
+
+    const appVariants = recordFor().starterFiles
+      .filter((file) => {
+        return file.target === 'src/App.tsx';
+      })
+      .map((file) => {
+        return file.variant;
+      });
+
+    expect(appVariants).toEqual([undefined, 'react-router', 'tanstack-router']);
   });
 
   /*
@@ -92,20 +99,25 @@ describe('reactTarget', () => {
         ...overrides,
       };
 
-      return Object.fromEntries(recordFor(overrides).starterFiles.filter((file) => {
-        return file.when === undefined || file.when(answers);
-      }).map((file) => {
-        return [file.target, file.variant];
-      }));
+      return Object.fromEntries(recordFor(overrides).starterFiles
+        .filter((file) => {
+          return file.when === undefined || file.when(answers);
+        })
+        .map((file) => {
+          return [file.target, file.variant];
+        }));
     };
 
     expect(sourcesFor({})).not.toHaveProperty('__mocks__/msw/handlers.ts');
     expect(sourcesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtended.ts');
     expect(sourcesFor({ mocking: 'msw' })['__mocks__/msw/handlers.ts']).toBeUndefined();
-    expect(sourcesFor({
+
+    const source = sourcesFor({
       mocking: 'msw',
       form: 'tanstack-form',
-    })['__mocks__/msw/handlers.ts']).toBe('with-form');
+    })['__mocks__/msw/handlers.ts'];
+
+    expect(source).toBe('with-form');
   });
 
   // The suite follows the file it covers, so the two spellings are picked the same way.
@@ -117,20 +129,25 @@ describe('reactTarget', () => {
         ...overrides,
       };
 
-      return Object.fromEntries(recordFor(overrides).starterTests.filter((test) => {
-        return test.when === undefined || test.when(answers);
-      }).map((test) => {
-        return [test.target, test.variant];
-      }));
+      return Object.fromEntries(recordFor(overrides).starterTests
+        .filter((test) => {
+          return test.when === undefined || test.when(answers);
+        })
+        .map((test) => {
+          return [test.target, test.variant];
+        }));
     };
 
     expect(suitesFor({})).not.toHaveProperty('__mocks__/msw/handlers.test.ts');
     expect(suitesFor({ mocking: 'msw' })['__mocks__/msw/handlers.test.ts']).toBeUndefined();
     expect(suitesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtended.test.ts');
-    expect(suitesFor({
+
+    const suite = suitesFor({
       mocking: 'msw',
       form: 'tanstack-form',
-    })['__mocks__/msw/handlers.test.ts']).toBe('with-form');
+    })['__mocks__/msw/handlers.test.ts'];
+
+    expect(suite).toBe('with-form');
   });
 
   it('marks a .tsx file a component wherever it sits', () => {

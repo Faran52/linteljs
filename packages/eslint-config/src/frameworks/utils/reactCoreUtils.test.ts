@@ -127,9 +127,10 @@ describe('reactCore', () => {
   it('sorts react-dom straight after react, ahead of react/ and the react-* packages', async () => {
     const block = (specifiers: string[]): string => {
       return [
-        ...specifiers.map((specifier, index) => {
-          return `import { a${String(index)} } from '${specifier}';`;
-        }),
+        ...specifiers
+          .map((specifier, index) => {
+            return `import { a${String(index)} } from '${specifier}';`;
+          }),
         '',
         'export const value = 1;',
         '',

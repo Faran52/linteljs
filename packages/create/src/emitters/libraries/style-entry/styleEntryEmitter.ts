@@ -44,9 +44,10 @@ export const mergeStyleEntry = (
     return appended(`${imports.join('\n')}\n`);
   }
 
-  const missing = imports.filter((line) => {
-    return !alreadyImported(current, line);
-  });
+  const missing = imports
+    .filter((line) => {
+      return !alreadyImported(current, line);
+    });
 
   // Prepended: `no-invalid-position-at-import-rule` reports an `@import` after a rule.
   return appended(missing.length === 0 ? current : `${missing.join('\n')}\n\n${current}`);
@@ -70,15 +71,19 @@ export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Arti
      * compiled to atomic classes rather than shipped as a file. The tokens and the page styles stay: StyleX's own
      * documentation asks for one CSS asset for resets and globals, and injects what it compiles into it.
      */
-    ...(target.starterStyles ?? []).filter((style) => {
-      return typeof style === 'string' || style.when(answers);
-    }).map((style) => {
-      return typeof style === 'string' ? style : style.path;
-    }).filter((path) => {
-      return !(stylex && path.includes('/components/'));
-    }).map((path) => {
-      return `@import "${path}";`;
-    }),
+    ...(target.starterStyles ?? [])
+      .filter((style) => {
+        return typeof style === 'string' || style.when(answers);
+      })
+      .map((style) => {
+        return typeof style === 'string' ? style : style.path;
+      })
+      .filter((path) => {
+        return !(stylex && path.includes('/components/'));
+      })
+      .map((path) => {
+        return `@import "${path}";`;
+      }),
     // Last: its `@theme` points at the tokens, so those have to be in scope by the time it is read.
     ...(tailwind && target.tailwindTheme !== undefined ? [`@import "${target.tailwindTheme}";`] : []),
   ];

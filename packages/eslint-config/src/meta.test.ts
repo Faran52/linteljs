@@ -25,17 +25,20 @@ const entryNameOf = (subject: string, suffix: string): string => {
   })}${suffix}`;
 };
 
-const subjects = Object.entries(GROUPS).flatMap(([group, suffix]) => {
-  return readdirSync(join(srcDir, group), { withFileTypes: true }).filter((entry) => {
-    return entry.isDirectory() && entry.name !== 'utils';
-  }).map((entry) => {
-    return {
-      group,
-      name: entry.name,
-      entry: entryNameOf(entry.name, suffix),
-    };
+const subjects = Object.entries(GROUPS)
+  .flatMap(([group, suffix]) => {
+    return readdirSync(join(srcDir, group), { withFileTypes: true })
+      .filter((entry) => {
+        return entry.isDirectory() && entry.name !== 'utils';
+      })
+      .map((entry) => {
+        return {
+          group,
+          name: entry.name,
+          entry: entryNameOf(entry.name, suffix),
+        };
+      });
   });
-});
 
 const byName = (left: string, right: string): number => {
   return left.localeCompare(right, 'en');
@@ -44,11 +47,15 @@ const byName = (left: string, right: string): number => {
 describe.each(Object.keys(GROUPS))('%s', (group) => {
   // A group holds subjects and its shared `utils/`, so a layer file left loose beside them is one nothing pins.
   it('holds no loose file', () => {
-    expect(readdirSync(join(srcDir, group), { withFileTypes: true }).filter((entry) => {
-      return !entry.isDirectory();
-    }).map((entry) => {
-      return entry.name;
-    })).toEqual([]);
+    const groupFiles = readdirSync(join(srcDir, group), { withFileTypes: true })
+      .filter((entry) => {
+        return !entry.isDirectory();
+      })
+      .map((entry) => {
+        return entry.name;
+      });
+
+    expect(groupFiles).toEqual([]);
   });
 });
 
@@ -61,18 +68,27 @@ describe.each(subjects)('$group/$name', ({
     const files = readdirSync(join(srcDir, group, name));
 
     expect(files).toEqual(expect.arrayContaining([`${entry}.ts`, `${entry}.test.ts`]));
-    expect(files.filter((file) => {
-      return ![`${entry}.ts`, `${entry}.test.ts`, 'constants.ts', 'utils'].includes(file);
-    })).toEqual([]);
+
+    const strays = files
+      .filter((file) => {
+        return ![`${entry}.ts`, `${entry}.test.ts`, 'constants.ts', 'utils'].includes(file);
+      });
+
+    expect(strays).toEqual([]);
   });
 });
 
 // No group names a kind here, so the entry takes no suffix and is named for its directory.
 it('holds compose-config to its entry, its suite and its loaders', () => {
-  expect(readdirSync(join(srcDir, 'compose-config')).toSorted(byName))
-    .toEqual(['composeConfig.test.ts', 'composeConfig.ts', 'utils']);
-  expect(readdirSync(join(srcDir, 'compose-config', 'utils')).toSorted(byName))
-    .toEqual(['loaderUtils.test.ts', 'loaderUtils.ts']);
+  const composeFiles = readdirSync(join(srcDir, 'compose-config'))
+    .toSorted(byName);
+
+  expect(composeFiles).toEqual(['composeConfig.test.ts', 'composeConfig.ts', 'utils']);
+
+  const composeUtils = readdirSync(join(srcDir, 'compose-config', 'utils'))
+    .toSorted(byName);
+
+  expect(composeUtils).toEqual(['loaderUtils.test.ts', 'loaderUtils.ts']);
 });
 
 // The source nests by subject while `exports` stays flat, so the keyed tsdown entries are the one join between them.
@@ -82,20 +98,30 @@ describe('tsdown entries', () => {
 
   it('each point at a file that exists', () => {
     expect(entries.length).toBeGreaterThan(0);
-    expect(entries.flatMap(([, path]) => {
-      return path;
-    }).filter((path) => {
-      return !existsSync(join(srcDir, '..', path));
-    })).toEqual([]);
+
+    const missing = entries
+      .flatMap(([, path]) => {
+        return path;
+      })
+      .filter((path) => {
+        return !existsSync(join(srcDir, '..', path));
+      });
+
+    expect(missing).toEqual([]);
   });
 
   it('match the exports subpaths one to one', () => {
-    const exported = Object.values(packageJson.exports).flatMap((target) => {
-      return typeof target === 'object' ? [target.import.default.replace(/^\.\/dist\/(.*)\.mjs$/u, '$1')] : [];
-    });
+    const exported = Object.values(packageJson.exports)
+      .flatMap((target) => {
+        return typeof target === 'object' ? [target.import.default.replace(/^\.\/dist\/(.*)\.mjs$/u, '$1')] : [];
+      });
 
-    expect(entries.map(([key]) => {
-      return key;
-    }).toSorted(byName)).toEqual(exported.toSorted(byName));
+    const entryKeys = entries
+      .map(([key]) => {
+        return key;
+      })
+      .toSorted(byName);
+
+    expect(entryKeys).toEqual(exported.toSorted(byName));
   });
 });

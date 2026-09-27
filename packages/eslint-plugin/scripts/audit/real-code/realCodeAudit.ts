@@ -52,18 +52,24 @@ if (sources.length === 0) {
 
 // A prefix for the fix pass. The sweep takes every nth, since a prefix of `node_modules` holds no React to sort.
 const sampled = (): string[] => {
-  const found = sources.flatMap((dir) => {
-    return [...filesUnder(dir)];
-  });
+  const found = sources
+    .flatMap((dir) => {
+      return [...filesUnder(dir)];
+    });
   const stride = Math.ceil(found.length / maxFiles);
 
-  return found.filter((_, index) => {
-    return index % stride === 0;
-  });
+  return found
+    .filter((_, index) => {
+      return index % stride === 0;
+    });
 };
 
 const prefix = (): string[] => {
-  return sources.values().flatMap(filesUnder).take(maxFiles).toArray();
+  return sources
+    .values()
+    .flatMap(filesUnder)
+    .take(maxFiles)
+    .toArray();
 };
 
 const context: AuditContext = {

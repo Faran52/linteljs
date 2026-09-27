@@ -200,22 +200,23 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
     // A `function` binding is writable, constructible and carries a `prototype`; an arrow on a `const` has none.
     const hasFunctionOnlyUsage = (nameVariable: Scope.Variable): boolean => {
-      return nameVariable.references.some((reference) => {
-        if (reference.isWrite()) {
-          return true;
-        }
+      return nameVariable.references
+        .some((reference) => {
+          if (reference.isWrite()) {
+            return true;
+          }
 
-        const parent = parentOf(reference);
+          const parent = parentOf(reference);
 
-        if (parent.type === 'NewExpression' && parent.callee === reference.identifier) {
-          return true;
-        }
+          if (parent.type === 'NewExpression' && parent.callee === reference.identifier) {
+            return true;
+          }
 
-        return parent.type === 'MemberExpression'
-          && parent.object === reference.identifier
-          && parent.property.type === 'Identifier'
-          && parent.property.name === 'prototype';
-      });
+          return parent.type === 'MemberExpression'
+            && parent.object === reference.identifier
+            && parent.property.type === 'Identifier'
+            && parent.property.name === 'prototype';
+        });
     };
 
     // `function x() {} function x() {}` is legal when var-scoped, and a TypeScript overload

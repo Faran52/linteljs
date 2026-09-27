@@ -41,11 +41,13 @@ const isDirective = (raw: string): boolean => {
 
 // Content lines between the delimiters, the leading star stripped off each continuation line.
 const jsdocBodyOf = (comment: CommentNode): string[] => {
-  const lines = comment.value.split('\n').map((line) => {
-    const trimmed = line.trim();
+  const lines = comment.value
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
 
-    return trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
-  });
+      return trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
+    });
 
   while (lines[0] === '') {
     lines.shift();
@@ -88,9 +90,10 @@ const slashTextFor = (indent: string, body: string[], eol: string): string => {
 const jsdocTextFor = (indent: string, contents: string[], eol: string): string => {
   return [
     '/**',
-    ...contents.map((line) => {
-      return `${indent} * ${line}`.trimEnd();
-    }),
+    ...contents
+      .map((line) => {
+        return `${indent} * ${line}`.trimEnd();
+      }),
     `${indent} */`,
   ].join(eol);
 };
@@ -128,9 +131,10 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
 
   // A `//` line can hold `*/` as plain text; a `/** */` block cannot, since that sequence closes it wherever it
   // falls. Merging a run that carries one would truncate the block early and spill the rest as code.
-  if (run.some((entry) => {
-    return entry.text.includes('*/');
-  })) {
+  if (run
+    .some((entry) => {
+      return entry.text.includes('*/');
+    })) {
     return;
   }
 
@@ -138,11 +142,14 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
     node: first.comment,
     messageId: 'useJsdoc',
     fix: (fixer: Fixer) => {
+      const texts = run
+        .map((entry) => {
+          return entry.text;
+        });
+
       return fixer.replaceTextRange([rangeOf(first.comment)[0], rangeOf(last.comment)[1]], jsdocTextFor(
         first.indent,
-        run.map((entry) => {
-          return entry.text;
-        }),
+        texts,
         eol,
       ));
     },
@@ -170,9 +177,10 @@ const reportShortJsdoc = (
     return;
   }
 
-  if (body.some((line) => {
-    return JSDOC_TAG.test(line);
-  })) {
+  if (body
+    .some((line) => {
+      return JSDOC_TAG.test(line);
+    })) {
     return;
   }
 

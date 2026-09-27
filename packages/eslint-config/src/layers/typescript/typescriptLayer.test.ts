@@ -44,9 +44,10 @@ describe('typescript', () => {
   // React Native's template names eleven assets this way and `expo/types` declares none for the ESM form.
   it('permits a require of a bundler asset while still reporting a require of a module', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...typescript()], REQUIRES_FILE);
-    const reported = ruleIds.filter((ruleId) => {
-      return ruleId === '@typescript-eslint/no-require-imports';
-    });
+    const reported = ruleIds
+      .filter((ruleId) => {
+        return ruleId === '@typescript-eslint/no-require-imports';
+      });
 
     expect(reported).toHaveLength(1);
   });

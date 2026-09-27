@@ -15,10 +15,12 @@ describe('emitReadme', () => {
   it('fills the project name and target label into the template', () => {
     const template = '# {{PROJECT_NAME}}\n\n{{TARGET_LABEL}} project.\n';
 
-    expect(emitReadme(template, 'demo-app', {
+    const readme = emitReadme(template, 'demo-app', {
       ...DEFAULT_ANSWERS,
       target: 'react',
-    })).toBe(
+    });
+
+    expect(readme).toBe(
       '# demo-app\n\nReact (Vite) project.\n',
     );
   });

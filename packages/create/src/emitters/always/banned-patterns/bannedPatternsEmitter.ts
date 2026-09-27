@@ -24,9 +24,11 @@ const withExtensions = (source: string, answers: Answers): string => {
   return replaceAnchored(
     source,
     "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];",
-    `const SCANNED_EXTENSIONS: string[] = [${scannedExtensions(answers).map((extension) => {
-      return `'${extension}'`;
-    }).join(', ')}];`,
+    `const SCANNED_EXTENSIONS: string[] = [${scannedExtensions(answers)
+      .map((extension) => {
+        return `'${extension}'`;
+      })
+      .join(', ')}];`,
   );
 };
 

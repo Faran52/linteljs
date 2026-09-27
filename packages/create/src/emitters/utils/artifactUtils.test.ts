@@ -39,10 +39,12 @@ describe('copied', () => {
 
 describe('joined', () => {
   it('keeps the given sources in the order it was handed them', () => {
-    expect(joined('src/setupTests.ts', [
+    const artifact = joined('src/setupTests.ts', [
       'fragments/test-setup/setupTests.ts',
       'fragments/test-setup/setupTests.router.ts',
-    ])).toEqual({
+    ]);
+
+    expect(artifact).toEqual({
       stage: 'standard',
       target: 'src/setupTests.ts',
       content: {

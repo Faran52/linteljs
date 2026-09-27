@@ -54,9 +54,11 @@ export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): 
 
   if (parent.type === 'ReturnStatement') {
     // Innermost enclosing function: reversed and found rather than findLast, newer than this package's Node floor.
-    const enclosing = [...reader.getAncestors(node)].reverse().find((ancestor) => {
-      return FUNCTION_TYPES.has(ancestor.type);
-    });
+    const enclosing = [...reader.getAncestors(node)]
+      .reverse()
+      .find((ancestor) => {
+        return FUNCTION_TYPES.has(ancestor.type);
+      });
 
     return enclosing !== undefined && isAsyncFunction(enclosing);
   }

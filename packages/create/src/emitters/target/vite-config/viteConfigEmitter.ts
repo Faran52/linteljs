@@ -28,23 +28,29 @@ export const emitViteConfig = (answers: Answers): string | null => {
     : [...vitePlugin.calls, ...styling.calls];
 
   // One entry per line: React's compiler call plus tailwind joined is 128 characters, over the emitted `max-len`.
-  const plugins = calls.map((call) => {
-    return `    ${call},\n`;
-  }).join('');
+  const plugins = calls
+    .map((call) => {
+      return `    ${call},\n`;
+    })
+    .join('');
 
   // crx reads its inputs from the manifest; this is for the one page a manifest cannot name, the devtools panel.
-  const entries = Object.entries(viteInputs ?? {}).map(([name, page]) => {
-    return `${name}: '${page}'`;
-  }).join(', ');
+  const entries = Object.entries(viteInputs ?? {})
+    .map(([name, page]) => {
+      return `${name}: '${page}'`;
+    })
+    .join(', ');
 
   // In the project's own style: `JSON.stringify`'s double quotes and quoted keys are two lint findings.
   const inputs = viteInputs === undefined
     ? ''
     : `  build: { rollupOptions: { input: { ${entries} } } },\n`;
 
-  const declarations = styling.declarations.map((line) => {
-    return `${line}\n\n`;
-  }).join('');
+  const declarations = styling.declarations
+    .map((line) => {
+      return `${line}\n\n`;
+    })
+    .join('');
 
   return `${imports}
 

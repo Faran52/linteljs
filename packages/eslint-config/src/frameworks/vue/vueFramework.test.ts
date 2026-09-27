@@ -44,9 +44,10 @@ describe('vue', () => {
   it('accepts a label bound by for, and still reports one bound to nothing', async () => {
     const layer = [...base(), ...typescript(), ...vue()];
     const messages = await messagesForFile(layer, join(SFC_FIXTURES, 'LabelledField.vue'));
-    const labels = messages.filter((message) => {
-      return message.ruleId === 'vuejs-accessibility/label-has-for';
-    });
+    const labels = messages
+      .filter((message) => {
+        return message.ruleId === 'vuejs-accessibility/label-has-for';
+      });
 
     expect(labels).toHaveLength(1);
     expect(labels[0]?.line).toBe(5);
@@ -57,9 +58,12 @@ describe('vue', () => {
     const layer = [...base(), ...typescript(), ...vue()];
     const messages = await messagesForFile(layer, join(SFC_FIXTURES, 'Inaccessible.vue'));
 
-    expect(messages.filter((message) => {
-      return message.fatal === true;
-    })).toEqual([]);
+    const fatal = messages
+      .filter((message) => {
+        return message.fatal === true;
+      });
+
+    expect(fatal).toEqual([]);
   });
 
   /**

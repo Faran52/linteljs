@@ -128,15 +128,16 @@ export const memberNewline = createRule('member-newline', {
 
       const { outer, inner: indentInner } = indentsAt(node);
 
-      const parts = node.properties.map((prop, index) => {
-        const isLast = index === node.properties.length - 1;
-        const separator = multiLine ? `,${eol}${indentInner}` : ', ';
-        const suffix = isLast ? '' : separator;
+      const parts = node.properties
+        .map((prop, index) => {
+          const isLast = index === node.properties.length - 1;
+          const separator = multiLine ? `,${eol}${indentInner}` : ', ';
+          const suffix = isLast ? '' : separator;
 
-        // No special case for `RestElement`: its text already carries the dots, and rebuilding
-        // it as `...` plus `argument.name` breaks on a member-expression rest target.
-        return `${sourceCode.getText(prop)}${suffix}`;
-      });
+          // No special case for `RestElement`: its text already carries the dots, and rebuilding
+          // it as `...` plus `argument.name` breaks on a member-expression rest target.
+          return `${sourceCode.getText(prop)}${suffix}`;
+        });
 
       const inner = parts.join('');
       // Collapsed form keeps the inner spaces, matching both the split form's style and what `import-newlines` emits.

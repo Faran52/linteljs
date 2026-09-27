@@ -40,10 +40,12 @@ describe('emitExpoConfig', () => {
 
 describe('expoConfigEmitter', () => {
   it('writes app.json for a react native project', () => {
-    expect(expoConfigEmitter({
+    const artifacts = expoConfigEmitter({
       ...HOSTED_DEFAULTS,
       target: 'react-native',
-    }, EMPTY_PROJECT, 'demo-app')).toEqual([{
+    }, EMPTY_PROJECT, 'demo-app');
+
+    expect(artifacts).toEqual([{
       stage: 'standard',
       target: 'app.json',
       content: { text: emitExpoConfig('demo-app') },
