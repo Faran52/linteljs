@@ -250,7 +250,9 @@ describe('the stages that shell out', () => {
 
   // The child reports its cwd with symlinks resolved, and macOS puts the temp directory behind one.
   const invocations = async (): Promise<string[]> => {
-    return (await readFile(join(cwd, MARKER), 'utf8')).trimEnd().split('\n');
+    return (await readFile(join(cwd, MARKER), 'utf8'))
+      .trimEnd()
+      .split('\n');
   };
 
   const installNotices = async (packageManager: PackageManager): Promise<string[]> => {

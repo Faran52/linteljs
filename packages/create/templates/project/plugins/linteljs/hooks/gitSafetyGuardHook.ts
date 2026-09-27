@@ -45,9 +45,12 @@ const beforeSeparator = (arguments_: string[]): string[] => {
 
 const addIsBanned = (arguments_: string[]): boolean => {
   const options = beforeSeparator(arguments_);
-  return arguments_.includes('.') || options.some((argument) => {
-    return argument === '-A' || argument === '--all' || (/^-[^-]/u.test(argument) && argument.slice(1).includes('A'));
-  });
+  return arguments_.includes('.') || options
+    .some((argument) => {
+      return argument === '-A' || argument === '--all' || (/^-[^-]/u.test(argument) && argument
+        .slice(1)
+        .includes('A'));
+    });
 };
 
 // The reason a command is banned, `UNREADABLE_REASON` when it cannot be judged, or nothing when it is clear.

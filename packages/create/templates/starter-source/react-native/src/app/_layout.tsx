@@ -20,15 +20,16 @@ const RootLayout = (): ReactNode => {
         sceneStyle: layout.scene,
       }}
     >
-      {PAGES.map((page) => {
-        return (
-          <Tabs.Screen
-            key={page.id}
-            name={page.id === 'home' ? 'index' : page.id}
-            options={{ title: page.label }}
-          />
-        );
-      })}
+      {PAGES
+        .map((page) => {
+          return (
+            <Tabs.Screen
+              key={page.id}
+              name={page.id === 'home' ? 'index' : page.id}
+              options={{ title: page.label }}
+            />
+          );
+        })}
     </Tabs>
   );
 };

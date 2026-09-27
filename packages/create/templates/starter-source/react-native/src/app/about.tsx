@@ -19,24 +19,26 @@ const AboutScreen = (): ReactNode => {
       </Text>
 
       <Text style={text.sectionTitle}>The gate</Text>
-      {GATE.map((leg) => {
-        return (
-          <View key={leg.command} style={layout.row}>
-            <Text style={text.key}>{leg.command}</Text>
-            <Text style={text.value}>{leg.runs}</Text>
-          </View>
-        );
-      })}
+      {GATE
+        .map((leg) => {
+          return (
+            <View key={leg.command} style={layout.row}>
+              <Text style={text.key}>{leg.command}</Text>
+              <Text style={text.value}>{leg.runs}</Text>
+            </View>
+          );
+        })}
 
       <Text style={text.sectionTitle}>Where the standard lives</Text>
-      {STANDARD_PATHS.map((entry) => {
-        return (
-          <View key={entry.path} style={layout.row}>
-            <Text style={text.key}>{entry.path}</Text>
-            <Text style={text.value}>{entry.holds}</Text>
-          </View>
-        );
-      })}
+      {STANDARD_PATHS
+        .map((entry) => {
+          return (
+            <View key={entry.path} style={layout.row}>
+              <Text style={text.key}>{entry.path}</Text>
+              <Text style={text.value}>{entry.holds}</Text>
+            </View>
+          );
+        })}
     </ScrollView>
   );
 };

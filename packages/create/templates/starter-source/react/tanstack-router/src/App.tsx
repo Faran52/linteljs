@@ -31,17 +31,18 @@ const rootRoute = createRootRoute({
  * Reading the array the header reads keeps that a sum, and a project that wants the generated tree adds the plugin.
  */
 const router = createRouter({
-  routeTree: rootRoute.addChildren(ROUTES.map(({ path, element }) => {
-    return createRoute({
-      getParentRoute: () => {
-        return rootRoute;
-      },
-      path,
-      component: () => {
-        return element;
-      },
-    });
-  })),
+  routeTree: rootRoute.addChildren(ROUTES
+    .map(({ path, element }) => {
+      return createRoute({
+        getParentRoute: () => {
+          return rootRoute;
+        },
+        path,
+        component: () => {
+          return element;
+        },
+      });
+    })),
 });
 
 declare module '@tanstack/react-router' {

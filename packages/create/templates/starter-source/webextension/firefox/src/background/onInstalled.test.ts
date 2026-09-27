@@ -2,9 +2,10 @@ import { onInstalled } from './onInstalled';
 
 describe('onInstalled', () => {
   it('announces a first install', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
-      return undefined;
-    });
+    const warn = vi.spyOn(console, 'warn')
+      .mockImplementation(() => {
+        return undefined;
+      });
 
     onInstalled({
       reason: 'install',
@@ -17,9 +18,10 @@ describe('onInstalled', () => {
   });
 
   it('says nothing on an update, which is not a first install', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
-      return undefined;
-    });
+    const warn = vi.spyOn(console, 'warn')
+      .mockImplementation(() => {
+        return undefined;
+      });
 
     onInstalled({
       reason: 'update',
@@ -33,9 +35,10 @@ describe('onInstalled', () => {
   });
 
   it('announces a temporary install, which is how web-ext loads the extension', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
-      return undefined;
-    });
+    const warn = vi.spyOn(console, 'warn')
+      .mockImplementation(() => {
+        return undefined;
+      });
 
     onInstalled({
       reason: 'install',

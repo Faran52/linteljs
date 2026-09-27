@@ -59,12 +59,16 @@ export const run = async (
   const out: string[] = [];
   const err: string[] = [];
 
-  child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
-    out.push(chunk);
-  });
-  child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
-    err.push(chunk);
-  });
+  child.stdout
+    .setEncoding('utf8')
+    .on('data', (chunk: string) => {
+      out.push(chunk);
+    });
+  child.stderr
+    .setEncoding('utf8')
+    .on('data', (chunk: string) => {
+      err.push(chunk);
+    });
   await once(child, 'close');
 
   return [...out, ...err].join('');

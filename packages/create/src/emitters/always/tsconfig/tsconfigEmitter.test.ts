@@ -363,7 +363,9 @@ describe('alias coupling', () => {
     for (const [alias, directory] of Object.entries(aliases)) {
       const prefix = alias.replace('/*', '');
       // Absolute, because Nuxt writes these into `.nuxt/` and reads them relative to it.
-      const root = directory.replace('/*', '').replace('./', '');
+      const root = directory
+        .replace('/*', '')
+        .replace('./', '');
 
       expect(nuxtConfig).toContain(`'${prefix}': join(import.meta.dirname, '${root}'),`);
       // The wildcard too: TypeScript resolves by pattern where Vite resolves by prefix.

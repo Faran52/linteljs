@@ -28,9 +28,10 @@ interface Message {
 const fetchMock = vi.fn();
 
 const answering = (body: Accepted, status = 200): void => {
-  fetchMock.mockImplementation(() => {
-    return Promise.resolve(new Response(JSON.stringify(body), { status }));
-  });
+  fetchMock
+    .mockImplementation(() => {
+      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+    });
 };
 
 // `createComponent` rather than markup, so this file is a `.ts`: a primitive is not a component.

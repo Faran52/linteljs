@@ -41,7 +41,9 @@ const agentOf = (pm: PackageManager, version: string): string => {
  */
 export const versionFrom = (pm: PackageManager, output: string): string => {
   // The first line: npm appends a new-version notice on stderr, which `run` joins after stdout.
-  const [version = ''] = output.trim().split('\n');
+  const [version = ''] = output
+    .trim()
+    .split('\n');
 
   // `x.y.z` or nothing: a manager missing from this machine answers with its spawn error, and injecting that as a
   // version is a failure three stages further on.

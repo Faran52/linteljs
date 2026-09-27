@@ -224,7 +224,10 @@ const describeShape = (entry: ActiveShape): string => {
 const snippetAt = (source: string, offset: number): string => {
   const line = countMatches(source.slice(0, offset), /\n/g) + 1;
 
-  return source.split('\n').slice(Math.max(0, line - 2), line + 3).join('\n');
+  return source
+    .split('\n')
+    .slice(Math.max(0, line - 2), line + 3)
+    .join('\n');
 };
 
 // One shape against one file. The original must be silent first, which makes a report afterwards the edit's alone.

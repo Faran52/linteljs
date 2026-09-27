@@ -36,9 +36,10 @@ export const fillSlots = (
   values: Record<string, string>,
   label: string,
 ): string => {
-  const filled = template.replace(SLOT_PATTERN, (slot) => {
-    return values[slot.slice(2, -2)] ?? slot;
-  });
+  const filled = template
+    .replace(SLOT_PATTERN, (slot) => {
+      return values[slot.slice(2, -2)] ?? slot;
+    });
 
   const unfilled = filled.match(SLOT_PATTERN);
 

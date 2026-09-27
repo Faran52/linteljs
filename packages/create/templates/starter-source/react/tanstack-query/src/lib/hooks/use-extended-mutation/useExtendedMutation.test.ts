@@ -32,9 +32,10 @@ interface WrapperProps {
 const fetchMock = vi.fn();
 
 const answering = (body: Accepted, status = 200): void => {
-  fetchMock.mockImplementation(() => {
-    return Promise.resolve(new Response(JSON.stringify(body), { status }));
-  });
+  fetchMock
+    .mockImplementation(() => {
+      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+    });
 };
 
 // `createElement` rather than markup, so this file is a `.ts`: a hook is not a component.

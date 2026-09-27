@@ -41,16 +41,17 @@ export const runSpawn = async (
     child.stderr?.on('data', keep);
 
     child.on('error', fail);
-    child.on('close', (code) => {
-      if (code === 0) {
-        settle();
-        return;
-      }
+    child
+      .on('close', (code) => {
+        if (code === 0) {
+          settle();
+          return;
+        }
 
-      // What it printed is the whole of why it failed, and on a terminal nobody has seen it yet.
-      const said = captured.length === 0 ? '' : `\n${captured.join('')}`;
+        // What it printed is the whole of why it failed, and on a terminal nobody has seen it yet.
+        const said = captured.length === 0 ? '' : `\n${captured.join('')}`;
 
-      fail(new Error(`${command} ${args.join(' ')} exited with ${String(code)}${said}`));
-    });
+        fail(new Error(`${command} ${args.join(' ')} exited with ${String(code)}${said}`));
+      });
   });
 };

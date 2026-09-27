@@ -17,8 +17,10 @@ when a version's change lives in a sibling it is described there instead:
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
   `eslint-plugin-jsx-a11y`. Install the new peer and rename `jsx-a11y/*` overrides to `jsx-a11y-x/*`.
 - **`typescript` `>=5` is a required peer.**
-- **`base` reports more.** The plugin's `recommended` now carries `@linteljs/no-eslint-disable` and
-  `@linteljs/no-inline-object-types`, and reaches `.vue` and `.svelte` files as well as scripts.
+- **`base` reports more.** The plugin's `recommended` now carries `@linteljs/chain-call-newline`,
+  `@linteljs/no-eslint-disable` and `@linteljs/no-inline-object-types`, and reaches `.vue` and `.svelte` files as
+  well as scripts. `chain-call-newline` splits a chain of two calls, or one call with a callback body, one call
+  per line; its fix does it for you.
   `@stylistic/jsx-max-props-per-line` allows two props on a one-line tag, and `es-toolkit/compat` is a restricted
   import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
 

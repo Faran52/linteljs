@@ -25,9 +25,10 @@ interface Version {
 const fetchMock = vi.fn();
 
 const answering = (body: Version, status = 200): void => {
-  fetchMock.mockImplementation(() => {
-    return Promise.resolve(new Response(JSON.stringify(body), { status }));
-  });
+  fetchMock
+    .mockImplementation(() => {
+      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+    });
 };
 
 /*

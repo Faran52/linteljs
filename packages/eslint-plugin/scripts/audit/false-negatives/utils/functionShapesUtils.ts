@@ -229,7 +229,9 @@ const inFunction = (node: AstNode): AstNode | undefined => {
 
 // The gap between `await` and its operand, which must be blank.
 const awaitGapIsClean = (state: State, node: AstNode, argument: AstNode): boolean => {
-  if (state.source.slice(node.range[0] + 'await'.length, argument.range[0]).trim() === '') {
+  if (state.source
+    .slice(node.range[0] + 'await'.length, argument.range[0])
+    .trim() === '') {
     return true;
   }
 

@@ -19,28 +19,30 @@ export const VersionPage: FC = () => {
       <section className="section">
         <h2 className="section-title">Stack</h2>
         <dl className="rows">
-          {STACK.map(({ name, version }) => {
-            return (
-              <div key={name} className="row">
-                <dt>{name}</dt>
-                <dd>{version}</dd>
-              </div>
-            );
-          })}
+          {STACK
+            .map(({ name, version }) => {
+              return (
+                <div key={name} className="row">
+                  <dt>{name}</dt>
+                  <dd>{version}</dd>
+                </div>
+              );
+            })}
         </dl>
       </section>
 
       <section className="section">
         <h2 className="section-title">Your answers</h2>
         <dl className="rows">
-          {ANSWERS.map(({ label, value }) => {
-            return (
-              <div key={label} className="row">
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </div>
-            );
-          })}
+          {ANSWERS
+            .map(({ label, value }) => {
+              return (
+                <div key={label} className="row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              );
+            })}
         </dl>
         <p className="note">
           Recorded in

@@ -38,7 +38,9 @@ export const managerFromUserAgent = (userAgent: string | undefined): DetectedMan
     return undefined;
   }
 
-  const version = token.slice(name.length + 1).replace(/\/.*/su, '');
+  const version = token
+    .slice(name.length + 1)
+    .replace(/\/.*/su, '');
 
   /*
    * Yarn says `yarn` whichever yarn it is, and the two are different managers here, so the major decides: semver has

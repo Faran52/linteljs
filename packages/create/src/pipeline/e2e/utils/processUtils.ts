@@ -107,25 +107,29 @@ export const run = async (
       return stripVTControlCharacters(`${out.join('')}${err.join('')}`);
     };
 
-    child.stdout.on('data', (chunk: Buffer) => {
-      out.push(chunk.toString('utf8'));
-    });
-    child.stderr.on('data', (chunk: Buffer) => {
-      err.push(chunk.toString('utf8'));
-    });
+    child.stdout
+      .on('data', (chunk: Buffer) => {
+        out.push(chunk.toString('utf8'));
+      });
+    child.stderr
+      .on('data', (chunk: Buffer) => {
+        err.push(chunk.toString('utf8'));
+      });
     // A manager that is not installed at all, which is a failure to report rather than one to throw through.
-    child.on('error', (error) => {
-      settle({
-        status: 1,
-        output: `${joined()}${error.message}`,
+    child
+      .on('error', (error) => {
+        settle({
+          status: 1,
+          output: `${joined()}${error.message}`,
+        });
       });
-    });
-    child.on('close', (code) => {
-      settle({
-        status: code ?? 1,
-        output: joined(),
+    child
+      .on('close', (code) => {
+        settle({
+          status: code ?? 1,
+          output: joined(),
+        });
       });
-    });
   });
 };
 

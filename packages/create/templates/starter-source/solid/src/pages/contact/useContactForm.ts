@@ -60,9 +60,10 @@ export const useContactForm = (): ContactForm => {
       },
     };
   });
-  const state = form.useSelector((current) => {
-    return current;
-  });
+  const state = form
+    .useSelector((current) => {
+      return current;
+    });
 
   const field = (
     name: keyof ContactValues,

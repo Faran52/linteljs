@@ -32,13 +32,14 @@ const ruleIds = readdirSync(rulesDir, { withFileTypes: true })
 // A sibling link `](../other-rule)` would 404 once flattened, so it becomes the file. Any other relative link
 // points out of `src/`, meaningless in the tarball and worth failing on.
 const relink = (text: string, id: string): string => {
-  return text.replace(/]\(\.\.\/([a-z-]+)\)/g, (match: string, target: string) => {
-    if (!ruleIds.includes(target)) {
-      throw new Error(`${id}/README.md links ../${target}, which is not a rule`);
-    }
+  return text
+    .replace(/]\(\.\.\/([a-z-]+)\)/g, (match: string, target: string) => {
+      if (!ruleIds.includes(target)) {
+        throw new Error(`${id}/README.md links ../${target}, which is not a rule`);
+      }
 
-    return `](./${target}.md)`;
-  });
+      return `](./${target}.md)`;
+    });
 };
 
 for (const id of ruleIds) {

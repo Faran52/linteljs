@@ -79,9 +79,10 @@ const GROUP_EXPORTS = {
 // Each layer directory needs both its subpath, which is its kebab name, and its barrel export, which is that name in
 // camelCase; the directories are the list.
 const camel = (name: string): string => {
-  return name.replace(/-([a-z])/gu, (_match, letter: string) => {
-    return letter.toUpperCase();
-  });
+  return name
+    .replace(/-([a-z])/gu, (_match, letter: string) => {
+      return letter.toUpperCase();
+    });
 };
 
 const layerDirs = ['src/layers', 'src/frameworks', 'src/libraries']

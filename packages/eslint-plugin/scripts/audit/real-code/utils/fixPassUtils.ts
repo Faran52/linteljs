@@ -35,7 +35,10 @@ interface AuditFinding extends Finding {
 }
 
 const around = (source: string, line: number): string => {
-  return `${source.split('\n').slice(Math.max(0, line - 3), line + 2).join('\n')}\n`;
+  return `${source
+    .split('\n')
+    .slice(Math.max(0, line - 3), line + 2)
+    .join('\n')}\n`;
 };
 
 const flavourOf = (file: string): Flavour => {

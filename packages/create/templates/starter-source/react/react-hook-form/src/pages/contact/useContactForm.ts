@@ -85,12 +85,13 @@ export const useContactForm = (): ContactForm => {
     },
     resolver: (values) => {
       const found = validateContact(values);
-      const errors = Object.fromEntries(Object.entries(found).map(([name, message]) => {
-        return [name, {
-          type: 'validate',
-          message,
-        }];
-      }));
+      const errors = Object.fromEntries(Object.entries(found)
+        .map(([name, message]) => {
+          return [name, {
+            type: 'validate',
+            message,
+          }];
+        }));
 
       return {
         errors,

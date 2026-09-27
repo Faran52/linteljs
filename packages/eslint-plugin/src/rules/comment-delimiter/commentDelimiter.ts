@@ -46,7 +46,11 @@ const jsdocBodyOf = (comment: CommentNode): string[] => {
     .map((line) => {
       const trimmed = line.trim();
 
-      return trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
+      return trimmed.startsWith('*')
+        ? trimmed
+            .slice(1)
+            .trim()
+        : trimmed;
     });
 
   while (lines[0] === '') {
@@ -67,14 +71,20 @@ const wholeLineIndentOf = (sourceCode: SourceCode, comment: CommentNode): string
   // Searching from `start` itself is safe: that character opens the comment and is never a line break.
   const lineStart = text.lastIndexOf('\n', start) + 1;
 
-  if (text.slice(lineStart, start).trim() !== '') {
+  if (text
+    .slice(lineStart, start)
+    .trim() !== '') {
     return null;
   }
 
   const newlineAfter = text.indexOf('\n', end);
   const lineEnd = newlineAfter === -1 ? text.length : newlineAfter;
 
-  return text.slice(end, lineEnd).trim() === '' ? text.slice(lineStart, start) : null;
+  return text
+    .slice(end, lineEnd)
+    .trim() === ''
+    ? text.slice(lineStart, start)
+    : null;
 };
 
 // Both replacements begin where the original comment began, so the line's own indent is already
@@ -101,7 +111,9 @@ const jsdocTextFor = (indent: string, contents: string[], eol: string): string =
 // Adjacent when one line break separates the two, and since both hold their lines alone, the rest is indent. Read
 // off the text rather than off `loc`, which ESTree types as nullable and a comment cannot be trusted to carry.
 const isAdjacent = (sourceCode: SourceCode, previous: LineEntry, comment: CommentNode): boolean => {
-  return sourceCode.text.slice(rangeOf(previous.comment)[1], rangeOf(comment)[0]).split('\n').length === 2;
+  return sourceCode.text
+    .slice(rangeOf(previous.comment)[1], rangeOf(comment)[0])
+    .split('\n').length === 2;
 };
 
 // Null for anything that cannot join a run: a block comment, a directive, or a `//` sharing its line with code.
@@ -117,7 +129,9 @@ const lineEntryOf = (sourceCode: SourceCode, comment: CommentNode, raw: string):
     : {
         comment,
         indent,
-        text: raw.slice(2).trim(),
+        text: raw
+          .slice(2)
+          .trim(),
       };
 };
 

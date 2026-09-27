@@ -34,7 +34,9 @@ export const emitNuxtConfig = (answers: Answers): string => {
   const aliases = Object.entries(buildAliases(answers))
     .flatMap(([alias, directory]) => {
       const prefix = alias.replace('/*', '');
-      const root = directory.replace('/*', '').replace('./', '');
+      const root = directory
+        .replace('/*', '')
+        .replace('./', '');
 
       return [
         `    '${prefix}': join(import.meta.dirname, '${root}'),`,

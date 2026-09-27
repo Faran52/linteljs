@@ -20,9 +20,10 @@ const GROUPS: Record<string, string> = {
 };
 
 const entryNameOf = (subject: string, suffix: string): string => {
-  return `${subject.replace(/-([a-z])/gu, (_match, letter: string) => {
-    return letter.toUpperCase();
-  })}${suffix}`;
+  return `${subject
+    .replace(/-([a-z])/gu, (_match, letter: string) => {
+      return letter.toUpperCase();
+    })}${suffix}`;
 };
 
 const subjects = Object.entries(GROUPS)

@@ -91,9 +91,10 @@ describe('the checker merge', () => {
 
   // A project's file as it really reads, closing on a line of its own. By function, so a `$&` in a fixture survives.
   const skippingWith = (answers: Answers, ...lines: string[]): string => {
-    return shippedFor(answers).replace('const PROJECT_SKIPPED: string[] = [];', () => {
-      return ['const PROJECT_SKIPPED: string[] = [', ...lines, '];'].join('\n');
-    });
+    return shippedFor(answers)
+      .replace('const PROJECT_SKIPPED: string[] = [];', () => {
+        return ['const PROJECT_SKIPPED: string[] = [', ...lines, '];'].join('\n');
+      });
   };
 
   it("keeps a project's exemptions while taking the standard's patterns", () => {

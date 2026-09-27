@@ -55,7 +55,12 @@ const UNREADABLE: Step = { kind: 'unreadable' };
 
 // `C:\Git\cmd\git.exe` and `/usr/bin/git` are both `git`: Windows spells a binary with its extension.
 export const commandName = (token: string): string => {
-  return (token.replaceAll('\\', '/').split('/').at(-1) ?? '').toLowerCase().replace(/\.(?:exe|cmd|bat)$/u, '');
+  return (token
+    .replaceAll('\\', '/')
+    .split('/')
+    .at(-1) ?? '')
+    .toLowerCase()
+    .replace(/\.(?:exe|cmd|bat)$/u, '');
 };
 
 export const skipOptions = (tokens: string[], start: number, valued: Set<string>): number | undefined => {
@@ -453,10 +458,16 @@ const powerShellWrapper = (tokens: string[], start: number, depth: number): Step
   for (let index = start; index < tokens.length; index += 1) {
     const option = (tokens[index] ?? '').toLowerCase();
     if (!option.startsWith('-')) {
-      return nested(tokens.slice(index).join(' '), 'powershell', depth);
+      const command = tokens
+        .slice(index)
+        .join(' ');
+      return nested(command, 'powershell', depth);
     }
     if (isPrefixOf(option, '-command', 1)) {
-      return nested(tokens.slice(index + 1).join(' '), 'powershell', depth);
+      const command = tokens
+        .slice(index + 1)
+        .join(' ');
+      return nested(command, 'powershell', depth);
     }
     if (isPrefixOf(option, '-encodedcommand', 1) || option === '-ec') {
       return UNREADABLE;
@@ -475,7 +486,10 @@ const cmdWrapper = (tokens: string[], start: number, depth: number): Step => {
   for (let index = start; index < tokens.length; index += 1) {
     const option = (tokens[index] ?? '').toLowerCase();
     if (option === '/c' || option === '/k') {
-      return nested(tokens.slice(index + 1).join(' '), 'powershell', depth);
+      const command = tokens
+        .slice(index + 1)
+        .join(' ');
+      return nested(command, 'powershell', depth);
     }
     if (!option.startsWith('/')) {
       break;
@@ -554,7 +568,10 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
   }
   if (name === 'iex' || name === 'invoke-expression') {
     const start = (tokens[index + 1] ?? '').toLowerCase() === '-command' ? index + 2 : index + 1;
-    return nested(tokens.slice(start).join(' '), 'powershell', depth);
+    const command = tokens
+      .slice(start)
+      .join(' ');
+    return nested(command, 'powershell', depth);
   }
   if (name === 'start-process' || name === 'saps' || name === 'start') {
     return startProcessWrapper(tokens, index + 1);

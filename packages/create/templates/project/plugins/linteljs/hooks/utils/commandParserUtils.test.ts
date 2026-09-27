@@ -12,9 +12,10 @@ import {
 } from './commandParserUtils.ts';
 
 const tokensOf = (source: string, dialect: Dialect = 'bash'): string[][] | undefined => {
-  return parseCommand(source, dialect)?.map(({ tokens }) => {
-    return tokens;
-  });
+  return parseCommand(source, dialect)
+    ?.map(({ tokens }) => {
+      return tokens;
+    });
 };
 
 const shellWrapped = (command: string, depth: number): string => {

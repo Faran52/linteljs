@@ -7,7 +7,11 @@ describe('AppMark', () => {
   it('draws the beam and the lines that come into line with it', () => {
     const mark = mount(AppMark);
 
-    expect(mark.find('svg[role="img"]').exists()).toBe(true);
+    const drawn = mark
+      .find('svg[role="img"]')
+      .exists();
+
+    expect(drawn).toBe(true);
     expect(mark.findAll('path')).toHaveLength(4);
   });
 });

@@ -63,6 +63,12 @@ when a version's change lives in a sibling it is described there instead:
 - React Native follows Expo SDK 57's own pins (react-native 0.86.3) and declares `@react-native/metro-config`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
 
+### Changed
+
+- **The starter source, hooks and scripts put each chained call on its own line**, the shape
+  `@linteljs/chain-call-newline` asks for, so a new project passes its own lint. Starter tests read a named value
+  rather than a chain.
+
 ### Fixed
 
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left

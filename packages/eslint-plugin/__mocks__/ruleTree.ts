@@ -15,7 +15,8 @@ export const ruleDirectories = readdirSync(rulesDir, { withFileTypes: true })
 
 // The rule's file is named for its single export, so the directory is the one place the kebab-case id is written.
 export const moduleNameOf = (ruleName: string): string => {
-  return ruleName.replace(/-([a-z])/g, (_match, letter: string) => {
-    return letter.toUpperCase();
-  });
+  return ruleName
+    .replace(/-([a-z])/g, (_match, letter: string) => {
+      return letter.toUpperCase();
+    });
 };

@@ -14,9 +14,10 @@ export interface AppProps {
  */
 export const App: FC<AppProps> = ({ initialPage = ROUTES[0].id }) => {
   const [page, setPage] = useState(initialPage);
-  const current = ROUTES.find((route) => {
-    return route.id === page;
-  });
+  const current = ROUTES
+    .find((route) => {
+      return route.id === page;
+    });
 
   return (
     <>

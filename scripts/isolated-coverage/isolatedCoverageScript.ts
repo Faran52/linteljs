@@ -104,36 +104,37 @@ const timedOut: string[] = [];
 try {
   const runs = tests
     .map(async (test, index) => {
-      return queue.add(async () => {
-        const report = await coverageRun(
-          root,
-          relative(root, test),
-          join(reports, String(index)),
-          thresholdKeys,
-          timeoutSeconds * 1000,
-        );
+      return queue
+        .add(async () => {
+          const report = await coverageRun(
+            root,
+            relative(root, test),
+            join(reports, String(index)),
+            thresholdKeys,
+            timeoutSeconds * 1000,
+          );
 
-        logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
+          logDebug(`${relative(root, test)} ${typeof report === 'string' ? report : 'done'}`);
 
-        if (report === 'timed out') {
-          timedOut.push(test);
+          if (report === 'timed out') {
+            timedOut.push(test);
 
-          return;
-        }
+            return;
+          }
 
-        if (report === 'failed') {
-          failed.push(test);
+          if (report === 'failed') {
+            failed.push(test);
 
-          return;
-        }
+            return;
+          }
 
-        hitsByTest.set(test, new Map(Object.entries(report)
-          .map(([file, coverage]) => {
-            maps.set(file, coverage);
+          hitsByTest.set(test, new Map(Object.entries(report)
+            .map(([file, coverage]) => {
+              maps.set(file, coverage);
 
-            return [file, hitsOf(coverage)];
-          })));
-      });
+              return [file, hitsOf(coverage)];
+            })));
+        });
     });
 
   await Promise.all(runs);

@@ -78,14 +78,17 @@ const requireFreePort = async (port: number): Promise<void> => {
   await new Promise<void>((resolve, reject) => {
     const probe = createServer();
 
-    probe.once('error', () => {
-      reject(new Error(`127.0.0.1:${String(port)} is in use: a verdaccio from an earlier run is still listening`));
-    });
-    probe.once('listening', () => {
-      probe.close(() => {
-        resolve();
+    probe
+      .once('error', () => {
+        reject(new Error(`127.0.0.1:${String(port)} is in use: a verdaccio from an earlier run is still listening`));
       });
-    });
+    probe
+      .once('listening', () => {
+        probe
+          .close(() => {
+            resolve();
+          });
+      });
     probe.listen(port, '127.0.0.1');
   });
 };

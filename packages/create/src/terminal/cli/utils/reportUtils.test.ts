@@ -48,11 +48,12 @@ const inherited = stdout.isTTY;
 
 const printed = (run: () => void): string => {
   const chunks: string[] = [];
-  const writing = vi.spyOn(stdout, 'write').mockImplementation((chunk) => {
-    chunks.push(String(chunk));
+  const writing = vi.spyOn(stdout, 'write')
+    .mockImplementation((chunk) => {
+      chunks.push(String(chunk));
 
-    return true;
-  });
+      return true;
+    });
 
   try {
     run();

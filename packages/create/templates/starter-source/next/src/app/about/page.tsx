@@ -15,14 +15,15 @@ const AboutPage = (): ReactNode => {
       <section className="section">
         <h2 className="section-title">The gate</h2>
         <ul className="rows">
-          {GATE.map(({ command, runs }) => {
-            return (
-              <li key={command} className="row">
-                <code className="key">{command}</code>
-                <span className="value">{runs}</span>
-              </li>
-            );
-          })}
+          {GATE
+            .map(({ command, runs }) => {
+              return (
+                <li key={command} className="row">
+                  <code className="key">{command}</code>
+                  <span className="value">{runs}</span>
+                </li>
+              );
+            })}
         </ul>
         <p className="note">
           <code>pnpm check</code>
@@ -34,14 +35,15 @@ const AboutPage = (): ReactNode => {
       <section className="section">
         <h2 className="section-title">Where the standard lives</h2>
         <dl className="rows">
-          {STANDARD_PATHS.map(({ path, holds }) => {
-            return (
-              <div key={path} className="row">
-                <dt><code>{path}</code></dt>
-                <dd>{holds}</dd>
-              </div>
-            );
-          })}
+          {STANDARD_PATHS
+            .map(({ path, holds }) => {
+              return (
+                <div key={path} className="row">
+                  <dt><code>{path}</code></dt>
+                  <dd>{holds}</dd>
+                </div>
+              );
+            })}
         </dl>
       </section>
 

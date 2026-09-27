@@ -63,7 +63,9 @@ const srcDir = join(import.meta.dirname);
 const SHARED = new Set(['utils', 'e2e']);
 
 const kebab = (key: string): string => {
-  return key.replace(/([a-z])([A-Z])/gu, '$1-$2').toLowerCase();
+  return key
+    .replace(/([a-z])([A-Z])/gu, '$1-$2')
+    .toLowerCase();
 };
 
 /**
@@ -231,7 +233,9 @@ describe.each(RINGED)('$name', (ring) => {
         return (names ?? '').split(',');
       })
       .map((name) => {
-        return name.replace('type ', '').trim();
+        return name
+          .replace('type ', '')
+          .trim();
       })
       .filter((name) => {
         return name !== '';

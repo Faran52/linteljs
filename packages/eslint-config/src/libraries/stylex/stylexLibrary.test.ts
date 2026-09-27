@@ -60,7 +60,9 @@ const fixed = async (code: string): Promise<string | undefined> => {
 const lint = async (code: string): Promise<string[]> => {
   return (await lintCard(code, false))?.messages
     .map((message) => {
-      return `${message.ruleId ?? ''}: ${message.message.split('\n').at(-1) ?? ''}`;
+      return `${message.ruleId ?? ''}: ${message.message
+        .split('\n')
+        .at(-1) ?? ''}`;
     }) ?? [];
 };
 

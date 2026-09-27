@@ -59,9 +59,10 @@ export const useContactForm = (): ContactForm => {
       sent.value = true;
     },
   });
-  const state = form.useSelector((current) => {
-    return current;
-  });
+  const state = form
+    .useSelector((current) => {
+      return current;
+    });
 
   const field = (
     name: keyof ContactValues,

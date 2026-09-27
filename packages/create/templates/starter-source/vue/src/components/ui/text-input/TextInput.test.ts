@@ -15,7 +15,11 @@ describe('TextInput', () => {
     });
     const input = field.get('input');
 
-    expect(field.get('label').attributes('for')).toBe('email');
+    const labelled = field
+      .get('label')
+      .attributes('for');
+
+    expect(labelled).toBe('email');
     expect(input.attributes('type')).toBe('email');
     expect(input.attributes('aria-invalid')).toBe('false');
 
@@ -39,7 +43,11 @@ describe('TextInput', () => {
     const area = field.get('textarea');
 
     expect(area.attributes('aria-describedby')).toBe('message-error');
-    expect(field.get('#message-error').text()).toBe('Write at least ten characters.');
+    const message = field
+      .get('#message-error')
+      .text();
+
+    expect(message).toBe('Write at least ten characters.');
 
     await area.setValue('long enough now');
     await area.trigger('blur');

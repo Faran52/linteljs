@@ -199,7 +199,9 @@ export const evaluate = (
 };
 
 const lineOf = (text: string, offset: number): number => {
-  return text.slice(0, offset).split('\n').length - 1;
+  return text
+    .slice(0, offset)
+    .split('\n').length - 1;
 };
 
 const changedLines = (source: string, fixed: string): [number, number] => {
@@ -230,7 +232,9 @@ export const narrow = (
   const lines = source.split('\n');
   const [first, last] = changedLines(source, fixed);
   const slice = (pad: number): string => {
-    return `${lines.slice(Math.max(0, first - pad), Math.min(lines.length, last + pad + 1)).join('\n')}\n`;
+    return `${lines
+      .slice(Math.max(0, first - pad), Math.min(lines.length, last + pad + 1))
+      .join('\n')}\n`;
   };
 
   for (const pad of [0, 1, 2, 4, 8, 16, 32]) {
@@ -242,8 +246,10 @@ export const narrow = (
     }
   }
 
-  return [`${lines.slice(Math.max(0, first - 3), Math.min(lines.length, last + 4)).join('\n')}\n`,
-    'changed hunk, could not narrow'];
+  return [`${lines
+    .slice(Math.max(0, first - 3), Math.min(lines.length, last + 4))
+    .join('\n')}\n`,
+  'changed hunk, could not narrow'];
 };
 
 export const attribute = (

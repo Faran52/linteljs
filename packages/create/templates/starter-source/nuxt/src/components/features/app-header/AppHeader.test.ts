@@ -12,12 +12,13 @@ import AppHeader from './AppHeader.vue';
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: PAGES.map((page) => {
-      return {
-        path: page.path,
-        component: { template: '<div />' },
-      };
-    }),
+    routes: PAGES
+      .map((page) => {
+        return {
+          path: page.path,
+          component: { template: '<div />' },
+        };
+      }),
   });
 
   await router.push(path);
@@ -45,15 +46,21 @@ describe('AppHeader', () => {
   it('names the project and links every page on the one route list', async () => {
     const header = await open('/');
 
-    expect(header.find('header p').text()).toBe('my-app');
+    const name = header
+      .find('header p')
+      .text();
+
+    expect(name).toBe('my-app');
     expect(header.findAll('nav a')).toHaveLength(PAGES.length);
   });
 
   it('marks the page it is on', async () => {
     const header = await open('/about');
-    const marked = header.findAll('nav a').filter((tab) => {
-      return tab.attributes('aria-current') === 'page';
-    });
+    const marked = header
+      .findAll('nav a')
+      .filter((tab) => {
+        return tab.attributes('aria-current') === 'page';
+      });
 
     expect(marked).toHaveLength(1);
     expect(marked[0]?.text()).toBe('About');

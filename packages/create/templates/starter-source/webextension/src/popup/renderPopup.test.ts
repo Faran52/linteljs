@@ -24,7 +24,9 @@ describe('renderPopup', () => {
 
     expect(root.querySelector('.count')?.textContent).toBe('0');
 
-    root.querySelector('button')?.click();
+    root
+      .querySelector('button')
+      ?.click();
 
     expect(root.querySelector('.count')?.textContent).toBe('1');
   });

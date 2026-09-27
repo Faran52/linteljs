@@ -65,9 +65,12 @@ afterEach(async () => {
 const ESCAPE = String.fromCharCode(27);
 
 const plain = (text: string): string => {
-  return text.split(`${ESCAPE}[`).map((part, index) => {
-    return index === 0 ? part : part.replace(/^[0-9;]*m/u, '');
-  }).join('');
+  return text
+    .split(`${ESCAPE}[`)
+    .map((part, index) => {
+      return index === 0 ? part : part.replace(/^[0-9;]*m/u, '');
+    })
+    .join('');
 };
 
 const run = (staged: string[]): RunResult => {

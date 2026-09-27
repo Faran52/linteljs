@@ -136,16 +136,19 @@ export const readEdit = (payload: object): EditInput | undefined => {
     stringAt(valueAt(payload, 'tool_response'), 'filePath'),
   ];
   const patch = stringAt(input, 'command') ?? stringAt(input, 'patch') ?? (typeof input === 'string' ? input : '');
-  const patched = patch.split(/\r?\n/u).map((line) => {
-    return PATCHED_FILE.exec(line)?.[1];
-  });
+  const patched = patch
+    .split(/\r?\n/u)
+    .map((line) => {
+      return PATCHED_FILE.exec(line)?.[1];
+    });
 
   return {
     host,
     cwd: stringAt(payload, 'cwd') ?? '',
-    paths: [...named, ...patched].filter((path) => {
-      return path !== undefined;
-    }),
+    paths: [...named, ...patched]
+      .filter((path) => {
+        return path !== undefined;
+      }),
   };
 };
 

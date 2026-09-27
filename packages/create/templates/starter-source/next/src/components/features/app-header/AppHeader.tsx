@@ -25,22 +25,23 @@ export const AppHeader = ({ name }: AppHeaderProps): ReactNode => {
     <header {...styles.header}>
       <p {...styles.brand}>{name}</p>
       <nav {...styles.tabs} aria-label="Main">
-        {PAGES.map(({
-          id,
-          label,
-          path,
-        }) => {
-          return (
-            <Link
-              key={id}
-              {...styles.tab(pathname === path)}
-              href={path}
-              aria-current={pathname === path ? 'page' : undefined}
-            >
-              {label}
-            </Link>
-          );
-        })}
+        {PAGES
+          .map(({
+            id,
+            label,
+            path,
+          }) => {
+            return (
+              <Link
+                key={id}
+                {...styles.tab(pathname === path)}
+                href={path}
+                aria-current={pathname === path ? 'page' : undefined}
+              >
+                {label}
+              </Link>
+            );
+          })}
       </nav>
     </header>
   );

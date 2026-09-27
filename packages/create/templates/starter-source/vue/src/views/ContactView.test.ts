@@ -28,7 +28,11 @@ describe('ContactView', () => {
     await fill(view, 'input', 'not-an-address');
     await nextTick();
 
-    expect(view.get('#email-error').text()).toBe('Enter a valid email address.');
+    const message = view
+      .get('#email-error')
+      .text();
+
+    expect(message).toBe('Enter a valid email address.');
   });
 
   it('sends once both fields are valid', async () => {
@@ -36,12 +40,18 @@ describe('ContactView', () => {
 
     await fill(view, 'input', 'someone@example.com');
     await fill(view, 'textarea', 'Ten characters, at least.');
-    await view.get('form').trigger('submit');
+    await view
+      .get('form')
+      .trigger('submit');
     await new Promise((resolve) => {
       setTimeout(resolve, 0);
     });
     await nextTick();
 
-    expect(view.find('[role="status"]').exists()).toBe(true);
+    const confirmed = view
+      .find('[role="status"]')
+      .exists();
+
+    expect(confirmed).toBe(true);
   });
 });

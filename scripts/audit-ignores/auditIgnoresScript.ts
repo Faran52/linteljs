@@ -91,7 +91,11 @@ try {
       }
 
       checked += 1;
-      writeFileSync(file, lines.toSpliced(index, 1).join('\n'));
+      const without = lines
+        .toSpliced(index, 1)
+        .join('\n');
+
+      writeFileSync(file, without);
 
       try {
         if (uncoveredIn(file) === 0) {

@@ -175,7 +175,11 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
     ...rows
       .map((row) => {
         return `    ${row.label.padEnd(14)}${String(row.files).padStart(7)}`
-          + `${row.medianMs.toFixed(2).padStart(12)}${row.nsPerByte.toFixed(0).padStart(10)}`;
+          + `${row.medianMs
+            .toFixed(2)
+            .padStart(12)}${row.nsPerByte
+            .toFixed(0)
+            .padStart(10)}`;
       }),
     `  ${superlinearVerdict(rows)}`,
     '  slowest 20, with the rule that dominates each:',
@@ -184,9 +188,13 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
         const dominant = dominantRule(sample.file);
 
         return [
-          `    ${sample.ms.toFixed(1).padStart(8)}ms ${kib(sample.bytes).padStart(11)} `
-          + `${nanosPerByte(sample).toFixed(0).padStart(6)} ns/byte  ${dominant.rule} `
-          + `${dominant.ms.toFixed(1)}ms over a ${dominant.baseline.toFixed(1)}ms parse`,
+          `    ${sample.ms
+            .toFixed(1)
+            .padStart(8)}ms ${kib(sample.bytes).padStart(11)} `
+            + `${nanosPerByte(sample)
+              .toFixed(0)
+              .padStart(6)} ns/byte  ${dominant.rule} `
+              + `${dominant.ms.toFixed(1)}ms over a ${dominant.baseline.toFixed(1)}ms parse`,
           `      ${sample.file}`,
         ];
       }),

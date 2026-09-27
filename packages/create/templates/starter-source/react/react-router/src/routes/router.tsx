@@ -21,9 +21,10 @@ const Shell: FC<ShellProps> = ({ children }) => {
 };
 
 // One route per page, read off the one list the header reads. A page is added there and appears in both.
-export const router = createBrowserRouter(ROUTES.map(({ path, element }) => {
-  return {
-    path,
-    element: <Shell>{element}</Shell>,
-  };
-}));
+export const router = createBrowserRouter(ROUTES
+  .map(({ path, element }) => {
+    return {
+      path,
+      element: <Shell>{element}</Shell>,
+    };
+  }));

@@ -24,27 +24,28 @@ export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
     <header {...styles.header}>
       <p {...styles.brand}>{name}</p>
       <nav {...styles.tabs} aria-label="Main">
-        {ROUTES.map(({
-          id,
-          label,
-          path,
-        }) => {
-          return (
-            <NavLink
-              key={id}
-              to={path}
-              end
-              className={({ isActive }) => {
-                return styles.tab(isActive).className;
-              }}
-              style={({ isActive }) => {
-                return styles.tab(isActive).style;
-              }}
-            >
-              {label}
-            </NavLink>
-          );
-        })}
+        {ROUTES
+          .map(({
+            id,
+            label,
+            path,
+          }) => {
+            return (
+              <NavLink
+                key={id}
+                to={path}
+                end
+                className={({ isActive }) => {
+                  return styles.tab(isActive).className;
+                }}
+                style={({ isActive }) => {
+                  return styles.tab(isActive).style;
+                }}
+              >
+                {label}
+              </NavLink>
+            );
+          })}
       </nav>
     </header>
   );

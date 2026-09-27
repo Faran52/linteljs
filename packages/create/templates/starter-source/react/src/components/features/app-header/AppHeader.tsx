@@ -25,21 +25,22 @@ export const AppHeader: FC<AppHeaderProps> = ({
     <header {...styles.header}>
       <p {...styles.brand}>{name}</p>
       <nav {...styles.tabs} aria-label="Main">
-        {ROUTES.map(({ id, label }) => {
-          return (
-            <button
-              key={id}
-              type="button"
-              aria-current={id === current ? 'page' : undefined}
-              {...styles.tab(id === current)}
-              onClick={() => {
-                onNavigate(id);
-              }}
-            >
-              {label}
-            </button>
-          );
-        })}
+        {ROUTES
+          .map(({ id, label }) => {
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-current={id === current ? 'page' : undefined}
+                {...styles.tab(id === current)}
+                onClick={() => {
+                  onNavigate(id);
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
       </nav>
     </header>
   );

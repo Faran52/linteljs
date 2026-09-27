@@ -19,8 +19,11 @@ describe('Mark', () => {
     const paths = [...container.querySelectorAll('path')];
 
     expect(paths).toHaveLength(4);
-    expect(paths.filter((path) => {
-      return path.hasAttribute('class');
-    })).toHaveLength(3);
+    const lines = paths
+      .filter((path) => {
+        return path.hasAttribute('class');
+      });
+
+    expect(lines).toHaveLength(3);
   });
 });

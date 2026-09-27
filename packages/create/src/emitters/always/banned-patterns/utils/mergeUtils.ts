@@ -11,7 +11,9 @@ const blockOf = (source: string, name: string): string | null => {
 
   const rest = source.slice(opening);
   // `split` with a limit of one answers exactly one element for any string.
-  const declaration = rest.split('\n', 1).join('');
+  const declaration = rest
+    .split('\n', 1)
+    .join('');
 
   if (declaration.includes('];')) {
     return declaration;
@@ -32,9 +34,10 @@ const carriedOver = (shipped: string, current: string, name: string): string => 
   }
 
   // By function: `$&` in a string replacement reads as the match.
-  return shipped.replace(ours, () => {
-    return theirs;
-  });
+  return shipped
+    .replace(ours, () => {
+      return theirs;
+    });
 };
 
 export const mergeChecker = (shipped: string, current: string | null): string => {

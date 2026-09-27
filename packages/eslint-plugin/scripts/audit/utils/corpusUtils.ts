@@ -119,5 +119,8 @@ export const isFirstSighting = (seen: Set<string>, source: string): boolean => {
 };
 
 export const messageOf = (error: unknown): string => {
-  return (error instanceof Error ? error.message : String(error)).split('\n', 1).join('').slice(0, 160);
+  return (error instanceof Error ? error.message : String(error))
+    .split('\n', 1)
+    .join('')
+    .slice(0, 160);
 };

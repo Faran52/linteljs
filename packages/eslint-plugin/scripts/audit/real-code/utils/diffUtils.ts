@@ -75,7 +75,11 @@ const contentLinesOf = (comments: Token[]): string[] => {
         .map((line) => {
           const trimmed = line.trim();
 
-          return comment.type === 'Block' && trimmed.startsWith('*') ? trimmed.slice(1).trim() : trimmed;
+          return comment.type === 'Block' && trimmed.startsWith('*')
+            ? trimmed
+                .slice(1)
+                .trim()
+            : trimmed;
         })
         .filter((line) => {
           return line !== '';

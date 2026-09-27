@@ -33,7 +33,9 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
     }
   }
 
-  const remainder = kept.join('\n').replace(/^\n+/, '');
+  const remainder = kept
+    .join('\n')
+    .replace(/^\n+/, '');
 
   // Each block on its own, since a project that predates one already has the other; a present block is the project's.
   const head = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;

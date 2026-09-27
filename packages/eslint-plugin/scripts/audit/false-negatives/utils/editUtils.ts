@@ -202,7 +202,9 @@ export const separatedByPunctuation = (state: State, members: AstNode[]): boolea
         return true;
       }
 
-      const gap = state.source.slice(member.range[1], next.range[0]).trim();
+      const gap = state.source
+        .slice(member.range[1], next.range[0])
+        .trim();
 
       return /[;,]$/.test(textOf(state, member)) || gap.startsWith(';') || gap.startsWith(',');
     });

@@ -56,17 +56,19 @@ catch (error) {
 
 const lines: string[] = output.split('\n');
 
-const errors: string[] = lines.filter((line: string) => {
-  const normalizedLine = line.replace(ANSI_ESCAPE_GLOBAL, '');
+const errors: string[] = lines
+  .filter((line: string) => {
+    const normalizedLine = line.replace(ANSI_ESCAPE_GLOBAL, '');
 
-  if (!normalizedLine.includes(' - error TS') && !normalizedLine.includes('): error TS')) {
-    return false;
-  }
+    if (!normalizedLine.includes(' - error TS') && !normalizedLine.includes('): error TS')) {
+      return false;
+    }
 
-  return stagedFiles.some((file: string) => {
-    return normalizedLine.includes(file);
+    return stagedFiles
+      .some((file: string) => {
+        return normalizedLine.includes(file);
+      });
   });
-});
 
 if (errors.length > 0) {
   logError(`TypeScript errors in staged files:\n${errors.join('\n')}`);

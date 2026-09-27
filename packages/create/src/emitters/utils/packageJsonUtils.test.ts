@@ -596,9 +596,15 @@ const catalogEntries = (): [string, string][] => {
       continue;
     }
 
-    const name = trimmed.slice(0, separator).replaceAll("'", '');
+    const name = trimmed
+      .slice(0, separator)
+      .replaceAll("'", '');
 
-    entries.push([name, trimmed.slice(separator + 1).trim()]);
+    const range = trimmed
+      .slice(separator + 1)
+      .trim();
+
+    entries.push([name, range]);
   }
 
   return entries;

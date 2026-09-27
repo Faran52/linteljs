@@ -15,4 +15,6 @@ const app = createApp(App);
 
 installStore(app);
 installData(app);
-app.use(router).mount('#app');
+app
+  .use(router)
+  .mount('#app');

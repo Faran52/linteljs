@@ -145,7 +145,9 @@ const usesQueryLibrary = (answers: Answers): boolean => {
 // Where an accessor sits, less its extension: the module adds `.ts`, being a hook and never a component, and its
 // suite adds the target's own test suffix.
 const accessorStem = (names: AccessorNames, entry: string): string => {
-  const kebab = entry.replaceAll(/(?<=[a-z])(?=[A-Z])/g, '-').toLowerCase();
+  const kebab = entry
+    .replaceAll(/(?<=[a-z])(?=[A-Z])/g, '-')
+    .toLowerCase();
 
   return `${names.directory}/${kebab}/${entry}`;
 };

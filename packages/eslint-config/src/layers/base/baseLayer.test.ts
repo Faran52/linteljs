@@ -336,6 +336,20 @@ describe('base: linteljs rules', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/union-newline');
   });
 
+  it('reports chain-call-newline', async () => {
+    const code = 'export const names = (users: string[]): string[] => users.filter(Boolean).map(String);\n';
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/chain-call-newline');
+  });
+
+  // The shape it asks for is one `@stylistic/indent` and the rest of the layer accept as it stands.
+  it('reports nothing on a chain split one call per line', async () => {
+    const code = 'export const names = (users: string[]): string[] => {\n  return users\n    .filter(Boolean)\n'
+      + '    .map((user) => {\n      return user.trim();\n    });\n};\n';
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toEqual([]);
+  });
+
   it('reports interface-order', async () => {
     const code = 'export const value = 1;\n\nexport interface Shape {\n  a: string;\n}\n';
 

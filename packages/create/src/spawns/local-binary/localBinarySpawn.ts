@@ -31,22 +31,25 @@ export const localBinarySpawn = async (cwd: string, name: string, args: string[]
 
     const out: string[] = [];
 
-    child.stdout.on('data', (chunk: Buffer) => {
-      out.push(chunk.toString('utf8'));
-    });
+    child.stdout
+      .on('data', (chunk: Buffer) => {
+        out.push(chunk.toString('utf8'));
+      });
 
     // A spawn that never started emits `error` and no `close`, so this settles rather than waiting for one. ENOENT is
     // the binary being absent, which is an answer; anything else is a binary that is there and would not run.
-    child.on('error', (error) => {
-      settle('code' in error && error.code === 'ENOENT' ? null : { failed: true });
-    });
-
-    child.on('close', (status) => {
-      settle({
-        failed: false,
-        status,
-        stdout: out.join(''),
+    child
+      .on('error', (error) => {
+        settle('code' in error && error.code === 'ENOENT' ? null : { failed: true });
       });
-    });
+
+    child
+      .on('close', (status) => {
+        settle({
+          failed: false,
+          status,
+          stdout: out.join(''),
+        });
+      });
   });
 };

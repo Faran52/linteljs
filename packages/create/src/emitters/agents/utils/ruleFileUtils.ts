@@ -21,7 +21,9 @@ export const globsOf = (source: string): string => {
 };
 
 const withoutFrontmatter = (source: string): string => {
-  return source.replace(PATHS, '').replace(/^\n+/u, '');
+  return source
+    .replace(PATHS, '')
+    .replace(/^\n+/u, '');
 };
 
 const named = (name: string, suffix: string): string => {

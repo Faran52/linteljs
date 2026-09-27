@@ -22,9 +22,10 @@ export interface AppProps {
 export const App = (props: AppProps): JSX.Element => {
   const [page, setPage] = createSignal(props.initialPage ?? ROUTES[0].id);
   const current = () => {
-    return ROUTES.find((route) => {
-      return route.id === page();
-    });
+    return ROUTES
+      .find((route) => {
+        return route.id === page();
+      });
   };
 
   return (

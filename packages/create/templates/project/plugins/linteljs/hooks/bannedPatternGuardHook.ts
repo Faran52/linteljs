@@ -45,9 +45,11 @@ const findChecker = (cwd: string): string | undefined => {
 
 const decide = (input: EditInput): string | undefined => {
   const cwd = resolve(input.cwd);
-  const files = new Set(input.paths.map((path) => {
-    return resolve(cwd, path);
-  }));
+  const resolved = input.paths
+    .map((path) => {
+      return resolve(cwd, path);
+    });
+  const files = new Set(resolved);
 
   for (const file of files) {
     if (!CHECKED.test(file) || !existsSync(file)) {

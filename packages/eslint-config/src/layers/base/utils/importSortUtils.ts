@@ -29,7 +29,11 @@ const ALIAS_BUCKETS = [
 const aliasNameOf = (alias: string): string => {
   const wildcard = alias.indexOf('*');
 
-  return wildcard === -1 ? alias : alias.slice(0, wildcard).replace(/\/$/, '');
+  return wildcard === -1
+    ? alias
+    : alias
+        .slice(0, wildcard)
+        .replace(/\/$/, '');
 };
 
 // Not `RegExp.escape`, which also rewrites `@` and would churn every group.

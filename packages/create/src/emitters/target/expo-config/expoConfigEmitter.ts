@@ -18,7 +18,9 @@ export const emitExpoConfig = (name: string): string => {
       name,
       // A scheme is a URL host, so it carries neither separators nor case.
       slug: name,
-      scheme: name.replaceAll(/[^a-z0-9]/gi, '').toLowerCase(),
+      scheme: name
+        .replaceAll(/[^a-z0-9]/gi, '')
+        .toLowerCase(),
       version: '1.0.0',
       orientation: 'portrait',
       userInterfaceStyle: 'automatic',

@@ -22,7 +22,11 @@ describe('App', () => {
   it('opens on the home page', async () => {
     const app = await open('/');
 
-    expect(app.find('svg[role="img"]').exists()).toBe(true);
+    const drawn = app
+      .find('svg[role="img"]')
+      .exists();
+
+    expect(drawn).toBe(true);
   });
 
   /*
@@ -34,17 +38,26 @@ describe('App', () => {
    */
   it('links to every page the route list names', async () => {
     const app = await open('/');
-    const labels = app.findAll('nav a').map((tab) => {
-      return tab.text();
-    });
+    const labels = app
+      .findAll('nav a')
+      .map((tab) => {
+        return tab.text();
+      });
 
-    expect(labels).toEqual(ROUTES.map((route) => {
-      return route.label;
-    }));
+    const expected = ROUTES
+      .map((route) => {
+        return route.label;
+      });
+
+    expect(labels).toEqual(expected);
   });
 
   it('routes to the other pages', async () => {
-    expect((await open('/about')).find('.page-title').text()).toBe('About');
-    expect((await open('/version')).find('.page-title').text()).toBe('Version');
+    expect((await open('/about'))
+      .find('.page-title')
+      .text()).toBe('About');
+    expect((await open('/version'))
+      .find('.page-title')
+      .text()).toBe('Version');
   });
 });

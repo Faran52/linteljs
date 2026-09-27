@@ -47,13 +47,17 @@ const probeFor = (values: ContactValues): ReturnType<typeof defineComponent> => 
 const press = async (values: ContactValues): Promise<string> => {
   const probe = mount(probeFor(values), { global: { plugins: [installData] } });
 
-  await probe.get('button').trigger('click');
+  await probe
+    .get('button')
+    .trigger('click');
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
   await nextTick();
 
-  return probe.get('button').text();
+  return probe
+    .get('button')
+    .text();
 };
 
 describe('useSubmitContact', () => {

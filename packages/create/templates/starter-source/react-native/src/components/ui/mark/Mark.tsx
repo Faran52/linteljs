@@ -21,9 +21,10 @@ export const Mark = (): ReactNode => {
       style={layout.mark}
     >
       <View style={layout.beam} />
-      {LINES.map((width) => {
-        return <View key={width} style={[layout.line, { width }]} />;
-      })}
+      {LINES
+        .map((width) => {
+          return <View key={width} style={[layout.line, { width }]} />;
+        })}
     </View>
   );
 };

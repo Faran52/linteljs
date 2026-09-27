@@ -25,9 +25,12 @@ export const createExtendedMutation = <TResponse, TBody extends object>(
         });
       },
       onSuccess: async () => {
-        await Promise.all(invalidates.map((key) => {
-          return client.invalidateQueries({ queryKey: [key] });
-        }));
+        const invalidations = invalidates
+          .map((key) => {
+            return client.invalidateQueries({ queryKey: [key] });
+          });
+
+        await Promise.all(invalidations);
       },
     };
   });

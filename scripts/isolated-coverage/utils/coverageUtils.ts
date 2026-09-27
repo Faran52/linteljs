@@ -118,9 +118,10 @@ export const metricsOf = (file: FileCoverage, hits: Set<string>): string => {
         return key.startsWith(kind);
       });
 
-    const hitCount = ofKind.filter((key) => {
-      return hits.has(key);
-    }).length;
+    const hitCount = ofKind
+      .filter((key) => {
+        return hits.has(key);
+      }).length;
 
     return percent(hitCount, ofKind.length);
   };

@@ -119,9 +119,11 @@ export const unionNewline = createRule('union-newline', {
         for (const [previous, curr] of adjacentPairs(types)) {
           if (sameLine(previous, curr)) {
             // A pipe separating two members sharing a line is always preceded by the member before it.
-            const pipeToken = mustFind(sourceCode.getTokenBefore(curr, (token) => {
-              return token.value === '|';
-            }), 'the `|` before a union member');
+            const pipe = sourceCode
+              .getTokenBefore(curr, (token) => {
+                return token.value === '|';
+              });
+            const pipeToken = mustFind(pipe, 'the `|` before a union member');
             const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipeToken), "the token before a union's `|`");
 
             // The pipe lookup skips comments, so a note written before it goes with the splice below.

@@ -33,9 +33,10 @@ export const modulesIn = (path: string): string[] => {
 
 // The entry is named for the directory it sits in, which is why the path is spelled once.
 export const entryNameOf = (subject: string, suffix: string): string => {
-  return `${subject.replace(/-([a-z])/gu, (_match, letter: string) => {
-    return letter.toUpperCase();
-  })}${suffix}`;
+  return `${subject
+    .replace(/-([a-z])/gu, (_match, letter: string) => {
+      return letter.toUpperCase();
+    })}${suffix}`;
 };
 
 export const sourcesUnder = (path: string): string[] => {
@@ -76,7 +77,11 @@ export const takenFromBarrel = (ringDir: string, ringName: string): Set<string> 
 
     for (const [, names] of text.matchAll(pattern)) {
       for (const name of (names ?? '').split(',')) {
-        taken.add(name.replace('type ', '').trim());
+        const bare = name
+          .replace('type ', '')
+          .trim();
+
+        taken.add(bare);
       }
     }
   }

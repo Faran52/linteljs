@@ -42,7 +42,9 @@ const swaps = textRule((text) => {
 const unionNewline: Rule.RuleModule = {
   ...swaps,
   create: (context) => {
-    if (context.sourceCode.getText().includes('THROW')) {
+    if (context.sourceCode
+      .getText()
+      .includes('THROW')) {
       throw new Error('rule crashed');
     }
 
@@ -59,7 +61,9 @@ const reporter = (message: string): Rule.RuleModule => {
     create: (context) => {
       return {
         Program: (node) => {
-          if (context.sourceCode.getText().includes('REPORT')) {
+          if (context.sourceCode
+            .getText()
+            .includes('REPORT')) {
             context.report({
               node,
               message,

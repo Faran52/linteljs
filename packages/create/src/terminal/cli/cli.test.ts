@@ -80,14 +80,16 @@ afterEach(async () => {
 const runMain = async (argv: string[], recorded?: Recorded): Promise<Run> => {
   const chunks: string[] = [];
   const errors: string[] = [];
-  const printing = vi.spyOn(stdout, 'write').mockImplementation((chunk) => {
-    chunks.push(String(chunk));
+  const printing = vi.spyOn(stdout, 'write')
+    .mockImplementation((chunk) => {
+      chunks.push(String(chunk));
 
-    return true;
-  });
-  const reporting = vi.spyOn(console, 'error').mockImplementation((message: string) => {
-    errors.push(message);
-  });
+      return true;
+    });
+  const reporting = vi.spyOn(console, 'error')
+    .mockImplementation((message: string) => {
+      errors.push(message);
+    });
 
   try {
     const code = await main(argv, recorded?.prompter);

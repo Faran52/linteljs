@@ -54,7 +54,9 @@ const renderGenerics = (sourceCode: SourceCode, fn: FunctionLike, isTsx: boolean
   if (isTsx && typeParameters.params.length === 1) {
     // In a `.tsx` file `<T>(value) => value` reads as a JSX tag, so a lone type parameter needs a trailing
     // comma to stay one (`<T extends string>` becomes `<T extends string,>`); one already there is left alone.
-    const innerTrimmed = text.slice(1, -1).trim();
+    const innerTrimmed = text
+      .slice(1, -1)
+      .trim();
     return innerTrimmed.endsWith(',') ? text : `${text.slice(0, -1)},>`;
   }
 

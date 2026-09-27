@@ -62,11 +62,15 @@ describe('bannedPatternGuardHook.ts', () => {
       return [];
     }
 
-    return readFileSync(checkerLog, 'utf8').trim().split('\n').filter(Boolean).map((line) => {
-      const parsed: unknown = JSON.parse(line);
+    return readFileSync(checkerLog, 'utf8')
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const parsed: unknown = JSON.parse(line);
 
-      return isPath(parsed) ? parsed : `not a path: ${line}`;
-    });
+        return isPath(parsed) ? parsed : `not a path: ${line}`;
+      });
   };
 
   it('ignores malformed JSON', () => {

@@ -14,5 +14,9 @@ export const nodeSpawn = (): string | undefined => {
   const result = spawnSync(binary, ['--version'], { encoding: 'utf8' });
 
   // `node --version` prints `v` first and nowhere else.
-  return result.status === 0 ? result.stdout.trim().replace('v', '') : undefined;
+  return result.status === 0
+    ? result.stdout
+        .trim()
+        .replace('v', '')
+    : undefined;
 };

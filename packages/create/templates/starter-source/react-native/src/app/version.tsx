@@ -17,24 +17,26 @@ const VersionScreen = (): ReactNode => {
       <Text style={text.lede}>What this project is running, and the answers it was generated from.</Text>
 
       <Text style={text.sectionTitle}>Stack</Text>
-      {STACK.map((entry) => {
-        return (
-          <View key={entry.name} style={layout.row}>
-            <Text style={text.key}>{entry.name}</Text>
-            <Text style={text.value}>{entry.version}</Text>
-          </View>
-        );
-      })}
+      {STACK
+        .map((entry) => {
+          return (
+            <View key={entry.name} style={layout.row}>
+              <Text style={text.key}>{entry.name}</Text>
+              <Text style={text.value}>{entry.version}</Text>
+            </View>
+          );
+        })}
 
       <Text style={text.sectionTitle}>Your answers</Text>
-      {ANSWERS.map((entry) => {
-        return (
-          <View key={entry.label} style={layout.row}>
-            <Text style={text.key}>{entry.label}</Text>
-            <Text style={text.value}>{entry.value}</Text>
-          </View>
-        );
-      })}
+      {ANSWERS
+        .map((entry) => {
+          return (
+            <View key={entry.label} style={layout.row}>
+              <Text style={text.key}>{entry.label}</Text>
+              <Text style={text.value}>{entry.value}</Text>
+            </View>
+          );
+        })}
     </ScrollView>
   );
 };

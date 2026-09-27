@@ -37,7 +37,9 @@ const swaps = textRule((text) => {
 const defective: Rule.RuleModule = {
   ...swaps,
   create: (context) => {
-    if (context.sourceCode.getText().includes('THROW')) {
+    if (context.sourceCode
+      .getText()
+      .includes('THROW')) {
       throw new Error('rule crashed');
     }
 

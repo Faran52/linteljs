@@ -130,9 +130,10 @@ const patterns: BannedPattern[] = [...BANNED, ...PROJECT_BANNED];
 const skipped: string[] = [...BASE_SKIPPED, ...PROJECT_SKIPPED];
 
 const isSkipped = (filePath: string): boolean => {
-  return skipped.some((fragment) => {
-    return filePath.includes(fragment) || filePath.startsWith(fragment.replace(/^\//, ''));
-  });
+  return skipped
+    .some((fragment) => {
+      return filePath.includes(fragment) || filePath.startsWith(fragment.replace(/^\//, ''));
+    });
 };
 
 // Import and alias `as` are not assertions.
@@ -192,19 +193,21 @@ const filesUnder = (path: string): string[] => {
     return [path];
   }
 
-  return readdirSync(path, { withFileTypes: true }).flatMap((entry) => {
-    const child = join(path, entry.name);
+  return readdirSync(path, { withFileTypes: true })
+    .flatMap((entry) => {
+      const child = join(path, entry.name);
 
-    if (entry.isDirectory()) {
-      return entry.name === 'node_modules' || entry.name.startsWith('.') ? [] : filesUnder(child);
-    }
+      if (entry.isDirectory()) {
+        return entry.name === 'node_modules' || entry.name.startsWith('.') ? [] : filesUnder(child);
+      }
 
-    return SCANNED_EXTENSIONS.some((extension) => {
-      return entry.name.endsWith(extension);
-    })
-      ? [child]
-      : [];
-  });
+      return SCANNED_EXTENSIONS
+        .some((extension) => {
+          return entry.name.endsWith(extension);
+        })
+        ? [child]
+        : [];
+    });
 };
 
 const files: string[] = argv.slice(2).flatMap(filesUnder);
@@ -229,20 +232,24 @@ for (const file of files) {
   const hits: string[] = [];
   const source = blankMultilineSpans(sfc ? scriptBlocksOnly(content) : content).split('\n');
 
-  for (const [index, line] of content.split('\n').entries()) {
+  const lines = content.split('\n');
+
+  for (const [index, line] of lines.entries()) {
     if (isAliasOrImportLine(line)) {
       continue;
     }
 
     const scrubbed = stripStringsAndComments(source[index] ?? '');
 
-    const match = patterns.find((pattern) => {
-      const subject = pattern.inComments === true ? stripStrings(source[index] ?? '') : scrubbed;
+    const match = patterns
+      .find((pattern) => {
+        const subject = pattern.inComments === true ? stripStrings(source[index] ?? '') : scrubbed;
 
-      return pattern.re.test(subject) && !pattern.allowed?.some((shape) => {
-        return shape.test(subject);
+        return pattern.re.test(subject) && !pattern.allowed
+          ?.some((shape) => {
+            return shape.test(subject);
+          });
       });
-    });
 
     if (match) {
       hits.push(`${String(index + 1)}: ${line.trim()}  [${match.name}]`);

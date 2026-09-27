@@ -28,9 +28,10 @@ const lineFor = (flag: string): string => {
 describe('flaggedAnswers', () => {
   // The recorded answers are read off the machine or hand-edited, so none of them is a flag.
   it('carries every answer with a flag, under its own key, and none without', () => {
-    const typeSafetyFlag = FLAGGED.find(({ key }) => {
-      return key === 'typeSafety';
-    })?.flag;
+    const typeSafetyFlag = FLAGGED
+      .find(({ key }) => {
+        return key === 'typeSafety';
+      })?.flag;
 
     expect(typeSafetyFlag).toBe('type-safety');
 

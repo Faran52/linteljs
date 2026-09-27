@@ -146,7 +146,9 @@ const check = async (major: Major, tarball: string): Promise<Outcome> => {
     return {
       failures: [`eslint ${String(major)}: ${detail}`],
       fixes: [undefined, undefined],
-      line: `eslint ${String(major)}: ${detail.split('\n', 1).join('')}`,
+      line: `eslint ${String(major)}: ${detail
+        .split('\n', 1)
+        .join('')}`,
     };
   }
 };

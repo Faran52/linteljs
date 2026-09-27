@@ -300,13 +300,17 @@ const relocateType = (state: State, node: AstNode): Candidate | undefined => {
   const lineEnd = state.source.indexOf('\n', node.range[1]);
   const to = lineEnd === -1 ? state.source.length : lineEnd + 1;
 
-  if (state.source.slice(from, node.range[0]).trim() !== '') {
+  if (state.source
+    .slice(from, node.range[0])
+    .trim() !== '') {
     state.skip('type declaration shares its opening line with other code');
 
     return undefined;
   }
 
-  const text = state.source.slice(node.range[0], to).trimEnd();
+  const text = state.source
+    .slice(node.range[0], to)
+    .trimEnd();
   const kept = `${state.source.slice(0, from)}${state.source.slice(to)}`.trimEnd();
 
   return {

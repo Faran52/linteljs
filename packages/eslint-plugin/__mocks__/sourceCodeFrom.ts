@@ -68,9 +68,10 @@ export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => 
       return of(found, type);
     },
     lastNode: (type: string): RuleNode => {
-      return of(nodes.findLast((node) => {
-        return node.type === type;
-      }), type);
+      return of(nodes
+        .findLast((node) => {
+          return node.type === type;
+        }), type);
     },
   };
 };

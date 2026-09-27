@@ -13,7 +13,10 @@ describe('show', () => {
       rules: ['union-newline', 'member-newline'],
     }, snippet, 'minimal reproduction');
 
-    const lines = error.mock.calls.flat().join('\n').split('\n');
+    const lines = error.mock.calls
+      .flat()
+      .join('\n')
+      .split('\n');
 
     expect(lines.slice(0, 4)).toStrictEqual([
       '[ERROR] token loss: a.ts',

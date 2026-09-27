@@ -23,9 +23,10 @@ interface Message {
 const fetchMock = vi.fn();
 
 const answering = (body: Accepted, status = 200): void => {
-  fetchMock.mockImplementation(() => {
-    return Promise.resolve(new Response(JSON.stringify(body), { status }));
-  });
+  fetchMock
+    .mockImplementation(() => {
+      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+    });
 };
 
 const freshClient = (): QueryClient => {

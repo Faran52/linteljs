@@ -28,9 +28,10 @@ export const useCounter = (): Counter => {
       return selected.current;
     },
     add: () => {
-      store.setState((state) => {
-        return { count: state.count + 1 };
-      });
+      store
+        .setState((state) => {
+          return { count: state.count + 1 };
+        });
     },
   };
 };
