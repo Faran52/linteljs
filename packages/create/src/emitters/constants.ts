@@ -12,13 +12,13 @@ const ESLINT_RANGE = '^10.11.0';
 
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest.
-  '@analogjs/vite-plugin-angular': '^2.7.2',
+  '@analogjs/vite-plugin-angular': '^2.7.5',
   '@astrojs/check': '^0.9.10',
   '@astrojs/react': '^7.0.0',
   '@astrojs/solid-js': '^7.0.2',
   '@astrojs/svelte': '^9.0.1',
   '@astrojs/vue': '^7.0.3',
-  'vite': '^8.3.0',
+  'vite': '^8.3.1',
   '@commitlint/cli': '^21.2.3',
   '@commitlint/config-conventional': '^21.2.3',
   '@crxjs/vite-plugin': '^2.7.1',
@@ -36,12 +36,8 @@ export const VERSIONS: Record<string, string> = {
   '@angular/forms': '^22.2.0',
   '@angular/platform-browser': '^22.2.0',
   '@angular/router': '^22.2.0',
-  /*
-   * Held on 22.1: 22.2.0 turned `SourceFileCache` from a `Map` subclass into a class holding one, and
-   * `@analogjs/vite-plugin-angular` 2.7.2 (and its 2.8 beta) still calls `cache.has` on it, so every vitest run on
-   * an angular project died at startup. Lift the tilde once an analog release reads the new shape.
-   */
-  '@angular/build': '~22.1.9',
+  // Moves with `@analogjs/vite-plugin-angular`, which reads its internals.
+  '@angular/build': '~22.2.0',
   '@angular/cli': '^22.2.0',
   '@angular/compiler-cli': '^22.2.0',
   'rxjs': '~7.8.2',
@@ -52,7 +48,7 @@ export const VERSIONS: Record<string, string> = {
   '@nanostores/react': '^2.0.1',
   '@nanostores/solid': '^1.1.1',
   '@nanostores/vue': '^1.1.0',
-  'nanostores': '^1.5.3',
+  'nanostores': '^1.5.4',
   '@reduxjs/toolkit': '^2.12.0',
   'react-redux': '^9.3.0',
   '@tanstack/react-store': '^0.11.1',
@@ -92,12 +88,12 @@ export const VERSIONS: Record<string, string> = {
   // The React Compiler's Rust port, which the plugin above runs natively. Held to 0.145 although 0.151 is out:
   // that plugin and `@astrojs/react` both peer `^0.145.0`, which on a zero major admits 0.145 alone.
   'oxc-transform-react': '^0.145.0',
-  '@vitest/coverage-v8': '^5.0.1',
+  '@vitest/coverage-v8': '^5.0.2',
   '@vitest/eslint-plugin': '^1.6.27',
   '@vue/test-utils': '^2.5.1',
   'angular-eslint': '^22.5.0',
-  'astro': '^7.3.4',
-  'astro-eslint-parser': '^3.1.0',
+  'astro': '^7.3.5',
+  'astro-eslint-parser': '^3.2.0',
   'eslint': ESLINT_RANGE,
   // The plugin, not `eslint-config-next`, which bundles plugins the layers already cover; see eslint-config's
   // `frameworks/next/`.
@@ -176,12 +172,12 @@ export const VERSIONS: Record<string, string> = {
   'qs': '^6.16.0',
   '@types/qs': '^6.15.1',
   'vite-plugin-solid': '^2.11.14',
-  'vitest': '^5.0.1',
+  'vitest': '^5.0.2',
   'vue': '^3.5.43',
   // Vue's meta-framework, which brings its own Vite, its own Nitro server and its own tsconfigs.
   'nuxt': '^4.5.2',
   // nuxt 4.5's own peer range, which is the release its builder is tested on.
-  'rolldown': '~1.2.10',
+  'rolldown': '~1.2.11',
   // A Vue application routes, and this target asks no router question to answer otherwise.
   'vue-router': '^5.3.1',
   'pinia': '^4.0.3',
