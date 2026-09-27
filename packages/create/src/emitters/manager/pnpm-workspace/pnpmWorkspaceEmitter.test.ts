@@ -6,7 +6,7 @@ import {
 } from 'vitest';
 
 import { mergePnpmWorkspace, pnpmWorkspaceEmitter } from './pnpmWorkspaceEmitter';
-import { allowBuildsBlock } from './utils/emitUtils';
+import { allowBuildsBlock, RELEASE_AGE_BLOCK } from './utils/emitUtils';
 
 describe('pnpmWorkspaceEmitter', () => {
   it('owns the workspace file only under pnpm', () => {
@@ -28,20 +28,24 @@ describe('pnpmWorkspaceEmitter', () => {
 
 describe('mergePnpmWorkspace', () => {
   it('writes the emitted block alone when there is no existing file', () => {
-    expect(mergePnpmWorkspace(null, answersFor({}))).toBe(allowBuildsBlock(answersFor({})));
+    const expected = `${allowBuildsBlock(answersFor({}))}\n${RELEASE_AGE_BLOCK}`;
+
+    expect(mergePnpmWorkspace(null, answersFor({}))).toBe(expected);
   });
 
   it('prepends the allowBuilds block to an existing file that has none', () => {
     const merged = mergePnpmWorkspace('onlyBuiltDependencies:\n  - foo\n', answersFor({}));
 
-    expect(merged).toContain(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+    const expected = `${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`;
+
+    expect(merged).toBe(expected);
   });
 
   it('drops the ignoredBuiltDependencies block a scaffolder wrote, list and all', () => {
     const existing = 'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
 
     expect(mergePnpmWorkspace(existing, answersFor({})))
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   // A blank line inside a YAML list does not end it, so it does not end the drop either.
@@ -49,22 +53,28 @@ describe('mergePnpmWorkspace', () => {
     const existing = 'ignoredBuiltDependencies:\n  - sharp\n\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
 
     expect(mergePnpmWorkspace(existing, answersFor({})))
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('drops a superseded key written as an inline list', () => {
     expect(mergePnpmWorkspace('ignoredBuiltDependencies: [sharp]\nonlyBuiltDependencies:\n  - foo\n', answersFor({})))
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('closes the gap the blank lines opening a file would leave under the prepended block', () => {
     expect(mergePnpmWorkspace('\n\nonlyBuiltDependencies:\n  - foo\n', answersFor({})))
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n`);
+      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   // An indented or dashed line before any key is not a key, so nothing ahead of the first one is dropped.
-  it('keeps the document marker a file opens with when it has nothing to add', () => {
+  it('keeps the document marker a file opens with', () => {
     const existing = "---\nallowBuilds:\n  'some-native': true\n";
+
+    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
+  });
+
+  it('leaves a release-age policy the project set alone', () => {
+    const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\n";
 
     expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(existing);
   });
@@ -79,7 +89,7 @@ describe('mergePnpmWorkspace', () => {
   it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {
     const existing = "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n  'custom-pkg': true\n";
 
-    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(existing);
+    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('keeps content that follows the dropped block, not just what precedes it', () => {
