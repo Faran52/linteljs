@@ -45,7 +45,6 @@ export type HookScript = 'bannedPatternGuardHook.ts' | 'eslintFixWarningHook.ts'
 
 const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
 
-// Claude Code and Codex hand a shell hook the same payload, so one shape answers for both hosts.
 export const commandPayload = (command: string, tool: 'Bash' | 'PowerShell' = 'Bash'): CommandHookPayload => {
   return {
     cwd: tmpdir(),
@@ -55,7 +54,6 @@ export const commandPayload = (command: string, tool: 'Bash' | 'PowerShell' = 'B
   };
 };
 
-// Copilot CLI's camelCase payload, with `toolArgs` as the JSON text the CLI sends.
 export const copilotPayload = (toolName: string, toolArgs: object, cwd = tmpdir()): CopilotPayload => {
   return {
     cwd,
@@ -65,7 +63,6 @@ export const copilotPayload = (toolName: string, toolArgs: object, cwd = tmpdir(
   };
 };
 
-// Cursor's shell gate carries the command at the top level; its generic tool events nest it as Claude Code does.
 export const cursorShellPayload = (command: string): CursorShellPayload => {
   return {
     command,
@@ -85,7 +82,7 @@ export const cursorToolPayload = (command: string, event: 'postToolUse' | 'preTo
   };
 };
 
-// Restated rather than imported from the hooks, so a hook that detects its host wrongly fails here.
+// Restated rather than imported, so a hook that detects its host wrongly fails here.
 const hostOf = (input: object | string): Host => {
   if (typeof input === 'string') {
     return 'claude';
@@ -98,8 +95,6 @@ const hostOf = (input: object | string): Host => {
 
 const CURSOR_ALLOW = '{"permission":"allow"}\n';
 
-// The one decision each hook may print on each host, around the text it chose; anything else on stdout is a hook
-// the host cannot parse.
 const decisionOf = (name: HookScript, host: Host, text: string): object => {
   if (host === 'cursor') {
     return name === 'gitSafetyGuardHook.ts'
@@ -150,8 +145,6 @@ const textOf = (stdout: string): string => {
   return typeof text === 'string' ? text : '';
 };
 
-// Holds stdout to nothing or exactly one decision object on one line, and answers the text the decision carries.
-// Cursor's shell gate prints an explicit allow for a clear command, which carries no text.
 export const expectDecisionOutput = (name: HookScript, stdout: string, host: Host = 'claude'): string | undefined => {
   if (stdout === '' || (host === 'cursor' && name === 'gitSafetyGuardHook.ts' && stdout === CURSOR_ALLOW)) {
     return undefined;
@@ -163,11 +156,7 @@ export const expectDecisionOutput = (name: HookScript, stdout: string, host: Hos
   return text;
 };
 
-/**
- * Runs the real hook through plain `node`, as every host's hooks file does, and answers its raw stdout. `projectDir`
- * is the host's own answer for the project root, dropped unless a case sets one: this suite runs under a harness that
- * exports it, which would point the checker search at this workspace.
- */
+// `projectDir` is dropped unless set: the harness exports one, which would point the checker at this workspace.
 export const spawnHook = (name: HookScript, input: object | string, projectDir?: string): string => {
   const env: typeof process.env = { ...process.env };
 
@@ -181,7 +170,7 @@ export const spawnHook = (name: HookScript, input: object | string, projectDir?:
     input: typeof input === 'string' ? input : JSON.stringify(input),
     encoding: 'utf8',
     env,
-    // A parser that loops would otherwise hang the suite: a synchronous spawn ignores the test timeout.
+    // A synchronous spawn ignores the test timeout.
     timeout: 10_000,
   });
 
@@ -192,7 +181,6 @@ export const spawnHook = (name: HookScript, input: object | string, projectDir?:
   return result.stdout;
 };
 
-// The text of the hook's decision, or `undefined` for none, with stdout held to the one shape its host reads.
 export const runHook = (name: HookScript, input: object | string, projectDir?: string): string | undefined => {
   return expectDecisionOutput(name, spawnHook(name, input, projectDir), hostOf(input));
 };

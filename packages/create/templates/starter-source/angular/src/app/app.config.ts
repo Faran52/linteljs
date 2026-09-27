@@ -3,8 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 
-// Everything the application is provided at its root. A service belongs at the narrowest scope that works, so
-// what goes here is what every route genuinely shares.
+// A service belongs at the narrowest scope that works; this is what every route shares.
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),

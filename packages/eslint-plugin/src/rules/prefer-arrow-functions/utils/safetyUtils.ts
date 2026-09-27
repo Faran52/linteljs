@@ -1,4 +1,3 @@
-// Reject conversions whose body or position would change meaning; `writeUtils.ts` handles output.
 import { adjacentPairs } from '../../../utils/layoutUtils.ts';
 import {
   mustFind,
@@ -8,8 +7,7 @@ import {
 
 import type { FunctionLike } from './writeUtils.ts';
 
-// An allow-list, not a block-list: anything that keeps consuming after a block-bodied arrow
-// (`.name`, an operator, `instanceof`, `**`, an optional call, `extends`) breaks, so this fails closed.
+// An allow-list: anything consuming after a block-bodied arrow breaks, so this fails closed.
 const SAFE_FUNCTION_PARENTS = new Set([
   'ArrayExpression',
   'AssignmentExpression',
@@ -37,13 +35,12 @@ export const SAFE_DECLARATION_PARENTS = new Set([
 export const sitsInUnsafePosition = (sourceCode: SourceCode, fn: FunctionLike): boolean => {
   const { parent } = fn;
 
-  // An arrow cannot be constructed, so a `new` callee is out. An argument to `new` is fine.
+  // An arrow cannot be constructed.
   if (parent.type === 'NewExpression') {
     return parent.callee === fn;
   }
 
-  // `(function(){})()` parenthesizes the function, so the arrow keeps the parens; Crockford's
-  // `(function(){}())` parenthesizes the call, leaving it bare. The token after is `)` or `(`.
+  // `(function(){})()` keeps the parens on the arrow; Crockford's `(function(){}())` leaves it bare.
   if (parent.type === 'CallExpression') {
     return parent.callee === fn
       && mustFind(sourceCode.getTokenAfter(fn), 'the token after a called function').value !== ')';
@@ -57,15 +54,14 @@ const isAssertionFunction = (fn: FunctionLike): boolean => {
   return annotation?.type === 'TSTypePredicate' && annotation.asserts === true;
 };
 
-// A `this` parameter is the first identifier; parameter properties are constructor-only.
+// Parameter properties are constructor-only.
 const hasThisParameter = (fn: FunctionLike): boolean => {
   const [first] = fn.params;
 
   return first?.type === 'Identifier' && first.name === 'this';
 };
 
-// A non-strict `function` may bind a name twice where an arrow may not. Identifiers only is
-// exhaustive: any other param makes the list non-simple, and repeating a name there is a SyntaxError.
+// Identifiers only is exhaustive: any other param makes the list non-simple, where repeats are a SyntaxError.
 const hasDuplicateParameters = (fn: FunctionLike): boolean => {
   const names = fn.params
     .flatMap((param) => {
@@ -83,8 +79,7 @@ const containsToken = (sourceCode: SourceCode, node: RuleNode, type: string, val
     });
 };
 
-// `node.arguments.length` is an Identifier too, so only a `.`/`?.` in front rules it out. Paired
-// rather than indexed, since a function opens on `function`, `async` or `(`, never on `arguments`.
+// `node.arguments.length` is an Identifier too, so only a `.`/`?.` in front rules it out.
 const readsArgumentsObject = (sourceCode: SourceCode, fn: FunctionLike): boolean => {
   return [...adjacentPairs(sourceCode.getTokens(fn))]
     .some(([before, token]) => {
@@ -102,8 +97,7 @@ const NEW_DOT_TARGET: [string, string][] = [
   ['Identifier', 'target'],
 ];
 
-// `every` reads past an offset only once the tokens before it matched, and no function ends on `new` or `new .`: the
-// grammar puts a callee after one and a property after the other. So each index read here is inside the list.
+// No function ends on `new` or `new .`, so each index read here is inside the list.
 const containsNewDotTarget = (sourceCode: SourceCode, node: RuleNode): boolean => {
   const tokens = sourceCode.getTokens(node);
 

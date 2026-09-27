@@ -7,7 +7,6 @@ import { targetFor } from '@targets';
 import { copied } from '../../utils/artifactUtils';
 
 export interface RuleSource {
-  // `type-standards.md`, the name every agent's copy is filed under.
   name: string;
   sources: string[];
 }
@@ -20,7 +19,6 @@ const withoutClaudePaths = (source: string): string => {
   return source.replace(/^---\npaths:\n(?: {2}- .+\n)+---\n\n/u, '');
 };
 
-// The rules one project gets, before any agent decides where to put them or what its frontmatter is called.
 export const ruleSources = (answers: Answers): RuleSource[] => {
   const target = targetFor(answers);
   const rules: RuleSource[] = [
@@ -78,8 +76,6 @@ export const referenceArtifacts = (answers: Answers): Artifact[] => {
     });
 };
 
-// The plugin tree every agent reads, written whichever agents were chosen: Claude and Codex load it as a plugin,
-// Copilot and Cursor are each given a copy of the rule files under it, and all four run its hook scripts.
 export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
   return [
     copied('plugins/linteljs/skills/linteljs/SKILL.md'),

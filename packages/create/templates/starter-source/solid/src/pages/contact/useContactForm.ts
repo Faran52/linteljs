@@ -10,8 +10,7 @@ import {
 
 import type { TextInputProps } from '../../components/ui';
 
-// What this library hands a validator and a submit; named because `createForm` takes its options through a getter
-// and TypeScript has no contextual type to infer them from there.
+// Named: `createForm` takes its options through a getter, which gives TypeScript no contextual type.
 interface ContactSubmission {
   value: ContactValues;
 }
@@ -28,16 +27,7 @@ export interface ContactForm {
   onSubmit: (event: SubmitEvent) => void;
 }
 
-/*
- * The one place the form answer is visible. It hands the page a field per input and a submit, and the page never
- * knows which library bound them, which is what lets the answer change without the page changing with it.
- *
- * The rules come from `lib/apis/contact`, so the form and the api agree about what is valid by reading the same
- * function rather than each carrying a copy of it.
- *
- * Every field is a getter, and the state behind them is one `useSelector`: that is the only read of this library
- * Solid tracks, so a plain `form.getFieldValue` would render the first value and never move again.
- */
+// One `useSelector` behind every getter: it is the only read of this library Solid tracks.
 export const useContactForm = (): ContactForm => {
   const [sent, setSent] = createSignal(false);
   const submit = useSubmitContact();
@@ -84,11 +74,7 @@ export const useContactForm = (): ContactForm => {
         return meta?.errors[0] === undefined ? undefined : String(meta.errors[0]);
       },
       onBlur: () => {
-        /*
-         * `validateField` answers the errors or a promise of them, and that union satisfies neither rule: left
-         * alone it may be a floating promise, and `void` is refused on a value that might not be one. Wrapping
-         * settles which it is.
-         */
+        // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
         void Promise.resolve(form.validateField(name, 'blur'));
       },
       onChange: (value) => {

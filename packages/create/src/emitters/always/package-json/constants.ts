@@ -8,7 +8,7 @@ export const SUPERSEDED = [
   'typescript-eslint',
   'eslint-plugin-react-refresh',
   'oxlint',
-  // create-vue's two: one is only called from the replaced vite.config.ts, jsdom is not the chosen environment.
+  // One is only called from the replaced vite.config.ts; jsdom is not the chosen environment.
   'vite-plugin-vue-devtools',
   'jsdom',
 ];

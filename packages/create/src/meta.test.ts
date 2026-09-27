@@ -33,15 +33,8 @@ import { type Ring, RINGS } from './rings';
 
 interface RingShape {
   name: Ring;
-  /**
-   * The suffix a subject's entry carries, keyed by the group that decides it. One `''` key is a ring with no group,
-   * and an empty string is a ring with no one kind: `terminal/` holds an entrypoint and a questionnaire, so there is
-   * nothing to suffix and the entry is named for its directory alone.
-   */
   suffixes: Record<string, string>;
-  // The keys the subject listing is held against: `<group>/<name>` where those keys carry a group, else `<name>`.
   registry?: () => string[];
-  // A ring read by path rather than by subject. It carries a barrel rule only where a barrel exists, which is neither.
   files?: true;
 }
 
@@ -51,15 +44,11 @@ interface Subject {
   name: string;
   path: string;
   entry: string;
-  // A registered subject is a value the registry names, so its entry exports it. An unregistered one is a module
-  // named for its directory and may export more than one thing: `pipeline/runs/sync/` plans and applies.
   registered: boolean;
 }
 
 const srcDir = join(import.meta.dirname);
 
-// `utils/` holds what the ring shares and `e2e/` is the harness rather than the package. Neither is a group or a
-// subject, and neither is held to the shape below.
 const SHARED = new Set(['utils', 'e2e']);
 
 const kebab = (key: string): string => {
@@ -68,14 +57,6 @@ const kebab = (key: string): string => {
     .toLowerCase();
 };
 
-/**
- * Every ring, the suffix each one's entry takes, and the registry that has to name the same subjects. One table
- * states the rule once, so a tenth ring is one row. `rings.ts` is the list it is held against.
- *
- * A ring is named for what its members are, or for the world it reaches when the world is the membership test. The
- * entry takes the singular of whatever names the kind, which is the ring where the ring has one and the group where
- * a group changes it.
- */
 const SHAPES: RingShape[] = [
   {
     name: 'answers',
@@ -172,7 +153,6 @@ const subjectsIn = (ring: RingShape): Subject[] => {
     });
 };
 
-// A registry keyed by `<group>/<name>` says so in its own keys, so nothing has to declare which spelling it uses.
 const keyOf = (subject: Subject, registered: string[]): string => {
   return registered
     .some((key) => {
@@ -209,7 +189,6 @@ const fileRings = SHAPES
   });
 
 describe.each(fileRings)('$name', (ring) => {
-  // Two files and one file, read by path. A directory here would be a subject, and a subject would need a registry.
   it('holds no subject', () => {
     expect(directoriesIn(join(srcDir, ring.name))).toEqual([]);
   });
@@ -222,10 +201,6 @@ describe.each(RINGED)('$name', (ring) => {
     expect(subjectsIn(ring).length).toBeGreaterThan(0);
   });
 
-  /**
-   * `index.ts` is the ring's public surface: the rings outside it reach it through the barrel rather than into a
-   * file. An export nothing out there reads is not a surface, it is a leftover.
-   */
   it('exports nothing the rings outside it never take from it', () => {
     const barrel = readFileSync(join(ringDir, 'index.ts'), 'utf8');
     const exported = [...barrel.matchAll(/export (?:type )?\{([^}]*)\} from/gu)]
@@ -266,7 +241,6 @@ describe.each(registeredRings)('$name registry', (ring) => {
       return keyOf(subject, registered);
     });
 
-  // Read off disk rather than probed, so a directory nobody registered is caught as well as the reverse.
   it('names every subject directory', () => {
     const unregistered = keys
       .filter((key) => {
@@ -300,22 +274,10 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
     expect(entriesIn(path)).toContain(`${entry}.ts`);
   });
 
-  // `index` means a barrel in this package, and a subject directory is not one.
   it('holds no index', () => {
     expect(entriesIn(path)).not.toContain('index.ts');
   });
 
-  /**
-   * One entry, its suite, a `constants.ts` for a table it alone owns, and a `utils/` for its private helpers.
-   * Nothing else: a second module loose beside the entry is either a helper, in which case `utils/` is where the
-   * `*Utils` suffix is enforced on it, or it is read from outside, in which case it is not this subject's.
-   *
-   * A `constants.ts` carries no suite of its own. Asserting a table equals itself proves nothing, and what is
-   * worth checking about one is always a fact about the code that reads it, which is where that assertion goes.
-   *
-   * One suite, too. A second file for part of a subject means a reader comparing the halves opens two, and the
-   * halves drift.
-   */
   it('holds nothing but its entry, its constants and a utils directory', () => {
     const allowed = new RegExp(`^(${entry}\\.test\\.ts|${entry}\\.ts|constants\\.ts)$`, 'u');
 
@@ -336,11 +298,6 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
     expect(misplaced).toEqual([]);
   });
 
-  /**
-   * What makes a helper private is that one subject reads it. A second reader means it belongs to the group or to
-   * the ring, and `<group>/utils/` or `<ring>/utils/` is where it goes. Checked by reading the import sites,
-   * because a helper that quietly gained a second consumer still passes every other assertion here.
-   */
   it('keeps every module under its utils private to itself', () => {
     const helpers = modulesIn(path)
       .filter((file) => {
@@ -361,11 +318,6 @@ describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
   });
 });
 
-/**
- * A registered subject is a value its registry names, so the entry exports it under the entry's own name; a record
- * annotates its type, so the character after the name is a colon as often as a space. An unregistered subject is a
- * module named for its directory and may export more than one thing: `pipeline/runs/sync/` plans and applies.
- */
 const registeredSubjects = RINGED
   .flatMap(subjectsIn)
   .filter((subject) => {
@@ -378,12 +330,6 @@ describe.each(registeredSubjects)('$ring/$name', ({ path, entry }) => {
   });
 });
 
-/**
- * A module-level value that is not a function is a constant, and a module holding more than two is carrying a table
- * its readers cannot see. `constants.ts` beside the entry is where those go, which is why the file that holds them
- * is exempt here, along with the two that are types or a barrel and the three registries, which are tables by
- * definition.
- */
 it('keeps every module to two constants, so a third is a constants.ts', () => {
   const exempt = new Set(['constants.ts', 'types.ts', 'index.ts', 'rings.ts']);
   const registries = new Set(['answers/registry.ts', 'emitters/registry.ts', 'targets/registry.ts']);
@@ -416,17 +362,14 @@ it('keeps every module to two constants, so a third is a constants.ts', () => {
   expect(carrying).toEqual([]);
 });
 
-// A Stryker worker reads an instrumented copy of the file, which always carries an `if (`.
 const instrumented = process.env['STRYKER_MUTATOR_WORKER'] !== undefined;
 
-// A file is written because its own emitter said so, so the assembler has no condition left to hold.
 it.skipIf(instrumented)('leaves the emitter assembler nothing to branch on', () => {
   expect(readFileSync(join(srcDir, 'emitters/registry.ts'), 'utf8')).not.toMatch(/\bif\s*\(/u);
 });
 
 describe('answers records', () => {
   const keys = valuesOf(ANSWERS);
-  // Widened once: `flag` is optional on the base record, and reading it off the union of the seventeen is not.
   const records: readonly AnswerRecord[] = keys
     .map((key) => {
       return ANSWERS[key];
@@ -459,10 +402,6 @@ describe('answers records', () => {
   });
 });
 
-/**
- * Two tables, one key set. A manager with a floor and no command is one nothing can spawn, and a command with no
- * floor is one nothing can refuse, and either way the one that is missing is found at a spawn rather than here.
- */
 it('gives every package manager both a floor and a command', () => {
   const commands = Object.keys(MANAGER_BINARIES)
     .toSorted(byName);

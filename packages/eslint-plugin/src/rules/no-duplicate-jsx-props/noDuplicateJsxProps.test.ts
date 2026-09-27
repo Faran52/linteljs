@@ -5,11 +5,9 @@ import { noDuplicateJsxProps } from './noDuplicateJsxProps.ts';
 tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
   valid: [
     'const view = <span className="a" id="b" />;',
-    // A shorthand attribute is a name like any other, so one shorthand beside its spelled-out twin is fine.
     'const view = <button disabled type="button">go</button>;',
     'const view = <use xlink:href="#a" xlink:title="b" />;',
     'const view = <text xml:lang="en" lang="en" />;',
-    // Two occurrences with a spread between are the documented override idiom.
     'const view = <span className="a" {...props} className="b" />;',
     'const view = <span a={1} {...first} b={2} {...second} a={3} />;',
     'const view = <><span a={1} /><span a={2} /></>;',
@@ -27,7 +25,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
     {
-      // The report sits on the second occurrence, not the first.
       code: 'const view = <span\n  className="a"\n  id="b"\n  className="b"\n/>;',
       errors: [{
         messageId: 'duplicateProp',
@@ -55,7 +52,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       ],
     },
     {
-      // A duplicate stays one however many distinct props sit between the pair.
       code: 'const view = <span a={1} b={2} c={3} a={4} />;',
       errors: [{
         messageId: 'duplicateProp',
@@ -63,7 +59,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
     {
-      // The reset ends at the spread: after it, counting starts over, so this third occurrence reports.
       code: 'const view = <span a={1} {...props} a={2} a={3} />;',
       errors: [{
         messageId: 'duplicateProp',
@@ -71,7 +66,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
     {
-      // Both occurrences sit after the spread, so the reset never comes between them.
       code: 'const view = <span {...props} className="a" className="b" />;',
       errors: [{
         messageId: 'duplicateProp',
@@ -93,7 +87,6 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       }],
     },
     {
-      // A namespaced name and its bare suffix are different props.
       code: 'const view = <use xlink:href="#a" href="#b" href="#c" />;',
       errors: [{
         messageId: 'duplicateProp',

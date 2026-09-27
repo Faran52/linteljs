@@ -6,12 +6,12 @@ import { targetFor } from '@targets';
 
 import type { Answers } from '@config/types';
 
-// `check` is named in the return type so callers need no unreachable `?? ''`.
+// Named in the return type so callers need no unreachable `?? ''`.
 interface CheckScript {
   check: string;
 }
 
-// Shared with the fix pass; SFC extensions included because `src/**/*.css` matches none of a Vue project's styles.
+// SFC extensions included because `src/**/*.css` matches none of a Vue project's styles.
 export const styleGlob = (answers: Answers): string => {
   const { sfcExtension } = targetFor(answers);
 
@@ -26,13 +26,10 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
   const scripts: Record<string, string> = {
     'lint': 'eslint .',
     'lint:fix': 'eslint . --fix',
-    // The type floor as a gate, since lint-staged scans staged files only. The checker walks `src` itself, so a newly
-    // added file the index has not seen is scanned too.
+    // lint-staged scans staged files only; the checker walks `src`, so an unstaged new file is scanned too.
     'lint:types': 'node scripts/checkBannedPatterns.ts src',
-    // Measured: 87 stylelint findings in starter CSS passed check without it. `--allow-empty-input`, since stylelint
-    // exits 2 on a glob matching nothing.
+    // Measured: 87 findings in starter CSS passed check without it. Stylelint exits 2 on an empty glob.
     'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,
-    // The recess-order config is almost entirely auto-fixable.
     'lint:css:fix': `stylelint "${styleGlob(answers)}" --fix --allow-empty-input`,
     'typecheck': target.typecheck,
   };
@@ -56,8 +53,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
         return `${run} ${gate}`;
       })
       .join(' && '),
-    // husky installs the hooks on `install`; a target's own step runs first. Yarn 2+ never runs `prepare`, only
-    // `postinstall`, so the same line moves there: measured on SvelteKit, whose `svelte-kit sync` otherwise never ran.
+    // Yarn 2+ never runs `prepare`, only `postinstall`: measured on SvelteKit, whose `svelte-kit sync` never ran.
     [answers.packageManager === 'yarn' ? 'postinstall' : 'prepare']:
       target.prepare === undefined ? 'husky' : `${target.prepare} && husky`,
   };

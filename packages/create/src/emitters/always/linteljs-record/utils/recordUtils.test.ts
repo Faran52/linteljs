@@ -21,7 +21,6 @@ describe('stackRows', () => {
     ]);
   });
 
-  // The extension hosting nothing is the case: there is no framework to name, so no row is printed for one.
   it('prints no framework row for a target that renders with none', () => {
     expect(stackRows(hostedAnswersFor({ target: 'webextension' }), VERSIONS)).toEqual([
       ["name: 'linteljs'", "version: '2.0.0'"],
@@ -30,18 +29,15 @@ describe('stackRows', () => {
     ]);
   });
 
-  // A version this table does not carry is left out rather than printed empty, and so is a manager never recorded.
   it('leaves out a row whose version is unknown', () => {
     expect(stackRows(hostedAnswersFor(), {})).toEqual([["name: 'node'", "version: '26.9.0'"]]);
   });
 });
 
 describe('answerRows', () => {
-  // `packageManager` holds a string no prompt asked for, so a row with no label would print for it.
   it('prints the answers a prompt asked, and nothing else', () => {
     expect(answerRows(hostedAnswersFor({ store: 'zustand' }), ANSWERS)).toEqual([
       ["label: 'Framework'", "value: 'react'"],
-      // Every config holds a browser, since the key is required; a slot decides the question, not the row.
       ["label: 'Browser'", "value: 'chrome'"],
       ["label: 'Testing'", "value: 'vitest'"],
       ["label: 'Libraries'", "value: 'es-toolkit'"],
@@ -52,7 +48,6 @@ describe('answerRows', () => {
     ]);
   });
 
-  // An empty list is an answer of nothing, so it prints no row rather than an empty value.
   it('prints a list answer joined, and no row for an empty one', () => {
     const label = `label: '${ANSWERS.agents.prompt}'`;
 
@@ -68,7 +63,6 @@ describe('answerRows', () => {
     expect(labels).not.toContain(label);
   });
 
-  // `aliases` is a map and carries no prompt, so a page never has to render one.
   it('prints nothing for an answer no prompt asks', () => {
     const rows = answerRows(hostedAnswersFor({ aliases: { '@app/*': './src/*' } }), ANSWERS);
 

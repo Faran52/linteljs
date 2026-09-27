@@ -1,7 +1,7 @@
 import { type Artifact } from '@config/types';
 
 import { merged } from '../../utils/artifactUtils';
-// Appended rather than written: the scaffolder's list knows about `.next/` and `.svelte-kit/`.
+// Appended: the scaffolder's list knows about `.next/` and `.svelte-kit/`.
 
 const LINTEL_IGNORED = ['coverage/', '*.tsbuildinfo'];
 
@@ -32,7 +32,6 @@ export const mergeGitignore = (existing: string | null): string => {
   return `${terminated}\n${block}`;
 };
 
-// Merged, to keep the scaffolder's own list.
 export const gitignoreEmitter = (): Artifact[] => {
   return [merged('package', '.gitignore', mergeGitignore)];
 };

@@ -1,9 +1,4 @@
-/**
- * The shipped floor, run over this workspace less its exemptions. It sits at this path because the banned-pattern
- * hook, lint-staged and `lint:types` all look for `scripts/checkBannedPatterns.ts`.
- *
- * Usage: node scripts/checkBannedPatterns.ts packages/create/src packages/create/src/cli.ts
- */
+// At this path because the banned-pattern hook, lint-staged and `lint:types` all look for it.
 import { spawnSync } from 'node:child_process';
 import { globSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,7 +13,7 @@ const SKIPPED = [
   'packages/create/templates/project/src/typings/',
 ];
 
-// Expanded here, not by the shipped walk, which reads `.ts` and `.tsx` only and cannot drop an exempt file it finds.
+// Expanded here: the shipped walk reads `.ts` and `.tsx` only and cannot drop an exempt file.
 const filesUnder = (path: string): string[] => {
   return statSync(path, { throwIfNoEntry: false })?.isDirectory() === true
     ? globSync(`${path}/**/*.{ts,tsx,mts,cts}`)

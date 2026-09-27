@@ -45,7 +45,7 @@ const flavourOf = (file: string): Flavour => {
   return ['.ts', '.tsx'].includes(extname(file)) ? 'ts' : 'js';
 };
 
-// Only what this plugin said counts: a disable comment naming an unloaded rule arrives under that rule's id.
+// A disable comment naming an unloaded rule arrives under that rule's id.
 const audit = (
   context: AuditContext,
   config: Linter.Config[],
@@ -170,7 +170,6 @@ const tally = (findings: Located[], keyOf: (finding: Located) => string): string
     });
 };
 
-// Answers the number of findings, which the caller turns into the exit code.
 export const runFixPass = (context: AuditContext): number => {
   const {
     activeRules,
@@ -199,7 +198,7 @@ export const runFixPass = (context: AuditContext): number => {
   const startedAt = Date.now();
 
   for (const [index, file] of files.entries()) {
-    // One pathological file must not end the run, and a crash inside a rule is what this exists to surface.
+    // One pathological file must not end the run.
     try {
       check(context, config, file);
     }
@@ -239,7 +238,6 @@ export const runFixPass = (context: AuditContext): number => {
       + `${String(bucket.unparsed)} the parser rejected`);
   }
 
-  // Volume is not a defect, but one rule owning a file's reports is worth a look.
   log([
     'reports across the corpus:',
     ...orderBy([...context.auditCounts], [1], ['desc'])

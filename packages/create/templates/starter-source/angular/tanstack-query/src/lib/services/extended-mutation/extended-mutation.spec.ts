@@ -33,7 +33,6 @@ const freshClient = (): QueryClient => {
   return new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 };
 
-// Angular's own ceremony: the binding reads its client out of the injector, so it runs where there is one.
 const runMutation = (
   path: string,
   client: QueryClient = freshClient(),
@@ -70,7 +69,6 @@ describe('injectExtendedMutation', () => {
     }));
   });
 
-  // The status a server sent reaches the caller rather than being swallowed on the way.
   it('rejects with the status a server sent', async () => {
     answering({ status: 'no' }, 422);
 
@@ -79,7 +77,6 @@ describe('injectExtendedMutation', () => {
     await expect(mutation.mutateAsync({ message: 'no' })).rejects.toMatchObject({ status: 422 });
   });
 
-  // The step that is forgotten most: a list that does not drop its cache shows what was there before the write.
   it('drops the caches it was told to once the write succeeds', async () => {
     answering({ status: 'accepted' });
 

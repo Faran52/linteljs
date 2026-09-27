@@ -23,11 +23,6 @@ describe('routerAnswer', () => {
     expect(routerAnswer.slot(vue)).toBe(false);
   });
 
-  /**
-   * The slot decides whether the question is asked; `only` decides which of the two values it offers. React is the
-   * one target with routers today and it lists both, so the pair is asked of a record narrowed to one: that is the
-   * case the predicate exists for, and the only input that tells it apart from the slot above.
-   */
   it('offers each router only to a target that lists it', () => {
     const react = targetFor({
       ...DEFAULT_ANSWERS,

@@ -6,8 +6,7 @@ import type {
   SourceCode,
 } from './ruleUtils.ts';
 
-// Every member optional: an older RuleContext lacks some structurally, and it keeps `context.sourceCode`
-// reads here from tripping `no-unnecessary-condition`, where the type is non-optional.
+// Every member optional: an older RuleContext lacks some structurally.
 export interface CompatContext {
   sourceCode?: SourceCode;
   physicalFilename?: string;
@@ -20,7 +19,7 @@ export interface CompatContext {
   getDeclaredVariables?: (node: RuleNode) => Scope.Variable[];
 }
 
-// Both shapes of the scope readers ESLint moved onto SourceCode: modern readers take a node, legacy ones do not.
+// Modern scope readers take a node, legacy ones do not.
 export interface CompatSourceCode {
   // Method syntax on purpose: bivariant node parameter, the only position a real SourceCode satisfies.
   getScope?(node: RuleNode): Scope.Scope;
@@ -44,7 +43,7 @@ export const sourceCodeOf = (context: CompatContext): SourceCode => {
   return required(context.sourceCode ?? context.getSourceCode?.(), 'a SourceCode');
 };
 
-// The on-disk path, not what a processor reports; `prefer-arrow-functions` uses it to tell `.tsx` from `.ts`.
+// The on-disk path, not what a processor reports.
 export const physicalFilenameOf = (context: CompatContext): string => {
   return required(
     context.physicalFilename
@@ -95,7 +94,6 @@ export const declaredVariablesOf = (context: CompatContext, node: RuleNode): Sco
   return declaredVariablesIn(compatCode(sourceCodeOf(context)), context, node);
 };
 
-// Adapts the ancestor walk to the AncestorReader shape so a helper stays unaware of which ESLint is running.
 export const ancestorReaderOf = (context: CompatContext): AncestorReader => {
   return {
     getAncestors: (node) => {

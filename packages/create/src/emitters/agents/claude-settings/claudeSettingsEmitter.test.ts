@@ -111,10 +111,6 @@ describe('claudeSettingsEmitter', () => {
     expect(artifacts).toEqual([]);
   });
 
-  /*
-   * The adapter is the project's once it exists; the settings file is linteljs's, and it is the one merge `sync` may
-   * still remove, since the whole file exists because this host was selected.
-   */
   it('writes the adapter, the settings and the plugin manifests, and owns all but the adapter', () => {
     const written = claudeSettingsEmitter(CLAUDE)
       .map(({
@@ -133,7 +129,6 @@ describe('claudeSettingsEmitter', () => {
     ]);
   });
 
-  // Hooks come through conventional discovery, so neither manifest names them.
   it('ships the exact minimal local plugin metadata', async () => {
     const [, , plugin, marketplace] = claudeSettingsEmitter(CLAUDE);
 
@@ -158,7 +153,6 @@ describe('claudeSettingsEmitter', () => {
 `);
   });
 
-  // Through the artifact, so what is on disk is what the merge is handed.
   it('merges the settings a running project already holds, and writes its own where there are none', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,

@@ -1,5 +1,4 @@
-// The slice of istanbul's `coverage-final.json` this script reads. Maps are a fact of the source, so every run over
-// the same file carries the same ids; only the counters differ.
+// Maps are a fact of the source, so every run over one file carries the same ids.
 interface Position {
   line: number;
 }
@@ -37,7 +36,6 @@ export const isCoverageReport = (value: unknown): value is CoverageReport => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
 
-// Every counter in a file as one key, `s:3`, `f:1` or `b:2:0` for arm 0 of branch 2.
 export const entriesOf = (file: FileCoverage): string[] => {
   return [
     ...Object.keys(file.statementMap)
@@ -58,7 +56,6 @@ export const entriesOf = (file: FileCoverage): string[] => {
   ];
 };
 
-// A table: statements and nothing else, so there is no behaviour for a suite of its own to hold.
 export const isData = (file: FileCoverage): boolean => {
   return Object.keys(file.fnMap).length === 0 && Object.keys(file.branchMap).length === 0;
 };
@@ -97,7 +94,6 @@ const percent = (hit: number, total: number): string => {
   return `${String(total === 0 ? 100 : Math.floor(hit * 100 / total))}%`;
 };
 
-// Istanbul's own line metric: a line is covered when a statement starting on it ran.
 const linesOf = (file: FileCoverage, keys: Iterable<string>): Set<number> => {
   const lines = [...keys]
     .filter((key) => {
@@ -141,7 +137,6 @@ export const gapOf = (file: FileCoverage, hits: Set<string>): string[] => {
     });
 };
 
-// `[40, 41, 42, 61]` reads as `L40-42, L61`.
 const rangesOf = (lines: number[]): string[] => {
   const sorted = [...new Set(lines)]
     .toSorted((left, right) => {
@@ -199,7 +194,6 @@ export const describeGap = (file: FileCoverage, keys: string[]): string => {
   ].join(', ');
 };
 
-// Which other runs hit any entry of the gap, and which entries no run hits at all.
 export const attribute = (gap: string[], others: Map<string, Set<string>>): Attribution => {
   const coveredBy = [...others]
     .filter(([, hits]) => {

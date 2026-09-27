@@ -12,11 +12,6 @@ import { angularConfigEmitter, emitAngularConfig } from './angularConfigEmitter'
 import type { HostedAnswers } from '@config/types';
 
 describe('emitAngularConfig', () => {
-  /*
-   * The whole file, because every value in it is read by the Angular CLI and nothing here runs that CLI: the
-   * end-to-end suite builds, serves and tests a project with exactly this document. Every `buildTarget` names the
-   * project, which is why the file is written rather than copied.
-   */
   it('writes the Angular CLI project file, keyed by the project name', () => {
     expect(JSON.parse(emitAngularConfig('demo-app', 'pnpm'))).toStrictEqual({
       $schema: './node_modules/@angular/cli/lib/config/schema.json',

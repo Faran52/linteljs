@@ -57,8 +57,6 @@ describe('artifactWriter', () => {
     await expect(readFile(join(cwd, 'kept.txt'), 'utf8')).resolves.toBe('project\n');
   });
 
-  // A project being born is no licence to overwrite: `create` into a directory that exists, or `--existing --seed`,
-  // once replaced a project's own CLAUDE.md and test setup with the shipped defaults.
   it('leaves an existing preserved artifact alone on a run that plants seeds too', async () => {
     await writeFile(join(cwd, 'kept.txt'), 'project\n', 'utf8');
 
@@ -71,7 +69,6 @@ describe('artifactWriter', () => {
     await expect(readFile(join(cwd, 'kept.txt'), 'utf8')).resolves.toBe('project\n');
   });
 
-  // An adapter a project points elsewhere is still the project's, whether or not the link resolves.
   it('leaves a preserved artifact alone behind a live or a dangling symbolic link', async () => {
     const live = join(external, 'live.md');
     const dangling = join(external, 'dangling.md');
@@ -117,7 +114,6 @@ describe('artifactWriter', () => {
       .resolves.toBe('current\nmerged\n');
   });
 
-  // A starter test covering source a scaffolder may not have written is skipped rather than left failing.
   it('writes an artifact that requires files only once every one of them is there', async () => {
     const artifact = {
       ...emitted('standard', 'src/App.test.tsx', 'shipped\n'),
@@ -134,7 +130,6 @@ describe('artifactWriter', () => {
     await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
   });
 
-  // The checker is copied and transformed, and its transform still needs the project's own blocks.
   it('gives a transformed artifact the current file', async () => {
     await writeFile(join(cwd, 'checker.ts'), 'current\n', 'utf8');
 
@@ -163,7 +158,6 @@ describe('artifactWriter', () => {
     expect((await stat(join(cwd, 'hook.sh'))).mode & 0o111).toBe(0o111);
   });
 
-  // Only what a hook runner invokes directly: a config is data, and an executable bit on it is noise in a diff.
   it('leaves an ordinary artifact without an execute bit', async () => {
     await expect(artifactWriter(cwd, emitted('standard', 'notes.md', '# notes\n'))).resolves.toBe(true);
     expect((await stat(join(cwd, 'notes.md'))).mode & 0o111).toBe(0);

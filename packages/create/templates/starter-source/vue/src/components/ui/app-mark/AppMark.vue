@@ -1,8 +1,4 @@
 <script setup lang="ts">
-/*
- * A beam, and three lines that come into line with it. The beam never moves: it is the standard, and the lines are
- * the files. Pure SVG, so every framework receives the same markup rather than its own animation.
- */
 import { styles } from './styles';
 </script>
 

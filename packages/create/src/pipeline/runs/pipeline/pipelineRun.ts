@@ -22,18 +22,12 @@ export interface PipelineOptions {
   cwd: string;
   answers: HostedAnswers;
   skip: Stage[];
-  // The directory is a repository that already exists rather than one this run made.
   existing?: boolean;
-  // Plant the seed artifacts in an existing directory, as if this run had made it.
   seed?: boolean;
   onWrite?: (path: string) => void;
-  // What happened that was not a file write.
   onNotice?: (message: string) => void;
-  // Called as each stage starts, with its position in the full list.
   onStage?: (stage: Stage, index: number, count: number) => void;
-  // Called once the stage's runner resolves, with what it took.
   onStageDone?: (stage: Stage, milliseconds: number) => void;
-  // What the install and the fix pass do with their own output. `terminal/` decides; a pipe keeps them visible.
   output?: RunOutput;
 }
 
@@ -59,16 +53,15 @@ const writeArtifacts = async (
   }
 };
 
-// A project is born once: `create` makes the directory, and `--existing --seed` asks for the same in one that exists.
 const plantsSeeds = (options: PipelineOptions): boolean => {
   return options.seed === true || options.existing !== true;
 };
 
-// `git rev-parse`, not `existsSync('.git')`: a subdirectory of an existing repo must not get a nested one.
+// Not `existsSync('.git')`: a subdirectory of an existing repo must not get a nested one.
 const ensureRepository = (options: PipelineOptions): void => {
   const inside = gitSpawn(['rev-parse', '--is-inside-work-tree'], { cwd: options.cwd });
 
-  // Said out loud: without git there are no hooks, which is a different project than promised.
+  // Said out loud: without git there are no hooks.
   if (inside.error !== undefined) {
     options.onNotice?.(`git unavailable, skipping repository setup: ${inside.error.message}`);
 
@@ -98,7 +91,7 @@ const stageStandard = async (
 
 // Fatal on purpose: every later step reads `node_modules`.
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
-  // The command it runs rather than the id: `yarn-classic` is not something anyone can type.
+  // `yarn-classic` is not something anyone can type.
   const binary = MANAGER_BINARIES[options.answers.packageManager];
 
   options.onNotice?.(`installing with ${binary}`);
@@ -117,8 +110,7 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
 };
 
 export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
-  // Read before the stages, so this is the directory as the user had it.
-  // Seeded first, so `linteljs.config.json` precedes the `package.json` whose dependencies its answers imply.
+  // Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.
   const artifacts = [
     ...seedArtifacts(options.answers, options.name),
     ...buildArtifacts(options.answers, await projectShapeReader(options.cwd), options.name),

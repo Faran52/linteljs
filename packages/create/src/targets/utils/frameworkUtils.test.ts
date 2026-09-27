@@ -15,7 +15,6 @@ describe('partsFor', () => {
 });
 
 describe('hostedNaming', () => {
-  // A host has no directory-based component rule to apply, so the extension is what marks one.
   it('marks a component by the extension the framework uses and keeps the declaration key beside it', () => {
     expect(hostedNaming('react')).toEqual({
       'src/**/*.tsx': COMPONENT,

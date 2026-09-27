@@ -27,7 +27,6 @@ afterEach(() => {
 });
 
 describe('resolvedBinary', () => {
-  // The Node running this suite is on PATH by definition, so this is the one name always resolvable here.
   it('answers an absolute path to a binary that is on PATH', () => {
     const resolved = resolvedBinary('node') ?? '';
 
@@ -45,10 +44,6 @@ describe('resolvedBinary', () => {
     expect(resolvedBinary('node')).toBeUndefined();
   });
 
-  /*
-   * An empty PATH entry means the working directory to a shell, so honouring it would run whatever sits there
-   * under the name. A name relative to the working directory is what an empty entry would resolve.
-   */
   it('skips an empty PATH entry rather than reading it as the working directory', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'linteljs-binary-'));
 

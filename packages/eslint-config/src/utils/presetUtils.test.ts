@@ -22,7 +22,6 @@ describe('presetOf', () => {
     expect(presetOf(configs, 'probe')).toBe(configs);
   });
 
-  // A preset's own glob wins; `files` fills only an entry that names none.
   it('scopes every entry with no glob of its own to the files given', () => {
     const preset = presetOf([{ name: 'probe/one' }, {
       name: 'probe/two',

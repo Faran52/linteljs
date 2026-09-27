@@ -38,7 +38,6 @@ const isConfigObject = (value: unknown): value is ConfigObject => {
   return isJsonObject(value);
 };
 
-// 1 is read and migrated, 2 is current. Anything else names the fix rather than the shape.
 const schemaVersionOf = (value: JsonValue | undefined): SchemaVersion => {
   if (typeof value !== 'number') {
     throw new Error('schemaVersion must be 1 or 2');
@@ -51,12 +50,10 @@ const schemaVersionOf = (value: JsonValue | undefined): SchemaVersion => {
   return value;
 };
 
-// The store a config describes: its own name, or what its v1 yes or no meant. Its own function so the parser below
-// stays one list of reads, and so the version check sits beside the migration rather than inside it.
 const storeAnswerOf = (parsed: ConfigObject, schemaVersion: number): JsonValue | undefined => {
   const raw = parsed.store;
   const wasYesOrNo = schemaVersion === 1 && typeof raw === 'boolean';
-  // Answers nothing for anything but a `true`, so it is safe to read before knowing whether it applies.
+  // Answers nothing but for a `true`, so it is safe to read before knowing whether it applies.
   const migrated: JsonValue | undefined = migratedStore(raw, () => {
     return targetFor({
       ...DEFAULT_ANSWERS,
@@ -71,7 +68,7 @@ const isFormValue = (item: JsonValue): item is string => {
   return typeof item === 'string' && item in ANSWERS.form.values;
 };
 
-// The v1 spelling, and what a `--libraries react-hook-form` flag still reaches for.
+// The v1 spelling, still reached by a `--libraries react-hook-form` flag.
 const libraryChoices = (value: JsonValue | undefined): Library[] => {
   const named = isJsonArray(value) ? value.find(isFormValue) : undefined;
 
@@ -82,15 +79,9 @@ const libraryChoices = (value: JsonValue | undefined): Library[] => {
   return readAnswer(ANSWERS.libraries, value);
 };
 
-/**
- * `ANSWERS` read as its own `Record<AnswerKey, unknown>`, so every key it yields is already `AnswerKey`: indexing
- * either `ANSWERS` or `answers` with one needs no further narrowing, and no branch is left proving what this
- * already guarantees.
- */
+// Read as its own `Record`, so every key it yields is already `AnswerKey`.
 const ANSWER_KEYS = valuesOf(ANSWERS);
 
-// The real type of `answers[key]` for `key: AnswerKey`, not `unknown`: every field `Answers` has, whichever this
-// call's own `key` turns out to name.
 const chosenValuesOf = (value: Answers[AnswerKey]): string[] => {
   if (Array.isArray(value)) {
     return value
@@ -102,11 +93,6 @@ const chosenValuesOf = (value: Answers[AnswerKey]): string[] => {
   return typeof value === 'string' ? [value] : [];
 };
 
-/**
- * Legality lives on the records, read back in two passes. The first refuses an answer given for a target with no
- * slot for it; the second refuses a value offered but not `only` for this target, which `form` and `router` use.
- * Both throw the message `refuseMisfit` always has: the answer, or the value, is not one for this target.
- */
 const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
   for (const key of ANSWER_KEYS) {
     const candidate: AnswerRecord = ANSWERS[key];
@@ -133,8 +119,6 @@ const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
   }
 };
 
-// Every single select v1 kept inside `libraries`, lifted into the field v2 gave it: the form library, the styling
-// system and the data layer. Its own function so `configFrom` stays a list of reads.
 const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject => {
   const fromV1 = schemaVersion === 1;
 
@@ -151,11 +135,7 @@ const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject =
   );
 };
 
-/**
- * One read per field, in the order a config carries them. Its own function so the checks above it stay readable:
- * an absent optional answer is a key that is never written rather than one written `undefined`, which
- * `exactOptionalPropertyTypes` refuses, so each one costs a conditional spread and they add up.
- */
+// `exactOptionalPropertyTypes` refuses a key written `undefined`, so each optional answer is a conditional spread.
 const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): LinteljsConfig => {
   const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
   const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);

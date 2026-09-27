@@ -38,7 +38,6 @@ const SFC_FIXTURES = join(import.meta.dirname, '../../__mocks__/fixtures/sfc');
 
 const TYPED_FILE = join(import.meta.dirname, '../../__mocks__/fixtures/typed/floating.ts');
 
-// Without a framework bucket both imports fall into the package bucket and the blank line is reported.
 const sortedFor = (specifier: string): string => {
   return [
     `import framework from '${specifier}';`,
@@ -54,7 +53,6 @@ const FRAMEWORK_PACKAGES: [Framework, string][] = [
   ['react', 'react'],
   ['next', 'next'],
   ['vue', 'vue'],
-  // Its import group is Vue's plus Nuxt's own, so the framework bucket has to hold `nuxt` as well.
   ['nuxt', 'nuxt'],
   ['svelte', 'svelte'],
   ['solid', 'solid-js'],
@@ -89,7 +87,6 @@ describe('composeConfig', () => {
     expect(none).toContain(SORT_RULE);
   });
 
-  // `layer order` below lints the failure directly; this asserts the composer cannot make it.
   it.each([
     ['vue', 'Home.vue', 'vue/'],
     ['svelte', 'Page.svelte', 'svelte/'],
@@ -135,8 +132,6 @@ describe('composeConfig', () => {
     expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
   });
 
-  // The one framework that is another with a layer removed, so the composer is what proves the removal reaches a
-  // project rather than only the layer's own suite.
   it('composes react-native as react without the accessibility preset', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" src="/b.png" />;\n};\n';
     const native = await ruleIdsFor(await composeConfig({ framework: 'react-native' }), code, 'src/Logo.tsx');
@@ -191,7 +186,6 @@ describe('composeConfig', () => {
       framework: 'react',
       libraries: ['tailwind'],
     });
-    // The plugin resolves `tailwindcss` from cwd.
     const pinned = [...config, {
       settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../..') } },
     }];
@@ -200,7 +194,6 @@ describe('composeConfig', () => {
       .resolves.toContain('better-tailwindcss/no-duplicate-classes');
   });
 
-  // On the layer, as `tailwind.test.ts` does: proving the effect needs a real CSS entry with a custom token.
   it('hands the tailwind entry point to the tailwind layer', async () => {
     const config = await composeConfig({
       libraries: ['tailwind'],
@@ -307,7 +300,6 @@ describe('composeConfig', () => {
     const config = await composeConfig({
       framework: 'react',
       ignores: ['generated/**'],
-      // `generated/**/*.ts` is in the map so the ignore below is the only thing that can silence that path.
       naming: {
         'src/**/*.ts': 'CAMEL_CASE',
         'generated/**/*.ts': 'CAMEL_CASE',
@@ -319,16 +311,10 @@ describe('composeConfig', () => {
 
     const ignored = await ruleIdsFor(config, 'export const value = 1;\n', 'generated/Bad-Name.ts');
 
-    // The null id is the "file ignored" notice itself, which is the evidence the ignore arrived.
     expect(ignored.filter(Boolean)).toEqual([]);
   });
 });
 
-/**
- * Two plugins enabling the same rule name is one defect reported twice, and where both carry a fixer, two fixers on
- * one range. Asserted as a property over the widest composition each framework can be given, rather than per known
- * pair, so the next plugin to republish somebody else's rules fails here on the day it is bumped.
- */
 const namesUnderTwoIds = (ruleIds: string[]): string[] => {
   const idsByName = new Map<string, string[]>();
 
@@ -351,24 +337,13 @@ const namesUnderTwoIds = (ruleIds: string[]): string[] => {
     });
 };
 
-/**
- * Pairs that share a name and nothing else, each confirmed by linting a file that trips one and not the other.
- * An entry here is a claim that the two read different nodes, so adding one without linting for it defeats the
- * assertion above.
- */
 const LOOKALIKES = [
-  // React's is the hook dependency array; TanStack's is the `queryKey`. Measured on one file: two reports, two
-  // different lines, two different missing identifiers.
   '@tanstack/query/exhaustive-deps + react-hooks/exhaustive-deps',
-  // Vue's reads the template only, and reports a `v-for` binding nobody used. The other reads the script.
   'unused-imports/no-unused-vars + vue/no-unused-vars',
-  // The same split: `vue/no-multi-spaces` is the template's whitespace, `@stylistic`'s is the script's.
   '@stylistic/no-multi-spaces + vue/no-multi-spaces',
-  // Not a sort rule at all: `solid/imports` is which of the three `solid-js` entries a symbol comes from.
   'simple-import-sort/imports + solid/imports',
 ];
 
-// Every layer at once, so a pair that only meets under one combination still meets here.
 const WIDEST: ComposeConfigOptions = {
   typescript: true,
   vitest: true,
@@ -382,7 +357,6 @@ const WIDEST: ComposeConfigOptions = {
   ],
 };
 
-// One file per framework, in the extension that framework's components are written in.
 const DUPLICATE_CASES: [string, Framework | undefined, string][] = [
   ['no framework', undefined, 'src/lib/utils/sample.ts'],
   ['a test file', undefined, 'src/lib/utils/sample.test.ts'],
@@ -412,13 +386,10 @@ describe('one owner per rule name', () => {
   });
 });
 
-// A plugin spread into a fresh object is rejected with "Cannot redefine plugin"; `Linter.verify` normalises as a run.
 const composes = (config: Layer): void => {
   new Linter().verify('const value = 1;\n', config, 'src/lib/utils/sample.ts');
 };
 
-// `reactNative` is in the list for the identity risk it alone carries: it registers `@linteljs` beside the
-// registration `reactCore()` already makes, so a second plugin object would throw here and nowhere else.
 const LAYERS: [string, () => Layer][] = [
   ['react', react],
   ['react-native', reactNative],
@@ -484,8 +455,6 @@ const reportsFrom = (messages: Linter.LintMessage[], prefix: string): (string | 
     });
 };
 
-// `strictTypeChecked` sets a parser with no `files` glob, so placed after an SFC layer it wins and the component
-// fails to parse. `react()` before `next()` is not tested: both orders resolve identically.
 describe('layer order', () => {
   it.each(SFC_ORDER)(
     '%s after typescript parses a component; before it, the component does not parse at all',

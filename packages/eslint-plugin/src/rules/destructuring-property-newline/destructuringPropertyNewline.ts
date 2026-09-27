@@ -14,7 +14,7 @@ import {
 
 import { fixCommaToNewline } from './utils/commaUtils.ts';
 
-// A member of either pattern; the array-pattern side carries holes in `[, , third]` as nulls, hence the null.
+// The array-pattern side carries holes in `[, , third]` as nulls.
 type PatternMember
   = ObjectPatternNode['properties'][number]
     | ArrayPatternNode['elements'][number];
@@ -54,12 +54,11 @@ export const destructuringPropertyNewline = createRule('destructuring-property-n
         return;
       }
 
-      // The member moves onto a line of its own, one step in from the line the pattern starts on,
-      // not to column 0, which is correct only for a pattern already at the margin.
+      // One step in from the pattern's line, not column 0.
       const { inner } = indentsAt(node);
 
       for (const [previous, current] of adjacentPairs(properties)) {
-        // An array pattern's holes are nulls (`[, , third]`); a pair with a hole has no token to measure.
+        // A pair with a hole has no token to measure.
         if (!previous || !current) {
           continue;
         }

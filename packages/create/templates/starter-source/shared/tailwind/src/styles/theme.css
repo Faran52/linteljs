@@ -1,9 +1,4 @@
-/*
- * Tailwind's names, pointed at the tokens rather than given values of their own. `bg-background` then resolves to
- * `--background`, so a utility and a hand-written rule read the same theme and a project retints both at once.
- *
- * `inline` because the values are already custom properties: without it Tailwind would wrap each one again.
- */
+/* `inline` because the values are already custom properties: without it Tailwind wraps each again. */
 
 @theme inline {
   --default-transition-duration: var(--motion-fast);
@@ -28,7 +23,7 @@
   --color-ok: var(--ok);
   --color-destructive: var(--destructive);
 
-  /* By what a thing is rather than by size. */
+  /* Radii, by role rather than by size. */
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);

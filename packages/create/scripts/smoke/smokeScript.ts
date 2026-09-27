@@ -1,9 +1,4 @@
-/**
- * Smoke test for the packed tarball: the `bin`, the `files` list and the `templates/` beside `dist/` are only wrong
- * once packed, and an asset missing from the tarball passes every test here and dies in a generated project.
- *
- * Usage: tsx scripts/smoke/smokeScript.ts
- */
+// The `bin`, `files` and `templates/` are only wrong once packed.
 import assert from 'node:assert/strict';
 import {
   existsSync,
@@ -19,11 +14,11 @@ import { log } from '../../templates/project/scripts/utils/loggerUtils.ts';
 const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');
 
-// Every option `parseCliArgs` accepts, at a word boundary: `--skip` was once a prefix of another flag.
+// At a word boundary: `--skip` was once a prefix of another flag.
 const FLAGS = ['--existing', '--no-install', '--seed', '--skip', '--yes', '-y', '--force', '--help', '-h'];
 const STAGES = ['lint', 'package', 'standard', 'install', 'fix'];
 
-// Beside the script it spawns, and negated in `files` so a generated project inherits no test for a file it owns.
+// Negated in `files`, so a generated project inherits no test.
 const EXCLUDED = /^project\/(?:scripts|plugins)\/(?:.*\/)?[^/]+\.test\.ts$/;
 
 log('packing and extracting the tarball');
@@ -51,7 +46,7 @@ assert.ok(existsSync(join(pkgDir, 'templates')), 'no templates/ beside dist/ for
 log('comparing the shipped asset tree against the tarball');
 
 const filesIn = (dir: string): string[] => {
-  // `readdirSync` rather than a glob, whose `*` skips dotfiles.
+  // A glob's `*` skips dotfiles.
   return readdirSync(dir, {
     recursive: true,
     withFileTypes: true,

@@ -10,8 +10,7 @@ interface ConfigBearing {
   configs: object;
 }
 
-// A layer built against a plugin release that no longer publishes a preset: `strip` rewrites the plugin's default
-// export, and `load` imports the layer's module afresh so it sees the rewritten one.
+// `load` imports the layer afresh so it sees the rewritten default export.
 export const layerWithout = async <P>(
   specifier: string,
   strip: (plugin: P) => P,
@@ -36,7 +35,6 @@ export const layerWithout = async <P>(
   }
 };
 
-// The plugin as a release that dropped `configs[key]` would ship it.
 export const layerWithoutConfig = (
   specifier: string,
   key: string,

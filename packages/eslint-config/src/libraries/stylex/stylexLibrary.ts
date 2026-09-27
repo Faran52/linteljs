@@ -5,11 +5,7 @@ import { SCRIPT_AND_SFC_FILES } from '../../config/constants';
 import type { ESLint, Rule } from 'eslint';
 import type { Layer } from '../../types';
 
-/**
- * StyleX 0.19 compiles each of these to no CSS at all, without an error. Measured against its Babel plugin. It drops
- * `border` and the eight one-sided border shorthands too, and `valid-styles` refuses those itself while
- * `banPropsForLegacy` is off, so a limit here would never be read.
- */
+// StyleX 0.19 compiles each of these to no CSS at all, without an error. Measured against its Babel plugin.
 const DROPPED_SHORTHANDS = [
   'animation',
   'background',
@@ -19,12 +15,8 @@ const DROPPED_SHORTHANDS = [
 
 const VALID_IMPORTS = ['stylex', '@stylexjs/stylex'];
 
-/*
- * `valid-styles` 0.19 still calls `context.getScope()`, which ESLint 9 removed, on a name in a numeric property
- * that its own table of constants cannot resolve, and the whole run threw. Such a name is an import or a `let`,
- * which StyleX cannot compile either, and the rule reports it from any scope that does not hold it as a `const`.
- * A copy rather than a wrapper: the context is frozen, and these are every member ESLint's type declares.
- */
+// `valid-styles` 0.19 calls `context.getScope()`, removed in ESLint 9, and the whole run threw.
+// A copy rather than a wrapper: the context is frozen.
 const withGetScope = (rule: Rule.RuleModule): Rule.RuleModule => {
   return {
     ...rule,

@@ -9,7 +9,7 @@ import { OUTSIDE_TESTS, targetFor } from '@targets';
 import { emitted } from '../../utils/artifactUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
-// Astro's Vite options live here, so there is no `vite.config.ts`. `.mjs` is the name `astro check` looks for first.
+// `.mjs` is the name `astro check` looks for first.
 
 interface Integration {
   specifier: string;
@@ -17,7 +17,7 @@ interface Integration {
 }
 
 const INTEGRATIONS: Record<HostedFramework, Integration> = {
-  // The React Compiler, passed through to `@vitejs/plugin-react`; the guard keeps its memo cache out of coverage.
+  // The guard keeps its memo cache out of coverage.
   react: {
     specifier: '@astrojs/react',
     call: `react({ compiler: ${OUTSIDE_TESTS} })`,
@@ -63,7 +63,7 @@ export const emitAstroConfig = (answers: Answers): string | null => {
     ? ''
     : `  integrations: [${INTEGRATIONS[framework].call}],\n`;
 
-  // Vite plugins, not integrations: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro one.
+  // Vite plugins: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro one.
   const vite = styling.calls.length === 0 ? '' : `  vite: { plugins: [${styling.calls.join(', ')}] },\n`;
 
   return `${imports}
@@ -73,7 +73,6 @@ ${integrations}${vite}});
 `;
 };
 
-// Birth only, for the same reason `vite.config.ts` is.
 export const astroConfigEmitter = (answers: Answers): Artifact[] => {
   const config = emitAstroConfig(answers);
 

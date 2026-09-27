@@ -1,13 +1,4 @@
-/**
- * Hunts for a rule that stays silent when it should report, which coverage, mutation and `realCode.ts` all reward.
- * Takes real code a rule is silent on, applies an edit that breaks that rule, and lints again: silence is a false
- * negative. The file must be silent before the edit, so any report is the edit's, and every input a rule declines on
- * purpose is a skip rather than a miss. A large miss count usually means a broken edit, not broken rules.
- * `--neuter <id>` stubs a rule to report nothing, which proves the detector can fail.
- *
- * Usage: tsx scripts/audit/false-negatives/falseNegativesAudit.ts [dir...] [--rule <id>] [--shape <text>]
- *          [--limit <n>] [--max-files <n>] [--neuter <id>]
- */
+// Breaks real code a rule is silent on and lints again; `--neuter <id>` proves the detector can fail.
 import { readFileSync } from 'node:fs';
 import process from 'node:process';
 import { parseArgs } from 'node:util';
@@ -138,8 +129,7 @@ if (activeShapes.length === 0) {
 const linter = new Linter();
 const configCache = new Map<string, Linter.Config[]>();
 
-// One rule with inline configuration off, since a third-party disable comment would silence the report the edit
-// provokes. A neutered rule keeps its real `meta`, because ESLint validates options against the schema.
+// Inline configuration off, since a third-party disable would silence the provoked report.
 const ruleConfig = (rule: string, options: Record<string, OptionValue> | undefined): Linter.Config[] => {
   const key = `${rule}|${JSON.stringify(options ?? null)}`;
   const cached = configCache.get(key);
@@ -230,8 +220,7 @@ const snippetAt = (source: string, offset: number): string => {
     .join('\n');
 };
 
-// One shape against one file. The original must be silent first, which makes a report afterwards the edit's alone.
-// The before count is cached per rule and options, since six shapes of one rule would otherwise pay six passes.
+// Cached per rule and options: six shapes of one rule would otherwise pay six passes.
 const attempt = (entry: ActiveShape, file: string, state: State, name: string, cache: Map<string, Reports>): void => {
   const candidate = entry.build(state);
 
@@ -304,7 +293,6 @@ const shapesStillHungry = (): ActiveShape[] => {
     });
 };
 
-// A disable comment would suppress the report waited for; `noInlineConfig` covers it, this keeps the counts honest.
 const load = (file: string): [string, string, Program] | undefined => {
   const source = readFileSync(file, 'utf8');
 
@@ -332,7 +320,6 @@ const load = (file: string): [string, string, Program] | undefined => {
   return [source, name, ast];
 };
 
-// One walk however many shapes still look: only the skip sink differs per shape.
 const check = (file: string, hungry: ActiveShape[]): void => {
   const loaded = load(file);
 
@@ -388,7 +375,7 @@ for (const file of interleave(sources).take(maxFiles)) {
 
   visited += 1;
 
-  // One pathological file must not end the run, and a crash inside a rule is what a harness exists to surface.
+  // One pathological file must not end the run.
   try {
     check(file, hungry);
   }

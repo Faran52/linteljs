@@ -6,7 +6,6 @@ const declare = 'const alpha = 1, bravo = 2, charlie = 3;\n';
 
 jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
   valid: [
-    // Brace placement is an indent rule's business, not this one's.
     "export { alpha,\n  bravo\n} from 'mod';",
     'export {};',
     `${declare}export { alpha };`,
@@ -26,7 +25,6 @@ jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
       errors: [{ messageId: 'specifiersOnNewline' }],
     },
     {
-      // An existing break wider than this file's step is left as written.
       code: "const pad = {\n  a: 1,\n};\nexport {\n      alpha, bravo } from 'mod';",
       output: "const pad = {\n  a: 1,\n};\nexport {\n      alpha,\n  bravo\n} from 'mod';",
       errors: [{ messageId: 'specifiersOnNewline' }],
@@ -50,13 +48,11 @@ jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
       errors: [{ messageId: 'specifiersOnNewline' }],
     },
     {
-      // The brace splice must not push the trailing comma to column 0 ahead of the brace.
       code: "export { alpha, bravo, } from 'mod';",
       output: "export {\n  alpha,\n  bravo,\n} from 'mod';",
       errors: [{ messageId: 'specifiersOnNewline' }],
     },
     {
-      // The open-brace splice belongs to the first report, not to specifier index 1.
       code: "export { alpha,\n  bravo, charlie } from 'mod';",
       output: "export {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'specifiersOnNewline' }],
@@ -72,7 +68,6 @@ jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
       errors: [{ messageId: 'specifiersOnNewline' }],
     },
     {
-      // A comment anywhere inside makes the brace gaps unsafe to splice, so no fix.
       code: "export { alpha, /* keep */ bravo } from 'mod';",
       output: null,
       errors: [{ messageId: 'specifiersOnNewline' }],

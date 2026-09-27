@@ -28,24 +28,18 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
     },
     'somethingElse(() => {}, [bravo, alpha]);',
 
-    // A member callee is left alone, so `React.useEffect` is not checked.
     'React.useEffect(() => {}, [bravo, alpha]);',
     'useEffect(() => {});',
     'useEffect(() => {}, dependencies);',
     'useEffect();',
 
-    // Anything other than a plain identifier is out of scope: sorting a member expression would mean rewriting text
-    // this rule cannot verify.
     'useEffect(() => {}, [bravo.value, alpha]);',
     'useEffect(() => {}, [alpha, bravo()]);',
     'useEffect(() => {}, [...spread, alpha]);',
     "useEffect(() => {}, ['literal', alpha]);",
 
-    // A hole is a null element rather than a node, so the identifier test has to answer for it.
     'useEffect(() => {}, [alpha, , bravo]);',
 
-    // Equal keys under numeric collation give a zero comparator result, so direction must multiply that, not divide it,
-    // or a tie flips to infinity.
     {
       code: 'useEffect(() => {}, [item1, item001]);',
       options: [{ order: 'desc' }],
@@ -53,7 +47,6 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
   ],
   invalid: [
     {
-      // Rewriting the array from the sorted names would drop the comment with it.
       code: 'useEffect(() => {}, [\n  bravo, // needed\n  alpha,\n]);',
       output: null,
       errors: [{ messageId: 'sort' }],
@@ -85,7 +78,6 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
       errors: [{ messageId: 'sort' }],
     },
     {
-      // Only the first out-of-order position reports; one pass fixes the whole array.
       code: 'useEffect(() => {}, [delta, charlie, bravo, alpha]);',
       output: 'useEffect(() => {}, [alpha, bravo, charlie, delta]);',
       errors: [{ messageId: 'sort' }],

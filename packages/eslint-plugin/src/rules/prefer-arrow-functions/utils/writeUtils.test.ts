@@ -21,8 +21,6 @@ interface ParsedFunction {
   fn: FunctionLike;
 }
 
-// Driven directly with real parsed function nodes, the same way the rule reaches them.
-
 const isFunctionLike = (node: RuleNode): node is FunctionLike => {
   return node.type === 'ArrowFunctionExpression'
     || node.type === 'FunctionDeclaration'
@@ -43,8 +41,6 @@ const functionFrom = (code: string): ParsedFunction => {
   };
 };
 
-// Generics and a return type annotation are TypeScript-only syntax, so these fixtures need the TypeScript parser
-// rather than @mocks/sourceCodeFrom; component.tsx names a real file rather than a flag asserted from nowhere.
 const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction => {
   const linter = new Linter();
   const nodes: RuleNode[] = [];
@@ -64,7 +60,6 @@ const tsFunctionFrom = (code: string, filename = 'source.ts'): ParsedFunction =>
 
   linter.verify(code, [
     {
-      // Flat config matches against the given filename, and needs an extension ESLint recognises to apply at all.
       files: ['**/*.ts', '**/*.tsx'],
       plugins: { probe: { rules: { capture } } },
       languageOptions: {
@@ -166,7 +161,6 @@ describe('writeArrowFunction', () => {
     expect(writeArrowFunction(sourceCode, fn, false)).toBe('<T>(value: T): T => {\n  return value;\n}');
   });
 
-  // A single type parameter in a .tsx file reads as a JSX tag, so the emitter adds a trailing comma to disambiguate.
   it('adds a disambiguating comma to a lone generic parameter in a tsx file', () => {
     const { sourceCode, fn } = tsFunctionFrom(
       'function identity<T>(value: T): T {\n  return value;\n}',
@@ -194,7 +188,6 @@ describe('writeArrowFunction', () => {
     expect(writeArrowFunction(sourceCode, fn, true)).toBe('<T,>(value: T): T => {\n  return value;\n}');
   });
 
-  // Two type parameters are already unambiguous, so the tsx flag adds nothing.
   it('does not disambiguate a generic list with more than one parameter', () => {
     const { sourceCode, fn } = tsFunctionFrom(
       'function pair<A, B>(first: A, second: B): [A, B] {\n  return [first, second];\n}',

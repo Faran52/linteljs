@@ -17,7 +17,6 @@ export type Counts = Record<'changed'
   | 'unparsed'
   | SkipReason, number>;
 
-// One run's state, passed rather than held at module level so each mode reads what it was handed.
 export interface AuditContext {
   activeRules: string[];
   auditCounts: Map<string, number>;
@@ -26,10 +25,9 @@ export interface AuditContext {
   counts: Record<Flavour, Counts>;
   files: string[];
   findings: Located[];
-  // The first `fix` of the current file, which is the whole-plugin pass a consumer pays for. Later calls attribute.
+  // The first `fix` is the whole-plugin pass a consumer pays for; later calls attribute.
   fixTimes: number[];
   linter: Linter;
-  // The options every config carries, by rule id. The sweep sets them per configuration and clears them after.
   options: Record<string, Record<string, OptionValue>>;
   seen: Set<string>;
   sources: string[];

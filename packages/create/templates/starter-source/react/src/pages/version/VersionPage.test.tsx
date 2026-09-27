@@ -8,7 +8,6 @@ describe('VersionPage', () => {
   it('renders every recorded row of the stack', () => {
     render(<VersionPage />);
 
-    // `getAllByText`: a name like `react` is also the value of an answer below it, so one match is not the test.
     for (const { name, version } of STACK) {
       expect(screen.getAllByText(name)).not.toHaveLength(0);
       expect(screen.getAllByText(version)).not.toHaveLength(0);

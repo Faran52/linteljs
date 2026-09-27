@@ -17,7 +17,6 @@ const counter = useCounter();
       Vue, Vite and the standard already applied.
     </p>
 
-    <!-- State that outlives the page: switch tabs and come back, and the count is still here. -->
     <div class="counter">
       <span
         class="count"

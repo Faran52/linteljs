@@ -7,7 +7,7 @@ import { HEAD, PEER_EXTENSIONS } from './constants';
 
 export const emitYarnrc = (answers: Answers): string => {
   const installed = [...Object.keys(buildDependencies(answers)), ...Object.keys(buildDevDependencies(answers))];
-  // A package with no extension looks up `undefined`, which `join` writes as nothing.
+  // No extension looks up `undefined`, which `join` writes as nothing.
   const peerExtensions = installed
     .map((name) => {
       return PEER_EXTENSIONS[name];

@@ -17,7 +17,6 @@ import type {
   NamingMap as UpstreamNamingMap,
 } from '@linteljs/eslint-config';
 
-// Declared twice on purpose, so this package installs before eslint-config publishes; this is what keeps them equal.
 it('mirrors eslint-config exactly', () => {
   expectTypeOf<AliasMap>().toEqualTypeOf<UpstreamAliasMap>();
   expectTypeOf<NamingMap>().toEqualTypeOf<UpstreamNamingMap>();

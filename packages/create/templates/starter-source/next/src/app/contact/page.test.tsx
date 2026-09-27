@@ -9,10 +9,6 @@ import { StoreProvider } from '../../lib/providers/StoreProvider';
 
 import ContactPage from './page';
 
-/*
- * Both slots, the way the layout wraps them: RTK Query's submit is a Redux hook and TanStack Query's wants a
- * client above it, so this one suite covers every combination of the form and data answers.
- */
 const open = (): void => {
   render(
     <StoreProvider>
@@ -23,7 +19,6 @@ const open = (): void => {
   );
 };
 
-// Blurred, since the rules run on blur in both form libraries.
 const fill = (label: string, value: string): void => {
   const field = screen.getByLabelText(label);
 

@@ -16,10 +16,6 @@ import base from '../../layers/base/baseLayer';
 import angular, { angularGroup } from './angularFramework';
 
 describe('angular', () => {
-  /*
-   * A component with no state of its own is normal Angular: it still has a template, a selector and a place in the
-   * injector. Without the carve-out every presentational component in a project fails its own lint.
-   */
   it('lets a decorated class carry nothing, and still refuses an undecorated one', async () => {
     const decorated = "@Component({ selector: 'app-mark' })\nexport class Mark {}\n";
     const bare = 'export class Bag {}\n';
@@ -34,7 +30,6 @@ describe('angular', () => {
     const code = '<div *ngIf="on">{{ label }}</div>\n<button (click)="go()"></button>\n';
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.html');
 
-    // A `null` id is a fatal parser error; an empty template ruleset would pass that alone.
     expect(ruleIds).not.toContain(null);
     expect(ruleIds.some(startsWith('@angular-eslint/'))).toBe(true);
   });
@@ -62,7 +57,6 @@ describe('angular', () => {
     expect(ruleIds.some(startsWith('@angular-eslint/'))).toBe(true);
   });
 
-  // The processor hands an inline template to the template rules as a virtual `.html` file.
   it('reports on a template written inline in a component', async () => {
     const code = [
       "@Component({ selector: 'app-logo', template: '<img src=\"/a.png\">' })",

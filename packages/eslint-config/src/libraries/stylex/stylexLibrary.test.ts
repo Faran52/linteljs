@@ -26,7 +26,6 @@ const layer = [...base(), ...react(), ...stylex()];
 
 const IMPORT = "import * as stylex from '@stylexjs/stylex';";
 
-// A style module the way the starters write one, with `rules` as the body of the one style.
 const moduleWith = (rules: string, preamble: string[] = []): string => {
   return [
     IMPORT,
@@ -67,7 +66,6 @@ const lint = async (code: string): Promise<string[]> => {
 };
 
 describe('stylex', () => {
-  // `allowRawCSSVars` waves a `var()` value through the rule's own check, which is where this bites.
   it('reports a shorthand StyleX compiles to nothing, even around a custom property', async () => {
     await expect(ruleIdsFor(layer, moduleWith("background: 'var(--card)'"), 'src/components/card/styles.ts'))
       .resolves.toContain('@stylexjs/valid-styles');
@@ -89,7 +87,6 @@ describe('stylex', () => {
     expect(output).not.toContain('!important');
   });
 
-  // With `banPropsForLegacy` on, the rule rewrites it as `borderBottom` longhands, another side in vertical text.
   it('leaves a logical border shorthand to be fixed by hand', async () => {
     await expect(fixed(moduleWith("borderBlockEnd: '1px solid red'"))).resolves.toBeUndefined();
   });
@@ -177,7 +174,6 @@ describe('stylex', () => {
       .resolves.not.toContain('@stylexjs/enforce-extension');
   });
 
-  // The rule reached for `context.getScope()` here, which ESLint removed, and the whole run threw.
   it('reports an imported number in a numeric property rather than crashing on it', async () => {
     const code = moduleWith('zIndex: LAYER', ["import { LAYER } from './layers';"]);
 
@@ -202,7 +198,6 @@ describe('stylex', () => {
       .resolves.toContain('@stylexjs/valid-styles');
   });
 
-  // `astro()` last, the order `composeConfig` keeps.
   it('reaches the frontmatter of an astro page', async () => {
     const code = `---\n${moduleWith("background: 'var(--card)'")}---\n\n<div>x</div>\n`;
 

@@ -27,7 +27,6 @@ import {
 
 import type { Scope } from 'eslint';
 
-// One frame of the `this` walk's stack; `isClassBound` marks a frame bound to a class instance, where it stops.
 interface FunctionFrame {
   node: FunctionLike;
   isArrow: boolean;
@@ -46,14 +45,13 @@ type PropertyNode = Extract<RuleNode, PropertyMatch>;
 
 const SKIPPED_PROPERTY_KINDS = new Set(['get', 'set']);
 
-// The variable a function's own name binds; a function declares at most one, so the first element is it.
 const nameVariableOf = (context: RuleContext, fn: FunctionLike): Scope.Variable | undefined => {
   const [nameVariable] = declaredVariablesOf(context, fn);
 
   return nameVariable;
 };
 
-// A method's value is a `function` and stops the walk as one, so only an arrow in a class field needs marking.
+// A method's value is a `function` and stops the walk, so only a class-field arrow needs marking.
 const isClassMemberValue = (fn: FunctionLike): boolean => {
   return fn.parent.type === 'PropertyDefinition';
 };
@@ -63,8 +61,7 @@ const parentOf = (reference: Scope.Reference): RuleNode => {
   return mustFind((reference.identifier as RuleNode).parent, 'the parent of a reference to the function');
 };
 
-// StyleX compiles `stylex.create` at build time and takes a dynamic style only as `(x) => ({ ... })`: the block
-// body the fix writes fails that build with `Unsupported expression`.
+// StyleX takes a dynamic style only as `(x) => ({ ... })`; a block body fails its build.
 const isStylexStyle = (fn: FunctionLike): boolean => {
   if (fn.parent.type !== 'Property') {
     return false;
@@ -125,13 +122,12 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
     // Off by default: no lint rule can tell a call that runs before declaration from one that only reads that way.
     const forceHoisted = optionsOf<PreferArrowFunctionsOptions>(context).forceHoisted ?? false;
 
-    // Every function visitor fires on `:exit`, so by the time a function is judged each `this` in it is recorded.
+    // Every function visitor fires on `:exit`, so each `this` in it is recorded by then.
     const functionStack: FunctionFrame[] = [];
     const containsThis = new WeakSet<FunctionLike>();
     const propertyOf = new WeakMap<object, PropertyNode>();
 
-    // Whether the function calls itself by name, which an arrow has none of:
-    // `function fact(n) { fact(n-1) }` would recurse into an unresolved global.
+    // An arrow has no name to recurse on.
     const referencesOwnName = (fn: FunctionLike): boolean => {
       const nameVariable = nameVariableOf(context, fn);
 
@@ -140,7 +136,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         && nameVariable.references.length > 0;
     };
 
-    // A `function` is hoisted, so an earlier call is legal; a `const` arrow sits in its dead zone and throws.
+    // A `function` is hoisted; a `const` arrow sits in its dead zone and throws.
     const isReferencedBeforeDeclaration = (
       fn: FunctionLike,
       nameVariable: Scope.Variable,
@@ -149,11 +145,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       const [, blockEnd] = rangeOf(fn.parent);
       const walked = new Set<RuleNode>();
 
-      /**
-       * The outermost function holding the reference below the one scope both share. The Program holds `fn`,
-       * so the walk always stops before it runs out of parents. Ranges nest and the reference starts inside or
-       * after `fn`, so the first ancestor starting no later than `fn` is `fn` or one holding it.
-       */
+      // The Program holds `fn`, so the walk always stops before it runs out of parents.
       const outermostFunctionOf = (reference: Scope.Reference): RuleNode | undefined => {
         let outermost: RuleNode | undefined;
 
@@ -167,8 +159,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         return outermost;
       };
 
-      // Any earlier mention, wherever it sits. A later one inside a function declaration only looks safe: that
-      // declaration is hoisted too, and may be called above this one, so its own mentions are judged the same way.
+      // A later mention inside a function declaration only looks safe: that declaration is hoisted too.
       const runsEarly = (reference: Scope.Reference): boolean => {
         const [referenceStart, referenceEnd] = rangeOf(reference.identifier);
 
@@ -176,8 +167,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return true;
         }
 
-        // A later `case` is reached by jumping past this one, so the text order says nothing there. An earlier one
-        // already answered above.
+        // A later `case` is reached by jumping past this one, so text order says nothing.
         if (fn.parent.type === 'SwitchCase' && referenceEnd > blockEnd) {
           return true;
         }
@@ -190,8 +180,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
         walked.add(outermost);
 
-        // The name comes first when there is one. An anonymous default export has none, and any parameter standing
-        // in for it is only mentioned inside the function already walked, so it can never answer true.
+        // An anonymous default export has no name, and its parameters are only mentioned inside it.
         return declaredVariablesOf(context, outermost)[0]?.references.some(runsEarly) ?? false;
       };
 
@@ -219,8 +208,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         });
     };
 
-    // `function x() {} function x() {}` is legal when var-scoped, and a TypeScript overload
-    // implementation counts too; `const` may not be bound twice.
+    // A var-scoped `function` and a TypeScript overload may bind twice; a `const` may not.
     const isRedeclared = (nameVariable: Scope.Variable): boolean => {
       return nameVariable.defs.length > 1;
     };
@@ -231,12 +219,12 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       replacement: string,
       target: RuleNode = fn,
     ): void => {
-      // Gated for `preferArrow` only: `preferExplicit` turns an arrow into an arrow, so the gate cannot change.
+      // `preferExplicit` turns an arrow into an arrow, so the gate cannot change.
       if (messageId === 'preferArrow' && !isSafeToConvert(sourceCode, fn, containsThis)) {
         return;
       }
 
-      // The arrow is assembled from parameter and body text, so a comment elsewhere has nowhere to go: report, no fix.
+      // The arrow is assembled from parameter and body text, so a comment elsewhere has nowhere to go.
       const rebuildLosesAComment = sourceCode.getCommentsInside(fn).length
         > sourceCode.getCommentsInside(fn.body).length;
 
@@ -261,8 +249,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       },
 
       'ThisExpression': () => {
-        // Mark every frame `this` is inherited through, stopping at the first owner;
-        // reversed on a copy since the stack belongs to the two visitors.
+        // Reversed on a copy, since the stack belongs to the two visitors.
         for (const frame of [...functionStack].reverse()) {
           containsThis.add(frame.node);
 
@@ -281,22 +268,18 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       },
 
       'FunctionDeclaration[parent.type!="ExportDefaultDeclaration"]:exit': (fn: FunctionLike) => {
-        // A statement position that takes a declaration but not a lexical one, so the `const` this visitor
-        // writes would not parse; silent, since `function` is the only spelling it accepts.
+        // A position that takes a declaration but not a lexical one, so a `const` would not parse.
         if (!SAFE_DECLARATION_PARENTS.has(fn.parent.type)) {
           return;
         }
 
-        // A named function declaration always declares its own name.
         const nameVariable = mustFind(nameVariableOf(context, fn), 'the variable a function declaration declares');
 
-        // Needs to stay a `function` to be constructed, reassigned, carry a prototype, or be declared twice.
         if (hasFunctionOnlyUsage(nameVariable) || isRedeclared(nameVariable)) {
           return;
         }
 
-        // The only visitor that produces a `const`, so the only one where hoisting matters;
-        // still reported with no fix so the exception does not look like an oversight.
+        // The only visitor that writes a `const`, so the only one where hoisting matters.
         if (!forceHoisted
           && isSafeToConvert(sourceCode, fn, containsThis)
           && isReferencedBeforeDeclaration(fn, nameVariable)) {
@@ -311,34 +294,30 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         reportFix(fn, 'preferArrow', `${writeArrowConstant(sourceCode, fn, isTsx)};`);
       },
 
-      // Recorded on the way down, so the visitor below reads its property already typed as one.
       'Property': (property: PropertyNode) => {
         propertyOf.set(property.value, property);
       },
 
-      // Keyed on the function: a property's `value` is an ESTree node with no `parent`, which everything below needs.
+      // Keyed on the function: a property's `value` has no `parent`, which everything below needs.
       'FunctionExpression[parent.type="Property"]:exit': (fn: FunctionLike) => {
-        // The selector matched a property's value, and the visitor above recorded every one on entering it.
         const property = mustFind(propertyOf.get(fn), 'the property recorded for a method function');
 
         if (SKIPPED_PROPERTY_KINDS.has(property.kind)) {
           return;
         }
 
-        // Checked here too, because a property value reaches this visitor instead of the plain function-expression one.
+        // A property value reaches this visitor instead of the plain function-expression one.
         if (referencesOwnName(fn)) {
           return;
         }
         const arrow = writeArrowFunction(sourceCode, fn, isTsx);
 
         if (!property.method) {
-          // Long form: `{ foo: function() {...} }`, so replace just the value.
           reportFix(fn, 'preferArrow', arrow);
           return;
         }
 
-        // Shorthand method: the value's source span excludes the property name, so
-        // replacing only the value yields `foo() => {...}`, a parse error.
+        // The value's span excludes the key, so replacing only the value yields `foo() => {...}`.
         const keyText = sourceCode.getText(property.key);
         const key = property.computed ? `[${keyText}]` : keyText;
         reportFix(fn, 'preferArrow', `${key}: ${arrow}`, property);

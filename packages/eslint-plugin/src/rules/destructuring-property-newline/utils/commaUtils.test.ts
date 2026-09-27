@@ -21,7 +21,6 @@ describe('fixCommaToNewline', () => {
     expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')?.text).toBe('\n  ');
   });
 
-  // Reflowing over a comment in the gap would delete it, so there is no fix to offer.
   it('offers no fix when a comment sits between the comma and the element', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, /* kept */ two];\n');
     const second = mustFind(

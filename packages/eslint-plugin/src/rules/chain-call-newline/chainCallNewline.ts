@@ -31,7 +31,7 @@ interface CallMatch {
   type: 'CallExpression';
 }
 
-// The ESTree expression a chain is built from, read off the member type so no ESTree import is needed.
+// Read off the member type so no ESTree import is needed.
 type Part = MemberExpressionNode['object'];
 
 type Member = Extract<Part, MemberMatch>;
@@ -43,7 +43,6 @@ type Step = Call | Member;
 interface Link {
   call: Call;
   start: Member;
-  // Whether no call of any kind sits between the head's base and this one.
   leading: boolean;
 }
 
@@ -63,7 +62,6 @@ const DEFAULT_MAX_LINE_LENGTH = 120;
 // `ROUTES.map(...)` is a method on a value, `Object.keys(...)` and `z.string()` are calls into a namespace.
 const CONSTANT_NAME = /^[A-Z][\dA-Z_]*$/;
 
-// Whether `parent` carries the chain `child` belongs to one step further out.
 const continues = (parent: RuleNode, child: Part): boolean => {
   if (parent.type === 'MemberExpression') {
     return parent.object === child;
@@ -76,7 +74,6 @@ const continues = (parent: RuleNode, child: Part): boolean => {
   return parent.type === 'ChainExpression';
 };
 
-// Collects the chain's steps base outward and answers the base: whatever the chain hangs off.
 const unwind = (node: Part, steps: Step[]): Part => {
   if (node.type === 'ChainExpression') {
     return unwind(node.expression, steps);
@@ -97,11 +94,7 @@ const unwind = (node: Part, steps: Step[]): Part => {
   return node;
 };
 
-/**
- * A link is a call through a plain `.name` or `?.name`. Property reads ahead of the first link belong to the head;
- * after a link they open the next one, so `rows.find(fn).name.trim()` breaks ahead of `.name`. A computed read, a
- * call of a call and a trailing property ride with the link before them.
- */
+// Property reads after a link open the next one, so `rows.find(fn).name.trim()` breaks ahead of `.name`.
 const linksOf = (steps: Step[]): Link[] => {
   const links: Link[] = [];
   let runStart: Member | undefined;
@@ -138,7 +131,7 @@ const takesBlockCallback = (link: Link): boolean => {
     });
 };
 
-// The `.` or `?.` a link begins with. A non-computed member is always `object . property`.
+// A non-computed member is always `object . property`.
 const dotOf = (sourceCode: SourceCode, member: Member): AST.Token => {
   return mustFind(sourceCode.getTokenBefore(member.property), 'the dot of a chained call');
 };
@@ -184,14 +177,13 @@ export const chainCallNewline = createRule('chain-call-newline', {
     const eol = lineTerminatorOf(sourceCode);
     const { text } = sourceCode;
 
-    // A line the chain spans, read without the undefined arm an index would carry.
+    // Read without the undefined arm an index would carry.
     const lineText = (line: number): string => {
       return sourceCode.lines
         .slice(line - 1, line)
         .join('');
     };
 
-    // A global or an imported binding named like a module, as opposed to a local value or an imported constant.
     const isNamespace = (top: RuleNode, base: Part): boolean => {
       if (base.type !== 'Identifier') {
         return false;
@@ -209,7 +201,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         });
     };
 
-    // The head keeps a namespace call, so `Object.keys(x).map(fn)` is one call on the head `Object.keys(x)`.
+    // The head keeps a namespace call: `Object.keys(x).map(fn)` is one call on the head `Object.keys(x)`.
     const chainLinksOf = (top: RuleNode, node: Part): Link[] => {
       const steps: Step[] = [];
       const base = unwind(node, steps);
@@ -218,7 +210,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return links[0]?.leading === true && isNamespace(top, base) ? links.slice(1) : links;
     };
 
-    // Lines a block comment continues onto: shifting one would rewrite the comment's text.
+    // Shifting a line a block comment continues onto would rewrite the comment's text.
     const linesInsideComments = (): Set<number> => {
       const inside = new Set<number>();
 
@@ -233,8 +225,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return inside;
     };
 
-    // A link that leaves a line at the chain's own indent carries its argument lines a step right with it, which is
-    // what an indent rule would do next. Blank lines and the inside of a template stay as they are.
+    // A link at the chain's own indent carries its argument lines a step right, as an indent rule would next.
     const shiftedLines = (breaks: Break[], outer: string): number[] => {
       const spanned = new Set<number>();
 
@@ -292,7 +283,6 @@ export const chainCallNewline = createRule('chain-call-newline', {
           return inner.length + segment.trimEnd().length <= maxLineLength;
         });
 
-      // A shifted line keeps only what sits ahead of its first break.
       const cutAt = new Map<number, number>();
 
       for (const { dot } of [...breaks].reverse()) {
@@ -315,7 +305,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         : undefined;
     };
 
-    // Visited at every level of a chain and acted on at the outermost, so each chain is read once.
+    // Acted on at the outermost level only, so each chain is read once.
     const check = (top: RuleNode, chain: Part): void => {
       if (continues(mustFind(top.parent, 'the parent of an expression'), chain)) {
         return;

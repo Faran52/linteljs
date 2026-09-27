@@ -10,7 +10,6 @@ interface ShellProps {
   readonly children: ReactNode;
 }
 
-// The header is outside the route, so it renders once and every route fills what sits under it.
 const Shell: FC<ShellProps> = ({ children }) => {
   return (
     <>
@@ -20,7 +19,6 @@ const Shell: FC<ShellProps> = ({ children }) => {
   );
 };
 
-// One route per page, read off the one list the header reads. A page is added there and appears in both.
 export const router = createBrowserRouter(ROUTES
   .map(({ path, element }) => {
     return {

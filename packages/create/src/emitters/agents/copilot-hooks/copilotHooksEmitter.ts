@@ -9,11 +9,7 @@ interface CopilotHook {
   cwd: '.';
 }
 
-/**
- * `command` rather than `bash` and `powershell`: the line is the same in both shells, and Copilot copies it into
- * whichever it runs. `cwd` is relative to the repository root, so the path holds wherever the CLI was started. The
- * eslint warning is added context, which Copilot takes only after a tool has run.
- */
+// `command`: the line is the same in both shells. `cwd` is relative to the repository root.
 const hook = (name: string, matcher: string): CopilotHook => {
   return {
     type: 'command',

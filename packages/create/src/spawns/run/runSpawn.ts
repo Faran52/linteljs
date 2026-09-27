@@ -3,19 +3,11 @@ import { env } from 'node:process';
 
 import type { RunOutput } from '@config/types';
 
-/**
- * Asynchronous on purpose: a `spawnSync` install blocks the event loop, which serialises a whole end-to-end file
- * however wide its concurrency is set.
- *
- * `capture` hands the binary's own output back on a failure rather than writing it here, which is what lets a run on
- * a terminal be one line per stage: a scaffolder printing its own progress and a spinner cannot share a line. Its
- * stdin is closed rather than inherited, so nothing downstream can stop to ask a question nobody is watching for.
- */
+// Async: a `spawnSync` install blocks the event loop. Stdin closed, so nothing stops to ask unseen.
 export const runSpawn = async (
   command: string,
   args: string[],
   cwd: string,
-  // Inherited unless captured.
   output?: RunOutput,
 ): Promise<void> => {
   await new Promise<void>((settle, fail) => {
@@ -24,8 +16,7 @@ export const runSpawn = async (
       cwd,
       stdio: output === 'capture' ? ['ignore', 'pipe', 'pipe'] : 'inherit',
       shell: false,
-      // Angular's CLI otherwise prompts for analytics with no flag to decline. Yarn 4 turns immutable installs on
-      // under CI, which refuses the lockfile a new project's first install has to write.
+      // Angular's CLI otherwise prompts for analytics; Yarn 4 under CI refuses the lockfile a first install writes.
       env: {
         ...env,
         NG_CLI_ANALYTICS: 'false',
@@ -48,7 +39,7 @@ export const runSpawn = async (
           return;
         }
 
-        // What it printed is the whole of why it failed, and on a terminal nobody has seen it yet.
+        // On a terminal nobody has seen what it printed yet.
         const said = captured.length === 0 ? '' : `\n${captured.join('')}`;
 
         fail(new Error(`${command} ${args.join(' ')} exited with ${String(code)}${said}`));

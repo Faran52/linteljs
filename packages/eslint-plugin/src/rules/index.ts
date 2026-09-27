@@ -28,8 +28,6 @@ import type { LintelRuleModule } from '../types.ts';
 
 export type RuleName = keyof typeof rules;
 
-// The rule registry: a new rule needs only an entry here, since configs and contract tests are generated from it
-// (the README table is hand-edited). Each key also names the directory its rule lives in.
 export const rules = {
   'chain-call-newline': chainCallNewline,
   'comment-delimiter': commentDelimiter,

@@ -4,7 +4,7 @@ import { emitted } from '../../utils/artifactUtils';
 import { emitAgentAdapter } from '../utils/adapterUtils';
 import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 
-// Cursor's own `description` key, taken from the rule's first heading so no second wording exists to drift.
+// From the rule's first heading, so no second wording exists to drift.
 const titleOf = (source: string): string => {
   return /^# (.+)/mu.exec(source)?.[1] ?? 'LintelJS project standard';
 };
@@ -19,8 +19,7 @@ export const cursorArtifacts = (answers: Answers): Artifact[] => {
       ),
       preserve: true,
     },
-    // A rule listing no paths governs any file, and Cursor spells that `alwaysApply` rather than with a glob, so the
-    // two keys move together: globs and not always, or always and no globs.
+    // Cursor spells any-file as `alwaysApply`, so globs and `alwaysApply` move together.
     ...ruleArtifacts(answers, '.cursor/rules', '.mdc', (source) => {
       const globs = globsOf(source);
       const scope = globs === '' ? 'alwaysApply: true' : `globs: ${globs}\nalwaysApply: false`;

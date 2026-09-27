@@ -1,10 +1,4 @@
-/**
- * Checks every `v8 ignore` in the packages' source against reality. An ignore claims a branch cannot be reached,
- * and two of the first ones written here were wrong, overstating coverage and hiding a live path. Each is removed in
- * turn and its file re-measured under its own package's suite: still uncovered means the claim holds.
- *
- * Usage: tsx scripts/audit-ignores/auditIgnoresScript.ts
- */
+// An ignore claims a branch cannot be reached, and two of the first ones written here were wrong.
 import { execFileSync } from 'node:child_process';
 import {
   globSync,
@@ -23,13 +17,11 @@ import process from 'node:process';
 
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
-// The two counter maps v8's JSON report carries per file. Only the zeros are read.
 interface FileCoverage {
   s: Record<string, number>;
   b: Record<string, number[]>;
 }
 
-// The count and the reason are both optional, as they are in the directive.
 const IGNORE = /^\s*\/\* v8 ignore next(?: \d+)?(?: -- .*)? \*\/\s*$/;
 
 const isCoverageReport = (value: unknown): value is Record<string, FileCoverage> => {
@@ -38,7 +30,6 @@ const isCoverageReport = (value: unknown): value is Record<string, FileCoverage>
 
 const reports = mkdtempSync(join(tmpdir(), 'linteljs-ignores-'));
 
-// Uncovered statements plus branch arms in `file`, measured under its own package's suite alone.
 const uncoveredIn = (file: string): number => {
   const packageDir = resolve(file.split('/src/')[0] ?? '.');
 

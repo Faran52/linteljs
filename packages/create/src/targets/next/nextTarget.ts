@@ -37,7 +37,7 @@ const STORES: readonly Store[] = ['zustand', 'redux-toolkit', 'tanstack-store'];
 export const nextTarget: TargetRecord = {
   id: 'next',
   framework: 'next',
-  // The App Router owns the document, so there is no index.html to lint and none to write.
+  // The App Router owns the document.
   html: false,
   stores: STORES,
   ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
@@ -49,11 +49,7 @@ export const nextTarget: TargetRecord = {
     '@content/*': './src/content/*',
   },
   styleEntry: 'src/app/globals.css',
-  /*
-   * Next owns its build and has no Vite config to plug into, so StyleX compiles through Babel and PostCSS here.
-   * The unplugin is installed too and is the test run's half: vitest does not go through Next's pipeline, so
-   * without it every suite fails on an uncompiled `defineVars`.
-   */
+  // Next compiles StyleX through Babel and PostCSS; the unplugin is the test run's half.
   stylexBuild: [
     '@stylexjs/babel-plugin',
     '@stylexjs/postcss-plugin',
@@ -84,18 +80,16 @@ export const nextTarget: TargetRecord = {
   tsconfig: {
     jsx: 'react-jsx',
     plugins: [{ name: 'next' }],
-    // Next rewrites tsconfig.json on every dev boot unless every key it wants is already declared.
+    // Next rewrites tsconfig.json on every dev boot unless every key it wants is declared.
     include: ['next-env.d.ts', '.next/types/**/*.ts', '.next/dev/types/**/*.ts'],
   },
-  // The root layout renders the document; what it composes is covered where each part renders.
+  // Its parts are covered where each renders.
   coverageExclude: ['src/app/layout.tsx'],
   publicDirectory: 'public',
   starterFiles: [
     ...mockFiles(true),
     ...componentStyles(),
-    // Next takes React's `className` spelling, which is what `stylex.props` answers with.
     ...componentStyleModules('react'),
-    // The two halves of the Babel and PostCSS path, which is how StyleX reaches a build Vite does not own.
     ...(['.babelrc', 'postcss.config.mjs'] as const)
       .map((target): StarterFile => {
         return {
@@ -132,7 +126,6 @@ export const nextTarget: TargetRecord = {
           shared: 'react',
         };
       }),
-    // One page list, read by the header; the routes directory is the other half and a form adds a folder to it.
     {
       target: 'src/config/routes.ts',
       when: (answers) => {
@@ -146,7 +139,6 @@ export const nextTarget: TargetRecord = {
       variant: 'with-form',
       shared: true,
     },
-    // The home route is the one page a store changes, and a store makes it a client component.
     {
       target: 'src/app/page.tsx',
       when: (answers) => {
@@ -158,13 +150,11 @@ export const nextTarget: TargetRecord = {
       when: hasStore,
       variant: 'with-store',
     },
-    // A button is what a store or a form gives the page to press; neither, and nothing presses anything.
     {
       target: 'src/components/ui/button/Button.tsx',
       when: pressable,
       shared: 'react',
     },
-    // The barrel is a list of what exists, so it takes the spelling the answers reach.
     {
       target: 'src/components/ui/index.ts',
       when: (answers) => {
@@ -186,7 +176,6 @@ export const nextTarget: TargetRecord = {
       variant: 'with-form',
       shared: true,
     },
-    // A form brings its route, its binding, its control and the layer it submits through.
     {
       target: 'src/app/contact/page.tsx',
       when: hasForm,
@@ -230,7 +219,6 @@ export const nextTarget: TargetRecord = {
           shared: 'react',
         };
       }),
-    // One rule set, read by the form that binds it and the api that refuses on it.
     {
       target: 'src/lib/apis/contact/schemas.ts',
       when: (answers) => {
@@ -246,7 +234,7 @@ export const nextTarget: TargetRecord = {
       variant: 'zod',
       shared: true,
     },
-    // Both slots are this target's own, because the directive on them is what makes them the client boundary.
+    // Next's own: the directive on them makes them the client boundary.
     {
       target: 'src/lib/providers/StoreProvider.tsx',
       when: (answers) => {
@@ -273,7 +261,6 @@ export const nextTarget: TargetRecord = {
       },
       variant: 'tanstack-query',
     },
-    // The markup is the same for every store, so only the module behind `useCounter` varies by which one.
     ...(['zustand', 'tanstack-store'] as const)
       .map((store): StarterFile => {
         return {
@@ -285,7 +272,7 @@ export const nextTarget: TargetRecord = {
           shared: 'react',
         };
       }),
-    // The Redux store is the one place RTK Query has to be registered, since its middleware is what makes it work.
+    // RTK Query's middleware must be registered in the Redux store.
     {
       target: 'src/lib/store/counter.ts',
       when: (answers) => {
@@ -302,7 +289,6 @@ export const nextTarget: TargetRecord = {
       variant: 'rtk-query',
       shared: 'react',
     },
-    // Tailwind reads the tokens through its own names; StyleX compiles a copy of them.
     {
       target: 'src/styles/theme.css',
       when: (answers) => {
@@ -312,10 +298,6 @@ export const nextTarget: TargetRecord = {
       shared: true,
     },
   ],
-  /*
-   * The generated project gates at 100% on all four metrics, so a starter file with no suite fails the gate it
-   * ships with. A suite whose subject is React's is React's too.
-   */
   starterTests: [
     ...mockTests(true),
     ...accessorTests(ACCESSORS, {
@@ -388,7 +370,7 @@ export const nextTarget: TargetRecord = {
       shared: 'react',
     },
   ],
-  // `next typegen` first: the template's route types are declared into `.next/types` only after a build.
+  // `next typegen` first: route types are declared into `.next/types` only after a build.
   typecheck: 'next typegen && tsc --noEmit',
   build: 'next build',
   extraScripts: {
@@ -397,7 +379,7 @@ export const nextTarget: TargetRecord = {
   },
   testDevDependencies: ['@testing-library/dom', '@testing-library/react'],
   dependencies: ['next', 'react', 'react-dom'],
-  // The plugin, not `eslint-config-next`; `frameworks/next/nextFramework.ts` says why.
+  // Not `eslint-config-next`; `frameworks/next/nextFramework.ts` says why.
   devDependencies: [...COMMON_REACT_PLUGINS, '@next/eslint-plugin-next', '@types/react', '@types/react-dom'],
   allowBuilds: [],
   stateRules: ['react-state.md', 'hooks-order.md'],

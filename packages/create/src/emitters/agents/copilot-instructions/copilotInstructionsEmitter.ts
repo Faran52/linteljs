@@ -6,7 +6,7 @@ import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 export const copilotArtifacts = (answers: Answers): Artifact[] => {
   return [
     adapterArtifact('.github/copilot-instructions.md', answers),
-    // `**` where the rule lists no paths: it governs any file, which is what Copilot reads that glob as.
+    // Copilot reads `**` as any file.
     ...ruleArtifacts(answers, '.github/instructions', '.instructions.md', (source) => {
       const globs = globsOf(source);
 

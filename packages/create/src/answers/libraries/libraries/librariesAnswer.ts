@@ -1,8 +1,7 @@
 import type { Library } from '@config/types';
 import type { MultiRecord } from '../../types';
 
-// Only what a dependency alone can be. Anything that changes what is emitted is its own field: a single select
-// hiding inside a multi select leaves the full library set an illegal value of itself.
+// A single select hiding in a multi select leaves the full set an illegal value of itself.
 export const librariesAnswer = {
   key: 'libraries',
   flag: 'libraries',

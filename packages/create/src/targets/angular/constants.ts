@@ -1,10 +1,6 @@
 import type { AccessorNames } from '../utils/mockUtils';
 
-/**
- * Every file the template writes whatever was answered. No `scaffold` on this record: the tree is this
- * repository's own, so nothing is fetched. `angular.json` is not here because it carries the project's name and is
- * emitted, and `tsconfig.spec.json` is not here because this CLI emits one tsconfig and the build reads it.
- */
+// `angular.json` carries the project's name and is emitted; this CLI emits one tsconfig.
 export const ALWAYS: readonly string[] = [
   'tsconfig.app.json',
   'src/index.html',
@@ -26,7 +22,6 @@ export const ALWAYS: readonly string[] = [
   'src/components/features/app-header/app-header.html',
 ];
 
-// The same bytes on every target: the tokens, the stylesheets and the page tables have no framework in them.
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/routes.ts',
@@ -34,8 +29,7 @@ export const SHARED: readonly string[] = [
   'src/styles/base.css',
 ];
 
-// Angular has no hooks and no composables. This runs in an injection context, and is kebab like every file
-// this target writes.
+// Angular has no hooks: this runs in an injection context.
 export const ACCESSORS: AccessorNames = {
   directory: 'src/lib/services',
   query: 'extended-query',

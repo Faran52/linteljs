@@ -5,11 +5,6 @@ import { StoreProvider } from '../../lib/providers/StoreProvider';
 
 import { HomePage } from './HomePage';
 
-/*
- * Through both slots, the way the entry wraps the application. Redux is the one store that needs an ancestor, and
- * TanStack Query needs its client, so a page that reads either renders nothing without them; with the other
- * answers both are pass-throughs and this costs a component each.
- */
 const renderPage = (): void => {
   render(
     <StoreProvider>

@@ -7,7 +7,7 @@ import {
 
 import type { AST, Rule } from 'eslint';
 
-// Null when anything is written in the gap: reflowing over a comment there would delete it silently.
+// Null when anything is written in the gap: reflowing over a comment would delete it.
 export const fixCommaToNewline = (
   sourceCode: SourceCode,
   fixer: Fixer,

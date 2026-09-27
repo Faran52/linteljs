@@ -14,11 +14,6 @@ interface Version {
   readonly status: string;
 }
 
-/*
- * Held rather than read back off `globalThis`, which would need a cast the standard bans outright. `fetchBaseQuery`
- * builds a `Request` and hands `fetch` that rather than a url and an options object, so what the call is asserted
- * on is read off the request here, where it is typed, rather than off `mock.calls` afterwards, where it is not.
- */
 const requested: string[] = [];
 
 const fetchMock = vi.fn((request: Request): Promise<Response> => {
@@ -29,13 +24,6 @@ const fetchMock = vi.fn((request: Request): Promise<Response> => {
   }));
 });
 
-/*
- * An endpoint injected the way a domain slice injects one, which is the whole of what this file is for: what is
- * asserted is that the base query prefixes the origin and that the cache is one slice rather than two.
- *
- * `undefined` for the argument rather than `void`: the standard refuses `void` outside a return position, and an
- * endpoint that takes nothing is one whose argument is `undefined`.
- */
 const probeApi = baseApi.injectEndpoints({
   endpoints: (build) => {
     return {
@@ -76,7 +64,6 @@ describe('baseApi', () => {
     expect(requested).toEqual(['/api/version']);
   });
 
-  // One slice, one cache. Two `createApi` calls would be two of each, and a tag in one invisible to the other.
   it('keeps every injected endpoint under the one reducer path', () => {
     expect(baseApi.reducerPath).toBe('api');
     expect(Object.keys(freshStore().getState())).toEqual(['api']);

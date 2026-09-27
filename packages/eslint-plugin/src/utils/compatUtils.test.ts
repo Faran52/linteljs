@@ -19,18 +19,14 @@ import {
   sourceCodeOf,
 } from './compatUtils.ts';
 
-// Both shapes are built as fixtures because the legacy half never executes through a real ESLint 10 rule.
-
 const { sourceCode, firstNode } = sourceCodeFrom('const value = 1;\n');
 const node = firstNode('VariableDeclarator');
 
-// ESLint 8.40 and later: everything is a property, and the scope readers take a node.
 const modern: CompatContext = {
   sourceCode,
   physicalFilename: '/repo/src/App.tsx',
 };
 
-// ESLint 5 to 8.36: everything is a method, and the scope readers take nothing.
 const legacy: CompatContext = {
   getSourceCode: () => {
     return sourceCode;
@@ -71,7 +67,6 @@ describe('physicalFilenameOf', () => {
     expect(physicalFilenameOf(legacy)).toBe('/repo/src/App.tsx');
   });
 
-  // filename is the last resort: inside a processor it is the containing document, not the linted file.
   it('falls back to the reported filename, in both spellings', () => {
     expect(physicalFilenameOf({ filename: '/repo/src/a.ts' })).toBe('/repo/src/a.ts');
     expect(physicalFilenameOf({
@@ -95,8 +90,6 @@ describe('the scope readers', () => {
     expect(declaredVariablesOf(modern, node)).toEqual(sourceCode.getDeclaredVariables(node));
   });
 
-  // A real SourceCode from ESLint 10 always has these, so the empty reader is written out to
-  // reach the shim's other half.
   it('fall back to the context-level readers when the SourceCode has none', () => {
     const none: CompatSourceCode = {};
 

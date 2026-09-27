@@ -35,7 +35,6 @@ import { readIfPresent } from '../../utils/fsUtils';
 
 import { linteljsConfigReader } from './linteljsConfigReader';
 
-// The real `lstat` unless a case stands in for it: the two races it guards against happen between it and `open`.
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>();
 
@@ -118,7 +117,6 @@ describe('linteljsConfigReader', () => {
       .rejects.toThrow('linteljs.config.json must be a regular file');
   });
 
-  // Every version through 1.5.3 wrote `lintel.config.json`, so an upgraded project is still found.
   it('reads the name older versions wrote when the current one is absent', async () => {
     await writeFile(join(cwd, LEGACY_CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
 
@@ -129,7 +127,6 @@ describe('linteljsConfigReader', () => {
     });
   });
 
-  // The current name wins, so a project part-way through an upgrade reads what this version wrote.
   it('prefers the current name when both are on disk', async () => {
     await writeFile(join(cwd, LEGACY_CONFIG_PATH), '{ not json', 'utf8');
     await writeFile(join(cwd, CONFIG_PATH), emitLinteljsConfig(DEFAULT_ANSWERS), 'utf8');
@@ -148,24 +145,18 @@ describe('linteljsConfigReader', () => {
     expect(await readdir('/dev/fd')).toHaveLength(before);
   });
 
-  // Opening a named pipe blocks until something writes to it, so the entry is refused before it is opened.
   it('rejects a named pipe without opening it', async () => {
     execFileSync('/usr/bin/mkfifo', [join(cwd, CONFIG_PATH)]);
 
     await expect(linteljsConfigReader(cwd)).rejects.toThrow('linteljs.config.json must be a regular file');
   });
 
-  // Only absence is "not found": a config that is there and cannot be read says why.
   it('passes on a failure to read that is not absence', async () => {
     vi.mocked(lstat).mockRejectedValueOnce(Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' }));
 
     await expect(linteljsConfigReader(cwd)).rejects.toThrow('EACCES: permission denied');
   });
 
-  /*
-   * An entry swapped between the `lstat` and the `open`: the check reads a regular file, and what is opened is not
-   * one. The descriptor is asked again, and `O_NOFOLLOW` refuses a link with the message a named one gets.
-   */
   describe('an entry swapped after it was checked', () => {
     const checkedAsRegular = async (): Promise<void> => {
       const regular = await lstat(join(external, 'regular.json'));

@@ -34,7 +34,6 @@ describe('rules', () => {
     expect(linteljs.rules).toBe(rules);
   });
 
-  // The registry's own keys are bare ids; a preset's `rules` record prefixes each with `@linteljs/`.
   it('registers every id unprefixed', () => {
     const ids = Object.keys(linteljs.rules ?? {});
 
@@ -67,7 +66,6 @@ describe('recommended preset', () => {
   });
 
   it('enables exactly those ids in the legacy shape', () => {
-    // TypeScript-only recommended rules live in the override, not the top-level `rules`.
     const enabled = [
       ...Object.keys(configs.recommended.rules),
       ...configs.recommended.overrides

@@ -2,8 +2,7 @@ import { Linter, type Rule } from 'eslint';
 
 import type { Fixer } from '../src/utils/ruleUtils.ts';
 
-// A real Rule.RuleFixer, captured from a throwaway rule rather than stubbed, since a stub would
-// test the stub, not the real object.
+// Captured rather than stubbed, since a stub would test the stub.
 export const captureFixer = (): Fixer => {
   let captured: Fixer | undefined;
 

@@ -11,13 +11,7 @@ export interface Counter {
 
 const store = new Store<CounterState>({ count: 0 });
 
-/*
- * The one store this starter ships, and the one place the store answer is visible. Every other file takes
- * `useCounter` and never knows which library is behind it.
- *
- * Runes cover state inside a component; this is for what crosses one, which is why the target offers a library
- * here rather than the built-in. The count is a getter, so reading it in a template is what subscribes to it.
- */
+// The count is a getter, so reading it in a template is what subscribes to it.
 export const useCounter = (): Counter => {
   const selected = useSelector(store, (state) => {
     return state.count;

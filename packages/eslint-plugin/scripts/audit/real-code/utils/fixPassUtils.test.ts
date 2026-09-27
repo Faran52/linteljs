@@ -29,13 +29,11 @@ const script = write('script.js', 'const b = 1;\n');
 const compiled = write('compiled.js', 'x;\n//# sourceMappingURL=x.map\n');
 const broken = write('broken.ts', 'const = ;\n');
 const copy = write('copy.ts', 'type A = { first: string } | string;\n');
-// The call above the declaration is what the hoisting probe reports, which is not this plugin speaking.
 const reported = write('reported.ts', '// REPORT\nconst c = 1;\nf();\nfunction f() {}\n');
 const swapped = write('swapped.ts', '// SWAP\ntype B = "a" | "b";\n');
 const dropped = write('dropped.ts', '// DROP\ntype C = "a" | "b";\n');
 const throws = write('throws.ts', '// THROW\nconst d = 1;\n');
 
-// Each defect fires only on the file carrying its marker, so the rest of the corpus reads clean.
 const swaps = textRule((text) => {
   return text.includes('SWAP') ? text.replace('|', '&') : text;
 });
@@ -55,7 +53,6 @@ const dropsComment = textRule((text) => {
   return text.replace('// DROP\n', '\n');
 });
 
-// A report-only rule reporting on the first line, which is no promise call, and a rule reporting nothing it converts.
 const reporter = (message: string): Rule.RuleModule => {
   return {
     create: (context) => {
@@ -81,7 +78,6 @@ const plantAudit = (context: ReturnType<typeof auditContext>): void => {
     'prefer-arrow-functions': reporter('nothing to convert'),
   });
 
-  // ES5 rejects `const`, which is how a file the audit cannot parse is reached.
   context.configCache.set(`${AUDIT_RULES.join(',')}|{}`, [typescript ?? {}, {
     files: ['**/*.js'],
     languageOptions: {
@@ -118,7 +114,6 @@ describe('runFixPass', () => {
     const printed = captured();
     const context = auditContext({
       activeRules: ['union-newline', 'member-newline'],
-      // The duplicates cost nothing to skip and carry the run past the 500-file progress line.
       files: [script, reported, swapped, dropped, throws, ...Array.from({ length: 495 }, () => {
         return script;
       })],

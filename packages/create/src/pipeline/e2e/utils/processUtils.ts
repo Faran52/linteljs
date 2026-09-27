@@ -16,23 +16,16 @@ export interface RunResult {
   output: string;
 }
 
-// The registry every case installs through, published by `registry.ts` before any of them run.
 export const registry = inject('registry');
 
-// `agent` is the one thing a case puts back: `LAUNCHER_KEYS` strips the launcher's own `npm_config_user_agent` below,
-// and the CLI reads its manager from that variable, so a case that wants a manager says so by naming one.
+// `LAUNCHER_KEYS` strips the launcher's `npm_config_user_agent`, so a case names its manager.
 export const run = async (
   command: string,
   args: string[],
   cwd: string,
   agent?: string,
 ): Promise<RunResult> => {
-  /**
-   * A generated project must not inherit which manager launched this suite. `run-p` reads `npm_execpath` to choose
-   * what it spawns, and `pnpm run test:e2e` sets it, so `vue on bun` ran pnpm inside a project pinned to bun and got
-   * `ERR_PNPM_OTHER_PM_EXPECTED`. Set under `pnpm run` and not `pnpm exec`, which is why it passed one way and
-   * failed the other. `npm_config_registry` and the cache paths below are this suite's own and stay.
-   */
+  // `run-p` reads `npm_execpath`, so `vue on bun` once ran pnpm inside a bun project.
   const inherited = Object.entries(env)
     .filter(([key]) => {
       return !LAUNCHER_KEYS.has(key)
@@ -43,23 +36,13 @@ export const run = async (
 
   const parentEnv = Object.fromEntries(inherited);
 
-  // `spawn` rather than `spawnSync`: a case is one `it.concurrent`, and a synchronous spawn blocks the event loop
-  // for the whole install, so every case in a file would run one at a time however high `maxConcurrency` is set.
+  // `spawn`: a synchronous spawn blocks the event loop, so concurrent cases would run one at a time.
   return new Promise<RunResult>((settle) => {
     const child = spawn(command, args, {
       cwd,
-      /**
-       * `spawn`'s default stdin is an open pipe never ended, so anything reading it waits for ever, and
-       * `pipelineRun.ts` hands it down through `stdio: 'inherit'`. `ignore` keeps an upstream prompt from hanging a
-       * case.
-       */
+      // `spawn`'s default stdin is an open pipe never ended, so an upstream prompt would hang the case.
       stdio: ['ignore', 'pipe', 'pipe'],
-      /**
-       * Half the 600s a case is given, so a leg that stalls is killed and reported as itself: `close` fires with a
-       * null code, `outcome` prints what the command had printed before it stopped, and the failure names its own
-       * stage. Measured on 2026-09-24, one case per target across all five managers at concurrency two: a whole case
-       * took 17 to 97 seconds, so one command is well under a third of this even on a slower CI runner.
-       */
+      // Half the 600s a case gets, so a stalled leg is killed and named; measured cases took 17 to 97 seconds.
       timeout: 300_000,
       killSignal: 'SIGKILL',
       env: {
@@ -67,26 +50,14 @@ export const run = async (
         npm_config_registry: registry.url,
         NPM_CONFIG_REGISTRY: registry.url,
         pnpm_config_registry: registry.url,
-        /**
-         * Only this workspace's own packages are exempt from pnpm's age gate: they are published seconds before a
-         * case installs them, so no age rule can ever admit them. Everything else resolves under whatever policy the
-         * machine carries, which is what a person's install does, so a case's lockfile is the one they would get.
-         * Excluding a name does not exclude its dependencies, which is why the pattern names the scope and nothing
-         * more: every dependency under it is a normal npm package with mature versions to choose from.
-         */
-        // JSON, because it is a list: measured, a bare `@linteljs/*` through the environment is silently ignored.
+        // Only this workspace's packages skip pnpm's age gate: they are published seconds before install.
+        // JSON, because it is a list: a bare `@linteljs/*` through the environment is silently ignored.
         pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
         BUN_CONFIG_REGISTRY: registry.url,
         YARN_NPM_REGISTRY_SERVER: registry.url,
         YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
         YARN_NPM_MINIMAL_AGE_GATE: '0',
-        /**
-         * Split by what each directory remembers. A cache of bytes is keyed by the bytes and persists. A cache of
-         * *which versions exist* starts empty every run, because `registry.ts` publishes a version no run has used
-         * before and a manifest cached last run does not list it: the range resolves to the previous run's build and
-         * the `why` assertion catches it. npm's cacache is integrity-keyed and needs neither treatment; bun's is
-         * pruned of `@linteljs` by `registry.ts` at the start of a run, which is the same split spelled by hand.
-         */
+        // A cache of which versions exist starts empty every run; a cache of bytes persists.
         npm_config_cache: join(registry.cacheDir, 'npm'),
         pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
         pnpm_config_cache_dir: join(registry.runDir, 'pnpm-cache'),
@@ -97,12 +68,10 @@ export const run = async (
       },
     });
 
-    // Kept apart and joined at the end, the way `spawnSync` handed them over: every matcher in `INSTALL_NOISE` is
-    // line-anchored, and interleaving two streams by chunk can split one line across a switch between them.
+    // Joined at the end: interleaving by chunk can split a line the line-anchored matchers read.
     const out: string[] = [];
     const err: string[] = [];
-    // Without colour: a launcher setting `FORCE_COLOR` hands it to every manager, and a matcher then meets the
-    // escape codes between a package's name and its version.
+    // Without colour: a launcher's `FORCE_COLOR` puts escape codes between a package's name and version.
     const joined = (): string => {
       return stripVTControlCharacters(`${out.join('')}${err.join('')}`);
     };
@@ -115,7 +84,7 @@ export const run = async (
       .on('data', (chunk: Buffer) => {
         err.push(chunk.toString('utf8'));
       });
-    // A manager that is not installed at all, which is a failure to report rather than one to throw through.
+    // A manager that is not installed is a failure to report, not one to throw through.
     child
       .on('error', (error) => {
         settle({
@@ -133,11 +102,9 @@ export const run = async (
   });
 };
 
-// The run each manager's last queued command settles with, which the next one waits for.
 const installs = new Map<PackageManager, Promise<RunResult>>();
 
-// One install per manager at a time, pnpm excepted: its store is built for concurrent writers, and yarn's and bun's
-// global caches are not. By manager rather than binary, since `versionFrom` lets only one yarn into a run.
+// pnpm's store is built for concurrent writers; yarn's and bun's global caches are not.
 export const oneAtATime = async (pm: PackageManager, work: () => Promise<RunResult>): Promise<RunResult> => {
   if (pm === 'pnpm') {
     return work();
@@ -155,7 +122,7 @@ export const oneAtATime = async (pm: PackageManager, work: () => Promise<RunResu
   return next;
 };
 
-// Folds the exit status into the asserted value, so a failure prints the process output.
+// Folded into the asserted value, so a failure prints the process output.
 export const outcome = (result: RunResult, label: string): string => {
   return result.status === 0 ? `${label}: ok` : `${label}: exit ${String(result.status)}\n${result.output}`;
 };

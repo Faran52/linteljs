@@ -1,10 +1,5 @@
 name: ci
 
-# Ported from `Faran52/eslint-plugin-tidy`, which had this before the three packages moved into
-# one workspace and it was left behind. The jobs below are that file adapted to a pnpm workspace:
-# the root owns `lint`, `typecheck` and `test:coverage` now, and `compat` is one script rather
-# than a job per major.
-
 on:
   push:
     branches: [main, 'v*']
@@ -27,8 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Third-party actions are pinned to a commit, not a tag: a tag can be moved onto different
-      # code without the reference here changing.
+      # Third-party actions are pinned to a commit: a tag can be moved.
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - uses: actions/setup-node@v7
@@ -38,8 +32,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The chain CLAUDE.md tells a contributor to run: build first, since the packages typecheck
-      # against each other's built declarations, then lint, lint:css, typecheck, test:coverage at 100%.
+      # Build first: the packages typecheck against each other's built declarations.
       - run: pnpm check
 
       # `oldest-runtime` cannot build for itself: pnpm and the bundler both need a modern Node.
@@ -62,8 +55,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # Unit tests cannot catch a broken `exports` map or a missing entry in `files`. All three
-      # get packed and loaded the way a consumer reaches them.
+      # Unit tests cannot catch a broken `exports` map or a missing `files` entry.
       - run: pnpm --filter @linteljs/eslint-plugin smoke
       - run: pnpm --filter @linteljs/eslint-config smoke
       - run: pnpm --filter @linteljs/create smoke
@@ -81,10 +73,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # `peerDependencies.eslint` is `>=5.0.0`. This is what makes that a test result rather than
-      # a claim: six majors, both config formats, and byte-identical fixed output across all of
-      # them. It has already caught rules reading an accessor that moved, which the whole unit
-      # suite passed straight through.
+      # `peerDependencies.eslint` is `>=5.0.0`: six majors, both config formats, byte-identical fixed output.
       - run: pnpm --filter @linteljs/eslint-plugin compat
 
   oldest-runtime:
@@ -94,8 +83,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The floor `engines.node` declares, paired with the oldest ESLint majors, in a container
-        # so the image is the bare runtime a consumer on that floor has.
+        # The `engines.node` floor in a container: the bare runtime a consumer on that floor has.
         include:
           - node: 14
             eslint: '5'
@@ -111,8 +99,7 @@ jobs:
           name: plugin-dist
           path: packages/eslint-plugin/dist
 
-      # The runner is TypeScript and Node 14 strips no types, so tsdown builds it into a `.mjs` on the host, which
-      # also inlines anything it imports. `--ignore-scripts` keeps `prepare` from rebuilding the downloaded `dist`.
+      # Node 14 strips no types, so tsdown builds the runner on the host. `--ignore-scripts` keeps `prepare` off `dist`.
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@v7
         with:
@@ -125,13 +112,7 @@ jobs:
           pnpm exec tsdown scripts/release/run-rules/runRulesRelease.ts --no-config --no-dts --no-clean
           --format esm --target node14 --platform node --out-dir scripts/release/run-rules
 
-      # Docker is driven from the host rather than through `container:`, because that would run
-      # actions/* on Node 24 inside the image, and node:14-alpine's musl is too old for it.
-      #
-      # This is the only thing that can answer whether the shipped bundle runs on the declared
-      # Node floor. A bundler lowers syntax and leaves built-in methods exactly where they were,
-      # so `smokeRelease.ts`'s scan for post-Node-14 APIs is a cheaper check of the same property, not a
-      # substitute for running it.
+      # From the host, not `container:`: actions/* on Node 24 cannot run on node:14-alpine's musl.
       - name: Run the rules on node ${{ matrix.node }}
         run: |
           docker run --rm -v "$PWD/packages/eslint-plugin:/src:ro" -w /tmp node:${{ matrix.node }}-alpine sh -c '

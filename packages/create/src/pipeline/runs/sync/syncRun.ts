@@ -41,8 +41,6 @@ export interface SyncResult {
   removed: string[];
 }
 
-// Re-applies shipped artifacts from the installed CLI, diffing first rather than rewriting blind.
-
 const entryOf = (target: string, status: SyncStatus, diff = ''): SyncEntry => {
   return {
     target,
@@ -51,8 +49,7 @@ const entryOf = (target: string, status: SyncStatus, diff = ''): SyncEntry => {
   };
 };
 
-// What the last run recorded as its own, plus the one name no run writes any more: versions through 1.5.3 kept the
-// answers in `lintel.config.json`, so an upgraded project carries a file this one replaced.
+// Versions through 1.5.3 kept the answers in `lintel.config.json`.
 const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
   return [...await managedPathsReader(cwd), LEGACY_CONFIG_PATH];
 };
@@ -67,11 +64,11 @@ const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
     },
   );
 
-  // Without git, or with a diff past spawnSync's buffer, the status is reported with no diff rather than failing sync.
+  // Without git, or past spawnSync's buffer, the status is reported with no diff.
   return 'stdout' in result && result.error === undefined ? result.stdout : '';
 };
 
-// A closed list of exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
+// Exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
 const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
   const entries: SyncEntry[] = [];
 
@@ -93,7 +90,7 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
   for (const artifact of buildArtifacts(answers, project, basename(cwd))) {
     expected.add(artifact.target);
 
-    // This run's own bookkeeping, rewritten whenever it applies anything, so it is not a file to report or choose.
+    // This run's own bookkeeping, not a file to report.
     if (artifact.target === MANAGED_PATH) {
       continue;
     }
@@ -168,15 +165,13 @@ export const applySync = async (
   const expected = new Set<string>();
 
   const project = await projectShapeReader(cwd);
-  // Read before anything is applied: the loop below rewrites the record, and what may be removed is what the
-  // previous run recorded rather than what this one is about to.
+  // Read first: the loop below rewrites the record.
   const candidates = await obsoleteCandidates(cwd);
 
   for (const artifact of buildArtifacts(answers, project, basename(cwd))) {
     expected.add(artifact.target);
 
-    // Rewritten whenever this run applies anything, and never reported: it is bookkeeping, not a file the caller
-    // asked for, and a partial sync that left it stale would forget what it may remove next time.
+    // A partial sync that left it stale would forget what it may remove next time.
     if (artifact.target === MANAGED_PATH) {
       await artifactWriter(cwd, artifact);
       continue;

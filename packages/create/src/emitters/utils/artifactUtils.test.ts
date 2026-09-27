@@ -58,7 +58,6 @@ describe('joined', () => {
 });
 
 describe('merged', () => {
-  // The merge is carried rather than run: what is on disk is only known when the artifact is written.
   it('carries the given stage and target with the merge as its content', () => {
     const merge = (current: string | null): string => {
       return current ?? '';

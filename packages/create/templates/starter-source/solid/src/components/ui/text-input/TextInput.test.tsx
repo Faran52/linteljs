@@ -35,7 +35,6 @@ describe('TextInput', () => {
     expect(typed).toEqual(['someone@example.com']);
   });
 
-  // The default, and the common case: a single-line field with no error and nothing to say about its type.
   it('defaults to a plain text field', () => {
     const typed: string[] = [];
 
@@ -62,8 +61,6 @@ describe('TextInput', () => {
     expect(typed).toEqual(['Ada']);
   });
 
-  // `aria-describedby` rather than a paragraph that merely sits nearby: a screen reader reads the error with the
-  // field, at the moment it lands on it, rather than after the whole form.
   it('describes a multiline field by its error', () => {
     const typed: string[] = [];
     const blurred: string[] = [];

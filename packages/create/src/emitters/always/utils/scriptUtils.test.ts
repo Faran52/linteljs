@@ -24,12 +24,10 @@ describe('buildScripts', () => {
     );
   });
 
-  // The type floor as a gate of its own, since lint-staged scans staged files only. The checker picks the extensions.
   it.each<TargetId>(['react', 'astro', 'vue', 'svelte'])('runs the banned patterns over src for %s', (target) => {
     expect(buildScripts(answersFor({ target }))['lint:types']).toBe('node scripts/checkBannedPatterns.ts src');
   });
 
-  // `lint:fix` is the step every next-step message names, so it has to be the fixing run and not the gate.
   it('gives the linter a fix script beside its gate', () => {
     expect(buildScripts(answersFor({}))).toMatchObject({
       'lint': 'eslint .',
@@ -37,7 +35,6 @@ describe('buildScripts', () => {
     });
   });
 
-  // The fixing counterpart to `lint:fix`, over the same glob the gate reads; stylelint exits 2 on an empty match.
   it('gives css a fix script beside its gate', () => {
     expect(buildScripts(answersFor({}))).toMatchObject({
       'lint:css': 'stylelint "src/**/*.css" --allow-empty-input',
@@ -49,12 +46,6 @@ describe('buildScripts', () => {
     });
   });
 
-  /*
-   * Every target declares its own `build`, so `check` never chains a script that does not exist. React Native's is
-   * the one with a reason of its own: its `eas build` needs an account, so `expo export` is the local Metro bundle
-   * instead (measurements in docs/DESIGN.md). The rest are each toolchain's own commands, which only a real project
-   * can run.
-   */
   it.each<[TargetId, Record<string, string>]>([
     ['react', {
       typecheck: 'tsc --noEmit',
@@ -86,8 +77,6 @@ describe('buildScripts', () => {
       prepare: 'nuxt prepare && husky',
     }],
     ['svelte', {
-      // `--fail-on-warnings` is load-bearing: Svelte reports accessibility as a compiler warning, and without the
-      // flag `svelte-check` prints it and exits 0.
       typecheck: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings',
       build: 'vite build',
       dev: 'vite dev',
@@ -132,7 +121,6 @@ describe('buildScripts', () => {
     expect(buildScripts(answersFor({ target }))).toMatchObject(own);
   });
 
-  // Framework mode hands the build, the dev server and the type generation to React Router's own CLI.
   it('writes the scripts React Router runs in framework mode', () => {
     const scripts = buildScripts({
       ...answersFor({ target: 'react' }),
@@ -149,7 +137,6 @@ describe('buildScripts', () => {
     });
   });
 
-  // Naming vitest in a project with no suite is a `check` that fails on command-not-found.
   it('names vitest for every target that has a suite', () => {
     const {
       test,
@@ -166,7 +153,6 @@ describe('buildScripts', () => {
     expect(buildScripts(answersFor({}))['prepare']).toBe('husky');
   });
 
-  // Replacing SvelteKit's own prepare breaks typecheck, and yarn 2+ runs no prepare at all.
   it('wires husky and the target step through postinstall on yarn, which runs no prepare', () => {
     const scripts = buildScripts(answersFor({
       target: 'svelte',

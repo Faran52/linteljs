@@ -4,11 +4,6 @@ import { useContactForm } from './useContactForm';
 
 import type { FC } from 'react';
 
-/*
- * One page, whichever form library was chosen and whichever data layer submits it. The binding lives in
- * `useContactForm` and the submit in `lib/apis/contact`, so this file is the same in every combination and the
- * suite beside it covers all of them.
- */
 export const ContactPage: FC = () => {
   const {
     fields,

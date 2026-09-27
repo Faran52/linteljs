@@ -95,8 +95,6 @@ describe('base: stylistic', () => {
       .resolves.toContain('@stylistic/jsx-quotes');
   });
 
-  // The preset caps a multiline tag and nothing else, so the two-prop tag passing and the three-prop one failing is
-  // the half that is new here. The multiline case is kept so a later edit cannot drop `multi` unnoticed.
   it('caps a single-line tag at two props and a multiline one at one per line', async () => {
     const widget = 'src/components/ui/Widget.tsx';
     const two = 'export const Widget = () => {\n  return <div id="a" lang="b" />;\n};\n';
@@ -163,7 +161,6 @@ describe('base: stylistic', () => {
 
 describe('base: ignores', () => {
   const doubleQuoted = 'export const value = "x";\n';
-  // Not `dist/`: this repository's `.gitignore` already covers that, and the option is what is under test.
   const built = 'src/generated/bundle.js';
 
   it('lints a path no ignore covers', async () => {
@@ -175,8 +172,6 @@ describe('base: ignores', () => {
       .resolves.not.toContain('@stylistic/quotes');
   });
 
-  // Its own `.gitignore` in its own directory, not this repository's: `base()` reads `process.cwd()`, so a test
-  // asserting against the workspace root only passes when vitest happens to be launched there.
   it('reports nothing under a path only .gitignore covers', async () => {
     const root = await realpath(await mkdtemp(join(tmpdir(), 'linteljs-gitignore-')));
 
@@ -280,7 +275,6 @@ describe('base: quality', () => {
 
     await expect(ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts'))
       .resolves.not.toContain('sonarjs/code-eval');
-    // A workspace keeps one `__mocks__/` per package, below the config's own root.
     await expect(ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts'))
       .resolves.not.toContain('sonarjs/code-eval');
     await expect(ruleIdsFor(base(), code, 'src/runner.ts'))
@@ -314,7 +308,6 @@ describe('base: unused imports', () => {
 });
 
 describe('base: restricted imports', () => {
-  // The bare entry and a deep path: one gitignore-style pattern covers both.
   it('reports the compat entry and its subpaths, and leaves the core entry alone', async () => {
     const importing = (from: string): string => {
       return `import { sortBy } from '${from}';\n\nexport const run = sortBy;\n`;
@@ -342,7 +335,6 @@ describe('base: linteljs rules', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/chain-call-newline');
   });
 
-  // The shape it asks for is one `@stylistic/indent` and the rest of the layer accept as it stands.
   it('reports nothing on a chain split one call per line', async () => {
     const code = 'export const names = (users: string[]): string[] => {\n  return users\n    .filter(Boolean)\n'
       + '    .map((user) => {\n      return user.trim();\n    });\n};\n';
@@ -356,8 +348,6 @@ describe('base: linteljs rules', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/interface-order');
   });
 
-  // Derived from the plugin's own registry rather than named, so a new `language: 'typescript'` rule is covered the
-  // day it is written instead of staying off in every `.vue` and `.svelte` script block.
   const TYPESCRIPT_RULE_IDS = Object.entries(lintelRules)
     .filter(([, rule]) => {
       return rule.meta.docs.language === 'typescript';
@@ -370,8 +360,6 @@ describe('base: linteljs rules', () => {
     expect(TYPESCRIPT_RULE_IDS.length).toBeGreaterThan(1);
   });
 
-  // Restated over the SFC extensions the plugin's own preset cannot reach, not over `.js`, where a rule enabled but
-  // unable to fire is a claim about the config that is not true.
   it('leaves every TypeScript-only rule off a plain .js file', async () => {
     const names = await ruleNamesFor(base(), 'src/lib/utils/sample.js');
 
@@ -391,7 +379,6 @@ describe('base: linteljs rules', () => {
   });
 });
 
-// Without `import-x/parsers` naming a `.cts`/`.mts` parser, `no-cycle` stays silent.
 describe('base: import-x/no-cycle', () => {
   const entry = join(import.meta.dirname, '../../../__mocks__/fixtures/cycle/a.cts');
 
@@ -399,7 +386,6 @@ describe('base: import-x/no-cycle', () => {
     await expect(ruleIdsForFile(base(), entry)).resolves.toContain('import-x/no-cycle');
   });
 
-  // Negative control.
   it('does not report the same cycle under the hand-written settings block it replaces', async () => {
     const handWritten: Layer = [
       {
@@ -451,7 +437,6 @@ describe('base: resolver options', () => {
     expect(settings).toHaveProperty('import-x/parsers');
   });
 
-  // Opt-in, never a default; see baseLayer.ts for the measurement.
   it('passes through the conditions a project asks for', () => {
     const conditionNames = ['import', 'types'];
     const settings = settingsOf(base({ resolver: { conditionNames } }));
@@ -490,7 +475,6 @@ describe('base: presets', () => {
     return (await import('./baseLayer')).base;
   };
 
-  // import-x keeps its flat presets under `flatConfigs`, and its settings are read off the same preset.
   it('names the import-x preset when the plugin stops publishing it', async () => {
     const layer = await layerWithout('eslint-plugin-import-x', (plugin: FlatConfigsBearing) => {
       return {
@@ -505,7 +489,6 @@ describe('base: presets', () => {
     expect(layer).toThrow('import-x/typescript is not published');
   });
 
-  // The plugin types `configs` as optional, so a release without it has to reach the same message.
   it('names the sonarjs preset when the plugin publishes no configs at all', async () => {
     const layer = await layerWithout('eslint-plugin-sonarjs', (plugin: typeof sonarjs) => {
       return {

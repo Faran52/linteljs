@@ -64,7 +64,6 @@ const FORMS = valuesOf(ANSWERS.form.values);
 const LIBRARIES = valuesOf(ANSWERS.libraries.values);
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-// Whatever the target offers, so a sweep over every target asks each for a store it actually has.
 const storeFor = (target: TargetId): Partial<Answers> => {
   const [store] = targetFor({
     ...DEFAULT_ANSWERS,
@@ -74,7 +73,6 @@ const storeFor = (target: TargetId): Partial<Answers> => {
   return store === undefined ? {} : { store };
 };
 
-// A silent skip on a missing VERSIONS entry is how @types/node vanished from every generated project.
 describe('versioned', () => {
   it('has a resolvable range for every dependency every target and library declares', () => {
     for (const target of TARGET_IDS) {
@@ -115,7 +113,6 @@ describe('versioned', () => {
   });
 });
 
-// MSW's install script copies the worker, so the answer that asks for one has to allow it.
 describe('the mocking answer', () => {
   it('installs msw as a dev dependency, and only when it was answered', () => {
     expect(buildDevDependencies(answersFor({ mocking: 'msw' }))).toHaveProperty('msw');
@@ -129,12 +126,6 @@ describe('the mocking answer', () => {
 });
 
 describe('buildDependencies', () => {
-  /**
-   * What each store brings: its own packages, and the one that binds it to the framework rendering it. The bindings
-   * are why this is a table rather than a name on the target: TanStack ships one package per framework, Astro's
-   * binding is the hosted framework's rather than Astro's, and a binding with no core beside it installs cleanly and
-   * fails at the first import. Pinia brings the devtools pinia 4 peers on.
-   */
   it.each<[TargetId, HostedFramework | undefined, Store, string[]]>([
     ['react', undefined, 'zustand', ['zustand']],
     ['react', undefined, 'redux-toolkit', ['@reduxjs/toolkit', 'react-redux']],
@@ -161,7 +152,6 @@ describe('buildDependencies', () => {
     expect(buildDependencies(answersFor({ target: 'vue' }))).not.toHaveProperty('@vue/devtools-api');
   });
 
-  // Svelte reads a nanostores atom through its own store contract, so there is no binding package to install.
   it('installs no binding where the framework needs none', () => {
     const nanostores = Object.keys(buildDependencies(answersFor({
       target: 'astro',
@@ -190,7 +180,6 @@ describe('buildDependencies', () => {
   });
 
   it('installs no TanStack binding for the one target that has none', () => {
-    // `qs` alone, which `http.ts` reads and every project receives: no binding was added beside it.
     const dependencyNames = Object.keys(buildDependencies(answersFor({
       target: 'webextension',
       libraries: [],
@@ -243,7 +232,6 @@ describe('buildDependencies', () => {
     expect(buildDependencies(answersFor({ styling: 'stylex' }))).toHaveProperty('@stylexjs/stylex');
   });
 
-  // RTK Query is `@reduxjs/toolkit`, which the Redux store it requires already installs.
   it('installs nothing for RTK Query beyond its store', () => {
     const redux = answersFor({ store: 'redux-toolkit' });
     const withQuery = answersFor({
@@ -255,7 +243,6 @@ describe('buildDependencies', () => {
     expect(buildDevDependencies(withQuery)).toEqual(buildDevDependencies(redux));
   });
 
-  // expo-router's peers, which yarn reports missing, and the Reanimated `react-native-css` requires unannounced.
   it('installs Reanimated, its worklets and the gesture handler on every React Native project', () => {
     const native = buildDependencies(answersFor({ target: 'react-native' }));
 
@@ -265,7 +252,6 @@ describe('buildDependencies', () => {
     expect(buildDependencies(answersFor({}))).not.toHaveProperty('react-native-reanimated');
   });
 
-  // Expo SDK 57's template pins react exactly, where every other target takes the caret the table carries.
   it('pins react to what Expo SDK 57 ships, on React Native alone', () => {
     const native = answersFor({ target: 'react-native' });
 
@@ -298,16 +284,11 @@ describe('buildDependencies', () => {
 });
 
 describe('buildDevDependencies', () => {
-  // A project that declined tests installs no runner, since nothing it holds would run one.
   it('installs the test runner only where testing was answered', () => {
     expect(buildDevDependencies(answersFor({}))).toHaveProperty('vitest');
     expect(buildDevDependencies(answersFor({ testing: 'none' }))).not.toHaveProperty('vitest');
   });
 
-  /*
-   * The emitted vite config imports `@stylexjs/unplugin/vite`, so a project that answers StyleX and does not
-   * install it fails its own lint on an unresolved import before it fails its build on uncompiled styles.
-   */
   it('installs the stylex lint plugin, the build plugin and its peer', () => {
     const devDependencies = buildDevDependencies(answersFor({ styling: 'stylex' }));
 
@@ -317,10 +298,6 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('@stylexjs/babel-plugin');
   });
 
-  /*
-   * Next owns its build and has no vite config to plug into, so it compiles through Babel and PostCSS. The
-   * unplugin is there too and is the test run's half: vitest never goes through Next's pipeline.
-   */
   it('installs the babel and postcss halves where there is no vite config', () => {
     const devDependencies = buildDevDependencies(answersFor({
       target: 'next',
@@ -333,7 +310,6 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).toHaveProperty('@stylexjs/unplugin');
   });
 
-  // `postcss-html` is stylelint's syntax for an SFC `<style>` block, and it does not install its own peer.
   it('installs postcss beside its syntax for an SFC target', () => {
     const devDependencies = buildDevDependencies(answersFor({ target: 'vue' }));
 
@@ -353,11 +329,8 @@ describe('buildDevDependencies', () => {
     expect(buildDevDependencies(answersFor({ libraries: [] }))).not.toHaveProperty('eslint-plugin-better-tailwindcss');
   });
 
-  // Astro calls the plugin from `astro.config.mjs` while owning no vite config; shipping both adapters once left
-  // PostCSS installed with nothing to load it.
   it.each<[TargetId, string, string]>([
     ['astro', '@tailwindcss/vite', '@tailwindcss/postcss'],
-    // Nuxt runs `postcss-import` ahead of its own PostCSS plugins, which cannot resolve `@import "tailwindcss"`.
     ['nuxt', '@tailwindcss/vite', '@tailwindcss/postcss'],
     ['next', '@tailwindcss/postcss', '@tailwindcss/vite'],
     ['angular', '@tailwindcss/postcss', '@tailwindcss/vite'],
@@ -402,7 +375,6 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).toHaveProperty('@tanstack/eslint-plugin-query');
   });
 
-  // React Native loads through an adapter; it is still vitest underneath, and naming jest would fail its gate.
   it('gives react native the adapter on top of the shared runner', () => {
     const devDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
 
@@ -413,7 +385,6 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('jest-expo');
   });
 
-  // A DOM accessibility plugin has nothing to fire on in React Native; the other two React plugins still apply.
   it('installs the react lint plugins on react native, less the accessibility one', () => {
     const devDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
 
@@ -422,15 +393,12 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('eslint-plugin-jsx-a11y-x');
   });
 
-  // The cli plugin inside react-native peers its own release exactly; any other and every manager reports the clash.
   it('declares the metro-config of react-native\'s own release, on React Native alone', () => {
     expect(buildDevDependencies(answersFor({ target: 'react-native' }))['@react-native/metro-config'])
       .toBe(VERSIONS['react-native']);
     expect(buildDevDependencies(answersFor({}))).not.toHaveProperty('@react-native/metro-config');
   });
 
-  // nuxt 4.5 peers rolldown outright, and its builder and devtools peer vite; only pnpm and bun install them unasked.
-  // `@astrojs/react` brings its own React plugin, and the compiler rides its Babel passthrough.
   it('installs neither the React plugin nor its Rolldown preset for an Astro React island', () => {
     const devDependencies = buildDevDependencies(answersFor({
       target: 'astro',
@@ -442,10 +410,6 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('@rolldown/plugin-babel');
   });
 
-  /*
-   * The shared four, then what each toolchain's own tree runs on install, which pnpm otherwise refuses: Astro's and
-   * Angular's builds pull esbuild, and Vue's query layer pulls vue-demi, hosted or not.
-   */
   it.each<[string, AnswerOverrides, string[]]>([
     ['react', { target: 'react' }, []],
     ['next', { target: 'next' }, []],
@@ -483,8 +447,6 @@ describe('buildDevDependencies', () => {
   });
 });
 
-// Framework mode's packages are the target record's, so the router tables add nothing for it. Tanstack takes its
-// lint plugin and no build plugin: nothing generates a route tree, so there is nothing for one to generate.
 describe('the router', () => {
   it.each<[Router, string, string[]]>([
     ['react-router', 'react-router', []],
@@ -509,7 +471,6 @@ describe('parsePackageJson', () => {
   });
 });
 
-// Every entry pinned tighter than a caret, with the operator it takes; the table says why beside each one.
 const PINNED_TIGHTER: Record<string, string> = {
   '@angular/build': '~',
   '@react-native/metro-config': '',
@@ -557,8 +518,6 @@ const siblingIn = (directory: string): Sibling => {
   };
 };
 
-// The only range this repository can check without the network. `^0.1.0` once sat while the package reached 0.2.0:
-// a caret on 0.x is minor-locked. Only @linteljs/eslint-config is written into a generated project.
 describe('VERSIONS against the workspace', () => {
   it('pins the one package a generated project depends on to the version this workspace carries', () => {
     const { name, version } = siblingIn('eslint-config');
@@ -567,8 +526,6 @@ describe('VERSIONS against the workspace', () => {
   });
 });
 
-// An entry in both places must not ship something older than the layers were built against. A line match, not a
-// YAML parser, for a flat block.
 const catalogEntries = (): [string, string][] => {
   const workspaceRoot = join(import.meta.dirname, '..', '..', '..', '..', '..');
   const yaml = readFileSync(join(workspaceRoot, 'pnpm-workspace.yaml'), 'utf8');
@@ -581,7 +538,6 @@ const catalogEntries = (): [string, string][] => {
 
   const entries: [string, string][] = [];
 
-  // Line by line: a regex spanning a block is the shape `sonarjs/slow-regex` reports.
   for (const line of lines.slice(start + 1)) {
     const indented = line.startsWith(' ') || line.startsWith('\t');
 
@@ -610,7 +566,6 @@ const catalogEntries = (): [string, string][] => {
   return entries;
 };
 
-// So `^10.8.1` and `~10.8.1` compare as numbers.
 const floorOf = (range: string): number[] => {
   return range
     .replace(/^[\^~]/, '')
@@ -635,7 +590,6 @@ const atLeast = (range: string, minimum: string): boolean => {
     });
 };
 
-// Every entry VERSIONS ships older than the range it is held to, which is the empty list when nothing drifted.
 const staleAgainst = (entries: [string, string][], source: string): string[] => {
   return entries
     .filter(([name, range]) => {
@@ -648,8 +602,6 @@ const staleAgainst = (entries: [string, string][], source: string): string[] => 
     });
 };
 
-// A range older than what `@linteljs/eslint-config` declares hands a project a plugin its config never ran against;
-// five had drifted before anything checked. `catalog:` entries answer in the block below.
 const configDependencies = (): [string, string][] => {
   const path = join(import.meta.dirname, '..', '..', '..', '..', 'eslint-config', 'package.json');
   const { devDependencies } = parsePackageJson(readFileSync(path, 'utf8'));
@@ -660,7 +612,6 @@ const configDependencies = (): [string, string][] => {
     });
 };
 
-// Each list is checked non-empty first, so an unreadable source fails rather than passing vacuously.
 describe('VERSIONS against what this workspace builds with', () => {
   it('ships nothing older than the version the layers were built against', () => {
     const dependencies = configDependencies();
@@ -678,11 +629,6 @@ describe('VERSIONS against what this workspace builds with', () => {
 });
 
 describe('MANAGER_FLOORS against the workspace', () => {
-  /**
-   * The direction the floor reads: a project is refused below this and pinned to its own executor's version above
-   * it, so what matters is that the floor is one this repository has run. A floor above the pnpm this workspace
-   * develops on would be a floor nothing here has ever gated at.
-   */
   it('floors pnpm no higher than the one this workspace runs', () => {
     const path = join(import.meta.dirname, '..', '..', '..', '..', '..', 'package.json');
     const { packageManager } = parsePackageJson(readFileSync(path, 'utf8'));

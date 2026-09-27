@@ -1,15 +1,10 @@
 name: audit
 
-# The real-code audit has found more defects in this plugin than coverage and
-# mutation testing put together, and until now it only ran when the author
-# remembered to run it. It is far too slow for pull request CI, so it runs on
-# its own clock instead.
+# Too slow for pull request CI, so it runs on its own clock.
 
 on:
   schedule:
-    # Sunday 03:17 UTC. Nothing releases at the weekend, so a two hour job is
-    # not competing with anything, and an odd minute away from the hour avoids
-    # the queue every cron-on-the-hour workflow on GitHub sits in.
+    # Sunday 03:17 UTC: nothing releases at the weekend, and an odd minute avoids the on-the-hour queue.
     - cron: '17 3 * * 0'
   workflow_dispatch:
 
@@ -26,52 +21,35 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    # The fix pass alone takes about 25 minutes on the author's laptop over a
-    # comparable corpus. A runner is slower and two more passes follow it.
+    # The fix pass alone takes about 25 minutes on a laptop, and two more passes follow.
     timeout-minutes: 180
     env:
-      # ESLint warns once per corpus file carrying an `/* eslint-env */`
-      # comment, and the first run buried its finding under 40 KB of that one
-      # line. Named rather than `--no-warnings`, so a deprecation still shows.
+      # ESLint warns once per corpus file carrying `/* eslint-env */`; named rather than `--no-warnings`.
       NODE_OPTIONS: --disable-warning=ESLintEnvWarning
     steps:
       - uses: actions/checkout@v7
 
-      # Third-party actions are pinned to a commit, not a tag: a tag can be
-      # moved onto different code without the reference here changing.
+      # Third-party actions are pinned to a commit: a tag can be moved.
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - uses: actions/setup-node@v7
         with:
-          # Pinned to the same patch as every other workflow: a floating `26` resolved below the `>=26.10.0` this
-          # workspace declares, so the audit measured the rules on a Node the project says it does not support.
+          # Pinned to the patch: a floating `26` resolved below the declared `>=26.10.0`.
           node-version: 26.10.0
           cache: pnpm
 
-      # The audits import `src/rules/index.ts` directly, so they need the dev
-      # dependencies. They also make `node_modules` the first corpus source:
-      # 31,000 files of published third-party JavaScript for the price of an
-      # install that has to happen anyway.
+      # The audits import `src/rules/index.ts`, and `node_modules` is the first corpus source.
       - run: pnpm install --frozen-lockfile
 
-      # Not cached. Shallow clones cost two or three minutes against a job
-      # measured in hours, and a cache key that never changes would quietly
-      # freeze the corpus, which is the one thing that must not happen to it.
+      # Not cached: a never-changing key would freeze the corpus.
       - name: Clone the corpus
         shell: bash
         run: |
-          # Exported here rather than in a job-level `env`, which cannot read
-          # the runner context.
+          # A job-level `env` cannot read the runner context.
           CORPUS="$RUNNER_TEMP/linteljs-real-code"
           echo "CORPUS=$CORPUS" >> "$GITHUB_ENV"
           mkdir -p "$CORPUS"
-          # React and hook-heavy libraries so sort-hook-dependencies and
-          # prefer-arrow-functions get real components; TypeScript-heavy
-          # libraries for interface-order and union-newline; plain JavaScript
-          # because nine of the eleven rules ship on for .js too.
-          # microsoft/TypeScript is deliberately absent: its tests/baselines
-          # directory is 60,000 files of compiler output and would drown every
-          # hand-written file in here.
+          # microsoft/TypeScript is absent: 60,000 files of compiler baselines would drown the hand-written code.
           for repo in \
             facebook/react \
             vuejs/core \
@@ -92,37 +70,20 @@ jobs:
       - name: Prepare the log directory
         run: mkdir -p reports
 
-      # `shell: bash` rather than the default, because it adds pipefail: without
-      # it `tee` reports success and a finding never fails the job.
+      # `shell: bash` adds pipefail: without it `tee` reports success and a finding never fails the job.
       - name: Fixers preserve the program
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run audit:real "$CORPUS" "$GITHUB_WORKSPACE/node_modules" 2>&1 | tee reports/audit-real.log
 
-      # Every other pass runs at default options, so a broken fix that only
-      # appears under a non-default configuration has nothing else looking for
-      # it. It samples the same corpus, so it is nearly free to run here.
+      # Every other pass runs at default options, so a fix broken only under an option needs this.
       - name: Fixers preserve the program under every option
         if: ${{ !cancelled() }}
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run audit:options "$CORPUS" "$GITHUB_WORKSPACE/node_modules" 2>&1 | tee reports/audit-options.log
 
-      # Two minutes, and it needs the same corpus. In pull request CI it would
-      # have to build that corpus from scratch on every push.
-      #
-      # This one also fails when a shape gets no case at all, not only when a
-      # rule misses one. That reads as "widen the corpus" in the log, and the
-      # fix is another repository in the list above, not a quieter exit code.
-      # Mutation lives here rather than in the release gate: it answers whether
-      # the tests are good, not whether the artifact is safe to ship, and a
-      # runner has far fewer cores than a laptop. Roughly 105 minutes here
-      # against 5 locally, with 240 static mutants taking most of it.
-      #
-      # `ignoreStatic` would cut that, and is deliberately not set: the static
-      # mutants are the module-level `new Set([...])` constants that
-      # `packages/eslint-plugin/src/ruleModules.test.ts` exists to kill, so skipping them would hide a
-      # rule that throws while its module is being evaluated.
+      # Not `ignoreStatic`: the static mutants are what `ruleModules.test.ts` exists to kill.
       - name: Tests still kill the mutants
-        # Missing here, so a finding in the fix pass skipped this step entirely.
+        # Without this a finding in the fix pass skipped this step.
         if: ${{ !cancelled() }}
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run mutation 2>&1 | tee reports/mutation.log
@@ -132,8 +93,7 @@ jobs:
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run audit:negatives "$CORPUS" "$GITHUB_WORKSPACE/node_modules" 2>&1 | tee reports/audit-negatives.log
 
-      # Uploaded on failure too, and that is the point: a finding prints the
-      # file and a minimal reproduction, which is the whole bug report.
+      # Uploaded on failure too: a finding prints the file and a minimal reproduction.
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

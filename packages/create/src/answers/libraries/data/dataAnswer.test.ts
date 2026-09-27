@@ -9,7 +9,6 @@ describe('dataAnswer', () => {
     expect(dataAnswer.key).toBe('data');
   });
 
-  // RTK Query ships inside Redux Toolkit, so the store answer decides it and the target does not.
   it('offers rtk-query only beside the redux store', () => {
     const react = targetFor({
       ...DEFAULT_ANSWERS,

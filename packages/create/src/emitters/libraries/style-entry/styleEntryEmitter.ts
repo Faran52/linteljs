@@ -15,11 +15,7 @@ import {
   TAILWIND_IMPORT,
 } from './constants';
 
-/**
- * Each import is added only where the file does not already have it, so a `sync` adds what is missing and repeats
- * nothing. Tailwind is matched by pattern rather than by string because a project may have written it in any of
- * four spellings; a stylesheet of its own is matched by its specifier, which is the only spelling this CLI writes.
- */
+// Tailwind by pattern: a project may have written it in any of four spellings.
 const alreadyImported = (current: string, line: string): boolean => {
   if (IMPORTS_TAILWIND.test(line)) {
     return IMPORTS_TAILWIND.test(current);
@@ -39,7 +35,7 @@ export const mergeStyleEntry = (
     return suffix === undefined || body.includes(suffix) ? body : `${body.trimEnd()}\n\n${suffix}\n`;
   };
 
-  // Svelte's case: there is no stylesheet on disk, so every import is missing and this is the whole file.
+  // Svelte has no stylesheet on disk, so this is the whole file.
   if (current === null) {
     return appended(`${imports.join('\n')}\n`);
   }
@@ -53,24 +49,15 @@ export const mergeStyleEntry = (
   return appended(missing.length === 0 ? current : `${missing.join('\n')}\n\n${current}`);
 };
 
-/**
- * The style entry is the one file that knows every stylesheet a project has, so it is where each is imported from
- * rather than from a component. Angular scopes through `ViewEncapsulation`, Svelte scopes a `<style>` block and Vue
- * has `<style scoped>`, so a colocated stylesheet only reaches its element when the import is global.
- */
+// From the entry: a scoped framework's colocated stylesheet only reaches its element when imported globally.
 export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Artifact[] => {
   const target = targetFor(answers);
-  // The target's own where present, the project's otherwise, and the target's default at birth.
   const entry = projectSpelling(target.styleEntry, project.styleEntries);
   const tailwind = answers.styling === 'tailwind';
   const stylex = answers.styling === 'stylex';
   const imports = [
     ...(tailwind ? target.tailwind?.imports ?? [TAILWIND_IMPORT] : []),
-    /*
-     * A component's stylesheet is dropped under StyleX, where the same rules are a `styles.ts` beside it and are
-     * compiled to atomic classes rather than shipped as a file. The tokens and the page styles stay: StyleX's own
-     * documentation asks for one CSS asset for resets and globals, and injects what it compiles into it.
-     */
+    // A component's stylesheet is a `styles.ts` under StyleX; the tokens and page styles stay, as StyleX asks.
     ...(target.starterStyles ?? [])
       .filter((style) => {
         return typeof style === 'string' || style.when(answers);
@@ -84,7 +71,7 @@ export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Arti
       .map((path) => {
         return `@import "${path}";`;
       }),
-    // Last: its `@theme` points at the tokens, so those have to be in scope by the time it is read.
+    // Last: its `@theme` points at the tokens, so those have to be in scope first.
     ...(tailwind && target.tailwindTheme !== undefined ? [`@import "${target.tailwindTheme}";`] : []),
   ];
 

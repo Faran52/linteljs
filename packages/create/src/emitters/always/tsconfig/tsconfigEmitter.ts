@@ -7,7 +7,7 @@ import { targetFor, type TsconfigPlugin } from '@targets';
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 
-// `noUnusedLocals`/`noUnusedParameters` are absent: `unused-imports` owns that, and both would double-report.
+// No `noUnusedLocals`/`noUnusedParameters`: `unused-imports` owns that.
 
 export interface CompilerOptions {
   rootDir: string;
@@ -56,7 +56,7 @@ export interface TsconfigFile {
 const BASE_INCLUDE = ['**/*.ts', '**/*.tsx', '**/*.mts'];
 const BASE_EXCLUDE = ['node_modules', 'dist', 'build', 'coverage'];
 
-// `vite/client` declares `./logo.svg`, `./App.css` and `import.meta.env`, which the starter component uses.
+// `vite/client` declares `./logo.svg`, `./App.css` and `import.meta.env`.
 const typesFor = (answers: Answers): string[] => {
   const target = targetFor(answers);
 
@@ -92,11 +92,7 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     module: 'esnext',
     moduleResolution: 'bundler',
     resolveJsonModule: true,
-    /**
-     * `scripts/` runs on Node's type stripping, which needs the `.ts` in `./utils/loggerUtils.ts`. The allowance
-     * needs `noEmit`; where ngtsc drops that, the rewrite grants the same. Not everywhere: vue-tsc rejects a `.vue`
-     * import under the rewrite.
-     */
+    // Type stripping needs `.ts` specifiers; vue-tsc rejects a `.vue` import under the rewrite.
     allowImportingTsExtensions: delta.dropsNoEmit !== true,
     ...(delta.dropsNoEmit === true ? { rewriteRelativeImportExtensions: true } : {}),
     isolatedModules: true,
@@ -104,7 +100,7 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     importHelpers: true,
     verbatimModuleSyntax: true,
 
-    // Absent on Angular: ngtsc emits nothing under it; `typecheck` passes --noEmit on the command line.
+    // ngtsc emits nothing under `noEmit`; `typecheck` passes --noEmit on the command line.
     ...(delta.dropsNoEmit === true ? {} : { noEmit: true }),
     incremental: true,
 
@@ -113,8 +109,7 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     exactOptionalPropertyTypes: true,
     noImplicitOverride: true,
     noFallthroughCasesInSwitch: true,
-    // `noPropertyAccessFromIndexSignature` is absent: CSS modules are index signatures, and it failed Next's own
-    // starter page eight times. `noUncheckedIndexedAccess` covers the safety half.
+    // No `noPropertyAccessFromIndexSignature`: CSS modules are index signatures; it failed Next's starter 8 times.
     allowUnreachableCode: false,
     allowUnusedLabels: false,
     // Parameter properties are not erasable, and Angular's DI is built on them.
@@ -150,7 +145,6 @@ export const emitTsconfig = (answers: Answers): string => {
   return `${JSON.stringify(buildTsconfig(answers), null, 2)}\n`;
 };
 
-// The directory is named for `tsconfig.json`, so the path is spelled here and nowhere else.
 export const tsconfigEmitter = (answers: Answers): Artifact[] => {
   return [emitted('package', 'tsconfig.json', emitTsconfig(answers))];
 };

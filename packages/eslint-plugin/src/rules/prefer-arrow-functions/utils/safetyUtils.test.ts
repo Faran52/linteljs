@@ -21,14 +21,10 @@ interface ParsedFunction {
   fn: FunctionLike;
 }
 
-// Finds the last function-like node via a real Linter run, not @mocks/sourceCodeFrom, which returns only the first node
-// of a type; the ts/script options serve fixtures needing the TypeScript parser or a non-strict sourceType.
 interface ParseOptions {
   ts?: boolean;
   script?: boolean;
 }
-
-// Driven directly with real parsed function nodes, the same way the rule reaches them.
 
 const isFunctionLike = (node: RuleNode): node is FunctionLike => {
   return node.type === 'ArrowFunctionExpression'
@@ -108,8 +104,6 @@ describe('sitsInUnsafePosition', () => {
       code: 'const made = new Wrapper(function () {\n  return 1;\n});',
       expected: false,
     },
-    // Crockford's spelling wraps the call rather than the function, so the token right after it
-    // is the call's own opening paren, not a wrapping group's closing paren.
     {
       label: 'a function immediately invoked in Crockford style',
       code: '(function () {\n  run();\n}());',
@@ -125,8 +119,6 @@ describe('sitsInUnsafePosition', () => {
       code: 'register(function () {\n  return 1;\n});',
       expected: false,
     },
-    // `void` takes the function as a bare operand, where an arrow would need parentheses of its
-    // own, so a unary operator is not in the safe-parent list.
     {
       label: 'an operand of a unary operator',
       code: 'void function () {\n  run();\n}();',
@@ -138,8 +130,6 @@ describe('sitsInUnsafePosition', () => {
     expect(sitsInUnsafePosition(sourceCode, fn)).toBe(expected);
   });
 
-  // JSXExpressionContainer needs JSX parsing this file has no reason to carry;
-  // preferArrowFunctions.test.ts covers it through tsxRuleTester.
   it('is false for every other parent position an arrow may stand in', () => {
     const positions = [
       'const list = [function () {\n  return 1;\n}];',
@@ -173,7 +163,6 @@ describe('isSafeToConvert', () => {
       code: 'function* walk() {\n  yield 1;\n}',
       expected: false,
     },
-    // `super` is only legal inside a method, so the fixture has to be one.
     {
       label: 'a method that reaches for super',
       code: 'class Child extends Parent {\n  greet() {\n    return super.greet();\n  }\n}',
@@ -189,37 +178,29 @@ describe('isSafeToConvert', () => {
       code: 'function greet() {\n  return !!new.target;\n}',
       expected: false,
     },
-    // `new` alone is not `new.target`; matching the keyword alone would wrongly decline every constructor call.
     {
       label: 'a function that only constructs something, with no new.target in sight',
       code: 'function build() {\n  return new Service();\n}',
       expected: true,
     },
-    // A sloppy-mode function may repeat a parameter name, which an arrow cannot in any mode; a module is always
-    // strict, where the duplicate is already a parse error, so this needs sourceType: 'script' to exist.
     {
       label: 'a duplicate parameter name in a sloppy-mode function',
       code: 'function pick(first, second, first) {\n  return first;\n}',
       options: { script: true },
       expected: false,
     },
-    // A pattern parameter binds no one name, and makes the list non-simple, where a repeat is a parse error anyway.
     {
       label: 'a sloppy-mode function taking a pattern beside its names',
       code: 'function pick({ first }, second) {\n  return first + second;\n}',
       options: { script: true },
       expected: true,
     },
-    // An explicit `this` parameter is TypeScript-only syntax, so this drives the check through
-    // the TypeScript parser rather than through `@mocks/sourceCodeFrom`.
     {
       label: 'an explicit this parameter',
       code: 'function greet(this: Service): string {\n  return "x";\n}',
       options: { ts: true },
       expected: false,
     },
-    // Only `asserts x is T` needs a declaration; a plain type predicate is not an assertion
-    // signature and does not block the rewrite.
     {
       label: 'an assertion signature',
       code: 'function assertString(value: unknown): asserts value is string {\n  return;\n}',
@@ -242,7 +223,6 @@ describe('isSafeToConvert', () => {
     expect(isSafeToConvert(sourceCode, fn, new WeakSet())).toBe(expected);
   });
 
-  // Depends on the caller-built containsThis set, not on the function's own shape, unlike every case above.
   it('is false when the function is recorded as reading this', () => {
     const { sourceCode, fn } = parseFunction('function greet() {\n  return 1;\n}');
     const containsThis = new WeakSet<FunctionLike>();

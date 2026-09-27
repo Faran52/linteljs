@@ -1,5 +1,3 @@
-// After a file edit: runs the project's own scripts/checkBannedPatterns.ts over each file an agent wrote, the same
-// checker lint-staged runs on commit, and reports its findings. Stdout is the decision JSON or nothing.
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import {
@@ -18,11 +16,7 @@ import {
 const CHECKED = /\.(?:ts|tsx|mts|cts|vue|svelte)$/u;
 const CHECKER = join('scripts', 'checkBannedPatterns.ts');
 
-/**
- * The payload's `cwd` is wherever the agent stands, which need not be the project root, so the checker is searched
- * for upwards: from the root Claude Code exports where there is one, then from `cwd`, which is all Codex and Copilot
- * send.
- */
+// The payload's `cwd` need not be the project root, so the checker is searched for upwards.
 const checkerAbove = (start: string): string | undefined => {
   let directory = start;
   for (;;) {

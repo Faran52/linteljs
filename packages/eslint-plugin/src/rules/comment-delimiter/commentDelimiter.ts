@@ -20,26 +20,20 @@ interface LineEntry {
 // Three slashes is where the shipped standard moves a note into JSDoc.
 const MIN_JSDOC_LINES = 3;
 
-// Directives are machine-addressed, so they are never rewritten. Two patterns: the single regex was over the
-// complexity limit.
+// Directives are machine-addressed, so never rewritten. Two patterns: one regex was over the complexity limit.
 const DIRECTIVE_OPENER = /^#!|^\/\/\/\s*<reference\b/;
 const DIRECTIVE_KEYWORD = /^\/\/\s*(?:eslint-\w+|@?ts-\w+|[vc]8 ignore|istanbul ignore|prettier-ignore)\b/;
 
-// Test files carry no comments at all under the shipped standard, which is a different rule's business.
+// Test files carry no comments at all, which is a different rule's business.
 const TEST_FILE_PATTERN = /(?:^|[/\\.])(?:test|spec)\.[cm]?[jt]sx?$|(?:^|[/\\])__tests__(?:[/\\]|$)/;
 
-/**
- * A tag makes the block machine-read rather than prose, and every reader of one stops at `/**`: `@type` in a
- * checked `.js` file is the annotation itself, `@jsxImportSource` is a pragma TypeScript takes from a block
- * comment only, and `@deprecated` on a `//` line strikes nothing through.
- */
+// Every reader of a tagged block stops at `/**`: a pragma or type annotation in a `//` line is inert.
 const JSDOC_TAG = /(^|\s)@[a-z]/i;
 
 const isDirective = (raw: string): boolean => {
   return DIRECTIVE_OPENER.test(raw) || DIRECTIVE_KEYWORD.test(raw);
 };
 
-// Content lines between the delimiters, the leading star stripped off each continuation line.
 const jsdocBodyOf = (comment: CommentNode): string[] => {
   const lines = comment.value
     .split('\n')
@@ -64,7 +58,7 @@ const jsdocBodyOf = (comment: CommentNode): string[] => {
   return lines;
 };
 
-// Null unless the comment is the only thing on every line it touches; the line's indent comes back with it.
+// Null unless the comment is alone on every line it touches.
 const wholeLineIndentOf = (sourceCode: SourceCode, comment: CommentNode): string | null => {
   const [start, end] = rangeOf(comment);
   const { text } = sourceCode;
@@ -87,8 +81,7 @@ const wholeLineIndentOf = (sourceCode: SourceCode, comment: CommentNode): string
     : null;
 };
 
-// Both replacements begin where the original comment began, so the line's own indent is already
-// outside the range and only continuation lines carry it.
+// Both replacements begin where the original did, so only continuation lines carry the indent.
 const slashTextFor = (indent: string, body: string[], eol: string): string => {
   return body
     .map((line, index) => {
@@ -108,15 +101,13 @@ const jsdocTextFor = (indent: string, contents: string[], eol: string): string =
   ].join(eol);
 };
 
-// Adjacent when one line break separates the two, and since both hold their lines alone, the rest is indent. Read
-// off the text rather than off `loc`, which ESTree types as nullable and a comment cannot be trusted to carry.
+// Read off the text rather than `loc`, which ESTree types as nullable.
 const isAdjacent = (sourceCode: SourceCode, previous: LineEntry, comment: CommentNode): boolean => {
   return sourceCode.text
     .slice(rangeOf(previous.comment)[1], rangeOf(comment)[0])
     .split('\n').length === 2;
 };
 
-// Null for anything that cannot join a run: a block comment, a directive, or a `//` sharing its line with code.
 const lineEntryOf = (sourceCode: SourceCode, comment: CommentNode, raw: string): LineEntry | null => {
   if (comment.type !== 'Line' || isDirective(raw)) {
     return null;
@@ -143,8 +134,7 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
   const first = mustFind(run[0], 'the first comment of a run');
   const last = mustFind(run[run.length - 1], 'the last comment of a run');
 
-  // A `//` line can hold `*/` as plain text; a `/** */` block cannot, since that sequence closes it wherever it
-  // falls. Merging a run that carries one would truncate the block early and spill the rest as code.
+  // A `//` line can hold `*/` as text; merged into a block it would close it early and spill the rest as code.
   if (run
     .some((entry) => {
       return entry.text.includes('*/');
@@ -170,7 +160,6 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
   });
 };
 
-// A no-op unless the comment is a JSDoc block short enough that the standard wants `//` lines instead.
 const reportShortJsdoc = (
   context: RuleContext,
   sourceCode: SourceCode,
@@ -178,7 +167,6 @@ const reportShortJsdoc = (
   raw: string,
   eol: string,
 ): void => {
-  // Only a block's raw text can open `/**`: a line comment opens `//` and a shebang `#!`.
   if (!raw.startsWith('/**')) {
     return;
   }
@@ -186,7 +174,7 @@ const reportShortJsdoc = (
   const body = jsdocBodyOf(comment);
   const indent = wholeLineIndentOf(sourceCode, comment);
 
-  // An empty body cannot happen in source that parses, and three content lines is JSDoc already.
+  // An empty body cannot happen in source that parses.
   if (indent === null || body.length === 0 || body.length >= MIN_JSDOC_LINES) {
     return;
   }
@@ -233,7 +221,6 @@ export const commentDelimiter = createRule('comment-delimiter', {
 
     return {
       Program: () => {
-        // One maximal run of adjacent whole-line `//` comments, flushed whenever anything breaks its adjacency.
         let run: LineEntry[] = [];
 
         const flush = (): void => {
@@ -246,8 +233,7 @@ export const commentDelimiter = createRule('comment-delimiter', {
           const raw = sourceCode.text.slice(start, end);
           const entry = lineEntryOf(sourceCode, comment, raw);
 
-          // No flush here: whatever comment this is, it sits between the run and the next entry, so that entry is
-          // not adjacent and breaks the run itself.
+          // No flush: the next entry is not adjacent and breaks the run itself.
           if (entry === null) {
             reportShortJsdoc(context, sourceCode, comment, raw, eol);
             continue;

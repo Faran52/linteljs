@@ -22,7 +22,6 @@ import type { AuditContext } from '../types.ts';
 
 const UNION = 'type A = "a" | "b";\n';
 
-// `|` to `&` still parses, so the defect is the token itself rather than the parse.
 const swapsPipe = textRule((text) => {
   return text.replace('|', '&');
 });
@@ -88,7 +87,6 @@ describe('evaluate', () => {
   });
 
   it('names the whole subset when only the fixers together change a token', () => {
-    // The first splits the line, and only a split line gives the second anything to rename.
     const context = planted({
       'union-newline': textRule((text) => {
         return text.replace('x =', 'x\n=');
@@ -217,7 +215,6 @@ describe('narrow', () => {
   });
 
   it('answers the changed hunk when no slice reproduces it', () => {
-    // Only a file carrying the marker breaks, and the marker sits further up than the widest slice reaches.
     const context = planted({
       'union-newline': textRule((text) => {
         return text.includes('MARK') ? text.replace('|', '&') : text;
@@ -271,7 +268,6 @@ describe('dominantRule', () => {
         const until = performance.now() + 30;
 
         while (performance.now() < until) {
-          // Spinning is the point: the rule has to cost measurably more than the real one beside it.
         }
 
         return {};

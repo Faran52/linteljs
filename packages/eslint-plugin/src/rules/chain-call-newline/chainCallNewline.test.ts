@@ -8,7 +8,6 @@ import { chainCallNewline } from './chainCallNewline.ts';
 
 const error = { messageId: 'callOnNewline' };
 
-// An undeclared name reads as a global namespace, so the values a chain hangs off are declared first.
 const locals = 'let items, rows, list, client, values, source;\n';
 
 jsRuleTester.run('chain-call-newline', chainCallNewline, {
@@ -29,15 +28,12 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
     'items // first\n  .map(fn)\n  .filter(keep);',
     'items\n  .map((item) => {\n    return item;\n  });',
     'Object.keys(record)\n  .map((key) => {\n    return key;\n  });',
-    // A curried call rides with the link before it, and its callback does not count.
     "it.each(rows)('runs %s', (row) => {\n  run(row);\n});",
     "describe.each(rows)('%s', () => {\n  run();\n});",
-    // An undeclared name is a global namespace, like `Object`.
     'vi.fn().mockReturnValue(1);',
     "import * as ns from 'mod';\nns.make(value).run(other);",
     "import codec from 'mod';\ncodec.make(value).run(other);",
     "import { helper } from 'mod';\nhelper.make(value).run(other);",
-    // Each chain inside another is judged on its own.
     'run(items.map(fn), rows.filter(keep));',
     'lookup[items.map(fn)];',
   ],
@@ -54,20 +50,17 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
       ],
     },
     {
-      // The callback's lines move a step right with the call they belong to.
       code: `${locals}const out = items.map((item) => {\n  return item;\n});`,
       output: `${locals}const out = items\n  .map((item) => {\n    return item;\n  });`,
       errors: [error],
     },
     {
-      // Measured after the split: `}).filter((b) => {` would be 20 wide shifted, and only `})` stays on it.
       code: `${locals}items.map((a) => {\n  return a;\n}).filter((b) => {\n  return b;\n});`,
       output: `${locals}items\n  .map((a) => {\n    return a;\n  })\n  .filter((b) => {\n    return b;\n  });`,
       options: [{ maxLineLength: 18 }],
       errors: [error],
     },
     {
-      // A link already on its own line has its lines where they belong.
       code: `${locals}items\n  .map(fn).filter((b) => {\n    return b;\n  });`,
       output: `${locals}items\n  .map(fn)\n  .filter((b) => {\n    return b;\n  });`,
       errors: [error],
@@ -124,7 +117,6 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
       errors: [error],
     },
     {
-      // A call ahead of the first link keeps the head's own call out of the namespace reading.
       code: 'load().then(done).catch(fail);',
       output: 'load()\n  .then(done)\n  .catch(fail);',
       errors: [error],
@@ -221,14 +213,12 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
       errors: [error],
     },
     {
-      // `  .filter(second);` is 18 wide.
       code: `${locals}const out = items.map(first).filter(second);`,
       output: null,
       options: [{ maxLineLength: 17 }],
       errors: [error],
     },
     {
-      // The body moves a step right with the call, which would take it past the limit.
       code: `${locals}items.map((item) => {\n  return item + 12345;\n});`,
       output: null,
       options: [{ maxLineLength: 23 }],

@@ -39,11 +39,8 @@ const FUNCTION_LIKE = new Set(['ArrowFunctionExpression', 'FunctionDeclaration',
 // An arrow inherits `this` and friends, so the hunt walks into nested arrows and stops at what binds its own.
 const OWNS_ITS_THIS = new Set(['ClassBody', 'FunctionDeclaration', 'FunctionExpression']);
 
-/**
- * A `function` is hoisted and a `const` arrow is not, so converting a declaration called above itself breaks code
- * while every fix-and-diff property still holds. Written out here rather than imported from the rule, since a check
- * sharing the code it checks agrees with every bug in it.
- */
+// A `function` is hoisted and a `const` arrow is not, and no fix-and-diff property catches it.
+// Written out rather than imported: a check sharing the code it checks agrees with its bugs.
 export const hoistedProbe: Rule.RuleModule = {
   create: (context) => {
     const { sourceCode } = context;
@@ -85,7 +82,6 @@ export const atReport = (report: Linter.LintMessage): string => {
   return `${String(report.line)}:${String(report.column - 1)}`;
 };
 
-// A name in a non-computed member or key slot, not a reference to a binding.
 const isPropertyName = (parent: AstNode | undefined, key: string | undefined): boolean => {
   return parent !== undefined && parent.computed !== true
     && ((parent.type === 'MemberExpression' && key === 'property') || (parent.type === 'Property' && key === 'key'));
@@ -129,7 +125,7 @@ const bodyHazard = (fn: AstNode): string | undefined => {
   return found;
 };
 
-// Where each report-only rule may report, derived from the AST. `promise[then](parse)` is why this exists.
+// `promise[then](parse)` is why this exists.
 export const shapesOf = (ast: Program): Shapes => {
   const namespaces = new Set<string>();
   const shapes: Shapes = {
@@ -181,7 +177,6 @@ const finding = (ruleId: string, category: string, detail: string): Finding => {
   };
 };
 
-// One report against the shape its rule claims and, for a conversion, against the original function body.
 export const judge = (report: Linter.LintMessage, shapes: Shapes, probed: Set<string>): Finding | undefined => {
   const spot = atReport(report);
   const ruleId = report.ruleId ?? '';

@@ -132,7 +132,6 @@ describe('codexMarketplaceEmitter', () => {
     expect(codexMarketplaceEmitter(DEFAULT_ANSWERS)).toEqual([]);
   });
 
-  // The adapter is the project's once it exists; the marketplace is linteljs's, rewritten from the answers each run.
   it('writes the adapter, the marketplace of the chosen plugins and the plugin manifest', () => {
     const artifacts = codexMarketplaceEmitter(CODEX);
 
@@ -153,7 +152,6 @@ describe('codexMarketplaceEmitter', () => {
     expect(artifacts[1]?.content).toEqual({ text: emitCodexMarketplace(CODEX.plugins) });
   });
 
-  // Hooks come through conventional discovery, so the manifest names none.
   it('ships the exact minimal local plugin metadata', async () => {
     const [, , plugin] = codexMarketplaceEmitter(CODEX);
     const longDescription = "Applies the generated project's LintelJS structure, typing, testing, "

@@ -47,14 +47,7 @@ import { customTypesEmitter } from './typesafety/custom-types/customTypesEmitter
 import { emitted } from './utils/artifactUtils';
 import { managedRecord, removableIn } from './utils/managedUtils';
 
-/**
- * Keyed by the directory the emitter lives in, which is named for the file it writes, so the path is spelled once
- * and `meta.test.ts` holds this listing against the directory listing in both directions. Insertion order is write
- * order within a stage, which is why `linteljs-config` precedes `package-json` in the seeded list.
- *
- * What `create` and `sync` both write from. A condition belongs to the emitter that owns it, so there is nothing
- * to branch on here.
- */
+// Insertion order is write order within a stage, so `linteljs-config` precedes `package-json`.
 export const BUILD_EMITTERS: Record<string, Emitter> = {
   'always/eslint-config': eslintConfigEmitter,
   'always/stylelint-config': stylelintConfigEmitter,
@@ -88,7 +81,6 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'manager/yarnrc': yarnrcEmitter,
 };
 
-// What a `create` run plants and `sync` never touches.
 export const SEED_EMITTERS: Record<string, Emitter> = {
   'always/linteljs-config': linteljsConfigEmitter,
   'always/readme': readmeEmitter,
@@ -100,30 +92,18 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
   'target/starter-source': starterSourceEmitter,
 };
 
-/**
- * Every file this CLI owns some or all of, which both `create` and `sync` write from. A merge belongs here, not in
- * a stage, or it reaches new projects and no old one. One line per emitter and no branch: whether a file is written
- * is the emitter's own question.
- */
+// A merge belongs here, not in a stage, or it reaches new projects and no old one.
 export const buildArtifacts = (answers: HostedAnswers, project: ProjectShape, name: string): Artifact[] => {
   const artifacts = Object.values(BUILD_EMITTERS)
     .flatMap((emit) => {
       return emit(answers, project, name);
     });
 
-  /**
-   * The record last, because it is a fact about the list rather than a member of it: every path above that this CLI
-   * owns outright, which is what a later `sync` may remove once an answer stops asking for it. Computed here rather
-   * than by an emitter, since an emitter would have to leave itself out of its own input.
-   */
+  // Computed here: an emitter would have to leave itself out of its own input.
   return [...artifacts, emitted('standard', MANAGED_PATH, managedRecord(removableIn(artifacts)))];
 };
 
-/**
- * What a project is seeded with and owns afterward. Kept out of `buildArtifacts` because that list is what
- * `sync` re-applies and none of this is linteljs's to maintain once the project has it. Everything here still
- * reaches disk as an `Artifact`, so `applyArtifact` is the only writer either way.
- */
+// Kept out of `buildArtifacts`, which `sync` re-applies: none of this is linteljs's once the project has it.
 export const seedArtifacts = (
   answers: HostedAnswers,
   name: string,

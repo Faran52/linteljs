@@ -86,7 +86,6 @@ describe('buildGroups', () => {
     expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(['^@assets(?:/|$)', '^@widgets(?:/|$)']);
   });
 
-  // A project whose aliases were all barrels once got no alias bucket at all, with lint green.
   it('matches a bare alias as well as a deep one', () => {
     const groups = buildGroups({
       '@engine': './src/engine',
@@ -117,7 +116,6 @@ describe('buildGroups', () => {
     expect(utils.exec('@utils/format')).not.toBeNull();
   });
 
-  // Unescaped, SvelteKit's `$lib` produces `^$lib/`, which matches nothing.
   it('escapes an alias whose name is regex syntax', () => {
     const patterns = buildGroups({
       '$lib': './src/lib',
@@ -161,7 +159,6 @@ describe('buildGroups', () => {
     expect(buildGroups({}, [])).toEqual(buildGroups());
   });
 
-  // A wildcard mid-key once kept its `\*` in the pattern, which matches no specifier a project writes.
   it('matches an alias whose wildcard sits mid-key', () => {
     const patterns = buildGroups({
       '@features/*/api': './src/features/*/api',
@@ -193,7 +190,6 @@ describe('base: simple-import-sort', () => {
       .resolves.toContain('simple-import-sort/imports');
   });
 
-  // The control for every framework's own bucket test: with no framework group, a framework import is a package.
   it('sorts a framework import with the packages when no framework group is given', async () => {
     await expect(sortsAheadOfPackages(base(), 'react')).resolves.toBe(false);
   });

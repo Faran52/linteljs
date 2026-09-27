@@ -33,7 +33,6 @@ const recordFor = (overrides: Partial<Answers> = {}) => {
 };
 
 describe('the astro record', () => {
-  // Astro renders the document itself, so there is no `index.html` and its own config is what a vite config would be.
   it('owns its document and its build', () => {
     expect(recordFor().html).toBe(false);
     expect(recordFor().vitePlugin).toBeUndefined();
@@ -42,20 +41,17 @@ describe('the astro record', () => {
 });
 
 describe('the build it owns', () => {
-  // Astro's Vite options belong in `astroTarget.config.mjs`; a `vite.config.ts` beside it would be read by nothing.
   it('owns no vite config and borrows the resolved one for tests', () => {
     const record = recordFor();
 
     expect(record.vitePlugin).toBeUndefined();
     expect(record.vitestFactory?.call).toBe('getViteConfig');
-    // The second import is what makes `test` a legal key for `astro check`.
     expect(record.vitestFactory?.imports).toEqual([
       "import { getViteConfig } from 'astro/config';",
       "import 'vitest/config';",
     ]);
   });
 
-  // Only `astro check` types a template, and the types it reads come from `astro sync`.
   it('gates on astro check, after a sync', () => {
     const record = recordFor();
 
@@ -72,7 +68,6 @@ describe('the build it owns', () => {
     expect(record.tsconfig.include).toContain('**/*.astro');
   });
 
-  // The html layer's parser cannot read a template's frontmatter fence.
   it('asks for the astro layer and not the html one', () => {
     expect(recordFor().astro).toBe(true);
     expect(recordFor().html).toBe(false);
@@ -104,7 +99,6 @@ describe('the hosted framework axis', () => {
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
   });
 
-  // The build plugin would install and never be imported; the compiler stays, as the optional peer that plugin loads.
   it('leaves the react build plugin to the targets that own a vite config', () => {
     const { devDependencies } = recordFor({ hostedFramework: 'react' });
 
@@ -120,7 +114,6 @@ describe('the hosted framework axis', () => {
     expect(record.stateRules).toEqual(['vue-reactivity.md']);
   });
 
-  // Runtime, where the node adapter's entry needs it; unconditional so a --existing run installs it.
   it('declares astro once, as a runtime dependency, hosted or not', () => {
     const records = [recordFor(), recordFor({ hostedFramework: 'react' })];
 
@@ -137,7 +130,6 @@ describe('the hosted framework axis', () => {
     }
   });
 
-  // `jsx` stays `preserve`; only Solid adds an import source.
   it('adds a jsx import source only where the framework needs one', () => {
     expect(recordFor({ hostedFramework: 'solid' }).tsconfig.jsxImportSource).toBe('solid-js');
     expect(recordFor({ hostedFramework: 'react' }).tsconfig.jsxImportSource).toBeUndefined();
@@ -153,19 +145,16 @@ describe('the hosted framework axis', () => {
     expect(record.devDependencies).toContain('astro-eslint-parser');
   });
 
-  // Found by an install that aborted: pnpm refuses esbuild's script unless allowed by name.
   it('allows the build script astro cannot install without', () => {
     expect(recordFor().allowBuilds).toContain('esbuild');
   });
 
-  // The adapter is chosen once, in the package-json emitter; the record adds nothing of its own.
   it('adds no tailwind adapter of its own', () => {
     expect(recordFor({ styling: 'tailwind' }).devDependencies).not.toContain('@tailwindcss/vite');
     expect(recordFor({ styling: 'tailwind' }).devDependencies).not.toContain('@tailwindcss/postcss');
   });
 });
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(false),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
@@ -174,7 +163,6 @@ const GATES: GateRow[] = [
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(astroTarget, 'astro');
 

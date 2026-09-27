@@ -8,7 +8,6 @@ import {
 import { allowBuildsBlock } from './emitUtils';
 
 describe('allowBuildsBlock', () => {
-  // One list for every manager: the measured names and the two carried as insurance, sorted.
   it('allows the four builds every target approves, sorted', () => {
     expect(allowBuildsBlock(answersFor({ target: 'svelte' }))).toBe(
       'allowBuilds:\n'
@@ -19,7 +18,6 @@ describe('allowBuildsBlock', () => {
     );
   });
 
-  // `@vitejs/plugin-react` has no native binary, so React needs no extra build allowance.
   it('allows only the shared builds for the react target', () => {
     expect(allowBuildsBlock(answersFor({ target: 'react' }))).toBe(
       'allowBuilds:\n'
@@ -30,11 +28,6 @@ describe('allowBuildsBlock', () => {
     );
   });
 
-  /**
-   * `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses unless it is named. The Vue record said so
-   * and the two hosts did not, so `create` died on ERR_PNPM_IGNORED_BUILDS for every Astro or extension project
-   * hosting Vue.
-   */
   it("takes a hosted framework's build allowance into the host", () => {
     const onAstro = allowBuildsBlock(answersFor({
       target: 'astro',

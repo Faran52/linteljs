@@ -20,10 +20,6 @@ describe('page', () => {
     expect(screen.getByText('pnpm check')).toBeTruthy();
   });
 
-  /*
-   * The store is covered here rather than beside itself: the selector behind `useCounter` is an `$effect`, which
-   * only runs while a component is initialising, so a plain module suite would read a count that never moves.
-   */
   it('counts up from the store behind it', async () => {
     render(Page);
 

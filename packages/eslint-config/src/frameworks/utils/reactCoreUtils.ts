@@ -9,30 +9,15 @@ import type { Layer } from '../../types';
 
 export const reactGroup: string[] = ['^react$', '^react-dom$', '^react/', '^react-', '^@react'];
 
-/**
- * Everything React that assumes no DOM, in its own module rather than in `reactFramework.ts`. A module-scope import
- * runs when the module loads, so composing this from `reactFramework.ts` would make a React Native project resolve
- * `eslint-plugin-jsx-a11y-x`, which it does not install, and ESLint would die on ERR_MODULE_NOT_FOUND before
- * reading a rule. Measured end to end on all four package managers.
- */
+// Its own module: importing it from `reactFramework.ts` would make React Native resolve `eslint-plugin-jsx-a11y-x`.
 export const reactCore = (): Layer => {
   return [
     ...presetOf(eslintReact.configs['recommended-typescript'], 'eslint-react/typescript', SCRIPT_FILES),
     // `configs.flat.recommended`: the bare name is still the eslintrc form.
     ...presetOf(reactHooks.configs.flat.recommended, 'react-hooks/flat/recommended', SCRIPT_FILES),
 
-    /**
-     * `@eslint-react` 5 republishes the `react-hooks` 7 rule set under its own prefix, so composing both presets
-     * enabled these nine twice and reported every hook defect on two lines with two different wordings. Measured:
-     * 535 rules on for a `.tsx` file, 12 names enabled under two ids.
-     *
-     * `eslint-plugin-react-hooks` is the owner rather than the other way round, which is the opposite of the
-     * obvious saving. Dropping its preset takes 16 rules off, and seven of those have no `@eslint-react` copy at
-     * any preset level: `config`, `gating`, `globals`, `immutability`, `incompatible-library`,
-     * `preserve-manual-memoization` and `refs`. Four are React Compiler rules and every React target this
-     * workspace scaffolds turns the compiler on, and `react-state.md` names `react-hooks/refs` as the rule
-     * enforcing its own published standard.
-     */
+    // `@eslint-react` 5 republishes these under its own prefix, so both presets reported every hook defect twice.
+    // `react-hooks` stays the owner: seven of its rules, `refs` among them, have no `@eslint-react` copy.
     {
       name: '@linteljs/react/hooks-one-owner',
       files: SCRIPT_FILES,

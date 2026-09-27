@@ -16,8 +16,6 @@ describe('AppHeader', () => {
     }
   });
 
-  // The tabs are links, so the page they are on is said out loud rather than shown. The suite renders no router,
-  // so `usePathname` is stood in for at the root.
   it('marks the page it is on for a screen reader', () => {
     pathnameMock.mockReturnValue('/about');
     render(<AppHeader name="my-app" />);

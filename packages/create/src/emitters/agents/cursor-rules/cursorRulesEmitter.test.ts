@@ -30,7 +30,6 @@ describe('cursorArtifacts', () => {
     expect(written).not.toContain('.github/copilot-instructions.md');
   });
 
-  // Cursor has no repository-wide file, so the adapter is a rule that always applies.
   it('carries the adapter as an always-applied rule', () => {
     const [always] = cursorArtifacts(answersFor(['cursor']));
 
@@ -39,7 +38,6 @@ describe('cursorArtifacts', () => {
     expect(always?.preserve).toBe(true);
   });
 
-  // `description` comes from the rule's own first heading, so no second wording exists to drift.
   it('rewrites the shared paths list as globs and takes the description from the heading', () => {
     const output = transformOf(cursorArtifacts(answersFor(['cursor'])), '.cursor/rules/repo-structure.mdc')(RULE, null);
 
@@ -49,7 +47,6 @@ describe('cursorArtifacts', () => {
     );
   });
 
-  // Cursor spells "everywhere" as `alwaysApply`, so the glob key is absent rather than empty.
   it('always applies with no paths list, and falls back to a description when there is no heading', () => {
     const transform = transformOf(cursorArtifacts(answersFor(['cursor'])), '.cursor/rules/type-standards.mdc');
 

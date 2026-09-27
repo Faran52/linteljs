@@ -5,13 +5,12 @@ import { targetFor } from '@targets';
 
 import type { Answers, HostedAnswers } from '@config/types';
 
-// A version range as written, with the caret stripped: the page states what was recorded, not a range to resolve.
+// The page states what was recorded, not a range to resolve.
 const plain = (range: string | undefined): string | undefined => {
   return range?.replace(/^[\^~]/, '');
 };
 
-// The stack, in the order a reader cares about it: this CLI, the framework it wrote for, the build tool, then the
-// machine. A row whose version is unknown is left out rather than printed empty.
+// A row whose version is unknown is left out rather than printed empty.
 export const stackRows = (answers: HostedAnswers, versions: Record<string, string>): [string, string][] => {
   const target = targetFor(answers);
   const framework: [string, string | undefined][] = target.framework === undefined
@@ -31,19 +30,12 @@ export const stackRows = (answers: HostedAnswers, versions: Record<string, strin
     });
 };
 
-/**
- * Only what a prompt asked and an answer holds: a never-asked record and an absent optional both print nothing.
- *
- * A word or a list of them is the whole vocabulary a page can render. `aliases` is a map and `ignores` a path list,
- * and neither carries a `prompt`, but the narrowing is here rather than implied by that: a record that gains one
- * should print nothing rather than `[object Object]`.
- */
+// Narrowed here, so a record that gains a `prompt` prints nothing rather than `[object Object]`.
 const printable = (value: Answers[AnswerKey]): string | undefined => {
   if (typeof value === 'string') {
     return value;
   }
 
-  // The only array an answer holds is a list of strings; a map and an absent answer both print nothing.
   if (Array.isArray(value)) {
     return value.length === 0 ? undefined : value.join(', ');
   }

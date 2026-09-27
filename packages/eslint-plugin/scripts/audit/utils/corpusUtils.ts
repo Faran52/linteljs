@@ -16,11 +16,10 @@ const SCRIPT_EXTENSIONS = new Set(['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx']
 const MAX_BYTES = 512 * 1024;
 const MAX_LINE = 1000;
 
-// The workspace store rather than this package's `node_modules`, which pnpm fills with symlinks the walk skips.
+// The workspace store: pnpm fills this package's `node_modules` with symlinks the walk skips.
 const DEFAULT_SOURCES = [
   resolve(import.meta.dirname, '../../../../../node_modules'),
   join(homedir(), 'Projects'),
-  // Clone more real code here for volume: git clone --depth 1 <repo> "$TMPDIR/linteljs-real-code/<name>"
   join(tmpdir(), 'linteljs-real-code'),
 ];
 
@@ -34,8 +33,8 @@ export const sourcesFrom = (given: string[]): string[] => {
     });
 };
 
-// Symlinks are neither file nor directory, which keeps cycles out. Inside a `node_modules` source, nested ones stay.
-// Lazy, so a capped run stops listing when it stops reading: eager, one spent seven of its ten seconds on the walk.
+// Symlinks are neither file nor directory, which keeps cycles out.
+// Lazy: eager, one capped run spent seven of its ten seconds on the walk.
 const walk = function* (dir: string, keepNodeModules: boolean): Generator<string> {
   let entries;
 
@@ -62,7 +61,7 @@ export const filesUnder = (dir: string): Generator<string> => {
   return walk(dir, dir.includes('node_modules'));
 };
 
-// One file from each source in turn, so the first source does not spend the whole budget.
+// In turn, so the first source does not spend the whole budget.
 export const interleave = function* (dirs: string[]): Generator<string> {
   let live = dirs.map(filesUnder);
 
@@ -105,7 +104,7 @@ export const skipReason = (source: string): SkipReason | undefined => {
   return source.length / lines.length > 200 || longest > MAX_LINE ? 'minified' : undefined;
 };
 
-// True the first time a given text is seen, so vendored copies of one file count once.
+// Vendored copies of one file count once.
 export const isFirstSighting = (seen: Set<string>, source: string): boolean => {
   const digest = hash('sha256', source);
 

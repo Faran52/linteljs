@@ -7,7 +7,6 @@ import {
 import { huskyEmitter } from './huskyEmitter';
 
 describe('huskyEmitter', () => {
-  // The mode bit is the point: husky invokes both hooks directly, so a copy without it never runs.
   it('writes both hooks executable, the pre-commit one first', () => {
     expect(huskyEmitter()).toEqual([
       {

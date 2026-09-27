@@ -12,10 +12,6 @@ import { useSubmitContact } from './api';
 
 import type { ContactValues } from './schemas';
 
-/*
- * Through the hook and the data slot, so the one suite covers both spellings of this module: a plain async
- * function and a TanStack Query mutation answer the same `useSubmitContact`.
- */
 const probeFor = (values: ContactValues): ReturnType<typeof defineComponent> => {
   return defineComponent({
     setup: () => {
@@ -68,7 +64,6 @@ describe('useSubmitContact', () => {
     })).toBe('sent 200');
   });
 
-  // The rules again, on the far side of the form: a caller that goes round the binding is still refused.
   it('refuses details the rules refuse', async () => {
     expect(await press({
       email: 'not-an-address',

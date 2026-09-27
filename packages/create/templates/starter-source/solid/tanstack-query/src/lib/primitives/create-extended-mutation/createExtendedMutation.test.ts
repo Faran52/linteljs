@@ -34,7 +34,6 @@ const answering = (body: Accepted, status = 200): void => {
     });
 };
 
-// `createComponent` rather than markup, so this file is a `.ts`: a primitive is not a component.
 const runMutation = (
   path: string,
   options: ExtendedMutationOptions = {},
@@ -103,7 +102,6 @@ describe('createExtendedMutation', () => {
     });
   });
 
-  // The step that is forgotten most: a list that does not drop its cache shows what was there before the write.
   it('drops the caches it was told to once the write succeeds', async () => {
     answering({ status: 'accepted' });
 

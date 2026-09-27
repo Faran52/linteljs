@@ -9,7 +9,7 @@ import type { Layer } from '../../types';
 
 export const solidGroup: string[] = ['^solid-js$', '^solid-js/', '^@solidjs/'];
 
-// Scoped, since the preset carries no `files` glob; `eslint-plugin-solid` has no a11y rules of its own.
+// Scoped, since the preset carries no `files` glob.
 export const solid = (): Layer => {
   return [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SCRIPT_FILES),

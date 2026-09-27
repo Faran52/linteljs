@@ -31,7 +31,6 @@ interface ConfigOverrides {
   agents?: string | string[] | undefined;
   plugins?: string | (string | number)[];
   unexpected?: boolean | object;
-  // An answer this version does not have, which an older config still carries.
   typescript?: boolean;
 }
 
@@ -45,7 +44,6 @@ const config = (overrides: ConfigOverrides = {}): string => {
 };
 
 describe('parseLinteljsConfig', () => {
-  // Strict: an optional answer the file leaves out is a key never written, not one written `undefined`.
   it('reads the current envelope and every answer', () => {
     expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS)))
       .toStrictEqual({
@@ -55,7 +53,6 @@ describe('parseLinteljsConfig', () => {
       });
   });
 
-  // All three arrived after the schema did, so a config written without them still parses.
   it('defaults the extension axes when a config predates them', () => {
     const withoutAxes = JSON.stringify({
       $schema: CONFIG_SCHEMA_URL,
@@ -73,13 +70,11 @@ describe('parseLinteljsConfig', () => {
 
     expect(config.browser).toBe('chrome');
     expect(config.hostedFramework).toBeUndefined();
-    // Left absent, so the file keeps saying what its author said.
     expect(config.surfaces).toBeUndefined();
     expect(surfacesOf(config)).toEqual(['popup', 'background']);
   });
 
   it('round-trips all three extension axes', () => {
-    // A readonly tuple is not assignable to the mutable list `Answers` declares.
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
       target: 'webextension',
@@ -112,7 +107,6 @@ describe('parseLinteljsConfig', () => {
     }).toThrow(new RegExp(`${field} must be one of`));
   });
 
-  // Recorded off the machine that ran `create`, so absent from a config written before they were.
   it('round-trips the recorded manager and node versions', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -155,14 +149,12 @@ describe('parseLinteljsConfig', () => {
     }).toThrow(new RegExp(message));
   });
 
-  // Hand-edited into `eslint.config.js`, an alias is gone on the next sync.
   it('round-trips a project\'s own aliases, in both shapes', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
       aliases: {
         '@engine': './src/lib/engine/index.ts',
         '@workers/*': './src/workers/*',
-        // SvelteKit's own sigil.
         '$lib': './src/lib',
       },
     };
@@ -174,7 +166,6 @@ describe('parseLinteljsConfig', () => {
     });
   });
 
-  // Only the sigil is checked: a bare `engine` sorts as a package.
   it.each([
     [{ engine: './src/lib/engine' }, 'must start with @ or \\$'],
     ['@engine', 'aliases must be an object'],
@@ -217,7 +208,6 @@ describe('parseLinteljsConfig', () => {
     }).toThrow(new RegExp(message));
   });
 
-  // Not for build outputs, which `base()` covers through `.gitignore`: for a generated file the project commits.
   it("round-trips a project's own ignores", () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -258,7 +248,6 @@ describe('parseLinteljsConfig', () => {
     }).toThrow(/schemaVersion/);
   });
 
-  // A hand-edited string is malformed, not unsupported.
   it('rejects a schema version that is not a number', () => {
     expect(() => {
       return parseLinteljsConfig(JSON.stringify({
@@ -290,7 +279,6 @@ describe('parseLinteljsConfig', () => {
   it.each([
     ['a non-object value', '[]', /linteljs\.config\.json must be a JSON object/],
     ['an unexpected property', config({ unexpected: true }), /unexpected property: unexpected/],
-    // docs/DESIGN.md's "No JavaScript output" rests on this refusal.
     ['a project recorded as javascript', config({ typescript: false }), /unexpected property: typescript/],
     ['a different schema URL', config({ $schema: 'https://example.com/schema.json' }), /\$schema must be/],
     [
@@ -303,7 +291,6 @@ describe('parseLinteljsConfig', () => {
       config({ target: 'ember' }),
       /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
     ],
-    // Every object inherits `toString`, so a key test that walks the prototype would take it for a target.
     [
       'a target named for an inherited property',
       config({ target: 'toString' }),
@@ -323,7 +310,6 @@ describe('parseLinteljsConfig', () => {
     ],
     ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
     ['a store outside the vocabulary', config({ store: 'false' }), /store must be one of: zustand, redux-toolkit/],
-    // The v1 spelling, in a file that says it is not v1: migrating it would read a yes this version never wrote.
     ['a yes-or-no store at this version', config({ store: true }), /store must be one of: zustand, redux-toolkit/],
     [
       'an unknown type-safety choice',
@@ -331,7 +317,6 @@ describe('parseLinteljsConfig', () => {
       /typeSafety must be one of: strict, relaxed/,
     ],
     ['a non-array agent list', config({ agents: 'codex' }), /agents must be an array/],
-    // A list answer is required like a single choice, so leaving it out is refused rather than read as none.
     ['a missing agent list', config({ agents: undefined }), /agents must be an array/],
     [
       'an unknown agent',
@@ -409,10 +394,6 @@ describe('the router and the form libraries', () => {
     expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('data');
   });
 
-  /**
-   * The first rule the parser carries that reads two fields at once. `askedWhen` cannot: it is prompt only, so it
-   * hides the question without refusing the value, and a hand-written config would otherwise pass.
-   */
   it('refuses rtk-query without the Redux store that ships it', () => {
     const parsed = parseLinteljsConfig(emitLinteljsConfig({
       ...DEFAULT_ANSWERS,
@@ -440,7 +421,6 @@ describe('the router and the form libraries', () => {
     }).toThrow(/stylex is not an answer for angular/);
   });
 
-  // The v1 spelling: the error names where the answer went rather than calling it an unknown library.
   it('refuses a form library listed among the libraries', () => {
     expect(() => {
       return parseLinteljsConfig(config({ libraries: ['zod', 'react-hook-form'] }));
@@ -454,7 +434,6 @@ describe('the router and the form libraries', () => {
   });
 });
 
-// v1 kept the form library inside `libraries`; a project written then still describes itself.
 describe('a version-one config', () => {
   const v1 = (overrides: ConfigOverrides = {}): string => {
     return JSON.stringify({
@@ -465,7 +444,6 @@ describe('a version-one config', () => {
     });
   };
 
-  // `store: true` meant the one store the target had; it names that store now, and `false` means no answer at all.
   it.each([
     ['react', 'zustand'],
     ['angular', 'ngrx-signals'],
@@ -483,7 +461,6 @@ describe('a version-one config', () => {
     expect(parseLinteljsConfig(v1({ store: false }))).not.toHaveProperty('store');
   });
 
-  // A yes on a target that has since stopped offering a store is no answer at all.
   it('carries no store where the target no longer offers one', () => {
     const parsed = parseLinteljsConfig(v1({
       target: 'webextension',
@@ -493,7 +470,6 @@ describe('a version-one config', () => {
     expect(parsed).not.toHaveProperty('store');
   });
 
-  // Only a yes or no is the v1 spelling; a store already named is read as written.
   it('keeps a store a version-one file already names', () => {
     expect(parseLinteljsConfig(v1({ store: 'redux-toolkit' })).store).toBe('redux-toolkit');
   });
@@ -513,7 +489,6 @@ describe('a version-one config', () => {
     expect(parsed.libraries).toEqual([]);
   });
 
-  // Migrated means migrated: what is written back is a v2 file.
   it('reports the current version and schema', () => {
     const parsed = parseLinteljsConfig(v1({ libraries: ['tanstack-form'] }));
 
@@ -529,7 +504,6 @@ describe('a version-one config', () => {
     expect(parsed.libraries).toEqual(DEFAULT_ANSWERS.libraries);
   });
 
-  // The one shape v1 itself refused, refused on the way through.
   it('still rejects both form libraries at once', () => {
     expect(() => {
       return parseLinteljsConfig(v1({ libraries: ['tanstack-form', 'react-hook-form'] }));
@@ -564,7 +538,6 @@ describe('answers a target never asks for', () => {
       target: 'next',
       surfaces: ['popup'],
     }, 'surfaces is not an answer for next'],
-    // Svelte offers one store, so the refusal worth holding is of a store it does not offer rather than of the key.
     ['zustand on Svelte', {
       target: 'svelte',
       store: 'zustand',
@@ -583,7 +556,6 @@ describe('answers a target never asks for', () => {
     }).toThrow(message);
   });
 
-  // Next and React Native are their own `framework` values, and both render with React.
   it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
     const form = parseLinteljsConfig(config({
       target,
@@ -622,7 +594,6 @@ describe('answers a target never asks for', () => {
 });
 
 describe('the mocking answer', () => {
-  // Named in `answersFrom` as well as in `EXPECTED`, which is the step a new answer is silently dropped by.
   it('round-trips through a config rather than being dropped', () => {
     const config = parseLinteljsConfig(JSON.stringify({
       $schema: CONFIG_SCHEMA_URL,

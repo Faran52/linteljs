@@ -1,12 +1,4 @@
-/*
- * A beam, and three lines that come into line with it. The beam never moves: it is the standard, and the lines are
- * the files. Markup rather than a component, because a popup with no framework has nowhere to put one; the drift
- * each line travels lives in the stylesheet either way.
- *
- * Under `lib/` rather than `components/`, because it is neither: with no hosted framework a file in `components/`
- * is PascalCase and a component by directory, and with one it is camelCase and a component by extension. A string
- * of markup is not a component under either rule.
- */
+// Under `lib/`: a string of markup is not a component under either naming rule.
 export const markSvg = `<svg
   class="mark"
   viewBox="0 0 120 120"

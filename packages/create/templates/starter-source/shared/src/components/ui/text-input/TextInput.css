@@ -1,4 +1,4 @@
-/* Colocated with the component, imported from the style entry: a scoped block would not reach ten targets. */
+/* Imported from the style entry: a scoped block would not reach ten targets. */
 
 .field {
   display: flex;
@@ -38,10 +38,7 @@
   border-color: transparent;
 }
 
-/*
- * A class rather than `[aria-invalid="true"]`, which would say the same thing here and could not be said at all
- * under StyleX. The component threads invalid to both answers as one boolean instead.
- */
+/* A class, not `[aria-invalid="true"]`, which StyleX cannot express. */
 .input-invalid,
 
 .textarea-invalid {

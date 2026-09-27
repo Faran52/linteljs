@@ -83,7 +83,6 @@ export const parsedFix = (
 
   const fixed = fix(context, source, name, names);
 
-  // Unparseable output is its own finding and is reported there.
   return fixed === source ? undefined : parseOrNull(fixed, name) ?? undefined;
 };
 
@@ -106,7 +105,6 @@ export const emptyCounts = (): Counts => {
   };
 };
 
-// Read, skip, dedupe and parse: the steps both passes share.
 export const load = (context: AuditContext, file: string, bucket: Counts): [string, string, Program] | undefined => {
   const source = readFileSync(file, 'utf8');
   const skipped = skipReason(source);

@@ -9,14 +9,12 @@ import { logWarn } from '../../../templates/project/scripts/utils/loggerUtils.ts
 
 import type { E2eRegistry } from '../../../src/pipeline/e2e/registry/registry';
 
-// npm blocks a superset of pnpm: `@swc/core` and `fsevents` too, which pnpm and bun run unasked.
+// npm blocks a superset of pnpm: `@swc/core` and `fsevents` too.
 export type Collected = 'pnpm' | 'npm';
 
 interface Pass {
-  // Strips the allowance `create` wrote, so every package wanting a script is reported, not just the first.
   clear: (project: string) => void;
   install: string[];
-  // Reads the installed tree, so it answers even after an install that refused every build.
   list: (project: string, registry: E2eRegistry) => Promise<string[]>;
 }
 
@@ -28,12 +26,12 @@ interface ScriptListing {
   allowScripts: ScriptEntry[];
 }
 
-// npm 12 blocks what 11 only warns about. Point `COLLECT_NPM` at an npm-cli.js to measure another major.
+// npm 12 blocks what 11 only warns about.
 const NPM_CLI = env['COLLECT_NPM'];
 
 export const NPM: [string, string[]] = NPM_CLI === undefined ? ['npm', []] : [execPath, [NPM_CLI]];
 
-// stdout before stderr, as a whole: the listings below are parsed, and interleaved chunks would split a line.
+// Whole, stdout first: interleaved chunks would split a parsed line.
 export const run = async (
   command: string,
   args: string[],
@@ -50,7 +48,7 @@ export const run = async (
       npm_config_registry: registry.url,
       NPM_CONFIG_REGISTRY: registry.url,
       pnpm_config_registry: registry.url,
-      // These builds are seconds old, the same exemption the end-to-end harness makes. JSON is pnpm's env shape.
+      // These builds are seconds old. JSON is pnpm's env shape.
       pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
       npm_config_cache: join(registry.cacheDir, 'npm'),
       pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),
@@ -120,7 +118,7 @@ export const PASSES: Record<Collected, Pass> = {
         return [];
       }
 
-      // A version without the subcommand answers prose, which is no reason to lose the whole run.
+      // A version without the subcommand answers prose.
       try {
         const parsed: unknown = JSON.parse(listing.slice(opening));
 

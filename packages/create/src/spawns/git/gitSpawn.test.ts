@@ -65,8 +65,6 @@ describe('gitSpawn', () => {
     expect(result.status).not.toBe(0);
   });
 
-  // Resolved from PATH explicitly, so a machine without git gets this message in `result.error` instead of a bare
-  // ENOENT three callers deep; not a throw, since `sync` degrades to reporting a change without its diff.
   it('names the missing dependency when PATH holds no git', () => {
     vi.stubEnv('PATH', cwd);
 
@@ -81,7 +79,6 @@ describe('gitSpawn', () => {
     }
   });
 
-  // A bare environment can hold no PATH at all, which has to read as "no git" rather than crash.
   it('treats a missing PATH like an empty one', () => {
     vi.stubEnv('PATH', undefined);
 

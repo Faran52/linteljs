@@ -37,7 +37,6 @@ describe('adjacentPairs', () => {
     expect([...adjacentPairs([])]).toEqual([]);
   });
 
-  // Array holes parse as null; a pair with one must still arrive, since the rule is what decides to skip it.
   it('carries a null member through as a side of a pair', () => {
     expect([...adjacentPairs([null, null, 'third'])])
       .toEqual([[null, null], [null, 'third']]);
@@ -90,7 +89,6 @@ describe('getIndentStep', () => {
     expect(stepFor('const value = [\n        eightWide,\n];\n')).toBe('        ');
   });
 
-  // Widths must be sorted, not sampled, since the narrowest should win regardless of order.
   it('picks the narrowest even when a wider indent comes first', () => {
     expect(stepFor('function a() {\n    four();\n}\nfunction b() {\n  two();\n}\n')).toBe('  ');
   });
@@ -99,7 +97,6 @@ describe('getIndentStep', () => {
     expect(stepFor('function a() {\n    x();\n    y();\n    z();\n}\nfunction b() {\n  q();\n}\n')).toBe('  ');
   });
 
-  // A tab followed by spaces is a tab indent; testing the run's end instead of its start would misread it as spaces.
   it('reads a tab that is followed by spaces', () => {
     expect(stepFor('function a() {\n\t  one();\n}\nfunction b() {\n\t  two();\n}\n')).toBe('\t');
   });
@@ -113,7 +110,6 @@ describe('getIndentStep', () => {
       .toBe('    ');
   });
 
-  // The closing backtick's line indentation is part of the template too, not a step.
   it('ignores the line a template literal closes on', () => {
     expect(stepFor('const run = () => {\n    const query = `\n        SELECT *\n  `;\n\n    return query;\n};\n'))
       .toBe('    ');
@@ -214,20 +210,16 @@ describe('sameLine', () => {
     expect(sameLine(pattern, firstNode('Literal'))).toBe(false);
   });
 
-  // Only a hand-built AST omits a location; answering true here would let a fixer rewrite a gap it can't see.
   it('reports false when either side carries no location', () => {
     expect(sameLine({}, second)).toBe(false);
     expect(sameLine(first, {})).toBe(false);
   });
 
-  // A token lookup answers null at the file's edge; both parameters accept it rather than throwing.
   it('reports false when either side is absent entirely', () => {
     expect(sameLine(null, second)).toBe(false);
     expect(sameLine(first, null)).toBe(false);
   });
 
-  // undefined === undefined would wrongly read two unknown lines as the same line, letting a
-  // fixer splice a gap it has no positions for.
   it('reports false when neither side has a line', () => {
     expect(sameLine(undefined, undefined)).toBe(false);
   });
@@ -236,7 +228,6 @@ describe('sameLine', () => {
 describe('spliceOntoNewline', () => {
   const fixer = captureFixer();
 
-  // Anchors here come from token lookups allowed to miss, so each has to survive the miss rather than throw.
   it('yields nothing when both anchors are absent', () => {
     expect([...spliceOntoNewline(fixer, null, null, '  ', '\n')]).toEqual([]);
   });
@@ -245,7 +236,6 @@ describe('spliceOntoNewline', () => {
     expect([...spliceOntoNewline(fixer, {}, {}, '  ', '\n')]).toEqual([]);
   });
 
-  // A range with no location passes the line test, leaving the range test as the only guard left.
   it('yields nothing when only the first anchor carries a range', () => {
     expect([...spliceOntoNewline(fixer, { range: [0, 1] }, null, '  ', '\n')]).toEqual([]);
   });
@@ -283,8 +273,6 @@ describe('commaToNewline', () => {
 });
 
 describe('fitsOnLine', () => {
-  // The pattern is what a collapse would replace; `const ` in front of it and ` = source;` behind
-  // it stay where they are, so both count towards the line the reader ends up with.
   const fitsPattern = (code: string, text: string, limit: number): boolean => {
     const { sourceCode, firstNode } = sourceCodeFrom(code);
 
@@ -312,8 +300,6 @@ describe('fitsOnLine', () => {
   });
 });
 
-// The gap a fixer rewrites runs from the separator to the next item, so this measures from the
-// comma, not the item before it.
 const gapAfterComma = (code: string): boolean => {
   return gapIsBlank(sourceCodeFrom(code).sourceCode, code.indexOf(',') + 1, code.indexOf('two'));
 };
@@ -345,7 +331,6 @@ const fixWith = (code: string): string => {
   return output;
 };
 
-// Confirms the indent step actually reaches the fixer's output, not just detection.
 describe('inferred indentation', () => {
   it('uses two spaces when the file gives nothing to go on', () => {
     expect(fixWith("import { alpha, bravo, charlie } from 'mod';\n"))

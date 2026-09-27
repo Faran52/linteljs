@@ -9,8 +9,7 @@ import type {
 // What an older config means by saying nothing.
 const DEFAULT_SURFACES: Surface[] = ['popup', 'background'];
 
-// Next and React Native render with React, so a React-only answer belongs on all three. `framework` keeps them apart
-// because each takes its own ESLint layer.
+// `framework` keeps Next and React Native apart because each takes its own ESLint layer.
 export const rendersWithReact = (framework: Framework | undefined): boolean => {
   return framework === 'react' || framework === 'next' || framework === 'react-native';
 };

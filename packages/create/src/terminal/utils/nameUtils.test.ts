@@ -2,7 +2,6 @@ import { PROJECT_NAME_RULE } from '../constants';
 
 import { isValidProjectName } from './nameUtils';
 
-// npm's own floor is the stricter of the two the name has to satisfy, so meeting it also makes a safe directory.
 describe('isValidProjectName', () => {
   it.each([
     ['a plain name', 'my-app'],

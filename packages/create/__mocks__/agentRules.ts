@@ -6,11 +6,10 @@ import {
 
 import { DEFAULT_ANSWERS } from '@answers';
 
-// The `claude-rules/` source every agent is fed, frontmatter and all.
 export const RULE
   = '---\npaths:\n  - "src/**/*.{ts,tsx}"\n  - "tsconfig.json"\n---\n\n# Repository Structure\n\nBody.\n';
 
-// Three shipped rules carry no `paths:` list, because they govern any file rather than a set of them.
+// Three shipped rules carry no `paths:` list: they govern any file.
 export const UNSCOPED = 'No frontmatter here.\n';
 
 export const answersFor = (agents: Agent[]): Answers => {

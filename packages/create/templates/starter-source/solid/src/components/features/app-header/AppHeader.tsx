@@ -10,10 +10,7 @@ export interface AppHeaderProps {
   readonly onNavigate: (page: string) => void;
 }
 
-/*
- * The tabs are controls rather than links, because they swap a view rather than navigating. A project that adds
- * `@solidjs/router` makes them anchors and the address bar follows; nothing else here changes.
- */
+// Controls rather than links: they swap a view rather than navigating.
 export const AppHeader = (props: AppHeaderProps): JSX.Element => {
   return (
     <header {...styles.header}>

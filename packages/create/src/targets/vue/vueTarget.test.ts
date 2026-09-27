@@ -43,10 +43,6 @@ const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
 };
 
 describe('vueTarget', () => {
-  /*
-   * Unconditional: a Vue application routes, and this target asks no router question to answer otherwise. So the
-   * header links rather than swapping from state, and there is one spelling of it rather than one per router.
-   */
   it('routes whatever was answered', () => {
     expect(destinationsFor()).toContain('src/router/index.ts');
 
@@ -64,7 +60,6 @@ describe('vueTarget', () => {
     expect(destinationsFor({ store: 'tanstack-store' })).toContain('src/lib/store/counter.ts');
   });
 
-  // Pinia installs on the app; the other store this target offers is read from a hook and installs nothing.
   it('installs a store plugin only for the store that needs one', () => {
     const installs = (store: Answers['store']): string | undefined => {
       const answers: Answers = {
@@ -85,7 +80,6 @@ describe('vueTarget', () => {
     expect(installs(undefined)).toBeUndefined();
   });
 
-  // A button is what a store gives the view to press; without one nothing presses anything.
   it('ships a button only where something presses it', () => {
     expect(destinationsFor()).not.toContain('src/components/ui/app-button/AppButton.vue');
     expect(destinationsFor({ store: 'pinia' })).toContain('src/components/ui/app-button/AppButton.vue');
@@ -96,7 +90,6 @@ describe('vueTarget', () => {
   });
 });
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
@@ -125,7 +118,6 @@ const GATES: GateRow[] = [
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(() => {
     return vueTarget;

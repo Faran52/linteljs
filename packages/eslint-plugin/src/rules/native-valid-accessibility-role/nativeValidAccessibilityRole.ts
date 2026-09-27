@@ -5,12 +5,7 @@ import {
 } from '../../utils/jsxUtils.ts';
 import { createRule, type RuleNode } from '../../utils/ruleUtils.ts';
 
-/**
- * `AccessibilityRole` from react-native 0.87.1, `Libraries/Components/View/ViewAccessibility.d.ts`. Read off the
- * package rather than from a doc page: the published list here was missing `dropdownlist`, `grid` and the seven
- * Android container roles, and carried three (`img`, `img button`, `img link`) React Native has never accepted.
- * The newest release on purpose: 0.86 lacks ten of these, and there the type checker rejects them first.
- */
+// Read off react-native 0.87.1's `ViewAccessibility.d.ts`: the published doc list was wrong.
 const ACCESSIBILITY_ROLES = [
   'adjustable', 'alert', 'button', 'checkbox', 'combobox', 'drawerlayout', 'dropdownlist', 'grid', 'header',
   'horizontalscrollview', 'iconmenu', 'image', 'imagebutton', 'keyboardkey', 'link', 'list', 'menu', 'menubar',
@@ -19,8 +14,7 @@ const ACCESSIBILITY_ROLES = [
   'toolbar', 'viewgroup', 'webview',
 ];
 
-// `Role` from the same file. The ARIA spelling is a different and larger vocabulary than `accessibilityRole`, so the
-// two cannot share one list: `searchbox` is a role and not an accessibilityRole, `imagebutton` the other way round.
+// The ARIA spelling is a different, larger vocabulary than `accessibilityRole`.
 const ARIA_ROLES = [
   'alert', 'alertdialog', 'application', 'article', 'banner', 'button', 'cell', 'checkbox', 'columnheader',
   'combobox', 'complementary', 'contentinfo', 'definition', 'dialog', 'directory', 'document', 'feed', 'figure',
@@ -63,12 +57,12 @@ export const nativeValidAccessibilityRole = createRule('native-valid-accessibili
 
           const value = literalValueOf(attribute);
 
-          // A value computed at runtime is unreadable rather than wrong, so only a written-down one is judged.
+          // A value computed at runtime is unreadable rather than wrong.
           if (value === undefined) {
             continue;
           }
 
-          // Compared rather than looked up, so a non-string literal matches nothing and needs no check of its own.
+          // Compared rather than looked up, so a non-string literal matches nothing.
           if (!valid
             .some((role) => {
               return role === value;

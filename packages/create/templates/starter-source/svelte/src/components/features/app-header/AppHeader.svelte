@@ -12,7 +12,7 @@
   const { name }: Props = $props();
 </script>
 
-<!-- Real links, because SvelteKit routes whatever was answered: the address bar follows and middle-click works. -->
+<!-- Real links, because SvelteKit routes whatever was answered. -->
 <header {...styles.header}>
   <p {...styles.brand}>{name}</p>
   <nav {...styles.tabs} aria-label="Main">

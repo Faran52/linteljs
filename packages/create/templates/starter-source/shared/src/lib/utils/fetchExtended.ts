@@ -1,11 +1,6 @@
 import { stringify } from 'qs';
 
-/*
- * `object` for the body, which is the one spelling that survives both gates. `unknown`, `unknown[]` and
- * `Record<string, unknown>` are refused by the standard's floor, and a second type parameter does not work either:
- * TypeScript takes type arguments all or nothing, so naming the response would silently pin the body to its
- * default at every call site. A body is a document, and `object` says that without widening to a bag.
- */
+// `object`: the floor refuses `unknown` bodies, and a second type parameter would pin the body's default.
 export type QueryValue = string | number | boolean | readonly string[] | readonly number[];
 
 export interface RequestOptions {
@@ -15,10 +10,7 @@ export interface RequestOptions {
   readonly signal?: AbortSignal;
 }
 
-/*
- * What a failed request throws, so a caller can tell one apart from a bug. `status` is the server's, or 0 where
- * the request never reached one, which is the case a caller usually wants to retry and a bug never is.
- */
+// `status` is 0 where the request never reached a server, the case a caller usually retries.
 export class ApiError extends Error {
   readonly status: number;
 
@@ -31,15 +23,7 @@ export class ApiError extends Error {
 
 const BASE_URL = '/api';
 
-/*
- * `qs` rather than `URLSearchParams`, for the one thing the platform will not do: an array. `URLSearchParams`
- * stringifies `['a', 'b']` to `a,b` and loses the shape, where `qs` writes `tag=a&tag=b` and parses it back to an
- * array on the other side.
- *
- * `repeat` of the three formats it offers. `brackets` writes `tag[]=a`, which is a Rails and PHP convention rather
- * than a general one, and `comma` collapses to the string this exists to avoid. `repeat` is what `qs.parse` reads
- * back without being told the format, so both halves agree with no configuration shared between them.
- */
+// `qs`, not `URLSearchParams`, which loses an array; `repeat` is what `qs.parse` reads back unconfigured.
 const urlFor = (path: string, query: RequestOptions['query']): string => {
   const rooted = path.startsWith('/') ? path : `/${path}`;
   const url = `${BASE_URL}${rooted}`;
@@ -53,13 +37,7 @@ const urlFor = (path: string, query: RequestOptions['query']): string => {
   return search === '' ? url : `${url}?${search}`;
 };
 
-/**
- * One place that speaks HTTP, which is what `apis/` means and what nothing above it should know about.
- *
- * It answers parsed JSON or throws `ApiError`, so every caller has two cases rather than four: there is no
- * `response.ok` to forget and no second parse to get wrong. A query layer wraps this rather than replacing it,
- * which is why the same function is underneath TanStack Query, RTK Query and a plain call.
- */
+// Answers parsed JSON or throws `ApiError`, so there is no `response.ok` to forget.
 export const request = async <TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> => {
   const {
     method = 'GET',
@@ -71,10 +49,7 @@ export const request = async <TResponse>(path: string, options: RequestOptions =
   let response: Response;
 
   try {
-    /*
-     * Spread rather than set to `undefined`. Under `exactOptionalPropertyTypes` an absent property and one holding
-     * `undefined` are different types, and `RequestInit` accepts the first and refuses the second.
-     */
+    // Spread: under `exactOptionalPropertyTypes` `RequestInit` refuses a property holding `undefined`.
     response = await fetch(urlFor(path, query), {
       method,
       ...(body === undefined

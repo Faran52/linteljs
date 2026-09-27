@@ -32,7 +32,6 @@ const bindingNameOf = (fn: FunctionLike): string => {
   let wrapped: Ranged = fn;
   let { parent } = fn;
 
-  // Climb wrapper arguments to the component's declarator, never wrapper callees.
   while (parent.type === 'CallExpression' && isArgumentOf(parent, wrapped)) {
     wrapped = parent;
     ({ parent } = parent);
@@ -66,8 +65,7 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
     schema: [],
   },
   create: (context) => {
-    // Record member objects during traversal: a scope reference's identifier is typed without `parent`, so reading
-    // it back from there would take a cast.
+    // A scope reference's identifier is typed without `parent`, so reading it back would take a cast.
     const memberObjects = new Map<string, boolean>();
 
     return {
@@ -86,7 +84,6 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
           return;
         }
 
-        // A parameter always declares its own binding.
         const declared = declaredVariablesOf(context, node)
           .find((variable) => {
             return variable.name === firstParam.name;

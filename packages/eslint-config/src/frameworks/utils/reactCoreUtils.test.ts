@@ -25,7 +25,6 @@ interface FlatNamespaced {
   configs: FlatConfigs;
 }
 
-// Everything React that assumes no DOM, which `react()` and `reactNative()` both compose.
 describe('reactCore', () => {
   it('reports a hook called inside a condition', async () => {
     const code = [
@@ -89,7 +88,6 @@ describe('reactCore', () => {
       .resolves.not.toContain('@linteljs/prefer-destructured-props');
   });
 
-  // The cases above pin only `react-hooks` and the linteljs rules; a renamed preset key would leave them green.
   it('reports through the eslint-react preset it composes', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...typescript(), ...reactCore()], JSX_FIXTURE);
 
@@ -103,7 +101,6 @@ describe('reactCore', () => {
     expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
   });
 
-  // The documented override idiom.
   it('stays quiet when a spread sits between two same-named props', async () => {
     const code = 'export const Chip = (props) => {\n'
       + '  return <span className="default" {...props} className="override" />;\n};\n';
@@ -122,8 +119,6 @@ describe('reactCore', () => {
     await expect(sortsAheadOfPackages(base({ frameworkGroup: reactGroup }), specifier)).resolves.toBe(true);
   });
 
-  // Each pattern in a group is a sub-group of its own, emitted in pattern order, so `^react-dom$` is what puts
-  // `react-dom` straight after `react` rather than among the `react-*` packages in alphabetical order.
   it('sorts react-dom straight after react, ahead of react/ and the react-* packages', async () => {
     const block = (specifiers: string[]): string => {
       return [
@@ -154,7 +149,6 @@ describe('reactCore', () => {
     expect(layer).toThrow(`${label} is not published`);
   });
 
-  // `configs.flat` is the plugin's own namespace for its flat presets, so the one that can go missing sits under it.
   it('names the hooks preset when its plugin stops publishing it', async () => {
     const layer = await layerWithout('eslint-plugin-react-hooks', (plugin: FlatNamespaced) => {
       return {

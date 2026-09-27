@@ -13,11 +13,7 @@ export interface AppHeaderProps {
   readonly name: string;
 }
 
-/*
- * A client component, and the only one the layout needs of its own: `usePathname` is what marks the tab you are
- * on, and a server component cannot read it. The tabs are `next/link`, which is what prefetches a route and keeps
- * the address bar honest.
- */
+// A client component: `usePathname` marks the current tab, and a server component cannot read it.
 export const AppHeader = ({ name }: AppHeaderProps): ReactNode => {
   const pathname = usePathname();
 

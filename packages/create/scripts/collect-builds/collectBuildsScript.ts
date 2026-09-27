@@ -1,11 +1,4 @@
-/**
- * Every build script a generated project can meet, in one pass. pnpm aborts on an unlisted `postinstall`, and
- * `vue-demi` surfaced as combination 1,187 of 1,200 in the end-to-end matrix. This installs each target's maximal
- * dependency set with `allowBuilds` emptied and prints what belongs in the record or `SHARED_ALLOWED_BUILDS`.
- * Eighteen real installs per manager, so run it after a dependency bump.
- *
- * Usage: pnpm --filter @linteljs/create collect:builds   (COLLECT_CONCURRENCY, default 4)
- */
+// Run after a dependency bump: pnpm aborts on an unlisted `postinstall`.
 import {
   mkdirSync,
   mkdtempSync,
@@ -51,7 +44,7 @@ const collectOne = async (
 
   mkdirSync(root, { recursive: true });
 
-  // `--no-install`, so the manifests exist before the allowance is stripped out of them.
+  // `--no-install`, so the manifests exist before the allowance is stripped.
   const flags = [registry.cliBin, name, ...answerFlags(answers), '--no-install'];
   const created = await run(execPath, flags, root, registry, agent);
 
@@ -64,7 +57,7 @@ const collectOne = async (
     return [];
   }
 
-  // pnpm exits 1 on the first ignored build and npm 11 only warns, so the exit code is not a verdict here.
+  // pnpm exits 1 on the first ignored build and npm 11 only warns, so the exit code is no verdict.
   const [binary, prefix] = pm === 'npm' ? NPM : [pm, []];
 
   await run(binary, [...prefix, ...PASSES[pm].install], project, registry);
@@ -129,7 +122,7 @@ const main = async (): Promise<void> => {
   const semaphore = new Semaphore(CONCURRENCY);
 
   try {
-    // The CLI reads its manager from `npm_config_user_agent`, so a pass names one the way a real run does.
+    // The CLI reads its manager from `npm_config_user_agent`.
     const agentLookups = MANAGERS
       .map(async (pm): Promise<[Collected, string]> => {
         const version = (await run(pm, ['--version'], workspace, registry)).trim();

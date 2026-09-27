@@ -13,8 +13,7 @@ export const emitClaudeSettings = (plugins: Plugin[]): string => {
   const usesOfficialMarketplace = plugins.includes('context7')
     || plugins.includes('frontend-design');
   const settings = {
-    // The harness setting, not just the rule: every current agent appends `Co-Authored-By` by default, and the
-    // generated rules ban rewriting a commit. `mergeClaudeSettings` keeps a project's own value.
+    // Every current agent appends `Co-Authored-By` by default, and the generated rules ban rewriting a commit.
     includeCoAuthoredBy: false,
     enabledPlugins: {
       'linteljs@linteljs': true,

@@ -49,7 +49,6 @@ import {
 
 import type { Answers, HostedAnswers } from '@config/types';
 
-// What `askedFrom` answers once the host has filled what it records.
 interface HostedAsk {
   name: string;
   answers: HostedAnswers;
@@ -64,7 +63,7 @@ const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
   }));
 };
 
-// Only the questionnaire can supply a missing name; every route that skips it already knows the name.
+// Only the questionnaire can supply a missing name.
 const askedFrom = async (
   options: CliOptions,
   prompter: Prompter,
@@ -102,7 +101,6 @@ const askedFrom = async (
     throw new Error(NOTHING_ANSWERED_MESSAGE);
   }
 
-  // With `--existing` the directory is already named.
   const known = options.existing ? basename(options.cwd) : options.name;
   const asked = await ask(prompter, known === '' ? {} : { name: known });
 
@@ -155,7 +153,7 @@ const runSync = async (options: CliOptions, answers: HostedAnswers): Promise<voi
   }
 };
 
-// Returns the exit code rather than calling `process.exit`, which drops queued stderr writes.
+// Not `process.exit`, which drops queued stderr writes.
 export const main = async (argv: string[], prompter?: Prompter): Promise<number> => {
   let options: CliOptions;
 
@@ -163,8 +161,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     options = parseCliArgs(argv);
   }
   catch (error) {
-    // `parseArgs` throws a `TypeError`, and `process.cwd()` an `Error` once the directory it stood in is gone. The
-    // check is how an `unknown` catch binding reaches `message` without a cast; nothing here throws a non-Error.
+    // `parseArgs` and a vanished cwd throw Errors; the check reaches `message` without a cast.
     /* v8 ignore next 3 */
     if (!(error instanceof Error)) {
       throw error;
@@ -193,7 +190,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     return 1;
   }
 
-  // After `--help` and `--version`, which owe an answer on any machine, and before the questionnaire, which does not.
+  // After `--help` and `--version`, which owe an answer on any machine.
   const host = await hostOf(options.cwd);
 
   if (typeof host === 'string') {
@@ -202,7 +199,6 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     return 1;
   }
 
-  // Only the real prompter reads a real terminal, so only that path needs telling whether one is there.
   const hasTerminal = prompter !== undefined || stdin.isTTY;
 
   if (options.command === 'create') {
@@ -219,9 +215,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     }
 
     await pipelineRun({
-      // With --existing the directory's existing name is the project's.
       name: name === '' ? basename(options.cwd) : name,
-      // `create` makes `<name>/` under cwd and every stage runs inside it; `--existing` is already there.
       cwd: options.existing ? options.cwd : resolve(options.cwd, name),
       answers,
       skip: options.skip,

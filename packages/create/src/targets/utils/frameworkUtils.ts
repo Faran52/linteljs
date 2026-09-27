@@ -12,7 +12,6 @@ export const partsFor = (framework: HostedFramework): FrameworkParts => {
   return PARTS[framework];
 };
 
-// The framework's extension marks a component, replacing the host's directory-based rule.
 export const hostedNaming = (framework: HostedFramework): NamingMap => {
   const { componentGlob } = partsFor(framework);
 

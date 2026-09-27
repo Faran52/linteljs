@@ -30,7 +30,6 @@ const THEIRS = {
 };
 
 describe('mergeCursorHooks', () => {
-  // Cursor runs project hooks from the project root, so the path needs no variable.
   it('writes the git guard on the shell gate and the eslint warning after a shell tool', () => {
     const merged = mergeCursorHooks(null);
 
@@ -62,7 +61,6 @@ describe('mergeCursorHooks', () => {
     expect(mergeCursorHooks(once)).toBe(once);
   });
 
-  // A hook this CLI no longer writes goes with the event it emptied; a project's own entries are not its to judge.
   it('drops its own stale entries and an event they alone filled', () => {
     const current = JSON.stringify({
       version: 1,
@@ -91,7 +89,6 @@ describe('mergeCursorHooks', () => {
     });
   });
 
-  // Only a string command can name this CLI's hooks directory, so anything else is the project's to keep.
   it("keeps a project's hook that carries no command string", () => {
     const current = JSON.stringify({
       hooks: {
@@ -155,7 +152,6 @@ describe('cursorHooksEmitter', () => {
     expect(cursorHooksEmitter(answersFor([agent]))).toEqual([]);
   });
 
-  // A merge, so sync keeps the project's own hooks, and removable, so dropping Cursor takes the file with it.
   it('merges .cursor/hooks.json and marks it removable', () => {
     const [artifact, ...rest] = cursorHooksEmitter(answersFor(['cursor']));
 

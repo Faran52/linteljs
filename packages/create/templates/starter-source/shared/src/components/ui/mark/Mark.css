@@ -1,9 +1,6 @@
-/* Colocated with the component, imported from the style entry: a scoped block would not reach ten targets. */
+/* Imported from the style entry: a scoped block would not reach ten targets. */
 
-/*
- * The beam never moves. It is the standard, and the lines are what come into line with it. Slow apart and fast
- * back: decay reads as drift and correction reads as the fix, where even timing reads as a jitter.
- */
+/* Slow apart and fast back: decay reads as drift and correction as the fix. */
 .mark {
   width: 148px;
   height: 148px;

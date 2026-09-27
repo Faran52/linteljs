@@ -18,7 +18,6 @@ import {
   subsetOf,
 } from './fixUtils.ts';
 
-// An object member, so union-newline splits it.
 const LONG_UNION = 'type Alpha = { first: string } | string;\n';
 
 describe('pluginConfig', () => {

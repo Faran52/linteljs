@@ -242,7 +242,6 @@ describe('eslintFixWarningHook.ts', () => {
     expect(runHook('eslintFixWarningHook.ts', { tool_input: {} })).toBeUndefined();
   });
 
-  // Copilot and Cursor take added context only after a tool runs, so both register this hook there.
   describe('on Copilot and Cursor', () => {
     it.each(['bash', 'powershell'])('warns after Copilot runs eslint without --fix in %s', (tool) => {
       expect(runHook('eslintFixWarningHook.ts', copilotPayload(tool, { command: 'npx eslint src' }))).toMatch(UNFIXED);
@@ -258,7 +257,6 @@ describe('eslintFixWarningHook.ts', () => {
         .toMatch(UNFIXED);
     });
 
-    // Claude Code's copy runs as `preToolUse` under Cursor, and the shell gate belongs to the git guard.
     it.each([
       ['Claude Code\'s copy', cursorToolPayload('eslint src', 'preToolUse')],
       ['the shell gate', cursorShellPayload('eslint src')],

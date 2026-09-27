@@ -39,9 +39,6 @@ describe('astro', () => {
     expect(ruleIds).toContain('astro/jsx-a11y/alt-text');
   });
 
-  // The plugin leaves its rule entries unglobbed and this layer scopes them, so what is worth asserting is the
-  // enabled set under `base()`. `astro()` alone matches no TypeScript file at all, so linting one answers a single
-  // null-id "no matching configuration" notice and an assertion over the reported ids holds whatever the layer does.
   it('enables no astro rule on a TypeScript file', async () => {
     const enabled = await enabledRuleIdsFor([...base(), ...astro()], 'src/lib/utils/sample.ts');
 
@@ -55,7 +52,6 @@ describe('astro', () => {
     expect(ruleIds).toContain('astro/jsx-a11y/alt-text');
   });
 
-  // The jsx-a11y preset repeats the four base entries of `recommended`; only its rule entry is new.
   it('carries each base entry of the plugin once', () => {
     const names = astro()
       .flatMap(({ name }) => {
@@ -70,7 +66,6 @@ describe('astro', () => {
     expect(astroBase).toEqual(['astro/base/plugin', 'astro/base', 'astro/base/javascript', 'astro/base/typescript']);
   });
 
-  // The virtual scripts the plugin extracts sit in no tsconfig, so a type-aware rule there would fail to start.
   it.each([
     'src/pages/index.astro/0_0.ts',
     'src/pages/index.astro/1_1.js',
@@ -82,8 +77,6 @@ describe('astro', () => {
     expect(enabled).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
-  // The plugin's own lookup runs from `process.cwd()`, which the pnpm `.bin` shims widen through NODE_PATH, so a lint
-  // under this suite parses the frontmatter either way. Only the layer's own blocks say it no longer depends on that.
   it('names the TypeScript parser for a template and its virtual scripts', () => {
     const typed = astro()
       .filter(({ name }) => {

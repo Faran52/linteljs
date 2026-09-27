@@ -74,7 +74,6 @@ describe('referenceArtifacts', () => {
 
     const contents = await Promise.all(reads);
 
-    // Stripped to nothing: every rule's body opens on its heading or on the italic line that says where it ships.
     for (const text of contents) {
       expect(text).toMatch(/^[#*]/u);
     }
@@ -121,7 +120,6 @@ describe('referenceArtifacts', () => {
     expect(testing.indexOf('## Infrastructure')).toBeLessThan(testing.indexOf('## Standard'));
   });
 
-  // The standard stays whole under either setting; relaxed adds its deviations after it.
   it('appends the deviations section to the type rule only when relaxed', async () => {
     const strict = await textOf({}, 'type-standards.md');
     const relaxed = await textOf({ typeSafety: 'relaxed' }, 'type-standards.md');
@@ -140,13 +138,10 @@ const targetsOf = (answers: Answers): string[] => {
 };
 
 describe('linteljsPluginEmitter', () => {
-  // Claude and Codex load the tree as a plugin, and Copilot and Cursor are each handed a copy of its rules and run
-  // its hook scripts from their own hooks files.
   it.each(valuesOf(ANSWERS.agents.values))('writes the same tree for %s as for no agent at all', (agent) => {
     expect(targetsOf(answersFor({ agents: [agent] }))).toEqual(targetsOf(answersFor({ agents: [] })));
   });
 
-  // `hooks.json` runs each hook through `node`, so none needs to be executable.
   it('ships the hooks and the parser and host adapter they share', () => {
     const hooks = linteljsPluginEmitter(DEFAULT_ANSWERS)
       .filter(({ target }) => {
@@ -198,7 +193,6 @@ const skillDocument = async (): Promise<SkillDocument> => {
   return parseSkill(skill === undefined ? '' : await shippedAssetsReader(skill.content));
 };
 
-// The skill every agent is routed to first, so each line an agent has to act on is held here by its text.
 describe('SKILL.md', () => {
   it('has the exact required frontmatter', async () => {
     const { frontmatter } = await skillDocument();
@@ -241,7 +235,6 @@ describe('SKILL.md', () => {
     expect((await skillDocument()).body).toContain(`\`${operation}\``);
   });
 
-  // With --amend banned, the default has to be set before the first commit; the same line both adapters carry.
   it('states the commit trailer policy directly after the git bans', async () => {
     const trailers = '- Commit messages carry no `Co-Authored-By` or tool-attribution trailers.';
     const { body } = await skillDocument();

@@ -25,7 +25,6 @@ const Probe = (props: ProbeProps): JSX.Element => {
 };
 
 describe('useCounter', () => {
-  // Two readers rather than one: what a store is for is that the second sees what the first did.
   it('counts up, and every reader sees the same count', () => {
     render(() => {
       return (

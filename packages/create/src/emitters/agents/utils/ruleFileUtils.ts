@@ -4,8 +4,7 @@ import { ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter'
 
 const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
 
-// One comma-separated string, which is how both tools spell a multi-glob. Empty where the rule carries no `paths:`
-// list, which several do: `type-standards.md` and `testing.standard.md` govern any file, not a set of them.
+// Empty where the rule carries no `paths:` list.
 export const globsOf = (source: string): string => {
   const listed = PATHS.exec(source)?.[1];
 
@@ -14,7 +13,7 @@ export const globsOf = (source: string): string => {
     : listed
         .split('\n')
         .flatMap((line) => {
-        // `PATHS` has already held every line to `  - "..."`, so the quotes are all that is left to read.
+        // `PATHS` has already held every line to `  - "..."`.
           return /"(.+)"/u.exec(line)?.[1] ?? [];
         })
         .join(',');
@@ -30,12 +29,7 @@ const named = (name: string, suffix: string): string => {
   return `${name.replace(/\.md$/u, '')}${suffix}`;
 };
 
-/**
- * Copilot reads one repository-wide file and any number of path-scoped ones, whose frontmatter key is `applyTo`.
- * Cursor reads `.mdc` rules alone, so the repository-wide half is a rule with `alwaysApply: true` rather than a file
- * of its own. Both are fed the same `fragments/claude-rules/` sources as the plugin skill
- * references, with the shared `paths:` list rewritten into the key that tool actually reads.
- */
+// Cursor reads `.mdc` rules alone, so the repository-wide half is an `alwaysApply: true` rule.
 export const ruleArtifacts = (
   answers: Answers,
   directory: string,

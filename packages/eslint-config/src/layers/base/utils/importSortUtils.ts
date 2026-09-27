@@ -25,7 +25,6 @@ const ALIAS_BUCKETS = [
   ['@mocks'],
 ];
 
-// Up to the wildcard, wherever it sits: `@features/*/api` is the `@features` alias.
 const aliasNameOf = (alias: string): string => {
   const wildcard = alias.indexOf('*');
 
@@ -46,11 +45,9 @@ const patternFor = (alias: string): string => {
   return `^${aliasNameOf(alias).replace(REGEX_SPECIAL, ESCAPED)}(?:/|$)`;
 };
 
-// Unknown aliases sort after the known buckets rather than with node_modules.
 const unknownAliasesIn = (aliases: string[]): string[] => {
   const known = new Set(ALIAS_BUCKETS.flat());
 
-  // `'@engine'` and `'@engine/*'` are one alias.
   const unknownPatterns = aliases
     .filter((alias) => {
       return !known.has(aliasNameOf(alias));

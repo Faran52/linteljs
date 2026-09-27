@@ -1,13 +1,6 @@
 import type { AccessorNames } from '../utils/mockUtils';
 
-/**
- * Every file the template writes whatever was answered. No `scaffold` on this record: the tree is this
- * repository's own, so nothing is fetched, nothing is renamed and nothing is patched. `app.json` is not here
- * because three of its fields are the project's name and it is emitted.
- *
- * The routes are the directory, as they are in any expo-router application, so there is no router answer and no
- * page switch: the tab bar is what the other targets draw as a header.
- */
+// `app.json` carries the project's name three times, so it is emitted.
 export const ALWAYS: readonly string[] = [
   'expo-env.d.ts',
   'src/typings/assets.d.ts',
@@ -18,14 +11,12 @@ export const ALWAYS: readonly string[] = [
   'src/styles/starter.ts',
 ];
 
-// The page tables have no framework in them, so they are the same bytes here as everywhere else. The stylesheets
-// are not: React Native has no CSS and no cascade, so `styles/starter.ts` above is this target's own.
+// React Native has no CSS, so the stylesheets are not shared.
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/routes.ts',
 ];
 
-// React Native takes React's hooks, at the `src/hooks/` its own record already names.
 export const ACCESSORS: AccessorNames = {
   directory: 'src/hooks',
   query: 'useExtendedQuery',

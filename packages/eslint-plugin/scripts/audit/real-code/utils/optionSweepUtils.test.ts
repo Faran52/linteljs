@@ -33,7 +33,6 @@ const swaps = textRule((text) => {
   return text.includes('SWAP') ? text.replace('|', '&') : text;
 });
 
-// Breaks only the files carrying its markers, so every other file under the same configuration stays clean.
 const defective: Rule.RuleModule = {
   ...swaps,
   create: (context) => {
@@ -76,7 +75,6 @@ describe('runOptionSweep', () => {
   it('reports a finding under the configuration that produced it, and a crash, and counts progress', () => {
     const printed = captured();
     const context = auditContext({
-      // The duplicates cost nothing to skip and carry the run past the 250-file progress line.
       files: [marked, throws, ...Array.from({ length: 248 }, () => {
         return clean;
       })],

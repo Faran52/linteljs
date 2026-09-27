@@ -1,6 +1,5 @@
 import type { Answers } from '@config/types';
 
-// What the solver reads of a case, which is the answers and nothing else.
 export interface PairwiseCase {
   answers: Answers;
 }
@@ -10,8 +9,7 @@ interface Scored<T> {
   pairs: string[];
 }
 
-// The axes a case is a point in. A constant one costs a pair that any case covers, so they are all listed rather
-// than filtered per target: the arithmetic is the same and the list stays readable.
+// A constant axis costs a pair any case covers, so all are listed rather than filtered per target.
 const axesOf = (answers: Answers): string[] => {
   return [
     `pm:${answers.packageManager}`,
@@ -40,11 +38,6 @@ export const pairsOf = (answers: Answers): string[] => {
     });
 };
 
-/**
- * The greedy set cover over every pair of answers: enough cases that each pair appears at least once. Generic over
- * what a case is, because the solver reads nothing but the answers a case carries. Each case's pairs are derived
- * once; the greedy only counts which of them are still uncovered.
- */
 export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
   const scored = cases
     .map((item) => {
@@ -65,7 +58,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
         return uncovered.has(pair);
       }).length;
   };
-  // Ties go to the earlier case, which keeps the cover stable, so a label names the same case every run.
+  // Ties go to the earlier case, so a label names the same case every run.
   const leader = (): Scored<T> | undefined => {
     return scored
       .reduce<Scored<T> | undefined>((best, candidate) => {
@@ -74,7 +67,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
   };
   const chosen: T[] = [];
 
-  // Until no case gains a pair, which is exactly when every pair is covered, since each pair came from some case.
+  // Until no case gains a pair, which is exactly when every pair is covered.
   for (let best = leader(); best !== undefined && gainOf(best.pairs) > 0; best = leader()) {
     for (const pair of best.pairs) {
       uncovered.delete(pair);

@@ -1,10 +1,4 @@
-/**
- * Lints the shipped starter source the way the project receiving it will: `composeConfig` with the target's own
- * framework, each file judged at the path it lands on. Nothing in `pnpm check` reads that tree otherwise, and its
- * frameworks are not installed here, so type-aware rules stay with the end-to-end suite.
- *
- * Usage: tsx scripts/lint-starters/lintStartersScript.ts [--fix]
- */
+// Nothing in `pnpm check` reads the starter tree otherwise; type-aware rules stay with the e2e suite.
 import {
   globSync,
   readdirSync,
@@ -32,13 +26,11 @@ import { unresolvedNames } from './utils/programUtils.ts';
 const TEMPLATES = 'packages/create/templates';
 const STARTERS = `${TEMPLATES}/starter-source`;
 const SCRIPT_GLOB = '**/*.{ts,tsx,mts,cts,js,jsx}';
-// Astro and the two SFC formats parse without their surroundings, so the markup is judged too.
 const LINTED_GLOB = '**/*.{ts,tsx,mts,cts,js,jsx,astro,vue,svelte}';
 
-// The frameworks are not installed and `@/` names scaffolder output, so this rule's findings say nothing.
+// The frameworks are not installed and `@/` names scaffolder output.
 const UNRESOLVABLE = 'import-x/no-unresolved';
 
-// `shared/` has no framework; each target places its files.
 const SHARED_ROOT = 'shared';
 
 const fixing = argv.includes('--fix');
@@ -82,13 +74,12 @@ const filesOf = (target: string, pattern: string): string[] => {
 
 // Two rules cannot run on text at a path nothing on disk holds.
 const STARTER_OVERRIDES: Linter.Config[] = [
-  // Resolves `pages/` against the working directory and finds this workspace instead of a Next project.
+  // Resolves `pages/` against the working directory and finds this workspace instead.
   {
     name: '@linteljs/starters/no-page-tree',
     rules: { '@next/next/no-html-link-for-pages': 'off' },
   },
-  // `projectService` needs a real tsconfig. `no-redundant-optional` reads the program's `exactOptionalPropertyTypes`
-  // to decide whether to run, so without one it would report what the receiving project never does.
+  // `no-redundant-optional` reads the program's `exactOptionalPropertyTypes`, which needs a real tsconfig.
   {
     name: '@linteljs/starters/no-program',
     languageOptions: { parserOptions: { projectService: false } },
@@ -102,7 +93,6 @@ const eslintFor = async (target: (typeof targets)[number]): Promise<ESLint> => {
     framework: record.framework,
     astro: record.astro === true,
     vitest: true,
-    // Its rules act only on a file importing `@stylexjs/stylex`, so the other starters are untouched by it.
     libraries: ['stylex'],
   });
 
@@ -131,7 +121,7 @@ const lintTarget = async (target: string, eslint: ESLint): Promise<[string[], nu
       filePath: destination ?? join('src', relative(join(STARTERS, target), path)),
     });
 
-    // Written back, so the shipped bytes are already what the fix stage would make them.
+    // Written back, so the shipped bytes are what the fix stage would make them.
     if (fixing && result?.output !== undefined) {
       writeFileSync(path, result.output, 'utf8');
     }
@@ -147,7 +137,7 @@ const lintTarget = async (target: string, eslint: ESLint): Promise<[string[], nu
   return [findings, fixable, files.length, unplaced];
 };
 
-// Built in turn: `composeConfig` loads its layers lazily, and two loads racing each other read a half-built module.
+// In turn: two lazy `composeConfig` loads racing read a half-built module.
 const linters: [string, ESLint][] = [];
 
 for (const target of targets) {
@@ -192,7 +182,7 @@ log(`${String(checked)} starter files linted through their own target's layers, 
   + `${String(findings.length - fixable)} of them not autofixable, ${String(unresolved.length)} names neither imported `
   + 'nor global');
 
-// A file no record places reaches no project, so it is reported rather than linted at a guessed path in silence.
+// A file no record places reaches no project.
 if (unplaced.length > 0) {
   logError(`${String(unplaced.length)} not named by any target record, linted under src/ as a guess:\n  `
     + unplaced.join('\n  '));

@@ -14,10 +14,8 @@ import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
 import type { StarterFile } from '../types';
 
-// Templates on the server, optionally hydrating islands in a hosted framework. `vite: false` although Astro runs on
-// Vite: its Vite options live in `astro.config.mjs`, so the test run borrows them through `getViteConfig`.
+// `vite: false`: Astro's Vite options live in `astro.config.mjs`, borrowed through `getViteConfig`.
 
-// Astro's integration per hosted framework.
 const INTEGRATIONS: Record<HostedFramework, string> = {
   react: '@astrojs/react',
   vue: '@astrojs/vue',
@@ -37,10 +35,8 @@ export const astroTarget: TargetBuilder = (answers) => {
     html: false,
     // Atoms outlive an island, which is the state problem Astro actually has.
     stores: ['nanostores'],
-    // `.astro/` is the generated types and content cache.
     ignores: ['.astro/**'],
-    // `COMPONENT` admits both `Card.astro` and the lowercase `index.astro` a route has to be; `pages` is the route
-    // directory.
+    // `COMPONENT` admits both `Card.astro` and a route's lowercase `index.astro`.
     naming: {
       'src/**/*.astro': COMPONENT,
       ...scriptKeys('pages'),
@@ -49,12 +45,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     },
     // A dynamic route is `[slug].astro`, so a directory may be one too.
     folderNaming: { 'src/**/': FOLDER_ROUTED },
-    /*
-     * Data a template reads, and vitest executes no template: a `.astro` file is not in the coverage include
-     * because nothing here can run one. Astro's own container API would let a suite render a page, which is the
-     * way to take these back into the measurement; until then a module only a page imports sits at zero and says
-     * nothing about whether the project works.
-     */
+    // Vitest executes no template, so a module only a page imports would sit at zero.
     coverageExclude: ['src/config/**'],
     styleEntry: 'src/styles/global.css',
     starterStyles: [
@@ -77,29 +68,23 @@ export const astroTarget: TargetBuilder = (answers) => {
     ],
     tailwindTheme: './theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
-    /**
-     * `astro/tsconfigs/strict` teaches TypeScript about `.astro` and `astro:*` modules; `jsx` stays `preserve`, which
-     * Astro needs.
-     * `include` re-names `.astro/types.d.ts` because this config replaces the inherited `include`.
-     */
+    // `include` re-names `.astro/types.d.ts` because this replaces the inherited `include`.
     tsconfig: {
       extends: 'astro/tsconfigs/strict',
       types: ['astro/client'],
       include: ['.astro/types.d.ts', '**/*.astro'],
       ...(hosted?.jsxImportSource === undefined ? {} : { jsxImportSource: hosted.jsxImportSource }),
     },
-    // No `vite.config.ts` to merge, so the test run borrows Astro's resolved config.
     vitestFactory: {
       imports: [
         "import { getViteConfig } from 'astro/config';",
-        // Types only: `vitest/config` declares the `test` key `astro check` otherwise rejects on `UserConfig`.
-        // A bare import, since the `/// <reference types>` directive is one this standard bans.
+        // A bare import: the reference-types directive is banned by this standard.
         "import 'vitest/config';",
       ],
       call: 'getViteConfig',
     },
     ...(hosted?.testConditions === undefined ? {} : { testConditions: hosted.testConditions }),
-    // Only `astro check` can type a template; `astro sync` first, since the types it reads are generated.
+    // `astro sync` first, since the types `astro check` reads are generated.
     typecheck: 'astro sync && astro check',
     build: 'astro build',
     prepare: 'astro sync',
@@ -107,7 +92,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     starterFiles: [
       ...mockFiles(false),
       ...componentStyles(),
-      // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling from `stylex.attrs`.
+      // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling.
       ...componentStyleModules('solid'),
       ...ALWAYS
         .map((target): StarterFile => {
@@ -129,11 +114,7 @@ export const astroTarget: TargetBuilder = (answers) => {
         shared: true,
       },
     ],
-    /*
-     * A `.astro` file is not in the coverage include, because vitest cannot execute one, so the helper the header
-     * calls is what the measurement is made of. It is real logic rather than a placeholder: Astro serves `/about`
-     * and `/about/` as the same page, and a header comparing the strings would mark neither.
-     */
+    // Astro serves `/about` and `/about/` as one page, so the helper's comparison is real logic.
     starterTests: [
       ...mockTests(false),
       {
@@ -141,15 +122,14 @@ export const astroTarget: TargetBuilder = (answers) => {
         covers: 'src/lib/utils/currentPath.ts',
       },
     ],
-    // Runtime, where the base template puts it for the `@astrojs/node` adapter; unconditional so `--existing`
-    // installs it too.
+    // Unconditional so `--existing` installs it too.
     dependencies: ['astro', ...(hosted === undefined ? [] : hosted.dependencies)],
     devDependencies: [
       '@astrojs/check',
       'eslint-plugin-astro',
       'astro-eslint-parser',
       ...(framework === undefined ? [] : [INTEGRATIONS[framework]]),
-      // Less the build plugin, which `@astrojs/react` brings; the compiler stays, as that plugin's optional peer.
+      // Less the build plugin, which `@astrojs/react` brings.
       ...(hosted?.devDependencies ?? [])
         .filter((name) => {
           return name !== '@vitejs/plugin-react';

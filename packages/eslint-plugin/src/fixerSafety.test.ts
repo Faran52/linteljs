@@ -27,10 +27,6 @@ const samples = parseableSamples()
     return [sample.name, sample] as const;
   });
 
-/**
- * `parseableSamples` drops a sample its parser rejects, so a component parser wired up wrong would leave every
- * assertion below holding over nothing for Vue, Svelte and Astro. Each has to parse before any rule reads it.
- */
 describe('the corpus', () => {
   const sfc = FIXER_SAMPLES
     .filter(isSfcSample)
@@ -64,7 +60,6 @@ describe.each(ruleNames)('%s', (name) => {
       code: once,
     }, name);
 
-    // A fixer that keeps editing on a second pass never reaches a stable file.
     expect(twice).toBe(once);
   });
 });
@@ -78,13 +73,11 @@ describe.each(ruleNames)('%s line endings', (name) => {
       return [sample.name, sample] as const;
     });
 
-  // A fix that writes bare \n into a CRLF file leaves mixed endings behind.
   it.each(windows)('keeps CRLF intact on %s', (_label, sample: FixerSample) => {
     expect(/(?<!\r)\n/.test(fixWith(sample, name))).toBe(false);
   });
 });
 
-// A fixer that cannot carry a comment across must decline the fix, not delete the comment.
 describe.each(ruleNames)('%s comments', (name) => {
   const commented = parseableSamples()
     .filter((sample) => {
@@ -101,7 +94,6 @@ describe.each(ruleNames)('%s comments', (name) => {
     expect(after).toBeGreaterThanOrEqual(before);
   });
 
-  // Two line comments merged onto one line pass the count above but corrupt both.
   it.each(commented)('keeps each comment whole in %s', (_label, sample: FixerSample) => {
     const after = commentsIn(fixWith(sample, name), sample.typescript, sample.filename);
 
@@ -113,14 +105,6 @@ const isIndented = (line: string): boolean => {
   return /^[\t ]/.test(line);
 };
 
-/**
- * The lines a fix left at the wrong indent. A line that survives the fix has to survive at its own indent or deeper,
- * since a call moved onto its own line carries its callback a step right. A new one at column 0 is stranded inside
- * brackets, unless it is a closer under a bracket opened at column 0, and stranded ahead of a line that was already
- * indented, which is a statement landing at the margin of a component's script. A new top-level statement among
- * top-level neighbours is none of these, which is why an inserted import passes where counting the lines at the
- * margin could not tell it from a dropped indent.
- */
 const lostIndents = (sample: FixerSample, fixed: string): string[] => {
   const before = sample.code.split(/\r?\n/);
   const after = fixed.split(/\r?\n/);
@@ -167,7 +151,6 @@ const lostIndents = (sample: FixerSample, fixed: string): string[] => {
         .findIndex((sibling, at) => {
           return at > index && sibling.trim() !== '';
         });
-      // With no line left, `next` is -1 and the empty string is never indented.
       const sibling = after[next] ?? '';
 
       return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
@@ -224,7 +207,6 @@ describe.each(ruleNames)('%s indentation', (name) => {
   });
 });
 
-// Read off the rule: what a fixer may do to the tokens is the fixer's own property.
 const namesIn = (shape: FixShape): string[] => {
   return Object.entries(rules)
     .filter(([, rule]) => {
@@ -235,7 +217,6 @@ const namesIn = (shape: FixShape): string[] => {
     });
 };
 
-// Only the token stream, not the text, can tell a code change from a whitespace one.
 describe.each(namesIn('whitespace'))('%s tokens', (name) => {
   it.each(samples)('rewrites no code in %s', (_label, sample: FixerSample) => {
     expect(tokensIn(fixWith(sample, name), sample.typescript, sample.filename))
@@ -243,7 +224,6 @@ describe.each(namesIn('whitespace'))('%s tokens', (name) => {
   });
 });
 
-// Ordering rules move tokens on purpose, so only the multiset has to match, not the order.
 describe.each(namesIn('reorder'))('%s tokens', (name) => {
   it.each(samples)('keeps every token in %s', (_label, sample: FixerSample) => {
     const fixedTokens = tokensIn(fixWith(sample, name), sample.typescript, sample.filename)
@@ -256,18 +236,11 @@ describe.each(namesIn('reorder'))('%s tokens', (name) => {
   });
 });
 
-/**
- * A fix that parses, settles and keeps every comment can still leave a program that throws the moment it runs: an
- * arrow `const` read in its dead zone is exactly that. So every sample that runs clean as written has to run clean
- * fixed. A component file has no one script to run, and a sample that throws as written, on an import or a name it
- * never declares, proves nothing either way, so both sit out.
- */
 const runnable = samples
   .filter(([, sample]) => {
     return !isSfcSample(sample) && runtimeErrorIn(sample.code, sample.filename) === undefined;
   });
 
-// An unchanged sample is already known to run.
 const runtimeErrorAfter = (sample: FixerSample, fixed: string): string | undefined => {
   return fixed === sample.code ? undefined : runtimeErrorIn(fixed, sample.filename);
 };

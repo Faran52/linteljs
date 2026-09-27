@@ -12,7 +12,6 @@ import { ROUTES } from './pages/routes';
 
 import type { FC } from 'react';
 
-// The header is outside the routes, so it renders once and every route fills what sits under it.
 const rootRoute = createRootRoute({
   component: () => {
     return (
@@ -24,12 +23,7 @@ const rootRoute = createRootRoute({
   },
 });
 
-/*
- * Built from the one route list rather than from a `routes/` directory and a generated tree. File-based routing is
- * this library's own default, and it is declined here for one reason: the tree would be a second list of the pages,
- * and the form answer adds a page, so the generated file would need a copy per combination of router and form.
- * Reading the array the header reads keeps that a sum, and a project that wants the generated tree adds the plugin.
- */
+// From the route list, not file-based: a generated tree would need a copy per router and form combination.
 const router = createRouter({
   routeTree: rootRoute.addChildren(ROUTES
     .map(({ path, element }) => {
@@ -51,10 +45,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-/*
- * With a router this is the whole of the app: the route table owns which page renders, and the header's tabs are
- * real links, so the address bar follows. The pages themselves are the same files the no-router build uses.
- */
 export const App: FC = () => {
   return <RouterProvider router={router} />;
 };

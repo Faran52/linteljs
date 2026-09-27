@@ -15,9 +15,8 @@ export type NamingMap = Record<string, NamingRule>;
 
 export interface ResolverOptions {
   project?: string;
-  // Export-map conditions in resolution order; unset by default, see `baseLayer.ts` for why reordering is not safe.
+  // Unset by default; see `baseLayer.ts` for why reordering is not safe.
   conditionNames?: string[];
-  // Silences the resolver's notice on a `project` glob.
   noWarnOnMultipleProjects?: boolean;
 }
 
@@ -49,9 +48,7 @@ export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'
   typescript?: boolean;
   vitest?: boolean;
   html?: boolean;
-  // A file type rather than a framework, so it stacks with one.
   astro?: boolean;
   libraries?: LibraryLayer[];
-  // The CSS file holding `@import "tailwindcss"`, so the tailwind layer reads the project's own theme.
   tailwindEntryPoint?: string;
 }

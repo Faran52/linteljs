@@ -9,13 +9,10 @@ import { majorOf } from '@utils/versionUtils';
 
 import { emitted } from '../../utils/artifactUtils';
 
-// The one workflow this standard owns, emitted rather than preserved because it is the gate: a reference repo renamed
-// `check` and its workflow called the old name for two days while `sync` reported it up to date.
+// Emitted, not preserved: it is the gate, and a stale copy once called a renamed `check` for two days.
 
 interface ManagerSetup {
-  // The step before `setup-node`, for a manager the runner does not ship.
   before?: string;
-  // Absent where `setup-node` does not know the manager.
   cache?: string;
   install: string;
 }
@@ -54,8 +51,7 @@ export const emitCiWorkflow = (answers: HostedAnswers): string => {
 
   const cache = setup.cache === undefined ? '' : `\n          cache: ${setup.cache}`;
 
-  // The major of the Node that made the project, so CI runs what it was built on. A bare major cannot resolve below
-  // `engines.node`, which is a major too.
+  // The Node that made the project; a bare major cannot resolve below `engines.node`.
   const nodeMajor = String(majorOf(answers.nodeVersion));
 
   return `# The gate in front of every push, written by @linteljs/create. It runs exactly what \`${
@@ -88,7 +84,6 @@ ${before}      - uses: actions/setup-node@v7
 `;
 };
 
-// The directory is named for `.github/workflows/ci.yml`, so the path is spelled here and nowhere else.
 export const ciWorkflowEmitter = (answers: HostedAnswers): Artifact[] => {
   return [emitted('standard', '.github/workflows/ci.yml', emitCiWorkflow(answers))];
 };

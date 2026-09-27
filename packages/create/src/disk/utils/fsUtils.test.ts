@@ -44,12 +44,10 @@ describe('hasCode', () => {
     expect(hasCode(Object.assign(new Error('denied'), { code: 'EACCES' }), 'ENOENT')).toBe(false);
     expect(hasCode(new Error('no code at all'), 'ENOENT')).toBe(false);
     expect(hasCode('not even an error', 'ENOENT')).toBe(false);
-    // The code alone is not enough: only an `Error` is a failure Node reported.
     expect(hasCode({ code: 'ENOENT' }, 'ENOENT')).toBe(false);
   });
 });
 
-// A directory carries the execute bit too, so the mode alone would take one for a binary.
 describe('isExecutableFile', () => {
   it('takes an executable file and refuses a plain one, a directory and absence', async () => {
     await writeFile(join(cwd, 'tool'), '', 'utf8');
@@ -87,7 +85,6 @@ describe('entryExists', () => {
     await expect(entryExists(join(cwd, 'absent.txt'))).resolves.toBe(false);
   });
 
-  // ENOTDIR read as absence would let the pipeline overwrite a preserved file it decided was not there.
   it('rethrows a failure that is not absence', async () => {
     await writeFile(join(cwd, 'file.txt'), 'text\n', 'utf8');
 
@@ -106,14 +103,11 @@ describe('readIfPresent', () => {
     await expect(readIfPresent(join(cwd, 'absent.txt'))).resolves.toBeNull();
   });
 
-  // A bare catch treating any failure as absence could make the pipeline overwrite an existing file on a corrupted
-  // read; a directory at the path stays an error.
   it('rethrows a failure that is not absence', async () => {
     await expect(readIfPresent(cwd)).rejects.toThrow();
   });
 });
 
-// Every one, not the first: which spelling a project means is `projectSpelling`'s decision, not this list's order.
 describe('allPresent', () => {
   const CANDIDATES = ['a.tsx', 'a.ts'];
 
@@ -121,7 +115,6 @@ describe('allPresent', () => {
     expect(await allPresent(cwd, CANDIDATES)).toEqual([]);
   });
 
-  // Candidate order, not the filesystem's, so the caller reads the same list whatever order they were written in.
   it('answers every candidate that exists, in the order given', async () => {
     await writeFile(join(cwd, 'a.ts'), '', 'utf8');
 

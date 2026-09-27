@@ -4,11 +4,7 @@ import { ESLint, type Linter } from 'eslint';
 
 import type { Layer } from '../src/types';
 
-/**
- * What `calculateConfigForFile` answers, of which only the rule map is read. ESLint types the method `any`, so the
- * shape is declared here and the instance read through it: the type from its owner rather than an `unknown` for the
- * caller to narrow.
- */
+// ESLint types the method `any`, so the shape is declared here.
 interface CalculatedConfig {
   rules: Partial<Linter.RulesRecord>;
 }
@@ -23,7 +19,6 @@ export const SFC_FIXTURES = join(import.meta.dirname, 'fixtures/sfc');
 // On disk for the same reason.
 export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 
-// A block name has no lint behaviour, so the layer itself is the only place to read one.
 export const ownBlockNames = (layer: Layer): string[] => {
   return layer
     .flatMap(({ name }) => {
@@ -37,8 +32,7 @@ export const startsWith = (prefix: string) => {
   };
 };
 
-// Which rules a file would be linted with, rather than what a fixture happens to trip. The only way to tell a rule
-// that is off from one that is on and silent, which is what a scoping change has to prove.
+// The only way to tell a rule that is off from one that is on and silent.
 export const ruleNamesFor = async (config: Layer, filePath: string): Promise<string[]> => {
   const reader: ConfigReader = new ESLint({
     overrideConfigFile: true,
@@ -49,7 +43,7 @@ export const ruleNamesFor = async (config: Layer, filePath: string): Promise<str
   return Object.keys(calculated.rules);
 };
 
-// Which rules would report, rather than which are listed: one turned off is still a key in the same map.
+// One turned off is still a key in the same map.
 export const enabledRuleIdsFor = async (config: Layer, filePath: string): Promise<string[]> => {
   const reader: ConfigReader = new ESLint({
     overrideConfigFile: true,
@@ -86,7 +80,7 @@ export const ruleIdsFor = async (config: Layer, code: string, filePath: string):
     });
 };
 
-// Messages, not rule ids: a parse error has no rule id, and that is the evidence a layer order broke the parser.
+// A parse error has no rule id, and it is the evidence a layer order broke the parser.
 export const messagesForFile = async (config: Layer, filePath: string): Promise<Linter.LintMessage[]> => {
   const eslint = new ESLint({
     overrideConfigFile: true,
@@ -110,8 +104,6 @@ export const ruleIdsForFile = async (config: Layer, filePath: string): Promise<(
     });
 };
 
-// Whether `specifier` sorts into a bucket of its own ahead of the packages. The blank line between it and a package
-// import is right only when the two land in different buckets, so the sort rule reports exactly when it does not.
 export const sortsAheadOfPackages = async (config: Layer, specifier: string): Promise<boolean> => {
   const code = `import { a } from '${specifier}';\n\nimport { b } from 'zod';\n\nexport const value = [a, b];\n`;
   const ruleIds = await ruleIdsFor(config, code, 'src/lib/utils/sample.ts');

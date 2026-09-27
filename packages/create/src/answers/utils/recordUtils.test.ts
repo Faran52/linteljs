@@ -26,8 +26,6 @@ describe('onlyFor', () => {
     expect(onVue).toBe(false);
   });
 
-  // The second argument is why this is a predicate rather than a target check: `rtk-query` is legal or not by
-  // another answer, and the prompt and the parser have to agree about which.
   it('answers a predicate that reads the answers rather than the target', () => {
     const only = onlyFor(dataAnswer, 'rtk-query');
     const target = targetFor({
@@ -51,8 +49,6 @@ describe('onlyFor', () => {
   });
 
   it('answers undefined where there is no predicate to answer with', () => {
-    // Three ways to have none: a value carrying no `only`, a value the record does not offer, and a record
-    // that carries no `values` at all.
     expect(onlyFor(formAnswer, 'tanstack-form')).toBeUndefined();
     expect(onlyFor(formAnswer, 'formik')).toBeUndefined();
     expect(onlyFor(nodeVersionAnswer, '26.1.0')).toBeUndefined();

@@ -1,8 +1,7 @@
 import type { Surface } from '@config/types';
 import type { OptionalMultiRecord } from '../../types';
 
-// `minimum` stays unset: the interactive prompt requires one pick on its own, but a config or flag may still say
-// `surfaces: []`, which is what an older config means by having none of this at all.
+// No `minimum`: a config or flag may still say `surfaces: []`, what an older config means.
 export const surfacesAnswer = {
   key: 'surfaces',
   flag: 'surfaces',

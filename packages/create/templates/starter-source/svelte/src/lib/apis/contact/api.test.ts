@@ -1,9 +1,5 @@
 import { submitContact } from './api';
 
-/*
- * The rules on the far side of the form: a caller that goes round the binding is still refused. `useSubmitContact`
- * is covered by the page that calls it, since with TanStack Query it is a mutation and needs a client above it.
- */
 describe('submitContact', () => {
   it('answers 200 for details the rules accept', async () => {
     expect(await submitContact({

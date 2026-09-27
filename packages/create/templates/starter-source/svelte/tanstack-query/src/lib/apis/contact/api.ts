@@ -6,10 +6,7 @@ export interface ContactResult {
   status: number;
 }
 
-/*
- * Local, and touching no network. A starter that posted somewhere would fail offline, fail in CI, and fail in the
- * five targets that have no server at all; what is worth demonstrating is the layer, not the request.
- */
+// Local: a starter that posted somewhere would fail offline, in CI, and on targets with no server.
 export const submitContact = async (values: ContactValues): Promise<ContactResult> => {
   const errors = validateContact(values);
 
@@ -20,10 +17,7 @@ export const submitContact = async (values: ContactValues): Promise<ContactResul
   return await Promise.resolve({ status: 200 });
 };
 
-/*
- * One shape whatever the data answer is, so the form takes a submit and never knows which layer runs it. Here it
- * is a mutation, which is what puts the call in the cache and gives it a retry.
- */
+// A mutation, which puts the call in the cache and gives it a retry.
 export const useSubmitContact = (): ((values: ContactValues) => Promise<ContactResult>) => {
   const mutation = createMutation(() => {
     return { mutationFn: submitContact };

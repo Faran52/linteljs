@@ -16,7 +16,6 @@ import {
 import type { AST } from 'eslint';
 
 interface SharedLine {
-  // Whether it is the last specifier, which is what the closing-brace splice hangs off.
   isLast: boolean;
   token: AST.Token;
 }
@@ -52,7 +51,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
 
         const { outer: indent, inner } = indentsAt(node);
         const openBrace = sourceCode.getTokenBefore(first);
-        // Past a trailing comma, which stays on the last specifier's line rather than moving down with the brace.
+        // Past a trailing comma, which stays on the last specifier's line.
         const closeBrace = mustFind(sourceCode.getTokenAfter(last, {
           filter: (token) => {
             return token.value !== ',';
@@ -60,7 +59,6 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
         }), 'the brace closing an export');
         const beforeCloseBrace = sourceCode.getTokenBefore(closeBrace);
 
-        // The open-brace splice belongs to the first report, not to specifier index 1.
         const shared: SharedLine[] = [];
 
         for (const [previous, specifier] of adjacentPairs(node.specifiers)) {
@@ -80,14 +78,14 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
             messageId: 'specifiersOnNewline',
             node,
             * fix(fixer) {
-              // Brace gaps are spliced wholesale below, so a comment there would be lost.
+              // Brace gaps are spliced wholesale, so a comment there would be lost.
               if (rebuildLosesComments(sourceCode, node)) {
                 return;
               }
 
               const split = commaToNewline(sourceCode, fixer, pair.token, inner);
 
-              // Brace gaps belong to the statement, not to this pair, so each is emitted once.
+              // Brace gaps belong to the statement, so each is emitted once.
               if (position === 0) {
                 yield* spliceOntoNewline(fixer, openBrace, first, inner, eol);
               }

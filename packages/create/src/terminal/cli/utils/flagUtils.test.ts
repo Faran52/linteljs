@@ -26,7 +26,6 @@ const lineFor = (flag: string): string => {
 };
 
 describe('flaggedAnswers', () => {
-  // The recorded answers are read off the machine or hand-edited, so none of them is a flag.
   it('carries every answer with a flag, under its own key, and none without', () => {
     const typeSafetyFlag = FLAGGED
       .find(({ key }) => {
@@ -63,7 +62,6 @@ describe('widthOf', () => {
 });
 
 describe('answerUsage', () => {
-  // Built from the records, so each line is held to its record rather than to a copy of the text.
   it('shapes each answer line from its record: list or value, every choice, and any note', () => {
     expect(lineFor('libraries')).toMatch(/^ {2}--libraries <list> /u);
     expect(lineFor('target')).toMatch(/^ {2}--target <value> /u);
@@ -71,7 +69,6 @@ describe('answerUsage', () => {
     expect(lineFor('router').endsWith(` (${ANSWERS.router.note})`)).toBe(true);
   });
 
-  // `form` carries no `slot`: every target asks it. Only `react-hook-form`, one of its two values, is react-only.
   it('does not scope --form to react, since only one of its values is', () => {
     expect(lineFor('form')).toContain('react-hook-form');
     expect(lineFor('form')).not.toContain('react only');

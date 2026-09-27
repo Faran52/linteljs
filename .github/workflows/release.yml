@@ -1,16 +1,8 @@
 name: release
 
-# Publishing needs no NPM_TOKEN. It needs a trusted publisher registered on npmjs.com for each
-# package, pointing at this repository and this workflow file. npm cannot register one for a
-# package that does not exist yet, so all three go out by hand the first time; after that, each
-# gets a trusted publisher on npmjs.com pointing at this repository and this workflow file.
-#
-# Ported from `Faran52/eslint-plugin-tidy` and widened from one package to three.
+# No NPM_TOKEN: each package has a trusted publisher on npmjs.com for this workflow.
 
-# Pushing the branch is the whole release. The branch name carries the version, this workflow waits
-# for `ci` and `e2e` to go green on the same commit, runs the release-only gates, publishes, and
-# only then writes the tag: a tag here means all three are on npm, rather than an intent to put them
-# there. Nothing releases off main, because main is not a `v*` branch.
+# Pushing the `v*` branch is the release; the tag is written only once all three are on npm.
 on:
   push:
     branches:
@@ -34,8 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # The branch name is the version, so `v1.2.0` releases 1.2.0. One place to say it, and the
-      # check below refuses the release rather than shipping whatever the files happen to hold.
+      # The branch name is the version; the check refuses a mismatch rather than shipping whatever the files hold.
       - name: Verify every package is at the version the branch names
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -47,9 +38,7 @@ jobs:
             fi
           done
 
-      # Read here rather than after the publish, because a release whose notes turn out to be empty is one nobody can
-      # fix afterwards without editing the release by hand. Not all three: one version covers all three packages, and
-      # a version whose change lives in one of them says so there and nowhere else.
+      # Read before the publish: empty notes cannot be fixed afterwards without editing the release by hand.
       - name: Verify a changelog describes this version
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -62,9 +51,7 @@ jobs:
           echo "The release notes are written from those sections, so this would publish an empty release." >&2
           exit 1
 
-      # A second push to the same branch would otherwise try to publish a version that is already on
-      # npm and fail deep in the publish step, after twenty minutes of gates. The tag written at the
-      # end of a successful run is what makes that knowable in one command, here.
+      # A second push would otherwise fail deep in the publish, after twenty minutes of gates.
       - name: Refuse to release a version that already went out
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/$GITHUB_REF_NAME" >/dev/null 2>&1; then
@@ -73,10 +60,7 @@ jobs:
             exit 1
           fi
 
-      # `ci` and `e2e` start from the same push as this workflow, so they are still running when it
-      # begins. Waiting is what makes the publish depend on them; reading their conclusions without
-      # waiting would pass while both were still in progress, which is the whole failure this avoids.
-      # e2e installs eight targets for real and takes around eleven minutes.
+      # `ci` and `e2e` start from the same push, so reading their conclusions without waiting passes them mid-run.
       - name: Wait for ci and e2e to pass on this commit
         uses: actions/github-script@v9
         with:
@@ -114,10 +98,7 @@ jobs:
 
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      # No `registry-url` here, deliberately. It makes setup-node write an .npmrc holding
-      # `_authToken=${NODE_AUTH_TOKEN}`, and trusted publishing sets no such variable, so every pnpm command below
-      # would print `Failed to replace env in config`. The gates need no registry credentials; the publish step
-      # writes that file for itself, immediately before it is used.
+      # No `registry-url`: its `.npmrc` names `NODE_AUTH_TOKEN`, which trusted publishing never sets.
       - uses: actions/setup-node@v7
         with:
           node-version: 26.10.0
@@ -132,34 +113,27 @@ jobs:
       # SonarSource's own analyser for JS/TS, run locally since this project has no SonarQube server or token.
       - run: pnpm --filter @linteljs/eslint-plugin audit:security
 
-      # Every major in `peerDependencies`, not the pinned devDependency alone. The support table in
-      # the plugin's README is a claim until this runs.
+      # Every major in `peerDependencies`, not the pinned devDependency alone.
       - run: pnpm --filter @linteljs/eslint-plugin compat
 
       - run: pnpm --filter @linteljs/eslint-plugin smoke
       - run: pnpm --filter @linteljs/eslint-config smoke
       - run: pnpm --filter @linteljs/create smoke
 
-      # The registry configuration, written here rather than at the top of the job so the gates above run without an
-      # .npmrc naming a token that does not exist. Same file, same contents, four steps later.
+      # Written here, so the gates above run without an .npmrc naming a token that does not exist.
       - uses: actions/setup-node@v7
         with:
           node-version: 26.10.0
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      # No NODE_AUTH_TOKEN. Authentication is npm trusted publishing: pnpm exchanges the workflow's
-      # OIDC token for a short-lived registry token, so there is no long-lived secret to steal.
-      #
-      # The plugin first, then the config that depends on it, then the CLI that writes both names
-      # into a generated project. A consumer installing mid-publish gets a resolvable tree at every
-      # point in that order.
+      # Trusted publishing: pnpm exchanges the workflow's OIDC token, so there is no long-lived secret.
+      # Dependency order, so a consumer installing mid-publish always gets a resolvable tree.
       - run: pnpm --filter @linteljs/eslint-plugin publish --no-git-checks --provenance --access public
       - run: pnpm --filter @linteljs/eslint-config publish --no-git-checks --provenance --access public
       - run: pnpm --filter @linteljs/create publish --no-git-checks --provenance --access public
 
-      # After the publish, never before: the tag is the record that all three are on npm, which is
-      # also what the "already went out" gate above reads on a second push to this branch.
+      # After the publish: the tag records that all three are on npm, and the gate above reads it.
       - name: Tag the released commit
         run: |
           git config user.name "github-actions[bot]"
@@ -167,9 +141,7 @@ jobs:
           git tag -a "$GITHUB_REF_NAME" -m "$GITHUB_REF_NAME"
           git push origin "refs/tags/$GITHUB_REF_NAME"
 
-      # The three changelog sections for this version, in dependency order, which is the order the packages publish in
-      # above. Generated notes still follow underneath: they answer "which commits", and these answer "what changed",
-      # and the second is the one a consumer arriving from npm came for.
+      # Generated notes follow underneath: they answer which commits, these answer what changed.
       - name: Compose the release notes from the changelogs
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -191,12 +163,6 @@ jobs:
           body_path: ${{ runner.temp }}/notes.md
           generate_release_notes: true
 
-      # The branch has done its job: the tag holds the commit and the release is out, so leaving it
-      # behind only accumulates a branch per version that nobody will read.
-      #
-      # `refs/heads/` spelled out, not the bare name. The tag written above shares that name, and
-      # `git push origin --delete v1.2.0` with both present answers `dst refspec matches more than
-      # one` and deletes neither, which would fail the run after all three packages were already on
-      # npm. The explicit form deletes the branch and leaves the tag, which is the whole point.
+      # `refs/heads/` spelled out: the tag shares the name, and a bare delete then deletes neither.
       - name: Delete the release branch
         run: git push origin --delete "refs/heads/$GITHUB_REF_NAME"

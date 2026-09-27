@@ -8,7 +8,6 @@ export interface GitOptions {
   input?: string;
 }
 
-// No git answers only what every caller reads first: the error, and no exit status.
 interface GitMissing {
   error: Error;
   status: null;

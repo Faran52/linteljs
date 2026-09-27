@@ -1,11 +1,4 @@
-/**
- * Runs every fixer over real third-party code, since the unit suite and mutation gate only know the corpus we wrote.
- * Each fix must parse, converge, and keep every token, comment, comment anchor and line ending; nothing is written
- * back. Report-only rules and arrow conversions are judged against shapes read off the AST, and each file's fix
- * time is recorded so a superlinear rule shows up. `--options` repeats the checks under every `meta.schema` option.
- *
- * Usage: tsx scripts/audit/real-code/realCodeAudit.ts [dir...] [--rule <id>] [--max-files <n>] [--options]
- */
+// Runs every fixer over real third-party code: the unit suite and mutation gate only know our corpus.
 import process from 'node:process';
 import { parseArgs } from 'node:util';
 
@@ -50,7 +43,7 @@ if (sources.length === 0) {
   process.exit(2);
 }
 
-// A prefix for the fix pass. The sweep takes every nth, since a prefix of `node_modules` holds no React to sort.
+// The sweep takes every nth, since a prefix of `node_modules` holds no React to sort.
 const sampled = (): string[] => {
   const found = sources
     .flatMap((dir) => {

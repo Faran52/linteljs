@@ -10,8 +10,6 @@ import { EMPTY_PROJECT } from '@config/constants';
 import { emitExpoConfig, expoConfigEmitter } from './expoConfigEmitter';
 
 describe('emitExpoConfig', () => {
-  // A scheme is a URL host, so the separators and the case go while the name and the slug keep them.
-  // The file whole: every other value is read by Expo, and nothing here runs Expo.
   it('names the app, its slug and its scheme after the project', () => {
     expect(JSON.parse(emitExpoConfig('Demo-App'))).toStrictEqual({
       expo: {

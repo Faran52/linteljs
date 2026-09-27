@@ -16,17 +16,7 @@ import type { Answers, Browser } from '@config/types';
 import type { TargetBuilder } from '../registry';
 import type { StarterFile } from '../types';
 
-// Manifest V3 on the vanilla scaffold, built by `@crxjs/vite-plugin`. The browser decides the manifest shape and the
-// ambient types; the hosted framework decides what a component is and which plugin and layer handle it.
-
-/**
- * Per browser: the Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy
- * both. Measured: the Firefox starter linted as three unsafe-member-access findings on an untyped `chrome`.
- *
- * Which four files those are is not listed here. Both browsers fill the same four destinations and the asset for
- * each sits under a directory named for the browser, so `variant` on the entry is the whole of the difference.
- */
-// A surface decides what the manifest names and whether the build needs an input the manifest does not give it.
+// The Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy both.
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
     ...POPUP
@@ -48,11 +38,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
       variant: 'tailwind',
       shared: true,
     },
-    /*
-     * The same bytes every other target's mark and button take, at the path this one puts them: there are no
-     * components here, so a stylesheet under `components/` would sit beside nothing. The popup always has a
-     * button, so neither is conditional.
-     */
+    // No components here, so a stylesheet under `components/` would sit beside nothing.
     {
       target: 'src/lib/mark.css',
       source: 'src/components/ui/mark/Mark.css',
@@ -81,8 +67,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
 
   if (hasSurface(answers, 'devtools-panel')) {
     files.push(
-      // A folder each for the devtools page and the panel; the entry HTML stays at the root, where manifest paths
-      // resolve.
+      // The entry HTML stays at the root, where manifest paths resolve.
       {
         target: 'devtools.html',
       },
@@ -105,7 +90,6 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   return files;
 };
 
-// Entry shells with no branch of their own, excluded like `src/{main,index}`.
 const surfaceCoverageExclude = (answers: Answers): string[] => {
   return [
     ...hasSurface(answers, 'background') ? ['src/background/index.ts'] : [],
@@ -128,8 +112,6 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     hostsFramework: true,
     html: true,
     ignores: [],
-    // With a framework the component is marked by its extension; without one, by living under `components/`: a
-    // component is marked by directory rather than by a `.tsx` extension.
     naming: hosted === undefined
       ? {
           'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',
@@ -138,15 +120,11 @@ export const webextensionTarget: TargetBuilder = (answers) => {
         }
       : hostedNaming(hosted.framework),
     folderNaming: { 'src/**/': FOLDER },
-    // `lib/model/` has no alias, and `@store/*` would name a directory this layout lacks.
+    // `@store/*` would name a directory this layout lacks.
     extraAliases: { '@model/*': './src/lib/model/*' },
     omitAliases: ['@store/*'],
     styleEntry: 'src/style.css',
-    /*
-     * Beside the markup that uses them rather than under `components/`, which this target has none of: the mark
-     * is a string in `lib/` and the popup builds its button node by node. That is also what keeps them under
-     * StyleX, where the style entry drops a component's stylesheet because a `styles.ts` replaces it.
-     */
+    // Beside their markup: the mark is a string in `lib/` and the popup builds its button node by node.
     starterStyles: [
       './styles/tokens.css',
       './styles/base.css',
@@ -156,7 +134,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     tailwindTheme: './styles/theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
     ...(hosted?.sfcExtension === undefined ? {} : { sfcExtension: hosted.sfcExtension }),
-    // The framework plugin runs before `crx`, which wraps whatever the plugins above produced.
+    // `crx` wraps whatever the plugins before it produced.
     vitePlugin: {
       imports: [...hosted?.vitePlugin.imports ?? [], ...CRX.imports],
       calls: [...hosted?.vitePlugin.calls ?? [], ...CRX.calls],
@@ -194,7 +172,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
         : [],
     ],
     coverageExclude: surfaceCoverageExclude(answers),
-    // crx builds only pages the manifest names; the panel is opened at runtime, so it goes in `rollupOptions.input`.
+    // crx builds only pages the manifest names; the panel is opened at runtime.
     ...(hasSurface(answers, 'devtools-panel') ? { viteInputs: { panel: 'panel.html' } } : {}),
     typecheck: 'tsc --noEmit',
     build: 'vite build',

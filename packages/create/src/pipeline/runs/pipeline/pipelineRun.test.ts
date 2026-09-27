@@ -109,13 +109,10 @@ describe('runPipeline against a directory that already exists', () => {
     ]));
     expect(written).not.toContain('AGENTS.md');
     expect(written).not.toContain('.agents/plugins/marketplace.json');
-    // A seed, and this run was not told the directory is being born.
     expect(written).not.toContain('src/App.tsx');
-    // The README is seeded on every run, and the name it carries is the one the run was given.
     expect(await readFile(join(cwd, 'README.md'), 'utf8')).toContain('# demo-app');
   });
 
-  // A stage writes its own artifacts and no other's, so a skipped stage leaves its files unwritten.
   it('writes nothing of a stage it was told to skip', async () => {
     const written: string[] = [];
 
@@ -135,7 +132,6 @@ describe('runPipeline against a directory that already exists', () => {
     expect(await exists(join(cwd, 'eslint.config.js'))).toBe(false);
   });
 
-  // Seeded first, in the same stage, so the recorded answers and the dependencies they imply agree.
   it('records the answers it was given before the package.json they imply', async () => {
     const answers = hostedAnswersFor({
       target: 'svelte',
@@ -151,7 +147,6 @@ describe('runPipeline against a directory that already exists', () => {
   });
 });
 
-// A plain `create` makes the directory, and `--existing --seed` asks for the same in one that exists.
 describe('a project being born', () => {
   it.each([
     ['a plain create run', {}],
@@ -178,7 +173,6 @@ describe('a project being born', () => {
 });
 
 describe('stage timing', () => {
-  // Numbered by place in the whole run, so a skipped stage leaves a gap rather than renumbering the rest.
   it('numbers each stage it runs by its place among all of them', async () => {
     const started: [Stage, number, number][] = [];
 
@@ -222,10 +216,6 @@ describe('stage timing', () => {
   });
 });
 
-/**
- * One route to disk. Every file this CLI owns is an `Artifact` and reaches the project through `artifactWriter`,
- * which is what lets `sync` see the same set and what stops this file growing a branch per artifact.
- */
 describe('the pipeline as a writer', () => {
   it('puts every file it owns on disk through artifactWriter and nothing else', async () => {
     const source = await readFile(join(import.meta.dirname, 'pipelineRun.ts'), 'utf8');
@@ -235,7 +225,6 @@ describe('the pipeline as a writer', () => {
   });
 });
 
-// Both stages run a name off `PATH` with `shell: false`, so a stand-in earlier on `PATH` is the whole seam.
 describe('the stages that shell out', () => {
   const MARKER = 'invocation.txt';
 
@@ -248,7 +237,6 @@ describe('the stages that shell out', () => {
     ]);
   };
 
-  // The child reports its cwd with symlinks resolved, and macOS puts the temp directory behind one.
   const invocations = async (): Promise<string[]> => {
     return (await readFile(join(cwd, MARKER), 'utf8'))
       .trimEnd()
@@ -300,7 +288,6 @@ describe('the stages that shell out', () => {
   });
 });
 
-// husky's `prepare` exits 0 even when `.git` cannot be found, so a project can ship hooks that never run.
 describe('the repository the hooks install into', () => {
   const noticesFromAgent = async (): Promise<string[]> => {
     const notices: string[] = [];
@@ -325,7 +312,6 @@ describe('the repository the hooks install into', () => {
     expect(await exists(join(cwd, '.git'))).toBe(true);
   });
 
-  // A subdirectory of somebody's repository has no `.git` of its own; nesting one there is not done quietly.
   it('says nothing where the directory is already inside a work tree', async () => {
     await noticesFromAgent();
 
@@ -333,7 +319,6 @@ describe('the repository the hooks install into', () => {
   });
 
   it('says the hooks will not install when it cannot make one', async () => {
-    // A `.git` that is a file: `rev-parse` and `init` both fail, ordinary writes still work.
     await writeFile(join(cwd, '.git'), 'not a gitfile\n', 'utf8');
 
     expect(await noticesFromAgent()).toEqual([
@@ -341,7 +326,6 @@ describe('the repository the hooks install into', () => {
     ]);
   });
 
-  // No git at all is not a failed `git init`: nothing is attempted, and the reason is the spawn's own.
   it('skips the repository and says why when git is not on PATH, with a listener or without', async () => {
     vi.stubEnv('PATH', '');
 
@@ -362,9 +346,7 @@ describe('the repository the hooks install into', () => {
   });
 });
 
-// What the pass reports is the pass's own suite; which runs reach it is this one.
 describe('the fix stage', () => {
-  // Stage 4's repository notice is the describe above.
   const noticesFrom = async (skip: Stage[]): Promise<string[]> => {
     const notices: string[] = [];
 
@@ -384,20 +366,16 @@ describe('the fix stage', () => {
       });
   };
 
-  // The stages only add eslint to package.json, so a run with no install has no binary to fix with.
   it('runs after the others and reports the install step it is waiting on', async () => {
     expect(await noticesFrom(['install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
   });
 
-  // `--skip lint` means somebody else's rules, and fixing against those is an unasked-for edit.
   it('does not run when the lint stage was skipped', async () => {
     expect(await noticesFrom(['lint', 'install'])).toEqual([]);
   });
 });
 
-// Both routes read the directory the same way: `--existing` once wrote a second stylesheet nothing imports.
 describe('what create and sync each discover about a project', () => {
-  // A React project generated before the setup file became `.tsx` keeps `.ts`.
   it("keeps the setup spelling the project already has, rather than its target's", async () => {
     await mkdir(join(cwd, '__mocks__'), { recursive: true });
     await writeFile(join(cwd, '__mocks__/setupTests.ts'), '', 'utf8');

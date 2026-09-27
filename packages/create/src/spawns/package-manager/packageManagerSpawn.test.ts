@@ -29,7 +29,6 @@ describe('packageManagerSpawn', () => {
     expect(spawn.mock.calls).toEqual([['pnpm', ['--version'], { encoding: 'utf8' }]]);
   });
 
-  // Not on PATH is not a failure here: the refusal, and its wording, belong to `terminal/`.
   it('answers nothing where the manager is not on PATH', () => {
     spawn.mockReturnValueOnce(spawnExit(1));
 

@@ -11,8 +11,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 
-// Emitted rather than templated: browser times surfaces would be twelve templates holding one shape. Birth only,
-// since a real manifest is its permissions and store metadata within a week.
+// Emitted: browsers times surfaces would be twelve templates of one shape. Birth only.
 
 // Chrome MV3 takes a service worker; Firefox MV3 takes an event page.
 interface ServiceWorker {
@@ -38,7 +37,6 @@ interface BrowserAction {
   default_popup: string;
 }
 
-// A starting point, not the whole of MV3.
 export interface Manifest {
   manifest_version: number;
   name: string;
@@ -61,7 +59,7 @@ const backgroundFor = (browser: Browser): ServiceWorker | EventPage => {
       };
 };
 
-// `browser` is a parameter: a project shipping to both stores emits this twice from one set of answers.
+// A project shipping to both stores emits this twice from one set of answers.
 export const emitManifest = (
   answers: Answers,
   projectName: string,
@@ -71,7 +69,7 @@ export const emitManifest = (
     return null;
   }
 
-  // Empty on purpose: permissions are the project's security surface, not a template's guess.
+  // Empty on purpose: permissions are the project's security surface.
   const manifest: Manifest = {
     manifest_version: 3,
     name: projectName,
@@ -89,8 +87,7 @@ export const emitManifest = (
       : {}),
     ...(hasSurface(answers, 'popup') ? { action: { default_popup: 'index.html' } } : {}),
     ...(hasSurface(answers, 'background') ? { background: backgroundFor(browser) } : {}),
-    // The devtools page, whose only job is `devtools.panels.create`; the panel is not named here, so the Vite
-    // config gives it an input of its own.
+    // The panel is not named here, so the Vite config gives it an input of its own.
     ...(hasSurface(answers, 'devtools-panel') ? { devtools_page: 'devtools.html' } : {}),
     permissions: [],
     host_permissions: [],
@@ -99,11 +96,6 @@ export const emitManifest = (
   return `${JSON.stringify(manifest, null, 2)}\n`;
 };
 
-/**
- * One per packaged browser; the second is named for its browser, since Chrome rejects
- * `browser_specific_settings` and AMO requires it. Birth only: a manifest's permissions and store metadata are
- * the project's to keep.
- */
 export const manifestEmitter = (answers: Answers, _project: ProjectShape, name: string): Artifact[] => {
   return browsersOf(answers)
     .flatMap((browser) => {

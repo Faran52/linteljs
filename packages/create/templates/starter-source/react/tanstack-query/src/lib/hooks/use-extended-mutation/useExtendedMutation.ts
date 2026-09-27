@@ -14,14 +14,7 @@ export interface ExtendedMutationResult<TResponse, TBody> {
   readonly status: 'error' | 'idle' | 'pending' | 'success';
 }
 
-/**
- * The writing half, and the same trade as the query hook: a component says what it is sending and where, and
- * everything about caches stays here.
- *
- * `send` answers the response rather than nothing, so a form can act on what came back without reading the
- * mutation object afterwards, and it rejects with `ApiError` so the failing path is the same one the adapter
- * already defines. Whatever `invalidates` names is dropped on success, which is the step that is forgotten most.
- */
+// Whatever `invalidates` names is dropped on success, the step forgotten most.
 export const useExtendedMutation = <TResponse, TBody extends object>(
   path: string,
   options: ExtendedMutationOptions = {},

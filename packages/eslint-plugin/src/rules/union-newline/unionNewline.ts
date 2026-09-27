@@ -19,7 +19,7 @@ interface UnionNewlineOptions {
   maxGenericMembers: number;
 }
 
-// `types` is optional: ESLint 10 checks handlers against `Rule.Node`, which lacks it; the selector guarantees it.
+// `types` is optional: ESLint 10 checks handlers against `Rule.Node`, which lacks it.
 interface Composed {
   types?: RuleNode[];
 }
@@ -77,8 +77,7 @@ export const unionNewline = createRule('union-newline', {
       return COMPLEX_UNION_MEMBER_TYPES.has(member.type);
     };
 
-    // A union type is never a child of `Program`, so it always has a parent. Widened to `string`, not cast: ESLint
-    // types `parent` as ESTree, and comparing that union directly is a TS2367 the runtime does not share.
+    // Widened to `string`, not cast: comparing ESLint's ESTree `parent` union directly is a TS2367.
     const isInsideGenericArg = (node: RuleNode): boolean => {
       const parentType: string = mustFind(node.parent, 'the parent of a union type').type;
 
@@ -112,13 +111,12 @@ export const unionNewline = createRule('union-newline', {
       node: RuleNode,
       types: RuleNode[],
     ): ((fixer: Rule.RuleFixer) => IterableIterator<Rule.Fix>) => {
-      // Emitting continuation lines at column 0 puts `| string` against the margin, wrong inside an interface body.
+      // Column 0 puts `| string` against the margin, wrong inside an interface body.
       const { inner } = indentsAt(node);
 
       return function* (fixer) {
         for (const [previous, curr] of adjacentPairs(types)) {
           if (sameLine(previous, curr)) {
-            // A pipe separating two members sharing a line is always preceded by the member before it.
             const pipe = sourceCode
               .getTokenBefore(curr, (token) => {
                 return token.value === '|';

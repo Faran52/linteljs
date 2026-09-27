@@ -97,7 +97,6 @@ describe('fixPass', () => {
     ],
     ['[{"output":"a"},{"output":"b"}]', 1, 'eslint --fix: 2 files changed'],
     ['[{"filePath":"a.ts"}]', 0, 'eslint --fix: nothing to fix'],
-    // Unreadable formatter output counts as nothing fixed.
     ['{"results":[]}', 0, 'eslint --fix: nothing to fix'],
   ])('reports what eslint fixed, for %s', async (printed, exitCode, notice) => {
     await plantEslint(`console.log(${JSON.stringify(printed)});\nprocess.exit(${String(exitCode)});\n`);
@@ -111,7 +110,6 @@ describe('fixPass', () => {
     expect(notices).toEqual([notice]);
   });
 
-  // The stand-in reports a fix only when asked exactly as a real eslint must be, for the count to exist at all.
   it('runs eslint over the whole project, fixing, with the JSON formatter', async () => {
     await plantEslint([
       'const asked = process.argv.slice(2).join(" ");',

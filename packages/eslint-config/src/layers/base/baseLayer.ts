@@ -24,22 +24,17 @@ import { buildGroups } from './utils/importSortUtils';
 import type { Linter } from 'eslint';
 import type { BaseOptions, Layer } from '../../types';
 
-/**
- * TypeScript, plus the two single-file component extensions whose `<script lang="ts">` block is TypeScript in a file
- * the TypeScript globs do not match. A TypeScript-only rule is restated over this when the plugin's own preset,
- * which scopes itself to the four TypeScript extensions, would miss the SFC half.
- */
+// `<script lang="ts">` blocks in SFCs are TypeScript the TypeScript globs miss.
 const TYPED_FILES = [`**/*.{${TYPESCRIPT_EXTENSIONS},vue,svelte}`];
 
-// What git ignores, ESLint ignores: a hardcoded list only ever covers the outputs it can guess. `process.cwd()` off
-// the global so a test can replace it; this file resolves from inside `node_modules`.
+// `process.cwd()` off the global so a test can replace it; this file resolves from `node_modules`.
 const gitignored = (): Layer => {
   const path = join(process.cwd(), '.gitignore');
 
   return existsSync(path) ? [includeIgnoreFile(path, '@linteljs/base/gitignore')] : [];
 };
 
-// Nothing here is type-aware, so `base` alone works on a plain JavaScript repository.
+// Nothing here is type-aware, so `base` alone works on plain JavaScript.
 export const base = (options: BaseOptions = {}): Layer => {
   const {
     ignores,
@@ -50,8 +45,8 @@ export const base = (options: BaseOptions = {}): Layer => {
     resolver,
   } = options;
 
-  // No default `conditionNames`: `import` ahead of `types` makes `react-native` resolve to its Flow `index.js`, which
-  // import-x cannot parse. Measured: 127 findings on a clean React Native project, 111 of them left unfixed.
+  // No default `conditionNames`: `import` ahead of `types` sends `react-native` to its Flow `index.js`.
+  // Measured: 127 findings on a clean React Native project.
   const importResolver: Linter.Config['settings'] = {
     typescript: {
       alwaysTryTypes: true,
@@ -88,7 +83,7 @@ export const base = (options: BaseOptions = {}): Layer => {
       languageOptions: { parser: tseslint.parser },
     },
 
-    // Limit presets to script parsers: Angular markup crashes `@stylistic/indent` and is owned by `angular()`.
+    // Script parsers only: Angular markup crashes `@stylistic/indent`.
     ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', SCRIPT_AND_SFC_FILES),
     ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', SCRIPT_AND_SFC_FILES),
     ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', SCRIPT_AND_SFC_FILES),
@@ -113,7 +108,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         '@stylistic/semi': ['error', 'always'],
         '@stylistic/brace-style': ['error', 'stroustrup', { allowSingleLine: false }],
         'curly': ['error', 'all'],
-        // Paired with `semi`: the preset ships `semi: never` and `member-delimiter-style: none` together.
+        // The preset ships `semi: never` and `member-delimiter-style: none` together.
         '@stylistic/member-delimiter-style': ['error', {
           multiline: {
             delimiter: 'semi',
@@ -125,8 +120,7 @@ export const base = (options: BaseOptions = {}): Layer => {
           },
         }],
         '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
-        // The preset's `when: 'multiline'` caps nothing on a one-line element, so a tag grew props until `max-len`
-        // broke it and only then had to wrap. Two is the width a one-line tag stays readable at.
+        // The preset's `when: 'multiline'` caps nothing on a one-line element.
         '@stylistic/jsx-max-props-per-line': ['error', {
           maximum: {
             single: 2,
@@ -149,11 +143,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         'import-x/no-cycle': 'error',
         'import-x/no-anonymous-default-export': 'error',
 
-        /**
-         * `/compat` is the lodash-compatibility build, and a project scaffolded today has no lodash to migrate from.
-         * Its looser signatures are the whole temptation: they let a call typecheck that the strict entry refuses,
-         * and the strict entry refusing it is usually the standard library answering instead.
-         */
+        // `/compat`'s looser signatures let a call typecheck that the strict entry refuses.
         'no-restricted-imports': ['error', {
           patterns: [
             {
@@ -178,11 +168,7 @@ export const base = (options: BaseOptions = {}): Layer => {
           args: 'after-used',
         }],
 
-        /**
-         * `typescript-eslint` owns both, and sonarjs's copies report the same defect a second time once
-         * `typescript()` is composed. Off here rather than there because both need type information to fire
-         * (`requiresTypeChecking`), so on a JavaScript-only stack where `base` runs alone they see nothing either way.
-         */
+        // `typescript-eslint` owns both; sonarjs's copies report the same defect twice once `typescript()` is composed.
         'sonarjs/no-array-delete': 'off',
         'sonarjs/prefer-regexp-exec': 'off',
 
@@ -196,11 +182,7 @@ export const base = (options: BaseOptions = {}): Layer => {
       },
     },
 
-    /**
-     * Every `language: 'typescript'` rule the plugin publishes, restated over the SFC extensions its own preset
-     * cannot reach: that preset scopes itself to the four TypeScript extensions. Over `TYPED_FILES` rather than the
-     * script globs, since on a `.js` file they match nothing. `base.test.ts` derives the list from the registry.
-     */
+    // Restated over the SFC extensions the plugin's own preset cannot reach.
     {
       name: '@linteljs/base/typescript-rules',
       files: TYPED_FILES,
@@ -211,15 +193,14 @@ export const base = (options: BaseOptions = {}): Layer => {
       },
     },
 
-    // A script's stdout is its output. Without this every reference repo turned `no-console` off for `**/*.js`.
+    // A script's stdout is its output.
     {
       name: '@linteljs/base/scripts',
       files: [`scripts/**/*.{${SCRIPT_EXTENSIONS}}`],
       rules: { 'no-console': 'off' },
     },
 
-    // `code-eval` is a hotspot with no clean state, and a fake of `inspectedWindow.eval` has to execute a string.
-    // Fixtures only, at whatever depth a package keeps its `__mocks__/`; `no-implied-eval` stays on even there.
+    // A fake of `inspectedWindow.eval` has to execute a string; `no-implied-eval` stays on.
     {
       name: '@linteljs/base/fixtures',
       files: [`**/__mocks__/**/*.{${SCRIPT_EXTENSIONS}}`],

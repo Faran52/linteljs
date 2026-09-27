@@ -1,5 +1,4 @@
-// Mutation testing, run as `pnpm mutation`, reports in `reports/mutation`. `.mjs` and a named plugin for the reasons
-// `packages/eslint-plugin/stryker.config.mjs` records. The runner is patched, under `patchedDependencies`.
+// `.mjs` and a named plugin for the reasons `packages/eslint-plugin/stryker.config.mjs` records.
 import {
   existsSync,
   mkdirSync,
@@ -8,8 +7,7 @@ import {
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Level with this package, two below the root: suites read `../../package.json` and `../eslint-config` off their own
-// path, which the default sandbox inside this package breaks. The links stand in for `packages/`.
+// Two below the root: suites read `../../package.json` off their own path, which the default sandbox breaks.
 const TEMP_DIR = fileURLToPath(new URL('../../.stryker-tmp', import.meta.url));
 
 mkdirSync(TEMP_DIR, { recursive: true });
@@ -20,29 +18,24 @@ for (const sibling of ['eslint-config', 'eslint-plugin']) {
   }
 }
 
-// @type {import('@stryker-mutator/api/core').PartialStrykerOptions}
 const config = {
   packageManager: 'pnpm',
   testRunner: 'vitest',
   plugins: ['@stryker-mutator/vitest-runner'],
   reporters: ['html', 'json', 'clear-text', 'progress'],
   tempDirName: TEMP_DIR,
-  // Stryker prefixes an `extends` leaving the package with `../..`, assuming a sandbox two deeper than this one.
-  // Naming no file keeps `../../tsconfig.json` as written, which from this sandbox is already right.
+  // Stryker prefixes an `extends` with `../..`; naming no file keeps `../../tsconfig.json` as written.
   tsconfigFile: 'none',
 
-  // A kill matrix rather than a score: every covering test runs, so a test that only repeats another's kills shows.
-  // Module-level code lands as static coverage and runs every related suite, so read those survivors by hand.
+  // Every covering test runs, so a test that only repeats another's shows.
   coverageAnalysis: 'perTest',
   disableBail: true,
 
-  // All of `src` is 6986 mutants: under five hours with the static target records skipped (`--ignoreStatic` on
-  // `src/targets`), an estimated seven more with them. `--mutate` narrows a run.
+  // All of `src` is 6986 mutants, over five hours; `--mutate` narrows a run.
   mutate: [
     'src/**/*.ts',
     '!src/**/*.test.ts',
     '!src/**/types.ts',
-    // The harness only; `e2e/matrix/` is pure and its suite runs here, so it is mutated with the rest.
     '!src/pipeline/e2e/*.ts',
     '!src/pipeline/e2e/registry/**',
     '!src/pipeline/e2e/runner/**',
@@ -50,12 +43,11 @@ const config = {
     '!src/pipeline/e2e/utils/**',
   ],
 
-  // Suites here spawn git and node, which a loaded machine slows past the default margin.
+  // Suites spawn git and node, which a loaded machine slows past the default.
   timeoutMS: 30000,
   // Measured on ten cores: six is as fast as nine, and nine turned kills into timeouts.
   concurrency: 6,
 
-  // A run of hours resumes from what it saved on an interrupt rather than starting over.
   incremental: true,
   incrementalFile: 'node_modules/.cache/stryker-incremental.json',
 };

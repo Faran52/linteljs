@@ -95,8 +95,7 @@ export const nativeAccessibleName = createRule('native-accessible-name', {
           return;
         }
 
-        // Text below the element is a name already: React Native builds a missing label by accumulating the Text
-        // nodes underneath, which is what makes `<Pressable><Text>Save</Text></Pressable>` correct as written.
+        // React Native builds a missing label from the Text nodes underneath.
         if (!isInteractive(element, touchables) || hasTextContent(element)) {
           return;
         }

@@ -2,7 +2,6 @@
 import { styles } from './styles';
 
 interface Props {
-  // A form's submit is the one that is not a plain button; everything else presses and does something now.
   type?: 'button' | 'submit';
   disabled?: boolean;
 }

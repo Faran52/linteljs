@@ -1,8 +1,4 @@
-/**
- * Around a shell command: warns, never blocks, when eslint runs without `--fix`. One run with `--fix` fixes what it
- * can and still reports the rest, so a bare run only costs a second one. Claude Code and Codex read the warning before
- * the command runs; Cursor and Copilot take added context only after it. Stdout is the decision JSON or nothing.
- */
+// Warns, never blocks: one run with `--fix` still reports the rest, so a bare run only costs a second.
 import {
   commandName,
   parseCommand,

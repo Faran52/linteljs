@@ -6,10 +6,6 @@ import { ROUTES } from '../../../pages/routes';
 
 import { AppHeader } from './AppHeader';
 
-/*
- * Framework mode has no `App` for the header's suite to ride along with, so it is stood up on its own. `NavLink`
- * needs a router above it and `MemoryRouter` is the one that needs no browser, which is all the header asks for.
- */
 describe('AppHeader', () => {
   it('names the project and links every page on the one route list', () => {
     render(
@@ -25,7 +21,6 @@ describe('AppHeader', () => {
     }
   });
 
-  // A link is an anchor and the router marks the one you are on, which is what a screen reader reads out.
   it('marks the page it is on', () => {
     render(
       <MemoryRouter initialEntries={['/about']}>

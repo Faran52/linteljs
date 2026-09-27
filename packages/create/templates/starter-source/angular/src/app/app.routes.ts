@@ -4,8 +4,7 @@ import { Version } from './version/version';
 
 import type { Routes } from '@angular/router';
 
-// One route per page, read by the router alone: the header reads `PAGES`, which carries the same paths and the
-// labels a route has no room for.
+// The header reads `PAGES`, which carries the same paths and the labels a route has no room for.
 export const routes: Routes = [
   {
     path: '',

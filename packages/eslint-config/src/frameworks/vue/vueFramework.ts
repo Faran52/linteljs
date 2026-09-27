@@ -15,8 +15,7 @@ export const vue = (): Layer => {
   return [
     ...presetOf(vuePlugin.configs['flat/recommended'], 'vue/flat/recommended'),
 
-    // `eslint-plugin-vue` has no accessibility rule. Ahead of the block below: the preset sets its own parser and
-    // placed later would drop the `projectService` there.
+    // Ahead of the block below: the preset sets its own parser, and later it would drop `projectService`.
     ...presetOf(vueA11y.configs['flat/recommended'], 'vuejs-accessibility/flat/recommended', VUE_FILES),
 
     {
@@ -26,24 +25,18 @@ export const vue = (): Layer => {
         parserOptions: {
           parser: tseslint.parser,
           extraFileExtensions: ['.vue'],
-          // `typescript()` scopes `projectService` to `.ts`, while `strictTypeChecked` enables its rules everywhere.
-          // No `loadTypeScriptPlugins`; see `sfc-import-seam` below.
+          // `typescript()` scopes `projectService` to `.ts`; see `sfc-import-seam` below.
           projectService: true,
         },
       },
       rules: {
-        /*
-         * `for` alone, where the rule's default demands nesting as well. No accessibility guidance asks for both:
-         * a label bound by `for` to a control's id is the documented association, and demanding the control also
-         * sit inside the label rules out every layout that puts anything between them, an error message included.
-         */
+        // `for` alone: demanding nesting too rules out any layout with an error message between label and control.
         'vuejs-accessibility/label-has-for': ['error', { required: { every: ['id'] } }],
       },
     },
 
     {
-      // An SFC import has no type for typescript-eslint; `vue-tsc --noEmit` covers these two. Measured alternatives:
-      // `@vue/typescript-plugin` trades 2 findings for 376, `declare module '*.vue'` types every SFC as `any`.
+      // `vue-tsc --noEmit` covers SFC imports. Measured: `@vue/typescript-plugin` trades 2 findings for 376.
       name: '@linteljs/vue/sfc-import-seam',
       files: ['**/*.ts'],
       rules: {

@@ -1,11 +1,4 @@
-/**
- * Runs the packed plugin against every ESLint major `peerDependencies` claims, since the suite runs one. Each major
- * gets its own install and the config format it reads: `.eslintrc.json` on 5 to 8, flat config on 9 and 10, so both
- * halves of `configs` meet a real consumer. Every major must then emit byte-identical fixed text. Network and
- * minutes, so it is not in `pnpm check`; run it before a release.
- *
- * Usage: tsx scripts/release/compat-matrix/compatMatrixRelease.ts
- */
+// Every major must emit byte-identical fixed text. Network and minutes, so not in `pnpm check`.
 import { execFile } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -114,7 +107,7 @@ const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean
   ];
 };
 
-// Each major is its own install and its own processes, so all six run at once.
+// Each major is its own install, so all six run at once.
 const check = async (major: Major, tarball: string): Promise<Outcome> => {
   try {
     const dir = await prepare(major, tarball);
@@ -153,8 +146,7 @@ const check = async (major: Major, tarball: string): Promise<Outcome> => {
   }
 };
 
-// The packed tarball, since an entry missing from `files` or an `exports` map resolving only here is what a consumer
-// meets and a matrix over source cannot.
+// The packed tarball: a missing `files` entry is what a consumer meets and a matrix over source cannot.
 const tarball = packTarball(pkgDir, matrixDir);
 const checks = MAJORS
   .map(async (major) => {
@@ -167,7 +159,6 @@ const failures = outcomes
     return outcome.failures;
   });
 
-// Byte-identical to the newest major, which the unit suite pins.
 for (const [slot, label] of [[0, 'javascript'], [1, 'typescript']] as const) {
   const reference = outcomes.at(-1)?.fixes[slot];
 

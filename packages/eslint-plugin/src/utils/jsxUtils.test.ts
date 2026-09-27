@@ -24,9 +24,6 @@ import {
   propertiesOf,
 } from './jsxUtils.ts';
 
-// Driven with hand-built nodes of the shapes a parse hands over, so every arm is reached here rather than through a
-// rule's suite; the declining arms are reachable from a direct call alone.
-
 describe('attributesOf', () => {
   it.each([
     ['a node carrying no attributes', { type: 'Identifier' }],
@@ -40,8 +37,6 @@ describe('attributesOf', () => {
 
   it('answers the list on a real opening element', () => {
     const attributes = [{ type: 'JSXSpreadAttribute' } as const];
-    // Bound first rather than passed inline: `attributesOf` takes the two-field node every rule narrows from,
-    // and a fresh literal carrying `attributes` trips the excess-property check.
     const node = {
       type: 'JSXOpeningElement',
       attributes,
@@ -86,7 +81,6 @@ describe('elementNameOf', () => {
     expect(elementName).toBe('Pressable');
   });
 
-  // The last part, so `Animated.Image` is checked as an `Image`.
   it('reads the last part of a qualified name', () => {
     const elementName = elementNameOf({
       type: 'JSXMemberExpression',
@@ -143,7 +137,6 @@ describe('literalValueOf', () => {
     name: 'accessible',
   } as const;
 
-  // `<View accessible />` is `accessible={true}`, which is the shape most of these rules key on.
   it('reads a bare attribute as true', () => {
     const literal = literalValueOf({
       type: 'JSXAttribute',
@@ -182,7 +175,6 @@ describe('literalValueOf', () => {
     expect(literal).toBe(false);
   });
 
-  // Unreadable rather than absent: a value computed at runtime is the caller's to get right.
   it('answers undefined for a value computed at runtime', () => {
     const literal = literalValueOf({
       type: 'JSXAttribute',
@@ -284,7 +276,6 @@ describe('keyNameOf', () => {
 });
 
 describe('isHidden', () => {
-  // A bare `aria-hidden` is `true`; only a literal `false` leaves the element reachable.
   it.each([
     ['a bare aria-hidden', undefined, true],
     ['aria-hidden={false}', {
@@ -323,7 +314,6 @@ describe('isHidden', () => {
     expect(hidden).toBe(true);
   });
 
-  // The other three values leave the element reachable, so they are not this rule's business.
   it('leaves the other importantForAccessibility values alone', () => {
     const hidden = isHidden([{
       type: 'JSXAttribute',
@@ -341,8 +331,6 @@ describe('isHidden', () => {
   });
 });
 
-// A parse always fills these three in, so only a direct call reaches the empty answer. They exist so that
-// assumption sits in one tested place instead of as a `?? []` in each rule.
 describe('the array accessors', () => {
   it('reads an element with no opening element as having no attributes', () => {
     expect(elementAttributesOf({ type: 'JSXElement' })).toEqual([]);
@@ -358,7 +346,6 @@ describe('the array accessors', () => {
 });
 
 describe('descendantElements', () => {
-  // Text and containers are walked through rather than listed: only an element can be a control.
   it('lists the elements at every depth and nothing else', () => {
     const inner = { type: 'JSXElement' };
     const outer = {
@@ -393,7 +380,6 @@ describe('hasTextContent', () => {
     expect(hasTextContent({ type: 'JSXElement' })).toBe(false);
   });
 
-  // A parsed `JSXText` always carries its text, so the empty-string fallback is reachable from here alone.
   it('reads a text child carrying no text as silent', () => {
     const hasText = hasTextContent({
       type: 'JSXElement',
@@ -403,7 +389,6 @@ describe('hasTextContent', () => {
     expect(hasText).toBe(false);
   });
 
-  // A container holds a value this cannot read, so it counts as text unless it is the empty `{}`.
   it.each([
     ['visible words', [{
       type: 'JSXText',

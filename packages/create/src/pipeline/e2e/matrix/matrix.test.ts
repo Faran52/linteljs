@@ -20,18 +20,12 @@ import { targetCases } from './matrix';
 
 import type { Answers } from '@config/types';
 
-// Only the answers are read, so the cases arrive as the narrowest thing that carries them.
 interface Answered {
   answers: Answers;
 }
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-/**
- * Derived here rather than imported, so this is a second opinion on what a pair is instead of a restatement of the
- * generator's own. A bug in `axesOf` that dropped an axis would be invisible to a test that shared it, and one did:
- * both copies once left out `styling` and `data`, so the vue-demi pair was never promised.
- */
 const pairsOf = (answers: Answers): string[] => {
   const axes = Object.entries({
     packageManager: answers.packageManager,
@@ -93,13 +87,11 @@ const accepts = (answers: Answers): boolean => {
   }
 };
 
-// Every case of every target, before the reduction.
 const everyTargetsCases = (): Answered[] => {
   return TARGET_IDS.flatMap(everyCase);
 };
 
 describe('targetCases', () => {
-  // The property the reduction rests on: every defect this suite has found was a two-way interaction.
   it('covers every pair of answers the full enumeration reaches', () => {
     for (const target of TARGET_IDS) {
       const covered = coveredBy(targetCases(target));
@@ -125,8 +117,6 @@ describe('targetCases', () => {
     expect(every).toBeGreaterThan(reduced * 3);
   });
 
-  // Named by the answers that produced each defect, so a reduction that lost one fails here rather than in a run of
-  // hours.
   it('keeps the combination behind every defect the matrix has found', () => {
     const has = (target: (typeof TARGET_IDS)[number], match: (answers: Answers) => boolean): boolean => {
       return targetCases(target)
@@ -158,7 +148,6 @@ describe('targetCases', () => {
     })).toBe(true);
   });
 
-  // Through the config parser, which is what refuses a combination the prompt would never offer.
   it('enumerates only answers the CLI accepts', () => {
     for (const { label, answers } of everyTargetsCases()
       .map((item) => {
@@ -171,11 +160,6 @@ describe('targetCases', () => {
     }
   });
 
-  /*
-   * The one axis whose offer depends on another answer: a form library binds a framework, and a hosted framework
-   * decides which one an Astro or extension project renders. Judged by the parser rather than by the generator's own
-   * reading of the target record, and in both directions.
-   */
   it('offers a form library exactly where the CLI accepts one', () => {
     for (const target of TARGET_IDS) {
       const cases = everyCase(target);
@@ -205,7 +189,6 @@ describe('targetCases', () => {
     }
   });
 
-  // `exactOptionalPropertyTypes` holds an unset answer to absent, and so does every reader of a parsed config.
   it('leaves an unset answer out rather than setting it to undefined', () => {
     for (const { answers } of everyTargetsCases()) {
       const unset = Object.entries(answers)
@@ -267,7 +250,6 @@ describe('targetCases', () => {
     })).toEqual(all(valuesOf(ANSWERS.data.values), true));
   });
 
-  // A multi-select is never combined, so every case carries a target's heaviest dependency set.
   it('carries every multi-select at its full value, and surfaces only where a target has them', () => {
     for (const { answers } of everyTargetsCases()) {
       expect(answers.libraries).toEqual(valuesOf(ANSWERS.libraries.values));
@@ -279,7 +261,6 @@ describe('targetCases', () => {
     }
   });
 
-  // Every axis that varies, in a fixed order: the label names the case and the directory it runs in.
   it('labels each case by every answer that can vary on its target', () => {
     for (const { label, answers } of TARGET_IDS.flatMap(targetCases)) {
       const record = targetFor(answers);

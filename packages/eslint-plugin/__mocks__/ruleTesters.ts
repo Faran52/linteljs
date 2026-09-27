@@ -17,8 +17,7 @@ export const tsRuleTester = new RuleTester({
   },
 });
 
-// TypeScript with JSX enabled: prefer-arrow-functions needs this to disambiguate a generic
-// parameter from a JSX tag, and prefer-destructured-props for its JSX fixtures.
+// JSX on: prefer-arrow-functions needs it to tell a generic parameter from a JSX tag.
 export const tsxRuleTester = new RuleTester({
   languageOptions: {
     parser: tseslint.parser,
@@ -30,7 +29,6 @@ export const tsxRuleTester = new RuleTester({
   },
 });
 
-// A `.svelte` file, whose `Program.body` holds each `<script>` as an element with its statements beneath it.
 export const svelteRuleTester = new RuleTester({
   files: ['**/*.svelte'],
   languageOptions: {

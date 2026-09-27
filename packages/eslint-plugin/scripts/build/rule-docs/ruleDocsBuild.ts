@@ -1,5 +1,4 @@
-// Flattens `src/rules/<id>/README.md` into `docs/rules/<id>.md` for the tarball. Every version since 1.0.0 packed
-// `docs/`, and `files` does not pack `src`, so the published path is generated from the doc beside its rule.
+// Every version since 1.0.0 packed `docs/`, and `files` does not pack `src`.
 import {
   mkdirSync,
   readdirSync,
@@ -29,8 +28,7 @@ const ruleIds = readdirSync(rulesDir, { withFileTypes: true })
     return entry.name;
   });
 
-// A sibling link `](../other-rule)` would 404 once flattened, so it becomes the file. Any other relative link
-// points out of `src/`, meaningless in the tarball and worth failing on.
+// A sibling link would 404 once flattened; any other relative link points out of `src/`.
 const relink = (text: string, id: string): string => {
   return text
     .replace(/]\(\.\.\/([a-z-]+)\)/g, (match: string, target: string) => {

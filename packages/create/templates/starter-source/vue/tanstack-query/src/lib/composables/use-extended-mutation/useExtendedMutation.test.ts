@@ -91,7 +91,6 @@ describe('useExtendedMutation', () => {
     await expect(mutation.send({ message: 'no' })).rejects.toMatchObject({ status: 422 });
   });
 
-  // The step that is forgotten most: a list that does not drop its cache shows what was there before the write.
   it('drops the caches it was told to once the write succeeds', async () => {
     answering({ status: 'accepted' });
 

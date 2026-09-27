@@ -32,15 +32,13 @@ import { ANSWER_KEYS, RUN_CANCELLED_MESSAGE } from './constants';
 
 import type { Answers } from '@config/types';
 
-// The four value-bearing kinds `askAnswer` dispatches on. `list` and `map` carry no `prompt` on any record, both
-// being hand-edited only, so neither reaches `askAnswer`.
+// `list` and `map` carry no `prompt`, so neither reaches `askAnswer`.
 type PromptableRecord
   = ChoiceRecord
     | MultiRecord
     | OptionalChoiceRecord
     | OptionalMultiRecord;
 
-// What a question offers: the value written to the config, and the two display halves a person reads.
 export interface PromptOption {
   value: string;
   label: string;
@@ -62,25 +60,18 @@ export interface MultiSelectRequest {
 
 export interface TextRequest {
   message: string;
-  // The message to show instead of accepting the value, or `undefined` where it is acceptable.
   validate: (value: string) => string | undefined;
 }
 
-/**
- * The questionnaire's own vocabulary rather than its library's, so the library is one file's business. Fixed at
- * `string` because a question's values are only a union at the call site; `askChoice` and `askMulti` recover the
- * literal union with the one cast the standard grants.
- */
+// `string` because a question's values are only a union at the call site.
 export interface Prompter {
   select: (request: SelectRequest) => Promise<string | symbol>;
   multiselect: (request: MultiSelectRequest) => Promise<string[] | symbol>;
   text: (request: TextRequest) => Promise<string | symbol>;
-  // Ctrl+C resolves a cancel symbol instead of a value; `unwrap` tells the two apart with this.
   isCancel: (value: string | readonly string[] | symbol) => value is symbol;
 }
 
 export interface AskInput {
-  // Already known (argument or directory name): the question is not asked.
   name?: string | undefined;
 }
 
@@ -89,7 +80,6 @@ export interface Asked {
   answers: Answers;
 }
 
-// Display only: the persisted value is never the label or the hint.
 interface Described {
   label: string;
   hint?: string;
@@ -97,14 +87,10 @@ interface Described {
 
 const CANCELLED = Symbol('cancelled');
 
-// Its own class so `main` recognises a cancel by one `instanceof` rather than by a tag on a plain `Error`.
+// Its own class so `main` recognises a cancel by one `instanceof`.
 export class RunCancelled extends Error {}
 
-/**
- * `@inquirer/prompts` rejects with an `ExitPromptError` on Ctrl+C where this interface resolves a symbol, so the
- * throw is turned back into one here. Matched on the name rather than the class: the error is constructed inside
- * `@inquirer/core`, which is a transitive dependency and not ours to import.
- */
+// Matched on the name: the error is constructed in `@inquirer/core`, a transitive dependency.
 const cancellable = async <T>(asked: Promise<T>): Promise<T | symbol> => {
   try {
     return await asked;
@@ -118,7 +104,6 @@ const cancellable = async <T>(asked: Promise<T>): Promise<T | symbol> => {
   }
 };
 
-// The real terminal; tests substitute their own.
 export const inquirerPrompter: Prompter = {
   select: async ({
     message,
@@ -128,7 +113,7 @@ export const inquirerPrompter: Prompter = {
     return await cancellable(select({
       message,
       default: initialValue,
-      // Every option on screen: the default window is seven, which hid the last two frameworks behind a scroll.
+      // The default window is seven, which hid the last two frameworks behind a scroll.
       pageSize: Math.max(options.length, 1),
       choices: options
         .map((option) => {
@@ -203,12 +188,10 @@ const askChoice = async <T extends string>(
     options,
   });
 
-  // `Prompter` erases every choice to `string`; a cast onto the bare generic parameter is the one the standard grants.
+  // The one cast the standard grants, onto the bare generic parameter.
   return unwrap(prompter, answer) as T;
 };
 
-// `required` is the prompt's own gate on an empty submission. Filtering `choices` recovers `T` and fixes
-// the answer's order.
 const askMulti = async <T extends string>(
   prompter: Prompter,
   message: string,
@@ -251,11 +234,7 @@ const askName = async (prompter: Prompter): Promise<string> => {
   return unwrap(prompter, answer);
 };
 
-/**
- * The values a record offers here, narrowed by `only`: what a target never asks for is never shown, and neither is
- * what another answer has already ruled out. `rtk-query` is the second case, being legal only with the Redux store
- * that ships it, and the parser refuses the same value through the same predicate.
- */
+// The parser refuses the same values through the same predicate.
 const offeredValuesOf = <V extends string>(
   values: Record<V, ValueRecord>,
   target: TargetRecord,
@@ -267,7 +246,6 @@ const offeredValuesOf = <V extends string>(
     });
 };
 
-// A record's own values, described the way `askChoice`/`askMulti` want: both already carry `label` and `hint`.
 const describeFrom = <V extends string>(values: Record<V, ValueRecord>) => {
   return (value: V): Described => {
     return values[value];
@@ -277,7 +255,6 @@ const describeFrom = <V extends string>(values: Record<V, ValueRecord>) => {
 const askAnswer = async (
   prompter: Prompter,
   record: PromptableRecord,
-  // Already checked by the caller: only a record with a `prompt` reaches here.
   message: string,
   target: TargetRecord,
   answered: Answers,
@@ -308,13 +285,12 @@ const askAnswer = async (
     case 'optionalMulti': {
       const offered = offeredValuesOf(record.values, target, answered);
 
-      // Required when asked, though a config may omit it: an extension with no surface has a manifest naming nothing.
+      // Required when asked: an extension with no surface has a manifest naming nothing.
       return await askMulti(prompter, message, offered, [], true, describeFrom(record.values));
     }
   }
 };
 
-// The `Answers` slot-and-askedWhen checks want, folding what has been answered so far over the defaults.
 const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers => {
   return {
     ...DEFAULT_ANSWERS,
@@ -322,12 +298,7 @@ const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers
   } as Answers;
 };
 
-/**
- * One record's worth of the questionnaire: `undefined` when its own `prompt` is absent, the unasked value when a
- * `slot` or an `askedWhen` refuses it for the target and the answers so far, and what was asked otherwise.
- * `targetFor` is recomputed on every call, which is what lets `hostedFramework` reach the Astro and extension
- * builders by the time `form` reads `target.framework`.
- */
+// `targetFor` is recomputed per call, so `hostedFramework` reaches the builders by the time `form` reads it.
 const askIfNeeded = async (
   prompter: Prompter,
   answered: Partial<Record<AnswerKey, JsonValue>>,
@@ -347,15 +318,15 @@ const askIfNeeded = async (
   }
 
   if (record.askedWhen !== undefined && !record.askedWhen(soFarAnswered(answered))) {
-    // Only `plugins` skips this way today: a multi, and a skip means none chosen, not the default three.
+    // A skip means none chosen, not the default three.
     return [];
   }
 
-  // `list` and `map` carry no `prompt`, which the check above already refused; neither reaches `askAnswer`.
+  // The check above already refused `list` and `map`.
   return await askAnswer(prompter, record as PromptableRecord, message, target, soFarAnswered(answered));
 };
 
-// `undefined` means omitted, not written: `exactOptionalPropertyTypes` bans setting an optional property to it.
+// `exactOptionalPropertyTypes` bans setting an optional property to `undefined`.
 const writeIfPresent = (
   answered: Partial<Record<AnswerKey, JsonValue>>,
   key: AnswerKey,
@@ -366,12 +337,7 @@ const writeIfPresent = (
   }
 };
 
-/**
- * In insertion order: project name, then every record `askIfNeeded` has an answer for.
- *
- * Accumulates into a plain object and hands it to `parseLinteljsConfig`, the same gate a `--flag` answer passes
- * through, so the questionnaire can offer nothing `refuseMisfit` would refuse and needs no cast onto `Answers`.
- */
+// Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
 export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Asked> => {
   const name = input.name ?? await askName(prompter);
   const answered: Partial<Record<AnswerKey, JsonValue>> = {};
@@ -387,7 +353,6 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
     ...answered,
   }));
 
-  // The envelope belongs to the file, not the answers a caller asked for.
   return {
     name,
     answers: omit(config, ['$schema', 'schemaVersion']),

@@ -34,7 +34,6 @@ describe('nodeSpawn', () => {
     expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), ['--version'], { encoding: 'utf8' });
   });
 
-  // The case this exists for: bun running the CLI on a machine with no Node at all.
   it('answers nothing, and spawns nothing, where PATH carries no node', () => {
     vi.stubEnv('PATH', '');
 

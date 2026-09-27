@@ -18,26 +18,14 @@ import {
 
 import type { StarterFile, TargetRecord } from '../types';
 
-/*
- * Vue's meta-framework, and a target rather than a mode on `vue` for the reason `docs/DESIGN.md` records: Vue asks no
- * router question and no mode question, so there is no axis to hang it off, and a mode would branch in every
- * field. What it shares with Vue it takes from Vue's own tree rather than a copy.
- *
- * `srcDir` is set to `src/` in `nuxt.config.ts`. Nuxt 4 defaults to `app/`, and one line there is what keeps every
- * glob this CLI writes reading a single source root.
- */
+// A target rather than a mode on `vue`: `docs/DESIGN.md` records why.
 export const nuxtTarget: TargetRecord = {
   id: 'nuxt',
   framework: 'nuxt',
-  // No `index.html`: Nuxt renders the document, and there is no entry for one to point at.
   html: false,
   sfcExtension: 'vue',
-  /*
-   * Declared so the dependency is installed and the question is asked, with no counter module yet: this target
-   * ships the pages and not the store demo. The same recorded gap astro, webextension and angular carry on `form`.
-   */
+  // Installed with no counter module yet: the same recorded gap astro, webextension and angular carry on `form`.
   stores: ['pinia', 'tanstack-store'],
-  // `.nuxt/` is the generated types and the tsconfigs they are read through; `.output/` is what `nuxt build` writes.
   ignores: ['.nuxt/**', '.output/**'],
   naming: sfcNaming('vue'),
   // A dynamic route is `[slug].vue`, so a directory may be one too.
@@ -65,32 +53,23 @@ export const nuxtTarget: TargetRecord = {
   ],
   tailwindTheme: '../styles/theme.css',
   nuxtProject: true,
-  // Nuxt owns Vite internally, so there is no `vite.config.ts` for this CLI to write, and no `vitePlugin`.
-  // Vitest runs outside Nuxt's own build, so the SFC transform has to be named for it.
+  // Vitest runs outside Nuxt's build, so the SFC transform has to be named for it.
   vitestPlugin: {
     imports: ["import vue from '@vitejs/plugin-vue';"],
     calls: ['vue()'],
   },
-  /*
-   * Extends the config Nuxt generates, which is where its own `#shared`, `#server` and component paths live, and
-   * declares no `paths` of its own so that merged set survives. A project's own aliases reach it the other way,
-   * through `alias` in `nuxt.config.ts`, which Nuxt merges rather than replaces. `nuxt typecheck` reads this file.
-   */
+  // No `paths` of its own, so Nuxt's merged `#shared` and `#server` set survives.
   tsconfig: {
     jsx: 'preserve',
     extends: './.nuxt/tsconfig.app.json',
-    /*
-     * `.nuxt/nuxt.d.ts` is named because an extending config replaces `include` rather than adding to it, and that
-     * file is where the `*.vue` module shim lives. Without it a relative import of a component resolves to
-     * nothing, which is one `import-x/no-unresolved` per single-file component in the project.
-     */
+    // An extending config replaces `include`, and `.nuxt/nuxt.d.ts` holds the `*.vue` module shim.
     include: ['**/*.vue', '.nuxt/nuxt.d.ts'],
     dropsPaths: true,
   },
   starterFiles: [
     ...mockFiles(false),
     ...componentStyles(COMPONENTS),
-    // Solid writes the `class` spelling these take; Vue renames two of the four, so each carries its own path.
+    // Vue renames two of the four, so each carries its own path.
     ...componentStyleModules('solid', COMPONENTS),
     ...accessorFiles(ACCESSORS, {
       shared: 'vue',
@@ -107,7 +86,6 @@ export const nuxtTarget: TargetRecord = {
           shared: true,
         };
       }),
-    // Vue's own views, verbatim: the same markup renders the same page, so it is the same bytes.
     ...FROM_VUE
       .map((target): StarterFile => {
         return {
@@ -118,7 +96,6 @@ export const nuxtTarget: TargetRecord = {
     {
       target: 'src/views/HomeView.vue',
     },
-    // Tailwind reads the tokens through its own names, which is what `@theme` in this file maps.
     {
       target: 'src/styles/theme.css',
       when: (answers) => {
@@ -167,11 +144,7 @@ export const nuxtTarget: TargetRecord = {
       covers: 'src/pages/version.vue',
     },
   ],
-  /*
-   * Nuxt's own CLI owns all three. `prepare` writes `.nuxt/`, which is where the generated tsconfigs and the route
-   * types live, so nothing can typecheck before it has run: it is the postinstall for the same reason SvelteKit's
-   * `svelte-kit sync` is.
-   */
+  // `nuxt prepare` writes `.nuxt/`, so nothing typechecks before it: it is the postinstall.
   build: 'nuxt build',
   extraScripts: {
     dev: 'nuxt dev',
@@ -182,8 +155,7 @@ export const nuxtTarget: TargetRecord = {
   prepare: 'nuxt prepare',
   testDevDependencies: PARTS.vue.testDevDependencies,
   dependencies: ['nuxt', ...PARTS.vue.dependencies, 'vue-router'],
-  // `rolldown` is nuxt 4.5's own required peer, and `vite` that of `@vitejs/plugin-vue` and nuxt's devtools; yarn
-  // installs no peer the project does not name.
+  // yarn installs no peer the project does not name.
   devDependencies: [...PARTS.vue.devDependencies, '@vitejs/plugin-vue', 'rolldown', 'vite'],
   // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
   allowBuilds: ['vue-demi', 'better-sqlite3', 'esbuild'],

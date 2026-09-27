@@ -6,10 +6,7 @@ import { useContactForm } from './useContactForm';
 
 import type { ReactNode } from 'react';
 
-/*
- * A client component: a form is state. One page whichever form library was chosen and whichever data layer submits
- * it, because the binding lives in `useContactForm` and the submit in `lib/apis/contact`.
- */
+// A client component: a form is state.
 const ContactPage = (): ReactNode => {
   const {
     fields,

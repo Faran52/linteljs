@@ -2,17 +2,8 @@ import * as stylex from '@stylexjs/stylex';
 
 import { tokens } from '../../../styles/tokens.stylex';
 
-/*
- * The button's styles, beside the component the way its stylesheet was, and compiled to atomic classes at build
- * time, so under this answer `Button.css` does not ship at all.
- *
- * `:hover` and `:disabled` are two values of one property rather than two rules. The stylesheet needs
- * `:hover:not(:disabled)` to keep a disabled button from lifting under the pointer; here it does not, because
- * StyleX orders `:disabled` after `:hover` and the last matching value wins.
- *
- * `border` and `outline` are written longhand. StyleX refuses a shorthand whose longhand could be set elsewhere
- * and contradict it, which is the whole class of bug that makes CSS specificity worth escaping.
- */
+// StyleX orders `:disabled` after `:hover`, so no `:not(:disabled)`.
+// Longhand: StyleX refuses a shorthand a longhand elsewhere could contradict.
 const sheet = stylex.create({
   button: {
     paddingBlock: '0.4375rem',

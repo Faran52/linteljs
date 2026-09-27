@@ -10,8 +10,6 @@ import {
   sfcNaming,
 } from './namingUtils';
 
-// The globs these compose are pinned character for character, measured against `micromatch@4.0.8`, which is what
-// `check-file` matches with, so an edit here is a policy change rather than a refactor.
 describe('scriptKeys', () => {
   it('reaches every script under src/ where no route directory is named', () => {
     expect(scriptKeys()).toStrictEqual({ 'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE' });

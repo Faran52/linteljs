@@ -15,7 +15,6 @@ describe('stylingPlugin', () => {
     });
   });
 
-  // The package's own Vite adapter, whose `generateBundle` writes the CSS, given the type its `=> any` withholds.
   it('runs stylex through its own vite adapter, typed, in css layers', () => {
     expect(stylingPlugin('stylex')).toEqual({
       imports: [

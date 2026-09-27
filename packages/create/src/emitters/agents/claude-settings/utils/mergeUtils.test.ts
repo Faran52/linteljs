@@ -8,7 +8,6 @@ import { emitClaudeSettings } from '../claudeSettingsEmitter';
 
 import { mergeClaudeSettings } from './mergeUtils';
 
-// The merged shape as these tests read it: this CLI's two keys, plus the project ones above.
 interface Matcher {
   matcher: string;
 }
@@ -35,8 +34,6 @@ interface MergedSettings {
 
 const OURS = emitClaudeSettings(['context7']);
 
-// What a project that has been running Claude Code for a while actually holds: a top-level key this
-// CLI has never heard of, a hook, and plugins from marketplaces it does not know.
 const THEIRS = `${JSON.stringify({
   includeCoAuthoredBy: false,
   hooks: {
@@ -80,8 +77,6 @@ describe('mergeClaudeSettings', () => {
     expect(mergeClaudeSettings(OURS, null)).toBe(OURS);
   });
 
-  // The existing case above holds a project that already answered `false`, which the default matches, so it cannot
-  // tell precedence. This one can: the answer is the project's, and ours is only what it starts with.
   it('leaves a project that wants the trailer alone', () => {
     const merged = parsedMerge(`${JSON.stringify({ includeCoAuthoredBy: true })}\n`);
 
@@ -94,7 +89,6 @@ describe('mergeClaudeSettings', () => {
     expect(merged.includeCoAuthoredBy).toBe(false);
   });
 
-  // The failure this exists to stop: a sync taking all three of these with it.
   it('keeps the keys the project owns', () => {
     const merged = parsedMerge(THEIRS);
 
@@ -112,8 +106,6 @@ describe('mergeClaudeSettings', () => {
     expect(merged.extraKnownMarketplaces['linteljs']?.source.path).toBe('./plugins/linteljs');
   });
 
-  // The plugins answer is the point of the file, so a declaration this CLI owns is not a project
-  // opinion to defer to.
   it('wins on an entry both sides declare', () => {
     const stale = `${JSON.stringify({
       enabledPlugins: { 'linteljs@linteljs': false },
@@ -133,8 +125,6 @@ describe('mergeClaudeSettings', () => {
     expect(merged.extraKnownMarketplaces['linteljs']?.source.path).toBe('./plugins/linteljs');
   });
 
-  // Blocking a sync on a file a person can fix in an editor helps nobody, and this reads a file
-  // the project owns rather than one this CLI wrote.
   it('falls back to the emitted file when what is there is not usable', () => {
     expect(mergeClaudeSettings(OURS, '{ not json')).toBe(OURS);
     expect(mergeClaudeSettings(OURS, '["an array"]')).toBe(OURS);

@@ -94,14 +94,12 @@ export const importNewlines = createRule('import-newlines', {
       };
     };
 
-    // Null from the emitter means a comment the rebuild cannot carry, so the report goes out without a fix.
     const splitFix = (node: ImportNode): ((fixer: Fixer) => Rule.Fix)
       | null => {
       return fixTo(node, writeImport(sourceCode, node, indentsAt(node), eol));
     };
 
-    // Measured from tokens, not node locations: a token's `loc` is always present, a node's is optional in the type.
-    // A parsed specifier always has a first and a last token.
+    // From tokens: a token's `loc` is always present, a node's is optional in the type.
     const hasBlankLines = (specifiers: ImportNode['specifiers']): boolean => {
       for (const [previous, specifier] of adjacentPairs(specifiers)) {
         const before = mustFind(sourceCode.getLastToken(previous), 'the last token of an import specifier');
@@ -117,7 +115,6 @@ export const importNewlines = createRule('import-newlines', {
 
     const checkSingleLineImport = (node: ImportNode, namedCount: number) => {
       if (sourceCode.getText(node).length + node.loc.start.column > maxLineLength) {
-        // Only a named specifier can be broken onto its own line; a default or namespace import has nothing to split.
         if (namedCount > 0) {
           context.report({
             node,
@@ -140,8 +137,6 @@ export const importNewlines = createRule('import-newlines', {
       }
     };
 
-    // The collapsed form when it is usable: null for a comment the rebuild cannot carry, for a line it would
-    // overrun, and for a statement with too many members to collapse in the first place.
     const collapsedText = (node: ImportNode, namedCount: number): string | null => {
       const collapsed = namedCount > maxItems ? null : writeImport(sourceCode, node, null, eol);
 
@@ -152,8 +147,7 @@ export const importNewlines = createRule('import-newlines', {
       const collapsed = collapsedText(node, namedCount);
 
       if (importLineCount !== namedCount + 2) {
-        // A half-split statement under the member count collapses in the end, so the fix goes
-        // straight there rather than splitting it fully and collapsing it on the next pass.
+        // A half-split statement under the member count collapses in the end, so the fix goes straight there.
         context.report({
           node,
           messageId: 'limitLineCount',
@@ -163,7 +157,7 @@ export const importNewlines = createRule('import-newlines', {
         return;
       }
 
-      // No collapsed form means the statement cannot be rewritten, so reporting it would leave an unfixable error.
+      // Reporting what cannot be rewritten would leave an unfixable error.
       if (collapsed === null) {
         return;
       }
@@ -181,7 +175,7 @@ export const importNewlines = createRule('import-newlines', {
         const importNode = node as ImportNode;
         const { specifiers } = importNode;
 
-        // `import 'x'` and `import {} from 'x'` have no clause; rebuilding yields `import  from 'x'`, unparseable.
+        // Rebuilding a clause-less import yields `import  from 'x'`, unparseable.
         if (specifiers.length === 0) {
           return;
         }

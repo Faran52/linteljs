@@ -12,10 +12,10 @@ interface SortHookDepsOptions {
   hooks: string[];
 }
 
-// Matching is by call name only, so a project with its own hooks replaces this list through the `hooks` option.
+// Matching is by call name only, so a project with its own hooks replaces this list.
 const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
 
-// Generic over the element, so `every` narrows the whole list and each name is read without a fallback.
+// Generic, so `every` narrows the whole list.
 const isPlainIdentifier = <Element extends TypedNode | null>(element: Element): element is Element & NamedNode => {
   return element?.type === 'Identifier';
 };
@@ -25,7 +25,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
     type: 'suggestion',
     docs: {
       language: 'universal',
-      // Off by default: matches on bare call names, so opting in should be a decision, not inherited from a preset.
+      // Off by default: it matches on bare call names.
       recommended: false,
       fixShape: 'reorder',
       description: 'Keep hook dependency arrays in a consistent order.',
@@ -76,7 +76,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
 
         const { elements } = lastArg;
 
-        // Reordering a member expression or a call would move text this rule cannot verify is free of side effects.
+        // Reordering a member expression or a call could move side effects.
         if (!elements.every(isPlainIdentifier)) {
           return;
         }

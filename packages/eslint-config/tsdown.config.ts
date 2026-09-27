@@ -1,12 +1,7 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  /**
-   * One entry per subpath in package.json `exports`. A subpath with no entry here typechecks fine and 404s at install
-   * time, so `scripts/smoke/smokeScript.ts` resolves every one against the built `dist` before publish. Keyed, not an
-   * array: an array preserves `src/frameworks/react/` in the output path, while `exports` points at a flat
-   * `./dist/react.mjs`, so the source nests by subject and the output stays flat.
-   */
+  // Keyed, not an array: an array keeps `src/frameworks/react/` in the output path, and `exports` is flat.
   entry: {
     index: 'src/index.ts',
     base: 'src/layers/base/baseLayer.ts',
@@ -28,24 +23,15 @@ export default defineConfig({
     tailwind: 'src/libraries/tailwind/tailwindLibrary.ts',
     stylex: 'src/libraries/stylex/stylexLibrary.ts',
   },
-  /**
-   * ESM only. `@eslint-react/eslint-plugin`, and it will not be the last, publishes no `require` condition at
-   * all, so a CJS half could not load its own peer dependencies. Flat config is ESM-first and every project
-   * `@linteljs/create` generates is `"type": "module"`, so a CJS build would ship broken to serve nobody.
-   */
+  // ESM only: `@eslint-react/eslint-plugin` publishes no `require` condition, so a CJS half could not load it.
   format: ['esm'],
   dts: true,
   clean: true,
   treeshake: true,
   platform: 'node',
-  // No sourcemaps, deliberately: tsdown drives declaration sourcemaps off the same flag, so with it on the
-  // emitted `.d.mts` carries a `sourceMappingURL` for a file never written, a dead link in every editor.
+  // tsdown ties declaration sourcemaps to this flag, and they would point at a file never written.
   sourcemap: false,
-  /**
-   * The floor its own peer requires, not this workspace's: `peerDependencies.eslint` is `>=9` and ESLint 9 runs
-   * on `^18.18.0`, so a Node 18 or 20 LTS consumer installing a node24 build gets EBADENGINE for a package
-   * with no Node 24 API in it.
-   */
+  // The floor `peerDependencies.eslint` implies: ESLint 9 runs on `^18.18.0`.
   target: 'node18',
   deps: {
     // Never inline a peer: ESLint compares plugins by identity, and a bundled copy registers a second object.

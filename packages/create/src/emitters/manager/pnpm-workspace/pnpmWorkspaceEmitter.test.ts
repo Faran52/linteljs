@@ -14,7 +14,6 @@ describe('pnpmWorkspaceEmitter', () => {
     expect(pnpmWorkspaceEmitter(answersFor({ packageManager: 'npm' }))).toEqual([]);
   });
 
-  // Read off the artifact rather than the merge, so the file on disk is what reaches it.
   it("drops create-next-app's build opt-out, which would fail the install, and keeps the rest of the file", () => {
     const [artifact] = pnpmWorkspaceEmitter(answersFor({ target: 'next' }));
     const scaffolded = 'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\noverrides:\n  left-pad: 1.0.0\n';
@@ -48,7 +47,6 @@ describe('mergePnpmWorkspace', () => {
       .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
-  // A blank line inside a YAML list does not end it, so it does not end the drop either.
   it('drops a superseded list across a blank line inside it', () => {
     const existing = 'ignoredBuiltDependencies:\n  - sharp\n\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
 
@@ -66,7 +64,6 @@ describe('mergePnpmWorkspace', () => {
       .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
-  // An indented or dashed line before any key is not a key, so nothing ahead of the first one is dropped.
   it('keeps the document marker a file opens with', () => {
     const existing = "---\nallowBuilds:\n  'some-native': true\n";
 
@@ -79,7 +76,6 @@ describe('mergePnpmWorkspace', () => {
     expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(existing);
   });
 
-  // Only a key at the start of a line is the block; a comment naming it is not.
   it('adds the block to a file that only mentions it in a comment', () => {
     const merged = mergePnpmWorkspace('# allowBuilds: is added\n', answersFor({}));
 
@@ -100,7 +96,6 @@ describe('mergePnpmWorkspace', () => {
   });
 });
 
-// What create-next-app actually leaves: its own opt-out block and no allowBuilds.
 it('adds allowBuilds to a next scaffold that has none', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 

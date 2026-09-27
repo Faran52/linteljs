@@ -15,7 +15,6 @@ import {
 
 import type { PackageManager } from '@config/types';
 
-// A machine carrying yarn 1 and no bun, the way a developer's often does; npm adds its update notice.
 const ANSWERED: Record<string, string> = {
   pnpm: '12.6.0',
   npm: '11.0.0\nnpm notice New minor version of npm available!',
@@ -36,20 +35,12 @@ vi.mock('./processUtils', () => {
   };
 });
 
-/*
- * Every answer the CLI names a flag for has to reach the CLI, or the suite generates a project from answers it
- * never gave and asserts against the ones it meant.
- *
- * A record with no `flag` is one no prompt asks and no argument sets: the package manager comes from the user
- * agent, and the rest are recorded off the machine that ran the CLI.
- */
 describe('answerFlags', () => {
   it('passes a flag for every answer the CLI names one for', () => {
     const named = Object.values(ANSWERS)
       .flatMap((record) => {
         return 'flag' in record ? [`--${record.flag}`] : [];
       });
-    // Two sets, since a browser is asked only of the extension and a router only of the targets that offer one.
     const passed = new Set([
       ...answerFlags({
         ...DEFAULT_ANSWERS,
@@ -89,7 +80,6 @@ describe('versionFrom', () => {
     }).toThrow('bun --version answered spawn bun ENOENT');
   });
 
-  // Both yarns answer to `yarn`, and the CLI would record the other one: the case must not run at all.
   it.each([
     ['yarn', '1.22.22', '4.0.0'],
     ['yarn-classic', '4.18.0', '1.22.22'],
@@ -113,7 +103,6 @@ describe('managersToRun', () => {
     await expect(managersToRun('npm')).resolves.toEqual(['npm']);
   });
 
-  // Once, before any case: a missing binary or the wrong yarn is one clear failure rather than one per case.
   it.each([
     ['yarn', 'The yarn on PATH is 1.22.22'],
     ['bun', 'bun --version answered'],

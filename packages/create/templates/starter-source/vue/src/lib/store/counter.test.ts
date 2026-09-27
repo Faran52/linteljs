@@ -9,13 +9,6 @@ import { installStore } from '../providers/installStore';
 
 import { useCounter } from './counter';
 
-/*
- * Two readers of the one store, in one component because `vue/one-component-per-file` allows no second, and in
- * one app because Pinia installs a fresh store per app and two mounts would not be reading the same one.
- *
- * Through `installStore`, so this covers every store: Pinia needs its plugin on the app and the others ignore it.
- * `unref` because Pinia unwraps its own state and TanStack Store hands back a ref.
- */
 const Probe = defineComponent({
   setup: () => {
     const one = useCounter();
@@ -34,7 +27,6 @@ const Probe = defineComponent({
 });
 
 describe('useCounter', () => {
-  // What a store is for is that the second reader sees what the first did.
   it('counts up, and every reader sees the same count', async () => {
     const app = mount(Probe, { global: { plugins: [installStore] } });
     const [first, second] = app.findAll('button');

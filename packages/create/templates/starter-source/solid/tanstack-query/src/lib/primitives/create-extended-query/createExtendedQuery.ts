@@ -21,13 +21,7 @@ export interface ExtendedQueryResult<TResponse> {
   readonly refetch: () => void;
 }
 
-/**
- * A primitive, not a hook, which is Solid's word and the directory this project keeps them in.
- *
- * Accessors come back rather than values, because Solid tracks a read rather than a render: returning the value
- * here would read it once, outside any tracking scope, and nothing would ever update again. The options are
- * passed as a function for the same reason, which is what lets a changing `enabled` or query be followed.
- */
+// Accessors, not values: Solid tracks a read, so a value read here would never update.
 export const createExtendedQuery = <TResponse>(
   path: string,
   options: ExtendedQueryOptions = {},

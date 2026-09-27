@@ -13,7 +13,7 @@ export const projectFileWriter = async (
   const path = await safeProjectPath(cwd, target);
 
   await mkdir(dirname(path), { recursive: true });
-  // Walked again: the first walk stopped at the first parent that did not exist yet. Called for the refusal.
+  // Walked again: the first walk stopped at the first missing parent.
   await safeProjectPath(cwd, target);
 
   try {

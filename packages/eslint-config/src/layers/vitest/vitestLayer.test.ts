@@ -23,7 +23,6 @@ describe('vitest', () => {
       .resolves.toContain('vitest/no-focused-tests');
   });
 
-  // A suite that only asserts over types has no `expect` call in it and is a suite all the same.
   it('counts a type assertion as an assertion', async () => {
     await expect(ruleIdsFor(layer, TYPED, 'src/lib/utils/sample.test.ts'))
       .resolves.not.toContain('vitest/expect-expect');

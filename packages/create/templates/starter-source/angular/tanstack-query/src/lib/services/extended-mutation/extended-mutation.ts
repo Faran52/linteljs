@@ -9,14 +9,13 @@ export interface ExtendedMutationOptions {
   readonly invalidates?: readonly string[];
 }
 
-// The writing half, in Angular's vocabulary. Signals come back rather than values, which is what a template reads
-// and what keeps the view following the request; the same injection-context rule applies as for the query.
+// Signals come back rather than values, which is what a template reads.
 export const injectExtendedMutation = <TResponse, TBody extends object>(
   path: string,
   options: ExtendedMutationOptions = {},
 ) => {
   const { method = 'POST', invalidates = [] } = options;
-  // `inject(QueryClient)`, not `injectQueryClient()`: the binding deprecated the latter.
+  // `inject(QueryClient)`: the binding deprecated `injectQueryClient()`.
   const client = inject(QueryClient);
 
   return injectMutation<TResponse, ApiError, TBody>(() => {

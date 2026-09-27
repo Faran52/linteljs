@@ -19,8 +19,6 @@ export interface ExtendedMutationResult<TResponse, TBody> {
   | 'success'>;
 }
 
-// The writing half, in Solid's vocabulary. Accessors out for the same reason the query primitive returns them,
-// and `send` answers the response so a form can act on what came back without reading the mutation afterwards.
 export const createExtendedMutation = <TResponse, TBody extends object>(
   path: string,
   options: ExtendedMutationOptions = {},

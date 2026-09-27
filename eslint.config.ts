@@ -1,8 +1,4 @@
-/**
- * The workspace lints itself with its own layers, imported from source rather than `dist`, so linting never
- * needs a build first; jiti loads this TypeScript config. Every exemption below names its docs/DESIGN.md heading
- * under "Workspace lint exemptions", which holds the measurement that earned it; one without is one to delete.
- */
+// Layers imported from source, so linting needs no build. Exemptions: docs/DESIGN.md "Workspace lint exemptions".
 import {
   INNER_RINGS,
   MIDDLE_RINGS,
@@ -25,8 +21,7 @@ const ring = (name: string): string => {
   return `packages/create/src/${name}`;
 };
 
-// What `packages/create/tsconfig.json` declares, so `simple-import-sort` gives the aliases a group of their own.
-// `buildGroups` reads the keys and never the values. `config/` and `utils/` have no barrel, so no bare form.
+// `buildGroups` reads the keys only; `config/` and `utils/` have no barrel, so no bare form.
 const aliases = Object.fromEntries(RINGS
   .flatMap((name) => {
     const subpath: [string, string] = [`@${name}/*`, `${ring(name)}/*`];
@@ -34,7 +29,6 @@ const aliases = Object.fromEntries(RINGS
     return name === 'config' || name === 'utils' ? [subpath] : [[`@${name}`, ring(name)], subpath];
   }));
 
-// Each inner ring may read only the inner rings after it in `INNER_RINGS`, which is the order the four point in.
 const innerZones = (exceptBarrel: boolean): Zone[] => {
   return INNER_RINGS
     .slice(1)
@@ -51,13 +45,8 @@ const innerZones = (exceptBarrel: boolean): Zone[] => {
 };
 
 const config = [
-  /**
-   * An escape hatch this workspace does not use should not be available: every directive is inert, so an
-   * `eslint-disable` is reported as having no effect. The exemptions this repo means are named blocks below.
-   *
-   * Root, not `base`: a generated project is held to this by `scripts/checkBannedPatterns.ts`, and in the layer it
-   * would make every existing consumer's directives inert on upgrade. docs/DESIGN.md: `noInlineConfig`
-   */
+  // Root, not `base`: in the layer it would make every consumer's directives inert on upgrade.
+  // docs/DESIGN.md: `noInlineConfig`
   { linterOptions: { noInlineConfig: true } },
 
   ...base({
@@ -77,7 +66,6 @@ const config = [
     ],
     naming: {
       'packages/*/src/**/*.ts': 'CAMEL_CASE',
-      // The TypeScript a generated project receives, the plugin's hooks included.
       'packages/create/templates/project/{scripts,plugins}/**/*.ts': 'CAMEL_CASE',
       // docs/DESIGN.md: `'**/utils/*.ts': '*Utils'`
       '**/utils/*.ts': '*Utils',
@@ -95,7 +83,7 @@ const config = [
   ...typescript(),
   ...vitest(),
 
-  // `@linteljs/create`'s direction, made mechanical. docs/DESIGN.md: `@linteljs/workspace/create-rings`
+  // docs/DESIGN.md: `@linteljs/workspace/create-rings`
   {
     name: '@linteljs/workspace/create-rings',
     files: ['packages/create/src/**'],
@@ -119,7 +107,6 @@ const config = [
     },
   },
 
-  // The inner order holds in the suites too, bar a targets suite taking its answer fixtures from the answers barrel.
   // docs/DESIGN.md: `@linteljs/workspace/create-rings`
   {
     name: '@linteljs/workspace/create-rings-tests',
@@ -127,22 +114,12 @@ const config = [
     rules: { 'import-x/no-restricted-paths': ['error', { zones: innerZones(true) }] },
   },
 
-  /**
-   * One folder per responsibility, and which one a module belongs to is decided by the world it reaches into rather
-   * than by judgement: `node:fs` means `disk/`, `node:child_process` means `spawns/`, argv and the terminal mean
-   * `terminal/`. Everything else goes through them, which is what makes the inner rings testable without a disk.
-   * `e2e/` is the harness rather than the package, and it spawns real managers on purpose.
-   *
-   * The `es-toolkit/compat` pattern is repeated here rather than inherited. `base` bans it for every project and
-   * for this one, and two config objects naming one rule do not merge their options: this block is the last to
-   * name `no-restricted-imports` for these files, so what it replaces is the layer's own ban.
-   * docs/DESIGN.md: `@linteljs/workspace/create-worlds`
-   */
+  // `es-toolkit/compat` restated: two config objects naming one rule do not merge their options.
+  // docs/DESIGN.md: `@linteljs/workspace/create-worlds`
   {
     name: '@linteljs/workspace/create-worlds',
     files: ['packages/create/src/**'],
     ignores: [
-      // The three rings that own a world, and nothing else: `pipeline/` owns none, so only its harness is exempt.
       ...Object.keys(WORLDS)
         .map((name) => {
           return `${ring(name)}/**`;
@@ -163,11 +140,7 @@ const config = [
     },
   },
 
-  /**
-   * `config/` is data and only data: the types, constants and tables no ring owns. A function belongs to a `utils/`
-   * at the level of its readers, which is what keeps this folder free of a suite and free of coverage.
-   * docs/DESIGN.md: `@linteljs/workspace/create-config-data`
-   */
+  // docs/DESIGN.md: `@linteljs/workspace/create-config-data`
   {
     name: '@linteljs/workspace/create-config-data',
     files: ['packages/create/src/config/**'],
@@ -179,7 +152,6 @@ const config = [
     },
   },
 
-  // A `utils/` module is helpers, and a long one is two categories in one drawer.
   // docs/DESIGN.md: `@linteljs/workspace/utils-size`
   {
     name: '@linteljs/workspace/utils-size',
@@ -193,7 +165,6 @@ const config = [
     },
   },
 
-  // A ceiling far above anything here, so the longest function stays a fact.
   // docs/DESIGN.md: `@linteljs/workspace/function-size`
   {
     name: '@linteljs/workspace/function-size',
@@ -207,8 +178,7 @@ const config = [
     },
   },
 
-  // Every script reports through `loggerUtils.ts`. Options given, since severity alone inherits the layer's `allow`.
-  // docs/DESIGN.md: `@linteljs/workspace/scripts`
+  // Options given, since severity alone inherits the layer's `allow`. docs/DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts',
     files: ['scripts/**', 'packages/*/scripts/**'],
@@ -223,8 +193,7 @@ const config = [
     rules: { 'no-console': 'off' },
   },
 
-  // `sonarjs/different-types-comparison` cannot read an AST identity check. Named file by file, so
-  // another site has to be added on purpose. docs/DESIGN.md: `@linteljs/workspace/ast-identity`
+  // sonarjs cannot read an AST identity check. docs/DESIGN.md: `@linteljs/workspace/ast-identity`
   {
     name: '@linteljs/workspace/ast-identity',
     files: [
@@ -237,8 +206,7 @@ const config = [
     },
   },
 
-  // `sonarjs/no-empty-test-file` cannot see cases `RuleTester.run()` registers at module scope.
-  // Scoped to that directory alone. docs/DESIGN.md: `@linteljs/workspace/rule-tester`
+  // sonarjs cannot see cases `RuleTester.run()` registers. docs/DESIGN.md: `@linteljs/workspace/rule-tester`
   {
     name: '@linteljs/workspace/rule-tester',
     files: ['packages/eslint-plugin/src/rules/**/*.test.ts'],
@@ -247,8 +215,7 @@ const config = [
     },
   },
 
-  // The e2e files pass `runE2eCase` by reference, out of the rule's reach.
-  // docs/DESIGN.md: `@linteljs/workspace/e2e-test`
+  // `runE2eCase` is passed by reference, out of the rule's reach. docs/DESIGN.md: `@linteljs/workspace/e2e-test`
   {
     name: '@linteljs/workspace/e2e-test',
     files: ['packages/create/src/pipeline/e2e/targets/*.e2e.test.ts'],

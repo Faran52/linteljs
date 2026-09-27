@@ -3,14 +3,11 @@ import { dirname, join } from 'node:path';
 import ts from 'typescript';
 
 export interface Placement {
-  // `<asset> -> <destination>` over every target.
   readonly placed: ReadonlyMap<string, string>;
-  // Per target, every path a relative import may reach.
   readonly covered: ReadonlyMap<string, ReadonlySet<string>>;
 }
 
-// A program answers what ESLint cannot: does every name and relative import resolve? `no-undef` is off under
-// typescript-eslint, and a `declare module '*'` would swallow a misspelled relative import.
+// `no-undef` is off under typescript-eslint, and a `declare module '*'` would swallow a bad relative import.
 const UNRESOLVED = new Set([
   2304, // Cannot find name
   2307, // Cannot find module, kept for a relative specifier only
@@ -49,7 +46,7 @@ const withoutExtension = (path: string): string => {
   return path.replace(/\.[cm]?[jt]sx?$/, '');
 };
 
-// A bare specifier names a package not installed here. A relative one may only miss the module a scaffolder writes.
+// A bare specifier names a package not installed here; a relative one may only miss a scaffolder's module.
 const resolvesElsewhere = (diagnostic: ts.Diagnostic, { placed, covered }: Placement): boolean => {
   const start = diagnostic.start ?? 0;
   const specifier = diagnostic.file?.text.slice(start + 1, start + (diagnostic.length ?? 0) - 1) ?? '';

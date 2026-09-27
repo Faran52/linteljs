@@ -8,7 +8,6 @@
     invalidates?: readonly string[] | undefined;
   }
 
-  // What the fake endpoint answers and what the probe sends it, named because the hook takes both as type arguments.
   interface Answered {
     status: string;
   }
@@ -17,7 +16,6 @@
     message: string;
   }
 
-  // The half that calls the hook, for the reason the query probe is its own component.
   const { path, invalidates = [] }: Props = $props();
 
   // The probe is handed one path for its lifetime, so reading it once is the intent rather than a missed dependency.

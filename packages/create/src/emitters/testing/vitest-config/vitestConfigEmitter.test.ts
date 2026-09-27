@@ -41,7 +41,6 @@ const configFor = (overrides: AnswerOverrides = {}): string | null => {
   return emitVitestConfig(answers, setupTestsPath(answers));
 };
 
-// The five shapes a vitest config takes, written out whole: the text is what the project receives.
 const MERGED = `import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config.js';
@@ -232,10 +231,6 @@ export default defineConfig({
 `;
 
 describe('emitVitestConfig', () => {
-  /*
-   * Next compiles StyleX through Babel and PostCSS, which a vitest run never goes through, so the plugin is named
-   * in this config too. Without it every suite fails on an uncompiled `defineVars`.
-   */
   it('names the stylex plugin where there is no vite config to inherit one from', () => {
     const config = configFor({
       target: 'next',
@@ -250,7 +245,6 @@ const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
 export default defineConfig({
   plugins: [stylex({ useCSSLayers: true })],
 `);
-    // Nuxt names a compiler plugin of its own, and StyleX goes first beside it.
     const nuxt = configFor({
       target: 'nuxt',
       styling: 'stylex',
@@ -284,11 +278,6 @@ export default defineConfig({
     expect(configFor({ target: 'react' })).not.toContain('vue');
   });
 
-  /**
-   * happy-dom no longer shims `localStorage` over Node 25+'s native one, which throws unconfigured;
-   * disabling the native module hands the global back. React Native runs on `environment: 'node'`
-   * and never touches it, so its platform projects stay as they were.
-   */
   it('disables native web storage for every happy-dom target', () => {
     for (const target of ['react', 'next', 'vue', 'angular', 'svelte', 'solid', 'webextension'] as const) {
       expect(configFor({ target })).toContain("execArgv: ['--no-experimental-webstorage'],");
@@ -297,11 +286,6 @@ export default defineConfig({
     expect(configFor({ target: 'react-native' })).not.toContain('execArgv');
   });
 
-  /**
-   * Svelte and Solid ship a server build and a client build behind export conditions; without the condition vitest
-   * resolves the server half and the first component rendered throws.
-   * Written per target, not as one loop, so a target added without conditions has to be listed here on purpose.
-   */
   it.each<[TargetId, string]>([
     ['svelte', "resolve: { conditions: ['browser'] },"],
     ['solid', "resolve: { conditions: ['development', 'browser'] },"],
@@ -316,10 +300,6 @@ export default defineConfig({
     },
   );
 
-  /**
-   * A merged config inherits `tsconfigPaths` from `vite.config.ts`, but a standalone one has nothing to inherit it
-   * from, and every alias in the emitted `tsconfig.json` is then unresolvable from a test.
-   */
   it.each<TargetId>(['next', 'angular'])(
     'resolves the tsconfig aliases for %s, which has no vite config to merge',
     (target) => {
@@ -328,10 +308,6 @@ export default defineConfig({
   );
 });
 
-/*
- * A `*.stylex.ts` file is a token table the bundler compiles to CSS, so nothing imports it and nothing executes it.
- * Left in, it sits at zero against a 100% threshold and every StyleX project fails the gate it was born with.
- */
 describe('the styling system', () => {
   it('keeps a StyleX token table out of coverage', () => {
     expect(configFor({ styling: 'stylex' })).toContain("'**/*.stylex.{ts,tsx}'");
@@ -344,7 +320,6 @@ describe('the router', () => {
     expect(configFor({})).not.toContain('src/routes/**');
   });
 
-  // TanStack Router is code-based: no `src/routes/` and no generated `routeTree.gen.ts` to exclude.
   it('excludes nothing for TanStack Router', () => {
     const config = configFor({ router: 'tanstack-router' });
 
@@ -353,9 +328,7 @@ describe('the router', () => {
   });
 });
 
-// The build configs are the project's after the first write: both reference repos rewrote their vite config wholesale.
 describe('vitestConfigEmitter', () => {
-  // A project being born has no setup file yet, so the one it is given is the standard's own spelling.
   it('hands the config to the project after the first write', () => {
     expect(vitestConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT)).toEqual([{
       stage: 'standard',
@@ -375,13 +348,11 @@ describe('vitestConfigEmitter', () => {
   });
 });
 
-// The 100% thresholds are measured over exactly the code somebody wrote.
 describe('the coverage surface', () => {
   it('never counts the bootstrap entry, whose only assertion is about the framework', () => {
     expect(configFor()).toContain("'src/{main,index}.{ts,tsx}'");
   });
 
-  // `src/**` alone hands rolldown files it cannot parse, printing `RolldownError: Parse failed` on a clean check.
   it.each<[TargetId, string]>([
     ['react', ''],
     ['svelte', ',svelte'],
@@ -390,11 +361,6 @@ describe('the coverage surface', () => {
     expect(configFor({ target })).toContain(`include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}']`);
   });
 
-  /*
-   * The shells and declarations each target cannot execute, after the shared six. Svelte's root layout is the odd
-   * one: `<svelte:head>` compiles to a hydration branch a suite that renders rather than hydrates cannot reach, so
-   * it would sit at 50% branches. It keeps its suite; only the measurement goes, as with Next's root layout.
-   */
   it.each<[string, AnswerOverrides, string[]]>([
     ['react', { target: 'react' }, []],
     ['react in framework mode', {

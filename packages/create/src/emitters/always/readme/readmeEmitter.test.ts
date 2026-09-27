@@ -40,7 +40,6 @@ describe('emitReadme', () => {
   });
 });
 
-// The scaffolder's README contradicts the project once the later stages have run, so it is replaced, not merged.
 describe('readmeEmitter', () => {
   it("replaces the scaffolder's README with one that matches the project", async () => {
     const [artifact] = readmeEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT, 'demo-app');

@@ -16,8 +16,6 @@ import {
   it,
 } from 'vitest';
 
-// One file for both hosts: Claude Code and Codex each substitute `${CLAUDE_PLUGIN_ROOT}` before a shell sees it,
-// and Codex ignores an exec-form `args`, so the path sits inside `command`.
 it('registers the three hooks, each run by node from the plugin root', () => {
   expect(JSON.parse(readFileSync(join(import.meta.dirname, 'hooks.json'), 'utf8'))).toEqual({
     hooks: {
@@ -51,7 +49,6 @@ it('registers the three hooks, each run by node from the plugin root', () => {
   });
 });
 
-// Both hosts find `hooks/hooks.json` by convention, and a manifest `hooks` field would replace that under Codex.
 it.each(['.claude-plugin/plugin.json', '.codex-plugin/plugin.json'])('leaves %s to discover hooks.json', (manifest) => {
   expect(readFileSync(join(import.meta.dirname, '..', manifest), 'utf8')).not.toContain('"hooks"');
 });
@@ -80,11 +77,6 @@ const CASES: [HookScript, object | string][] = [
   ['bannedPatternGuardHook.ts', copilotPayload('edit', { path: 'missing.ts' })],
 ];
 
-/**
- * A host parses stdout as the decision, so a stray line of text turns a deny into nothing at all. `runHook` holds
- * every case in every suite to this, in the shape of the host that sent the payload; these are the edges, and the
- * check itself is shown to refuse the rest.
- */
 describe('hook stdout', () => {
   it.each(CASES)('%s prints nothing or exactly one decision', (name, input) => {
     expect(() => {
@@ -103,7 +95,6 @@ describe('hook stdout', () => {
     }).toThrow();
   });
 
-  // Each host reads only its own shape, so another host's decision is as unreadable to it as plain text.
   it.each([
     ['Claude Code\'s deny under Copilot', 'copilot', '{"hookSpecificOutput":{"hookEventName":"PreToolUse",'
     + '"permissionDecision":"deny","permissionDecisionReason":"x"}}\n'],

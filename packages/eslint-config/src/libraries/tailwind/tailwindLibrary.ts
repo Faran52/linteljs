@@ -5,7 +5,7 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-// Class order, duplicates and conflicts. Without `entryPoint` every theme rule warns once per class string.
+// Without `entryPoint` every theme rule warns once per class string.
 export const tailwind = (entryPoint?: string): Layer => {
   return [
     ...presetOf(betterTailwindcss.configs.recommended, 'better-tailwindcss/recommended', SCRIPT_AND_SFC_FILES),

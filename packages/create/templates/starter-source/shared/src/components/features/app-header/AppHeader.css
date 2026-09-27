@@ -1,4 +1,4 @@
-/* Colocated with the component, imported from the style entry: a scoped block would not reach three targets. */
+/* Imported from the style entry: a scoped block would not reach three targets. */
 
 .header {
   display: flex;
@@ -44,11 +44,7 @@
   background: var(--muted);
 }
 
-/*
- * A class rather than `[aria-current="page"]`. The attribute is still on the element and still what a screen
- * reader reads; styling off a class is what lets StyleX say the same thing, since it compiles to atomic classes
- * and has no attribute selector to match on.
- */
+/* A class, not `[aria-current="page"]`: StyleX has no attribute selector. */
 .tab-current {
   font-weight: 560;
   color: var(--primary);

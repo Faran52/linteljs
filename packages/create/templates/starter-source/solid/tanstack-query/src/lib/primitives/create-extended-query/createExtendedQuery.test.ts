@@ -21,7 +21,6 @@ interface Version {
   readonly status: string;
 }
 
-// Held rather than read back off `globalThis`, which would need a cast the standard bans outright.
 const fetchMock = vi.fn();
 
 const answering = (body: Version, status = 200): void => {
@@ -31,11 +30,6 @@ const answering = (body: Version, status = 200): void => {
     });
 };
 
-/*
- * `createComponent` rather than markup, so this file is a `.ts`: a primitive is not a component, and a camelCase
- * `.tsx` is refused by the same naming rule that keeps components PascalCase. It still renders inside a real
- * provider, because Solid tracks a read rather than a render and the primitive has to run inside the tree.
- */
 const runQuery = (path: string, options: ExtendedQueryOptions = {}): ExtendedQueryResult<Version> => {
   let captured: ExtendedQueryResult<Version> | undefined;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -81,11 +75,9 @@ describe('createExtendedQuery', () => {
       expect(result.status()).toBe('success');
     });
     expect(result.response()).toEqual({ status: 'ok' });
-    // Read here as well, because an accessor nothing calls is an accessor nothing proves reactive.
     expect(result.isFetching()).toBe(false);
   });
 
-  // The key is the path and its query, which is what makes two components asking the same thing one request.
   it('sends the query through to the adapter', async () => {
     answering({ status: 'ok' });
     runQuery('/version', { query: { tag: ['a', 'b'] } });
@@ -112,7 +104,6 @@ describe('createExtendedQuery', () => {
     expect(result.error()).toMatchObject({ status: 500 });
   });
 
-  // `refetch` answers nothing on purpose: its promise is one nobody awaits, and that is a finding at every caller.
   it('refetches without handing back a promise nobody awaits', async () => {
     answering({ status: 'ok' });
 

@@ -7,8 +7,7 @@ import { env } from 'node:process';
 
 import { isExecutableFile } from '@disk';
 
-// Resolved from PATH rather than spawned by name, so `sync` can run it from another cwd and a directory that merely
-// carries the name is not mistaken for the binary. Executable directories are rejected.
+// From PATH, so `sync` can run it from another cwd and a same-named directory is not mistaken for it.
 export const resolvedBinary = (name: string): string | undefined => {
   for (const directory of (env['PATH'] ?? '').split(delimiter)) {
     if (directory === '') {

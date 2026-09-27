@@ -37,7 +37,6 @@ afterEach(async () => {
 });
 
 describe('projectFileWriter', () => {
-  // A descriptor left open lingers until garbage collection, and a run writes dozens of files.
   it('closes every file it opens', async () => {
     const before = (await readdir('/dev/fd')).length;
 

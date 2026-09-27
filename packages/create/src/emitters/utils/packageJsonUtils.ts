@@ -28,7 +28,6 @@ import {
   VERSIONS,
 } from '../constants';
 
-// npm's `devEngines` entry: `runtime` is the one a scaffolder writes, `packageManager` the one written here.
 export interface DevEngine {
   name: string;
   version?: string;
@@ -53,15 +52,7 @@ export interface PackageJson {
   allowScripts?: Record<string, boolean | string>;
 }
 
-/*
- * Astro calls `@tailwindcss/vite` from `astro.config.mjs` and Nuxt passes it through `vite.plugins` in
- * `nuxt.config.ts`, both while owning no vite config of their own, so this reads the record rather than `vite`.
- * Next, Angular and React Native take PostCSS.
- *
- * Nuxt is here rather than with them because PostCSS does not work: Nuxt runs `postcss-import` ahead of any plugin
- * named in its `postcss` key, and that tries to read `@import "tailwindcss"` off disk. Tailwind 4 resolves that
- * import itself, which is what the Vite plugin does and the PostCSS one cannot be reached in time to.
- */
+// Nuxt takes the Vite plugin: its `postcss-import` reads `@import "tailwindcss"` off disk and fails.
 const usesTailwindVitePlugin = (target: TargetRecord): boolean => {
   return target.vitePlugin !== undefined || target.astro === true || target.nuxtProject === true;
 };
@@ -90,7 +81,7 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
     tailwind: target.tailwind?.dependencies ?? [],
     stylex: ['@stylexjs/stylex'],
   };
-  // `rtk-query` installs nothing: it is `@reduxjs/toolkit`, which the store this answer requires already brings.
+  // `rtk-query` is `@reduxjs/toolkit`, which the store it requires already brings.
   const data: Record<Data, string[]> = {
     'tanstack-query': bound(TANSTACK_QUERY_BINDINGS),
     'rtk-query': [],
@@ -127,7 +118,7 @@ export const parsePackageJson = (text: string): PackageJson => {
   return parsed;
 };
 
-// Sorted and de-duped like a package manager writes back. Throws on a missing entry rather than silently dropping it.
+// Throws on a missing entry rather than silently dropping it.
 export const versioned = (names: string[], pins: Record<string, string> = {}): Record<string, string> => {
   const result: Record<string, string> = {};
 
@@ -159,7 +150,6 @@ export const buildDependencies = (answers: Answers): Record<string, string> => {
   // A hosted framework is not installed by the host's scaffolder.
   names.push(...target.dependencies ?? []);
 
-  // The chosen store's own packages, and the one that binds it to the framework rendering it where there is one.
   const { store } = answers;
 
   if (store !== undefined) {
@@ -176,14 +166,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
 
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
-    /*
-     * The lint layer's plugin, the build plugin and its peer. `@stylexjs/stylex` is the runtime; the build plugin
-     * compiles `defineVars` and the style calls into CSS, and without it the emitted config imports a module the
-     * project never installed. `unplugin` is a real peer that nothing installs on its behalf.
-     *
-     * Not keyed off `vite`: Astro and Nuxt own their Vite config rather than emitting one and still take the
-     * plugin through it. `stylexBuild` on the record is what names a target that compiles some other way.
-     */
+    // Without the build plugin the emitted config imports a module never installed; `unplugin` is a real peer.
     stylex: ['@stylexjs/eslint-plugin', ...target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin']],
   };
   const dataDev: Record<Data, string[]> = {
@@ -193,7 +176,6 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
 
   return versioned([
     ...SHARED_DEV_DEPENDENCIES,
-    // Stylelint's syntax for an SFC `<style>` block, and the peer it does not install for itself.
     ...(target.sfcExtension === undefined ? [] : ['postcss-html', 'postcss']),
     ...target.devDependencies,
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
@@ -204,7 +186,6 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(answers.styling === undefined ? [] : stylingDev[answers.styling]),
     ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),
-    // Development and the test run only, which is the whole of what a mocking layer is for.
     ...(answers.mocking === 'msw' ? ['msw'] : []),
     // `qs` ships no types of its own.
     '@types/qs',
@@ -212,10 +193,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
 };
 
 export const allowedBuildNames = (answers: Answers): string[] => {
-  /*
-   * MSW's install script is what copies `mockServiceWorker.js` into the served directory, so the answer that asks
-   * for a browser worker is the answer that has to allow it. Without this the install stops and asks.
-   */
+  // MSW's install script copies `mockServiceWorker.js`; without this the install stops and asks.
   const mocking = answers.mocking === 'msw' ? ['msw'] : [];
 
   return uniq([...ALLOWED_BUILDS, ...mocking, ...targetFor(answers).allowBuilds])

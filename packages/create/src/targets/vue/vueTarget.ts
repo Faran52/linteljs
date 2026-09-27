@@ -67,7 +67,7 @@ export const vueTarget: TargetRecord = {
   starterFiles: [
     ...mockFiles(true),
     ...componentStyles(COMPONENTS),
-    // Solid writes the `class` spelling these take; Vue renames two of the four, so each carries its own path.
+    // Vue renames two of the four, so each carries its own path.
     ...componentStyleModules('solid', COMPONENTS),
     ...accessorFiles(ACCESSORS),
     ...ALWAYS
@@ -92,12 +92,10 @@ export const vueTarget: TargetRecord = {
       when: hasStore,
       variant: 'with-store',
     },
-    // A button is what a store or a form gives the view to press; neither, and nothing presses anything.
     {
       target: 'src/components/ui/app-button/AppButton.vue',
       when: pressable,
     },
-    // A form brings its view, its binding, its control and the layer it submits through.
     ...([
       'src/views/ContactView.vue',
       'src/views/useContactForm.ts',
@@ -129,8 +127,6 @@ export const vueTarget: TargetRecord = {
       },
       variant: 'tanstack-query',
     },
-    // One rule set, read by the form that binds it and the api that refuses on it. Zod replaces the file, not the
-    // two readers.
     {
       target: 'src/lib/apis/contact/schemas.ts',
       when: (answers) => {
@@ -146,7 +142,6 @@ export const vueTarget: TargetRecord = {
       variant: 'zod',
       shared: true,
     },
-    // One route list, read by the router and the header alike. A form adds Contact to it and both readers follow.
     {
       target: 'src/views/routes.ts',
       when: (answers) => {
@@ -158,7 +153,7 @@ export const vueTarget: TargetRecord = {
       when: hasForm,
       variant: 'with-form',
     },
-    // Vue installs both as plugins on the app, so each slot is a function rather than a component.
+    // Vue installs both as app plugins, so each slot is a function rather than a component.
     {
       target: 'src/lib/providers/installStore.ts',
       when: (answers) => {
@@ -204,11 +199,7 @@ export const vueTarget: TargetRecord = {
       shared: true,
     },
   ],
-  /*
-   * Mounting `App` walks the real router, so that suite covers the header and every page it opens together.
-   * `covers` keeps a suite out of a project whose answers never wrote its subject; the generated project gates at
-   * 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
-   */
+  // Mounting `App` walks the real router, so that suite covers the header and every page.
   starterTests: [
     ...mockTests(true),
     ...accessorTests(ACCESSORS),
@@ -245,15 +236,13 @@ export const vueTarget: TargetRecord = {
       covers: 'src/lib/store/counter.ts',
     },
   ],
-  // Nothing fetches this target, so without `build` here `pnpm check` would fail the project's own gate at birth.
   build: 'vite build',
   extraScripts: {
     dev: 'vite',
     preview: 'vite preview',
   },
   typecheck: 'vue-tsc --noEmit',
-  // Read off `PARTS`, since this target installs the same framework a host installs and only adds the build. The
-  // router is unconditional here, so it is a dependency rather than an answer's.
+  // The router is unconditional here, so it is a dependency rather than an answer's.
   testDevDependencies: PARTS.vue.testDevDependencies,
   dependencies: [...PARTS.vue.dependencies, 'vue-router'],
   devDependencies: [...PARTS.vue.devDependencies, 'vite'],

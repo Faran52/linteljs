@@ -54,7 +54,6 @@ const askWith = async (
 };
 
 describe('ask', () => {
-  // Svelte has no router slot and one store, so this is name plus nine answers.
   it('asks the project name first, then returns the chosen answer for every question', async () => {
     const { result } = await askWith([
       'demo-app', 'svelte', 'none', ['zod'], 'tailwind', undefined, 'tanstack-store',
@@ -66,7 +65,6 @@ describe('ask', () => {
         target: 'svelte',
         browser: 'chrome',
         testing: 'none',
-        // Never asked: the questionnaire leaves the record's placeholder, which `cli.ts` overwrites with the host.
         packageManager: 'pnpm',
         libraries: ['zod'],
         styling: 'tailwind',
@@ -78,7 +76,6 @@ describe('ask', () => {
     });
   });
 
-  // The extension target is the only one that hosts either axis; no store slot, so name plus nine answers.
   it('asks the browser and the UI framework for an extension, and records both', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', 'firefox', ['popup', 'background'], 'solid',
@@ -90,7 +87,6 @@ describe('ask', () => {
     expect(result.answers.hostedFramework).toBe('solid');
   });
 
-  // `none` is a real answer, not a skipped question.
   it('records no hosted framework when the answer is none', async () => {
     const { result } = await askWith([
       'demo-app', 'webextension', 'chrome', ['popup', 'background'], 'none',
@@ -100,7 +96,6 @@ describe('ask', () => {
     expect(result.answers.browser).toBe('chrome');
   });
 
-  // Recorded only where asked, so the eight other targets keep a config with no key for it.
   it('asks the surfaces for an extension, and records the ones chosen', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', 'firefox', ['devtools-panel'], 'solid',
@@ -129,8 +124,6 @@ describe('ask', () => {
     expect(recorded.calls).not.toContain('Surfaces');
   });
 
-  // No language question on any target: this CLI generates TypeScript only. Angular has two stores, so this is
-  // name plus nine answers.
   it('asks nothing about the language, and still asks for a store', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'angular', undefined, undefined, undefined, undefined, 'ngrx-store',
@@ -153,14 +146,12 @@ describe('ask', () => {
     await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
-  // The input disappearing, not a person cancelling, partway through.
   it('throws once the script runs out, even partway through', async () => {
     const recorded = scripted(['demo-app']);
 
     await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
-  // Cancelling is its own class, reachable partway through.
   it('throws a distinct, calm error when a person cancels mid-questionnaire', async () => {
     const recorded = scripted(['demo-app', CANCEL]);
     const asking = ask(recorded.prompter);
@@ -204,7 +195,6 @@ describe('ask', () => {
     });
   });
 
-  // What a person reads; none of these strings is the value written to `linteljs.config.json`.
   it('offers every option in the product\'s own name and casing', async () => {
     const { recorded } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined,
@@ -262,7 +252,6 @@ describe('ask', () => {
 });
 
 describe('the store question', () => {
-  // One choice per store the target offers, with None first, which is where the cursor starts.
   it('offers every store the target has, and takes the one chosen', async () => {
     const { result, recorded } = await askWith([
       'demo-app', undefined, undefined, undefined, undefined, undefined, undefined, 'redux-toolkit',
@@ -273,7 +262,6 @@ describe('the store question', () => {
     expect(recorded.labels['State store']).toEqual(['None', 'Zustand', 'Redux Toolkit', 'TanStack Store']);
   });
 
-  // Each target's own list: nothing offers another framework's binding, and Angular offers neither of React's.
   it('names the stores the target actually brings, not React\'s', async () => {
     const { recorded } = await askWith([
       'demo-app', 'angular', undefined, undefined, undefined,
@@ -298,7 +286,6 @@ describe('the store question', () => {
     expect(result.answers.store).toBeUndefined();
   });
 
-  // The extension is the one target with no stores: MV3 state belongs in `chrome.storage`.
   it('is not asked on a target without a store slot', async () => {
     const { result, recorded } = await askWith([
       'demo-app', 'webextension', undefined, ['popup'], undefined, undefined, undefined, undefined,
@@ -309,7 +296,6 @@ describe('the store question', () => {
   });
 });
 
-// Refused at the prompt rather than by a scaffolder much later with a message about something else.
 describe('the project name question', () => {
   it('refuses a name npm would not accept and passes one it would', async () => {
     const recorded = scripted([
@@ -321,7 +307,6 @@ describe('the project name question', () => {
       text: (options: Parameters<Prompter['text']>[0]) => {
         const { validate } = options;
 
-        // The empty string is what a person submits before typing anything, and `My-App` is the near miss npm refuses.
         seen.push(
           validate('') ?? '',
           validate('My-App') ?? '',
@@ -342,7 +327,6 @@ describe('the project name question', () => {
 });
 
 describe('the form library and router questions', () => {
-  // Its own answer: the checkbox list carries the libraries and nothing else.
   it('records the form choice apart from the libraries', async () => {
     const { result } = await askWith([
       'demo-app', undefined, undefined, ['zod'], 'tailwind', 'react-hook-form',
@@ -373,7 +357,6 @@ describe('the form library and router questions', () => {
     expect(hostedReact.recorded.labels['Form library']).toEqual(['None', 'TanStack Form', 'React Hook Form']);
   });
 
-  // Their own `framework` values, and both render with React; asking for the exact `react` left them out.
   it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
     const { recorded } = await askWith([
       'demo-app', target, undefined, undefined, undefined,
@@ -396,11 +379,6 @@ describe('the form library and router questions', () => {
   });
 });
 
-/**
- * The one place the prompt library is named. Everything above drives `ask` through a scripted `Prompter`, which is
- * the seam that makes that possible; these cases are the seam's other side, and the only thing holding the shape
- * this CLI asks for against the shape the library takes.
- */
 describe('inquirerPrompter', () => {
   beforeEach(() => {
     vi.mocked(select).mockReset();
@@ -428,11 +406,9 @@ describe('inquirerPrompter', () => {
     });
 
     expect(answer).toBe('react');
-    // A hint that is absent is an absent key rather than an undefined one, which is what the option type asks for.
     expect(vi.mocked(select).mock.calls[0]?.[0]).toEqual({
       message: 'Framework',
       default: 'react',
-      // Every option on screen rather than inquirer's window of seven.
       pageSize: 2,
       choices: [
         {
@@ -489,7 +465,6 @@ describe('inquirerPrompter', () => {
     });
   });
 
-  // `true` is how that library spells acceptable, and a string is the message it shows instead.
   it('asks the name as an input, translating what its validation answers', async () => {
     vi.mocked(input).mockResolvedValue('my-app');
 
@@ -524,7 +499,6 @@ describe('inquirerPrompter', () => {
     expect(inquirerPrompter.isCancel(answer)).toBe(true);
   });
 
-  // A broken terminal is not a cancelled run, and swallowing it would report one as the other.
   it('rethrows anything that is not an exit', async () => {
     vi.mocked(select).mockRejectedValue(new Error('stdin is not a terminal'));
 

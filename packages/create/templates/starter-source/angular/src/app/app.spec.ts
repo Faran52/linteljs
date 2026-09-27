@@ -8,11 +8,6 @@ import { PAGES } from '../config/routes';
 import { App } from './app';
 import { routes } from './app.routes';
 
-/*
- * Through the real router rather than a stub, so what is covered is the wiring a project actually runs: the header
- * sits outside the outlet and every page is behind it. `as HTMLElement` is Angular's own idiom here, and the only
- * one it offers: `ComponentFixture.nativeElement` is typed `any` by the framework.
- */
 const open = async (path: string): Promise<HTMLElement> => {
   TestBed.configureTestingModule({
     imports: [App],

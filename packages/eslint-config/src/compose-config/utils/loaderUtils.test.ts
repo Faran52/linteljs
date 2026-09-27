@@ -25,7 +25,6 @@ import {
 
 import type { Framework } from '../../types';
 
-// What each framework loads: its own layer and import group, with the framework a meta-framework sits on underneath.
 const FRAMEWORK_PARTS: [Framework, () => FrameworkParts][] = [
   ['react', () => {
     return {
@@ -99,7 +98,6 @@ describe('LIBRARIES', () => {
     await expect(LIBRARIES.stylex({})).resolves.toEqual(stylex());
   });
 
-  // The entry point is the one option a loader passes on, and without it the plugin guesses at the stylesheet.
   it('hands tailwind the entry point it was given, and none when it was given none', async () => {
     await expect(LIBRARIES.tailwind({ tailwindEntryPoint: 'src/styles/app.css' }))
       .resolves.toEqual(tailwind('src/styles/app.css'));

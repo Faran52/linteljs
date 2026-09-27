@@ -25,7 +25,6 @@ interface BucketRow {
 const OUTLIER_FLOOR_BYTES = 4096;
 const OUTLIER_FLOOR_MS = 2;
 
-// At 25x the median a file's cost is driven by something other than its length.
 const OUTLIER_FACTOR = 25;
 
 const SUPERLINEAR_MIN_FILES = 20;
@@ -40,7 +39,7 @@ const SIZE_BUCKETS: [string, number][] = [
   ['over 256 KiB', Infinity],
 ];
 
-// Nearest-rank, so the answer is a time some file took rather than one invented between two.
+// Nearest-rank, so the answer is a time some file took.
 const quantile = (sorted: number[], fraction: number): number => {
   return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))] ?? 0;
 };
@@ -85,8 +84,7 @@ const bucketRows = (timings: Timing[]): BucketRow[] => {
     });
 };
 
-// Time per byte climbing with size is what a quadratic rule looks like from outside. Measured against the cheapest
-// bucket, since small files are dominated by fixed cost and anchoring there would hide a climb in the middle.
+// Time per byte climbing with size is what a quadratic rule looks like from outside.
 const superlinearVerdict = (rows: BucketRow[]): string => {
   const usable = rows
     .filter((row) => {
@@ -113,7 +111,7 @@ const superlinearVerdict = (rows: BucketRow[]): string => {
     : `time per byte does not climb with size (${span}), so nothing here looks superlinear`;
 };
 
-// A slow file is not a broken fix, so outliers are printed loudly and never fail the run.
+// A slow file is not a broken fix, so outliers never fail the run.
 const outlierLines = (timings: Timing[]): string[] => {
   const measurable = timings
     .filter((sample) => {

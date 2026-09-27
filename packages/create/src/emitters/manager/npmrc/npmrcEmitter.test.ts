@@ -18,7 +18,6 @@ describe('npmrcEmitter', () => {
     expect(artifacts).toEqual([]);
   });
 
-  // Emitted rather than copied: `npm pack` drops a `.npmrc` at any depth, so there is no template to read.
   it('emits the one line npm needs to install at all', () => {
     const artifacts = npmrcEmitter({
       ...DEFAULT_ANSWERS,

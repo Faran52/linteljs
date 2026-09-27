@@ -6,13 +6,11 @@ import { VERSIONS } from '../../constants';
 
 import { emitLinteljsRecord, linteljsRecordEmitter } from './linteljsRecordEmitter';
 
-// The pinned ranges move with every bump, so the page's versions are read off the table rather than restated.
 const recorded = (name: string): string => {
   return (VERSIONS[name] ?? '').replace(/^[\^~]/u, '');
 };
 
 describe('emitLinteljsRecord', () => {
-  // The module whole, since the starter imports it by these names: the project, its stack, what was answered.
   it('names the project and carries the framework the target renders with', () => {
     expect(emitLinteljsRecord(hostedAnswersFor({ packageManagerVersion: '12.4.1' }), 'my-app')).toBe(`\
 // Written once by @linteljs/create. Yours from here; the starter Version page is its only reader.
@@ -74,10 +72,6 @@ export const ANSWERS = [
 `);
   });
 
-  /*
-   * A browser cannot read either off its machine, which is the half of this page that could never have been a
-   * runtime read. Both are absent in a config written before they were recorded, and then print nothing.
-   */
   it('writes the recorded node and manager versions, and leaves out what was never recorded', () => {
     const recorded = emitLinteljsRecord(hostedAnswersFor({
       nodeVersion: '26.9.0',
@@ -86,7 +80,6 @@ export const ANSWERS = [
 
     expect(recorded).toContain("version: '26.9.0'");
     expect(recorded).toContain("version: '12.4.1'");
-    // Every run records its Node, so the manager's version is the one that can be absent.
     expect(emitLinteljsRecord(hostedAnswersFor(), 'my-app')).not.toContain("name: 'pnpm'");
   });
 

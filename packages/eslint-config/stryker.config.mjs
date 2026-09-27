@@ -1,21 +1,14 @@
-/**
- * Mutation testing, run as `pnpm mutation`, reports in `reports/mutation`. `.mjs` because Stryker's config lookup has
- * no `.ts`, and the runner named because pnpm's layout hides it from Stryker's scan. It is patched, under
- * `patchedDependencies`.
- */
+// `.mjs` because Stryker's config lookup has no `.ts`; the runner is named because pnpm's layout hides it.
 
-// @type {import('@stryker-mutator/api/core').PartialStrykerOptions}
 const config = {
   packageManager: 'pnpm',
   testRunner: 'vitest',
   plugins: ['@stryker-mutator/vitest-runner'],
   reporters: ['html', 'json', 'clear-text', 'progress'],
 
-  // Measured against `all` on vueFramework.ts and importSortUtils.ts: 98 of 111 mutants static, identical verdicts,
-  // same wall time. `perTest` keeps the killing test named for the rest.
+  // Measured against `all`: identical verdicts, same wall time, and `perTest` names the killing test.
   coverageAnalysis: 'perTest',
 
-  // The barrel and the types hold no logic worth mutating.
   mutate: [
     'src/**/*.ts',
     '!src/**/*.test.ts',

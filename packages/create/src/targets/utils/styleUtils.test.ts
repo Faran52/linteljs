@@ -13,7 +13,6 @@ import {
 
 import type { Answers } from '@config/types';
 
-// Vue's spelling: two of the four renamed, so their destinations stop being the asset's own path.
 const RENAMED: ComponentPaths = {
   header: 'src/components/features/app-header/AppHeader',
   mark: 'src/components/ui/app-mark/AppMark',
@@ -22,7 +21,6 @@ const RENAMED: ComponentPaths = {
 };
 
 describe('componentStyles', () => {
-  // Each stylesheet ships exactly when its component does: the button with a store or a form, the input with a form.
   it.each<[string, Partial<Answers>, string[]]>([
     ['no answers', {}, ['AppHeader', 'Mark']],
     ['a store', { store: 'zustand' }, ['AppHeader', 'Mark', 'Button']],
@@ -51,7 +49,6 @@ describe('componentStyles', () => {
 });
 
 describe('componentStyleModules', () => {
-  // One module per component in two spellings of one export, and the StyleX tokens with the StyleX one.
   it('writes the class-name module without stylex and the compiled one and its tokens with it', () => {
     expect(pickedBy(componentStyleModules())).toEqual([
       'src/components/features/app-header/styles.ts base',
@@ -70,7 +67,6 @@ describe('componentStyleModules', () => {
     ]);
   });
 
-  // `from` names the target whose bytes a module is, and a renamed directory reads the asset from the base one.
   it('takes another target\'s bytes into its own directories', () => {
     expect(componentStyleModules('solid', RENAMED)[2]).toMatchObject({
       target: 'src/components/ui/app-mark/styles.ts',

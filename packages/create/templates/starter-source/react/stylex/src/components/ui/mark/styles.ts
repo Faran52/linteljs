@@ -2,13 +2,7 @@ import * as stylex from '@stylexjs/stylex';
 
 import { tokens } from '../../../styles/tokens.stylex';
 
-/*
- * The beam never moves. It is the standard, and the lines are what come into line with it. Slow apart and fast
- * back: decay reads as drift and correction reads as the fix, where even timing reads as a jitter.
- *
- * One `@keyframes` for all three, with the distance each line travels held in a custom property the line sets.
- * Three animations would be three copies of the same six frames differing in one number.
- */
+// Slow apart and fast back: decay reads as drift and correction as the fix.
 const cascade = stylex.keyframes({
   '0%': {
     transform: 'translateX(0)',

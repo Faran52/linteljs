@@ -1,9 +1,4 @@
-/**
- * Every layer, one export each, which is what makes `scripts/smoke/smokeScript.ts` able to hold the barrel and the
- * `exports` map to the same list. No `composeConfig`: it would load every framework layer, so it lives at
- * `/compose-config`. Taking a layer through its own subpath stays the better choice for a project, since the barrel
- * resolves the optional peer of every layer in it.
- */
+// No `composeConfig`: it would load every framework layer, so it lives at `/compose-config`.
 export {
   angular,
   angularGroup,

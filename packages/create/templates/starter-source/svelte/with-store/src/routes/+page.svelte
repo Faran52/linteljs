@@ -14,7 +14,6 @@
   <h1 class="title">{NAME}</h1>
   <p class="lede">Svelte, SvelteKit and the standard already applied.</p>
 
-  <!-- State that outlives the page: switch tabs and come back, and the count is still here. -->
   <div class="counter">
     <span class="count" aria-live="polite">{counter.count}</span>
     <Button onclick={counter.add}>Add one</Button>

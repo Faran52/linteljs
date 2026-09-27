@@ -37,8 +37,6 @@ import type { HostedAnswers } from '@config/types';
 const HUSKY_HOOK = '.husky/pre-commit';
 const TYPE_STANDARDS = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 
-// The three files only a Claude Code project gets, and the whole of what removal may touch here.
-// Sorted, because the record a run leaves behind is sorted and what `sync` finds obsolete follows it.
 const CLAUDE_ONLY = [
   '.claude/settings.json',
   'plugins/linteljs/.claude-plugin/marketplace.json',
@@ -63,7 +61,6 @@ afterEach(async () => {
   });
 });
 
-// `sync --force` without the CLI.
 const applyPending = async (answers: HostedAnswers): Promise<SyncResult> => {
   const { pending } = await planSync(cwd, answers);
 
@@ -103,10 +100,6 @@ describe('planSync', () => {
     expect(plan.pending).toEqual(plan.entries);
   });
 
-  /*
-   * The recorded config is what sync plans from, so it is the project's own bytes and never a file to rewrite. The
-   * record of what linteljs owns is rewritten by every apply, so it is bookkeeping rather than a file to choose.
-   */
   it('never plans the recorded config or its own record', async () => {
     const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
     const targets = entries
@@ -138,7 +131,6 @@ describe('planSync', () => {
     expect(pendsConfig).toBe(false);
   });
 
-  // A copied rule rather than an emitted config, and a full project around it, every other file of which is unchanged.
   it('reports a locally edited rule alone, with its diff, and leaves the edit on disk', async () => {
     await applyPending(HOSTED_DEFAULTS);
     await writeFile(join(cwd, TYPE_STANDARDS), '# local edit\n', 'utf8');
@@ -155,7 +147,6 @@ describe('planSync', () => {
     expect(await readFile(join(cwd, TYPE_STANDARDS), 'utf8')).toBe('# local edit\n');
   });
 
-  // A machine with no git still needs to be told which files differ.
   it('reports a changed file without a diff when git cannot be spawned', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
     await writeFile(join(cwd, TYPE_STANDARDS), '# local edit\n', 'utf8');
@@ -175,7 +166,6 @@ describe('planSync', () => {
     }
   });
 
-  // Past spawnSync's one-megabyte buffer git's output is cut mid-hunk, and half a diff reads as the whole of one.
   it('reports a changed file without a diff when the diff outgrows what git can hand back', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, [TYPE_STANDARDS]);
     await writeFile(join(cwd, TYPE_STANDARDS), 'local edit\n'.repeat(200_000), 'utf8');
@@ -204,7 +194,6 @@ describe('planSync', () => {
     expect(plan.pending).toContainEqual(entry);
   });
 
-  // An edit is the project's; only absence is still linteljs's to fix.
   it('calls an edited preserved artifact unchanged and its absence missing', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md']);
     await writeFile(join(cwd, 'CLAUDE.md'), '# our own instructions\n', 'utf8');
@@ -220,8 +209,6 @@ describe('planSync', () => {
     expect(await statusOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toBe('missing');
   });
 
-  // A bare catch that read any read failure as absence would report this as "missing" and invite a
-  // `--force` that then fails writing over a directory, hiding the real problem behind the wrong status.
   it('rejects rather than reporting missing when a target cannot be read for a reason other than absence', async () => {
     await mkdir(join(cwd, 'eslint.config.js'));
 
@@ -253,7 +240,6 @@ describe('planSync', () => {
     expect(pending).toEqual(expect.arrayContaining(obsolete));
   });
 
-  // Exact paths, not prefixes: neither adapter is in the inventory, nor is a file this CLI never wrote.
   it('leaves the deselected adapter and unknown files below a generated directory alone', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md', '.claude/settings.json']);
     await writeFile(join(cwd, '.claude/notes.md'), '# ours\n', 'utf8');
@@ -334,7 +320,6 @@ describe('applySync', () => {
   it('refuses to remove an obsolete file through a symbolic-link parent', async () => {
     const external = join(cwd, 'external-claude');
 
-    // A path is only ever removed because a previous run recorded it as its own.
     await mkdir(join(cwd, 'plugins', 'linteljs'), { recursive: true });
     await writeFile(
       join(cwd, MANAGED_PATH),
@@ -358,8 +343,6 @@ describe('applySync', () => {
     expect(mode & 0o111).toBe(0o111);
   });
 
-  // The setup file, which is preserved outright: the checker is merged instead, since it holds the standard's
-  // pattern list as well as the project's own blocks.
   it('writes a preserved file when missing, and leaves it alone once it exists', async () => {
     const setup = '__mocks__/setupTests.tsx';
     const first = await applySync(cwd, HOSTED_DEFAULTS, [setup]);
@@ -387,12 +370,9 @@ describe('applySync', () => {
 
     expect(await exists(join(cwd, 'AGENTS.md'))).toBe(true);
     expect(await exists(join(cwd, '.agents/plugins/marketplace.json'))).toBe(true);
-    // Not in the inventory, so `--force` has no mandate over it even with its host gone.
     expect(await exists(join(cwd, 'CLAUDE.md'))).toBe(true);
   });
 
-  // Both hooks files are in managed.json: sync rewrites each, keeps a project's own Cursor hook, and takes both away
-  // with their agents.
   it('keeps the Cursor and Copilot hooks files current and removes them once their agents are dropped', async () => {
     const hosted: HostedAnswers = {
       ...HOSTED_DEFAULTS,
@@ -421,7 +401,6 @@ describe('applySync', () => {
     expect(await exists(join(cwd, '.github/hooks/linteljs.json'))).toBe(false);
   });
 
-  // The shell hooks and their parser, as a project written before the hooks became TypeScript recorded them.
   it('removes the retired shell hooks and parser a previous run recorded, and keeps what replaced them', async () => {
     const retired = [
       'plugins/linteljs/hooks/banned-pattern-guard.sh',
@@ -467,14 +446,12 @@ describe('applySync', () => {
     expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'))).toBe(true);
   });
 
-  // `sync` is handed no name, so a manifest it has to write from nothing takes the directory's, as `--existing` does.
   it('names a package.json it writes from nothing after the directory', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['package.json']);
 
     expect(JSON.parse(await readFile(join(cwd, 'package.json'), 'utf8'))).toHaveProperty('name', basename(cwd));
   });
 
-  // Planned and applied are two moments: a file deleted in between is already where the apply wanted it.
   it('does not fail on an obsolete file that vanished after it was planned', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
     await rm(join(cwd, '.claude/settings.json'));
@@ -493,19 +470,16 @@ describe('applySync', () => {
     expect(await exists(join(cwd, 'plugins/linteljs/.claude-plugin/plugin.json'))).toBe(true);
   });
 
-  // An empty `.claude/` left behind would read as if the host were still configured.
   it('drops the directories that empty out and keeps the ones that do not', async () => {
     await applyPending(HOSTED_DEFAULTS);
     await applyPending(CODEX_ONLY);
 
     expect(await exists(join(cwd, '.claude'))).toBe(false);
     expect(await exists(join(cwd, 'plugins/linteljs/.claude-plugin'))).toBe(false);
-    // The same walk up reaches these, and they still hold the shared skill and hooks.
     expect(await exists(join(cwd, 'plugins/linteljs'))).toBe(true);
     expect(await exists(join(cwd, 'plugins'))).toBe(true);
   });
 
-  // `retired/` is met first, from the shallow file, and only empties once the deep chain below it is gone.
   it('drops a directory whose emptying waits on a deeper one met after it', async () => {
     const retired = ['retired/a.md', 'retired/deep/er/b.md'];
 

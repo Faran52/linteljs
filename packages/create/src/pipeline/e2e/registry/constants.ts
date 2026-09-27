@@ -1,8 +1,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-// Walked up to `pnpm-workspace.yaml` rather than counted in `..`, so moving this file cannot silently break `ROOT`:
-// only the end-to-end suite reads it, and `pnpm check` excludes that.
+// Walked up rather than counted in `..`: only the e2e suite reads it, and `pnpm check` excludes that.
 const workspaceRootFrom = (from: string): string => {
   let directory = from;
 
@@ -21,22 +20,15 @@ const workspaceRootFrom = (from: string): string => {
 
 export const ROOT = workspaceRootFrom(import.meta.dirname);
 
-/**
- * One registry for a run, on a fixed port. Every job in `e2e.yml` is one package manager on its own machine, so two
- * registries never want the same machine at once. Fixed rather
- * than chosen freshly because Yarn caches package metadata globally, tarball URLs included, and Verdaccio answers its
- * conditional request with 304 whenever upstream is unchanged: a port that moved between runs is a dead tarball host.
- */
+// Fixed: Yarn caches tarball URLs globally and Verdaccio answers 304, so a moved port is a dead tarball host.
 export const PORT = 48730;
 
 // Wiped at the start of every run: anything recording which versions exist rather than what bytes they hold.
 export const RUN_DIR = join(ROOT, '.e2e');
 
-// Never wiped, and outside `RUN_DIR`. A package manager's cache records the registry a tarball came from, which the
-// fixed port above keeps valid between runs, so every download survives to the next one.
+// Never wiped: the fixed port keeps a cache's recorded registry valid between runs.
 export const CACHE_DIR = join(ROOT, '.e2e-cache');
 
-// What the registry proxies everything outside `@linteljs/*` to, unless `E2E_UPSTREAM` names another.
 export const UPSTREAM = 'https://registry.npmjs.org/';
 
 export const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin']

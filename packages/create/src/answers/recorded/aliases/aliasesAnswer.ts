@@ -1,7 +1,6 @@
 import type { AnswerRecord } from '../../types';
 
-// Never asked: the directories a project grew. Recorded here because `eslint.config.js` is emitted whole, so an
-// alias added there was lost on the next `sync`.
+// Recorded because `eslint.config.js` is emitted whole, so an alias added there was lost on `sync`.
 export const aliasesAnswer = {
   key: 'aliases',
   description: 'Aliases this project has beyond the standard set, merged in after it. A value ending in /* names a '

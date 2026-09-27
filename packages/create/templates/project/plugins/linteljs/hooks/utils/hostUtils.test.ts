@@ -79,7 +79,6 @@ describe('readCommand', () => {
     }, 'postToolUse')).toBeUndefined();
   });
 
-  // Cursor names no shell, so the platform decides the dialect.
   it.each([
     ['darwin', 'bash'],
     ['win32', 'powershell'],
@@ -96,7 +95,6 @@ describe('readCommand', () => {
       .toBe('eslint src');
   });
 
-  // Cursor runs Claude Code's hooks as well, as `preToolUse`: that copy of the hook answers nothing.
   it.each([
     [cursorToolPayload('git stash', 'preToolUse'), 'beforeShellExecution'],
     [cursorToolPayload('eslint src', 'preToolUse'), 'postToolUse'],
@@ -147,7 +145,6 @@ describe('readEdit', () => {
     });
   });
 
-  // Cursor documents no path on the edit event that can answer the agent, so its payload is left alone.
   it('reads nothing from Cursor', () => {
     expect(readEdit({
       cursor_version: '2.4.0',
@@ -216,7 +213,6 @@ describe('writeDecision', () => {
   });
 });
 
-// Spawned: reading stdin through `node:process` rather than the global failed a large payload with EAGAIN.
 describe('readPayload', () => {
   it('reads a payload larger than one pipe buffer', () => {
     const command = `git status ${'x'.repeat(4 * 1024 * 1024)}; git stash`;
@@ -224,7 +220,6 @@ describe('readPayload', () => {
       input: JSON.stringify({ tool_input: { command } }),
       encoding: 'utf8',
       maxBuffer: 16 * 1024 * 1024,
-      // A synchronous spawn ignores the test timeout, so a stalled pipe would otherwise hang the run.
       timeout: 30_000,
     });
 

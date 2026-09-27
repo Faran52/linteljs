@@ -4,8 +4,7 @@ type PluginConfigs = NonNullable<ESLint.Plugin['configs']>;
 
 type PluginConfig = PluginConfigs[string];
 
-// The matcher `Extract` reads, picking the flat arm out of the union. `unknown` is the type-level wildcard here and
-// no value ever carries it, which is why `type-standards.md` exempts this file from the mechanical floor.
+// `unknown` is the type-level wildcard here, which is why `type-standards.md` exempts this file.
 interface RuleBearing {
   rules?: unknown;
 }
@@ -31,7 +30,6 @@ const scopedTo = (configs: Linter.Config[], files?: string[]): Linter.Config[] =
     });
 };
 
-// Normalises the three shapes `Plugin.configs` holds; `files` fills any entry with no glob of its own.
 export const presetOf = (config: PluginConfig | undefined, label: string, files?: string[]): Linter.Config[] => {
   if (!config) {
     throw new Error(`@linteljs/eslint-config: ${label} is not published by its plugin`);

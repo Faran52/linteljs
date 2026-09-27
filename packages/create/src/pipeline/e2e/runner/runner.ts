@@ -30,10 +30,9 @@ import {
 import type { PackageManager } from '@config/types';
 import type { E2eCase } from '../matrix/matrix';
 
-// What each manager prints when an install was not clean.
 const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   'pnpm': (output) => {
-    // `Request took` and the speed notice are this suite's own registry on a cold fetch, not the project.
+    // `Request took` and the speed notice are this suite's own registry on a cold fetch.
     return (output.match(/^.*(?:\bWARN\b|Ignored build scripts).*$/gm) ?? [])
       .filter((line) => {
         return !line.includes('Request took')
@@ -47,10 +46,7 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
         return !DEPRECATION.test(line);
       });
   },
-  /*
-   * Yarn's summary decides; then every coded line counts but the ones that only narrate a cold install: YN0000 the
-   * banner, YN0007 a package built for the first time, YN0013 packages fetched, YN0085 the resolution delta.
-   */
+  // YN0000, YN0007, YN0013 and YN0085 only narrate a cold install.
   'yarn': (output) => {
     return output.includes('Done with warnings')
       ? (output.match(/^.*YN0(?!000|007|013|085)\d{3}.*$/gm) ?? [])
@@ -59,7 +55,6 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
           })
       : [];
   },
-  // Yarn 1 has no codes: every line it wants read starts with the word.
   'yarn-classic': (output) => {
     return (output.match(/^warning .*$/gm) ?? [])
       .filter((line) => {
@@ -69,15 +64,14 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   'bun': (output) => {
     return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? [])
       .filter((line) => {
-      // `Slow filesystem` names this suite's own cache directory, which is a fact about the machine, not the project.
+      // `Slow filesystem` names this suite's own cache directory.
         return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');
       });
   },
 };
 
 const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
-  // Proves the install resolved the workspace versions rather than anything published. One `why` per package: yarn 1
-  // names a dependent without its version, so only a package's own answer carries it on every manager.
+  // One `why` per package: yarn 1 names a dependent without its version.
   const version = registry.version.replaceAll('.', String.raw`\.`);
 
   for (const name of ['@linteljs/eslint-plugin', '@linteljs/eslint-config']) {
@@ -96,16 +90,10 @@ const verifyLintOutput = async (pm: PackageManager, project: string): Promise<vo
 
   expect(`${String(found)} findings\n${found === 0 ? '' : lint.output}`).toBe('0 findings\n');
 
-  // `check`, so the gate has one definition.
   expect(outcome(await runPm(pm, ['check'], project), 'check')).toBe('check: ok');
 };
 
-/**
- * The StyleX classes the built JS and HTML name that no built stylesheet defines. Every build directory a target
- * writes is read, server halves included, since a class a server render emits needs its rule as much. A build that
- * drops the atomic rules still passes `check`, which is how this once shipped. A build naming no class passes: the
- * extension's starter has no StyleX component.
- */
+// A build that drops the atomic rules still passes `check`, which is how this once shipped.
 const missingStylexRules = (project: string): string => {
   const files = globSync('{dist,build,.output,.svelte-kit/output,.next}/**/*.{js,mjs,html,css}', { cwd: project });
   const joined = (css: boolean): string => {
@@ -142,13 +130,10 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
   expect(create.output).not.toContain('next: ');
-  // The whole run: nothing but linteljs and the install it spawns writes to it.
   expect(INSTALL_NOISE[answers.packageManager](create.output)).toEqual([]);
-  // `prepare` (`postinstall` on yarn) ran: husky writes its runner there.
   expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
-  // The manager came from the injected user agent rather than a flag, so what the config recorded is the proof it
-  // was read, down to the version.
+  // The manager came from the injected user agent, so the recorded config proves it was read.
   expect(parseLinteljsConfig(readFileSync(join(project, CONFIG_PATH), 'utf8'))).toMatchObject({
     ...answers,
     packageManagerVersion: await versionOf(answers.packageManager),

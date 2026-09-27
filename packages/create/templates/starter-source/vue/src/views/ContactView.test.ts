@@ -5,15 +5,8 @@ import { installData } from '../lib/providers/installData';
 
 import ContactView from './ContactView.vue';
 
-/*
- * Every mount is annotated, and settled with `nextTick` rather than `wrapper.vm`: a `.ts` file cannot type a
- * `.vue` import, so the wrapper arrives as `any` and naming its type is what makes every call on it a typed one.
- *
- * Through the data slot, because the submit behind this view is a mutation whenever TanStack Query answered.
- */
 const mounted = { global: { plugins: [installData] } };
 
-// Blurred, since the rules run on blur.
 const fill = async (view: ReturnType<typeof mount>, selector: string, value: string): Promise<void> => {
   const field = view.get(selector);
 

@@ -36,7 +36,6 @@ interface Evaluation {
   fixed: string;
 }
 
-// Fixers that may only insert or remove whitespace, so token order holds.
 const ORDERED_RULES = [
   'destructuring-property-newline',
   'export-specifier-newline',
@@ -45,10 +44,8 @@ const ORDERED_RULES = [
   'union-newline',
 ];
 
-// Those, plus the two that may move a member: same tokens, different order.
 const MOVE_RULES = [...ORDERED_RULES, 'interface-order', 'sort-hook-dependencies'];
 
-// A changed token stream proves nothing on its own: re-run the subsets that promise to keep it, and name the breaker.
 const attributeTokens = (
   context: AuditContext,
   source: string,
@@ -86,7 +83,7 @@ const attributeTokens = (
   return undefined;
 };
 
-// Only whitespace fixers are asked: `prefer-arrow-functions` moves which name sits nearest an untouched comment.
+// Only whitespace fixers: `prefer-arrow-functions` moves which name sits nearest an untouched comment.
 const attributeCommentMoves = (
   context: AuditContext,
   source: string,
@@ -180,7 +177,6 @@ const inspect = (
     });
 };
 
-// `parsed` spares a caller that already holds the AST a second parse.
 export const evaluate = (
   context: AuditContext,
   source: string,
@@ -221,7 +217,7 @@ const changedLines = (source: string, fixed: string): [number, number] => {
   return [lineOf(source, start), lineOf(source, source.length - back)];
 };
 
-// The smallest slice that still shows the category, widening outwards: a two-line slice rarely parses on its own.
+// A two-line slice rarely parses on its own.
 export const narrow = (
   context: AuditContext,
   source: string,
@@ -268,7 +264,7 @@ export const attribute = (
     });
 };
 
-// Each rule alone with an empty pass subtracted, since the parse is most of a large file's cost. Slowest files only.
+// An empty pass subtracted, since the parse is most of a large file's cost.
 export const dominantRule = (context: AuditContext, file: string): Dominant => {
   const source = readFileSync(file, 'utf8');
   const name = nameFor(file, source);

@@ -12,7 +12,6 @@ describe('verdaccioConfig', () => {
     expect(verdaccioConfig('/storage')).toContain(`  npmjs:\n    url: ${UPSTREAM}\n`);
   });
 
-  // A machine that cannot reach npmjs names a mirror. The uplink keeps its name, so `proxy: npmjs` still reads it.
   it('proxies to the upstream E2E_UPSTREAM names', () => {
     const config = verdaccioConfig('/storage', 'https://mirror.example/');
 

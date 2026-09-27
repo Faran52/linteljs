@@ -10,23 +10,20 @@ import { PROJECT_NAME_RULE } from '../../constants';
 import { isValidProjectName } from '../../utils/nameUtils';
 import { CLI_OPTIONS, FLAGGED_ANSWERS } from '../constants';
 
-// Answers given as flags, validated by the config parser so a wrong value names its choices.
+// Validated by the config parser, so a wrong value names its choices.
 export type AnswerFlags = Partial<Record<AnswerKey, JsonValue>>;
 
 export interface CliOptions {
   command: 'create' | 'sync';
   name: string;
   cwd: string;
-  // Present when any answer flag was passed; the run then asks nothing.
   answers?: AnswerFlags;
   skip: Stage[];
-  // `--existing`: the directory is a repository that already exists rather than one this run makes.
   existing: boolean;
   // Kept rather than thrown on, so `main` reports every argv problem the same way.
   unknownSkips: string[];
   unexpectedArguments: string[];
   yes: boolean;
-  // `--seed`: plant the seed artifacts in that directory as if this run had made it.
   seed: boolean;
   force: boolean;
   help: boolean;
@@ -40,8 +37,7 @@ const list = (flag: string[]): string[] => {
     });
 };
 
-// `values[record.flag]` to `{ [record.key]: ... }`. `CLI_OPTIONS` declares every answer flag a string and a list one
-// `multiple`, so an array is a list to comma-split and anything else passes through for the config parser to validate.
+// `CLI_OPTIONS` declares list flags `multiple`, so an array is a list to comma-split.
 const answerFlagsFrom = (values: Record<string, boolean
   | string
   | string[]
@@ -97,7 +93,6 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     unknownSkips,
     unexpectedArguments,
     ...(answered ? { answers: flagged } : {}),
-    // An answer flag makes the run non-interactive the way --yes does; the rest take the defaults.
     existing: values.existing,
     yes: values.yes || answered,
     seed: values.seed,
@@ -107,10 +102,9 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
   };
 };
 
-// The argument only: a directory name was never chosen as a package name, and adopting one is what
-// `--existing` is for.
+// A directory name was never chosen as a package name; adopting one is what `--existing` is for.
 const projectNameError = (options: CliOptions): string | undefined => {
-  // `sync` takes no name, so `parseCliArgs` gives it `''` and this one check covers both.
+  // `sync` takes no name, so this one check covers both.
   if (options.name === '') {
     return undefined;
   }
@@ -118,7 +112,6 @@ const projectNameError = (options: CliOptions): string | undefined => {
   return isValidProjectName(options.name) ? undefined : `Project name must be ${PROJECT_NAME_RULE}.`;
 };
 
-// Every refusal of the argv, in the order a user meets them.
 export const argumentError = (options: CliOptions): string | undefined => {
   if (options.unexpectedArguments.length > 0) {
     const plural = options.unexpectedArguments.length === 1 ? '' : 's';

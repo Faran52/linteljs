@@ -18,8 +18,7 @@ export const moduleOf = (id: string): LintelRuleModule => {
   return module;
 };
 
-// One entry per language: JavaScript stays on espree, which is what a consumer linting `.js` runs, since
-// typescript-eslint accepts syntax espree rejects. A flat config only applies to a name its `files` matches.
+// JavaScript stays on espree, what a consumer linting `.js` runs: typescript-eslint accepts more syntax.
 export const configFor = (
   modules: Record<string, LintelRuleModule>,
   settings: Linter.RulesRecord,

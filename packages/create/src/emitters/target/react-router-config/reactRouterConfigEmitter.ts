@@ -4,13 +4,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 
-/**
- * React Router's own config, which framework mode reads and no other answer writes.
- *
- * `appDirectory` is the whole reason this is emitted rather than left at its default. React Router looks for
- * `app/`, this repository puts source in `src/`, and one line here is what keeps every glob it writes reading a
- * single root. `ssr` is on, which is what makes this framework mode rather than the same router in a SPA.
- */
+// `appDirectory`: React Router looks for `app/`, and source lives in `src/`.
 export const emitReactRouterConfig = (): string => {
   return [
     "import type { Config } from '@react-router/dev/config';",

@@ -1,4 +1,4 @@
-// Emitter: import statement in, replacement text out. A string, not a fix, so `importNewlines.ts` can measure it first.
+// A string, not a fix, so `importNewlines.ts` can measure it first.
 import {
   type NodeLocation,
   rebuildLosesComments,
@@ -8,7 +8,6 @@ import {
 
 import type { Indents } from '../../../utils/layoutUtils.ts';
 
-// The matcher `Extract` reads, named because nothing in this workspace is written inline.
 interface ImportDeclarationNode {
   type: 'ImportDeclaration';
 }
@@ -18,8 +17,7 @@ interface ImportSource {
   loc: NodeLocation;
 }
 
-// `range`/`loc` are ESTree-optional but always present on a parsed statement; `importKind` is TypeScript-only,
-// unnamed in ESLint's ESTree types.
+// `range`/`loc` are always present on a parsed statement; `importKind` is TypeScript-only.
 interface ImportShape {
   source: ImportSource;
   range: [number, number];
@@ -35,8 +33,7 @@ interface ClauseParts {
   namedImports: string[];
 }
 
-// Each specifier's own source text, not a reconstruction: `imported.name` drops an inline `type` prefix and is
-// undefined for a string-literal name.
+// `imported.name` drops an inline `type` prefix and is undefined for a string-literal name.
 const partsOf = (sourceCode: SourceCode, node: ImportNode): ClauseParts => {
   const parts: ClauseParts = {
     defaultImport: '',
@@ -61,7 +58,7 @@ const partsOf = (sourceCode: SourceCode, node: ImportNode): ClauseParts => {
   return parts;
 };
 
-// Split form lands at the statement's own column, one step in; emitting at column 0 fights an indent rule.
+// Emitting at column 0 fights an indent rule.
 const writeNamedClause = (named: string[], indents: Indents | null, eol: string): string => {
   if (!indents) {
     return `{ ${named.join(', ')} }`;
@@ -73,7 +70,6 @@ const writeNamedClause = (named: string[], indents: Indents | null, eol: string)
   return `{${eol}${inner}${named.join(separator)}${eol}${outer}}`;
 };
 
-// The statement rewritten, or null when it must be left alone. `indents` picks split columns, or null for collapsed.
 export const writeImport = (
   sourceCode: SourceCode,
   node: ImportNode,
@@ -104,7 +100,7 @@ export const writeImport = (
     parts.push(writeNamedClause(namedImports, indents, eol));
   }
 
-  // Everything from the module specifier onward, verbatim, so import attributes survive the rebuild.
+  // Verbatim, so import attributes survive the rebuild.
   parts.push(' from ', sourceCode.text.slice(node.source.range[0], node.range[1]));
 
   return parts.join('');

@@ -7,10 +7,7 @@ import type { ReactNode } from 'react';
 
 import '../global.css';
 
-/*
- * The route root, and the one place the stylesheet is imported: Metro has no CSS pipeline of its own, so NativeWind
- * is what makes this import mean anything and the answer that brings it is what writes this file.
- */
+// Metro has no CSS pipeline; NativeWind is what makes this import mean anything.
 const RootLayout = (): ReactNode => {
   return (
     <Tabs

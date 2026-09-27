@@ -15,27 +15,21 @@ import { sortedImports } from '../../utils/importUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
 
-// Merges onto `vite.config.ts` on a Vite target, since a standalone config has no framework plugin. `./vite.config.js`
-// on purpose: extensionless, Vite warns on every run; `.ts` hits TS5097; `.js` resolves to the `.ts` under `bundler`.
+// `./vite.config.js`: extensionless, Vite warns every run; `.ts` hits TS5097; `.js` resolves to the `.ts`.
 
-// The entry exclusion matches only at the root of `src/`, so a `src/lib/index.ts` barrel still counts.
+// Root of `src/` only, so a `src/lib/index.ts` barrel still counts.
 const SHARED_COVERAGE_EXCLUDE = [
   '**/*.test.*',
   '**/*.d.ts',
   'src/typings/**',
   'src/{main,index}.{ts,tsx}',
-  // A StyleX token table is compiled to CSS by the bundler, so at runtime there is nothing of it left to measure.
+  // Compiled to CSS by the bundler, so nothing of it is left at runtime.
   '**/*.stylex.{ts,tsx}',
-  /*
-   * A component's style module, which is the same kind of thing one level down: a declaration of rules, compiled
-   * to atomic classes under StyleX and a table of class names otherwise. Astro is what settles it rather than
-   * taste: an `.astro` component has no vitest renderer, so a module only an `.astro` file imports cannot be
-   * reached by any suite that could be written.
-   */
+  // An `.astro` component has no vitest renderer, so a module only one imports is unreachable by any suite.
   '**/components/**/styles.{ts,tsx}',
 ];
 
-// A bare `src/**` hands rolldown `src/app.html` and friends, each printing a parse failure while the gate passes.
+// A bare `src/**` hands rolldown `src/app.html`, printing a parse failure while the gate passes.
 const MEASURABLE = [
   'ts',
   'tsx',
@@ -59,7 +53,7 @@ const quoted = (values: string[]): string => {
     .join(', ');
 };
 
-// One entry per line: `max-len` has no fixer. Two levels below the block, which the merged config nests one deeper.
+// One entry per line: `max-len` has no fixer.
 const excludeList = (exclude: string[], indent: string): string => {
   return exclude
     .map((value) => {
@@ -83,14 +77,8 @@ ${indent}  },
 ${indent}},`;
 };
 
-/*
- * `execArgv`: Node 25+ exposes a native `localStorage` that throws without
- * `--localstorage-file`, and happy-dom stopped replacing it, so a storage-backed
- * component test reads `undefined`. Turning the native one off hands the global
- * back to happy-dom's shim. https://github.com/capricorn86/happy-dom/issues/1950
- * Unconditional: Node accepts the flag from 22.4, below `NODE_ENGINE`, and
- * on a release without native storage it turns off nothing.
- */
+// Node 25+ `localStorage` throws without `--localstorage-file`; this hands the global back to happy-dom.
+// https://github.com/capricorn86/happy-dom/issues/1950
 const testBlock = (
   include: string,
   exclude: string[],
@@ -107,13 +95,7 @@ ${coverageBlock(include, exclude, `${indent}  `)}
 ${indent}},`;
 };
 
-/*
- * One project, and the only one this CLI writes by hand: React Native needs its own transform, its own module
- * resolution and a `node` environment, since it renders through a test renderer rather than a DOM.
- *
- * `resolve.extensions` is Metro's own order, so a `.ios` or `.native` module outranks the plain one the way it
- * does at runtime.
- */
+// React Native renders through a test renderer, not a DOM; `resolve.extensions` is Metro's own order.
 const platformProjects = (
   platforms: TestPlatform[],
   include: string,
@@ -182,14 +164,8 @@ ${conditions}${block}
 `;
 };
 
-/*
- * A standalone config inherits no resolution; measured on a real Next project, 27 of 36 suites failed on the
- * import line without `tsconfigPaths`.
- *
- * StyleX is added here rather than left to the target's own build. A target with a Vite config gets the plugin
- * through it, and this is the shape for one that has none: Next compiles through Babel and PostCSS, which a
- * vitest run never reaches, so without the plugin every suite fails on an uncompiled `defineVars`.
- */
+// A standalone config inherits no resolution: 27 of 36 suites failed on a real Next project without it.
+// Next compiles StyleX through Babel, which vitest never reaches, so the plugin is added here.
 const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: StylingPlugin): string => {
   const calls = [...stylex.calls, ...vitestPlugin?.calls ?? []];
   const pluginImports = sortedImports([...vitestPlugin?.imports ?? [], ...stylex.imports]);
@@ -249,8 +225,7 @@ ${block}
   return standaloneConfig(block, target.vitestPlugin, stylex);
 };
 
-// Birth only, for the same reason `vite.config.ts` is. The excludes name this CLI's layout guesses, which a
-// project replaces with its own.
+// Birth only: the excludes are layout guesses a project replaces with its own.
 export const vitestConfigEmitter = (answers: Answers, project: ProjectShape): Artifact[] => {
   const config = emitVitestConfig(answers, setupTestsPath(answers, project.setupTests));
 

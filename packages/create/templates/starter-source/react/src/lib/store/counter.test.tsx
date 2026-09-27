@@ -14,7 +14,6 @@ interface ProbeProps {
   readonly label: string;
 }
 
-// Through `StoreProvider`, so the one suite covers every store: Redux needs that ancestor and the others ignore it.
 const Probe: FC<ProbeProps> = ({ label }) => {
   const { count, add } = useCounter();
 
@@ -22,7 +21,6 @@ const Probe: FC<ProbeProps> = ({ label }) => {
 };
 
 describe('useCounter', () => {
-  // Two readers rather than one: what a store is for is that the second sees what the first did.
   it('counts up, and every reader sees the same count', () => {
     render(
       <StoreProvider>

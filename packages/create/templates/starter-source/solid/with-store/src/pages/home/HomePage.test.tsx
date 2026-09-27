@@ -25,8 +25,6 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { name: 'my-app' })).toBeTruthy();
   });
 
-  // Pressed here rather than only in the store's own suite: the button this page hands the store is a child of
-  // this file, and nothing else renders it.
   it('counts up when the button it holds is pressed', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Add one' }));

@@ -1,5 +1,4 @@
-// Runs the project typecheck and keeps only the errors in the staged files.
-// Usage: node scripts/typecheckStaged.ts src/App.tsx src/lib/utils/dateUtils.ts
+// Keeps only the errors in the staged files.
 import { type ExecException, execSync } from 'node:child_process';
 import {
   argv,

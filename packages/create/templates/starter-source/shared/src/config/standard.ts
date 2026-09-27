@@ -1,4 +1,3 @@
-// What `pnpm check` chains, in the order it runs them.
 export const GATE = [
   {
     command: 'pnpm lint',
@@ -18,7 +17,6 @@ export const GATE = [
   },
 ] as const;
 
-// The four paths worth knowing before changing anything.
 export const STANDARD_PATHS = [
   {
     path: 'eslint.config.js',

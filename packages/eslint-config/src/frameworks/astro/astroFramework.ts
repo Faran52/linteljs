@@ -7,11 +7,9 @@ import type { Layer } from '../../types';
 
 const ASTRO_FILES = ['**/*.astro'];
 
-// The template and the virtual `.ts` files the plugin extracts from it, which no tsconfig can contain. The virtual
-// `.js` files need no entry: `typescript()` already turns the type-aware rules off every `.js` path.
+// No tsconfig can contain these; `.js` virtual files are already type-free under `typescript()`.
 const ASTRO_TYPELESS = ['**/*.astro', '**/*.astro/*.ts'];
 
-// A file-type layer that stacks with a framework one, since a site may host React, Vue, Svelte or Solid islands.
 // Scoped, because the plugin leaves its rule entry unglobbed.
 export const astro = (): Layer => {
   const recommended = presetOf(
@@ -20,7 +18,7 @@ export const astro = (): Layer => {
     ASTRO_FILES,
   );
 
-  // The plugin re-exports jsx-a11y as `astro/jsx-a11y/*`; only that rule entry is kept, the base entries are above.
+  // Only the plugin's `astro/jsx-a11y/*` entry; the base entries are above.
   const a11y = presetOf(
     astroPlugin.configs['flat/jsx-a11y-recommended'],
     'astro/flat/jsx-a11y-recommended',
@@ -36,8 +34,7 @@ export const astro = (): Layer => {
   return [
     ...recommended,
     ...a11y,
-    // The plugin looks for typescript-eslint from `process.cwd()` and falls back to espree and `.js` virtual files
-    // when that fails, which a project that has it only through this package can hit. Named here instead.
+    // The plugin looks for typescript-eslint from `process.cwd()` and falls back to espree when that fails.
     {
       name: '@linteljs/astro/typescript',
       files: ASTRO_FILES,
@@ -49,7 +46,7 @@ export const astro = (): Layer => {
       files: ['**/*.astro/*.ts'],
       languageOptions: { parser: tseslint.parser },
     },
-    // After `typescript()`, which is why `composeConfig` composes this layer last.
+    // After `typescript()`, which is why `composeConfig` composes this last.
     {
       ...tseslint.configs.disableTypeChecked,
       name: '@linteljs/astro/untyped',

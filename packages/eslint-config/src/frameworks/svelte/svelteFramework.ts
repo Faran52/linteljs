@@ -5,12 +5,10 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-// SvelteKit's virtual modules: the sort bucket and the `no-unresolved` allowance are one set.
 const VIRTUAL_MODULES = [String.raw`^\$app/`, String.raw`^\$env/`];
 
 export const svelteGroup: string[] = ['^svelte$', '^svelte/', '^@sveltejs/', ...VIRTUAL_MODULES];
 
-// Filenames SvelteKit owns, which no naming convention accepts.
 const SVELTEKIT_ROUTE_FILES = [
   '**/routes/**/+*.svelte',
   '**/routes/**/+*.ts',
@@ -43,8 +41,7 @@ export const svelte = (): Layer => {
 
     {
       name: '@linteljs/svelte',
-      // Not `.svelte.js`: `typescript()` turns the type-aware rules off every `.js` file, so a JavaScript rune module
-      // has nothing to gain from the project service.
+      // Not `.svelte.js`: `typescript()` turns type-aware rules off every `.js` file.
       files: ['**/*.svelte', '**/*.svelte.ts'],
       languageOptions: {
         parserOptions: {

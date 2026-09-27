@@ -7,7 +7,6 @@ describe('mockingAnswer', () => {
     expect(readAnswer(mockingAnswer, 'msw')).toBe('msw');
   });
 
-  // Optional, so a config written before the answer existed still reads, as an api layer that answers locally.
   it('reads an absent answer as no mocking layer rather than refusing it', () => {
     expect(readAnswer(mockingAnswer, undefined)).toBeUndefined();
   });

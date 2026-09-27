@@ -40,7 +40,6 @@ interface AnswerOverrides {
   router?: Router;
 }
 
-// The keys a target's own tsconfig delta decides, over the shared base.
 interface TypesSource {
   extends?: string;
   include: string[];
@@ -51,7 +50,6 @@ interface TypesSource {
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 describe('buildTsconfig', () => {
-  // The shared standard whole, as a React project receives it: every other case here is a delta from this one.
   it('carries the shared base', () => {
     const expected = {
       compilerOptions: {
@@ -101,7 +99,6 @@ describe('buildTsconfig', () => {
       exclude: ['node_modules', 'dist', 'build', 'coverage'],
     };
 
-    // Strict: an optional key the target leaves unset is absent, not present and undefined.
     expect(buildTsconfig(answersFor({ target: 'react' }))).toStrictEqual(expected);
     expect(emitTsconfig(answersFor({ target: 'react' }))).toBe(`${JSON.stringify(expected, null, 2)}\n`);
   });
@@ -129,7 +126,6 @@ describe('buildTsconfig', () => {
     expect(compilerOptions).not.toHaveProperty('erasableSyntaxOnly');
   });
 
-  // Where each target's own types come from: the config it extends, what it adds to `include`, and its JSX mode.
   it.each<[string, AnswerOverrides, TypesSource]>([
     ['react', { target: 'react' }, {
       include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
@@ -216,8 +212,6 @@ describe('buildTsconfig', () => {
       .toEqual(['node', 'vite/client']);
   });
 
-  // `types` is the whole allow-list once it names anything: `vite/client` only where Vite builds, and a target's
-  // own ambient types after the shared ones.
   it.each<[TargetId, string[]]>([
     ['react', ['node', 'vite/client', 'vitest/globals']],
     ['next', ['node', 'vitest/globals']],
@@ -245,10 +239,6 @@ describe('buildTsconfig', () => {
       .toEqual([[true, undefined], [true, undefined], [false, true]]);
   });
 
-  /*
-   * Framework mode's generated route types sit under `.react-router/types` and are written by `typegen`. `rootDirs`
-   * is what lets a route module import its own `Route.*` from a path beside itself rather than from that tree.
-   */
   it('merges the generated route types into the source tree for framework mode', () => {
     const { compilerOptions, include } = buildTsconfig(answersFor({
       target: 'react',
@@ -260,7 +250,6 @@ describe('buildTsconfig', () => {
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions).not.toHaveProperty('rootDirs');
   });
 
-  // Otherwise NativeWind adds it on the first bundle, and `check` rewrites the project it is checking.
   it('includes the NativeWind declaration file on react-native under tailwind alone', () => {
     const styled = buildTsconfig(answersFor({
       target: 'react-native',
@@ -285,7 +274,6 @@ describe('buildTsconfig', () => {
   });
 });
 
-// The alias list feeds tsconfig paths, the import-sort buckets and the resolver; hand-kept copies drifted.
 describe('alias coupling', () => {
   for (const target of TARGET_IDS
     .filter((id) => {
@@ -311,8 +299,6 @@ describe('alias coupling', () => {
           expect(config).toContain(`'${alias}': '${directory}',`);
         }
 
-        // Anything outside the shared list reaching one consumer and not the others is the failure this pins.
-        // `[@$]` with an optional wildcard, since `$lib` is spelled both ways and Expo's `@/*` has no segment.
         const body = config.replaceAll(/^import .*$/gm, '');
         const emitted = body.match(/'[@$][\w-]*(?:\/[\w-]+)*(?:\/\*)?'/g) ?? [];
 
@@ -328,7 +314,6 @@ describe('alias coupling', () => {
     }
   }
 
-  // Hand-edited into `eslint.config.js` they lasted until the next sync.
   it("carries a project's own aliases through all three consumers", () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -347,11 +332,6 @@ describe('alias coupling', () => {
     expect(config).toContain("'@workers/*': './src/workers/*',");
   });
 
-  /*
-   * Nuxt is the one target whose aliases do not reach tsconfig through `paths`. It declares them in
-   * `nuxt.config.ts`, which merges them into the paths Nuxt generates, and the emitted `tsconfig.json` extends
-   * that and inherits the merged set. So the same coupling holds, one file over.
-   */
   it('carries the alias map through nuxt.config for nuxt, whose tsconfig declares none', () => {
     const answers = answersFor({ target: 'nuxt' });
     const aliases = buildAliases(answers);
@@ -362,19 +342,16 @@ describe('alias coupling', () => {
 
     for (const [alias, directory] of Object.entries(aliases)) {
       const prefix = alias.replace('/*', '');
-      // Absolute, because Nuxt writes these into `.nuxt/` and reads them relative to it.
       const root = directory
         .replace('/*', '')
         .replace('./', '');
 
       expect(nuxtConfig).toContain(`'${prefix}': join(import.meta.dirname, '${root}'),`);
-      // The wildcard too: TypeScript resolves by pattern where Vite resolves by prefix.
       expect(nuxtConfig).toContain(`'${prefix}/*': join(import.meta.dirname, '${root}/*'),`);
       expect(config).toContain(`'${alias}': '${directory}',`);
     }
   });
 
-  // Last, so a restated one is deliberate.
   it('lets a project restate a standard alias, and keeps the order', () => {
     const answers: Answers = {
       ...DEFAULT_ANSWERS,
@@ -403,7 +380,6 @@ describe('alias coupling', () => {
       });
 
     for (const target of others) {
-      // `?? {}` for nuxt, whose tsconfig declares no paths at all: absent is the strongest form of not having one.
       const { paths } = buildTsconfig(answersFor({ target })).compilerOptions;
 
       expect(paths ?? {}).not.toHaveProperty('@server/*');
@@ -411,7 +387,6 @@ describe('alias coupling', () => {
     }
   });
 
-  // Expo's own two, the assets outside `src/` among them, and the hooks where Expo keeps them rather than under `lib/`.
   it("resolves react native's hooks and Expo's aliases where its tree keeps them", () => {
     const { paths } = buildTsconfig(answersFor({ target: 'react-native' })).compilerOptions;
 
@@ -420,7 +395,6 @@ describe('alias coupling', () => {
     expect(paths?.['@/*']).toEqual(['./src/*']);
   });
 
-  // An alias naming a directory the target's repo-structure.md does not describe is a dead end.
   it("matches the extension target's own documented layout", () => {
     const { paths } = buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions;
 
@@ -433,7 +407,6 @@ describe('alias coupling', () => {
       .not.toHaveProperty('@providers/*');
   });
 
-  // `svelte-kit sync` writes `.svelte-kit/tsconfig.json`; extending it replaces `paths`, so `$lib` is redeclared.
   it('extends what SvelteKit generates, and keeps $lib resolvable through it', () => {
     const config = buildTsconfig(answersFor({ target: 'svelte' }));
 
@@ -444,7 +417,6 @@ describe('alias coupling', () => {
   });
 });
 
-// Measured: 213 `TS17004` and 245 `TS7026` in a hosted extension before the JSX settings arrived.
 describe('a hosted framework brings its own JSX settings', () => {
   it('gives the extension solid’s mode and import source', () => {
     const { compilerOptions } = buildTsconfig(

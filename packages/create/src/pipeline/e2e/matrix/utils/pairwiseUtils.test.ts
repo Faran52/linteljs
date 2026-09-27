@@ -22,7 +22,6 @@ const caseFor = (overrides: Partial<Answers>): PairwiseCase => {
 };
 
 describe('pairsOf', () => {
-  // Ten axes, each pair once and in one order: an axis paired with itself or twice over would weigh the greedy.
   it('pairs every two axes once', () => {
     const pairs = pairsOf(DEFAULT_ANSWERS);
 
@@ -30,7 +29,6 @@ describe('pairsOf', () => {
     expect(new Set(pairs).size).toBe(45);
   });
 
-  // An unset optional answer is its own value, spelled so it cannot be mistaken for a real one.
   it('names an unset answer none', () => {
     expect(pairsOf(DEFAULT_ANSWERS)).toEqual(expect.arrayContaining([
       'host:none|browser:chrome',
@@ -84,7 +82,6 @@ describe('coveringSubset', () => {
     expect(coveringSubset([caseFor({}), caseFor({})])).toHaveLength(1);
   });
 
-  // Ties go to the earlier case, which is what keeps a label naming the same case on every run.
   it('breaks a tie towards the earlier case', () => {
     const first = caseFor({ store: 'zustand' });
     const second = caseFor({ store: 'redux-toolkit' });

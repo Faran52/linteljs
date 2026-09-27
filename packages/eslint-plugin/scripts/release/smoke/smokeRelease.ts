@@ -1,10 +1,4 @@
-/**
- * Smoke test for the packed tarball: a real ESLint over a fixture through both the ESM and CJS entry, the preset
- * shapes, and the bundle itself. A missing `files` entry, a broken `exports` map or a CJS build that throws on
- * `require` passes every unit test.
- *
- * Usage: tsx scripts/release/smoke/smokeRelease.ts
- */
+// A missing `files` entry, a broken `exports` map or a throwing CJS build passes every unit test.
 import assert from 'node:assert/strict';
 import {
   existsSync,
@@ -25,12 +19,11 @@ import {
   ruleIdsOf,
 } from '../utils/eslintOutputUtils.ts';
 
-// A `files`-scoped block inside an eslintrc preset, which is where the TypeScript-only rules go.
 interface EslintrcOverride {
   rules?: object;
 }
 
-// What a consumer sees, written out rather than imported from `src/plugin.ts`: this reads the artifact as a stranger.
+// Written out rather than imported: this reads the artifact as a stranger.
 interface EslintrcPreset {
   plugins?: string[];
   rules?: object;
@@ -65,7 +58,6 @@ const isPluginShape = (value: unknown): value is PluginShape => {
     && Boolean(value.configs);
 };
 
-// A dynamic import's namespace, which is the same untyped boundary as a `JSON.parse`.
 const defaultExportOf = async (href: string): Promise<unknown> => {
   const loaded: unknown = await import(href);
 
@@ -77,8 +69,7 @@ log('packing and extracting the tarball');
 const pkgDir = unpackTarball(root, smokeDir);
 const distDir = join(pkgDir, 'dist');
 
-// A fixture that trips several rules at once, so a silently-unregistered rule
-// shows up as a missing message rather than passing quietly.
+// Several rules at once, so a silently unregistered rule shows up as a missing message.
 const fixture = [
   "import { alpha, bravo, charlie } from 'mod';",
   '',
@@ -94,7 +85,7 @@ const expectedRuleIds = [
   '@linteljs/export-specifier-newline',
 ];
 
-// Published since 1.0.0: bare names are eslintrc objects, `flat/` twins arrays. Written out, so a rename fails here.
+// Written out, so a rename fails here.
 const expectedPresetNames = [
   'all',
   'flat/all',
@@ -102,8 +93,7 @@ const expectedPresetNames = [
   'recommended',
 ];
 
-// The preset spread a consumer actually writes. The configs below name their
-// rules by hand, so they would pass with every preset key misspelled.
+// The configs below name rules by hand, so they would pass with every preset key misspelled.
 const esmPresetConfig = (pluginPath: string): string => {
   return [
     `import linteljs from ${JSON.stringify(pluginPath)};`,
@@ -166,7 +156,6 @@ const checkFlavour = async (name: string, configFile: string, configSource: stri
     assert.ok(reported.has(ruleId), `${name}: expected ${ruleId} to report, got ${[...reported].join(', ')}`);
   }
 
-  // Rule ids that fired on the fixture, not rules the plugin ships.
   log(`${name} entry loaded, ${String(reported.size)}/${String(expectedRuleIds.length)} expected rule ids fired`);
 };
 
@@ -178,8 +167,7 @@ await Promise.all([
   checkFlavour('esm-preset', 'eslint.config.mjs', esmPresetConfig(esmEntry)),
 ]);
 
-// A `.cjs` flat config receives the module namespace from `require`, an ESM one the default export. Both have to
-// be a usable plugin on their own, or `plugins: { '@linteljs': linteljs }` silently loses `meta` in one of them.
+// A `.cjs` flat config gets the namespace from `require`, an ESM one the default: both must be a plugin.
 const cjsNamespace = await defaultExportOf(pathToFileURL(join(distDir, 'index.js')).href);
 const esmDefault = await defaultExportOf(esmEntry);
 
@@ -212,7 +200,6 @@ for (const [label, shape] of entries) {
     assert.ok(!Array.isArray(preset), `${label}: configs.${presetName} is an array, not eslintrc`);
     assert.deepEqual(preset.plugins, ['@linteljs'], `${label}: configs.${presetName} names no plugin`);
 
-    // A TypeScript-only preset carries everything in `overrides`; what matters is that it enables something.
     const enabled = Object.keys(preset.rules ?? {}).length
       + (preset.overrides ?? [])
         .reduce((total: number, override) => {
@@ -235,12 +222,7 @@ assert.deepEqual(
   'ESM and CJS entry points expose different rule sets',
 );
 
-/**
- * One read per bundle file for three checks. A `sourceMappingURL` to a file not packed is a dead link in every editor.
- * `tslib` in dist means a runtime dependency grew. And the `engines.node` floor is 14, where a bundler downlevels `??=`
- * but leaves `array.at(-1)`, a TypeError on first call: `compatMatrixRelease.ts` runs modern Node, so it cannot see
- * that.
- */
+// The `engines.node` floor is 14, where a bundler downlevels `??=` but leaves `array.at(-1)`.
 const POST_NODE_14: [string, number][] = [
   ['.at(', 16.6],
   ['.findLast(', 18],
@@ -273,7 +255,7 @@ for (const file of readdirSync(distDir)) {
 
 log('no dangling sourcemap, no runtime dependency, no API newer than the declared Node floor');
 
-// One doc per rule at the path every version has published, which the move into `src/rules/` once dropped.
+// Every version has published this path, which the move into `src/rules/` once dropped.
 const packedDocs = readdirSync(join(pkgDir, 'docs', 'rules'))
   .sort(alphabetically);
 

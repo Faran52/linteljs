@@ -6,13 +6,7 @@ export interface ContactResult {
   status: number;
 }
 
-/*
- * Local, and touching no network. A starter that posted somewhere would fail offline, fail in CI, and fail in the
- * five targets that have no server at all; what is worth demonstrating is the layer, not the request.
- *
- * `services/` would be the home for domain logic. This is `apis/` because it is the edge: the one place that
- * would speak HTTP if there were any.
- */
+// Local: a starter that posted somewhere would fail offline, in CI, and on targets with no server.
 export const submitContact = async (values: ContactValues): Promise<ContactResult> => {
   const errors = validateContact(values);
 
@@ -23,13 +17,7 @@ export const submitContact = async (values: ContactValues): Promise<ContactResul
   return await Promise.resolve({ status: 200 });
 };
 
-/*
- * One shape whatever the data answer is, so the form takes a submit and never knows which layer runs it. With no
- * data layer there is nothing to wrap, so this is the function itself, held stable across renders.
- *
- * A hook by contract rather than by need: the TanStack Query and RTK Query spellings of this file both have to be
- * one, and a page written against two shapes would be a page per data answer.
- */
+// A hook by contract: the TanStack Query and RTK Query spellings of this file have to be one.
 export const useSubmitContact = (): ((values: ContactValues) => Promise<ContactResult>) => {
   return useCallback(async (values: ContactValues) => {
     return await submitContact(values);

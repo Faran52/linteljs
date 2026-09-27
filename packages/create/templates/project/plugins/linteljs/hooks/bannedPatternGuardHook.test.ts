@@ -88,14 +88,6 @@ describe('bannedPatternGuardHook.ts', () => {
     expect(output).toContain('bad cast');
   });
 
-  /**
-   * The checker lives at the project root and the payload's `cwd` is wherever the agent is standing, which is not the
-   * same directory. Resolved from `cwd` alone, an agent working in `dist/` was told `Cannot find module` and had the
-   * edit blocked for it: node exits non-zero either way, so a missing checker read exactly like a banned pattern.
-   *
-   * Both hosts are covered because only one of them answers the question. Claude Code exports the root; Codex does
-   * not, and there the walk up from `cwd` is the only thing that finds it.
-   */
   describe.each([
     ['the host names the project root', true],
     ['the host names nothing, so it is found by walking up', false],
@@ -116,7 +108,6 @@ describe('bannedPatternGuardHook.ts', () => {
     });
   });
 
-  // A project with no checker has no floor to enforce, which is not the same as a violation to report.
   it('stays silent when no checker exists above the file at all', () => {
     rmSync(join(cwd, 'scripts/checkBannedPatterns.ts'));
 
@@ -228,8 +219,6 @@ describe('bannedPatternGuardHook.ts', () => {
     expect(checkedPaths()).toEqual([join(cwd, 'src/app.ts')]);
   });
 
-  // Cursor documents no path on the edit event that can answer the agent, so this hook is not registered there,
-  // and the copy Cursor runs from Claude Code's hooks answers nothing.
   it('answers nothing under Cursor', () => {
     expect(runHook('bannedPatternGuardHook.ts', {
       cursor_version: '2.4.0',

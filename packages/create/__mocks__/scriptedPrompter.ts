@@ -1,44 +1,18 @@
 import { NOTHING_ANSWERED_MESSAGE, type Prompter } from '@terminal';
 
-/**
- * Every shape a scripted answer can take: a `select` or `text` answer is a string, a `multiselect` answer is a list of
- * strings, and `undefined` takes the prompt's own default. That is every value `ask` ever asks a prompter for, so the
- * mock never needs a wider type to carry a test's fixtures.
- */
 export type ScriptedAnswer = string | readonly string[];
 
 export interface Recorded {
   prompter: Prompter;
-  // Every prompt's `message`, in the order `ask` asked them.
   calls: string[];
-  /**
-   * The option labels each `select`/`multiselect` offered, keyed by that prompt's message: what a person reads, which
-   * is deliberately not what gets written to `linteljs.config.json`. Recorded because a label is the only half of a
-   * question with nothing else asserting it; the values are covered by the returned answers.
-   */
   labels: Record<string, string[]>;
 }
 
-/**
- * A scripted terminal for `ask`.
- *
- * Each entry in `answers` is one prompt's answer, in the order `ask` asks them: `undefined` takes that prompt's own
- * default (`initialValue`/`initialValues`), exactly what leaving a real prompt alone and pressing Enter does, and
- * `CANCEL` resolves the way a real Ctrl+C would. A script shorter than the questionnaire runs out instead, and every
- * prompt from there on throws `NOTHING_ANSWERED_MESSAGE` directly, the same way a pipe with nobody left on the other
- * end would, so a test can drive either of `ask`'s two dead ends without a real terminal.
- */
-// What a prompter hands its recorder: the label is absent on a plain choice.
 interface PromptOption {
   label?: string;
   value: string;
 }
 
-/**
- * Placed in a script to simulate a person cancelling that question on purpose, the way a real Ctrl+C resolves: every
- * prompt still ahead of it is never asked. Distinct from a script that simply runs out, which simulates the input
- * disappearing instead, and is a different problem `unwrap` tells apart by throwing directly rather than resolving.
- */
 export const CANCEL = Symbol('scripted-cancel');
 
 export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | undefined)[]): Recorded => {
@@ -92,7 +66,6 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
           return Promise.resolve(CANCEL);
         }
 
-        // A text question has no default to fall back on: a script that answers `undefined` answered nothing.
         return Promise.resolve(typeof answer === 'string' ? answer : CANCEL);
       },
       multiselect: (opts) => {
@@ -106,13 +79,11 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
 
         const value = answer ?? opts.initialValues;
 
-        // Not `Array.isArray`: its `arg is any[]` predicate widens the union away and makes the spread below unsafe.
-        // An array is the only member that is `typeof 'object'`, so this keeps `value` typed with no cast.
+        // Not `Array.isArray`: its `any[]` predicate widens the union and makes the spread unsafe.
         if (typeof value !== 'object') {
           return Promise.resolve(CANCEL);
         }
 
-        // A real prompt will not submit a required question empty, so a script that tries answered nothing.
         if (opts.required && value.length === 0) {
           throw new Error(`${opts.message} needs at least one choice`);
         }

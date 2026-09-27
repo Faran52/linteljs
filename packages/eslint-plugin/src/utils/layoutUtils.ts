@@ -8,7 +8,6 @@ import {
 
 import type { AST, Rule } from 'eslint';
 
-// Anything the parse gave a position to: a token, comment or node; naming it keeps the helpers cast-free.
 export interface Located {
   loc?: AST.Token['loc'] | null | undefined;
 }
@@ -26,7 +25,7 @@ const MAX_SANE_INDENT = 8;
 
 const MIN_SANE_INDENT = 2;
 
-// Carries the previous item forward rather than indexing back, since items[index - 1] can be a possibly-missing read.
+// Carries the previous item forward, since `items[index - 1]` is a possibly-missing read.
 export const adjacentPairs = function* <T>(items: T[]): IterableIterator<[T, T]> {
   let previous: T | undefined;
 
@@ -39,7 +38,7 @@ export const adjacentPairs = function* <T>(items: T[]): IterableIterator<[T, T]>
   }
 };
 
-// A missing side answers false: two absent locations should not read as a match a fixer would rewrite.
+// Two absent locations should not read as a match a fixer would rewrite.
 export const sameLine = (
   before: Located | null | undefined,
   after: Located | null | undefined,
@@ -58,15 +57,13 @@ export const gapIsBlank = (sourceCode: SourceCode, from: number, to: number): bo
 
 // Reads the line's indentation, not the node's column: an ObjectPattern starts after `const `.
 export const getIndent = (sourceCode: SourceCode, node: Located): string => {
-  // A parsed node carries a location, and the line it starts on is always in `lines`.
   const { start } = mustFind(node.loc, 'the location of a node to indent');
   const line = mustFind(sourceCode.lines[start.line - 1], 'the line a node starts on');
 
   return line.replace(/[^\t ][\s\S]*/u, '');
 };
 
-// Whether replacing `node` with `text` leaves the line within `limit`. Whatever sits either side of the node on
-// its line counts, since a length rule measures the line and a collapse it cannot satisfy is an unfixable error.
+// The whole line counts: a collapse a length rule cannot satisfy is an unfixable error.
 export const fitsOnLine = (
   sourceCode: SourceCode,
   node: RuleNode,
@@ -81,7 +78,7 @@ export const fitsOnLine = (
   return before + text.length + after <= limit;
 };
 
-// A fixer that always writes \n leaves a CRLF repo with mixed endings, a permanently dirty diff on Windows.
+// A fixer that always writes \n leaves a CRLF repo with mixed endings.
 export const lineTerminatorOf = (sourceCode: SourceCode): string => {
   return sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
 };
@@ -99,8 +96,7 @@ export const linesInsideTokens = (sourceCode: SourceCode): Set<number> => {
   return inside;
 };
 
-// One indentation step read off the file: narrowest indent wins, tabs win on a tie, and JSDoc
-// ` * ` continuation lines are excluded so they don't skew it to one space.
+// JSDoc ` * ` continuation lines are excluded so they don't skew it to one space.
 export const getIndentStep = (sourceCode: SourceCode): string => {
   const widths = new Set<number>();
   const inside = linesInsideTokens(sourceCode);
@@ -127,14 +123,13 @@ export const getIndentStep = (sourceCode: SourceCode): string => {
     return '\t';
   }
 
-  // `Infinity` for a file with no spaced line, which the ceiling sends to the floor like any other outlier. A width
-  // under the floor lands on the floor too, so raising it to the floor is the same answer as falling back.
+  // `Infinity` for a file with no spaced line, which the ceiling sends to the floor.
   const narrowest = Math.min(...widths);
 
   return ' '.repeat(narrowest <= MAX_SANE_INDENT ? Math.max(narrowest, MIN_SANE_INDENT) : MIN_SANE_INDENT);
 };
 
-// Reads the file's indent step once rather than per node, so a brace and its members share one scale.
+// Read once, so a brace and its members share one scale.
 export const indentReader = (sourceCode: SourceCode): ((node: RuleNode) => Indents) => {
   const step = getIndentStep(sourceCode);
 
@@ -148,7 +143,7 @@ export const indentReader = (sourceCode: SourceCode): ((node: RuleNode) => Inden
   };
 };
 
-// Yields nothing when the anchors sit on different lines: that gap is the caller's layout, not ours to collapse.
+// A gap across lines is the caller's layout, not ours to collapse.
 export const spliceOntoNewline = function* (
   fixer: Fixer,
   before: SpliceAnchor | null | undefined,
@@ -161,7 +156,6 @@ export const spliceOntoNewline = function* (
   }
 };
 
-// The edit alone, for a caller that has already ruled out a comment anywhere in the statement.
 export const commaToNewline = (
   sourceCode: SourceCode,
   fixer: Fixer,

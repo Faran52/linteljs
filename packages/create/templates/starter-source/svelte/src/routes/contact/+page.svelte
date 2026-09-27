@@ -4,10 +4,6 @@
 
   import { useContactForm } from './useContactForm';
 
-  /*
-   * One page, whichever data layer submits it. The binding lives in `useContactForm` and the submit in
-   * `lib/apis/contact`, so this file is the same in every combination and the suite beside it covers all of them.
-   */
   const form = useContactForm();
 </script>
 

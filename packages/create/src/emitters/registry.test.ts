@@ -60,7 +60,6 @@ interface AnswerOverrides {
   data?: Data;
 }
 
-// Only the path and the text are read back off a composed artifact.
 interface ScannedArtifact {
   target: string;
   text: string;
@@ -68,7 +67,6 @@ interface ScannedArtifact {
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-// The empty string where the answers emit no such artifact.
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
   const artifact = buildArtifacts(hostedAnswersFor(overrides), EMPTY_PROJECT, 'demo-app')
     .find((candidate) => {
@@ -87,7 +85,6 @@ describe('buildArtifacts', () => {
 
     const copies = artifacts
       .flatMap((artifact) => {
-      // Only a copied artifact names files on disk.
         return 'sources' in artifact.content
           ? artifact.content.sources
               .map((source) => {
@@ -101,11 +98,6 @@ describe('buildArtifacts', () => {
     expect(artifacts.length).toBeGreaterThan(0);
   });
 
-  /**
-   * The asset is derived from the destination, so the derivation is what has to be held against disk. Every answer
-   * that opens a starter file is asked for, since a browser and a router each pick a different asset for one
-   * destination.
-   */
   it.each(TARGET_IDS)('resolves every seeded starter for %s', async (target) => {
     const cases: HostedAnswers[] = [
       hostedAnswersFor({ target }),
@@ -139,7 +131,6 @@ describe('buildArtifacts', () => {
           });
       });
 
-    // One spelling per destination under each answer set: a variant and its base exclude each other by `when`.
     for (const answers of cases) {
       const targets = seedArtifacts(answers, 'demo-app')
         .map((artifact) => {
@@ -159,7 +150,6 @@ describe('buildArtifacts', () => {
     expect(sources.length).toBeGreaterThan(0);
   });
 
-  // Two emitters writing one path would race, and the later write would win without anyone choosing it.
   it.each(TARGET_IDS)('names each path once across both lists for %s', (target) => {
     const answers = hostedAnswersFor({
       target,
@@ -181,28 +171,17 @@ describe('buildArtifacts', () => {
   });
 });
 
-/*
- * The project the answers write, held together as one: every file it imports is one it writes, every package it
- * imports is one it declares, every stylesheet its entry imports is there, every coverage exclusion names a file it
- * has, and every starter asset reaches some project. Read over the legal answer sets the end-to-end suite installs,
- * each also with MSW and without Zod, the two answers that suite always leaves at one value. A record that names a
- * path or a package wrongly is otherwise found only by an install or a build that cannot resolve it.
- */
 describe('the project the answers write', () => {
   interface Project {
     answers: HostedAnswers;
     artifacts: Artifact[];
-    // What reaches disk: a starter suite whose subject is not written is skipped, as `artifactWriter` skips it.
     written: Set<string>;
     textOf: (path: string) => Promise<string>;
   }
 
   const SCRIPT = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/u;
-  // A static `from 'x'` or `import 'x'`, and a dynamic `import('x')`. Every starter and emitted file quotes singly.
   const SPECIFIER = /(?:from |import ?\(?)'([^']+)'/gu;
-  // Relative paths, Node's builtins and a framework's virtual modules (`$app/`, `#imports`, `astro:`, `~/`).
   const NOT_A_PACKAGE = /^(?:\.|\/|node:|#|~|\$|astro:|virtual:)/u;
-  // What a bundler tries after the path as written; `.js` names the `.ts` beside it under `bundler` resolution.
   const RESOLVED = ['', '.ts', '.tsx', '.vue', '.svelte', '.astro', '/index.ts'];
 
   const projectsFor = (target: TargetId): Project[] => {
@@ -271,7 +250,6 @@ describe('the project the answers write', () => {
       });
   };
 
-  // `tsconfig` `paths`, exact before wildcard, as TypeScript and Vite both resolve them.
   const aliasedPath = (answers: HostedAnswers, specifier: string): string | undefined => {
     const aliases = {
       ...buildAliases(answers),
@@ -351,7 +329,6 @@ describe('the project the answers write', () => {
     expect([...undeclared]).toEqual([]);
   });
 
-  // A relative import is a file the project writes; any other is a package it declares, Tailwind's own among them.
   it.each(TARGET_IDS)('writes or declares every stylesheet the %s style entry imports', async (target) => {
     const missing = new Set<string>();
 
@@ -387,7 +364,6 @@ describe('the project the answers write', () => {
     expect([...stale]).toEqual([]);
   });
 
-  // A suite gated on a file no answer writes is a suite no project ever gets.
   it.each(TARGET_IDS)('writes every %s starter suite under some answers', (target) => {
     const projects = projectsFor(target);
     const requiring = projects
@@ -414,7 +390,6 @@ describe('the project the answers write', () => {
     expect(unwritten).toEqual([]);
   });
 
-  // Each asset is read from a file, and every file under `starter-source/` is read by some project.
   it('reads every starter asset some project is written from, and no other', async () => {
     const copiedSources = TARGET_IDS
       .flatMap((target) => {
@@ -455,11 +430,9 @@ describe('the project the answers write', () => {
   });
 });
 
-// Nothing else runs the checker against starter code: `pnpm check` never invokes it and e2e never commits.
 describe('the emitted checker against the emitted starter code', () => {
   const CHECKER = 'scripts/checkBannedPatterns.ts';
 
-  // A composed artifact is only scannable once composed.
   const scannedFor = async (target: TargetId): Promise<ScannedArtifact[]> => {
     const files = [
       ...buildArtifacts(hostedAnswersFor({
@@ -477,8 +450,6 @@ describe('the emitted checker against the emitted starter code', () => {
                 },
               }];
         }),
-      // Through `seedArtifacts` rather than off the record: the record names the destination and the emitter derives
-      // the asset from it, so reading the record directly would scan a path nothing writes.
       ...seedArtifacts(hostedAnswersFor({ target }), 'demo-app')
         .flatMap((artifact) => {
           return 'sources' in artifact.content
@@ -524,11 +495,6 @@ describe('the emitted checker against the emitted starter code', () => {
         await writeFile(join(cwd, file.target), file.text, 'utf8');
       }
 
-      /*
-       * A checker spawned with no files exits 0, so the assertion below says nothing until the list is real. Both
-       * arms of `scannedFor` have to land: the generated scripts and the starter tree. This is `lint:starters`
-       * reporting zero findings over files it never read, in miniature, and it passed with `scanned` emptied.
-       */
       expect([
         scanned
           .some(({ target: path }) => {
@@ -540,7 +506,6 @@ describe('the emitted checker against the emitted starter code', () => {
           }).length > 1,
       ]).toEqual([true, true]);
 
-      // Relative paths, which is what lint-staged hands it.
       const { status, stderr } = spawnSync(
         execPath,
         [CHECKER, ...scanned
@@ -564,12 +529,6 @@ describe('the emitted checker against the emitted starter code', () => {
   });
 });
 
-/*
- * A generated project keeps `managed.json` in version control, so the order of its entries is part of what this CLI
- * emits: move the comparator and every consumer's next `sync` is a diff of pure churn. Pinned as the ordering
- * property rather than as a snapshot of the file, so a new emitter costs nothing and a moved comparator costs a
- * red test. Read back through the reader `sync` itself uses, which is the order that actually matters.
- */
 describe('the managed record', () => {
   const removableOf = async (overrides: AnswerOverrides): Promise<string[]> => {
     const cwd = await mkdtemp(join(tmpdir(), 'linteljs-managed-'));
@@ -589,12 +548,10 @@ describe('the managed record', () => {
     }
   };
 
-  // What a bare `.sort()` would give, spelled out because the lint layer rightly refuses to let a test write one.
   const byCodeUnit = (left: string, right: string): number => {
     return left < right ? -1 : Number(left > right);
   };
 
-  // One case per group that contributes paths of its own: the agent files, the manager files and the rules.
   it.each<[string, AnswerOverrides]>([
     ['the defaults', {}],
     ['every agent, zod and npm', {
@@ -621,11 +578,6 @@ describe('the managed record', () => {
       });
 
     expect(removable).toEqual(sortedRemovable);
-    /*
-     * Otherwise the assertion above holds vacuously. Only a mixed-case pair tells the two comparators apart, and
-     * `SKILL.md` beside the `references/` in the same directory is the pair a bare `.sort()` reorders. A set that
-     * loses its last such pair fails here rather than going quietly toothless.
-     */
     expect(removable).not.toEqual([...removable].toSorted(byCodeUnit));
   });
 });

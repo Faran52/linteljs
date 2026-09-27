@@ -8,7 +8,7 @@ import {
   validateContact,
 } from '$lib/apis/contact';
 
-// What this library hands a validator and a submit, named because an inline shape cannot be referenced.
+// Named because an inline shape cannot be referenced.
 interface ContactSubmission {
   value: ContactValues;
 }
@@ -25,18 +25,7 @@ export interface ContactForm {
   onSubmit: (event: SubmitEvent) => void;
 }
 
-/*
- * The one place the form answer is visible. It hands the page a field per input and a submit, and the page never
- * knows which library bound them, which is what lets the answer change without the page changing with it.
- *
- * The rules come from `lib/apis/contact`, so the form and the api agree about what is valid by reading the same
- * function rather than each carrying a copy of it.
- *
- * Called from a component's script and nowhere else: `createForm` opens an effect, and every read below is a
- * getter over one `useSelector`, which is the only read of this library Svelte tracks. That is also why `sent` is
- * the library's own flag rather than a rune: a rune would make this a `.svelte.ts` module for one boolean the form
- * already holds.
- */
+// Every read is a getter over one `useSelector`, the only read of this library Svelte tracks.
 export const useContactForm = (): ContactForm => {
   const submit = useSubmitContact();
   const form = createForm(() => {
@@ -81,11 +70,7 @@ export const useContactForm = (): ContactForm => {
         return meta?.errors[0] === undefined ? undefined : String(meta.errors[0]);
       },
       onBlur: () => {
-        /*
-         * `validateField` answers the errors or a promise of them, and that union satisfies neither rule: left
-         * alone it may be a floating promise, and `void` is refused on a value that might not be one. Wrapping
-         * settles which it is.
-         */
+        // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
         void Promise.resolve(form.validateField(name, 'blur'));
       },
       onChange: (value) => {

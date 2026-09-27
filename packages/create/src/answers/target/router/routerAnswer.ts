@@ -22,11 +22,7 @@ export const routerAnswer = {
         return target.routers?.includes('react-router') === true;
       },
     },
-    /*
-     * React Router's own framework mode, which is a mode of that router rather than a router of its own: it is the
-     * same library with its build, its route module and its generated types turned on. A third value here rather
-     * than a new answer, because this is the question that already decides which router a project gets.
-     */
+    // A mode of React Router rather than a router, so a value here rather than a new answer.
     'react-router-framework': {
       label: 'React Router, framework mode',
       hint: 'Server rendered, route modules and generated types',

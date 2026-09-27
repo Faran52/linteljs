@@ -153,7 +153,6 @@ const DENIED: CommandProbe[] = [
   },
 ];
 
-// A command the parser cannot read is one it cannot vouch for, and the guard denies it as a ban.
 const UNREADABLE_COMMANDS: CommandProbe[] = [
   {
     label: 'env missing path operand',
@@ -418,7 +417,6 @@ describe('gitSafetyGuardHook.ts', () => {
     expect(runHook('gitSafetyGuardHook.ts', commandPayload("pwsh -c 'git stash'"))).toMatch(BLOCKED);
   });
 
-  // Neither host has a Command Prompt tool, but both shells can start one.
   describe.each<'Bash' | 'PowerShell'>(['Bash', 'PowerShell'])('Command Prompt reached from %s', (tool) => {
     it.each([
       'cmd /c git stash',
@@ -438,7 +436,6 @@ describe('gitSafetyGuardHook.ts', () => {
     });
   });
 
-  // Each reason names the command it stopped and what to run instead.
   it.each([
     ['git stash', '`git worktree add`'],
     ['git reset --hard HEAD', '`git restore --staged <path>`'],
@@ -460,7 +457,6 @@ describe('gitSafetyGuardHook.ts', () => {
     expect(runHook('gitSafetyGuardHook.ts', { tool_input: {} })).toBeUndefined();
   });
 
-  // One guard, every host: each reads its own payload shape and is answered in its own words, which `runHook` holds.
   describe('on Copilot and Cursor', () => {
     it.each(['bash', 'powershell'])('denies a banned git operation Copilot runs in %s', (tool) => {
       expect(runHook('gitSafetyGuardHook.ts', copilotPayload(tool, { command: 'git stash' }))).toMatch(BLOCKED);
@@ -480,7 +476,6 @@ describe('gitSafetyGuardHook.ts', () => {
       expect(spawnHook('gitSafetyGuardHook.ts', cursorShellPayload('git status'))).toBe('{"permission":"allow"}\n');
     });
 
-    // Cursor runs Claude Code's copy of this hook as `preToolUse` too; its shell gate is the one that answers.
     it('answers nothing to the copy Cursor runs from Claude Code\'s hooks', () => {
       expect(spawnHook('gitSafetyGuardHook.ts', cursorToolPayload('git stash', 'preToolUse'))).toBe('');
     });

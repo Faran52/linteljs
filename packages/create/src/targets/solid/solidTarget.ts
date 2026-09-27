@@ -33,7 +33,6 @@ export const solidTarget: TargetRecord = {
   htmlEntry: 'src/index.tsx',
   framework: 'solid',
   html: true,
-  // Solid's own stores cover a component; this is for what crosses one.
   stores: ['tanstack-store'],
   ignores: [],
   naming: componentNaming(),
@@ -73,7 +72,6 @@ export const solidTarget: TargetRecord = {
   starterFiles: [
     ...mockFiles(true),
     ...componentStyles(),
-    // Solid writes the `class` spelling, which `stylex.attrs` answers with; the other SFC targets take these.
     ...componentStyleModules(),
     ...accessorFiles(ACCESSORS),
     ...ALWAYS
@@ -113,12 +111,10 @@ export const solidTarget: TargetRecord = {
       variant: 'with-store',
       shared: true,
     },
-    // A button is what a store or a form gives the page to press; neither, and nothing presses anything.
     {
       target: 'src/components/ui/button/Button.tsx',
       when: pressable,
     },
-    // A form brings its page, its binding, its control and the layer it submits through.
     ...([
       'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/useContactForm.ts',
@@ -149,8 +145,6 @@ export const solidTarget: TargetRecord = {
       },
       variant: 'tanstack-query',
     },
-    // One rule set, read by the form that binds it and the api that refuses on it. Zod replaces the file, not the
-    // two readers.
     {
       target: 'src/lib/apis/contact/schemas.ts',
       when: (answers) => {
@@ -166,15 +160,12 @@ export const solidTarget: TargetRecord = {
       variant: 'zod',
       shared: true,
     },
-    // The barrel and the route list are what a form adds itself to; both read one list of what exists.
     {
       target: 'src/components/ui/index.ts',
       when: hasForm,
       variant: 'with-form',
       shared: true,
     },
-    // One route list, read by the header and the no-router switch alike. A form adds Contact to it and both
-    // readers follow, so neither needs a second spelling.
     {
       target: 'src/pages/routes.tsx',
       when: (answers) => {
@@ -191,7 +182,6 @@ export const solidTarget: TargetRecord = {
       when: hasStore,
       variant: 'tanstack-store',
     },
-    // TanStack Query is the one data layer this target offers, and it needs an ancestor.
     {
       target: 'src/lib/providers/DataProvider.tsx',
       when: (answers) => {
@@ -214,10 +204,6 @@ export const solidTarget: TargetRecord = {
       shared: true,
     },
   ],
-  /*
-   * `covers` keeps a suite out of a project whose answers never wrote its subject. The generated project gates at
-   * 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
-   */
   starterTests: [
     ...mockTests(true),
     ...accessorTests(ACCESSORS),
@@ -225,7 +211,7 @@ export const solidTarget: TargetRecord = {
       target: 'src/App.test.tsx',
       covers: 'src/App.tsx',
     },
-    // The page that holds the counter: its button is a child of that file and nothing else renders it.
+    // Its button is a child of that page and nothing else renders it.
     {
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
@@ -268,14 +254,12 @@ export const solidTarget: TargetRecord = {
       covers: 'src/lib/store/counter.ts',
     },
   ],
-  // Nothing fetches this target, so without `build` here `pnpm check` would fail the project's own gate at birth.
   build: 'vite build',
   extraScripts: {
     dev: 'vite',
     preview: 'vite preview',
   },
   typecheck: 'tsc --noEmit',
-  // Read off `PARTS`, since this target installs the same framework a host installs and only adds the build.
   testDevDependencies: PARTS.solid.testDevDependencies,
   dependencies: PARTS.solid.dependencies,
   devDependencies: [...PARTS.solid.devDependencies, 'vite'],

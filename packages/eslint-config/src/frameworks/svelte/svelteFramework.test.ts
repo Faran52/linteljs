@@ -24,7 +24,6 @@ import svelte, { svelteGroup } from './svelteFramework';
 const FILENAME_RULE = 'check-file/filename-naming-convention';
 
 describe('svelte', () => {
-  // With `base()`, which registers the `import-x` plugin the layer configures.
   it('parses a component and reports on it', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...svelte()], join(SFC_FIXTURES, 'Page.svelte'));
 
@@ -32,7 +31,6 @@ describe('svelte', () => {
     expect(ruleIds.some(startsWith('svelte/'))).toBe(true);
   });
 
-  // `.svelte` route files are absent: `projectService` throws on a path with no file; the e2e suite covers them.
   it.each([
     ['src/routes/+page.ts', true],
     ['src/routes/+page.server.ts', true],
@@ -62,7 +60,6 @@ describe('svelte', () => {
     await expect(enabledRuleIdsFor([...base({ naming }), ...svelte()], path)).resolves.not.toContain(FILENAME_RULE);
   });
 
-  // `$lib` may not exist before `svelte-kit sync`, and `$app`/`$env` never exist on disk at all.
   it.each([
     '$lib/utils',
     '$app/navigation',
@@ -75,7 +72,6 @@ describe('svelte', () => {
       .resolves.not.toContain('import-x/no-unresolved');
   });
 
-  // The allowance is those three prefixes and no wider: a package that is not installed is still reported.
   it('still reports a package that does not resolve', async () => {
     const code = "import { a } from 'not-installed';\n\nexport const value = a;\n";
 
@@ -83,7 +79,6 @@ describe('svelte', () => {
       .resolves.toContain('import-x/no-unresolved');
   });
 
-  // A rune module is TypeScript inside the Svelte parser, which needs typescript-eslint beneath it to read a type.
   it('parses a .svelte.ts rune module', async () => {
     const messages = await messagesForFile([...base(), ...svelte()], join(SFC_FIXTURES, 'counter.svelte.ts'));
 

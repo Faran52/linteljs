@@ -6,12 +6,7 @@ import {
 
 import { server } from './msw/node';
 
-/*
- * One interceptor for the whole run, so a suite makes the request the application makes and a handler answers it.
- *
- * `onUnhandledRequest: 'error'` on purpose: a request nobody wrote a handler for is a test reaching the network,
- * which is the failure this layer exists to make impossible rather than something to let through quietly.
- */
+// `onUnhandledRequest: 'error'`: a request with no handler is a test reaching the network.
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });

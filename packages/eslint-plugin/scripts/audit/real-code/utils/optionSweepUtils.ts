@@ -24,7 +24,6 @@ const sweep = (
   file: string,
   counters: SweepCounter[],
 ): number => {
-  // The sweep reports no skip counts, so they land in a bucket nothing reads.
   const loaded = load(context, file, emptyCounts());
 
   if (loaded === undefined) {
@@ -59,7 +58,6 @@ const sweep = (
   return hits;
 };
 
-// Answers the number of findings, which the caller turns into the exit code.
 export const runOptionSweep = (context: AuditContext): number => {
   const { files } = context;
   const configurations = context.activeRules.flatMap(configurationsFor);
@@ -91,7 +89,6 @@ export const runOptionSweep = (context: AuditContext): number => {
   let hits = 0;
 
   for (const [index, file] of files.entries()) {
-    // A crash under a non-default option is the defect this sweep exists to find.
     try {
       hits += sweep(context, file, counters);
     }

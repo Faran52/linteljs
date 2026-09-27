@@ -23,27 +23,16 @@ export const angularTarget: TargetRecord = {
   // SignalStore over classic @ngrx/store; measurements in docs/DESIGN.md.
   stores: ['ngrx-signals', 'ngrx-store'],
   ignores: ['.angular/**'],
-  /**
-   * No `--file-name-style-guide`: pinning affects initial files only, and later `ng generate` writes the current
-   * default anyway (measured with `2016`).
-   * `ng generate`'s own spelling; `ignoreMiddleExtensions` already reduces `app.spec.ts` to `app`. The declaration
-   * key is not optional here either: `customTypes.d.ts` ships with `typeSafety: relaxed` and is not kebab.
-   */
+  // No `--file-name-style-guide`: pinning affects initial files only (measured with `2016`).
   naming: {
-    // `!(*.d)`: the declaration key below judges those, and `check-file` applies every key that matches a file, so
-    // two of them on one name have to agree. `customTypes.d.ts` ships with `typeSafety: relaxed` and is not kebab.
+    // `check-file` applies every matching key, so two on one name must agree.
     'src/**/!(*.d).ts': 'KEBAB_CASE',
     ...DECLARATION_KEY,
   },
   folderNaming: { 'src/**/': FOLDER },
   // `vmThreads`, which Angular's Vite plugin sets, has no Node globals; `testPool` on `types.ts` carries why.
   testPool: 'forks',
-  /*
-   * The one place Angular's kebab spelling is bridged rather than followed. `fetchExtended.ts` is a shared asset
-   * with no framework in it, so it is one file across ten targets, and nine of them spell it in camel; Angular
-   * names every source file in kebab and its own lint rule holds it to that. The alias keeps the specifier the
-   * same everywhere, so the adapter and its suite stay one asset rather than nine plus a copy.
-   */
+  // `fetchExtended.ts` is one shared asset across ten targets; the alias bridges Angular's kebab spelling.
   extraAliases: { '@utils/fetchExtended': './src/lib/utils/fetch-extended.ts' },
   styleEntry: 'src/styles.css',
   starterStyles: [
@@ -70,16 +59,15 @@ export const angularTarget: TargetRecord = {
     dropsErasableSyntaxOnly: true,
     dropsNoEmit: true,
   },
-  // Vitest cannot read a decorator; the tsconfig is named because the plugin defaults to `tsconfig.spec.json`.
+  // Vitest cannot read a decorator; the plugin defaults to `tsconfig.spec.json`.
   vitestPlugin: {
     imports: ["import angular from '@analogjs/vite-plugin-angular';"],
     calls: ["angular({ tsconfig: './tsconfig.json' })"],
   },
-  // Declarations Angular reads at bootstrap, with no branch; `ng new` already ships the component spec.
+  // Declarations with no branch; `ng new` already ships the component spec.
   coverageExclude: ['src/app/app.config.ts', 'src/app/app.routes.ts'],
   publicDirectory: 'public',
   starterFiles: [
-    // Kebab, because every source file this target writes is: the asset is the same bytes as the other nine.
     ...mockFiles(false, true, 'src/lib/utils/fetch-extended.ts'),
     ...componentStyles(),
     ...accessorFiles(ACCESSORS),
@@ -103,10 +91,7 @@ export const angularTarget: TargetRecord = {
       shared: true,
     },
   ],
-  /*
-   * One suite, walking the real router: the header is outside the outlet and every page is behind it, so opening
-   * each route covers the shell, the header, the mark and all three pages at once.
-   */
+  // The header is outside the outlet, so opening each route covers the shell and every page.
   starterTests: [
     ...mockTests(false, 'src/lib/utils/fetch-extended'),
     ...accessorTests(ACCESSORS),
@@ -116,7 +101,7 @@ export const angularTarget: TargetRecord = {
     },
   ],
   typecheck: 'tsc --noEmit',
-  // `ng test` is declined, since this standard's runner is vitest.
+  // `ng test` is declined: this standard's runner is vitest.
   build: 'ng build',
   extraScripts: { dev: 'ng serve' },
   devDependencies: ['angular-eslint', '@angular/cli', '@angular/build', '@angular/compiler-cli'],
@@ -130,7 +115,6 @@ export const angularTarget: TargetRecord = {
     'rxjs',
     'tslib',
   ],
-  // Only the emitted `vitest.config.ts` calls the compiler plugin.
   testDevDependencies: ['@analogjs/vite-plugin-angular'],
   allowBuilds: ['@parcel/watcher', 'esbuild', 'lmdb', 'msgpackr-extract'],
   stateRules: [],

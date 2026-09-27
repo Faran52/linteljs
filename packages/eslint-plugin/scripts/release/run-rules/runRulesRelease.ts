@@ -1,10 +1,4 @@
-/**
- * Loads the built plugin and lints one fixture on whatever Node and ESLint are present. CI builds it with tsdown,
- * `--target node14`, and runs the `.mjs` inside `node:14-alpine`: only a bare floor runtime shows the bundle runs
- * there, since a bundler lowers syntax and leaves built-in methods where they were.
- *
- * Usage: tsx scripts/release/run-rules/runRulesRelease.ts [path-to-entry]
- */
+// Only a bare floor runtime shows the bundle runs: a bundler lowers syntax, not built-in methods.
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import process from 'node:process';
@@ -15,7 +9,7 @@ interface LintMessage {
   fatal?: boolean;
 }
 
-// The eslintrc-era `Linter`, which the installed ESLint 10 types no longer describe: `defineRule` left in 9.
+// `defineRule` left in ESLint 9, so the installed types no longer describe it.
 interface LegacyLinter {
   defineRule: (id: string, rule: object) => void;
   verify: (code: string, config: object) => LintMessage[];
@@ -40,7 +34,6 @@ const FIXTURE = [
   '',
 ].join('\n');
 
-// ESLint 9 and later have no `defineRule`, so this runner is for 5 to 8, which the container installs.
 const isLegacyEslint = (value: unknown): value is LegacyEslint => {
   return typeof value === 'object' && value !== null && 'Linter' in value && typeof value.Linter === 'function'
     && 'defineRule' in value.Linter.prototype;
@@ -51,8 +44,7 @@ const isBuiltPlugin = (value: unknown): value is BuiltPlugin => {
     && typeof value.rules === 'object' && value.rules !== null;
 };
 
-// `require`, since ESLint 5 and the bundle are CommonJS; resolved from here, which the container copies under
-// its own `node_modules`. The entry resolves against the working directory for the same reason.
+// `require`, since ESLint 5 and the bundle are CommonJS; resolved from where the container copies it.
 const require = createRequire(import.meta.url);
 const eslint: unknown = require('eslint');
 
@@ -109,5 +101,5 @@ if (missing.length > 0) {
   throw new Error(`no report from ${missing.join(', ')}`);
 }
 
-// Not the workspace logger: the container holds this package's `dist/` and `scripts/` and nothing above them.
+// Not the workspace logger: the container holds nothing above this package's `dist/` and `scripts/`.
 process.stdout.write(`[INFO] node ${process.versions.node}: all ${String(EXPECTED.length)} rules reported\n`);

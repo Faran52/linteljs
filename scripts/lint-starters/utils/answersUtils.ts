@@ -10,8 +10,7 @@ import { valuesOf } from '../../../packages/create/src/utils/objectUtils';
 
 import type { Answers, TargetId } from '../../../packages/create/src/config/types';
 
-// Every answer set that opens a starter file. One cannot reach everything: a browser picks one background spelling,
-// a router one entry, a form, store or data layer its own module beside a shared page.
+// One answer set cannot open every file: several answers pick one module out of many.
 export const widestFor = (target: TargetId): Answers[] => {
   const widest: Answers = {
     ...DEFAULT_ANSWERS,
@@ -85,7 +84,7 @@ export const widestFor = (target: TargetId): Answers[] => {
   ];
 };
 
-// `<asset> -> <destination>` through the emitter, so a mirror that drifts from the pipeline shows as an unplaced file.
+// Through the emitter, so a mirror that drifts from the pipeline shows as an unplaced file.
 export const destinationsFor = (every: Answers[]): Map<string, string> => {
   return new Map(every
     .flatMap((answers) => {
@@ -101,7 +100,6 @@ export const destinationsFor = (every: Answers[]): Map<string, string> => {
     }));
 };
 
-// Every path a relative import may reach: what the target writes, what each starter test covers, and the record module.
 export const writtenPaths = (every: Answers[]): Set<string> => {
   const destinations = every
     .flatMap((answers) => {

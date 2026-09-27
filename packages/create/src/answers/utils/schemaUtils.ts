@@ -20,7 +20,7 @@ interface SchemaProperty {
   type?: 'array' | 'boolean' | 'object' | 'string';
   const?: number | string;
   enum?: readonly string[];
-  // `| undefined`: the schema is only ever serialised, and `JSON.stringify` writes no key for an undefined value.
+  // `JSON.stringify` writes no key for an undefined value.
   description?: string | undefined;
   items?: SchemaProperty;
   minLength?: number;
@@ -31,8 +31,7 @@ interface SchemaProperty {
   additionalProperties?: SchemaProperty;
 }
 
-// `browser` is the one required-kind answer a config may still omit: `configFrom` defaults it to `'chrome'` for a
-// config written before the extension axes existed, so the schema does not demand it either.
+// `browser` stays out of `required`: `configFrom` defaults it for configs that predate it.
 const REQUIRED_KINDS = new Set(['choice', 'multi']);
 
 const isRequired = (key: AnswerKey, record: AnswerRecord): boolean => {
@@ -43,7 +42,6 @@ const withDescription = (record: AnswerRecord): Partial<SchemaProperty> => {
   return { description: record.description };
 };
 
-// A scalar choice: `choice` and `optionalChoice` share this shape, one required and one not.
 const enumProperty = (record: ChoiceRecord | OptionalChoiceRecord): SchemaProperty => {
   return {
     ...withDescription(record),
@@ -51,7 +49,6 @@ const enumProperty = (record: ChoiceRecord | OptionalChoiceRecord): SchemaProper
   };
 };
 
-// `resolveConditions` and `ignores`: an open vocabulary, so there is nothing to enumerate, only the shape.
 const stringListProperty = (record: AnswerRecord): SchemaProperty => {
   return {
     type: 'array',
@@ -65,8 +62,6 @@ const stringListProperty = (record: AnswerRecord): SchemaProperty => {
   };
 };
 
-// `libraries`, `agents`, `plugins`, `surfaces`, `browsers`: a closed vocabulary, `minItems` only where a record
-// names one, since a `multi` and an `optionalMulti` both default to none.
 const enumListProperty = (record: MultiRecord | OptionalMultiRecord): SchemaProperty => {
   return {
     type: 'array',
@@ -77,7 +72,6 @@ const enumListProperty = (record: MultiRecord | OptionalMultiRecord): SchemaProp
   };
 };
 
-// `aliases`, the one `map`: an object rather than an array, its own shape entirely.
 const mapProperty = (record: AnswerRecord): SchemaProperty => {
   return {
     type: 'object',
@@ -90,7 +84,6 @@ const mapProperty = (record: AnswerRecord): SchemaProperty => {
   };
 };
 
-// `packageManagerVersion` and `nodeVersion`: one string each, `pattern` the whole of what the schema can say.
 const textProperty = (record: TextRecord): SchemaProperty => {
   return {
     type: 'string',
@@ -125,13 +118,7 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
   }
 };
 
-/**
- * The v2 schema, generated from the records rather than hand-kept: `required` off the kinds that are required in
- * `Answers` (`browser` alone excepted, for the config files that predate it), every property's shape off its own
- * record's `kind`, in `ANSWERS`' own order. `scripts/write-schemas/writeSchemasScript.ts` writes this to both
- * checked-in copies, and `schemaUtils.test.ts` pins them against it, so a schema that drifts from the records is a
- * failing test rather than a silent one.
- */
+// Generated from the records; `schemaUtils.test.ts` pins both checked-in copies against it.
 export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
   const keys = valuesOf(answers);
 

@@ -11,7 +11,6 @@ export interface State {
   skip: (reason: string) => void;
 }
 
-// The edited source, and where the edit landed for the snippet a miss prints.
 export interface Candidate {
   source: string;
   offset: number;
@@ -21,7 +20,7 @@ export type Build = (state: State) => Candidate | undefined;
 
 export const FUNCTION_TYPES = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression']);
 
-// Parent links and a type index in one walk: `parseForESLint` hands back a bare tree and three edits climb.
+// `parseForESLint` hands back a bare tree, and three edits climb.
 export const indexAst = (ast: Program): Map<string, AstNode[]> => {
   const byType = new Map<string, AstNode[]>();
   const visit = (node: AstNode, parent: AstNode | undefined): void => {
@@ -61,7 +60,6 @@ export const commentsIn = (state: State, from: number, to: number): boolean => {
     });
 };
 
-// A comment, a template literal and a string continuation all make a reflow unsafe or a case the rule declines.
 export const unsafeToReflow = (state: State, from: number, to: number): string | undefined => {
   if (commentsIn(state, from, to)) {
     return 'comment inside the range the edit rewrites';
@@ -93,7 +91,6 @@ export const replaced = (state: State, from: number, to: number, text: string): 
   };
 };
 
-// One span reflowed onto a single line, or the reason not to.
 export const joinRange = (state: State, from: number, to: number): Candidate | undefined => {
   const unsafe = unsafeToReflow(state, from, to);
 
@@ -110,7 +107,6 @@ export const spansLines = (first: AstNode, last: AstNode): boolean => {
   return first.loc.start.line !== last.loc.end.line;
 };
 
-// Every member on a line of its own, which is what these rules call correct.
 export const fullySplit = (members: AstNode[]): boolean => {
   return members
     .every((member, index) => {
@@ -142,7 +138,7 @@ export const pickFirst = <T>(nodes: AstNode[], build: (node: AstNode) => T | und
   return undefined;
 };
 
-// A blank line opened after the comma between two members. Found in the text, since this harness holds no tokens.
+// Found in the text, since this harness holds no tokens.
 export const insertBlankLine = (state: State, previous: AstNode, next: AstNode): Candidate | undefined => {
   if (!spansLines(previous, next)) {
     return undefined;
@@ -159,7 +155,7 @@ export const insertBlankLine = (state: State, previous: AstNode, next: AstNode):
   return comma === -1 || comma > next.range[0] ? undefined : replaced(state, comma + 1, comma + 1, '\n');
 };
 
-// One member per line. Braces come from the member ranges, so an import attribute's `{` cannot be taken for them.
+// Braces from the member ranges, so an import attribute's `{` cannot be taken for them.
 export const splitBraces = (state: State, members: AstNode[]): Candidate | undefined => {
   const [first] = members;
   const last = members.at(-1);
@@ -192,7 +188,7 @@ export const splitBraces = (state: State, members: AstNode[]): Candidate | undef
   return replaced(state, open, close + 1, `{\n  ${text}\n}`);
 };
 
-// Members held apart by newlines alone would join into `{ a: string b: number }`, a broken edit rather than a case.
+// Members held apart by newlines alone would join into `{ a: string b: number }`.
 export const separatedByPunctuation = (state: State, members: AstNode[]): boolean => {
   return members
     .every((member, index) => {

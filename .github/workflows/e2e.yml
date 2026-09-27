@@ -1,8 +1,6 @@
 name: e2e
 
-# The generation suite: every pair of answers on every target, the package manager among them. 209
-# cases, each generated, installed and put through its own `check`. Network installs on every one of
-# them keep it off pull requests.
+# Network installs on every case keep it off pull requests.
 
 on:
   push:
@@ -18,14 +16,7 @@ concurrency:
 
 jobs:
   generate:
-    # One package manager per runner, named to the suite by `E2E_PM`. Both yarns answer to `yarn`, so
-    # no one machine can carry the two, and a job that sets up only its own manager tests exactly the
-    # binary a user of it would run. The last full local run at concurrency two measured, in
-    # case-seconds, npm 2843, yarn-classic 2466, yarn 1629, pnpm 1622 and bun 1471: about 24
-    # minutes of cases for the slowest job, well inside the timeout on a slower runner.
-    #
-    # Each runner is its own machine, so each starts its own registry on the same fixed port with
-    # its own storage, and nothing is shared between them.
+    # One manager per runner: both yarns answer to `yarn`, so no one machine carries the two.
     name: answers pass their own gate (${{ matrix.pm }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -45,10 +36,7 @@ jobs:
           node-version: 26.10.0
           cache: pnpm
 
-      # The CLI installs no manager: one below its floor in `MANAGER_FLOORS` is refused with the
-      # reason. The harness injects `npm_config_user_agent` from the manager's real `--version`, so
-      # what a runner carries is what every generated project records, and a yarn of the wrong major
-      # fails the run before any case.
+      # The CLI installs no manager, and a yarn of the wrong major fails the run before any case.
       - if: matrix.pm == 'bun'
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
@@ -64,19 +52,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The registry's own storage, and nothing else. Every tarball npmjs serves is stored once here
-      # and handed to whichever manager the job runs. The managers' own caches are deliberately not
-      # cached: npm's cacache alone reached 125GB locally, it never evicts, and a manager refetching
-      # over loopback is cheap. Verdaccio rewrites `dist.tarball` per request, and the port is fixed anyway, so a
-      # restored storage works whatever restored it.
-      #
-      # The week in the key is the eviction policy. A tarball is immutable and is never replaced, so
-      # a new version of a dependency is added beside the old one and the directory only grows;
-      # rotating weekly rebuilds it from npmjs instead. Metadata is not at stake either way, since
-      # verdaccio revalidates a packument after two minutes and a run picks up what was published.
-      #
-      # One key for every job, not one per manager: npmjs serves every manager the same tarballs, so
-      # the first job to finish saves it for the rest of the week.
+      # Only the registry storage: npm's cacache alone reached 125GB and never evicts.
+      # The week in the key is the eviction policy: tarballs are immutable, so the directory only grows.
       - id: week
         run: echo "id=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
 
@@ -84,18 +61,11 @@ jobs:
         with:
           path: .e2e-cache/registry
           key: e2e-registry-${{ steps.week.outputs.id }}
-          # This week only. A prefix reaching further back would restore last week's directory and save
-          # it again under this week's key, so it would never rebuild and the rotation would buy
-          # nothing.
+          # This week only: a wider prefix would restore and resave last week's, and never rebuild.
           restore-keys: |
             e2e-registry-${{ steps.week.outputs.id }}
 
-      # This is the only suite where the emitted text meets the real layers. Everything else
-      # asserts on strings, and a plugin registered twice, a peer nobody installs or a version
-      # range that does not resolve all pass a unit test and then break the first project.
-      #
-      # `E2E_CONCURRENCY` is per runner, not per suite: ubuntu-latest has four cores, and a case is
-      # an install and a full `check`, both of which want more than one.
+      # `E2E_CONCURRENCY` is per runner: ubuntu-latest has four cores, and a case wants more than one.
       - run: pnpm --filter @linteljs/create test:e2e
         env:
           E2E_PM: ${{ matrix.pm }}

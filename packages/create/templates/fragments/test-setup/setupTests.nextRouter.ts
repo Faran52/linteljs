@@ -1,10 +1,4 @@
-/**
- * `next/navigation`'s hooks read a router its own runtime provides, so a component a suite renders rather than the
- * App Router reads nothing and throws. `usePathname` is the one the starter's header calls, and it is the only one
- * stood in for: everything else stays real.
- *
- * Exported for a suite that renders a page the header should mark: `pathnameMock.mockReturnValue('/about')`.
- */
+// `next/navigation`'s hooks read a router only its runtime provides; `usePathname` alone is stood in.
 export const pathnameMock = vi.fn(() => {
   return '/';
 });

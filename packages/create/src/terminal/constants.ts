@@ -1,5 +1,4 @@
-// The project name, which is argv or a prompt rather than a recorded answer: `create` takes it on the command line
-// or asks for it, and nothing outside this ring ever reads it back.
+// Argv or a prompt rather than a recorded answer: nothing outside this ring reads it back.
 export const PROJECT_NAME_RULE
   = "a valid npm package name: lowercase letters, digits, '.', '-' and '_' only, starting with a letter or digit, "
     + 'at most 214 characters, and not a reserved npm name';

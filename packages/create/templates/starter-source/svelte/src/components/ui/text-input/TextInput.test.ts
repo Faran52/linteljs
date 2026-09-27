@@ -31,8 +31,6 @@ describe('TextInput', () => {
     expect(typed).toEqual(['someone@example.com']);
   });
 
-  // `aria-describedby` rather than a paragraph that merely sits nearby: a screen reader reads the error with the
-  // field, at the moment it lands on it, rather than after the whole form.
   it('describes a multiline field by its error', async () => {
     const typed: string[] = [];
     const blurred: string[] = [];

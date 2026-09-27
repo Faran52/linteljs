@@ -13,8 +13,6 @@ import { safeProjectPath } from '../../utils/pathUtils';
 
 import { projectFileWriter } from './utils/projectFileUtils';
 
-// `seed` says the project is being born, so its seed artifacts are planted. A `preserve` file that already exists is
-// the project's on every run, born or not.
 export const artifactWriter = async (
   cwd: string,
   artifact: Artifact,
@@ -24,7 +22,7 @@ export const artifactWriter = async (
     return false;
   }
 
-  // Skipped rather than failed: the example it covers is worth losing when a rearranged starter moved it.
+  // Skipped rather than failed: the example is worth losing when a rearranged starter moved it.
   if (artifact.requires !== undefined
     && !(await Promise.all(artifact.requires
       .map(async (path) => {
@@ -39,8 +37,7 @@ export const artifactWriter = async (
     return false;
   }
 
-  // Read for every artifact, though only a merge or a transform uses it: the checker is copied and still carries the
-  // project's own blocks.
+  // Read for every artifact: the copied checker still carries the project's own blocks.
   const current = await readIfPresent(path);
 
   await projectFileWriter(cwd, artifact.target, await shippedAssetsReader(artifact.content, current));

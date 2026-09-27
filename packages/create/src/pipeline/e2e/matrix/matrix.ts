@@ -40,26 +40,10 @@ export interface E2eCase {
   answers: Answers;
 }
 
-/**
- * Every combination of two answers, per target, in as few cases as the greedy will manage.
- *
- * Every defect this suite has found was a two-way interaction, and none needed a third axis pinned: `vue-demi` is
- * hosted-vue with TanStack Query, the devtools floating promise is the extension on chrome, the leftover suites are
- * `testing: none` on angular and on react-native, `customTypes.d.ts` is `typeSafety: relaxed` on angular, and the
- * rolldown peer is React on yarn 1. So the suite covers every *pair* of answers rather than every combination.
- *
- * The package manager is one of the axes: what a manager changes is how it resolves the dependency set a target and
- * its libraries emit, and the files the CLI writes for it, which is a pair of the manager with each of those
- * answers. Every multi-select stays at its full value in every case.
- *
- * Greedy set cover over the legal enumeration rather than synthesised candidates: every case it can pick is one the
- * CLI would accept, so no combination has to be checked for legality, and the pair universe is by construction the
- * reachable one. Deterministic, ties going to the earlier case, so a label that failed names the same case next run.
- *
- * `E2E_FULL=1` runs the cross product instead, for a pre-release sweep that wants three-way interactions too.
- */
+// Every pair rather than every combination: every defect found so far was a two-way interaction.
+// `E2E_FULL=1` runs the cross product instead.
 
-// A multi-select is never combined: it is always every value it has, so one case carries the whole set.
+// Always every value, so one case carries the whole set.
 const everyMultiSelect = (target: TargetId): Partial<Answers> => {
   return {
     libraries: [...LIBRARIES],
@@ -70,7 +54,6 @@ const everyMultiSelect = (target: TargetId): Partial<Answers> => {
   };
 };
 
-// The record for the answers chosen so far, which is what the prompt hands `targetFor` when it asks the next one.
 const recordFor = (target: TargetId, variant: Partial<Answers>): TargetRecord => {
   return targetFor({
     ...DEFAULT_ANSWERS,
@@ -79,7 +62,7 @@ const recordFor = (target: TargetId, variant: Partial<Answers>): TargetRecord =>
   });
 };
 
-// `react-hook-form` binds React, so a non-React target is offered the other one alone. `undefined` is no form library.
+// `react-hook-form` binds React.
 const formsFor = (framework: Framework | undefined): (Form | undefined)[] => {
   return [undefined, ...FORMS
     .filter((form) => {
@@ -87,8 +70,7 @@ const formsFor = (framework: Framework | undefined): (Form | undefined)[] => {
     })];
 };
 
-// The values an optional choice offers here, read through the same predicate the prompt and the parser use, so the
-// matrix cannot enumerate a combination `refuseMisfit` would then refuse. `undefined` is the answer's own none.
+// Through the predicate the prompt and parser use, so the matrix cannot enumerate a refused combination.
 const offered = <V extends string>(
   values: readonly V[],
   record: AnswerRecord,
@@ -111,11 +93,7 @@ const routersFor = (record: TargetRecord): (Router | undefined)[] => {
   return [undefined, ...record.routers ?? []];
 };
 
-/**
- * One axis folded into what is built so far. The values an axis offers depend on the axes already chosen, because a
- * hosted framework decides both the form libraries and the naming, so the axis reads the variant rather than a
- * constant list.
- */
+// A hosted framework decides both the form libraries and the naming, so the axis reads the variant.
 const across = <T>(
   variants: Partial<Answers>[],
   valuesFor: (variant: Partial<Answers>) => T[],
@@ -130,7 +108,7 @@ const across = <T>(
     });
 };
 
-// Every axis that can vary, in a fixed order, so two cases can never share a label or the directory named after it.
+// Every varying axis, so two cases never share a label or directory.
 const labelFor = (answers: Answers): string => {
   const record = targetFor(answers);
 
@@ -156,7 +134,6 @@ const asCase = (answers: Answers): E2eCase => {
   };
 };
 
-// Every legal combination of the single-select axes a target asks for, on every manager. Reduced by `coveringSubset`.
 const everyCase = (target: TargetId): E2eCase[] => {
   const recordOf = (variant: Partial<Answers>): TargetRecord => {
     return recordFor(target, variant);
@@ -208,7 +185,6 @@ const everyCase = (target: TargetId): E2eCase[] => {
   });
 
   const stores = across(routers, (variant) => {
-    // Every store the target offers, plus none: the axis the pairwise cover walks.
     return [undefined, ...recordOf(variant).stores ?? []];
   }, (variant, store) => {
     return {

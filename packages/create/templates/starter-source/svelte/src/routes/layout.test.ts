@@ -22,8 +22,6 @@ describe('layout', () => {
     expect(screen.getByText('routed')).toBeTruthy();
   });
 
-  // The tabs are links because SvelteKit routes whatever was answered, so the page they are on is said out loud
-  // rather than shown. The suite renders no router, so `$app/state` is stood in for at the root.
   it('marks the page it is on for a screen reader', () => {
     render(Layout, { children: routed });
 

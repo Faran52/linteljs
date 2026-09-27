@@ -3,7 +3,7 @@ enableGlobalCache: true
 nodeLinker: node-modules
 `;
 
-// The wasm fallback binding, never loaded on a platform with a native one. Two toolchains drag it in.
+// Never loaded on a platform with a native binding. Two toolchains drag it in.
 const WASM_RUNTIME = `  "@napi-rs/wasm-runtime@*":
     peerDependenciesMeta:
       "@emnapi/core":
@@ -12,12 +12,7 @@ const WASM_RUNTIME = `  "@napi-rs/wasm-runtime@*":
         optional: true
 `;
 
-/**
- * Yarn wants a peer provided by the dependent's own parent, and reports YN0086 when only the project has it. Adding
- * the peer to that parent walks the request up to the project, which installs it; marking it optional ends a request
- * the project has no business answering. Keyed by the package that brings the dependent, so a target carries only its
- * own. Measured per target with `yarn explain peer-requirements`.
- */
+// Yarn reports YN0086 when only the project has a peer; measured per target with `yarn explain peer-requirements`.
 export const PEER_EXTENSIONS: Record<string, string> = {
   '@commitlint/cli': `  "@commitlint/cli@*":
     peerDependencies:
@@ -48,10 +43,7 @@ export const PEER_EXTENSIONS: Record<string, string> = {
     dependencies:
       "@babel/core": "^7"
 `,
-  /*
-   * Expo SDK 57's own tree: `react` walks up to the project, the expo modules are `expo`'s own dependencies, and
-   * babel has no parent that declares it.
-   */
+  // Expo SDK 57: `react` walks up to the project, and babel has no parent that declares it.
   'expo': `  "@expo/cli@*":
     peerDependencies:
       react: "*"

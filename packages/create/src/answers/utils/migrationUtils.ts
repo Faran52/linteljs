@@ -2,15 +2,7 @@ import { isValueOf, valuesOf } from '@utils/objectUtils';
 
 import { isJsonArray, type JsonValue } from './readUtils';
 
-/**
- * Every version so far has lifted one single select out of `libraries` into a field of its own: v1 kept the form
- * library there, and v2 kept `tailwind` and `tanstack-query`. Lift before the members are checked against today's
- * vocabulary, or a valid older file fails as an unknown library. Silent, the way an absent `surfaces` still
- * describes its project.
- *
- * Generic over the caller's own parsed-object type, so a lift leaves every other key's type exactly as the caller
- * had it. `field` is a key of that type rather than a free string, so a typo cannot write a property nothing reads.
- */
+// Lift before members are checked against today's vocabulary, or a valid older file fails.
 export const migrateLifted = <
   V extends string,
   K extends string,
@@ -53,13 +45,7 @@ export const migrateLifted = <
   };
 };
 
-/**
- * What a v1 `store` meant. It was required and written as a yes or no, because a target offered exactly one: a yes
- * is the store that question was about, which is the first one the target offers now, and anything else is no
- * answer at all, including a yes on a target that has since stopped offering any.
- *
- * Which versions this runs for is the parser's business, next to what it does with `$schema`.
- */
+// A v1 yes is the first store the target offers now; anything else is no answer.
 export const migratedStore = (store: JsonValue | undefined, offered: () => string | undefined): string | undefined => {
   return store === true ? offered() : undefined;
 };

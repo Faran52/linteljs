@@ -44,10 +44,6 @@ describe('reactTarget', () => {
     expect(recordFor().id).toBe('react');
   });
 
-  /*
-   * Framework mode is an overlay rather than a record of its own, so what is worth pinning is the fields it moves:
-   * React Router's CLI owns the build, and there is no `index.html` for it to own.
-   */
   it('hands framework mode the build, and takes its document away', () => {
     const framework = recordFor({ router: 'react-router-framework' });
 
@@ -57,17 +53,12 @@ describe('reactTarget', () => {
     expect(recordFor({ router: 'react-router' }).htmlEntry).toBe('src/main.tsx');
   });
 
-  // Only `react()` runs the compiler, and framework mode builds through `reactRouter()` instead.
   it('installs the compiler only where react() builds', () => {
     expect(recordFor().devDependencies).toContain('oxc-transform-react');
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).not.toContain('oxc-transform-react');
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).toContain('@vitejs/plugin-react');
   });
 
-  /*
-   * The entry is one file whatever was answered: it mounts `App`, and `App` is what a router replaces. Keeping the
-   * router out of the entry is what stops it multiplying with the store, which also needs an ancestor.
-   */
   it('ships one entry, and an App per router it offers plus one for no router', () => {
     const mains = recordFor().starterFiles
       .filter((file) => {
@@ -87,10 +78,6 @@ describe('reactTarget', () => {
     expect(appVariants).toEqual([undefined, 'react-router', 'tanstack-router']);
   });
 
-  /*
-   * The mocking layer is shared and framework-free, so what the record decides is only whether it is written and
-   * which of the two handler spellings goes: the contact endpoint answers a page that exists only with a form.
-   */
   it('ships the mocking layer only when msw was answered, and picks the handlers by whether a form was', () => {
     const sourcesFor = (overrides: Partial<Answers>): Record<string, string | undefined> => {
       const answers: Answers = {
@@ -120,7 +107,6 @@ describe('reactTarget', () => {
     expect(source).toBe('with-form');
   });
 
-  // The suite follows the file it covers, so the two spellings are picked the same way.
   it('picks the handler suite the same way the handlers are picked', () => {
     const suitesFor = (overrides: Partial<Answers>): Record<string, string | undefined> => {
       const answers: Answers = {
@@ -158,7 +144,6 @@ describe('reactTarget', () => {
 const NO_ROUTER: readonly Condition[] = [{ router: [undefined] }];
 const FRAMEWORK_MODE: readonly Condition[] = [{ router: ['react-router-framework'] }];
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
@@ -167,7 +152,6 @@ const GATES: GateRow[] = [
   ['src/App.tsx@react-router', [{ router: ['react-router'] }]],
   ['src/App.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
   ['src/components/features/app-header/AppHeader.tsx', NO_ROUTER],
-  // Framework mode's header is the declarative one verbatim.
   [
     'src/components/features/app-header/AppHeader.tsx@react-router',
     [{ router: ['react-router', 'react-router-framework'] }],
@@ -231,7 +215,6 @@ const GATES: GateRow[] = [
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(reactTarget, 'react');
 

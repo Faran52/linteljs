@@ -12,7 +12,6 @@ import {
 
 import type { TypedNode } from '../../../utils/ruleUtils.ts';
 
-// The one field a fixture tag carries, named because the plugin's own rule wants it named.
 interface NamedTag {
   name: JsxTagName;
 }
@@ -58,7 +57,6 @@ describe('globalNamespaceTags', () => {
     expect(globalNamespaceTags(element({ openingElement: tag('Other', 'Thing') }), 'React')).toEqual([]);
   });
 
-  // No opening tag at all, and a node that is not an element: neither reaches here through the rule.
   it('answers nothing for a node that is not an element', () => {
     expect(globalNamespaceTags({ type: 'Literal' }, 'React')).toEqual([]);
   });

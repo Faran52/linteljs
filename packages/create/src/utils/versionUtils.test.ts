@@ -8,7 +8,6 @@ describe('rankOf', () => {
     expect(rankOf('1.2.0')).toBe(rankOf('1.2.0'));
   });
 
-  // A manager prints what it likes: `4` and `4.0` both mean 4.0.0 to a floor comparison.
   it('reads a missing field as zero', () => {
     expect(rankOf('22')).toBe(rankOf('22.0.0'));
     expect(rankOf('22.6')).toBe(rankOf('22.6.0'));

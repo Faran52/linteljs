@@ -36,8 +36,7 @@ import type {
   TargetRecord,
 } from '../types';
 
-// Framework mode moves the build, the typecheck, the vite plugin and the tsconfig, which is what makes the record
-// a function of the answers rather than a constant.
+// Framework mode moves the build, typecheck, vite plugin and tsconfig, so the record is a function.
 const isFrameworkMode = (answers: Answers): boolean => {
   return answers.router === 'react-router-framework';
 };
@@ -92,23 +91,15 @@ const baseReactTarget: TargetRecord = {
           shared: true,
         };
       }),
-    /*
-     * Every styled component's rules as a module beside it, both spellings. `AppHeader.tsx` varies by router
-     * alone and not by router times styling, which is the copy-per-combination this repository refuses.
-     */
+    // So `AppHeader.tsx` varies by router alone, not router times styling.
     ...componentStyleModules(),
-    /*
-     * The client entry, everywhere but framework mode. There React Router's own build owns it and `root.tsx` is
-     * what a request reaches, so an entry of this repository's own would be a second one nothing calls.
-     */
+    // In framework mode React Router's build owns the entry, so a second one would go uncalled.
     {
       target: 'src/main.tsx',
       when: (answers) => {
         return !isFrameworkMode(answers);
       },
     },
-    // One route list, read by the header, the route table and the no-router switch alike. A form adds Contact to
-    // it and every reader follows, so none of the three needs a second spelling.
     {
       target: 'src/pages/routes.tsx',
       when: (answers) => {
@@ -122,7 +113,6 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'with-form',
     },
-    // Home carries the store demo; which store it is lives in the store module rather than here.
     {
       target: 'src/pages/home/HomePage.tsx',
       when: (answers) => {
@@ -134,7 +124,6 @@ const baseReactTarget: TargetRecord = {
       when: hasStore,
       variant: 'with-store',
     },
-    // The barrel names what exists: the mark always, a button once something presses, an input once there is a form.
     {
       target: 'src/components/ui/index.ts',
       when: (answers) => {
@@ -158,7 +147,6 @@ const baseReactTarget: TargetRecord = {
       variant: 'with-form',
       shared: true,
     },
-    // A form brings its page, its control and the layer it submits through.
     ...([
       'src/pages/contact/ContactPage.tsx',
       'src/components/ui/text-input/TextInput.tsx',
@@ -172,11 +160,7 @@ const baseReactTarget: TargetRecord = {
           },
         };
       }),
-    /*
-     * One submit shape across all three, so the form hook is written once: a plain call with no data layer, a
-     * mutation under TanStack Query, and a generated endpoint under RTK Query, which keeps its own `createApi`
-     * rather than being wrapped in a function and losing the cache that is the reason to pick it.
-     */
+    // RTK Query keeps its own `createApi` rather than a wrapper that would lose its cache.
     {
       target: 'src/lib/apis/contact/api.ts',
       when: (answers) => {
@@ -193,7 +177,7 @@ const baseReactTarget: TargetRecord = {
           variant: data,
         };
       }),
-    // TanStack Query is the one data layer needing an ancestor; RTK Query rides the Redux provider beside it.
+    // TanStack Query needs an ancestor; RTK Query rides the Redux provider.
     {
       target: 'src/lib/providers/DataProvider.tsx',
       when: (answers) => {
@@ -207,8 +191,6 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'tanstack-query',
     },
-    // One rule set, read by the form that binds it and the api that refuses on it. Zod replaces the file, not the
-    // two readers.
     {
       target: 'src/lib/apis/contact/schemas.ts',
       when: (answers) => {
@@ -234,14 +216,13 @@ const baseReactTarget: TargetRecord = {
           variant: form,
         };
       }),
-    // A button is what a store or a form gives the page to press; neither, and nothing presses anything.
     {
       target: 'src/components/ui/button/Button.tsx',
       when: (answers) => {
         return hasStore(answers) || answers.form !== undefined;
       },
     },
-    // Without a router the header swaps the page from state, so its tabs are controls rather than links.
+    // Without a router the header swaps the page from state, so its tabs are controls.
     {
       target: 'src/components/features/app-header/AppHeader.tsx',
       when: (answers) => {
@@ -254,7 +235,6 @@ const baseReactTarget: TargetRecord = {
         return !hasRouter(answers);
       },
     },
-    // Redux is the one store needing an ancestor; the other two pass their children through.
     {
       target: 'src/lib/providers/StoreProvider.tsx',
       when: (answers) => {
@@ -264,9 +244,7 @@ const baseReactTarget: TargetRecord = {
     ...mockFiles(true),
     ...componentStyles(),
     ...rtkFiles(),
-    // React calls it a hook, and the record says where its own live.
     ...accessorFiles(REACT_ACCESSORS),
-    // Tailwind reads the tokens through its own names; StyleX compiles a copy of them.
     {
       target: 'src/styles/theme.css',
       when: (answers) => {
@@ -282,7 +260,6 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'redux-toolkit',
     },
-    // The markup is the same for every store, so only the module behind `useCounter` varies by which one.
     ...(['zustand', 'tanstack-store'] as const)
       .map((store): StarterFile => {
         return {
@@ -293,7 +270,7 @@ const baseReactTarget: TargetRecord = {
           variant: store,
         };
       }),
-    // The Redux store is the one place RTK Query has to be registered, since its middleware is what makes it work.
+    // RTK Query's middleware must be registered in the Redux store.
     {
       target: 'src/lib/store/counter.ts',
       when: (answers) => {
@@ -308,7 +285,6 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'rtk-query',
     },
-    // A router replaces the entry and routes the same pages, and renders the header's tabs as real links.
     ...DECLARATIVE_ROUTERS
       .flatMap((router): StarterFile[] => {
         const chosen = (answers: Answers): boolean => {
@@ -340,11 +316,7 @@ const baseReactTarget: TargetRecord = {
           variant: 'react-router',
         };
       }),
-    /*
-     * Framework mode's own five. The header is the `react-router` one verbatim, because `NavLink` off `ROUTES` is
-     * the same in both, and there is no `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's
-     * build owns the entry.
-     */
+    // No `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's build owns the entry.
     {
       target: 'src/components/features/app-header/AppHeader.tsx',
       when: isFrameworkMode,
@@ -365,10 +337,7 @@ const baseReactTarget: TargetRecord = {
         };
       }),
   ],
-  /*
-   * `covers` keeps a suite out of a project whose answers never wrote its subject. The generated project gates at
-   * 100% on all four metrics, so a starter file with no suite fails the gate it ships with.
-   */
+  // The project gates at 100%, so a starter file with no suite fails the gate it ships with.
   starterTests: [
     ...mockTests(true),
     ...rtkTests(),
@@ -380,8 +349,6 @@ const baseReactTarget: TargetRecord = {
         return !hasRouter(answers);
       },
     },
-    // With a router the header renders links rather than buttons and `App` takes no page, so the suite changes
-    // with it. One variant for both routers: what they change about this file is the same.
     {
       target: 'src/App.test.tsx',
       covers: 'src/App.tsx',
@@ -390,7 +357,6 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'with-router',
     },
-    // Framework mode's four, one per module it adds that is not the document.
     ...([
       ['src/routes.test.ts', 'src/routes.ts'],
       ['src/routes/about.test.tsx', 'src/routes/about.tsx'],
@@ -404,7 +370,7 @@ const baseReactTarget: TargetRecord = {
           variant: 'react-router-framework',
         };
       }),
-    // Home is the one that carries the counter, so its suite wraps the two providers the document wraps.
+    // Wraps the two providers the document wraps: Home carries the counter.
     {
       target: 'src/routes/home.test.tsx',
       covers: 'src/routes/home.tsx',
@@ -439,8 +405,7 @@ const baseReactTarget: TargetRecord = {
       target: 'src/components/ui/text-input/TextInput.test.tsx',
       covers: 'src/components/ui/text-input/TextInput.tsx',
     },
-    // A router renders the header inside itself, where `App`'s own suite covers it; standing it up alone would
-    // need a router context around it and would assert what that suite already does.
+    // `App`'s own suite covers a routed header; standing it alone would need a router context.
     {
       target: 'src/components/features/app-header/AppHeader.test.tsx',
       covers: 'src/components/features/app-header/AppHeader.tsx',
@@ -448,11 +413,7 @@ const baseReactTarget: TargetRecord = {
         return !hasRouter(answers);
       },
     },
-    /*
-     * Framework mode is the one routed answer with no `App` for the header to be covered inside, since `root.tsx`
-     * is the document and excluded. So the header stands alone here, in a memory router, and that is also what
-     * covers the route list it reads.
-     */
+    // Framework mode has no `App` to cover the header inside, so it stands alone in a memory router.
     {
       target: 'src/components/features/app-header/AppHeader.test.tsx',
       covers: 'src/components/features/app-header/AppHeader.tsx',
@@ -476,18 +437,14 @@ const baseReactTarget: TargetRecord = {
       covers: 'src/lib/apis/contact/api.ts',
     },
   ],
-  // Nothing fetches this target, so without `build` here `pnpm check` would fail the project's own gate at birth.
+  // Nothing fetches this target, so without `build` the project's own gate fails at birth.
   build: 'vite build',
   extraScripts: {
     dev: 'vite',
     preview: 'vite preview',
   },
   typecheck: 'tsc --noEmit',
-  /*
-   * Read off `PARTS` rather than restated: this target installs the same framework a host installs, and the only
-   * difference is that it owns the build, which is what `vite` is here for. Nothing fetches these, so a
-   * name missing from this list is a project with no React in it.
-   */
+  // Nothing fetches these, so a name missing here is a project with no React in it.
   testDevDependencies: PARTS.react.testDevDependencies,
   dependencies: PARTS.react.dependencies,
   devDependencies: [...PARTS.react.devDependencies, 'vite'],
@@ -496,29 +453,13 @@ const baseReactTarget: TargetRecord = {
   routerMock: ROUTER_MOCK,
 };
 
-/*
- * Framework mode is the same React on the same Vite, so it overlays the record rather than replacing it. What it
- * moves is everything downstream of who owns the build: React Router's own CLI does, so the build, the dev server,
- * the typecheck and the vite plugin are all its, and the document comes from a route module rather than an
- * `index.html`. `appDirectory` is set to `src` in `react-router.config.ts`, so the source root does not move and
- * every glob in this repository still reads one.
- */
+// Overlays the record: the same React on the same Vite, with React Router's CLI owning the build.
 const FRAMEWORK_MODE: Partial<TargetRecord> = {
   reactRouterProject: true,
-  /*
-   * `typegen` writes the route types under `.react-router/`, and `react-router build` writes `build/`. Both are
-   * generated, so both are ignored, the same way `.svelte-kit/` and `.expo/` are on the targets that generate.
-   */
   ignores: ['.react-router/**', 'build/**'],
-  // No `index.html`: `root.tsx` is the document, and the dev server serves it.
   html: false,
   htmlEntry: undefined,
-  /*
-   * React Router's plugin owns the build and the dev server, and cannot run under vitest: it expects its own
-   * server to have injected a preamble, and every suite fails on its absence. So the same swap the React Compiler
-   * already takes, for the same reason and in the same place: the router's plugin outside the test run, and the
-   * plain React transform inside it, which is all a suite that renders a component needs.
-   */
+  // React Router's plugin expects its server's preamble and fails every suite, so the test run takes plain React.
   vitePlugin: {
     imports: [
       "import { reactRouter } from '@react-router/dev/vite';",
@@ -526,10 +467,7 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
     ],
     calls: [`...(${OUTSIDE_TESTS} ? [reactRouter()] : [react()])`],
   },
-  /*
-   * `typegen` before `tsc`, because the route types it writes under `.react-router/` are what a route module's own
-   * `Route.*` types resolve to, and `rootDirs` is what lets them sit beside the module rather than be imported.
-   */
+  // `typegen` first: a route module's `Route.*` types resolve to what it writes.
   typecheck: 'react-router typegen && tsc --noEmit',
   prepare: 'react-router typegen',
   tsconfig: {
@@ -537,7 +475,7 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
     include: ['.react-router/types/**/*'],
     rootDirs: ['.', './.react-router/types'],
   },
-  // The document, which is Next's trade too: what it composes is covered where each part renders.
+  // The document: its parts are covered where each renders.
   coverageExclude: ['src/root.tsx'],
   build: 'react-router build',
   extraScripts: {
@@ -553,7 +491,7 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
     // React Router's own server entry reads it to tell a crawler from a browser.
     'isbot',
   ],
-  // Less the compiler, which only `react()` runs and `reactRouter()` stands in for outside the test run.
+  // Less the compiler, which only `react()` runs.
   devDependencies: [
     ...PARTS.react.devDependencies
       .filter((name) => {

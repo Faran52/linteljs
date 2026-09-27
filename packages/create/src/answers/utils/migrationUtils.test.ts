@@ -9,7 +9,6 @@ describe('migrateLifted', () => {
   });
 
   it('leaves a config alone when its libraries name none of the lifted values', () => {
-    // Strict: nothing lifted writes no field, rather than one set to `undefined` over what the file already had.
     expect(migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values))
       .toStrictEqual({ libraries: ['zod'] });
   });
@@ -21,7 +20,6 @@ describe('migrateLifted', () => {
     });
   });
 
-  // Every version so far has lifted one single select out of the multi select it was hiding inside.
   it('lifts tailwind into styling and tanstack-query into data, which v2 lifts alongside the form library', () => {
     expect(migrateLifted({ libraries: ['zod', 'tailwind'] }, true, 'styling', ANSWERS.styling.values)).toEqual({
       libraries: ['zod'],
@@ -40,11 +38,6 @@ describe('migrateLifted', () => {
   });
 });
 
-/**
- * v1 required `store` and wrote a boolean, because a target offered exactly one. The vocabulary has names now, so a
- * yes has to become one before anything reads it. Which versions this runs for is the parser's, and its own suite
- * holds that end.
- */
 describe('migratedStore', () => {
   const offered = (): string | undefined => {
     return 'zustand';
@@ -58,7 +51,6 @@ describe('migratedStore', () => {
     expect(migratedStore(false, offered)).toBeUndefined();
   });
 
-  // A target that offers none, read from a config that still says yes: there is nothing to land on.
   it('answers nothing where the target offers no store at all', () => {
     expect(migratedStore(true, () => {
       return undefined;

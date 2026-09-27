@@ -25,12 +25,10 @@ const HOOKS: AccessorNames = {
 };
 
 describe('mockFiles', () => {
-  // Every project speaks HTTP through one adapter, whether or not it answered a mocking layer.
   it('writes the adapter alone without msw', () => {
     expect(pickedBy(mockFiles(true))).toEqual(['src/lib/utils/fetchExtended.ts base']);
   });
 
-  // The contact handler answers a page only a form writes, so the handlers follow the form answer.
   it.each<[string, Partial<Answers>, string]>([
     ['no form', { mocking: 'msw' }, 'base'],
     ['a form', {
@@ -46,10 +44,6 @@ describe('mockFiles', () => {
     ]);
   });
 
-  /*
-   * A form on a target that writes no contact page: the with-form handlers import its schemas, so the bare pair is
-   * written, and no with-form entry is carried that no answer could reach.
-   */
   it('writes the bare handlers under a form where the target writes no contact page', () => {
     const files = mockFiles(false);
 
@@ -68,7 +62,6 @@ describe('mockFiles', () => {
     expect(withForm).toEqual([]);
   });
 
-  // React Native has no dev server to serve a worker from, so it carries no entry for one at all.
   it('leaves the browser worker out for a target that serves none, and lands the adapter where it is asked', () => {
     const files = mockFiles(true, false, 'src/lib/utils/fetch-extended.ts');
 
@@ -131,7 +124,6 @@ describe('mockTests', () => {
 });
 
 describe('accessorFiles', () => {
-  // Only TanStack Query is wrapped: RTK Query generates its own hooks, and no data layer has nothing to wrap.
   it('writes both accessors in their own kebab directory under tanstack query alone', () => {
     expect(pickedBy(accessorFiles(HOOKS), { data: 'tanstack-query' })).toEqual([
       'src/lib/hooks/use-extended-query/useExtendedQuery.ts tanstack-query',
@@ -140,7 +132,6 @@ describe('accessorFiles', () => {
     expect(pickedBy(accessorFiles(HOOKS), { data: 'rtk-query' })).toEqual([]);
   });
 
-  // React Native takes React's bytes into its own directory, which is what `source` records.
   it('reads another target\'s accessor where one is taken', () => {
     const files = accessorFiles({
       ...HOOKS,
@@ -168,7 +159,6 @@ describe('accessorTests', () => {
     });
   });
 
-  // Angular names its suites `.spec.ts` and its files in kebab.
   it('names a suite with the target\'s own suffix', () => {
     const tests = accessorTests({
       directory: 'src/lib/services',
@@ -183,7 +173,6 @@ describe('accessorTests', () => {
     });
   });
 
-  // React Native takes React's suites into its own directory, as it takes the accessors they cover.
   it('reads another target\'s suite where one is taken', () => {
     const tests = accessorTests({
       ...HOOKS,

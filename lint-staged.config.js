@@ -1,8 +1,4 @@
-/**
- * The three passes a generated project runs, cheapest failure first. The glob drops `tsx`, `vue` and
- * `svelte`, and stylelint sees only `*.css`: those extensions exist here as shipped template text under
- * `packages/create/templates/`, written for frameworks this workspace does not install.
- */
+// The glob drops `tsx`, `vue` and `svelte`: here they are only template text for frameworks not installed.
 const config = {
   '*.{ts,mts,cts}': (stagedFiles) => {
     const files = stagedFiles.join(' ');

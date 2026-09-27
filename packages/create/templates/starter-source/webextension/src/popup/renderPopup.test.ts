@@ -18,7 +18,6 @@ describe('renderPopup', () => {
     expect(root.querySelector('svg[role="img"]')).not.toBeNull();
   });
 
-  // The one interaction a popup this size has, and the reason it holds any state at all.
   it('counts up when its button is pressed', () => {
     const root = open();
 

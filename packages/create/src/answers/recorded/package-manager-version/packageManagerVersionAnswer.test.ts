@@ -9,7 +9,6 @@ describe('packageManagerVersionAnswer', () => {
     expect(packageManagerVersionAnswer.kind).toBe('text');
   });
 
-  // `packageManager` in a manifest is refused unless it names all three fields, so a bare major is not a version here.
   it('accepts three fields and refuses a bare major', () => {
     const pattern = new RegExp(packageManagerVersionAnswer.pattern, 'u');
 

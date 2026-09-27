@@ -25,8 +25,6 @@ describe('Button', () => {
     expect(pressed).toEqual(['add']);
   });
 
-  // A form's submit is the one that is not a plain button, and the only reason this prop exists. It carries no
-  // press of its own, since the form's own submit is what it raises.
   it('submits a form when it is asked to', () => {
     render(() => {
       return <Button type="submit">Send</Button>;

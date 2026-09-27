@@ -5,7 +5,6 @@
 
   interface Props {
     path: string;
-    // Taken as a prop where a test spies on it, and made here otherwise, so most cases say nothing about a client.
     client?: QueryClient | undefined;
     invalidates?: readonly string[] | undefined;
   }

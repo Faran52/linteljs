@@ -17,7 +17,7 @@ const describeToken = (token: Token): string => {
   return `${token.type} ${JSON.stringify(token.value)}`;
 };
 
-// Trailing commas dropped: collapsing a list takes one with it, and a missing separator would fail to parse first.
+// Trailing commas dropped: collapsing a list takes one with it.
 const comparable = (tokens: Token[]): Token[] => {
   return tokens
     .filter((token, index) => {
@@ -47,7 +47,6 @@ export const orderedDiff = (beforeTokens: Token[], afterTokens: Token[]): string
   return undefined;
 };
 
-// Order-blind: what is left after a rule allowed to move members.
 const missingFrom = <T>(before: T[], after: T[], keyOf: (item: T) => string, noun: string): string | undefined => {
   const produced = countBy(after, keyOf);
 
@@ -106,7 +105,6 @@ const nameBefore = (tokens: Token[], from: number): Token | undefined => {
   return undefined;
 };
 
-// Stops at a closing bracket: past it are the next construct's names, not what a last note in a block is about.
 const nameAfter = (tokens: Token[], from: number): Token | undefined => {
   for (let index = from; index < tokens.length; index += 1) {
     const token = tokens[index];
@@ -123,11 +121,7 @@ const nameAfter = (tokens: Token[], from: number): Token | undefined => {
   return undefined;
 };
 
-/**
- * What each comment is written against. Text alone cannot see a note that moved, which is how a 1.0.1 fix walked
- * every trailing note onto the field below. A note trails the code before it on its line, and otherwise heads what
- * follows; only that side goes into the key, so a declaration moving with its note is not a move.
- */
+// Text alone cannot see a note that moved, which is how a 1.0.1 fix walked every trailing note down a line.
 const commentAnchors = ({ tokens, comments }: Parsed): string[] => {
   let index = 0;
 

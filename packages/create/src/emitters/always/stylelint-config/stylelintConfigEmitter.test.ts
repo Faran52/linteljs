@@ -12,7 +12,6 @@ import { emitStylelintConfig, stylelintConfigEmitter } from './stylelintConfigEm
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-// The file whole at its two extremes: the bare standard, and a single-file-component target with tailwind.
 const PLAIN = `const config = {
   extends: [
     'stylelint-config-standard',
@@ -74,8 +73,6 @@ describe('emitStylelintConfig', () => {
     expect(config).toBe(SFC_WITH_TAILWIND);
   });
 
-  // Without it every `@apply` in the project is an unknown-at-rule error, so the entry follows the tailwind answer
-  // rather than being fixed either way.
   it('teaches stylelint the tailwind at-rules only when tailwind was chosen', () => {
     const plain = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
@@ -93,8 +90,6 @@ describe('emitStylelintConfig', () => {
     expect(withTailwind).toContain("'stylelint-config-tailwindcss',");
   });
 
-  // Stylelint reads a `.vue` or `.svelte` file as plain CSS unless handed a syntax that knows where the `<style>` block
-  // starts; without it those styles go unlinted entirely.
   it('parses the SFC style block on the two targets that have one', () => {
     const vue = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
@@ -127,8 +122,6 @@ describe('emitStylelintConfig', () => {
     expect(onExtension).not.toContain('postcss-html');
   });
 
-  // A CSS module's classes are camelCase JS properties, so the kebab-case demand can't be met; it's the one finding
-  // `stylelint --fix` can't clear, leaving `lint:css` unpassable otherwise.
   it('lets a CSS module keep the camelCase classes its consumer reads', () => {
     for (const target of TARGET_IDS) {
       const config = emitStylelintConfig({
@@ -142,10 +135,6 @@ describe('emitStylelintConfig', () => {
   });
 });
 
-/*
- * `stylelint-config-standard` prefers `url()`, and Tailwind 4's entry has to be `@import "tailwindcss";`. Taking
- * the default would mean one notation with that answer and another without it, in a file this CLI writes itself.
- */
 describe('the import notation', () => {
   it('pins the string form for every project, whatever styles it', () => {
     for (const target of TARGET_IDS) {
@@ -163,7 +152,6 @@ describe('the import notation', () => {
   });
 });
 
-// A Tailwind 4 `@custom-variant` body is a bare `&` rule by design, which stylelint reads as dangling.
 describe('the tailwind nesting carve-out', () => {
   it('stands the scoping-root rule down for a tailwind project', () => {
     const config = emitStylelintConfig({

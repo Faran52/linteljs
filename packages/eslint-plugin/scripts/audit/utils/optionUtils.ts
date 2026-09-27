@@ -12,7 +12,6 @@ export interface Configuration {
   rule: string;
 }
 
-// Real hook names the default list leaves out, so the widened list is one someone would write.
 const EXTRA_HOOK_NAMES = ['useLayoutEffect', 'useImperativeHandle'];
 
 const isStringList = (value: unknown): value is string[] => {
@@ -26,8 +25,7 @@ const isScalar = (value: unknown): value is boolean | number | string => {
   return ['boolean', 'number', 'string'].includes(typeof value);
 };
 
-// Both sides of a boolean, every enum member, and a low, default and past-any-human high for a number. An option
-// type with no values here throws, so a new option cannot quietly go unswept.
+// An option type with no values here throws, so a new option cannot quietly go unswept.
 const valuesFor = (property: JSONSchema4): OptionValue[] => {
   if (property.type === 'boolean') {
     return [true, false];
@@ -50,7 +48,7 @@ const valuesFor = (property: JSONSchema4): OptionValue[] => {
   throw new Error(`no values known for a schema property of type ${JSON.stringify(property.type)}`);
 };
 
-// Derived from `meta.schema` rather than listed, so an option added to a rule is swept the day it lands.
+// Derived from `meta.schema`, so an option added to a rule is swept the day it lands.
 export const configurationsFor = (rule: string): Configuration[] => {
   const { schema } = moduleOf(rule).meta;
   const [first] = Array.isArray(schema) ? schema : [];

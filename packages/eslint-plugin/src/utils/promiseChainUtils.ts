@@ -6,12 +6,11 @@ import {
   type RuleNode,
 } from './ruleUtils.ts';
 
-// Both callers already know the node is a function; the `in` check here narrows the union, not answers a real question.
+// The `in` check narrows the union; both callers already know the node is a function.
 const isAsyncFunction = (node: Ancestor | RuleNode): boolean => {
   return 'async' in node && node.async === true;
 };
 
-// Climbs to the end of a fluent chain: `fetch(url)` in `fetch(url).then(parse).catch(handle)` answers for it all.
 export const outermostCall = (node: RuleNode): RuleNode => {
   let current = node.type === 'MemberExpression'
     && node.parent.type === 'CallExpression'
@@ -19,7 +18,7 @@ export const outermostCall = (node: RuleNode): RuleNode => {
     ? node.parent
     : node;
 
-  // Every link of a chain is an expression inside some statement, so each has a parent; only Program has none.
+  // Only Program has no parent.
   let parent = mustFind(current.parent, "the parent of a promise chain's link");
 
   while (
@@ -32,12 +31,11 @@ export const outermostCall = (node: RuleNode): RuleNode => {
     parent = mustFind(current.parent, "the parent of a promise chain's link");
   }
 
-  // An optional chain is wrapped in a ChainExpression, so the await or return sits above that wrapper, not the call.
+  // An optional chain is wrapped in a ChainExpression, so the await or return sits above it.
   return parent.type === 'ChainExpression' ? parent : current;
 };
 
-// Whether the value is awaited or returned from an async function; shared by prefer-await-to-then
-// and prefer-try-catch so neither double-reports a line.
+// Shared by prefer-await-to-then and prefer-try-catch so neither double-reports a line.
 export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): boolean => {
   const outer = outermostCall(node);
   const parent = mustFind(outer.parent, "the parent of a promise chain's outermost call");
@@ -46,14 +44,13 @@ export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): 
     return true;
   }
 
-  // An implicit return like async () => promise.catch(handle). A call under an arrow can only be its body: every
-  // other child is a parameter pattern or a type annotation.
+  // A call under an arrow can only be its body: every other child is a pattern or annotation.
   if (parent.type === 'ArrowFunctionExpression') {
     return isAsyncFunction(parent);
   }
 
   if (parent.type === 'ReturnStatement') {
-    // Innermost enclosing function: reversed and found rather than findLast, newer than this package's Node floor.
+    // Not `findLast`, newer than this package's Node floor.
     const enclosing = [...reader.getAncestors(node)]
       .reverse()
       .find((ancestor) => {

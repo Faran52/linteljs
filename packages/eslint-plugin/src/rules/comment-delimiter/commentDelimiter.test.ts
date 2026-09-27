@@ -4,23 +4,16 @@ import { commentDelimiter } from './commentDelimiter.ts';
 
 tsxRuleTester.run('comment-delimiter', commentDelimiter, {
   valid: [
-    // One and two whole-line `//` comments are the standard's own form.
     '// one line\nexport const value = 1;\n',
     '// first line\n// second line\nexport const value = 1;\n',
     '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;\n',
-    // A paragraph break counts as a line.
     '/**\n * alpha\n *\n * bravo\n */\nexport const value = 1;\n',
-    // Two runs split by a blank line never reach three.
     '// alpha\n// bravo\n\n// charlie\n// delta\n',
-    // Code between two pairs splits the count.
     'const first = 1; // why first\nconst second = 2; // why second\nconst third = 3;\n',
-    // Trailing and inline comments are not this rule's business, whichever delimiter they use.
     'const value = 1; // why it is one\n',
     'const value = /* measured */ 1;\n',
     'const value = /** measured */ 1;\n',
-    // A plain block that is not JSDoc stays as written.
     '/* v8 ignore next 3 -- a parsed node always carries a location */\nexport const value = 1;\n',
-    // Directives are machine-addressed; rewriting any of them breaks what points at them.
     '#!/usr/bin/env node\nexport const value = 1;\n',
     '/// <reference lib="dom" />\nexport const value = 1;\n',
     '// eslint-disable-next-line no-console\nconsole.warn(1);\n',
@@ -30,8 +23,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     '// v8 ignore next\nexport const value = 1;\n',
     '// c8 ignore next\nexport const value = 1;\n',
     '// istanbul ignore next\nexport const value = 1;\n',
-    // A directive breaks a run instead of joining it, so neither side reaches three. One directive a line, since a
-    // lone comment reports nothing and only a broken run shows the line was read as a directive.
     ...[
       '// prettier-ignore',
       '//prettier-ignore',
@@ -50,10 +41,8 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       .map((directive) => {
         return `// alpha\n// bravo\n${directive}\n// charlie\n// delta\n`;
       }),
-    // An empty JSDoc block has no body to move into `//` lines.
     '/** */\nexport const value = 1;\n',
     {
-      // Test files carry no comments under the shipped standard; their shape is another rule's business.
       code: '/** short doc */\n// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
       filename: 'src/lib/utils/sample.test.ts',
     },
@@ -78,21 +67,15 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
           filename,
         };
       }),
-    // A short block with code after it on the same line is a trailing note, and moving it would move the code.
     '/** short */ const value = 1;',
-    // One character of code after it on a last line with no newline still shares the line.
     '/** short */ a',
-    // Merged into a block, this line's `*/` would close it early and spill the rest as code.
     '// alpha\n// bravo `*/` charlie\n// delta\nexport const value = 1;\n',
-    // A tag makes the block machine-read, and every reader of one stops at `/**`.
     "/** @type {import('tailwindcss').Config} */\nexport default {};\n",
     '/** @jsxImportSource @emotion/react */\nexport const value = 1;\n',
     '/** @deprecated use `other` instead */\nexport const old = 1;\n',
-    // The tag need not open the block, which is why every line is tested rather than the first.
     '/**\n * Adds two numbers.\n * @returns the sum\n */\nexport const add = 1;\n',
   ],
   invalid: [
-    // A line that only mentions a directive's marker past its start is prose, and joins the run.
     ...[
       '// bravo #! here',
       '// bravo /// <reference lib="dom" />',
@@ -105,7 +88,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
           errors: [{ messageId: 'useJsdoc' as const }],
         };
       }),
-    // A name that only resembles a test file is ordinary source, so its comments are judged.
     ...[
       'src/contest.ts',
       'src/sample.test.ts.snap',
@@ -121,13 +103,11 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
         };
       }),
     {
-      // A continuation line with no leading star keeps its first character.
       code: '/**\n First.\n * Second.\n */\nexport const value = 1;',
       output: '// First.\n// Second.\nexport const value = 1;',
       errors: [{ messageId: 'useSlashes' }],
     },
     {
-      // Trailing whitespace after the block still leaves it alone on its line.
       code: '/** short doc */  \nexport const value = 1;',
       output: '// short doc  \nexport const value = 1;',
       errors: [{ messageId: 'useSlashes' }],
@@ -144,7 +124,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useSlashes' }],
     },
     {
-      // The block keeps its indent, whatever sits around it.
       code: 'export const run = () => {\n  /**\n   * Guards against zero.\n   * Throws otherwise.\n   */\n'
         + '  return 1;\n};',
       output: 'export const run = () => {\n  // Guards against zero.\n  // Throws otherwise.\n  return 1;\n};',
@@ -156,7 +135,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useSlashes' }],
     },
     {
-      // The closing delimiter sharing the last content line changes nothing.
       code: '/**\n * First.\n * Second. */\nexport const value = 1;',
       output: '// First.\n// Second.\nexport const value = 1;',
       errors: [{ messageId: 'useSlashes' }],
@@ -172,13 +150,11 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useJsdoc' }],
     },
     {
-      // A run keeps the indent it was found at.
       code: 'export const run = () => {\n  // alpha\n  // bravo\n  // charlie\n  return 1;\n};',
       output: 'export const run = () => {\n  /**\n   * alpha\n   * bravo\n   * charlie\n   */\n  return 1;\n};',
       errors: [{ messageId: 'useJsdoc' }],
     },
     {
-      // A blank-free marker style still reads as content.
       code: '//alpha\n//bravo\n//charlie\nexport const value = 1;',
       output: '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;',
       errors: [{ messageId: 'useJsdoc' }],
@@ -189,7 +165,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useSlashes' }, { messageId: 'useJsdoc' }],
     },
     {
-      // Runs separated by a trailing comment are reported one at a time.
       code: '// alpha\n// bravo\n// charlie\nconst value = 1; // trailing\n// delta\n// echo\n// foxtrot\n'
         + 'const other = 2;',
       output: '/**\n * alpha\n * bravo\n * charlie\n */\nconst value = 1; // trailing\n/**\n * delta\n * echo\n'
@@ -203,8 +178,6 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       errors: [{ messageId: 'useSlashes' }],
     },
     {
-      // An `@` with something other than whitespace in front is an address, not a tag, which is the whole
-      // reason the pattern is anchored rather than a bare `@[a-z]`.
       code: '/** ask faran@example.com first */\nexport const value = 1;',
       output: '// ask faran@example.com first\nexport const value = 1;',
       errors: [{ messageId: 'useSlashes' }],

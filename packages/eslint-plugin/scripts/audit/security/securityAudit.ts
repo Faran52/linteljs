@@ -1,11 +1,4 @@
-/**
- * The security-relevant slice of eslint-plugin-sonarjs over `src` and `scripts`, the analyser SonarQube runs, with
- * no server. Kept out of `eslint.config.ts`: a scan an inline comment can switch off is not a scan, so this one sets
- * `noInlineConfig` and fails on any finding. Every rule name is checked against the installed plugin first,
- * so one a plugin upgrade renamed fails the run rather than skipping quietly.
- *
- * Usage: tsx scripts/audit/security/securityAudit.ts
- */
+// Not in `eslint.config.ts`: a scan an inline comment can switch off is not a scan.
 import { relative, resolve } from 'node:path';
 import process from 'node:process';
 
@@ -26,10 +19,8 @@ interface Finding {
 
 const root = resolve(import.meta.dirname, '../../..');
 
-// Rule to the hazard it covers, so a removal can be judged. Out on purpose: the `aws-*` rules, with no
-// infrastructure here, and complexity, naming and duplication, which `pnpm lint` already covers.
+// Out on purpose: `aws-*`, with no infrastructure here, and what `pnpm lint` already covers.
 const SECURITY_RULES: Record<string, string> = {
-  // Injection: attacker-controlled data reaching an interpreter.
   'code-eval': 'code injection through eval, Function and setTimeout with a string',
   'dynamically-constructed-templates': 'template injection in a server-side template engine',
   'os-command': 'OS command injection through exec with a built command line',
@@ -42,15 +33,12 @@ const SECURITY_RULES: Record<string, string> = {
   'disabled-auto-escaping': 'template auto-escaping turned off',
   'dompurify-unsafe-config': 'DOMPurify configured to keep the dangerous elements',
 
-  // Filesystem. sonarjs has no dedicated path-traversal rule; these are the file-facing
-  // checks it does ship, and unsafe-unzip is the traversal case that matters (zip slip).
   'no-unsafe-unzip': 'zip slip and zip bomb: archive entries written without limits',
   'file-permissions': 'chmod or umask granting more than the owner needs',
   'publicly-writable-directories': 'temp paths any local user can write to',
   'hidden-files': 'server configured to serve dot-files',
   'file-uploads': 'upload handler without a size or destination limit',
 
-  // Secrets.
   'no-hardcoded-secrets': 'a literal secret in source',
   'no-hardcoded-passwords': 'a literal password in source',
   'hardcoded-secret-signatures': 'literals matching a known provider key format',
@@ -58,7 +46,6 @@ const SECURITY_RULES: Record<string, string> = {
   'no-hardcoded-ip': 'a pinned address that leaks topology and breaks on move',
   'confidential-information-logging': 'credentials or tokens written to a log',
 
-  // Cryptography and randomness.
   'hashing': 'a broken or unsalted hash for passwords',
   'no-weak-cipher': 'DES, RC4 and the rest of the retired ciphers',
   'no-weak-keys': 'key sizes below the current floor',
@@ -67,7 +54,6 @@ const SECURITY_RULES: Record<string, string> = {
   'pseudo-random': 'Math.random where the value has to be unguessable',
   'insecure-jwt-token': 'JWT verified without checking the signature',
 
-  // Transport and certificate verification.
   'unverified-certificate': 'certificate validation switched off',
   'unverified-hostname': 'hostname check switched off',
   'no-clear-text-protocols': 'http, ftp and telnet where the secure twin exists',
@@ -75,14 +61,12 @@ const SECURITY_RULES: Record<string, string> = {
   'disabled-resource-integrity': 'third-party script loaded without an integrity hash',
   'strict-transport-security': 'HSTS missing or too short',
 
-  // Cookies and sessions.
   'insecure-cookie': 'cookie without the secure flag',
   'cookie-no-httponly': 'session cookie readable from JavaScript',
   'no-session-cookies-on-static-assets': 'session cookie leaked onto cacheable assets',
   'session-regeneration': 'session id kept across an authentication boundary',
   'csrf': 'CSRF protection disabled',
 
-  // Response headers and browser-side hardening.
   'content-security-policy': 'CSP missing or set to allow everything',
   'frame-ancestors': 'clickjacking protection missing',
   'cors': 'CORS opened to any origin',
@@ -95,7 +79,7 @@ const SECURITY_RULES: Record<string, string> = {
   'no-ip-forward': 'proxy forwarding the client address without validating it',
   'production-debug': 'debug mode left on in a production path',
 
-  // ReDoS: a rule's regex runs over every file in someone else's repo, so catastrophic backtracking is a DoS there.
+  // A rule's regex runs over someone else's repo, so catastrophic backtracking is a DoS there.
   'slow-regex': 'a pattern whose worst case is super-linear',
   'super-linear-regex': 'polynomial backtracking on crafted input',
   'regex-complexity': 'a pattern complex enough that nobody can reason about its cost',
@@ -104,7 +88,6 @@ const SECURITY_RULES: Record<string, string> = {
   'no-invalid-regexp': 'a pattern that throws at construction',
   'unicode-aware-regex': 'a pattern that mishandles astral characters',
 
-  // Regex correctness, same family: a pattern that does not match what it looks like, so a rule misses a report.
   'anchor-precedence': 'an anchor binding to one alternative instead of the group',
   'duplicates-in-character-class': 'a character class repeating itself',
   'no-empty-character-class': 'a class that can never match',
@@ -116,7 +99,7 @@ const SECURITY_RULES: Record<string, string> = {
   'no-regex-spaces': 'runs of literal spaces nobody can count',
 };
 
-// `rules` is optional on a plugin, so a scan that found none would otherwise read as a mass rename below.
+// `rules` is optional on a plugin, so a missing one would read as a mass rename.
 if (!sonarjs.rules) {
   throw new Error('eslint-plugin-sonarjs exports no rules: nothing for this scan to run');
 }
@@ -128,7 +111,7 @@ const missing = expected
     return !installed.includes(name);
   });
 
-// A rule this scan believes it runs but the plugin no longer has would show up as a clean report, the worst outcome.
+// A rule the plugin no longer has would show up as a clean report.
 if (missing.length > 0) {
   logError(`eslint-plugin-sonarjs no longer ships ${String(missing.length)} rule(s) this scan expects:\n${
     missing
@@ -146,12 +129,10 @@ const rules = Object.fromEntries(expected
 
 const eslint = new ESLint({
   cwd: root,
-  // `true` means: ignore eslint.config.ts entirely. This scan is not the repo's linting.
   overrideConfigFile: true,
   overrideConfig: [
     {
-      // Type-aware, because several of these rules (sql-queries, hashing, the regex
-      // family) resolve values through the type checker and degrade to nothing without it.
+      // Type-aware: several of these rules degrade to nothing without the type checker.
       files: ['src/**/*.ts', 'scripts/**/*.ts'],
       plugins: { sonarjs },
       languageOptions: {
@@ -190,7 +171,7 @@ const findings = results
       });
   });
 
-// A file that failed to parse produced no findings, which reads as clean. It is not.
+// A file that failed to parse produced no findings, which reads as clean.
 const fatal = findings
   .filter((finding) => {
     return finding.fatal;
@@ -205,8 +186,7 @@ if (fatal.length > 0) {
   process.exit(1);
 }
 
-// `noInlineConfig` makes ESLint emit a rule-less warning for every disable comment it ignored: the setting
-// working, not a finding, so it is dropped here. The suppressed rule still reports, the point of the flag.
+// `noInlineConfig` warns for every disable comment it ignored: the setting working, not a finding.
 const reported = findings
   .filter((finding) => {
     return finding.rule !== null;
@@ -235,7 +215,6 @@ if (reported.length > 0) {
     .join('\n')}`);
 }
 
-// No allowlist: none is needed today, and a finding worth accepting deserves the argument in review, not here.
 if (reported.length > 0) {
   logError(`${String(reported.length)} finding(s):\n${reported
     .map(lineOf)

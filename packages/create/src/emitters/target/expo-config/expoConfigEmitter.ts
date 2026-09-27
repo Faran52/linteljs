@@ -4,14 +4,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 
-/**
- * Expo's own project file, which names the application, its scheme and the plugins its build loads. Written rather
- * than copied because three of its fields are the project's name, and a template with a placeholder in it would be
- * a placeholder in three places.
- *
- * The icons `create-expo` points at are absent on purpose: the starter ships no images, and a path to a file that
- * is not there fails the first `expo export`. A project adds its own and names them here.
- */
+// No icons: the starter ships no images, and a path to a missing file fails the first `expo export`.
 export const emitExpoConfig = (name: string): string => {
   const config = {
     expo: {
@@ -43,7 +36,7 @@ export const emitExpoConfig = (name: string): string => {
   return `${JSON.stringify(config, null, 2)}\n`;
 };
 
-// Birth only: a project's application metadata is its own from its first run, and `sync` has no name to key it by.
+// Birth only: the metadata is the project's, and `sync` has no name to key it by.
 export const expoConfigEmitter: Emitter = (answers, _project, name): Artifact[] => {
   const { expoProject } = targetFor(answers);
 

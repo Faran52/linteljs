@@ -20,13 +20,11 @@ tsRuleTester.run('union-newline', unionNewline, {
   ],
   invalid: [
     {
-      // An existing break wider than this file's step is left exactly as written.
       code: 'const pad = {\n  a: 1,\n};\ntype Alpha = { first: string }\n      | { second: string } | string;',
       output: 'const pad = {\n  a: 1,\n};\ntype Alpha = { first: string }\n      | { second: string }\n  | string;',
       errors: [{ messageId: 'complexUnionNewline' }],
     },
     {
-      // A comment sits in the gap the split would overwrite.
       code: 'type Alpha = { first: string } /* keep */ | string;',
       output: null,
       errors: [{ messageId: 'complexUnionNewline' }],
@@ -37,8 +35,6 @@ tsRuleTester.run('union-newline', unionNewline, {
       errors: [{ messageId: 'complexUnionNewline' }],
     },
     {
-      // The parser drops the parentheses, so the token before `string` is `(`, not the pipe; searching back for the
-      // pipe avoids splitting on the wrong side.
       code: 'type Alpha = { first: string } | (string);',
       output: 'type Alpha = { first: string }\n  | (string);',
       errors: [{ messageId: 'complexUnionNewline' }],

@@ -1,9 +1,4 @@
-/*
- * Everything the starter pages render. One file, and the only one this repository ships that is not a component's
- * own: a page's classes are shared across pages, and a component's stylesheet sits beside it.
- *
- * Delete this with the pages it styles. Nothing else reads it.
- */
+/* Delete this with the pages it styles. Nothing else reads it. */
 
 *,
 *::before,
@@ -37,7 +32,7 @@ code {
   font-size: var(--text-body);
 }
 
-/* Centred in whatever the header leaves. The 360px floor is what an extension popup gives you. */
+/* The 360px floor is what an extension popup gives you. */
 .hero {
   display: flex;
   flex: 1;
@@ -103,7 +98,6 @@ code {
   color: var(--primary);
 }
 
-/* The form the Contact page renders, when a form library was chosen. */
 .sent {
   padding: 1rem;
   margin: 0;

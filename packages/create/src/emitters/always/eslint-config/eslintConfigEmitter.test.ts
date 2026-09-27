@@ -35,10 +35,6 @@ interface AnswerOverrides {
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
-/**
- * Character for character: both READMEs quote it. An ordinary literal, not `String.raw`, since the emitted file
- * carries a `String.raw` of its own and a raw fixture cannot hold the backticks that tag needs.
- */
 const CANONICAL_REACT = `import { composeConfig } from '@linteljs/eslint-config/compose-config';
 
 const config = await composeConfig({
@@ -82,7 +78,6 @@ describe('emitEslintConfig', () => {
     expect(config).toBe(CANONICAL_REACT);
   });
 
-  // The barrel pulls in all six framework layers.
   it('imports the composer from its subpath, once, and nothing else', () => {
     const output = emitEslintConfig(answersFor({ target: 'vue' }));
 
@@ -91,7 +86,6 @@ describe('emitEslintConfig', () => {
     expect(output).toContain("import { composeConfig } from '@linteljs/eslint-config/compose-config';");
   });
 
-  // The composer puts react underneath next and reads the order off the layer.
   it('names next as one framework rather than composing react beneath it here', () => {
     const output = emitEslintConfig(answersFor({ target: 'next' }));
 
@@ -143,13 +137,11 @@ describe('emitEslintConfig', () => {
     expect(output).not.toContain('@mocks/*');
   });
 
-  // The layer imports @vitest/eslint-plugin, which only a project with a suite installs.
   it('asks for the vitest layer only where a suite was chosen', () => {
     expect(emitEslintConfig(answersFor({ testing: 'vitest' }))).toContain('vitest: true');
     expect(emitEslintConfig(answersFor({ testing: 'none' }))).not.toContain('vitest');
   });
 
-  // React Native's eight ignores on one line came to 133 characters and self-reported a finding.
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {
     for (const target of TARGET_IDS) {
       const tooLong = emitEslintConfig(answersFor({ target }))
@@ -200,7 +192,6 @@ describe('emitEslintConfig', () => {
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
   });
 
-  // Each layer is its one answer value: the other value of the same answer installs a package with no layer behind it.
   it('asks for no layer for the other value of the answer that gates it', () => {
     const config = emitEslintConfig(answersFor({
       libraries: [],
@@ -211,7 +202,6 @@ describe('emitEslintConfig', () => {
     expect(config).not.toContain('libraries:');
   });
 
-  // The scaffolder's own path lets the plugin read the project's theme rather than Tailwind's defaults.
   it.each<[TargetId, string]>([
     ['react', './src/index.css'],
     ['next', './src/app/globals.css'],
@@ -220,7 +210,6 @@ describe('emitEslintConfig', () => {
     ['angular', './src/styles.css'],
     ['webextension', './src/style.css'],
     ['react-native', './src/global.css'],
-    // `sv create --template minimal` ships no stylesheet.
     ['svelte', './src/app.css'],
   ])('names %s tailwind entry point as its stylesheet', (target, entry) => {
     const config = emitEslintConfig(answersFor({
@@ -232,7 +221,6 @@ describe('emitEslintConfig', () => {
     expect(config).toContain(`tailwindEntryPoint: '${entry}',`);
   });
 
-  // Recorded rather than asked, so needing it costs a line rather than an override block.
   it('emits the resolver conditions a project recorded', () => {
     const output = emitEslintConfig({
       ...answersFor({}),
@@ -242,7 +230,6 @@ describe('emitEslintConfig', () => {
     expect(output).toContain("  resolver: {\n    conditionNames: ['import', 'require', 'node', 'default'],\n  },");
   });
 
-  // 121 characters inline, one past `max-len`, so the list breaks: measured on the line it is written on.
   it('breaks the resolver conditions onto their own lines once they would run past max-len', () => {
     const conditions = ['1', '2', '3', '4', '5']
       .map((digit) => {
@@ -279,7 +266,6 @@ describe('emitEslintConfig', () => {
   });
 
   it('omits the html layer where there is no markup for it to lint', () => {
-    // angular-eslint processes templates itself; Next's App Router owns the document.
     expect(emitEslintConfig(answersFor({ target: 'angular' }))).not.toContain('html');
     expect(emitEslintConfig(answersFor({ target: 'next' }))).not.toContain('html');
     expect(emitEslintConfig(answersFor({ target: 'react' }))).toContain('html: true,');
@@ -295,7 +281,6 @@ describe('emitEslintConfig', () => {
     expect(react).not.toContain("'@content/*'");
   });
 
-  // Next's list runs past `max-len`, so this covers the wrapped form.
   it('carries the target ignores on top of the shared ones', () => {
     expect(emitEslintConfig(answersFor({ target: 'next' }))).toContain(
       [
@@ -313,7 +298,6 @@ describe('emitEslintConfig', () => {
     );
   });
 
-  // A list exactly as long as `max-len` allows stays on its line.
   it('keeps a list that is exactly max-len long on one line', () => {
     const line = emitEslintConfig({
       ...answersFor({ target: 'react' }),
@@ -328,7 +312,6 @@ describe('emitEslintConfig', () => {
     expect(line?.endsWith("'generated/very-long-name/**'],")).toBe(true);
   });
 
-  // A project's own ignore is text a user typed, so a quote in it is escaped rather than ending the string.
   it('escapes a quote inside a value', () => {
     const config = emitEslintConfig({
       ...answersFor({}),
@@ -338,7 +321,6 @@ describe('emitEslintConfig', () => {
     expect(config).toContain("'it\\'s/**'");
   });
 
-  // A file type rather than a framework, so the layer is asked for beside the hosted one.
   it('asks for the astro layer on astro alone', () => {
     expect(emitEslintConfig(answersFor({ target: 'astro' }))).toContain('  astro: true,\n');
     expect(emitEslintConfig(answersFor({ target: 'react' }))).not.toContain('astro');
@@ -351,12 +333,6 @@ describe('emitEslintConfig', () => {
   });
 });
 
-/*
- * Every target's naming policy as its config writes it, hosted frameworks included: which file kinds take which case,
- * where a framework's own route spelling is exempt, and which folders a router's `[slug]` and `(group)` may name.
- * Nothing but a badly named file can tell one policy from another, and the starters are named well, so the policy is
- * held here as written.
- */
 describe('the naming policy', () => {
   it.each<[string, AnswerOverrides, string]>([
     ['react', { target: 'react' }, `  naming: {
@@ -547,7 +523,6 @@ describe('the naming policy', () => {
 });
 
 describe('folderNaming', () => {
-  // `String.raw` carries a backslash verbatim, so the emitted text equals the glob the policy declared.
   it('emits the glob raw, so the file parses back to the pattern it declared', () => {
     const emitted = emitEslintConfig(answersFor({ target: 'react-native' }));
     const tagged = /'src\/\*\*\/': String\.raw`([^`]*)`/.exec(emitted)?.[1];
@@ -556,7 +531,6 @@ describe('folderNaming', () => {
   });
 });
 
-// A target repeating a shared entry must not publish it twice.
 describe('ignores', () => {
   const ignoresOf = (answers: Answers): string[] => {
     const list = /ignores: (\[[^\]]*\])/su.exec(emitEslintConfig(answers))?.[1] ?? '[]';
@@ -567,7 +541,6 @@ describe('ignores', () => {
       });
   };
 
-  // What each framework generates or owns and nothing of its own should lint: build output, caches, native shells.
   it.each<[TargetId, string[]]>([
     ['react', []],
     ['next', ['.next/**', 'out/**', 'next-env.d.ts']],
@@ -617,7 +590,6 @@ describe('the router', () => {
     }));
 
     expect(config).toContain("'tanstack-router'");
-    // Nothing generated to ignore: the route tree is built from the one route list.
     expect(config).not.toContain('routeTree.gen.ts');
   });
 

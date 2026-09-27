@@ -11,14 +11,7 @@ export interface ExtendedQueryOptions {
   readonly staleTime?: number;
 }
 
-/**
- * Angular has no hooks and no composables, so this is neither: it is a function that runs in an injection context
- * and hands back the binding's signal-backed result, which is what a template reads. The file is kebab and the
- * export is `inject*`, because both are what Angular's own CLI and its query binding already spell.
- *
- * Call it from a field initialiser in a component or from another injectable. Calling it anywhere else throws,
- * which is Angular's rule rather than this project's, and the reason there is no wrapper trying to hide it.
- */
+// Call it from a field initialiser or another injectable: anywhere else Angular throws.
 export const injectExtendedQuery = <TResponse>(
   path: string,
   options: ExtendedQueryOptions = {},

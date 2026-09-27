@@ -1,10 +1,6 @@
 import type { LibraryLayer } from '@config/types';
 
-/**
- * The libraries and routers with a layer behind them, in emit order so the written config is stable; the rest bring
- * no ESLint rules. Kept `as const` rather than annotated `readonly LibraryLayer[]`: the annotation widened the members
- * away, and `src/types.test.ts` holds this union against `LibraryLayer`, so a layer dropped here fails there.
- */
+// `as const`: annotating it `readonly LibraryLayer[]` widened the members away.
 export const LIBRARY_LAYERS = [
   'tanstack-query',
   'tanstack-router',
@@ -15,8 +11,7 @@ export const LIBRARY_LAYERS = [
 // The subpath, not the barrel, which loads all six framework layers.
 export const PACKAGE = '@linteljs/eslint-config/compose-config';
 
-// `plugins/linteljs/` is shipped, not written here; `.agents/` is the codex half of `.claude/`. Ignoring one and
-// not the other made a real project's gate fail on skill files mirrored into `.agents/`.
+// `.agents/` is the codex half of `.claude/`; ignoring only one failed a real project's gate.
 export const BASE_IGNORES = [
   'dist/**',
   'coverage/**',

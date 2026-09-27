@@ -35,7 +35,6 @@ const OPTIONS: CliOptions = {
   version: false,
 };
 
-// `isTTY` is a plain property on the stream rather than an accessor, so it is replaced and put back.
 const asTerminal = (value: boolean | undefined): void => {
   Object.defineProperty(stdout, 'isTTY', {
     value,
@@ -78,12 +77,10 @@ describe('stageLine', () => {
     expect(stageLine('lint', 1, '', 40)).toBe('lint      1 file, 0.0s');
   });
 
-  // The install writes nothing through the pipeline, so what it said is all it has.
   it('falls back to what a stage said where it wrote nothing', () => {
     expect(stageLine('install', 0, 'installing with pnpm', 12_100)).toBe('install   installing with pnpm, 12.1s');
   });
 
-  // The spinner's own message, before the stage has finished and there is a time to give.
   it('omits the time while the stage is still running', () => {
     expect(stageLine('standard', 12, '')).toBe('standard  12 files');
   });
@@ -92,7 +89,6 @@ describe('stageLine', () => {
     expect(stageLine('fix', 0, '', 8400)).toBe('fix       8.4s');
   });
 
-  // The first frame of a stage that has done nothing yet: the padding is for a summary, so with none it goes.
   it('is the stage name alone where there is nothing yet to say', () => {
     expect(stageLine('fix', 0, '')).toBe('fix');
   });
@@ -104,7 +100,6 @@ describe('stepsPlan', () => {
     expect(stepsPlan(OPTIONS)).toContain('  4. install');
   });
 
-  // The rule `pipelineRun` applies: with lint skipped there is nothing of ours left for fix to run over.
   it('marks a skipped stage, and the fix that skipping lint takes with it', () => {
     const plan = stepsPlan({
       ...OPTIONS,
@@ -116,7 +111,6 @@ describe('stepsPlan', () => {
     expect(plan).not.toContain('lint: (skipped)');
   });
 
-  // The end-to-end suite reads this block, so its shape is held line by line: a header, then one line per stage.
   it('is a header and one numbered line per stage, none marked where nothing was skipped', () => {
     expect(stepsPlan(OPTIONS).split('\n')).toEqual([
       '',
@@ -145,7 +139,6 @@ describe('stepsPlan', () => {
   });
 });
 
-// What is left to do once every stage has run: enter the directory it made, install what it skipped, run the gate.
 describe('nextSteps', () => {
   const INSTALL_SKIPPED: CliOptions = {
     ...OPTIONS,
@@ -171,7 +164,6 @@ describe('nextSteps', () => {
     expect(nextSteps('', OPTIONS, 'pnpm')).toBe('\nDone. Next:\n  pnpm check');
   });
 
-  // npm needs `run` before a script; yarn 1 is installed and run by the command it answers to.
   it.each([
     ['npm', 'npm install\n  npm run lint:fix\n  npm run check'],
     ['yarn-classic', 'yarn install\n  yarn run lint:fix\n  yarn run check'],
@@ -225,12 +217,10 @@ describe('stageReport on a terminal', () => {
 
     expect(output).not.toContain('Steps:');
     expect(output).not.toContain('wrote CLAUDE.md');
-    // The first frame is painted as the stage starts, so something is on the line before anything is counted.
     expect(output).toContain('standard');
     expect(output).toContain('\u2713 standard  2 files, 0.1s');
   });
 
-  // Nothing else writes to this terminal, so the two stages that spawn a binary spin like the rest.
   it('spins for a stage that spawns a binary, and says what it said', () => {
     asTerminal(true);
 
@@ -266,7 +256,6 @@ describe('stageReport on a terminal', () => {
     }
   });
 
-  // What the last stage said is its own: the next stage starts from nothing written and nothing said.
   it('starts each stage from a clean line rather than the last stage\'s count', () => {
     asTerminal(true);
     vi.useFakeTimers();
@@ -309,7 +298,6 @@ describe('stageReport on a terminal', () => {
     }
   });
 
-  // The two halves of one decision: a spinner owns the line only because the binaries are handing their output back.
   it('captures a spawn on a terminal and lets it write behind a pipe', () => {
     asTerminal(true);
 
@@ -317,7 +305,6 @@ describe('stageReport on a terminal', () => {
 
     asTerminal(undefined);
 
-    // Behind a pipe the report prints its plan as it is built, which is not this test's to show.
     let output = '';
 
     printed(() => {

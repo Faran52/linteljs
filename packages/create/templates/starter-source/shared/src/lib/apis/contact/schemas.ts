@@ -5,10 +5,7 @@ export interface ContactValues {
 
 export type ContactErrors = Partial<Record<keyof ContactValues, string>>;
 
-/*
- * The shape and the rules, apart from the form that binds them and the api that sends them. Plain predicates
- * here; answering `zod` replaces this file with a schema and nothing else changes.
- */
+// Answering `zod` replaces this file with a schema and nothing else changes.
 export const validateContact = (values: ContactValues): ContactErrors => {
   const errors: ContactErrors = {};
 

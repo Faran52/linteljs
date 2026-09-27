@@ -4,8 +4,7 @@ import {
   type Store,
 } from '@config/types';
 
-// Caret ranges, so a project picks up patches. An entry this workspace also installs must be at least the
-// `catalog:` version in `pnpm-workspace.yaml`; `utils/packageJsonUtils.test.ts` gates it.
+// Caret ranges; an entry this workspace also installs must be at least its `catalog:` version.
 
 export const VERSIONS: Record<string, string> = {
   // Angular's only route onto vitest.
@@ -22,11 +21,7 @@ export const VERSIONS: Record<string, string> = {
   '@eslint-react/eslint-plugin': '^5.20.8',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
-  /*
-   * Angular's runtime, its compiler and its build, all released together on one version. `zone.js` is absent on
-   * purpose: an application on signals and `provideBrowserGlobalErrorListeners` is zoneless, which is Angular 20's
-   * own default and what `ng new` stopped writing.
-   */
+  // No `zone.js`: signals and `provideBrowserGlobalErrorListeners` are zoneless, Angular 20's default.
   '@angular/common': '^22.2.0',
   '@angular/compiler': '^22.2.0',
   '@angular/core': '^22.2.0',
@@ -62,7 +57,7 @@ export const VERSIONS: Record<string, string> = {
   '@srsholmes/vitest-react-native': '^0.1.5',
   // The bare plugin, for a host that owns its entry; `sveltekit()` would take it over.
   '@sveltejs/vite-plugin-svelte': '^7.3.0',
-  // The PostCSS half, for a target with no vite.config.ts; same release train as the plugin.
+  // The PostCSS half, for a target with no vite.config.ts.
   '@tailwindcss/postcss': '^4.3.3',
   '@tailwindcss/vite': '^4.3.3',
   '@tanstack/angular-query-experimental': '^5.103.2',
@@ -82,8 +77,7 @@ export const VERSIONS: Record<string, string> = {
   '@types/react': '^19.3.0',
   '@types/react-dom': '^19.3.0',
   '@vitejs/plugin-react': '^6.1.1',
-  // The React Compiler's Rust port, which the plugin above runs natively. Held to 0.145 although 0.151 is out:
-  // that plugin and `@astrojs/react` both peer `^0.145.0`, which on a zero major admits 0.145 alone.
+  // Held to 0.145: that plugin and `@astrojs/react` both peer `^0.145.0`, which on a zero major admits 0.145 alone.
   'oxc-transform-react': '^0.145.0',
   '@vitest/coverage-v8': '^5.0.2',
   '@vitest/eslint-plugin': '^1.6.27',
@@ -92,10 +86,9 @@ export const VERSIONS: Record<string, string> = {
   'astro': '^7.3.5',
   'astro-eslint-parser': '^3.2.0',
   'eslint': '^10.11.0',
-  // The plugin, not `eslint-config-next`, which bundles plugins the layers already cover; see eslint-config's
-  // `frameworks/next/`.
+  // Not `eslint-config-next`, which bundles plugins the layers already cover.
   '@next/eslint-plugin-next': '^16.3.6',
-  // The sibling package; `utils/packageJsonUtils.test.ts` fails the moment they diverge.
+  // `utils/packageJsonUtils.test.ts` fails the moment the sibling package diverges.
   '@linteljs/eslint-config': '^2.0.0',
   'eslint-plugin-react-hooks': '^7.1.1',
   'eslint-plugin-astro': '^3.2.1',
@@ -111,12 +104,8 @@ export const VERSIONS: Record<string, string> = {
   'husky': '^9.1.7',
   'lint-staged': '^17.5.1',
   'postcss-html': '^2.0.0',
-  // Next owns its own build, its own router and its own document; nothing else installs it.
   'next': '^16.3.6',
-  /*
-   * Expo's runtime and the modules a tab layout measures itself with, at exactly what the SDK's own template pins:
-   * Expo tests them together and a mismatched one is what `expo-doctor` exists to find. docs/DESIGN.md has why.
-   */
+  // At exactly what the SDK's own template pins, which `expo-doctor` checks. docs/DESIGN.md has why.
   'expo': '~57.0.25',
   'react-native': '0.86.3',
   // react-native's cli plugin peers its own release exactly and worklets peers `*`; declared, both resolve to it.
@@ -143,39 +132,29 @@ export const VERSIONS: Record<string, string> = {
   // A peer of stylelint-config-recess-order that pnpm does not install on its own.
   'stylelint-order': '^8.1.1',
   'svelte': '^5.57.1',
-  // SvelteKit is the framework this target is, so its own template installs the kit and the adapter rather than
-  // inheriting them from `sv create`.
+  // Its own template installs the kit and the adapter rather than inheriting them from `sv create`.
   '@sveltejs/kit': '^2.70.3',
   '@sveltejs/adapter-auto': '^7.0.1',
   'svelte-check': '^4.7.6',
   'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',
-  /**
-   * Named rather than left to the peer resolver: `@testing-library/react-native` requires it, pnpm installs a
-   * peer unasked and npm under `legacy-peer-deps` does not, and without it every `screen.getByTestId().props`
-   * resolves to an error type that `skipLibCheck` hides from `tsc` and typescript-eslint reports.
-   *
-   * Tilde, like `typescript` below, and for the same kind of reason. 1.2.0 depends on `react-reconciler ~0.33.0`,
-   * which peers `react ^19.2.0`; 1.3.0 moved to `~0.34.0`, which peers `react ^19.3.0`. Expo pins react 19.2.3, so
-   * a caret floated every React Native project onto an unmet peer, which the end-to-end suite reads as install
-   * noise and refuses. Raise this once an Expo SDK ships react 19.3.
-   */
+  // Named: npm under `legacy-peer-deps` skips this peer, and `screen.getByTestId().props` becomes an error type.
+  // Tilde: 1.3.0 peers `react ^19.3.0` and Expo pins 19.2.3. Raise once an Expo SDK ships react 19.3.
   'test-renderer': '~1.2.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
-  // A dev dependency whatever the data answer is: it answers requests, it never ships in a build.
+  // Answers requests, never ships in a build.
   'msw': '^2.15.0',
-  // Read by `http.ts`, which every project receives. `URLSearchParams` loses an array; this keeps it.
+  // `URLSearchParams` loses an array; this keeps it.
   'qs': '^6.16.0',
   '@types/qs': '^6.15.1',
   'vite-plugin-solid': '^2.11.14',
   'vitest': '^5.0.2',
   'vue': '^3.5.43',
-  // Vue's meta-framework, which brings its own Vite, its own Nitro server and its own tsconfigs.
   'nuxt': '^4.5.2',
-  // nuxt 4.5's own peer range, which is the release its builder is tested on.
+  // nuxt 4.5's own peer range.
   'rolldown': '~1.2.11',
-  // A Vue application routes, and this target asks no router question to answer otherwise.
+  // A Vue application routes, and this target asks no router question.
   'vue-router': '^5.3.1',
   'pinia': '^4.0.3',
   '@vue/devtools-api': '^8.2.1',
@@ -196,13 +175,10 @@ export const VERSIONS: Record<string, string> = {
   'nativewind': '^5.0.0-rc.0',
   'postcss': '^8.5.28',
   'react-hook-form': '^7.88.0',
-  // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version, so a caret resolves past it.
+  // Exact, and a prerelease: `nativewind@5.0.0-rc.0` peers this one version.
   'react-native-css': '3.1.0-rc.0',
   'react-router': '^8.4.0',
-  /*
-   * Framework mode's own four, pinned with the router because React Router releases them as one version. The
-   * server entry reads `isbot` to tell a crawler from a browser, which decides whether it streams.
-   */
+  // Pinned with the router: React Router releases them as one version.
   '@react-router/dev': '^8.4.0',
   '@react-router/node': '^8.4.0',
   '@react-router/serve': '^8.4.0',
@@ -226,8 +202,7 @@ export const SHARED_DEV_DEPENDENCIES = [
   'stylelint-order',
 ];
 
-// Omitting @vitest/eslint-plugin fails the first `eslint .`, not the install.
-// `vite` is vitest's required peer; npm under `legacy-peer-deps` installs no peers, so it is named outright.
+// `vite` is vitest's required peer; npm under `legacy-peer-deps` installs no peers.
 export const RUNNER_DEV_DEPENDENCIES = [
   '@vitest/coverage-v8',
   '@vitest/eslint-plugin',
@@ -238,7 +213,6 @@ export const RUNNER_DEV_DEPENDENCIES = [
 
 export const HTML_DEV_DEPENDENCIES = ['@html-eslint/eslint-plugin', '@html-eslint/parser'];
 
-// A host with no framework installs nothing at runtime.
 export const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
   'react': '@tanstack/react-query',
   'next': '@tanstack/react-query',
@@ -250,11 +224,7 @@ export const TANSTACK_QUERY_BINDINGS: Record<Framework, string> = {
   'angular': '@tanstack/angular-query-experimental',
 };
 
-/**
- * What a chosen store installs, before any framework binding. TanStack Store is absent because its binding is the
- * whole of it: `@tanstack/react-store` and its siblings re-export the core. RTK Query ships inside the toolkit, so
- * `redux-toolkit` is the answer for both, with `react-redux` as what binds it to a component.
- */
+// TanStack Store's binding re-exports the core; RTK Query ships inside the toolkit.
 export const STORE_DEPENDENCIES: Record<Store, readonly string[]> = {
   'zustand': ['zustand'],
   'redux-toolkit': ['@reduxjs/toolkit', 'react-redux'],
@@ -266,11 +236,7 @@ export const STORE_DEPENDENCIES: Record<Store, readonly string[]> = {
   'nanostores': ['nanostores'],
 };
 
-/**
- * The package that binds a store to the framework rendering it, where one exists. Absent is an answer: Svelte reads
- * a nanostores atom through its own store contract, so there is no `@nanostores/svelte` to install, and a plain
- * Astro with no hosted framework uses the atoms directly. A store missing from this table binds nowhere.
- */
+// Svelte reads a nanostores atom through its own store contract, so there is no `@nanostores/svelte`.
 export const STORE_BINDINGS: Partial<Record<Store, Partial<Record<Framework, string>>>> = {
   'tanstack-store': {
     'react': '@tanstack/react-store',
@@ -300,7 +266,6 @@ export const TANSTACK_FORM_BINDINGS: Record<Framework, string> = {
 
 export const ROUTER_DEPENDENCIES: Record<Router, string[]> = {
   'react-router': ['react-router'],
-  // The record carries framework mode's own four, since they are the build rather than the router.
   'react-router-framework': [],
   'tanstack-router': ['@tanstack/react-router'],
 };
@@ -311,23 +276,6 @@ export const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
   'tanstack-router': ['@tanstack/eslint-plugin-router'],
 };
 
-/**
- * Install scripts every project approves; pnpm writes them to `pnpm-workspace.yaml`, bun reads `trustedDependencies`,
- * npm reads `allowScripts`. Yarn is absent because it runs install scripts by default and has nothing to approve.
- *
- * One list for all three, not a shared pair plus an npm-only pair. Measured with
- * `pnpm --filter @linteljs/create collect:builds`, which installs the maximal dependency set of all eighteen target
- * and hosted-framework combinations against pnpm and npm and reports what each would refuse to build:
- *
- * - `unrs-resolver` every target reaches, through `eslint-import-resolver-typescript`.
- * - `fsevents` npm 12 refuses on eleven of the eighteen, as an optional dependency of the watchers in each tree.
- *   npm 11 only warns, so it reports nothing and this entry looks dead on the version a project declares.
- * - `sharp` and `@swc/core` no combination reaches, on either manager, and both stay. Measured: an allowance for a
- *   package that is not installed is silent on pnpm and on npm 12, down to a name no registry has, so each costs a
- *   line. Without them, the day something pulls one, a user's first install stops; with them, the next
- *   `collect:builds` reports the change and nobody is interrupted. `create-next-app` writes
- *   `ignoredBuiltDependencies: - sharp` into its own scaffold, which is the ecosystem saying a Next tree meets it.
- *
- * Add a name because that script reported it, or because it is obviously of this kind. Removing one buys nothing.
- */
+// Measured with `collect:builds`; Yarn runs install scripts by default and has nothing to approve.
+// `sharp` and `@swc/core` stay: an allowance for an absent package is silent, and removing one buys nothing.
 export const ALLOWED_BUILDS = ['@swc/core', 'fsevents', 'sharp', 'unrs-resolver'];

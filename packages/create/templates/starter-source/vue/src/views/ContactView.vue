@@ -4,10 +4,6 @@ import TextInput from '../components/ui/text-input/TextInput.vue';
 
 import { useContactForm } from './useContactForm';
 
-/*
- * One view, whichever data layer submits it. The binding lives in `useContactForm` and the submit in
- * `lib/apis/contact`, so this file is the same in every combination and the suite beside it covers all of them.
- */
 const form = useContactForm();
 </script>
 

@@ -17,10 +17,9 @@ import {
   PACKAGE,
 } from './constants';
 
-// Keyed by `keyof ComposeConfigOptions`, so a renamed option fails to compile here rather than in a project.
+// A renamed option fails to compile here rather than in a project.
 type OptionRow = [keyof ComposeConfigOptions, string];
 
-// Which answer turns each layer on: the answer that installs the package behind it.
 const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
   'tanstack-query': (answers) => {
     return answers.data === 'tanstack-query';
@@ -36,7 +35,7 @@ const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
   },
 };
 
-// `String.raw` for a value carrying a backslash, which an ordinary literal parses back as an escape.
+// `String.raw`, or a backslash parses back as an escape.
 const quote = (value: string): string => {
   if (value.includes('\\')) {
     return `String.raw\`${value}\``;
@@ -76,7 +75,6 @@ const objectLiteral = (entries: [string, string][], level: number): string => {
   return `{\n${inner}\n${indentOf(level)}}`;
 };
 
-// Layer switches first, then what `base` reads.
 const optionRows = (answers: Answers): OptionRow[] => {
   const target = targetFor(answers);
   const rows: OptionRow[] = [];
@@ -85,10 +83,10 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['framework', quote(target.framework)]);
   }
 
-  // Unconditional: this CLI generates TypeScript only.
+  // This CLI generates TypeScript only.
   rows.push(['typescript', 'true']);
 
-  // Follows the suite: the layer imports @vitest/eslint-plugin, which dies on ERR_MODULE_NOT_FOUND without one.
+  // The layer imports @vitest/eslint-plugin, which dies on ERR_MODULE_NOT_FOUND without the suite.
   if (answers.testing === 'vitest') {
     rows.push(['vitest', 'true']);
   }
@@ -111,15 +109,12 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['libraries', arrayLiteral('libraries', layers)]);
   }
 
-  // Without the entry point `better-tailwindcss` warns once per class string: 63 warnings on one real project.
+  // Without the entry point `better-tailwindcss` warns once per class string: 63 on one real project.
   if (answers.styling === 'tailwind') {
     rows.push(['tailwindEntryPoint', quote(`./${target.styleEntry}`)]);
   }
 
-  /*
-   * Only where recorded; `@linteljs/eslint-config` explains why the order is not a safe default. A block, so the
-   * line `arrayLiteral` measures is the line written: inline, the closing ` }` ran a list it kept past `max-len`.
-   */
+  // A block, so `arrayLiteral` measures the line written: inline, the closing ` }` ran past `max-len`.
   const { resolveConditions } = answers;
 
   if (resolveConditions !== undefined) {
@@ -128,7 +123,6 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['resolver', `{\n${indentOf(2)}conditionNames: ${conditions},\n${indentOf(1)}}`]);
   }
 
-  // The project's own last.
   rows.push([
     'ignores',
     arrayLiteral('ignores', [
@@ -151,7 +145,7 @@ export const emitEslintConfig = (answers: Answers): string => {
     })
     .join('\n');
 
-  // Named: import/no-anonymous-default-export reports a bare array.
+  // import/no-anonymous-default-export reports a bare array.
   return [
     `import { composeConfig } from '${PACKAGE}';`,
     '',
@@ -162,7 +156,6 @@ export const emitEslintConfig = (answers: Answers): string => {
   ].join('\n');
 };
 
-// The directory is named for `eslint.config.js`, so the path is spelled here and nowhere else.
 export const eslintConfigEmitter = (answers: Answers): Artifact[] => {
   return [emitted('lint', 'eslint.config.js', emitEslintConfig(answers))];
 };

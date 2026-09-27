@@ -15,7 +15,6 @@ export interface SourceLocation {
   end: Position;
 }
 
-// A token and a comment carry the same shape.
 export interface Token {
   type: string;
   value: string;
@@ -23,8 +22,7 @@ export interface Token {
   loc: SourceLocation;
 }
 
-// Only the fields the audits read, each optional: JavaScript and TypeScript nodes each carry their own subset, and
-// ESLint's ESTree types have no TypeScript nodes at all.
+// ESLint's ESTree types have no TypeScript nodes.
 export interface AstNode {
   type: string;
   range: Range;
@@ -85,7 +83,7 @@ interface EslintParser {
   parseForESLint: (text: string, options: object) => ParseResult;
 }
 
-// Keys holding no child worth walking. Tokens carry a `type` and would otherwise be walked as nodes.
+// Tokens carry a `type` and would otherwise be walked as nodes.
 const NOT_CHILDREN = new Set(['comments', 'loc', 'parent', 'range', 'tokens']);
 
 const isAstNode = (value: unknown): value is AstNode => {
@@ -107,8 +105,7 @@ const isEslintParser = (value: unknown): value is EslintParser => {
     && 'parseForESLint' in value && typeof value.parseForESLint === 'function';
 };
 
-// espree ships inside ESLint, so reading JavaScript the way ESLint does costs no dependency. Resolved through ESLint
-// because pnpm hoists no transitive dependency.
+// espree ships inside ESLint; resolved through it because pnpm hoists no transitive dependency.
 const espreeModule: unknown = createRequire(createRequire(import.meta.url).resolve('eslint'))('espree');
 
 if (!isParser(espreeModule) || !isEslintParser(tseslint.parser)) {
@@ -118,7 +115,7 @@ if (!isParser(espreeModule) || !isEslintParser(tseslint.parser)) {
 const espree = espreeModule;
 const typescriptParser: EslintParser = tseslint.parser;
 
-// ESLint's own defaults for espree, spelled out: the harness parses directly as well as through the Linter.
+// Spelled out: the harness parses directly as well as through the Linter.
 const JS_PARSE = {
   ecmaFeatures: { jsx: true },
   comment: true,
@@ -157,7 +154,7 @@ export const parseOrNull = (source: string, name: string): Program | null => {
   }
 };
 
-// The name a file is linted under. `.tsx` unlocks JSX; a `.js` on disk may be CommonJS, which a probe settles once.
+// `.tsx` unlocks JSX; a `.js` on disk may be CommonJS, which a probe settles once.
 export const nameFor = (file: string, source: string): string => {
   const extension = extname(file);
 
@@ -172,7 +169,7 @@ export const nameFor = (file: string, source: string): string => {
   return parseOrNull(source, 'file.js') ? 'file.js' : 'file.cjs';
 };
 
-// Each child with the key it sits under. `Reflect.get`, because a node's keys are whatever its parser wrote.
+// `Reflect.get`, because a node's keys are whatever its parser wrote.
 export const childrenOf = (node: AstNode): [string, AstNode][] => {
   const found: [string, AstNode][] = [];
 
@@ -194,7 +191,6 @@ export const childrenOf = (node: AstNode): [string, AstNode][] => {
   return found;
 };
 
-// Depth-first, with the parent and the key reached under. `false` from `visit` prunes that branch.
 export const walkAst = (
   node: AstNode,
   visit: (node: AstNode, parent: AstNode | undefined, key: string | undefined) => boolean,
@@ -210,7 +206,6 @@ export const walkAst = (
   }
 };
 
-// A child that is a node rather than a flag or a list, for the fields that can be either.
 export const nodeOf = (value: AstNode['value'] | AstNode[]): AstNode | undefined => {
   return isAstNode(value) ? value : undefined;
 };

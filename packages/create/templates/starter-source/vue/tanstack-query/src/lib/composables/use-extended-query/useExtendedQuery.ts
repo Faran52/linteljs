@@ -21,14 +21,7 @@ export interface ExtendedQueryResult<TResponse> {
   readonly refetch: () => void;
 }
 
-/**
- * A composable, not a hook, which is the word Vue uses and the directory this project keeps them in.
- *
- * Refs come back rather than values, because that is what a Vue template unwraps and what keeps the view reactive;
- * returning `.value` here would hand the caller a snapshot that never updates again. Everything else is the trade
- * the React hook makes for the same reasons: the key is the path and its query, the library's signal is passed
- * down so an unmounted query cancels, and `refetch` answers nothing so no caller has a promise to float.
- */
+// Refs, not values: `.value` here would hand the caller a snapshot that never updates.
 export const useExtendedQuery = <TResponse>(
   path: string,
   options: ExtendedQueryOptions = {},

@@ -14,16 +14,11 @@ import vueParser from 'vue-eslint-parser';
 
 import { rules } from '../src/rules/index.ts';
 
-// A corpus aimed at fixers: a rule's own suite pins what its fix produces, not that the result parses.
 export interface FixerSample {
   name: string;
   code: string;
   typescript?: boolean | undefined;
-  /**
-   * Without one every snippet is called `<input>`, so `physicalFilenameOf` never sees a `.tsx`
-   * and JSX never kicks in. A `.vue`, `.svelte` or `.astro` one is read by that framework's parser, the way a
-   * consumer's config globs pick it.
-   */
+  // Without one every snippet is `<input>`, so JSX never kicks in.
   filename?: string | undefined;
   // Declared, not sniffed out of the text, so the CRLF set is a decision.
   crlf?: true;
@@ -31,39 +26,35 @@ export interface FixerSample {
 
 export const FIXER_SAMPLES: FixerSample[] = [
   {
-    // `react-no-global-namespace` writes an import where there was none, so the corpus carries the shape it
-    // inserts before: a file whose first statement is not an import at all.
+    // The shape it inserts before: a first statement that is not an import.
     name: 'React global ahead of any import',
     code: 'const node: React.ReactNode = null;\nexport { node };',
     typescript: true,
     filename: 'widget.ts',
   },
   {
-    // An import ahead of `'use client'` stops it being a directive at all. Indented on purpose: a new top-level
-    // statement in a file holding indented lines is what the indentation check has to let through.
+    // An import ahead of `'use client'` stops it being a directive. Indented on purpose.
     name: 'React global under a use client directive',
     code: "'use client';\n\ninterface Props {\n  children?: React.ReactNode;\n}\n\nexport type { Props };\n",
     typescript: true,
     filename: 'panel.tsx',
   },
   {
-    // typescript-eslint gives every ExpressionStatement a `directive` key, and reading the key alone took a file of
-    // nothing but calls for one with no statement past its prologue, which threw.
+    // typescript-eslint gives every ExpressionStatement a `directive` key, which once made this throw.
     name: 'React global in a file of expression statements',
     code: "React.createElement('div');\n",
     typescript: true,
     filename: 'render.ts',
   },
   {
-    // A declaration file is a script until something imports into it, at which point `declare module '*.svg'`
-    // augments a module that does not exist and every global here stops being global.
+    // Importing into a declaration file makes it a module, and its globals stop being global.
     name: 'React global in a global declaration file',
     code: "declare module '*.svg' {\n  const Component: React.FC;\n  export default Component;\n}\n",
     typescript: true,
     filename: 'custom.d.ts',
   },
   {
-    // The name is bound, but to a type; rewriting the tags against it makes a value out of a type-only binding.
+    // Bound to a type; rewriting the tags against it makes a value of a type-only binding.
     name: 'type-only react import beside a value reach',
     code: "import type { Fragment } from 'react';\n\nconst view = <React.Fragment>text</React.Fragment>;\n",
     typescript: true,
@@ -95,8 +86,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'default-only import split over lines',
     code: "import\ndefaultExport from 'mod';",
   },
-  // Under the member count and half split, so the one pass that fixes it collapses rather than
-  // splitting into a shape the next pass would undo.
+  // Under the member count, so the one pass collapses rather than splitting into a shape the next undoes.
   {
     name: 'half-split import under the member count',
     code: "import {\n  alpha, bravo } from 'mod';",
@@ -115,8 +105,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'rest target is a member expression',
     code: '({ alpha, bravo, ...target.rest } = source);',
   },
-  // The `?` sits inside the `ObjectPattern`, between its closing brace and the
-  // annotation; a pattern rebuild can drop it and still parse.
+  // A pattern rebuild can drop the `?` between the closing brace and the annotation and still parse.
   {
     name: 'optional destructured parameter',
     code: 'declare function load({ alpha, bravo, charlie }?: Options): void;',
@@ -139,8 +128,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'array pattern with a leading hole',
     code: 'const [, alpha, bravo,\n  charlie] = source;',
   },
-  // Under the property count, so a collapse is on offer, and the collapsed line would run past 120
-  // characters: `max-len` would then report a line no fixer in this plugin can shorten.
+  // The collapsed line would run past 120 characters, which no fixer here can shorten.
   {
     name: 'split destructuring too long to collapse',
     code: 'const {\n  alphaProperty = computeSomethingRatherLong(configuration),\n'
@@ -163,7 +151,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'new on a function expression',
     code: 'const made = new function () {\n  return 1;\n}();',
   },
-  // The callee is still a callee here; `() => {}()` does not parse.
+  // `() => {}()` does not parse.
   {
     name: 'immediately invoked function expression',
     code: 'const value = function () {\n  return 1;\n}();',
@@ -176,8 +164,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'immediately invoked function expression as a class field',
     code: 'class Service {\n  value = function () {\n    return 1;\n  }();\n}',
   },
-  // Crockford's spelling, parentheses around the call rather than the function;
-  // same nodes as `(function () {})(1)`, and only one can take an arrow.
+  // Crockford's spelling: same nodes as `(function () {})(1)`, and only one can take an arrow.
   {
     name: 'immediately invoked function expression, parentheses outside',
     code: '(function (a) {\n  return a;\n}(1));',
@@ -195,15 +182,13 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'function with a comment between parameters',
     code: 'function greet(/* first */ alpha, bravo) {\n  return alpha + bravo;\n}',
   },
-  // Only a sloppy function with a simple parameter list may repeat a name; an
-  // arrow never may, so this has to be linted as `.cjs`.
+  // An arrow may never repeat a parameter name, so this is linted as `.cjs`.
   {
     name: 'duplicate parameter name in a sloppy function',
     code: 'function parseAdvanced(source, parse, _, _, tokenizers) {\n  return source;\n}\n',
     filename: 'sample.cjs',
   },
-  // Annex B: a sloppy-mode function declaration is legal as an if/else body
-  // and as a labelled statement; const is legal in neither.
+  // Annex B: a sloppy function declaration is legal as an if/else body and a label; const is legal in neither.
   {
     name: 'function declaration as an if body',
     code: 'if (flag) function helper() {\n  return 1;\n}\n',
@@ -219,18 +204,17 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'outer: function helper() {\n  return 1;\n}\n',
     filename: 'sample.cjs',
   },
-  // Main at the top, helpers below: `run()` reaches `helper` immediately, so a `const helper` two hops down
-  // sits in its dead zone at that moment and the converted file throws before it does anything.
+  // `run()` reaches `helper` immediately, so a `const helper` two hops down sits in its dead zone.
   {
     name: 'function called before its declaration through another function',
     code: 'run();\n\nfunction run() {\n  helper();\n}\n\nfunction helper() {\n  return 1;\n}\n',
   },
-  // The same two hops with the helper written first, so its one mention sits below it and reads as safe.
+  // The helper written first, so its one mention sits below it and reads as safe.
   {
     name: 'function declared before a hoisted caller that runs first',
     code: 'run();\n\nfunction helper() {\n  return 1;\n}\n\nfunction run() {\n  helper();\n}\n',
   },
-  // A jump to a later case skips the one holding the declaration, so a `const` there is never initialised.
+  // A jump to a later case skips the declaration, so a `const` there is never initialised.
   {
     name: 'function declared in one switch case and called from a later one',
     code: 'const key = 1;\n\nswitch (key) {\n  case 0:\n    function helper() {\n      return 1;\n    }\n    break;\n'
@@ -247,7 +231,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'type Alpha = { first: string } /* keep */ | string;',
     typescript: true,
   },
-  // A note between the last member and the closing brace: the one gap a member split rewrites wholesale.
+  // The one gap a member split rewrites wholesale.
   {
     name: 'interface with a comment before the brace',
     code: 'interface Alpha { first: string; second: string; third: string; /* end */ }',
@@ -268,8 +252,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'const value = 1; // why it is one\n\ntype Alpha = string;\n',
     typescript: true,
   },
-  // The note is on the declaration that moves, so it has to move too or it
-  // ends up documenting whatever slides under it.
+  // The note is on the declaration that moves, so it has to move too.
   {
     name: 'trailing comment on a misplaced type',
     code: "const value = 1;\n\ntype Alpha = 'a' | 'b'; // keep\n\ntype Bravo = number; // also keep\n",
@@ -280,8 +263,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: "import { thing } from 'mod'; // note\n\nconst value = thing;\n\ntype Alpha = string;\n",
     typescript: true,
   },
-  // comment-delimiter declines all of these, so they pin where it stops rather than what it rewrites;
-  // a delimiter conversion changes a comment's type, which the corpus's comment checks cannot absorb.
+  // comment-delimiter declines all of these, so they pin where it stops.
   {
     name: 'three-line jsdoc stays JSDoc',
     code: '/**\n * alpha\n * bravo\n * charlie\n */\nconst value = 1;\n',
@@ -290,7 +272,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'two slash lines stay separate',
     code: '// alpha\n// bravo\nconst value = 1;\n',
   },
-  // A tagged block is read by a tool, and every reader of one stops at `/**`, so none of these survives as `//`.
+  // Every reader of a tagged block stops at `/**`, so none of these survives as `//`.
   {
     name: 'jsdoc type annotation on a config file',
     code: "/** @type {import('tailwindcss').Config} */\nmodule.exports = {};\n",
@@ -306,16 +288,14 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'deprecated tag on one line',
     code: '/** @deprecated use `other` */\nexport const old = 1;\n',
   },
-  // A three-line run merges into one `/** */` block; if a line already carries a literal `*/`, merging it would
-  // close that block early and spill the rest of the run as code.
+  // A literal `*/` in a merged line would close the block early.
   {
     name: 'run carrying a literal close-block sequence stays slash lines',
     code: '// alpha\n// bravo `*/` charlie\n// delta\nconst value = 1;\n',
   },
   {
     name: 'directive run stays machine-addressed',
-    // No `eslint-disable` here: ESLint's own fix pass deletes a disable directive that suppresses nothing,
-    // which drops a comment for reasons that have nothing to do with the rule under test.
+    // No `eslint-disable`: ESLint's own fix pass deletes a directive that suppresses nothing.
     code: '// @ts-expect-error legacy\n// v8 ignore next\n// istanbul ignore next\nconst value = 1;\n',
     typescript: true,
   },
@@ -413,8 +393,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'chain inside a static block',
     code: 'class Service {\n  static {\n    fetch(url).then(parse);\n  }\n}',
   },
-  // An optional chain puts a `ChainExpression` between the outermost call and
-  // whatever awaits it; that is the position both promise rules read.
+  // An optional chain puts a `ChainExpression` between the call and whatever awaits it.
   {
     name: 'optional chain returned from an async function',
     code: 'async function load() {\n  return api?.fetch(url).catch(handle);\n}',
@@ -424,8 +403,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'async function load() {\n  await api?.fetch(url).catch(handle);\n}',
   },
 
-  // Nested constructs: at the top level a fix that lands at column 0 lands
-  // where it belongs anyway, hiding this shape of defect.
+  // Nested: at the top level a fix landing at column 0 hides this defect.
   {
     name: 'partly wrapped destructuring inside a function',
     code: 'const run = () => {\n  const { alpha,\n    bravo, charlie } = source;\n};\n',
@@ -444,7 +422,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
   },
 
-  // `.tsx`, so the parser reads angle brackets as JSX; neither is true of a snippet linted as `<input>`.
+  // `.tsx`, so the parser reads angle brackets as JSX.
   {
     name: 'generic function in a tsx file',
     code: 'export function identity<T>(value: T): T {\n  return value;\n}\n',
@@ -486,7 +464,6 @@ export const FIXER_SAMPLES: FixerSample[] = [
     crlf: true,
   },
 
-  // Every other parser a consumer runs these rules under, each with TypeScript beneath it the way their layers set it.
   {
     name: 'vue <script setup lang="ts">',
     code: [
@@ -612,7 +589,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join('\n'),
     filename: 'index.astro',
   },
-  // Indented, with a type after runtime code: a fixer that writes at column 0 shows up in the indentation checks.
+  // A fixer that writes at column 0 shows up in the indentation checks.
   {
     name: 'svelte script with a type after runtime code',
     code: [
@@ -631,7 +608,6 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join('\n'),
     filename: 'Ordered.svelte',
   },
-  // A `React.` reach where the import has to land inside a component's script, and one where no import can go.
   {
     name: 'svelte script reaching through React',
     code: '<script lang="ts">\n  const state = React.useState(0);\n</script>\n\n<p>{state}</p>\n',
@@ -655,7 +631,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join('\n'),
     filename: 'reach.astro',
   },
-  // A prologue is the one place a string statement means something, and the fixers must neither move nor wrap it.
+  // A prologue is the one place a string statement means something.
   {
     name: 'nested prologue directives',
     code: "'use strict';\n\nfunction run() {\n  'use strict';\n  return 1;\n}\n\nmodule.exports = { run };\n",
@@ -673,7 +649,6 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
     filename: 'client.ts',
   },
-  // Nothing to walk: a rule that assumes a first statement, a first token or a comment's neighbour meets none here.
   ...['empty.js', 'empty.ts', 'Empty.vue', 'Empty.svelte', 'empty.astro']
     .map((filename) => {
       return {
@@ -708,7 +683,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'stub.astro',
   },
   {
-    // The StyleX compiler reads a dynamic style's expression body and refuses a block, so no fixer may write one.
+    // The StyleX compiler refuses a block body in a dynamic style.
     name: 'a StyleX dynamic style',
     code: "import * as stylex from '@stylexjs/stylex';\n\n"
       + 'export const sheet = stylex.create({\n  box: (width: number) => ({ width }),\n});\n',
@@ -716,7 +691,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'styles.ts',
   },
   {
-    // A break before `.` must not end a statement: no semicolons, a number head, and a block callback to reindent.
+    // A break before `.` must not end a statement.
     name: 'chained calls without semicolons',
     code: 'const items = [3, 1, 2]\nconst joined = items.map((item) => {\n  return item * 2\n})'
       + '.filter(Boolean).join()\nconst fixed = 1 .toFixed(2).trim()\n',
@@ -751,7 +726,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
 
 const linter = new Linter();
 
-// Strict mode rules out a repeated parameter name, which this corpus holds; ESLint reads a real `.cjs` as commonjs.
+// ESLint reads a real `.cjs` as commonjs, which the repeated-parameter samples need.
 const sourceTypeFor = (filename?: string): 'commonjs' | 'module' => {
   return filename?.endsWith('.cjs') ? 'commonjs' : 'module';
 };
@@ -794,18 +769,14 @@ const languageOptionsFor = ({ typescript, filename }: Pick<FixerSample, 'filenam
       };
 };
 
-// A named sample opts itself in via `files`; an unnamed one is linted as
-// `<input>`, matching no pattern and getting nothing.
 const filesFor = (filename?: string) => {
   return filename ? { files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,vue,svelte,astro}'] } : {};
 };
 
-// Written for a component parser, which is what the guard in `fixerSafety.test.ts` holds to parsing at all.
 export const isSfcSample = (sample: FixerSample): boolean => {
   return sfcParserFor(sample.filename) !== undefined;
 };
 
-// Parse errors in a snippet, so a fixer's output can be checked for validity.
 export const parseErrorsIn = (code: string, typescript = false, filename?: string): string[] => {
   return linter
     .verify(code, [{
@@ -823,7 +794,7 @@ export const parseErrorsIn = (code: string, typescript = false, filename?: strin
     });
 };
 
-// The same trick `sourceCodeFrom` uses: there is no public constructor, so a throwaway rule captures the parsed result.
+// No public constructor, so a throwaway rule captures the parsed result.
 const astOf = (code: string, typescript: boolean, filename?: string): AST.Program => {
   let captured: SourceCode | undefined;
 
@@ -852,22 +823,18 @@ const astOf = (code: string, typescript: boolean, filename?: string): AST.Progra
   return captured.ast;
 };
 
-// For the multiset comparisons: order is meaningless, it only has to be stable.
 export const alphabetically = (left: string, right: string): number => {
   return left.localeCompare(right);
 };
 
 const CLOSERS = new Set([')', '}', ']', '>']);
 
-// The tokens of a snippet, minus a trailing comma that a closer follows,
-// which is what these fixers collapse onto one line.
 export const tokensIn = (code: string, typescript = false, filename?: string): string[] => {
   const { tokens } = astOf(code, typescript, filename);
 
   return tokens
     .filter((token, index) => {
-    // `at`, not an index read: the last token has no next, but ESLint's
-    // `Token[]` is typed as if every index were populated.
+    // `at`: ESLint's `Token[]` is typed as if every index were populated.
       const next = tokens.at(index + 1);
 
       return !(token.value === ',' && next && CLOSERS.has(next.value));
@@ -880,8 +847,7 @@ export const tokensIn = (code: string, typescript = false, filename?: string): s
 const OPENERS = new Set(['(', '{', '[']);
 const BRACKET_CLOSERS = new Set([')', '}', ']']);
 
-// For each line, the line that opened the innermost bracket still open when it starts, or `undefined` at the top
-// level. Only punctuators count: a template's `${` is part of its template token.
+// Only punctuators count: a template's `${` is part of its template token.
 export const openerLinesIn = (code: string, typescript = false, filename?: string): (number | undefined)[] => {
   const brackets = astOf(code, typescript, filename).tokens
     .filter((token) => {
@@ -891,7 +857,6 @@ export const openerLinesIn = (code: string, typescript = false, filename?: strin
   const openers: (number | undefined)[] = [];
   const open: number[] = [];
 
-  // Every line up to a bracket's own is recorded before that bracket moves the stack.
   const recordThrough = (line: number): void => {
     while (openers.length <= line) {
       openers.push(open.at(-1));
@@ -916,7 +881,7 @@ export const openerLinesIn = (code: string, typescript = false, filename?: strin
   return openers;
 };
 
-// Each comment as its own text, sorted; counting `//` occurrences cannot tell one note from two sharing a line.
+// Counting `//` cannot tell one note from two sharing a line.
 export const commentsIn = (code: string, typescript = false, filename?: string): string[] => {
   return astOf(code, typescript, filename).comments
     .map((comment) => {
@@ -925,9 +890,8 @@ export const commentsIn = (code: string, typescript = false, filename?: string):
     .sort(alphabetically);
 };
 
-// Runs `--fix` to completion with one rule, or the whole plugin when omitted.
 export const fixWith = (sample: FixerSample, ruleName?: string): string => {
-  // Filtered out of the registry rather than looked up by name, which would need a cast to prove the key existed.
+  // Filtered rather than looked up, which would need a cast to prove the key.
   const selected = Object.entries(rules)
     .filter(([name]) => {
       return ruleName === undefined || name === ruleName;
@@ -949,12 +913,7 @@ export const fixWith = (sample: FixerSample, ruleName?: string): string => {
   ], sample.filename).output;
 };
 
-/**
- * What running a sample throws, or `undefined` when it runs clean. TypeScript and modules go through `transpileModule`
- * to CommonJS first; a `.cjs` runs as written, since the transpiler would add the `'use strict'` its sloppy-mode
- * samples exist to be without. The context holds `module` and `exports` and nothing else, so a sample reaching an
- * import, a host global or a name it never declares throws before any fix is involved.
- */
+// A `.cjs` runs as written: the transpiler would add the `'use strict'` its samples exist to be without.
 export const runtimeErrorIn = (code: string, filename = ''): string | undefined => {
   const script = filename.endsWith('.cjs')
     ? code
@@ -980,7 +939,6 @@ export const runtimeErrorIn = (code: string, filename = ''): string | undefined 
   }
 };
 
-// Samples the given parser accepts, so a fixture never fails on its own input.
 export const parseableSamples = (): FixerSample[] => {
   return FIXER_SAMPLES
     .filter((sample) => {

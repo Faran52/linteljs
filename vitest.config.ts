@@ -6,13 +6,11 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/*.e2e.test.ts'],
     coverage: {
       provider: 'v8',
-      // The real-code audit's split-out helpers carry suites of their own; the rest of scripts/ has none yet.
       include: [
         'packages/*/src/**/*.ts',
         'packages/eslint-plugin/scripts/audit/real-code/utils/{attribution,finding,fix,fixPass,optionSweep}Utils.ts',
       ],
-      // The e2e harness, which spawns, publishes and needs the registry, and so runs only under `test:e2e`. The
-      // case matrix under `e2e/matrix/` is pure and runs in the default suite, so it is held to the gate.
+      // The e2e harness spawns and publishes, so it runs only under `test:e2e`; `e2e/matrix/` is pure and stays.
       exclude: [
         '**/*.test.ts',
         '**/types.ts',

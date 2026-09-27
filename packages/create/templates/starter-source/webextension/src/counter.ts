@@ -3,10 +3,7 @@ export interface Counter {
   add: () => void;
 }
 
-/*
- * The one piece of state the popup holds, and it holds it in memory: a popup is destroyed every time it closes, so
- * anything that has to outlive that goes in `chrome.storage` and this does not pretend otherwise.
- */
+// A popup is destroyed every time it closes; state that must outlive it belongs in `chrome.storage`.
 export const createCounter = (onChange: (count: number) => void): Counter => {
   let count = 0;
 

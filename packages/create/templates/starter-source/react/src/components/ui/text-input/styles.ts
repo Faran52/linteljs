@@ -2,11 +2,7 @@ interface ElementProps {
   readonly className: string;
 }
 
-/*
- * The field's styles as props. `input` and `textarea` are functions because invalid is a conditional style, and
- * it is threaded as a value rather than selected on `[aria-invalid="true"]`: StyleX has no attribute selectors,
- * so a stylesheet that reached for one would be a rule the other answer could not express.
- */
+// Invalid is a value, not `[aria-invalid="true"]`: StyleX has no attribute selectors.
 export const styles = {
   field: { className: 'field' },
   label: { className: 'label' },

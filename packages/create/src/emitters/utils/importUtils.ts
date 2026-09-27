@@ -1,15 +1,10 @@
 import { partition } from 'es-toolkit';
 
-// Everything after `from`, quotes included, so sorting by it is sorting by specifier.
 const specifierOf = (line: string): string => {
   return line.replace(/^import .* from /, '');
 };
 
-/**
- * The order `simple-import-sort` would fix to: packages by specifier, then the project's own files after a blank
- * line. Here rather than beside one emitter because two config files are assembled the same way, and a generated
- * project lints itself, so an emitted import block in any other order fails its own first `pnpm lint`.
- */
+// A generated project lints itself, so an emitted import block out of `simple-import-sort` order fails.
 export const sortedImports = (lines: string[]): string => {
   const bySpecifier = (left: string, right: string): number => {
     return specifierOf(left).localeCompare(specifierOf(right), 'en');

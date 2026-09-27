@@ -27,7 +27,6 @@ import { targetFor, TARGETS } from './registry';
 
 import type { TargetRecord } from './types';
 
-// Every reachable combination, labelled so a failure names the combination rather than only the target.
 interface Axes {
   browsers: (Browser | undefined)[];
   hosted: (HostedFramework | undefined)[];
@@ -46,10 +45,6 @@ const recordFor = (target: TargetId): TargetRecord => {
   });
 };
 
-/**
- * Every asset a record names by hand. Not the starter: a record names the destination and `starterSourceEmitter`
- * derives the asset from it, so `emitters/registry.test.ts` holds that half against disk through the emitter.
- */
 const assetPathsOf = (target: TargetRecord): string[] => {
   return [
     ...(target.testSetup === undefined ? [] : [target.testSetup]),
@@ -57,13 +52,11 @@ const assetPathsOf = (target: TargetRecord): string[] => {
       .map((rule) => {
         return `fragments/claude-rules/${rule}`;
       }),
-    // `ruleArtifacts` derives both from the id, so a target added without them emits a path to nothing.
     `fragments/claude-rules/repo-structure.${target.id}.md`,
     `fragments/claude-rules/testing.${target.id}.md`,
   ];
 };
 
-// A surface arrives singly: each contributes its own files, so a combination adds no path one of them does not.
 const caseFor = (
   base: Answers,
   browser: Browser | undefined,
@@ -83,7 +76,6 @@ const caseFor = (
   return [label, answers];
 };
 
-// `undefined` is a case of its own: not answering is what most projects do.
 const axesOf = (base: Answers): Axes => {
   const { hostsBrowser, hostsFramework } = targetFor(base);
 
@@ -134,11 +126,9 @@ describe('TARGETS', () => {
     expect(registered).toEqual([...TARGET_IDS].sort(byName));
   });
 
-  // Both axes reach into `assets/`; under the defaults alone this never opened a Firefox or an island file.
   it.each(axisCases())('names only shipped assets on %s', async (_label, answers) => {
     const paths = assetPathsOf(targetFor(answers));
 
-    // The whole list, so a run names every missing file at once.
     const missingChecks = paths
       .map(async (path) => {
         try {
@@ -156,7 +146,6 @@ describe('TARGETS', () => {
     expect(missing.filter(Boolean)).toEqual([]);
   });
 
-  // A suite is written only once its subject is on disk, so one naming a module its target never writes never ships.
   it.each(axisCases())('has every suite on %s cover a file the target writes', (_label, answers) => {
     const { starterFiles, starterTests } = targetFor(answers);
     const starterTargets = starterFiles
@@ -175,10 +164,6 @@ describe('TARGETS', () => {
   });
 });
 
-/*
- * What each target offers and what it is held to, which the questionnaire, the config parser and the agent rules all
- * read off the record. The order of the stores is the offer's: the first is what a version-one yes lands on.
- */
 describe('what each target offers', () => {
   it.each<[TargetId, string[] | undefined, string[] | undefined]>([
     [
@@ -201,7 +186,6 @@ describe('what each target offers', () => {
     expect([record.stores, record.routers]).toEqual([stores, routers]);
   });
 
-  // A host takes both from the framework it hosts; the test conditions pick the browser build a component mounts.
   it.each<[string, Answers, string[], string[] | undefined]>([
     ['react', {
       ...DEFAULT_ANSWERS,
@@ -280,25 +264,17 @@ describe('targetFor', () => {
   });
 });
 
-/**
- * A layer only works if the project installed what it imports: React Native once listed its own copy of the react
- * set, and adding `jsx-a11y` to the shared list missed it (`ERR_MODULE_NOT_FOUND` at the first `eslint .`). One
- * entry per layer, holding what that layer's source imports.
- */
 const REACT_PLUGINS = ['@eslint-react/eslint-plugin', 'eslint-plugin-react-hooks', 'eslint-plugin-jsx-a11y-x'];
 
 const LAYER_PLUGINS: Record<Framework, string[]> = {
   'react': REACT_PLUGINS,
-  // `composeConfig` composes `react()` ahead of `next()`.
   'next': [...REACT_PLUGINS, '@next/eslint-plugin-next'],
-  // `reactNative()` composes `reactCore()`, which is `react()` without the accessibility preset.
   'react-native': REACT_PLUGINS
     .filter((name) => {
       return name !== 'eslint-plugin-jsx-a11y-x';
     }),
   'solid': ['eslint-plugin-solid', 'eslint-plugin-jsx-a11y-x'],
   'vue': ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
-  // `composeConfig` composes `vue()` ahead of `nuxt()`, which brings no plugin of its own.
   'nuxt': ['eslint-plugin-vue', 'eslint-plugin-vuejs-accessibility'],
   'svelte': ['eslint-plugin-svelte'],
   'angular': ['angular-eslint'],

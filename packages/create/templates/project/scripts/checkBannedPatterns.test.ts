@@ -19,7 +19,6 @@ import {
 
 import { TEMPLATES_ROOT } from '../../../src/disk';
 
-// Spawned rather than imported: it reads `argv` and calls `exit`, which would take the runner down with it.
 const CHECKER = join(TEMPLATES_ROOT, 'project/scripts/checkBannedPatterns.ts');
 
 let cwd = '';
@@ -36,7 +35,6 @@ afterEach(async () => {
 });
 
 const check = async (source: string): Promise<string> => {
-  // Not under `scripts/`, which the checker skips: it holds the patterns as data.
   const path = join(cwd, 'sample.ts');
   await writeFile(path, source, 'utf8');
 
@@ -63,22 +61,14 @@ describe('the carve-out the rule file grants', () => {
   it.each([
     ['a narrowing type guard', 'const isTarget = (value: unknown): value is Target => {\n  return true;\n};\n'],
     ['the parsed payload it narrows', 'const parsed: unknown = JSON.parse(text);\n'],
-    // A parse helper taking the guard as an argument: the parameter's type is itself a predicate.
     ['a guard parameter', 'const parsedAs = <T>(text: string, guard: (value: unknown) => value is T): T | null => {\n'],
     ['a guard type alias', 'type Guard<T> = (value: unknown) => value is T;\n'],
-    // A staged file is checked before any formatter runs, so the shape holds however it is spaced.
     ['a guard type spaced any way', 'type Guard<T> = ( value :unknown )=>value  is T;\n'],
-    // `import()` with a computed path is typed `any`, so binding the namespace as `unknown` is the stronger read.
     ['a dynamic import namespace', 'const loaded: unknown = await import(`./rules/${name}.ts`);\n'],
-    // `catch` binds `unknown` by language rule, so a helper turning a throw into a message has no other parameter type.
     ['a caught value', 'const messageOf = (error: unknown): string => {\n  return String(error);\n};\n'],
     ['a caught value named cause', 'const codeOf = (cause: unknown): string => {\n  return String(cause);\n};\n'],
-    // `.catch(cb)` binds what `catch` would, so the callback's one parameter is granted whatever it is named. Angular's
-    // own `main.ts` is written this way, and without the grant a fresh scaffold failed its own type floor.
     ['a caught value in a promise chain', 'run().catch((err: unknown) => {\n  report(err);\n});\n'],
     ['a caught value in an async promise chain', 'run().catch(async (e: unknown) => {\n  await report(e);\n});\n'],
-    // A labelled tuple element, not an index signature: this is how Vue declares a typed emit, and how any named
-    // tuple reads. What makes an index signature one is the colon after the bracket.
     ['a labelled tuple element', 'const emit = defineEmits<{\n  change: [value: string];\n}>();\n'],
     ['a named tuple type', 'type Pair = [first: string, second: number];\n'],
   ])('allows %s', async (_label, source) => {
@@ -89,7 +79,6 @@ describe('the carve-out the rule file grants', () => {
     expect(await check('const loaded: unknown = other;\n')).toContain('[: unknown]');
   });
 
-  // The guard-type grant holds only where the predicate names the parameter typed `unknown`.
   it.each([
     ['a callback answering a boolean', 'const f = (run: (value: unknown) => boolean): void => {\n'],
     ['a predicate on another name', 'const f = (run: (value: unknown) => other is T): void => {\n'],
@@ -97,11 +86,6 @@ describe('the carve-out the rule file grants', () => {
     expect(await check(source)).toContain('[: unknown]');
   });
 
-  /**
-   * The caught-value grant is the one keyed on a name rather than a shape, because TypeScript gives a caught value no
-   * type of its own. So it is held to the tightest reading that still covers the case: one argument, named for a
-   * throw. A second parameter means the function is doing something else and `unknown` is load-bearing there.
-   */
   it.each([
     ['a second parameter beside it', 'const f = (error: unknown, name: string): string => {\n  return name;\n};\n'],
     ['a parameter named for anything else', 'const f = (value: unknown): string => {\n  return String(value);\n};\n'],
@@ -123,8 +107,6 @@ describe('mentions rather than directives', () => {
       'a banned pattern inside a block comment',
       '/**\n * Never write `value: unknown` outside a guard.\n */\nconst value = 1;\n',
     ],
-    // A rule that has to leave directives alone cannot be tested without holding them as fixture text, and text inside
-    // a string literal instructs no tool.
     [
       'a directive inside a string literal',
       "const fixture = '// eslint-disable-next-line no-console';\n",
@@ -143,7 +125,6 @@ describe('mentions rather than directives', () => {
   });
 });
 
-// Enforced by this script and by nothing else, so an extension it does not recognise has no floor at all.
 describe('single-file components', () => {
   const checkFile = async (name: string, source: string): Promise<string> => {
     const path = join(cwd, name);
@@ -184,7 +165,6 @@ describe('single-file components', () => {
     expect(report).toContain('2: let value = input as never;');
   });
 
-  // A component that renders a code sample quotes exactly the shapes this script bans.
   it('never reads the template or the styles as if they were TypeScript', async () => {
     expect(await checkFile('Docs.vue', [
       '<script setup lang="ts">',
@@ -208,7 +188,6 @@ describe('single-file components', () => {
   });
 });
 
-// `lint:types` hands it `src`; lint-staged and the plugin hook hand it files.
 describe('its arguments', () => {
   const run = (...paths: string[]): string => {
     const { status, stderr } = spawnSync(execPath, [CHECKER, ...paths], {

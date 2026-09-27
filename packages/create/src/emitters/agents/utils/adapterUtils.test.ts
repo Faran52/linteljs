@@ -9,7 +9,6 @@ import { DEFAULT_ANSWERS } from '@answers';
 import { adapterArtifact, emitAgentAdapter } from './adapterUtils';
 
 describe('emitAgentAdapter', () => {
-  // The one body CLAUDE.md, AGENTS.md, Copilot's instructions and Cursor's rule all carry.
   it('points at the skill, the gate, the comment rule and the git bans, and nothing else', () => {
     expect(emitAgentAdapter(DEFAULT_ANSWERS)).toBe(`# LintelJS project
 
@@ -23,7 +22,6 @@ describe('emitAgentAdapter', () => {
 `);
   });
 
-  // npm is the one manager that needs `run` before a script name, and every command line in the file carries it.
   it('spells every script the way the chosen manager runs it', () => {
     const adapter = emitAgentAdapter({
       ...DEFAULT_ANSWERS,
@@ -46,7 +44,6 @@ describe('adapterArtifact', () => {
   });
 });
 
-// `yarn check` on 1.x is yarn's own lockfile check, so a classic project reaches its gate through `run`.
 it('sends a classic project through run, where berry needs none', () => {
   const classic = emitAgentAdapter({
     ...DEFAULT_ANSWERS,

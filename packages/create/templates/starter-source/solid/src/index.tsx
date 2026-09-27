@@ -12,10 +12,6 @@ if (!root) {
   throw new Error('Element #root not found');
 }
 
-/*
- * One entry, whatever was answered. The store lives in one provider and the data layer in the other, so an answer
- * changes one file rather than multiplying this one.
- */
 render(() => {
   return (
     <StoreProvider>

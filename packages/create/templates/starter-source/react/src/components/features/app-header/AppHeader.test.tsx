@@ -6,7 +6,6 @@ import {
 
 import { AppHeader } from './AppHeader';
 
-// Recorded rather than ignored: an empty arrow is a function that says nothing, and this one says what was chosen.
 const chosen: string[] = [];
 
 const onNavigate = (page: string): void => {
@@ -33,7 +32,6 @@ describe('AppHeader', () => {
     expect(screen.getByRole('button', { name: 'Version' })).toBeTruthy();
   });
 
-  // Without a router the tabs are controls rather than links, so the page they are on is said out loud.
   it('marks the current page for a screen reader', () => {
     render(
       <AppHeader

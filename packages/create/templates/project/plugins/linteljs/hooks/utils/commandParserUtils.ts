@@ -1,9 +1,7 @@
-// Reads the shell command a hook is handed and answers the commands it would run. It decides nothing:
-// each guard judges the commands it is given, and `undefined` means the command could not be read.
+// `undefined` means the command could not be read.
 export type Dialect = 'bash' | 'powershell';
 
 export interface ParsedCommand {
-  // From the command name on, with every wrapper and leading assignment already unwrapped.
   tokens: string[];
   // Part of the command is computed where it runs (a PowerShell subexpression or `Start-Process`), so no guard can
   // vouch for what it is.
@@ -26,8 +24,6 @@ interface TokenizerState {
   tokens: string[];
 }
 
-// What unwrapping one word of a command answers: the commands a nested shell runs, where the wrapped command starts,
-// that the word is no wrapper, or that the line cannot be read.
 interface NestedStep {
   kind: 'nested';
   commands: ParsedCommand[];
@@ -625,7 +621,6 @@ const commandsIn = (source: string, dialect: Dialect, depth: number): ParsedComm
   return commands;
 };
 
-// Every command the source runs, or `undefined` when it cannot be read: a guard denies what it cannot read.
 export const parseCommand = (source: string, dialect: Dialect): ParsedCommand[] | undefined => {
   return commandsIn(source, dialect, 0);
 };

@@ -1,7 +1,6 @@
-// Preserving the checker froze the pattern list, emitting it deleted the project's blocks; so the shipped file
-// supplies everything and the project's `PROJECT_SKIPPED` and `PROJECT_BANNED` are lifted back over it.
+// Preserving the checker froze its pattern list and emitting it deleted the project's blocks, so both merge.
 
-// The declaration through its closing `];`, read as whole lines since a reason quoting `arr[0];` would end it early.
+// Whole lines, since a reason quoting `arr[0];` would end it early.
 const blockOf = (source: string, name: string): string | null => {
   const opening = source.indexOf(`const ${name}`);
 
@@ -29,7 +28,6 @@ const carriedOver = (shipped: string, current: string, name: string): string => 
   const ours = blockOf(shipped, name);
 
   if (theirs === null || ours === null) {
-    // Never edited, or no longer declared.
     return shipped;
   }
 

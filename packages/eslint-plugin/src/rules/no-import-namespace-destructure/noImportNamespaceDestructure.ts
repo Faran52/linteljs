@@ -27,8 +27,7 @@ export const noImportNamespaceDestructure = createRule('no-import-namespace-dest
 
         const variable = resolveVariable(scopeOf(context, node), init.name);
 
-        // The binding's own definition, not its declaration's specifier list: checking the
-        // declaration would also match the default in `import def, * as ns from 'mod'`.
+        // Not the declaration's specifiers, which would also match the default in `import def, * as ns from 'mod'`.
         if (variable?.defs[0]?.node.type === 'ImportNamespaceSpecifier') {
           context.report({
             messageId: 'noDestructureNamespace',

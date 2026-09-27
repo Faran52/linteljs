@@ -16,7 +16,6 @@ import base from '../base/baseLayer';
 
 import typescript from './typescriptLayer';
 
-// `fixtures/typed/` carries its own `tsconfig.json` for `projectService`.
 const TYPED_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/floating.ts');
 
 const UNUSED_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/unused.ts');
@@ -29,7 +28,6 @@ describe('typescript', () => {
       .resolves.toContain('@typescript-eslint/no-floating-promises');
   });
 
-  // `base.test.ts` cannot cover this: it never composes `strictTypeChecked`. Deleting the handover doubles findings.
   it('leaves one owner for unused code once the typed layer is composed', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...typescript()], UNUSED_FILE);
 
@@ -41,7 +39,6 @@ describe('typescript', () => {
     expect(ruleIds).not.toContain('no-unused-vars');
   });
 
-  // React Native's template names eleven assets this way and `expo/types` declares none for the ESM form.
   it('permits a require of a bundler asset while still reporting a require of a module', async () => {
     const ruleIds = await ruleIdsForFile([...base(), ...typescript()], REQUIRES_FILE);
     const reported = ruleIds
@@ -52,7 +49,6 @@ describe('typescript', () => {
     expect(reported).toHaveLength(1);
   });
 
-  // `strictTypeChecked` has no files glob, so a plain script would otherwise ask for types it cannot have.
   it('turns the type-aware rules off a plain .js file', async () => {
     await expect(ruleNamesFor([...base(), ...typescript()], 'src/tool.js'))
       .resolves.toContain('@typescript-eslint/no-floating-promises');

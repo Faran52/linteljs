@@ -17,10 +17,6 @@ interface ProbeProps {
   readonly values: ContactValues;
 }
 
-/*
- * Through the hook and both slots, so the one suite covers all three spellings of this module: a plain async
- * function, a TanStack Query mutation and an RTK Query endpoint all answer the same `useSubmitContact`.
- */
 const Probe: FC<ProbeProps> = ({ values }) => {
   const submit = useSubmitContact();
   const [outcome, setOutcome] = useState('waiting');
@@ -68,7 +64,6 @@ describe('useSubmitContact', () => {
     expect(await screen.findByRole('button', { name: 'sent 200' })).toBeTruthy();
   });
 
-  // The rules again, on the far side of the form: a caller that goes round the binding is still refused.
   it('refuses details the rules refuse', async () => {
     press({
       email: 'not-an-address',

@@ -17,7 +17,6 @@ describe('copilotHooksEmitter', () => {
     expect(copilotHooksEmitter(answersFor([agent]))).toEqual([]);
   });
 
-  // Copilot CLI and its cloud agent both read `.github/hooks/*.json`, the cloud agent nothing else.
   it('writes one hooks file linteljs owns outright', async () => {
     const [artifact, ...rest] = copilotHooksEmitter(answersFor(['copilot']));
 

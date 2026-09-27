@@ -8,7 +8,6 @@ import { DataProvider } from '../../lib/providers/DataProvider';
 
 import { ContactPage } from './ContactPage';
 
-// Through the data slot, because the submit behind this page is a mutation whenever TanStack Query answered.
 const renderPage = (): void => {
   render(() => {
     return (
@@ -19,7 +18,6 @@ const renderPage = (): void => {
   });
 };
 
-// Blurred, since the rules run on blur.
 const fill = (label: string, value: string): void => {
   const field = screen.getByLabelText(label);
 

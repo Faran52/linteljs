@@ -1,5 +1,4 @@
-// Before a shell command: denies a banned git operation, and any command too tangled to read, since a guard cannot
-// vouch for what it cannot read. Stdout is the decision JSON or nothing.
+// A guard cannot vouch for what it cannot read, so an unreadable command is denied.
 import {
   commandName,
   parseCommand,
@@ -53,7 +52,6 @@ const addIsBanned = (arguments_: string[]): boolean => {
     });
 };
 
-// The reason a command is banned, `UNREADABLE_REASON` when it cannot be judged, or nothing when it is clear.
 const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
   if (commandName(tokens[0] ?? '') !== 'git') {
     return undefined;

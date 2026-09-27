@@ -91,22 +91,18 @@ describe('writeImport', () => {
     expect(writeImport(sourceCode, node, null, '\n')).toBe("import alpha from 'mod';");
   });
 
-  // This emitter has no guard for a side-effect import; the rule's early return prevents reaching it. Pinned so
-  // that guard is not deleted as dead code.
   it('writes an unparseable statement for an import with no specifiers, which callers must guard against', () => {
     const { sourceCode, node } = importNodeFrom("import 'mod';");
 
     expect(writeImport(sourceCode, node, null, '\n')).toBe("import  from 'mod';");
   });
 
-  // `import type` is TypeScript's alone, so the keyword survives only where the parser read one.
   it('keeps the type keyword on a type-only import', () => {
     const { sourceCode, node } = importNodeFrom("import type {\n  Alpha,\n  Bravo\n} from 'mod';", true);
 
     expect(writeImport(sourceCode, node, null, '\n')).toBe("import type { Alpha, Bravo } from 'mod';");
   });
 
-  // An import attribute clause sits after the module specifier, so it needs an explicit slice to survive the rebuild.
   it('carries an import attribute clause across the rebuild', () => {
     const { sourceCode, node } = importNodeFrom(
       "import { alpha, bravo } from 'mod' with { type: 'json' };",
@@ -120,7 +116,6 @@ describe('writeImport', () => {
     expect(written).toBe("import {\n  alpha,\n  bravo\n} from 'mod' with { type: 'json' };");
   });
 
-  // A comment inside the braces cannot be carried across a rebuild assembled from specifier text alone.
   it('returns null when a comment sits inside the statement', () => {
     const { sourceCode, node } = importNodeFrom("import { alpha, /* keep */ bravo } from 'mod';");
 
@@ -132,7 +127,6 @@ describe('writeImport', () => {
     expect(written).toBeNull();
   });
 
-  // The same rebuild path serves the collapse check, so a comment declines it too, not only the split.
   it('returns null for the collapsed form as well, given the same comment', () => {
     const { sourceCode, node } = importNodeFrom("import {\n  alpha,\n  /* keep */ bravo\n} from 'mod';");
 

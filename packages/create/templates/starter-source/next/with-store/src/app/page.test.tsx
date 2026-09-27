@@ -9,7 +9,6 @@ import { StoreProvider } from '../lib/providers/StoreProvider';
 
 import HomePage from './page';
 
-// Through the store slot, the way the layout wraps it: Redux is the one store that needs an ancestor.
 const open = (): void => {
   render(
     <StoreProvider>
@@ -31,7 +30,6 @@ describe('the home route', () => {
     expect(screen.getByText('pnpm check')).toBeTruthy();
   });
 
-  // The button this page hands the store is a child of this file, and nothing else renders it.
   it('counts up when the button it holds is pressed', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Add one' }));

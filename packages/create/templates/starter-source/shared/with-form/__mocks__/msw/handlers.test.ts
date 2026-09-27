@@ -20,10 +20,6 @@ const postContact = async (body: object): Promise<Response> => {
   });
 };
 
-/*
- * Against the running interceptor the setup file starts, and through `fetch` rather than through the adapter: what
- * is asserted here is what the handlers answer, and the adapter has a suite of its own.
- */
 describe('handlers', () => {
   it('answers the version endpoint', async () => {
     const response = await fetch('/api/version');
@@ -38,7 +34,6 @@ describe('handlers', () => {
     await expect(response.json() as Promise<ContactResponse>).resolves.toEqual({ status: 'accepted' });
   });
 
-  // The server validates too, which is what makes this reachable without going through the form.
   it('refuses contact details that do not, with the status a server would send', async () => {
     const response = await postContact({ email: 'nope', message: 'short' });
 

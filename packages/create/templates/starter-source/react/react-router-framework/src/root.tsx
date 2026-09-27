@@ -19,12 +19,6 @@ interface LayoutProps {
   readonly children: ReactNode;
 }
 
-/*
- * The document itself, which in framework mode is a module rather than an `index.html`. React Router renders this
- * on the server and hydrates it, so `Meta` and `Links` are where the head comes from and `Scripts` is what makes
- * the page interactive. The two providers wrap the outlet here for the same reason the no-router build wraps them
- * around `App`: an answer adds a provider rather than multiplying the entry.
- */
 export const Layout = ({ children }: LayoutProps): ReactNode => {
   return (
     <html lang="en">
@@ -52,10 +46,6 @@ const Root = (): ReactNode => {
   return <Outlet />;
 };
 
-/*
- * No `ErrorBoundary` export, and React Router's own default stands in. Its props come from `./+types/root`, which
- * `react-router typegen` writes and nothing can read before the first build, and typing them by hand means a bare
- * `: unknown` on a thrown value that the mechanical floor refuses. A project adds one the moment it wants its own.
- */
+// No `ErrorBoundary`: its props come from typegen output, and typing them by hand needs a banned `: unknown`.
 
 export default Root;

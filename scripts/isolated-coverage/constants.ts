@@ -6,10 +6,9 @@ export const TEST_SUFFIX = '.test.ts';
 
 export const SOURCE_SUFFIX = '.ts';
 
-// The one name that holds data and so has no suite of its own.
 export const DATA_FILE = 'constants.ts';
 
-// Suites that cover a package rather than one file, each named in .claude/rules/repo-structure.md.
+// Each named in .claude/rules/repo-structure.md.
 export const DOCUMENTED_SUITES = [
   'meta.test.ts',
   'types.test.ts',
@@ -18,7 +17,6 @@ export const DOCUMENTED_SUITES = [
   'hooks.test.ts',
 ];
 
-// Every metric a threshold key can carry, each set to this so no run fails on the merged-suite gate.
 export const THRESHOLD_METRICS = ['statements', 'branches', 'functions', 'lines'];
 
 export const THRESHOLD_OFF = 0;
@@ -26,5 +24,5 @@ export const THRESHOLD_OFF = 0;
 // ponytail: a module every suite imports is covered by all of them, and seventy names say no more than ten.
 export const COVERED_BY_SHOWN = 10;
 
-// A single suite runs in seconds; ten minutes is a hang, not a slow file.
+// A single suite runs in seconds; ten minutes is a hang.
 export const TIMEOUT_SECONDS = 600;

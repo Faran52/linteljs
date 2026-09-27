@@ -6,8 +6,7 @@ import { hasLibrary, hasTests } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
-// Read by tsconfig `paths`, `base({ aliases })` and the resolver; the order is the dependency direction, so a
-// sorted import block reads as the architecture.
+// The order is the dependency direction, so a sorted import block reads as the architecture.
 export const buildAliases = (answers: Answers): AliasMap => {
   const target = targetFor(answers);
   const omitted = target.omitAliases ?? [];
@@ -23,7 +22,6 @@ export const buildAliases = (answers: Answers): AliasMap => {
     '@services/*': './src/lib/services/*',
     // Zod owns lib/apis/.
     ...(hasLibrary(answers, 'zod') ? { '@apis/*': './src/lib/apis/*' } : {}),
-    // What one target alone has.
     ...target.extraAliases,
     '@config/*': './src/config/*',
     ...(hasTests(answers) ? { '@mocks/*': './__mocks__/*' } : {}),

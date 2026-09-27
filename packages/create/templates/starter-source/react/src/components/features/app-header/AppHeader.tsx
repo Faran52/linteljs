@@ -10,12 +10,7 @@ export interface AppHeaderProps {
   readonly onNavigate: (page: string) => void;
 }
 
-/*
- * The one place the router answer is visible. Without a router these are buttons over local state and the address
- * bar never moves; with one they become links and it follows. An anchor that navigates is an anchor and a control
- * that swaps a view is a button, so faking the first with the second would break middle-click and lie about where
- * you are.
- */
+// An element that navigates is an anchor; faking one with a button breaks middle-click.
 export const AppHeader: FC<AppHeaderProps> = ({
   name,
   current,

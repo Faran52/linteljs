@@ -6,11 +6,6 @@ import { emitHtmlEntry, htmlEntryEmitter } from './htmlEntryEmitter';
 
 import type { Answers } from '@config/types';
 
-/*
- * The document whole. The project name is in the title, which is why it is written rather than copied; the language
- * is declared, since an empty one tells a screen reader it is unknown; the entry the record names loads from the root
- * into the `#root` every starter mounts on.
- */
 describe('emitHtmlEntry', () => {
   it('writes the document a bundler serves, titled for the project and loading its entry', () => {
     expect(emitHtmlEntry('my-app', 'src/main.tsx')).toBe([
@@ -32,7 +27,6 @@ describe('emitHtmlEntry', () => {
 });
 
 describe('htmlEntryEmitter', () => {
-  // Only where a bundler serves the page: a framework that renders its own document gets none.
   it.each<[string, Partial<Answers>, string | undefined]>([
     ['react', { target: 'react' }, 'src/main.tsx'],
     ['react in framework mode', {

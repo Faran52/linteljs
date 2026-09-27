@@ -18,7 +18,6 @@ import { shippedAssetsReader, TEMPLATES_ROOT } from '@disk';
 
 import { testSetupEmitter } from './testSetupEmitter';
 
-// A project that holds neither spelling, so the target's own is the one written.
 const FRESH: ProjectShape = {
   setupTests: [],
   styleEntries: [],
@@ -34,7 +33,6 @@ describe('testSetupEmitter', () => {
     expect(artifacts).toEqual([]);
   });
 
-  // Preserved, so a project keeps the mocks it added to the file after the first run.
   it('joins the target setup and its router mocks into the spelling React needs', () => {
     expect(testSetupEmitter(DEFAULT_ANSWERS, FRESH)).toEqual([{
       stage: 'standard',
@@ -63,7 +61,6 @@ describe('testSetupEmitter', () => {
     ]);
   });
 
-  // The target's own file first: it is the one with imports, and the fragments after it have none.
   it('leads with the target setup where the target ships one', () => {
     const [artifact] = testSetupEmitter({
       ...DEFAULT_ANSWERS,
@@ -75,10 +72,6 @@ describe('testSetupEmitter', () => {
 });
 
 describe('the mocking answer', () => {
-  /*
-   * Last in the join, because the fragments above it may themselves make a request while setting up and the
-   * interceptor has to be listening by then.
-   */
   it('appends the msw fragment, and only when msw was answered', () => {
     const sourcesFor = (mocking: Answers['mocking']): string[] => {
       const answers: Answers = {
@@ -96,7 +89,6 @@ describe('the mocking answer', () => {
   });
 });
 
-// The setup is composed from a target source plus per-answer fragments, so these read the composed text.
 describe('the shipped test setup', () => {
   const FRAGMENTS = ['fragments/test-setup/setupTests.router.ts', 'fragments/test-setup/setupTests.tanstackQuery.ts'];
 
@@ -116,11 +108,6 @@ describe('the shipped test setup', () => {
     },
   );
 
-  /*
-   * Next's router is not a binding a project installs, it is the framework, and what its header reads is
-   * `usePathname`. So it stands a different thing in, which is why the record names a fragment rather than
-   * setting a flag.
-   */
   it('stands in for what next reads instead, which is the pathname', async () => {
     const setup = await setupFor({ target: 'next' });
 
@@ -136,7 +123,6 @@ describe('the shipped test setup', () => {
     },
   );
 
-  // A mock of a package the project never installed costs nothing: the factory runs only on import.
   it('mocks all three bindings at once, since linteljs installs none of them', async () => {
     const setup = await setupFor({ target: 'react' });
 
@@ -163,7 +149,6 @@ describe('the shipped test setup', () => {
     expect(withQuery).toContain('TEST_QUERY_OPTIONS');
   });
 
-  // Angular and React Native are the two whose setup is not the shared file.
   it.each<TargetId>(['angular', 'react-native'])('appends them on %s too', async (target) => {
     const setup = await setupFor({
       target,
@@ -185,7 +170,6 @@ describe('the shipped test setup', () => {
     expect(setup.indexOf('navigateMock')).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
   });
 
-  // An import in a fragment lands after the statements of the setup it follows.
   it.each(FRAGMENTS)('keeps %s import-free', async (fragment) => {
     const text = await readFile(join(TEMPLATES_ROOT, fragment), 'utf8');
 

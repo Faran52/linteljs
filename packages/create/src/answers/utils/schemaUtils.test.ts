@@ -11,8 +11,6 @@ interface GeneratedSchema {
 
 describe('schemaFor', () => {
   it('matches both checked-in copies of the v2 schema', async () => {
-    // Off this file rather than `process.cwd()`, which is the workspace root under `pnpm test` and this package's
-    // own directory under `pnpm --filter @linteljs/create test`.
     const packageRoot = join(import.meta.dirname, '../../..');
     const workspaceRoot = join(packageRoot, '../..');
     const [canonical, packaged] = await Promise.all([

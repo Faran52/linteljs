@@ -21,7 +21,6 @@ interface ProbeOptions {
   max: number;
 }
 
-// Both take the shape rather than RuleNode, so a degenerate argument here needs no cast.
 const parsed = sourceCodeFrom([
   'const alpha = 1;',
   '',
@@ -41,7 +40,6 @@ describe('isDirective', () => {
     expect(directive).toBe(true);
   });
 
-  // typescript-eslint's shape for `run();`: the key is present and undefined, so the key alone would answer wrongly.
   it('declines a statement whose directive key is undefined, or absent', () => {
     const directive = isDirective({
       type: 'ExpressionStatement',
@@ -60,7 +58,6 @@ describe('mustFind', () => {
     expect(mustFind(parsed.sourceCode.getFirstToken(identifier), 'the first token').value).toBe('alpha');
   });
 
-  // ESLint names the rule and the file; only the rule knows which of its lookups failed.
   it('names the plugin and the lookup when one comes back null', () => {
     expect(() => {
       return mustFind(null, 'the token before a comma');
@@ -90,7 +87,6 @@ describe('rangeOf', () => {
 });
 
 describe('optionsOf', () => {
-  // What a rule reads its first option through, from a real run so the context is ESLint's own.
   const optionsFrom = (entry: Linter.RuleEntry): Partial<ProbeOptions> => {
     let read: Partial<ProbeOptions> = {};
     const capture: Rule.RuleModule = {
@@ -114,7 +110,6 @@ describe('optionsOf', () => {
     expect(optionsFrom(['error', { max: 2 }])).toEqual({ max: 2 });
   });
 
-  // An unconfigured rule reads every option as its default, so it gets an empty object rather than undefined.
   it('answers an empty object where none was given', () => {
     expect(optionsFrom('error')).toEqual({});
   });

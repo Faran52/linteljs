@@ -25,7 +25,6 @@ beforeEach(async () => {
   cwd = await mkdtemp(join(tmpdir(), 'linteljs-managed-'));
 });
 
-// The one file here that left its directories behind; every other suite that takes a temp directory removes it.
 afterEach(async () => {
   await rm(cwd, {
     recursive: true,
@@ -38,11 +37,6 @@ const record = async (text: string): Promise<void> => {
   await writeFile(join(cwd, MANAGED_PATH), text, 'utf8');
 };
 
-/**
- * Every unreadable shape answers nothing rather than throwing, and nothing is the safe direction: `sync` then adds
- * what the answers ask for and removes none of what they no longer do. Throwing would stop a sync over bookkeeping
- * the same run is about to rewrite.
- */
 describe('managedPathsReader', () => {
   it('reads the paths a previous run recorded', async () => {
     await record('{ "removable": [".claude/settings.json"] }');
@@ -50,7 +44,6 @@ describe('managedPathsReader', () => {
     await expect(managedPathsReader(cwd)).resolves.toEqual(['.claude/settings.json']);
   });
 
-  // A project written before this file existed.
   it('answers nothing when there is no record', async () => {
     await expect(managedPathsReader(cwd)).resolves.toEqual([]);
   });
@@ -71,7 +64,6 @@ describe('managedPathsReader', () => {
     await expect(managedPathsReader(cwd)).resolves.toEqual([]);
   });
 
-  // A hand-edited record keeps the entries that are still paths rather than failing whole.
   it('keeps only the entries that are strings', async () => {
     await record('{ "removable": ["a.js", 7, null, "b.js"] }');
 

@@ -14,8 +14,7 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-// `AccessibilityActionName` from react-native 0.87.1. These six are announced by the platform under a name it
-// already has words for; any other name is the app's own and is read out verbatim unless a label supplies better.
+// From react-native 0.87.1; any other name is read out verbatim.
 const STANDARD_ACTIONS = [
   'activate',
   'decrement',
@@ -75,8 +74,6 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
         return;
       }
 
-      // Only a name written down can be matched against the standard set; one computed at runtime may be either. A
-      // property always has a value, and of the expressions only a string literal carries a string `value`.
       const { value } = mustFind(named.value, "the value of an accessibility action's name");
 
       if (typeof value !== 'string') {
@@ -98,7 +95,7 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
         const actions = findProp(attributes, ['accessibilityActions']);
         const handler = findProp(attributes, ['onAccessibilityAction']);
 
-        // Either half may arrive through the spread, so an unpaired one here is not yet a missing one.
+        // Either half may arrive through the spread.
         if (!hasSpread(attributes) && Boolean(actions) !== Boolean(handler)) {
           context.report({
             node,
@@ -114,7 +111,6 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
 
         const expression = expressionOf(actions);
 
-        // No expression container means a bare attribute or a string, and neither is an array.
         if (!expression || expression.type === 'Literal') {
           context.report({
             node,
@@ -140,7 +136,6 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
         }
 
         for (const element of elements) {
-          // A hole or a spread carries no properties to judge.
           if (element?.type === 'ObjectExpression') {
             reportAction(node, element);
           }

@@ -41,8 +41,6 @@ describe('emitViteConfig', () => {
     expect(configFor({ target: 'angular' })).toBeNull();
   });
 
-  // Everything above the config, and the plugins it registers. Solid's hot reloading stays out of the test run, where
-  // it leaves one branch no suite can reach in every component.
   it.each<[string, AnswerOverrides, string[], string]>([
     ['react', { target: 'react' }, [
       "import react from '@vitejs/plugin-react';",
@@ -86,10 +84,6 @@ describe('emitViteConfig', () => {
     expect(/ {2}plugins: \[\n([\s\S]*?)\n {2}\],/u.exec(config)?.[1]).toBe(plugins);
   });
 
-  /**
-   * The compiler is `@vitejs/plugin-react`'s own `compiler` option, which runs `oxc-transform-react`. The VITEST
-   * guard keeps its memo cache out of the test run, where it would leave one branch uncovered in every component.
-   */
   it('declares the compiler in the plugin call', () => {
     const react = configFor({
       target: 'react',
@@ -110,8 +104,6 @@ describe('emitViteConfig', () => {
     );
   });
 
-  // One call per line: React's compiler call plus tailwind joined is 128 characters, over the emitted config's own 120
-  // max-len with no fixer.
   it('keeps every plugin call inside the line length it emits for itself', () => {
     const react = configFor({
       target: 'react',
@@ -128,8 +120,6 @@ describe('emitViteConfig', () => {
     expect(withinWidth).toBe(true);
   });
 
-  // `crx` is not a framework plugin but occupies the same slot: it turns a vanilla build into an extension build by
-  // reading the manifest.
   it('builds the extension from its manifest rather than from a framework plugin', () => {
     const extension = configFor({ target: 'webextension' }) ?? '';
 
@@ -138,7 +128,6 @@ describe('emitViteConfig', () => {
     expect(extension).toContain('    crx({ manifest }),');
   });
 
-  // The hosted framework's own plugin, ahead of the manifest's.
   it.each<[HostedFramework, string, string]>([
     ['vue', "import vue from '@vitejs/plugin-vue';", 'vue()'],
     ['svelte', "import { svelte } from '@sveltejs/vite-plugin-svelte';", 'svelte()'],
@@ -181,11 +170,6 @@ describe('emitViteConfig', () => {
     expect(config).not.toContain('tailwind');
   });
 
-  /*
-   * First in the list, which is what StyleX's own documentation asks for: placed after the framework plugin it
-   * breaks Fast Refresh. The package's own Vite adapter, since the generic unplugin build of its factory writes no
-   * CSS into a production bundle, bound to a typed name because the adapter itself is typed `=> any`.
-   */
   it('adds the stylex plugin before the framework one, through its typed vite adapter', () => {
     const config = configFor({
       target: 'vue',
@@ -222,10 +206,6 @@ export default defineConfig({
   });
 });
 
-/**
- * crx derives its inputs from the manifest, so a page the manifest does not name would not be built. A devtools
- * panel is that page: its devtools page opens it at runtime rather than declaring it.
- */
 describe('extra rollup inputs', () => {
   it('names the panel as an input once the devtools surface is answered', () => {
     const output = emitViteConfig({
@@ -234,7 +214,6 @@ describe('extra rollup inputs', () => {
       surfaces: ['devtools-panel'],
     });
 
-    // The project's own quoting, not JSON's: this file is linted by the config beside it.
     expect(output).toContain("build: { rollupOptions: { input: { panel: 'panel.html' } } },");
     expect(output).not.toContain('"panel"');
   });
@@ -250,8 +229,6 @@ describe('extra rollup inputs', () => {
 });
 
 describe('the router', () => {
-  // Neither router adds a build plugin: the starter's TanStack route tree is built from the one route list rather
-  // than generated out of a `routes/` directory, which is what that plugin exists to do.
   it('adds nothing for either router', () => {
     expect(configFor({ router: 'tanstack-router' })).not.toContain('tanstackRouter');
     expect(configFor({ router: 'react-router' })).not.toContain('tanstackRouter');
@@ -259,7 +236,6 @@ describe('the router', () => {
 });
 
 describe('viteConfigEmitter', () => {
-  // Both reference repos rewrote `vite.config.ts` wholesale, so it is the project's after the first write.
   it('hands the config to the project after the first write', () => {
     const shapes = viteConfigEmitter(DEFAULT_ANSWERS)
       .map(({ target, preserve }) => {
@@ -269,7 +245,6 @@ describe('viteConfigEmitter', () => {
     expect(shapes).toEqual([['vite.config.ts', true]]);
   });
 
-  // Next owns its bundler, so there is no vite config for this CLI to write.
   it('writes nothing for a target whose build is not vite', () => {
     const artifacts = viteConfigEmitter({
       ...DEFAULT_ANSWERS,

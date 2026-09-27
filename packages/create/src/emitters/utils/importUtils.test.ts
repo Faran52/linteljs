@@ -7,7 +7,6 @@ import {
 import { sortedImports } from './importUtils';
 
 describe('sortedImports', () => {
-  // The order `simple-import-sort` fixes to, so an emitted config passes its own project's first lint.
   it('sorts packages by specifier, then the project files after a blank line', () => {
     const sorted = sortedImports([
       "import local from './local';",

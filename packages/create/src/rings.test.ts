@@ -15,7 +15,6 @@ it('names every ring once', () => {
   expect([...new Set(RINGS)]).toStrictEqual([...RINGS]);
 });
 
-// The pipeline sequences the other three and reaches no world of its own.
 it('gives every outer ring but the pipeline a world', () => {
   const owningRings = OUTER_RINGS
     .filter((ring) => {
@@ -25,8 +24,6 @@ it('gives every outer ring but the pipeline a world', () => {
   expect(Object.keys(WORLDS)).toStrictEqual(owningRings);
 });
 
-// Every module the root `eslint.config.ts` holds to WORLDS, and what each imports: the tests and the e2e harness are
-// exempt there, so they are here.
 const importsBySource = (): [string, string[]][] => {
   return modulesIn(import.meta.dirname)
     .filter((path) => {
@@ -42,10 +39,6 @@ const importsBySource = (): [string, string[]][] => {
     });
 };
 
-/*
- * The same data the lint rule reads, held to the tree it describes: a world's imports appear only in its own ring,
- * every pattern names an import that ring really makes, and the message sends a reader to that ring.
- */
 it.each(Object.entries(WORLDS))('keeps what reaches %s inside that ring', (name, world) => {
   const sources = importsBySource();
   const worldRings = Object.keys(WORLDS);

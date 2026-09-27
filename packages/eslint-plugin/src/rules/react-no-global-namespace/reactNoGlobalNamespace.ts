@@ -23,41 +23,34 @@ import { nameOf } from './utils/nameUtils.ts';
 
 import type { AST } from 'eslint';
 
-// `TSQualifiedName` is absent from ESLint's ESTree types, so the two fields this rule reads are described
-// structurally and narrowed by a predicate. A real parsed node satisfies it, and no cast is needed to say so.
+// `TSQualifiedName` is absent from ESLint's ESTree types, so it is narrowed by a predicate.
 interface Qualified {
   left: NamedNode;
   right: NamedNode;
 }
 
-// The module an import names. A `Literal` in general carries several value types; an import source is a string.
 interface ImportSource {
   value?: string;
 }
 
-// One specifier, read for the name it binds, for whether it is a named one a fix may sit beside, and for
-// whether `import { type X }` made that binding a type rather than a value.
 interface ImportSpecifier extends Ranged {
   type: string;
   importKind?: string;
   local: NamedNode;
 }
 
-// `declare` marks an ambient declaration. Described structurally for the same reason `TSQualifiedName` is:
-// ESLint's ESTree types carry no such field, and typescript-estree puts it on several node types.
+// ESLint's ESTree types carry no `declare`, and typescript-estree puts it on several node types.
 interface Ambient {
   declare?: boolean;
 }
 
-// One import statement, read for the names already bound so a fix never writes a duplicate specifier. `importKind`
-// is TypeScript's, marking `import type { ... }`, where a `type` modifier on a specifier is a syntax error.
+// In `import type { ... }` a `type` modifier on a specifier is a syntax error.
 interface ImportNode {
   importKind?: string;
   source: ImportSource;
   specifiers: ImportSpecifier[];
 }
 
-// A named specifier is the only thing a fix can sit beside; a default or namespace one has no list to join.
 const namedSpecifiers = (node: ImportNode): ImportSpecifier[] => {
   return node.specifiers
     .filter((specifier) => {
@@ -71,8 +64,7 @@ const MODULE = 'react';
 
 const DECLARATION_FILE = /\.d\.[cm]?ts$/;
 
-// A value reach needs a value binding. `import type { Fragment } from 'react'` and `import { type Fragment }`
-// both bind a type, and `<Fragment>` against one is a value TypeScript refuses. A type reach takes either.
+// `<Fragment>` against a type-only binding is a value TypeScript refuses.
 const bindsUsably = (node: ImportNode, name: string, isType: boolean): boolean => {
   return node.specifiers
     .some((specifier) => {
@@ -85,12 +77,11 @@ const isAmbient = (node: TypedNode & Ambient): boolean => {
   return node.declare === true;
 };
 
-// The visitor only sees a `TSQualifiedName`, which always carries both halves, so one key narrows for the two.
 const isQualified = (node: RuleNode): node is RuleNode & Qualified => {
   return 'left' in node;
 };
 
-// `TypedNode` rather than `RuleNode`: this walks `ast.body`, whose members ESLint types as ESTree statements.
+// `TypedNode`: this walks `ast.body`, whose members ESLint types as ESTree statements.
 const isImport = (node: TypedNode): node is TypedNode & ImportNode => {
   return node.type === 'ImportDeclaration' && 'source' in node && 'specifiers' in node;
 };
@@ -114,17 +105,12 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
   create: (context) => {
     const source = sourceCodeOf(context);
 
-    /**
-     * An import turns a script into a module, so every global in the file stops being global and
-     * `declare module '*.svg'` becomes an augmentation of a module that does not exist. A `.d.ts` is that
-     * file by definition. Nothing to say either: the file cannot take the import the message asks for.
-     */
+    // An import would turn a declaration file into a module, and every global in it would stop being global.
     if (DECLARATION_FILE.test(physicalFilenameOf(context))
       || (source.ast.body.some(isAmbient) && !source.ast.body.some(isImport))) {
       return {};
     }
 
-    // The file's own `react` import, which a fix merges into rather than writing a second statement beside it.
     const existingImport = (): (TypedNode & ImportNode) | undefined => {
       for (const statement of source.ast.body) {
         if (isImport(statement) && statement.source.value === MODULE) {
@@ -135,13 +121,8 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       return undefined;
     };
 
-    /**
-     * Where a new import goes: after the prologue, since `'use client'` stops being a directive the moment anything
-     * precedes it, and a file with a `React.` reference has an entry past it. svelte-eslint-parser is the one parser
-     * whose `Program.body` holds markup: each `<script>` is an element there with its statements beneath it, so the
-     * import goes before the statement holding the reference inside its script. A reference in the template has no
-     * script to take an import, so it gets no fix.
-     */
+    // After the prologue: `'use client'` stops being a directive once anything precedes it.
+    // A reference in Svelte markup has no script to take an import, so it gets no fix.
     const importAnchor = (member: RuleNode): (Located & Ranged) | undefined => {
       const firstStatement = source.ast.body
         .find((entry) => {
@@ -166,15 +147,10 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       return script === -1 ? undefined : chain[script + 1];
     };
 
-    /**
-     * `React.ReactNode` in a type position and `React.createElement` in a value one are the same reach through the
-     * same global, so both land here. `member` is what the fix replaces; `isType` decides whether the specifier it
-     * adds carries `type`.
-     */
     const report = (member: RuleNode, name: string, isType: boolean, targets: AST.Range[]): void => {
       const scope = scopeOf(context, member);
 
-      // A local `React` is the file's own binding, so reaching through it is a namespace this file owns.
+      // A local `React` is the file's own binding.
       if (resolveVariable(scope, NAMESPACE) !== null) {
         return;
       }
@@ -185,7 +161,6 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       // Bound to something else already, so replacing the member access would quietly mean a different value.
       const collides = !alreadyImported && resolveVariable(scope, name) !== null;
 
-      // The list a fix may join, absent for a type-only import and for one with no named specifiers.
       const mergeable = existing !== undefined && existing.importKind !== 'type'
         ? namedSpecifiers(existing)[0]
         : undefined;
@@ -194,7 +169,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       const rewrite = (fixer: Fixer): ReturnType<Fixer['replaceText']>[] => {
         const specifier = isType ? `type ${name}` : name;
 
-        // A range each, because a JSX element carries the reach twice and both tags have to move together.
+        // A JSX element carries the reach twice, and both tags have to move together.
         const replaced = targets
           .map((target) => {
             return fixer.replaceTextRange(target, name);
@@ -204,12 +179,10 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return replaced;
         }
 
-        // No import to join: none from `react` at all, a type-only one, or one carrying no named list. A second
-        // `import { ... } from 'react'` beside any of those is valid, which rewriting them into one is not.
+        // A second `import { ... } from 'react'` beside these is valid, which rewriting them into one is not.
         if (mergeable === undefined) {
           const before = mustFind(anchor, 'the statement a new import goes before');
 
-          // The statement's own indent after the import, which is none in a script and the body's in a component.
           return [
             fixer.insertTextBeforeRange(
               rangeOf(before),
@@ -219,8 +192,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           ];
         }
 
-        // Beside the first named specifier, rather than by rewriting the statement's text, which guesses at the quote
-        // style and can write `import * as R, { X } from 'react'` or `import type { type X }`, neither of which parses.
+        // Rewriting the statement text can write `import * as R, { X } from 'react'`, which does not parse.
         return [
           fixer.insertTextBeforeRange(rangeOf(mergeable), `${specifier}, `),
           ...replaced,
@@ -231,25 +203,18 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         node: member,
         messageId: 'globalNamespace',
         data: { name },
-        // No anchor is a reference in Svelte markup, where `Program.body` holds elements and no import is ever found to
-        // merge into either, so there is nothing to fix with.
         fix: collides || anchor === undefined ? null : rewrite,
       });
     };
 
     return {
-      // `React.ReactNode`, in a type.
       TSQualifiedName: (node: RuleNode) => {
         if (isQualified(node) && node.left.name === NAMESPACE) {
           report(node, node.right.name, true, [rangeOf(node)]);
         }
       },
 
-      /**
-       * `<React.Fragment>`, in markup. A JSX tag name is not a member expression, so the visitor below never sees
-       * one, and both tags are rewritten by a single fix: half of that rename does not parse, and ESLint writes
-       * whatever the last pass produced.
-       */
+      // Both tags in one fix: half of that rename does not parse, and ESLint writes whatever the last pass produced.
       JSXElement: (node: RuleNode) => {
         const tags = globalNamespaceTags(node, NAMESPACE);
         const [opening] = tags;
@@ -263,8 +228,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         report(node, mustFind(member.name, 'the name of a namespaced JSX tag'), false, tags.map(rangeOf));
       },
 
-      // `React.createElement`, in a value. A computed access names nothing a fix could import, and is the only way
-      // the property of a member expression is not an identifier, so the guard covers both.
+      // A computed access names nothing a fix could import.
       MemberExpression: (node) => {
         if (node.computed || nameOf(node.object) !== NAMESPACE) {
           return;

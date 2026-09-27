@@ -24,10 +24,8 @@ interface RunResult {
   output: string;
 }
 
-// Spawned rather than imported: it reads `argv` and calls `exit`, which would take the runner down with it.
 const CHECKER = join(TEMPLATES_ROOT, 'project/scripts/typecheckStaged.ts');
 
-// Repo-root tsc, not a fixture install: a tmpdir has no node_modules of its own to resolve.
 const TSC = join(TEMPLATES_ROOT, '../../../node_modules/.bin/tsc');
 
 const TSCONFIG = [
@@ -58,10 +56,6 @@ afterEach(async () => {
   });
 });
 
-/**
- * Colour is decoration, and asserting through it makes a test read the terminal it happens to run in: `tsc` pretty
- * prints `error TS2322` with escapes between the two words, so a run under a coloured terminal failed where CI passed.
- */
 const ESCAPE = String.fromCharCode(27);
 
 const plain = (text: string): string => {
@@ -111,7 +105,6 @@ describe('a staged file with a real type error', () => {
 
 describe('files it does not check', () => {
   it('skips the typecheck entirely when nothing is staged', () => {
-    // The command plants a sentinel, so an invocation is observable rather than inferred.
     const sentinel = join(cwd, 'invoked.txt');
     const result = spawnSync(execPath, [CHECKER], {
       encoding: 'utf8',
@@ -130,7 +123,6 @@ describe('files it does not check', () => {
     await writeFile(join(cwd, 'clean.ts'), 'export const value: number = 1;\n', 'utf8');
     await writeFile(join(cwd, 'broken.ts'), "export const value: number = 'nope';\n", 'utf8');
 
-    // The project still fails to typecheck; only broken.ts is unstaged, so nothing is reported.
     expect(run(['clean.ts']).status).toBe(0);
   }, 30000);
 });

@@ -31,7 +31,6 @@ describe('solidTarget', () => {
     expect(solidTarget.id).toBe('solid');
   });
 
-  // Its own layer, rather than React's, though both compile `.tsx`.
   it('takes the solid framework layer', () => {
     expect(solidTarget.framework).toBe('solid');
   });
@@ -40,13 +39,11 @@ describe('solidTarget', () => {
     expect(solidTarget.naming).toEqual(componentNaming());
   });
 
-  // Solid has a file-based router, so a route directory may be `[id]` or `(group)`.
   it('admits the route segments a file-based router owns', () => {
     expect(solidTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
   });
 });
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
@@ -82,7 +79,6 @@ const GATES: GateRow[] = [
   ['src/lib/primitives/create-extended-mutation/createExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(() => {
     return solidTarget;

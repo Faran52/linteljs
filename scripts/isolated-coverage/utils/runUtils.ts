@@ -13,7 +13,6 @@ import {
 
 import { type CoverageReport, isCoverageReport } from './coverageUtils.ts';
 
-// A run that wrote a report, one that wrote none, or one killed at the deadline.
 export type RunOutcome = CoverageReport | 'failed' | 'timed out';
 
 interface ListedTest {
@@ -27,7 +26,6 @@ const isListedTests = (value: unknown): value is ListedTest[] => {
     });
 };
 
-// Every test file the workspace's projects collect, as absolute paths: vitest's own include and exclude decide.
 export const listTests = (cwd: string): string[] => {
   const listed: unknown = JSON.parse(run('pnpm', ['exec', 'vitest', 'list', '--filesOnly', '--json'], cwd));
 
@@ -41,12 +39,7 @@ export const listTests = (cwd: string): string[] => {
     });
 };
 
-/**
- * One test file alone, from the root so `coverage.include` and `exclude` apply as configured. The path is a filter
- * vitest matches by substring, and a root-relative path is unique. Every threshold key is zeroed, since one file
- * alone is never meant to meet the merged gate. The report decides, not the exit code, so the run's own output and
- * status are dropped.
- */
+// The report decides, not the exit code; every threshold key is zeroed for a single file.
 export const coverageRun = async (
   cwd: string,
   test: string,
@@ -71,7 +64,7 @@ export const coverageRun = async (
   ], {
     cwd,
     stdio: 'ignore',
-    // Its own process group, so the deadline kills vitest's workers with it rather than orphaning them.
+    // Its own process group, so the deadline kills vitest's workers too.
     detached: true,
   });
   const deadline = AbortSignal.timeout(timeoutMs);

@@ -8,14 +8,9 @@
     query?: Record<string, string[]> | undefined;
   }
 
-  // The provider, with the hook one component down so it runs inside the context rather than beside it.
   const { path, query }: Props = $props();
 
-  /*
-   * Its own client rather than `DataProvider`'s, for the one default that matters here: retries off. A failing
-   * query otherwise backs off three times and the assertion on `error` times out while the status reads
-   * `pending`. Mutations need no such client, TanStack Query not retrying those to begin with.
-   */
+  // Its own client, retries off: a failing query otherwise backs off and the `error` assertion times out.
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 </script>
 

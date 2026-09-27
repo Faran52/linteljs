@@ -14,14 +14,7 @@ export interface Route {
   readonly element: () => JSX.Element;
 }
 
-/*
- * Every page this project has, once. The header reads the label and the path off it and the switch reads the id,
- * so neither can disagree about which pages exist.
- */
-/*
- * A non-empty tuple, not an array: this project always has a home page, and typed as an array the first entry is
- * possibly-undefined and every reader carries a fallback for a case it cannot reach.
- */
+// A non-empty tuple: typed as an array, the first entry is possibly-undefined for a case that cannot happen.
 export const ROUTES: readonly [Route, ...Route[]] = [
   {
     id: 'home',

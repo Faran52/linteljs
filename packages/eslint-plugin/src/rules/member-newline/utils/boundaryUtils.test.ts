@@ -18,18 +18,11 @@ import {
   startTokenOf,
 } from './boundaryUtils.ts';
 
-// Every node in the snippet, in document order, with `parent` intact: `.properties` on the node carries
-// `@types/estree`'s shape rather than `RuleNode`'s, so the parent link is the cast-free way to the members.
 interface ParsedProperties {
   sourceCode: SourceCode;
   members: PropertyNode[];
 }
 
-// The boundary readers, driven directly rather than through the rule's own fixer. All three node kinds share identical
-// comment and blank-line handling, so an `ObjectPattern` fixture covers them without the TypeScript parser.
-
-// A real parsed node always has a `loc`, the same narrowing `checkMembers` relies on
-// implicitly; spelled as a guard instead of a cast.
 const isPropertyNode = (node: RuleNode): node is PropertyNode => {
   return node.loc != null;
 };
@@ -99,7 +92,6 @@ describe('startTokenOf', () => {
     expect(startTokenOf(sourceCode, bravo)).toBe(sourceCode.getFirstToken(bravo));
   });
 
-  // A doc comment on its own line above a member is that member's heading, not a blank line above it.
   it('returns a leading comment written on its own line', () => {
     const { sourceCode, members } = propertiesOf('const {\n  /** first */\n  alpha,\n  bravo\n} = source;');
     const [alpha] = members;
@@ -118,7 +110,6 @@ describe('startTokenOf', () => {
     expect(token.loc.start.line).toBe(2);
   });
 
-  // A brace has nothing to trail, so a comment written straight after it heads the first member.
   it('returns a comment written on the same line as the opening brace', () => {
     const { sourceCode, members } = propertiesOf('const { /** first */ alpha, bravo, charlie } = source;');
     const [alpha] = members;
@@ -132,8 +123,6 @@ describe('startTokenOf', () => {
     expect(token.type).toBe('Block');
   });
 
-  // A comment on the same line as the token before it belongs to what came before, not what
-  // follows: `getCommentsBefore` hands back both.
   it('does not attribute a same-line trailing comment to the member after it', () => {
     const { sourceCode, members } = propertiesOf('const { alpha, /* trailing */ bravo, charlie } = source;');
     const [, bravo] = members;
@@ -147,7 +136,6 @@ describe('startTokenOf', () => {
 });
 
 describe('endTokenOf', () => {
-  // A note written right after a member, before its comma, trails that member.
   it('returns a comment trailing the member on the same line', () => {
     const { sourceCode, members } = propertiesOf('const { alpha /* trail */, bravo } = source;');
     const [alpha] = members;
@@ -161,10 +149,6 @@ describe('endTokenOf', () => {
     expect(token.type).toBe('Block');
   });
 
-  /*
-   * The member's own last token wherever nothing trails it on its line: nothing after it at all, a comment on the
-   * line below that heads the next member, and one below the last member with no comma between to stop at.
-   */
   it.each([
     ['nothing trails it', 'const { alpha, bravo } = source;'],
     ['a next-line comment heads the next member', 'const {\n  alpha,\n  // heads bravo\n  bravo\n} = source;'],
@@ -204,7 +188,6 @@ describe('analyzeProperties', () => {
     });
   });
 
-  // A pair still sharing a line inside an otherwise split block is what `membersOnNewline` reports.
   it('flags a pair that still shares a line inside an otherwise split block', () => {
     const { sourceCode, members } = propertiesOf('const {\n  alpha, bravo,\n  charlie\n} = source;');
 
@@ -220,14 +203,12 @@ describe('analyzeProperties', () => {
     expect(analyzeProperties(sourceCode, members).hasBlankBetween).toBe(true);
   });
 
-  // A doc comment above a member counts as that member's own start line, not a blank gap.
   it('does not read a leading doc comment as a blank line', () => {
     const { sourceCode, members } = propertiesOf('const {\n  /** first */\n  alpha,\n  bravo\n} = source;');
 
     expect(analyzeProperties(sourceCode, members).hasBlankBetween).toBe(false);
   });
 
-  // The gap is measured to the comment heading the next member, not to the member itself.
   it('measures the gap above a later member from the comment heading it', () => {
     const tight = propertiesOf('const {\n  alpha,\n  // heads bravo\n  bravo\n} = source;');
     const spaced = propertiesOf('const {\n  alpha,\n\n  // heads bravo\n  bravo\n} = source;');
@@ -236,8 +217,6 @@ describe('analyzeProperties', () => {
     expect(analyzeProperties(spaced.sourceCode, spaced.members).hasBlankBetween).toBe(true);
   });
 
-  // A member whose value spans multiple lines drags the block open regardless of where it sits,
-  // so this reads every member, not only the ones the pairwise walk visits.
   it('flags a multiline property no matter which member holds it', () => {
     const first = propertiesOf('const { alpha = {\n  first: 1\n}, bravo } = source;');
     const last = propertiesOf('const { alpha, bravo = {\n  first: 1\n} } = source;');

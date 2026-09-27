@@ -2,8 +2,7 @@ import { COMPONENT, DECLARATION_KEY } from '../constants';
 
 import type { NamingMap } from '@config/types';
 
-// `check-file` applies every matching key, so two conventions on one file satisfy neither. A route directory gets
-// two keys because `src/!(app)/**/*` alone cannot reach a file directly in `src/`.
+// `check-file` applies every matching key; `src/!(app)/**/*` alone cannot reach a file directly in `src/`.
 export const scriptKeys = (routeDirectory?: string): NamingMap => {
   if (routeDirectory === undefined) {
     return { 'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE' };
@@ -15,7 +14,6 @@ export const scriptKeys = (routeDirectory?: string): NamingMap => {
   };
 };
 
-// `.tsx` is a component wherever it sits.
 export const componentNaming = (routeDirectory?: string): NamingMap => {
   return {
     'src/**/*.tsx': COMPONENT,

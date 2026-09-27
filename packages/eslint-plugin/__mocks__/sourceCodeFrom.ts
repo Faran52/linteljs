@@ -4,8 +4,7 @@ import type { RuleNode, SourceCode } from '../src/utils/ruleUtils.ts';
 
 type Parser = NonNullable<Linter.LanguageOptions['parser']>;
 
-// A real `SourceCode` for a snippet: there is no public constructor, so this runs a throwaway rule to capture one.
-// Espree unless a parser is given, which is how a TypeScript-only node reaches a helper's own suite.
+// No public constructor for `SourceCode`, so a throwaway rule captures one.
 export interface ParsedSnippet {
   sourceCode: SourceCode;
   firstNode: (type: string) => RuleNode;
@@ -17,8 +16,7 @@ export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => 
   const nodes: RuleNode[] = [];
   let captured: SourceCode | undefined;
 
-  // Annotated rather than inferred: inference would narrow `context` to less
-  // than the `Rule.RuleModule` a flat config expects.
+  // Annotated: inference would narrow `context` below what a flat config expects.
   const capture: Rule.RuleModule = {
     create: (context) => {
       captured = context.sourceCode;

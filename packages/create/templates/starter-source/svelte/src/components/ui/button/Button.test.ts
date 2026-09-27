@@ -33,7 +33,6 @@ describe('Button', () => {
     expect(pressed).toEqual(['add']);
   });
 
-  // A form's submit is the one that is not a plain button, and the only reason this prop exists.
   it('submits a form when it is asked to, and is inert while disabled', () => {
     render(Button, {
       children: label('Send'),

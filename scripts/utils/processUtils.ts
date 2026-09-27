@@ -23,7 +23,7 @@ const emptyDir = (dir: string): void => {
   mkdirSync(dir, { recursive: true });
 };
 
-// `pnpm pack`, which runs `prepack` and rewrites `catalog:` the way a publish does, into an emptied `outDir`.
+// `pnpm pack` runs `prepack` and rewrites `catalog:` the way a publish does.
 export const packTarball = (packageDir: string, outDir: string): string => {
   emptyDir(outDir);
   run('pnpm', ['pack', '--pack-destination', outDir], packageDir);
@@ -40,7 +40,6 @@ export const packTarball = (packageDir: string, outDir: string): string => {
   return join(outDir, tarball);
 };
 
-// Packed and extracted: the `package/` directory a consumer's install holds.
 export const unpackTarball = (packageDir: string, outDir: string): string => {
   run('tar', ['-xzf', packTarball(packageDir, outDir)], outDir);
 

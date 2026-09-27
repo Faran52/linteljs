@@ -2,7 +2,6 @@ import { GATE, STANDARD_PATHS } from '../../config/standard';
 
 import type { ReactNode } from 'react';
 
-// A server component: it renders two tables the build already knows.
 const AboutPage = (): ReactNode => {
   return (
     <main className="page">

@@ -11,7 +11,7 @@ const { name } = Astro.props;
 const here = Astro.url.pathname;
 ---
 
-<!-- Real links, and a full navigation: Astro renders each page on the server, which is the whole of what it is. -->
+<!-- Real links: Astro renders each page on the server. -->
 <header {...styles.header}>
   <p {...styles.brand}>{name}</p>
   <nav {...styles.tabs} aria-label="Main">

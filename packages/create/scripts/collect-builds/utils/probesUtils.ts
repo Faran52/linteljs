@@ -9,7 +9,7 @@ import type {
 } from '../../../src/config/types';
 import type { E2eCase } from '../../../src/pipeline/e2e/matrix/matrix';
 
-// Everything installable on, so one run per target is enough. The axes left at default only replace a package.
+// Everything on, so one run per target covers it.
 const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined): Answers => {
   const hosted = hostedFramework === undefined ? {} : { hostedFramework };
   const record = targetFor({
@@ -33,7 +33,6 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
   };
 };
 
-// The plain targets, plus each hosting target once per framework it can host and once without.
 export const probes = (): E2eCase[] => {
   return valuesOf(ANSWERS.target.values)
     .flatMap((target) => {

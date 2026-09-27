@@ -11,9 +11,9 @@ import {
   TAILWIND_RULES,
 } from './constants';
 
-// `stylelint-config-tailwindcss` teaches it Tailwind's at-rules; without it every `@apply` is unknown.
+// Without `stylelint-config-tailwindcss` every `@apply` is unknown.
 
-// Without a `customSyntax` a `.vue` or `.svelte` file's styles go unlinted entirely.
+// Without a `customSyntax` a `.vue` or `.svelte` file's styles go unlinted.
 const sfcOverride = (extension: string): StyleOverride => {
   return {
     files: `**/*.${extension}`,
@@ -63,7 +63,6 @@ export const emitStylelintConfig = (answers: Answers): string => {
   return `const config = {\n  extends: [\n${entries}\n  ],${rules}${overrides}\n};\n\nexport default config;\n`;
 };
 
-// The directory is named for `stylelint.config.js`, so the path is spelled here and nowhere else.
 export const stylelintConfigEmitter = (answers: Answers): Artifact[] => {
   return [emitted('lint', 'stylelint.config.js', emitStylelintConfig(answers))];
 };

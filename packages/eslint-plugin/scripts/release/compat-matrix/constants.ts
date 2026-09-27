@@ -3,11 +3,7 @@ export type Major = 5 | 6 | 7 | 8 | 9 | 10;
 
 export const MAJORS: Major[] = [5, 6, 7, 8, 9, 10];
 
-/**
- * Trips every universal rule in `recommended`, in plain JavaScript: the TypeScript leg below carries its own parser.
- * The two promise rules need opposite shapes, so each gets a chain. `ecmaVersion` is stated because ESLint 5 defaults
- * to ES5. `no-alert` is a core rule on every major, so disabling it is no unknown-rule error.
- */
+// `ecmaVersion` stated because ESLint 5 defaults to ES5.
 export const FIXTURE = [
   "import { alpha, bravo, charlie } from 'mod';",
   "import * as helpers from 'helpers';",
@@ -67,8 +63,7 @@ export const legacyConfig = JSON.stringify({
   rules: { '@linteljs/prefer-destructured-props': 'error' },
 }, null, 2);
 
-// Flat config reports unused disable directives by default and `--fix` then deletes one, which would fail the
-// byte-identical comparison over a difference in ESLint rather than in this plugin.
+// Flat config reports unused disable directives and `--fix` deletes one, breaking the byte comparison.
 export const flatConfig = [
   "import linteljs from '@linteljs/eslint-plugin';",
   '',
@@ -80,7 +75,6 @@ export const flatConfig = [
   '',
 ].join('\n');
 
-// Each major paired with the `@typescript-eslint/parser` whose peer range accepts it, and that era's TypeScript.
 // Asserts this plugin's rules report, never that the parser is right.
 export const TS_TOOLING: Record<Major, string[]> = {
   5: ['@typescript-eslint/parser@2.34.0', 'typescript@3.9.10'],
@@ -91,7 +85,6 @@ export const TS_TOOLING: Record<Major, string[]> = {
   10: ['@typescript-eslint/parser@8.70.0', 'typescript@5.9.3'],
 };
 
-// One shape per TypeScript-only rule: an inline literal, a union wide enough to break, and an interface after code.
 export const TS_FIXTURE = [
   'export const read = (answers: { target: string }): string => {',
   '  return answers.target;',

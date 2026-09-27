@@ -11,8 +11,7 @@ interface Props {
 
 defineProps<Props>();
 
-// Read here rather than left to `active-class`, which appends: under StyleX the current tab is a different set of
-// atomic classes, not the base set plus one, so which tab is current has to be a value the styles are asked for.
+// Not `active-class`, which appends: under StyleX the current tab is a different set of atomic classes.
 const route = useRoute();
 </script>
 
@@ -25,7 +24,7 @@ const route = useRoute();
       v-bind="styles.tabs"
       aria-label="Main"
     >
-      <!-- Real links, because this target routes: vue-router sets aria-current on the active one itself. -->
+      <!-- vue-router sets aria-current on the active link itself. -->
       <RouterLink
         v-for="entry in ROUTES"
         :key="entry.id"

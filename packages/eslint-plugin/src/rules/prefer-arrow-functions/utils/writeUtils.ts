@@ -1,5 +1,3 @@
-// The emitter: a function node in, the arrow that replaces it out. Nothing here decides
-// whether a rewrite is allowed; `safetyUtils.ts` is the other half.
 import {
   type FunctionNode,
   mustFind,
@@ -29,7 +27,7 @@ interface Parameterised {
 
 type TypeParametersNode = RuleNode & Parameterised;
 
-// `returnType` and `typeParameters` are TypeScript nodes ESLint's ESTree types have no name for.
+// TypeScript nodes ESLint's ESTree types have no name for.
 interface FunctionExtras {
   id?: NamedNode | null;
   returnType?: ReturnTypeNode;
@@ -52,8 +50,7 @@ const renderGenerics = (sourceCode: SourceCode, fn: FunctionLike, isTsx: boolean
   const text = sourceCode.getText(typeParameters);
 
   if (isTsx && typeParameters.params.length === 1) {
-    // In a `.tsx` file `<T>(value) => value` reads as a JSX tag, so a lone type parameter needs a trailing
-    // comma to stay one (`<T extends string>` becomes `<T extends string,>`); one already there is left alone.
+    // In a `.tsx` file `<T>(value) => value` reads as a JSX tag, so a lone type parameter needs a trailing comma.
     const innerTrimmed = text
       .slice(1, -1)
       .trim();
@@ -95,7 +92,7 @@ export const writeArrowFunction = (sourceCode: SourceCode, fn: FunctionLike, isT
   return `${asyncPrefix}${generics}(${params})${returnType} => ${body}`;
 };
 
-// Only a named declaration reaches this; an anonymous default export is written by `writeArrowFunction` alone.
+// An anonymous default export is written by `writeArrowFunction` alone.
 export const writeArrowConstant = (sourceCode: SourceCode, fn: FunctionLike, isTsx: boolean): string => {
   const { name } = mustFind(getFunctionId(fn), 'the name of a function declaration');
 

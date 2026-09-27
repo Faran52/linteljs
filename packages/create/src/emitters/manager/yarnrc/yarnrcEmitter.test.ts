@@ -54,7 +54,6 @@ describe('emitYarnrc', () => {
     expect(emitYarnrc(answersFor({}))).not.toContain('@tanstack/react-form');
   });
 
-  // Measured on yarn 4: each left a YN0086 on an Angular project choosing TanStack Form and Query.
   it('answers the peers beneath the Angular TanStack packages only when they are chosen', () => {
     const chosen = emitYarnrc(answersFor({
       target: 'angular',
@@ -69,7 +68,6 @@ describe('emitYarnrc', () => {
     expect(bare).not.toContain('goober');
   });
 
-  // Angular and Astro both drag the wasm binding in, and a target installing neither must not carry it.
   it('writes the toolchain entries each of angular, astro and next needs', () => {
     const angular = emitYarnrc(answersFor({ target: 'angular' }));
     const astro = emitYarnrc(answersFor({ target: 'astro' }));
@@ -82,9 +80,6 @@ describe('emitYarnrc', () => {
     expect(emitYarnrc(answersFor({}))).not.toContain('@napi-rs/wasm-runtime');
   });
 
-  // Hard peers no emitted manifest answers. Written only where the dependent is installed: yarn reports YN0068 for a
-  // rule that matches nothing, so `react-native-css` rides with the tailwind answer that brings it.
-  // Every entry nests under the one key, however many packages bring one.
   it('writes every extension under packageExtensions', () => {
     const [, extensions = ''] = emitYarnrc(answersFor({ target: 'nuxt' })).split('packageExtensions:\n');
 
@@ -107,18 +102,15 @@ describe('emitYarnrc', () => {
     const css = '  "react-native-css@*":\n    dependencies:\n      lightningcss: ">=1.27.0"\n'
       + '      "@expo/metro-config": ">=54"\n';
 
-    // The project declares metro-config itself, so worklets' peer on it is answered without an extension.
     expect(native).toContain('  "react-native-worklets@*":\n    dependencies:\n      "@babel/core": "^7"\n');
     expect(native).not.toContain('"@react-native/metro-config"');
     expect(native).toContain('  "expo-linking@*":\n    peerDependencies:\n      expo: "*"\n');
     expect(native).not.toContain('react-native-css');
     expect(styled).toContain(css);
-    // A target declaring none carries none.
     expect(emitYarnrc(answersFor({}))).not.toContain('react-native-worklets');
     expect(emitYarnrc(answersFor({}))).not.toContain('@expo/cli');
   });
 
-  // Neither passes down a peer its own dependencies ask for, so the request stops short of the project.
   it('walks the peers up that the router plugin and nuxt leave short', () => {
     expect(emitYarnrc(answersFor({ router: 'tanstack-router' }))).toContain(
       '  "@tanstack/eslint-plugin-router@*":\n    peerDependencies:\n      typescript: "*"\n',
@@ -131,7 +123,6 @@ describe('emitYarnrc', () => {
     expect(emitYarnrc(answersFor({}))).not.toContain('eslint-plugin-router');
   });
 
-  // No `logFilters`: a peer problem on any target prints rather than being discarded.
   it('discards no warning code on any target', () => {
     for (const target of ['react', 'angular', 'react-native'] as const) {
       const output = emitYarnrc(answersFor({ target }));
@@ -140,7 +131,6 @@ describe('emitYarnrc', () => {
     }
   });
 
-  // Measured on vue and svelte: three YN0002 warnings for peers a tree the project does not own supplies.
   it('marks the peers their own tree supplies optional', () => {
     const vue = emitYarnrc(answersFor({ target: 'vue' }));
 
@@ -151,7 +141,6 @@ describe('emitYarnrc', () => {
     expect(vue).toContain(
       '  "eslint-plugin-vuejs-accessibility@*":\n    peerDependenciesMeta:\n      globals:\n        optional: true\n',
     );
-    // svelte carries the stylelint syntax too, and neither vue entry.
     const svelte = emitYarnrc(answersFor({ target: 'svelte' }));
 
     expect(svelte).toContain('  "postcss-html@*":\n');
@@ -161,7 +150,6 @@ describe('emitYarnrc', () => {
 });
 
 describe('yarnrcEmitter', () => {
-  // Berry reads `.yarnrc.yml`; every other manager, yarn 1 included, would carry a file it never reads.
   it('writes the yarnrc for berry and nothing for any other manager', () => {
     expect(yarnrcEmitter(answersFor({}))).toEqual([{
       stage: 'package',

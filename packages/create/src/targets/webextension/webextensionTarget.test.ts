@@ -34,7 +34,6 @@ const recordFor = (overrides: Partial<Answers> = {}) => {
 };
 
 describe('the webextension record', () => {
-  // The popup is a page like any other, so the document is written from the entry the manifest names.
   it('writes its own popup document', () => {
     expect(recordFor().htmlEntry).toBe('src/main.ts');
     expect(recordFor().build).toBe('vite build');
@@ -42,7 +41,6 @@ describe('the webextension record', () => {
 });
 
 describe('the browser axis', () => {
-  // `crx` builds for both, so the browser decides the manifest shape and the ambient types.
   it.each<[Browser, string]>([
     ['chrome', 'chrome'],
     ['firefox', 'firefox-webext-browser'],
@@ -55,8 +53,6 @@ describe('the browser axis', () => {
     expect(recordFor({ browser: 'firefox' }).vitePlugin?.calls).toContain('crx({ manifest })');
   });
 
-  // Equal length is the assertion: a browser contributes its ambient types and nothing else, so neither costs more
-  // than the other. docs/DESIGN.md: the extension target ships no browser runner.
   it('brings only the types each browser needs, and the same count for both', () => {
     const firefox = recordFor({ browser: 'firefox' }).devDependencies;
     const chrome = recordFor({ browser: 'chrome' }).devDependencies;
@@ -66,11 +62,6 @@ describe('the browser axis', () => {
     expect(firefox).toHaveLength(chrome.length);
   });
 
-  /**
-   * Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone. Both
-   * browsers fill the same three destinations, so what the record carries is the browser rather than a path, and
-   * `starterSourceEmitter.test.ts` is where that becomes an asset under the matching directory.
-   */
   it.each<[Browser]>([
     ['chrome'],
     ['firefox'],
@@ -94,7 +85,6 @@ describe('the browser axis', () => {
 });
 
 describe('the surfaces axis', () => {
-  // The popup is every project's, and the default adds a background to it.
   it('defaults to a popup and a background', () => {
     const record = recordFor();
     const targets = record.starterFiles
@@ -108,7 +98,6 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toBeUndefined();
   });
 
-  // A devtools panel is two pages; crx cannot know about the second, so it needs a Rollup input of its own.
   it('ships both devtools pages and gives the panel a build input', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
     const targets = record.starterFiles
@@ -129,7 +118,6 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toEqual({ panel: 'panel.html' });
   });
 
-  // A registration call has no branch of its own.
   it('excludes both entry shells and covers the panel body', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
 
@@ -155,7 +143,6 @@ describe('the surfaces axis', () => {
     });
   });
 
-  // The popup is the surface every extension has, so choosing it alone adds nothing the default did not carry.
   it('adds no surface file for a popup, which every project already is', () => {
     const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles
       .map((file) => {
@@ -187,7 +174,6 @@ describe('the hosted framework axis', () => {
 
     expect(record.framework).toBe(hostedFramework);
     expect(record.naming[componentGlob]).toBe('!([a-z]*[A-Z]*)');
-    // Replaced: two conventions on one file satisfy neither.
     expect(record.naming['src/components/**/!(*.d|*.test|*.spec).ts']).toBeUndefined();
   });
 
@@ -196,7 +182,6 @@ describe('the hosted framework axis', () => {
       .toEqual(['solid({ hot: process.env.VITEST === undefined })', 'crx({ manifest })']);
   });
 
-  // A vanilla scaffold installs no framework.
   it('brings the framework itself, its lint plugins and its testing library', () => {
     const record = recordFor({ hostedFramework: 'vue' });
 
@@ -212,7 +197,6 @@ describe('the hosted framework axis', () => {
     expect(recordFor({ hostedFramework: 'react' }).sfcExtension).toBeUndefined();
   });
 
-  // Without `browser`, vitest resolves the server build and the first render throws.
   it('carries the resolve conditions the framework needs under test', () => {
     expect(recordFor({ hostedFramework: 'svelte' }).testConditions).toEqual(['browser']);
     expect(recordFor({ hostedFramework: 'react' }).testConditions).toBeUndefined();
@@ -226,13 +210,11 @@ describe('the host slots', () => {
   });
 });
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(false),
   ['src/styles/theme.css@tailwind', TAILWIND],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(webextensionTarget, 'webextension');
 

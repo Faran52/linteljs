@@ -1,11 +1,4 @@
-/**
- * Mechanical floor for the type standards, run by lint-staged on the staged files, by `lint:types` over `src`,
- * and by the linteljs plugin's PostToolUse hook on each file an agent writes.
- * `sync` restores it when missing but never overwrites your lists.
- *
- * Usage: node scripts/checkBannedPatterns.ts src
- *        node scripts/checkBannedPatterns.ts src/foo.ts src/bar.tsx src/App.vue
- */
+// `sync` restores this when missing but never overwrites your lists.
 import {
   readdirSync,
   readFileSync,
@@ -26,7 +19,6 @@ interface BannedPattern {
 
 type TypeSafety = 'strict' | 'relaxed';
 
-// Only these `: unknown` forms are allowed.
 const NARROWING_GUARD = /:\s*unknown\b[^)]*\)\s*:\s*\w+\s+is\s/;
 const PARSED_JSON = /:\s*unknown\s*=\s*JSON\.parse\(/;
 const DYNAMIC_IMPORT = /:\s*unknown\s*=\s*await import\(/;
@@ -105,10 +97,7 @@ const STRICT_ONLY: BannedPattern[] = [
   },
   {
     name: 'index signature',
-    /*
-     * The trailing colon is what makes it one. Without it this also matched a labelled tuple element, which is
-     * how Vue declares a typed emit (`change: [value: string]`) and how a named tuple reads anywhere else.
-     */
+    // The trailing colon: without it this matched a labelled tuple element, as in Vue's typed emits.
     re: /\[[A-Za-z_]\w*:\s*(?:string|number|symbol)]\s*:/,
   },
 ];
@@ -156,8 +145,7 @@ const blankMultilineSpans = (content: string): string => {
     .replace(/`(?:\\[\s\S]|[^`\\])*`/g, blankSpan);
 };
 
-// Strings blanked, comments kept: stripping comments hides every directive, and an untouched line reported the
-// same words inside a string literal.
+// Strings blanked, comments kept: stripping comments hides every directive.
 const stripStrings = (line: string): string => {
   return line
     .replace(/\\['"]/g, '  ')
@@ -187,7 +175,6 @@ const scriptBlocksOnly = (content: string): string => {
   return output + blankSpan(content.slice(cursor));
 };
 
-// A directory is walked for the scanned extensions, past `node_modules` and dot-directories; a file is taken as named.
 const filesUnder = (path: string): string[] => {
   if (statSync(path, { throwIfNoEntry: false })?.isDirectory() !== true) {
     return [path];

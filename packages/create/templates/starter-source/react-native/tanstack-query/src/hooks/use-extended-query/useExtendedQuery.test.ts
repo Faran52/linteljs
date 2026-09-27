@@ -25,7 +25,6 @@ interface WrapperProps {
   readonly children: ReactNode;
 }
 
-// Held rather than read back off `globalThis`, which would need a cast the standard bans outright.
 const fetchMock = vi.fn();
 
 const answering = (body: Version, status = 200): void => {
@@ -35,11 +34,6 @@ const answering = (body: Version, status = 200): void => {
     });
 };
 
-/*
- * `@testing-library/react-native`, not the web one: this target renders through a native test renderer and has no
- * DOM, which is the one thing that keeps this suite from being React's own verbatim. `createElement` rather than
- * markup, so the file is a `.ts`: a hook is not a component.
- */
 const wrapperFor = (client: QueryClient): FC<WrapperProps> => {
   return ({ children }) => {
     return createElement(QueryClientProvider, { client }, children);
@@ -107,7 +101,6 @@ describe('useExtendedQuery', () => {
     expect(result.current.error).toMatchObject({ status: 500 });
   });
 
-  // `refetch` answers nothing on purpose: its promise is one nobody awaits, and that is a finding at every caller.
   it('refetches without handing back a promise nobody awaits', async () => {
     answering({ status: 'ok' });
 

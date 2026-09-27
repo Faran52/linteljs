@@ -56,7 +56,7 @@ const shape = (build: Build, name: string, options?: Record<string, OptionValue>
   };
 };
 
-// Each rule broken several distinct ways: a rule can be awake on the shape someone tested and asleep on the next.
+// A rule can be awake on the shape someone tested and asleep on the next.
 export const SHAPES: Record<string, Shape[]> = {
   'destructuring-property-newline': [
     shape(patternGapCase('ObjectPattern', false), 'object pattern, last gap closed'),

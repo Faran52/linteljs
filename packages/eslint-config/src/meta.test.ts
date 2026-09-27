@@ -12,7 +12,6 @@ import tsdownConfig from '../tsdown.config';
 
 const srcDir = import.meta.dirname;
 
-// The suffix a subject's entry takes, keyed by the group that decides it.
 const GROUPS: Record<string, string> = {
   frameworks: 'Framework',
   layers: 'Layer',
@@ -46,7 +45,6 @@ const byName = (left: string, right: string): number => {
 };
 
 describe.each(Object.keys(GROUPS))('%s', (group) => {
-  // A group holds subjects and its shared `utils/`, so a layer file left loose beside them is one nothing pins.
   it('holds no loose file', () => {
     const groupFiles = readdirSync(join(srcDir, group), { withFileTypes: true })
       .filter((entry) => {
@@ -79,7 +77,6 @@ describe.each(subjects)('$group/$name', ({
   });
 });
 
-// No group names a kind here, so the entry takes no suffix and is named for its directory.
 it('holds compose-config to its entry, its suite and its loaders', () => {
   const composeFiles = readdirSync(join(srcDir, 'compose-config'))
     .toSorted(byName);
@@ -92,7 +89,6 @@ it('holds compose-config to its entry, its suite and its loaders', () => {
   expect(composeUtils).toEqual(['loaderUtils.test.ts', 'loaderUtils.ts']);
 });
 
-// The source nests by subject while `exports` stays flat, so the keyed tsdown entries are the one join between them.
 describe('tsdown entries', () => {
   const { entry } = tsdownConfig;
   const entries = typeof entry === 'object' && !Array.isArray(entry) ? Object.entries(entry) : [];

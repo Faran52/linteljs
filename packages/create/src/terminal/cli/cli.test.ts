@@ -59,8 +59,6 @@ const RULE = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 let project = '';
 let entered = '';
 
-// `parseCliArgs` reads `process.cwd()`. The agent is stubbed rather than inherited: the manager is neither asked
-// nor flagged, so what the suite runs under would otherwise decide what every case records.
 beforeEach(async () => {
   vi.stubEnv('npm_config_user_agent', 'pnpm/12.5.1 npm/? node/? darwin arm64');
   entered = processCwd();
@@ -110,7 +108,6 @@ const generated = async (): Promise<Run> => {
   return await runMain(['--existing', '--no-install', '--yes']);
 };
 
-// A stand-in scaffolder that makes the directory it was asked for and nothing else.
 const plantScaffolder = async (): Promise<void> => {
   await plantBinary(join(project, 'fake-bin'), 'pnpm', [
     "require('node:fs').mkdirSync(process.argv[4], { recursive: true });",
@@ -129,7 +126,6 @@ const writeConfig = async (answers: Answers): Promise<void> => {
   await writeFile(join(project, CONFIG_PATH), emitLinteljsConfig(answers), 'utf8');
 };
 
-// stdout, not stderr: `create --help | grep skip` would print nothing otherwise.
 describe('main: what it prints and what it returns', () => {
   it('prints the usage to stdout and succeeds', async () => {
     const { code, printed } = await runMain(['--help']);
@@ -138,7 +134,6 @@ describe('main: what it prints and what it returns', () => {
     expect(printed).toContain('--existing');
   });
 
-  // `argumentError` owns the wording; what is `main`'s is that a refusal is one line and nothing after it runs.
   it.each<[string, string[], string, string?]>([
     ['an invalid project name', ['My-App', '--existing', '--no-install', '--yes'], 'Project name must be'],
     ['an unknown stage', ['--existing', '--no-install', '--yes', '--skip', 'lnt'], 'Not a stage: lnt'],
@@ -152,13 +147,11 @@ describe('main: what it prints and what it returns', () => {
     const { code, errors } = await runMain(argv);
 
     expect(code).toBe(1);
-    // The line opens with what a user has to act on, not the `TypeError [ERR_PARSE_ARGS_UNKNOWN_OPTION]` class name.
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain(message);
     expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
   });
 
-  // `process.cwd()` throws once the directory the shell stands in is deleted, which is a refusal and not a crash.
   it('fails with one line when the directory it stands in is gone', async () => {
     const gone = join(project, 'gone');
 
@@ -172,7 +165,6 @@ describe('main: what it prints and what it returns', () => {
     expect(errors).toEqual([expect.stringContaining('ENOENT')]);
   });
 
-  // `mkdir demo-app && cd demo-app && create --yes` scaffolds into it under its own name.
   it('scaffolds into the directory it stands in when --yes gave no name', async () => {
     const named = join(project, 'demo-app');
 
@@ -186,7 +178,6 @@ describe('main: what it prints and what it returns', () => {
     expect(await nameAt(named)).toBe('demo-app');
   });
 
-  // The name is a question, so a bare run is refused only because there is no terminal to ask it on.
   it('asks for a missing name rather than requiring it, and still refuses with no terminal', async () => {
     const { code, errors } = await runMain([]);
 
@@ -196,7 +187,6 @@ describe('main: what it prints and what it returns', () => {
   });
 });
 
-// Quitting on purpose is not a failure: no "Error:" prefix, exit 130 rather than 1.
 describe('main: cancelled mid-questionnaire', () => {
   it('prints a calm message and exits 130, with nothing written and nothing on stderr', async () => {
     const {
@@ -216,12 +206,7 @@ describe('main: cancelled mid-questionnaire', () => {
   });
 });
 
-/*
- * The name `main` hands the pipeline is the only route a project name has to `package.json`: the pipeline's own
- * suite plants a manifest first, so nothing there reads the name back.
- */
 describe('main: create', () => {
-  // With `--existing` the directory's own name is what package.json keeps calling it.
   it('names the project after the directory when no name was given', async () => {
     await generated();
 
@@ -249,7 +234,6 @@ describe('main: create', () => {
       agents: ['claude-code', 'codex'],
       plugins: [],
     });
-    // The report is wired to the run: each write is announced as it lands.
     expect(printed).toContain('wrote AGENTS.md');
   });
 
@@ -267,7 +251,6 @@ describe('main: create', () => {
     expect(await nameAt(join(project, 'asked-app'))).toBe('asked-app');
   });
 
-  // Wrong, the whole standard lands one level too high.
   it('patches the directory the scaffolder made, not the one it was run from', async () => {
     await plantScaffolder();
 
@@ -286,12 +269,7 @@ describe('main: create', () => {
   });
 });
 
-// Behind a pipe, EOF reads as the default answer; unguarded this rewrote the project as React for four of seven agents.
 describe('main: patching a project that already exists', () => {
-  /*
-   * --yes declines the questions, not the record. The record's manager differs from this machine's, so a run that
-   * treated it as fresh would stamp pnpm and its version over it; a recorded config only has the gaps filled.
-   */
   it('plans from the config it recorded under --yes, and fills only what the host can say about it', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
@@ -333,7 +311,6 @@ describe('main: sync', () => {
     expect(printed).toContain(`${RULE}: changed`);
     expect(printed).toContain('local edit');
     expect(printed).toContain('Re-run with --force');
-    // A sync runs no stages, so it has no step list to print.
     expect(printed).not.toContain('Steps:');
     expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
   });
@@ -356,7 +333,6 @@ describe('main: sync', () => {
     expect((await runMain(['sync', '--yes'])).printed).toMatch(/\b2 files\b/u);
   });
 
-  // Without git there is no diff to show, and an empty one is not printed as a blank line.
   it('prints no empty diff where git could not make one', async () => {
     await generated();
     await writeFile(join(project, RULE), '# local edit\n', 'utf8');
@@ -411,7 +387,6 @@ describe('main: sync', () => {
     expect(await exists(join(project, CONFIG_PATH))).toBe(false);
   });
 
-  // Planned from the record rather than asked: a hosted framework is an answer only a config can carry into sync.
   it('plans an extension from the browser and framework the config recorded', async () => {
     await writeConfig({
       ...DEFAULT_ANSWERS,
@@ -461,7 +436,6 @@ describe('main: what a run reports', () => {
     expect(printed.trim()).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  // The banner says which release wrote the project; a sync only reports on one that exists.
   it('opens a create run with the release it is, and a sync with nothing', async () => {
     const created = await runMain(['--existing', '--no-install', '--yes']);
     const synced = await runMain(['sync', '--yes']);
@@ -470,7 +444,6 @@ describe('main: what a run reports', () => {
     expect(synced.printed).not.toContain('@linteljs/create');
   });
 
-  // `nextSteps` spells the lines; what is `main`'s is handing it the name, the skips and the recorded manager.
   it('closes a named create by entering the directory it made, then the steps it skipped', async () => {
     await plantScaffolder();
 

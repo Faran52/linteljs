@@ -5,7 +5,6 @@ import { ANSWERS, STACK } from '../../config/linteljs';
 import VersionPage from './page';
 
 describe('the version route', () => {
-  // `getAllByText`: a name like `react` is also the value of an answer below it, so one match is not the test.
   it('renders every recorded row of the stack', () => {
     render(<VersionPage />);
 

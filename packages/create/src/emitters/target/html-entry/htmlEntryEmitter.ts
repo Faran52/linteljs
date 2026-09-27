@@ -4,14 +4,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 
-/**
- * The document a bundler serves, for a target whose template is this repository's own. It carries the project name
- * in its title, which is the whole reason it is written rather than copied: a starter file is bytes, and this one
- * has to know what the project is called.
- *
- * `lang` is set rather than left empty. An empty one tells a screen reader the language is unknown, which is worse
- * than omitting it.
- */
+// `lang` set: an empty one tells a screen reader the language is unknown.
 export const emitHtmlEntry = (name: string, entry: string): string => {
   return [
     '<!doctype html>',

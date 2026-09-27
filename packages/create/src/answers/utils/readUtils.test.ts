@@ -6,8 +6,6 @@ import {
   unaskedValueOf,
 } from './readUtils';
 
-// One reader per kind, so the suite is one case per kind: what a legal value reads back as, what an illegal one
-// refuses with, and, for the four kinds that are optional in `Answers`, what an absent one answers.
 describe('readAnswer', () => {
   it('reads a choice', () => {
     expect(readAnswer(ANSWERS.testing, 'none')).toBe('none');
@@ -89,7 +87,6 @@ describe('readAnswer', () => {
 });
 
 describe('unaskedValueOf', () => {
-  // The kinds that are optional in `Answers` answer nothing, `store` among them.
   it('answers nothing for a kind a target never asks', () => {
     expect(unaskedValueOf(ANSWERS.store)).toBeUndefined();
     expect(unaskedValueOf(ANSWERS.router)).toBeUndefined();

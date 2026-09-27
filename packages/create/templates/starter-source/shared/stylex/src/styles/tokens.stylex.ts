@@ -1,12 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 
-/*
- * StyleX's names for the tokens, pointed at `tokens.css` rather than given values of their own.
- *
- * Every value is spelled once, in one file, whatever styles this project. `tokens.primary` here, `bg-primary`
- * under Tailwind and `var(--primary)` in a stylesheet are the same colour, so retinting is one edit and no two
- * copies can disagree. A second table of the same thirty values is the drift this repository exists to stop.
- */
+// Pointed at `tokens.css`, so every value is spelled once whatever styles this project.
 export const tokens = stylex.defineVars({
   motionFast: 'var(--motion-fast)',
   motionEase: 'var(--motion-ease)',

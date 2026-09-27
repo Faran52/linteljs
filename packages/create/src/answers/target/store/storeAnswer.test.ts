@@ -16,7 +16,6 @@ describe('storeAnswer', () => {
       ...DEFAULT_ANSWERS,
       target: 'react',
     });
-    // The extension is the one target with none: MV3 state belongs in `chrome.storage`.
     const extension = targetFor({
       ...DEFAULT_ANSWERS,
       target: 'webextension',
@@ -26,7 +25,6 @@ describe('storeAnswer', () => {
     expect(storeAnswer.slot(extension)).toBe(false);
   });
 
-  // Each value is offered by the stores list alone, so a record listing only that store is the input that decides.
   it.each(valuesOf(storeAnswer.values))('offers %s only to a target that lists it', (store) => {
     const react = targetFor({
       ...DEFAULT_ANSWERS,

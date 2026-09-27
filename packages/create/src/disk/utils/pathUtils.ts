@@ -10,8 +10,7 @@ import {
 
 import { hasCode } from './fsUtils';
 
-// The one gate every write goes through: a target outside the project, or reached through a symbolic link a
-// scaffolder left behind, is refused rather than followed.
+// A target outside the project, or reached through a scaffolder's symbolic link, is refused.
 export const safeProjectPath = async (cwd: string, target: string): Promise<string> => {
   const root = resolve(cwd);
   const path = resolve(root, target);

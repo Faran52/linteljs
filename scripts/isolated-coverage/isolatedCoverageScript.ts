@@ -1,16 +1,4 @@
-/**
- * Shows every source file is covered by the test file beside it alone. Vitest measures the merged suite, so a module
- * can read 100% while its own suite leaves a branch to some other file's run. Each collected test file runs in its own
- * process with coverage on; the run of `x.test.ts` is `x.ts`'s own coverage, and every other run's hits name the
- * suites that cover the rest by pass-through. A gap no run hits is dead code or a missing test.
- *
- * One code file has exactly one test file. The exemptions are a `constants.ts`, which must hold data only, no function
- * and no branch, and a barrel of nothing but `export ... from`, told by its source. Any other source with no test
- * beside it is untested however data-like it is, and a source two test files claim by name is reported. The suites
- * that cover a package rather than a file are the documented exceptions, listed so they stay visible.
- *
- * Usage: tsx scripts/isolated-coverage/isolatedCoverageScript.ts [--concurrency <n>] [--timeout <seconds>]
- */
+// Vitest measures the merged suite, so a module can read 100% while its own suite leaves a branch uncovered.
 import {
   existsSync,
   mkdtempSync,
@@ -78,7 +66,7 @@ if (!Number.isInteger(timeoutSeconds) || timeoutSeconds < 1) {
   process.exit(1);
 }
 
-// The glob-keyed thresholds, read rather than restated, so each run can switch them off.
+// Read rather than restated, so each run can switch them off.
 const thresholdKeys = Object.entries(config.test?.coverage?.thresholds ?? {})
   .filter(([, value]) => {
     return typeof value === 'object';
@@ -95,7 +83,6 @@ const reports = mkdtempSync(join(tmpdir(), REPORTS_PREFIX));
 const started = performance.now();
 const queue = new PQueue({ concurrency });
 
-// Per run, the entries it hit in each file; the maps are the same in every run, so one copy of each is kept.
 const hitsByTest = new Map<string, Map<string, Set<string>>>();
 const maps = new Map<string, FileCoverage>();
 const failed: string[] = [];
@@ -148,7 +135,7 @@ finally {
 
 const seconds = Math.round((performance.now() - started) / 1000);
 
-// A basename where it is unique among the suites, the path where it is not: three packages have a `meta.test.ts`.
+// Three packages have a `meta.test.ts`.
 const labelOf = (test: string): string => {
   const name = basename(test);
 
@@ -164,7 +151,6 @@ const sourceOf = (test: string): string => {
   return `${test.slice(0, -TEST_SUFFIX.length)}${SOURCE_SUFFIX}`;
 };
 
-// The source a test names up to its first dot, so `x.test.ts` and `x.other.test.ts` both claim `x.ts`.
 const claimOf = (test: string): string => {
   return join(dirname(test), `${basename(test).split('.')[0] ?? ''}${SOURCE_SUFFIX}`);
 };
@@ -203,7 +189,6 @@ const claimedTwice = [...claimants]
       .join(', ')}`;
   });
 
-// The gap of `file` against every run but its own, as the lines the report prints.
 const explain = (file: string, coverage: FileCoverage, gap: string[], own?: string): string[] => {
   const others = new Map([...hitsByTest]
     .filter(([test]) => {
@@ -263,7 +248,6 @@ for (const [file, coverage] of [...maps]
 
   const run = hitsByTest.get(test);
 
-  // Its own run wrote no report, and is listed as such rather than read as covering nothing.
   if (run === undefined) {
     continue;
   }

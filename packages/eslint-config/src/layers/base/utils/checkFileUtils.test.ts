@@ -76,7 +76,6 @@ describe('base: check-file', () => {
       .resolves.toContain('check-file/folder-naming-convention');
   });
 
-  // Without its own plugin registration, an `.html` under the folder glob makes ESLint exit 2.
   it('judges a file outside the script globs without losing the plugin', async () => {
     const withHtml = [...layer, ...html()];
 

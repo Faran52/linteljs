@@ -1,9 +1,4 @@
-/**
- * Smoke test for the packed tarball: links it under `node_modules` and imports every `exports` subpath by package
- * name. An `exports` entry with no tsdown entry typechecks, builds and publishes, then 404s on a consumer's import.
- *
- * Usage: tsx scripts/smoke/smokeScript.ts
- */
+// An `exports` entry with no tsdown entry builds and publishes, then 404s on a consumer's import.
 import assert from 'node:assert/strict';
 import {
   mkdirSync,
@@ -23,7 +18,6 @@ import { execPath } from 'node:process';
 import { run, unpackTarball } from '../../../../scripts/utils/processUtils.ts';
 import { log } from '../../../create/templates/project/scripts/utils/loggerUtils.ts';
 
-// The two fields this reads out of the packed `package.json`.
 interface PackedManifest {
   name: string;
   exports: object;
@@ -50,21 +44,20 @@ const manifest: unknown = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 
 
 assert.ok(isPackedManifest(manifest), 'the packed package.json has no `name` and `exports`');
 
-// Linked rather than installed, so the package's own dependencies resolve out of the workspace.
+// Linked rather than installed, so its dependencies resolve out of the workspace.
 const linkPath = join(smokeDir, 'node_modules', manifest.name);
 
 mkdirSync(dirname(linkPath), { recursive: true });
 symlinkSync(pkgDir, linkPath, 'dir');
 
-// `./package.json` is a plain string target with no layer behind it.
+// `./package.json` has no layer behind it.
 const subpaths = Object.keys(manifest.exports)
   .filter((subpath) => {
     return subpath !== './package.json';
   });
 assert.ok(subpaths.length > 1, 'exports map has no layer subpaths');
 
-// The sort bucket each framework layer publishes. `@linteljs/create` writes `base({ frameworkGroup: reactGroup })`,
-// so a missing one breaks generated projects only: nothing in this repository would notice.
+// `@linteljs/create` writes `base({ frameworkGroup: reactGroup })`; nothing here would notice one missing.
 const GROUP_EXPORTS = {
   './react': 'reactGroup',
   './react-native': 'reactNativeGroup',
@@ -76,8 +69,6 @@ const GROUP_EXPORTS = {
   './angular': 'angularGroup',
 };
 
-// Each layer directory needs both its subpath, which is its kebab name, and its barrel export, which is that name in
-// camelCase; the directories are the list.
 const camel = (name: string): string => {
   return name
     .replace(/-([a-z])/gu, (_match, letter: string) => {

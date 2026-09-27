@@ -28,7 +28,6 @@ import {
 
 import type { Rule } from 'eslint';
 
-// `typeAnnotation` is TypeScript-only, so it is optional here rather than asserted, letting the visitor skip a cast.
 interface PatternExtras {
   optional?: boolean;
   typeAnnotation?: RuleNode;
@@ -36,7 +35,7 @@ interface PatternExtras {
 
 type DestructuredPattern = ObjectPatternNode & PatternExtras;
 
-// Same as `DestructuredPattern`: ESLint 10 checks a selector's handler against `Rule.Node`, which carries neither list.
+// ESLint 10 checks a selector's handler against `Rule.Node`, which carries neither list.
 interface Bodied {
   body?: PropertyNode[];
 }
@@ -49,7 +48,6 @@ interface Membered {
 
 type TypeLiteralNode = RuleNode & Membered;
 
-// What `context.report` accepts; the two builders answer different shapes, so one ladder serves both without a cast.
 type ReportFix = (fixer: Fixer) => IterableIterator<Rule.Fix> | Rule.Fix | null;
 
 interface MemberNewlineOptions {
@@ -76,8 +74,7 @@ export const memberNewline = createRule('member-newline', {
       fixShape: 'whitespace',
       description: 'Keep crowded destructuring patterns, interfaces, and type literals on separate lines.',
     },
-    // `code`, not `whitespace`: the `ObjectPattern` branch rebuilds the pattern and drops a
-    // trailing comma, a token edit that `--fix-type whitespace` would skip.
+    // `code`: the `ObjectPattern` branch drops a trailing comma, which `--fix-type whitespace` would skip.
     fixable: 'code',
     messages: {
       mustSplit:
@@ -119,8 +116,7 @@ export const memberNewline = createRule('member-newline', {
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
-    // The pattern rewritten, or null when a comment inside it means the rebuild would delete one. A string rather
-    // than a fix, so the collapsed form can be measured against the line limit before it is offered.
+    // A string rather than a fix, so the collapsed form is measured against the line limit first.
     const writePattern = (node: DestructuredPattern, multiLine: boolean): string | null => {
       if (rebuildLosesComments(sourceCode, node)) {
         return null;
@@ -134,16 +130,14 @@ export const memberNewline = createRule('member-newline', {
           const separator = multiLine ? `,${eol}${indentInner}` : ', ';
           const suffix = isLast ? '' : separator;
 
-          // No special case for `RestElement`: its text already carries the dots, and rebuilding
-          // it as `...` plus `argument.name` breaks on a member-expression rest target.
+          // Not `...` plus `argument.name`, which breaks on a member-expression rest target.
           return `${sourceCode.getText(prop)}${suffix}`;
         });
 
       const inner = parts.join('');
-      // Collapsed form keeps the inner spaces, matching both the split form's style and what `import-newlines` emits.
       const body = multiLine ? `{${eol}${indentInner}${inner}${eol}${outer}}` : `{ ${inner} }`;
       const annotation = node.typeAnnotation ? sourceCode.getText(node.typeAnnotation) : '';
-      // The optional `?` sits between the closing brace and the annotation; dropping it makes the parameter required.
+      // Dropping the `?` makes the parameter required.
       const optional = node.optional ? '?' : '';
 
       return `${body}${optional}${annotation}`;
@@ -162,9 +156,8 @@ export const memberNewline = createRule('member-newline', {
       members: RuleNode[],
       indentInner: string,
     ): IterableIterator<Rule.Fix> {
-      // A `TSPropertySignature` node covers its own trailing `;` or `,`, so the last token is already the separator.
+      // A `TSPropertySignature` covers its own trailing `;` or `,`.
       for (const [previous, member] of adjacentPairs(members)) {
-        // Members are parsed nodes, so each has a token at either end and every token and comment a location.
         const endToken = mustFind(endTokenOf(sourceCode, previous), 'the last token of a type member');
         const targetToken = mustFind(startTokenOf(sourceCode, member), 'the first token of a type member');
         const endLine = mustFind(endToken.loc, "the location of a type member's last token").end.line;
@@ -181,12 +174,11 @@ export const memberNewline = createRule('member-newline', {
       members: RuleNode[],
     ): ((fixer: Fixer) => IterableIterator<Rule.Fix>) => {
       return function* (fixer) {
-        // `checkMembers` only builds this fix for two or more members.
         const firstMember = mustFind(members[0], 'the first member of a type');
         const lastMember = mustFind(members[members.length - 1], 'the last member of a type');
         const closeBrace = sourceCode.getLastToken(node);
 
-        // `getLastToken` skips comments, so a note in the splice gap would be lost; decline the fix, like the rebuild.
+        // `getLastToken` skips comments, so a note in the splice gap would be lost.
         if (closeBrace && sourceCode.getCommentsBefore(closeBrace).length > 0) {
           return;
         }
@@ -202,8 +194,7 @@ export const memberNewline = createRule('member-newline', {
       };
     };
 
-    // A member that spans lines drags the whole block open regardless of count; the pattern
-    // rebuild cannot express it, so `ObjectPattern` calls this with no fix.
+    // The pattern rebuild cannot express a multiline member, so `ObjectPattern` calls this with no fix.
     const reportedMultilineMember = (
       node: RuleNode,
       analysis: PatternAnalysis,
@@ -222,18 +213,13 @@ export const memberNewline = createRule('member-newline', {
       return true;
     };
 
-    /**
-     * The three complaints a block over the threshold can draw; a rebuilt pattern or spliced member list answers
-     * all three, so the fix is a parameter. `threshold` is passed rather than read off `maxCount`, since a pattern
-     * carrying a rest is judged against `maxPropertiesWithRest` and the message names the number that fired.
-     */
+    // `threshold` is passed: a pattern with a rest is judged against `maxPropertiesWithRest`.
     const reportOverThreshold = (
       node: RuleNode,
       analysis: PatternAnalysis,
       threshold: number,
       fix: ReportFix,
-      // Off for a pattern: `destructuring-property-newline` reports the half-split shape under its
-      // own message and fixes it comma by comma, and one shape is worth one message.
+      // Off for a pattern: `destructuring-property-newline` reports that shape, and one shape is worth one message.
       reportsSameLinePairs = true,
     ) => {
       if (!analysis.isMultiLine) {
@@ -305,8 +291,7 @@ export const memberNewline = createRule('member-newline', {
         if (analysis.isMultiLine && !analysis.hasMultilineProperty) {
           const collapsed = writePattern(node, false);
 
-          // A collapse the line cannot hold trades this report for a `max-len` finding no fixer can
-          // answer, so the pattern is left split.
+          // A collapse the line cannot hold trades this report for a `max-len` finding no fixer can answer.
           if (collapsed !== null && !fitsOnLine(sourceCode, node, collapsed, maxLineLength)) {
             return;
           }
@@ -320,7 +305,6 @@ export const memberNewline = createRule('member-newline', {
         }
       },
 
-      // Each selector matches only the node that carries its list, which the types leave optional for `Rule.Node`.
       TSInterfaceBody: (node: InterfaceBodyNode) => {
         checkMembers(node, mustFind(node.body, 'the members of an interface body'));
       },

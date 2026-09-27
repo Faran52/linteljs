@@ -26,15 +26,7 @@ export interface ContactForm {
   onSubmit: SubmitEventHandler<HTMLFormElement>;
 }
 
-/*
- * A client component's hook, which is why the directive is here: it is state, and state is the browser's.
- *
- * The one place the form answer is visible. It hands the page a field per input and a submit, and the page never
- * knows which library bound them, which is what lets the answer change without the page changing with it.
- *
- * The rules come from `lib/apis/contact`, so the form and the api agree about what is valid by reading the same
- * function rather than each carrying a copy of it.
- */
+// A client component's hook: it is state, and state is the browser's.
 export const useContactForm = (): ContactForm => {
   const [sent, setSent] = useState(false);
   const submit = useSubmitContact();
@@ -56,11 +48,7 @@ export const useContactForm = (): ContactForm => {
     },
   });
 
-  /*
-   * One subscription, and every field read off it. `getFieldValue` and `getFieldMeta` are plain reads on the
-   * form's store, so a field built from them renders its first value and never moves again: nothing tells React
-   * the store changed.
-   */
+  // One subscription: `getFieldValue` reads never tell React the store changed.
   const state = useSelector(form.store, (current) => {
     return current;
   });
@@ -78,11 +66,7 @@ export const useContactForm = (): ContactForm => {
       value: state.values[name],
       error: meta?.errors[0] === undefined ? undefined : String(meta.errors[0]),
       onBlur: () => {
-        /*
-         * `validateField` answers the errors or a promise of them, and that union satisfies neither rule: left
-         * alone it may be a floating promise, and `void` is refused on a value that might not be one. Wrapping
-         * settles which it is.
-         */
+        // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
         void Promise.resolve(form.validateField(name, 'blur'));
       },
       onChange: (value) => {

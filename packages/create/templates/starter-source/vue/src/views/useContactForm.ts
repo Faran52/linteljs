@@ -10,7 +10,7 @@ import {
 
 import type { TextInputProps } from '../components/ui/text-input/types';
 
-// What this library hands a validator and a submit, named because an inline shape cannot be referenced.
+// Named because an inline shape cannot be referenced.
 interface ContactSubmission {
   value: ContactValues;
 }
@@ -29,16 +29,7 @@ export interface ContactForm {
   onSubmit: (event: Event) => void;
 }
 
-/*
- * The one place the form answer is visible. It hands the view a field per input and a submit, and the view never
- * knows which library bound them, which is what lets the answer change without the view changing with it.
- *
- * The rules come from `lib/apis/contact`, so the form and the api agree about what is valid by reading the same
- * function rather than each carrying a copy of it.
- *
- * Every read is a getter over one `useSelector`: that ref is the only read of this library Vue tracks, so a plain
- * `form.getFieldValue` would render the first value and never move again.
- */
+// Every read is a getter over one `useSelector`, the only read of this library Vue tracks.
 export const useContactForm = (): ContactForm => {
   const sent = ref(false);
   const submit = useSubmitContact();
@@ -100,11 +91,7 @@ export const useContactForm = (): ContactForm => {
       form.setFieldValue(name, value);
     },
     blur: (name) => {
-      /*
-       * `validateField` answers the errors or a promise of them, and that union satisfies neither rule: left
-       * alone it may be a floating promise, and `void` is refused on a value that might not be one. Wrapping
-       * settles which it is.
-       */
+      // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
       void Promise.resolve(form.validateField(name, 'blur'));
     },
     onSubmit: (event) => {

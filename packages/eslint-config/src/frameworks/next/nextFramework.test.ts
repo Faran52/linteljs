@@ -15,7 +15,6 @@ import react from '../react/reactFramework';
 
 import next, { nextGroup } from './nextFramework';
 
-// `no-html-link-for-pages` off: it writes a paragraph to stderr on every lint when no `pages/` directory exists.
 const composed = (): ReturnType<typeof base> => {
   return [
     ...base(),
@@ -75,7 +74,6 @@ describe('next', () => {
     expect(plugins).toEqual(['@next/next']);
   });
 
-  // Each of the three stopped its `eslint` peer range at 9; dropping them took three peer allowances out.
   it('registers none of the plugins the replaced config bundled', () => {
     const registered = next()
       .flatMap((entry) => {
@@ -95,7 +93,6 @@ describe('next', () => {
     expect(ruleIds).toContain('import-x/no-unresolved');
   });
 
-  // Structural: pnpm dedupes the plugin here, so the "Cannot redefine plugin" a consumer would hit is not reproducible.
   it('registers no @typescript-eslint plugin of its own', () => {
     const registrations = next()
       .filter((entry) => {

@@ -6,7 +6,6 @@ import {
 
 import { gitignoreEmitter, mergeGitignore } from './gitignoreEmitter';
 
-// coverage/ and *.tsbuildinfo come from scripts linteljs writes, not the generator, so no generator ignores them.
 describe('mergeGitignore', () => {
   it('appends what linteljs produces to the list the scaffolder wrote', () => {
     expect(mergeGitignore('node_modules\ndist\n'))
@@ -21,7 +20,6 @@ describe('mergeGitignore', () => {
     expect(mergeGitignore(null)).toBe('# linteljs\ncoverage/\n*.tsbuildinfo\n');
   });
 
-  // Re-running `--existing` must not stack a second block on every pass.
   it('adds nothing a second time', () => {
     const once = mergeGitignore('node_modules\n');
 
@@ -32,15 +30,12 @@ describe('mergeGitignore', () => {
     expect(mergeGitignore('coverage/\n')).toBe('coverage/\n\n# linteljs\n*.tsbuildinfo\n');
   });
 
-  // Splitting on `\n` alone leaves a trailing `\r` on a CRLF checkout, so an entry never matches and the block
-  // duplicates.
   it('recognises an entry it already added on a CRLF line ending', () => {
     expect(mergeGitignore('coverage/\r\n*.tsbuildinfo\r\n')).toBe('coverage/\r\n*.tsbuildinfo\r\n');
   });
 });
 
 describe('gitignoreEmitter', () => {
-  // Through the artifact, so the list on disk is what the merge keeps.
   it("keeps the generator's list and adds what linteljs's own scripts produce", () => {
     const [artifact] = gitignoreEmitter();
 

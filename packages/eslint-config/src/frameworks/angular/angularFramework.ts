@@ -23,21 +23,17 @@ export const angular = (): Layer => {
     },
 
     {
-      /*
-       * A class with a decorator on it is not an extraneous class: it is how Angular declares a component, and a
-       * component with no state of its own still has a template, a selector and a place in the injector. The rule
-       * ships the option for exactly this, and without it every presentational component fails its own lint.
-       */
+      // Angular declares a component by decorator; without this every presentational component fails.
       name: '@linteljs/angular/decorated-classes',
       files: TS_FILES,
-      // Declared here so the layer stands alone: it names a rule whose plugin no preset above it registers.
+      // Declared so the layer stands alone: no preset above registers this plugin.
       plugins: { '@typescript-eslint': tseslint.plugin },
       rules: { '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }] },
     },
 
     ...presetOf(angularEslint.configs.templateRecommended, 'angular-eslint/template', TEMPLATE_FILES),
 
-    // `templateRecommended` has no accessibility rule; the eleven that are ship as their own preset.
+    // `templateRecommended` has no accessibility rule.
     ...presetOf(angularEslint.configs.templateAccessibility, 'angular-eslint/templateAccessibility', TEMPLATE_FILES),
   ];
 };

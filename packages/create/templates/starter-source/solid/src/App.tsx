@@ -12,13 +12,7 @@ export interface AppProps {
   readonly initialPage?: string;
 }
 
-/*
- * The header swaps this from a signal and the address bar never moves. Solid routes with `@solidjs/router` when a
- * project wants one; the pages are the same files either way.
- *
- * `props` is read rather than destructured: taking `initialPage` out of it once would read it once and never
- * again, which is the reactivity rule this target's own `solid-reactivity.md` carries.
- */
+// `props` is read rather than destructured: destructuring reads `initialPage` once.
 export const App = (props: AppProps): JSX.Element => {
   const [page, setPage] = createSignal(props.initialPage ?? ROUTES[0].id);
   const current = () => {

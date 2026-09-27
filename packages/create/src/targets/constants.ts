@@ -6,34 +6,29 @@ import {
 
 import type { FrameworkParts, PluginSpec } from './types';
 
-// The glob vocabulary `check-file` is given, and the three shapes the naming tables on the records compose out
-// of it.
 const KEBAB = '+([a-z0-9])*(-+([a-z0-9]))';
 
-// Everything except camelCase, so `[slug]`, `(tabs)`, `_layout` and `+page@(app)` pass while `useThing` does not.
+// Everything except camelCase, so `[slug]`, `(tabs)`, `_layout` and `+page@(app)` pass.
 export const COMPONENT = '!([a-z]*[A-Z]*)';
 
 // Kebab-case or camelCase, so `vite-env.d.ts` and `assets.d.ts` both pass.
 export const DECLARATION = `@(${KEBAB}|+([a-z])*([a-zA-Z0-9]))`;
 
-// Plus `__tests__`, which every framework's tooling reserves.
+// `__tests__` is reserved by every framework's tooling.
 export const FOLDER = `@(${KEBAB}|__tests__)`;
 
-// Plus the segments a file-based router owns, granted to the React family, Solid and SvelteKit.
 export const FOLDER_ROUTED = String.raw`@(${KEBAB}|__tests__|\[*\]|\(*\)|{*})`;
 
 // Its own key: `src/**/*.ts` matches `vite-env.d.ts`, and two keys on one file must agree.
 export const DECLARATION_KEY: NamingMap = { 'src/**/*.d.ts': DECLARATION };
 
-// Off for the test run: the React Compiler's memo cache and `vite-plugin-solid`'s HMR handler each leave one
-// uncovered branch per component. `process.env.VITEST`, not `mode`, because a function config cannot be merged.
+// Off for the test run: the React Compiler's memo cache and Solid's HMR handler leave uncovered branches.
+// `process.env.VITEST`, not `mode`, because a function config cannot be merged.
 export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';
 
-// Stands `useNavigate` in for a suite that mounts no router; every React binding and Solid's take the same one.
 export const ROUTER_MOCK = 'fragments/test-setup/setupTests.router.ts';
 
-// The one spelling of React's build wiring, read by the React target and every host. The compiler is the Rust port
-// `oxc-transform-react`, which the plugin runs natively; docs/DESIGN.md has why it replaced the Babel pass.
+// docs/DESIGN.md has why `oxc-transform-react` replaced the Babel pass.
 export const REACT_VITE_PLUGIN: PluginSpec = {
   imports: ["import react from '@vitejs/plugin-react';"],
   calls: [`react({ compiler: ${OUTSIDE_TESTS} })`],
@@ -62,7 +57,7 @@ export const PARTS: Record<HostedFramework, FrameworkParts> = {
     framework: 'vue',
     sfcExtension: 'vue',
     componentGlob: 'src/**/*.vue',
-    // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses unless it is named.
+    // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses unless named.
     allowBuilds: ['vue-demi'],
     vitePlugin: {
       imports: ["import vue from '@vitejs/plugin-vue';"],
@@ -83,7 +78,7 @@ export const PARTS: Record<HostedFramework, FrameworkParts> = {
     framework: 'svelte',
     sfcExtension: 'svelte',
     componentGlob: 'src/**/*.svelte',
-    // The bare plugin: a host owns its own entry, and `sveltekit()` would take it over.
+    // A host owns its own entry, and `sveltekit()` would take it over.
     vitePlugin: {
       imports: ["import { svelte } from '@sveltejs/vite-plugin-svelte';"],
       calls: ['svelte()'],
@@ -118,7 +113,7 @@ export const PARTS: Record<HostedFramework, FrameworkParts> = {
 
 export const HOOKS_ALIAS: AliasMap = { '@hooks/*': './src/lib/hooks/*' };
 
-// `jsx-a11y-x` is here because `react()` loads it, so every target composing that layer installs it.
+// `react()` loads `jsx-a11y-x`, so every target composing that layer installs it.
 export const COMMON_REACT_PLUGINS = [
   '@eslint-react/eslint-plugin',
   'eslint-plugin-jsx-a11y-x',

@@ -2,14 +2,7 @@ import { ANSWERS, STACK } from '../../config/linteljs';
 
 import type { FC } from 'react';
 
-/*
- * What was recorded at birth, rather than what is resolved now. A browser cannot read its machine's Node or
- * package manager, and `package.json` carries ranges rather than versions, so a runtime read would restate a
- * literal at the cost of a tsconfig flag.
- *
- * This project owns `lib/linteljs.ts` from its first run, the way it owns the rest of its source, so `sync` never
- * rewrites it. Edit it, or delete this page with the rest of the starter.
- */
+// Recorded at birth: a browser cannot read its machine's Node or package manager.
 export const VersionPage: FC = () => {
   return (
     <main className="page">

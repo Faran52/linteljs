@@ -32,12 +32,6 @@ export const isJsonArray = (value: JsonValue | undefined): value is JsonValue[] 
   return Array.isArray(value);
 };
 
-/**
- * What a record's own answer is worth when nothing asked for it: a record's `default` for the two kinds that are
- * required in `Answers`, and `undefined` for the five kinds that are optional there. `refuseMisfit` compares an
- * answer against this to tell an unasked value from a misfit one; the prompt writes it for a question a `slot` or
- * an `askedWhen` skipped.
- */
 export const unaskedValueOf = (record: AnswerRecord): JsonValue | undefined => {
   const isRequired = record.kind === 'choice' || record.kind === 'multi';
 
@@ -86,8 +80,6 @@ const arrayOfChoices = <V extends string>(
   return choices;
 };
 
-// `resolveConditions` and `ignores` are both open vocabularies, so only the shape is checked, and it is the same
-// shape: a non-empty list of distinct non-empty strings.
 const stringList = (value: JsonValue | undefined, key: string): string[] => {
   if (!isJsonArray(value) || value.length === 0) {
     throw new Error(`${key} must be a non-empty array`);
@@ -107,8 +99,6 @@ const stringList = (value: JsonValue | undefined, key: string): string[] => {
   return names;
 };
 
-// The record's `pattern` is the whole vocabulary, so a value that misses it is no more a reading of this key than a
-// number would be.
 const textValue = (value: JsonValue | undefined, key: string, pattern: string): string => {
   if (typeof value !== 'string' || !new RegExp(pattern, 'u').test(value)) {
     throw new Error(`${key} must be a string`);
@@ -117,8 +107,7 @@ const textValue = (value: JsonValue | undefined, key: string, pattern: string): 
   return value;
 };
 
-// Names are the project's; the sigil is checked because `simple-import-sort` groups on it and a bare key sorts as a
-// package.
+// The sigil is checked because `simple-import-sort` groups on it and a bare key sorts as a package.
 const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
   if (!isJsonObject(value)) {
     throw new Error(`${key} must be an object`);
@@ -142,11 +131,6 @@ const aliasMap = (value: JsonValue | undefined, key: string): AliasMap => {
     }));
 };
 
-/**
- * One reader per kind, dispatched off `record.kind`: a `choice` or `multi` throws when the value is missing or
- * illegal, since both are required in `Answers`; the rest answer `undefined` for an absent value, since both are
- * optional there. `record.key` is the field name every message carries, so no caller spells it a second time.
- */
 export const readAnswer = <R extends AnswerRecord>(record: R, value: JsonValue | undefined): ReadResult<R> => {
   switch (record.kind) {
     case 'choice': {

@@ -45,7 +45,6 @@ describe('solid', () => {
     expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
   });
 
-  // No preset in this layer registers the plugin, so its own block has to for the layer to stand alone.
   it('runs its linteljs rule without base', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
 

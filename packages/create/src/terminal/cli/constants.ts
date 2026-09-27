@@ -12,7 +12,6 @@ import {
 
 export const FLAGGED_ANSWERS = flaggedAnswers();
 
-// Spread after the fixed entries, so a `--target` or a `--store` is one record away.
 const ANSWER_OPTIONS = answerOptions(FLAGGED_ANSWERS);
 
 export const USAGE = `@linteljs/create [name] [options]
@@ -74,7 +73,6 @@ export const CLI_OPTIONS = {
   ...ANSWER_OPTIONS,
 } satisfies ParseArgsOptionsConfig;
 
-// What each stage does, on the line that announces it.
 export const STAGE_LABELS: Record<Stage, string> = {
   lint: 'lint: eslint and stylelint config',
   package: 'package: package.json, tsconfig and the manager files',
@@ -83,11 +81,10 @@ export const STAGE_LABELS: Record<Stage, string> = {
   fix: 'fix: eslint and stylelint --fix',
 };
 
-// Braille, so one cell turns rather than a word growing. Every terminal this CLI refuses to run below draws them.
+// Braille, so one cell turns rather than a word growing.
 export const SPINNER_FRAMES = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
 
 // Slow enough to read a stage's name, fast enough to look alive.
 export const SPINNER_INTERVAL = 80;
 
-// Every stage summary lines up on one column, so a run reads down rather than ragged.
 export const STAGE_WIDTH = widthOf(STAGES);

@@ -19,7 +19,6 @@ const answersFor = (overrides: Partial<Answers> = {}): HostedAnswers => {
   };
 };
 
-// The file whole, with no styling and with StyleX: the text is what Nuxt reads, and nothing here runs Nuxt.
 const PLAIN = `import { join } from 'node:path';
 
 import { defineNuxtConfig } from 'nuxt/config';
@@ -110,18 +109,10 @@ describe('nuxtConfigEmitter', () => {
     expect(nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app')).toEqual([]);
   });
 
-  /*
-   * The two lines this target would not work without: Nuxt 4 looks for `app/`, and every glob this CLI writes
-   * reads `src/`; and a project's own aliases reach Nuxt's generated paths through `alias` rather than `paths`.
-   */
   it('names src as the source root and carries the aliases', () => {
     expect(emitNuxtConfig(answersFor())).toBe(PLAIN);
   });
 
-  /*
-   * The Vite plugin rather than the PostCSS one, because Nuxt runs `postcss-import` ahead of its own `postcss`
-   * key and that reads `@import "tailwindcss"` off disk. Measured: the build fails with ENOENT on `tailwindcss`.
-   */
   it('reaches tailwind through vite, and only when tailwind was answered', () => {
     const tailwind = emitNuxtConfig(answersFor({ styling: 'tailwind' }));
 
@@ -130,10 +121,6 @@ describe('nuxtConfigEmitter', () => {
     expect(emitNuxtConfig(answersFor())).not.toContain('tailwindcss');
   });
 
-  /*
-   * StyleX reaches this target through the Vite config it owns rather than one this CLI emits, so the plugin is
-   * named here instead.
-   */
   it('names the stylex plugin among the vite plugins', () => {
     expect(emitNuxtConfig(answersFor({ styling: 'stylex' }))).toBe(WITH_STYLEX);
   });

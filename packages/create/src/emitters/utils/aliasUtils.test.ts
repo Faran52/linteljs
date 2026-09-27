@@ -60,10 +60,6 @@ describe('buildAliases', () => {
     expect(plain['@model/*']).toBe('./src/lib/model/*');
   });
 
-  /**
-   * No template creates `src/lib/providers/`, so the alias named a directory a reader would chase for nothing; it
-   * ships on no target rather than being omitted per target.
-   */
   it('aliases providers on no target at all', () => {
     for (const target of TARGET_IDS) {
       expect(buildAliases(answersFor({ target }))['@providers/*']).toBeUndefined();

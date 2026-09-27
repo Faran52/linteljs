@@ -2,8 +2,6 @@ import { tsxRuleTester } from '@mocks/ruleTesters';
 
 import { nativeValidAccessibilityRole } from './nativeValidAccessibilityRole.ts';
 
-// Written out again rather than imported, so a name dropped from the rule's list fails here instead of vanishing
-// from both at once.
 const ACCESSIBILITY_ROLES = [
   'adjustable', 'alert', 'button', 'checkbox', 'combobox', 'drawerlayout', 'dropdownlist', 'grid', 'header',
   'horizontalscrollview', 'iconmenu', 'image', 'imagebutton', 'keyboardkey', 'link', 'list', 'menu', 'menubar',
@@ -33,7 +31,6 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
         return `const view = <View role="${role}" />;`;
       }),
     'const view = <View accessibilityRole="button" role="button" />;',
-    // A value computed at runtime is unreadable rather than wrong, and so is an element standing in for one.
     'const view = <View accessibilityRole=<Role /> />;',
     'const view = <View accessibilityRole={role} />;',
     'const view = <View role={role} />;',
@@ -51,8 +48,6 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
       }],
     },
     {
-      // The two vocabularies are different sets, not one with two spellings: `img` is a role and never an
-      // accessibilityRole, so a rule sharing one list would pass this.
       code: 'const view = <View accessibilityRole="img" />;',
       errors: [{
         messageId: 'invalidRole',
@@ -63,7 +58,6 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
       }],
     },
     {
-      // And the other way round.
       code: 'const view = <View role="imagebutton" />;',
       errors: [{
         messageId: 'invalidRole',
@@ -84,7 +78,6 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
       }],
     },
     {
-      // A bare attribute is `={true}`, which is not a role either.
       code: 'const view = <View accessibilityRole />;',
       errors: [{
         messageId: 'invalidRole',
@@ -95,7 +88,6 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
       }],
     },
     {
-      // Both props are checked on one element, each against its own list.
       code: 'const view = <View accessibilityRole="btn" role="btn" />;',
       errors: [
         {

@@ -29,7 +29,6 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
     .join('\n')
     .replace(/^\n+/, '');
 
-  // A present block is the project's.
   const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
   const hasAgePolicy = /^minimumReleaseAge:/m.test(withBuilds);
   const withAge = hasAgePolicy ? withBuilds : `${withBuilds.trimEnd()}\n\n${RELEASE_AGE_BLOCK}`;
@@ -38,7 +37,7 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
   return `${withAge.trimEnd()}\n`;
 };
 
-// Only where it means something; discarding it breaks an install that already wrote into it.
+// Discarding it breaks an install that already wrote into it.
 export const pnpmWorkspaceEmitter = (answers: Answers): Artifact[] => {
   return answers.packageManager === 'pnpm'
     ? [merged('package', 'pnpm-workspace.yaml', (current) => {

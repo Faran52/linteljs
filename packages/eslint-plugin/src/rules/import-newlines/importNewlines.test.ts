@@ -14,29 +14,23 @@ jsRuleTester.run('import-newlines', importNewlines, {
     "import 'mod';",
     "import alpha, * as namespace from 'mod';",
 
-    // Under the split threshold, but collapsing would run past the line limit, so the fix is not offered.
     `import {\n  ${LONG},\n  bravo\n} from 'mod';`,
 
-    // A default or namespace import cannot be broken onto separate lines, so the rule stays quiet.
     `import defaultExport, * as namespace from '${LONG}';`,
     `import defaultExport from '${LONG}';`,
     `import * as namespace from '${LONG}';`,
     "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
     "import defaultExport, {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
 
-    // A trailing line comment does not prevent this from being read as already split.
     "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod'; // trailing",
 
-    // Exactly at the limit is allowed; the message requires the length to be exceeded.
     {
       code: "import { alpha, bravo } from 'mod';",
       options: [{ maxLineLength: 35 }],
     },
 
-    // A comment on a specifier's own line reaches the collapse check with nothing to collapse to.
     "import {\n  alpha, // why\n  bravo\n} from 'mod';",
 
-    // Collapsing would put the line at 37 characters once the indent is counted, so it stays split.
     {
       code: "  import {\n    alpha,\n    bravo\n  } from 'mod';",
       options: [{ maxLineLength: 36 }],
@@ -49,14 +43,12 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
-      // The indent column counts towards the length: 35 characters starting at column 2 runs to 37.
       code: "  import { alpha, bravo } from 'mod';",
       output: "  import {\n    alpha,\n    bravo\n  } from 'mod';",
       options: [{ maxLineLength: 36 }],
       errors: [{ messageId: 'mustSplitLong' }],
     },
     {
-      // A default import cannot be split, but the named ones can, so this still has something to split.
       code: "import alpha, { bravo } from 'mod';",
       output: "import alpha, {\n  bravo\n} from 'mod';",
       options: [{ maxLineLength: 30 }],
@@ -69,7 +61,6 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'mustNotSplit' }],
     },
     {
-      // Members land at the statement's own column plus one step, not at column 0.
       code: "function load() {\n  import('x');\n}\nimport { alpha, bravo, charlie } from 'mod';",
       output: "function load() {\n  import('x');\n}\nimport {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'mustSplitMany' }],
@@ -95,20 +86,16 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'limitLineCount' }],
     },
     {
-      // Under the member count, so the collapsed form is where this ends up: emitted in one pass
-      // rather than split first and collapsed on the next.
       code: "import {\n  alpha, bravo } from 'mod';",
       output: "import { alpha, bravo } from 'mod';",
       errors: [{ messageId: 'limitLineCount' }],
     },
     {
-      // Under the member count but too long to collapse, so the half-split statement splits.
       code: `import {\n  alpha, ${LONG} } from 'mod';`,
       output: `import {\n  alpha,\n  ${LONG}\n} from 'mod';`,
       errors: [{ messageId: 'limitLineCount' }],
     },
     {
-      // Under the member count and carrying a comment, so neither rebuild is available.
       code: "import {\n  alpha, /* keep */ bravo } from 'mod';",
       output: null,
       errors: [{ messageId: 'limitLineCount' }],
@@ -129,19 +116,16 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
-      // Import attributes must survive the rebuild or the statement stops resolving.
       code: "import { alpha, bravo, charlie } from 'mod' with { type: 'json' };",
       output: "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod' with { type: 'json' };",
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
-      // A comment inside the braces cannot be carried across, so the rule reports with no fix.
       code: "import { alpha, /* keep */ bravo, charlie } from 'mod';",
       output: null,
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
-      // A blank line is the one route by which a namespace import reaches the rebuild.
       code: "import defaultExport,\n\n  * as namespace from 'mod';",
       output: "import defaultExport, * as namespace from 'mod';",
       errors: [{ messageId: 'noBlankBetween' }],

@@ -1,18 +1,14 @@
 /*
- * The vocabulary, not the values. Named by role rather than by shade, so a component never spells a colour and a
- * theme is one block to override. Dark mode is a class rather than a media query: an application that offers the
- * choice has to be able to set it.
- *
- * Each group carries a heading, which is also what makes the blank line between them legal: stylelint's standard
- * config allows an empty line before a custom property that follows a comment, and refuses a bare one.
+ * Dark mode is a class, not a media query: an application offering the choice must set it.
+ * Each group keeps a heading: stylelint allows a blank line before a custom property only after a comment.
  */
 
 :root {
-  /* How long a colour or a hover takes, so no stylesheet writes its own milliseconds. */
+  /* Motion, so no stylesheet writes its own milliseconds. */
   --motion-fast: 160ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 
-  /* Surfaces and the text on them, from the page down to the line between two rows. */
+  /* Surfaces and the text on them. */
   --background: #faf9f7;
   --card: #fff;
   --foreground: #1c1b19;
@@ -32,14 +28,14 @@
   --ok: #1f7a6d;
   --destructive: #b23a32;
 
-  /* By what a thing is rather than by size: a control, a surface, the frame around both. */
+  /* Radii, by role rather than by size. */
   --radius-xs: 4px;
   --radius-sm: 5px;
   --radius-md: 7px;
   --radius-lg: 9px;
   --radius-xl: 11px;
 
-  /* Typefaces, and the scale in rem so a reader's own font size reaches it. */
+  /* Typefaces, in rem so a reader's own font size reaches them. */
   --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, "SF Mono", menlo, consolas, monospace;
   --text-eyebrow: 0.594rem;

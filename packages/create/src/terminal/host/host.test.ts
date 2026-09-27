@@ -38,7 +38,6 @@ const HOST: Host = {
 
 let cwd = '';
 
-// The agent is stubbed rather than inherited, so what the suite runs under decides nothing.
 beforeEach(async () => {
   vi.stubEnv('npm_config_user_agent', 'pnpm/12.5.1 npm/? node/? darwin arm64');
   cwd = await mkdtemp(join(tmpdir(), 'linteljs-host-'));
@@ -61,7 +60,6 @@ describe('hostOf: the manager that ran it', () => {
     });
   });
 
-  // `--existing` and `sync` run in a directory somebody already has, and a lockfile there is the same answer.
   it.each([
     ['pnpm-lock.yaml', 'pnpm-lock.yaml', '', 'pnpm', '12.5.1', 'pnpm'],
     ['a classic yarn.lock', 'yarn.lock', '# yarn lockfile v1\n', 'yarn', '1.22.22', 'yarn-classic'],
@@ -99,7 +97,6 @@ describe('hostOf: the manager that ran it', () => {
     expect(await hostOf(cwd)).toContain('needs pnpm 10.26.0 or newer');
   });
 
-  // Refused before the floor is read, since there is no version to hold to one.
   it('refuses a manager that will not say its version', async () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/? npm/? node/? darwin arm64');
     await plantBinary(join(cwd, 'fake-bin'), 'pnpm', ['process.exit(1);']);
@@ -108,9 +105,7 @@ describe('hostOf: the manager that ran it', () => {
   });
 });
 
-// bun bundles a Node of its own, so under bun the Node a project will run on is asked of `PATH` instead.
 describe('hostOf: the Node a project records', () => {
-  // A shell script rather than `plantBinary`: a stand-in named `node` would answer its own `env node` shebang.
   const plantNode = async (version: string): Promise<void> => {
     const bin = join(cwd, 'fake-bin');
 
@@ -156,7 +151,6 @@ describe('hostOf: the Node a project records', () => {
 });
 
 describe('hosted', () => {
-  // The manager is never asked, so whatever the answers carried is replaced rather than kept.
   it('records the host over whatever manager the answers carried', () => {
     const recorded = hosted({
       ...DEFAULT_ANSWERS,
@@ -167,13 +161,11 @@ describe('hosted', () => {
   });
 });
 
-// A config written before the versions existed: its manager is the project's, and the run fills what it lacks.
 describe('filled', () => {
   it('keeps the manager a config recorded and fills only what it lacks', () => {
     expect(filled(DEFAULT_ANSWERS, HOST)).toMatchObject(HOST);
   });
 
-  // Node is not a manager, so it fills either way.
   it('fills no version where the machine runs a different manager than the config records', () => {
     const answers = filled({
       ...DEFAULT_ANSWERS,

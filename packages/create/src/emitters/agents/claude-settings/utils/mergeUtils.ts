@@ -10,7 +10,6 @@ interface MarketplaceRef {
   source: MarketplaceLocation;
 }
 
-// Only the keys this CLI owns are typed; spreads keep every project-owned setting.
 interface ClaudeSettings {
   // Explicitly `| undefined`: `exactOptionalPropertyTypes` separates a missing key from one set to undefined.
   includeCoAuthoredBy?: boolean | undefined;
@@ -22,8 +21,7 @@ const isClaudeSettings = (value: unknown): value is ClaudeSettings => {
   return isJsonObject(value);
 };
 
-// Invalid project settings read as absent, so a sync is never blocked by an editable file. No file reads as JSON
-// `null`, which is no settings either.
+// Invalid project settings read as absent, so a sync is never blocked by an editable file.
 const settingsIn = (text: string | null): ClaudeSettings => {
   return parsedAs(text, isClaudeSettings) ?? {};
 };
@@ -33,7 +31,7 @@ export const mergeClaudeSettings = (emitted: string, current: string | null): st
   const theirs = settingsIn(current);
 
   const settings: ClaudeSettings = {
-    // Ours first, so a project's own answer wins; the two lists below are the other way round, being this CLI's.
+    // Ours first, so a project's own answer wins.
     includeCoAuthoredBy: ours.includeCoAuthoredBy,
     ...theirs,
     enabledPlugins: {

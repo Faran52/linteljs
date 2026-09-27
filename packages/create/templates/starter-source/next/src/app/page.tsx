@@ -3,7 +3,6 @@ import { NAME } from '../config/linteljs';
 
 import type { ReactNode } from 'react';
 
-// A server component: nothing here is stateful, so nothing here ships to the browser.
 const HomePage = (): ReactNode => {
   return (
     <main className="hero">

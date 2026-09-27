@@ -6,8 +6,7 @@ export default defineConfig({
     'index': 'src/index.ts',
     'create-linteljs': 'bin/createLinteljs.ts',
   },
-  // ESM only. The entry point is a `bin` invoked by npx, never imported by a consumer's
-  // bundler, so the CJS half of the dual build would ship unused.
+  // ESM only: the entry is a `bin` npx runs, never imported, so a CJS half would ship unused.
   format: ['esm'],
   dts: true,
   clean: true,

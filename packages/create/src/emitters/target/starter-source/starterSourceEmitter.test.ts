@@ -34,7 +34,6 @@ const artifactFor = (overrides: Partial<Answers>, target: string): Artifact | un
     });
 };
 
-// `<destination> -> <asset>`, which is the whole of what this emitter decides.
 const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> => {
   return Object.fromEntries(starterSourceEmitter(answersFor(overrides))
     .flatMap((artifact) => {
@@ -47,18 +46,12 @@ const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> =>
     }));
 };
 
-/**
- * A record names the destination and this derives the asset from it, so these are the cases where the derivation
- * has to add something: an answer that picks one of several spellings filling one path. `registry.test.ts` holds
- * every derived path against what is on disk; this holds which one is derived.
- */
 describe('the asset a destination derives', () => {
   it('reads it straight off the destination where no answer gates the file', () => {
     expect(sourcesByTarget({ target: 'astro' })['src/lib/utils/currentPath.ts'])
       .toBe('starter-source/astro/src/lib/utils/currentPath.ts');
   });
 
-  // Found end to end: the Firefox project shipped Chrome's entry against types declaring `browser.*` alone.
   it.each<[TargetId, Browser]>([
     ['webextension', 'chrome'],
     ['webextension', 'firefox'],
@@ -72,7 +65,6 @@ describe('the asset a destination derives', () => {
     expect(source).toBe(`starter-source/webextension/${browser}/src/background/index.ts`);
   });
 
-  // Three spellings of `App` fill one destination, so the destination alone cannot say which file to copy.
   it.each<Router>([
     'react-router',
     'tanstack-router',
@@ -90,7 +82,6 @@ describe('the asset a destination derives', () => {
       .toBe('starter-source/react/src/App.tsx');
   });
 
-  // Expo's default Metro config serves a project without NativeWind, which is the one thing that wraps it.
   it.each([
     'metro.config.js',
     'nativewind-env.d.ts',
@@ -112,7 +103,6 @@ describe('the asset a destination derives', () => {
   });
 });
 
-// Birth only: a project owns its own source from its first run, so `--existing` without `--seed` plants none of it.
 it.each(valuesOf(ANSWERS.target.values))('plants every %s starter only on a project being born', (target) => {
   const unseeded = starterSourceEmitter(answersFor({ target }))
     .filter(({ seed }) => {
@@ -122,7 +112,6 @@ it.each(valuesOf(ANSWERS.target.values))('plants every %s starter only on a proj
   expect(unseeded).toEqual([]);
 });
 
-// `ng new` leaves the rejection value implicitly `any`, which plain TypeScript refuses.
 it('writes the angular entry with its rejection value typed', async () => {
   const entry = artifactFor({ target: 'angular' }, 'src/main.ts');
 
@@ -130,7 +119,6 @@ it('writes the angular entry with its rejection value typed', async () => {
 });
 
 describe('starter tests', () => {
-  // Skipped rather than failed: a rearranged starter costs the example, not a broken import.
   it.each<[TargetId, string, string]>([
     ['react', 'src/App.test.tsx', 'src/App.tsx'],
     ['webextension', 'src/counter.test.ts', 'src/counter.ts'],
@@ -138,7 +126,6 @@ describe('starter tests', () => {
     const artifact = artifactFor({ target }, suite);
 
     expect(artifact?.requires?.[0]).toBe(covers);
-    // The suite's own asset, under its target's tree.
     expect(artifact?.content).toEqual({ sources: [`starter-source/${target}/${suite}`] });
   });
 
@@ -146,14 +133,12 @@ describe('starter tests', () => {
     expect(artifactFor({ target: 'webextension' }, 'src/counter.test.ts')?.requires).toEqual(['src/counter.ts']);
   });
 
-  // With no store there is no counter, so the gate is what keeps its suite from covering nothing.
   it('gates the store suite on a counter only a store writes', () => {
     expect(artifactFor({}, 'src/lib/store/counter.test.tsx')?.requires).toContain('src/lib/store/counter.ts');
     expect(targetsFor({})).not.toContain('src/lib/store/counter.ts');
     expect(targetsFor({ store: 'zustand' })).toContain('src/lib/store/counter.ts');
   });
 
-  // Both land, since this repository writes both: the layout is the shell and the page is what it wraps.
   it('covers both the svelte page and its root layout', () => {
     expect(targetsFor({ target: 'svelte' }))
       .toEqual(expect.arrayContaining(['src/routes/page.test.ts', 'src/routes/layout.test.ts']));
@@ -170,7 +155,6 @@ describe('starter tests', () => {
 });
 
 describe('starter files for a router', () => {
-  // The entry is written either way; without a router it is the base copy, and no route table joins it.
   it('writes the base entry and no route table without a router', () => {
     const written = targetsFor({});
 
@@ -179,10 +163,6 @@ describe('starter files for a router', () => {
     expect(written).not.toContain('src/routeTree.gen.ts');
   });
 
-  /*
-   * The entry is the same file whatever was answered; `App` is what the router replaces. TanStack has no `routes/`
-   * directory and no generated tree: the tree is built from the one route list, in the entry.
-   */
   it.each<[Router, string, boolean]>([
     ['react-router', "from 'react-router'", true],
     ['tanstack-router', "from '@tanstack/react-router'", false],
@@ -195,20 +175,13 @@ describe('starter files for a router', () => {
   });
 });
 
-/*
- * The contact demo, on every target that ported it. The gates are per record rather than shared, so each target is
- * its own row: each offers one form library and one data layer, and each spells its pages and its control its own
- * way. Next takes React's primitives, api and store to the byte, so its rows name React's tree as the root.
- */
 describe('the starter source', () => {
-  // A button is what a store or a form gives the page to press; neither, and nothing presses anything.
   it('writes the button for a store or a form, and for neither writes none', () => {
     expect(targetsFor({})).not.toContain('src/components/ui/button/Button.tsx');
     expect(targetsFor({ store: 'zustand' })).toContain('src/components/ui/button/Button.tsx');
     expect(targetsFor({ form: 'tanstack-form' })).toContain('src/components/ui/button/Button.tsx');
   });
 
-  // Vue's row is left out: mutation testing found nothing it killed that another row here does not.
   it.each<[TargetId, string[]]>([
     ['react', [
       'src/pages/contact/ContactPage.tsx',
@@ -245,12 +218,10 @@ describe('the starter source', () => {
     expect(targetsFor({ target })).not.toContain(files[0]);
   });
 
-  // One route list, in the spelling the form answer asks for, so the header and the router follow it together.
   it.each<[TargetId, string, string]>([
     ['solid', 'src/pages/routes.tsx', 'solid'],
     ['vue', 'src/views/routes.ts', 'vue'],
     ['svelte', 'src/config/routes.ts', 'svelte'],
-    // The nav list has no framework in it, so it is the shared copy in both spellings.
     ['next', 'src/config/routes.ts', 'shared'],
   ])('adds contact to the one %s route list', (target, routes, root) => {
     const source = sourcesByTarget({
@@ -262,7 +233,6 @@ describe('the starter source', () => {
     expect(sourcesByTarget({ target })[routes]).toBe(`starter-source/${root}/${routes}`);
   });
 
-  // The rules are one file, read by the form that binds them and the api that refuses on them: zod replaces it.
   it.each<TargetId>([
     'react',
     'solid',
@@ -282,10 +252,6 @@ describe('the starter source', () => {
     expect(schemasFor([])).toBe('starter-source/shared/src/lib/apis/contact/schemas.ts');
   });
 
-  /*
-   * One file per answer rather than one per combination: the page and its hook are the same in every data layer,
-   * and the api is what varies. Asserting the asset rather than the destination is what says which spelling won.
-   */
   it.each<[TargetId, string, string]>([
     ['react', 'react', 'react'],
     ['solid', 'shared', 'solid'],
@@ -306,7 +272,6 @@ describe('the starter source', () => {
       .toBe(`starter-source/${queryRoot}/tanstack-query/src/lib/apis/contact/api.ts`);
   });
 
-  // RTK Query's middleware is what gives an endpoint its cache, so the store it rides has to register it.
   it.each<TargetId>([
     'react',
     'next',
@@ -322,10 +287,6 @@ describe('the starter source', () => {
     expect(sources['src/lib/store/counter.ts']).toBe('starter-source/react/rtk-query/src/lib/store/counter.ts');
   });
 
-  /*
-   * SvelteKit's data slot is a component rather than a plugin or a JSX element, so a suite that needs it around
-   * its subject needs one of its own. It is a test helper, so a project that declined tests receives none.
-   */
   it('writes the svelte data wrapper only for a form with a suite', () => {
     const withSuite = targetsFor({
       target: 'svelte',
@@ -344,7 +305,6 @@ describe('the starter source', () => {
     expect(targetsFor({ target: 'svelte' })).not.toContain('__mocks__/WithData.svelte');
   });
 
-  // The barrel a form and a store each add to, on the target whose barrel is a component list.
   it('takes the solid barrel the answers ask for', () => {
     const barrelFor = (overrides: Partial<Answers>): string | undefined => {
       return sourcesByTarget({
@@ -358,11 +318,6 @@ describe('the starter source', () => {
     expect(barrelFor({ form: 'tanstack-form' })).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
   });
 
-  /*
-   * Next's own block, because what varies is not only the destination but which tree each file comes from: the
-   * document and the routing are Next's, the primitives and the store are React's to the byte, and the rule tables
-   * have no framework in them at all.
-   */
   describe('on next', () => {
     const sourceOf = (overrides: Partial<Answers>, wanted: string): string | undefined => {
       return sourcesByTarget({
@@ -381,7 +336,6 @@ describe('the starter source', () => {
         .toBe('starter-source/react/redux-toolkit/src/lib/store/counter.ts');
     });
 
-    // Both slots are Next's own, because the directive on them is what makes them the client boundary.
     it('keeps both client slots in its own tree', () => {
       expect(sourceOf({}, 'src/lib/providers/StoreProvider.tsx'))
         .toBe('starter-source/next/src/lib/providers/StoreProvider.tsx');
@@ -407,7 +361,6 @@ describe('the starter source', () => {
       expect(source).toBe('starter-source/shared/with-store/src/components/ui/index.ts');
     });
 
-    // A store makes the home route a client component, which is a different file rather than a directive added.
     it('takes the home route the store answer asks for', () => {
       const source = sourcesByTarget({
         target: 'next',

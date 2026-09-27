@@ -22,14 +22,12 @@ describe('nuxtTarget', () => {
     expect(nuxtTarget.id).toBe('nuxt');
   });
 
-  // Nuxt renders the document and owns Vite, so neither an `index.html` nor a vite config is this CLI's to write.
   it('writes no document and no vite config of its own', () => {
     expect(nuxtTarget.html).toBe(false);
     expect(nuxtTarget.vitePlugin).toBeUndefined();
   });
 });
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(false),
   ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
@@ -42,7 +40,6 @@ const GATES: GateRow[] = [
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(() => {
     return nuxtTarget;

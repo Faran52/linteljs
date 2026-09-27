@@ -26,15 +26,12 @@ import type { Answers } from '@config/types';
 
 export type AnswerKey = keyof typeof ANSWERS;
 
-// `extends Answers`, so a config plans directly. `utils/configUtils.ts`'s parser is the only list and refuses an
-// unknown property by name.
 export interface LinteljsConfig extends Answers {
   $schema: typeof CONFIG_SCHEMA_URL;
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
 }
 
-// One line per record, insertion order the ask order and the order a config's keys are written in. `plugins` sits
-// beside `agents` rather than with the never-asked tail.
+// Insertion order is the ask order and the order a config's keys are written in.
 export const ANSWERS = {
   target: targetAnswer,
   browser: browserAnswer,

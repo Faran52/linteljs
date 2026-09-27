@@ -33,13 +33,11 @@ describe('nextTarget', () => {
     expect(nextTarget.id).toBe('next');
   });
 
-  // The App Router renders the document, so there is no `index.html` to write and none to lint.
   it('owns its document rather than writing one', () => {
     expect(nextTarget.html).toBe(false);
     expect(nextTarget.htmlEntry).toBeUndefined();
   });
 
-  // Next owns the build, so there is no vite config for a plugin to go in.
   it('carries no vite build', () => {
     expect(nextTarget.vitePlugin).toBeUndefined();
     expect(nextTarget.build).toBe('next build');
@@ -49,18 +47,15 @@ describe('nextTarget', () => {
     expect(nextTarget.naming).toEqual(componentNaming('app'));
   });
 
-  // The routes are the directory, so a route folder may be `[id]` or `(group)`.
   it('admits the route segments a file-based router owns', () => {
     expect(nextTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
   });
 });
 
-// Every gated entry and the answers that write it, read off what the entry is for rather than off its gate.
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query', 'rtk-query']),
-  // StyleX compiles through Babel and PostCSS here, so both configs ship with it and only with it.
   ['.babelrc@stylex', STYLEX],
   ['postcss.config.mjs@stylex', STYLEX],
   ['src/config/routes.ts', WITHOUT_FORM],
@@ -108,7 +103,6 @@ const GATES: GateRow[] = [
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];
 
-// `starterSourceEmitter` refuses two spellings of one destination, and each gate is held to what it is for.
 describe('the starter gates', () => {
   const walk = walkGates(() => {
     return nextTarget;

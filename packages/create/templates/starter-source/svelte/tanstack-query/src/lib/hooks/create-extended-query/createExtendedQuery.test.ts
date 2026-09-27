@@ -17,7 +17,6 @@ interface Version {
   readonly status: string;
 }
 
-// Held rather than read back off `globalThis`, which would need a cast the standard bans outright.
 const fetchMock = vi.fn();
 
 const answering = (body: Version, status = 200): void => {
@@ -27,10 +26,6 @@ const answering = (body: Version, status = 200): void => {
     });
 };
 
-/*
- * Mounted through a host component, because the binding reads its query client out of context and context needs a
- * component to be in. What the host renders is the two things worth asserting: the status and the body.
- */
 describe('createExtendedQuery', () => {
   beforeEach(() => {
     fetchMock.mockReset();
@@ -51,7 +46,6 @@ describe('createExtendedQuery', () => {
     expect(screen.getByTestId('body').textContent).toBe('{"status":"ok"}');
   });
 
-  // The adapter is underneath, so the query reaches it the way every other target's does.
   it('sends the query through to the adapter', async () => {
     answering({ status: 'ok' });
     render(WithExtendedQuery, {

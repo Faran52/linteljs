@@ -10,16 +10,11 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 
-// A Node failure, which carries the code it failed with.
 interface CodedError extends Error {
   code: string;
 }
 
-/**
- * The filesystem itself, re-exported rather than reached for directly everywhere. `node:fs` is importable from
- * `disk/` alone, enforced in the root `eslint.config.ts`, so this is the one place the rest of the package
- * substitutes when it needs to run without touching a disk.
- */
+// `node:fs` is importable from `disk/` alone, so this is the one place to substitute.
 export {
   rm,
   rmdir,
@@ -37,12 +32,12 @@ export const isExecutableFile = (path: string): boolean => {
   }
 };
 
-// A Node failure by its code: `ENOENT` for absence, so a permission error stays an error, and `ELOOP` for a link.
+// By code: `ENOENT` for absence, so a permission error stays an error.
 export const hasCode = (error: unknown, code: string): error is CodedError => {
   return error instanceof Error && 'code' in error && error.code === code;
 };
 
-// Presence for an async caller; an unreachable path reads as absent, since nothing here decides what to overwrite.
+// An unreachable path reads as absent, since nothing here decides what to overwrite.
 export const exists = async (path: string): Promise<boolean> => {
   try {
     await access(path);
@@ -54,7 +49,7 @@ export const exists = async (path: string): Promise<boolean> => {
   }
 };
 
-// The entry itself, including a dangling symbolic link.
+// Including a dangling symbolic link.
 export const entryExists = async (path: string): Promise<boolean> => {
   try {
     await lstat(path);
@@ -70,7 +65,6 @@ export const entryExists = async (path: string): Promise<boolean> => {
   }
 };
 
-// The file's text, or null when it does not exist yet.
 export const readIfPresent = async (path: string): Promise<string | null> => {
   try {
     return await readFile(path, 'utf8');
@@ -84,7 +78,6 @@ export const readIfPresent = async (path: string): Promise<string | null> => {
   }
 };
 
-// All present candidates, in the order given; which one a project means is `projectSpelling`'s decision.
 export const allPresent = async (cwd: string, candidates: string[]): Promise<string[]> => {
   const checked = candidates
     .map(async (candidate) => {

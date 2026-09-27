@@ -42,7 +42,6 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).toBe(current);
   });
 
-  // The pattern list is the shipped file's, always: a project that froze it would never see a new pattern.
   it('keeps the shipped declarations outside those two blocks', () => {
     const current = withBlocks(
       "const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];",
@@ -53,7 +52,6 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).not.toContain('old();');
   });
 
-  // The defect the block reader was written for: a reason quoting `arr[0];` ending the block early.
   it('reads a multi-line block to its own closing bracket, not to a semicolon inside a reason', () => {
     const skipped = [
       'const PROJECT_SKIPPED: string[] = [',
@@ -63,7 +61,6 @@ describe('mergeChecker', () => {
     ].join('\n');
     const current = withBlocks(skipped, 'const PROJECT_BANNED: Banned[] = [];');
 
-    // Whole, so the block is lifted to its bracket and not a line past it.
     expect(mergeChecker(SHIPPED, current)).toBe(current);
   });
 
@@ -73,7 +70,6 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).toContain("const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
   });
 
-  // `String.replace` reads `$&` and `$'` in a string replacement as the match and the text after it.
   it('carries a project block verbatim when its text reads as a replacement pattern', () => {
     const skipped = "const PROJECT_SKIPPED: string[] = ['$& and $\' are literal'];";
     const current = withBlocks(skipped, 'const PROJECT_BANNED: Banned[] = [];');
@@ -87,7 +83,6 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).toBe(SHIPPED);
   });
 
-  // A `null` in the shipped text, as the real checker has, is not a block to replace.
   it('leaves the project block behind when the shipped file no longer declares it', () => {
     const shipped = 'const BASE_SKIPPED = [];\n\nexport const run = () => null;';
     const current = withBlocks(
@@ -98,7 +93,6 @@ describe('mergeChecker', () => {
     expect(mergeChecker(shipped, current)).toBe(shipped);
   });
 
-  // An edit that broke the block leaves nothing to lift, so the shipped one stands rather than half a list.
   it('leaves the shipped block alone when the project left one unterminated', () => {
     const current = "const PROJECT_BANNED: Banned[] = [\n  { pattern: 'TODO' },\n";
 

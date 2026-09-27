@@ -39,10 +39,6 @@ describe('reactRouterConfigEmitter', () => {
     expect(targetsOf({})).toEqual([]);
   });
 
-  /*
-   * The whole reason the file is written rather than left to its default: React Router looks for `app/`, and every
-   * glob this CLI emits reads `src/`.
-   */
   it('names src as the source root, so nothing downstream learns a second one', () => {
     expect(emitReactRouterConfig()).toBe([
       "import type { Config } from '@react-router/dev/config';",

@@ -71,7 +71,6 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
     };
 
     return {
-      // The selector only matches a MemberExpression, so the parameter states that once, not reasserted below.
       'CallExpression > MemberExpression.callee': (node: MemberExpressionNode) => {
         // Hands off to prefer-try-catch once the value is awaited or returned; without this both rules fire.
         const handedOff = !strict && (
@@ -84,7 +83,7 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
           return;
         }
 
-        // `computed` matters: in `promise[then](parse)` the property is a variable, not a call to `.then`.
+        // In `promise[then](parse)` the property is a variable, not a call to `.then`.
         if (
           !node.computed
           && node.property.type === 'Identifier'

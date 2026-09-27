@@ -16,7 +16,6 @@ interface Version {
   readonly status: string;
 }
 
-// Held rather than read back off `globalThis`, which would need a cast the standard bans outright.
 const fetchMock = vi.fn();
 
 const answering = (body: Version, status = 200): void => {
@@ -26,10 +25,6 @@ const answering = (body: Version, status = 200): void => {
     });
 };
 
-/*
- * `runInInjectionContext` is the whole ceremony here, and it is Angular's rather than this project's: the binding
- * reads its client out of the injector, so it can only be called where one is. `TestBed` is what provides one.
- */
 const runQuery = (path: string, query?: Record<string, string[]>): ReturnType<typeof injectExtendedQuery<Version>> => {
   TestBed.configureTestingModule({
     providers: [provideTanStackQuery(new QueryClient({ defaultOptions: { queries: { retry: false } } }))],
@@ -68,7 +63,6 @@ describe('injectExtendedQuery', () => {
     expect(query.data()).toEqual({ status: 'ok' });
   });
 
-  // The adapter is underneath, so the query reaches it the way every other target's does.
   it('sends the query through to the adapter', async () => {
     answering({ status: 'ok' });
     runQuery('/version', { tag: ['a', 'b'] });

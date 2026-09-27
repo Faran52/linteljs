@@ -10,15 +10,13 @@ export interface LintelRuleDocs {
   language: RuleLanguage;
   // Whether `configs.recommended` enables it. `configs.all` carries it either way.
   recommended: boolean;
-  // What this rule's fixer is allowed to do to the token stream, which `fixerSafety.test.ts` holds it to. Absent
-  // means it may rewrite code, which is what `prefer-arrow-functions` does. A rule with no fixer declares nothing.
+  // Held by `fixerSafety.test.ts`. Absent means it may rewrite code; a rule with no fixer declares nothing.
   fixShape?: FixShape;
   url: string;
 }
 
 type BaseMeta = NonNullable<Rule.RuleModule['meta']>;
 
-// The `docs` half of each meta, named so neither is written inline beside the `Omit` that carries it.
 interface PublishedDocs {
   docs: LintelRuleDocs;
 }

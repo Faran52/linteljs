@@ -7,8 +7,7 @@ export interface ExtendedMutationOptions {
   readonly invalidates?: readonly string[];
 }
 
-// The writing half, in Svelte's vocabulary. The binding's own reactive object comes back untouched for the same
-// reason the query one does: unwrapping it here would end the reactivity this exists to carry.
+// Unwrapping the reactive object here would end the reactivity it carries.
 export const createExtendedMutation = <TResponse, TBody extends object>(
   path: string,
   options: ExtendedMutationOptions = {},

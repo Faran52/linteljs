@@ -1,15 +1,10 @@
-/**
- * The four hosts in and out of one shape. Each hook reads its payload through here, judges what it was handed, and
- * writes its decision back through here, so the guards never learn which agent called them. Claude Code and Codex
- * send the same payload and read the same decision, so `claude` names both.
- */
+// Claude Code and Codex send the same payload and read the same decision, so `claude` names both.
 import { readFileSync } from 'node:fs';
 
 import type { Dialect } from './commandParserUtils.ts';
 
 export type Host = 'claude' | 'copilot' | 'cursor';
 
-// `deny` stops a shell command, `warn` tells the agent without stopping anything, `block` reports a finished edit.
 export type DecisionKind = 'block' | 'deny' | 'warn';
 
 // The one event each command hook answers under Cursor; `.cursor/hooks.json` registers it there and nowhere else.
@@ -80,8 +75,7 @@ const toolInputOf = (payload: object, host: Host): FieldValue => {
   return host === 'copilot' ? toolArgumentsOf(payload) : valueAt(payload, 'tool_input');
 };
 
-// The process global rather than `node:process`, which sets stdin non-blocking and fails a large read with EAGAIN.
-// Malformed JSON, or JSON that is not an object, is no payload to judge.
+// The process global, not `node:process`, which sets stdin non-blocking and fails a large read with EAGAIN.
 export const readPayload = (): object | undefined => {
   try {
     const payload: unknown = JSON.parse(readFileSync(0, 'utf8'));
@@ -92,11 +86,7 @@ export const readPayload = (): object | undefined => {
   }
 };
 
-/**
- * Cursor also runs Claude Code's hooks, as `preToolUse` and `postToolUse`, so a Cursor payload for any event but the
- * one `.cursor/hooks.json` gives this hook is that second copy, and it stays silent. Cursor's payload names no shell,
- * so the platform's own stands in: PowerShell on Windows, a POSIX shell elsewhere.
- */
+// Cursor also runs Claude Code's hooks, so a payload for any other event is that second copy and stays silent.
 export const readCommand = (
   payload: object,
   cursorEvent: CursorEvent,
@@ -119,11 +109,7 @@ export const readCommand = (
   };
 };
 
-/**
- * Claude Code names the file, Copilot names its `path`, and Codex's apply_patch carries the patch text, whose Add and
- * Update headers name them. Cursor documents no file path on the one edit event that can answer the agent, so a
- * Cursor payload is not read.
- */
+// Cursor documents no file path on the one edit event that can answer the agent.
 export const readEdit = (payload: object): EditInput | undefined => {
   const host = hostOf(payload);
   if (host === 'cursor') {
@@ -192,8 +178,7 @@ const claudeDecision = (kind: DecisionKind, text: string): object => {
   };
 };
 
-// The decision in the host's own words, or nothing when there is none to make. Cursor's shell gate is the one that
-// answers a clear command too: its own examples print an explicit allow rather than an empty stdout.
+// Cursor's shell gate answers a clear command too: its own examples print an explicit allow.
 export const decisionOf = (host: Host, kind: DecisionKind, text: string | undefined): object | undefined => {
   if (text === undefined) {
     return host === 'cursor' && kind === 'deny' ? { permission: 'allow' } : undefined;

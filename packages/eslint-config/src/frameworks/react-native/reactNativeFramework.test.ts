@@ -26,11 +26,6 @@ describe('reactNative', () => {
     expect(ruleIds).toContain('@linteljs/prefer-destructured-props');
   });
 
-  /**
-   * Measured before the split: the same defect reports four findings as web markup and none as React Native markup,
-   * because those rules key on lowercase element names and React Native renders `<Image>` and `<Text>`. The preset
-   * was 34 rules that could not fire, so it is gone here and kept in `react()`.
-   */
   it('drops the accessibility preset that react keeps', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
     const web = await ruleIdsFor([...base(), ...react()], code, 'src/Logo.tsx');
@@ -40,7 +35,6 @@ describe('reactNative', () => {
     expect(native.some(startsWith('jsx-a11y-x/'))).toBe(false);
   });
 
-  // The replacement for the preset above: rules that read what React Native actually announces with.
   it('reports a touchable with no accessible name', async () => {
     const code = 'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Save.tsx');
@@ -55,7 +49,6 @@ describe('reactNative', () => {
     expect(ruleIds).toContain('@linteljs/native-valid-accessibility-role');
   });
 
-  // Scoped to this layer alone: `Button` and `TextInput` are ordinary names that mean something else on the web.
   it('leaves those rules out of the react layer', async () => {
     const code = 'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Save.tsx');
@@ -63,11 +56,6 @@ describe('reactNative', () => {
     expect(ruleIds).not.toContain('@linteljs/native-accessible-name');
   });
 
-  /**
-   * `reactFramework.ts` imports `eslint-plugin-jsx-a11y-x` at module scope, which a React Native project does not
-   * install, so reaching it kills ESLint with ERR_MODULE_NOT_FOUND. The package is installed here either way, so
-   * the guard reads the source.
-   */
   it('reaches no module that imports the web accessibility plugin', async () => {
     const here = dirname(fileURLToPath(import.meta.url));
     const reads = ['reactNativeFramework.ts', '../utils/reactCoreUtils.ts']
@@ -90,7 +78,6 @@ describe('reactNative', () => {
     expect(specifiers).not.toContain('./react');
   });
 
-  // `^react-` already covers `react-native`, so there is no second group to keep in step with the first.
   it('sorts imports by the same group as react', () => {
     expect(reactNativeGroup).toContain('^react-');
   });

@@ -53,8 +53,7 @@ export const nativeNoNestedTouchables = createRule('native-no-nested-touchables'
         const element = asElement(node);
         const accessible = findProp(elementAttributesOf(element), ['accessible']);
 
-        // Only `accessible={true}` collapses the subtree. A value computed at runtime may be false, and reporting
-        // needs the certainty that it is not.
+        // A value computed at runtime may be false, and reporting needs certainty.
         if (!accessible || literalValueOf(accessible) !== true) {
           return;
         }

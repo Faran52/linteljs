@@ -23,7 +23,7 @@ export const preferTryCatch = createRule('prefer-try-catch', {
       CallExpression: (node) => {
         const { callee } = node;
 
-        // A computed property is a variable, not the method by that name, so `promise[then]()` is not a `.then` call.
+        // A computed property is a variable, so `promise[then]()` is not a `.then` call.
         if (callee.type !== 'MemberExpression' || callee.computed
           || callee.property.type !== 'Identifier') {
           return;
@@ -31,7 +31,7 @@ export const preferTryCatch = createRule('prefer-try-catch', {
 
         const { name } = callee.property;
 
-        // `then` only counts with a rejection handler; a plain `then(onFulfilled)` is `prefer-await-to-then`'s job.
+        // A plain `then(onFulfilled)` is `prefer-await-to-then`'s job.
         const handlesRejection = name === 'catch' && node.arguments.length > 0;
         const passesRejectionHandler = name === 'then' && node.arguments.length > 1;
 
@@ -44,8 +44,7 @@ export const preferTryCatch = createRule('prefer-try-catch', {
           messageId = 'preferTryCatchOverThenHandler';
         }
 
-        // Only flag a rejection a `try`/`catch` could take over: a detached `queue.catch(report)` is fire and forget,
-        // so rewriting it would change behaviour; that case belongs to `prefer-await-to-then`.
+        // A detached `queue.catch(report)` is fire and forget, so rewriting it would change behaviour.
         if (!messageId || !isAwaitedOrAsyncReturn(ancestorReaderOf(context), node)) {
           return;
         }

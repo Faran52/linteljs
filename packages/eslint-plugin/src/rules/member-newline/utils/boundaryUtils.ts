@@ -1,5 +1,3 @@
-// Where a member begins and ends once surrounding comments are counted, and what that says
-// about the block's layout. `memberNewline.ts` decides and fixes; nothing here reports.
 import { adjacentPairs, sameLine } from '../../../utils/layoutUtils.ts';
 import {
   mustFind,
@@ -13,7 +11,7 @@ interface Placed {
   loc: NodeLocation;
 }
 
-// The location every reader needs; `loc` is optional on ESTree nodes, so stating it once avoids per-reader fallbacks.
+// `loc` is optional on ESTree nodes, so stating it once avoids per-reader fallbacks.
 export type PropertyNode = RuleNode & Placed;
 
 export interface PatternAnalysis {
@@ -23,38 +21,33 @@ export interface PatternAnalysis {
   hasMultilineProperty: boolean;
 }
 
-// The comments above a member, not the trailing comment of the member before it: `getCommentsBefore`
-// returns both, so a same-line note would otherwise be misattributed.
+// `getCommentsBefore` also returns the previous member's trailing note.
 const leadingCommentsOf = (sourceCode: SourceCode, member: RuleNode) => {
   return sourceCode
     .getCommentsBefore(member)
     .filter((comment) => {
-    // Every member sits inside braces, so a comment above one has at least the `{` before it.
       const previousToken = mustFind(
         sourceCode.getTokenBefore(comment),
         'the token before a comment above a type member',
       );
 
-      // A brace has nothing to trail, so a comment written straight after `{` heads the first member.
+      // A brace has nothing to trail, so a note straight after `{` heads the first member.
       return previousToken.value === '{' || !sameLine(previousToken, comment);
     });
 };
 
-// A member's first line, counting a doc comment above it as its own rather than as a blank line above the member.
 const startLineOf = (sourceCode: SourceCode, member: PropertyNode): number => {
   const [comment] = leadingCommentsOf(sourceCode, member);
 
   return comment?.loc ? comment.loc.start.line : member.loc.start.line;
 };
 
-// Where a splice moving a member down cuts in: before its heading comment, not between the comment and the member.
 export const startTokenOf = (sourceCode: SourceCode, member: RuleNode) => {
   const [comment] = leadingCommentsOf(sourceCode, member);
 
   return comment ?? sourceCode.getFirstToken(member);
 };
 
-// Where a member ends, counting a trailing same-line note so the newline goes after it, not in front of it.
 export const endTokenOf = (sourceCode: SourceCode, member: RuleNode) => {
   const lastToken = sourceCode.getLastToken(member);
   let trailing;
@@ -70,7 +63,6 @@ export const endTokenOf = (sourceCode: SourceCode, member: RuleNode) => {
   return trailing ?? lastToken;
 };
 
-// How the block is laid out, read off its members' boundaries; both fix strategies and the report ladder use it.
 export const analyzeProperties = (
   sourceCode: SourceCode,
   properties: PropertyNode[],
@@ -79,8 +71,6 @@ export const analyzeProperties = (
     isMultiLine: false,
     hasSameLinePairs: false,
     hasBlankBetween: false,
-    // Every member, not only the ones the pairwise walk below reaches as `current`: a block
-    // whose last member spans lines is as open as one whose first does.
     hasMultilineProperty: properties
       .some((property) => {
         return property.loc.end.line !== property.loc.start.line;

@@ -32,7 +32,6 @@ afterEach(async () => {
 });
 
 describe('localBinarySpawn', () => {
-  // Before `install` has run there is nothing there to fix, so absence is not a failure to report.
   it('answers null where the project has installed nothing', async () => {
     await expect(localBinarySpawn(cwd, 'probe', ['--version'])).resolves.toBeNull();
   });
@@ -51,7 +50,6 @@ describe('localBinarySpawn', () => {
     });
   });
 
-  // A binary that is there and will not run: the shim exists, the bit does not, and `spawn` never reaches `close`.
   it('reports a binary it could not execute as failed rather than absent', async () => {
     const bin = join(cwd, 'node_modules', '.bin');
 
@@ -62,7 +60,6 @@ describe('localBinarySpawn', () => {
     await expect(localBinarySpawn(cwd, 'probe', [])).resolves.toEqual({ failed: true });
   });
 
-  // Output arrives in as many chunks as the binary flushes, and the report is read whole.
   it('reads output that arrives in more than one piece as one', async () => {
     const bin = join(cwd, 'node_modules', '.bin');
 
@@ -77,7 +74,6 @@ describe('localBinarySpawn', () => {
     });
   });
 
-  // Closed rather than inherited: a binary waiting on its input would otherwise wait on nobody.
   it("closes the binary's input, so one reading it cannot hang the run", async () => {
     const bin = join(cwd, 'node_modules', '.bin');
 

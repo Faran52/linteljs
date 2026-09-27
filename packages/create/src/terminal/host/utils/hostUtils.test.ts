@@ -14,8 +14,6 @@ import {
 } from './hostUtils';
 
 describe('managerFromUserAgent', () => {
-  // The four agents a real run sees. pnpm's carries `node/?` rather than a version, which is why the version is
-  // read off the first token alone and not off the rest of the line.
   it('reads the name and version off the first token', () => {
     expect(managerFromUserAgent('pnpm/12.5.1 npm/? node/? darwin arm64')).toEqual({
       name: 'pnpm',
@@ -45,13 +43,11 @@ describe('managerFromUserAgent', () => {
     expect(managerFromUserAgent('deno/2.0 node/? darwin arm64')).toBeUndefined();
   });
 
-  // An agent names a command, and `yarn-classic` is an id no binary answers to; `toString` is on every object.
   it('answers nothing for an id that is not its own command, or a name every object inherits', () => {
     expect(managerFromUserAgent('yarn-classic/1.22.22 npm/? node/?')).toBeUndefined();
     expect(managerFromUserAgent('toString/1.0.0 npm/? node/?')).toBeUndefined();
   });
 
-  // A manager that names itself without a version still names itself: the version is asked of the binary instead.
   it('answers the name alone where the token carries no version', () => {
     expect(managerFromUserAgent('pnpm/? npm/? node/?')).toEqual({
       name: 'pnpm',
@@ -59,13 +55,11 @@ describe('managerFromUserAgent', () => {
     });
   });
 
-  // A floor compares three numbers, so a version with anything before or after them is not read as one.
   it('reads no version from a token that is more than three numbers', () => {
     expect(managerFromUserAgent('pnpm/v12.5.1 npm/? node/?')?.version).toBeUndefined();
     expect(managerFromUserAgent('pnpm/12.5.1-rc.1 npm/? node/?')?.version).toBeUndefined();
   });
 
-  // Classic is a readable major of exactly 1; a major merely ending in 1, or an unreadable 1.x, is Berry.
   it('takes only a readable yarn 1 for classic', () => {
     expect(managerFromUserAgent('yarn/21.0.0 npm/? node/?')?.name).toBe('yarn');
     expect(managerFromUserAgent('yarn/1.22.22-rc.1 npm/? node/?')?.name).toBe('yarn');
@@ -126,10 +120,6 @@ describe('nodeRefusal', () => {
     expect(refusal).toContain('https://nodejs.org');
   });
 
-  /**
-   * The case that separates this from the manager check above, which a major comparison would wave through: the
-   * floor is the minor its own prompt library asks for, so 22.12 is refused and 22.13 is not.
-   */
   it('compares the minor and the patch, not the major alone', () => {
     expect(nodeRefusal('22.0.0')).toBeDefined();
     expect(nodeRefusal('22.12.99')).toBeDefined();
@@ -137,14 +127,12 @@ describe('nodeRefusal', () => {
 });
 
 describe('the two yarns', () => {
-  // Measured: `yarn create @linteljs` on 1.22.22 reaches this CLI with exactly this agent.
   it('reads yarn 1 as classic and everything later as berry', () => {
     expect(managerFromUserAgent('yarn/1.22.22 npm/? node/v26.9.0 darwin arm64')?.name).toBe('yarn-classic');
     expect(managerFromUserAgent('yarn/4.18.0 npm/? node/v26.9.0 darwin arm64')?.name).toBe('yarn');
     expect(managerFromUserAgent('yarn/2.4.3 npm/? node/? darwin arm64')?.name).toBe('yarn');
   });
 
-  // An agent with no version to read is the one a `dlx` forwards to, which is a modern yarn.
   it('takes a yarn that will not say its version for berry', () => {
     expect(managerFromUserAgent('yarn/? npm/? node/?')?.name).toBe('yarn');
   });

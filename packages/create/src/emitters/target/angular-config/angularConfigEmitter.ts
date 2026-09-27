@@ -4,14 +4,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 
-/**
- * The Angular CLI's own project file, which is the build, the dev server and the test target in one. Written
- * rather than copied because it is keyed by the project's name: every `buildTarget` names it, so a template with a
- * placeholder in it would be a placeholder in four places.
- *
- * The build reads the starter's `tsconfig.app.json`, which extends the one tsconfig this CLI emits and narrows the
- * build to `src/main.ts`, away from the specs.
- */
+// Written rather than copied: every `buildTarget` is keyed by the project's name.
 export const emitAngularConfig = (name: string, packageManager: string): string => {
   const config = {
     $schema: './node_modules/@angular/cli/lib/config/schema.json',
@@ -79,7 +72,7 @@ export const emitAngularConfig = (name: string, packageManager: string): string 
   return `${JSON.stringify(config, null, 2)}\n`;
 };
 
-// Birth only: a project's build configuration is its own from its first run, and `sync` has no name to key it by.
+// Birth only: the build configuration is the project's, and `sync` has no name to key it by.
 export const angularConfigEmitter: Emitter = (answers, _project, name): Artifact[] => {
   const { angularProject } = targetFor(answers);
 

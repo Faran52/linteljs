@@ -15,14 +15,13 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
-// The matcher `Extract` reads, named because this workspace writes no object type inline.
 interface ProgramNode {
   type: 'Program';
 }
 
 type ProgramEntry = Extract<RuleNode, ProgramNode>['body'][number];
 
-// A `<script>` under svelte-eslint-parser, which holds the statements `Program.body` holds under every other parser.
+// svelte-eslint-parser holds a `<script>`'s statements here, not in `Program.body`.
 interface ScriptElement {
   body: ProgramEntry[];
 }
@@ -45,7 +44,7 @@ const readText = (entry: Texted): string => {
   return entry.text;
 };
 
-// A line holding only indentation, which an editor leaves behind in a blank line and a move would carry along.
+// An editor leaves this in a blank line, and a move would carry it along.
 const WHITESPACE_LINE = /^[\t ]+$/gmu;
 
 const startLineOf = (node: Located): number => {
@@ -69,7 +68,7 @@ const isTypeDeclaration = (node: ProgramEntry): boolean => {
 };
 
 const findHeaderEndIndex = (body: ProgramEntry[]): number => {
-  // Reversed and found rather than `findLastIndex`, which needs Node 18 and this package declares a floor of 14.
+  // Not `findLastIndex`: it needs Node 18 and this package's floor is 14.
   const fromEnd = [...body]
     .reverse()
     .findIndex((statement) => {
@@ -86,14 +85,11 @@ const findFirstRuntimeIndex = (body: ProgramEntry[], afterIndex: number): number
     });
 };
 
-// Everything between the header and the first runtime node is a type declaration by definition, so the anchor is the
-// entry before it.
 const findInsertionIndex = (headerEndIndex: number, firstRuntimeIndex: number): number => {
   return Math.max(headerEndIndex, firstRuntimeIndex - 1);
 };
 
-// A trailing note travels with the statement it follows; cutting at the declaration's own end would leave it for the
-// next statement to slide under.
+// Cutting at the declaration's own end would leave its trailing note for the next statement.
 const trailingNoteOf = (sourceCode: SourceCode, node: ProgramEntry): [number, number] | undefined => {
   const [note] = sourceCode.getCommentsAfter(node);
 
@@ -101,14 +97,13 @@ const trailingNoteOf = (sourceCode: SourceCode, node: ProgramEntry): [number, nu
     return undefined;
   }
 
-  // A comment after a node always has that node's last token before it, and a token's location is always present.
+  // A comment after a node always has that node's last token before it.
   const before = mustFind(sourceCode.getTokenBefore(note), 'the token before a trailing comment');
 
   return before.loc.end.line === startLineOf(note) ? note.range : undefined;
 };
 
-// Cut from the end of the previous entry, so the blank line goes and a trailing note above stays; `getCommentsBefore`
-// hands back that note beside the declaration's own heading comments, and the line split sorts which travel.
+// Cut from the end of the previous entry, so the blank line goes and a trailing note above stays.
 const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: ProgramEntry): TypeCut => {
   const previousEndLine = mustFind(previous.loc, 'the location of the previous declaration').end.line;
   const between = sourceCode.getCommentsBefore(typeNode);
@@ -134,13 +129,11 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
   };
 };
 
-// All are safe to move, `typeof` included: TypeScript resolves type positions lazily. The walk is
-// pairwise so removal range is never read from a possibly-missing `body[index - 1]`.
+// `typeof` is safe to move too: TypeScript resolves type positions lazily.
 const cutsFor = (sourceCode: SourceCode, body: ProgramEntry[], firstRuntimeIndex: number): TypeCut[] => {
   const cuts: TypeCut[] = [];
 
-  // From the first runtime statement on, so every candidate sits after it and the header stays where it is. With no
-  // runtime statement the index is -1 and the slice is the last entry alone, which pairs with nothing.
+  // With no runtime statement the index is -1 and the slice is the last entry alone, which pairs with nothing.
   for (const [previous, candidate] of adjacentPairs(body.slice(firstRuntimeIndex))) {
     if (isTypeDeclaration(candidate)) {
       cuts.push(cutFor(sourceCode, candidate, previous));
@@ -155,7 +148,7 @@ export const interfaceOrder = createRule('interface-order', {
     type: 'layout',
     docs: {
       language: 'typescript',
-      // The only rule that relocates declarations, and comment placement is a judgement call, so the fix is `reorder`.
+      // Comment placement is a judgement call, so the fix is `reorder`.
       recommended: true,
       fixShape: 'reorder',
       description: 'Keep top-level interfaces and type aliases together, after imports and before runtime code.',
@@ -182,14 +175,12 @@ export const interfaceOrder = createRule('interface-order', {
     const sourceCode = sourceCodeOf(context);
     const eol = lineTerminatorOf(sourceCode);
     const trimBlankLines = optionsOf<InterfaceOrderOptions>(context).trimBlankLines ?? true;
-    // What a moved declaration is written back as: its own text, with blank lines emptied unless asked otherwise.
     const movedText = (entry: Texted): string => {
       const text = readText(entry);
 
       return trimBlankLines ? text.replace(WHITESPACE_LINE, '') : text;
     };
 
-    // One statement list: the program's, or one Svelte `<script>`'s.
     const check = (body: ProgramEntry[]): void => {
       const [firstStatement] = body;
       const headerEndIndex = findHeaderEndIndex(body);
@@ -207,8 +198,7 @@ export const interfaceOrder = createRule('interface-order', {
         node: firstCut.node,
         messageId: 'moveAfterImports',
         * fix(fixer) {
-          // A cut means a runtime statement exists, so the list has a first statement. Its indent is the list's: none
-          // in a script file, and whatever the `<script>` body is written at in a component.
+          // A cut means a runtime statement exists, so the list has a first statement.
           const first = mustFind(firstStatement, 'the first statement of the list');
           const indent = getIndent(sourceCode, first);
           const joinedTypes = cuts
@@ -216,7 +206,6 @@ export const interfaceOrder = createRule('interface-order', {
             .join(`${eol}${eol}${indent}`);
 
           if (insertAfterNode) {
-            // After the anchor's own trailing note, not between the two.
             const anchorNote = trailingNoteOf(sourceCode, insertAfterNode);
             const block = `${eol}${eol}${indent}` + joinedTypes;
 
@@ -225,8 +214,7 @@ export const interfaceOrder = createRule('interface-order', {
               : fixer.insertTextAfter(insertAfterNode, block);
           }
           else {
-            // No header, so the block goes above the first statement's own comments, since inserting at the node
-            // would detach a JSDoc from it.
+            // Inserting at the node would detach a JSDoc from it.
             const leading = sourceCode.getCommentsBefore(first);
             const anchor = leading[0] ?? first;
 
@@ -241,13 +229,11 @@ export const interfaceOrder = createRule('interface-order', {
     };
 
     return {
-      // `node` infers as `Program` already; intersecting the whole node union with a `body` shape distributes over
-      // every member and needs a cast to undo.
+      // Intersecting the node union with a `body` shape distributes and needs a cast to undo.
       'Program:exit': (node) => {
         check(node.body);
       },
 
-      // svelte-eslint-parser puts each `<script>` in `Program.body` as an element, so each script is its own list.
       'SvelteScriptElement:exit': (node: ScriptElement) => {
         check(node.body);
       },

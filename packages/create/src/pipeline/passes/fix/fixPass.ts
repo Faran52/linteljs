@@ -17,13 +17,11 @@ export const nextStep = (answers: Answers): string => {
   return `next: ${MANAGER_BINARIES[answers.packageManager]} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
 };
 
-// ESLint's JSON formatter answers one result per file linted.
 const isFixReport = (value: unknown): value is EslintFixResult[] => {
   return Array.isArray(value);
 };
 
-// `--fix` reports a fixed file's rewritten source under `output`, so no separate dry run is needed. Unparseable
-// formatter output counts nothing rather than failing a generate.
+// Unparseable formatter output counts nothing rather than failing a generate.
 const parseFixReport = (stdout: string): number => {
   const report = parsedAs(stdout, isFixReport);
 
@@ -44,7 +42,7 @@ const fixStyles = async (cwd: string, answers: Answers, report: (message: string
   }
 };
 
-// Never fatal: exit 1 on remaining findings is normal, and a missing eslint reports a next step instead.
+// Never fatal: exit 1 on remaining findings is normal.
 export const fixPass = async (
   cwd: string,
   answers: Answers,

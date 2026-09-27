@@ -36,17 +36,17 @@ interface Edit {
   text: string;
 }
 
-// Names this harness writes. One already in the file means it is not a clean slate.
+// One already in the file means it is not a clean slate.
 const PROBE_BINDING = 'linteljsNamespaceProbe';
 const PROBE_PROPS = 'linteljsProbeProps';
 
 export const PROBE_HANDLER = 'linteljsRejectionProbe';
 export const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
 
-// Wide-use hooks the default list leaves out, the only way to exercise the `hooks` option on real code.
+// The only way to exercise the `hooks` option on real code.
 export const EXTRA_HOOKS = ['useLayoutEffect', 'useImperativeHandle'];
 
-// What an arrow inherits and a `function` rebinds. Textual and over-skipping: a lost candidate costs nothing.
+// Textual and over-skipping: a lost candidate costs nothing.
 const ARROW_HAZARDS = /\b(?:this|arguments|super|asserts)\b|new\s*\.\s*target/;
 
 const STATEMENT_PARENTS = new Set(['Program', 'BlockStatement', 'ExportNamedDeclaration']);
@@ -55,7 +55,7 @@ const isBlockArrow = (node: AstNode | null | undefined): node is AstNode => {
   return node?.type === 'ArrowFunctionExpression' && nodeOf(node.body)?.type === 'BlockStatement';
 };
 
-// `new f()`, `f.prototype` and reassignment are what a `const` cannot support, and the rule stays silent on them.
+// The rule stays silent on `new f()`, `f.prototype` and reassignment.
 const arrowNameIsFunctionOnly = (state: State, name: string): boolean => {
   const escaped = escapeName(name);
 
@@ -75,7 +75,6 @@ const writeFunction = (state: State, arrow: AstNode, head: string): string => {
   return `${arrow.async === true ? 'async ' : ''}${head}(${params})${returnType} ${body ? textOf(state, body) : ''}`;
 };
 
-// Why this arrow cannot become a `function` and still be a case.
 const arrowBodySkipReason = (state: State, arrow: AstNode, from: number): string | undefined => {
   const body = nodeOf(arrow.body);
 
@@ -135,7 +134,6 @@ const declarationSkipReason = (state: State, node: AstNode, found: ArrowDeclarat
       : undefined);
 };
 
-// `const f = () => {}` rewritten as a hoisted `function` declaration.
 export const functionDeclarationCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'VariableDeclaration'), (node) => {
     const found = arrowDeclarationOf(node);
@@ -146,7 +144,6 @@ export const functionDeclarationCase: Build = (state) => {
   });
 };
 
-// The same `const` holding a function expression: another visitor, and hoisting does not apply.
 export const functionExpressionCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'VariableDeclaration'), (node) => {
     const found = arrowDeclarationOf(node);
@@ -166,7 +163,7 @@ const objectArrowProperty = (node: AstNode): AstNode | undefined => {
     : arrow;
 };
 
-// Long form replaces the value alone, shorthand the whole property: the key sits outside the function's range.
+// The key sits outside the function's range, so shorthand replaces the whole property.
 export const propertyFunctionCase = (asMethod: boolean): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, 'Property'), (node) => {
@@ -183,7 +180,6 @@ export const propertyFunctionCase = (asMethod: boolean): Build => {
   };
 };
 
-// `export default () => {}` rewritten as an anonymous default declaration. An expression body is its own shape.
 export const defaultExportFunctionCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'ExportDefaultDeclaration'), (node) => {
     const arrow = node.declaration;
@@ -194,7 +190,7 @@ export const defaultExportFunctionCase: Build = (state) => {
   });
 };
 
-// A one-`return` block collapsed to an expression body, parenthesised so an object literal keeps its meaning.
+// Parenthesised so an object literal keeps its meaning.
 export const expressionBodyCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'ArrowFunctionExpression'), (node) => {
     const body = nodeOf(node.body);
@@ -227,7 +223,6 @@ const inFunction = (node: AstNode): AstNode | undefined => {
   });
 };
 
-// The gap between `await` and its operand, which must be blank.
 const awaitGapIsClean = (state: State, node: AstNode, argument: AstNode): boolean => {
   if (state.source
     .slice(node.range[0] + 'await'.length, argument.range[0])
@@ -240,8 +235,7 @@ const awaitGapIsClean = (state: State, node: AstNode, argument: AstNode): boolea
   return false;
 };
 
-// A statement-position `await` rewritten as a detached handler: nothing awaits or returns it, so this rule rather
-// than `prefer-try-catch` is on the hook. `then`, `catch` and `finally` are each their own case.
+// Nothing awaits or returns it, so this rule rather than `prefer-try-catch` is on the hook.
 export const detachedHandlerCase = (method: string): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, 'ExpressionStatement'), (node) => {
@@ -273,7 +267,6 @@ export const detachedHandlerCase = (method: string): Build => {
   };
 };
 
-// An awaited handler, which only `strict` objects to; there the two promise rules deliberately overlap.
 export const strictAwaitedHandlerCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'AwaitExpression'), (node) => {
     const { argument } = node;
@@ -294,8 +287,7 @@ export const strictAwaitedHandlerCase: Build = (state) => {
   });
 };
 
-// A rejection handler hung off an existing `await`, the doc's own `await fetch(url).catch(handle)`. Unpicking a real
-// `try`/`catch` would mean deciding which statements belong in the handler, so the edit goes this way only.
+// Unpicking a real `try`/`catch` would mean choosing the handler's statements, so the edit goes this way only.
 export const awaitedHandlerCase = (suffix: string): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, 'AwaitExpression'), (node) => {
@@ -308,7 +300,6 @@ export const awaitedHandlerCase = (suffix: string): Build => {
   };
 };
 
-// A handler on a value an async function returns, the half of the shared predicate no `await` can reach.
 export const asyncReturnHandlerCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'ReturnStatement'), (node) => {
     const { argument } = node;
@@ -328,11 +319,7 @@ export const asyncReturnHandlerCase: Build = (state) => {
   });
 };
 
-/**
- * Whether the namespace name is bound again around the edit, which the rule is right to respect. Textual and
- * over-skipping: `const [monaco, setMonaco]` and `(_, monaco) => {` against `import * as monaco` were each once
- * reported as a rule defect.
- */
+// Textual and over-skipping: `const [monaco, setMonaco]` was once reported as a rule defect.
 const shadowsName = (state: State, node: AstNode, name: string): boolean => {
   const escaped = escapeName(name);
   const declares = new RegExp(String.raw`\b(?:const|let|var|function|class)\b[^;=]*\b${escaped}\b`);
@@ -359,8 +346,7 @@ const namespaceImportOf = (node: AstNode): AstNode | undefined => {
     : undefined;
 };
 
-// A namespace destructure at three depths, since the ported rule resolved names in the immediate scope only and was
-// dead in any function or block. Always the first statement of its block, so nothing between can shadow the import.
+// Three depths: the ported rule resolved names in the immediate scope only.
 export const namespaceDestructureCase = (place: 'block' | 'function' | 'module'): Build => {
   return (state) => {
     if (state.source.includes(PROBE_BINDING)) {
@@ -397,12 +383,11 @@ export const namespaceDestructureCase = (place: 'block' | 'function' | 'module')
   };
 };
 
-// The rule's comparator written out rather than imported: a check sharing the code it checks agrees with its bugs.
+// Written out rather than imported: a check sharing the code it checks agrees with its bugs.
 const compareNames = (left: string, right: string): number => {
   return left.localeCompare(right, 'en', { numeric: true });
 };
 
-// Identifiers only: a member, call or spread makes the rule leave the array alone.
 const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefined => {
   const last = node.arguments?.at(-1);
   const elements = last?.elements ?? [];
@@ -422,7 +407,7 @@ const dependencyNames = (node: AstNode, hooks: string[]): Dependencies | undefin
   };
 };
 
-// Sorted the wrong way rather than reversed: a reversed array can land sorted by accident.
+// Not reversed: a reversed array can land sorted by accident.
 export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, 'CallExpression'), (node) => {
@@ -448,7 +433,6 @@ export const hookOrderCase = (hooks: string[], wanted: 'asc' | 'desc'): Build =>
   };
 };
 
-// A first parameter the rule already accepts: every property a plain shorthand, so every exclusion is this one check.
 const propsPatternNames = (pattern: AstNode | undefined): string[] | undefined => {
   const properties = pattern?.type === 'ObjectPattern' ? pattern.properties ?? [] : [];
   const names = properties
@@ -464,7 +448,6 @@ const propsPatternNames = (pattern: AstNode | undefined): string[] | undefined =
   return properties.length > 0 && names.length === properties.length ? names : undefined;
 };
 
-// A prop name bound again inside the function means the emitted identifier would not always mean the prop.
 const isDeclaringUse = (node: AstNode): boolean => {
   const { parent } = node;
 
@@ -513,7 +496,7 @@ const isDeclaringUse = (node: AstNode): boolean => {
   }
 };
 
-// `{ alpha }` as a literal's shorthand would become `{ props.alpha }`, which does not parse.
+// `{ alpha }` would become `{ props.alpha }`, which does not parse.
 const isObjectShorthandValue = (node: AstNode): boolean => {
   const { parent } = node;
 
@@ -529,7 +512,6 @@ const KEYED = new Set([
   'TSMethodSignature',
 ]);
 
-// A key, a non-computed member name or a label spells the word without referring to the prop.
 const isNonReference = (node: AstNode): boolean => {
   const { parent } = node;
 
@@ -542,11 +524,7 @@ const isNonReference = (node: AstNode): boolean => {
     || (['LabeledStatement', 'BreakStatement', 'ContinueStatement'].includes(parent.type) && parent.label === node);
 };
 
-/**
- * The inverse of what the rule accepts: destructured props turned into a plain parameter with every reference a
- * member read on it. The destructured names are the ground truth, so no scope analysis is needed. Inner edits apply
- * right to left against the function's own text, and `replaced` gets the whole function.
- */
+// The destructured names are the ground truth, so no scope analysis is needed.
 const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Candidate | undefined => {
   const body = nodeOf(fn.body);
   const [firstParam] = fn.params ?? [];
@@ -569,7 +547,6 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
       return names.includes(node.name ?? '') && node.range[0] >= body.range[0] && node.range[1] <= body.range[1];
     });
 
-  // In source order, so the first offending use names the skip.
   const offending = candidates
     .find((node) => {
       return isDeclaringUse(node) || isObjectShorthandValue(node);
@@ -588,7 +565,6 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
       return !isNonReference(node);
     });
 
-  // No member read to force means no violation the rule would report.
   if (references.length === 0) {
     return undefined;
   }
@@ -621,7 +597,6 @@ const componentPropsRewrite = (state: State, fn: AstNode, names: string[]): Cand
   return replaced(state, fn.range[0], fn.range[1], rewritten);
 };
 
-// `const Widget = ({ alpha, bravo }) => ...`
 export const arrowComponentCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'VariableDeclarator'), (node) => {
     const { id, init } = node;
@@ -633,7 +608,6 @@ export const arrowComponentCase: Build = (state) => {
   });
 };
 
-// `function Widget({ alpha, bravo }) {...}`
 export const functionDeclarationComponentCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'FunctionDeclaration'), (node) => {
     const names = propsPatternNames(node.params?.[0]);

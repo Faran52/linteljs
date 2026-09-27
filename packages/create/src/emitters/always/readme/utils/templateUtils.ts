@@ -18,7 +18,6 @@ const testRows = (answers: Answers, run: string): string => {
     : '';
 };
 
-// Shared by CLAUDE.md and README.md, so a new slot is one edit.
 export const sharedSlots = (projectName: string, answers: Answers): Record<string, string> => {
   const run = RUN_PREFIX[answers.packageManager];
 

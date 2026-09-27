@@ -16,7 +16,6 @@ import {
   textOf,
 } from './editUtils.ts';
 
-// The defaults the rules ship, which these edits have to cross.
 const DEFAULT_MAX_ITEMS = 2;
 const DEFAULT_MAX_LINE_LENGTH = 120;
 const DEFAULT_MAX_PROPERTIES = 2;
@@ -42,21 +41,18 @@ const importCase = (build: (node: AstNode, named: AstNode[], state: State) => Ca
   };
 };
 
-// A compliant multiline import over `maxItems`, joined onto one line.
 export const importJoinedCase = importCase((node, named, state) => {
   return named.length <= DEFAULT_MAX_ITEMS || oneLine(node)
     ? undefined
     : joinRange(state, node.range[0], node.range[1]);
 });
 
-// A short one-line import split one per line: the direction the joining cases never reach.
 export const importSplitCase = importCase((node, named, state) => {
   return named.length === 0 || named.length > DEFAULT_MAX_ITEMS || !oneLine(node)
     ? undefined
     : splitBraces(state, named);
 });
 
-// Padded past `maxLineLength` inside the module specifier's quotes, reaching the length trigger alone.
 export const importLongLineCase = importCase((node, named, state) => {
   const end = node.source?.range[1];
   const needed = DEFAULT_MAX_LINE_LENGTH + 1 - node.loc.start.column - textOf(state, node).length;
@@ -68,7 +64,6 @@ export const importLongLineCase = importCase((node, named, state) => {
   return /['"]/.test(state.source[end - 1] ?? '') ? replaced(state, end - 1, end - 1, 'x'.repeat(needed)) : undefined;
 });
 
-// The last two members of a split import brought onto one line.
 export const importTailJoinedCase = importCase((_, named, state) => {
   const [previous, last] = named.slice(-2);
 
@@ -92,7 +87,7 @@ const hasRest = (properties: AstNode[]): boolean => {
     });
 };
 
-// Over the threshold on one line is `mustSplit` unconditionally. A rest element drops the threshold to one.
+// A rest element drops the threshold to one.
 export const patternJoinedCase = (withRest: boolean): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, 'ObjectPattern'), (node) => {
@@ -111,7 +106,6 @@ export const patternJoinedCase = (withRest: boolean): Build => {
   };
 };
 
-// At the threshold the rule wants one line, so splitting lands on the opposite branch.
 export const patternSplitCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'ObjectPattern'), (node) => {
     const properties = node.properties ?? [];
@@ -137,7 +131,6 @@ export const patternBlankLineCase: Build = (state) => {
   });
 };
 
-// An interface body or type literal joined: one predicate in the rule, two visitors the patterns never reach.
 export const typeMembersJoinedCase = (type: string, read: (node: AstNode) => AstNode[]): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, type), (node) => {
@@ -168,8 +161,7 @@ export const literalMembers = (node: AstNode): AstNode[] => {
   return node.members ?? [];
 };
 
-// One gap closed in an otherwise one-per-line pattern. The rule allows a pattern wholly on one line, so only the
-// half-wrapped shape is a case. Array holes are out: a hole has no tokens to measure.
+// Array holes are out: a hole has no tokens to measure.
 export const patternGapCase = (type: string, fromStart: boolean): Build => {
   return (state) => {
     return pickFirst(nodesOf(state, type), (node) => {
@@ -210,7 +202,7 @@ const exportKindOf = (node: AstNode): string => {
   return node.source ? 'from' : 'local';
 };
 
-// A second specifier beside a lone one: re-exporting the same local under a new name is legal in all three forms.
+// Re-exporting the same local under a new name is legal in all three forms.
 export const exportPairCase = (kind: string): Build => {
   return (state) => {
     if (state.source.includes(PROBE_ALIAS)) {
@@ -235,7 +227,6 @@ export const exportPairCase = (kind: string): Build => {
 // A bare `extends` accepts no union, and an array or indexed-access parent would take the member with it.
 const UNION_SAFE_PARENTS = new Set(['TSTypeAliasDeclaration', 'TSTypeAnnotation', 'TSTypeParameterInstantiation']);
 
-// Members that are no reason to split, so the union reports for the reason the shape says.
 const PLAIN_TYPES = new Set([
   'TSBooleanKeyword',
   'TSLiteralType',
@@ -244,11 +235,7 @@ const PLAIN_TYPES = new Set([
   'TSTypeReference',
 ]);
 
-/**
- * A plain type widened by one member the rule always splits on. The member is written rather than found, since a
- * corpus cannot be relied on for a mapped type, and parenthesised because a function type is not legal bare in a
- * union; typescript-eslint elides the parentheses, so the rule sees the member itself.
- */
+// Parenthesised because a function type is not legal bare in a union; typescript-eslint elides them.
 export const unionWithMemberCase = (member: string): Build => {
   return (state) => {
     const candidates = [...PLAIN_TYPES]
@@ -264,7 +251,6 @@ export const unionWithMemberCase = (member: string): Build => {
   };
 };
 
-// A generic argument widened to four plain members, one over `maxGenericMembers`.
 export const unionGenericCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'TSTypeParameterInstantiation'), (node) => {
     const [first] = node.params ?? [];
@@ -294,7 +280,6 @@ const isHeader = (node: AstNode): boolean => {
   return node.type === 'ImportDeclaration' || isDirective(node);
 };
 
-// Whole lines move, so the edit cannot leave half a line behind.
 const relocateType = (state: State, node: AstNode): Candidate | undefined => {
   const from = state.source.lastIndexOf('\n', node.range[0] - 1) + 1;
   const lineEnd = state.source.indexOf('\n', node.range[1]);
@@ -319,7 +304,6 @@ const relocateType = (state: State, node: AstNode): Candidate | undefined => {
   };
 };
 
-// Where the fix puts the moved block back: after imports, after a directive prologue, or at the top.
 const headerKindOf = (body: AstNode[]): string => {
   if (body
     .some((entry) => {
@@ -331,7 +315,7 @@ const headerKindOf = (body: AstNode[]): string => {
   return body.some(isDirective) ? 'directive' : 'none';
 };
 
-// A prologue with no imports is too rare to rely on the corpus for, so the directive shape writes its own.
+// A prologue with no imports is too rare to rely on the corpus for.
 const DIRECTIVE = "'use strict';\n\n";
 
 export const typeBelowRuntimeCase = (header: string): Build => {

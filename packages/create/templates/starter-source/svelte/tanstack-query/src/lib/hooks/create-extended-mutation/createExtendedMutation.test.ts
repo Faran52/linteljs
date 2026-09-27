@@ -52,7 +52,6 @@ describe('createExtendedMutation', () => {
     }));
   });
 
-  // The status a server sent reaches the view rather than being swallowed on the way.
   it('reports the failure a server sent', async () => {
     answering({ status: 'no' }, 422);
     render(WithExtendedMutation, { path: '/contact' });
@@ -63,7 +62,6 @@ describe('createExtendedMutation', () => {
     });
   });
 
-  // The step that is forgotten most: a list that does not drop its cache shows what was there before the write.
   it('drops the caches it was told to once the write succeeds', async () => {
     answering({ status: 'accepted' });
 

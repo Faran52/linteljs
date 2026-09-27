@@ -12,8 +12,7 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-// `AccessibilityState` from react-native 0.87.1, `Libraries/Components/View/ViewAccessibility.d.ts`. A key outside
-// this set is dropped silently, so the state never reaches VoiceOver or TalkBack.
+// From react-native 0.87.1; a key outside this set is dropped silently.
 const STATE_KEYS = [
   'busy',
   'checked',
@@ -22,7 +21,6 @@ const STATE_KEYS = [
   'selected',
 ];
 
-// The two forms that are a state value but not an object, so the mistake is legible rather than merely wrong.
 const NOT_OBJECT_TYPES = ['Literal', 'ArrayExpression'];
 
 export const nativeValidAccessibilityState = createRule('native-valid-accessibility-state', {
@@ -45,7 +43,6 @@ export const nativeValidAccessibilityState = createRule('native-valid-accessibil
     const reportProperty = (node: RuleNode, property: JsxProperty): void => {
       const key = keyNameOf(property);
 
-      // A spread or a computed key names nothing that can be checked here.
       if (key === undefined) {
         return;
       }
@@ -60,8 +57,6 @@ export const nativeValidAccessibilityState = createRule('native-valid-accessibil
         return;
       }
 
-      // Only a value written down can be judged; one computed at runtime is the caller's to get right. A property
-      // always has a value.
       const written = mustFind(property.value, 'the value of an accessibilityState property');
 
       if (written.type !== 'Literal') {
@@ -100,7 +95,6 @@ export const nativeValidAccessibilityState = createRule('native-valid-accessibil
 
         const expression = expressionOf(attribute);
 
-        // No expression container means a bare attribute or a string, and neither is an object.
         if (!expression || NOT_OBJECT_TYPES.includes(expression.type)) {
           context.report({
             node,

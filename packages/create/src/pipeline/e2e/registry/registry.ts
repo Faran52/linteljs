@@ -28,7 +28,6 @@ import {
 
 import type { TestProject } from 'vitest/node';
 
-// The registry and the handle that stops it, so a caller cannot take one without the other.
 interface StartedRegistry {
   registry: E2eRegistry;
   stop: () => void;
@@ -40,7 +39,6 @@ export interface E2eRegistry {
   cliBin: string;
   // Persists between runs: the registry's storage, and the caches keyed by the bytes they hold.
   cacheDir: string;
-  // Wiped at the start of every run, for anything recording which versions exist.
   runDir: string;
 }
 
@@ -50,17 +48,12 @@ declare module 'vitest' {
   }
 }
 
-/**
- * bun's cache is the one that cannot tell "these bytes" from "these versions exist". Only `@linteljs/*` is
- * republished under a version a cached manifest cannot know about, so only `@linteljs/*` has to go. Anything this
- * misses fails loudly rather than quietly: `verifyLintOutput` asserts the resolved version is this run's.
- */
+// bun's cache cannot tell these bytes from these versions exist, and only `@linteljs/*` is republished.
 const pruneBunCache = (): void => {
   const cache = join(CACHE_DIR, 'bun');
 
   mkdirSync(cache, { recursive: true });
 
-  // A scope directory, a flattened `@linteljs%2f*` entry and a `.npm` manifest beside it all carry the scope.
   for (const name of readdirSync(cache)
     .filter((entry) => {
       return entry.includes('@linteljs');
@@ -72,8 +65,7 @@ const pruneBunCache = (): void => {
   }
 };
 
-// A verdaccio orphaned by a killed run still answers `-/ping`, so `waitForPing` would pass against a registry serving
-// a directory this run has just deleted, and every later request is refused. Fail on the clash instead.
+// An orphaned verdaccio still answers `-/ping` while serving a directory this run deleted.
 const requireFreePort = async (port: number): Promise<void> => {
   await new Promise<void>((resolve, reject) => {
     const probe = createServer();
@@ -137,11 +129,7 @@ const createVersion = (): string => {
   return version;
 };
 
-/**
- * Unique, increasing, and inside the `^2.0.0` a generated project asks for. Not a prerelease: `2.0.0-e2e.x` sorts
- * below `2.0.0` and satisfies no caret, so every install would resolve nothing. A patch of the current second
- * satisfies the range and is always the highest, so `maxSatisfying` picks this run's build.
- */
+// Not a prerelease: `2.0.0-e2e.x` sorts below `2.0.0` and satisfies no caret.
 const runVersion = (base: string): string => {
   const [major, minor] = base.split('.');
 
@@ -152,11 +140,7 @@ const runVersion = (base: string): string => {
   return `${major}.${minor}.${String(Math.floor(Date.now() / 1000))}`;
 };
 
-/**
- * A version no run has published before. A version published once can never go stale, so every directory recording
- * which tarball a version resolved to can persist.
- * `workspace:*` between the three resolves to whatever is published, so they move together.
- */
+// A version published once never goes stale, so every resolution cache can persist.
 const publishedAs = (version: string, publish: () => void): void => {
   const originals = WORKSPACE_MANIFESTS
     .map((path) => {
@@ -180,15 +164,8 @@ const publishedAs = (version: string, publish: () => void): void => {
   }
 };
 
-/**
- * A registry holding the workspace versions in front of npmjs, so an install resolves `@linteljs/*` to what is
- * checked out and everything else to the real thing. Nothing published is ever consulted for this scope.
- *
- * Exported apart from `setup` because the suite is not its only caller: `scripts/collect-builds/collectBuildsScript.ts`
- * needs the same registry and the same freshly published CLI, and duplicating a hundred lines of verdaccio wiring to
- * get them is how the two drift.
- */
-// `E2E_UPSTREAM` stands in for npmjs, for a machine whose network cannot reach it but can reach a mirror.
+// Exported apart from `setup`: `collectBuildsScript.ts` needs the same registry and CLI.
+// `E2E_UPSTREAM` stands in for npmjs where only a mirror is reachable.
 export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {
   return [
     `storage: ${storage}`,
@@ -214,11 +191,7 @@ export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string =>
 };
 
 export const startRegistry = async (): Promise<StartedRegistry> => {
-  /**
-   * Outside `RUN_DIR`, so it survives the wipe. One npmjs tarball is stored once and served to every manager,
-   * which all speak the registry protocol, and verdaccio rewrites `dist.tarball` per request rather than storing a
-   * port. Measured: the same storage on a different port with the uplink unreachable still serves both.
-   */
+  // Outside `RUN_DIR`; verdaccio rewrites `dist.tarball` per request, so storage survives a port change.
   const storage = join(CACHE_DIR, 'registry');
 
   rmSync(RUN_DIR, {
@@ -250,7 +223,7 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
     check('pnpm', ['-r', 'publish', '--registry', url, '--no-git-checks'], ROOT);
   });
 
-  // Installed from the registry like a user's `create @linteljs`, so the bin runs on its published dependency tree.
+  // Installed from the registry like a user's `create @linteljs`, on its published dependency tree.
   const cliDir = join(RUN_DIR, 'cli');
 
   mkdirSync(cliDir, { recursive: true });
@@ -276,7 +249,6 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
   };
 };
 
-// The vitest half: `globalSetup` hands the registry to every case through `inject`.
 export const setup = async (project: TestProject): Promise<() => void> => {
   const { registry, stop } = await startRegistry();
 

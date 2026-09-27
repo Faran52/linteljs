@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { execPath } from 'node:process';
 import { promisify } from 'node:util';
 
-// The slice of ESLint's JSON formatter this reads, written out because the majors under test predate its types.
+// Written out because the majors under test predate its types.
 export interface LintMessage {
   ruleId: string | null;
   fatal?: boolean;
@@ -25,7 +25,7 @@ const streamOf = (error: unknown, name: 'stderr' | 'stdout'): string => {
   return typeof value === 'string' ? value : '';
 };
 
-// ESLint exits non-zero whenever it reports, the expected path here; only output that will not parse fails.
+// ESLint exits non-zero whenever it reports; only output that will not parse fails.
 export const lintResultOf = async (args: string[], cwd: string): Promise<LintResult> => {
   let stdout: string;
 

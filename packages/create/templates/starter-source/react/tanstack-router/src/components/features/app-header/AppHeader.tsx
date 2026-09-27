@@ -10,11 +10,7 @@ export interface AppHeaderProps {
   readonly name: string;
 }
 
-/*
- * With a router the tabs are links and the address bar follows. An element that navigates is an anchor and one
- * that swaps a view is a button, so the no-router build renders buttons instead: faking the first with the second
- * breaks middle-click and lies about where you are.
- */
+// An element that navigates is an anchor; faking one with a button breaks middle-click.
 export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
   return (
     <header {...styles.header}>

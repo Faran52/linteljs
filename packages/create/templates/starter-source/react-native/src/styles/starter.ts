@@ -1,13 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-/*
- * The starter's own styles, as a `StyleSheet` rather than the stylesheet every other target ships: React Native has
- * no CSS and no cascade, so a token is a value in this file and a rule is an object. The names match the classes
- * used everywhere else, which is what keeps the two readable side by side.
- *
- * Two sheets, not one: `StyleSheet.create` infers one kind for the whole call, so a text rule and a view rule in
- * the same object leave every entry typed as whichever it settled on.
- */
+// Two sheets: `StyleSheet.create` infers one kind for the whole call, so text and view rules would clash.
 export const colors = {
   background: '#0b0d0e',
   card: '#14181a',
@@ -37,8 +30,7 @@ export const layout = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  // Named here rather than written inline: the navigator types its own style as an animated one, and an object
-  // literal handed straight to it is checked against that union instead of against a view.
+  // Named: the navigator types its style as animated, and an inline literal is checked against that union.
   tabBar: {
     backgroundColor: colors.card,
     borderTopColor: colors.border,

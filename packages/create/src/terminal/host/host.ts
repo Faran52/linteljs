@@ -28,8 +28,7 @@ export interface Host {
   nodeVersion: string;
 }
 
-// The manager that invoked this CLI, which is the one a generated project keeps: the user agent that manager sets,
-// else the lockfile the directory already has, else npm, which is what a bare `node .../create` is.
+// The user agent, else the lockfile, else npm, which is what a bare `node .../create` is.
 const detectedManager = async (cwd: string): Promise<DetectedManager> => {
   const fromAgent = managerFromUserAgent(env['npm_config_user_agent']);
 
@@ -50,13 +49,12 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
     }) ?? 'npm';
 
   return {
-    // `yarn.lock` names yarn without saying which one, and the two are different managers here.
+    // `yarn.lock` does not say which yarn, and the two are different managers here.
     name: found === 'yarn' ? yarnFromLockfile(await readIfPresent(join(cwd, 'yarn.lock'))) : found,
     version: undefined,
   };
 };
 
-// A fresh run records the host: `packageManager` on the answers is a placeholder until here.
 export const hosted = (answers: Answers, host: Host): HostedAnswers => {
   return {
     ...answers,
@@ -66,11 +64,7 @@ export const hosted = (answers: Answers, host: Host): HostedAnswers => {
   };
 };
 
-/**
- * A config already recorded a manager, so it wins and the host fills only what a config written before these were
- * recorded lacks. The version fills only where the two agree on the manager: this machine's pnpm version says
- * nothing about a project that records npm, and `packageManager` would then name a version that manager never had.
- */
+// The version fills only where the two agree on the manager.
 export const filled = (answers: Answers, host: Host): HostedAnswers => {
   const sameManager = answers.packageManager === host.packageManager;
 
@@ -83,11 +77,7 @@ export const filled = (answers: Answers, host: Host): HostedAnswers => {
   };
 };
 
-/**
- * The machine this run records, or the one sentence that stops it: the manager that invoked the CLI has to be one a
- * project of ours can be installed by, and the Node a generated project will run on has to be one this CLI can write
- * for. Answered rather than thrown, like `argumentError`, and asked before the questionnaire.
- */
+// Answered rather than thrown, and asked before the questionnaire.
 export const hostOf = async (cwd: string): Promise<Host | string> => {
   const manager = await detectedManager(cwd);
   const packageManagerVersion = manager.version ?? packageManagerSpawn(manager.name);
@@ -102,7 +92,7 @@ export const hostOf = async (cwd: string): Promise<Host | string> => {
     return wrongManager;
   }
 
-  // bun runs this CLI itself, so `versions.node` there is the Node bun bundles rather than the one a project runs on.
+  // bun's `versions.node` is the Node it bundles, not the one a project runs on.
   const nodeVersion = versions['bun'] === undefined ? versions.node : nodeSpawn();
 
   if (nodeVersion === undefined) {

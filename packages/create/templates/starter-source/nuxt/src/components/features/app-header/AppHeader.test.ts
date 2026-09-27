@@ -5,10 +5,6 @@ import { PAGES } from '../../../config/routes';
 
 import AppHeader from './AppHeader.vue';
 
-/*
- * A real vue-router, because `useRoute` is what marks the tab you are on, with `NuxtLink` stubbed: it is Nuxt's
- * own component and only its build provides it, and what this suite is about is the list, not the prefetch.
- */
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   const router = createRouter({
     history: createMemoryHistory(),
@@ -38,10 +34,6 @@ const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   });
 };
 
-/*
- * Found by role and by the nav around them rather than by class: under StyleX a class is a compiled atomic
- * name, so a suite that spelled one would be testing the styling answer instead of the markup.
- */
 describe('AppHeader', () => {
   it('names the project and links every page on the one route list', async () => {
     const header = await open('/');
