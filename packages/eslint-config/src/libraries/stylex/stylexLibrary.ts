@@ -84,23 +84,11 @@ export const stylex = (): Layer => {
             }];
           })),
       }],
-      // Stryker disable ObjectLiteral: each restates what StyleX falls back to, pinned across its majors
-      '@stylexjs/valid-shorthands': ['error', {
-        validImports: VALID_IMPORTS,
-        allowImportant: false,
-        preferInline: false,
-      }],
-      '@stylexjs/no-unused': ['error', { validImports: VALID_IMPORTS }],
-      '@stylexjs/no-conflicting-props': ['error', { validImports: VALID_IMPORTS }],
-      '@stylexjs/no-legacy-contextual-styles': ['error', { validImports: VALID_IMPORTS }],
-      '@stylexjs/enforce-extension': ['error', {
-        validImports: VALID_IMPORTS,
-        // Stryker disable next-line StringLiteral: StyleX reads an empty extension as its `.stylex` default
-        themeFileExtension: '.stylex',
-        legacyAllowMixedExports: false,
-        enforceDefineConstsExtension: false,
-      }],
-      // Stryker restore ObjectLiteral
+      '@stylexjs/valid-shorthands': 'error',
+      '@stylexjs/no-unused': 'error',
+      '@stylexjs/no-conflicting-props': 'error',
+      '@stylexjs/no-legacy-contextual-styles': 'error',
+      '@stylexjs/enforce-extension': 'error',
     },
   }];
 };

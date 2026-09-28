@@ -19,6 +19,8 @@ const SVELTEKIT_ROUTE_FILES = [
 // `$lib` is a `svelte-kit sync` output that may not exist yet; `$app`/`$env` have no file at all.
 const SVELTEKIT_VIRTUAL_MODULES = [String.raw`^\$lib/`, ...VIRTUAL_MODULES];
 
+const SVELTE_EXTENSION = '.svelte';
+
 // After `typescript()`, like `vue()`: `svelte-eslint-parser` is top-level and nests TypeScript beneath it.
 export const svelte = (): Layer => {
   return [
@@ -42,12 +44,11 @@ export const svelte = (): Layer => {
     {
       name: '@linteljs/svelte',
       // Not `.svelte.js`: `typescript()` turns type-aware rules off every `.js` file.
-      files: ['**/*.svelte', '**/*.svelte.ts'],
+      files: [`**/*${SVELTE_EXTENSION}`, `**/*${SVELTE_EXTENSION}.ts`],
       languageOptions: {
         parserOptions: {
           parser: tseslint.parser,
-          // Stryker disable next-line StringLiteral: an empty extension matches every file, so this one is typed anyway
-          extraFileExtensions: ['.svelte'],
+          extraFileExtensions: [SVELTE_EXTENSION],
           // As in `vue()`: the type-aware rules have no `files` glob, `projectService` does.
           projectService: true,
         },

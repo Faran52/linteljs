@@ -5,6 +5,7 @@ import {
   functionOf,
   messagesForFile,
   ownBlockNames,
+  ruleIdsFor,
   ruleIdsForFile,
   ruleIdsForSfc,
   SFC_FIXTURES,
@@ -69,6 +70,13 @@ describe('vue', () => {
 
     expect(ruleIds).toContain('@linteljs/union-newline');
     expect(ruleIds).toContain('@linteljs/no-inline-object-types');
+  });
+
+  it('leaves a plain .js file to parse untyped', async () => {
+    const layer = [...base(), ...typescript(), ...vue()];
+    const ruleIds = await ruleIdsFor(layer, 'export const value = 1;\n', 'src/lib/value.js');
+
+    expect(ruleIds).not.toContain(null);
   });
 
   it('lets a .ts file pass an imported component along', async () => {

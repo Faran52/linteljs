@@ -16,7 +16,7 @@ const config = {
     '!src/index.ts',
   ],
 
-  // 100% with its equivalent mutants disabled in place; `break` sits under it so the weekly audit flags a regression.
+  // `break` sits under 100 so the weekly audit flags a regression.
   thresholds: {
     high: 100,
     low: 99,

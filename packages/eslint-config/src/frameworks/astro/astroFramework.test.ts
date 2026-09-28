@@ -132,6 +132,14 @@ describe('astro', () => {
     expect(overLimit).toContain('max-lines-per-function');
   });
 
+  it('counts no IIFE in the frontmatter as a function', async () => {
+    const code = `---\n(() => {\n${codeLines(351, '  ')}})();\n---\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...astro()], code, 'src/components/Big.astro');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain('max-lines-per-function');
+  });
+
   it('counts neither blank lines nor comments in a component file', async () => {
     const padded = `---\n${codeLines(347)}\n// a note\n\n---\n\n<main></main>\n`;
     const ruleIds = await ruleIdsFor([...base(), ...astro()], padded, 'src/components/Big.astro');

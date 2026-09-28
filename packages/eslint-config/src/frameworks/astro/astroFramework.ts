@@ -55,8 +55,6 @@ export const astro = (): Layer => {
           max: 350,
           skipBlankLines: true,
           skipComments: true,
-          // Stryker disable next-line BooleanLiteral: restates the plugin default, pinned across its majors
-          IIFEs: false,
         }],
       },
     },

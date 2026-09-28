@@ -8,7 +8,9 @@ import type { Layer } from '../../types';
 
 export const vueGroup: string[] = ['^vue$', '^vue-router$', '^pinia$', '^@vue/'];
 
-const VUE_FILES = ['**/*.vue'];
+const VUE_EXTENSION = '.vue';
+
+const VUE_FILES = [`**/*${VUE_EXTENSION}`];
 
 // After `typescript()`: `vue-eslint-parser` is the top-level SFC parser, and placed earlier it is overwritten.
 export const vue = (): Layer => {
@@ -24,8 +26,7 @@ export const vue = (): Layer => {
       languageOptions: {
         parserOptions: {
           parser: tseslint.parser,
-          // Stryker disable next-line StringLiteral: an empty extension matches every file, so this one is typed anyway
-          extraFileExtensions: ['.vue'],
+          extraFileExtensions: [VUE_EXTENSION],
           // `typescript()` scopes `projectService` to `.ts`; see `sfc-import-seam` below.
           projectService: true,
         },

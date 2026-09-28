@@ -310,6 +310,14 @@ describe('base: unused imports', () => {
     expect(ruleIds).not.toContain('@typescript-eslint/no-unused-vars');
     expect(ruleIds).not.toContain('no-unused-vars');
   });
+
+  it('forgives an unused parameter ahead of a used one, and reports one after the last used', async () => {
+    const leading = await ruleIdsFor(base(), 'export const pick = (first, second) => second;\n', TS_FILE);
+    const trailing = await ruleIdsFor(base(), 'export const pick = (first, second) => first;\n', TS_FILE);
+
+    expect(leading).not.toContain('unused-imports/no-unused-vars');
+    expect(trailing).toContain('unused-imports/no-unused-vars');
+  });
 });
 
 describe('base: duplicate imports', () => {
@@ -528,6 +536,13 @@ describe('base: presets', () => {
 });
 
 describe('base: size', () => {
+  it('counts no IIFE as a function', async () => {
+    const ruleIds = await ruleIdsFor(base(), `(() => {\n${codeLines(351, '  ')}})();\n`, TS_FILE);
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain('max-lines-per-function');
+  });
+
   const FILE_RULE = 'max-lines';
   const FUNCTION_RULE = 'max-lines-per-function';
 

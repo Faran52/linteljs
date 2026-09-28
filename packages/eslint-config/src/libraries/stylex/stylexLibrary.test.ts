@@ -151,6 +151,36 @@ describe('stylex', () => {
       .resolves.toContain('@stylexjs/no-conflicting-props');
   });
 
+  it.each([
+    ['@stylexjs/valid-shorthands', moduleWith("padding: '1px 2px'"), 'src/components/card/styles.ts'],
+    [
+      '@stylexjs/no-unused',
+      `${IMPORT}\n\nconst sheet = stylex.create({ card: { color: 'red' }, unused: { color: 'blue' } });\n\n`
+      + 'export const styles = { card: stylex.props(sheet.card) };\n',
+      'src/components/card/styles.ts',
+    ],
+    [
+      '@stylexjs/no-legacy-contextual-styles',
+      moduleWith("color: 'red', ':hover': { color: 'blue' }"),
+      'src/card/styles.ts',
+    ],
+    [
+      '@stylexjs/no-conflicting-props',
+      `${IMPORT}\n\nconst sheet = stylex.create({ card: { color: 'red' } });\n\n`
+      + 'export const Card = () => {\n  return <div {...stylex.props(sheet.card)} className="card">x</div>;\n};\n',
+      'src/components/Card.tsx',
+    ],
+    [
+      '@stylexjs/enforce-extension',
+      `${IMPORT}\n\nexport const tokens = stylex.defineVars({ primary: 'var(--primary)' });\n`,
+      'src/styles/tokens.ts',
+    ],
+  ])('reports %s under the legacy stylex import too', async (rule, code, path) => {
+    const legacy = code.replace("'@stylexjs/stylex'", "'stylex'");
+
+    await expect(ruleIdsFor(layer, legacy, path)).resolves.toContain(rule);
+  });
+
   it('reports tokens defined outside a .stylex.ts file', async () => {
     const code = `${IMPORT}\n\nexport const tokens = stylex.defineVars({ primary: 'var(--primary)' });\n`;
 
