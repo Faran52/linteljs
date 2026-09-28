@@ -6,7 +6,7 @@ on:
   schedule:
     # Sunday 03:17 UTC: nothing releases at the weekend, and an odd minute avoids the on-the-hour queue.
     - cron: '17 3 * * 0'
-    # Wednesday runs only create, so its caches are read before seven idle days evict them.
+    # Wednesday runs only the mutation jobs, so their caches are read before seven idle days evict them.
     - cron: '17 3 * * 3'
   workflow_dispatch:
 
@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   eslint-plugin:
-    name: eslint-plugin fixers, options, mutants and negatives over real code
+    name: eslint-plugin fixers, options and negatives over real code
     if: github.event.schedule != '17 3 * * 3'
     runs-on: ubuntu-latest
     permissions:
@@ -84,13 +84,6 @@ jobs:
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run audit:options "$CORPUS" "$GITHUB_WORKSPACE/node_modules" 2>&1 | tee reports/audit-options.log
 
-      # Not `ignoreStatic`: the static mutants are what `ruleModules.test.ts` exists to kill.
-      - name: Tests still kill the mutants
-        # Without this a finding in the fix pass skipped this step.
-        if: ${{ !cancelled() }}
-        shell: bash
-        run: pnpm --filter @linteljs/eslint-plugin run mutation 2>&1 | tee reports/mutation.log
-
       - name: Rules still catch what they claim to
         if: ${{ !cancelled() }}
         shell: bash
@@ -104,9 +97,55 @@ jobs:
           path: reports/*.log
           retention-days: 30
 
+  eslint-plugin-mutants:
+    name: eslint-plugin mutants
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Each part is a quarter of the 75 minutes a whole cold run took.
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [rules-a, rules-b, rules-c, rest]
+    env:
+      STRYKER_PART: ${{ matrix.part }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26.10.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: packages/eslint-plugin/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
+          key: stryker-eslint-plugin-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            stryker-eslint-plugin-${{ matrix.part }}-
+
+      # Not `ignoreStatic`: the static mutants are what `ruleModules.test.ts` exists to kill.
+      - name: Tests still kill the mutants
+        shell: bash
+        run: pnpm --filter @linteljs/eslint-plugin run mutation 2>&1 | tee mutation.log
+
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: packages/eslint-plugin/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
+          key: stryker-eslint-plugin-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: eslint-plugin-${{ matrix.part }}-logs
+          path: mutation.log
+          retention-days: 30
+
   eslint-config:
     name: eslint-config mutants
-    if: github.event.schedule != '17 3 * * 3'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -122,10 +161,23 @@ jobs:
       # Suites import the sibling packages through their built `exports`.
       - run: pnpm build
 
+      - uses: actions/cache/restore@v4
+        with:
+          path: packages/eslint-config/node_modules/.cache/stryker-incremental.json
+          key: stryker-eslint-config-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            stryker-eslint-config-
+
       # ubuntu-latest has four cores; the config's six is sized for a laptop.
       - name: Tests still kill the mutants
         shell: bash
         run: pnpm --filter @linteljs/eslint-config run mutation --concurrency 3 2>&1 | tee mutation.log
+
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: packages/eslint-config/node_modules/.cache/stryker-incremental.json
+          key: stryker-eslint-config-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
@@ -144,7 +196,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [targets-a, targets-b, targets-c, targets-d, emitters-a, emitters-b, terminal-answers, rest]
+        part: [targets-a, targets-b, targets-c, targets-d, targets-e, emitters-a, emitters-b, terminal-answers, rest]
     env:
       STRYKER_PART: ${{ matrix.part }}
     steps:
