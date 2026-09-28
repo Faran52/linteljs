@@ -5,7 +5,6 @@ import {
 } from '../../utils/compatUtils.ts';
 import {
   createRule,
-  FUNCTION_TYPES,
   isIdentifierNamed,
   mustFind,
   optionsOf,
@@ -42,7 +41,12 @@ interface PropertyMatch {
   type: 'Property';
 }
 
+interface FunctionDeclarationMatch {
+  type: 'FunctionDeclaration';
+}
+
 type PropertyNode = Extract<RuleNode, PropertyMatch>;
+type FunctionDeclarationNode = Extract<RuleNode, FunctionDeclarationMatch>;
 
 const SKIPPED_PROPERTY_KINDS = new Set(['get', 'set']);
 
@@ -145,14 +149,15 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       const previous = sourceCode.getTokenBefore(fn);
       const walked = new Set<RuleNode>();
 
+      // Only a declaration is hoisted; one inside another function is called from there, once `fn` exists.
       // The Program holds `fn`, so the walk always stops before it runs out of parents.
-      const outermostFunctionOf = (reference: Scope.Reference): RuleNode | undefined => {
-        let outermost: RuleNode | undefined;
+      const outermostDeclarationOf = (reference: Scope.Reference): FunctionDeclarationNode | undefined => {
+        let outermost: FunctionDeclarationNode | undefined;
 
         let node = parentOf(reference);
 
         while (rangeOf(node)[0] > declarationStart) {
-          outermost = FUNCTION_TYPES.has(node.type) ? node : outermost;
+          outermost = node.type === 'FunctionDeclaration' ? node : outermost;
           node = mustFind(node.parent);
         }
 
@@ -173,16 +178,17 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return true;
         }
 
-        const outermost = outermostFunctionOf(reference);
+        const outermost = outermostDeclarationOf(reference);
 
-        if (outermost?.type !== 'FunctionDeclaration' || walked.has(outermost)) {
+        if (outermost === undefined || walked.has(outermost)) {
           return false;
         }
 
         walked.add(outermost);
 
-        // An anonymous default export has no name, and its parameters are only mentioned inside it.
-        return declaredVariablesOf(context, outermost)[0]?.references.some(runsEarly) ?? false;
+        // An anonymous default export has no name this file could call it by.
+        return getFunctionId(outermost) !== null
+          && mustFind(nameVariableOf(context, outermost)).references.some(runsEarly);
       };
 
       return nameVariable.references.some(runsEarly);

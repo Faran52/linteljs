@@ -446,6 +446,23 @@ class Holder {
       ],
     },
     {
+      code: 'function helper() {\n  return 1;\n}\n\nconst run = () => {\n  function inner() {\n'
+        + '    return helper();\n  }\n\n  return inner();\n};',
+      output: 'const helper = () => {\n  return 1;\n};\n\nconst run = () => {\n  const inner = () => {\n'
+        + '    return helper();\n  };\n\n  return inner();\n};',
+      errors: [
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrow' },
+      ],
+    },
+    {
+      code: 'const make = () => {\n  return new Service();\n};\n\nfunction helper() {\n  return 1;\n}\n\n'
+        + 'class Service {\n  run() {\n    return helper();\n  }\n}',
+      output: 'const make = () => {\n  return new Service();\n};\n\nconst helper = () => {\n  return 1;\n};\n\n'
+        + 'class Service {\n  run() {\n    return helper();\n  }\n}',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
       code: 'switch (key) {\n  case 0:\n    function helper() {\n      return 1;\n    }\n    break;\n'
         + '  case 1:\n    helper();\n}',
       output: null,
