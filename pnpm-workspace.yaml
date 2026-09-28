@@ -24,7 +24,7 @@ catalog:
 
 packages:
   - 'packages/*'
-# The runner names tests with a space where vitest 5 matches ` > ` (stryker-js#6210, unmerged #6214).
-# On a bump, drop what the release carries.
+# The runner names tests with a space where vitest 5 matches ` > ` (stryker-js#6210, unmerged #6214),
+# and reads a suite whose import threw as passing. On a bump, drop what the release carries.
 patchedDependencies:
   '@stryker-mutator/vitest-runner@10.0.0': patches/@stryker-mutator__vitest-runner@10.0.0.patch
