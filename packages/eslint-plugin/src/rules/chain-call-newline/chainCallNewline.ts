@@ -62,15 +62,13 @@ interface Gap {
   indent: string;
 }
 
-// Keyed by line: each break's new indent, and what each argument line gains ahead of its own indent.
-// `undo` takes back a nested chain whose lines do not fit.
+// Keyed by line. A shift is indent added ahead of the line's own.
 interface Plan {
   gaps: Map<number, Gap[]>;
   shifts: Map<number, string>;
   undo: (() => void)[];
 }
 
-// Whether a chain went into the plan, and the index past every chain nested in it.
 interface Folded {
   fits: boolean;
   after: number;
@@ -255,7 +253,6 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return plan.gaps.get(line) ?? [];
     };
 
-    // Where a token lands once `plan` applies: behind the last break ahead of it on its line, else on its line shifted.
     const indentAt = (plan: Plan, token: AST.Token | RuleNode): string => {
       const { start } = mustFind(token.loc, 'the location of a chained token');
       const [offset] = mustFind(token.range, 'the range of a chained token');
@@ -388,11 +385,8 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return mustFind(chainAt(index).top.range, 'the range of a chain')[0];
     };
 
-    /**
-     * A chain nested in this one's arguments folds in, or waits for a later pass along with every chain inside it.
-     * One in the head is left alone: it ends before this fix begins, so it lands in the same pass already.
-     * This chain's own lines are measured last, since a nested chain's breaks can shorten them.
-     */
+    // A chain in the head ends before this fix begins, so it lands in the same pass unfolded.
+    // Own lines are measured last: a nested chain's breaks can shorten them.
     const fold = (plan: Plan, index: number): Folded => {
       const chain = chainAt(index);
       const [, end] = mustFind(chain.top.range, 'the range of a chain');
