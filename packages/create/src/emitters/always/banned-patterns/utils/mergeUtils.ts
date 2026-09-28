@@ -1,23 +1,20 @@
 // Preserving the checker froze its pattern list and emitting it deleted the project's blocks, so both merge.
 
-// Whole lines, since a reason quoting `arr[0];` would end it early.
+// Whole lines, anchored to a line's start, since a comment or a longer name can hold the same text.
 const blockOf = (source: string, name: string): string | null => {
-  const opening = source.indexOf(`const ${name}`);
+  const opening = new RegExp(`^const ${name}\\b.*$`, 'mu').exec(source);
 
-  if (opening === -1) {
+  if (opening === null) {
     return null;
   }
 
-  const rest = source.slice(opening);
-  // `split` with a limit of one answers exactly one element for any string.
-  const declaration = rest
-    .split('\n', 1)
-    .join('');
+  const [declaration] = opening;
 
   if (declaration.includes('];')) {
     return declaration;
   }
 
+  const rest = source.slice(opening.index);
   const closing = rest.indexOf('\n];');
 
   return closing === -1 ? null : rest.slice(0, closing + 3);

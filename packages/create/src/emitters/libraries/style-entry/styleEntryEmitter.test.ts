@@ -92,6 +92,18 @@ describe('mergeStyleEntry', () => {
 
     expect(mergeStyleEntry(once)).toBe(once);
   });
+
+  it('adds a line that is not an @import', () => {
+    expect(mergeStyleEntry('a {}\n', ['@layer base;'])).toContain('@layer base;');
+  });
+
+  it('does not repeat an import spelled with two spaces', () => {
+    expect(mergeStyleEntry('@import  "./a.css";\n', ['@import  "./a.css";'])).toBe('@import  "./a.css";\n');
+  });
+
+  it('reads a dot in a specifier as a dot, not as any character', () => {
+    expect(mergeStyleEntry('@import "./aXcss";\n', ['@import "./a.css";'])).toContain('@import "./a.css";');
+  });
 });
 
 describe('an entry that already imports tailwind another way', () => {

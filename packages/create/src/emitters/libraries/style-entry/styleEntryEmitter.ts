@@ -10,20 +10,29 @@ import { merged } from '../../utils/artifactUtils';
 import { projectSpelling } from '../../utils/shapeUtils';
 
 import {
+  IMPORT_SPECIFIER,
   IMPORTS_TAILWIND,
   STYLEX_AT_RULE,
   TAILWIND_IMPORT,
 } from './constants';
 
-// Tailwind by pattern: a project may have written it in any of four spellings.
+const specifiersIn = (text: string): (string | undefined)[] => {
+  return [...text.matchAll(IMPORT_SPECIFIER)]
+    .map(([, specifier]) => {
+      return specifier;
+    });
+};
+
+// Tailwind by pattern: a project may have written it in any of four spellings. Others by the specifier's
+// exact text, so a `.` in it matches only a `.`.
 const alreadyImported = (current: string, line: string): boolean => {
   if (IMPORTS_TAILWIND.test(line)) {
     return IMPORTS_TAILWIND.test(current);
   }
 
-  const specifier = /@import\s+["']([^"']+)["']/.exec(line)?.[1];
+  const [specifier] = specifiersIn(line);
 
-  return specifier !== undefined && new RegExp(`@import\\s+["']${specifier}["']`).test(current);
+  return specifiersIn(current).includes(specifier);
 };
 
 export const mergeStyleEntry = (

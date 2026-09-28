@@ -5,3 +5,5 @@ export const STYLEX_AT_RULE = '@stylex;';
 
 // `@import url("tailwindcss") source(none)` once read as no import.
 export const IMPORTS_TAILWIND = /@import\s+(?:url\(\s*)?['"]tailwindcss(?:\/[^'"]*)?['"]/;
+
+export const IMPORT_SPECIFIER = /@import\s+["']([^"']+)["']/gu;

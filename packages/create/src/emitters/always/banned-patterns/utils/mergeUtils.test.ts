@@ -52,6 +52,26 @@ describe('mergeChecker', () => {
     expect(mergeChecker(SHIPPED, current)).not.toContain('old();');
   });
 
+  it('takes the block that opens a line, not one a comment names first', () => {
+    const current = withBlocks(
+      "// const PROJECT_SKIPPED: string[] = ['src/old.ts'];\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];",
+      'const PROJECT_BANNED: Banned[] = [];',
+    );
+
+    expect(mergeChecker(SHIPPED, current)).toContain("\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
+    expect(mergeChecker(SHIPPED, current)).not.toContain("const PROJECT_SKIPPED: string[] = ['src/old.ts'];");
+  });
+
+  it('takes the block of that exact name, not a longer one declared ahead of it', () => {
+    const current = withBlocks(
+      "const PROJECT_SKIPPED_LEGACY: string[] = ['src/old.ts'];\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];",
+      'const PROJECT_BANNED: Banned[] = [];',
+    );
+
+    expect(mergeChecker(SHIPPED, current)).toContain("\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
+    expect(mergeChecker(SHIPPED, current)).not.toContain('PROJECT_SKIPPED_LEGACY');
+  });
+
   it('reads a multi-line block to its own closing bracket, not to a semicolon inside a reason', () => {
     const skipped = [
       'const PROJECT_SKIPPED: string[] = [',
