@@ -51,9 +51,11 @@ interface Break {
   link: Link;
 }
 
+// `last` is the index of the last chain collected inside this one, itself when none is.
 interface Chain {
   top: RuleNode;
   breaks: Break[];
+  last: number;
 }
 
 interface Gap {
@@ -66,7 +68,6 @@ interface Gap {
 interface Plan {
   gaps: Map<number, Gap[]>;
   shifts: Map<number, string>;
-  undo: (() => void)[];
 }
 
 type Edit = [AST.Range, string];
@@ -243,25 +244,36 @@ export const chainCallNewline = createRule('chain-call-newline', {
     const insideTokens = linesInsideTokens(sourceCode);
     const insideComments = linesInsideComments();
     const chains: Chain[] = [];
+    const byTop = new Map<RuleNode, Chain>();
 
     const gapsOn = (plan: Plan, line: number): Gap[] => {
       return plan.gaps.get(line) ?? [];
     };
 
-    const indentAt = (plan: Plan, token: AST.Token | RuleNode): string => {
-      const { start } = mustFind(token.loc);
-      const [offset] = mustFind(token.range);
-      let indent = `${plan.shifts.get(start.line) ?? ''}${getIndent(sourceCode, token)}`;
-      let reached = -1;
+    const breakAt = (plan: Plan, token: AST.Token): Gap | undefined => {
+      return gapsOn(plan, token.loc.start.line)
+        .find((gap) => {
+          return gap.dot === token;
+        });
+    };
 
-      for (const gap of gapsOn(plan, start.line)) {
-        if (gap.range[1] <= offset && gap.range[1] > reached) {
-          reached = gap.range[1];
-          indent = gap.indent;
+    // The nearest break at or before the token on its line decides the indent it lands on.
+    const indentAt = (plan: Plan, token: AST.Token | RuleNode): string => {
+      const { line } = mustFind(token.loc).start;
+
+      for (
+        let current = sourceCode.getTokenByRangeStart(mustFind(token.range)[0]);
+        current !== null && current.loc.start.line === line;
+        current = sourceCode.getTokenBefore(current)
+      ) {
+        const gap = breakAt(plan, current);
+
+        if (gap) {
+          return gap.indent;
         }
       }
 
-      return indent;
+      return `${plan.shifts.get(line) ?? ''}${getIndent(sourceCode, token)}`;
     };
 
     // A link at the chain's own indent carries its argument lines a step right, as an indent rule would next.
@@ -305,28 +317,6 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return splitFit && (shift === '' || kept.trimEnd().length + shift.length <= maxLineLength);
     };
 
-    const record = <T>(plan: Plan, map: Map<number, T>, line: number, value: T): void => {
-      const previous = map.get(line);
-
-      plan.undo
-        .push(() => {
-          if (previous === undefined) {
-            map.delete(line);
-          }
-          else {
-            map.set(line, previous);
-          }
-        });
-
-      map.set(line, value);
-    };
-
-    const rollBack = (plan: Plan, mark: number): void => {
-      while (plan.undo.length > mark) {
-        mustFind(plan.undo.pop())();
-      }
-    };
-
     // Planned against the text `plan` leaves, so a chain in another's arguments settles in the same pass.
     const extend = (plan: Plan, { top, breaks }: Chain): number[] | undefined => {
       const outer = indentAt(plan, top);
@@ -358,11 +348,11 @@ export const chainCallNewline = createRule('chain-call-newline', {
       for (const gap of gaps) {
         const { line } = gap.dot.loc.start;
 
-        record(plan, plan.gaps, line, [...gapsOn(plan, line), gap]);
+        plan.gaps.set(line, [...gapsOn(plan, line), gap]);
       }
 
       for (const line of shifted) {
-        record(plan, plan.shifts, line, `${step}${plan.shifts.get(line) ?? ''}`);
+        plan.shifts.set(line, `${step}${plan.shifts.get(line) ?? ''}`);
       }
 
       return gaps
@@ -376,8 +366,14 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return mustFind(chains[index]);
     };
 
-    const startOf = (index: number): number => {
-      return mustFind(chainAt(index).top.range)[0];
+    const within = (node: RuleNode, container: object): boolean => {
+      for (let current: RuleNode | null = node; current !== null; current = current.parent) {
+        if (current === container) {
+          return true;
+        }
+      }
+
+      return false;
     };
 
     // A later chain on a line this plan breaks moves with the break.
@@ -389,14 +385,16 @@ export const chainCallNewline = createRule('chain-call-newline', {
     // Own lines are measured last: a nested chain's breaks can shorten them.
     const fold = (plan: Plan, index: number): number => {
       const chain = chainAt(index);
-      const [, end] = mustFind(chain.top.range);
-      const firstDot = mustFind(chain.breaks[0]).dot.range[0];
-      const mark = plan.undo.length;
+      const head = mustFind(chain.breaks[0]).link.start.object;
+      const saved = {
+        gaps: new Map(plan.gaps),
+        shifts: new Map(plan.shifts),
+      };
       const touched = extend(plan, chain);
       let after = index + 1;
 
-      while (after < chains.length && startOf(after) < end) {
-        if (touched && startOf(after) >= firstDot) {
+      while (after <= chain.last) {
+        if (touched && !within(chainAt(after).top, head)) {
           after = fold(plan, after);
         }
         else {
@@ -410,7 +408,8 @@ export const chainCallNewline = createRule('chain-call-newline', {
         });
 
       if (fits !== true) {
-        rollBack(plan, mark);
+        plan.gaps = saved.gaps;
+        plan.shifts = saved.shifts;
 
         return after;
       }
@@ -426,7 +425,6 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const plan: Plan = {
         gaps: new Map(),
         shifts: new Map(),
-        undo: [],
       };
 
       fold(plan, index);
@@ -461,7 +459,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
       const links = chainLinksOf(top, chain);
 
-      if (links.length < 2 && !links.some(takesBlockCallback)) {
+      if (links.length === 1 && !takesBlockCallback(mustFind(links[0]))) {
         return;
       }
 
@@ -477,10 +475,22 @@ export const chainCallNewline = createRule('chain-call-newline', {
         });
 
       if (breaks.length > 0) {
-        chains.push({
+        const collected: Chain = {
           top,
           breaks,
-        });
+          last: chains.length,
+        };
+
+        chains.push(collected);
+        byTop.set(top, collected);
+      }
+    };
+
+    const close = (node: RuleNode): void => {
+      const closed = byTop.get(node);
+
+      if (closed) {
+        closed.last = chains.length - 1;
       }
     };
 
@@ -509,6 +519,9 @@ export const chainCallNewline = createRule('chain-call-newline', {
       'ChainExpression': (node) => {
         collect(node, node);
       },
+      'CallExpression:exit': close,
+      'MemberExpression:exit': close,
+      'ChainExpression:exit': close,
       'Program:exit': () => {
         for (const index of chains.keys()) {
           report(index);

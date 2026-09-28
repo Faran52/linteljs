@@ -408,13 +408,27 @@ tsxRuleTester.run('chain-call-newline', chainCallNewline, {
 });
 
 describe('the fix of a chain', () => {
-  it('stays inside its own chain when a later chain sits on a line it leaves alone', () => {
-    const code = 'let a, b;\nrun(a.map(f).filter(g));\nb.map(f).filter(g);\n';
-    const [first] = new Linter().verify(code, [{
+  const messagesFor = (code: string) => {
+    return new Linter().verify(code, [{
       plugins: { linteljs: { rules: { 'chain-call-newline': chainCallNewline } } },
       rules: { 'linteljs/chain-call-newline': 'error' },
     }]);
+  };
+
+  it('stays inside its own chain when a later chain sits on a line it leaves alone', () => {
+    const code = 'let a, b;\nrun(a.map(f).filter(g));\nb.map(f).filter(g);\n';
+    const [first] = messagesFor(code);
 
     expect(first?.fix?.range[1]).toBeLessThan(code.indexOf('\nb.'));
+  });
+
+  it('leaves a chain in its head to that chain\'s own fix', () => {
+    const code = 'let a;\nrun(a.map(f).filter(g)).then(h).catch(k);\n';
+    const outer = messagesFor(code)
+      .find(({ column }) => {
+        return column === 'run(a.map(f).filter(g))'.length + 1;
+      });
+
+    expect(outer?.fix?.range[0]).toBeGreaterThan(code.indexOf('.filter'));
   });
 });
