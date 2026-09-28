@@ -481,6 +481,18 @@ class Holder {
       ],
     },
     {
+      code: 'function helper() {\n  return 1;\n}\n\nfunction run(n) {\n  return helper() + first(n);\n}\n\n'
+        + 'function first(n) {\n  return second(n);\n}\n\nfunction second(n) {\n  return n && run(n - 1);\n}',
+      output: 'const helper = () => {\n  return 1;\n};\n\nconst run = (n) => {\n  return helper() + first(n);\n};\n\n'
+        + 'function first(n) {\n  return second(n);\n}\n\nfunction second(n) {\n  return n && run(n - 1);\n}',
+      errors: [
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrow' },
+        { messageId: 'preferArrowHoisted' },
+        { messageId: 'preferArrowHoisted' },
+      ],
+    },
+    {
       code: 'const eager = greet();\n\nfunction greet() {\n  return 1;\n}',
       output: null,
       errors: [{ messageId: 'preferArrowHoisted' }],
