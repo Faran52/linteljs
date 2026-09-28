@@ -27,9 +27,9 @@ const config = {
   // Stryker prefixes an `extends` with `../..`; naming no file keeps `../../tsconfig.json` as written.
   tsconfigFile: 'none',
 
-  // Every covering test runs, so a test that only repeats another's shows.
+  // Locally every covering test runs, so a test that only repeats another's shows; CI bails to stay in hours.
   coverageAnalysis: 'perTest',
-  disableBail: true,
+  disableBail: !process.env.CI,
 
   // All of `src` is 6986 mutants, over five hours; `--mutate` narrows a run.
   mutate: [
@@ -42,6 +42,13 @@ const config = {
     '!src/pipeline/e2e/targets/**',
     '!src/pipeline/e2e/utils/**',
   ],
+
+  // 77.9% on the last full run; `break` sits under it so the weekly audit flags a regression.
+  thresholds: {
+    high: 95,
+    low: 85,
+    break: 75,
+  },
 
   // Suites spawn git and node, which a loaded machine slows past the default.
   timeoutMS: 30000,

@@ -100,3 +100,76 @@ jobs:
           name: audit-logs
           path: reports/*.log
           retention-days: 30
+
+  config-mutation:
+    name: eslint-config tests kill the mutants
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26.10.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Suites import the sibling packages through their built `exports`.
+      - run: pnpm build
+
+      # ubuntu-latest has four cores; the config's six is sized for a laptop.
+      - name: Tests still kill the mutants
+        shell: bash
+        run: pnpm --filter @linteljs/eslint-config run mutation --concurrency 3 2>&1 | tee mutation.log
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: config-mutation-logs
+          path: mutation.log
+          retention-days: 30
+
+  create-mutation:
+    name: create tests kill the mutants
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # A cold run is over three hours even bailing; the cached incremental report re-mutates only what changed.
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26.10.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Suites import the sibling packages through their built `exports`.
+      - run: pnpm build
+
+      # A key per run and a prefix to restore from: the newest report seeds the next run.
+      - uses: actions/cache/restore@v4
+        with:
+          path: packages/create/node_modules/.cache/stryker-incremental.json
+          key: stryker-create-${{ github.run_id }}
+          restore-keys: |
+            stryker-create-
+
+      - name: Tests still kill the mutants
+        shell: bash
+        run: pnpm --filter @linteljs/create run mutation --concurrency 3 2>&1 | tee mutation.log
+
+      # Saved on failure too: a run that breaks the threshold still did the work the next one can skip.
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: packages/create/node_modules/.cache/stryker-incremental.json
+          key: stryker-create-${{ github.run_id }}
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: create-mutation-logs
+          path: mutation.log
+          retention-days: 30
