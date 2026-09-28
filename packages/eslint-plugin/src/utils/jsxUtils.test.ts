@@ -125,6 +125,10 @@ describe('findProp', () => {
     expect(hasProp([spread, accessible], ['accessibilityLabel'])).toBe(false);
   });
 
+  it('never answers a spread, whatever the names asked for', () => {
+    expect(findProp([spread], [''])).toBeUndefined();
+  });
+
   it('sees a spread', () => {
     expect(hasSpread([accessible])).toBe(false);
     expect(hasSpread([accessible, spread])).toBe(true);

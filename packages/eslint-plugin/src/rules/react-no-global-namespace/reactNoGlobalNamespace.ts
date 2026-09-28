@@ -194,7 +194,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
         for (const reach of group) {
           for (const target of reach.targets) {
-            targets.set(target.join(':'), [target, reach.name]);
+            targets.set(`${String(target[0])}:${String(target[1])}`, [target, reach.name]);
           }
 
           if (!reach.imported) {
@@ -242,10 +242,10 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
     return {
       'Program:exit': () => {
-        const groups = new Map<Located & Ranged, Reach[]>();
+        const groups = new Map<(Located & Ranged) | undefined, Reach[]>();
 
         for (const reach of reaches) {
-          if (!reach.collides && reach.anchor !== undefined) {
+          if (!reach.collides) {
             groups.set(reach.anchor, [...groups.get(reach.anchor) ?? [], reach]);
           }
         }

@@ -10,6 +10,7 @@ import {
   createRule,
   docsUrl,
   isDirective,
+  isIdentifierNamed,
   mustFind,
   optionsOf,
   rangeOf,
@@ -48,6 +49,23 @@ describe('isDirective', () => {
 
     expect(directive).toBe(false);
     expect(isDirective({ type: 'VariableDeclaration' })).toBe(false);
+  });
+});
+
+describe('isIdentifierNamed', () => {
+  it('answers for an identifier of that name only', () => {
+    expect(isIdentifierNamed({
+      type: 'Identifier',
+      name: 'stylex',
+    }, 'stylex')).toBe(true);
+    expect(isIdentifierNamed({
+      type: 'Identifier',
+      name: 'css',
+    }, 'stylex')).toBe(false);
+    expect(isIdentifierNamed({
+      type: 'PrivateIdentifier',
+      name: 'stylex',
+    }, 'stylex')).toBe(false);
   });
 });
 

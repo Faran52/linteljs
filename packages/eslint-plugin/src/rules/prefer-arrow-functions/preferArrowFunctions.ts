@@ -6,6 +6,7 @@ import {
 import {
   createRule,
   FUNCTION_TYPES,
+  isIdentifierNamed,
   mustFind,
   optionsOf,
   rangeOf,
@@ -71,10 +72,8 @@ const isStylexStyle = (fn: FunctionLike): boolean => {
 
   return call.type === 'CallExpression'
     && call.callee.type === 'MemberExpression'
-    && call.callee.object.type === 'Identifier'
-    && call.callee.object.name === 'stylex'
-    && call.callee.property.type === 'Identifier'
-    && call.callee.property.name === 'create';
+    && isIdentifierNamed(call.callee.object, 'stylex')
+    && isIdentifierNamed(call.callee.property, 'create');
 };
 
 const buildFrame = (fn: FunctionLike): FunctionFrame => {
@@ -234,12 +233,12 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         fix: rebuildLosesAComment
           ? null
           : (fixer) => {
-              const [start, end] = rangeOf(target);
-              const [bodyStart, bodyEnd] = rangeOf(fn.body);
+              const [start] = rangeOf(target);
+              const [bodyStart] = rangeOf(fn.body);
               const body = sourceCode.getText(fn.body);
 
               // A body kept verbatim stays out of the edit, so a fix nested inside it lands in the same pass.
-              return end === bodyEnd && replacement.endsWith(body)
+              return replacement.endsWith(body)
                 ? fixer.replaceTextRange([start, bodyStart], replacement.slice(0, -body.length))
                 : fixer.replaceText(target, replacement);
             },

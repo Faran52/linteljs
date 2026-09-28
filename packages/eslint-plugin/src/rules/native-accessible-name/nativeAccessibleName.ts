@@ -57,8 +57,8 @@ export const nativeAccessibleName = createRule('native-accessible-name', {
     }],
   },
   create: (context) => {
-    const { components = [] } = optionsOf<Options>(context);
-    const touchables = [...TOUCHABLE_COMPONENTS, ...components];
+    const { components } = optionsOf<Options>(context);
+    const touchables = components === undefined ? TOUCHABLE_COMPONENTS : [...TOUCHABLE_COMPONENTS, ...components];
 
     return {
       JSXElement: (node: RuleNode) => {

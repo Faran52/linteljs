@@ -99,6 +99,8 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       "const sheet = stylex['create']({ box: (width) => ({ width }) });",
       'const sheet = other.create({ box: (width) => ({ width }) });',
       'const sheet = stylex.keyframes({ box: (width) => ({ width }) });',
+      'class Sheet {\n  #create;\n\n  build(stylex) {\n'
+      + '    return stylex.#create({ box: (width) => ({ width }) });\n  }\n}',
       '(width) => ({ width });',
     ]
       .map((code) => {
