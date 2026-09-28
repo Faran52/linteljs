@@ -16,6 +16,8 @@ import { targetFor } from '@targets';
 
 import { copied } from '../../utils/artifactUtils';
 
+import { withoutClaudePaths } from './utils/frontmatterUtils';
+
 export interface RuleSource {
   name: string;
   sources: string[];
@@ -91,10 +93,6 @@ export const forAnswers = (answers: Answers, source: string): string => {
         : [];
     })
     .join('\n');
-};
-
-const withoutClaudePaths = (source: string): string => {
-  return source.replace(/^---\npaths:\n(?: {2}- .+\n)+---\n\n/u, '');
 };
 
 export const ruleSources = (answers: Answers): RuleSource[] => {

@@ -32,8 +32,8 @@ export const shippedAssetsReader = async (
   }
 
   const reads = content.sources
-    .map((source) => {
-      return readFile(join(TEMPLATES_ROOT, source), 'utf8');
+    .map(async (source) => {
+      return (await readFile(join(TEMPLATES_ROOT, source))).toString('utf8');
     });
 
   const parts = await Promise.all(reads);

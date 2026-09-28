@@ -19,6 +19,10 @@ describe('globsOf', () => {
     expect(globsOf('# No frontmatter here.\n')).toBe('');
   });
 
+  it('reads paths only from frontmatter that opens the file', () => {
+    expect(globsOf('# Title\n\n---\npaths:\n  - "src/**"\n---\n')).toBe('');
+  });
+
   it('expands every brace group, since both tools split the string on its commas', () => {
     expect(globsOf('---\npaths:\n  - "**/*.{test,spec}.{ts,tsx}"\n---\n'))
       .toBe('**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx');

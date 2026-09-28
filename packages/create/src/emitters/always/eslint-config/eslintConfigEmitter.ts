@@ -65,6 +65,10 @@ const arrayLiteral = (key: string, values: string[], level = 1): string => {
   return `[\n${entries.join('\n')}\n${indentOf(level)}]`;
 };
 
+const arrayRow = (key: OptionRow[0], values: string[]): OptionRow => {
+  return [key, arrayLiteral(key, values)];
+};
+
 const objectLiteral = (entries: [string, string][], level: number): string => {
   const inner = entries
     .map(([key, value]) => {
@@ -106,7 +110,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
     });
 
   if (layers.length > 0) {
-    rows.push(['libraries', arrayLiteral('libraries', layers)]);
+    rows.push(arrayRow('libraries', layers));
   }
 
   // Without the entry point `better-tailwindcss` warns once per class string: 63 on one real project.
@@ -123,14 +127,11 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['resolver', `{\n${indentOf(2)}conditionNames: ${conditions},\n${indentOf(1)}}`]);
   }
 
-  rows.push([
-    'ignores',
-    arrayLiteral('ignores', [
-      ...BASE_IGNORES,
-      ...target.ignores,
-      ...answers.ignores ?? [],
-    ]),
-  ]);
+  rows.push(arrayRow('ignores', [
+    ...BASE_IGNORES,
+    ...target.ignores,
+    ...answers.ignores ?? [],
+  ]));
   rows.push(['aliases', objectLiteral(Object.entries(buildAliases(answers)), 1)]);
   rows.push(['naming', objectLiteral(Object.entries(target.naming), 1)]);
   rows.push(['folderNaming', objectLiteral(Object.entries(target.folderNaming), 1)]);

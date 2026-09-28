@@ -406,7 +406,7 @@ describe('inquirerPrompter', () => {
     });
 
     expect(answer).toBe('react');
-    expect(vi.mocked(select).mock.calls[0]?.[0]).toEqual({
+    expect(vi.mocked(select).mock.calls[0]?.[0]).toStrictEqual({
       message: 'Framework',
       default: 'react',
       pageSize: 2,
@@ -445,7 +445,7 @@ describe('inquirerPrompter', () => {
     });
 
     expect(answer).toEqual(['zod']);
-    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toEqual({
+    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toStrictEqual({
       message: 'Libraries',
       required: false,
       pageSize: 2,

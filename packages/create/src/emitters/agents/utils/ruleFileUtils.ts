@@ -1,3 +1,5 @@
+import { basename } from 'node:path';
+
 import { type Answers, type Artifact } from '@config/types';
 
 import { forAnswers, ruleSources } from '../../always/linteljs-plugin/linteljsPluginEmitter';
@@ -40,7 +42,7 @@ const withoutFrontmatter = (source: string): string => {
 };
 
 const named = (name: string, suffix: string): string => {
-  return `${name.replace(/\.md$/u, '')}${suffix}`;
+  return `${basename(name, '.md')}${suffix}`;
 };
 
 // Cursor reads `.mdc` rules alone, so the repository-wide half is an `alwaysApply: true` rule.

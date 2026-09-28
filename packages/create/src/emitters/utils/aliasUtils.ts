@@ -9,7 +9,7 @@ import { targetFor } from '@targets';
 // The order is the dependency direction, so a sorted import block reads as the architecture.
 export const buildAliases = (answers: Answers): AliasMap => {
   const target = targetFor(answers);
-  const omitted = target.omitAliases ?? [];
+  const omitted = new Set(target.omitAliases);
 
   const all: AliasMap = {
     '@components/*': './src/components/*',
@@ -30,5 +30,5 @@ export const buildAliases = (answers: Answers): AliasMap => {
   };
 
   // Dropped at the end, to keep the order above intact.
-  return omit(all, omitted);
+  return omit(all, [...omitted]);
 };

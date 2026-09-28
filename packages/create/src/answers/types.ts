@@ -36,14 +36,14 @@ export interface OptionalChoiceRecord<V extends string = string> extends Base {
 
 export interface MultiRecord<V extends string = string> extends Base {
   kind: 'multi';
-  values: Record<V, ValueRecord>;
+  values: Record<V, Omit<ValueRecord, 'only'>>;
   default: V[];
   minimum?: number;
 }
 
 export interface OptionalMultiRecord<V extends string = string> extends Base {
   kind: 'optionalMulti';
-  values: Record<V, ValueRecord>;
+  values: Record<V, Omit<ValueRecord, 'only'>>;
   minimum?: number;
 }
 

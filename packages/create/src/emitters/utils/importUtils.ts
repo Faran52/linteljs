@@ -1,7 +1,7 @@
 import { partition } from 'es-toolkit';
 
 const specifierOf = (line: string): string => {
-  return line.replace(/^import .* from /, '');
+  return line.replace(/import .* from /, '');
 };
 
 // A generated project lints itself, so an emitted import block out of `simple-import-sort` order fails.

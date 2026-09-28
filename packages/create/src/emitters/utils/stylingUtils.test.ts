@@ -8,38 +8,32 @@ import { stylingPlugin } from './stylingUtils';
 
 describe('stylingPlugin', () => {
   it('runs tailwind through its own vite plugin', () => {
-    expect(stylingPlugin('tailwind')).toEqual({
+    expect(stylingPlugin('tailwind')).toStrictEqual({
       imports: ["import tailwindcss from '@tailwindcss/vite';"],
-      declarations: [],
-      calls: ['tailwindcss()'],
+      call: 'tailwindcss()',
     });
   });
 
   it('runs stylex through its own vite adapter, typed, in css layers', () => {
-    expect(stylingPlugin('stylex')).toEqual({
+    expect(stylingPlugin('stylex')).toStrictEqual({
       imports: [
         "import { type UserOptions } from '@stylexjs/unplugin';",
         "import stylexVite from '@stylexjs/unplugin/vite';",
         "import { type VitePlugin } from 'unplugin';",
       ],
-      declarations: ['const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;'],
-      calls: ['stylex({ useCSSLayers: true })'],
+      declaration: 'const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;',
+      call: 'stylex({ useCSSLayers: true })',
     });
   });
 
   it('takes the stylex adapter bare in a javascript config, which nothing type-lints', () => {
-    expect(stylingPlugin('stylex', 'js')).toEqual({
+    expect(stylingPlugin('stylex', 'js')).toStrictEqual({
       imports: ["import stylex from '@stylexjs/unplugin/vite';"],
-      declarations: [],
-      calls: ['stylex({ useCSSLayers: true })'],
+      call: 'stylex({ useCSSLayers: true })',
     });
   });
 
   it('adds nothing without a styling answer', () => {
-    expect(stylingPlugin(undefined)).toEqual({
-      imports: [],
-      declarations: [],
-      calls: [],
-    });
+    expect(stylingPlugin(undefined)).toStrictEqual({ imports: [] });
   });
 });

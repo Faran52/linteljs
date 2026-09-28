@@ -12,7 +12,6 @@ import {
   type SchemaVersion,
 } from '../constants';
 import {
-  type AnswerKey,
   ANSWERS,
   DEFAULT_ANSWERS,
   type LinteljsConfig,
@@ -25,7 +24,7 @@ import {
   readAnswer,
   unaskedValueOf,
 } from './readUtils';
-import { onlyFor } from './recordUtils';
+import { refusedValue } from './recordUtils';
 
 import type { Answers, Library } from '@config/types';
 import type { AnswerRecord } from '../types';
@@ -82,17 +81,6 @@ const libraryChoices = (value: JsonValue | undefined): Library[] => {
 // Read as its own `Record`, so every key it yields is already `AnswerKey`.
 const ANSWER_KEYS = valuesOf(ANSWERS);
 
-const chosenValuesOf = (value: Answers[AnswerKey]): string[] => {
-  if (Array.isArray(value)) {
-    return value
-      .filter((item): item is string => {
-        return typeof item === 'string';
-      });
-  }
-
-  return typeof value === 'string' ? [value] : [];
-};
-
 const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
   for (const key of ANSWER_KEYS) {
     const candidate: AnswerRecord = ANSWERS[key];
@@ -107,14 +95,10 @@ const refuseMisfit = (answers: Answers, record: TargetRecord): void => {
   }
 
   for (const key of ANSWER_KEYS) {
-    const candidate: AnswerRecord = ANSWERS[key];
+    const refused = refusedValue(ANSWERS[key], answers[key], record, answers);
 
-    for (const chosen of chosenValuesOf(answers[key])) {
-      const only = onlyFor(candidate, chosen);
-
-      if (only !== undefined && !only(record, answers)) {
-        throw new Error(`${chosen} is not an answer for ${answers.target}`);
-      }
+    if (refused !== undefined) {
+      throw new Error(`${refused} is not an answer for ${answers.target}`);
     }
   }
 };

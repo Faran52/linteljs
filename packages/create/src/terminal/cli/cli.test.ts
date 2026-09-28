@@ -14,6 +14,7 @@ import {
   stdout,
   versions,
 } from 'node:process';
+import { runInNewContext } from 'node:vm';
 
 import { plantBinary } from '@mocks/plantBinary';
 import {
@@ -45,6 +46,7 @@ import packageJson from '../../../package.json' with { type: 'json' };
 import { RUN_CANCELLED_MESSAGE } from '../prompts/constants';
 
 import { main } from './cli';
+import { parseCliArgs } from './utils/argvUtils';
 
 import type { Answers } from '@config/types';
 
@@ -53,6 +55,15 @@ interface Run {
   printed: string;
   errors: string[];
 }
+
+vi.mock('./utils/argvUtils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./utils/argvUtils')>();
+
+  return {
+    ...actual,
+    parseCliArgs: vi.fn(actual.parseCliArgs),
+  };
+});
 
 const RULE = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
 
@@ -452,5 +463,16 @@ describe('main: what a run reports', () => {
     expect(code).toBe(0);
     expect(printed.endsWith('\n\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n'))
       .toBe(true);
+  });
+});
+
+describe('main, when argument parsing throws', () => {
+  it('rethrows what is not an Error of this realm, having no message it can trust', async () => {
+    vi.mocked(parseCliArgs)
+      .mockImplementationOnce(() => {
+        throw runInNewContext('new Error("from another realm")');
+      });
+
+    await expect(main(['--help'])).rejects.toThrow('from another realm');
   });
 });

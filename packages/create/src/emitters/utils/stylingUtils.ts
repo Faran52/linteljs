@@ -1,8 +1,9 @@
 import type { Styling } from '@config/types';
-import type { PluginSpec } from '@targets';
 
-export interface StylingPlugin extends PluginSpec {
-  declarations: string[];
+export interface StylingPlugin {
+  imports: string[];
+  declaration?: string;
+  call?: string;
 }
 
 const STYLEX_CALL = 'stylex({ useCSSLayers: true })';
@@ -13,34 +14,28 @@ export const stylingPlugin = (styling: Styling | undefined, language: 'ts' | 'js
   if (styling === 'tailwind') {
     return {
       imports: ["import tailwindcss from '@tailwindcss/vite';"],
-      declarations: [],
-      calls: ['tailwindcss()'],
+      call: 'tailwindcss()',
     };
   }
 
-  if (styling === 'stylex' && language === 'js') {
-    return {
-      imports: ["import stylex from '@stylexjs/unplugin/vite';"],
-      declarations: [],
-      calls: [STYLEX_CALL],
-    };
-  }
-
-  if (styling === 'stylex') {
+  if (styling === 'stylex' && language === 'ts') {
     return {
       imports: [
         "import { type UserOptions } from '@stylexjs/unplugin';",
         "import stylexVite from '@stylexjs/unplugin/vite';",
         "import { type VitePlugin } from 'unplugin';",
       ],
-      declarations: ['const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;'],
-      calls: [STYLEX_CALL],
+      declaration: 'const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;',
+      call: STYLEX_CALL,
     };
   }
 
-  return {
-    imports: [],
-    declarations: [],
-    calls: [],
-  };
+  if (styling === 'stylex') {
+    return {
+      imports: ["import stylex from '@stylexjs/unplugin/vite';"],
+      call: STYLEX_CALL,
+    };
+  }
+
+  return { imports: [] };
 };

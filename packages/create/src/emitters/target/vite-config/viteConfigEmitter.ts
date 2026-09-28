@@ -6,6 +6,8 @@ import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
+import { rollupInputs } from './utils/inputUtils';
+
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
 
 export const emitViteConfig = (answers: Answers): string | null => {
@@ -19,9 +21,10 @@ export const emitViteConfig = (answers: Answers): string | null => {
   const imports = sortedImports(["import { defineConfig } from 'vite';", ...vitePlugin.imports, ...styling.imports]);
 
   // StyleX first, as its documentation asks: after the framework plugin it breaks Fast Refresh.
+  const stylingCalls = styling.call === undefined ? [] : [styling.call];
   const calls = answers.styling === 'stylex'
-    ? [...styling.calls, ...vitePlugin.calls]
-    : [...vitePlugin.calls, ...styling.calls];
+    ? [...stylingCalls, ...vitePlugin.calls]
+    : [...vitePlugin.calls, ...stylingCalls];
 
   // One per line: React's compiler call plus tailwind is 128 characters, over the emitted `max-len`.
   const plugins = calls
@@ -30,23 +33,8 @@ export const emitViteConfig = (answers: Answers): string | null => {
     })
     .join('');
 
-  // crx reads its inputs from the manifest, which cannot name the devtools panel.
-  const entries = Object.entries(viteInputs ?? {})
-    .map(([name, page]) => {
-      return `${name}: '${page}'`;
-    })
-    .join(', ');
-
-  // `JSON.stringify`'s double quotes and quoted keys are two lint findings.
-  const inputs = viteInputs === undefined
-    ? ''
-    : `  build: { rollupOptions: { input: { ${entries} } } },\n`;
-
-  const declarations = styling.declarations
-    .map((line) => {
-      return `${line}\n\n`;
-    })
-    .join('');
+  const inputs = rollupInputs(viteInputs);
+  const declarations = styling.declaration === undefined ? '' : `${styling.declaration}\n\n`;
 
   return `${imports}
 

@@ -3,6 +3,11 @@ import { ANSWERS } from '../registry';
 import { migratedStore, migrateLifted } from './migrationUtils';
 
 describe('migrateLifted', () => {
+  it('lifts nothing out of a nested list, however its text reads', () => {
+    expect(migrateLifted({ libraries: [['react-hook-form']] }, true, 'form', ANSWERS.form.values))
+      .toStrictEqual({ libraries: [['react-hook-form']] });
+  });
+
   it('leaves a config alone where the lift does not apply', () => {
     expect(migrateLifted({ libraries: ['zod', 'react-hook-form'] }, false, 'form', ANSWERS.form.values))
       .toEqual({ libraries: ['zod', 'react-hook-form'] });

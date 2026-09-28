@@ -24,6 +24,13 @@ describe('gateScripts', () => {
 });
 
 describe('buildScripts', () => {
+  it('writes no test scripts when testing is declined', () => {
+    const scripts = buildScripts(answersFor({ testing: 'none' }));
+
+    expect(scripts).not.toHaveProperty('test');
+    expect(scripts).not.toHaveProperty('test:coverage');
+  });
+
   it('chains check through every gate the answers enable', () => {
     expect(buildScripts(answersFor({})).check).toBe(
       'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck'

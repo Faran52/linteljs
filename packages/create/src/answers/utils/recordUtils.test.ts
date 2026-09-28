@@ -5,7 +5,23 @@ import { formAnswer } from '../libraries/form/formAnswer';
 import { nodeVersionAnswer } from '../recorded/node-version/nodeVersionAnswer';
 import { DEFAULT_ANSWERS } from '../registry';
 
-import { onlyFor } from './recordUtils';
+import { onlyFor, refusedValue } from './recordUtils';
+
+describe('refusedValue', () => {
+  const vue = targetFor({
+    ...DEFAULT_ANSWERS,
+    target: 'vue',
+  });
+
+  it('names the value its target refuses, and nothing where it fits', () => {
+    expect(refusedValue(formAnswer, 'react-hook-form', vue, DEFAULT_ANSWERS)).toBe('react-hook-form');
+    expect(refusedValue(formAnswer, 'react-hook-form', targetFor(DEFAULT_ANSWERS), DEFAULT_ANSWERS)).toBeUndefined();
+  });
+
+  it('refuses nothing that is not a string, however it reads', () => {
+    expect(refusedValue(formAnswer, ['react-hook-form'], vue, DEFAULT_ANSWERS)).toBeUndefined();
+  });
+});
 
 describe('onlyFor', () => {
   it('answers the predicate the chosen value carries', () => {

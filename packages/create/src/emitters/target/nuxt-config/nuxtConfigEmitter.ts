@@ -36,10 +36,7 @@ export const emitNuxtConfig = (answers: Answers): string => {
     '',
     sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"]),
     '',
-    ...styling.declarations
-      .flatMap((line) => {
-        return [line, ''];
-      }),
+    ...styling.declaration === undefined ? [] : [styling.declaration, ''],
     'export default defineNuxtConfig({',
     "  compatibilityDate: '2025-07-15',",
     "  // `src/`, not Nuxt 4's own `app/`: one source root, the same as every other target this CLI writes.",
@@ -51,11 +48,11 @@ export const emitNuxtConfig = (answers: Answers): string => {
     ...aliases,
     '  },',
     // The Vite plugin: Nuxt's `postcss-import` reads `@import "tailwindcss"` off disk and fails.
-    ...(styling.calls.length === 0
+    ...(styling.call === undefined
       ? []
       : [
           '  vite: {',
-          `    plugins: [${styling.calls.join(', ')}],`,
+          `    plugins: [${styling.call}],`,
           '  },',
         ]),
     '});',

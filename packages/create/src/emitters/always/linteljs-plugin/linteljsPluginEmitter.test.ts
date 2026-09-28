@@ -156,6 +156,7 @@ describe('referenceArtifacts', () => {
     ['popup', {}],
     ['background', {}],
     ['devtools-panel', { surfaces: ['devtools-panel'] }],
+    ['msw', { mocking: 'msw' }],
     ['tanstack-query', { data: 'tanstack-query' }],
     ['rtk-query', { data: 'rtk-query' }],
     ['tanstack-router', { router: 'tanstack-router' }],
@@ -171,6 +172,12 @@ describe('referenceArtifacts', () => {
       ...opposite,
       surfaces: [],
     }, source)).toBe('kept');
+  });
+
+  it('treats a marker mid-line as text', () => {
+    const line = 'a <!-- when msw --> and more';
+
+    expect(forAnswers(answersFor(), line)).toBe(line);
   });
 
   it('refuses a condition no answer decides', () => {

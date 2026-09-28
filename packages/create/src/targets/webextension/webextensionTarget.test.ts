@@ -39,6 +39,12 @@ describe('the webextension record', () => {
     expect(recordFor().htmlEntry).toBe('src/main.ts');
     expect(recordFor().build).toBe('vite build');
   });
+
+  it('imports the mark stylesheet only where the popup draws the mark', () => {
+    expect(recordFor({ surfaces: ['popup'] }).starterStyles)
+      .toEqual(['./styles/tokens.css', './styles/base.css', './lib/mark/mark.css']);
+    expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(['./styles/tokens.css', './styles/base.css']);
+  });
 });
 
 describe('the browser axis', () => {

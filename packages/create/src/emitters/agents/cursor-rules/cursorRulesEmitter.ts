@@ -6,7 +6,12 @@ import { globsOf, ruleArtifacts } from '../utils/ruleFileUtils';
 
 // From the rule's first heading, so no second wording exists to drift.
 const titleOf = (source: string): string => {
-  return /^# (.+)/mu.exec(source)?.[1] ?? 'LintelJS project standard';
+  return source
+    .split('\n')
+    .find((line) => {
+      return line.startsWith('# ');
+    })
+    ?.slice('# '.length) ?? 'LintelJS project standard';
 };
 
 export const cursorArtifacts = (answers: Answers): Artifact[] => {

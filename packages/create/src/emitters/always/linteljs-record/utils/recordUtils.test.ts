@@ -33,6 +33,18 @@ describe('stackRows', () => {
     ]);
   });
 
+  it('strips only a leading range sigil from a recorded version', () => {
+    expect(stackRows(hostedAnswersFor({ target: 'webextension' }), {
+      '@linteljs/eslint-config': 'workspace:^',
+      'typescript': '5.9.3',
+    })).toContainEqual(["name: 'linteljs'", "version: 'workspace:^'"]);
+  });
+
+  it('reads no framework version for a target that renders with none', () => {
+    expect(stackRows(hostedAnswersFor({ target: 'webextension' }), { undefined: '1.0.0' }))
+      .toEqual([["name: 'node'", "version: '26.9.0'"]]);
+  });
+
   it('leaves out a row whose version is unknown', () => {
     expect(stackRows(hostedAnswersFor(), {})).toEqual([["name: 'node'", "version: '26.9.0'"]]);
   });

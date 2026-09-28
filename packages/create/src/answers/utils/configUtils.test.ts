@@ -21,7 +21,7 @@ interface ConfigOverrides {
   browser?: string;
   hostedFramework?: string;
   surfaces?: string[];
-  libraries?: string | string[];
+  libraries?: string | (string | string[])[];
   styling?: string;
   data?: string;
   form?: string;
@@ -297,6 +297,7 @@ describe('parseLinteljsConfig', () => {
       /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
     ],
     ['an unknown testing choice', config({ testing: 'jest' }), /testing must be one of: vitest, none/],
+    ['a form library nested in a list', config({ libraries: [['react-hook-form']] }), /libraries must be one of/],
     [
       'an unknown package manager',
       config({ packageManager: 'deno' }),

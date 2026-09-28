@@ -1,10 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, parse } from 'node:path';
 
 import {
   describe,
   expect,
   it,
+  vi,
 } from 'vitest';
 
 import { shippedAssetsReader, TEMPLATES_ROOT } from './shippedAssetsReader';
@@ -16,6 +17,24 @@ describe('TEMPLATES_ROOT', () => {
     const skill = await readFile(join(TEMPLATES_ROOT, SKILL), 'utf8');
 
     expect(skill).toContain('name: linteljs');
+  });
+
+  it('stops at the filesystem root when no templates directory sits above it', async () => {
+    vi.resetModules();
+    vi.doMock('node:fs', async (importOriginal) => {
+      return {
+        ...await importOriginal<typeof import('node:fs')>(),
+        existsSync: () => {
+          return false;
+        },
+      };
+    });
+
+    const { TEMPLATES_ROOT: root } = await import('./shippedAssetsReader');
+
+    vi.doUnmock('node:fs');
+
+    expect(root).toBe(join(parse(root).root, 'templates'));
   });
 });
 

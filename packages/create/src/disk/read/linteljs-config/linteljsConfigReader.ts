@@ -41,7 +41,7 @@ export const linteljsConfigReader = async (cwd: string): Promise<LinteljsConfig>
         throw new Error('linteljs.config.json must be a regular file');
       }
 
-      text = await file.readFile('utf8');
+      text = (await file.readFile()).toString('utf8');
     }
     finally {
       await file.close();

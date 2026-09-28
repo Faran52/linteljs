@@ -15,6 +15,8 @@ import { sortedImports } from '../../utils/importUtils';
 import { setupTestsPath } from '../../utils/shapeUtils';
 import { type StylingPlugin, stylingPlugin } from '../../utils/stylingUtils';
 
+import { platformEntries, quoted } from './utils/platformUtils';
+
 // `./vite.config.js`: extensionless, Vite warns every run; `.ts` hits TS5097; `.js` resolves to the `.ts`.
 
 // Root of `src/` only, so a `src/lib/index.ts` barrel still counts.
@@ -43,14 +45,6 @@ const coverageInclude = (sfcExtension?: string): string => {
   const extensions = sfcExtension === undefined ? MEASURABLE : [...MEASURABLE, sfcExtension];
 
   return `src/**/*.{${extensions.join(',')}}`;
-};
-
-const quoted = (values: string[]): string => {
-  return values
-    .map((value) => {
-      return `'${value}'`;
-    })
-    .join(', ');
 };
 
 // One entry per line: `max-len` has no fixer.
@@ -102,18 +96,6 @@ const platformProjects = (
   exclude: string[],
   setup: string,
 ): string => {
-  // One argument per line: the extension lists run past `max-len`.
-  const entries = platforms
-    .map((platform) => {
-      const lines = [
-        `        '${platform.name}',`,
-        `        [${quoted(platform.extensions)}],`,
-        `        [${quoted(platform.include)}],`,
-      ];
-
-      return `      platform(\n${lines.join('\n')}\n      ),`;
-    });
-
   return `import { reactNative } from '@srsholmes/vitest-react-native';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
@@ -138,7 +120,7 @@ const platform = (name: string, extensions: string[], include: string[]) => {
 export default defineConfig({
   test: {
     projects: [
-${entries.join('\n')}
+${platformEntries(platforms)}
     ],
 ${coverageBlock(include, exclude, '    ')}
   },
@@ -167,15 +149,11 @@ ${conditions}${block}
 // A standalone config inherits no resolution: 27 of 36 suites failed on a real Next project without it.
 // Next compiles StyleX through Babel, which vitest never reaches, so the plugin is added here.
 const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, stylex: StylingPlugin): string => {
-  const calls = [...stylex.calls, ...vitestPlugin?.calls ?? []];
+  const calls = [...stylex.call === undefined ? [] : [stylex.call], ...vitestPlugin?.calls ?? []];
   const pluginImports = sortedImports([...vitestPlugin?.imports ?? [], ...stylex.imports]);
   const plugins = calls.length === 0 ? '' : `  plugins: [${calls.join(', ')}],\n`;
   const prelude = pluginImports === '' ? '' : `${pluginImports}\n`;
-  const declarations = stylex.declarations
-    .map((line) => {
-      return `\n${line}\n`;
-    })
-    .join('');
+  const declarations = stylex.declaration === undefined ? '' : `\n${stylex.declaration}\n`;
 
   return `${prelude}import { defineConfig } from 'vitest/config';
 ${declarations}

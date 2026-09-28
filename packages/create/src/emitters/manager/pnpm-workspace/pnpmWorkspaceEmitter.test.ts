@@ -96,6 +96,12 @@ describe('mergePnpmWorkspace', () => {
   });
 });
 
+describe('the release age policy', () => {
+  it('adds the policy to a file that only mentions it in a comment', () => {
+    expect(mergePnpmWorkspace('# minimumReleaseAge: is added\n', answersFor({}))).toMatch(/^minimumReleaseAge:/mu);
+  });
+});
+
 describe('the NativeWind lightningcss pin', () => {
   const nativewind = answersFor({
     target: 'react-native',
@@ -114,6 +120,18 @@ describe('the NativeWind lightningcss pin', () => {
     const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\noverrides:\n  left-pad: 1.0.0\n";
 
     expect(mergePnpmWorkspace(existing, nativewind)).toBe(existing);
+  });
+
+  it('adds the override block to a file that only mentions it in a comment', () => {
+    expect(mergePnpmWorkspace('# overrides: are added\n', nativewind)).toMatch(/^overrides:/mu);
+  });
+
+  it('parts the override block from a policy the project set by one blank line', () => {
+    const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\n";
+    const metro = "'@expo/metro-config>lightningcss': '1.30.1'";
+    const css = "'react-native-css>lightningcss': '1.30.1'";
+
+    expect(mergePnpmWorkspace(existing, nativewind)).toBe(`${existing}\noverrides:\n  ${metro}\n  ${css}\n`);
   });
 
   it('writes no override without NativeWind', () => {

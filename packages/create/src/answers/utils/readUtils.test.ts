@@ -6,6 +6,8 @@ import {
   unaskedValueOf,
 } from './readUtils';
 
+import type { TextRecord } from '../types';
+
 describe('readAnswer', () => {
   it('reads a choice', () => {
     expect(readAnswer(ANSWERS.testing, 'none')).toBe('none');
@@ -86,7 +88,39 @@ describe('readAnswer', () => {
   });
 });
 
+describe('readAnswer, on the wrong shape', () => {
+  it('refuses a value wrapped in an array where one value belongs', () => {
+    expect(() => {
+      return readAnswer(ANSWERS.testing, ['vitest']);
+    }).toThrow('testing must be one of: vitest, none');
+    expect(() => {
+      return readAnswer(ANSWERS.agents, [['codex']]);
+    }).toThrow('agents must be one of: claude-code, codex, copilot, cursor');
+    expect(() => {
+      return readAnswer(ANSWERS.packageManagerVersion, ['12.5.1']);
+    }).toThrow('packageManagerVersion must be a string');
+  });
+
+  it('reads a pattern with unicode semantics, as the JSON schema does', () => {
+    const record: TextRecord = {
+      kind: 'text',
+      key: 'probe',
+      pattern: '^.$',
+    };
+
+    expect(readAnswer(record, '\u{1F600}')).toBe('\u{1F600}');
+  });
+});
+
 describe('unaskedValueOf', () => {
+  it('lets the kind decide, not a default the record carries', () => {
+    expect(unaskedValueOf({
+      ...ANSWERS.testing,
+      kind: 'optionalChoice',
+      none: { label: 'None' },
+    })).toBeUndefined();
+  });
+
   it('answers nothing for a kind a target never asks', () => {
     expect(unaskedValueOf(ANSWERS.store)).toBeUndefined();
     expect(unaskedValueOf(ANSWERS.router)).toBeUndefined();

@@ -161,8 +161,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     options = parseCliArgs(argv);
   }
   catch (error) {
-    // `parseArgs` and a vanished cwd throw Errors; the check reaches `message` without a cast.
-    /* v8 ignore next 3 */
+    // An Error from another realm fails `instanceof`, and its `message` is not this module's to trust.
     if (!(error instanceof Error)) {
       throw error;
     }
