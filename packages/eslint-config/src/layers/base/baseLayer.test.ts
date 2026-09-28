@@ -312,6 +312,15 @@ describe('base: unused imports', () => {
   });
 });
 
+describe('base: duplicate imports', () => {
+  it('reports a type import beside a value import of the same module, to be merged inline', async () => {
+    const code = "import type { ZodType } from 'zod';\nimport { z } from 'zod';\n\n"
+      + 'export const value: ZodType = z.string();\n';
+
+    await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('import-x/no-duplicates');
+  });
+});
+
 describe('base: restricted imports', () => {
   it('reports the compat entry and its subpaths, and leaves the core entry alone', async () => {
     const importing = (from: string): string => {
@@ -538,9 +547,13 @@ describe('base: size', () => {
     expect(overLimit).toContain(FILE_RULE);
   });
 
-  it('counts neither blank lines nor comments', async () => {
-    const padded = `${codeLines(500)}\n\n// a note\n/*\n * a block\n */\n`;
-    const ruleIds = await ruleIdsFor(base(), padded, 'src/app/format.ts');
+  it.each([
+    ['src/app/format.ts', 500],
+    ['src/components/button/Button.tsx', 350],
+    ['src/lib/utils/formatUtils.ts', 800],
+  ])('counts neither blank lines nor comments in %s', async (path, max) => {
+    const padded = `${codeLines(max)}\n\n// a note\n/*\n * a block\n */\n`;
+    const ruleIds = await ruleIdsFor(base(), padded, path);
 
     expect(ruleIds).not.toContain(null);
     expect(ruleIds).not.toContain(FILE_RULE);

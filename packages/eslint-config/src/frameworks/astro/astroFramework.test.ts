@@ -132,6 +132,22 @@ describe('astro', () => {
     expect(overLimit).toContain('max-lines-per-function');
   });
 
+  it('counts neither blank lines nor comments in a component file', async () => {
+    const padded = `---\n${codeLines(347)}\n// a note\n\n---\n\n<main></main>\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...astro()], padded, 'src/components/Big.astro');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain('max-lines');
+  });
+
+  it('counts neither blank lines nor comments in a frontmatter function', async () => {
+    const padded = `---\n${functionOf(350).replace('{\n', '{\n\n  // a note\n\n')}---\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...astro()], padded, 'src/components/Big.astro');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain('max-lines-per-function');
+  });
+
   it.each([
     ['flat/recommended', 'astro/flat/recommended'],
     ['flat/jsx-a11y-recommended', 'astro/flat/jsx-a11y-recommended'],

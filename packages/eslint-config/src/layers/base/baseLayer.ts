@@ -115,9 +115,11 @@ export const base = (options: BaseOptions = {}): Layer => {
           ignorePattern: String.raw`^[ \t]*(?:<[\w.-]+[ \t]+)?[\w:@.-]+="[^"]*"[ \t]*/?>?[ \t]*$`,
         }],
         '@stylistic/semi': ['error', 'always'],
+        // Stryker disable next-line ObjectLiteral: restates the plugin default, pinned across its majors
         '@stylistic/brace-style': ['error', 'stroustrup', { allowSingleLine: false }],
         'curly': ['error', 'all'],
         // The preset ships `semi: never` and `member-delimiter-style: none` together.
+        // Stryker disable ObjectLiteral: restates the plugin default, pinned across its majors
         '@stylistic/member-delimiter-style': ['error', {
           multiline: {
             delimiter: 'semi',
@@ -128,6 +130,7 @@ export const base = (options: BaseOptions = {}): Layer => {
             requireLast: false,
           },
         }],
+        // Stryker restore ObjectLiteral
         '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
         // The preset's `when: 'multiline'` caps nothing on a one-line element.
         '@stylistic/jsx-max-props-per-line': ['error', {
@@ -137,6 +140,7 @@ export const base = (options: BaseOptions = {}): Layer => {
           },
         }],
         // One property per line; `object-curly-newline` alone leaves the braces on the first and last property lines.
+        // Stryker disable next-line ObjectLiteral: restates the plugin default, pinned across its majors
         '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
         '@stylistic/object-curly-newline': ['error', {
           ObjectExpression: {
@@ -172,6 +176,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         'sonarjs/unused-import': 'off',
         'sonarjs/no-unused-vars': 'off',
         'unused-imports/no-unused-imports': 'error',
+        // Stryker disable next-line ObjectLiteral: restates the plugin default, pinned across its majors
         'unused-imports/no-unused-vars': ['error', {
           vars: 'all',
           args: 'after-used',
@@ -197,6 +202,7 @@ export const base = (options: BaseOptions = {}): Layer => {
           max: 350,
           skipBlankLines: true,
           skipComments: true,
+          // Stryker disable next-line BooleanLiteral: restates the plugin default, pinned across its majors
           IIFEs: false,
         }],
 
