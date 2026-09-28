@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  real-code:
-    name: fixers over real third-party code
+  eslint-plugin:
+    name: eslint-plugin fixers, options, mutants and negatives over real code
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -97,12 +97,12 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: audit-logs
+          name: eslint-plugin-logs
           path: reports/*.log
           retention-days: 30
 
-  config-mutation:
-    name: eslint-config tests kill the mutants
+  eslint-config:
+    name: eslint-config mutants
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -126,12 +126,12 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: config-mutation-logs
+          name: eslint-config-logs
           path: mutation.log
           retention-days: 30
 
-  create-mutation:
-    name: create tests kill the mutants
+  create:
+    name: create mutants
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -170,6 +170,6 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: create-mutation-logs
+          name: create-logs
           path: mutation.log
           retention-days: 30
