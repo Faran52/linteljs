@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {};
+// `next dev` otherwise rewrites the CLAUDE.md and AGENTS.md this project owns.
+const nextConfig: NextConfig = { agentRules: false };
 
 export default nextConfig;

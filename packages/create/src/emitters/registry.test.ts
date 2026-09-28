@@ -172,6 +172,17 @@ describe('buildArtifacts', () => {
   });
 });
 
+it('keeps next dev from rewriting the agent files a next project owns', async () => {
+  const answers = hostedAnswersFor({ target: 'next' });
+  const config = seedArtifacts(answers, 'demo-app')
+    .find((artifact) => {
+      return artifact.target === 'next.config.ts';
+    });
+  const text = config === undefined ? '' : await shippedAssetsReader(config.content);
+
+  expect(text).toContain('agentRules: false');
+});
+
 describe('the page a target serves', () => {
   it.each(TARGET_IDS)('mounts %s on the element its index.html carries', async (target) => {
     const answers = hostedAnswersFor({ target });

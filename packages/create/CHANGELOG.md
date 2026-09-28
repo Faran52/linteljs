@@ -102,6 +102,8 @@ when a version's change lives in a sibling it is described there instead:
 - The starter source writes one import per module, with an inline `type` on each type-only name, which is what the
   base layer's `import-x/no-duplicates` now asks for.
 - An Astro project gets `dev` and `preview` scripts, like every other target.
+- A Next project sets `agentRules: false`, so `next dev` no longer rewrites the `CLAUDE.md` and `AGENTS.md` the
+  project owns.
 - Vue and the web extension popup mount on `#root`, the element their `index.html` carries; they mounted on `#app`
   and rendered nothing.
 - The starter follows the system colour scheme. Each colour token is `light-dark()` under `color-scheme: light dark`,
