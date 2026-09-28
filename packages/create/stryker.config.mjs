@@ -70,11 +70,11 @@ const config = {
     ...earlierParts,
   ],
 
-  // 77.9% on the last full run; `break` sits under it so the weekly audit flags a regression.
+  // Every part scored over 96% on its first run; `break` sits under it so the weekly audit flags a regression.
   thresholds: {
-    high: 95,
-    low: 85,
-    break: 75,
+    high: 100,
+    low: 99,
+    break: 95,
   },
 
   // Suites spawn git and node, which a loaded machine slows past the default.
