@@ -24,6 +24,7 @@ export const vue = (): Layer => {
       languageOptions: {
         parserOptions: {
           parser: tseslint.parser,
+          // Stryker disable next-line StringLiteral: an empty extension matches every file, so this one is typed anyway
           extraFileExtensions: ['.vue'],
           // `typescript()` scopes `projectService` to `.ts`; see `sfc-import-seam` below.
           projectService: true,

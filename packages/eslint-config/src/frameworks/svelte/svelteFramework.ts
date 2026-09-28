@@ -46,6 +46,7 @@ export const svelte = (): Layer => {
       languageOptions: {
         parserOptions: {
           parser: tseslint.parser,
+          // Stryker disable next-line StringLiteral: an empty extension matches every file, so this one is typed anyway
           extraFileExtensions: ['.svelte'],
           // As in `vue()`: the type-aware rules have no `files` glob, `projectService` does.
           projectService: true,

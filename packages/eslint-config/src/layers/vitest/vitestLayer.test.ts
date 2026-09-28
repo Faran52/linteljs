@@ -47,6 +47,13 @@ describe('vitest', () => {
     await expect(ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts')).resolves.not.toContain('vitest/valid-expect');
   });
 
+  it('accepts a message held in a variable, which the rule forgives by default only as a literal', async () => {
+    const code = "import { expect, it } from 'vitest';\n\nconst label = 'sum';\n\n"
+      + "it('adds', () => {\n  expect(1 + 1, label).toBe(2);\n});\n";
+
+    await expect(ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts')).resolves.not.toContain('vitest/valid-expect');
+  });
+
   it('names every block it writes', () => {
     expect(ownBlockNames(vitest())).toEqual([
       '@linteljs/vitest',

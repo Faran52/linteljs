@@ -16,11 +16,11 @@ const config = {
     '!src/index.ts',
   ],
 
-  // 96.7% on the first CI run; `break` sits under it so the weekly audit flags a regression.
+  // 100% with its equivalent mutants disabled in place; `break` sits under it so the weekly audit flags a regression.
   thresholds: {
     high: 100,
-    low: 96,
-    break: 96,
+    low: 99,
+    break: 99,
   },
 
   // Every case is a real ESLint run, and the typed ones start a TypeScript project service.
