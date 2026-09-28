@@ -275,6 +275,10 @@ export const dominantRule = (context: AuditContext, file: string): Dominant => {
 
     return performance.now() - started;
   };
+
+  // The first pass carries the linter's warm-up, which a baseline would subtract from every rule.
+  timed([]);
+
   const baseline = timed([]);
 
   return context.activeRules

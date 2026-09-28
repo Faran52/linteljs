@@ -284,29 +284,53 @@ describe('attribute', () => {
 });
 
 describe('dominantRule', () => {
-  it('names the rule that costs the most over an empty pass', () => {
-    const slow: Rule.RuleModule = {
-      create: () => {
-        const until = performance.now() + 30;
+  const busy = (ms: number): void => {
+    const until = performance.now() + ms;
 
-        while (performance.now() < until) {
-        }
+    while (performance.now() < until) {
+    }
+  };
 
-        return {};
-      },
-    };
+  const unionFile = (): string => {
     const file = join(mkdtempSync(join(tmpdir(), 'attribution-')), 'a.ts');
 
     writeFileSync(file, UNION);
 
+    return file;
+  };
+
+  it('names the rule that costs the most over an empty pass', () => {
+    const slow: Rule.RuleModule = {
+      create: () => {
+        busy(100);
+
+        return {};
+      },
+    };
     const context = planted({ 'slow-rule': slow });
 
     context.activeRules = ['slow-rule', 'union-newline'];
 
-    const dominant = dominantRule(context, file);
+    const dominant = dominantRule(context, unionFile());
 
     expect(dominant.rule).toBe('slow-rule');
-    expect(dominant.ms).toBeGreaterThan(20);
+    expect(dominant.ms).toBeGreaterThan(50);
     expect(dominant.baseline).toBeGreaterThanOrEqual(0);
+  });
+
+  it('leaves the first pass out of the baseline', () => {
+    const context = planted({});
+    const verify = context.linter.verifyAndFix.bind(context.linter);
+
+    vi.spyOn(context.linter, 'verifyAndFix')
+      .mockImplementationOnce((...args) => {
+        busy(100);
+
+        return verify(...args);
+      });
+
+    context.activeRules = ['union-newline'];
+
+    expect(dominantRule(context, unionFile()).baseline).toBeLessThan(50);
   });
 });
