@@ -19,6 +19,7 @@ import type {
   Answers,
   Browser,
   HostedFramework,
+  Surface,
 } from '@config/types';
 
 const extensionAnswers = (overrides: Partial<Answers> = {}): Answers => {
@@ -118,10 +119,10 @@ describe('the surfaces axis', () => {
     expect(record.viteInputs).toEqual({ panel: 'panel.html' });
   });
 
-  it('excludes both entry shells and covers the panel body', () => {
+  it('excludes both entry shells and the record no page reads, and covers the panel body', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
 
-    expect(record.coverageExclude).toEqual(['src/devtools/index.ts', 'src/panel/index.ts']);
+    expect(record.coverageExclude).toEqual(['src/config/linteljs.ts', 'src/devtools/index.ts', 'src/panel/index.ts']);
     expect(record.starterTests).toContainEqual({
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',
@@ -143,7 +144,7 @@ describe('the surfaces axis', () => {
     });
   });
 
-  it('adds no surface file for a popup, which every project already is', () => {
+  it('writes the popup and nothing else for a popup alone', () => {
     const popupOnly = recordFor({ surfaces: ['popup'] }).starterFiles
       .map((file) => {
         return file.target;
@@ -152,6 +153,25 @@ describe('the surfaces axis', () => {
     expect(popupOnly).toContain('src/popup/renderPopup.ts');
     expect(popupOnly).not.toContain('src/background/onInstalled.ts');
     expect(popupOnly).not.toContain('panel.html');
+  });
+
+  it.each<[string, Surface[], boolean]>([
+    ['a devtools panel', ['devtools-panel'], true],
+    ['a background alone', ['background'], false],
+  ])('writes no popup, mark or popup page for %s', (_label, surfaces, html) => {
+    const record = recordFor({ surfaces });
+    const written = [...record.starterFiles, ...record.starterTests]
+      .map((file) => {
+        return file.target;
+      })
+      .filter((target) => {
+        return target === 'src/main.ts' || target.startsWith('src/popup/') || target.startsWith('src/lib/mark/');
+      });
+
+    expect(written).toEqual([]);
+    expect(record.htmlEntry).toBeUndefined();
+    expect(record.starterStyles).not.toContain('./lib/mark/mark.css');
+    expect(record.html).toBe(html);
   });
 });
 

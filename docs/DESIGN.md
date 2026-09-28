@@ -544,8 +544,9 @@ what it reaches for without the folder. Every other module is a subject director
 plus the folder's kind, the way `targets/react/reactTarget.ts` does here: `store/counter/counterStore.ts`,
 `providers/data/DataProvider.tsx` (a component, so the component spelling), `apis/contact/contactApi.ts`, and
 `lib/mark/mark.ts` on the extension, where `lib/` itself names no kind. `config/` stays flat, since it holds data.
-`repo-structure.standard.md` states both; the emitted `naming` map does not carry the suffix. The entry's spelling is the target's: `componentNaming()` and
-`sfcNaming()` give React, Solid, Vue and Svelte a PascalCase entry, and Angular is `'src/**/*.ts': 'KEBAB_CASE'`,
+`repo-structure.standard.md` states both, and the emitted `naming` map carries the suffix: `'**/utils/*.ts'` to
+`*Utils`, and on Angular `'src/**/utils/*.ts'` to `*-utils`, since the shipped `scripts/utils/` stays camelCase.
+The entry's spelling is the target's: `componentNaming()` and `sfcNaming()` give React, Solid, Vue and Svelte a PascalCase entry, and Angular is `'src/**/*.ts': 'KEBAB_CASE'`,
 `ng generate`'s own spelling, so the same component is `components/ui/button/button.ts`.
 
 ### Per framework
@@ -1094,8 +1095,8 @@ themselves). Making it ordinary source means installing ten targets' runtime and
 of three ESLint packages.
 
 So `pnpm lint:starters`, a leg of `pnpm check`, lints each file the way the project receiving it will.
-`composeConfig` is the function a generated `eslint.config.js` calls, handed that target's framework, and each file
-is judged at the path its record places it on, which is what makes the naming rules mean anything. The answers widen
+`composeConfig` is the function a generated `eslint.config.js` calls, handed that target's framework and its
+record's `naming` and `folderNaming` maps, and each file is judged at the path its record places it on, which is what makes the naming rules mean anything. The answers widen
 per target until every file is placed, so a starter nothing ships is reported rather than linted at a guess. It
 reads the same `starterSourceEmitter` as the pipeline, so the two cannot disagree about where a file lives.
 `lint:starters:fix` runs the same config to repair what is autofixable, because a `create` run's `fix` stage is

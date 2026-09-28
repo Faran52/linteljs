@@ -58,6 +58,7 @@ const config = await composeConfig({
   naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -338,6 +339,7 @@ describe('the naming policy', () => {
     ['react', { target: 'react' }, `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -347,6 +349,7 @@ describe('the naming policy', () => {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -355,6 +358,7 @@ describe('the naming policy', () => {
     ['vue', { target: 'vue' }, `  naming: {
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -363,6 +367,7 @@ describe('the naming policy', () => {
     ['nuxt', { target: 'nuxt' }, `  naming: {
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -372,6 +377,7 @@ describe('the naming policy', () => {
     'src/**/*.svelte': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(routes)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -380,6 +386,7 @@ describe('the naming policy', () => {
     ['solid', { target: 'solid' }, `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -387,6 +394,7 @@ describe('the naming policy', () => {
   },`],
     ['angular', { target: 'angular' }, `  naming: {
     'src/**/!(*.d).ts': 'KEBAB_CASE',
+    'src/**/utils/*.ts': '*-utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -396,6 +404,7 @@ describe('the naming policy', () => {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -405,6 +414,7 @@ describe('the naming policy', () => {
     'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(components)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -414,6 +424,7 @@ describe('the naming policy', () => {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -426,6 +437,7 @@ describe('the naming policy', () => {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
   },
@@ -438,6 +450,7 @@ describe('the naming policy', () => {
     }, `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -450,6 +463,7 @@ describe('the naming policy', () => {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
   },
@@ -462,6 +476,7 @@ describe('the naming policy', () => {
     }, `  naming: {
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -474,6 +489,7 @@ describe('the naming policy', () => {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     'src/**/*.svelte': '!([a-z]*[A-Z]*)',
   },
@@ -486,6 +502,7 @@ describe('the naming policy', () => {
     }, `  naming: {
     'src/**/*.svelte': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
@@ -498,6 +515,7 @@ describe('the naming policy', () => {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
   },
@@ -510,6 +528,7 @@ describe('the naming policy', () => {
     }, `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    '**/utils/*.ts': '*Utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {

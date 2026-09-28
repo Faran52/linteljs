@@ -22,6 +22,9 @@ export const FOLDER_ROUTED = String.raw`@(${KEBAB}|__tests__|\[*\]|\(*\)|{*})`;
 // Its own key: `src/**/*.ts` matches `vite-env.d.ts`, and two keys on one file must agree.
 export const DECLARATION_KEY: NamingMap = { 'src/**/*.d.ts': DECLARATION };
 
+// Every folder, so the shipped `scripts/utils/` and hook helpers are held to it too.
+export const UTILS_KEY: NamingMap = { '**/utils/*.ts': '*Utils' };
+
 // Off for the test run: the React Compiler's memo cache and Solid's HMR handler leave uncovered branches.
 // `process.env.VITEST`, not `mode`, because a function config cannot be merged.
 export const OUTSIDE_TESTS = 'process.env.VITEST === undefined';

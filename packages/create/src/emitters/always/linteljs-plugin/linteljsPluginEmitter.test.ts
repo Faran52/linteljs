@@ -153,6 +153,7 @@ describe('referenceArtifacts', () => {
   it.each<[string, Partial<Answers>]>([
     ['store', { store: 'zustand' }],
     ['no-store', {}],
+    ['popup', {}],
     ['background', {}],
     ['devtools-panel', { surfaces: ['devtools-panel'] }],
     ['tanstack-query', { data: 'tanstack-query' }],
@@ -168,7 +169,7 @@ describe('referenceArtifacts', () => {
 
     expect(forAnswers({
       ...opposite,
-      surfaces: ['popup'],
+      surfaces: [],
     }, source)).toBe('kept');
   });
 

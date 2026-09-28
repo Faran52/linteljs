@@ -382,7 +382,7 @@ describe('the coverage surface', () => {
     ['a webextension with a devtools panel', {
       target: 'webextension',
       surfaces: ['devtools-panel'],
-    }, ['src/devtools/index.ts', 'src/panel/index.ts']],
+    }, ['src/config/linteljs.ts', 'src/devtools/index.ts', 'src/panel/index.ts']],
     ['react-native', { target: 'react-native' }, ['src/app/_layout.tsx', 'src/config/routes.ts']],
   ])('leaves out of coverage on %s only what it cannot execute', (_label, overrides, excluded) => {
     const [, block = ''] = /coverage: \{[\s\S]*?exclude: \[([^\]]*)\]/u.exec(configFor(overrides) ?? '') ?? [];

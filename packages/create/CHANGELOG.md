@@ -134,6 +134,13 @@ when a version's change lives in a sibling it is described there instead:
 - The emitted `checkBannedPatterns.ts` accepts a type guard's own type, `(value: unknown) => value is T`, as a
   parameter or an alias, so a parse helper that takes its guard as an argument passes the floor.
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
+- An extension without the popup surface writes no `index.html`, `src/main.ts`, `src/popup/` or `src/lib/mark/`,
+  since its manifest names no popup; one with no page at all gets no html layer.
+- The emitted `naming` map holds every file under a `utils/` folder to the `Utils` suffix: `'**/utils/*.ts'` to
+  `*Utils`, and `'src/**/utils/*.ts'` to `*-utils` on Angular.
+- The starter suites are linted against each target's own `naming` map before release, so a filename a generated
+  project's `check-file` rejects, such as `counterStore.test.tsx` on React, no longer ships.
+- The webextension structure rule lists `lib/mark/`, `style.css`, `devtools.html` and `panel.html` in its tree.
 
 ## 1.5.3
 

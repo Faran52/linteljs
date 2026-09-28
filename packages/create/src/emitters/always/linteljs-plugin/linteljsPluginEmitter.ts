@@ -21,7 +21,7 @@ export interface RuleSource {
   sources: string[];
 }
 
-type Condition = 'store' | 'no-store' | 'background' | 'devtools-panel' | Mocking | Data | Router;
+type Condition = 'store' | 'no-store' | 'popup' | 'background' | 'devtools-panel' | Mocking | Data | Router;
 
 const reference = (name: string): string => {
   return `plugins/linteljs/skills/linteljs/references/${name}`;
@@ -34,6 +34,9 @@ const CONDITIONS: Record<Condition, (answers: Answers) => boolean> = {
   },
   'no-store': (answers) => {
     return answers.store === undefined;
+  },
+  'popup': (answers) => {
+    return hasSurface(answers, 'popup');
   },
   'background': (answers) => {
     return hasSurface(answers, 'background');

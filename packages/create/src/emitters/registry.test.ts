@@ -33,6 +33,7 @@ import {
   type HostedAnswers,
   type Library,
   type PackageManager,
+  type Surface,
   type TargetId,
   type Testing,
 } from '@config/types';
@@ -453,6 +454,75 @@ describe('the project the answers write', () => {
       });
 
     expect(unusedAssets).toEqual([]);
+  });
+});
+
+describe('the files a webextension surface owns', () => {
+  const OWNED: Record<Surface, string[]> = {
+    'popup': [
+      'index.html',
+      'src/lib/mark/mark.css',
+      'src/lib/mark/mark.ts',
+      'src/main.ts',
+      'src/popup/renderPopup.test.ts',
+      'src/popup/renderPopup.ts',
+    ],
+    'background': [
+      'src/background/index.ts',
+      'src/background/onInstalled.test.ts',
+      'src/background/onInstalled.ts',
+    ],
+    'devtools-panel': [
+      'devtools.html',
+      'panel.html',
+      'src/devtools/index.ts',
+      'src/panel/index.ts',
+      'src/panel/renderPanel.test.ts',
+      'src/panel/renderPanel.ts',
+    ],
+  };
+  const SURFACE_PATH = /^(?:[^/]+\.html|src\/(?:main\.ts|popup\/|background\/|devtools\/|panel\/|lib\/mark\/))/u;
+  const SURFACES = valuesOf(ANSWERS.surfaces.values);
+
+  const byLocale = (left: string, right: string): number => {
+    return left.localeCompare(right, 'en');
+  };
+
+  const combinations = SURFACES
+    .reduce<Surface[][]>((subsets, surface) => {
+      return [...subsets, ...subsets
+        .map((subset) => {
+          return [...subset, surface];
+        })];
+    }, [[]])
+    .map((surfaces): [string, Surface[]] => {
+      return [surfaces.join(' + ') || 'no surface', surfaces];
+    });
+
+  it.each(combinations)('writes exactly what %s names', (_label, surfaces) => {
+    const answers = {
+      ...hostedAnswersFor({ target: 'webextension' }),
+      styling: 'tailwind' as const,
+      surfaces,
+    };
+    const artifacts = [...seedArtifacts(answers, 'demo-app'), ...buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')];
+    const writtenPaths = artifacts
+      .map(({ target: path }) => {
+        return path;
+      })
+      .filter((path) => {
+        return SURFACE_PATH.test(path);
+      })
+      .toSorted(byLocale);
+    const expectedPaths = surfaces
+      .flatMap((surface) => {
+        return OWNED[surface];
+      })
+      .toSorted(byLocale);
+    const html = targetFor(answers).html;
+
+    expect(writtenPaths).toEqual(expectedPaths);
+    expect(html).toBe(surfaces.includes('popup') || surfaces.includes('devtools-panel'));
   });
 });
 

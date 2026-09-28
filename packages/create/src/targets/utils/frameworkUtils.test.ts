@@ -19,6 +19,7 @@ describe('hostedNaming', () => {
     expect(hostedNaming('react')).toEqual({
       'src/**/*.tsx': COMPONENT,
       'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': DECLARATION,
     });
   });

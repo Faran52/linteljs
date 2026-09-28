@@ -27,6 +27,8 @@ export const angularTarget: TargetRecord = {
   naming: {
     // `check-file` applies every matching key, so two on one name must agree.
     'src/**/!(*.d).ts': 'KEBAB_CASE',
+    // `src/` only: the shipped `scripts/utils/` stays camelCase on every target.
+    'src/**/utils/*.ts': '*-utils',
     ...DECLARATION_KEY,
   },
   folderNaming: { 'src/**/': FOLDER },

@@ -89,11 +89,14 @@ const STARTER_OVERRIDES: Linter.Config[] = [
 
 const eslintFor = async (target: (typeof targets)[number]): Promise<ESLint> => {
   const record = targetFor(answerSets.get(target)?.[0] ?? DEFAULT_ANSWERS);
+  // The record's own naming, or a suite named against it passes here and fails the generated project.
   const config = await composeConfig({
     framework: record.framework,
     astro: record.astro === true,
     vitest: true,
     libraries: ['stylex'],
+    naming: record.naming,
+    folderNaming: record.folderNaming,
   });
 
   return new ESLint({
@@ -188,4 +191,4 @@ if (unplaced.length > 0) {
     + unplaced.join('\n  '));
 }
 
-process.exitCode = findings.length > 0 || unresolved.length > 0 ? 1 : 0;
+process.exitCode = findings.length > 0 || unresolved.length > 0 || unplaced.length > 0 ? 1 : 0;

@@ -12,13 +12,17 @@ import {
 
 describe('scriptKeys', () => {
   it('reaches every script under src/ where no route directory is named', () => {
-    expect(scriptKeys()).toStrictEqual({ 'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE' });
+    expect(scriptKeys()).toStrictEqual({
+      'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      '**/utils/*.ts': '*Utils',
+    });
   });
 
   it('takes a second key for the file sitting directly in src/ where one is', () => {
     expect(scriptKeys('app')).toStrictEqual({
       'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
       'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      '**/utils/*.ts': '*Utils',
     });
   });
 });
@@ -28,6 +32,7 @@ describe('componentNaming', () => {
     expect(componentNaming()).toStrictEqual({
       'src/**/*.tsx': '!([a-z]*[A-Z]*)',
       'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     });
   });
@@ -42,6 +47,7 @@ describe('sfcNaming', () => {
     expect(sfcNaming('vue')).toStrictEqual({
       'src/**/*.vue': '!([a-z]*[A-Z]*)',
       'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+      '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
     });
 

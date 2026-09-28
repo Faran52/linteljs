@@ -6,6 +6,8 @@ import {
   PARTS,
 } from '../constants';
 
+import { scriptKeys } from './namingUtils';
+
 import type { FrameworkParts } from '../types';
 
 export const partsFor = (framework: HostedFramework): FrameworkParts => {
@@ -17,7 +19,7 @@ export const hostedNaming = (framework: HostedFramework): NamingMap => {
 
   return {
     [componentGlob]: COMPONENT,
-    'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
+    ...scriptKeys(),
     'src/**/*.d.ts': DECLARATION,
   };
 };

@@ -22,7 +22,7 @@ testing.
 ## Layout
 
 A generated project has `manifest.json` and the folders for the surfaces it was generated with.
-The popup is `index.html`, with `src/main.ts` rendering `src/popup/`.
+The popup is `index.html`, with `src/main.ts` rendering `src/popup/` and its mark from `src/lib/mark/`. <!-- when popup -->
 `src/background/` holds the service worker. <!-- when background -->
 `devtools.html` loads `src/devtools/`, and `panel.html` loads `src/panel/`. <!-- when devtools-panel -->
 The rest of the tree below is where the next surface goes. Do not keep a folder for a surface this project
@@ -37,8 +37,11 @@ one.
 ```
 manifest.json     at the repo root, declares every surface below
 index.html        the popup, referenced as action.default_popup
+devtools.html     the devtools page, referenced as devtools_page
+panel.html        the panel it opens, a vite input: the manifest cannot name it
 src/
   main.ts         the popup entry, rendering popup/
+  style.css       the stylesheet entry, importing styles/ and lib/mark/
   popup/          what the popup renders
   background/     the service worker named by manifest.background
   content-scripts/
@@ -50,6 +53,7 @@ src/
     ui/           primitives: DOM-building modules or custom elements
     features/     reusable domain features
   lib/
+    mark/         the popup's mark, a string of markup and its stylesheet
     model/        domain entities and their types
     utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch the platform

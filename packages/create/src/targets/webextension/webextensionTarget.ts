@@ -19,10 +19,6 @@ import type { StarterFile } from '../types';
 // The Chrome types declare `chrome.*` and the Firefox ones `browser.*`, so one starter cannot satisfy both.
 const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
   const files: StarterFile[] = [
-    ...POPUP
-      .map((target): StarterFile => {
-        return { target };
-      }),
     ...SHARED
       .map((target): StarterFile => {
         return {
@@ -38,13 +34,22 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
       variant: 'tailwind',
       shared: true,
     },
-    // No components here, so a stylesheet under `components/` would sit beside nothing.
-    {
-      target: 'src/lib/mark/mark.css',
-      source: 'src/components/ui/mark/Mark.css',
-      shared: true,
-    },
   ];
+
+  if (hasSurface(answers, 'popup')) {
+    files.push(
+      ...POPUP
+        .map((target): StarterFile => {
+          return { target };
+        }),
+      // No components here, so a stylesheet under `components/` would sit beside nothing.
+      {
+        target: 'src/lib/mark/mark.css',
+        source: 'src/components/ui/mark/Mark.css',
+        shared: true,
+      },
+    );
+  }
 
   if (hasSurface(answers, 'background')) {
     // `manifest.json` names the entry, so it must exist before the first `vite build`.
@@ -87,6 +92,8 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
 
 const surfaceCoverageExclude = (answers: Answers): string[] => {
   return [
+    // Only the popup reads the record, so without it nothing a suite runs imports the module.
+    ...hasSurface(answers, 'popup') ? [] : ['src/config/linteljs.ts'],
     ...hasSurface(answers, 'background') ? ['src/background/index.ts'] : [],
     ...hasSurface(answers, 'devtools-panel')
       ? ['src/devtools/index.ts', 'src/panel/index.ts']
@@ -95,6 +102,7 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
 };
 
 export const webextensionTarget: TargetBuilder = (answers) => {
+  const popup = hasSurface(answers, 'popup');
   const browser = BROWSERS[answers.browser];
   const hosted = answers.hostedFramework === undefined
     ? undefined
@@ -102,10 +110,10 @@ export const webextensionTarget: TargetBuilder = (answers) => {
 
   return {
     id: 'webextension',
-    htmlEntry: 'src/main.ts',
+    htmlEntry: popup ? 'src/main.ts' : undefined,
     hostsBrowser: true,
     hostsFramework: true,
-    html: true,
+    html: popup || hasSurface(answers, 'devtools-panel'),
     ignores: [],
     naming: hosted === undefined
       ? {
@@ -123,7 +131,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     starterStyles: [
       './styles/tokens.css',
       './styles/base.css',
-      './lib/mark/mark.css',
+      ...popup ? ['./lib/mark/mark.css'] : [],
     ],
     tailwindTheme: './styles/theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),
@@ -143,10 +151,12 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     starterFiles: [...mockFiles(false), ...surfaceFiles(answers, answers.browser)],
     starterTests: [
       ...mockTests(false),
-      {
-        target: 'src/popup/renderPopup.test.ts',
-        covers: 'src/popup/renderPopup.ts',
-      },
+      ...popup
+        ? [{
+            target: 'src/popup/renderPopup.test.ts',
+            covers: 'src/popup/renderPopup.ts',
+          }]
+        : [],
       ...hasSurface(answers, 'background')
         ? [{
             variant: answers.browser,

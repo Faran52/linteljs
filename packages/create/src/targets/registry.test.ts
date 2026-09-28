@@ -1,7 +1,9 @@
 import { access, constants } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { composeConfig } from '@linteljs/eslint-config/compose-config';
 import { byName } from '@mocks/byName';
+import { ESLint } from 'eslint';
 import {
   describe,
   expect,
@@ -297,5 +299,48 @@ describe('a framework layer and the plugins it loads', () => {
       label,
       missing: [],
     });
+  });
+});
+
+describe('the emitted naming map on a utils file', () => {
+  const namingCases = axisCases()
+    .filter(([, answers], index, cases) => {
+      const naming = JSON.stringify(targetFor(answers).naming);
+
+      return cases
+        .findIndex(([, other]) => {
+          return JSON.stringify(targetFor(other).naming) === naming;
+        }) === index;
+    });
+
+  const findingsOn = async (answers: Answers, path: string): Promise<string[]> => {
+    const { naming, folderNaming } = targetFor(answers);
+    const eslint = new ESLint({
+      cwd: '/project',
+      overrideConfigFile: true,
+      overrideConfig: await composeConfig({
+        naming,
+        folderNaming,
+      }),
+    });
+    const [result] = await eslint.lintText('export const value = 1;\n', { filePath: `/project/${path}` });
+
+    return (result?.messages ?? [])
+      .flatMap(({ ruleId }) => {
+        return ruleId === 'check-file/filename-naming-convention' ? [ruleId] : [];
+      });
+  };
+
+  it.each(namingCases)('holds %s to the Utils suffix, in its own case', async (_label, answers) => {
+    const suffixed = answers.target === 'angular' ? 'fetch-extended-utils' : 'fetchExtendedUtils';
+    const bare = answers.target === 'angular' ? 'fetch-extended' : 'fetchExtended';
+    const findings = [
+      await findingsOn(answers, `src/lib/utils/${suffixed}.ts`),
+      await findingsOn(answers, `src/lib/utils/${suffixed}.test.ts`),
+      await findingsOn(answers, 'scripts/utils/loggerUtils.ts'),
+      await findingsOn(answers, `src/lib/utils/${bare}.ts`),
+    ];
+
+    expect(findings).toEqual([[], [], [], ['check-file/filename-naming-convention']]);
   });
 });
