@@ -4,9 +4,24 @@ import {
   it,
 } from 'vitest';
 
-import { COMPONENT, DECLARATION } from '../constants';
+import {
+  COMPONENT,
+  DECLARATION,
+  PARTS,
+} from '../constants';
 
-import { hostedNaming, partsFor } from './frameworkUtils';
+import {
+  hostedNaming,
+  hostedPartsFor,
+  partsFor,
+} from './frameworkUtils';
+
+describe('hostedPartsFor', () => {
+  it('answers the parts of a hosted framework, and none where nothing is hosted', () => {
+    expect(hostedPartsFor('vue')).toBe(PARTS.vue);
+    expect(hostedPartsFor(undefined)).toBeUndefined();
+  });
+});
 
 describe('partsFor', () => {
   it('answers the parts of the framework it is asked for', () => {

@@ -5,12 +5,15 @@ export const isJsonObject = (value: unknown): value is object => {
     && Object.getPrototypeOf(value) === Object.prototype;
 };
 
-// A predicate filter rather than `Object.keys(...) as V[]`.
+// `for...in` types a record's key as its key union, so neither a cast nor a filter is needed.
 export const valuesOf = <V extends string>(values: Record<V, unknown>): V[] => {
-  return Object.keys(values)
-    .filter((key): key is V => {
-      return key in values;
-    });
+  const keys: V[] = [];
+
+  for (const key in values) {
+    keys.push(key);
+  }
+
+  return keys;
 };
 
 // Own rather than `in`, which takes `toString` for a key of every record.

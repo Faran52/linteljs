@@ -3,7 +3,7 @@ import {
   DECLARATION_KEY,
   FOLDER_ROUTED,
 } from '../constants';
-import { partsFor } from '../utils/frameworkUtils';
+import { hostedPartsFor } from '../utils/frameworkUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
 import { componentStyleModules, componentStyles } from '../utils/styleUtils';
@@ -25,7 +25,7 @@ const INTEGRATIONS: Record<HostedFramework, string> = {
 
 export const astroTarget: TargetBuilder = (answers) => {
   const framework = answers.hostedFramework;
-  const hosted = framework === undefined ? undefined : partsFor(framework);
+  const hosted = hostedPartsFor(framework);
 
   return {
     id: 'astro',

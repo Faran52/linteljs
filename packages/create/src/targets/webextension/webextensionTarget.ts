@@ -1,7 +1,7 @@
 import { hasSurface } from '@utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
-import { hostedNaming, partsFor } from '../utils/frameworkUtils';
+import { hostedNaming, hostedPartsFor } from '../utils/frameworkUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
 
@@ -104,9 +104,7 @@ const surfaceCoverageExclude = (answers: Answers): string[] => {
 export const webextensionTarget: TargetBuilder = (answers) => {
   const popup = hasSurface(answers, 'popup');
   const browser = BROWSERS[answers.browser];
-  const hosted = answers.hostedFramework === undefined
-    ? undefined
-    : partsFor(answers.hostedFramework);
+  const hosted = hostedPartsFor(answers.hostedFramework);
 
   return {
     id: 'webextension',

@@ -23,6 +23,7 @@ import {
   buildDevDependencies,
   buildOverrides,
   parsePackageJson,
+  pinned,
   versioned,
 } from './packageJsonUtils';
 
@@ -123,6 +124,35 @@ describe('the mocking answer', () => {
   it('allows the install script that copies the worker', () => {
     expect(allowedBuildNames(answersFor({ mocking: 'msw' }))).toContain('msw');
     expect(allowedBuildNames(answersFor({}))).not.toContain('msw');
+  });
+});
+
+describe('pinned', () => {
+  it('pins each scoped override to its own package\'s version', () => {
+    expect(pinned([
+      {
+        parent: 'metro',
+        name: 'lightningcss',
+      },
+      {
+        parent: 'babel',
+        name: 'semver',
+      },
+    ], {
+      lightningcss: '1.30.1',
+      semver: '7.7.2',
+    })).toEqual([
+      {
+        parent: 'metro',
+        name: 'lightningcss',
+        version: '1.30.1',
+      },
+      {
+        parent: 'babel',
+        name: 'semver',
+        version: '7.7.2',
+      },
+    ]);
   });
 });
 

@@ -9,6 +9,7 @@ export {
 } from './registry';
 export type {
   PluginSpec,
+  ScopedOverride,
   StarterFile,
   StarterTest,
   TargetRecord,

@@ -13,7 +13,11 @@ import {
 import { hasLibrary, hasTests } from '@utils/answerUtils';
 import { isJsonObject } from '@utils/objectUtils';
 
-import { targetFor, type TargetRecord } from '@targets';
+import {
+  type ScopedOverride,
+  targetFor,
+  type TargetRecord,
+} from '@targets';
 
 import {
   ALLOWED_BUILDS,
@@ -166,16 +170,10 @@ const SCOPED_KEYS: Record<Exclude<PackageManager, 'npm'>, (parent: string, name:
   },
 };
 
-const pinsFor = (answers: Answers): Pin[] => {
-  const scoped = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides ?? [] : [];
-  const versions = versioned(scoped
-    .map(({ name }) => {
-      return name;
-    }));
-
+export const pinned = (overrides: ScopedOverride[], versions: Record<string, string>): Pin[] => {
   return Object.entries(versions)
     .flatMap(([name, version]) => {
-      return scoped
+      return overrides
         .filter((override) => {
           return override.name === name;
         })
@@ -187,6 +185,15 @@ const pinsFor = (answers: Answers): Pin[] => {
           };
         });
     });
+};
+
+const pinsFor = (answers: Answers): Pin[] => {
+  const scoped = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides ?? [] : [];
+
+  return pinned(scoped, versioned(scoped
+    .map(({ name }) => {
+      return name;
+    })));
 };
 
 export const flatOverrides = (answers: Answers, pm: Exclude<PackageManager, 'npm'>): Record<string, string> => {
