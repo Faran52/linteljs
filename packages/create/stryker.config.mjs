@@ -18,6 +18,32 @@ for (const sibling of ['eslint-config', 'eslint-plugin']) {
   }
 }
 
+// A cold run outlasts a hosted runner's six hours. A file goes to the first part matching it.
+const PARTS = {
+  'targets-a': 'src/targets/{react,next,svelte,vue}/**',
+  'targets-b': 'src/targets/**',
+  'emitters-a': 'src/emitters/{always,agents}/**',
+  'emitters-b': 'src/emitters/**',
+  'terminal-answers': 'src/{terminal,answers}/**',
+  'rest': 'src/**',
+};
+const PART_NAMES = Object.keys(PARTS);
+
+const part = process.env.STRYKER_PART;
+
+if (part && !PART_NAMES.includes(part)) {
+  throw new Error(`STRYKER_PART "${part}" is not one of ${PART_NAMES.join(', ')}.`);
+}
+
+const partGlob = part ? PARTS[part] : 'src/**';
+const earlierParts = [];
+
+for (const name of PART_NAMES.slice(0, part ? PART_NAMES.indexOf(part) : 0)) {
+  earlierParts.push(`!${PARTS[name]}`);
+}
+
+const incrementalSuffix = part ? `-${part}` : '';
+
 const config = {
   packageManager: 'pnpm',
   testRunner: 'vitest',
@@ -31,9 +57,9 @@ const config = {
   coverageAnalysis: 'perTest',
   disableBail: !process.env.CI,
 
-  // All of `src` is 6986 mutants, over five hours; `--mutate` narrows a run.
+  // All of `src` is 7168 mutants; `--mutate` narrows a run.
   mutate: [
-    'src/**/*.ts',
+    `${partGlob}/*.ts`,
     '!src/**/*.test.ts',
     '!src/**/types.ts',
     '!src/pipeline/e2e/*.ts',
@@ -41,6 +67,7 @@ const config = {
     '!src/pipeline/e2e/runner/**',
     '!src/pipeline/e2e/targets/**',
     '!src/pipeline/e2e/utils/**',
+    ...earlierParts,
   ],
 
   // 77.9% on the last full run; `break` sits under it so the weekly audit flags a regression.
@@ -56,7 +83,7 @@ const config = {
   concurrency: 6,
 
   incremental: true,
-  incrementalFile: 'node_modules/.cache/stryker-incremental.json',
+  incrementalFile: `node_modules/.cache/stryker-incremental${incrementalSuffix}.json`,
 };
 
 export default config;

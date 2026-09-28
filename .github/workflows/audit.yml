@@ -6,6 +6,8 @@ on:
   schedule:
     # Sunday 03:17 UTC: nothing releases at the weekend, and an odd minute avoids the on-the-hour queue.
     - cron: '17 3 * * 0'
+    # Wednesday runs only create, so its caches are read before seven idle days evict them.
+    - cron: '17 3 * * 3'
   workflow_dispatch:
 
 permissions:
@@ -18,6 +20,7 @@ concurrency:
 jobs:
   eslint-plugin:
     name: eslint-plugin fixers, options, mutants and negatives over real code
+    if: github.event.schedule != '17 3 * * 3'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -103,6 +106,7 @@ jobs:
 
   eslint-config:
     name: eslint-config mutants
+    if: github.event.schedule != '17 3 * * 3'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -135,8 +139,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    # A cold run is over three hours even bailing; the cached incremental report re-mutates only what changed.
-    timeout-minutes: 350
+    # Parts are sized in `stryker.config.mjs` to run cold in under two hours.
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [targets-a, targets-b, emitters-a, emitters-b, terminal-answers, rest]
+    env:
+      STRYKER_PART: ${{ matrix.part }}
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -151,10 +161,10 @@ jobs:
       # A key per run and a prefix to restore from: the newest report seeds the next run.
       - uses: actions/cache/restore@v4
         with:
-          path: packages/create/node_modules/.cache/stryker-incremental.json
-          key: stryker-create-${{ github.run_id }}
+          path: packages/create/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
+          key: stryker-create-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            stryker-create-
+            stryker-create-${{ matrix.part }}-
 
       - name: Tests still kill the mutants
         shell: bash
@@ -164,12 +174,12 @@ jobs:
       - uses: actions/cache/save@v4
         if: ${{ !cancelled() }}
         with:
-          path: packages/create/node_modules/.cache/stryker-incremental.json
-          key: stryker-create-${{ github.run_id }}
+          path: packages/create/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
+          key: stryker-create-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: create-logs
+          name: create-${{ matrix.part }}-logs
           path: mutation.log
           retention-days: 30
