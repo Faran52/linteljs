@@ -87,6 +87,10 @@ chain's break leaves it on. Separate fixes would overlap, ESLint applies one of 
 its ten passes stop before a nest more than ten deep is done. A nested chain that fails one of the
 checks above is left, with every chain inside it, to the next pass.
 
+A chain that starts on a line another chain's fix breaks goes in that fix too, indented from where
+the break leaves it: `run(a.map(f).filter(g), b.map(f).filter(g))` puts `b`'s calls one step past
+the line `.filter(g), b`.
+
 ## Options
 
 ```jsonc

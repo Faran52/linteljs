@@ -36,6 +36,10 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
     "import { helper } from 'mod';\nhelper.make(value).run(other);",
     'run(items.map(fn), rows.filter(keep));',
     'lookup[items.map(fn)];',
+    'let items;\nitems.map((item) => item.name);',
+    'JSON.parse(text).map(fn);',
+    "import { DateTime } from 'luxon';\nDateTime.fromISO(text).toFormat(pattern);",
+    "import { apiV2 } from 'mod';\napiV2.users(id).fetch();",
   ],
   invalid: [
     {
@@ -293,6 +297,80 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
       options: [{ maxLineLength: 20 }],
       errors: [error, error],
     },
+    {
+      code: 'let a, b;\nrun(a.map(f).filter(g), b.map(f).filter(g));',
+      output: 'let a, b;\nrun(a\n  .map(f)\n  .filter(g), b\n    .map(f)\n    .filter(g));',
+      errors: [error, error],
+    },
+    {
+      code: 'let a, b, c;\nrun(a.map(f).filter(g), b.map(f).filter(g), c.map(f).filter(g));',
+      output: [
+        'let a, b, c;',
+        'run(a',
+        '  .map(f)',
+        '  .filter(g), b',
+        '    .map(f)',
+        '    .filter(g), c',
+        '      .map(f)',
+        '      .filter(g));',
+      ].join('\n'),
+      errors: [error, error, error],
+    },
+    {
+      code: 'let a, b;\nrun(a.map(f).filter(gggggggggggggggggggg), b.map(f).filter(g));',
+      output: 'let a, b;\nrun(a.map(f).filter(gggggggggggggggggggg), b\n  .map(f)\n  .filter(g));',
+      options: [{ maxLineLength: 20 }],
+      errors: [error, error],
+    },
+    {
+      code: 'a.b(a.b(x).c(y)).c(y);\nvar a;',
+      output: 'a\n  .b(a\n    .b(x)\n    .c(y))\n  .c(y);\nvar a;',
+      errors: [error, error],
+    },
+    {
+      code: 'let a, c, e, k;\na.b(c.d(e.f(x).g(y)).h(z), k.l(m).n(o)).p(q);',
+      output: [
+        'let a, c, e, k;',
+        'a',
+        '  .b(c',
+        '    .d(e',
+        '      .f(x)',
+        '      .g(y))',
+        '    .h(z), k',
+        '      .l(m)',
+        '      .n(o))',
+        '  .p(q);',
+      ].join('\n'),
+      errors: [error, error, error, error],
+    },
+    {
+      code: 'let items;\nitems.map((a) => {\n  use(a);\n  \n  return a;\n});',
+      output: 'let items;\nitems\n  .map((a) => {\n    use(a);\n  \n    return a;\n  });',
+      errors: [error],
+    },
+    {
+      code: 'let a, c;\na.b(c.d(x).e(yyyyyyyyyyyyy)).i(w);',
+      output: 'let a, c;\na\n  .b(c\n    .d(x)\n    .e(yyyyyyyyyyyyy))\n  .i(w);',
+      options: [{ maxLineLength: 22 }],
+      errors: [error, error],
+    },
+    {
+      code: 'let items;\r\nconst out = items.map(first).filter(second);\r\n',
+      output: 'let items;\r\nconst out = items\r\n  .map(first)\r\n  .filter(second);\r\n',
+      options: [{ maxLineLength: 18 }],
+      errors: [error],
+    },
+    {
+      code: 'let items;\nconst someVeryLongVariableName = items.map(f).filter(g);',
+      output: 'let items;\nconst someVeryLongVariableName = items\n  .map(f)\n  .filter(g);',
+      options: [{ maxLineLength: 14 }],
+      errors: [error],
+    },
+    {
+      code: 'let items;\nitems.map(fn).filter(keep).length;',
+      output: 'let items;\nitems\n  .map(fn)\n  .filter(keep).length;',
+      errors: [error],
+    },
   ],
 });
 
@@ -307,6 +385,11 @@ tsRuleTester.run('chain-call-newline', chainCallNewline, {
     {
       code: 'items.find(fn)!.map(fn).filter(keep);',
       output: 'items.find(fn)!\n  .map(fn)\n  .filter(keep);',
+      errors: [error],
+    },
+    {
+      code: "import { helper } from 'mod';\nfunction helper() {}\nhelper.make(value).run(other);",
+      output: "import { helper } from 'mod';\nfunction helper() {}\nhelper\n  .make(value)\n  .run(other);",
       errors: [error],
     },
   ],

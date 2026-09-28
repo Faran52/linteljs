@@ -69,11 +69,6 @@ interface Plan {
   undo: (() => void)[];
 }
 
-interface Folded {
-  fits: boolean;
-  after: number;
-}
-
 type Edit = [AST.Range, string];
 
 // The same figure `member-newline` and `import-newlines` default to.
@@ -201,7 +196,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
     const lineText = (line: number): string => {
       return sourceCode.lines
         .slice(line - 1, line)
-        .join('');
+        .join();
     };
 
     const isNamespace = (top: RuleNode, base: Part): boolean => {
@@ -385,9 +380,19 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return mustFind(chainAt(index).top.range)[0];
     };
 
+    // A later chain on a line this plan breaks moves with it, so it is planned against the broken line.
+    const followsGap = (plan: Plan, index: number): boolean => {
+      const start = startOf(index);
+
+      return gapsOn(plan, mustFind(chainAt(index).top.loc).start.line)
+        .some((gap) => {
+          return gap.range[1] <= start;
+        });
+    };
+
     // A chain in the head ends before this fix begins, so it lands in the same pass unfolded.
     // Own lines are measured last: a nested chain's breaks can shorten them.
-    const fold = (plan: Plan, index: number): Folded => {
+    const fold = (plan: Plan, index: number): number => {
       const chain = chainAt(index);
       const [, end] = mustFind(chain.top.range);
       const firstDot = mustFind(chain.breaks[0]).dot.range[0];
@@ -397,7 +402,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
       while (after < chains.length && startOf(after) < end) {
         if (touched && startOf(after) >= firstDot) {
-          after = fold(plan, after).after;
+          after = fold(plan, after);
         }
         else {
           after++;
@@ -407,26 +412,32 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const fits = touched
         ?.every((line) => {
           return lineFits(plan, line);
-        }) ?? false;
+        });
 
-      if (!fits) {
+      if (fits !== true) {
         rollBack(plan, mark);
+
+        return after;
       }
 
-      return {
-        fits,
-        after,
-      };
+      while (after < chains.length && followsGap(plan, after)) {
+        after = fold(plan, after);
+      }
+
+      return after;
     };
 
-    const planAt = (index: number): Plan | undefined => {
+    // A plan rolled back to nothing yields no edits, which ESLint takes as no fix.
+    const planAt = (index: number): Plan => {
       const plan: Plan = {
         gaps: new Map(),
         shifts: new Map(),
         undo: [],
       };
 
-      return fold(plan, index).fits ? plan : undefined;
+      fold(plan, index);
+
+      return plan;
     };
 
     const editsOf = (plan: Plan): Edit[] => {
@@ -445,10 +456,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         edits.push([[start, start], shift]);
       }
 
-      return edits
-        .sort((first, second) => {
-          return first[0][0] - second[0][0];
-        });
+      return edits;
     };
 
     // Collected rather than reported, so the chains nested in each are known when its fix is planned.
@@ -490,13 +498,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         loc: mustFind(breaks[0]).dot.loc,
         messageId: 'callOnNewline',
         * fix(fixer) {
-          const plan = planAt(index);
-
-          if (!plan) {
-            return;
-          }
-
-          for (const [range, insert] of editsOf(plan)) {
+          for (const [range, insert] of editsOf(planAt(index))) {
             yield fixer.replaceTextRange(range, insert);
           }
         },

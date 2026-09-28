@@ -77,6 +77,11 @@ export const FIXER_SAMPLES: FixerSample[] = [
       }, 'x')};\n`,
   },
   {
+    // Each chain was once planned against the unbroken line, so a later one kept the indent of a line it had left.
+    name: 'sibling chains on one line',
+    code: 'let a, b, c;\nrun(a.map(f).filter(g), b.map(f).filter(g), c.map(f).filter(g));\n',
+  },
+  {
     // Each reach once edited the one import, so ESLint's ten passes left a file with twelve half done.
     name: 'twelve React globals in one file',
     code: ['useState', 'useEffect', 'useMemo', 'useRef', 'useId', 'useContext', 'useReducer', 'useCallback',
