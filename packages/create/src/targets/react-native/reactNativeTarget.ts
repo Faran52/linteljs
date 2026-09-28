@@ -67,7 +67,17 @@ export const reactNativeTarget: TargetRecord = {
     devDependencies: ['postcss'],
     // NativeWind otherwise adds this to `include` on the first bundle, which is `check` rewriting what it checks.
     tsconfigInclude: ['nativewind-env.d.ts'],
-    overrides: ['lightningcss'],
+    // react-native-css loads the copy `@expo/metro-config` resolves, falling back to its own.
+    overrides: [
+      {
+        parent: '@expo/metro-config',
+        name: 'lightningcss',
+      },
+      {
+        parent: 'react-native-css',
+        name: 'lightningcss',
+      },
+    ],
   },
   tsconfig: {
     jsx: 'react-jsx',

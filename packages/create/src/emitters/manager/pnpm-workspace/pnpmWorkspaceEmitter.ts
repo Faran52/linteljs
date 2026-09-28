@@ -1,7 +1,7 @@
 import { type Answers, type Artifact } from '@config/types';
 
 import { merged } from '../../utils/artifactUtils';
-import { buildOverrides } from '../../utils/packageJsonUtils';
+import { flatOverrides } from '../../utils/packageJsonUtils';
 
 import {
   allowBuildsBlock,
@@ -37,7 +37,7 @@ export const mergePnpmWorkspace = (existing: string | null, answers: Answers): s
   const withBuilds = /^allowBuilds:/m.test(remainder) ? remainder : `${allowBuildsBlock(answers)}${remainder}`;
   const hasAgePolicy = /^minimumReleaseAge:/m.test(withBuilds);
   const withAge = hasAgePolicy ? withBuilds : `${withBuilds.trimEnd()}\n\n${RELEASE_AGE_BLOCK}`;
-  const overrides = buildOverrides(answers);
+  const overrides = flatOverrides(answers, 'pnpm');
   const keepsOverrides = Object.keys(overrides).length === 0 || /^overrides:/m.test(withAge);
   const withOverrides = keepsOverrides ? withAge : `${withAge.trimEnd()}\n\n${overridesBlock(overrides)}`;
 

@@ -6,6 +6,7 @@ import {
   type Form,
   type Framework,
   type Library,
+  type PackageManager,
   type Styling,
 } from '@config/types';
 
@@ -28,6 +29,8 @@ import {
   VERSIONS,
 } from '../constants';
 
+type Overrides = Record<string, string | Record<string, string>>;
+
 export interface DevEngine {
   name: string;
   version?: string;
@@ -46,10 +49,16 @@ export interface PackageJson {
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
-  overrides?: Record<string, string>;
+  overrides?: Overrides;
   resolutions?: Record<string, string>;
   trustedDependencies?: string[];
   allowScripts?: Record<string, boolean | string>;
+}
+
+interface Pin {
+  parent: string;
+  name: string;
+  version: string;
 }
 
 // Nuxt takes the Vite plugin: its `postcss-import` reads `@import "tailwindcss"` off disk and fails.
@@ -140,10 +149,80 @@ export const versioned = (names: string[], pins: Record<string, string> = {}): R
   return result;
 };
 
-export const buildOverrides = (answers: Answers): Record<string, string> => {
-  const overrides = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides : undefined;
+// yarn 1 reads a path from the root, so a parent below it needs `**/`. bun reads a scoped override from 1.4 only,
+// below the 1.2 floor, so its pin stays global.
+const SCOPED_KEYS: Record<Exclude<PackageManager, 'npm'>, (parent: string, name: string) => string> = {
+  'pnpm': (parent, name) => {
+    return `${parent}>${name}`;
+  },
+  'yarn': (parent, name) => {
+    return `${parent}/${name}`;
+  },
+  'yarn-classic': (parent, name) => {
+    return `**/${parent}/${name}`;
+  },
+  'bun': (_parent, name) => {
+    return name;
+  },
+};
 
-  return versioned(overrides ?? []);
+const pinsFor = (answers: Answers): Pin[] => {
+  const scoped = answers.styling === 'tailwind' ? targetFor(answers).tailwind?.overrides ?? [] : [];
+  const versions = versioned(scoped
+    .map(({ name }) => {
+      return name;
+    }));
+
+  return Object.entries(versions)
+    .flatMap(([name, version]) => {
+      return scoped
+        .filter((override) => {
+          return override.name === name;
+        })
+        .map(({ parent }) => {
+          return {
+            parent,
+            name,
+            version,
+          };
+        });
+    });
+};
+
+export const flatOverrides = (answers: Answers, pm: Exclude<PackageManager, 'npm'>): Record<string, string> => {
+  const keyFor = SCOPED_KEYS[pm];
+
+  return Object.fromEntries(pinsFor(answers)
+    .map(({
+      parent,
+      name,
+      version,
+    }) => {
+      return [keyFor(parent, name), version];
+    }));
+};
+
+export const buildOverrides = (answers: Answers): Overrides => {
+  const pm = answers.packageManager;
+
+  if (pm !== 'npm') {
+    return flatOverrides(answers, pm);
+  }
+
+  const nested: Record<string, Record<string, string>> = {};
+
+  for (const {
+    parent,
+    name,
+    version,
+  } of pinsFor(answers)) {
+    nested[parent] = {
+      ...nested[parent],
+      [name]: version,
+    };
+  }
+
+  return nested;
 };
 
 export const buildDependencies = (answers: Answers): Record<string, string> => {

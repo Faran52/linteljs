@@ -127,13 +127,37 @@ describe('the mocking answer', () => {
 });
 
 describe('buildOverrides', () => {
-  it('pins lightningcss where NativeWind compiles the styles', () => {
+  it.each([
+    ['pnpm', ['@expo/metro-config>lightningcss', 'react-native-css>lightningcss']],
+    ['yarn', ['@expo/metro-config/lightningcss', 'react-native-css/lightningcss']],
+    ['yarn-classic', ['**/@expo/metro-config/lightningcss', '**/react-native-css/lightningcss']],
+    ['bun', ['lightningcss']],
+  ] as const)('pins lightningcss where NativeWind reads it for %s as %j', (packageManager, keys) => {
     const overrides = buildOverrides(answersFor({
       target: 'react-native',
       styling: 'tailwind',
+      packageManager,
     }));
+    const expected = Object.fromEntries(keys
+      .map((key) => {
+        return [key, VERSIONS['lightningcss']];
+      }));
 
-    expect(overrides).toEqual({ lightningcss: VERSIONS['lightningcss'] });
+    expect(overrides).toEqual(expected);
+  });
+
+  it('nests the npm pin under each parent', () => {
+    const overrides = buildOverrides(answersFor({
+      target: 'react-native',
+      styling: 'tailwind',
+      packageManager: 'npm',
+    }));
+    const pin = { lightningcss: VERSIONS['lightningcss'] };
+
+    expect(overrides).toEqual({
+      '@expo/metro-config': pin,
+      'react-native-css': pin,
+    });
   });
 
   it('pins nothing for Tailwind on the web or for React Native without it', () => {

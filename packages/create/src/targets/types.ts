@@ -72,13 +72,18 @@ export interface FrameworkParts {
   stateRules: string[];
 }
 
+// `name` pinned only where `parent` depends on it, so every other consumer keeps its own.
+export interface ScopedOverride {
+  parent: string;
+  name: string;
+}
+
 export interface TailwindSlot {
   imports: string[];
   dependencies: string[];
   devDependencies: string[];
   tsconfigInclude?: string[];
-  // Forced on the whole tree through the manager's own override field.
-  overrides?: string[];
+  overrides?: ScopedOverride[];
 }
 
 export interface TsconfigDelta {

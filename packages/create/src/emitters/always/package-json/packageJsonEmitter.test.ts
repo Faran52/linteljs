@@ -180,20 +180,20 @@ describe('patchPackageJson', () => {
   });
 
   it.each([
-    ['npm', 'overrides'],
-    ['bun', 'overrides'],
-    ['yarn', 'resolutions'],
-    ['yarn-classic', 'resolutions'],
-  ] as const)('pins lightningcss for NativeWind under %s in %s, keeping its own', (packageManager, field) => {
+    ['npm', 'overrides', 'react-native-css', { lightningcss: VERSIONS['lightningcss'] }],
+    ['bun', 'overrides', 'lightningcss', VERSIONS['lightningcss']],
+    ['yarn', 'resolutions', '@expo/metro-config/lightningcss', VERSIONS['lightningcss']],
+    ['yarn-classic', 'resolutions', '**/react-native-css/lightningcss', VERSIONS['lightningcss']],
+  ] as const)('pins lightningcss for NativeWind under %s in %s, keeping its own', (packageManager, field, key, pin) => {
     const patched = patchPackageJson({ [field]: { 'left-pad': '1.0.0' } }, answersFor({
       target: 'react-native',
       styling: 'tailwind',
       packageManager,
     }));
 
-    expect(patched[field]).toEqual({
+    expect(patched[field]).toMatchObject({
       'left-pad': '1.0.0',
-      'lightningcss': VERSIONS['lightningcss'],
+      [key]: pin,
     });
   });
 

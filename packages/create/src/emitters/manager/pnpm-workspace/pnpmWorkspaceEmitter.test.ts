@@ -104,8 +104,10 @@ describe('the NativeWind lightningcss pin', () => {
 
   it('appends the override block for react-native with tailwind', () => {
     const merged = mergePnpmWorkspace(null, nativewind);
+    const metro = "'@expo/metro-config>lightningcss': '1.30.1'";
+    const css = "'react-native-css>lightningcss': '1.30.1'";
 
-    expect(merged).toContain("\n\noverrides:\n  'lightningcss': '1.30.1'\n");
+    expect(merged).toContain(`\n\noverrides:\n  ${metro}\n  ${css}\n`);
   });
 
   it('leaves an overrides block the project wrote alone', () => {

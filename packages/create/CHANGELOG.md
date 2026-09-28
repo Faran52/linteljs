@@ -111,7 +111,10 @@ when a version's change lives in a sibling it is described there instead:
   `.postcssrc.json`, so Tailwind runs. Without them the raw `@theme`, `@custom-variant` and `@utility` reached the
   bundler, which warned on each request.
 - A React Native project answering `tailwind` pins `lightningcss` to 1.30.1, NativeWind 5's documented version,
-  through the manager's own override field; under 1.32 and 1.33 react-native-css failed the Android bundle.
+  through the manager's own override field; under 1.32 and 1.33 react-native-css failed the Android bundle. The
+  pin is scoped to `@expo/metro-config` and react-native-css, the copies react-native-css loads, so every other
+  package keeps its own and yarn 1 no longer warns of an incompatible resolution; bun, which reads scoped overrides
+  only from 1.4, keeps it global.
 - Every starter header carries a "LintelJS Starter" label at its left, and React Native turns on the tab
   navigator's header to show it.
 - The web extension popup drops its counter, which no store answer put there, and shows the gate hint every other
