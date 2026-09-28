@@ -69,6 +69,14 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join(''),
   },
   {
+    // Each chain's fix once spanned the chains in its arguments, so ESLint's ten passes stopped short of the innermost.
+    name: 'chains nested twelve deep',
+    code: `let a, x, y;\n${Array.from({ length: 12 })
+      .reduce<string>((inner) => {
+        return `a.b(${inner}).c(y)`;
+      }, 'x')};\n`,
+  },
+  {
     // Each reach once edited the one import, so ESLint's ten passes left a file with twelve half done.
     name: 'twelve React globals in one file',
     code: ['useState', 'useEffect', 'useMemo', 'useRef', 'useId', 'useContext', 'useReducer', 'useCallback',

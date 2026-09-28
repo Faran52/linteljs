@@ -2,7 +2,7 @@ import { scopeOf, sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   gapIsBlank,
   getIndent,
-  indentReader,
+  getIndentStep,
   linesInsideTokens,
   lineTerminatorOf,
   sameLine,
@@ -51,10 +51,32 @@ interface Break {
   link: Link;
 }
 
-interface Plan {
-  gaps: AST.Range[];
-  shifted: number[];
+interface Chain {
+  top: RuleNode;
+  breaks: Break[];
 }
+
+interface Gap {
+  dot: AST.Token;
+  range: AST.Range;
+  indent: string;
+}
+
+// Keyed by line: each break's new indent, and what each argument line gains ahead of its own indent.
+// `undo` takes back a nested chain whose lines do not fit.
+interface Plan {
+  gaps: Map<number, Gap[]>;
+  shifts: Map<number, string>;
+  undo: (() => void)[];
+}
+
+// Whether a chain went into the plan, and the index past every chain nested in it.
+interface Folded {
+  fits: boolean;
+  after: number;
+}
+
+type Edit = [AST.Range, string];
 
 // The same figure `member-newline` and `import-newlines` default to.
 const DEFAULT_MAX_LINE_LENGTH = 120;
@@ -173,7 +195,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
     const sourceCode = sourceCodeOf(context);
     const options = optionsOf<ChainCallNewlineOptions>(context);
     const maxLineLength = options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH;
-    const indentsAt = indentReader(sourceCode);
+    const step = getIndentStep(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
     const { text } = sourceCode;
 
@@ -225,12 +247,37 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return inside;
     };
 
+    const insideTokens = linesInsideTokens(sourceCode);
+    const insideComments = linesInsideComments();
+    const chains: Chain[] = [];
+
+    const gapsOn = (plan: Plan, line: number): Gap[] => {
+      return plan.gaps.get(line) ?? [];
+    };
+
+    // Where a token lands once `plan` applies: behind the last break ahead of it on its line, else on its line shifted.
+    const indentAt = (plan: Plan, token: AST.Token | RuleNode): string => {
+      const { start } = mustFind(token.loc, 'the location of a chained token');
+      const [offset] = mustFind(token.range, 'the range of a chained token');
+      let indent = `${plan.shifts.get(start.line) ?? ''}${getIndent(sourceCode, token)}`;
+      let reached = -1;
+
+      for (const gap of gapsOn(plan, start.line)) {
+        if (gap.range[1] <= offset && gap.range[1] > reached) {
+          reached = gap.range[1];
+          indent = gap.indent;
+        }
+      }
+
+      return indent;
+    };
+
     // A link at the chain's own indent carries its argument lines a step right, as an indent rule would next.
-    const shiftedLines = (breaks: Break[], outer: string): number[] => {
+    const shiftedLines = (plan: Plan, breaks: Break[], outer: string): number[] => {
       const spanned = new Set<number>();
 
       for (const { dot, link } of breaks) {
-        if (getIndent(sourceCode, dot) === outer) {
+        if (indentAt(plan, dot) === outer) {
           const end = mustFind(link.call.loc, 'the location of a chained call').end.line;
 
           for (let line = dot.loc.start.line + 1; line <= end; line++) {
@@ -239,27 +286,73 @@ export const chainCallNewline = createRule('chain-call-newline', {
         }
       }
 
-      const insideTokens = linesInsideTokens(sourceCode);
-
       return [...spanned]
         .filter((line) => {
           return !insideTokens.has(line) && lineText(line).trim() !== '';
         });
     };
 
-    const planFix = (breaks: Break[], outer: string, inner: string): Plan | undefined => {
+    const lineFits = (plan: Plan, line: number): boolean => {
+      const gaps = [...gapsOn(plan, line)]
+        .sort((first, second) => {
+          return first.range[0] - second.range[0];
+        });
+
+      const splitFit = gaps
+        .every((gap, index) => {
+          const next = gaps[index + 1]?.range[0] ?? lineEndAfter(text, gap.range[1]);
+
+          return gap.indent.length + text
+            .slice(gap.range[1], next)
+            .trimEnd().length <= maxLineLength;
+        });
+
+      const shift = plan.shifts.get(line) ?? '';
+      const kept = lineText(line).slice(0, gaps[0]?.dot.loc.start.column ?? Number.POSITIVE_INFINITY);
+
+      return splitFit && (shift === '' || kept.trimEnd().length + shift.length <= maxLineLength);
+    };
+
+    const record = <T>(plan: Plan, map: Map<number, T>, line: number, value: T): void => {
+      const previous = map.get(line);
+
+      plan.undo
+        .push(() => {
+          if (previous === undefined) {
+            map.delete(line);
+          }
+          else {
+            map.set(line, previous);
+          }
+        });
+
+      map.set(line, value);
+    };
+
+    const rollBack = (plan: Plan, mark: number): void => {
+      while (plan.undo.length > mark) {
+        mustFind(plan.undo.pop(), 'an undo step')();
+      }
+    };
+
+    // Planned against the text `plan` leaves, so a chain in another's arguments settles in the same pass.
+    const extend = (plan: Plan, { top, breaks }: Chain): number[] | undefined => {
+      const outer = indentAt(plan, top);
       const gaps = breaks
-        .map(({ dot }): AST.Range => {
-          return [mustFind(sourceCode.getTokenBefore(dot), 'the token ahead of a dot').range[1], dot.range[0]];
+        .map(({ dot }): Gap => {
+          return {
+            dot,
+            range: [mustFind(sourceCode.getTokenBefore(dot), 'the token ahead of a dot').range[1], dot.range[0]],
+            indent: `${outer}${step}`,
+          };
         });
 
       const blank = gaps
-        .every(([from, to]) => {
-          return gapIsBlank(sourceCode, from, to);
+        .every(({ range }) => {
+          return gapIsBlank(sourceCode, range[0], range[1]);
         });
 
-      const shifted = shiftedLines(breaks, outer);
-      const insideComments = linesInsideComments();
+      const shifted = shiftedLines(plan, breaks, outer);
 
       const crossesComment = shifted
         .some((line) => {
@@ -270,43 +363,102 @@ export const chainCallNewline = createRule('chain-call-newline', {
         return undefined;
       }
 
-      const starts = breaks
-        .map(({ dot }) => {
-          return dot.range[0];
-        });
+      for (const gap of gaps) {
+        const { line } = gap.dot.loc.start;
 
-      const newLinesFit = starts
-        .every((start, index) => {
-          const next = starts[index + 1] ?? Number.POSITIVE_INFINITY;
-          const segment = text.slice(start, Math.min(next, lineEndAfter(text, start)));
-
-          return inner.length + segment.trimEnd().length <= maxLineLength;
-        });
-
-      const cutAt = new Map<number, number>();
-
-      for (const { dot } of [...breaks].reverse()) {
-        cutAt.set(dot.loc.start.line, dot.loc.start.column);
+        record(plan, plan.gaps, line, [...gapsOn(plan, line), gap]);
       }
 
-      const step = inner.length - outer.length;
-      const shiftedFit = shifted
-        .every((line) => {
-          const kept = lineText(line).slice(0, cutAt.get(line) ?? Number.POSITIVE_INFINITY);
+      for (const line of shifted) {
+        record(plan, plan.shifts, line, `${step}${plan.shifts.get(line) ?? ''}`);
+      }
 
-          return kept.trimEnd().length + step <= maxLineLength;
-        });
-
-      return newLinesFit && shiftedFit
-        ? {
-            gaps,
-            shifted,
-          }
-        : undefined;
+      return gaps
+        .map(({ dot }) => {
+          return dot.loc.start.line;
+        })
+        .concat(shifted);
     };
 
-    // Acted on at the outermost level only, so each chain is read once.
-    const check = (top: RuleNode, chain: Part): void => {
+    const chainAt = (index: number): Chain => {
+      return mustFind(chains[index], 'a collected chain');
+    };
+
+    const startOf = (index: number): number => {
+      return mustFind(chainAt(index).top.range, 'the range of a chain')[0];
+    };
+
+    /**
+     * A chain nested in this one's arguments folds in, or waits for a later pass along with every chain inside it.
+     * One in the head is left alone: it ends before this fix begins, so it lands in the same pass already.
+     * This chain's own lines are measured last, since a nested chain's breaks can shorten them.
+     */
+    const fold = (plan: Plan, index: number): Folded => {
+      const chain = chainAt(index);
+      const [, end] = mustFind(chain.top.range, 'the range of a chain');
+      const firstDot = mustFind(chain.breaks[0], 'the first break of a chain').dot.range[0];
+      const mark = plan.undo.length;
+      const touched = extend(plan, chain);
+      let after = index + 1;
+
+      while (after < chains.length && startOf(after) < end) {
+        if (touched && startOf(after) >= firstDot) {
+          after = fold(plan, after).after;
+        }
+        else {
+          after++;
+        }
+      }
+
+      const fits = touched
+        ?.every((line) => {
+          return lineFits(plan, line);
+        }) ?? false;
+
+      if (!fits) {
+        rollBack(plan, mark);
+      }
+
+      return {
+        fits,
+        after,
+      };
+    };
+
+    const planAt = (index: number): Plan | undefined => {
+      const plan: Plan = {
+        gaps: new Map(),
+        shifts: new Map(),
+        undo: [],
+      };
+
+      return fold(plan, index).fits ? plan : undefined;
+    };
+
+    const editsOf = (plan: Plan): Edit[] => {
+      const edits = [...plan.gaps.values()]
+        .flat()
+        .map((gap): Edit => {
+          return [gap.range, `${eol}${gap.indent}`];
+        });
+
+      for (const [line, shift] of plan.shifts) {
+        const start = sourceCode.getIndexFromLoc({
+          line,
+          column: 0,
+        });
+
+        edits.push([[start, start], shift]);
+      }
+
+      return edits
+        .sort((first, second) => {
+          return first[0][0] - second[0][0];
+        });
+    };
+
+    // Collected rather than reported, so the chains nested in each are known when its fix is planned.
+    const collect = (top: RuleNode, chain: Part): void => {
       if (continues(mustFind(top.parent, 'the parent of an expression'), chain)) {
         return;
       }
@@ -328,50 +480,49 @@ export const chainCallNewline = createRule('chain-call-newline', {
           return sameLine(sourceCode.getTokenBefore(dot), dot);
         });
 
-      const first = breaks[0];
-
-      if (!first) {
-        return;
+      if (breaks.length > 0) {
+        chains.push({
+          top,
+          breaks,
+        });
       }
+    };
 
-      const { outer, inner } = indentsAt(top);
+    const report = (index: number): void => {
+      const { top, breaks } = chainAt(index);
 
       context.report({
         node: top,
-        loc: first.dot.loc,
+        loc: mustFind(breaks[0], 'the first break of a chain').dot.loc,
         messageId: 'callOnNewline',
         * fix(fixer) {
-          const plan = planFix(breaks, outer, inner);
+          const plan = planAt(index);
 
           if (!plan) {
             return;
           }
 
-          for (const gap of plan.gaps) {
-            yield fixer.replaceTextRange(gap, `${eol}${inner}`);
-          }
-
-          for (const line of plan.shifted) {
-            const start = sourceCode.getIndexFromLoc({
-              line,
-              column: 0,
-            });
-
-            yield fixer.insertTextBeforeRange([start, start], inner.slice(outer.length));
+          for (const [range, insert] of editsOf(plan)) {
+            yield fixer.replaceTextRange(range, insert);
           }
         },
       });
     };
 
     return {
-      CallExpression: (node) => {
-        check(node, node);
+      'CallExpression': (node) => {
+        collect(node, node);
       },
-      MemberExpression: (node) => {
-        check(node, node);
+      'MemberExpression': (node) => {
+        collect(node, node);
       },
-      ChainExpression: (node) => {
-        check(node, node);
+      'ChainExpression': (node) => {
+        collect(node, node);
+      },
+      'Program:exit': () => {
+        for (const index of chains.keys()) {
+          report(index);
+        }
       },
     };
   },

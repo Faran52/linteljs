@@ -82,6 +82,11 @@ It reports and moves nothing when:
 
 Lines inside a template literal and blank lines never move.
 
+A chain nested in another chain's arguments is broken by the same fix, at the indent the outer
+chain's break leaves it on. Separate fixes would overlap, ESLint applies one of them a pass, and
+its ten passes stop before a nest more than ten deep is done. A nested chain that fails one of the
+checks above is left, with every chain inside it, to the next pass.
+
 ## Options
 
 ```jsonc
