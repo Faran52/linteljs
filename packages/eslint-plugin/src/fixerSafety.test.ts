@@ -76,6 +76,18 @@ describe.each(ruleNames)('%s line endings', (name) => {
   it.each(windows)('keeps CRLF intact on %s', (_label, sample: FixerSample) => {
     expect(/(?<!\r)\n/.test(fixWith(sample, name))).toBe(false);
   });
+
+  const unix = parseableSamples()
+    .filter((sample) => {
+      return sample.strayCrlf === true;
+    })
+    .map((sample) => {
+      return [sample.name, sample] as const;
+    });
+
+  it.each(unix)('keeps a stray CRLF from spreading on %s', (_label, sample: FixerSample) => {
+    expect(fixWith(sample, name).split('\r\n')).toHaveLength(sample.code.split('\r\n').length);
+  });
 });
 
 describe.each(ruleNames)('%s comments', (name) => {

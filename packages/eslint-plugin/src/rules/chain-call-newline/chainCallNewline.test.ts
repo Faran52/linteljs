@@ -202,6 +202,11 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
       errors: [error],
     },
     {
+      code: 'let items;\r\nlet other;\nitems.map(fn).filter(keep);\n',
+      output: 'let items;\r\nlet other;\nitems\n  .map(fn)\n  .filter(keep);\n',
+      errors: [error],
+    },
+    {
       code: `${locals}function run() {\n\treturn items.map(fn).filter(keep);\n}`,
       output: `${locals}function run() {\n\treturn items\n\t\t.map(fn)\n\t\t.filter(keep);\n}`,
       errors: [error],

@@ -130,8 +130,16 @@ describe('lineTerminatorOf', () => {
     expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\r\nconst b = 2;\r\n').sourceCode)).toBe('\r\n');
   });
 
-  it('reports CRLF when only one line uses it', () => {
+  it('reports CRLF when the endings tie', () => {
     expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\nconst b = 2;\r\n').sourceCode)).toBe('\r\n');
+  });
+
+  it('reports LF for an LF file with one stray CRLF line', () => {
+    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\r\nconst b = 2;\nconst c = 3;\n').sourceCode)).toBe('\n');
+  });
+
+  it('reports CRLF for a CRLF file with one stray LF line', () => {
+    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\nconst b = 2;\r\nconst c = 3;\r\n').sourceCode)).toBe('\r\n');
   });
 
   it('reports LF for a single-line file', () => {

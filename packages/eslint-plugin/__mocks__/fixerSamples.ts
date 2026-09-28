@@ -22,6 +22,8 @@ export interface FixerSample {
   filename?: string | undefined;
   // Declared, not sniffed out of the text, so the CRLF set is a decision.
   crlf?: true;
+  // An LF file carrying one CRLF line, which a fixer must not spread.
+  strayCrlf?: true;
 }
 
 export const FIXER_SAMPLES: FixerSample[] = [
@@ -52,6 +54,31 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: "declare module '*.svg' {\n  const Component: React.FC;\n  export default Component;\n}\n",
     typescript: true,
     filename: 'custom.d.ts',
+  },
+  {
+    // Each rewrite once spanned the callbacks inside it, so ESLint's ten passes stopped short of the innermost.
+    name: 'callbacks nested twelve deep',
+    code: [
+      ...Array.from({ length: 12 }, (_, depth) => {
+        return `${'  '.repeat(depth)}items.forEach(function (item) {\n`;
+      }),
+      `${'  '.repeat(12)}run(item);\n`,
+      ...Array.from({ length: 12 }, (_, depth) => {
+        return `${'  '.repeat(11 - depth)}});\n`;
+      }),
+    ].join(''),
+  },
+  {
+    // Each reach once edited the one import, so ESLint's ten passes left a file with twelve half done.
+    name: 'twelve React globals in one file',
+    code: ['useState', 'useEffect', 'useMemo', 'useRef', 'useId', 'useContext', 'useReducer', 'useCallback',
+      'useLayoutEffect', 'useTransition', 'useDeferredValue', 'useSyncExternalStore']
+      .map((hook) => {
+        return `export const ${hook}Ref = React.${hook};\n`;
+      })
+      .join(''),
+    typescript: true,
+    filename: 'hooks.ts',
   },
   {
     // Bound to a type; rewriting the tags against it makes a value of a type-only binding.
@@ -710,6 +737,11 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'chained calls under CRLF',
     code: "const rows = [1];\r\nconst out = rows.map(String).join('');\r\n",
     crlf: true,
+  },
+  {
+    name: 'chained calls in an LF file with one CRLF line',
+    code: "const rows = [1];\r\nconst out = rows.map(String).join('');\nconst other = 1;\n",
+    strayCrlf: true,
   },
   {
     name: 'chained calls in a JSX attribute',

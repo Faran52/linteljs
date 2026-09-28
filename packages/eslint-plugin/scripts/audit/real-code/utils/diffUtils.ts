@@ -154,9 +154,14 @@ export const endingsDiff = (source: string, fixed: string): string | undefined =
   const crlfBefore = countMatches(source, /\r\n/g);
   const crlfAfter = countMatches(fixed, /\r\n/g);
 
-  if (crlfBefore > 0 && bareAfter > bareBefore) {
+  // By majority, as `lineTerminatorOf` decides: one stray CRLF line leaves an LF file LF.
+  const crlfFile = crlfBefore > 0 && crlfBefore >= bareBefore;
+
+  if (crlfFile && bareAfter > bareBefore) {
     return `CRLF file gained ${String(bareAfter - bareBefore)} bare LF line ending(s)`;
   }
 
-  return crlfBefore === 0 && crlfAfter > 0 ? `LF file gained ${String(crlfAfter)} CRLF line ending(s)` : undefined;
+  return !crlfFile && crlfAfter > crlfBefore
+    ? `LF file gained ${String(crlfAfter - crlfBefore)} CRLF line ending(s)`
+    : undefined;
 };

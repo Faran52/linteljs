@@ -191,6 +191,28 @@ describe('evaluate', () => {
     expect(categoriesOf(context, 'const a = 1;\r\nconst b = 2;\r\n', ['union-newline']))
       .toStrictEqual(['line-ending change']);
   });
+
+  it('lets an LF file with one stray CRLF line lose it', () => {
+    const context = planted({
+      'union-newline': textRule((text) => {
+        return text.replaceAll('\r\n', '\n');
+      }),
+    });
+
+    expect(categoriesOf(context, 'const a = 1;\r\nconst b = 2;\nconst c = 3;\n', ['union-newline']))
+      .toStrictEqual([]);
+  });
+
+  it('reports an LF file with one stray CRLF line gaining more', () => {
+    const context = planted({
+      'union-newline': textRule((text) => {
+        return text.replace('2;\n', '2;\r\n');
+      }),
+    });
+
+    expect(categoriesOf(context, 'const a = 1;\r\nconst b = 2;\nconst c = 3;\n', ['union-newline']))
+      .toStrictEqual(['line-ending change']);
+  });
 });
 
 describe('narrow', () => {

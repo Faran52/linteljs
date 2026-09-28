@@ -78,9 +78,12 @@ export const fitsOnLine = (
   return before + text.length + after <= limit;
 };
 
-// A fixer that always writes \n leaves a CRLF repo with mixed endings.
+// The file's majority: always writing \n mixes a CRLF repo, and one stray CRLF line must not convert an LF file.
 export const lineTerminatorOf = (sourceCode: SourceCode): string => {
-  return sourceCode.text.includes('\r\n') ? '\r\n' : '\n';
+  const crlf = sourceCode.text.split('\r\n').length - 1;
+  const lf = sourceCode.text.split('\n').length - 1 - crlf;
+
+  return crlf > 0 && crlf >= lf ? '\r\n' : '\n';
 };
 
 // Lines inside a multi-line token (a template body) are content, not indentation, so the indent scan skips them.

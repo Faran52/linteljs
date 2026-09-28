@@ -60,6 +60,10 @@ The name is imported from `react` and the member access is replaced with it. A t
 A JSX element is rewritten at both tags by one fix, since `<Fragment>` against `</React.Fragment>`
 would not parse and ESLint keeps whatever the last pass produced.
 
+Every report in a file carries the same fix, which imports all the names and rewrites every reach at
+once. A fix per reach would each edit the one import statement, ESLint applies one such fix a pass,
+and its ten passes stop before a file with more than ten reaches is done.
+
 Where the file already imports a named list from `react`, the name joins that list. Where it does
 not, the fix writes a second `import { ... } from 'react'` rather than rewriting what is there: a
 type-only import (`import type { FC } from 'react'`) cannot carry a `type` specifier, and a default

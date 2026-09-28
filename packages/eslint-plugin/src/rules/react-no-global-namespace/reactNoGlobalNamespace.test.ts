@@ -142,7 +142,42 @@ function build() {
 
     {
       code: 'let a: React.ReactNode;\nlet b: React.ReactElement;',
-      output: "import { type ReactNode } from 'react';\n\nlet a: ReactNode;\nlet b: React.ReactElement;",
+      output: "import { type ReactNode, type ReactElement } from 'react';\n\nlet a: ReactNode;\nlet b: ReactElement;",
+      errors: [{ messageId: 'globalNamespace' }, { messageId: 'globalNamespace' }],
+    },
+
+    {
+      code: 'let a: React.ReactNode;\nconst b = React.useState;\nconst c = React.useState;',
+      output: "import { type ReactNode, useState } from 'react';\n\n"
+        + 'let a: ReactNode;\nconst b = useState;\nconst c = useState;',
+      errors: [
+        { messageId: 'globalNamespace' },
+        { messageId: 'globalNamespace' },
+        { messageId: 'globalNamespace' },
+      ],
+    },
+
+    {
+      code: 'let a: React.Component;\nclass B extends React.Component {}',
+      output: "import { Component } from 'react';\n\nlet a: Component;\nclass B extends Component {}",
+      errors: [{ messageId: 'globalNamespace' }, { messageId: 'globalNamespace' }],
+    },
+
+    {
+      code: "import { useState } from 'react';\n"
+        + 'const a = React.useState;\nconst b = React.useEffect;\nconst c = React.useMemo;',
+      output: "import { useEffect, useMemo, useState } from 'react';\n"
+        + 'const a = useState;\nconst b = useEffect;\nconst c = useMemo;',
+      errors: [
+        { messageId: 'globalNamespace' },
+        { messageId: 'globalNamespace' },
+        { messageId: 'globalNamespace' },
+      ],
+    },
+
+    {
+      code: 'const useMemo = 1;\nconst a = React.useMemo;\nconst b = React.useState;',
+      output: "import { useState } from 'react';\n\nconst useMemo = 1;\nconst a = React.useMemo;\nconst b = useState;",
       errors: [{ messageId: 'globalNamespace' }, { messageId: 'globalNamespace' }],
     },
 

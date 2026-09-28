@@ -114,6 +114,11 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       errors: [{ messageId: 'preferArrow' }],
     },
     {
+      code: 'items.forEach(function (a) {\n  a.forEach(function (b) {\n    run(b);\n  });\n});',
+      output: 'items.forEach((a) => {\n  a.forEach((b) => {\n    run(b);\n  });\n});',
+      errors: [{ messageId: 'preferArrow' }, { messageId: 'preferArrow' }],
+    },
+    {
       code: 'function build() {\n  return new Service();\n}',
       output: 'const build = () => {\n  return new Service();\n};',
       errors: [{ messageId: 'preferArrow' }],

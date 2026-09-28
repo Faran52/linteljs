@@ -234,7 +234,14 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         fix: rebuildLosesAComment
           ? null
           : (fixer) => {
-              return fixer.replaceText(target, replacement);
+              const [start, end] = rangeOf(target);
+              const [bodyStart, bodyEnd] = rangeOf(fn.body);
+              const body = sourceCode.getText(fn.body);
+
+              // A body kept verbatim stays out of the edit, so a fix nested inside it lands in the same pass.
+              return end === bodyEnd && replacement.endsWith(body)
+                ? fixer.replaceTextRange([start, bodyStart], replacement.slice(0, -body.length))
+                : fixer.replaceText(target, replacement);
             },
       });
     };
