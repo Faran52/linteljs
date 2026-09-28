@@ -217,7 +217,7 @@ catalogs:
       version: 10.4.1
 
 patchedDependencies:
-  '@stryker-mutator/vitest-runner@10.0.0': b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf
+  '@stryker-mutator/vitest-runner@10.0.0': ee024083ab12802273d54fc2bac494e83f1cb258d6de2a2284f5b9378a613ab4
 
 importers:
 
@@ -304,7 +304,7 @@ importers:
         version: 10.0.0(@types/node@26.6.2)
       '@stryker-mutator/vitest-runner':
         specifier: 'catalog:'
-        version: 10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)
+        version: 10.0.0(patch_hash=ee024083ab12802273d54fc2bac494e83f1cb258d6de2a2284f5b9378a613ab4)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
@@ -359,7 +359,7 @@ importers:
         version: 10.0.0(@types/node@26.6.2)
       '@stryker-mutator/vitest-runner':
         specifier: 'catalog:'
-        version: 10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)
+        version: 10.0.0(patch_hash=ee024083ab12802273d54fc2bac494e83f1cb258d6de2a2284f5b9378a613ab4)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)
       '@stylexjs/eslint-plugin':
         specifier: ^0.19.1
         version: 0.19.1
@@ -440,7 +440,7 @@ importers:
         version: 10.0.0(@types/node@26.6.2)
       '@stryker-mutator/vitest-runner':
         specifier: 'catalog:'
-        version: 10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)
+        version: 10.0.0(patch_hash=ee024083ab12802273d54fc2bac494e83f1cb258d6de2a2284f5b9378a613ab4)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2
@@ -6712,7 +6712,7 @@ snapshots:
 
   '@stryker-mutator/util@10.0.0': {}
 
-  '@stryker-mutator/vitest-runner@10.0.0(patch_hash=b876bf65fb2b31d85e7b1c4641097678426c21636e30d1e4c5e4ceba968b91bf)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)':
+  '@stryker-mutator/vitest-runner@10.0.0(patch_hash=ee024083ab12802273d54fc2bac494e83f1cb258d6de2a2284f5b9378a613ab4)(@stryker-mutator/core@10.0.0(@types/node@26.6.2))(vitest@5.0.2)':
     dependencies:
       '@stryker-mutator/api': 10.0.0
       '@stryker-mutator/core': 10.0.0(@types/node@26.6.2)

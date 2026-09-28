@@ -25,9 +25,18 @@ index 56cc786f30c524ae18ce87eef1a67fdf26b703c5..9b6d43b30da4ab4e9c6d1d9ea66af049
  export function toRawTestId(test) {
      return `${test.file?.filepath ?? 'unknown.js'}#${collectTestName(test)}`;
 diff --git a/dist/src/vitest-test-runner.js b/dist/src/vitest-test-runner.js
-index 84f1ca026503b8e92b7adc952ec6c6a401943656..70e67f19261206427370ad7fc7b245200847d56a 100644
+index 84f1ca026503b8e92b7adc952ec6c6a401943656..dac2214099145ef587207b0d292599c2befb0093 100644
 --- a/dist/src/vitest-test-runner.js
 +++ b/dist/src/vitest-test-runner.js
+@@ -7,7 +7,7 @@ import { commonTokens, tokens, } from '@stryker-mutator/api/plugin';
+ import { DryRunStatus, toMutantRunResult, determineHitLimitReached, TestStatus, } from '@stryker-mutator/api/test-runner';
+ import { errorToString, escapeRegExp, normalizeFileName, notEmpty, testFilesProvided, } from '@stryker-mutator/util';
+ import { vitestWrapper } from './vitest-wrapper.js';
+-import { convertTestToTestResult, fromTestId, collectTestsFromSuite, normalizeCoverage, isErrorCodeError, VITEST_ERROR_CODES, } from './vitest-helpers.js';
++import { convertTestToTestResult, fromTestId, normalizeTestId, collectTestsFromSuite, normalizeCoverage, isErrorCodeError, VITEST_ERROR_CODES, } from './vitest-helpers.js';
+ const STRYKER_SETUP = fileURLToPath(new URL('./stryker-setup.js', import.meta.url));
+ export class VitestTestRunner {
+     log;
 @@ -48,7 +48,6 @@ export class VitestTestRunner {
              };
          }
@@ -36,3 +45,26 @@ index 84f1ca026503b8e92b7adc952ec6c6a401943656..70e67f19261206427370ad7fc7b24520
              maxWorkers: 1,
          };
      }
+@@ -177,6 +176,22 @@ export class VitestTestRunner {
+             failure ||= testResult.status === TestStatus.Failed;
+             return testResult;
+         });
++        // A suite whose import throws collects no test, so a mutant that breaks module load read as survived.
++        const unloaded = this.ctx.state.getFiles()
++            .find((file) => file.result?.state === 'fail' && collectTestsFromSuite(file).length === 0);
++        if (!failure && unloaded) {
++            failure = true;
++            const unloadedFile = path.resolve(unloaded.filepath);
++            const requested = testIds.find((id) => path.resolve(fromTestId(id).file) === unloadedFile);
++            testResults.push({
++                id: requested ?? normalizeTestId(`${unloadedFile}#module load`),
++                name: 'module load',
++                timeSpentMs: 0,
++                fileName: unloadedFile,
++                status: TestStatus.Failed,
++                failureMessage: unloaded.result?.errors?.[0]?.message ?? 'the suite failed to load',
++            });
++        }
+         if (!failure && this.ctx.state.errorsSet.size > 0) {
+             const errorText = [...this.ctx.state.errorsSet]
+                 .map(errorToString)
