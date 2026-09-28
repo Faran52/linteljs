@@ -3,6 +3,7 @@ import {
   tsRuleTester,
   tsxRuleTester,
 } from '@mocks/ruleTesters';
+import { Linter } from 'eslint';
 
 import { chainCallNewline } from './chainCallNewline.ts';
 
@@ -404,4 +405,16 @@ tsxRuleTester.run('chain-call-newline', chainCallNewline, {
       errors: [error],
     },
   ],
+});
+
+describe('the fix of a chain', () => {
+  it('stays inside its own chain when a later chain sits on a line it leaves alone', () => {
+    const code = 'let a, b;\nrun(a.map(f).filter(g));\nb.map(f).filter(g);\n';
+    const [first] = new Linter().verify(code, [{
+      plugins: { linteljs: { rules: { 'chain-call-newline': chainCallNewline } } },
+      rules: { 'linteljs/chain-call-newline': 'error' },
+    }]);
+
+    expect(first?.fix?.range[1]).toBeLessThan(code.indexOf('\nb.'));
+  });
 });

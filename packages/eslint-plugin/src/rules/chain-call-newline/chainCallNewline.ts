@@ -381,13 +381,8 @@ export const chainCallNewline = createRule('chain-call-newline', {
     };
 
     // A later chain on a line this plan breaks moves with the break.
-    const followsGap = (plan: Plan, index: number): boolean => {
-      const start = startOf(index);
-
-      return gapsOn(plan, mustFind(chainAt(index).top.loc).start.line)
-        .some((gap) => {
-          return gap.range[1] <= start;
-        });
+    const onBrokenLine = (plan: Plan, index: number): boolean => {
+      return gapsOn(plan, mustFind(chainAt(index).top.loc).start.line).length > 0;
     };
 
     // A chain in the head ends before this fix begins, so it lands in the same pass unfolded.
@@ -420,7 +415,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         return after;
       }
 
-      while (after < chains.length && followsGap(plan, after)) {
+      while (after < chains.length && onBrokenLine(plan, after)) {
         after = fold(plan, after);
       }
 
