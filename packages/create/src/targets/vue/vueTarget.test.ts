@@ -55,9 +55,9 @@ describe('vueTarget', () => {
   });
 
   it('takes one store module per store it offers, and none without one', () => {
-    expect(destinationsFor()).not.toContain('src/lib/store/counter.ts');
-    expect(destinationsFor({ store: 'pinia' })).toContain('src/lib/store/counter.ts');
-    expect(destinationsFor({ store: 'tanstack-store' })).toContain('src/lib/store/counter.ts');
+    expect(destinationsFor()).not.toContain('src/lib/store/counter/counterStore.ts');
+    expect(destinationsFor({ store: 'pinia' })).toContain('src/lib/store/counter/counterStore.ts');
+    expect(destinationsFor({ store: 'tanstack-store' })).toContain('src/lib/store/counter/counterStore.ts');
   });
 
   it('installs a store plugin only for the store that needs one', () => {
@@ -70,7 +70,7 @@ describe('vueTarget', () => {
 
       return vueTarget.starterFiles
         .find((file) => {
-          return file.target === 'src/lib/providers/installStore.ts'
+          return file.target === 'src/lib/providers/store/storeProvider.ts'
             && (file.when === undefined || file.when(answers));
         })?.variant;
     };
@@ -105,12 +105,12 @@ const GATES: GateRow[] = [
   ['src/components/ui/text-input/types.ts', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/installData.ts', NOT_TANSTACK_QUERY],
-  ['src/lib/providers/installData.ts@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/installStore.ts', [{ store: [undefined, 'tanstack-store'] }]],
-  ['src/lib/providers/installStore.ts@pinia', [{ store: ['pinia'] }]],
-  ['src/lib/store/counter.ts@pinia', [{ store: ['pinia'] }]],
-  ['src/lib/store/counter.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
+  ['src/lib/providers/data/dataProvider.ts', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/dataProvider.ts@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/store/storeProvider.ts', [{ store: [undefined, 'tanstack-store'] }]],
+  ['src/lib/providers/store/storeProvider.ts@pinia', [{ store: ['pinia'] }]],
+  ['src/lib/store/counter/counterStore.ts@pinia', [{ store: ['pinia'] }]],
+  ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['../components/ui/app-button/AppButton.css', PRESSABLE],
   ['../components/ui/text-input/TextInput.css', WITH_FORM],

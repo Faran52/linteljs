@@ -7,7 +7,7 @@
 
   import '../app.css';
 
-  import DataProvider from '$lib/providers/DataProvider.svelte';
+  import DataProvider from '$lib/providers/data/DataProvider.svelte';
 
   interface Props {
     children: Snippet;

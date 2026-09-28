@@ -16,7 +16,7 @@
       }
     </ul>
     <p class="note">
-      <code>pnpm check</code> runs the four in order, and is what CI runs.
+      <code>{{ check }}</code> runs them in order, and is what CI runs.
     </p>
   </section>
 
@@ -35,7 +35,7 @@
   <section class="section">
     <h2 class="section-title">Keeping it current</h2>
     <p class="note">
-      <code>pnpm dlx &#64;linteljs/create sync</code> re-applies the standard after an update. It
+      <code>npx &#64;linteljs/create sync</code> re-applies the standard after an update. It
       rewrites the toolchain and never touches your source.
     </p>
   </section>

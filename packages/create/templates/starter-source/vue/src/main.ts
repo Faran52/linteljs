@@ -1,16 +1,16 @@
 import { createApp } from 'vue';
 
 import App from './App.vue';
-import { installData } from './lib/providers/installData';
-import { installStore } from './lib/providers/installStore';
+import { dataProvider } from './lib/providers/data/dataProvider';
+import { storeProvider } from './lib/providers/store/storeProvider';
 import { router } from './router';
 
 import './styles/main.css';
 
 const app = createApp(App);
 
-installStore(app);
-installData(app);
+storeProvider(app);
+dataProvider(app);
 app
   .use(router)
   .mount('#root');

@@ -33,7 +33,7 @@ src/
     features/     reusable domain features
   lib/
     store/        cross-cutting client state
-    utils/        pure helpers, no domain type in the signature
+    utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch HTTP
     providers/    context providers
     hooks/        cross-cutting hooks

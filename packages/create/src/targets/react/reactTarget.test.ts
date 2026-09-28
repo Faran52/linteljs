@@ -96,7 +96,7 @@ describe('reactTarget', () => {
     };
 
     expect(sourcesFor({})).not.toHaveProperty('__mocks__/msw/handlers.ts');
-    expect(sourcesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtended.ts');
+    expect(sourcesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtendedUtils.ts');
     expect(sourcesFor({ mocking: 'msw' })['__mocks__/msw/handlers.ts']).toBeUndefined();
 
     const source = sourcesFor({
@@ -126,7 +126,7 @@ describe('reactTarget', () => {
 
     expect(suitesFor({})).not.toHaveProperty('__mocks__/msw/handlers.test.ts');
     expect(suitesFor({ mocking: 'msw' })['__mocks__/msw/handlers.test.ts']).toBeUndefined();
-    expect(suitesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtended.test.ts');
+    expect(suitesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtendedUtils.test.ts');
 
     const suite = suitesFor({
       mocking: 'msw',
@@ -182,20 +182,20 @@ const GATES: GateRow[] = [
   ['src/pages/contact/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
   ['src/pages/contact/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ...contactGates(['tanstack-query', 'rtk-query']),
-  ['src/lib/apis/baseApi.ts@rtk-query', RTK_QUERY],
+  ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],
   ['src/lib/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/DataProvider.tsx', NOT_TANSTACK_QUERY],
-  ['src/lib/providers/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/StoreProvider.tsx', [{ store: [undefined, 'zustand', 'tanstack-store'] }]],
-  ['src/lib/providers/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
-  ['src/lib/store/counter.ts@zustand', [{ store: ['zustand'] }]],
-  ['src/lib/store/counter.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
-  ['src/lib/store/counter.ts@redux-toolkit', [{
+  ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [undefined, 'zustand', 'tanstack-store'] }]],
+  ['src/lib/providers/store/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
+  ['src/lib/store/counter/counterStore.ts@zustand', [{ store: ['zustand'] }]],
+  ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
+  ['src/lib/store/counter/counterStore.ts@redux-toolkit', [{
     store: ['redux-toolkit'],
     data: [undefined, 'tanstack-query'],
   }]],
-  ['src/lib/store/counter.ts@rtk-query', [{
+  ['src/lib/store/counter/counterStore.ts@rtk-query', [{
     store: ['redux-toolkit'],
     data: ['rtk-query'],
   }]],
@@ -210,7 +210,7 @@ const GATES: GateRow[] = [
   ['src/routes/home.test.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/about.test.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/version.test.tsx@react-router-framework', FRAMEWORK_MODE],
-  ['src/lib/apis/baseApi.test.ts@rtk-query', RTK_QUERY],
+  ['src/lib/apis/base/baseApi.test.ts@rtk-query', RTK_QUERY],
   ['src/lib/hooks/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];

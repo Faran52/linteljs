@@ -1,4 +1,4 @@
-import { NAME } from '../config/linteljs';
+import { CHECK, NAME } from '../config/linteljs';
 
 import { renderPopup } from './renderPopup';
 
@@ -23,7 +23,9 @@ describe('renderPopup', () => {
 
     const hint = root.querySelector('.hint')?.textContent;
 
-    expect(hint).toBe('Run pnpm check for lint, types, tests and build.');
+    const expected = `Run ${CHECK} for the full gate.`;
+
+    expect(hint).toBe(expected);
     expect(root.querySelector('button')).toBeNull();
   });
 });

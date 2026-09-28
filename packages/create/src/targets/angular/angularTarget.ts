@@ -32,8 +32,8 @@ export const angularTarget: TargetRecord = {
   folderNaming: { 'src/**/': FOLDER },
   // `vmThreads`, which Angular's Vite plugin sets, has no Node globals; `testPool` on `types.ts` carries why.
   testPool: 'forks',
-  // `fetchExtended.ts` is one shared asset across ten targets; the alias bridges Angular's kebab spelling.
-  extraAliases: { '@utils/fetchExtended': './src/lib/utils/fetch-extended.ts' },
+  // `fetchExtendedUtils.ts` is one shared asset across ten targets; the alias bridges Angular's kebab spelling.
+  extraAliases: { '@utils/fetchExtendedUtils': './src/lib/utils/fetch-extended-utils.ts' },
   styleEntry: 'src/styles.css',
   starterStyles: [
     './styles/tokens.css',
@@ -68,7 +68,7 @@ export const angularTarget: TargetRecord = {
   coverageExclude: ['src/app/app.config.ts', 'src/app/app.routes.ts'],
   publicDirectory: 'public',
   starterFiles: [
-    ...mockFiles(false, true, 'src/lib/utils/fetch-extended.ts'),
+    ...mockFiles(false, true, 'src/lib/utils/fetch-extended-utils.ts'),
     ...componentStyles(),
     ...accessorFiles(ACCESSORS),
     ...ALWAYS
@@ -101,7 +101,7 @@ export const angularTarget: TargetRecord = {
   ],
   // The header is outside the outlet, so opening each route covers the shell and every page.
   starterTests: [
-    ...mockTests(false, 'src/lib/utils/fetch-extended'),
+    ...mockTests(false, 'src/lib/utils/fetch-extended-utils'),
     ...accessorTests(ACCESSORS),
     {
       target: 'src/app/app.spec.ts',

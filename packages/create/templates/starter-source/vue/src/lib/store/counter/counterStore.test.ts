@@ -5,9 +5,9 @@ import {
 } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { installStore } from '../providers/installStore';
+import { storeProvider } from '../../providers/store/storeProvider';
 
-import { useCounter } from './counter';
+import { useCounter } from './counterStore';
 
 const Probe = defineComponent({
   setup: () => {
@@ -28,7 +28,7 @@ const Probe = defineComponent({
 
 describe('useCounter', () => {
   it('counts up, and every reader sees the same count', async () => {
-    const app = mount(Probe, { global: { plugins: [installStore] } });
+    const app = mount(Probe, { global: { plugins: [storeProvider] } });
     const [first, second] = app.findAll('button');
 
     expect(first?.text()).toBe('one 0');

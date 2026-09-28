@@ -4,7 +4,7 @@ import {
   screen,
 } from '@solidjs/testing-library';
 
-import { DataProvider } from '../../lib/providers/DataProvider';
+import { DataProvider } from '../../lib/providers/data/DataProvider';
 
 import { ContactPage } from './ContactPage';
 

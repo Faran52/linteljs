@@ -51,10 +51,10 @@ const GATES: GateRow[] = [
   ['src/app/_layout.tsx@tailwind', TAILWIND],
   ['src/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/apis/baseApi.ts@rtk-query', RTK_QUERY],
+  ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],
   ['src/hooks/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/apis/baseApi.test.ts@rtk-query', RTK_QUERY],
+  ['src/lib/apis/base/baseApi.test.ts@rtk-query', RTK_QUERY],
 ];
 
 describe('the starter gates', () => {

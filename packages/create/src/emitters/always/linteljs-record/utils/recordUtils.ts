@@ -1,9 +1,27 @@
+import { RUN_PREFIX } from '@config/constants';
+
 import { valuesOf } from '@utils/objectUtils';
 
 import { type AnswerKey, type AnswerRecord } from '@answers';
 import { targetFor } from '@targets';
 
+import { buildScripts, gateScripts } from '../../utils/scriptUtils';
+
 import type { Answers, HostedAnswers } from '@config/types';
+
+// Read off the scripts `package.json` gets, so the page cannot name a command the project does not run.
+export const gateRows = (answers: Answers): [string, string][] => {
+  const run = RUN_PREFIX[answers.packageManager];
+  const gates = gateScripts(answers);
+
+  return Object.entries(buildScripts(answers))
+    .filter(([name]) => {
+      return gates.includes(name);
+    })
+    .map(([name, runs]) => {
+      return [`command: '${run} ${name}'`, `runs: '${runs}'`];
+    });
+};
 
 // The page states what was recorded, not a range to resolve.
 const plain = (range: string | undefined): string | undefined => {

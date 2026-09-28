@@ -7,7 +7,7 @@ export const ALWAYS: readonly string[] = [
   'src/pages/version/VersionPage.tsx',
   'src/components/ui/mark/Mark.tsx',
   'src/components/features/app-header/AppHeader.tsx',
-  'src/lib/providers/StoreProvider.tsx',
+  'src/lib/providers/store/StoreProvider.tsx',
 ];
 
 export const SHARED: readonly string[] = [

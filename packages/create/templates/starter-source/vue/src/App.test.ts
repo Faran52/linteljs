@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils';
 
 import App from './App.vue';
-import { installData } from './lib/providers/installData';
-import { installStore } from './lib/providers/installStore';
+import { dataProvider } from './lib/providers/data/dataProvider';
+import { storeProvider } from './lib/providers/store/storeProvider';
 import { router } from './router';
 import { ROUTES } from './views/routes';
 
@@ -10,7 +10,7 @@ const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   await router.push(path);
   await router.isReady();
 
-  return mount(App, { global: { plugins: [router, installStore, installData] } });
+  return mount(App, { global: { plugins: [router, storeProvider, dataProvider] } });
 };
 
 describe('App', () => {

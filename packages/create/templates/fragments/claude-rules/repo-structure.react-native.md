@@ -39,7 +39,7 @@ src/
   hooks/                use* only
   lib/
     store/              universal
-    utils/              pure helpers, no domain type in the signature
+    utils/              pure *Utils.ts helpers, no domain type in the signature
     services/           domain logic, may never touch the network directly
     providers/          context providers
     apis/               endpoint definitions and schemas

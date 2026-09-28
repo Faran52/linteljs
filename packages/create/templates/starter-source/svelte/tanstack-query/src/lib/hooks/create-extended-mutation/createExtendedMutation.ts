@@ -1,5 +1,5 @@
 import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-import { type ApiError, request } from '@utils/fetchExtended';
+import { type ApiError, request } from '@utils/fetchExtendedUtils';
 
 export interface ExtendedMutationOptions {
   readonly method?: 'POST' | 'PUT' | 'PATCH' | 'DELETE';

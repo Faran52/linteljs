@@ -1,3 +1,4 @@
+import { RUN_PREFIX } from '@config/constants';
 import { type Emitter, type HostedAnswers } from '@config/types';
 
 import { ANSWERS } from '@answers';
@@ -5,7 +6,11 @@ import { ANSWERS } from '@answers';
 import { VERSIONS } from '../../constants';
 import { emitted } from '../../utils/artifactUtils';
 
-import { answerRows, stackRows } from './utils/recordUtils';
+import {
+  answerRows,
+  gateRows,
+  stackRows,
+} from './utils/recordUtils';
 
 // A browser cannot read its machine's Node or package manager, so this CLI records them.
 export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string => {
@@ -18,8 +23,14 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
   };
 
   return [
-    '// Written once by @linteljs/create. Yours from here; the starter Version page is its only reader.',
+    '// Written once by @linteljs/create. Yours from here; only the starter pages read it.',
     `export const NAME = '${name}';`,
+    '',
+    `export const CHECK = '${RUN_PREFIX[answers.packageManager]} check';`,
+    '',
+    'export const GATE = [',
+    rows(gateRows(answers)),
+    '] as const;',
     '',
     'export const STACK = [',
     rows(stackRows(answers, VERSIONS)),

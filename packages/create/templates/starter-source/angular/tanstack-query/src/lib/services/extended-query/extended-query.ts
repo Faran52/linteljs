@@ -3,7 +3,7 @@ import {
   type ApiError,
   type QueryValue,
   request,
-} from '@utils/fetchExtended';
+} from '@utils/fetchExtendedUtils';
 
 export interface ExtendedQueryOptions {
   readonly query?: Readonly<Record<string, QueryValue>>;

@@ -162,14 +162,14 @@ export const svelteTarget: TargetRecord = {
       },
     },
     {
-      target: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
       shared: true,
     },
     {
-      target: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === 'tanstack-query';
       },
@@ -202,18 +202,18 @@ export const svelteTarget: TargetRecord = {
       variant: 'with-form',
     },
     {
-      target: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.ts',
       when: hasStore,
       variant: 'tanstack-store',
     },
     {
-      target: 'src/lib/providers/DataProvider.svelte',
+      target: 'src/lib/providers/data/DataProvider.svelte',
       when: (answers) => {
         return answers.data !== 'tanstack-query';
       },
     },
     {
-      target: 'src/lib/providers/DataProvider.svelte',
+      target: 'src/lib/providers/data/DataProvider.svelte',
       when: (answers) => {
         return answers.data === 'tanstack-query';
       },
@@ -276,8 +276,8 @@ export const svelteTarget: TargetRecord = {
       covers: 'src/components/ui/text-input/TextInput.svelte',
     },
     {
-      target: 'src/lib/apis/contact/api.test.ts',
-      covers: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.test.ts',
+      covers: 'src/lib/apis/contact/contactApi.ts',
     },
   ],
   build: 'vite build',

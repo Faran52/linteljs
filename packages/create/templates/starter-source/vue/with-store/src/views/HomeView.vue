@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AppButton from '../components/ui/app-button/AppButton.vue';
 import AppMark from '../components/ui/app-mark/AppMark.vue';
-import { NAME } from '../config/linteljs';
-import { useCounter } from '../lib/store/counter';
+import { CHECK, NAME } from '../config/linteljs';
+import { useCounter } from '../lib/store/counter/counterStore';
 
 const counter = useCounter();
 </script>
@@ -31,7 +31,7 @@ const counter = useCounter();
     </p>
 
     <p class="hint">
-      Run <code>pnpm check</code> for lint, types, tests and build.
+      Run <code>{{ CHECK }}</code> for the full gate.
     </p>
   </main>
 </template>

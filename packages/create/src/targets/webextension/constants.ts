@@ -31,7 +31,7 @@ export const CRX: PluginSpec = {
 export const POPUP: readonly string[] = [
   'src/main.ts',
   'src/popup/renderPopup.ts',
-  'src/lib/mark.ts',
+  'src/lib/mark/mark.ts',
 ];
 
 export const SHARED: readonly string[] = [

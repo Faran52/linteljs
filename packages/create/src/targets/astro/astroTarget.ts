@@ -122,8 +122,8 @@ export const astroTarget: TargetBuilder = (answers) => {
     starterTests: [
       ...mockTests(false),
       {
-        target: 'src/lib/utils/currentPath.test.ts',
-        covers: 'src/lib/utils/currentPath.ts',
+        target: 'src/lib/utils/currentPathUtils.test.ts',
+        covers: 'src/lib/utils/currentPathUtils.ts',
       },
     ],
     // Unconditional so `--existing` installs it too.

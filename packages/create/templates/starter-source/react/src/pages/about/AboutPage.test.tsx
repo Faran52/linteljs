@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
-import { GATE, STANDARD_PATHS } from '../../config/standard';
+import { GATE } from '../../config/linteljs';
+import { STANDARD_PATHS } from '../../config/standard';
 
 import { AboutPage } from './AboutPage';
 

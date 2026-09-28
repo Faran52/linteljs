@@ -1,3 +1,4 @@
+import { GATE } from '@config/linteljs';
 import { render, screen } from '@testing-library/svelte';
 
 import Page from './+page.svelte';
@@ -7,7 +8,10 @@ describe('about page', () => {
     render(Page);
 
     expect(screen.getByRole('heading', { name: 'About' })).toBeTruthy();
-    expect(screen.getByText('pnpm typecheck')).toBeTruthy();
+
+    for (const { command } of GATE) {
+      expect(screen.getByText(command)).toBeTruthy();
+    }
   });
 
   it('says where the standard lives', () => {

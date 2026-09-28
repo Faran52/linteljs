@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 
 import { Mark } from '../components/ui/mark/Mark';
-import { NAME } from '../config/linteljs';
+import { CHECK, NAME } from '../config/linteljs';
 import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
@@ -14,7 +14,13 @@ const HomeScreen = (): ReactNode => {
       <Mark />
       <Text style={text.title}>{NAME}</Text>
       <Text style={text.lede}>Expo, expo-router and the standard already applied.</Text>
-      <Text style={text.hint}>Run pnpm check for lint, types, tests and build.</Text>
+      <Text style={text.hint}>
+        Run
+        {' '}
+        {CHECK}
+        {' '}
+        for the full gate.
+      </Text>
     </View>
   );
 };

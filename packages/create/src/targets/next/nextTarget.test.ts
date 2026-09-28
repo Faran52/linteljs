@@ -77,20 +77,20 @@ const GATES: GateRow[] = [
   ['src/components/ui/index.ts@with-form', WITH_FORM],
   ['src/components/ui/button/Button.tsx', PRESSABLE],
   ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],
-  ['src/lib/apis/baseApi.ts@rtk-query', RTK_QUERY],
+  ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],
   ['src/lib/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/DataProvider.tsx', NOT_TANSTACK_QUERY],
-  ['src/lib/providers/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/StoreProvider.tsx', [{ store: [undefined, 'zustand', 'tanstack-store'] }]],
-  ['src/lib/providers/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
-  ['src/lib/store/counter.ts@zustand', [{ store: ['zustand'] }]],
-  ['src/lib/store/counter.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
-  ['src/lib/store/counter.ts@redux-toolkit', [{
+  ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
+  ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
+  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [undefined, 'zustand', 'tanstack-store'] }]],
+  ['src/lib/providers/store/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
+  ['src/lib/store/counter/counterStore.ts@zustand', [{ store: ['zustand'] }]],
+  ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
+  ['src/lib/store/counter/counterStore.ts@redux-toolkit', [{
     store: ['redux-toolkit'],
     data: [undefined, 'tanstack-query'],
   }]],
-  ['src/lib/store/counter.ts@rtk-query', [{
+  ['src/lib/store/counter/counterStore.ts@rtk-query', [{
     store: ['redux-toolkit'],
     data: ['rtk-query'],
   }]],
@@ -99,7 +99,7 @@ const GATES: GateRow[] = [
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/app/page.test.tsx', WITHOUT_STORE],
   ['src/app/page.test.tsx@with-store', WITH_STORE],
-  ['src/lib/apis/baseApi.test.ts@rtk-query', RTK_QUERY],
+  ['src/lib/apis/base/baseApi.test.ts@rtk-query', RTK_QUERY],
   ['src/lib/hooks/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],
 ];

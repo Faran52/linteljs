@@ -30,7 +30,7 @@ src/
     features/     reusable domain features
   lib/
     store/        cross-cutting state; Pinia stores when Pinia was selected
-    utils/        pure helpers, no domain type in the signature
+    utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch HTTP
     providers/    provide/inject wrappers
     composables/  cross-cutting composables

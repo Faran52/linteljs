@@ -5,8 +5,8 @@ import {
 } from '@solidjs/testing-library';
 
 import { App } from './App';
-import { DataProvider } from './lib/providers/DataProvider';
-import { StoreProvider } from './lib/providers/StoreProvider';
+import { DataProvider } from './lib/providers/data/DataProvider';
+import { StoreProvider } from './lib/providers/store/StoreProvider';
 import { ROUTES } from './pages/routes';
 
 import type { JSX } from 'solid-js';

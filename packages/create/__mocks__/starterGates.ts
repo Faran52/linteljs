@@ -86,13 +86,13 @@ export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
 export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]): GateRow[] => {
   return [
     ['src/lib/apis/contact/index.ts', WITH_FORM],
-    ['src/lib/apis/contact/api.ts', [{
+    ['src/lib/apis/contact/contactApi.ts', [{
       form: ANSWERED,
       data: [undefined],
     }]],
     ...dataLayers
       .map((data): GateRow => {
-        return [`src/lib/apis/contact/api.ts@${data}`, [{
+        return [`src/lib/apis/contact/contactApi.ts@${data}`, [{
           form: ANSWERED,
           data: [data],
         }]];

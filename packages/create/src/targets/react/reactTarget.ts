@@ -162,7 +162,7 @@ const baseReactTarget: TargetRecord = {
       }),
     // RTK Query keeps its own `createApi` rather than a wrapper that would lose its cache.
     {
-      target: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return answers.form !== undefined && answers.data === undefined;
       },
@@ -170,7 +170,7 @@ const baseReactTarget: TargetRecord = {
     ...(['tanstack-query', 'rtk-query'] as const)
       .map((data): StarterFile => {
         return {
-          target: 'src/lib/apis/contact/api.ts',
+          target: 'src/lib/apis/contact/contactApi.ts',
           when: (answers) => {
             return answers.form !== undefined && answers.data === data;
           },
@@ -179,13 +179,13 @@ const baseReactTarget: TargetRecord = {
       }),
     // TanStack Query needs an ancestor; RTK Query rides the Redux provider.
     {
-      target: 'src/lib/providers/DataProvider.tsx',
+      target: 'src/lib/providers/data/DataProvider.tsx',
       when: (answers) => {
         return answers.data !== 'tanstack-query';
       },
     },
     {
-      target: 'src/lib/providers/DataProvider.tsx',
+      target: 'src/lib/providers/data/DataProvider.tsx',
       when: (answers) => {
         return answers.data === 'tanstack-query';
       },
@@ -236,7 +236,7 @@ const baseReactTarget: TargetRecord = {
       },
     },
     {
-      target: 'src/lib/providers/StoreProvider.tsx',
+      target: 'src/lib/providers/store/StoreProvider.tsx',
       when: (answers) => {
         return answers.store !== 'redux-toolkit';
       },
@@ -254,7 +254,7 @@ const baseReactTarget: TargetRecord = {
       shared: true,
     },
     {
-      target: 'src/lib/providers/StoreProvider.tsx',
+      target: 'src/lib/providers/store/StoreProvider.tsx',
       when: (answers) => {
         return answers.store === 'redux-toolkit';
       },
@@ -263,7 +263,7 @@ const baseReactTarget: TargetRecord = {
     ...(['zustand', 'tanstack-store'] as const)
       .map((store): StarterFile => {
         return {
-          target: 'src/lib/store/counter.ts',
+          target: 'src/lib/store/counter/counterStore.ts',
           when: (answers) => {
             return answers.store === store;
           },
@@ -272,14 +272,14 @@ const baseReactTarget: TargetRecord = {
       }),
     // RTK Query's middleware must be registered in the Redux store.
     {
-      target: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.ts',
       when: (answers) => {
         return answers.store === 'redux-toolkit' && answers.data !== 'rtk-query';
       },
       variant: 'redux-toolkit',
     },
     {
-      target: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.ts',
       when: (answers) => {
         return answers.store === 'redux-toolkit' && answers.data === 'rtk-query';
       },
@@ -421,20 +421,20 @@ const baseReactTarget: TargetRecord = {
       variant: 'react-router-framework',
     },
     {
-      target: 'src/lib/providers/StoreProvider.test.tsx',
-      covers: 'src/lib/providers/StoreProvider.tsx',
+      target: 'src/lib/providers/store/StoreProvider.test.tsx',
+      covers: 'src/lib/providers/store/StoreProvider.tsx',
     },
     {
-      target: 'src/lib/providers/DataProvider.test.tsx',
-      covers: 'src/lib/providers/DataProvider.tsx',
+      target: 'src/lib/providers/data/DataProvider.test.tsx',
+      covers: 'src/lib/providers/data/DataProvider.tsx',
     },
     {
-      target: 'src/lib/store/counter.test.tsx',
-      covers: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.test.ts',
+      covers: 'src/lib/store/counter/counterStore.ts',
     },
     {
-      target: 'src/lib/apis/contact/api.test.tsx',
-      covers: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.test.ts',
+      covers: 'src/lib/apis/contact/contactApi.ts',
     },
   ],
   // Nothing fetches this target, so without `build` the project's own gate fails at birth.

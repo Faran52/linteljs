@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { NAME } from '../config/linteljs';
+import { CHECK, NAME } from '../config/linteljs';
 
 import HomePage from './page';
 
@@ -14,6 +14,6 @@ describe('the home route', () => {
   it('names the one command that runs the whole gate', () => {
     render(<HomePage />);
 
-    expect(screen.getByText('pnpm check')).toBeTruthy();
+    expect(screen.getByText(CHECK)).toBeTruthy();
   });
 });

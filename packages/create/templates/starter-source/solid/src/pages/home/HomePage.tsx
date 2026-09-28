@@ -1,4 +1,5 @@
 import { Mark } from '../../components/ui';
+import { CHECK } from '../../config/linteljs';
 
 import type { JSX } from 'solid-js';
 
@@ -15,9 +16,9 @@ export const HomePage = (props: HomePageProps): JSX.Element => {
       <p class="hint">
         Run
         {' '}
-        <code>pnpm check</code>
+        <code>{CHECK}</code>
         {' '}
-        for lint, types, tests and build.
+        for the full gate.
       </p>
     </main>
   );

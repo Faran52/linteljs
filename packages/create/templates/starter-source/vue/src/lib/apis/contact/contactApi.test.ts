@@ -6,9 +6,9 @@ import {
 } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { installData } from '../../providers/installData';
+import { dataProvider } from '../../providers/data/dataProvider';
 
-import { useSubmitContact } from './api';
+import { useSubmitContact } from './contactApi';
 
 import type { ContactValues } from './schemas';
 
@@ -41,7 +41,7 @@ const probeFor = (values: ContactValues): ReturnType<typeof defineComponent> => 
 };
 
 const press = async (values: ContactValues): Promise<string> => {
-  const probe = mount(probeFor(values), { global: { plugins: [installData] } });
+  const probe = mount(probeFor(values), { global: { plugins: [dataProvider] } });
 
   await probe
     .get('button')

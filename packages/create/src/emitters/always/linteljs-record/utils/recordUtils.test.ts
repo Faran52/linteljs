@@ -2,7 +2,11 @@ import { hostedAnswersFor } from '@mocks/answersFor';
 
 import { ANSWERS } from '@answers';
 
-import { answerRows, stackRows } from './recordUtils';
+import {
+  answerRows,
+  gateRows,
+  stackRows,
+} from './recordUtils';
 
 const VERSIONS = {
   '@linteljs/eslint-config': '^2.0.0',
@@ -31,6 +35,23 @@ describe('stackRows', () => {
 
   it('leaves out a row whose version is unknown', () => {
     expect(stackRows(hostedAnswersFor(), {})).toEqual([["name: 'node'", "version: '26.9.0'"]]);
+  });
+});
+
+describe('gateRows', () => {
+  it('prints what each leg of check runs for the target, not what another target runs', () => {
+    const rows = gateRows(hostedAnswersFor({
+      target: 'react-native',
+      testing: 'none',
+    }));
+
+    expect(rows).toEqual([
+      ["command: 'pnpm lint'", "runs: 'eslint .'"],
+      ["command: 'pnpm lint:types'", "runs: 'node scripts/checkBannedPatterns.ts src'"],
+      ["command: 'pnpm lint:css'", "runs: 'stylelint \"src/**/*.css\" --allow-empty-input'"],
+      ["command: 'pnpm typecheck'", "runs: 'tsc --noEmit'"],
+      ["command: 'pnpm build'", "runs: 'expo export'"],
+    ]);
   });
 });
 

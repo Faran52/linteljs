@@ -1,22 +1,3 @@
-export const GATE = [
-  {
-    command: 'pnpm lint',
-    runs: 'ESLint, one config, zero warnings',
-  },
-  {
-    command: 'pnpm typecheck',
-    runs: 'tsc --noEmit',
-  },
-  {
-    command: 'pnpm test',
-    runs: 'vitest, with coverage thresholds',
-  },
-  {
-    command: 'pnpm build',
-    runs: 'vite build',
-  },
-] as const;
-
 export const STANDARD_PATHS = [
   {
     path: 'eslint.config.js',

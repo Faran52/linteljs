@@ -1,8 +1,8 @@
 'use client';
 
 import { Button, Mark } from '../components/ui';
-import { NAME } from '../config/linteljs';
-import { useCounter } from '../lib/store/counter';
+import { CHECK, NAME } from '../config/linteljs';
+import { useCounter } from '../lib/store/counter/counterStore';
 
 import type { ReactNode } from 'react';
 
@@ -26,9 +26,9 @@ const HomePage = (): ReactNode => {
       <p className="hint">
         Run
         {' '}
-        <code>pnpm check</code>
+        <code>{CHECK}</code>
         {' '}
-        for lint, types, tests and build.
+        for the full gate.
       </p>
     </main>
   );

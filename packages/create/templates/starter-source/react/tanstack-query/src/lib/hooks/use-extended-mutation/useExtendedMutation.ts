@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { type ApiError, request } from '@utils/fetchExtended';
+import { type ApiError, request } from '@utils/fetchExtendedUtils';
 
 export interface ExtendedMutationOptions {
   readonly method?: 'POST' | 'PUT' | 'PATCH' | 'DELETE';

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/solid-query';
-import { type ApiError, request } from '@utils/fetchExtended';
+import { type ApiError, request } from '@utils/fetchExtendedUtils';
 
 import type { Accessor } from 'solid-js';
 

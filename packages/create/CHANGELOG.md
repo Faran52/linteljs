@@ -76,6 +76,14 @@ when a version's change lives in a sibling it is described there instead:
 - The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on file
   carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule files
   drop their "shipped verbatim" note.
+- Every file in a starter `utils/` folder ends in `Utils`: `lib/utils/fetchExtendedUtils.ts`
+  (`fetch-extended-utils.ts` on Angular) and Astro's `lib/utils/currentPathUtils.ts`, with their tests. The emitted
+  structure rule states the suffix.
+- Outside `utils/`, a starter module is a subject directory holding one entry named for the subject and its folder:
+  `lib/store/counter/counterStore.ts`, `lib/providers/data/DataProvider.tsx` and `store/StoreProvider.tsx`,
+  `lib/apis/base/baseApi.ts`, `lib/apis/contact/contactApi.ts`, and the extension's `lib/mark/mark.ts`. Vue's
+  `installData` and `installStore` are `dataProvider` and `storeProvider` under `lib/providers/data/` and
+  `lib/providers/store/`. The emitted structure rule states the shape.
 
 ### Fixed
 
@@ -109,6 +117,11 @@ when a version's change lives in a sibling it is described there instead:
 - The web extension popup drops its counter, which no store answer put there, and shows the gate hint every other
   home page shows.
 - React Native's mark animates like the web one, through Reanimated, and holds still under reduced motion.
+- The starter pages name the commands the project runs. The gate on About lists every script `check` chains, with
+  what each runs and the manager's own prefix, read from the emitted `package.json` scripts: React Native showed
+  `vite build` for `expo export`, every non-Vite target `tsc --noEmit` or `vite build` for its own tools, and a
+  project without tests a test leg. Home's hint names the same `check`, and About's sync line is
+  `npx @linteljs/create sync`, as the README has it.
 - A pnpm project's `pnpm-workspace.yaml` sets `minimumReleaseAge: 2880` and exempts `@linteljs/*`, so a fresh
   linteljs release installs the day it ships; a project's own `minimumReleaseAge` is left alone.
 - On Yarn inside CI, the first install writes its lockfile. Yarn 4 turns immutable installs on under CI and refused

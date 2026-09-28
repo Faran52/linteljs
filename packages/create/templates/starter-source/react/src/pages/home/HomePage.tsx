@@ -1,4 +1,5 @@
 import { Mark } from '../../components/ui';
+import { CHECK } from '../../config/linteljs';
 
 import type { FC } from 'react';
 
@@ -15,9 +16,9 @@ export const HomePage: FC<HomePageProps> = ({ name }) => {
       <p className="hint">
         Run
         {' '}
-        <code>pnpm check</code>
+        <code>{CHECK}</code>
         {' '}
-        for lint, types, tests and build.
+        for the full gate.
       </p>
     </main>
   );

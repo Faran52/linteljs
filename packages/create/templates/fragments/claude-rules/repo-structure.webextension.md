@@ -51,7 +51,7 @@ src/
     features/     reusable domain features
   lib/
     model/        domain entities and their types
-    utils/        pure helpers, no domain type in the signature
+    utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch the platform
     apis/         endpoint definitions and schemas
 ```

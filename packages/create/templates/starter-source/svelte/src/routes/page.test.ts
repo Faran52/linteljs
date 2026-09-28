@@ -1,4 +1,4 @@
-import { NAME } from '@config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
 import { render, screen } from '@testing-library/svelte';
 
 import Page from './+page.svelte';
@@ -13,6 +13,6 @@ describe('page', () => {
   it('names the one command that runs the whole gate', () => {
     render(Page);
 
-    expect(screen.getByText('pnpm check')).toBeTruthy();
+    expect(screen.getByText(CHECK)).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-import { baseApi } from '../baseApi';
+import { baseApi } from '../base/baseApi';
 
 import { type ContactValues, validateContact } from './schemas';
 

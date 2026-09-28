@@ -26,7 +26,7 @@ const HOOKS: AccessorNames = {
 
 describe('mockFiles', () => {
   it('writes the adapter alone without msw', () => {
-    expect(pickedBy(mockFiles(true))).toEqual(['src/lib/utils/fetchExtended.ts base']);
+    expect(pickedBy(mockFiles(true))).toEqual(['src/lib/utils/fetchExtendedUtils.ts base']);
   });
 
   it.each<[string, Partial<Answers>, string]>([
@@ -37,7 +37,7 @@ describe('mockFiles', () => {
     }, 'with-form'],
   ])('writes the worker, the node server and the handlers for %s under msw', (_case, overrides, handlers) => {
     expect(pickedBy(mockFiles(true), overrides)).toEqual([
-      'src/lib/utils/fetchExtended.ts base',
+      'src/lib/utils/fetchExtendedUtils.ts base',
       '__mocks__/msw/node.ts base',
       '__mocks__/msw/browser.ts base',
       `__mocks__/msw/handlers.ts ${handlers}`,
@@ -63,7 +63,7 @@ describe('mockFiles', () => {
   });
 
   it('leaves the browser worker out for a target that serves none, and lands the adapter where it is asked', () => {
-    const files = mockFiles(true, false, 'src/lib/utils/fetch-extended.ts');
+    const files = mockFiles(true, false, 'src/lib/utils/fetch-extended-utils.ts');
 
     const targets = files
       .map(({ target }) => {
@@ -72,8 +72,8 @@ describe('mockFiles', () => {
 
     expect(targets).not.toContain('__mocks__/msw/browser.ts');
     expect(files[0]).toEqual({
-      target: 'src/lib/utils/fetch-extended.ts',
-      source: 'src/lib/utils/fetchExtended.ts',
+      target: 'src/lib/utils/fetch-extended-utils.ts',
+      source: 'src/lib/utils/fetchExtendedUtils.ts',
       shared: true,
     });
   });
@@ -81,16 +81,16 @@ describe('mockFiles', () => {
 
 describe('mockTests', () => {
   it.each<[string, Partial<Answers>, string[]]>([
-    ['no mocking', {}, ['src/lib/utils/fetchExtended.test.ts base']],
+    ['no mocking', {}, ['src/lib/utils/fetchExtendedUtils.test.ts base']],
     ['msw and no form', { mocking: 'msw' }, [
-      'src/lib/utils/fetchExtended.test.ts base',
+      'src/lib/utils/fetchExtendedUtils.test.ts base',
       '__mocks__/msw/handlers.test.ts base',
     ]],
     ['msw and a form', {
       mocking: 'msw',
       form: 'tanstack-form',
     }, [
-      'src/lib/utils/fetchExtended.test.ts base',
+      'src/lib/utils/fetchExtendedUtils.test.ts base',
       '__mocks__/msw/handlers.test.ts with-form',
     ]],
   ])('follows the files it covers under %s', (_case, overrides, picked) => {
@@ -116,9 +116,9 @@ describe('mockTests', () => {
   });
 
   it('names the suite after the adapter it covers', () => {
-    expect(mockTests(true, 'src/lib/utils/fetch-extended')[0]).toMatchObject({
-      target: 'src/lib/utils/fetch-extended.test.ts',
-      covers: 'src/lib/utils/fetch-extended.ts',
+    expect(mockTests(true, 'src/lib/utils/fetch-extended-utils')[0]).toMatchObject({
+      target: 'src/lib/utils/fetch-extended-utils.test.ts',
+      covers: 'src/lib/utils/fetch-extended-utils.ts',
     });
   });
 });
@@ -204,8 +204,8 @@ describe('accessorTests', () => {
 describe('the rtk query api', () => {
   it('writes the base api and its suite under rtk query alone', () => {
     expect(pickedBy([...rtkFiles(), ...rtkTests()], { data: 'rtk-query' })).toEqual([
-      'src/lib/apis/baseApi.ts rtk-query',
-      'src/lib/apis/baseApi.test.ts rtk-query',
+      'src/lib/apis/base/baseApi.ts rtk-query',
+      'src/lib/apis/base/baseApi.test.ts rtk-query',
     ]);
     expect(pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' })).toEqual([]);
   });

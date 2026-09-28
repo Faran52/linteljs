@@ -8,8 +8,8 @@ import {
 
 import { AppHeader } from './components/features/app-header/AppHeader';
 import { NAME } from './config/linteljs';
-import { DataProvider } from './lib/providers/DataProvider';
-import { StoreProvider } from './lib/providers/StoreProvider';
+import { DataProvider } from './lib/providers/data/DataProvider';
+import { StoreProvider } from './lib/providers/store/StoreProvider';
 
 import type { ReactNode } from 'react';
 

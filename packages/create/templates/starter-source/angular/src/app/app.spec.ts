@@ -2,7 +2,11 @@ import { provideLocationMocks } from '@angular/common/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
-import { ANSWERS, NAME } from '../config/linteljs';
+import {
+  ANSWERS,
+  GATE,
+  NAME,
+} from '../config/linteljs';
 import { PAGES } from '../config/routes';
 
 import { App } from './app';
@@ -42,7 +46,10 @@ describe('App', () => {
     const root = await open('/about');
 
     expect(root.querySelector('.page-title')?.textContent).toContain('About');
-    expect(root.textContent).toContain('pnpm typecheck');
+
+    for (const { command } of GATE) {
+      expect(root.textContent).toContain(command);
+    }
   });
 
   it('routes to the version page, which renders what was recorded', async () => {

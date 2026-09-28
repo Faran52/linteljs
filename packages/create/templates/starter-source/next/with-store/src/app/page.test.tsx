@@ -4,8 +4,8 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { NAME } from '../config/linteljs';
-import { StoreProvider } from '../lib/providers/StoreProvider';
+import { CHECK, NAME } from '../config/linteljs';
+import { StoreProvider } from '../lib/providers/store/StoreProvider';
 
 import HomePage from './page';
 
@@ -27,7 +27,7 @@ describe('the home route', () => {
   it('names the one command that runs the whole gate', () => {
     open();
 
-    expect(screen.getByText('pnpm check')).toBeTruthy();
+    expect(screen.getByText(CHECK)).toBeTruthy();
   });
 
   it('counts up when the button it holds is pressed', () => {

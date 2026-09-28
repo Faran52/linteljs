@@ -7,7 +7,7 @@ import {
   vi,
 } from 'vitest';
 
-import { ApiError, request } from '@utils/fetchExtended';
+import { ApiError, request } from '@utils/fetchExtendedUtils';
 
 interface Named {
   readonly name: string;

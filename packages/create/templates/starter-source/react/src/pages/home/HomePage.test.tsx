@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import { DataProvider } from '../../lib/providers/DataProvider';
-import { StoreProvider } from '../../lib/providers/StoreProvider';
+import { CHECK } from '../../config/linteljs';
+import { DataProvider } from '../../lib/providers/data/DataProvider';
+import { StoreProvider } from '../../lib/providers/store/StoreProvider';
 
 import { HomePage } from './HomePage';
 
@@ -25,6 +26,6 @@ describe('HomePage', () => {
   it('names the one command that runs the whole gate', () => {
     renderPage();
 
-    expect(screen.getByText('pnpm check')).toBeTruthy();
+    expect(screen.getByText(CHECK)).toBeTruthy();
   });
 });

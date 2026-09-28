@@ -48,8 +48,8 @@ const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> =>
 
 describe('the asset a destination derives', () => {
   it('reads it straight off the destination where no answer gates the file', () => {
-    expect(sourcesByTarget({ target: 'astro' })['src/lib/utils/currentPath.ts'])
-      .toBe('starter-source/astro/src/lib/utils/currentPath.ts');
+    expect(sourcesByTarget({ target: 'astro' })['src/lib/utils/currentPathUtils.ts'])
+      .toBe('starter-source/astro/src/lib/utils/currentPathUtils.ts');
   });
 
   it.each<[TargetId, Browser]>([
@@ -136,9 +136,12 @@ describe('starter tests', () => {
   });
 
   it('gates the store suite on a counter only a store writes', () => {
-    expect(artifactFor({}, 'src/lib/store/counter.test.tsx')?.requires).toContain('src/lib/store/counter.ts');
-    expect(targetsFor({})).not.toContain('src/lib/store/counter.ts');
-    expect(targetsFor({ store: 'zustand' })).toContain('src/lib/store/counter.ts');
+    const store = 'src/lib/store/counter/counterStore.ts';
+    const requires = artifactFor({}, 'src/lib/store/counter/counterStore.test.ts')?.requires;
+
+    expect(requires).toContain(store);
+    expect(targetsFor({})).not.toContain(store);
+    expect(targetsFor({ store: 'zustand' })).toContain(store);
   });
 
   it('covers both the svelte page and its root layout', () => {
@@ -188,7 +191,7 @@ describe('the starter source', () => {
     ['react', [
       'src/pages/contact/ContactPage.tsx',
       'src/components/ui/text-input/TextInput.tsx',
-      'src/lib/apis/contact/api.ts',
+      'src/lib/apis/contact/contactApi.ts',
     ]],
     ['solid', [
       'src/pages/contact/ContactPage.tsx',
@@ -266,12 +269,12 @@ describe('the starter source', () => {
         target,
         form: 'tanstack-form',
         ...overrides,
-      })['src/lib/apis/contact/api.ts'];
+      })['src/lib/apis/contact/contactApi.ts'];
     };
 
-    expect(apiFor({})).toBe(`starter-source/${root}/src/lib/apis/contact/api.ts`);
+    expect(apiFor({})).toBe(`starter-source/${root}/src/lib/apis/contact/contactApi.ts`);
     expect(apiFor({ data: 'tanstack-query' }))
-      .toBe(`starter-source/${queryRoot}/tanstack-query/src/lib/apis/contact/api.ts`);
+      .toBe(`starter-source/${queryRoot}/tanstack-query/src/lib/apis/contact/contactApi.ts`);
   });
 
   it.each<TargetId>([
@@ -285,8 +288,11 @@ describe('the starter source', () => {
       data: 'rtk-query',
     });
 
-    expect(sources['src/lib/apis/contact/api.ts']).toBe('starter-source/react/rtk-query/src/lib/apis/contact/api.ts');
-    expect(sources['src/lib/store/counter.ts']).toBe('starter-source/react/rtk-query/src/lib/store/counter.ts');
+    const api = 'src/lib/apis/contact/contactApi.ts';
+    const store = 'src/lib/store/counter/counterStore.ts';
+
+    expect(sources[api]).toBe(`starter-source/react/rtk-query/${api}`);
+    expect(sources[store]).toBe(`starter-source/react/rtk-query/${store}`);
   });
 
   it('writes the svelte data wrapper only for a form with a suite', () => {
@@ -330,23 +336,23 @@ describe('the starter source', () => {
     };
 
     it('takes react\'s store in the spelling the store answer asks for', () => {
-      expect(sourceOf({ store: 'zustand' }, 'src/lib/store/counter.ts'))
-        .toBe('starter-source/react/zustand/src/lib/store/counter.ts');
-      expect(sourceOf({ store: 'tanstack-store' }, 'src/lib/store/counter.ts'))
-        .toBe('starter-source/react/tanstack-store/src/lib/store/counter.ts');
-      expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/store/counter.ts'))
-        .toBe('starter-source/react/redux-toolkit/src/lib/store/counter.ts');
+      expect(sourceOf({ store: 'zustand' }, 'src/lib/store/counter/counterStore.ts'))
+        .toBe('starter-source/react/zustand/src/lib/store/counter/counterStore.ts');
+      expect(sourceOf({ store: 'tanstack-store' }, 'src/lib/store/counter/counterStore.ts'))
+        .toBe('starter-source/react/tanstack-store/src/lib/store/counter/counterStore.ts');
+      expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/store/counter/counterStore.ts'))
+        .toBe('starter-source/react/redux-toolkit/src/lib/store/counter/counterStore.ts');
     });
 
     it('keeps both client slots in its own tree', () => {
-      expect(sourceOf({}, 'src/lib/providers/StoreProvider.tsx'))
-        .toBe('starter-source/next/src/lib/providers/StoreProvider.tsx');
-      expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/providers/StoreProvider.tsx'))
-        .toBe('starter-source/next/redux-toolkit/src/lib/providers/StoreProvider.tsx');
-      expect(sourceOf({}, 'src/lib/providers/DataProvider.tsx'))
-        .toBe('starter-source/next/src/lib/providers/DataProvider.tsx');
-      expect(sourceOf({ data: 'tanstack-query' }, 'src/lib/providers/DataProvider.tsx'))
-        .toBe('starter-source/next/tanstack-query/src/lib/providers/DataProvider.tsx');
+      expect(sourceOf({}, 'src/lib/providers/store/StoreProvider.tsx'))
+        .toBe('starter-source/next/src/lib/providers/store/StoreProvider.tsx');
+      expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/providers/store/StoreProvider.tsx'))
+        .toBe('starter-source/next/redux-toolkit/src/lib/providers/store/StoreProvider.tsx');
+      expect(sourceOf({}, 'src/lib/providers/data/DataProvider.tsx'))
+        .toBe('starter-source/next/src/lib/providers/data/DataProvider.tsx');
+      expect(sourceOf({ data: 'tanstack-query' }, 'src/lib/providers/data/DataProvider.tsx'))
+        .toBe('starter-source/next/tanstack-query/src/lib/providers/data/DataProvider.tsx');
     });
 
     it('takes the shared barrel in the spelling the answers reach', () => {

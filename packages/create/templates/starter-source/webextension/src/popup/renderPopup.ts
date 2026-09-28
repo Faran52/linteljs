@@ -1,5 +1,5 @@
-import { NAME } from '../config/linteljs';
-import { markSvg } from '../lib/mark';
+import { CHECK, NAME } from '../config/linteljs';
+import { markSvg } from '../lib/mark/mark';
 
 // Built node by node: a kept reference cannot be null, and an extension's CSP has no reason to trust markup.
 export const renderPopup = (root: HTMLElement): void => {
@@ -13,9 +13,9 @@ export const renderPopup = (root: HTMLElement): void => {
   lede.className = 'lede';
   lede.textContent = 'An extension, built by Vite and the standard already applied.';
 
-  command.textContent = 'pnpm check';
+  command.textContent = CHECK;
   hint.className = 'hint';
-  hint.append('Run ', command, ' for lint, types, tests and build.');
+  hint.append('Run ', command, ' for the full gate.');
 
   root.className = 'hero';
   root.innerHTML = markSvg;

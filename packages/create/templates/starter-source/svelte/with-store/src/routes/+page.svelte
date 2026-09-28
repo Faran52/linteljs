@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { NAME } from '@config/linteljs';
+  import { CHECK, NAME } from '@config/linteljs';
 
   import Button from '../components/ui/button/Button.svelte';
   import Mark from '../components/ui/mark/Mark.svelte';
 
-  import { useCounter } from '$lib/store/counter';
+  import { useCounter } from '$lib/store/counter/counterStore';
 
   const counter = useCounter();
 </script>
@@ -21,6 +21,6 @@
   <p class="caption">Held in a store, across every page.</p>
 
   <p class="hint">
-    Run <code>pnpm check</code> for lint, types, tests and build.
+    Run <code>{CHECK}</code> for the full gate.
   </p>
 </main>

@@ -28,13 +28,13 @@ const answersContact = (contact: boolean, answers: Answers): boolean => {
 export const mockFiles = (
   contact: boolean,
   servesAWorker = true,
-  adapter = 'src/lib/utils/fetchExtended.ts',
+  adapter = 'src/lib/utils/fetchExtendedUtils.ts',
 ): StarterFile[] => {
   return [
     // Unconditional: a project without a query library still makes requests.
     {
       target: adapter,
-      source: 'src/lib/utils/fetchExtended.ts',
+      source: 'src/lib/utils/fetchExtendedUtils.ts',
       shared: true,
     },
     {
@@ -70,11 +70,11 @@ export const mockFiles = (
   ];
 };
 
-export const mockTests = (contact: boolean, adapter = 'src/lib/utils/fetchExtended'): StarterTest[] => {
+export const mockTests = (contact: boolean, adapter = 'src/lib/utils/fetchExtendedUtils'): StarterTest[] => {
   return [
     {
       target: `${adapter}.test.ts`,
-      source: 'src/lib/utils/fetchExtended.test.ts',
+      source: 'src/lib/utils/fetchExtendedUtils.test.ts',
       covers: `${adapter}.ts`,
       shared: true,
     },
@@ -162,7 +162,7 @@ const usesRtkQuery = (answers: Answers): boolean => {
 
 export const rtkFiles = (): StarterFile[] => {
   return [{
-    target: 'src/lib/apis/baseApi.ts',
+    target: 'src/lib/apis/base/baseApi.ts',
     when: usesRtkQuery,
     variant: 'rtk-query',
     shared: true,
@@ -171,8 +171,8 @@ export const rtkFiles = (): StarterFile[] => {
 
 export const rtkTests = (): StarterTest[] => {
   return [{
-    target: 'src/lib/apis/baseApi.test.ts',
-    covers: 'src/lib/apis/baseApi.ts',
+    target: 'src/lib/apis/base/baseApi.test.ts',
+    covers: 'src/lib/apis/base/baseApi.ts',
     when: usesRtkQuery,
     variant: 'rtk-query',
     shared: true,

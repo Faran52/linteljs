@@ -116,11 +116,6 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
   cost in an empty one. This workspace runs it (`pnpm --filter <package> mutation`). MSW is an answer rather than a
   default, see [The api edge](#the-api-edge).
 - **No Emotion or styled-components.** That was one project's choice, never a standard.
-- **No `*Utils` filename suffix in a generated project.** This workspace uses it and enforces it on its own
-  `utils/` directories, and that stops at the workspace edge. `repo-structure.*.md` already puts every shared
-  helper inside a folder named `utils/`, so the import site reads `./utils/format` and the suffix would add nothing.
-  Every other entry in the emitted `naming` map answers a question the tooling asks; this one answers a question of
-  taste, and one project's taste is not a standard.
 - **A layer never weakens `base`.** Framework layers add rules for their framework. Every exemption that survives
   carries a measurement showing the tooling forced it: a plugin double-reporting one defect, a framework owning a
   filename. "It would be noisy otherwise" is not a reason.
@@ -266,7 +261,7 @@ component is a function and meets the function cap; a `.vue`, `.svelte` or `.ast
 the file cap, template and script counted together, and a function in its script meets the function cap. An
 Angular component class is a `.ts` file, so the 500 cap holds it and the function cap holds each method. A `utils/`
 module is a drawer of small helpers rather than one subject, which is why it gets the most room; the glob is
-`**/utils/**` rather than `*Utils.ts` because a generated project's `lib/utils/` does not carry the suffix.
+`**/utils/**` rather than `*Utils.ts` because Angular spells the suffix in kebab (`fetch-extended-utils.ts`).
 
 `**/*.{test,spec}.*`, `**/__mocks__/**` and `**/e2e/**` are exempt from both: a suite is a list of cases, and a
 `describe` callback is as long as the list. `astro()` states the `.astro` limits itself, because naming `.astro`
@@ -368,7 +363,7 @@ Vue's `class`, React destructures props and Solid may not, and React's route ele
 be a function.
 
 **A template names its own asset under each project's convention.** `StarterFile.source` lets one asset land under
-two names: `fetchExtended.ts` is `fetch-extended.ts` on Angular, which names every file in kebab, the way
+two names: `fetchExtendedUtils.ts` is `fetch-extended-utils.ts` on Angular, which names every file in kebab, the way
 `Mark.tsx` is `AppMark.vue` on Vue.
 
 **The asset path is the destination path**, verbatim, under the answer that gates the file where one does.
@@ -422,7 +417,7 @@ block. The rule reads identically on every target.
 - **The extension popup is built node by node**, with `document.createElement`, not from a string of markup. An
   extension runs under a content security policy with no reason to trust markup, and a reference kept cannot be
   null, where querying back out of `innerHTML` is a guard for a case that cannot happen and a branch the 100% gate
-  cannot cover. The mark lives in `lib/`, because with no hosted framework a file under `components/` is a
+  cannot cover. The mark lives in `lib/mark/`, because with no hosted framework a file under `components/` is a
   component by directory and with one by extension, and a string of markup satisfies neither.
 - **React Native's route list is out of coverage with the shell.** The nav is the tab bar in `src/app/_layout.tsx`,
   excluded because rendering the navigator reaches Expo's TypeScript source in `node_modules`, which no test
@@ -508,6 +503,10 @@ know its machine's Node or package manager; they are recorded as `nodeVersion` a
 framework's own `version` export would be accurate and a different import on every target, for one line nobody
 keeps.
 
+The same record carries `CHECK` and `GATE`, which Home and About print. Both are read off the scripts
+`package.json` receives, the manager's run prefix included, so a page cannot name a command the project does not
+run: React Native's `build` is `expo export`, and a project with no tests has no coverage leg.
+
 ## Project structure
 
 The published `repo-structure.<target>.md` rules describe the layout, and the templates seed it populated rather
@@ -539,7 +538,13 @@ domain logic with no HTTP dependency. `components/{ui,features}/` applies to the
 is a DOM-building module.
 
 A kebab-case directory holding an entry named for it, its suite and its stylesheet is the same subject rule this
-workspace holds itself to, one ring out. The entry's spelling is the target's: `componentNaming()` and
+workspace holds itself to, one ring out. It holds in `lib/` too: `utils/` is the one folder of loose files, each
+ending in `Utils` (`lib/utils/fetchExtendedUtils.ts`, `fetch-extended-utils.ts` on Angular), so an import names
+what it reaches for without the folder. Every other module is a subject directory whose entry takes the subject
+plus the folder's kind, the way `targets/react/reactTarget.ts` does here: `store/counter/counterStore.ts`,
+`providers/data/DataProvider.tsx` (a component, so the component spelling), `apis/contact/contactApi.ts`, and
+`lib/mark/mark.ts` on the extension, where `lib/` itself names no kind. `config/` stays flat, since it holds data.
+`repo-structure.standard.md` states both; the emitted `naming` map does not carry the suffix. The entry's spelling is the target's: `componentNaming()` and
 `sfcNaming()` give React, Solid, Vue and Svelte a PascalCase entry, and Angular is `'src/**/*.ts': 'KEBAB_CASE'`,
 `ng generate`'s own spelling, so the same component is `components/ui/button/button.ts`.
 
@@ -667,7 +672,7 @@ it would teach the wrong thing.
 
 ### The api edge
 
-**`fetchExtended.ts` ships on every project.** One place that speaks HTTP, whatever was answered. It answers parsed
+**`fetchExtendedUtils.ts` ships on every project.** One place that speaks HTTP, whatever was answered. It answers parsed
 JSON or throws `ApiError`, so a caller has two cases: no `response.ok` to forget and no second parse. The body is
 typed `object`, because `unknown`, `unknown[]` and `Record<string, unknown>` are refused by the type floor, and a
 second type parameter does not work since TypeScript takes type arguments all or nothing. Query strings go through
@@ -702,7 +707,7 @@ by the rule that keeps components PascalCase; React builds its provider with `cr
 Astro and the extension get the adapter and the mocks and no accessor: their query binding is the hosted
 framework's, and an accessor here would be one file per hosted framework.
 
-**RTK Query gets `baseApi.ts` and no accessor.** `createApi` generates a hook per endpoint, and
+**RTK Query gets `base/baseApi.ts` and no accessor.** `createApi` generates a hook per endpoint, and
 `useGetVersionQuery` says what it fetches where `useExtendedQuery('/version')` does not. What ships is what sits
 under every endpoint: one `fetchBaseQuery` against the origin the mocks answer on, one cache, one set of tags.
 Domain slices use `injectEndpoints`, because two `createApi` calls are two caches, and a tag invalidated in one is

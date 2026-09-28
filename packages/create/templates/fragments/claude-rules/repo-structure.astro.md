@@ -33,7 +33,7 @@ src/
   styles/         global.css and anything imported by a layout
   assets/
   lib/
-    utils/        pure helpers, no domain type in the signature
+    utils/        pure *Utils.ts helpers, no domain type in the signature
     services/     domain logic, may never touch HTTP
     apis/         endpoint definitions and schemas
 ```

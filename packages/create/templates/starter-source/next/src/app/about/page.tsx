@@ -1,4 +1,5 @@
-import { GATE, STANDARD_PATHS } from '../../config/standard';
+import { CHECK, GATE } from '../../config/linteljs';
+import { STANDARD_PATHS } from '../../config/standard';
 
 import type { ReactNode } from 'react';
 
@@ -25,9 +26,9 @@ const AboutPage = (): ReactNode => {
             })}
         </ul>
         <p className="note">
-          <code>pnpm check</code>
+          <code>{CHECK}</code>
           {' '}
-          runs the four in order, and is what CI runs.
+          runs them in order, and is what CI runs.
         </p>
       </section>
 
@@ -49,7 +50,7 @@ const AboutPage = (): ReactNode => {
       <section className="section">
         <h2 className="section-title">Keeping it current</h2>
         <p className="note">
-          <code>pnpm dlx @linteljs/create sync</code>
+          <code>npx @linteljs/create sync</code>
           {' '}
           re-applies the standard after an update. It rewrites the
           toolchain and never touches your source.

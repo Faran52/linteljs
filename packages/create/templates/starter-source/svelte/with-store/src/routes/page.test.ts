@@ -1,4 +1,4 @@
-import { NAME } from '@config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
 import {
   fireEvent,
   render,
@@ -17,7 +17,7 @@ describe('page', () => {
   it('names the one command that runs the whole gate', () => {
     render(Page);
 
-    expect(screen.getByText('pnpm check')).toBeTruthy();
+    expect(screen.getByText(CHECK)).toBeTruthy();
   });
 
   it('counts up from the store behind it', async () => {

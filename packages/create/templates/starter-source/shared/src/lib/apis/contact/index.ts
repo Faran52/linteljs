@@ -1,5 +1,5 @@
 // `useSubmitContact` alone: it is the one shape every data answer shares.
-export { useSubmitContact } from './api';
+export { useSubmitContact } from './contactApi';
 export {
   type ContactErrors,
   type ContactValues,

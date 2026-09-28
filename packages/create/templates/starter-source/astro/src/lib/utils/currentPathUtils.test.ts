@@ -1,4 +1,4 @@
-import { isCurrentPath } from './currentPath';
+import { isCurrentPath } from './currentPathUtils';
 
 describe('isCurrentPath', () => {
   it('marks the page being looked at', () => {

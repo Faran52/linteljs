@@ -13,15 +13,15 @@ Load alongside `type-standards.md` when touching anything under `src/lib/apis/`.
 ```
 lib/apis/
   shared/
-    api.ts              base client
+    sharedApi.ts        base client
     schemas.ts          error and envelope shapes
     entity-schemas.ts   reusable entity shapes
     fields.ts           reusable field primitives
     validations.ts      message builders
   <domain>/<entity>/
-    api.ts              the endpoint objects, with typed error variants
+    <entity>Api.ts      the endpoint objects, with typed error variants
     schemas.ts          request and response schemas, one pair per endpoint
-    index.ts            export * from './api'
+    index.ts            export * from './<entity>Api'
 ```
 
 `apis/` is the only place that knows about HTTP. `services/` holds domain logic and may never

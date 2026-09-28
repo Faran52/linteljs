@@ -5,9 +5,23 @@ import {
   it,
 } from 'vitest';
 
-import { buildScripts } from './scriptUtils';
+import { buildScripts, gateScripts } from './scriptUtils';
 
 import type { TargetId } from '@config/types';
+
+describe('gateScripts', () => {
+  it('lists the legs of check in order, the coverage leg only with tests', () => {
+    expect(gateScripts(answersFor({}))).toEqual([
+      'lint',
+      'lint:types',
+      'lint:css',
+      'typecheck',
+      'test:coverage',
+      'build',
+    ]);
+    expect(gateScripts(answersFor({ testing: 'none' }))).not.toContain('test:coverage');
+  });
+});
 
 describe('buildScripts', () => {
   it('chains check through every gate the answers enable', () => {

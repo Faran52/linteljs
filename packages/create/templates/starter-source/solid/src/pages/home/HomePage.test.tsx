@@ -1,6 +1,6 @@
 import { render, screen } from '@solidjs/testing-library';
 
-import { StoreProvider } from '../../lib/providers/StoreProvider';
+import { StoreProvider } from '../../lib/providers/store/StoreProvider';
 
 import { HomePage } from './HomePage';
 

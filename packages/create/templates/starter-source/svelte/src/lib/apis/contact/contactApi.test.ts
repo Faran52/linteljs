@@ -1,4 +1,4 @@
-import { submitContact } from './api';
+import { submitContact } from './contactApi';
 
 describe('submitContact', () => {
   it('answers 200 for details the rules accept', async () => {

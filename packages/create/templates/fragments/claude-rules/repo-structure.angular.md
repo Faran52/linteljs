@@ -30,7 +30,7 @@ src/
     features/     reusable domain features
   lib/
     store/        cross-cutting state
-    utils/        pure helpers, no domain type in the signature
+    utils/        pure *-utils.ts helpers, no domain type in the signature
     services/     injectable domain logic, may never touch HTTP
     providers/    DI providers and injection tokens
     apis/         endpoint definitions and schemas
@@ -49,6 +49,7 @@ than a file the build swaps out from under the code.
 - **There is no hooks slot; DI is the composition mechanism.** Shared reactive state is an
   `@Injectable` in `lib/services/` provided at the right level, not a function every component
   calls.
+- The query wrappers in `lib/services/` run in an injection context, the job a hook does elsewhere, so each entry is named for its directory as a hook's is: `extended-query/extended-query.ts`. <!-- when tanstack-query -->
 - Provide a service at the narrowest scope that works: `providedIn: 'root'` for genuinely global
   state, a route or component `providers` array otherwise. A root-provided service holding one
   route's state is a memory leak with extra steps.

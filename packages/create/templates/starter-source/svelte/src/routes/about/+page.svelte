@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { GATE, STANDARD_PATHS } from '../../config/standard';
+  import { CHECK, GATE } from '../../config/linteljs';
+import { STANDARD_PATHS } from '../../config/standard';
 </script>
 
 <main class="page">
@@ -20,7 +21,7 @@
       {/each}
     </ul>
     <p class="note">
-      <code>pnpm check</code> runs the four in order, and is what CI runs.
+      <code>{CHECK}</code> runs them in order, and is what CI runs.
     </p>
   </section>
 
@@ -39,7 +40,7 @@
   <section class="section">
     <h2 class="section-title">Keeping it current</h2>
     <p class="note">
-      <code>pnpm dlx @linteljs/create sync</code> re-applies the standard after an update. It
+      <code>npx @linteljs/create sync</code> re-applies the standard after an update. It
       rewrites the toolchain and never touches your source.
     </p>
   </section>

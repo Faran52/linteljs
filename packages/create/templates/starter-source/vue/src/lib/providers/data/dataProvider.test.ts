@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { installData } from './installData';
+import { dataProvider } from './dataProvider';
 
 const Probe = defineComponent({
   render: () => {
@@ -9,9 +9,9 @@ const Probe = defineComponent({
   },
 });
 
-describe('installData', () => {
+describe('dataProvider', () => {
   it('installs on the app, leaving what it renders alone', () => {
-    const app = mount(Probe, { global: { plugins: [installData] } });
+    const app = mount(Probe, { global: { plugins: [dataProvider] } });
 
     expect(app.text()).toBe('under the data layer');
   });

@@ -18,10 +18,14 @@ export const styleGlob = (answers: Answers): string => {
   return sfcExtension === undefined ? 'src/**/*.css' : `src/**/*.{css,${sfcExtension}}`;
 };
 
+// The scripts `check` chains, in order.
+export const gateScripts = (answers: Answers): string[] => {
+  return ['lint', 'lint:types', 'lint:css', 'typecheck', ...(hasTests(answers) ? ['test:coverage'] : []), 'build'];
+};
+
 export const buildScripts = (answers: Answers): Record<string, string> & CheckScript => {
   const run = RUN_PREFIX[answers.packageManager];
   const target = targetFor(answers);
-  const gates = ['lint', 'lint:types', 'lint:css', 'typecheck'];
 
   const scripts: Record<string, string> = {
     'lint': 'eslint .',
@@ -40,15 +44,13 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
     // vitest exits 1 on an empty run; test:coverage stays strict, since check uses it.
     scripts['test'] = 'vitest run --passWithNoTests';
     scripts['test:coverage'] = 'vitest run --coverage';
-    gates.push('test:coverage');
   }
 
   scripts['build'] = target.build;
-  gates.push('build');
 
   return {
     ...scripts,
-    check: gates
+    check: gateScripts(answers)
       .map((gate) => {
         return `${run} ${gate}`;
       })

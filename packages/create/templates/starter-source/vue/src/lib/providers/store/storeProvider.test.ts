@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { installStore } from './installStore';
+import { storeProvider } from './storeProvider';
 
 const Probe = defineComponent({
   render: () => {
@@ -9,9 +9,9 @@ const Probe = defineComponent({
   },
 });
 
-describe('installStore', () => {
+describe('storeProvider', () => {
   it('installs on the app, leaving what it renders alone', () => {
-    const app = mount(Probe, { global: { plugins: [installStore] } });
+    const app = mount(Probe, { global: { plugins: [storeProvider] } });
 
     expect(app.text()).toBe('under the store');
   });

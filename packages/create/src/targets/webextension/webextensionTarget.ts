@@ -40,7 +40,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
     },
     // No components here, so a stylesheet under `components/` would sit beside nothing.
     {
-      target: 'src/lib/mark.css',
+      target: 'src/lib/mark/mark.css',
       source: 'src/components/ui/mark/Mark.css',
       shared: true,
     },
@@ -123,7 +123,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     starterStyles: [
       './styles/tokens.css',
       './styles/base.css',
-      './lib/mark.css',
+      './lib/mark/mark.css',
     ],
     tailwindTheme: './styles/theme.css',
     ...(hosted === undefined ? {} : { framework: hosted.framework }),

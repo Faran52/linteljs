@@ -1,11 +1,11 @@
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { installData } from '../lib/providers/installData';
+import { dataProvider } from '../lib/providers/data/dataProvider';
 
 import ContactView from './ContactView.vue';
 
-const mounted = { global: { plugins: [installData] } };
+const mounted = { global: { plugins: [dataProvider] } };
 
 const fill = async (view: ReturnType<typeof mount>, selector: string, value: string): Promise<void> => {
   const field = view.get(selector);

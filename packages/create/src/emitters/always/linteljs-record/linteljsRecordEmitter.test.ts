@@ -13,8 +13,37 @@ const recorded = (name: string): string => {
 describe('emitLinteljsRecord', () => {
   it('names the project and carries the framework the target renders with', () => {
     expect(emitLinteljsRecord(hostedAnswersFor({ packageManagerVersion: '12.4.1' }), 'my-app')).toBe(`\
-// Written once by @linteljs/create. Yours from here; the starter Version page is its only reader.
+// Written once by @linteljs/create. Yours from here; only the starter pages read it.
 export const NAME = 'my-app';
+
+export const CHECK = 'pnpm check';
+
+export const GATE = [
+  {
+    command: 'pnpm lint',
+    runs: 'eslint .',
+  },
+  {
+    command: 'pnpm lint:types',
+    runs: 'node scripts/checkBannedPatterns.ts src',
+  },
+  {
+    command: 'pnpm lint:css',
+    runs: 'stylelint "src/**/*.css" --allow-empty-input',
+  },
+  {
+    command: 'pnpm typecheck',
+    runs: 'tsc --noEmit',
+  },
+  {
+    command: 'pnpm test:coverage',
+    runs: 'vitest run --coverage',
+  },
+  {
+    command: 'pnpm build',
+    runs: 'vite build',
+  },
+] as const;
 
 export const STACK = [
   {
@@ -95,6 +124,15 @@ export const ANSWERS = [
     expect(emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app'))
       .toContain("value: 'zod, es-toolkit'");
     expect(emitLinteljsRecord(hostedAnswersFor({ agents: [] }), 'my-app')).not.toContain("label: 'AI agents'");
+  });
+});
+
+describe('the gate it records', () => {
+  it('names the check under the manager that runs it', () => {
+    const recorded = emitLinteljsRecord(hostedAnswersFor({ packageManager: 'npm' }), 'my-app');
+
+    expect(recorded).toContain("export const CHECK = 'npm run check';");
+    expect(recorded).toContain("command: 'npm run build',");
   });
 });
 

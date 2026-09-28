@@ -3,7 +3,7 @@ import {
   type ApiError,
   type QueryValue,
   request,
-} from '@utils/fetchExtended';
+} from '@utils/fetchExtendedUtils';
 
 import type { Ref } from 'vue';
 

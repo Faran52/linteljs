@@ -209,7 +209,7 @@ export const nextTarget: TargetRecord = {
         };
       }),
     {
-      target: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
@@ -218,7 +218,7 @@ export const nextTarget: TargetRecord = {
     ...(['tanstack-query', 'rtk-query'] as const)
       .map((data): StarterFile => {
         return {
-          target: 'src/lib/apis/contact/api.ts',
+          target: 'src/lib/apis/contact/contactApi.ts',
           when: (answers) => {
             return hasForm(answers) && answers.data === data;
           },
@@ -243,26 +243,26 @@ export const nextTarget: TargetRecord = {
     },
     // Next's own: the directive on them makes them the client boundary.
     {
-      target: 'src/lib/providers/StoreProvider.tsx',
+      target: 'src/lib/providers/store/StoreProvider.tsx',
       when: (answers) => {
         return answers.store !== 'redux-toolkit';
       },
     },
     {
-      target: 'src/lib/providers/StoreProvider.tsx',
+      target: 'src/lib/providers/store/StoreProvider.tsx',
       when: (answers) => {
         return answers.store === 'redux-toolkit';
       },
       variant: 'redux-toolkit',
     },
     {
-      target: 'src/lib/providers/DataProvider.tsx',
+      target: 'src/lib/providers/data/DataProvider.tsx',
       when: (answers) => {
         return answers.data !== 'tanstack-query';
       },
     },
     {
-      target: 'src/lib/providers/DataProvider.tsx',
+      target: 'src/lib/providers/data/DataProvider.tsx',
       when: (answers) => {
         return answers.data === 'tanstack-query';
       },
@@ -271,7 +271,7 @@ export const nextTarget: TargetRecord = {
     ...(['zustand', 'tanstack-store'] as const)
       .map((store): StarterFile => {
         return {
-          target: 'src/lib/store/counter.ts',
+          target: 'src/lib/store/counter/counterStore.ts',
           when: (answers) => {
             return answers.store === store;
           },
@@ -281,7 +281,7 @@ export const nextTarget: TargetRecord = {
       }),
     // RTK Query's middleware must be registered in the Redux store.
     {
-      target: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.ts',
       when: (answers) => {
         return answers.store === 'redux-toolkit' && answers.data !== 'rtk-query';
       },
@@ -289,7 +289,7 @@ export const nextTarget: TargetRecord = {
       shared: 'react',
     },
     {
-      target: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.ts',
       when: (answers) => {
         return answers.store === 'redux-toolkit' && answers.data === 'rtk-query';
       },
@@ -357,23 +357,23 @@ export const nextTarget: TargetRecord = {
       shared: 'react',
     },
     {
-      target: 'src/lib/providers/StoreProvider.test.tsx',
-      covers: 'src/lib/providers/StoreProvider.tsx',
+      target: 'src/lib/providers/store/StoreProvider.test.tsx',
+      covers: 'src/lib/providers/store/StoreProvider.tsx',
       shared: 'react',
     },
     {
-      target: 'src/lib/providers/DataProvider.test.tsx',
-      covers: 'src/lib/providers/DataProvider.tsx',
+      target: 'src/lib/providers/data/DataProvider.test.tsx',
+      covers: 'src/lib/providers/data/DataProvider.tsx',
       shared: 'react',
     },
     {
-      target: 'src/lib/store/counter.test.tsx',
-      covers: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.test.ts',
+      covers: 'src/lib/store/counter/counterStore.ts',
       shared: 'react',
     },
     {
-      target: 'src/lib/apis/contact/api.test.tsx',
-      covers: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.test.ts',
+      covers: 'src/lib/apis/contact/contactApi.ts',
       shared: 'react',
     },
   ],

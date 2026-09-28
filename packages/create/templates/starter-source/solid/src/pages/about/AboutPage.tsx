@@ -1,6 +1,7 @@
 import { For, type JSX } from 'solid-js';
 
-import { GATE, STANDARD_PATHS } from '../../config/standard';
+import { CHECK, GATE } from '../../config/linteljs';
+import { STANDARD_PATHS } from '../../config/standard';
 
 export const AboutPage = (): JSX.Element => {
   return (
@@ -26,9 +27,9 @@ export const AboutPage = (): JSX.Element => {
           </For>
         </ul>
         <p class="note">
-          <code>pnpm check</code>
+          <code>{CHECK}</code>
           {' '}
-          runs the four in order, and is what CI runs.
+          runs them in order, and is what CI runs.
         </p>
       </section>
 
@@ -51,7 +52,7 @@ export const AboutPage = (): JSX.Element => {
       <section class="section">
         <h2 class="section-title">Keeping it current</h2>
         <p class="note">
-          <code>pnpm dlx @linteljs/create sync</code>
+          <code>npx @linteljs/create sync</code>
           {' '}
           re-applies the standard after an update. It rewrites the toolchain and never touches your source.
         </p>

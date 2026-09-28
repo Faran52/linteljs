@@ -114,14 +114,14 @@ export const vueTarget: TargetRecord = {
       shared: true,
     },
     {
-      target: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
       shared: true,
     },
     {
-      target: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === 'tanstack-query';
       },
@@ -155,13 +155,13 @@ export const vueTarget: TargetRecord = {
     },
     // Vue installs both as app plugins, so each slot is a function rather than a component.
     {
-      target: 'src/lib/providers/installStore.ts',
+      target: 'src/lib/providers/store/storeProvider.ts',
       when: (answers) => {
         return answers.store !== 'pinia';
       },
     },
     {
-      target: 'src/lib/providers/installStore.ts',
+      target: 'src/lib/providers/store/storeProvider.ts',
       when: (answers) => {
         return answers.store === 'pinia';
       },
@@ -170,7 +170,7 @@ export const vueTarget: TargetRecord = {
     ...(['pinia', 'tanstack-store'] as const)
       .map((store): StarterFile => {
         return {
-          target: 'src/lib/store/counter.ts',
+          target: 'src/lib/store/counter/counterStore.ts',
           when: (answers) => {
             return answers.store === store;
           },
@@ -178,13 +178,13 @@ export const vueTarget: TargetRecord = {
         };
       }),
     {
-      target: 'src/lib/providers/installData.ts',
+      target: 'src/lib/providers/data/dataProvider.ts',
       when: (answers) => {
         return answers.data !== 'tanstack-query';
       },
     },
     {
-      target: 'src/lib/providers/installData.ts',
+      target: 'src/lib/providers/data/dataProvider.ts',
       when: (answers) => {
         return answers.data === 'tanstack-query';
       },
@@ -220,20 +220,20 @@ export const vueTarget: TargetRecord = {
       covers: 'src/components/ui/text-input/TextInput.vue',
     },
     {
-      target: 'src/lib/apis/contact/api.test.ts',
-      covers: 'src/lib/apis/contact/api.ts',
+      target: 'src/lib/apis/contact/contactApi.test.ts',
+      covers: 'src/lib/apis/contact/contactApi.ts',
     },
     {
-      target: 'src/lib/providers/installStore.test.ts',
-      covers: 'src/lib/providers/installStore.ts',
+      target: 'src/lib/providers/store/storeProvider.test.ts',
+      covers: 'src/lib/providers/store/storeProvider.ts',
     },
     {
-      target: 'src/lib/providers/installData.test.ts',
-      covers: 'src/lib/providers/installData.ts',
+      target: 'src/lib/providers/data/dataProvider.test.ts',
+      covers: 'src/lib/providers/data/dataProvider.ts',
     },
     {
-      target: 'src/lib/store/counter.test.ts',
-      covers: 'src/lib/store/counter.ts',
+      target: 'src/lib/store/counter/counterStore.test.ts',
+      covers: 'src/lib/store/counter/counterStore.ts',
     },
   ],
   build: 'vite build',
