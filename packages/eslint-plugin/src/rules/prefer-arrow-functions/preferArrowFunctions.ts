@@ -142,6 +142,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
     ): boolean => {
       const [declarationStart] = rangeOf(fn);
       const [, blockEnd] = rangeOf(fn.parent);
+      const previous = sourceCode.getTokenBefore(fn);
       const walked = new Set<RuleNode>();
 
       // The Program holds `fn`, so the walk always stops before it runs out of parents.
@@ -162,7 +163,8 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       const runsEarly = (reference: Scope.Reference): boolean => {
         const [referenceStart, referenceEnd] = rangeOf(reference.identifier);
 
-        if (referenceStart < declarationStart) {
+        // At or before the last token ahead of the declaration: a reference can be that very token.
+        if (previous !== null && referenceStart <= previous.range[0]) {
           return true;
         }
 

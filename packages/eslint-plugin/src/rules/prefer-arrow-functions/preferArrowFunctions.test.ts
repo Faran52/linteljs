@@ -498,6 +498,11 @@ class Holder {
       errors: [{ messageId: 'preferArrowHoisted' }],
     },
     {
+      code: 'greet\nfunction greet() {\n  return 1;\n}',
+      output: null,
+      errors: [{ messageId: 'preferArrowHoisted' }],
+    },
+    {
       code: 'greet();\n\nfunction greet() {\n  return 1;\n}',
       output: null,
       errors: [{ messageId: 'preferArrowHoisted' }],

@@ -141,7 +141,10 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: eslint-plugin-${{ matrix.part }}-logs
-          path: mutation.log
+          # The JSON names each timed-out mutant; the text log only counts them.
+          path: |
+            mutation.log
+            packages/eslint-plugin/reports/mutation/mutation.json
           retention-days: 30
 
   eslint-config:
@@ -183,7 +186,9 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: eslint-config-logs
-          path: mutation.log
+          path: |
+            mutation.log
+            packages/eslint-config/reports/mutation/mutation.json
           retention-days: 30
 
   create:
@@ -233,5 +238,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: create-${{ matrix.part }}-logs
-          path: mutation.log
+          path: |
+            mutation.log
+            packages/create/reports/mutation/mutation.json
           retention-days: 30
