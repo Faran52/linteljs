@@ -5,7 +5,7 @@ import { SCRIPT_AND_SFC_FILES } from '../../config/constants';
 import type { ESLint, Rule } from 'eslint';
 import type { Layer } from '../../types';
 
-// StyleX 0.19 compiles each of these to no CSS at all, without an error. Measured against its Babel plugin.
+// StyleX 0.19 silently compiles each of these to no CSS, measured against its Babel plugin.
 const DROPPED_SHORTHANDS = [
   'animation',
   'background',
@@ -15,7 +15,7 @@ const DROPPED_SHORTHANDS = [
 
 const VALID_IMPORTS = ['stylex', '@stylexjs/stylex'];
 
-// `valid-styles` 0.19 calls `context.getScope()`, removed in ESLint 9, and the whole run threw.
+// `valid-styles` 0.19 calls `context.getScope()`, gone in ESLint 9, so the run throws.
 // A copy rather than a wrapper: the context is frozen.
 const withGetScope = (rule: Rule.RuleModule): Rule.RuleModule => {
   return {
@@ -52,7 +52,7 @@ const plugin: ESLint.Plugin = {
   rules: {
     ...stylexPlugin.rules,
     'valid-styles': withGetScope(validStyles),
-    // Published as `type: 'error'`, which is none of ESLint's three, so no `--fix-type` ever applied its fix.
+    // Published as `type: 'error'`, none of ESLint's three, so no `--fix-type` applies its fix.
     'valid-shorthands': {
       ...validShorthands,
       meta: {

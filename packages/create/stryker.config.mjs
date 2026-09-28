@@ -73,7 +73,7 @@ const config = {
     ...earlierParts,
   ],
 
-  // Every part scored over 96% on its first run; `break` sits under it so the weekly audit flags a regression.
+  // Every part scores over 96%; `break` sits under it so the weekly audit flags a regression.
   thresholds: {
     high: 100,
     low: 99,

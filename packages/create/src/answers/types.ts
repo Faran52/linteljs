@@ -4,7 +4,7 @@ import type { TargetRecord } from '@targets';
 export interface ValueRecord {
   label: string;
   hint?: string;
-  // `answered` because one value's legality can depend on another answer: `rtk-query` needs its store.
+  // One value's legality can depend on another answer: `rtk-query` needs its store.
   only?: (target: TargetRecord, answered: Answers) => boolean;
 }
 

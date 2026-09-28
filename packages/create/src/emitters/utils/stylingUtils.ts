@@ -8,7 +8,7 @@ export interface StylingPlugin {
 
 const STYLEX_CALL = 'stylex({ useCSSLayers: true })';
 
-// `@stylexjs/unplugin/vite`: the generic adapter lacks `generateBundle`, so a build shipped class names with no CSS.
+// `@stylexjs/unplugin/vite`: the generic adapter lacks `generateBundle` and emits no CSS.
 // Typed `=> any`, so a TypeScript config gives it unplugin's Vite adapter type.
 export const stylingPlugin = (styling: Styling | undefined, language: 'ts' | 'js' = 'ts'): StylingPlugin => {
   if (styling === 'tailwind') {

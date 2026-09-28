@@ -20,7 +20,7 @@ interface LineEntry {
 // Three slashes is where the shipped standard moves a note into JSDoc.
 const MIN_JSDOC_LINES = 3;
 
-// Directives are machine-addressed, so never rewritten. Two patterns: one regex was over the complexity limit.
+// Directives are machine-addressed, so never rewritten. Two patterns for the complexity limit.
 const DIRECTIVE_OPENER = /^#!|^\/\/\/\s*<reference\b/;
 const DIRECTIVE_KEYWORD = /^\/\/\s*(?:eslint-\w+|@?ts-\w+|[vc]8 ignore|istanbul ignore|prettier-ignore)\b/;
 

@@ -37,7 +37,7 @@ const config = {
   // pnpm's strict layout keeps the runner out of Stryker's own node_modules, so scanning misses it.
   plugins: ['@stryker-mutator/vitest-runner'],
   reporters: ['html', 'json', 'clear-text', 'progress'],
-  // `all`: a rule is built at module load, and per-test attribution reported eleven caught mutants as survivors.
+  // `all`: a rule is built at module load, so per-test attribution scores caught mutants as survivors.
   coverageAnalysis: 'all',
 
   // These suites import `create` by a relative path the sandbox, two folders deeper, cannot resolve.

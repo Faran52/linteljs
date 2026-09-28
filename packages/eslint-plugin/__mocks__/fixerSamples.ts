@@ -42,7 +42,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'panel.tsx',
   },
   {
-    // typescript-eslint gives every ExpressionStatement a `directive` key, which once made this throw.
+    // typescript-eslint gives every ExpressionStatement a `directive` key; the fix must not throw on it.
     name: 'React global in a file of expression statements',
     code: "React.createElement('div');\n",
     typescript: true,
@@ -56,7 +56,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'custom.d.ts',
   },
   {
-    // Each rewrite once spanned the callbacks inside it, so ESLint's ten passes stopped short of the innermost.
+    // Deeper than ESLint's ten fix passes, so each rewrite must span only its own callback.
     name: 'callbacks nested twelve deep',
     code: [
       ...Array.from({ length: 12 }, (_, depth) => {
@@ -69,7 +69,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     ].join(''),
   },
   {
-    // Each chain's fix once spanned the chains in its arguments, so ESLint's ten passes stopped short of the innermost.
+    // Deeper than ESLint's ten fix passes, so each fix must span only its own chain.
     name: 'chains nested twelve deep',
     code: `let a, x, y;\n${Array.from({ length: 12 })
       .reduce<string>((inner) => {
@@ -77,12 +77,12 @@ export const FIXER_SAMPLES: FixerSample[] = [
       }, 'x')};\n`,
   },
   {
-    // A later chain on the line once kept the indent of the line it left.
+    // A later chain on the line must take the indent of the line it lands on.
     name: 'sibling chains on one line',
     code: 'let a, b, c;\nrun(a.map(f).filter(g), b.map(f).filter(g), c.map(f).filter(g));\n',
   },
   {
-    // Each reach once edited the one import, so ESLint's ten passes left a file with twelve half done.
+    // More reaches than ESLint's ten fix passes, so they must land in one edit of the import.
     name: 'twelve React globals in one file',
     code: ['useState', 'useEffect', 'useMemo', 'useRef', 'useId', 'useContext', 'useReducer', 'useCallback',
       'useLayoutEffect', 'useTransition', 'useDeferredValue', 'useSyncExternalStore']

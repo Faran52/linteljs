@@ -20,7 +20,6 @@ export const buildAliases = (answers: Answers): AliasMap => {
     ...target.hooksAlias,
     '@utils/*': './src/lib/utils/*',
     '@services/*': './src/lib/services/*',
-    // Zod owns lib/apis/.
     ...(hasLibrary(answers, 'zod') ? { '@apis/*': './src/lib/apis/*' } : {}),
     ...target.extraAliases,
     '@config/*': './src/config/*',

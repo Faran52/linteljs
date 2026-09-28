@@ -118,7 +118,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
     rows.push(['tailwindEntryPoint', quote(`./${target.styleEntry}`)]);
   }
 
-  // A block, so `arrayLiteral` measures the line written: inline, the closing ` }` ran past `max-len`.
+  // A block: inline, the closing ` }` runs past `max-len`.
   const { resolveConditions } = answers;
 
   if (resolveConditions !== undefined) {

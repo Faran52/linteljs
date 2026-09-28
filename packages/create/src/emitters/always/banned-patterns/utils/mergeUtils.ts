@@ -1,4 +1,4 @@
-// Preserving the checker froze its pattern list and emitting it deleted the project's blocks, so both merge.
+// Merged, so the shipped patterns update and the project's own blocks survive.
 
 // Anchored to a whole line: a comment or a longer name can hold the same text.
 const blockOf = (source: string, name: string): string | null => {
