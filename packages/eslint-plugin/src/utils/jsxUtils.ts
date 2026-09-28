@@ -246,7 +246,7 @@ export const hasTextContent = (node: JsxChild | JsxElement): boolean => {
 
       // A container always holds an expression, `{}` included as JSXEmptyExpression.
       if (child.type === 'JSXExpressionContainer') {
-        return mustFind(child.expression, 'the expression of a JSX expression container').type !== 'JSXEmptyExpression';
+        return mustFind(child.expression).type !== 'JSXEmptyExpression';
       }
 
       return hasTextContent(child);

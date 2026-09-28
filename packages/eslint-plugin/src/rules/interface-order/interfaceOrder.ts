@@ -48,7 +48,7 @@ const readText = (entry: Texted): string => {
 const WHITESPACE_LINE = /^[\t ]+$/gmu;
 
 const startLineOf = (node: Located): number => {
-  return mustFind(node.loc, 'the location of a declaration').start.line;
+  return mustFind(node.loc).start.line;
 };
 
 const TYPE_DECLARATION_TYPES = new Set(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration']);
@@ -98,14 +98,14 @@ const trailingNoteOf = (sourceCode: SourceCode, node: ProgramEntry): [number, nu
   }
 
   // A comment after a node always has that node's last token before it.
-  const before = mustFind(sourceCode.getTokenBefore(note), 'the token before a trailing comment');
+  const before = mustFind(sourceCode.getTokenBefore(note));
 
   return before.loc.end.line === startLineOf(note) ? note.range : undefined;
 };
 
 // Cut from the end of the previous entry, so the blank line goes and a trailing note above stays.
 const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: ProgramEntry): TypeCut => {
-  const previousEndLine = mustFind(previous.loc, 'the location of the previous declaration').end.line;
+  const previousEndLine = mustFind(previous.loc).end.line;
   const between = sourceCode.getCommentsBefore(typeNode);
 
   const firstOwned = between
@@ -199,7 +199,7 @@ export const interfaceOrder = createRule('interface-order', {
         messageId: 'moveAfterImports',
         * fix(fixer) {
           // A cut means a runtime statement exists, so the list has a first statement.
-          const first = mustFind(firstStatement, 'the first statement of the list');
+          const first = mustFind(firstStatement);
           const indent = getIndent(sourceCode, first);
           const joinedTypes = cuts
             .map(movedText)

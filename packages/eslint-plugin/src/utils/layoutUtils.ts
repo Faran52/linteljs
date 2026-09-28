@@ -57,8 +57,8 @@ export const gapIsBlank = (sourceCode: SourceCode, from: number, to: number): bo
 
 // Reads the line's indentation, not the node's column: an ObjectPattern starts after `const `.
 export const getIndent = (sourceCode: SourceCode, node: Located): string => {
-  const { start } = mustFind(node.loc, 'the location of a node to indent');
-  const line = mustFind(sourceCode.lines[start.line - 1], 'the line a node starts on');
+  const { start } = mustFind(node.loc);
+  const line = mustFind(sourceCode.lines[start.line - 1]);
 
   return line.replace(/[^\t ][\s\S]*/u, '');
 };
@@ -165,7 +165,7 @@ export const commaToNewline = (
   currentToken: AST.Token,
   indent: string,
 ): Rule.Fix => {
-  const comma = mustFind(sourceCode.getTokenBefore(currentToken), 'the separator before a list element');
+  const comma = mustFind(sourceCode.getTokenBefore(currentToken));
 
   return fixer.replaceTextRange([comma.range[1], currentToken.range[0]], `${lineTerminatorOf(sourceCode)}${indent}`);
 };

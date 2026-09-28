@@ -89,7 +89,7 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
             return variable.name === firstParam.name;
           });
 
-        const propsVariable = mustFind(declared, 'the variable a props parameter declares');
+        const propsVariable = mustFind(declared);
 
         const { references } = propsVariable;
 

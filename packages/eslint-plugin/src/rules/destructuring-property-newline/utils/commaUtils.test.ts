@@ -15,7 +15,6 @@ describe('fixCommaToNewline', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
     const second = mustFind(
       sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
-      'the token before the closing bracket',
     );
 
     expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')?.text).toBe('\n  ');
@@ -25,7 +24,6 @@ describe('fixCommaToNewline', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, /* kept */ two];\n');
     const second = mustFind(
       sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
-      'the token before the closing bracket',
     );
 
     expect(fixCommaToNewline(sourceCode, captureFixer(), second, '  ')).toBeNull();

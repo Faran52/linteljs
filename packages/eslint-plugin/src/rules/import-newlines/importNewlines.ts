@@ -102,8 +102,8 @@ export const importNewlines = createRule('import-newlines', {
     // From tokens: a token's `loc` is always present, a node's is optional in the type.
     const hasBlankLines = (specifiers: ImportNode['specifiers']): boolean => {
       for (const [previous, specifier] of adjacentPairs(specifiers)) {
-        const before = mustFind(sourceCode.getLastToken(previous), 'the last token of an import specifier');
-        const current = mustFind(sourceCode.getFirstToken(specifier), 'the first token of an import specifier');
+        const before = mustFind(sourceCode.getLastToken(previous));
+        const current = mustFind(sourceCode.getFirstToken(specifier));
 
         if (current.loc.start.line - before.loc.end.line > 1) {
           return true;

@@ -131,8 +131,8 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
     return;
   }
 
-  const first = mustFind(run[0], 'the first comment of a run');
-  const last = mustFind(run[run.length - 1], 'the last comment of a run');
+  const first = mustFind(run[0]);
+  const last = mustFind(run[run.length - 1]);
 
   // A `//` line can hold `*/` as text; merged into a block it would close it early and spill the rest as code.
   if (run

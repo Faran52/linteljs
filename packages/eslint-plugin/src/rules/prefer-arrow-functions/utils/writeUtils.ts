@@ -94,7 +94,7 @@ export const writeArrowFunction = (sourceCode: SourceCode, fn: FunctionLike, isT
 
 // An anonymous default export is written by `writeArrowFunction` alone.
 export const writeArrowConstant = (sourceCode: SourceCode, fn: FunctionLike, isTsx: boolean): string => {
-  const { name } = mustFind(getFunctionId(fn), 'the name of a function declaration');
+  const { name } = mustFind(getFunctionId(fn));
 
   return `const ${name} = ${writeArrowFunction(sourceCode, fn, isTsx)}`;
 };

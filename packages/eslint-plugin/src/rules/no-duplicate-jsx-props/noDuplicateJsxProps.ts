@@ -46,7 +46,7 @@ export const noDuplicateJsxProps = createRule('no-duplicate-jsx-props', {
           if (seen.has(name)) {
             // `loc` rather than `node`: the descriptor's `node` is typed ESTree, which a JSX attribute is not.
             context.report({
-              loc: mustFind(attribute.loc, 'the location of a JSX attribute'),
+              loc: mustFind(attribute.loc),
               messageId: 'duplicateProp',
               data: { name },
             });

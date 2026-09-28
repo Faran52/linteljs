@@ -28,7 +28,6 @@ const leadingCommentsOf = (sourceCode: SourceCode, member: RuleNode) => {
     .filter((comment) => {
       const previousToken = mustFind(
         sourceCode.getTokenBefore(comment),
-        'the token before a comment above a type member',
       );
 
       // A brace has nothing to trail, so a note straight after `{` heads the first member.

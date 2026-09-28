@@ -33,7 +33,7 @@ const hasMembers = (node: RuleNode): node is RuleNode & TypeLiteral => {
 
 // A type literal is never a child of `Program`, so it always has a parent.
 const parentTypeOf = (node: RuleNode): string => {
-  return mustFind(node.parent, 'the parent of a type literal').type;
+  return mustFind(node.parent).type;
 };
 
 const hasTypeName = (node: RuleNode): node is RuleNode & NamedTypeReference => {
@@ -42,8 +42,8 @@ const hasTypeName = (node: RuleNode): node is RuleNode & NamedTypeReference => {
 
 // `undefined` rather than an empty string, which `allowIn: ['']` would match for every literal outside a generic.
 const argumentToOf = (node: RuleNode): string | undefined => {
-  const argument = mustFind(node.parent, 'the parent of a type literal');
-  const reference = mustFind(argument.parent, 'the reference a type argument belongs to');
+  const argument = mustFind(node.parent);
+  const reference = mustFind(argument.parent);
 
   return hasTypeName(reference) ? reference.typeName.name : undefined;
 };

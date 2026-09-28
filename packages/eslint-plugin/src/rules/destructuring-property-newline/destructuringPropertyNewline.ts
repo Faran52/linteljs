@@ -63,8 +63,8 @@ export const destructuringPropertyNewline = createRule('destructuring-property-n
           continue;
         }
 
-        const previousToken = mustFind(sourceCode.getLastToken(previous), 'the last token of a destructured property');
-        const currentToken = mustFind(sourceCode.getFirstToken(current), 'the first token of a destructured property');
+        const previousToken = mustFind(sourceCode.getLastToken(previous));
+        const currentToken = mustFind(sourceCode.getFirstToken(current));
 
         if (sameLine(previousToken, currentToken)) {
           context.report({

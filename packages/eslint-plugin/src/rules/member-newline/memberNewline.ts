@@ -158,10 +158,10 @@ export const memberNewline = createRule('member-newline', {
     ): IterableIterator<Rule.Fix> {
       // A `TSPropertySignature` covers its own trailing `;` or `,`.
       for (const [previous, member] of adjacentPairs(members)) {
-        const endToken = mustFind(endTokenOf(sourceCode, previous), 'the last token of a type member');
-        const targetToken = mustFind(startTokenOf(sourceCode, member), 'the first token of a type member');
-        const endLine = mustFind(endToken.loc, "the location of a type member's last token").end.line;
-        const targetLine = mustFind(targetToken.loc, "the location of a type member's first token").start.line;
+        const endToken = mustFind(endTokenOf(sourceCode, previous));
+        const targetToken = mustFind(startTokenOf(sourceCode, member));
+        const endLine = mustFind(endToken.loc).end.line;
+        const targetLine = mustFind(targetToken.loc).start.line;
 
         if (endLine === targetLine || targetLine > endLine + 1) {
           yield fixer.replaceTextRange([rangeOf(endToken)[1], rangeOf(targetToken)[0]], `${eol}${indentInner}`);
@@ -174,8 +174,8 @@ export const memberNewline = createRule('member-newline', {
       members: RuleNode[],
     ): ((fixer: Fixer) => IterableIterator<Rule.Fix>) => {
       return function* (fixer) {
-        const firstMember = mustFind(members[0], 'the first member of a type');
-        const lastMember = mustFind(members[members.length - 1], 'the last member of a type');
+        const firstMember = mustFind(members[0]);
+        const lastMember = mustFind(members[members.length - 1]);
         const closeBrace = sourceCode.getLastToken(node);
 
         // `getLastToken` skips comments, so a note in the splice gap would be lost.
@@ -306,11 +306,11 @@ export const memberNewline = createRule('member-newline', {
       },
 
       TSInterfaceBody: (node: InterfaceBodyNode) => {
-        checkMembers(node, mustFind(node.body, 'the members of an interface body'));
+        checkMembers(node, mustFind(node.body));
       },
 
       TSTypeLiteral: (node: TypeLiteralNode) => {
-        checkMembers(node, mustFind(node.members, 'the members of a type literal'));
+        checkMembers(node, mustFind(node.members));
       },
     };
   },

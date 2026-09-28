@@ -79,7 +79,7 @@ export const unionNewline = createRule('union-newline', {
 
     // Widened to `string`, not cast: comparing ESLint's ESTree `parent` union directly is a TS2367.
     const isInsideGenericArg = (node: RuleNode): boolean => {
-      const parentType: string = mustFind(node.parent, 'the parent of a union type').type;
+      const parentType: string = mustFind(node.parent).type;
 
       return parentType === 'TSTypeParameterInstantiation';
     };
@@ -121,8 +121,8 @@ export const unionNewline = createRule('union-newline', {
               .getTokenBefore(curr, (token) => {
                 return token.value === '|';
               });
-            const pipeToken = mustFind(pipe, 'the `|` before a union member');
-            const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipeToken), "the token before a union's `|`");
+            const pipeToken = mustFind(pipe);
+            const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipeToken));
 
             // The pipe lookup skips comments, so a note written before it goes with the splice below.
             if (!gapIsBlank(sourceCode, tokenBeforePipe.range[1], pipeToken.range[0])) {
@@ -140,7 +140,7 @@ export const unionNewline = createRule('union-newline', {
 
     return {
       TSUnionType: (node: UnionTypeNode) => {
-        const types = mustFind(node.types, 'the members of a union type');
+        const types = mustFind(node.types);
         const messageId = messageIdFor(node, types);
 
         if (!messageId) {

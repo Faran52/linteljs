@@ -58,7 +58,7 @@ const isClassMemberValue = (fn: FunctionLike): boolean => {
 
 // An identifier is never the Program, and ESLint 5 on links every node in a full pass before any listener.
 const parentOf = (reference: Scope.Reference): RuleNode => {
-  return mustFind((reference.identifier as RuleNode).parent, 'the parent of a reference to the function');
+  return mustFind((reference.identifier as RuleNode).parent);
 };
 
 // StyleX takes a dynamic style only as `(x) => ({ ... })`; a block body fails its build.
@@ -67,7 +67,7 @@ const isStylexStyle = (fn: FunctionLike): boolean => {
     return false;
   }
 
-  const call = mustFind(fn.parent.parent.parent, 'the parent of an object literal');
+  const call = mustFind(fn.parent.parent.parent);
 
   return call.type === 'CallExpression'
     && call.callee.type === 'MemberExpression'
@@ -153,7 +153,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
         while (rangeOf(node)[0] > declarationStart) {
           outermost = FUNCTION_TYPES.has(node.type) ? node : outermost;
-          node = mustFind(node.parent, 'the parent of a node below the Program');
+          node = mustFind(node.parent);
         }
 
         return outermost;
@@ -280,7 +280,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
           return;
         }
 
-        const nameVariable = mustFind(nameVariableOf(context, fn), 'the variable a function declaration declares');
+        const nameVariable = mustFind(nameVariableOf(context, fn));
 
         if (hasFunctionOnlyUsage(nameVariable) || isRedeclared(nameVariable)) {
           return;
@@ -307,7 +307,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
       // Keyed on the function: a property's `value` has no `parent`, which everything below needs.
       'FunctionExpression[parent.type="Property"]:exit': (fn: FunctionLike) => {
-        const property = mustFind(propertyOf.get(fn), 'the property recorded for a method function');
+        const property = mustFind(propertyOf.get(fn));
 
         if (SKIPPED_PROPERTY_KINDS.has(property.kind)) {
           return;

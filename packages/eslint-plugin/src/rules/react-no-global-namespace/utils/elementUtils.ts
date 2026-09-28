@@ -37,7 +37,7 @@ export const globalNamespaceTags = (node: TypedNode, namespace: string): JsxTagN
   }
 
   // A member-expression name's property is an identifier, and so always named.
-  const name = mustFind(node.openingElement.name, 'the name of a JSX opening element');
+  const name = mustFind(node.openingElement.name);
 
   if (name.object?.name !== namespace) {
     return [];

@@ -139,7 +139,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return !isDirective(entry);
         });
 
-      const first = mustFind(firstStatement, 'the first statement past the prologue');
+      const first = mustFind(firstStatement);
       const firstType: string = first.type;
 
       if (!firstType.startsWith('Svelte')) {
@@ -262,7 +262,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
             data: { name },
             fix: collides || anchor === undefined
               ? null
-              : rewriteAll(anchor, mustFind(groups.get(anchor), 'the reaches sharing an import site')),
+              : rewriteAll(anchor, mustFind(groups.get(anchor))),
           });
         }
       },
@@ -282,9 +282,9 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        const member = mustFind(opening.property, 'the member of a namespaced JSX tag');
+        const member = mustFind(opening.property);
 
-        note(node, mustFind(member.name, 'the name of a namespaced JSX tag'), false, tags.map(rangeOf));
+        note(node, mustFind(member.name), false, tags.map(rangeOf));
       },
 
       // A computed access names nothing a fix could import.
@@ -293,7 +293,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        note(node, mustFind(nameOf(node.property), 'the name of a namespace member'), false, [rangeOf(node)]);
+        note(node, mustFind(nameOf(node.property)), false, [rangeOf(node)]);
       },
     };
   },

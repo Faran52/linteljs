@@ -19,7 +19,7 @@ export const outermostCall = (node: RuleNode): RuleNode => {
     : node;
 
   // Only Program has no parent.
-  let parent = mustFind(current.parent, "the parent of a promise chain's link");
+  let parent = mustFind(current.parent);
 
   while (
     parent.type === 'MemberExpression'
@@ -28,7 +28,7 @@ export const outermostCall = (node: RuleNode): RuleNode => {
     && parent.parent.callee === parent
   ) {
     current = parent.parent;
-    parent = mustFind(current.parent, "the parent of a promise chain's link");
+    parent = mustFind(current.parent);
   }
 
   // An optional chain is wrapped in a ChainExpression, so the await or return sits above it.
@@ -38,7 +38,7 @@ export const outermostCall = (node: RuleNode): RuleNode => {
 // Shared by prefer-await-to-then and prefer-try-catch so neither double-reports a line.
 export const isAwaitedOrAsyncReturn = (reader: AncestorReader, node: RuleNode): boolean => {
   const outer = outermostCall(node);
-  const parent = mustFind(outer.parent, "the parent of a promise chain's outermost call");
+  const parent = mustFind(outer.parent);
 
   if (parent.type === 'AwaitExpression') {
     return true;

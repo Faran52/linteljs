@@ -74,7 +74,7 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
         return;
       }
 
-      const { value } = mustFind(named.value, "the value of an accessibility action's name");
+      const { value } = mustFind(named.value);
 
       if (typeof value !== 'string') {
         return;

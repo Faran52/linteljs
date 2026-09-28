@@ -57,7 +57,7 @@ export const nativeValidAccessibilityState = createRule('native-valid-accessibil
         return;
       }
 
-      const written = mustFind(property.value, 'the value of an accessibilityState property');
+      const written = mustFind(property.value);
 
       if (written.type !== 'Literal') {
         return;

@@ -131,7 +131,7 @@ const linksOf = (steps: Step[]): Link[] => {
     if (callee.type === 'MemberExpression' && !callee.computed) {
       links.push({
         call: step,
-        start: links.length > 0 ? mustFind(runStart, 'the property read a chained call starts at') : callee,
+        start: links.length > 0 ? mustFind(runStart) : callee,
         leading: !calledBefore,
       });
     }
@@ -153,7 +153,7 @@ const takesBlockCallback = (link: Link): boolean => {
 
 // A non-computed member is always `object . property`.
 const dotOf = (sourceCode: SourceCode, member: Member): AST.Token => {
-  return mustFind(sourceCode.getTokenBefore(member.property), 'the dot of a chained call');
+  return mustFind(sourceCode.getTokenBefore(member.property));
 };
 
 const lineEndAfter = (text: string, from: number): number => {
@@ -235,7 +235,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const inside = new Set<number>();
 
       for (const comment of sourceCode.getAllComments()) {
-        const { start, end } = mustFind(comment.loc, 'the location of a comment');
+        const { start, end } = mustFind(comment.loc);
 
         for (let line = start.line + 1; line <= end.line; line++) {
           inside.add(line);
@@ -254,8 +254,8 @@ export const chainCallNewline = createRule('chain-call-newline', {
     };
 
     const indentAt = (plan: Plan, token: AST.Token | RuleNode): string => {
-      const { start } = mustFind(token.loc, 'the location of a chained token');
-      const [offset] = mustFind(token.range, 'the range of a chained token');
+      const { start } = mustFind(token.loc);
+      const [offset] = mustFind(token.range);
       let indent = `${plan.shifts.get(start.line) ?? ''}${getIndent(sourceCode, token)}`;
       let reached = -1;
 
@@ -275,7 +275,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
       for (const { dot, link } of breaks) {
         if (indentAt(plan, dot) === outer) {
-          const end = mustFind(link.call.loc, 'the location of a chained call').end.line;
+          const end = mustFind(link.call.loc).end.line;
 
           for (let line = dot.loc.start.line + 1; line <= end; line++) {
             spanned.add(line);
@@ -328,7 +328,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
     const rollBack = (plan: Plan, mark: number): void => {
       while (plan.undo.length > mark) {
-        mustFind(plan.undo.pop(), 'an undo step')();
+        mustFind(plan.undo.pop())();
       }
     };
 
@@ -339,7 +339,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         .map(({ dot }): Gap => {
           return {
             dot,
-            range: [mustFind(sourceCode.getTokenBefore(dot), 'the token ahead of a dot').range[1], dot.range[0]],
+            range: [mustFind(sourceCode.getTokenBefore(dot)).range[1], dot.range[0]],
             indent: `${outer}${step}`,
           };
         });
@@ -378,19 +378,19 @@ export const chainCallNewline = createRule('chain-call-newline', {
     };
 
     const chainAt = (index: number): Chain => {
-      return mustFind(chains[index], 'a collected chain');
+      return mustFind(chains[index]);
     };
 
     const startOf = (index: number): number => {
-      return mustFind(chainAt(index).top.range, 'the range of a chain')[0];
+      return mustFind(chainAt(index).top.range)[0];
     };
 
     // A chain in the head ends before this fix begins, so it lands in the same pass unfolded.
     // Own lines are measured last: a nested chain's breaks can shorten them.
     const fold = (plan: Plan, index: number): Folded => {
       const chain = chainAt(index);
-      const [, end] = mustFind(chain.top.range, 'the range of a chain');
-      const firstDot = mustFind(chain.breaks[0], 'the first break of a chain').dot.range[0];
+      const [, end] = mustFind(chain.top.range);
+      const firstDot = mustFind(chain.breaks[0]).dot.range[0];
       const mark = plan.undo.length;
       const touched = extend(plan, chain);
       let after = index + 1;
@@ -453,7 +453,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
     // Collected rather than reported, so the chains nested in each are known when its fix is planned.
     const collect = (top: RuleNode, chain: Part): void => {
-      if (continues(mustFind(top.parent, 'the parent of an expression'), chain)) {
+      if (continues(mustFind(top.parent), chain)) {
         return;
       }
 
@@ -487,7 +487,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
 
       context.report({
         node: top,
-        loc: mustFind(breaks[0], 'the first break of a chain').dot.loc,
+        loc: mustFind(breaks[0]).dot.loc,
         messageId: 'callOnNewline',
         * fix(fixer) {
           const plan = planAt(index);

@@ -76,10 +76,10 @@ export const isDirective = (node: object): boolean => {
   return 'directive' in node && typeof node.directive === 'string';
 };
 
-// A lookup the parse guarantees: a throw names the failed lookup where a silent `continue` would hide it.
-export const mustFind = <Found>(found: Found | null | undefined, lookup: string): Found => {
+// A lookup the parse guarantees: a throw, whose stack names the call, where a silent `continue` would hide it.
+export const mustFind = <Found>(found: Found | null | undefined): Found => {
   if (!found) {
-    throw new Error(`@linteljs/eslint-plugin: ${lookup} was not found, which the parse promises. `
+    throw new Error('@linteljs/eslint-plugin: a lookup the parse promises came back empty. '
       + 'Please open an issue with the file and the parser it ran under.');
   }
 
