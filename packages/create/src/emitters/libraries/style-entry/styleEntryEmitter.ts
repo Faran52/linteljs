@@ -23,8 +23,7 @@ const specifiersIn = (text: string): (string | undefined)[] => {
     });
 };
 
-// Tailwind by pattern: a project may have written it in any of four spellings. Others by the specifier's
-// exact text, so a `.` in it matches only a `.`.
+// Tailwind by pattern: a project may have written it in any of four spellings.
 const alreadyImported = (current: string, line: string): boolean => {
   if (IMPORTS_TAILWIND.test(line)) {
     return IMPORTS_TAILWIND.test(current);

@@ -80,7 +80,7 @@ export const isIdentifierNamed = (node: TypedNode & Partial<NamedNode>, name: st
   return node.type === 'Identifier' && node.name === name;
 };
 
-// A lookup the parse guarantees: a throw, whose stack names the call, where a silent `continue` would hide it.
+// A lookup the parse guarantees: a throw where a silent `continue` would hide it.
 export const mustFind = <Found>(found: Found | null | undefined): Found => {
   if (!found) {
     throw new Error('@linteljs/eslint-plugin: a lookup the parse promises came back empty. '

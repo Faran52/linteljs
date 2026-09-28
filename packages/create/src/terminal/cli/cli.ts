@@ -161,7 +161,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     options = parseCliArgs(argv);
   }
   catch (error) {
-    // An Error from another realm fails `instanceof`, and its `message` is not this module's to trust.
+    // An Error from another realm fails `instanceof`.
     if (!(error instanceof Error)) {
       throw error;
     }

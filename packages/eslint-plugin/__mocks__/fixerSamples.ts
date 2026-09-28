@@ -77,7 +77,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
       }, 'x')};\n`,
   },
   {
-    // Each chain was once planned against the unbroken line, so a later one kept the indent of a line it had left.
+    // A later chain on the line once kept the indent of the line it left.
     name: 'sibling chains on one line',
     code: 'let a, b, c;\nrun(a.map(f).filter(g), b.map(f).filter(g), c.map(f).filter(g));\n',
   },

@@ -1,6 +1,6 @@
 // Preserving the checker froze its pattern list and emitting it deleted the project's blocks, so both merge.
 
-// Whole lines, anchored to a line's start, since a comment or a longer name can hold the same text.
+// Anchored to a whole line: a comment or a longer name can hold the same text.
 const blockOf = (source: string, name: string): string | null => {
   const opening = new RegExp(`^const ${name}\\b.*$`, 'mu').exec(source);
 

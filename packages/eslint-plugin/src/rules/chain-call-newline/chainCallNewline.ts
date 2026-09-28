@@ -380,7 +380,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return mustFind(chainAt(index).top.range)[0];
     };
 
-    // A later chain on a line this plan breaks moves with it, so it is planned against the broken line.
+    // A later chain on a line this plan breaks moves with the break.
     const followsGap = (plan: Plan, index: number): boolean => {
       const start = startOf(index);
 
@@ -427,7 +427,6 @@ export const chainCallNewline = createRule('chain-call-newline', {
       return after;
     };
 
-    // A plan rolled back to nothing yields no edits, which ESLint takes as no fix.
     const planAt = (index: number): Plan => {
       const plan: Plan = {
         gaps: new Map(),

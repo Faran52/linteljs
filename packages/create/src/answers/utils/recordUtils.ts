@@ -17,7 +17,6 @@ export const onlyFor = (
   return values[chosen]?.only;
 };
 
-// A list or a map is never refused: no multi value carries `only`.
 export const refusedValue = (
   record: AnswerRecord,
   chosen: Answers[keyof Answers],
