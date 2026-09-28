@@ -40,6 +40,9 @@ const config = {
   // `all`: a rule is built at module load, and per-test attribution reported eleven caught mutants as survivors.
   coverageAnalysis: 'all',
 
+  // These suites import `create` by a relative path the sandbox, two folders deeper, cannot resolve.
+  ignorePatterns: ['/scripts/**/*.test.ts'],
+
   mutate: [
     ...partGlobs,
     '!src/**/*.test.ts',
