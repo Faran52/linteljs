@@ -21,7 +21,9 @@ for (const sibling of ['eslint-config', 'eslint-plugin']) {
 // A cold run outlasts a hosted runner's six hours. A file goes to the first part matching it.
 const PARTS = {
   'targets-a': 'src/targets/{react,next,svelte,vue}/**',
-  'targets-b': 'src/targets/**',
+  'targets-b': 'src/targets/{solid,webextension}/**',
+  'targets-c': 'src/targets/{react-native,astro,angular}/**',
+  'targets-d': 'src/targets/**',
   'emitters-a': 'src/emitters/{always,agents}/**',
   'emitters-b': 'src/emitters/**',
   'terminal-answers': 'src/{terminal,answers}/**',
