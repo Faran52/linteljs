@@ -87,6 +87,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- The Astro starter's pages and components pass the lint an Astro project now runs on `.astro` files: imports
+  sorted, a `map` callback with a block body, and one prop per line on a multiline tag.
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
   alone on every run.
 - The emitted type standard tells an agent that comments are minimal: a short why, or none, and none in tests.

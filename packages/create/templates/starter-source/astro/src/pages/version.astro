@@ -1,6 +1,6 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { ANSWERS, STACK } from '../config/linteljs';
+import Layout from '../layouts/Layout.astro';
 ---
 
 <!-- What was recorded at birth: a page rendered on the server still cannot read the machine that generated it. -->
@@ -12,24 +12,30 @@ import { ANSWERS, STACK } from '../config/linteljs';
     <section class="section">
       <h2 class="section-title">Stack</h2>
       <dl class="rows">
-        {STACK.map((entry) => (
-          <div class="row">
-            <dt>{entry.name}</dt>
-            <dd>{entry.version}</dd>
-          </div>
-        ))}
+        {STACK
+          .map((entry) => {
+            return (
+              <div class="row">
+                <dt>{entry.name}</dt>
+                <dd>{entry.version}</dd>
+              </div>
+            );
+          })}
       </dl>
     </section>
 
     <section class="section">
       <h2 class="section-title">Your answers</h2>
       <dl class="rows">
-        {ANSWERS.map((entry) => (
-          <div class="row">
-            <dt>{entry.label}</dt>
-            <dd>{entry.value}</dd>
-          </div>
-        ))}
+        {ANSWERS
+          .map((entry) => {
+            return (
+              <div class="row">
+                <dt>{entry.label}</dt>
+                <dd>{entry.value}</dd>
+              </div>
+            );
+          })}
       </dl>
       <p class="note">
         Recorded in <code>linteljs.config.json</code>, which <code>sync</code> reads.
