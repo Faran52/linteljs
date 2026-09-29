@@ -24,6 +24,7 @@ import {
 import {
   DEPRECATION,
   STYLEX_CLASSES,
+  SVELTEKIT_VERSION_HASH,
   YARN_CLASSIC_UPSTREAM,
 } from './constants';
 
@@ -107,7 +108,9 @@ const missingStylexRules = (project: string): string => {
       .join('\n');
   };
   const styles = joined(true);
-  const classNames = (joined(false).match(STYLEX_CLASSES) ?? [])
+  const classNames = (joined(false)
+    .replaceAll(SVELTEKIT_VERSION_HASH, '')
+    .match(STYLEX_CLASSES) ?? [])
     .flatMap((run) => {
       return run.split(' ');
     });
