@@ -33,7 +33,7 @@ export const useContactForm = (): ContactForm => {
       defaultValues: {
         email: '',
         message: '',
-      } satisfies ContactValues as ContactValues,
+      },
       validators: {
         onBlur: ({ value }: ContactSubmission) => {
           const found = validateContact(value);

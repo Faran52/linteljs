@@ -34,7 +34,7 @@ export const useContactForm = (): ContactForm => {
     defaultValues: {
       email: '',
       message: '',
-    } satisfies ContactValues as ContactValues,
+    },
     validators: {
       onBlur: ({ value }) => {
         const found = validateContact(value);
