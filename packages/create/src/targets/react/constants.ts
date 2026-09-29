@@ -25,3 +25,21 @@ export const REACT_ACCESSORS: AccessorNames = {
   mutation: 'useExtendedMutation',
   testSuffix: '.test.ts',
 };
+
+export const WELL_KNOWN_404 = `{
+      // Chrome DevTools asks for \`/.well-known/\` files, and React Router logs each miss as an error.
+      name: 'well-known-404',
+      configureServer: (server) => {
+        server.middlewares
+          .use((request, response, next) => {
+            if (request.url?.startsWith('/.well-known/') === true) {
+              response.statusCode = 404;
+              response.end();
+
+              return;
+            }
+
+            next();
+          });
+      },
+    }`;

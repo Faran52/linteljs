@@ -5,6 +5,7 @@ import {
 } from 'vitest';
 
 import { DEFAULT_ANSWERS } from '@answers';
+import { WELL_KNOWN_404 } from '@targets/react/constants';
 
 import { emitViteConfig, viteConfigEmitter } from './viteConfigEmitter';
 
@@ -53,7 +54,7 @@ describe('emitViteConfig', () => {
       "import { reactRouter } from '@react-router/dev/vite';",
       "import react from '@vitejs/plugin-react';",
       "import { defineConfig } from 'vite';",
-    ], '    ...(process.env.VITEST === undefined ? [reactRouter()] : [react()]),'],
+    ], `    ${WELL_KNOWN_404},\n    ...(process.env.VITEST === undefined ? [reactRouter()] : [react()]),`],
     ['vue', { target: 'vue' }, [
       "import vue from '@vitejs/plugin-vue';",
       "import { defineConfig } from 'vite';",

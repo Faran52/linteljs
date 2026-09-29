@@ -28,6 +28,7 @@ import {
   REACT_ACCESSORS,
   ROUTERS,
   SHARED,
+  WELL_KNOWN_404,
 } from './constants';
 
 import type { Answers } from '@config/types';
@@ -482,7 +483,7 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
       "import { reactRouter } from '@react-router/dev/vite';",
       "import react from '@vitejs/plugin-react';",
     ],
-    calls: [`...(${OUTSIDE_TESTS} ? [reactRouter()] : [react()])`],
+    calls: [WELL_KNOWN_404, `...(${OUTSIDE_TESTS} ? [reactRouter()] : [react()])`],
   },
   // `typegen` first: a route module's `Route.*` types resolve to what it writes.
   typecheck: 'react-router typegen && tsc --noEmit',
