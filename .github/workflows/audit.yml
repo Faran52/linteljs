@@ -1,13 +1,12 @@
 name: audit
 
 # Too slow for pull request CI, so it runs on its own clock.
+# No mutation cache: an incremental report cannot see files the tests read at runtime, so it can hide a change.
 
 on:
   schedule:
     # Sunday 03:17 UTC: nothing releases at the weekend, and an odd minute avoids the on-the-hour queue.
     - cron: '17 3 * * 0'
-    # Wednesday runs only the mutation jobs, so their caches are read before seven idle days evict them.
-    - cron: '17 3 * * 3'
   workflow_dispatch:
 
 permissions:
@@ -20,7 +19,6 @@ concurrency:
 jobs:
   eslint-plugin:
     name: eslint-plugin fixers, options and negatives over real code
-    if: github.event.schedule != '17 3 * * 3'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -119,23 +117,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - uses: actions/cache/restore@v4
-        with:
-          path: packages/eslint-plugin/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
-          key: stryker-eslint-plugin-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            stryker-eslint-plugin-${{ matrix.part }}-
-
       # Not `ignoreStatic`: the static mutants are what `ruleModules.test.ts` exists to kill.
       - name: Tests still kill the mutants
         shell: bash
         run: pnpm --filter @linteljs/eslint-plugin run mutation 2>&1 | tee mutation.log
-
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: packages/eslint-plugin/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
-          key: stryker-eslint-plugin-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
@@ -164,23 +149,10 @@ jobs:
       # Suites import the sibling packages through their built `exports`.
       - run: pnpm build
 
-      - uses: actions/cache/restore@v4
-        with:
-          path: packages/eslint-config/node_modules/.cache/stryker-incremental.json
-          key: stryker-eslint-config-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            stryker-eslint-config-
-
       # ubuntu-latest has four cores; the config's six is sized for a laptop.
       - name: Tests still kill the mutants
         shell: bash
         run: pnpm --filter @linteljs/eslint-config run mutation --concurrency 3 2>&1 | tee mutation.log
-
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: packages/eslint-config/node_modules/.cache/stryker-incremental.json
-          key: stryker-eslint-config-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
@@ -215,24 +187,9 @@ jobs:
       # Suites import the sibling packages through their built `exports`.
       - run: pnpm build
 
-      # A key per run and a prefix to restore from: the newest report seeds the next run.
-      - uses: actions/cache/restore@v4
-        with:
-          path: packages/create/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
-          key: stryker-create-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            stryker-create-${{ matrix.part }}-
-
       - name: Tests still kill the mutants
         shell: bash
         run: pnpm --filter @linteljs/create run mutation --concurrency 3 2>&1 | tee mutation.log
-
-      # Saved on failure too: a run that breaks the threshold still did the work the next one can skip.
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: packages/create/node_modules/.cache/stryker-incremental-${{ matrix.part }}.json
-          key: stryker-create-${{ matrix.part }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
