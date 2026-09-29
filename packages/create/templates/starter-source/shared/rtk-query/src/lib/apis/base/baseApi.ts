@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-// No `useExtendedQuery` here: `createApi` generates a hook per endpoint.
 // Slices use `injectEndpoints`: two `createApi` calls are two caches a tag cannot cross.
 export const baseApi = createApi({
   reducerPath: 'api',
