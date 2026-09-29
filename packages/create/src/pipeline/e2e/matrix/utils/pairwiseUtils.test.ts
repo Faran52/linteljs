@@ -89,6 +89,23 @@ describe('coveringSubset', () => {
     expect(coveringSubset([first, second])[0]).toBe(first);
   });
 
+  it('takes the case that covers the most new pairs, not the first that covers any', () => {
+    const base = caseFor({
+      store: 'redux-toolkit',
+      typeSafety: 'strict',
+    });
+    const oneAxis = caseFor({
+      store: 'zustand',
+      typeSafety: 'strict',
+    });
+    const twoAxes = caseFor({
+      store: 'zustand',
+      typeSafety: 'relaxed',
+    });
+
+    expect(coveringSubset([base, oneAxis, twoAxes])).toEqual([base, twoAxes, oneAxis]);
+  });
+
   it('answers nothing for nothing', () => {
     expect(coveringSubset([])).toEqual([]);
   });

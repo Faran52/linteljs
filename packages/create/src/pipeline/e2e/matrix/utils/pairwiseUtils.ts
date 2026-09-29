@@ -56,10 +56,10 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
   const chosen: T[] = [];
   let remaining = scored;
 
-  // Each pick covers a pair, so the uncovered count bounds the rounds. A case that gains nothing is dropped,
-  // so an emptied pool ends them.
+  // Each pick covers a pair, so the uncovered count bounds the rounds. No early exit: past an empty pool a round
+  // does nothing, and an exit a mutant could drop would only cost time.
   Array.from({ length: uncovered.size })
-    .some(() => {
+    .forEach(() => {
       const ranked = remaining
         .map((candidate) => {
           return {
@@ -76,23 +76,21 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
           return candidate;
         });
 
-      // Ties go to the earlier case, so a label names the same case every run.
-      const best = ranked
-        .reduce<typeof ranked[number] | undefined>((leader, entry) => {
-          return leader === undefined || entry.gain > leader.gain ? entry : leader;
-        }, undefined);
+      const [first, ...rest] = ranked;
 
-      if (best === undefined) {
-        return true;
+      if (first !== undefined) {
+        // Ties go to the earlier case, so a label names the same case every run.
+        const best = rest
+          .reduce((leader, entry) => {
+            return entry.gain > leader.gain ? entry : leader;
+          }, first);
+
+        for (const pair of best.candidate.pairs) {
+          uncovered.delete(pair);
+        }
+
+        chosen.push(best.candidate.item);
       }
-
-      for (const pair of best.candidate.pairs) {
-        uncovered.delete(pair);
-      }
-
-      chosen.push(best.candidate.item);
-
-      return false;
     });
 
   return chosen;
