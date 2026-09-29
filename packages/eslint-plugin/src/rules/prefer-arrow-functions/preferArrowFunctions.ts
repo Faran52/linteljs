@@ -147,8 +147,6 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       const [declarationStart] = rangeOf(fn);
       const [, blockEnd] = rangeOf(fn.parent);
       const previous = sourceCode.getTokenBefore(fn);
-      const walked = new Set<RuleNode>();
-
       // Only a declaration is hoisted; one inside another function is called from there, once `fn` exists.
       // The Program holds `fn`, so the walk always stops before it runs out of parents.
       const outermostDeclarationOf = (reference: Scope.Reference): FunctionDeclarationNode | undefined => {
@@ -171,30 +169,38 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         }
 
         // A later `case` is reached by jumping past this one, so text order says nothing.
-        if (fn.parent.type === 'SwitchCase' && referenceEnd > blockEnd) {
+        return fn.parent.type === 'SwitchCase' && referenceEnd > blockEnd;
+      };
+
+      // A Set visits each declaration once however often it is added, so mutual calls cannot loop.
+      const hoisted = new Set<FunctionDeclarationNode>();
+      const follow = (reference: Scope.Reference): boolean => {
+        if (runsEarly(reference)) {
           return true;
         }
 
         const outermost = outermostDeclarationOf(reference);
 
-        if (outermost === undefined) {
-          return false;
+        if (outermost !== undefined) {
+          hoisted.add(outermost);
         }
 
-        const before = walked.size;
-
-        walked.add(outermost);
-
-        if (walked.size === before) {
-          return false;
-        }
-
-        // An anonymous default export has no name this file could call it by.
-        return getFunctionId(outermost) !== null
-          && mustFind(nameVariableOf(context, outermost)).references.some(runsEarly);
+        return false;
       };
 
-      return nameVariable.references.some(runsEarly);
+      if (nameVariable.references.some(follow)) {
+        return true;
+      }
+
+      for (const declaration of hoisted) {
+        // An anonymous default export has no name this file could call it by.
+        if (getFunctionId(declaration) !== null
+          && mustFind(nameVariableOf(context, declaration)).references.some(follow)) {
+          return true;
+        }
+      }
+
+      return false;
     };
 
     // A `function` binding is writable, constructible and carries a `prototype`; an arrow on a `const` has none.

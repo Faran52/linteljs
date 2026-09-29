@@ -399,7 +399,10 @@ export const chainCallNewline = createRule('chain-call-newline', {
           continue;
         }
 
-        after = touched && !within(chainAt(candidate).top, head) ? fold(plan, candidate) : candidate + 1;
+        // Never back past the candidate, so no fold can revisit a line and recurse without end.
+        const folded = touched && !within(chainAt(candidate).top, head) ? fold(plan, candidate) : candidate + 1;
+
+        after = Math.max(candidate, folded);
       }
 
       const fits = touched
