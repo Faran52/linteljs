@@ -101,6 +101,10 @@ describe('mergeStyleEntry', () => {
     expect(mergeStyleEntry('@import  "./a.css";\n', ['@import  "./a.css";'])).toBe('@import  "./a.css";\n');
   });
 
+  it('tells two specifiers apart by their last character', () => {
+    expect(mergeStyleEntry('@import "./tokens1";\n', ['@import "./tokens2";'])).toContain('@import "./tokens2";');
+  });
+
   it('reads a dot in a specifier as a dot, not as any character', () => {
     expect(mergeStyleEntry('@import "./aXcss";\n', ['@import "./a.css";'])).toContain('@import "./a.css";');
   });

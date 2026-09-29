@@ -67,14 +67,23 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
   };
   const chosen: T[] = [];
 
-  // Until no case gains a pair, which is exactly when every pair is covered.
-  for (let best = leader(); best !== undefined && gainOf(best.pairs) > 0; best = leader()) {
-    for (const pair of best.pairs) {
-      uncovered.delete(pair);
-    }
+  // Each pick covers a pair, so the uncovered count bounds the rounds; a round that gains nothing ends them.
+  Array.from({ length: uncovered.size })
+    .some(() => {
+      const best = leader();
 
-    chosen.push(best.item);
-  }
+      if (best === undefined || gainOf(best.pairs) === 0) {
+        return true;
+      }
+
+      for (const pair of best.pairs) {
+        uncovered.delete(pair);
+      }
+
+      chosen.push(best.item);
+
+      return false;
+    });
 
   return chosen;
 };

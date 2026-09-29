@@ -6,14 +6,10 @@ import { fileURLToPath } from 'node:url';
 import type { ArtifactContent } from '@emitters';
 
 // Walks up to `templates/`: this module sits at `src/disk/` in the workspace and at `dist/` once published.
-const templatesRootFrom = (start: string): string => {
-  let dir = start;
+const templatesRootFrom = (dir: string): string => {
+  const parent = dirname(dir);
 
-  while (!existsSync(join(dir, 'templates')) && dir !== dirname(dir)) {
-    dir = dirname(dir);
-  }
-
-  return join(dir, 'templates');
+  return existsSync(join(dir, 'templates')) || parent === dir ? join(dir, 'templates') : templatesRootFrom(parent);
 };
 
 export const TEMPLATES_ROOT = templatesRootFrom(dirname(fileURLToPath(import.meta.url)));

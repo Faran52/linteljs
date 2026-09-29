@@ -1,8 +1,4 @@
-import {
-  basename,
-  dirname,
-  join,
-} from 'node:path';
+import { basename, join } from 'node:path';
 
 import { MANAGED_PATH } from '@config/constants';
 
@@ -129,16 +125,19 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
 
 // An empty `.claude/` reads as if the host were still configured.
 const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
-  const directories = new Set<string>();
+  const directories = new Set(removed
+    .flatMap((target) => {
+      const parts = target
+        .split('/')
+        .slice(0, -1);
 
-  for (const target of removed) {
-    let directory = dirname(target);
-
-    while (directory !== '.') {
-      directories.add(directory);
-      directory = dirname(directory);
-    }
-  }
+      return parts
+        .map((_, index) => {
+          return parts
+            .slice(0, index + 1)
+            .join('/');
+        });
+    }));
 
   // A child path is always longer than its parent, so length descending is depth-first.
   const deepestFirst = [...directories]

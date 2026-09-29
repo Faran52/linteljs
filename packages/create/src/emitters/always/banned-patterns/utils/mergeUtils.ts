@@ -36,9 +36,8 @@ const carriedOver = (shipped: string, current: string, name: string): string => 
 };
 
 export const mergeChecker = (shipped: string, current: string | null): string => {
-  if (current === null) {
-    return shipped;
-  }
+  // With no file yet, the shipped text stands in for it and every block carries over unchanged.
+  const existing = current ?? shipped;
 
-  return carriedOver(carriedOver(shipped, current, 'PROJECT_SKIPPED'), current, 'PROJECT_BANNED');
+  return carriedOver(carriedOver(shipped, existing, 'PROJECT_SKIPPED'), existing, 'PROJECT_BANNED');
 };
