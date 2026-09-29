@@ -60,11 +60,14 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
     const options = optionsOf<SortHookDepsOptions>(context);
     const order = options.order ?? 'asc';
     const direction = order === 'asc' ? 1 : -1;
-    const hooks = new Set(options.hooks ?? DEFAULT_HOOKS);
+    // Widened so a callee with no name, such as `React.useEffect`, is simply not a member.
+    const hooks = new Set<string | undefined>(options.hooks ?? DEFAULT_HOOKS);
 
     return {
       CallExpression: (node) => {
-        if (node.callee.type !== 'Identifier' || !hooks.has(node.callee.name)) {
+        const callee: TypedNode & Partial<NamedNode> = node.callee;
+
+        if (!hooks.has(callee.name)) {
           return;
         }
 

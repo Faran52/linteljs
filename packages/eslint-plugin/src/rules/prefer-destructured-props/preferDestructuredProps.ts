@@ -7,6 +7,7 @@ import {
   type NamedNode,
   type Ranged,
   rangeOf,
+  type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
 interface Identified {
@@ -21,8 +22,9 @@ interface Called {
   arguments: Ranged[];
 }
 
-const declarationNameOf = (fn: FunctionLike): string => {
-  return fn.id?.name ?? '';
+// A pattern or an anonymous declaration has no name, so it reads as no component.
+const nameOf = (node: (TypedNode & Partial<NamedNode>) | null | undefined): string => {
+  return node?.name ?? '';
 };
 
 // By identity: ESLint links `parent` on the same objects the call's `arguments` hold.
@@ -39,11 +41,11 @@ const unwrappedParentOf = (wrapped: Ranged, parent: Parent): Parent => {
 const bindingNameOf = (fn: FunctionLike): string => {
   const parent = unwrappedParentOf(fn, fn.parent);
 
-  if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
-    return parent.id.name;
+  if (parent.type === 'VariableDeclarator') {
+    return nameOf(parent.id);
   }
 
-  return fn.type === 'FunctionDeclaration' ? declarationNameOf(fn) : '';
+  return fn.type === 'FunctionDeclaration' ? nameOf(fn.id) : '';
 };
 
 const spanOf = (node: Ranged): string => {

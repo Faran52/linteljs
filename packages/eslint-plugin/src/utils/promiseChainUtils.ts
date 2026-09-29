@@ -2,6 +2,7 @@ import {
   type Ancestor,
   type AncestorReader,
   FUNCTION_TYPES,
+  type MemberExpressionNode,
   mustFind,
   type RuleNode,
 } from './ruleUtils.ts';
@@ -11,17 +12,19 @@ const isAsyncFunction = (node: Ancestor | RuleNode): boolean => {
   return 'async' in node && node.async === true;
 };
 
+// The `.then` of `promise.then(parse)`, whose parent is the call.
+const isCalledMember = (node: RuleNode): node is MemberExpressionNode => {
+  return node.type === 'MemberExpression'
+    && node.parent.type === 'CallExpression'
+    && node.parent.callee === node;
+};
+
 // An optional chain is wrapped in a ChainExpression, so the await or return sits above it.
 const climbChain = (current: RuleNode): RuleNode => {
   // Only Program has no parent.
   const parent = mustFind(current.parent);
 
-  if (
-    parent.type === 'MemberExpression'
-    && parent.object === current
-    && parent.parent.type === 'CallExpression'
-    && parent.parent.callee === parent
-  ) {
+  if (isCalledMember(parent) && parent.object === current) {
     return climbChain(parent.parent);
   }
 
@@ -29,13 +32,7 @@ const climbChain = (current: RuleNode): RuleNode => {
 };
 
 export const outermostCall = (node: RuleNode): RuleNode => {
-  return climbChain(
-    node.type === 'MemberExpression'
-    && node.parent.type === 'CallExpression'
-    && node.parent.callee === node
-      ? node.parent
-      : node,
-  );
+  return climbChain(isCalledMember(node) ? node.parent : node);
 };
 
 // Shared by prefer-await-to-then and prefer-try-catch so neither double-reports a line.

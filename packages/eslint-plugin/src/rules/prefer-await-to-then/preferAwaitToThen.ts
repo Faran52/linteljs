@@ -9,7 +9,12 @@ import {
   type MemberExpressionNode,
   optionsOf,
   type RuleNode,
+  type TypedNode,
 } from '../../utils/ruleUtils.ts';
+
+interface Kinded {
+  kind?: string;
+}
 
 interface PreferAwaitToThenOptions {
   strict: boolean;
@@ -60,8 +65,9 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
     const isInsideConstructor = (node: RuleNode): boolean => {
       return ancestorsOf(context, node)
         .some(
-          (parent) => {
-            return parent.type === 'MethodDefinition' && parent.kind === 'constructor';
+          // Only a MethodDefinition carries this kind, so no type test is needed first.
+          (parent: TypedNode & Kinded) => {
+            return parent.kind === 'constructor';
           },
         );
     };
