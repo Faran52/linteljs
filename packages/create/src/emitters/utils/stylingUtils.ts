@@ -10,7 +10,7 @@ const STYLEX_CALL = 'stylex({ useCSSLayers: true })';
 
 // `@stylexjs/unplugin/vite`: the generic adapter lacks `generateBundle` and emits no CSS.
 // Typed `=> any`, so a TypeScript config gives it unplugin's Vite adapter type.
-export const stylingPlugin = (styling: Styling | undefined, language: 'ts' | 'js' = 'ts'): StylingPlugin => {
+export const stylingPlugin = (styling: Styling | undefined, typed = true): StylingPlugin => {
   if (styling === 'tailwind') {
     return {
       imports: ["import tailwindcss from '@tailwindcss/vite';"],
@@ -18,7 +18,7 @@ export const stylingPlugin = (styling: Styling | undefined, language: 'ts' | 'js
     };
   }
 
-  if (styling === 'stylex' && language === 'ts') {
+  if (styling === 'stylex' && typed) {
     return {
       imports: [
         "import { type UserOptions } from '@stylexjs/unplugin';",

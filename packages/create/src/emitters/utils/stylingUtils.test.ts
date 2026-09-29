@@ -27,7 +27,7 @@ describe('stylingPlugin', () => {
   });
 
   it('takes the stylex adapter bare in a javascript config, which nothing type-lints', () => {
-    expect(stylingPlugin('stylex', 'js')).toStrictEqual({
+    expect(stylingPlugin('stylex', false)).toStrictEqual({
       imports: ["import stylex from '@stylexjs/unplugin/vite';"],
       call: 'stylex({ useCSSLayers: true })',
     });
