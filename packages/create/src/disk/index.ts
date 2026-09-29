@@ -14,7 +14,7 @@ export {
   isExecutableFile,
   readIfPresent,
   rm,
-  rmdir,
+  rmdirIfEmpty,
 } from './utils/fsUtils';
 export { safeProjectPath } from './utils/pathUtils';
 export { artifactWriter } from './write/artifact/artifactWriter';

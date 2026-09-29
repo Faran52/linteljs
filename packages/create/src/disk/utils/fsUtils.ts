@@ -7,6 +7,7 @@ import {
   access,
   lstat,
   readFile,
+  rmdir,
 } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -15,10 +16,7 @@ interface CodedError extends Error {
 }
 
 // `node:fs` is importable from `disk/` alone, so this is the one place to substitute.
-export {
-  rm,
-  rmdir,
-} from 'node:fs/promises';
+export { rm } from 'node:fs/promises';
 
 // Sync because its answer feeds a `spawnSync`: `spawns/` resolves a binary with no asynchronous point to wait at.
 export const isExecutableFile = (path: string): boolean => {
@@ -72,6 +70,20 @@ export const readIfPresent = async (path: string): Promise<string | null> => {
   catch (error) {
     if (hasCode(error, 'ENOENT')) {
       return null;
+    }
+
+    throw error;
+  }
+};
+
+// A directory still holding something stays; any other failure, absence included, is an error.
+export const rmdirIfEmpty = async (path: string): Promise<void> => {
+  try {
+    await rmdir(path);
+  }
+  catch (error) {
+    if (hasCode(error, 'ENOTEMPTY')) {
+      return;
     }
 
     throw error;

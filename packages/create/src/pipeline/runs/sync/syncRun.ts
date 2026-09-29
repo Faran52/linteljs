@@ -10,7 +10,7 @@ import {
   projectShapeReader,
   readIfPresent,
   rm,
-  rmdir,
+  rmdirIfEmpty,
   safeProjectPath,
   shippedAssetsReader,
 } from '@disk';
@@ -146,11 +146,7 @@ const pruneEmpty = async (cwd: string, removed: string[]): Promise<void> => {
     });
 
   for (const directory of deepestFirst) {
-    try {
-      await rmdir(join(cwd, directory));
-    }
-    catch {
-    }
+    await rmdirIfEmpty(join(cwd, directory));
   }
 };
 
@@ -190,8 +186,15 @@ export const applySync = async (
       continue;
     }
 
+    const path = await safeProjectPath(cwd, target);
+
+    // Gone since the plan: nothing to remove or report, and its directory may be gone too.
+    if (!await entryExists(path)) {
+      continue;
+    }
+
     // On a symlink this drops the link, not its target.
-    await rm(await safeProjectPath(cwd, target), { force: true });
+    await rm(path);
     removed.push(target);
   }
 

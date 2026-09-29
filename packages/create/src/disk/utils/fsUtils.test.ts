@@ -1,5 +1,6 @@
 import {
   chmod,
+  mkdir,
   mkdtemp,
   rm,
   symlink,
@@ -23,6 +24,7 @@ import {
   hasCode,
   isExecutableFile,
   readIfPresent,
+  rmdirIfEmpty,
 } from './fsUtils';
 
 let cwd = '';
@@ -105,6 +107,29 @@ describe('readIfPresent', () => {
 
   it('rethrows a failure that is not absence', async () => {
     await expect(readIfPresent(cwd)).rejects.toThrow();
+  });
+});
+
+describe('rmdirIfEmpty', () => {
+  it('removes an empty directory', async () => {
+    await mkdir(join(cwd, 'empty'));
+
+    await rmdirIfEmpty(join(cwd, 'empty'));
+
+    expect(await exists(join(cwd, 'empty'))).toBe(false);
+  });
+
+  it('keeps a directory that still holds something', async () => {
+    await mkdir(join(cwd, 'full'));
+    await writeFile(join(cwd, 'full/kept.txt'), '', 'utf8');
+
+    await rmdirIfEmpty(join(cwd, 'full'));
+
+    expect(await exists(join(cwd, 'full/kept.txt'))).toBe(true);
+  });
+
+  it('rethrows a failure that is not a directory in use, absence included', async () => {
+    await expect(rmdirIfEmpty(join(cwd, 'absent'))).rejects.toThrow('ENOENT');
   });
 });
 

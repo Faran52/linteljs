@@ -452,13 +452,13 @@ describe('applySync', () => {
     expect(JSON.parse(await readFile(join(cwd, 'package.json'), 'utf8'))).toHaveProperty('name', basename(cwd));
   });
 
-  it('does not fail on an obsolete file that vanished after it was planned', async () => {
+  it('skips and does not report an obsolete file that vanished with its directory after it was planned', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, CLAUDE_ONLY);
-    await rm(join(cwd, '.claude/settings.json'));
+    await rm(join(cwd, '.claude'), { recursive: true });
 
     const { removed } = await applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);
 
-    expect(removed).toEqual(['.claude/settings.json']);
+    expect(removed).toEqual([]);
   });
 
   it('removes nothing it was not given, even where the plan called it obsolete', async () => {
