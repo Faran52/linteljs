@@ -36,7 +36,7 @@ Each layer switch is off unless you enable it.
 | `typescript` | Enables the TypeScript layer. |
 | `vitest` | Enables rules for `*.test.*` and `*.spec.*` files. |
 | `html` | Enables the HTML layer. |
-| `astro` | Enables Astro rules for `.astro` templates. It stacks with a framework layer rather than replacing one. |
+| `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
 | `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
 | `tailwindEntryPoint` | Path to the CSS file that contains `@import "tailwindcss"`, passed to the Tailwind layer. Ignored unless `libraries` includes `'tailwind'`. |
 | `ignores`, `naming`, `folderNaming`, `aliases`, `resolver` | Passed through to `base` under the same names. |
@@ -117,6 +117,7 @@ interface BaseOptions {
     conditionNames?: string[];
     noWarnOnMultipleProjects?: boolean;
   };
+  astro?: boolean;
 }
 ```
 
@@ -124,7 +125,9 @@ Pass aliases to the composer instead of adding them in a later block. The base l
 resolution and import-sort groups. Set `resolver.project` when the relevant tsconfig is not the one the
 resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
-glob matching more than one tsconfig.
+glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every
+rule a script gets; the composer sets it with its own `astro` switch, and a hand-composed config sets it beside
+`astro()`, which supplies the parser.
 
 `base` also reads `.gitignore` from `process.cwd()` and turns what git ignores into what ESLint ignores. In a
 monorepo that means the `.gitignore` of whichever directory ESLint was started from, so a package-level run picks

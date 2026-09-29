@@ -8,6 +8,7 @@ import {
   it,
 } from 'vitest';
 
+import astro from '../../frameworks/astro/astroFramework';
 import react from '../../frameworks/react/reactFramework';
 import base from '../../layers/base/baseLayer';
 
@@ -43,6 +44,14 @@ describe('tailwind', () => {
       '',
     ].join('\n');
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
+
+    expect(ruleIds).toContain('better-tailwindcss/no-duplicate-classes');
+  });
+
+  it('reports a duplicate utility in the template of an astro page', async () => {
+    const page = '---\n---\n\n<div class="p-2 p-2">x</div>\n';
+    const astroLayer = [...base({ astro: true }), ...tailwind(), ...CWD_SETTINGS, ...astro()];
+    const ruleIds = await ruleIdsFor(astroLayer, page, 'src/pages/index.astro');
 
     expect(ruleIds).toContain('better-tailwindcss/no-duplicate-classes');
   });

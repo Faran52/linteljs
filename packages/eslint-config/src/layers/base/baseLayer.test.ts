@@ -28,6 +28,8 @@ import {
   vi,
 } from 'vitest';
 
+import astro from '../../frameworks/astro/astroFramework';
+
 import base from './baseLayer';
 
 import type sonarjs from 'eslint-plugin-sonarjs';
@@ -398,6 +400,25 @@ describe('base: linteljs rules', () => {
         expect(`${file} ${ruleId}: ${String(enabled.includes(ruleId))}`).toBe(`${file} ${ruleId}: true`);
       }
     }
+  });
+});
+
+describe('base: astro', () => {
+  it('gives a .astro file every rule a TypeScript file gets, on request', async () => {
+    const script = await enabledRuleIdsFor(base(), 'src/lib/utils/sample.ts');
+    const component = await enabledRuleIdsFor(base({ astro: true }), 'src/pages/index.astro');
+    const unordered = new Set(component);
+
+    expect(unordered).toEqual(new Set(script));
+  });
+
+  it('lints the frontmatter of a .astro file only on request', async () => {
+    const page = '---\nfunction title() {\n  return 1;\n}\n---\n\n<h1>{title()}</h1>\n';
+    const requested = await ruleIdsFor([...base({ astro: true }), ...astro()], page, 'src/pages/index.astro');
+    const unrequested = await ruleIdsFor([...base(), ...astro()], page, 'src/pages/index.astro');
+
+    expect(requested).toContain('func-style');
+    expect(unrequested).not.toContain('func-style');
   });
 });
 

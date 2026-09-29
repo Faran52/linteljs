@@ -270,6 +270,17 @@ describe('composeConfig', () => {
       .resolves.not.toContain('astro/jsx-a11y/alt-text');
   });
 
+  it('widens base to the frontmatter when astro is asked for', async () => {
+    const page = '---\nfunction title() {\n  return 1;\n}\n---\n\n<h1>{title()}</h1>\n';
+    const config = await composeConfig({
+      astro: true,
+      typescript: true,
+    });
+    const ruleIds = await ruleIdsFor(config, page, 'src/pages/index.astro');
+
+    expect(ruleIds).toContain('func-style');
+  });
+
   it('composes the astro layer beside a hosted framework rather than instead of one', async () => {
     const config = await composeConfig({
       astro: true,

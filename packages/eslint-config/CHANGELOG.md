@@ -25,7 +25,11 @@ when a version's change lives in a sibling it is described there instead:
   import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
 - **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350 and
   `max-lines` at 500, 350 for a `.tsx`, `.jsx`, `.vue` or `.svelte` file and 800 under a `utils/` directory.
-  `astro()` holds `.astro` files to the same 350. Tests, `__mocks__/` and `e2e/` are exempt from both.
+  `base({ astro: true })` holds `.astro` files to the same 350. Tests, `__mocks__/` and `e2e/` are exempt from both.
+- **An Astro project lints its `.astro` files as scripts.** `base` takes `astro: true`, which `composeConfig` passes
+  with its own `astro` switch, and gives the frontmatter and template of a `.astro` file every rule a script gets:
+  stylistic, sonarjs, import sorting and the Lintel rules. The Tailwind layer reaches `.astro` class attributes too.
+  `@stylistic/jsx-one-expression-per-line` stays off in `.astro`, where a line break in text renders as a space.
 
 ### Added
 

@@ -30,7 +30,6 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     typescript: withTypescript,
     vitest: withVitest,
     html: withHtml,
-    astro: withAstro,
     libraries = [],
     tailwindEntryPoint,
     ...baseOptions
@@ -45,7 +44,8 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
   const libraryLayers = await Promise.all(loading);
   const vitestRules = withVitest === true ? await loadVitest() : [];
   const htmlRules = withHtml === true ? await loadHtml() : [];
-  const astroRules = withAstro === true ? await loadAstro() : [];
+  // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
+  const astroRules = baseOptions.astro === true ? await loadAstro() : [];
 
   return [
     ...base(parts === undefined

@@ -41,22 +41,11 @@ export const astro = (): Layer => {
       languageOptions: { parserOptions: { parser: tseslint.parser } },
       processor: 'astro/client-side-ts',
     },
-    // `base()` holds the same limits on the files it reaches, and `.astro` is not one of them.
+    // Astro keeps a text node's line break as a space, so splitting `<code>x</code>, which` renders ` , which`.
     {
-      name: '@linteljs/astro/component-size',
+      name: '@linteljs/astro/text-whitespace',
       files: ASTRO_FILES,
-      rules: {
-        'max-lines': ['error', {
-          max: 350,
-          skipBlankLines: true,
-          skipComments: true,
-        }],
-        'max-lines-per-function': ['error', {
-          max: 350,
-          skipBlankLines: true,
-          skipComments: true,
-        }],
-      },
+      rules: { '@stylistic/jsx-one-expression-per-line': 'off' },
     },
     {
       name: '@linteljs/astro/typescript-scripts',

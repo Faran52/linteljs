@@ -5,13 +5,16 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
+// `.astro` named here, as in `stylex()`: only an Astro project has one to lint.
+const TAILWIND_FILES = [...SCRIPT_AND_SFC_FILES, '**/*.astro'];
+
 // Without `entryPoint` every theme rule warns once per class string.
 export const tailwind = (entryPoint?: string): Layer => {
   return [
-    ...presetOf(betterTailwindcss.configs.recommended, 'better-tailwindcss/recommended', SCRIPT_AND_SFC_FILES),
+    ...presetOf(betterTailwindcss.configs.recommended, 'better-tailwindcss/recommended', TAILWIND_FILES),
     {
       name: '@linteljs/tailwind',
-      files: SCRIPT_AND_SFC_FILES,
+      files: TAILWIND_FILES,
       ...(entryPoint === undefined ? {} : { settings: { 'better-tailwindcss': { entryPoint } } }),
       rules: {
         // create-vite's own template classes trip it. Measured.

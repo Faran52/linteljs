@@ -20,6 +20,8 @@ import typescript from '../../layers/typescript/typescriptLayer';
 
 import astro from './astroFramework';
 
+const WITH_BASE = [...base({ astro: true }), ...astro()];
+
 const PAGE = (body: string): string => {
   return `---\nconst title = 'Home';\n---\n\n<h1>{title}</h1>\n${body}\n`;
 };
@@ -42,14 +44,14 @@ describe('astro', () => {
   });
 
   it('enables no astro rule on a TypeScript file', async () => {
-    const enabled = await enabledRuleIdsFor([...base(), ...astro()], 'src/lib/utils/sample.ts');
+    const enabled = await enabledRuleIdsFor(WITH_BASE, 'src/lib/utils/sample.ts');
 
     expect(enabled.filter(startsWith('astro/'))).toEqual([]);
   });
 
   it('stacks under base without either losing its rules', async () => {
     const code = PAGE('<img src="/a.png" />');
-    const ruleIds = await ruleIdsFor([...base(), ...astro()], code, 'src/pages/index.astro');
+    const ruleIds = await ruleIdsFor(WITH_BASE, code, 'src/pages/index.astro');
 
     expect(ruleIds).toContain('astro/jsx-a11y/alt-text');
   });
@@ -100,10 +102,17 @@ describe('astro', () => {
     ]);
   });
 
+  it('leaves inline text beside an element on its line, where a break would render as a space', async () => {
+    const page = '---\n---\n\n<p><code>x</code>, which</p>\n';
+    const ruleIds = await ruleIdsFor(WITH_BASE, page, 'src/pages/index.astro');
+
+    expect(ruleIds).not.toContain('@stylistic/jsx-one-expression-per-line');
+  });
+
   it('names every block it writes', () => {
     expect(ownBlockNames(astro())).toEqual([
       '@linteljs/astro/typescript',
-      '@linteljs/astro/component-size',
+      '@linteljs/astro/text-whitespace',
       '@linteljs/astro/typescript-scripts',
       '@linteljs/astro/untyped',
     ]);
@@ -113,8 +122,8 @@ describe('astro', () => {
     const component = (lines: number): string => {
       return `---\n${codeLines(lines - 3)}---\n\n<main></main>\n`;
     };
-    const atLimit = await ruleIdsFor([...base(), ...astro()], component(350), 'src/components/Big.astro');
-    const overLimit = await ruleIdsFor([...base(), ...astro()], component(351), 'src/components/Big.astro');
+    const atLimit = await ruleIdsFor(WITH_BASE, component(350), 'src/components/Big.astro');
+    const overLimit = await ruleIdsFor(WITH_BASE, component(351), 'src/components/Big.astro');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');
@@ -125,8 +134,8 @@ describe('astro', () => {
     const component = (lines: number): string => {
       return `---\n${functionOf(lines)}---\n`;
     };
-    const atLimit = await ruleIdsFor([...base(), ...astro()], component(350), 'src/components/Big.astro');
-    const overLimit = await ruleIdsFor([...base(), ...astro()], component(351), 'src/components/Big.astro');
+    const atLimit = await ruleIdsFor(WITH_BASE, component(350), 'src/components/Big.astro');
+    const overLimit = await ruleIdsFor(WITH_BASE, component(351), 'src/components/Big.astro');
 
     expect(atLimit).not.toContain('max-lines-per-function');
     expect(overLimit).toContain('max-lines-per-function');
@@ -134,7 +143,7 @@ describe('astro', () => {
 
   it('counts no IIFE in the frontmatter as a function', async () => {
     const code = `---\n(() => {\n${codeLines(351, '  ')}})();\n---\n`;
-    const ruleIds = await ruleIdsFor([...base(), ...astro()], code, 'src/components/Big.astro');
+    const ruleIds = await ruleIdsFor(WITH_BASE, code, 'src/components/Big.astro');
 
     expect(ruleIds).not.toContain(null);
     expect(ruleIds).not.toContain('max-lines-per-function');
@@ -142,7 +151,7 @@ describe('astro', () => {
 
   it('counts neither blank lines nor comments in a component file', async () => {
     const padded = `---\n${codeLines(347)}\n// a note\n\n---\n\n<main></main>\n`;
-    const ruleIds = await ruleIdsFor([...base(), ...astro()], padded, 'src/components/Big.astro');
+    const ruleIds = await ruleIdsFor(WITH_BASE, padded, 'src/components/Big.astro');
 
     expect(ruleIds).not.toContain(null);
     expect(ruleIds).not.toContain('max-lines');
@@ -150,7 +159,7 @@ describe('astro', () => {
 
   it('counts neither blank lines nor comments in a frontmatter function', async () => {
     const padded = `---\n${functionOf(350).replace('{\n', '{\n\n  // a note\n\n')}---\n`;
-    const ruleIds = await ruleIdsFor([...base(), ...astro()], padded, 'src/components/Big.astro');
+    const ruleIds = await ruleIdsFor(WITH_BASE, padded, 'src/components/Big.astro');
 
     expect(ruleIds).not.toContain(null);
     expect(ruleIds).not.toContain('max-lines-per-function');

@@ -27,6 +27,7 @@ export interface BaseOptions {
   aliases?: AliasMap;
   frameworkGroup?: string[];
   resolver?: ResolverOptions;
+  astro?: boolean;
 }
 
 // `next` implies `react` beneath it and `nuxt` implies `vue`; `react-native` is `react` without the a11y preset.
@@ -48,7 +49,6 @@ export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'
   typescript?: boolean;
   vitest?: boolean;
   html?: boolean;
-  astro?: boolean;
   libraries?: LibraryLayer[];
   tailwindEntryPoint?: string;
 }

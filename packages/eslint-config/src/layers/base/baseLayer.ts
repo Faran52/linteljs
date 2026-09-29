@@ -27,8 +27,10 @@ import type { BaseOptions, Layer } from '../../types';
 // `<script lang="ts">` blocks in SFCs are TypeScript the TypeScript globs miss.
 const TYPED_FILES = [`**/*.{${TYPESCRIPT_EXTENSIONS},vue,svelte}`];
 
-// `astro()` caps `.astro` itself: naming it here would pull `.astro` into a project that has no parser for it.
 const COMPONENT_FILES = ['**/*.{tsx,jsx,vue,svelte}'];
+
+// Only on request: naming `.astro` would pull it into a project that has no parser for it.
+const ASTRO_FILES = ['**/*.astro'];
 
 const SIZE_EXEMPT_FILES = [
   '**/*.{test,spec}.*',
@@ -52,7 +54,13 @@ export const base = (options: BaseOptions = {}): Layer => {
     aliases,
     frameworkGroup,
     resolver,
+    astro = false,
   } = options;
+
+  const reaching = (files: string[]): string[] => {
+    return astro ? [...files, ...ASTRO_FILES] : files;
+  };
+  const scriptFiles = reaching(SCRIPT_AND_SFC_FILES);
 
   // No default `conditionNames`: `import` ahead of `types` sends `react-native` to its Flow `index.js`.
   // Measured: 127 findings on a clean React Native project.
@@ -93,13 +101,13 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
 
     // Script parsers only: Angular markup crashes `@stylistic/indent`.
-    ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', SCRIPT_AND_SFC_FILES),
-    ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', SCRIPT_AND_SFC_FILES),
-    ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', SCRIPT_AND_SFC_FILES),
+    ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', scriptFiles),
+    ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', scriptFiles),
+    ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', scriptFiles),
 
     {
       name: '@linteljs/base',
-      files: SCRIPT_AND_SFC_FILES,
+      files: scriptFiles,
 
       plugins: {
         'check-file': checkFile,
@@ -194,7 +202,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     // Restated over the SFC extensions the plugin's own preset cannot reach.
     {
       name: '@linteljs/base/typescript-rules',
-      files: TYPED_FILES,
+      files: reaching(TYPED_FILES),
       rules: {
         '@linteljs/union-newline': 'error',
         '@linteljs/interface-order': 'error',
@@ -218,7 +226,7 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     {
       name: '@linteljs/base/component-size',
-      files: COMPONENT_FILES,
+      files: reaching(COMPONENT_FILES),
       rules: {
         'max-lines': ['error', {
           max: 350,

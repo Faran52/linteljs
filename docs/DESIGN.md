@@ -264,8 +264,9 @@ module is a drawer of small helpers rather than one subject, which is why it get
 `**/utils/**` rather than `*Utils.ts` because Angular spells the suffix in kebab (`fetch-extended-utils.ts`).
 
 `**/*.{test,spec}.*`, `**/__mocks__/**` and `**/e2e/**` are exempt from both: a suite is a list of cases, and a
-`describe` callback is as long as the list. `astro()` states the `.astro` limits itself, because naming `.astro`
-in `base` would make ESLint lint `.astro` files in a project that has no parser for them.
+`describe` callback is as long as the list. `base` names `.astro` only when asked (`astro: true`, which
+`composeConfig` passes through), because naming it unasked would make ESLint lint `.astro` files in a project that
+has no parser for them.
 
 The numbers govern this workspace too. Measured the way the rules count, in non-test source: the longest file is
 `create/src/targets/react/reactTarget.ts` at 483 lines, the longest `utils/` module
