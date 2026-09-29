@@ -15,6 +15,8 @@ interface Identified {
 
 type FunctionLike = FunctionNode & Identified;
 
+type Parent = FunctionLike['parent'];
+
 interface Called {
   arguments: Ranged[];
 }
@@ -28,14 +30,14 @@ const isArgumentOf = (call: Called, node: Ranged): boolean => {
   return call.arguments.includes(node);
 };
 
-const bindingNameOf = (fn: FunctionLike): string => {
-  let wrapped: Ranged = fn;
-  let { parent } = fn;
+const unwrappedParentOf = (wrapped: Ranged, parent: Parent): Parent => {
+  return parent.type === 'CallExpression' && isArgumentOf(parent, wrapped)
+    ? unwrappedParentOf(parent, parent.parent)
+    : parent;
+};
 
-  while (parent.type === 'CallExpression' && isArgumentOf(parent, wrapped)) {
-    wrapped = parent;
-    ({ parent } = parent);
-  }
+const bindingNameOf = (fn: FunctionLike): string => {
+  const parent = unwrappedParentOf(fn, fn.parent);
 
   if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
     return parent.id.name;

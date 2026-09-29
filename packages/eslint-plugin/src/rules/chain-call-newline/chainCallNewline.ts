@@ -4,6 +4,7 @@ import {
   getIndent,
   getIndentStep,
   linesInsideTokens,
+  lineSpan,
   lineTerminatorOf,
   sameLine,
 } from '../../utils/layoutUtils.ts';
@@ -233,7 +234,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       for (const comment of sourceCode.getAllComments()) {
         const { start, end } = mustFind(comment.loc);
 
-        for (let line = start.line + 1; line <= end.line; line++) {
+        for (const line of lineSpan(start.line + 1, end.line)) {
           inside.add(line);
         }
       }
@@ -284,7 +285,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         if (indentAt(plan, dot) === outer) {
           const end = mustFind(link.call.loc).end.line;
 
-          for (let line = dot.loc.start.line + 1; line <= end; line++) {
+          for (const line of lineSpan(dot.loc.start.line + 1, end)) {
             spanned.add(line);
           }
         }
@@ -393,13 +394,12 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const touched = extend(plan, chain);
       let after = index + 1;
 
-      while (after <= chain.last) {
-        if (touched && !within(chainAt(after).top, head)) {
-          after = fold(plan, after);
+      for (const candidate of lineSpan(index + 1, chain.last)) {
+        if (candidate < after) {
+          continue;
         }
-        else {
-          after++;
-        }
+
+        after = touched && !within(chainAt(candidate).top, head) ? fold(plan, candidate) : candidate + 1;
       }
 
       const fits = touched
@@ -414,8 +414,16 @@ export const chainCallNewline = createRule('chain-call-newline', {
         return after;
       }
 
-      while (after < chains.length && onBrokenLine(plan, after)) {
-        after = fold(plan, after);
+      for (const candidate of lineSpan(after, chains.length - 1)) {
+        if (candidate < after) {
+          continue;
+        }
+
+        if (!onBrokenLine(plan, candidate)) {
+          break;
+        }
+
+        after = fold(plan, candidate);
       }
 
       return after;

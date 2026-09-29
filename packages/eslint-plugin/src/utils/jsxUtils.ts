@@ -1,5 +1,7 @@
 // JSX is absent from ESLint's ESTree types; structural, so a test can hand these a plain object.
 
+import { NO_CHILDREN } from '../constants.ts';
+
 import {
   mustFind,
   type NodeLocation,
@@ -228,7 +230,7 @@ export const isInteractive = (
 };
 
 export const descendantElements = (node: JsxChild | JsxElement): JsxChild[] => {
-  return (node.children ?? [])
+  return (node.children ?? NO_CHILDREN)
     .flatMap((child) => {
       return child.type === 'JSXElement'
         ? [child, ...descendantElements(child)]
@@ -238,7 +240,7 @@ export const descendantElements = (node: JsxChild | JsxElement): JsxChild[] => {
 
 // Generous on purpose: assuming an expression renders text costs a missed report, not a false one.
 export const hasTextContent = (node: JsxChild | JsxElement): boolean => {
-  return (node.children ?? [])
+  return (node.children ?? NO_CHILDREN)
     .some((child) => {
       if (child.type === 'JSXText') {
         return (child.value ?? '').trim() !== '';

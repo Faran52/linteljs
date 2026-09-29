@@ -87,11 +87,18 @@ export const lineTerminatorOf = (sourceCode: SourceCode): string => {
 };
 
 // Lines inside a multi-line token (a template body) are content, not indentation, so the indent scan skips them.
+// Both ends included; empty when `last` falls before `first`.
+export const lineSpan = (first: number, last: number): number[] => {
+  return Array.from({ length: Math.max(0, last - first + 1) }, (_, offset) => {
+    return first + offset;
+  });
+};
+
 export const linesInsideTokens = (sourceCode: SourceCode): Set<number> => {
   const inside = new Set<number>();
 
   for (const { loc } of sourceCode.ast.tokens) {
-    for (let line = loc.start.line + 1; line <= loc.end.line; line++) {
+    for (const line of lineSpan(loc.start.line + 1, loc.end.line)) {
       inside.add(line);
     }
   }

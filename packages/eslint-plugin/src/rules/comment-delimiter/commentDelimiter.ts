@@ -47,15 +47,11 @@ const jsdocBodyOf = (comment: CommentNode): string[] => {
         : trimmed;
     });
 
-  while (lines[0] === '') {
-    lines.shift();
-  }
+  const body = lines
+    .join('\n')
+    .trim();
 
-  while (lines[lines.length - 1] === '') {
-    lines.pop();
-  }
-
-  return lines;
+  return body === '' ? [] : body.split('\n');
 };
 
 // Null unless the comment is alone on every line it touches.

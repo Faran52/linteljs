@@ -17,6 +17,8 @@ import {
   getIndent,
   getIndentStep,
   indentReader,
+  linesInsideTokens,
+  lineSpan,
   lineTerminatorOf,
   sameLine,
   spliceOntoNewline,
@@ -40,6 +42,26 @@ describe('adjacentPairs', () => {
   it('carries a null member through as a side of a pair', () => {
     expect([...adjacentPairs([null, null, 'third'])])
       .toEqual([[null, null], [null, 'third']]);
+  });
+});
+
+describe('lineSpan', () => {
+  it('lists both ends', () => {
+    expect(lineSpan(3, 5)).toEqual([3, 4, 5]);
+    expect(lineSpan(4, 4)).toEqual([4]);
+  });
+
+  it('is empty when last falls before first', () => {
+    expect(lineSpan(5, 4)).toEqual([]);
+    expect(lineSpan(5, 2)).toEqual([]);
+  });
+});
+
+describe('linesInsideTokens', () => {
+  it('holds the continuation lines of a multi-line token only', () => {
+    const { sourceCode } = sourceCodeFrom('const a = `x\ny\nz`;\nconst b = 1;');
+
+    expect([...linesInsideTokens(sourceCode)]).toEqual([2, 3]);
   });
 });
 

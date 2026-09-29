@@ -154,11 +154,8 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       const outermostDeclarationOf = (reference: Scope.Reference): FunctionDeclarationNode | undefined => {
         let outermost: FunctionDeclarationNode | undefined;
 
-        let node = parentOf(reference);
-
-        while (rangeOf(node)[0] > declarationStart) {
+        for (let node = parentOf(reference); rangeOf(node)[0] > declarationStart; node = mustFind(node.parent)) {
           outermost = node.type === 'FunctionDeclaration' ? node : outermost;
-          node = mustFind(node.parent);
         }
 
         return outermost;
@@ -180,11 +177,17 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
         const outermost = outermostDeclarationOf(reference);
 
-        if (outermost === undefined || walked.has(outermost)) {
+        if (outermost === undefined) {
           return false;
         }
 
+        const before = walked.size;
+
         walked.add(outermost);
+
+        if (walked.size === before) {
+          return false;
+        }
 
         // An anonymous default export has no name this file could call it by.
         return getFunctionId(outermost) !== null

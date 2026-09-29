@@ -11,28 +11,31 @@ const isAsyncFunction = (node: Ancestor | RuleNode): boolean => {
   return 'async' in node && node.async === true;
 };
 
-export const outermostCall = (node: RuleNode): RuleNode => {
-  let current = node.type === 'MemberExpression'
-    && node.parent.type === 'CallExpression'
-    && node.parent.callee === node
-    ? node.parent
-    : node;
-
+// An optional chain is wrapped in a ChainExpression, so the await or return sits above it.
+const climbChain = (current: RuleNode): RuleNode => {
   // Only Program has no parent.
-  let parent = mustFind(current.parent);
+  const parent = mustFind(current.parent);
 
-  while (
+  if (
     parent.type === 'MemberExpression'
     && parent.object === current
     && parent.parent.type === 'CallExpression'
     && parent.parent.callee === parent
   ) {
-    current = parent.parent;
-    parent = mustFind(current.parent);
+    return climbChain(parent.parent);
   }
 
-  // An optional chain is wrapped in a ChainExpression, so the await or return sits above it.
   return parent.type === 'ChainExpression' ? parent : current;
+};
+
+export const outermostCall = (node: RuleNode): RuleNode => {
+  return climbChain(
+    node.type === 'MemberExpression'
+    && node.parent.type === 'CallExpression'
+    && node.parent.callee === node
+      ? node.parent
+      : node,
+  );
 };
 
 // Shared by prefer-await-to-then and prefer-try-catch so neither double-reports a line.

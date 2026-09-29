@@ -5,13 +5,11 @@ import type { NamingMap } from '../../../types';
 
 // A folder glob matches no file alone, so it gains a `*`.
 export const buildNaming = (naming?: NamingMap, folderNaming?: NamingMap): Linter.Config[] => {
-  const files = [
-    ...Object.keys(naming ?? {}),
-    ...Object.keys(folderNaming ?? {})
-      .map((glob) => {
-        return `${glob}*`;
-      }),
-  ];
+  const files = Object.keys(naming ?? {});
+
+  for (const glob of Object.keys(folderNaming ?? {})) {
+    files.push(`${glob}*`);
+  }
 
   if (files.length === 0) {
     return [];
