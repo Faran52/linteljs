@@ -13,20 +13,20 @@ export const Mark: FC = () => {
       role="img"
       aria-label="linteljs"
     >
-      <path d="M12 28 H108" strokeWidth="13" />
+      <path d="M12 28.5 H108" strokeWidth="13" />
       <path
         {...styles.line1}
-        d="M12 58 H86"
+        d="M12 51.5 H86"
         strokeWidth="9"
       />
       <path
         {...styles.line2}
-        d="M12 79 H104"
+        d="M12 72.5 H104"
         strokeWidth="9"
       />
       <path
         {...styles.line3}
-        d="M12 100 H68"
+        d="M12 93.5 H68"
         strokeWidth="9"
       />
     </svg>

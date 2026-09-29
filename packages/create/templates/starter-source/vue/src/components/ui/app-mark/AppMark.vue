@@ -13,22 +13,22 @@ import { styles } from './styles';
     aria-label="linteljs"
   >
     <path
-      d="M12 28 H108"
+      d="M12 28.5 H108"
       stroke-width="13"
     />
     <path
       v-bind="styles.line1"
-      d="M12 58 H86"
+      d="M12 51.5 H86"
       stroke-width="9"
     />
     <path
       v-bind="styles.line2"
-      d="M12 79 H104"
+      d="M12 72.5 H104"
       stroke-width="9"
     />
     <path
       v-bind="styles.line3"
-      d="M12 100 H68"
+      d="M12 93.5 H68"
       stroke-width="9"
     />
   </svg>

@@ -222,7 +222,7 @@ keeps it off imports, exports and destructuring, which the four `@linteljs` newl
 
 JSX props take the object form of `@stylistic/jsx-max-props-per-line`, `{ maximum: { single: 2, multi: 1 } }`,
 replacing the preset's `{ maximum: 1, when: 'multiline' }`, which caps a one-line tag at nothing. Two on a line
-rather than one: `<path d="M12 28 H108" strokeWidth="13" />` is one idea, and a third prop is where a reader starts
+rather than one: `<path d="M12 28.5 H108" strokeWidth="13" />` is one idea, and a third prop is where a reader starts
 scanning. Measured on the shipped starters: twelve findings across six files, every one autofixable.
 
 ### Duplicate JSX props: this plugin's rule, not a dependency

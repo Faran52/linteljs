@@ -90,6 +90,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- The web mark's gaps are even: 12 units under the beam and between each line, where the beam had 19, and the
+  group sits centred in its viewBox. Both stroke widths and the drift animation are unchanged.
+
 - The Astro starter's pages and components pass the lint an Astro project now runs on `.astro` files: imports
   sorted, a `map` callback with a block body, and one prop per line on a multiline tag.
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
