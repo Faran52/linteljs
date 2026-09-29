@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
 import ts from 'typescript';
@@ -18,6 +19,10 @@ const UNRESOLVED = new Set([
   2686, // refers to a UMD global, but the current file is a module
   2694, // Namespace has no exported member
 ]);
+
+// A generated Vite project lists `vite/client` in `types`; this workspace reaches Vite only through Vitest.
+const VITE_CLIENT = join(dirname(createRequire(createRequire(import.meta.url).resolve('vitest/package.json'))
+  .resolve('vite/package.json')), 'client.d.ts');
 
 // Three programs because `@types/chrome` and `@types/firefox-webext-browser` are mutually exclusive.
 const SCOPES: [string, string[]][] = [
@@ -74,7 +79,7 @@ const resolvesElsewhere = (diagnostic: ts.Diagnostic, { placed, covered }: Place
 };
 
 const diagnose = (files: string[], types: string[], placement: Placement): string[] => {
-  const program = ts.createProgram(files, {
+  const program = ts.createProgram([...files, VITE_CLIENT], {
     ...OPTIONS,
     types,
   });

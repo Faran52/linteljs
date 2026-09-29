@@ -154,6 +154,8 @@ when a version's change lives in a sibling it is described there instead:
 - The starter suites are linted against each target's own `naming` map before release, so a filename a generated
   project's `check-file` rejects, such as `counterStore.test.tsx` on React, no longer ships.
 - The webextension structure rule lists `lib/mark/`, `style.css`, `devtools.html` and `panel.html` in its tree.
+- React Router framework mode with StyleX links StyleX's dev stylesheet from `root.tsx`, so `dev` is no longer
+  unstyled; StyleX's plugin injects it into an `index.html` that framework mode does not have.
 
 ## 1.5.3
 

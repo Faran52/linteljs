@@ -328,8 +328,18 @@ const baseReactTarget: TargetRecord = {
       when: isFrameworkMode,
       variant: 'react-router',
     },
+    // StyleX's dev CSS goes into `index.html`, so its framework document links it itself.
+    ...([['react-router-framework', false], ['stylex', true]] as const)
+      .map(([variant, stylex]): StarterFile => {
+        return {
+          target: 'src/root.tsx',
+          when: (answers) => {
+            return isFrameworkMode(answers) && (answers.styling === 'stylex') === stylex;
+          },
+          variant,
+        };
+      }),
     ...([
-      'src/root.tsx',
       'src/routes.ts',
       'src/routes/home.tsx',
       'src/routes/about.tsx',

@@ -158,7 +158,14 @@ const GATES: GateRow[] = [
   ],
   ['src/components/features/app-header/AppHeader.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
   ['src/routes/router.tsx@react-router', [{ router: ['react-router'] }]],
-  ['src/root.tsx@react-router-framework', FRAMEWORK_MODE],
+  ['src/root.tsx@react-router-framework', [{
+    router: ['react-router-framework'],
+    styling: [undefined, 'tailwind'],
+  }]],
+  ['src/root.tsx@stylex', [{
+    router: ['react-router-framework'],
+    styling: ['stylex'],
+  }]],
   ['src/routes.ts@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/home.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/about.tsx@react-router-framework', FRAMEWORK_MODE],

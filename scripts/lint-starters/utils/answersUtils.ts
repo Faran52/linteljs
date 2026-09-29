@@ -81,12 +81,20 @@ export const widestFor = (target: TargetId): Answers[] => {
           store,
         };
       }),
+    // A router's document can differ per styling: framework mode links StyleX's dev CSS itself.
     ...(record.routers ?? [])
-      .map((router): Answers => {
-        return {
-          ...widest,
-          router,
-        };
+      .flatMap((router): Answers[] => {
+        return [
+          {
+            ...widest,
+            router,
+          },
+          {
+            ...widest,
+            router,
+            styling: 'stylex',
+          },
+        ];
       }),
   ];
 };
