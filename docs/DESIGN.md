@@ -1105,6 +1105,12 @@ skippable. `.astro`, `.vue` and `.svelte` are read by their own parsers with `pr
 a file against a real `tsconfig.json` and this walk lints text at a path nothing on disk holds; one rule goes off
 with it, `sonarjs/no-redundant-optional`, which reads the program to decide whether to run.
 
+The test setup is not a starter but fragments joined into one file, `__mocks__/setupTests.ts`, so the walk also
+joins them as `testSetupEmitter` does, once per distinct join its answer sets produce (one set adds `msw` and
+TanStack Query to reach every fragment), and lints the result at that path. It lints with `fix` on and reports only
+what survives: the joined text puts a later fragment's imports mid-file, and the project's own `fix` stage hoists
+them at birth. With nothing on disk to write back to, `lint:starters:fix` leaves the setup alone.
+
 What a rule cannot see is a name that resolves to nothing, so the script builds a program too, with
 `@types/chrome`, `@types/firefox-webext-browser`, `@types/react` and `vitest/globals` installed as gate machinery.
 The two extension packages are mutually exclusive, so it is three programs. Only diagnostics naming a name or module
@@ -1267,8 +1273,8 @@ measurement is missing from this section is an exemption to delete.
 unawaited promise, and an SFC pair. Linting them reports the defect each exists to trigger, and the `.vue` and
 `.svelte` pair cannot parse without the layers those tests compose.
 
-`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts`,
-`templates/starter-source/react-native/__mocks__/renderScreen.tsx` and `templates/starter-source/**` are shipped
+`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts` and
+`templates/starter-source/**` are shipped
 source, copied to disk and never imported here. Each imports the framework it is written for, none of which is
 installed here, so every import is unresolvable and every call through one untyped. The MSW setup differs only in
 what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here. They are data here

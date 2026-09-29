@@ -5,6 +5,7 @@ import {
 } from '../../../packages/create/src/answers';
 import { RECORD_MODULE } from '../../../packages/create/src/emitters/always/linteljs-record/linteljsRecordEmitter';
 import { starterSourceEmitter } from '../../../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
+import { testSetupEmitter } from '../../../packages/create/src/emitters/testing/test-setup/testSetupEmitter';
 import { targetFor } from '../../../packages/create/src/targets';
 import { valuesOf } from '../../../packages/create/src/utils/objectUtils';
 
@@ -60,6 +61,12 @@ export const widestFor = (target: TargetId): Answers[] => {
       form: 'tanstack-form',
       data: 'tanstack-query',
     },
+    // The one set that joins every test setup fragment a target can take.
+    {
+      ...widest,
+      data: 'tanstack-query',
+      mocking: 'msw',
+    },
     // RTK Query ships inside the Redux store.
     {
       ...widest,
@@ -113,4 +120,20 @@ export const writtenPaths = (every: Answers[]): Set<string> => {
     });
 
   return new Set(destinations);
+};
+
+// The fragments joined into a project's test setup, keyed by their joined order, to where the project holds them.
+export const setupsFor = (every: Answers[]): Map<string, [string, string[]]> => {
+  return new Map(every
+    .flatMap((answers) => {
+      return testSetupEmitter(answers, {
+        setupTests: [],
+        styleEntries: [],
+      });
+    })
+    .flatMap((artifact): [string, [string, string[]]][] => {
+      return 'sources' in artifact.content
+        ? [[artifact.content.sources.join(' + '), [artifact.target, artifact.content.sources]]]
+        : [];
+    }));
 };

@@ -18,10 +18,24 @@ import { composeConfig } from '../../packages/eslint-config/src/compose-config/c
 
 import {
   destinationsFor,
+  setupsFor,
   widestFor,
   writtenPaths,
 } from './utils/answersUtils.ts';
 import { unresolvedNames } from './utils/programUtils.ts';
+
+import type { TargetId } from '../../packages/create/src/config/types';
+
+interface Linters {
+  starters: ESLint;
+  // Always fixing: the project's own fix stage rewrites the joined setup at birth, so only what survives it counts.
+  setups: ESLint;
+}
+
+interface SetupLint {
+  findings: string[];
+  count: number;
+}
 
 const TEMPLATES = 'packages/create/templates';
 const STARTERS = `${TEMPLATES}/starter-source`;
@@ -87,7 +101,7 @@ const STARTER_OVERRIDES: Linter.Config[] = [
   },
 ];
 
-const eslintFor = async (target: (typeof targets)[number]): Promise<ESLint> => {
+const eslintFor = async (target: TargetId): Promise<Linters> => {
   const record = targetFor(answerSets.get(target)?.[0] ?? DEFAULT_ANSWERS);
   // The record's own naming, or a suite named against it passes here and fails the generated project.
   const config = await composeConfig({
@@ -99,14 +113,49 @@ const eslintFor = async (target: (typeof targets)[number]): Promise<ESLint> => {
     folderNaming: record.folderNaming,
   });
 
-  return new ESLint({
-    overrideConfigFile: true,
-    overrideConfig: [...config, ...STARTER_OVERRIDES],
-    fix: fixing,
-  });
+  const overrideConfig = [...config, ...STARTER_OVERRIDES];
+
+  return {
+    starters: new ESLint({
+      overrideConfigFile: true,
+      overrideConfig,
+      fix: fixing,
+    }),
+    setups: new ESLint({
+      overrideConfigFile: true,
+      overrideConfig,
+      fix: true,
+    }),
+  };
 };
 
-const lintTarget = async (target: string, eslint: ESLint): Promise<[string[], number, number, string[]]> => {
+const lintSetups = async (target: TargetId, eslint: ESLint): Promise<SetupLint> => {
+  const findings: string[] = [];
+  const setups = [...setupsFor(answerSets.get(target) ?? []).values()];
+
+  for (const [destination, sources] of setups) {
+    const text = sources
+      .map((source) => {
+        return readFileSync(join(TEMPLATES, source), 'utf8');
+      })
+      .join('\n');
+    const [result] = await eslint.lintText(text, { filePath: destination });
+
+    for (const message of result?.messages ?? []) {
+      if (message.ruleId !== UNRESOLVABLE) {
+        findings.push(`${sources.join(' + ')} as ${destination}:${String(message.line)} `
+          + `${message.ruleId ?? 'parse error'}  ${message.message}`);
+      }
+    }
+  }
+
+  return {
+    findings,
+    count: setups.length,
+  };
+};
+
+const lintTarget = async (target: TargetId, eslint: Linters): Promise<[string[], number, number, string[]]> => {
   const findings: string[] = [];
   const unplaced: string[] = [];
   let fixable = 0;
@@ -120,7 +169,7 @@ const lintTarget = async (target: string, eslint: ESLint): Promise<[string[], nu
       unplaced.push(source);
     }
 
-    const [result] = await eslint.lintText(readFileSync(path, 'utf8'), {
+    const [result] = await eslint.starters.lintText(readFileSync(path, 'utf8'), {
       filePath: destination ?? join('src', relative(join(STARTERS, target), path)),
     });
 
@@ -137,11 +186,13 @@ const lintTarget = async (target: string, eslint: ESLint): Promise<[string[], nu
     }
   }
 
-  return [findings, fixable, files.length, unplaced];
+  const setups = await lintSetups(target, eslint.setups);
+
+  return [[...findings, ...setups.findings], fixable, files.length + setups.count, unplaced];
 };
 
 // In turn: two lazy `composeConfig` loads racing read a half-built module.
-const linters: [string, ESLint][] = [];
+const linters: [TargetId, Linters][] = [];
 
 for (const target of targets) {
   linters.push([target, await eslintFor(target)]);
