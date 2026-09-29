@@ -118,9 +118,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Not `ignoreStatic`: the static mutants are what `ruleModules.test.ts` exists to kill.
+      # Each mutant runs the whole suite; at four workers on four cores the slow kills time out.
       - name: Tests still kill the mutants
         shell: bash
-        run: pnpm --filter @linteljs/eslint-plugin run mutation 2>&1 | tee mutation.log
+        run: pnpm --filter @linteljs/eslint-plugin run mutation --concurrency 2 2>&1 | tee mutation.log
 
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
