@@ -394,7 +394,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       const touched = extend(plan, chain);
       let after = index + 1;
 
-      for (const candidate of lineSpan(index + 1, chain.last)) {
+      for (const candidate of lineSpan(after, chain.last)) {
         if (candidate < after) {
           continue;
         }
