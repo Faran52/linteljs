@@ -16,6 +16,8 @@ import {
   accessorTests,
   mockFiles,
   mockTests,
+  rtkContactFiles,
+  rtkContactTests,
   rtkFiles,
   rtkTests,
 } from '../utils/mockUtils';
@@ -124,9 +126,6 @@ export const nextTarget: TargetRecord = {
         };
       }),
     ...FROM_REACT
-      .filter((target) => {
-        return !target.includes('text-input') && !target.includes('apis');
-      })
       .map((target): StarterFile => {
         return {
           target,
@@ -199,7 +198,6 @@ export const nextTarget: TargetRecord = {
       }),
     ...([
       'src/components/ui/text-input/TextInput.tsx',
-      'src/lib/apis/contact/index.ts',
     ] as const)
       .map((target): StarterFile => {
         return {
@@ -209,23 +207,28 @@ export const nextTarget: TargetRecord = {
         };
       }),
     {
+      target: 'src/lib/apis/contact/index.ts',
+      when: (answers) => {
+        return hasForm(answers) && answers.data !== 'rtk-query';
+      },
+      shared: true,
+    },
+    {
       target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return hasForm(answers) && answers.data === undefined;
       },
       shared: 'react',
     },
-    ...(['tanstack-query', 'rtk-query'] as const)
-      .map((data): StarterFile => {
-        return {
-          target: 'src/lib/apis/contact/contactApi.ts',
-          when: (answers) => {
-            return hasForm(answers) && answers.data === data;
-          },
-          variant: data,
-          shared: 'react',
-        };
-      }),
+    {
+      target: 'src/lib/apis/contact/contactApi.ts',
+      when: (answers) => {
+        return hasForm(answers) && answers.data === 'tanstack-query';
+      },
+      variant: 'tanstack-query',
+      shared: 'react',
+    },
+    ...rtkContactFiles(),
     {
       target: 'src/lib/apis/contact/schemas.ts',
       when: (answers) => {
@@ -376,6 +379,7 @@ export const nextTarget: TargetRecord = {
       covers: 'src/lib/apis/contact/contactApi.ts',
       shared: 'react',
     },
+    ...rtkContactTests(),
   ],
   // `next typegen` first: route types are declared into `.next/types` only after a build.
   typecheck: 'next typegen && tsc --noEmit',

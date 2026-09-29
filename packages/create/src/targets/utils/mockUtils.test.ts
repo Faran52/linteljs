@@ -11,6 +11,8 @@ import {
   accessorTests,
   mockFiles,
   mockTests,
+  rtkContactFiles,
+  rtkContactTests,
   rtkFiles,
   rtkTests,
 } from './mockUtils';
@@ -208,5 +210,38 @@ describe('the rtk query api', () => {
       'src/lib/apis/base/baseApi.test.ts rtk-query',
     ]);
     expect(pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' })).toEqual([]);
+  });
+});
+
+describe('the rtk query contact api', () => {
+  it('writes the endpoints, the hooks and their barrel under a form with rtk query alone', () => {
+    const withForm = pickedBy(rtkContactFiles(), {
+      form: 'tanstack-form',
+      data: 'rtk-query',
+    });
+
+    expect(withForm).toEqual([
+      'src/lib/apis/contact/index.ts rtk-query',
+      'src/lib/apis/contact/contactEndpoints.ts rtk-query',
+      'src/lib/apis/contact/contactHooks.ts rtk-query',
+    ]);
+    expect(pickedBy(rtkContactFiles(), { data: 'rtk-query' })).toEqual([]);
+    expect(pickedBy(rtkContactFiles(), { form: 'tanstack-form' })).toEqual([]);
+  });
+
+  it('takes both from the react tree, a suite each', () => {
+    const tests = rtkContactTests()
+      .map(({
+        target,
+        covers,
+        shared,
+      }) => {
+        return `${target} ${covers} ${String(shared)}`;
+      });
+
+    expect(tests).toEqual([
+      'src/lib/apis/contact/contactEndpoints.test.ts src/lib/apis/contact/contactEndpoints.ts react',
+      'src/lib/apis/contact/contactHooks.test.ts src/lib/apis/contact/contactHooks.ts react',
+    ]);
   });
 });

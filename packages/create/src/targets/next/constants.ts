@@ -14,8 +14,6 @@ export const SHARED: readonly string[] = [
 
 export const FROM_REACT: readonly string[] = [
   'src/components/ui/mark/Mark.tsx',
-  'src/lib/apis/contact/index.ts',
-  'src/components/ui/text-input/TextInput.tsx',
 ];
 
 export { REACT_ACCESSORS as ACCESSORS } from '../react/constants';

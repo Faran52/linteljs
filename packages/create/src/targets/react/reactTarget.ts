@@ -14,6 +14,8 @@ import {
   accessorTests,
   mockFiles,
   mockTests,
+  rtkContactFiles,
+  rtkContactTests,
   rtkFiles,
   rtkTests,
 } from '../utils/mockUtils';
@@ -150,7 +152,6 @@ const baseReactTarget: TargetRecord = {
     ...([
       'src/pages/contact/ContactPage.tsx',
       'src/components/ui/text-input/TextInput.tsx',
-      'src/lib/apis/contact/index.ts',
     ] as const)
       .map((target): StarterFile => {
         return {
@@ -160,23 +161,28 @@ const baseReactTarget: TargetRecord = {
           },
         };
       }),
-    // RTK Query keeps its own `createApi` rather than a wrapper that would lose its cache.
+    {
+      target: 'src/lib/apis/contact/index.ts',
+      when: (answers) => {
+        return answers.form !== undefined && answers.data !== 'rtk-query';
+      },
+      shared: true,
+    },
     {
       target: 'src/lib/apis/contact/contactApi.ts',
       when: (answers) => {
         return answers.form !== undefined && answers.data === undefined;
       },
     },
-    ...(['tanstack-query', 'rtk-query'] as const)
-      .map((data): StarterFile => {
-        return {
-          target: 'src/lib/apis/contact/contactApi.ts',
-          when: (answers) => {
-            return answers.form !== undefined && answers.data === data;
-          },
-          variant: data,
-        };
-      }),
+    {
+      target: 'src/lib/apis/contact/contactApi.ts',
+      when: (answers) => {
+        return answers.form !== undefined && answers.data === 'tanstack-query';
+      },
+      variant: 'tanstack-query',
+    },
+    // RTK Query keeps its own `createApi` rather than a wrapper that would lose its cache.
+    ...rtkContactFiles(),
     // TanStack Query needs an ancestor; RTK Query rides the Redux provider.
     {
       target: 'src/lib/providers/data/DataProvider.tsx',
@@ -436,6 +442,7 @@ const baseReactTarget: TargetRecord = {
       target: 'src/lib/apis/contact/contactApi.test.ts',
       covers: 'src/lib/apis/contact/contactApi.ts',
     },
+    ...rtkContactTests(),
   ],
   // Nothing fetches this target, so without `build` the project's own gate fails at birth.
   build: 'vite build',

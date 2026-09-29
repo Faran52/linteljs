@@ -178,3 +178,34 @@ export const rtkTests = (): StarterTest[] => {
     shared: true,
   }];
 };
+
+const usesRtkContact = (answers: Answers): boolean => {
+  return hasForm(answers) && usesRtkQuery(answers);
+};
+
+const RTK_CONTACT_STEMS = ['contactEndpoints', 'contactHooks'] as const;
+
+// React's tree holds them, which Next shares.
+export const rtkContactFiles = (): StarterFile[] => {
+  return ['index', ...RTK_CONTACT_STEMS]
+    .map((stem): StarterFile => {
+      return {
+        target: `src/lib/apis/contact/${stem}.ts`,
+        when: usesRtkContact,
+        variant: 'rtk-query',
+        shared: 'react',
+      };
+    });
+};
+
+export const rtkContactTests = (): StarterTest[] => {
+  return RTK_CONTACT_STEMS
+    .map((stem): StarterTest => {
+      return {
+        target: `src/lib/apis/contact/${stem}.test.ts`,
+        covers: `src/lib/apis/contact/${stem}.ts`,
+        variant: 'rtk-query',
+        shared: 'react',
+      };
+    });
+};

@@ -84,6 +84,9 @@ when a version's change lives in a sibling it is described there instead:
   `lib/apis/base/baseApi.ts`, `lib/apis/contact/contactApi.ts`, and the extension's `lib/mark/mark.ts`. Vue's
   `installData` and `installStore` are `dataProvider` and `storeProvider` under `lib/providers/data/` and
   `lib/providers/store/`. The emitted structure rule states the shape.
+- Under RTK Query, a React or Next project's `lib/apis/contact/` splits `contactApi.ts` into `contactEndpoints.ts`
+  (the injected endpoints, exported as `contactApi`) and `contactHooks.ts` (`useSubmitContact`), each with its own
+  test, and its `index.ts` re-exports both.
 
 ### Fixed
 

@@ -83,14 +83,36 @@ export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
   ];
 };
 
+// RTK Query splits the module into endpoints and hooks, with its own barrel.
 export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]): GateRow[] => {
+  const wrapped = dataLayers
+    .filter((data) => {
+      return data !== 'rtk-query';
+    });
+  const hasRtkQuery = dataLayers.includes('rtk-query');
+  const rtkQuery = hasRtkQuery
+    ? ['index', 'contactEndpoints', 'contactHooks']
+        .map((stem): GateRow => {
+          return [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
+            form: ANSWERED,
+            data: ['rtk-query'],
+          }]];
+        })
+    : [];
+
   return [
-    ['src/lib/apis/contact/index.ts', WITH_FORM],
+    ['src/lib/apis/contact/index.ts', hasRtkQuery
+      ? [{
+          form: ANSWERED,
+          data: [undefined, ...wrapped],
+        }]
+      : WITH_FORM],
+    ...rtkQuery,
     ['src/lib/apis/contact/contactApi.ts', [{
       form: ANSWERED,
       data: [undefined],
     }]],
-    ...dataLayers
+    ...wrapped
       .map((data): GateRow => {
         return [`src/lib/apis/contact/contactApi.ts@${data}`, [{
           form: ANSWERED,
