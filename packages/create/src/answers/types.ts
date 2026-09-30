@@ -44,6 +44,8 @@ export interface MultiRecord<V extends string = string> extends Base {
 export interface OptionalMultiRecord<V extends string = string> extends Base {
   kind: 'optionalMulti';
   values: Record<V, Omit<ValueRecord, 'only'>>;
+  // The prompt takes no pick, which records nothing.
+  skippable?: true;
   minimum?: number;
 }
 

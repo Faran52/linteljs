@@ -917,3 +917,22 @@ describe('MANAGER_FLOORS against the workspace', () => {
     expect(atLeast(running, MANAGER_FLOORS.pnpm)).toBe(true);
   });
 });
+
+describe('buildDependencies with languages', () => {
+  it('adds the target\'s i18n libraries only once a language is chosen on a target that translates', () => {
+    const translated = buildDependencies(answersFor({ languages: ['ja'] }));
+    const english = buildDependencies(answersFor({}));
+    const vue = buildDependencies(answersFor({
+      target: 'vue',
+      languages: ['ja'],
+    }));
+
+    expect(Object.keys(translated)).toEqual(expect.arrayContaining([
+      'i18next',
+      'i18next-browser-languagedetector',
+      'react-i18next',
+    ]));
+    expect(english).not.toHaveProperty('i18next');
+    expect(vue).not.toHaveProperty('i18next');
+  });
+});

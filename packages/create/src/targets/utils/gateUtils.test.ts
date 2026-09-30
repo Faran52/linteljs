@@ -5,7 +5,11 @@ import {
   it,
 } from 'vitest';
 
-import { hasForm, hasStore } from './gateUtils';
+import {
+  hasForm,
+  hasI18n,
+  hasStore,
+} from './gateUtils';
 
 import type { Answers } from '@config/types';
 
@@ -45,5 +49,13 @@ describe('the starter gates', () => {
       hasStore(answers),
       hasForm(answers),
     ]).toEqual([store, form]);
+  });
+});
+
+describe('hasI18n', () => {
+  it('holds once any language is chosen', () => {
+    expect(hasI18n(answersFor({}))).toBe(false);
+    expect(hasI18n(answersFor({ languages: [] }))).toBe(false);
+    expect(hasI18n(answersFor({ languages: ['ko'] }))).toBe(true);
   });
 });

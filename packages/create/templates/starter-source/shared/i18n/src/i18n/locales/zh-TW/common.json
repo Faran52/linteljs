@@ -1,0 +1,13 @@
+{
+  "starterLabel": "LintelJS 入門範本",
+  "language": "語言",
+  "home": "首頁",
+  "about": "關於",
+  "version": "版本",
+  "contact": "聯絡我們",
+  "statusForbidden": "你沒有存取此頁面的權限",
+  "statusNotFound": "找不到頁面",
+  "statusServerError": "發生錯誤",
+  "statusRetry": "重試",
+  "statusHome": "返回首頁"
+}

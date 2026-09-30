@@ -43,6 +43,11 @@ export interface StarterFile {
 }
 
 // `include` matters as much as `extensions`, or a web variant resolves under a native test.
+export interface I18nParts {
+  dependencies: string[];
+  testSetup: string;
+}
+
 export interface TestPlatform {
   name: string;
   extensions: string[];
@@ -133,6 +138,8 @@ export interface TargetRecord {
   routers?: readonly Router[];
   tailwind?: TailwindSlot;
   hostsBrowser?: true;
+  // Present once a target translates its starter: what `languages` adds to its dependencies and test setup.
+  i18n?: I18nParts;
   hostsFramework?: true;
   ignores: string[];
   naming: NamingMap;

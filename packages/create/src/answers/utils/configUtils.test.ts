@@ -709,3 +709,32 @@ describe('the mocking answer', () => {
     expect(config.mocking).toBe('msw');
   });
 });
+
+describe('the languages answer', () => {
+  const configWith = (target: string): string => {
+    return JSON.stringify({
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      target,
+      testing: 'vitest',
+      packageManager: 'pnpm',
+      libraries: [],
+      typeSafety: 'strict',
+      agents: [],
+      plugins: [],
+      languages: ['ar', 'ja'],
+    });
+  };
+
+  it('round-trips through a config rather than being dropped', () => {
+    const config = parseLinteljsConfig(configWith('react'));
+
+    expect(config.languages).toEqual(['ar', 'ja']);
+  });
+
+  it('is refused on a target that does not translate its starter', () => {
+    expect(() => {
+      return parseLinteljsConfig(configWith('vue'));
+    }).toThrow('languages is not an answer for vue');
+  });
+});

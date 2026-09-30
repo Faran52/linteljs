@@ -5,6 +5,7 @@ import {
   hasLibrary,
   hasSurface,
   hasTests,
+  localesOf,
   rendersWithReact,
   surfacesOf,
 } from './answerUtils';
@@ -65,5 +66,35 @@ describe('hasTests', () => {
   it('holds for every testing answer but none', () => {
     expect(hasTests(answersFor())).toBe(true);
     expect(hasTests(answersFor({ testing: 'none' }))).toBe(false);
+  });
+});
+
+describe('localesOf', () => {
+  it.each<[string, Parameters<typeof answersFor>[0], string[]]>([
+    [
+      'nothing when unanswered',
+      {},
+      [],
+    ],
+    [
+      'nothing when answered empty',
+      { languages: [] },
+      [],
+    ],
+    [
+      'English first, once',
+      { languages: [
+        'ja',
+        'en',
+        'ar',
+      ] },
+      [
+        'en',
+        'ja',
+        'ar',
+      ],
+    ],
+  ])('answers %s', (_label, chosen, expected) => {
+    expect(localesOf(answersFor(chosen))).toEqual(expected);
   });
 });

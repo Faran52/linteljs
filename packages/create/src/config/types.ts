@@ -42,6 +42,8 @@ export type Data = 'tanstack-query' | 'rtk-query';
 
 export type Mocking = 'msw';
 
+export type Language = 'en' | 'ar' | 'ja' | 'ko' | 'zh-CN' | 'zh-TW';
+
 export type TypeSafety = 'strict' | 'relaxed';
 
 export type Agent = 'claude-code' | 'codex' | 'copilot' | 'cursor';
@@ -72,6 +74,8 @@ export interface Answers {
   data?: Data;
   // Absent is an api layer that answers locally.
   mocking?: Mocking;
+  // Absent is no i18n. English ships with any choice, as the fallback.
+  languages?: Language[];
   typeSafety: TypeSafety;
   agents: Agent[];
   plugins: Plugin[];

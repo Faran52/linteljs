@@ -3,7 +3,9 @@ import {
   DEFAULT_ANSWERS,
   onlyFor,
 } from '../../../packages/create/src/answers';
+import { LANGUAGES } from '../../../packages/create/src/config/constants';
 import { RECORD_MODULE } from '../../../packages/create/src/emitters/always/linteljs-record/linteljsRecordEmitter';
+import { i18nConfigEmitter } from '../../../packages/create/src/emitters/libraries/i18n-config/i18nConfigEmitter';
 import { starterSourceEmitter } from '../../../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
 import { testSetupEmitter } from '../../../packages/create/src/emitters/testing/test-setup/testSetupEmitter';
 import { targetFor } from '../../../packages/create/src/targets';
@@ -70,6 +72,7 @@ export const widestFor = (target: TargetId): Answers[] => {
       ...widest,
       data: 'tanstack-query',
       mocking: 'msw',
+      ...(record.i18n === undefined ? {} : { languages: [...LANGUAGES] }),
     },
     // RTK Query ships inside the Redux store.
     {
@@ -130,6 +133,10 @@ export const writtenPaths = (every: Answers[]): Set<string> => {
     .flatMap((answers) => {
       return [
         RECORD_MODULE,
+        ...i18nConfigEmitter(answers)
+          .map(({ target }) => {
+            return target;
+          }),
         ...starterSourceEmitter(answers)
           .flatMap((artifact) => {
             return [artifact.target, ...artifact.requires ?? []];

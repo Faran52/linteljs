@@ -37,6 +37,7 @@ export const EXPECTED: Record<keyof Answers | '$schema' | 'schemaVersion', null>
   store: null,
   data: null,
   mocking: null,
+  languages: null,
   typeSafety: null,
   agents: null,
   plugins: null,

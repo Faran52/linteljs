@@ -1351,11 +1351,12 @@ measurement is missing from this section is an exemption to delete.
 unawaited promise, and an SFC pair. Linting them reports the defect each exists to trigger, and the `.vue` and
 `.svelte` pair cannot parse without the layers those tests compose.
 
-`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts` and
-`templates/starter-source/**` are shipped
+`templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts`,
+`setupTests.i18n.ts` and `templates/starter-source/**` are shipped
 source, copied to disk and never imported here. Each imports the framework it is written for, none of which is
 installed here, so every import is unresolvable and every call through one untyped. The MSW setup differs only in
-what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here. They are data here
+what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here; the i18n setup
+reaches for `../src/i18n` alike. They are data here
 and code only in a generated project, where that project's own `eslint .` judges them; `pnpm lint:starters` and the
 end-to-end suite are what prove it.
 

@@ -285,8 +285,11 @@ const askAnswer = async (
     case 'optionalMulti': {
       const offered = offeredValuesOf(record.values, target, answered);
 
-      // Required when asked: an extension with no surface has a manifest naming nothing.
-      return await askMulti(prompter, message, offered, [], true, describeFrom(record.values));
+      // Required unless skippable: an extension with no surface has a manifest naming nothing.
+      const required = record.skippable !== true;
+      const picked = await askMulti(prompter, message, offered, [], required, describeFrom(record.values));
+
+      return record.skippable === true && picked.length === 0 ? undefined : picked;
     }
   }
 };

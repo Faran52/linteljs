@@ -1,0 +1,13 @@
+{
+  "starterLabel": "LintelJS 入门模板",
+  "language": "语言",
+  "home": "首页",
+  "about": "关于",
+  "version": "版本",
+  "contact": "联系我们",
+  "statusForbidden": "你没有访问此页面的权限",
+  "statusNotFound": "找不到页面",
+  "statusServerError": "出了点问题",
+  "statusRetry": "重试",
+  "statusHome": "返回首页"
+}

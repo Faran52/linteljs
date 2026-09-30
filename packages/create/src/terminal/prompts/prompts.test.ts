@@ -278,9 +278,43 @@ describe('ask', () => {
     });
   });
 
+  it.each<[string, string[], string[] | undefined]>([
+    [
+      'records nothing when no language is picked',
+      [],
+      undefined,
+    ],
+    [
+      'records the languages picked',
+      ['ar', 'ja'],
+      ['ar', 'ja'],
+    ],
+  ])('%s', async (_label, picked, recorded) => {
+    const { result } = await askWith([
+      'demo-app',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      picked,
+      undefined,
+      ['claude-code'],
+      [],
+      undefined,
+    ]);
+
+    expect(result.answers.languages).toEqual(recorded);
+  });
+
   it('selects both agents and no plugins', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -305,6 +339,7 @@ describe('ask', () => {
   it('selects one agent and a plugin subset, normalized to declaration order', async () => {
     const { result } = await askWith([
       'demo-app',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -392,6 +427,7 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
       [],
       undefined,
       undefined,
@@ -407,6 +443,7 @@ describe('ask', () => {
   it('offers AI plugins label only when agents are selected', async () => {
     const { recorded } = await askWith([
       'demo-app',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -435,6 +472,7 @@ describe('ask', () => {
     it('skips the name question and uses it as given', async () => {
       const { result, recorded } = await askWith(
         [
+          undefined,
           undefined,
           undefined,
           undefined,

@@ -3,6 +3,7 @@ import { pluginsAnswer } from './agents/plugins/pluginsAnswer';
 import { CONFIG_SCHEMA_URL, CURRENT_SCHEMA_VERSION } from './constants';
 import { dataAnswer } from './libraries/data/dataAnswer';
 import { formAnswer } from './libraries/form/formAnswer';
+import { languagesAnswer } from './libraries/languages/languagesAnswer';
 import { librariesAnswer } from './libraries/libraries/librariesAnswer';
 import { mockingAnswer } from './libraries/mocking/mockingAnswer';
 import { stylingAnswer } from './libraries/styling/stylingAnswer';
@@ -48,6 +49,7 @@ export const ANSWERS = {
   store: storeAnswer,
   data: dataAnswer,
   mocking: mockingAnswer,
+  languages: languagesAnswer,
   typeSafety: typeSafetyAnswer,
   agents: agentsAnswer,
   plugins: pluginsAnswer,

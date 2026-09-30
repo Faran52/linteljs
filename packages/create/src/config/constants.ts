@@ -1,4 +1,5 @@
 import {
+  type Language,
   type PackageManager,
   type ProjectShape,
   type Stage,
@@ -52,3 +53,13 @@ export const EMPTY_PROJECT: ProjectShape = {
   setupTests: [],
   styleEntries: [],
 };
+
+// The order a project lists them in.
+export const LANGUAGES: readonly Language[] = [
+  'en',
+  'ar',
+  'ja',
+  'ko',
+  'zh-CN',
+  'zh-TW',
+];

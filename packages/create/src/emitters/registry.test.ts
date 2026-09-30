@@ -25,7 +25,11 @@ import {
   it,
 } from 'vitest';
 
-import { EMPTY_PROJECT, MANAGED_PATH } from '@config/constants';
+import {
+  EMPTY_PROJECT,
+  LANGUAGES,
+  MANAGED_PATH,
+} from '@config/constants';
 import {
   type Agent,
   type Artifact,
@@ -237,11 +241,22 @@ describe('the project the answers write', () => {
   const projectsFor = (target: TargetId): Project[] => {
     return targetCases(target)
       .flatMap(({ answers: chosen }) => {
-        return [chosen, {
-          ...chosen,
-          mocking: 'msw' as const,
-          libraries: [],
-        }];
+        const translated = targetFor(chosen).i18n === undefined
+          ? []
+          : [{
+              ...chosen,
+              languages: [...LANGUAGES],
+            }];
+
+        return [
+          chosen,
+          {
+            ...chosen,
+            mocking: 'msw' as const,
+            libraries: [],
+          },
+          ...translated,
+        ];
       })
       .map((chosen) => {
         const answers = hostedAnswersFor(chosen);

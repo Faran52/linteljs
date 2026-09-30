@@ -28,6 +28,7 @@ import { readmeEmitter } from './always/readme/readmeEmitter';
 import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfigEmitter';
 import { tsconfigEmitter } from './always/tsconfig/tsconfigEmitter';
 import { typecheckStagedEmitter } from './always/typecheck-staged/typecheckStagedEmitter';
+import { i18nConfigEmitter } from './libraries/i18n-config/i18nConfigEmitter';
 import { styleEntryEmitter } from './libraries/style-entry/styleEntryEmitter';
 import { bunfigEmitter } from './manager/bunfig/bunfigEmitter';
 import { npmrcEmitter } from './manager/npmrc/npmrcEmitter';
@@ -91,6 +92,7 @@ export const SEED_EMITTERS: Record<string, Emitter> = {
   'target/expo-config': expoConfigEmitter,
   'target/html-entry': htmlEntryEmitter,
   'target/manifest': manifestEmitter,
+  'libraries/i18n-config': i18nConfigEmitter,
   'target/starter-source': starterSourceEmitter,
 };
 

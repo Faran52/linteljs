@@ -1,0 +1,13 @@
+{
+  "starterLabel": "LintelJS 스타터",
+  "language": "언어",
+  "home": "홈",
+  "about": "소개",
+  "version": "버전",
+  "contact": "문의",
+  "statusForbidden": "이 페이지에 접근할 권한이 없습니다",
+  "statusNotFound": "페이지를 찾을 수 없습니다",
+  "statusServerError": "문제가 발생했습니다",
+  "statusRetry": "다시 시도",
+  "statusHome": "홈으로 이동"
+}

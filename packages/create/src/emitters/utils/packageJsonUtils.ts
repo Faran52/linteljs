@@ -10,7 +10,11 @@ import {
   type Styling,
 } from '@config/types';
 
-import { hasLibrary, hasTests } from '@utils/answerUtils';
+import {
+  hasLibrary,
+  hasTests,
+  localesOf,
+} from '@utils/answerUtils';
 import { isJsonObject } from '@utils/objectUtils';
 
 import {
@@ -114,6 +118,7 @@ const libraryDependencies = (answers: Answers, target: TargetRecord): string[] =
     ...(answers.styling === undefined ? [] : styling[answers.styling]),
     ...(answers.data === undefined ? [] : data[answers.data]),
     ...(answers.form === undefined ? [] : forms[answers.form]),
+    ...(localesOf(answers).length === 0 ? [] : target.i18n?.dependencies ?? []),
   ];
 };
 

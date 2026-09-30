@@ -12,8 +12,10 @@ import {
   TANSTACK_QUERY,
   walkGates,
   WITH_FORM,
+  WITH_I18N,
   WITH_STORE,
   WITHOUT_FORM,
+  WITHOUT_I18N,
   WITHOUT_STORE,
 } from '@mocks/starterGates';
 import {
@@ -21,6 +23,8 @@ import {
   expect,
   it,
 } from 'vitest';
+
+import { LANGUAGES } from '@config/constants';
 
 import { DEFAULT_ANSWERS } from '@answers';
 
@@ -65,13 +69,29 @@ describe('reactTarget', () => {
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).toContain('@vitejs/plugin-react');
   });
 
-  it('ships one entry, and an App per router it offers plus one for no router', () => {
+  it('translates only the routerless starter, through i18next', () => {
+    expect(recordFor().i18n).toEqual({
+      dependencies: [
+        'i18next',
+        'i18next-browser-languagedetector',
+        'react-i18next',
+      ],
+      testSetup: 'fragments/test-setup/setupTests.i18n.ts',
+    });
+    expect(recordFor({ router: 'react-router' }).i18n).toBeUndefined();
+    expect(recordFor({ router: 'react-router-framework' }).i18n).toBeUndefined();
+  });
+
+  it('ships one entry and its translated twin, and an App per router it offers plus one for no router', () => {
     const mains = recordFor().starterFiles
       .filter((file) => {
         return file.target === 'src/main.tsx';
+      })
+      .map(({ variant }) => {
+        return variant;
       });
 
-    expect(mains).toHaveLength(1);
+    expect(mains).toEqual([undefined, 'i18n']);
 
     const appVariants = recordFor().starterFiles
       .filter((file) => {
@@ -152,6 +172,14 @@ describe('reactTarget', () => {
 });
 
 const NO_ROUTER: readonly Condition[] = [{ router: [undefined] }];
+const ROUTERLESS_ENGLISH: readonly Condition[] = [{
+  router: [undefined],
+  languages: [undefined],
+}];
+const ROUTERLESS_I18N: readonly Condition[] = [{
+  router: [undefined],
+  languages: ANSWERED,
+}];
 const FRAMEWORK_MODE: readonly Condition[] = [{ router: ['react-router-framework'] }];
 const FRAMEWORK_WITHOUT_FORM: readonly Condition[] = [{
   router: ['react-router-framework'],
@@ -167,15 +195,41 @@ const DATA_ROUTER: readonly Condition[] = [{ router: ['react-router', 'react-rou
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
-  ['src/main.tsx', [{ router: [
-    undefined,
-    'react-router',
-    'tanstack-router',
-  ] }]],
+  ['src/main.tsx', [{
+    router: [
+      undefined,
+      'react-router',
+      'tanstack-router',
+    ],
+    languages: [undefined],
+  }]],
+  ['src/main.tsx@i18n', [{
+    router: [
+      undefined,
+      'react-router',
+      'tanstack-router',
+    ],
+    languages: ANSWERED,
+  }]],
+  ['src/config/statuses.ts', WITHOUT_I18N],
+  ['src/config/statuses.ts@i18n', WITH_I18N],
+  ['src/components/features/status-page/StatusPage.tsx', WITHOUT_I18N],
+  ['src/components/features/status-page/StatusPage.tsx@i18n', WITH_I18N],
+  ['src/components/features/status-page/StatusPage.test.tsx', WITHOUT_I18N],
+  ['src/components/features/status-page/StatusPage.test.tsx@i18n', WITH_I18N],
+  ['src/components/features/app-header/AppHeader.tsx@i18n', ROUTERLESS_I18N],
+  ['src/components/features/app-header/AppHeader.test.tsx@i18n', ROUTERLESS_I18N],
+  ['src/i18n/index.ts@i18n', WITH_I18N],
+  ['src/i18n/index.test.ts@i18n', WITH_I18N],
+  ['src/i18n/locales.test.ts@i18n', WITH_I18N],
+  ...LANGUAGES
+    .map((language): GateRow => {
+      return [`src/i18n/locales/${language}/common.json@i18n`, WITH_I18N];
+    }),
   ['src/App.tsx', NO_ROUTER],
   ['src/App.tsx@react-router', [{ router: ['react-router'] }]],
   ['src/App.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
-  ['src/components/features/app-header/AppHeader.tsx', NO_ROUTER],
+  ['src/components/features/app-header/AppHeader.tsx', ROUTERLESS_ENGLISH],
   ['src/components/features/error-boundary/ErrorBoundary.tsx', NO_ROUTER],
   ['src/components/features/route-error/RouteError.tsx@react-router', DATA_ROUTER],
   ['src/components/features/route-error/RouteError.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
@@ -237,7 +291,7 @@ const GATES: GateRow[] = [
   ['./components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/App.test.tsx', NO_ROUTER],
   ['src/App.test.tsx@with-router', [{ router: ['react-router', 'tanstack-router'] }]],
-  ['src/components/features/app-header/AppHeader.test.tsx', NO_ROUTER],
+  ['src/components/features/app-header/AppHeader.test.tsx', ROUTERLESS_ENGLISH],
   ['src/components/features/app-header/AppHeader.test.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes.test.ts@react-router-framework', FRAMEWORK_WITHOUT_FORM],
   ['src/routes.test.ts@with-form', FRAMEWORK_WITH_FORM],

@@ -10,6 +10,7 @@ import {
   STATUS_UTILS_TEST,
 } from '../constants';
 import { hasStore } from '../utils/gateUtils';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -36,6 +37,7 @@ import {
   frameworkRouteTests,
   isFrameworkMode,
 } from './utils/frameworkRouteUtils';
+import { reactI18nFiles, reactI18nTests } from './utils/translatedFileUtils';
 
 import type { Answers } from '@config/types';
 import type { TargetBuilder } from '../registry';
@@ -92,13 +94,8 @@ const baseReactTarget: TargetRecord = {
       }),
     // So `AppHeader.tsx` varies by router alone, not router times styling.
     ...componentStyleModules(),
-    // In framework mode React Router's build owns the entry, so a second one would go uncalled.
-    {
-      target: 'src/main.tsx',
-      when: (answers) => {
-        return !isFrameworkMode(answers);
-      },
-    },
+    ...reactI18nFiles(),
+    ...localeFiles(),
     {
       target: 'src/pages/routes.tsx',
       when: (answers) => {
@@ -212,13 +209,6 @@ const baseReactTarget: TargetRecord = {
         };
       }),
     { target: 'src/components/ui/button/Button.tsx' },
-    // Without a router the header swaps the page from state, so its tabs are controls.
-    {
-      target: 'src/components/features/app-header/AppHeader.tsx',
-      when: (answers) => {
-        return !hasRouter(answers);
-      },
-    },
     {
       target: 'src/App.tsx',
       when: (answers) => {
@@ -389,10 +379,6 @@ const baseReactTarget: TargetRecord = {
       covers: 'src/components/ui/mark/Mark.tsx',
     },
     {
-      target: 'src/components/features/status-page/StatusPage.test.tsx',
-      covers: 'src/components/features/status-page/StatusPage.tsx',
-    },
-    {
       target: 'src/components/features/error-boundary/ErrorBoundary.test.tsx',
       covers: 'src/components/features/error-boundary/ErrorBoundary.tsx',
     },
@@ -420,14 +406,8 @@ const baseReactTarget: TargetRecord = {
       target: 'src/components/ui/text-input/TextInput.test.tsx',
       covers: 'src/components/ui/text-input/TextInput.tsx',
     },
-    // `App`'s own suite covers a routed header; standing it alone would need a router context.
-    {
-      target: 'src/components/features/app-header/AppHeader.test.tsx',
-      covers: 'src/components/features/app-header/AppHeader.tsx',
-      when: (answers) => {
-        return !hasRouter(answers);
-      },
-    },
+    ...reactI18nTests(),
+    LOCALES_TEST,
     // Framework mode has no `App` to cover the header inside, so it stands alone in a memory router.
     {
       target: 'src/components/features/app-header/AppHeader.test.tsx',
@@ -518,11 +498,26 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
   ],
 };
 
+// A routed starter is not translated yet, so only the routerless one asks for languages.
 export const reactTarget: TargetBuilder = (answers) => {
-  return isFrameworkMode(answers)
-    ? {
+  if (isFrameworkMode(answers)) {
+    return {
+      ...baseReactTarget,
+      ...FRAMEWORK_MODE,
+    };
+  }
+
+  return hasRouter(answers)
+    ? baseReactTarget
+    : {
         ...baseReactTarget,
-        ...FRAMEWORK_MODE,
-      }
-    : baseReactTarget;
+        i18n: {
+          dependencies: [
+            'i18next',
+            'i18next-browser-languagedetector',
+            'react-i18next',
+          ],
+          testSetup: 'fragments/test-setup/setupTests.i18n.ts',
+        },
+      };
 };

@@ -1,0 +1,13 @@
+{
+  "starterLabel": "LintelJS Starter",
+  "language": "Language",
+  "home": "Home",
+  "about": "About",
+  "version": "Version",
+  "contact": "Contact",
+  "statusForbidden": "You don't have access to this page",
+  "statusNotFound": "Page not found",
+  "statusServerError": "Something went wrong",
+  "statusRetry": "Try again",
+  "statusHome": "Go home"
+}

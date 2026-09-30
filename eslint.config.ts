@@ -61,6 +61,7 @@ const config = [
       'packages/create/templates/fragments/test-setup/setupTests.angular.ts',
       'packages/create/templates/fragments/test-setup/setupTests.reactNative.ts',
       'packages/create/templates/fragments/test-setup/setupTests.msw.ts',
+      'packages/create/templates/fragments/test-setup/setupTests.i18n.ts',
       'packages/create/templates/starter-source/**',
     ],
     naming: {

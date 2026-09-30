@@ -14,12 +14,10 @@ export const ALWAYS: readonly string[] = [
   'src/pages/about/AboutPage.tsx',
   'src/pages/version/VersionPage.tsx',
   'src/components/ui/mark/Mark.tsx',
-  'src/components/features/status-page/StatusPage.tsx',
 ];
 
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
-  'src/config/statuses.ts',
   'src/lib/utils/statusUtils.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',

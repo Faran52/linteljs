@@ -119,18 +119,33 @@ const lifted = (raw: ConfigObject, schemaVersion: SchemaVersion): ConfigObject =
   );
 };
 
-// `exactOptionalPropertyTypes` refuses a key written `undefined`, so each optional answer is a conditional spread.
-const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): LinteljsConfig => {
-  const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
-  const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
-  const managerVersionValue = readAnswer(ANSWERS.packageManagerVersion, parsed.packageManagerVersion);
-  const nodeVersionValue = readAnswer(ANSWERS.nodeVersion, parsed.nodeVersion);
+// The library answers, apart so neither half outgrows its complexity budget.
+const libraryAnswersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Partial<LinteljsConfig> => {
   const stylingValue = readAnswer(ANSWERS.styling, parsed.styling);
   const formValue = readAnswer(ANSWERS.form, parsed.form);
   const routerValue = readAnswer(ANSWERS.router, parsed.router);
   const storeValue = readAnswer(ANSWERS.store, storeAnswerOf(parsed, schemaVersion));
   const dataValue = readAnswer(ANSWERS.data, parsed.data);
   const mockingValue = readAnswer(ANSWERS.mocking, parsed.mocking);
+  const languagesValue = readAnswer(ANSWERS.languages, parsed.languages);
+
+  return {
+    ...(stylingValue === undefined ? {} : { styling: stylingValue }),
+    ...(formValue === undefined ? {} : { form: formValue }),
+    ...(routerValue === undefined ? {} : { router: routerValue }),
+    ...(storeValue === undefined ? {} : { store: storeValue }),
+    ...(dataValue === undefined ? {} : { data: dataValue }),
+    ...(mockingValue === undefined ? {} : { mocking: mockingValue }),
+    ...(languagesValue === undefined ? {} : { languages: languagesValue }),
+  };
+};
+
+// `exactOptionalPropertyTypes` refuses a key written `undefined`, so each optional answer is a conditional spread.
+const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): LinteljsConfig => {
+  const surfacesValue = readAnswer(ANSWERS.surfaces, parsed.surfaces);
+  const hostedFrameworkValue = readAnswer(ANSWERS.hostedFramework, parsed.hostedFramework);
+  const managerVersionValue = readAnswer(ANSWERS.packageManagerVersion, parsed.packageManagerVersion);
+  const nodeVersionValue = readAnswer(ANSWERS.nodeVersion, parsed.nodeVersion);
   const resolveConditionsValue = readAnswer(ANSWERS.resolveConditions, parsed.resolveConditions);
   const aliasesValue = readAnswer(ANSWERS.aliases, parsed.aliases);
   const browsersValue = readAnswer(ANSWERS.browsers, parsed.browsers);
@@ -149,12 +164,7 @@ const answersFrom = (parsed: ConfigObject, schemaVersion: SchemaVersion): Lintel
     ...(managerVersionValue === undefined ? {} : { packageManagerVersion: managerVersionValue }),
     ...(nodeVersionValue === undefined ? {} : { nodeVersion: nodeVersionValue }),
     libraries: libraryChoices(parsed.libraries),
-    ...(stylingValue === undefined ? {} : { styling: stylingValue }),
-    ...(formValue === undefined ? {} : { form: formValue }),
-    ...(routerValue === undefined ? {} : { router: routerValue }),
-    ...(storeValue === undefined ? {} : { store: storeValue }),
-    ...(dataValue === undefined ? {} : { data: dataValue }),
-    ...(mockingValue === undefined ? {} : { mocking: mockingValue }),
+    ...libraryAnswersFrom(parsed, schemaVersion),
     typeSafety: readAnswer(ANSWERS.typeSafety, parsed.typeSafety),
     agents: readAnswer(ANSWERS.agents, parsed.agents),
     ...(resolveConditionsValue === undefined ? {} : { resolveConditions: resolveConditionsValue }),

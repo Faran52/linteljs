@@ -2,6 +2,7 @@ import type {
   Answers,
   Browser,
   Framework,
+  Language,
   Library,
   Surface,
 } from '@config/types';
@@ -24,6 +25,18 @@ export const surfacesOf = (answers: Answers): Surface[] => {
 
 export const hasSurface = (answers: Answers, surface: Surface): boolean => {
   return surfacesOf(answers).includes(surface);
+};
+
+// English first and always: it is the fallback every other language falls back to.
+export const localesOf = (answers: Answers): Language[] => {
+  const chosen = answers.languages ?? [];
+
+  return chosen.length === 0
+    ? []
+    : ['en', ...chosen
+        .filter((language) => {
+          return language !== 'en';
+        })];
 };
 
 // `browser` first, so the primary one keeps writing `manifest.json`.

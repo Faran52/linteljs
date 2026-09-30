@@ -2,6 +2,8 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { answersFor } from '@mocks/answersFor';
 
+import { LANGUAGES } from '@config/constants';
+
 import { valuesOf } from '@utils/objectUtils';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '@answers';
@@ -42,10 +44,13 @@ const AXES = new Set<string>([
   'hostedFramework',
   'browser',
   'surfaces',
+  'languages',
 ]);
 
 export const WITH_FORM: readonly Condition[] = [{ form: ANSWERED }];
 export const WITHOUT_FORM: readonly Condition[] = [{ form: [undefined] }];
+export const WITH_I18N: readonly Condition[] = [{ languages: ANSWERED }];
+export const WITHOUT_I18N: readonly Condition[] = [{ languages: [undefined] }];
 export const WITH_STORE: readonly Condition[] = [{ store: ANSWERED }];
 export const WITHOUT_STORE: readonly Condition[] = [{ store: [undefined] }];
 export const TANSTACK_QUERY: readonly Condition[] = [{ data: ['tanstack-query'] }];
@@ -190,6 +195,7 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
   const {
     hostsBrowser,
     hostsFramework,
+    i18n,
     routers = [],
     stores = [],
   } = builder(base);
@@ -202,6 +208,7 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
     answered('mocking', valuesOf(ANSWERS.mocking.values)),
     answered('libraries', [[], ['zod']], false),
     answered('testing', valuesOf(ANSWERS.testing.values), false),
+    ...i18n === undefined ? [] : [answered('languages', [[...LANGUAGES]])],
     ...hostsFramework === true ? [answered('hostedFramework', valuesOf(ANSWERS.hostedFramework.values))] : [],
     ...hostsBrowser === true
       ? [

@@ -51,6 +51,7 @@ describe('answerFlags', () => {
         styling: 'tailwind',
         data: 'tanstack-query',
         mocking: 'msw',
+        languages: ['en', 'ar'],
       }),
       ...answerFlags({
         ...DEFAULT_ANSWERS,

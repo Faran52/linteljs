@@ -93,6 +93,7 @@ export const answerFlags = (answers: Answers): string[] => {
     ...(answers.styling === undefined ? [] : ['--styling', answers.styling]),
     ...(answers.data === undefined ? [] : ['--data', answers.data]),
     ...(answers.mocking === undefined ? [] : ['--mocking', answers.mocking]),
+    ...(answers.languages === undefined ? [] : ['--languages', answers.languages.join(',')]),
   ];
 };
 

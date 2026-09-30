@@ -1,0 +1,13 @@
+{
+  "starterLabel": "قالب LintelJS",
+  "language": "اللغة",
+  "home": "الرئيسية",
+  "about": "حول",
+  "version": "الإصدار",
+  "contact": "تواصل معنا",
+  "statusForbidden": "ليس لديك صلاحية الوصول إلى هذه الصفحة",
+  "statusNotFound": "الصفحة غير موجودة",
+  "statusServerError": "حدث خطأ ما",
+  "statusRetry": "حاول مرة أخرى",
+  "statusHome": "العودة إلى الرئيسية"
+}

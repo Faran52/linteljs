@@ -1,0 +1,13 @@
+{
+  "starterLabel": "LintelJS スターター",
+  "language": "言語",
+  "home": "ホーム",
+  "about": "概要",
+  "version": "バージョン",
+  "contact": "お問い合わせ",
+  "statusForbidden": "このページへのアクセス権がありません",
+  "statusNotFound": "ページが見つかりません",
+  "statusServerError": "問題が発生しました",
+  "statusRetry": "再試行",
+  "statusHome": "ホームに戻る"
+}

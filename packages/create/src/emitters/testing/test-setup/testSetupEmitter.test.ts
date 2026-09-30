@@ -61,6 +61,27 @@ describe('testSetupEmitter', () => {
     ]);
   });
 
+  it('initialises i18n where the target translates, and nowhere else', () => {
+    const [react] = testSetupEmitter({
+      ...DEFAULT_ANSWERS,
+      languages: ['ar'],
+    }, FRESH);
+    const [vue] = testSetupEmitter({
+      ...DEFAULT_ANSWERS,
+      target: 'vue',
+      languages: ['ar'],
+    }, FRESH);
+
+    expect(react?.content).toHaveProperty('sources', [
+      'fragments/test-setup/setupTests.ts',
+      'fragments/test-setup/setupTests.router.ts',
+      'fragments/test-setup/setupTests.i18n.ts',
+    ]);
+    const i18nSetup = ['fragments/test-setup/setupTests.i18n.ts'];
+
+    expect(vue?.content).toHaveProperty('sources', expect.not.arrayContaining(i18nSetup));
+  });
+
   it('leads with the target setup where the target ships one', () => {
     const [artifact] = testSetupEmitter({
       ...DEFAULT_ANSWERS,

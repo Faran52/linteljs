@@ -140,6 +140,21 @@
         "msw"
       ]
     },
+    "languages": {
+      "type": "array",
+      "description": "Translates the starter and adds a language switcher; English ships with any choice.",
+      "items": {
+        "enum": [
+          "en",
+          "ar",
+          "ja",
+          "ko",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
+      "uniqueItems": true
+    },
     "typeSafety": {
       "enum": [
         "strict",
