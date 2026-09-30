@@ -531,22 +531,24 @@ under every answer, and it makes each framework's mount point a flex column so t
 under the header. Its message is the
 `role="alert"`, and "Go home" is a full load, so a crash leaves no state behind (Next takes `Link`, which its
 plugin requires). A status ships only where something can produce it: a 404 needs a router, and a 403 needs a
-loader or a server that can refuse.
+loader or a server that can refuse, or a boundary that can tell a refusal from a crash. Where the boundary is client
+code, that is `ForbiddenError` in `src/lib/utils/statusUtils.ts` (`status-utils.ts` on Angular): thrown anywhere
+below the boundary, it shows the 403 page, with no retry, since trying again cannot grant access.
 
 | target | 404 | 403 | crash |
 | --- | --- | --- | --- |
-| react, no router | none, nothing routes | no | `ErrorBoundary`, a class, since only `getDerivedStateFromError` catches |
-| react-router | the layout route's `errorElement` | loader | the same `RouteError`; retry navigates to the same place, which resets it |
-| react-router-framework | `ErrorBoundary` exported from `root.tsx` | loader | the same `RouteError` |
-| tanstack-router | `defaultNotFoundComponent` | no | `defaultErrorComponent`, with its `reset` |
-| next | `app/not-found.tsx` | no, `forbidden()` is experimental | `app/error.tsx` and `app/global-error.tsx`, with `reset` |
-| vue | a catch-all route rendering the page | no | `onErrorCaptured` in `ErrorBoundary.vue` around `RouterView` |
+| react, no router | none, nothing routes | `ForbiddenError` | `ErrorBoundary`, a class, since only `getDerivedStateFromError` catches |
+| react-router | the layout route's `errorElement` | loader, or `ForbiddenError` | the same `RouteError`; retry navigates to the same place, which resets it |
+| react-router-framework | `ErrorBoundary` exported from `root.tsx` | loader; `ForbiddenError` once hydrated (a server render's error arrives without its class) | the same `RouteError` |
+| tanstack-router | `defaultNotFoundComponent` | `ForbiddenError` | `defaultErrorComponent`, with its `reset` |
+| next | `app/not-found.tsx` | `ForbiddenError` from a client component (a server component's error arrives without its class); `forbidden()` is experimental | `app/error.tsx` and `app/global-error.tsx`, with `reset` |
+| vue | a catch-all route rendering the page | `ForbiddenError` | `onErrorCaptured` in `ErrorBoundary.vue` around `RouterView` |
 | nuxt | `error.vue` | `createError` | `error.vue`, retry is `clearError()` |
 | svelte | `+error.svelte` | `error(403)` | `+error.svelte`, retry is `invalidateAll()` |
-| solid, no router | none, nothing routes | no | `<ErrorBoundary>` with its `reset` |
-| angular | a `**` route rendering the page | no | a custom `ErrorHandler` raises a signal the shell swaps its outlet on; retry lowers it |
-| astro | `src/pages/404.astro` | no | none: static output renders at build, so a crash fails the build, not a visit |
-| react-native | `src/app/+not-found.tsx` | no | `ErrorBoundary` exported from the root `_layout.tsx`, with `retry` |
+| solid, no router | none, nothing routes | `ForbiddenError` | `<ErrorBoundary>` with its `reset` |
+| angular | a `**` route rendering the page | `ForbiddenError` | a custom `ErrorHandler` sets a signal to the status the shell swaps its outlet for; retry clears it |
+| astro | `src/pages/404.astro` | no: static output has no request to refuse | none: static output renders at build, so a crash fails the build, not a visit |
+| react-native | `src/app/+not-found.tsx` | `ForbiddenError` | `ErrorBoundary` exported from the root `_layout.tsx`, with `retry` |
 | webextension | none, no router | no | none: its pages are built node by node, with no framework boundary to use |
 
 Where the boundary runs only inside its framework (Next's `error.tsx`, SvelteKit's `+error.svelte`, Nuxt's

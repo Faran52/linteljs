@@ -36,6 +36,9 @@ when a version's change lives in a sibling it is described there instead:
   `src/config/statuses.ts`. The button now ships under every answer, since the 500 page retries with it.
   The page centres a large code, one muted line and its actions under the header; its styles are the `.status`
   classes in `base.css`, which every styling answer ships.
+- Every client boundary (React in each router mode, Next's `error.tsx`, Vue, Solid, Angular, React Native) shows
+  the 403 page, with no retry, for a `ForbiddenError`, the class `src/lib/utils/statusUtils.ts` ships
+  (`status-utils.ts` on Angular). The loader and server 403s on React Router, Nuxt and SvelteKit stay.
 - Every answer is a flag, and one makes the run non-interactive: `--target`, `--browser`, `--surfaces`, `--hosted`,
   `--store`, `--router`, `--testing`, `--type-safety`, `--libraries`, `--styling`, `--data`, `--form`, `--mocking`,
   `--agents`, `--plugins`. `--version` prints the version.

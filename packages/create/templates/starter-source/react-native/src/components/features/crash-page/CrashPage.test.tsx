@@ -1,6 +1,8 @@
 import { renderScreen } from '@mocks/renderScreen';
 import { fireEvent, screen } from '@testing-library/react-native';
 
+import { ForbiddenError } from '../../../lib/utils/statusUtils';
+
 import { CrashPage } from './CrashPage';
 
 // expo-router's entry reaches Expo's TypeScript source, which no test transform strips; a text stands in.
@@ -23,5 +25,12 @@ describe('CrashPage', () => {
     await fireEvent.press(screen.getByRole('button'));
 
     expect(retry).toHaveBeenCalledOnce();
+  });
+
+  it('shows the 403 page, with no retry, for a ForbiddenError', async () => {
+    await renderScreen(<CrashPage error={new ForbiddenError()} retry={vi.fn<() => Promise<void>>()} />);
+
+    expect(screen.getByText('403')).toBeTruthy();
+    expect(screen.queryByText('Try again')).toBeNull();
   });
 });

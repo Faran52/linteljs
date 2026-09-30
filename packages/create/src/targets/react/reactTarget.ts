@@ -7,6 +7,7 @@ import {
   PARTS,
   REACT_VITE_PLUGIN,
   ROUTER_MOCK,
+  STATUS_UTILS_TEST,
 } from '../constants';
 import { hasStore } from '../utils/gateUtils';
 import {
@@ -348,6 +349,7 @@ const baseReactTarget: TargetRecord = {
   // The project gates at 100%, so a starter file with no suite fails the gate it ships with.
   starterTests: [
     ...mockTests(true),
+    STATUS_UTILS_TEST,
     ...rtkTests(),
     ...accessorTests(REACT_ACCESSORS),
     {

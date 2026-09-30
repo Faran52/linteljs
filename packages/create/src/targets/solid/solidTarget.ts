@@ -5,6 +5,7 @@ import {
   OUTSIDE_TESTS,
   PARTS,
   ROUTER_MOCK,
+  STATUS_UTILS_TEST,
 } from '../constants';
 import {
   hasForm,
@@ -189,6 +190,7 @@ export const solidTarget: TargetRecord = {
   ],
   starterTests: [
     ...mockTests(true),
+    STATUS_UTILS_TEST,
     ...accessorTests(ACCESSORS),
     {
       target: 'src/App.test.tsx',

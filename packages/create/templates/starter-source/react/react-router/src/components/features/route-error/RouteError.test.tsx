@@ -11,12 +11,16 @@ import {
   screen,
 } from '@testing-library/react';
 
+import { ForbiddenError } from '../../../lib/utils/statusUtils';
+
 import { RouteError } from './RouteError';
 
 import type { FC } from 'react';
 
+const crash = { error: new Error('render failed') };
+
 const Crashing: FC = () => {
-  throw new Error('render failed');
+  throw crash.error;
 };
 
 const renderAt = (path: string, hydrationData: HydrationState = {}): void => {
@@ -37,6 +41,7 @@ const renderAt = (path: string, hydrationData: HydrationState = {}): void => {
 
 describe('RouteError', () => {
   beforeEach(() => {
+    crash.error = new Error('render failed');
     // React reports every caught render error, which is the case under test.
     vi.spyOn(console, 'error')
       .mockReturnValue(undefined);
@@ -59,6 +64,14 @@ describe('RouteError', () => {
     } } });
 
     expect(await screen.findByRole('heading', { name: '403' })).toBeTruthy();
+  });
+
+  it('shows the 403 page, with no retry, for a route that throws a ForbiddenError', async () => {
+    crash.error = new ForbiddenError();
+    renderAt('/');
+
+    expect(await screen.findByRole('heading', { name: '403' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
   });
 
   it('shows the 500 page for a route that throws, and retries by navigating to the same place', async () => {

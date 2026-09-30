@@ -4,6 +4,7 @@ import {
   COMMON_REACT_PLUGINS,
   FOLDER_ROUTED,
   ROUTER_MOCK,
+  STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
 import {
@@ -163,6 +164,7 @@ export const reactNativeTarget: TargetRecord = {
   // expo-router treats every file under the route root as a route; `expo export` died on a suite there.
   starterTests: [
     ...mockTests(false),
+    STATUS_UTILS_TEST,
     // React's hook suites import `@testing-library/react`, and this target has no DOM.
     ...accessorTests(ACCESSORS),
     ...rtkTests(),

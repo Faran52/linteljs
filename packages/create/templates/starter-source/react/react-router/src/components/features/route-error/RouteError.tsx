@@ -6,6 +6,7 @@ import {
 } from 'react-router';
 
 import { STATUSES } from '../../../config/statuses';
+import { ForbiddenError } from '../../../lib/utils/statusUtils';
 import { StatusPage } from '../status-page/StatusPage';
 
 import type { FC } from 'react';
@@ -15,10 +16,13 @@ export const RouteError: FC = () => {
   const error = useRouteError();
   const navigate = useNavigate();
   const location = useLocation();
-  const status = [STATUSES.forbidden, STATUSES.notFound]
-    .find(({ code }) => {
-      return isRouteErrorResponse(error) && error.status === code;
-    });
+  // A loader answers with a status; a component throws a ForbiddenError.
+  const status = error instanceof ForbiddenError
+    ? STATUSES.forbidden
+    : [STATUSES.forbidden, STATUSES.notFound]
+        .find(({ code }) => {
+          return isRouteErrorResponse(error) && error.status === code;
+        });
 
   if (status !== undefined) {
     return <StatusPage {...status} />;

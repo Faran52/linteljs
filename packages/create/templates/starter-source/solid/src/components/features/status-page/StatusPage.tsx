@@ -20,10 +20,11 @@ export const StatusPage = (props: StatusPageProps): JSX.Element => {
             return <Button onClick={retry()}>Try again</Button>;
           }}
         </Show>
+        {/* `href` first: Solid writes the template unquoted, and happy-dom reads a closing `href=/>` as empty. */}
         <a
+          href="/"
           class="status-action"
           classList={{ 'status-action-outline': props.onRetry !== undefined }}
-          href="/"
         >
           Go home
         </a>

@@ -4,6 +4,7 @@ import {
   COMMON_REACT_PLUGINS,
   FOLDER_ROUTED,
   HOOKS_ALIAS,
+  STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
 import {
@@ -314,6 +315,7 @@ export const nextTarget: TargetRecord = {
   ],
   starterTests: [
     ...mockTests(true),
+    STATUS_UTILS_TEST,
     ...accessorTests(ACCESSORS, {
       shared: 'react',
       names: SOURCE_ACCESSORS,

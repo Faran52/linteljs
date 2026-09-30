@@ -19,6 +19,7 @@ export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/routes.ts',
   'src/config/statuses.ts',
+  'src/lib/utils/statusUtils.ts',
 ];
 
 export const ACCESSORS: AccessorNames = {

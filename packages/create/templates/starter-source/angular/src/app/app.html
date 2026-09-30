@@ -1,6 +1,9 @@
 <app-header [name]="name" />
-@if (crashed()) {
-  <app-status-page [code]="serverError.code" [message]="serverError.message" [onRetry]="retry" />
+@let status = crash();
+@if (status === 'forbidden') {
+  <app-status-page [code]="statuses.forbidden.code" [message]="statuses.forbidden.message" />
+} @else if (status === 'serverError') {
+  <app-status-page [code]="statuses.serverError.code" [message]="statuses.serverError.message" [onRetry]="retry" />
 } @else {
   <router-outlet />
 }

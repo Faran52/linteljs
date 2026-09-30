@@ -14,6 +14,7 @@ import {
 } from '../config/linteljs';
 import { PAGES } from '../config/routes';
 import { CrashHandler } from '../lib/providers/crash-handler/crash-handler';
+import { ForbiddenError } from '../lib/utils/status-utils';
 
 import { App } from './app';
 import { routes } from './app.routes';
@@ -91,5 +92,19 @@ describe('App', () => {
     await settled.whenStable();
 
     expect(root.querySelector('.mark')).not.toBeNull();
+  });
+
+  it('swaps the page for the 403 page, with no retry, on a ForbiddenError', async () => {
+    vi.spyOn(console, 'error')
+      .mockReturnValue(undefined);
+    const root = await open('/');
+    const settled = TestBed.inject(ApplicationRef);
+
+    TestBed.inject(CrashHandler)
+      .handleError(new ForbiddenError());
+    await settled.whenStable();
+
+    expect(root.querySelector('h1')?.textContent).toBe('403');
+    expect(root.querySelector('button')).toBeNull();
   });
 });

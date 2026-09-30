@@ -4,7 +4,11 @@ import {
   type NamingMap,
 } from '@config/types';
 
-import type { FrameworkParts, PluginSpec } from './types';
+import type {
+  FrameworkParts,
+  PluginSpec,
+  StarterTest,
+} from './types';
 
 const KEBAB = '+([a-z0-9])*(-+([a-z0-9]))';
 
@@ -126,3 +130,10 @@ export const COMMON_REACT_PLUGINS = [
   'eslint-plugin-jsx-a11y-x',
   'eslint-plugin-react-hooks',
 ];
+
+// The suite of the shared `ForbiddenError`, on every target whose boundary maps it to the 403 page.
+export const STATUS_UTILS_TEST: StarterTest = {
+  target: 'src/lib/utils/statusUtils.test.ts',
+  covers: 'src/lib/utils/statusUtils.ts',
+  shared: true,
+};

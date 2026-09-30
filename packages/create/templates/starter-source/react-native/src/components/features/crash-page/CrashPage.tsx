@@ -1,17 +1,20 @@
 import { STATUSES } from '../../../config/statuses';
+import { ForbiddenError } from '../../../lib/utils/statusUtils';
 import { StatusPage } from '../status-page/StatusPage';
 
 import type { ErrorBoundaryProps } from 'expo-router';
 import type { ReactNode } from 'react';
 
-const { code, message } = STATUSES.serverError;
-
 // `_layout.tsx` exports this as its `ErrorBoundary`; `retry` clears the error and renders the route again.
-export const CrashPage = ({ retry }: ErrorBoundaryProps): ReactNode => {
+export const CrashPage = ({ error, retry }: ErrorBoundaryProps): ReactNode => {
+  // Trying again cannot grant access.
+  if (error instanceof ForbiddenError) {
+    return <StatusPage {...STATUSES.forbidden} />;
+  }
+
   return (
     <StatusPage
-      code={code}
-      message={message}
+      {...STATUSES.serverError}
       onRetry={() => {
         void retry();
       }}

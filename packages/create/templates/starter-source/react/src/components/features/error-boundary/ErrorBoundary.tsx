@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react';
 
 import { STATUSES } from '../../../config/statuses';
+import { ForbiddenError } from '../../../lib/utils/statusUtils';
 import { StatusPage } from '../status-page/StatusPage';
 
 export interface ErrorBoundaryProps {
@@ -9,14 +10,21 @@ export interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   readonly failed: boolean;
+  readonly forbidden: boolean;
 }
 
 // A class: React catches a render error only in `getDerivedStateFromError`, which has no hook.
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  override state: ErrorBoundaryState = { failed: false };
+  override state: ErrorBoundaryState = {
+    failed: false,
+    forbidden: false,
+  };
 
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { failed: true };
+  static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
+    return {
+      failed: true,
+      forbidden: error instanceof ForbiddenError,
+    };
   }
 
   override render(): ReactNode {
@@ -25,11 +33,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return <>{this.props.children}</>;
     }
 
+    // Trying again cannot grant access.
+    if (this.state.forbidden) {
+      return <StatusPage {...STATUSES.forbidden} />;
+    }
+
     return (
       <StatusPage
         {...STATUSES.serverError}
         onRetry={() => {
-          this.setState({ failed: false });
+          this.setState({
+            failed: false,
+            forbidden: false,
+          });
         }}
       />
     );

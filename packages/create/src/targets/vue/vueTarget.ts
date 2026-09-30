@@ -1,6 +1,10 @@
 import { hasLibrary } from '@utils/answerUtils';
 
-import { FOLDER, PARTS } from '../constants';
+import {
+  FOLDER,
+  PARTS,
+  STATUS_UTILS_TEST,
+} from '../constants';
 import {
   hasForm,
   hasStore,
@@ -193,6 +197,7 @@ export const vueTarget: TargetRecord = {
   // Mounting `App` walks the real router, so that suite covers the header and every page.
   starterTests: [
     ...mockTests(true),
+    STATUS_UTILS_TEST,
     ...accessorTests(ACCESSORS),
     {
       target: 'src/App.test.ts',

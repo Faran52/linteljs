@@ -1,6 +1,7 @@
 import { ErrorBoundary as SolidErrorBoundary, type JSX } from 'solid-js';
 
 import { STATUSES } from '../../../config/statuses';
+import { ForbiddenError } from '../../../lib/utils/statusUtils';
 import { StatusPage } from '../status-page/StatusPage';
 
 export interface ErrorBoundaryProps {
@@ -9,7 +10,12 @@ export interface ErrorBoundaryProps {
 
 export const ErrorBoundary = (props: ErrorBoundaryProps): JSX.Element => {
   return (
-    <SolidErrorBoundary fallback={(_error, reset) => {
+    <SolidErrorBoundary fallback={(error, reset) => {
+      // Trying again cannot grant access.
+      if (error instanceof ForbiddenError) {
+        return <StatusPage {...STATUSES.forbidden} />;
+      }
+
       return <StatusPage {...STATUSES.serverError} onRetry={reset} />;
     }}
     >

@@ -25,6 +25,15 @@ describe('angularTarget', () => {
     expect(angularTarget.build).toBe('ng build');
   });
 
+  it('writes the shared ForbiddenError suite under the kebab spec name the CLI would give it', () => {
+    const suite = angularTarget.starterTests
+      .find((test) => {
+        return test.covers === 'src/lib/utils/status-utils.ts';
+      });
+
+    expect(suite?.target).toBe('src/lib/utils/status-utils.spec.ts');
+  });
+
   it('names every module the way the CLI would, and leaves declarations to their own key', () => {
     expect(angularTarget.naming['src/**/!(*.d).ts']).toBe('KEBAB_CASE');
     expect(angularTarget.naming).not.toHaveProperty('src/**/*.ts');

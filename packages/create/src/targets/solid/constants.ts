@@ -15,6 +15,7 @@ export const ALWAYS: readonly string[] = [
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/statuses.ts',
+  'src/lib/utils/statusUtils.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'public/favicon.svg',
