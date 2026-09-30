@@ -5,6 +5,24 @@ import { FRAMEWORKS, LIBRARIES } from './utils/loaderUtils';
 
 import type { ComposeConfigOptions, Layer } from '../types';
 
+const loadVitest = async (): Promise<Layer> => {
+  const { vitest } = await import('../layers/vitest/vitestLayer');
+
+  return vitest();
+};
+
+const loadHtml = async (): Promise<Layer> => {
+  const { html } = await import('../layers/html/htmlLayer');
+
+  return html();
+};
+
+const loadAstro = async (): Promise<Layer> => {
+  const { astro } = await import('../frameworks/astro/astroFramework');
+
+  return astro();
+};
+
 // Layer order is fixed here: `vue()`/`svelte()` nest typescript-eslint under their own parser and must follow it.
 export const composeConfig = async (options: ComposeConfigOptions = {}): Promise<Layer> => {
   const {
@@ -24,10 +42,10 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     });
 
   const libraryLayers = await Promise.all(loading);
-  const vitestRules = withVitest === true ? (await import('../layers/vitest/vitestLayer')).vitest() : [];
-  const htmlRules = withHtml === true ? (await import('../layers/html/htmlLayer')).html() : [];
+  const vitestRules = withVitest === true ? await loadVitest() : [];
+  const htmlRules = withHtml === true ? await loadHtml() : [];
   // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
-  const astroRules = baseOptions.astro === true ? (await import('../frameworks/astro/astroFramework')).astro() : [];
+  const astroRules = baseOptions.astro === true ? await loadAstro() : [];
 
   return [
     ...base(parts === undefined
