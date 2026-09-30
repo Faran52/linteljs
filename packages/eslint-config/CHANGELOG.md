@@ -50,6 +50,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `@stylistic/object-curly-newline` also covers type literals and interface bodies, so a one-line
+  `{ type: string; value: string }` fixes to one member per line with the braces on their own lines rather
+  than hanging on the first and last members.
 - `import-x/no-duplicates` merges with `prefer-inline`, so two imports of one module become one import with an inline
   `type` on each type-only name. Its default fix put values inside `import type { … }`, which fails to compile.
 - One owner per rule name. `@eslint-react`'s nine copies of the `react-hooks` rules are off, so a React project no

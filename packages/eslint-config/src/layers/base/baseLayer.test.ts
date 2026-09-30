@@ -12,6 +12,7 @@ import { rules as lintelRules } from '@linteljs/eslint-plugin';
 import {
   codeLines,
   enabledRuleIdsFor,
+  fixedTextFor,
   functionOf,
   ownBlockNames,
   ruleIdsFor,
@@ -82,6 +83,20 @@ describe('base: stylistic', () => {
     const code = 'export const value = { a: 1,\n  b: 2 };\n';
 
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@stylistic/object-curly-newline');
+  });
+
+  it('puts the braces of a one-line type literal on their own lines', async () => {
+    const code = 'export type Read = (token: { type: string; value: string }) => string;\n';
+    const fixed = await fixedTextFor(base(), code, TS_FILE);
+
+    expect(fixed).toBe('export type Read = (token: {\n  type: string;\n  value: string;\n}) => string;\n');
+  });
+
+  it('puts the braces of a one-line interface body on their own lines', async () => {
+    const code = 'export interface Token { type: string; value: string }\n';
+    const fixed = await fixedTextFor(base(), code, TS_FILE);
+
+    expect(fixed).toBe('export interface Token {\n  type: string;\n  value: string;\n}\n');
   });
 
   it('leaves an import to the newline rules that own it', async () => {

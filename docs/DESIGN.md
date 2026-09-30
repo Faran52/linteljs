@@ -215,10 +215,11 @@ touchable produce different interfaces.
 ### One item per line, object literals included
 
 `base` enables `@stylistic/object-property-newline` with `allowAllPropertiesOnSameLine: false`, paired with
-`@stylistic/object-curly-newline` scoped to `ObjectExpression`. Without it a four-property literal stays on one
-line while the identical destructuring pattern is split by `destructuring-property-newline`, and at 120 columns
-`max-len` never reaches it. The pairing matters: `object-property-newline` alone fixes to a hanging brace. The scope
-keeps it off imports, exports and destructuring, which the four `@linteljs` newline rules own.
+`@stylistic/object-curly-newline` scoped to `ObjectExpression`, `TSTypeLiteral` and `TSInterfaceBody`, the three
+nodes the first rule splits. Without it a four-property literal stays on one line while the identical
+destructuring pattern is split by `destructuring-property-newline`, and at 120 columns `max-len` never reaches it.
+The pairing matters: `object-property-newline` alone fixes to a hanging brace. The scope keeps it off imports, exports
+and destructuring, which the four `@linteljs` newline rules own.
 
 JSX props take the object form of `@stylistic/jsx-max-props-per-line`, `{ maximum: { single: 2, multi: 1 } }`,
 replacing the preset's `{ maximum: 1, when: 'multiline' }`, which caps a one-line tag at nothing. Two on a line

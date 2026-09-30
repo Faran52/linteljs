@@ -88,6 +88,21 @@ export const ruleIdsFor = async (config: Layer, code: string, filePath: string):
     });
 };
 
+export const fixedTextFor = async (config: Layer, code: string, filePath: string): Promise<string> => {
+  const eslint = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: config,
+    fix: true,
+  });
+  const [result] = await eslint.lintText(code, { filePath });
+
+  if (!result) {
+    throw new Error(`ESLint returned no result for ${filePath}`);
+  }
+
+  return result.output ?? code;
+};
+
 // A parse error has no rule id, and it is the evidence a layer order broke the parser.
 export const messagesForFile = async (config: Layer, filePath: string): Promise<Linter.LintMessage[]> => {
   const eslint = new ESLint({

@@ -142,6 +142,14 @@ export const base = (options: BaseOptions = {}): Layer => {
             multiline: true,
             consistent: true,
           },
+          TSTypeLiteral: {
+            multiline: true,
+            consistent: true,
+          },
+          TSInterfaceBody: {
+            multiline: true,
+            consistent: true,
+          },
         }],
 
         'import-x/no-unresolved': 'error',
