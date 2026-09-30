@@ -100,3 +100,17 @@ describe('the starter gates', () => {
     expect(walk.mismatchOf(key, conditions)).toBeUndefined();
   });
 });
+
+describe('the favicon', () => {
+  it('is the shared Mark, served from where the framework serves a static icon', () => {
+    const favicon = svelteTarget.starterFiles.find((file) => {
+      return file.target === 'static/favicon.svg';
+    });
+
+    expect(favicon).toEqual({
+      target: 'static/favicon.svg',
+      shared: true,
+      source: 'public/favicon.svg',
+    });
+  });
+});

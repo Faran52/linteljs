@@ -65,6 +65,8 @@ when a version's change lives in a sibling it is described there instead:
 - Angular renders a Contact page under every answer: Reactive Forms, validated by the shared `validateContact`
   (the Zod schema when `zod` is chosen), or TanStack Form's `injectForm` when `--form tanstack-form`. It brings
   `button` and `text-input` components, a spec each, and ships their styles unconditionally.
+- Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme: `favicon.svg` in the
+  public directory (`static/` on SvelteKit), linked from the document head, and `src/app/icon.svg` on Next.
 
 ### Changed
 

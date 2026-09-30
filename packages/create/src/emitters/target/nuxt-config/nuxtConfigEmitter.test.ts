@@ -27,6 +27,15 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   srcDir: 'src/',
   devtools: { enabled: false },
+  app: {
+    head: {
+      link: [{
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/favicon.svg',
+      }],
+    },
+  },
   css: ['~/styles/main.css'],
   // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
   alias: {
@@ -67,6 +76,15 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   srcDir: 'src/',
   devtools: { enabled: false },
+  app: {
+    head: {
+      link: [{
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/favicon.svg',
+      }],
+    },
+  },
   css: ['~/styles/main.css'],
   // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
   alias: {

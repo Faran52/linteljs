@@ -14,6 +14,7 @@ export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
+  'public/favicon.svg',
 ];
 
 export const ACCESSORS: AccessorNames = {

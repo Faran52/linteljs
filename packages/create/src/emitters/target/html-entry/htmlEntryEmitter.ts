@@ -5,7 +5,7 @@ import { targetFor } from '@targets';
 import { emitted } from '../../utils/artifactUtils';
 
 // `lang` set: an empty one tells a screen reader the language is unknown.
-export const emitHtmlEntry = (name: string, entry: string): string => {
+export const emitHtmlEntry = (name: string, entry: string, favicon: boolean): string => {
   return [
     '<!doctype html>',
     '<html lang="en">',
@@ -13,6 +13,7 @@ export const emitHtmlEntry = (name: string, entry: string): string => {
     '    <meta charset="UTF-8" />',
     '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
     `    <title>${name}</title>`,
+    ...favicon ? ['    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />'] : [],
     '  </head>',
     '  <body>',
     '    <div id="root"></div>',
@@ -24,7 +25,9 @@ export const emitHtmlEntry = (name: string, entry: string): string => {
 };
 
 export const htmlEntryEmitter: Emitter = (answers, _project, name): Artifact[] => {
-  const { htmlEntry } = targetFor(answers);
+  const { htmlEntry, publicDirectory } = targetFor(answers);
+  // A web extension's popup has no tab to put an icon on, and no public directory to serve one from.
+  const favicon = publicDirectory !== undefined;
 
-  return htmlEntry === undefined ? [] : [emitted('standard', 'index.html', emitHtmlEntry(name, htmlEntry))];
+  return htmlEntry === undefined ? [] : [emitted('standard', 'index.html', emitHtmlEntry(name, htmlEntry, favicon))];
 };

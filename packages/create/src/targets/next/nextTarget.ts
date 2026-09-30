@@ -132,6 +132,12 @@ export const nextTarget: TargetRecord = {
           shared: 'react',
         };
       }),
+    // Next links an `app/icon.svg` itself.
+    {
+      target: 'src/app/icon.svg',
+      shared: true,
+      source: 'public/favicon.svg',
+    },
     {
       target: 'src/config/routes.ts',
       when: (answers) => {

@@ -14,4 +14,5 @@ export const SHARED: readonly string[] = [
   'src/config/routes.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
+  'public/favicon.svg',
 ];

@@ -237,3 +237,18 @@ describe('the starter gates', () => {
     expect(walk.mismatchOf(key, conditions)).toBeUndefined();
   });
 });
+
+describe('the favicon', () => {
+  it('is the shared Mark, served from where the framework serves a static icon', () => {
+    const { starterFiles } = recordFor({ router: 'react-router-framework' });
+    const favicon = starterFiles
+      .find((file) => {
+        return file.target === 'public/favicon.svg';
+      });
+
+    expect(favicon).toEqual({
+      target: 'public/favicon.svg',
+      shared: true,
+    });
+  });
+});

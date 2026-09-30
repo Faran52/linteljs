@@ -16,6 +16,7 @@ export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
+  'public/favicon.svg',
 ];
 
 // A camelCase `.tsx` is refused by the naming rule, so hooks take `.ts` suites.

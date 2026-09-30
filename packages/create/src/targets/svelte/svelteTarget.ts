@@ -123,6 +123,11 @@ export const svelteTarget: TargetRecord = {
         };
       }),
     {
+      target: 'static/favicon.svg',
+      shared: true,
+      source: 'public/favicon.svg',
+    },
+    {
       target: 'src/routes/+page.svelte',
       when: (answers) => {
         return !hasStore(answers);

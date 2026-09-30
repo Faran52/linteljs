@@ -34,6 +34,7 @@ export const SHARED: readonly string[] = [
   'src/components/ui/mark/Mark.css',
   'src/components/ui/button/Button.css',
   'src/components/ui/text-input/TextInput.css',
+  'public/favicon.svg',
 ];
 
 // Angular has no hooks: this runs in an injection context.

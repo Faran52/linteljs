@@ -25,6 +25,11 @@ export const Layout = ({ children }: LayoutProps): ReactNode => {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href="/favicon.svg"
+        />
         <Meta />
         <Links />
         {/* StyleX injects its dev CSS into `index.html`, which framework mode does not have. */}
