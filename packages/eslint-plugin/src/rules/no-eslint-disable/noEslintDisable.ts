@@ -10,11 +10,6 @@ interface CommentText {
   value: string;
 }
 
-interface CommentText {
-  type: string;
-  value: string;
-}
-
 interface NoEslintDisableOptions {
   allowRules: string[];
 }
