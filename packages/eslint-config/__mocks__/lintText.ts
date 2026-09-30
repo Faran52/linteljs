@@ -24,6 +24,14 @@ interface ConfigReader {
 // `projectService: true` needs the file inside a real tsconfig; `fixtures/sfc/` carries one.
 export const SFC_FIXTURES = join(import.meta.dirname, 'fixtures/sfc');
 
+// Next's link rule reads its routes from `settings.next.rootDir`, and the workspace root has no `app/`.
+export const NEXT_PROJECT: Layer = [
+  {
+    name: 'test/next-project',
+    settings: { next: { rootDir: join(import.meta.dirname, 'fixtures/next') } },
+  },
+];
+
 // On disk for the same reason.
 export const JSX_FIXTURE = join(import.meta.dirname, 'fixtures/jsx/Widget.tsx');
 

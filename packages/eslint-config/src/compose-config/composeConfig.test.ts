@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import {
   enabledRuleIdsFor,
   messagesForFile,
+  NEXT_PROJECT,
   ruleIdsFor,
   ruleIdsForFile,
 } from '@mocks/lintText';
@@ -80,7 +81,7 @@ describe('composeConfig', () => {
   it.each(FRAMEWORK_PACKAGES)('gives base the sort bucket %s owns', async (framework, specifier) => {
     const code = sortedFor(specifier);
 
-    const own = await ruleIdsFor(await composeConfig({ framework }), code, 'src/app/entry.ts');
+    const own = await ruleIdsFor([...await composeConfig({ framework }), ...NEXT_PROJECT], code, 'src/app/entry.ts');
     const none = await ruleIdsFor(await composeConfig(), code, 'src/app/entry.ts');
 
     expect(own).not.toContain(SORT_RULE);

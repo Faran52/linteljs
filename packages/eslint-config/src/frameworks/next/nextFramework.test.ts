@@ -1,4 +1,5 @@
 import {
+  NEXT_PROJECT,
   ownBlockNames,
   ruleIdsFor,
   sortsAheadOfPackages,
@@ -20,10 +21,7 @@ const composed = (): ReturnType<typeof base> => {
     ...base(),
     ...react(),
     ...next(),
-    {
-      name: 'test/without-a-pages-directory',
-      rules: { '@next/next/no-html-link-for-pages': 'off' },
-    },
+    ...NEXT_PROJECT,
   ];
 };
 
@@ -40,6 +38,13 @@ describe('next', () => {
       .filter(startsWith('@next/next/'));
 
     expect(rules).toHaveLength(22);
+  });
+
+  it('reports a raw <a> to one of the app\'s own routes', async () => {
+    const code = 'export const Nav = () => {\n  return <a href="/">Home</a>;\n};\n';
+    const ruleIds = await ruleIdsFor(composed(), code, 'src/app/nav.tsx');
+
+    expect(ruleIds).toContain('@next/next/no-html-link-for-pages');
   });
 
   it('adds only the next/image mapping on top of the accessibility react() enables', () => {
