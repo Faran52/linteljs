@@ -61,7 +61,7 @@ jobs:
       - run: pnpm --filter @linteljs/create smoke
 
   compat:
-    name: rules run on eslint 5 to 10
+    name: rules run on eslint 6 to 10
     runs-on: ubuntu-latest
     needs: check
     steps:
@@ -73,7 +73,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # `peerDependencies.eslint` is `>=5.0.0`: six majors, both config formats, byte-identical fixed output.
+      # `peerDependencies.eslint` is `>=6.0.0`: five majors, both config formats, byte-identical fixed output.
       - run: pnpm --filter @linteljs/eslint-plugin compat
 
   oldest-runtime:
@@ -85,11 +85,9 @@ jobs:
       matrix:
         # The `engines.node` floor in a container: the bare runtime a consumer on that floor has.
         include:
-          - node: 14
-            eslint: '5'
-          - node: 14
+          - node: 18
             eslint: '6'
-          - node: 14
+          - node: 18
             eslint: '7'
     steps:
       - uses: actions/checkout@v7
@@ -99,20 +97,20 @@ jobs:
           name: plugin-dist
           path: packages/eslint-plugin/dist
 
-      # Node 14 strips no types, so tsdown builds the runner on the host. `--ignore-scripts` keeps `prepare` off `dist`.
+      # Node 18 strips no types, so tsdown builds the runner on the host. `--ignore-scripts` keeps `prepare` off `dist`.
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@v7
         with:
           node-version: 26.10.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      - name: Build the runner for node 14
+      - name: Build the runner for node 18
         working-directory: packages/eslint-plugin
         run: >-
           pnpm exec tsdown scripts/release/run-rules/runRulesRelease.ts --no-config --no-dts --no-clean
-          --format esm --target node14 --platform node --out-dir scripts/release/run-rules
+          --format esm --target node18 --platform node --out-dir scripts/release/run-rules
 
-      # From the host, not `container:`: actions/* on Node 24 cannot run on node:14-alpine's musl.
+      # From the host, not `container:`: actions/* on Node 24 cannot run on node:18-alpine's musl.
       - name: Run the rules on node ${{ matrix.node }}
         run: |
           docker run --rm -v "$PWD/packages/eslint-plugin:/src:ro" -w /tmp node:${{ matrix.node }}-alpine sh -c '

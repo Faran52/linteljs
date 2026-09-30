@@ -10,7 +10,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Breaking
 
-- **Node `>=14.0.0`**, up from 12. The bundle targets `node14`; CI runs ESLint 5, 6 and 7 on `node:14-alpine`.
+- **Node `>=18.0.0`**, up from 12. The bundle targets `node18`; CI runs ESLint 6 and 7 on `node:18-alpine`.
+- **ESLint `>=6.0.0`**, up from 5.
 - **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. Its message ids
   `consistNewline` and `multilineProperty` are now `membersOnNewline` and `multilineMember`, and the messages say
   "Members". Options and fixes are unchanged.

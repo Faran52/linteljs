@@ -222,20 +222,11 @@ assert.deepEqual(
   'ESM and CJS entry points expose different rule sets',
 );
 
-// The `engines.node` floor is 14, where a bundler downlevels `??=` but leaves `array.at(-1)`.
-const POST_NODE_14: [string, number][] = [
-  ['.at(', 16.6],
-  ['.findLast(', 18],
-  ['.findLastIndex(', 18],
+// The `engines.node` floor is 18, where a bundler downlevels new syntax but leaves `array.toSorted()`.
+const POST_NODE_18: [string, number][] = [
   ['.toSorted(', 20],
   ['.toReversed(', 20],
   ['.toSpliced(', 20],
-  ['Object.hasOwn', 16.9],
-  ['structuredClone', 17],
-  ['.replaceAll(', 15],
-  ['Promise.any', 15],
-  ['AggregateError', 15],
-  ['WeakRef', 14.6],
 ];
 
 for (const file of readdirSync(distDir)) {
@@ -248,8 +239,8 @@ for (const file of readdirSync(distDir)) {
 
   assert.ok(!contents.includes('tslib'), `${file} references tslib, which is not a runtime dependency`);
 
-  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? POST_NODE_14 : []) {
-    assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 14`);
+  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? POST_NODE_18 : []) {
+    assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 18`);
   }
 }
 

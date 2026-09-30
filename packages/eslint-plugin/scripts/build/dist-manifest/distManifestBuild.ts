@@ -1,4 +1,4 @@
-// The CJS half cannot be `.cjs`: ESLint 5's config loader sends that extension to its YAML branch.
+// The CJS half cannot be `.cjs`: ESLint's config loader before 6.8 sends that extension to its YAML branch.
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 

@@ -1,9 +1,9 @@
-// The majors the package declares: 5 is the `peerDependencies` floor, 10 what this workspace develops against.
-export type Major = 5 | 6 | 7 | 8 | 9 | 10;
+// The majors the package declares: 6 is the `peerDependencies` floor, 10 what this workspace develops against.
+export type Major = 6 | 7 | 8 | 9 | 10;
 
-export const MAJORS: Major[] = [5, 6, 7, 8, 9, 10];
+export const MAJORS: Major[] = [6, 7, 8, 9, 10];
 
-// `ecmaVersion` stated because ESLint 5 defaults to ES5.
+// `ecmaVersion` stated because ESLint 6 defaults to ES5.
 export const FIXTURE = [
   "import { alpha, bravo, charlie } from 'mod';",
   "import * as helpers from 'helpers';",
@@ -59,7 +59,7 @@ export const legacyConfig = JSON.stringify({
   },
   plugins: ['@linteljs'],
   extends: ['plugin:@linteljs/recommended'],
-  // Outside `recommended`, and still owed the six-major proof.
+  // Outside `recommended`, and still owed the five-major proof.
   rules: { '@linteljs/prefer-destructured-props': 'error' },
 }, null, 2);
 
@@ -77,7 +77,6 @@ export const flatConfig = [
 
 // Asserts this plugin's rules report, never that the parser is right.
 export const TS_TOOLING: Record<Major, string[]> = {
-  5: ['@typescript-eslint/parser@2.34.0', 'typescript@3.9.10'],
   6: ['@typescript-eslint/parser@2.34.0', 'typescript@3.9.10'],
   7: ['@typescript-eslint/parser@4.33.0', 'typescript@4.4.4'],
   8: ['@typescript-eslint/parser@8.70.0', 'typescript@5.9.3'],

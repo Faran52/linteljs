@@ -44,7 +44,7 @@ const isBuiltPlugin = (value: unknown): value is BuiltPlugin => {
     && typeof value.rules === 'object' && value.rules !== null;
 };
 
-// `require`, since ESLint 5 and the bundle are CommonJS; resolved from where the container copies it.
+// `require`, since ESLint 6 and the bundle are CommonJS; resolved from where the container copies it.
 const require = createRequire(import.meta.url);
 const eslint: unknown = require('eslint');
 

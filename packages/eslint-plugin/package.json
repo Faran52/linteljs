@@ -10,7 +10,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public",
@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "build": "tsdown && tsx scripts/build/dist-manifest/distManifestBuild.ts && tsx scripts/build/rule-docs/ruleDocsBuild.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.src.json",
     "test": "vitest run",
     "prepack": "pnpm run build",
     "smoke": "tsx scripts/release/smoke/smokeRelease.ts",
@@ -77,7 +77,7 @@
     "vue-eslint-parser": "catalog:"
   },
   "peerDependencies": {
-    "eslint": ">=5.0.0"
+    "eslint": ">=6.0.0"
   },
   "keywords": [
     "codestyle",

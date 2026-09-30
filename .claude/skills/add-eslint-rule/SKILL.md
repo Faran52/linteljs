@@ -5,7 +5,7 @@ description: Steps to add a rule to @linteljs/eslint-plugin, from the rule direc
 
 # Add a rule to `@linteljs/eslint-plugin`
 
-Read `packages/eslint-plugin/CLAUDE.md` first; its hard rules (safe fixes, the Node 14 and ESLint 5 floors, no
+Read `packages/eslint-plugin/CLAUDE.md` first; its hard rules (safe fixes, the Node 18 and ESLint 6 floors, no
 casts) apply to every step.
 
 1. `src/rules/<kebab-id>/<camelCaseExport>.ts`, built with `createRule('<kebab-id>', { ... })` from

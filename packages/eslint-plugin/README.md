@@ -133,7 +133,7 @@ and [prefer-try-catch](https://github.com/Faran52/linteljs/tree/main/packages/es
 
 ## Compatibility
 
-The package supports ESLint `>=5.0.0` and Node `>=14.0.0`.
+The package supports ESLint `>=6.0.0` and Node `>=18.0.0`.
 
 | ESLint | Config format | Preset |
 | --- | --- | --- |
@@ -141,7 +141,7 @@ The package supports ESLint `>=5.0.0` and Node `>=14.0.0`.
 | 9.x | Flat config | `configs['flat/recommended']` |
 | 8.x and below | eslintrc | `extends: ['plugin:@linteljs/recommended']` |
 
-The package has no runtime dependencies. Its compatibility matrix packs the tarball, runs it with ESLint 5
+The package has no runtime dependencies. Its compatibility matrix packs the tarball, runs it with ESLint 6
 through 10, and checks that fixed output stays identical across those versions. Compatibility helpers cover
 ESLint APIs that moved between releases. A fixer must preserve behaviour, so a rule that cannot prove a
 rewrite is safe reports without fixing. Rules are framework-agnostic: TypeScript-only rules are scoped away

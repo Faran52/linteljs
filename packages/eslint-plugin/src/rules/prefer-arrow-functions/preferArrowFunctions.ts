@@ -61,7 +61,7 @@ const isClassMemberValue = (fn: FunctionLike): boolean => {
   return fn.parent.type === 'PropertyDefinition';
 };
 
-// An identifier is never the Program, and ESLint 5 on links every node in a full pass before any listener.
+// An identifier is never the Program, and ESLint 6 on links every node in a full pass before any listener.
 const parentOf = (reference: Scope.Reference): RuleNode => {
   return mustFind((reference.identifier as RuleNode).parent);
 };
