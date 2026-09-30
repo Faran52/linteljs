@@ -103,6 +103,7 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A React Router framework project has a document title: `root.tsx` renders the project's name (D2).
 - The header no longer overflows a 375px screen on a starter with a Contact tab: below 30rem the
   "LintelJS Starter" label is hidden, in `AppHeader.css` and the StyleX header styles.
 - A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev

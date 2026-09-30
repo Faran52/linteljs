@@ -31,6 +31,7 @@ export const Layout = ({ children }: LayoutProps): ReactNode => {
           type="image/svg+xml"
           href="/favicon.svg"
         />
+        <title>{NAME}</title>
         <Meta />
         <Links />
         {/* StyleX injects its dev CSS into `index.html`, which framework mode does not have. */}

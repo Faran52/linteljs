@@ -31,6 +31,7 @@ export const Layout = ({ children }: LayoutProps): ReactNode => {
           type="image/svg+xml"
           href="/favicon.svg"
         />
+        <title>{NAME}</title>
         <Meta />
         <Links />
       </head>
