@@ -1,5 +1,4 @@
 import { About } from './about/about';
-import { Contact } from './contact/contact';
 import { Home } from './home/home';
 import { Version } from './version/version';
 
@@ -13,7 +12,12 @@ export const routes: Routes = [
   },
   {
     path: 'contact',
-    component: Contact,
+    // Lazy: the form library and the rules (Zod, when chosen) stay out of the first load.
+    loadComponent: async () => {
+      const { Contact } = await import('./contact/contact');
+
+      return Contact;
+    },
   },
   {
     path: 'about',

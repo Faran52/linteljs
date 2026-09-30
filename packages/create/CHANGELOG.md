@@ -97,6 +97,8 @@ when a version's change lives in a sibling it is described there instead:
   Form (React, Next, Solid, Svelte, Vue, Angular) checks every change with the shared `validateContact` and shows
   a field's result once it is blurred or a send is tried; Send stays open until a send is tried. React Hook Form
   moves from `onBlur` to `onTouched`.
+- Angular lazy-loads the Contact route, so the form library and Zod leave the initial bundle: 739 kB to 245 kB
+  under TanStack Form and Zod, inside the 500 kB budget `ng build` warned about.
 - The web mark's gaps are even: 12 units under the beam and between each line, where the beam had 19, and the
   group sits centred in its viewBox. Both stroke widths and the drift animation are unchanged.
 
