@@ -82,11 +82,6 @@ describe('the carve-out the rule file grants', () => {
   it.each([
     ['a callback answering a boolean', 'const f = (run: (value: unknown) => boolean): void => {\n'],
     ['a predicate on another name', 'const f = (run: (value: unknown) => other is T): void => {\n'],
-  ])('still blocks %s', async (_label, source) => {
-    expect(await check(source)).toContain('[: unknown]');
-  });
-
-  it.each([
     ['a second parameter beside it', 'const f = (error: unknown, name: string): string => {\n  return name;\n};\n'],
     ['a parameter named for anything else', 'const f = (value: unknown): string => {\n  return String(value);\n};\n'],
     ['a caught value in a wider list', 'const f = (name: string, error: unknown): string => {\n  return name;\n};\n'],
