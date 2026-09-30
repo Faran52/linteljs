@@ -61,7 +61,7 @@ export const mockFiles = (
       ? [{
         target: '__mocks__/msw/handlers.ts',
         when: (answers) => {
-          return usesMsw(answers) && answers.form !== undefined;
+          return usesMsw(answers) && hasForm(answers);
         },
         variant: 'with-form',
         shared: true,
@@ -91,7 +91,7 @@ export const mockTests = (contact: boolean, adapter = 'src/lib/utils/fetchExtend
         target: '__mocks__/msw/handlers.test.ts',
         covers: '__mocks__/msw/handlers.ts',
         when: (answers) => {
-          return usesMsw(answers) && answers.form !== undefined;
+          return usesMsw(answers) && hasForm(answers);
         },
         variant: 'with-form',
         shared: true,

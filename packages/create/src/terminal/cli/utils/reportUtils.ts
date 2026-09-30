@@ -69,7 +69,7 @@ export const nextSteps = (name: string, options: CliOptions, packageManager: Pac
 export const stepsPlan = (options: CliOptions): string => {
   const lines = STAGES
     .map((stage, index) => {
-    // With lint skipped there is nothing of ours to fix against.
+      // With lint skipped there is nothing of ours to fix against.
       const skipped = options.skip.includes(stage) || (stage === 'fix' && options.skip.includes('lint'));
 
       return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;

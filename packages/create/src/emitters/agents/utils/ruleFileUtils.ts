@@ -28,7 +28,7 @@ export const globsOf = (source: string): string => {
     : listed
         .split('\n')
         .flatMap((line) => {
-        // `PATHS` has already held every line to `  - "..."`.
+          // `PATHS` has already held every line to `  - "..."`.
           return /"(.+)"/u.exec(line)?.[1] ?? [];
         })
         .flatMap(expanded)

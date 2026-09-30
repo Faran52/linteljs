@@ -2,14 +2,10 @@ import { env } from 'node:process';
 
 import {
   type Answers,
-  type Form,
-  type Framework,
   type HostedFramework,
   type Router,
   type TargetId,
 } from '@config/types';
-
-import { rendersWithReact } from '@utils/answerUtils';
 
 import {
   type AnswerRecord,
@@ -60,14 +56,6 @@ const recordFor = (target: TargetId, variant: Partial<Answers>): TargetRecord =>
     ...variant,
     target,
   });
-};
-
-// `react-hook-form` binds React.
-const formsFor = (framework: Framework | undefined): (Form | undefined)[] => {
-  return [undefined, ...FORMS
-    .filter((form) => {
-      return rendersWithReact(framework) || form !== 'react-hook-form';
-    })];
 };
 
 // Through the predicate the prompt and parser use, so the matrix cannot enumerate a refused combination.
@@ -140,7 +128,7 @@ const everyCase = (target: TargetId): E2eCase[] => {
   };
 
   const hosted = across([{}], () => {
-    return hostedFor(recordFor(target, {}));
+    return hostedFor(recordOf({}));
   }, (variant, hostedFramework) => {
     return {
       ...variant,
@@ -167,7 +155,7 @@ const everyCase = (target: TargetId): E2eCase[] => {
   });
 
   const forms = across(stylings, (variant) => {
-    return formsFor(recordOf(variant).framework);
+    return offered(FORMS, ANSWERS.form, recordOf(variant), DEFAULT_ANSWERS);
   }, (variant, form) => {
     return {
       ...variant,

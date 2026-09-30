@@ -311,19 +311,20 @@ const askIfNeeded = async (
   }
 
   const message = record.prompt;
-  const target = targetFor(soFarAnswered(answered));
+  const soFar = soFarAnswered(answered);
+  const target = targetFor(soFar);
 
   if (record.slot !== undefined && !record.slot(target)) {
     return unaskedValueOf(record);
   }
 
-  if (record.askedWhen !== undefined && !record.askedWhen(soFarAnswered(answered))) {
+  if (record.askedWhen !== undefined && !record.askedWhen(soFar)) {
     // A skip means none chosen, not the default three.
     return [];
   }
 
   // The check above already refused `list` and `map`.
-  return await askAnswer(prompter, record as PromptableRecord, message, target, soFarAnswered(answered));
+  return await askAnswer(prompter, record as PromptableRecord, message, target, soFar);
 };
 
 // `exactOptionalPropertyTypes` bans setting an optional property to `undefined`.

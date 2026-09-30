@@ -16,7 +16,7 @@ export const removableIn = (artifacts: Artifact[]): string[] => {
 // Kept in version control, so a bare `.sort()` would churn every consumer's next `sync`.
 export const managedRecord = (removable: string[]): string => {
   return `${JSON.stringify({
-    removable: [...removable]
+    removable: removable
       .toSorted((left, right) => {
         return left.localeCompare(right, 'en');
       }),

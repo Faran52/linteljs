@@ -25,7 +25,7 @@ export const run = async (
   cwd: string,
   agent?: string,
 ): Promise<RunResult> => {
-  // `run-p` reads `npm_execpath`, so `vue on bun` once ran pnpm inside a bun project.
+  // `run-p` reads `npm_execpath`, so a launcher's value would run its manager inside the case's project.
   const inherited = Object.entries(env)
     .filter(([key]) => {
       return !LAUNCHER_KEYS.has(key)

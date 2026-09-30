@@ -116,14 +116,14 @@ export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
     ...buildArtifacts(options.answers, await projectShapeReader(options.cwd), options.name),
   ];
 
-  for (const stage of STAGES) {
+  for (const [index, stage] of STAGES.entries()) {
     // `--skip lint` means somebody else's rules, and fixing against those is an unasked-for edit.
     if (stage === 'fix' && options.skip.includes('lint')) {
       continue;
     }
 
     if (!options.skip.includes(stage)) {
-      options.onStage?.(stage, STAGES.indexOf(stage) + 1, STAGES.length);
+      options.onStage?.(stage, index + 1, STAGES.length);
 
       const started = performance.now();
 

@@ -9,8 +9,6 @@ import { OUTSIDE_TESTS, targetFor } from '@targets';
 import { emitted } from '../../utils/artifactUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
-// `.mjs` is the name `astro check` looks for first.
-
 interface Integration {
   specifier: string;
   call: string;
@@ -36,13 +34,6 @@ const INTEGRATIONS: Record<HostedFramework, Integration> = {
   },
 };
 
-const BINDING: Record<HostedFramework, string> = {
-  react: 'react',
-  vue: 'vue',
-  svelte: 'svelte',
-  solid: 'solid',
-};
-
 export const emitAstroConfig = (answers: Answers): string | null => {
   if (targetFor(answers).astro !== true) {
     return null;
@@ -55,7 +46,7 @@ export const emitAstroConfig = (answers: Answers): string | null => {
     "import { defineConfig } from 'astro/config';",
     ...(framework === undefined
       ? []
-      : [`import ${BINDING[framework]} from '${INTEGRATIONS[framework].specifier}';`]),
+      : [`import ${framework} from '${INTEGRATIONS[framework].specifier}';`]),
     ...styling.imports,
   ].join('\n');
 
@@ -73,6 +64,7 @@ ${integrations}${vite}});
 `;
 };
 
+// `.mjs` is the name `astro check` looks for first.
 export const astroConfigEmitter = (answers: Answers): Artifact[] => {
   const config = emitAstroConfig(answers);
 

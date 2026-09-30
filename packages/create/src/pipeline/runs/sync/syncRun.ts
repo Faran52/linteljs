@@ -50,7 +50,7 @@ const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
   return [...await managedPathsReader(cwd), LEGACY_CONFIG_PATH];
 };
 
-// `git diff --no-index` rather than a diff dependency; `git.ts` says why that is safe.
+// `git diff --no-index` rather than a diff dependency.
 const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
   const result = gitSpawn(
     ['diff', '--no-index', '--no-color', '--', currentPath, '-'],

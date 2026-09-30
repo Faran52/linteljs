@@ -88,7 +88,7 @@ export const forAnswers = (answers: Answers, source: string): string => {
 
       return CONDITIONS[name](answers)
         ? [line
-            .slice(0, line.indexOf(' <!-- when '))
+            .replace(WHEN, '')
             .trimEnd()]
         : [];
     })

@@ -9,7 +9,7 @@ import { majorOf } from '@utils/versionUtils';
 
 import { emitted } from '../../utils/artifactUtils';
 
-// Emitted, not preserved: it is the gate, and a stale copy once called a renamed `check` for two days.
+// Emitted, not preserved: it is the gate, and a stale copy would go on calling a renamed script.
 
 interface ManagerSetup {
   before?: string;

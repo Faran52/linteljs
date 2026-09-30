@@ -65,7 +65,7 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
   'bun': (output) => {
     return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? [])
       .filter((line) => {
-      // `Slow filesystem` names this suite's own cache directory.
+        // `Slow filesystem` names this suite's own cache directory.
         return !DEPRECATION.test(line) && !line.includes('Slow filesystem detected');
       });
   },
@@ -94,7 +94,7 @@ const verifyLintOutput = async (pm: PackageManager, project: string): Promise<vo
   expect(outcome(await runPm(pm, ['check'], project), 'check')).toBe('check: ok');
 };
 
-// A build that drops the atomic rules still passes `check`, which is how this once shipped.
+// A build that drops the atomic rules still passes `check`.
 const missingStylexRules = (project: string): string => {
   const files = globSync('{dist,build,.output,.svelte-kit/output,.next}/**/*.{js,mjs,html,css}', { cwd: project });
   const joined = (css: boolean): string => {
