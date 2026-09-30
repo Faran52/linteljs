@@ -904,6 +904,14 @@ in `package.json` and nothing else (measured on bun 1.3.11: an `allowBuilds` key
 blocked). npm 12 reads `allowScripts` from `package.json`. All of them take the one list `allowedBuildNames`
 builds.
 
+Every manager that has a release age gate gets two days, linteljs exempt: pnpm `minimumReleaseAge: 2880`
+(minutes), bun `install.minimumReleaseAge = 172800` (seconds) in `bunfig.toml`, Yarn `npmMinimalAgeGate: 2880`
+(minutes). CI e2e run 36732855202 failed every bun and yarn case on a half-published `@eslint-react/jsx` that
+pnpm's gate held back. Measured 2026-10-01: bun 1.2.23 ignores the keys and 1.3.0 honours them, with exclusions
+matched by exact name; Yarn 4.9.4 refuses `npmMinimalAgeGate` as an unrecognized setting and 4.10.1 reads it, so
+`.yarnrc.yml` carries it only when the recorded Yarn is 4.10.1 or later. Yarn 1 has no such gate. The
+e2e harness zeroes none of them: each project's own exemption lets the just-published linteljs packages through.
+
 `.npmrc` and `.yarnrc.yml` are load-bearing, measured on React and Next with each removed. Without
 `legacy-peer-deps` npm refuses the install outright; its price is that npm installs no peers, which is why `vite` is
 a named dev dependency wherever vitest is. Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint

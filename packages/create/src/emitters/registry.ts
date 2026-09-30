@@ -29,6 +29,7 @@ import { stylelintConfigEmitter } from './always/stylelint-config/stylelintConfi
 import { tsconfigEmitter } from './always/tsconfig/tsconfigEmitter';
 import { typecheckStagedEmitter } from './always/typecheck-staged/typecheckStagedEmitter';
 import { styleEntryEmitter } from './libraries/style-entry/styleEntryEmitter';
+import { bunfigEmitter } from './manager/bunfig/bunfigEmitter';
 import { npmrcEmitter } from './manager/npmrc/npmrcEmitter';
 import { pnpmWorkspaceEmitter } from './manager/pnpm-workspace/pnpmWorkspaceEmitter';
 import { yarnrcEmitter } from './manager/yarnrc/yarnrcEmitter';
@@ -79,6 +80,7 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'testing/test-setup': testSetupEmitter,
   'manager/npmrc': npmrcEmitter,
   'manager/yarnrc': yarnrcEmitter,
+  'manager/bunfig': bunfigEmitter,
 };
 
 export const SEED_EMITTERS: Record<string, Emitter> = {

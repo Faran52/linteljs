@@ -54,13 +54,15 @@ export const run = async (
         npm_config_registry: registry.url,
         NPM_CONFIG_REGISTRY: registry.url,
         pnpm_config_registry: registry.url,
-        // Only this workspace's packages skip pnpm's age gate: they are published seconds before install.
-        // JSON, because it is a list: a bare `@linteljs/*` through the environment is silently ignored.
+        /**
+         * Only this workspace's packages skip pnpm's age gate: they are published seconds before install.
+         * JSON, because it is a list: a bare `@linteljs/*` through the environment is silently ignored.
+         * Yarn and bun take theirs from the project's own `.yarnrc.yml` and `bunfig.toml`.
+         */
         pnpm_config_minimum_release_age_exclude: '["@linteljs/*"]',
         BUN_CONFIG_REGISTRY: registry.url,
         YARN_NPM_REGISTRY_SERVER: registry.url,
         YARN_UNSAFE_HTTP_WHITELIST: '127.0.0.1',
-        YARN_NPM_MINIMAL_AGE_GATE: '0',
         // A cache of which versions exist starts empty every run; a cache of bytes persists.
         npm_config_cache: join(registry.cacheDir, 'npm'),
         pnpm_config_store_dir: join(registry.cacheDir, 'pnpm-store'),

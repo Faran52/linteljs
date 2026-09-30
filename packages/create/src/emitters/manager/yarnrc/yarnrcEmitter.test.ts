@@ -6,7 +6,7 @@ import {
 
 import { DEFAULT_ANSWERS } from '@answers';
 
-import { HEAD } from './constants';
+import { AGE_GATE, HEAD } from './constants';
 import { emitYarnrc, yarnrcEmitter } from './yarnrcEmitter';
 
 import type {
@@ -150,6 +150,38 @@ describe('emitYarnrc', () => {
     expect(svelte).toContain('  "postcss-html@*":\n');
     expect(svelte).not.toContain('@vue/test-utils');
     expect(emitYarnrc(answersFor({}))).not.toContain('postcss-html');
+  });
+
+  it.each([
+    '4.10.1',
+    '4.18.0',
+  ])('holds a release two days back on yarn %s, linteljs exempt', (packageManagerVersion) => {
+    const text = emitYarnrc({
+      ...answersFor({}),
+      packageManagerVersion,
+    });
+
+    expect(text).toContain(`${HEAD}${AGE_GATE}packageExtensions:\n`);
+    expect(AGE_GATE).toBe('npmMinimalAgeGate: 2880\nnpmPreapprovedPackages:\n  - "@linteljs/*"\n');
+  });
+
+  it.each([
+    '4.0.0',
+    '4.9.4',
+    '4.10.0',
+  ])('writes no age gate on yarn %s, which refuses the setting', (packageManagerVersion) => {
+    const text = emitYarnrc({
+      ...answersFor({}),
+      packageManagerVersion,
+    });
+
+    expect(text).toContain(`${HEAD}packageExtensions:\n`);
+  });
+
+  it('writes no age gate when no yarn version is recorded, since the floor refuses it', () => {
+    const text = emitYarnrc(answersFor({}));
+
+    expect(text).toContain(`${HEAD}packageExtensions:\n`);
   });
 });
 

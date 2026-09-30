@@ -3,6 +3,15 @@ enableGlobalCache: true
 nodeLinker: node-modules
 `;
 
+// pnpm's two days, in minutes. linteljs is exempt so a fresh release installs the day it ships.
+export const AGE_GATE = `npmMinimalAgeGate: 2880
+npmPreapprovedPackages:
+  - "@linteljs/*"
+`;
+
+// Below it yarn refuses the whole `.yarnrc.yml` as an unrecognized setting; measured on 4.9.4 and 4.10.1.
+export const AGE_GATE_FLOOR = '4.10.1';
+
 // Never loaded on a platform with a native binding. Two toolchains drag it in.
 const WASM_RUNTIME = `  "@napi-rs/wasm-runtime@*":
     peerDependenciesMeta:

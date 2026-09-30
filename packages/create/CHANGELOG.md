@@ -175,6 +175,11 @@ when a version's change lives in a sibling it is described there instead:
   `npx @linteljs/create sync`, as the README has it.
 - A pnpm project's `pnpm-workspace.yaml` sets `minimumReleaseAge: 2880` and exempts `@linteljs/*`, so a fresh
   linteljs release installs the day it ships; a project's own `minimumReleaseAge` is left alone.
+- Bun and Yarn projects hold a release back two days as well, so a half-published version is not installed the
+  minute it appears: `bunfig.toml` sets `install.minimumReleaseAge = 172800` (seconds, honoured from bun 1.3.0)
+  and exempts `@linteljs/eslint-config` and `@linteljs/eslint-plugin`; `.yarnrc.yml` sets
+  `npmMinimalAgeGate: 2880` (minutes) with `npmPreapprovedPackages` `@linteljs/*`, written only when the Yarn
+  that ran `create` is 4.10.1 or later, since an older Yarn 4 refuses the setting.
 - On Yarn inside CI, the first install writes its lockfile. Yarn 4 turns immutable installs on under CI and refused
   the lockfile a new project has to create.
 - On Yarn, husky and a target's own setup (`svelte-kit sync`) run from `postinstall`, since Yarn 2+ never runs
