@@ -33,7 +33,11 @@ describe('buildGroups', () => {
     const groups = buildGroups();
 
     expect(groups).toEqual([
-      ['^node:', '^fs$', '^path$'],
+      [
+        '^node:',
+        '^fs$',
+        '^path$',
+      ],
       [String.raw`^@?\w`],
       [String.raw`^\.\.(?!/?$)`, String.raw`^\.\./?$`],
       [String.raw`^\./`],
@@ -131,10 +135,20 @@ describe('buildGroups', () => {
 
   it('files every named alias in its bucket and nowhere else', () => {
     const named = [
-      '@config', '@typings',
-      '@lib', '@store', '@services', '@providers', '@apis', '@utils',
-      '@hooks', '@composables', '@primitives',
-      '@ui', '@features', '@components',
+      '@config',
+      '@typings',
+      '@lib',
+      '@store',
+      '@services',
+      '@providers',
+      '@apis',
+      '@utils',
+      '@hooks',
+      '@composables',
+      '@primitives',
+      '@ui',
+      '@features',
+      '@components',
       '@mocks',
     ];
     const aliases = Object.fromEntries([...named, '@widgets']
@@ -147,9 +161,24 @@ describe('buildGroups', () => {
 
     expect(buildGroups(aliases).slice(2, -4)).toEqual([
       ['@config', '@typings'].map(pattern),
-      ['@lib', '@store', '@services', '@providers', '@apis', '@utils'].map(pattern),
-      ['@hooks', '@composables', '@primitives'].map(pattern),
-      ['@ui', '@features', '@components'].map(pattern),
+      [
+        '@lib',
+        '@store',
+        '@services',
+        '@providers',
+        '@apis',
+        '@utils',
+      ].map(pattern),
+      [
+        '@hooks',
+        '@composables',
+        '@primitives',
+      ].map(pattern),
+      [
+        '@ui',
+        '@features',
+        '@components',
+      ].map(pattern),
       ['@mocks'].map(pattern),
       ['@widgets'].map(pattern),
     ]);

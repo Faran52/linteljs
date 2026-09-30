@@ -33,11 +33,23 @@ const REPORT_ONLY_RULES = new Set([
   '@linteljs/prefer-try-catch',
 ]);
 
-const PROMISE_METHODS = new Set(['catch', 'finally', 'then']);
-const FUNCTION_LIKE = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression']);
+const PROMISE_METHODS = new Set([
+  'catch',
+  'finally',
+  'then',
+]);
+const FUNCTION_LIKE = new Set([
+  'ArrowFunctionExpression',
+  'FunctionDeclaration',
+  'FunctionExpression',
+]);
 
 // An arrow inherits `this` and friends, so the hunt walks into nested arrows and stops at what binds its own.
-const OWNS_ITS_THIS = new Set(['ClassBody', 'FunctionDeclaration', 'FunctionExpression']);
+const OWNS_ITS_THIS = new Set([
+  'ClassBody',
+  'FunctionDeclaration',
+  'FunctionExpression',
+]);
 
 // A `function` is hoisted and a `const` arrow is not, and no fix-and-diff property catches it.
 // Written out rather than imported: a check sharing the code it checks agrees with its bugs.

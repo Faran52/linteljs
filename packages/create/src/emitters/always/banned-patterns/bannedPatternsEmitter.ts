@@ -17,7 +17,11 @@ const replaceAnchored = (source: string, anchor: string, replacement: string): s
 const scannedExtensions = (answers: Answers): string[] => {
   const { sfcExtension } = targetFor(answers);
 
-  return ['.ts', '.tsx', ...(sfcExtension === undefined ? [] : [`.${sfcExtension}`])];
+  return [
+    '.ts',
+    '.tsx',
+    ...(sfcExtension === undefined ? [] : [`.${sfcExtension}`]),
+  ];
 };
 
 const withExtensions = (source: string, answers: Answers): string => {

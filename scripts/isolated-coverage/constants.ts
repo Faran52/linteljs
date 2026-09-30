@@ -17,7 +17,12 @@ export const DOCUMENTED_SUITES = [
   'hooks.test.ts',
 ];
 
-export const THRESHOLD_METRICS = ['statements', 'branches', 'functions', 'lines'];
+export const THRESHOLD_METRICS = [
+  'statements',
+  'branches',
+  'functions',
+  'lines',
+];
 
 export const THRESHOLD_OFF = 0;
 

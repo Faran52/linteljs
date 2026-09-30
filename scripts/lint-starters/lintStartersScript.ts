@@ -99,11 +99,6 @@ const STARTER_OVERRIDES: Linter.Config[] = [
     languageOptions: { parserOptions: { projectService: false } },
     rules: { 'sonarjs/no-redundant-optional': 'off' },
   },
-  // Off until the reformat commit lands. docs/DESIGN.md: `@linteljs/workspace/pending-list-reformat`
-  {
-    name: '@linteljs/starters/pending-list-reformat',
-    rules: { '@linteljs/array-newline': 'off' },
-  },
 ];
 
 const eslintFor = async (target: TargetId): Promise<Linters> => {
@@ -193,7 +188,12 @@ const lintTarget = async (target: TargetId, eslint: Linters): Promise<[string[],
 
   const setups = await lintSetups(target, eslint.setups);
 
-  return [[...findings, ...setups.findings], fixable, files.length + setups.count, unplaced];
+  return [
+    [...findings, ...setups.findings],
+    fixable,
+    files.length + setups.count,
+    unplaced,
+  ];
 };
 
 // In turn: two lazy `composeConfig` loads racing read a half-built module.
@@ -214,7 +214,12 @@ const findings = results
     return found;
   });
 const unplaced = results
-  .flatMap(([, , , missing]) => {
+  .flatMap(([
+    ,
+    ,
+    ,
+    missing,
+  ]) => {
     return missing;
   });
 const fixable = results
@@ -222,7 +227,11 @@ const fixable = results
     return total + count;
   }, 0);
 const checked = results
-  .reduce((total, [, , count]) => {
+  .reduce((total, [
+    ,
+    ,
+    count,
+  ]) => {
     return total + count;
   }, 0);
 

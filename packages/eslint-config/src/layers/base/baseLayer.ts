@@ -127,7 +127,11 @@ export const base = (options: BaseOptions = {}): Layer => {
         'curly': ['error', 'all'],
         // The preset ships `semi: never` and `member-delimiter-style: none` together; `{}` is the plugin's own default.
         '@stylistic/member-delimiter-style': ['error', {}],
-        '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+        '@stylistic/quotes': [
+          'error',
+          'single',
+          { avoidEscape: true },
+        ],
         // The preset's `when: 'multiline'` caps nothing on a one-line element.
         '@stylistic/jsx-max-props-per-line': ['error', {
           maximum: {

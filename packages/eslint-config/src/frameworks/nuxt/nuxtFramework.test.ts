@@ -20,7 +20,12 @@ import vue from '../vue/vueFramework';
 
 import nuxt, { nuxtGroup } from './nuxtFramework';
 
-const layer = [...base(), ...typescript(), ...vue(), ...nuxt()];
+const layer = [
+  ...base(),
+  ...typescript(),
+  ...vue(),
+  ...nuxt(),
+];
 
 describe('nuxt', () => {
   it('lets a route file be one word, and still refuses one anywhere else', async () => {

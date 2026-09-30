@@ -30,7 +30,11 @@ const sweep = (
     return 0;
   }
 
-  const [source, name, ast] = loaded;
+  const [
+    source,
+    name,
+    ast,
+  ] = loaded;
   let hits = 0;
 
   for (const counter of counters) {

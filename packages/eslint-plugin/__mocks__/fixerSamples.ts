@@ -84,8 +84,20 @@ export const FIXER_SAMPLES: FixerSample[] = [
   {
     // More reaches than ESLint's ten fix passes, so they must land in one edit of the import.
     name: 'twelve React globals in one file',
-    code: ['useState', 'useEffect', 'useMemo', 'useRef', 'useId', 'useContext', 'useReducer', 'useCallback',
-      'useLayoutEffect', 'useTransition', 'useDeferredValue', 'useSyncExternalStore']
+    code: [
+      'useState',
+      'useEffect',
+      'useMemo',
+      'useRef',
+      'useId',
+      'useContext',
+      'useReducer',
+      'useCallback',
+      'useLayoutEffect',
+      'useTransition',
+      'useDeferredValue',
+      'useSyncExternalStore',
+    ]
       .map((hook) => {
         return `export const ${hook}Ref = React.${hook};\n`;
       })
@@ -710,7 +722,13 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
     filename: 'client.ts',
   },
-  ...['empty.js', 'empty.ts', 'Empty.vue', 'Empty.svelte', 'empty.astro']
+  ...[
+    'empty.js',
+    'empty.ts',
+    'Empty.vue',
+    'Empty.svelte',
+    'empty.astro',
+  ]
     .map((filename) => {
       return {
         name: `an empty ${filename}`,
@@ -797,7 +815,11 @@ const sourceTypeFor = (filename?: string): 'commonjs' | 'module' => {
   return filename?.endsWith('.cjs') ? 'commonjs' : 'module';
 };
 
-const SFC_EXTENSIONS = ['.vue', '.svelte', '.astro'];
+const SFC_EXTENSIONS = [
+  '.vue',
+  '.svelte',
+  '.astro',
+];
 
 const SFC_PARSERS: [string, Linter.Parser][] = [
   ['.vue', vueParser],
@@ -893,7 +915,12 @@ export const alphabetically = (left: string, right: string): number => {
   return left.localeCompare(right);
 };
 
-const CLOSERS = new Set([')', '}', ']', '>']);
+const CLOSERS = new Set([
+  ')',
+  '}',
+  ']',
+  '>',
+]);
 
 export const tokensIn = (code: string, typescript = false, filename?: string): string[] => {
   const { tokens } = astOf(code, typescript, filename);
@@ -910,8 +937,16 @@ export const tokensIn = (code: string, typescript = false, filename?: string): s
     });
 };
 
-const OPENERS = new Set(['(', '{', '[']);
-const BRACKET_CLOSERS = new Set([')', '}', ']']);
+const OPENERS = new Set([
+  '(',
+  '{',
+  '[',
+]);
+const BRACKET_CLOSERS = new Set([
+  ')',
+  '}',
+  ']',
+]);
 
 // Only punctuators count: a template's `${` is part of its template token.
 export const openerLinesIn = (code: string, typescript = false, filename?: string): (number | undefined)[] => {

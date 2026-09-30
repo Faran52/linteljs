@@ -155,7 +155,12 @@ export const angularTarget: TargetRecord = {
   // `ng test` is declined: this standard's runner is vitest.
   build: 'ng build',
   extraScripts: { dev: 'ng serve' },
-  devDependencies: ['angular-eslint', '@angular/cli', '@angular/build', '@angular/compiler-cli'],
+  devDependencies: [
+    'angular-eslint',
+    '@angular/cli',
+    '@angular/build',
+    '@angular/compiler-cli',
+  ],
   dependencies: [
     '@angular/common',
     '@angular/compiler',
@@ -167,7 +172,12 @@ export const angularTarget: TargetRecord = {
     'tslib',
   ],
   testDevDependencies: ['@analogjs/vite-plugin-angular'],
-  allowBuilds: ['@parcel/watcher', 'esbuild', 'lmdb', 'msgpackr-extract'],
+  allowBuilds: [
+    '@parcel/watcher',
+    'esbuild',
+    'lmdb',
+    'msgpackr-extract',
+  ],
   stateRules: [],
   testSetup: 'fragments/test-setup/setupTests.angular.ts',
 };

@@ -113,7 +113,11 @@ const check = (context: AuditContext, config: Linter.Config[], file: string): vo
     return;
   }
 
-  const [source, name, ast] = loaded;
+  const [
+    source,
+    name,
+    ast,
+  ] = loaded;
 
   bucket.scanned += 1;
   context.fixTimes.length = 0;
@@ -263,11 +267,16 @@ export const runFixPass = (context: AuditContext): number => {
     return 0;
   }
 
-  logError([`${String(findings.length)} findings`, ...tally(findings, (finding) => {
-    return finding.category;
-  }), 'by rule:', ...tally(findings, (finding) => {
-    return finding.rules.join(', ');
-  })].join('\n'));
+  logError([
+    `${String(findings.length)} findings`,
+    ...tally(findings, (finding) => {
+      return finding.category;
+    }),
+    'by rule:',
+    ...tally(findings, (finding) => {
+      return finding.rules.join(', ');
+    }),
+  ].join('\n'));
 
   return findings.length;
 };

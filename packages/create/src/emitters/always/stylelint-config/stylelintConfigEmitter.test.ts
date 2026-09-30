@@ -138,7 +138,11 @@ describe('emitStylelintConfig', () => {
 describe('the import notation', () => {
   it('pins the string form for every project, whatever styles it', () => {
     for (const target of TARGET_IDS) {
-      for (const styling of [undefined, 'tailwind', 'stylex'] as const) {
+      for (const styling of [
+        undefined,
+        'tailwind',
+        'stylex',
+      ] as const) {
         const config = emitStylelintConfig({
           ...DEFAULT_ANSWERS,
           libraries: [],

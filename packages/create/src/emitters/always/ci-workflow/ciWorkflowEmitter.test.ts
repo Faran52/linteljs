@@ -17,7 +17,12 @@ describe('emitCiWorkflow', () => {
   });
 
   it('names a script the project actually declares', () => {
-    for (const manager of ['pnpm', 'npm', 'yarn', 'bun'] as const) {
+    for (const manager of [
+      'pnpm',
+      'npm',
+      'yarn',
+      'bun',
+    ] as const) {
       const answers = hostedAnswersFor({ packageManager: manager });
       const scripts = buildScripts(answers);
       const [, script] = /- run: \S+(?: run)? ([\w:]+)\n$/.exec(emitCiWorkflow(answers)) ?? [];

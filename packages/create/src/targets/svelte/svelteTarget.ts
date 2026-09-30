@@ -297,7 +297,12 @@ export const svelteTarget: TargetRecord = {
   routerMock: 'fragments/test-setup/setupTests.svelteRouter.ts',
   testDevDependencies: PARTS.svelte.testDevDependencies,
   dependencies: PARTS.svelte.dependencies,
-  devDependencies: [...PARTS.svelte.devDependencies, '@sveltejs/kit', '@sveltejs/adapter-auto', 'vite'],
+  devDependencies: [
+    ...PARTS.svelte.devDependencies,
+    '@sveltejs/kit',
+    '@sveltejs/adapter-auto',
+    'vite',
+  ],
   allowBuilds: [],
   stateRules: ['svelte-reactivity.md'],
 };

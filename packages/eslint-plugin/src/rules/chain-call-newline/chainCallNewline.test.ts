@@ -243,7 +243,11 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
     {
       code: 'let a, x, y;\na.b(a.b(a.b(x).c(y)).c(y)).c(y);',
       output: 'let a, x, y;\na\n  .b(a\n    .b(a\n      .b(x)\n      .c(y))\n    .c(y))\n  .c(y);',
-      errors: [error, error, error],
+      errors: [
+        error,
+        error,
+        error,
+      ],
     },
     {
       code: 'let a, b, f, g;\na.map(f).filter((x) => {\n  return b.map(g).filter((y) => {\n    return y;\n  });\n});',
@@ -315,7 +319,11 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
         '      .map(f)',
         '      .filter(g));',
       ].join('\n'),
-      errors: [error, error, error],
+      errors: [
+        error,
+        error,
+        error,
+      ],
     },
     {
       code: 'let a, b;\nrun(a.map(f).filter(gggggggggggggggggggg), b.map(f).filter(g));',
@@ -342,7 +350,12 @@ jsRuleTester.run('chain-call-newline', chainCallNewline, {
         '      .n(o))',
         '  .p(q);',
       ].join('\n'),
-      errors: [error, error, error, error],
+      errors: [
+        error,
+        error,
+        error,
+        error,
+      ],
     },
     {
       code: 'let items;\nitems.map((a) => {\n  use(a);\n  \n  return a;\n});',

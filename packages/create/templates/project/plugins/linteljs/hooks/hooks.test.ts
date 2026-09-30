@@ -96,10 +96,22 @@ describe('hook stdout', () => {
   });
 
   it.each([
-    ['Claude Code\'s deny under Copilot', 'copilot', '{"hookSpecificOutput":{"hookEventName":"PreToolUse",'
-    + '"permissionDecision":"deny","permissionDecisionReason":"x"}}\n'],
-    ['Copilot\'s deny under Cursor', 'cursor', '{"permissionDecision":"deny","permissionDecisionReason":"x"}\n'],
-    ['Cursor\'s allow under Claude Code', 'claude', '{"permission":"allow"}\n'],
+    [
+      'Claude Code\'s deny under Copilot',
+      'copilot',
+      '{"hookSpecificOutput":{"hookEventName":"PreToolUse",'
+      + '"permissionDecision":"deny","permissionDecisionReason":"x"}}\n',
+    ],
+    [
+      'Copilot\'s deny under Cursor',
+      'cursor',
+      '{"permissionDecision":"deny","permissionDecisionReason":"x"}\n',
+    ],
+    [
+      'Cursor\'s allow under Claude Code',
+      'claude',
+      '{"permission":"allow"}\n',
+    ],
   ] as const)('refuses %s', (_label, host, stdout) => {
     expect(() => {
       return expectDecisionOutput('gitSafetyGuardHook.ts', stdout, host);

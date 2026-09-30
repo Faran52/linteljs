@@ -40,7 +40,11 @@ describe('the corpus', () => {
         return sample.filename?.replace(/^.*\./, '');
       });
 
-    expect(new Set(extensions)).toEqual(new Set(['astro', 'svelte', 'vue']));
+    expect(new Set(extensions)).toEqual(new Set([
+      'astro',
+      'svelte',
+      'vue',
+    ]));
   });
 
   it.each(sfc)('parses %s', (_label, sample: FixerSample) => {

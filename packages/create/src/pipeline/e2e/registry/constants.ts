@@ -31,7 +31,11 @@ export const CACHE_DIR = join(ROOT, '.e2e-cache');
 
 export const UPSTREAM = 'https://registry.npmjs.org/';
 
-export const WORKSPACE_MANIFESTS = ['create', 'eslint-config', 'eslint-plugin']
+export const WORKSPACE_MANIFESTS = [
+  'create',
+  'eslint-config',
+  'eslint-plugin',
+]
   .map((name) => {
     return join(ROOT, 'packages', name, 'package.json');
   });

@@ -7,7 +7,13 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-export const reactGroup: string[] = ['^react$', '^react-dom$', '^react/', '^react-', '^@react'];
+export const reactGroup: string[] = [
+  '^react$',
+  '^react-dom$',
+  '^react/',
+  '^react-',
+  '^@react',
+];
 
 // Its own module: importing it from `reactFramework.ts` would make React Native resolve `eslint-plugin-jsx-a11y-x`.
 export const reactCore = (): Layer => {

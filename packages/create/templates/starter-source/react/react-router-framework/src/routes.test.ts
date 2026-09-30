@@ -5,6 +5,10 @@ describe('routes', () => {
     expect(routes).toHaveLength(3);
     expect(routes.map((entry) => {
       return entry.file;
-    })).toEqual(['routes/home.tsx', 'routes/about.tsx', 'routes/version.tsx']);
+    })).toEqual([
+      'routes/home.tsx',
+      'routes/about.tsx',
+      'routes/version.tsx',
+    ]);
   });
 });

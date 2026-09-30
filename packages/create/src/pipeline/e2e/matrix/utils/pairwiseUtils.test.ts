@@ -103,7 +103,15 @@ describe('coveringSubset', () => {
       typeSafety: 'relaxed',
     });
 
-    expect(coveringSubset([base, oneAxis, twoAxes])).toEqual([base, twoAxes, oneAxis]);
+    expect(coveringSubset([
+      base,
+      oneAxis,
+      twoAxes,
+    ])).toEqual([
+      base,
+      twoAxes,
+      oneAxis,
+    ]);
   });
 
   it('answers nothing for nothing', () => {

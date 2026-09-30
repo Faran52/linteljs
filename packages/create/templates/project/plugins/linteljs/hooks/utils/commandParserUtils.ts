@@ -298,13 +298,28 @@ const splitStringOf = (option: string, operand: string | undefined): string | un
 
 const envOption = (tokens: string[], index: number): Step => {
   const option = tokens[index] ?? '';
-  if (option === '-P' || ['-u', '--unset', '-C', '--chdir', '-a', '--argv0'].includes(option)) {
+  if (option === '-P' || [
+    '-u',
+    '--unset',
+    '-C',
+    '--chdir',
+    '-a',
+    '--argv0',
+  ].includes(option)) {
     return valuedOperand(tokens, index);
   }
   if (option.startsWith('-P') && option.length > 2) {
     return next(index + 1);
   }
-  if (['-', '-0', '--null', '-i', '--ignore-environment', '-v', '--debug'].includes(option)) {
+  if ([
+    '-',
+    '-0',
+    '--null',
+    '-i',
+    '--ignore-environment',
+    '-v',
+    '--debug',
+  ].includes(option)) {
     return next(index + 1);
   }
   return UNREADABLE;
@@ -546,14 +561,37 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
   }
   if (name === 'sudo') {
     return optionWrapper(tokens, index + 1, new Set([
-      '-u', '--user', '-g', '--group', '-h', '--host', '-p', '--prompt',
-      '-C', '--close-from', '-r', '--role', '-t', '--type',
+      '-u',
+      '--user',
+      '-g',
+      '--group',
+      '-h',
+      '--host',
+      '-p',
+      '--prompt',
+      '-C',
+      '--close-from',
+      '-r',
+      '--role',
+      '-t',
+      '--type',
     ]));
   }
   if (name === 'time') {
-    return optionWrapper(tokens, index + 1, new Set(['-f', '--format', '-o', '--output']));
+    return optionWrapper(tokens, index + 1, new Set([
+      '-f',
+      '--format',
+      '-o',
+      '--output',
+    ]));
   }
-  if (['sh', 'bash', 'zsh', 'dash', 'ksh'].includes(name)) {
+  if ([
+    'sh',
+    'bash',
+    'zsh',
+    'dash',
+    'ksh',
+  ].includes(name)) {
     return shellWrapper(tokens, index + 1, depth);
   }
   if (name === 'pwsh' || name === 'powershell') {

@@ -1442,16 +1442,6 @@ and every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the call
 finds no body, since the helper is passed by reference. Measured: `assertFunctionNames: ['runE2eCase']` does not help,
 because it matches calls inside the body and there is no call. Off for that directory alone.
 
-### `@linteljs/workspace/pending-list-reformat`
-
-2.0.0 moves every list layout to one threshold, three or more items one per line: `@linteljs/array-newline` is new
-in `recommended`, and `member-newline` takes object literals from `@stylistic/object-property-newline`. This
-workspace is not yet formatted to `array-newline`. Measured under `eslint .` with the block removed: 649
-`array-newline` findings across 164 files, and none from `member-newline` or `import-newlines`. Under
-`pnpm lint:starters`: 3 across 3 files. Every one is autofixable. The block turns the new rule off. The reformat is
-its own commit, reviewed apart from the rules, and it deletes this block and
-`@linteljs/starters/pending-list-reformat` in `scripts/lint-starters/lintStartersScript.ts`.
-
 ### Coverage thresholds, in `vitest.config.ts`
 
 A gate, not an aspiration. The root config is what gates: a package's own `vitest.config.ts` coverage block is

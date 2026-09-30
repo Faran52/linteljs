@@ -15,8 +15,24 @@ const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');
 
 // At a word boundary: `--skip` was once a prefix of another flag.
-const FLAGS = ['--existing', '--no-install', '--seed', '--skip', '--yes', '-y', '--force', '--help', '-h'];
-const STAGES = ['lint', 'package', 'standard', 'install', 'fix'];
+const FLAGS = [
+  '--existing',
+  '--no-install',
+  '--seed',
+  '--skip',
+  '--yes',
+  '-y',
+  '--force',
+  '--help',
+  '-h',
+];
+const STAGES = [
+  'lint',
+  'package',
+  'standard',
+  'install',
+  'fix',
+];
 
 // Negated in `files`, so a generated project inherits no test.
 const EXCLUDED = /^project\/(?:scripts|plugins)\/(?:.*\/)?[^/]+\.test\.ts$/;

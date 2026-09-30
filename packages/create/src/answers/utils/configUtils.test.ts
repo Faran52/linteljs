@@ -277,10 +277,26 @@ describe('parseLinteljsConfig', () => {
   });
 
   it.each([
-    ['a non-object value', '[]', /linteljs\.config\.json must be a JSON object/],
-    ['an unexpected property', config({ unexpected: true }), /unexpected property: unexpected/],
-    ['a project recorded as javascript', config({ typescript: false }), /unexpected property: typescript/],
-    ['a different schema URL', config({ $schema: 'https://example.com/schema.json' }), /\$schema must be/],
+    [
+      'a non-object value',
+      '[]',
+      /linteljs\.config\.json must be a JSON object/,
+    ],
+    [
+      'an unexpected property',
+      config({ unexpected: true }),
+      /unexpected property: unexpected/,
+    ],
+    [
+      'a project recorded as javascript',
+      config({ typescript: false }),
+      /unexpected property: typescript/,
+    ],
+    [
+      'a different schema URL',
+      config({ $schema: 'https://example.com/schema.json' }),
+      /\$schema must be/,
+    ],
     [
       'a missing target',
       config({ target: undefined }),
@@ -296,36 +312,76 @@ describe('parseLinteljsConfig', () => {
       config({ target: 'toString' }),
       /target must be one of: react, next, vue, nuxt, svelte, solid, angular, astro, webextension, react-native/,
     ],
-    ['an unknown testing choice', config({ testing: 'jest' }), /testing must be one of: vitest, none/],
-    ['a form library nested in a list', config({ libraries: [['react-hook-form']] }), /libraries must be one of/],
+    [
+      'an unknown testing choice',
+      config({ testing: 'jest' }),
+      /testing must be one of: vitest, none/,
+    ],
+    [
+      'a form library nested in a list',
+      config({ libraries: [['react-hook-form']] }),
+      /libraries must be one of/,
+    ],
     [
       'an unknown package manager',
       config({ packageManager: 'deno' }),
       /packageManager must be one of: pnpm, npm, yarn, yarn-classic, bun/,
     ],
-    ['a non-array library list', config({ libraries: 'zod' }), /libraries must be an array/],
+    [
+      'a non-array library list',
+      config({ libraries: 'zod' }),
+      /libraries must be an array/,
+    ],
     [
       'an unknown library',
       config({ libraries: ['jquery'] }),
       /libraries must be one of: zod, es-toolkit, ts-pattern, t3-env/,
     ],
-    ['a duplicate library', config({ libraries: ['zod', 'zod'] }), /libraries must not contain duplicate values/],
-    ['a store outside the vocabulary', config({ store: 'false' }), /store must be one of: zustand, redux-toolkit/],
-    ['a yes-or-no store at this version', config({ store: true }), /store must be one of: zustand, redux-toolkit/],
+    [
+      'a duplicate library',
+      config({ libraries: ['zod', 'zod'] }),
+      /libraries must not contain duplicate values/,
+    ],
+    [
+      'a store outside the vocabulary',
+      config({ store: 'false' }),
+      /store must be one of: zustand, redux-toolkit/,
+    ],
+    [
+      'a yes-or-no store at this version',
+      config({ store: true }),
+      /store must be one of: zustand, redux-toolkit/,
+    ],
     [
       'an unknown type-safety choice',
       config({ typeSafety: 'unchecked' }),
       /typeSafety must be one of: strict, relaxed/,
     ],
-    ['a non-array agent list', config({ agents: 'codex' }), /agents must be an array/],
-    ['a missing agent list', config({ agents: undefined }), /agents must be an array/],
+    [
+      'a non-array agent list',
+      config({ agents: 'codex' }),
+      /agents must be an array/,
+    ],
+    [
+      'a missing agent list',
+      config({ agents: undefined }),
+      /agents must be an array/,
+    ],
     [
       'an unknown agent',
       config({ agents: ['windsurf'] }),
       /agents must be one of: claude-code, codex, copilot, cursor/,
     ],
-    ['a duplicate agent', config({ agents: ['codex', 'codex'] }), /agents must not contain duplicate values/],
-    ['a non-array plugin list', config({ plugins: 'ponytail' }), /plugins must be an array/],
+    [
+      'a duplicate agent',
+      config({ agents: ['codex', 'codex'] }),
+      /agents must not contain duplicate values/,
+    ],
+    [
+      'a non-array plugin list',
+      config({ plugins: 'ponytail' }),
+      /plugins must be an array/,
+    ],
     [
       'a non-string plugin',
       config({ plugins: [1] }),
@@ -336,7 +392,11 @@ describe('parseLinteljsConfig', () => {
       config({ plugins: ['cursor'] }),
       /plugins must be one of: ponytail, context7, frontend-design/,
     ],
-    ['a duplicate plugin', config({ plugins: ['ponytail', 'ponytail'] }), /plugins must not contain duplicate values/],
+    [
+      'a duplicate plugin',
+      config({ plugins: ['ponytail', 'ponytail'] }),
+      /plugins must not contain duplicate values/,
+    ],
   ])('rejects %s', (_case, text, error) => {
     expect(() => {
       return parseLinteljsConfig(text);
@@ -481,7 +541,11 @@ describe('a version-one config', () => {
   ])('lifts %s out of libraries, and tailwind and tanstack-query with it', (form, target) => {
     const parsed = parseLinteljsConfig(v1({
       target,
-      libraries: [form, 'tailwind', 'tanstack-query'],
+      libraries: [
+        form,
+        'tailwind',
+        'tanstack-query',
+      ],
     }));
 
     expect(parsed.form).toBe(form);
@@ -523,34 +587,62 @@ describe('a version-one config', () => {
 
 describe('answers a target never asks for', () => {
   it.each([
-    ['a router on Vue', {
-      target: 'vue',
-      router: 'react-router',
-    }, 'router is not an answer for vue'],
-    ['a hosted framework on React', {
-      target: 'react',
-      hostedFramework: 'vue',
-    }, 'hostedFramework is not an answer for react'],
-    ['a browser on Svelte', {
-      target: 'svelte',
-      browser: 'firefox',
-    }, 'browser is not an answer for svelte'],
-    ['surfaces on Next', {
-      target: 'next',
-      surfaces: ['popup'],
-    }, 'surfaces is not an answer for next'],
-    ['zustand on Svelte', {
-      target: 'svelte',
-      store: 'zustand',
-    }, 'zustand is not an answer for svelte'],
-    ['a store on the extension, which has none', {
-      target: 'webextension',
-      store: 'zustand',
-    }, 'store is not an answer for webextension'],
-    ['react-hook-form on Vue', {
-      target: 'vue',
-      form: 'react-hook-form',
-    }, 'react-hook-form is not an answer for vue'],
+    [
+      'a router on Vue',
+      {
+        target: 'vue',
+        router: 'react-router',
+      },
+      'router is not an answer for vue',
+    ],
+    [
+      'a hosted framework on React',
+      {
+        target: 'react',
+        hostedFramework: 'vue',
+      },
+      'hostedFramework is not an answer for react',
+    ],
+    [
+      'a browser on Svelte',
+      {
+        target: 'svelte',
+        browser: 'firefox',
+      },
+      'browser is not an answer for svelte',
+    ],
+    [
+      'surfaces on Next',
+      {
+        target: 'next',
+        surfaces: ['popup'],
+      },
+      'surfaces is not an answer for next',
+    ],
+    [
+      'zustand on Svelte',
+      {
+        target: 'svelte',
+        store: 'zustand',
+      },
+      'zustand is not an answer for svelte',
+    ],
+    [
+      'a store on the extension, which has none',
+      {
+        target: 'webextension',
+        store: 'zustand',
+      },
+      'store is not an answer for webextension',
+    ],
+    [
+      'react-hook-form on Vue',
+      {
+        target: 'vue',
+        form: 'react-hook-form',
+      },
+      'react-hook-form is not an answer for vue',
+    ],
   ])('refuses %s', (_case, overrides, message) => {
     expect(() => {
       return parseLinteljsConfig(config(overrides));
@@ -566,7 +658,12 @@ describe('answers a target never asks for', () => {
     expect(form).toBe('react-hook-form');
   });
 
-  it.each(['vue', 'svelte', 'solid', 'angular'])('still refuses react-hook-form on %s', (target) => {
+  it.each([
+    'vue',
+    'svelte',
+    'solid',
+    'angular',
+  ])('still refuses react-hook-form on %s', (target) => {
     expect(() => {
       return parseLinteljsConfig(config({
         target,

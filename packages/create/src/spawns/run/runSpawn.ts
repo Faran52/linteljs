@@ -14,7 +14,13 @@ export const runSpawn = async (
     const captured: string[] = [];
     const child = spawn(command, args, {
       cwd,
-      stdio: output === 'capture' ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+      stdio: output === 'capture'
+        ? [
+            'ignore',
+            'pipe',
+            'pipe',
+          ]
+        : 'inherit',
       shell: false,
       // Angular's CLI otherwise prompts for analytics; Yarn 4 under CI refuses the lockfile a first install writes.
       env: {

@@ -38,7 +38,11 @@ export const reactNativeTarget: TargetRecord = {
   packageMain: 'expo-router/entry',
   framework: 'react-native',
   html: false,
-  stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
+  stores: [
+    'zustand',
+    'redux-toolkit',
+    'tanstack-store',
+  ],
   ignores: [
     '.expo/**',
     'android/**',
@@ -88,7 +92,17 @@ export const reactNativeTarget: TargetRecord = {
   // React Native resolves as Metro does and renders through a test renderer, not a DOM.
   testPlatforms: [{
     name: 'native',
-    extensions: ['.ios.tsx', '.ios.ts', '.native.tsx', '.native.ts', '.tsx', '.ts', '.jsx', '.js', '.json'],
+    extensions: [
+      '.ios.tsx',
+      '.ios.ts',
+      '.native.tsx',
+      '.native.ts',
+      '.tsx',
+      '.ts',
+      '.jsx',
+      '.js',
+      '.json',
+    ],
     include: ['src/**/*.test.{ts,tsx}'],
   }],
   // The shell reaches Expo's TypeScript source in `node_modules`, which no test transform strips.

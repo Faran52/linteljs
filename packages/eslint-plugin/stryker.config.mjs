@@ -1,6 +1,10 @@
 // `.mjs`: Stryker 10's config lookup carries no `.ts`, so a `stryker.config.ts` is silently not found.
 
-const MUTATED = ['src/rules/**/*.ts', 'src/utils/**/*.ts', 'src/plugin.ts'];
+const MUTATED = [
+  'src/rules/**/*.ts',
+  'src/utils/**/*.ts',
+  'src/plugin.ts',
+];
 
 // CI splits the run by `STRYKER_PART` into parallel jobs. A file goes to the first part matching it.
 const PARTS = {
@@ -36,7 +40,12 @@ const config = {
   testRunner: 'vitest',
   // pnpm's strict layout keeps the runner out of Stryker's own node_modules, so scanning misses it.
   plugins: ['@stryker-mutator/vitest-runner'],
-  reporters: ['html', 'json', 'clear-text', 'progress'],
+  reporters: [
+    'html',
+    'json',
+    'clear-text',
+    'progress',
+  ],
   // `all`: a rule is built at module load, so per-test attribution scores caught mutants as survivors.
   coverageAnalysis: 'all',
 

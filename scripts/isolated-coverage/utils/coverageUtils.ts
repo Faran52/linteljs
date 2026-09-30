@@ -168,7 +168,11 @@ export const describeGap = (file: FileCoverage, keys: string[]): string => {
       return key.startsWith('b:');
     })
     .map((key) => {
-      const [, id = '', arm = ''] = key.split(':');
+      const [
+        ,
+        id = '',
+        arm = '',
+      ] = key.split(':');
       const branch = file.branchMap[id];
 
       return branch?.locations[Number(arm)]?.start.line ?? branch?.line ?? 0;

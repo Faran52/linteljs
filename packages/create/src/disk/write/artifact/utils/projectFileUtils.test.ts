@@ -40,7 +40,11 @@ describe('projectFileWriter', () => {
   it('closes every file it opens', async () => {
     const before = (await readdir('/dev/fd')).length;
 
-    for (const text of ['one\n', 'two\n', 'three\n']) {
+    for (const text of [
+      'one\n',
+      'two\n',
+      'three\n',
+    ]) {
       await projectFileWriter(cwd, 'file.txt', text);
     }
 

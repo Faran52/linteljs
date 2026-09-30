@@ -53,8 +53,17 @@ export interface TsconfigFile {
   exclude: string[];
 }
 
-const BASE_INCLUDE = ['**/*.ts', '**/*.tsx', '**/*.mts'];
-const BASE_EXCLUDE = ['node_modules', 'dist', 'build', 'coverage'];
+const BASE_INCLUDE = [
+  '**/*.ts',
+  '**/*.tsx',
+  '**/*.mts',
+];
+const BASE_EXCLUDE = [
+  'node_modules',
+  'dist',
+  'build',
+  'coverage',
+];
 
 // `vite/client` declares `./logo.svg`, `./App.css` and `import.meta.env`.
 const typesFor = (answers: Answers): string[] => {
@@ -83,7 +92,11 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     ...(delta.rootDirs === undefined ? {} : { rootDirs: delta.rootDirs }),
 
     target: 'esnext',
-    lib: ['dom', 'dom.iterable', 'esnext'],
+    lib: [
+      'dom',
+      'dom.iterable',
+      'esnext',
+    ],
     // Angular's decorators read fields before the base constructor defines them; [[Define]] wipes them.
     useDefineForClassFields: delta.useDefineForClassFields ?? true,
     ...(delta.jsx === undefined ? {} : { jsx: delta.jsx }),
@@ -136,7 +149,11 @@ export const buildTsconfig = (answers: Answers): TsconfigFile => {
   return {
     ...(delta.extends === undefined ? {} : { extends: delta.extends }),
     compilerOptions: compilerOptionsFor(answers),
-    include: [...BASE_INCLUDE, ...(delta.include ?? []), ...styled],
+    include: [
+      ...BASE_INCLUDE,
+      ...(delta.include ?? []),
+      ...styled,
+    ],
     exclude: BASE_EXCLUDE,
   };
 };

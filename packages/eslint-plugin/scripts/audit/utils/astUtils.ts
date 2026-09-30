@@ -84,7 +84,13 @@ interface EslintParser {
 }
 
 // Tokens carry a `type` and would otherwise be walked as nodes.
-const NOT_CHILDREN = new Set(['comments', 'loc', 'parent', 'range', 'tokens']);
+const NOT_CHILDREN = new Set([
+  'comments',
+  'loc',
+  'parent',
+  'range',
+  'tokens',
+]);
 
 const isAstNode = (value: unknown): value is AstNode => {
   return typeof value === 'object' && value !== null && 'type' in value && typeof value.type === 'string'

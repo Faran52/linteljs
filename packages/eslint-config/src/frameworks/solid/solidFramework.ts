@@ -7,7 +7,11 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-export const solidGroup: string[] = ['^solid-js$', '^solid-js/', '^@solidjs/'];
+export const solidGroup: string[] = [
+  '^solid-js$',
+  '^solid-js/',
+  '^@solidjs/',
+];
 
 // Scoped, since the preset carries no `files` glob.
 export const solid = (): Layer => {

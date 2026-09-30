@@ -13,7 +13,11 @@ interface SortHookDepsOptions {
 }
 
 // Matching is by call name only, so a project with its own hooks replaces this list.
-const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
+const DEFAULT_HOOKS = [
+  'useEffect',
+  'useCallback',
+  'useMemo',
+];
 
 // Generic, so `every` narrows the whole list.
 const isPlainIdentifier = <Element extends TypedNode | null>(element: Element): element is Element & NamedNode => {

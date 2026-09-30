@@ -8,14 +8,28 @@ interface World {
 export type Ring = (typeof RINGS)[number];
 
 // Each reads only those after it.
-export const INNER_RINGS = ['answers', 'targets', 'utils', 'config'] as const;
+export const INNER_RINGS = [
+  'answers',
+  'targets',
+  'utils',
+  'config',
+] as const;
 
 export const MIDDLE_RINGS = ['emitters'] as const;
 
 // Named for the world each reaches into, which decides membership.
-export const OUTER_RINGS = ['disk', 'pipeline', 'spawns', 'terminal'] as const;
+export const OUTER_RINGS = [
+  'disk',
+  'pipeline',
+  'spawns',
+  'terminal',
+] as const;
 
-export const RINGS = [...INNER_RINGS, ...MIDDLE_RINGS, ...OUTER_RINGS] as const;
+export const RINGS = [
+  ...INNER_RINGS,
+  ...MIDDLE_RINGS,
+  ...OUTER_RINGS,
+] as const;
 
 export const WORLDS: Record<'disk' | 'spawns' | 'terminal', World> = {
   disk: {

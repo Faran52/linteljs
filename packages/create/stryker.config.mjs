@@ -51,7 +51,12 @@ const config = {
   packageManager: 'pnpm',
   testRunner: 'vitest',
   plugins: ['@stryker-mutator/vitest-runner'],
-  reporters: ['html', 'json', 'clear-text', 'progress'],
+  reporters: [
+    'html',
+    'json',
+    'clear-text',
+    'progress',
+  ],
   tempDirName: TEMP_DIR,
   // Stryker prefixes an `extends` with `../..`; naming no file keeps `../../tsconfig.json` as written.
   tsconfigFile: 'none',

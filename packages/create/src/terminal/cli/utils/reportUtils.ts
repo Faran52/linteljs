@@ -62,7 +62,13 @@ export const nextSteps = (name: string, options: CliOptions, packageManager: Pac
     ? [`  ${MANAGER_BINARIES[packageManager]} install`, `  ${run} lint:fix`]
     : [];
 
-  return ['', 'Done. Next:', ...enter, ...install, `  ${run} check`].join('\n');
+  return [
+    '',
+    'Done. Next:',
+    ...enter,
+    ...install,
+    `  ${run} check`,
+  ].join('\n');
 };
 
 // A skipped stage is easier to read here than to notice missing below.
@@ -75,7 +81,11 @@ export const stepsPlan = (options: CliOptions): string => {
       return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;
     });
 
-  return ['', 'Steps:', ...lines].join('\n');
+  return [
+    '',
+    'Steps:',
+    ...lines,
+  ].join('\n');
 };
 
 // Behind a pipe every event is its own line: what a CI log carries and the e2e suite reads.

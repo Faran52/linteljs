@@ -116,7 +116,11 @@ const runMain = async (argv: string[], recorded?: Recorded): Promise<Run> => {
 };
 
 const generated = async (): Promise<Run> => {
-  return await runMain(['--existing', '--no-install', '--yes']);
+  return await runMain([
+    '--existing',
+    '--no-install',
+    '--yes',
+  ]);
 };
 
 const plantScaffolder = async (): Promise<void> => {
@@ -146,10 +150,42 @@ describe('main: what it prints and what it returns', () => {
   });
 
   it.each<[string, string[], string, string?]>([
-    ['an invalid project name', ['My-App', '--existing', '--no-install', '--yes'], 'Project name must be'],
-    ['an unknown stage', ['--existing', '--no-install', '--yes', '--skip', 'lnt'], 'Not a stage: lnt'],
-    ['an unknown option', ['--wat'], "Unknown option '--wat'"],
-    ['a manager below its floor', ['--existing', '--no-install', '--yes'], 'needs pnpm 10.26.0', 'pnpm/10.25.0'],
+    [
+      'an invalid project name',
+      [
+        'My-App',
+        '--existing',
+        '--no-install',
+        '--yes',
+      ],
+      'Project name must be',
+    ],
+    [
+      'an unknown stage',
+      [
+        '--existing',
+        '--no-install',
+        '--yes',
+        '--skip',
+        'lnt',
+      ],
+      'Not a stage: lnt',
+    ],
+    [
+      'an unknown option',
+      ['--wat'],
+      "Unknown option '--wat'",
+    ],
+    [
+      'a manager below its floor',
+      [
+        '--existing',
+        '--no-install',
+        '--yes',
+      ],
+      'needs pnpm 10.26.0',
+      'pnpm/10.25.0',
+    ],
   ])('fails on %s with one line, before writing anything', async (_case, argv, message, agent) => {
     if (agent !== undefined) {
       vi.stubEnv('npm_config_user_agent', `${agent} npm/? node/? darwin arm64`);
@@ -228,8 +264,17 @@ describe('main: create', () => {
     const { printed } = await runMain(
       ['--existing', '--no-install'],
       scripted([
-        'svelte', undefined, ['zod'], undefined, undefined, 'tanstack-store',
-        undefined, undefined, undefined, ['claude-code', 'codex'], [],
+        'svelte',
+        undefined,
+        ['zod'],
+        undefined,
+        undefined,
+        'tanstack-store',
+        undefined,
+        undefined,
+        undefined,
+        ['claude-code', 'codex'],
+        [],
       ]),
     );
 
@@ -252,8 +297,20 @@ describe('main: create', () => {
     await plantScaffolder();
 
     const asked = scripted([
-      'asked-app', undefined, undefined, undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+      'asked-app',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
     ]);
     const { code } = await runMain(['--no-install'], asked);
 
@@ -265,7 +322,11 @@ describe('main: create', () => {
   it('patches the directory the scaffolder made, not the one it was run from', async () => {
     await plantScaffolder();
 
-    const { code } = await runMain(['demo-app', '--no-install', '--yes']);
+    const { code } = await runMain([
+      'demo-app',
+      '--no-install',
+      '--yes',
+    ]);
 
     expect(code).toBe(0);
     expect(await exists(join(project, 'demo-app', 'eslint.config.js'))).toBe(true);
@@ -274,7 +335,12 @@ describe('main: create', () => {
   });
 
   it('names the project after the argument even where no scaffolder ran', async () => {
-    await runMain(['demo-app', '--existing', '--no-install', '--yes']);
+    await runMain([
+      'demo-app',
+      '--existing',
+      '--no-install',
+      '--yes',
+    ]);
 
     expect(await nameAt(project)).toBe('demo-app');
   });
@@ -288,7 +354,11 @@ describe('main: patching a project that already exists', () => {
       packageManager: 'npm',
     });
 
-    const { code } = await runMain(['--existing', '--no-install', '--yes']);
+    const { code } = await runMain([
+      '--existing',
+      '--no-install',
+      '--yes',
+    ]);
     const written = await configAt();
 
     expect(code).toBe(0);
@@ -359,7 +429,11 @@ describe('main: sync', () => {
     await generated();
     await writeFile(join(project, RULE), '# local edit\n', 'utf8');
 
-    const { printed } = await runMain(['sync', '--yes', '--force']);
+    const { printed } = await runMain([
+      'sync',
+      '--yes',
+      '--force',
+    ]);
 
     expect(printed).toContain(`wrote ${RULE}`);
     expect(await readFile(join(project, RULE), 'utf8')).not.toBe('# local edit\n');
@@ -420,8 +494,20 @@ describe('main: answers given as flags', () => {
 
     const asked = scripted([]);
     const { code } = await runMain([
-      '--existing', '--no-install', '--target', 'svelte', '--libraries', 'zod,es-toolkit',
-      '--styling', 'tailwind', '--testing', 'none', '--type-safety', 'relaxed', '--agents', 'codex',
+      '--existing',
+      '--no-install',
+      '--target',
+      'svelte',
+      '--libraries',
+      'zod,es-toolkit',
+      '--styling',
+      'tailwind',
+      '--testing',
+      'none',
+      '--type-safety',
+      'relaxed',
+      '--agents',
+      'codex',
     ], asked);
 
     expect(code).toBe(0);
@@ -448,7 +534,11 @@ describe('main: what a run reports', () => {
   });
 
   it('opens a create run with the release it is, and a sync with nothing', async () => {
-    const created = await runMain(['--existing', '--no-install', '--yes']);
+    const created = await runMain([
+      '--existing',
+      '--no-install',
+      '--yes',
+    ]);
     const synced = await runMain(['sync', '--yes']);
 
     expect(created.printed.startsWith(`@linteljs/create ${packageJson.version}\n`)).toBe(true);
@@ -458,7 +548,11 @@ describe('main: what a run reports', () => {
   it('closes a named create by entering the directory it made, then the steps it skipped', async () => {
     await plantScaffolder();
 
-    const { code, printed } = await runMain(['demo-app', '--no-install', '--yes']);
+    const { code, printed } = await runMain([
+      'demo-app',
+      '--no-install',
+      '--yes',
+    ]);
 
     expect(code).toBe(0);
     expect(printed.endsWith('\n\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n'))

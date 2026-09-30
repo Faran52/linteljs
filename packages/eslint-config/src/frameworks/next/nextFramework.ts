@@ -7,7 +7,11 @@ import type { Layer } from '../../types';
 
 // Not `eslint-config-next`: its bundled `eslint-plugin-react` throws on ESLint 10.
 
-export const nextGroup: string[] = [...reactGroup, '^next$', '^next/'];
+export const nextGroup: string[] = [
+  ...reactGroup,
+  '^next$',
+  '^next/',
+];
 
 export const next = (): Layer => {
   return [

@@ -23,5 +23,9 @@ export const pluginsAnswer = {
       hint: 'Guidance on visual and UX choices',
     },
   },
-  default: ['ponytail', 'context7', 'frontend-design'],
+  default: [
+    'ponytail',
+    'context7',
+    'frontend-design',
+  ],
 } as const satisfies MultiRecord<Plugin>;

@@ -39,7 +39,11 @@ const stepFor = (code: string): string => {
 
 describe('adjacentPairs', () => {
   it('pairs each item with the one before it', () => {
-    expect([...adjacentPairs(['a', 'b', 'c'])]).toEqual([['a', 'b'], ['b', 'c']]);
+    expect([...adjacentPairs([
+      'a',
+      'b',
+      'c',
+    ])]).toEqual([['a', 'b'], ['b', 'c']]);
   });
 
   it('yields nothing for a list too short to hold a pair', () => {
@@ -48,14 +52,22 @@ describe('adjacentPairs', () => {
   });
 
   it('carries a null member through as a side of a pair', () => {
-    expect([...adjacentPairs([null, null, 'third'])])
+    expect([...adjacentPairs([
+      null,
+      null,
+      'third',
+    ])])
       .toEqual([[null, null], [null, 'third']]);
   });
 });
 
 describe('lineSpan', () => {
   it('lists both ends', () => {
-    expect(lineSpan(3, 5)).toEqual([3, 4, 5]);
+    expect(lineSpan(3, 5)).toEqual([
+      3,
+      4,
+      5,
+    ]);
     expect(lineSpan(4, 4)).toEqual([4]);
   });
 
@@ -439,8 +451,16 @@ describe('listGaps', () => {
   // Each gap as the text either side of it and the indent it would take.
   const describeGaps = (sourceCode: SourceCode, gaps: ListGap[]): string[][] => {
     return gaps
-      .map(([before, after, indent]) => {
-        return [sourceCode.text.slice(...rangeOf(before)), sourceCode.text.slice(...rangeOf(after)), indent];
+      .map(([
+        before,
+        after,
+        indent,
+      ]) => {
+        return [
+          sourceCode.text.slice(...rangeOf(before)),
+          sourceCode.text.slice(...rangeOf(after)),
+          indent,
+        ];
       });
   };
 
@@ -454,10 +474,26 @@ describe('listGaps', () => {
     const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
 
     expect(gaps).toEqual([
-      ['[', ',', '  '],
-      [',', 'alpha', '  '],
-      [',', 'bravo', '  '],
-      [',', ']', ''],
+      [
+        '[',
+        ',',
+        '  ',
+      ],
+      [
+        ',',
+        'alpha',
+        '  ',
+      ],
+      [
+        ',',
+        'bravo',
+        '  ',
+      ],
+      [
+        ',',
+        ']',
+        '',
+      ],
     ]);
   });
 
@@ -466,7 +502,11 @@ describe('listGaps', () => {
     const node = firstNode('ArrayExpression');
     const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
 
-    expect(gaps[1]).toEqual([',', 'bravo', '  ']);
+    expect(gaps[1]).toEqual([
+      ',',
+      'bravo',
+      '  ',
+    ]);
   });
 
   it('breaks after a same-line comment that trails a comma, and before one heading the next line', () => {
@@ -476,10 +516,26 @@ describe('listGaps', () => {
     const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
 
     expect(gaps).toEqual([
-      ['[', 'alpha', '  '],
-      ['/* b */', 'bravo', '  '],
-      [',', '/* c */', '  '],
-      ['charlie', ']', ''],
+      [
+        '[',
+        'alpha',
+        '  ',
+      ],
+      [
+        '/* b */',
+        'bravo',
+        '  ',
+      ],
+      [
+        ',',
+        '/* c */',
+        '  ',
+      ],
+      [
+        'charlie',
+        ']',
+        '',
+      ],
     ]);
   });
 
@@ -498,14 +554,38 @@ describe('listGaps', () => {
     const properties = pattern.type === 'ObjectPattern' ? pattern.properties : [];
 
     expect(describeGaps(sourceCode, listGaps(sourceCode, body, members, INDENTS, false))).toEqual([
-      ['{', 'alpha', '  '],
-      [';', 'bravo', '  '],
-      ['number', '}', ''],
+      [
+        '{',
+        'alpha',
+        '  ',
+      ],
+      [
+        ';',
+        'bravo',
+        '  ',
+      ],
+      [
+        'number',
+        '}',
+        '',
+      ],
     ]);
     expect(describeGaps(sourceCode, listGaps(sourceCode, pattern, properties, INDENTS, true))).toEqual([
-      ['{', 'alpha', '  '],
-      [',', 'bravo', '  '],
-      ['bravo', '}', ''],
+      [
+        '{',
+        'alpha',
+        '  ',
+      ],
+      [
+        ',',
+        'bravo',
+        '  ',
+      ],
+      [
+        'bravo',
+        '}',
+        '',
+      ],
     ]);
   });
 });

@@ -81,8 +81,16 @@ describe('versionFrom', () => {
   });
 
   it.each([
-    ['yarn', '1.22.22', '4.0.0'],
-    ['yarn-classic', '4.18.0', '1.22.22'],
+    [
+      'yarn',
+      '1.22.22',
+      '4.0.0',
+    ],
+    [
+      'yarn-classic',
+      '4.18.0',
+      '1.22.22',
+    ],
   ] as const)('refuses a %s case the yarn on PATH at %s cannot run', (pm, version, floor) => {
     expect(() => {
       return versionFrom(pm, version);
@@ -96,7 +104,11 @@ describe('versionFrom', () => {
 
 describe('managersToRun', () => {
   it('runs every manager this machine answers for when E2E_PM is unset', async () => {
-    await expect(managersToRun(undefined)).resolves.toEqual(['pnpm', 'npm', 'yarn-classic']);
+    await expect(managersToRun(undefined)).resolves.toEqual([
+      'pnpm',
+      'npm',
+      'yarn-classic',
+    ]);
   });
 
   it('runs only the manager E2E_PM names', async () => {

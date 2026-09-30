@@ -194,12 +194,6 @@ const config = [
     files: ['packages/create/src/pipeline/e2e/targets/*.e2e.test.ts'],
     rules: { 'vitest/expect-expect': 'off' },
   },
-
-  // Off until the reformat commit lands. docs/DESIGN.md: `@linteljs/workspace/pending-list-reformat`
-  {
-    name: '@linteljs/workspace/pending-list-reformat',
-    rules: { '@linteljs/array-newline': 'off' },
-  },
 ];
 
 export default config;

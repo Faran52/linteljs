@@ -41,7 +41,11 @@ const PROBE_BINDING = 'linteljsNamespaceProbe';
 const PROBE_PROPS = 'linteljsProbeProps';
 
 export const PROBE_HANDLER = 'linteljsRejectionProbe';
-export const DEFAULT_HOOKS = ['useEffect', 'useCallback', 'useMemo'];
+export const DEFAULT_HOOKS = [
+  'useEffect',
+  'useCallback',
+  'useMemo',
+];
 
 // The only way to exercise the `hooks` option on real code.
 export const EXTRA_HOOKS = ['useLayoutEffect', 'useImperativeHandle'];
@@ -49,7 +53,11 @@ export const EXTRA_HOOKS = ['useLayoutEffect', 'useImperativeHandle'];
 // Textual and over-skipping: a lost candidate costs nothing.
 const ARROW_HAZARDS = /\b(?:this|arguments|super|asserts)\b|new\s*\.\s*target/;
 
-const STATEMENT_PARENTS = new Set(['Program', 'BlockStatement', 'ExportNamedDeclaration']);
+const STATEMENT_PARENTS = new Set([
+  'Program',
+  'BlockStatement',
+  'ExportNamedDeclaration',
+]);
 
 const isBlockArrow = (node: AstNode | null | undefined): node is AstNode => {
   return node?.type === 'ArrowFunctionExpression' && nodeOf(node.body)?.type === 'BlockStatement';
@@ -521,7 +529,11 @@ const isNonReference = (node: AstNode): boolean => {
 
   return (KEYED.has(parent.type) && parent.key === node && parent.computed !== true)
     || (parent.type === 'MemberExpression' && parent.property === node && parent.computed !== true)
-    || (['LabeledStatement', 'BreakStatement', 'ContinueStatement'].includes(parent.type) && parent.label === node);
+    || ([
+      'LabeledStatement',
+      'BreakStatement',
+      'ContinueStatement',
+    ].includes(parent.type) && parent.label === node);
 };
 
 // The destructured names are the ground truth, so no scope analysis is needed.

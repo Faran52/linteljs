@@ -124,7 +124,11 @@ describe('emitYarnrc', () => {
   });
 
   it('discards no warning code on any target', () => {
-    for (const target of ['react', 'angular', 'react-native'] as const) {
+    for (const target of [
+      'react',
+      'angular',
+      'react-native',
+    ] as const) {
       const output = emitYarnrc(answersFor({ target }));
 
       expect(output.startsWith(`${HEAD}packageExtensions:\n`)).toBe(true);

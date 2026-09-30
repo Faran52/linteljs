@@ -200,7 +200,11 @@ export const exportPairCase = (kind: string): Build => {
 };
 
 // A bare `extends` accepts no union, and an array or indexed-access parent would take the member with it.
-const UNION_SAFE_PARENTS = new Set(['TSTypeAliasDeclaration', 'TSTypeAnnotation', 'TSTypeParameterInstantiation']);
+const UNION_SAFE_PARENTS = new Set([
+  'TSTypeAliasDeclaration',
+  'TSTypeAnnotation',
+  'TSTypeParameterInstantiation',
+]);
 
 const PLAIN_TYPES = new Set([
   'TSBooleanKeyword',

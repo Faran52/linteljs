@@ -91,7 +91,13 @@ describe('runFixPass', () => {
   it('passes a clean corpus and counts what it skipped', () => {
     const printed = captured();
     const context = auditContext({
-      files: [clean, script, compiled, broken, copy],
+      files: [
+        clean,
+        script,
+        compiled,
+        broken,
+        copy,
+      ],
       sources: [dir],
     });
 
@@ -114,9 +120,16 @@ describe('runFixPass', () => {
     const printed = captured();
     const context = auditContext({
       activeRules: ['union-newline', 'member-newline'],
-      files: [script, reported, swapped, dropped, throws, ...Array.from({ length: 495 }, () => {
-        return script;
-      })],
+      files: [
+        script,
+        reported,
+        swapped,
+        dropped,
+        throws,
+        ...Array.from({ length: 495 }, () => {
+          return script;
+        }),
+      ],
       sources: [dir],
     });
 

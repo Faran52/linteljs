@@ -68,7 +68,11 @@ const baseReactTarget: TargetRecord = {
   tailwindTheme: './styles/theme.css',
   framework: 'react',
   html: true,
-  stores: ['zustand', 'redux-toolkit', 'tanstack-store'],
+  stores: [
+    'zustand',
+    'redux-toolkit',
+    'tanstack-store',
+  ],
   routers: ROUTERS,
   ignores: [],
   naming: componentNaming(),

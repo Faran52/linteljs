@@ -121,7 +121,11 @@ describe('runPipeline against a directory that already exists', () => {
       cwd,
       answers: hostedAnswersFor({}),
       existing: true,
-      skip: ['lint', 'install', 'fix'],
+      skip: [
+        'lint',
+        'install',
+        'fix',
+      ],
       onWrite: (path) => {
         written.push(path);
       },
@@ -181,13 +185,29 @@ describe('stage timing', () => {
       cwd,
       answers: hostedAnswersFor({}),
       existing: true,
-      skip: ['package', 'install', 'fix'],
+      skip: [
+        'package',
+        'install',
+        'fix',
+      ],
       onStage: (stage, index, total) => {
-        started.push([stage, index, total]);
+        started.push([
+          stage,
+          index,
+          total,
+        ]);
       },
     });
 
-    expect(started).toEqual([['lint', 1, 5], ['standard', 3, 5]]);
+    expect(started).toEqual([[
+      'lint',
+      1,
+      5,
+    ], [
+      'standard',
+      3,
+      5,
+    ]]);
   });
 
   it('reports each stage by the time it took rather than a clock reading', async () => {
@@ -250,7 +270,12 @@ describe('the stages that shell out', () => {
       name: 'demo-app',
       cwd,
       answers: hostedAnswersFor({ packageManager }),
-      skip: ['lint', 'package', 'standard', 'fix'],
+      skip: [
+        'lint',
+        'package',
+        'standard',
+        'fix',
+      ],
       onNotice: (message) => {
         notices.push(message);
       },
@@ -269,7 +294,12 @@ describe('the stages that shell out', () => {
       name: 'demo-app',
       cwd,
       answers: hostedAnswersFor({ packageManager: 'yarn' }),
-      skip: ['lint', 'package', 'standard', 'fix'],
+      skip: [
+        'lint',
+        'package',
+        'standard',
+        'fix',
+      ],
     });
 
     expect(await invocations()).toHaveLength(2);
@@ -296,7 +326,12 @@ describe('the repository the hooks install into', () => {
       name: 'demo-app',
       cwd,
       answers: hostedAnswersFor({}),
-      skip: ['lint', 'package', 'install', 'fix'],
+      skip: [
+        'lint',
+        'package',
+        'install',
+        'fix',
+      ],
       onNotice: (message) => {
         notices.push(message);
       },
@@ -339,7 +374,12 @@ describe('the repository the hooks install into', () => {
       name: 'demo-app',
       cwd,
       answers: hostedAnswersFor({}),
-      skip: ['lint', 'package', 'install', 'fix'],
+      skip: [
+        'lint',
+        'package',
+        'install',
+        'fix',
+      ],
     });
 
     await expect(run).resolves.toBeUndefined();

@@ -43,7 +43,14 @@ describe('gitSpawn', () => {
     await writeFile(join(cwd, 'a.txt'), 'one\n', 'utf8');
 
     const result = gitSpawn(
-      ['diff', '--no-index', '--no-color', '--', 'a.txt', '-'],
+      [
+        'diff',
+        '--no-index',
+        '--no-color',
+        '--',
+        'a.txt',
+        '-',
+      ],
       {
         cwd,
         input: 'two\n',

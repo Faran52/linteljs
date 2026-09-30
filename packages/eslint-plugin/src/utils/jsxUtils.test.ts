@@ -281,14 +281,22 @@ describe('keyNameOf', () => {
 
 describe('isHidden', () => {
   it.each([
-    ['a bare aria-hidden', undefined, true],
-    ['aria-hidden={false}', {
-      type: 'JSXExpressionContainer',
-      expression: {
-        type: 'Literal',
-        value: false,
+    [
+      'a bare aria-hidden',
+      undefined,
+      true,
+    ],
+    [
+      'aria-hidden={false}',
+      {
+        type: 'JSXExpressionContainer',
+        expression: {
+          type: 'Literal',
+          value: false,
+        },
       },
-    }, false],
+      false,
+    ],
   ])('reads %s', (_label, value, hidden) => {
     const answered = isHidden([{
       type: 'JSXAttribute',
@@ -393,7 +401,11 @@ describe('descendantElements through an expression', () => {
 
     const descendants = descendantElements({
       type: 'JSXElement',
-      children: [logical, conditional, call]
+      children: [
+        logical,
+        conditional,
+        call,
+      ]
         .map((expression) => {
           return {
             type: 'JSXExpressionContainer',
@@ -402,7 +414,12 @@ describe('descendantElements through an expression', () => {
         }),
     });
 
-    expect(descendants).toEqual([left, right, consequent, alternate]);
+    expect(descendants).toEqual([
+      left,
+      right,
+      consequent,
+      alternate,
+    ]);
   });
 
   it('lists the elements inside a fragment an expression renders, not the fragment', () => {
@@ -448,25 +465,41 @@ describe('hasTextContent', () => {
   });
 
   it.each([
-    ['visible words', [{
-      type: 'JSXText',
-      value: 'Save',
-    }], true],
-    ['an expression', [{
-      type: 'JSXExpressionContainer',
-      expression: { type: 'Identifier' },
-    }], true],
-    ['an empty expression', [{
-      type: 'JSXExpressionContainer',
-      expression: { type: 'JSXEmptyExpression' },
-    }], false],
-    ['words inside a nested element', [{
-      type: 'JSXElement',
-      children: [{
+    [
+      'visible words',
+      [{
         type: 'JSXText',
         value: 'Save',
       }],
-    }], true],
+      true,
+    ],
+    [
+      'an expression',
+      [{
+        type: 'JSXExpressionContainer',
+        expression: { type: 'Identifier' },
+      }],
+      true,
+    ],
+    [
+      'an empty expression',
+      [{
+        type: 'JSXExpressionContainer',
+        expression: { type: 'JSXEmptyExpression' },
+      }],
+      false,
+    ],
+    [
+      'words inside a nested element',
+      [{
+        type: 'JSXElement',
+        children: [{
+          type: 'JSXText',
+          value: 'Save',
+        }],
+      }],
+      true,
+    ],
   ])('reads %s', (_label, children, text) => {
     const hasText = hasTextContent({
       type: 'JSXElement',

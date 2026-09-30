@@ -30,25 +30,45 @@ describe('parseCliArgs', () => {
   });
 
   it('keeps a stage name it does not know, rather than dropping it', () => {
-    const options = parseCliArgs(['demo-app', '--skip', 'standard', '--skip', 'nonsense']);
+    const options = parseCliArgs([
+      'demo-app',
+      '--skip',
+      'standard',
+      '--skip',
+      'nonsense',
+    ]);
 
     expect(options.skip).toEqual(['standard']);
     expect(options.unknownSkips).toEqual(['nonsense']);
   });
 
   it('reports nothing unknown for a valid skip list', () => {
-    expect(parseCliArgs(['demo-app', '--skip', 'standard']).unknownSkips).toEqual([]);
+    expect(parseCliArgs([
+      'demo-app',
+      '--skip',
+      'standard',
+    ]).unknownSkips).toEqual([]);
   });
 
   it('collects an optional list flag given more than once, or comma-separated', () => {
-    expect(parseCliArgs(['--surfaces', 'popup', '--surfaces', 'background']).answers)
+    expect(parseCliArgs([
+      '--surfaces',
+      'popup',
+      '--surfaces',
+      'background',
+    ]).answers)
       .toEqual({ surfaces: ['popup', 'background'] });
     expect(parseCliArgs(['--surfaces', 'popup,background']).answers)
       .toEqual({ surfaces: ['popup', 'background'] });
   });
 
   it('carries a single answer flag under its answer key, unsplit', () => {
-    expect(parseCliArgs(['--target', 'svelte', '--type-safety', 'relaxed']).answers)
+    expect(parseCliArgs([
+      '--target',
+      'svelte',
+      '--type-safety',
+      'relaxed',
+    ]).answers)
       .toEqual({
         target: 'svelte',
         typeSafety: 'relaxed',
@@ -63,11 +83,41 @@ describe('parseCliArgs', () => {
 
 describe('argumentError', () => {
   it.each([
-    ['an invalid project name', ['My-App'], 'Project name must be'],
-    ['an extra create argument', ['demo-app', 'extra'], 'Unexpected argument: extra'],
-    ['extra create arguments', ['demo-app', 'extra', 'more'], 'Unexpected arguments: extra, more'],
-    ['an extra sync argument', ['sync', 'extra'], 'Unexpected argument: extra'],
-    ['every stage it does not know', ['demo-app', '--skip', 'lnt', '--skip', 'fx'], 'Not a stage: lnt, fx.'],
+    [
+      'an invalid project name',
+      ['My-App'],
+      'Project name must be',
+    ],
+    [
+      'an extra create argument',
+      ['demo-app', 'extra'],
+      'Unexpected argument: extra',
+    ],
+    [
+      'extra create arguments',
+      [
+        'demo-app',
+        'extra',
+        'more',
+      ],
+      'Unexpected arguments: extra, more',
+    ],
+    [
+      'an extra sync argument',
+      ['sync', 'extra'],
+      'Unexpected argument: extra',
+    ],
+    [
+      'every stage it does not know',
+      [
+        'demo-app',
+        '--skip',
+        'lnt',
+        '--skip',
+        'fx',
+      ],
+      'Not a stage: lnt, fx.',
+    ],
   ])('refuses %s', (_case, argv, message) => {
     expect(argumentError(parseCliArgs(argv))?.startsWith(message)).toBe(true);
   });

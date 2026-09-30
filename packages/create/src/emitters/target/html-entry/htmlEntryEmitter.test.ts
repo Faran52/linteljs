@@ -38,20 +38,75 @@ describe('emitHtmlEntry', () => {
 
 describe('htmlEntryEmitter', () => {
   it.each<[string, Partial<Answers>, string | undefined, boolean]>([
-    ['react', { target: 'react' }, 'src/main.tsx', true],
-    ['react in framework mode', {
-      target: 'react',
-      router: 'react-router-framework',
-    }, undefined, false],
-    ['next', { target: 'next' }, undefined, false],
-    ['vue', { target: 'vue' }, 'src/main.ts', true],
-    ['nuxt', { target: 'nuxt' }, undefined, false],
-    ['svelte', { target: 'svelte' }, undefined, false],
-    ['solid', { target: 'solid' }, 'src/index.tsx', true],
-    ['angular', { target: 'angular' }, undefined, false],
-    ['astro', { target: 'astro' }, undefined, false],
-    ['webextension', { target: 'webextension' }, 'src/main.ts', false],
-    ['react-native', { target: 'react-native' }, undefined, false],
+    [
+      'react',
+      { target: 'react' },
+      'src/main.tsx',
+      true,
+    ],
+    [
+      'react in framework mode',
+      {
+        target: 'react',
+        router: 'react-router-framework',
+      },
+      undefined,
+      false,
+    ],
+    [
+      'next',
+      { target: 'next' },
+      undefined,
+      false,
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      'src/main.ts',
+      true,
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      undefined,
+      false,
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      undefined,
+      false,
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      'src/index.tsx',
+      true,
+    ],
+    [
+      'angular',
+      { target: 'angular' },
+      undefined,
+      false,
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      undefined,
+      false,
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      'src/main.ts',
+      false,
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      undefined,
+      false,
+    ],
   ])('writes the document %s serves, loading its own entry', (_label, overrides, entry, favicon) => {
     const artifacts = htmlEntryEmitter(hostedAnswersFor(overrides), EMPTY_PROJECT, 'my-app');
 

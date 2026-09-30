@@ -157,35 +157,67 @@ describe('readEdit', () => {
 
 describe('decisionOf', () => {
   it.each([
-    ['claude', 'deny', {
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
+    [
+      'claude',
+      'deny',
+      {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'deny',
+          permissionDecisionReason: 'why',
+        },
+      },
+    ],
+    [
+      'claude',
+      'warn',
+      {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          additionalContext: 'why',
+        },
+      },
+    ],
+    [
+      'claude',
+      'block',
+      {
+        decision: 'block',
+        reason: 'why',
+      },
+    ],
+    [
+      'copilot',
+      'deny',
+      {
         permissionDecision: 'deny',
         permissionDecisionReason: 'why',
       },
-    }],
-    ['claude', 'warn', {
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        additionalContext: 'why',
+    ],
+    [
+      'copilot',
+      'warn',
+      { additionalContext: 'why' },
+    ],
+    [
+      'copilot',
+      'block',
+      { additionalContext: 'why' },
+    ],
+    [
+      'cursor',
+      'deny',
+      {
+        permission: 'deny',
+        user_message: 'why',
+        agent_message: 'why',
       },
-    }],
-    ['claude', 'block', {
-      decision: 'block',
-      reason: 'why',
-    }],
-    ['copilot', 'deny', {
-      permissionDecision: 'deny',
-      permissionDecisionReason: 'why',
-    }],
-    ['copilot', 'warn', { additionalContext: 'why' }],
-    ['copilot', 'block', { additionalContext: 'why' }],
-    ['cursor', 'deny', {
-      permission: 'deny',
-      user_message: 'why',
-      agent_message: 'why',
-    }],
-    ['cursor', 'warn', { additional_context: 'why' }],
+    ],
+    [
+      'cursor',
+      'warn',
+      { additional_context: 'why' },
+    ],
   ] as const)('writes a %s %s in that host\'s own words', (host, kind, decision) => {
     expect(decisionOf(host, kind, 'why')).toEqual(decision);
   });
@@ -226,7 +258,11 @@ describe('readPayload', () => {
     expect(result.stdout).toContain('"permissionDecision":"deny"');
   });
 
-  it.each(['{', 'null', '"text"'])('reads %s as no payload', (input) => {
+  it.each([
+    '{',
+    'null',
+    '"text"',
+  ])('reads %s as no payload', (input) => {
     const result = spawnSync(process.execPath, [join(import.meta.dirname, '..', 'gitSafetyGuardHook.ts')], {
       input,
       encoding: 'utf8',

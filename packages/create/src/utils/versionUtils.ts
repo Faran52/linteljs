@@ -1,6 +1,10 @@
 // No field of a Node version nears a thousand; a range with an upper bound would need more.
 export const rankOf = (version: string): number => {
-  const [major = 0, minor = 0, patch = 0] = version
+  const [
+    major = 0,
+    minor = 0,
+    patch = 0,
+  ] = version
     .split('.')
     .map((field) => {
       return Number.parseInt(field, 10);

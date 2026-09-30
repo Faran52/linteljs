@@ -18,7 +18,11 @@ export interface Candidate {
 
 export type Build = (state: State) => Candidate | undefined;
 
-export const FUNCTION_TYPES = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression']);
+export const FUNCTION_TYPES = new Set([
+  'ArrowFunctionExpression',
+  'FunctionDeclaration',
+  'FunctionExpression',
+]);
 
 // `parseForESLint` hands back a bare tree, and three edits climb.
 export const indexAst = (ast: Program): Map<string, AstNode[]> => {

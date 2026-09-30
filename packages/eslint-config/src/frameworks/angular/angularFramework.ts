@@ -5,7 +5,11 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-export const angularGroup: string[] = ['^@angular/', '^rxjs$', '^rxjs/'];
+export const angularGroup: string[] = [
+  '^@angular/',
+  '^rxjs$',
+  '^rxjs/',
+];
 
 const TS_FILES = ['**/*.ts'];
 

@@ -170,10 +170,17 @@ const value = thing;`,
 });
 
 const component = (...script: string[]): string => {
-  return ['<script lang="ts">', ...script
-    .map((line) => {
-      return line === '' ? '' : `  ${line}`;
-    }), '</script>', '', '<p>{count}</p>', ''].join('\n');
+  return [
+    '<script lang="ts">',
+    ...script
+      .map((line) => {
+        return line === '' ? '' : `  ${line}`;
+      }),
+    '</script>',
+    '',
+    '<p>{count}</p>',
+    '',
+  ].join('\n');
 };
 
 svelteRuleTester.run('interface-order: svelte', interfaceOrder, {

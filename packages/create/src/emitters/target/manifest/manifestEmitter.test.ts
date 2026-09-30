@@ -129,7 +129,11 @@ describe('emitManifest', () => {
   });
 
   it('names all three where all three were answered', () => {
-    const manifest = manifestFor({ surfaces: ['popup', 'background', 'devtools-panel'] });
+    const manifest = manifestFor({ surfaces: [
+      'popup',
+      'background',
+      'devtools-panel',
+    ] });
 
     expect(manifest.action).toBeDefined();
     expect(manifest.background).toBeDefined();
@@ -161,10 +165,18 @@ describe('manifestEmitter', () => {
         target,
         seed,
       }) => {
-        return [stage, target, seed];
+        return [
+          stage,
+          target,
+          seed,
+        ];
       });
 
-    expect(shapes).toEqual([['standard', 'manifest.json', true]]);
+    expect(shapes).toEqual([[
+      'standard',
+      'manifest.json',
+      true,
+    ]]);
     expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
   });
 

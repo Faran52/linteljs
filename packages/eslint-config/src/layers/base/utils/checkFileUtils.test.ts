@@ -34,7 +34,11 @@ describe('buildNaming', () => {
   it('derives its files glob from the maps rather than restating src', () => {
     const [config] = buildNaming(NAMING, FOLDER_NAMING);
 
-    expect(config?.files).toEqual(['src/components/**/*.tsx', 'src/**/*.ts', 'src/**/*']);
+    expect(config?.files).toEqual([
+      'src/components/**/*.tsx',
+      'src/**/*.ts',
+      'src/**/*',
+    ]);
   });
 
   it('omits the folder rule when only filenames are configured', () => {

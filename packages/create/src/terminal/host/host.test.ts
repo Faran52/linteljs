@@ -61,11 +61,46 @@ describe('hostOf: the manager that ran it', () => {
   });
 
   it.each([
-    ['pnpm-lock.yaml', 'pnpm-lock.yaml', '', 'pnpm', '12.5.1', 'pnpm'],
-    ['a classic yarn.lock', 'yarn.lock', '# yarn lockfile v1\n', 'yarn', '1.22.22', 'yarn-classic'],
-    ['a berry yarn.lock', 'yarn.lock', '__metadata:\n', 'yarn', '4.18.0', 'yarn'],
-    ['bun.lock', 'bun.lock', '', 'bun', '1.3.14', 'bun'],
-    ['bun.lockb', 'bun.lockb', '', 'bun', '1.3.14', 'bun'],
+    [
+      'pnpm-lock.yaml',
+      'pnpm-lock.yaml',
+      '',
+      'pnpm',
+      '12.5.1',
+      'pnpm',
+    ],
+    [
+      'a classic yarn.lock',
+      'yarn.lock',
+      '# yarn lockfile v1\n',
+      'yarn',
+      '1.22.22',
+      'yarn-classic',
+    ],
+    [
+      'a berry yarn.lock',
+      'yarn.lock',
+      '__metadata:\n',
+      'yarn',
+      '4.18.0',
+      'yarn',
+    ],
+    [
+      'bun.lock',
+      'bun.lock',
+      '',
+      'bun',
+      '1.3.14',
+      'bun',
+    ],
+    [
+      'bun.lockb',
+      'bun.lockb',
+      '',
+      'bun',
+      '1.3.14',
+      'bun',
+    ],
   ])('reads %s as the manager that wrote it where no agent set one', async (
     _case,
     lockfile,

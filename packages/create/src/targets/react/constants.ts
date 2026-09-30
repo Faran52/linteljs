@@ -1,7 +1,11 @@
 import type { Router } from '@config/types';
 import type { AccessorNames } from '../utils/mockUtils';
 
-export const ROUTERS: readonly Router[] = ['react-router', 'react-router-framework', 'tanstack-router'];
+export const ROUTERS: readonly Router[] = [
+  'react-router',
+  'react-router-framework',
+  'tanstack-router',
+];
 
 // Framework mode routes through React Router's own build, so it has no `App.tsx`.
 export const DECLARATIVE_ROUTERS: readonly Router[] = ['react-router', 'tanstack-router'];

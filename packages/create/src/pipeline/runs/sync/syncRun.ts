@@ -53,7 +53,14 @@ const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
 // `git diff --no-index` rather than a diff dependency.
 const diffOf = (currentPath: string, shipped: string, cwd: string): string => {
   const result = gitSpawn(
-    ['diff', '--no-index', '--no-color', '--', currentPath, '-'],
+    [
+      'diff',
+      '--no-index',
+      '--no-color',
+      '--',
+      currentPath,
+      '-',
+    ],
     {
       cwd,
       input: shipped,

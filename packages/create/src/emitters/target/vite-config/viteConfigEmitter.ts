@@ -18,7 +18,11 @@ export const emitViteConfig = (answers: Answers): string | null => {
   }
 
   const styling = stylingPlugin(answers.styling);
-  const imports = sortedImports(["import { defineConfig } from 'vite';", ...vitePlugin.imports, ...styling.imports]);
+  const imports = sortedImports([
+    "import { defineConfig } from 'vite';",
+    ...vitePlugin.imports,
+    ...styling.imports,
+  ]);
 
   // StyleX first, as its documentation asks: after the framework plugin it breaks Fast Refresh.
   const stylingCalls = styling.call === undefined ? [] : [styling.call];

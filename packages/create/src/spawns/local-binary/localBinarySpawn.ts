@@ -18,7 +18,11 @@ export const localBinarySpawn = async (cwd: string, name: string, args: string[]
   return await new Promise<LocalBinaryRun | null>((settle) => {
     const child = spawn(join(cwd, 'node_modules', '.bin', name), args, {
       cwd,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
     });
 
     const out: string[] = [];

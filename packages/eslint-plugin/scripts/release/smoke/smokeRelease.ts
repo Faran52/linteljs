@@ -146,7 +146,15 @@ const checkFlavour = async (name: string, configFile: string, configSource: stri
   writeFileSync(join(dir, configFile), configSource);
   writeFileSync(join(dir, 'fixture.js'), fixture);
 
-  const args = [eslintBin, '--no-config-lookup', '-c', configFile, '-f', 'json', 'fixture.js'];
+  const args = [
+    eslintBin,
+    '--no-config-lookup',
+    '-c',
+    configFile,
+    '-f',
+    'json',
+    'fixture.js',
+  ];
   const result = await lintResultOf(args, dir);
   const reported = new Set(ruleIdsOf(result));
 

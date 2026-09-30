@@ -433,7 +433,11 @@ describe('base: linteljs rules', () => {
   });
 
   it('keeps every one of them on for TypeScript and for an SFC, which is why they are restated at all', async () => {
-    for (const file of ['src/lib/utils/sample.ts', 'src/components/Card.vue', 'src/components/Card.svelte']) {
+    for (const file of [
+      'src/lib/utils/sample.ts',
+      'src/components/Card.vue',
+      'src/components/Card.svelte',
+    ]) {
       const enabled = await enabledRuleIdsFor(base(), file);
 
       for (const ruleId of TYPESCRIPT_RULE_IDS) {

@@ -34,7 +34,11 @@ import {
 import type { Store } from '@config/types';
 import type { StarterFile, TargetRecord } from '../types';
 
-const STORES: readonly Store[] = ['zustand', 'redux-toolkit', 'tanstack-store'];
+const STORES: readonly Store[] = [
+  'zustand',
+  'redux-toolkit',
+  'tanstack-store',
+];
 
 export const nextTarget: TargetRecord = {
   id: 'next',
@@ -42,7 +46,11 @@ export const nextTarget: TargetRecord = {
   // The App Router owns the document.
   html: false,
   stores: STORES,
-  ignores: ['.next/**', 'out/**', 'next-env.d.ts'],
+  ignores: [
+    '.next/**',
+    'out/**',
+    'next-env.d.ts',
+  ],
   naming: componentNaming('app'),
   folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: HOOKS_ALIAS,
@@ -83,7 +91,11 @@ export const nextTarget: TargetRecord = {
     jsx: 'react-jsx',
     plugins: [{ name: 'next' }],
     // Next rewrites tsconfig.json on every dev boot unless every key it wants is declared.
-    include: ['next-env.d.ts', '.next/types/**/*.ts', '.next/dev/types/**/*.ts'],
+    include: [
+      'next-env.d.ts',
+      '.next/types/**/*.ts',
+      '.next/dev/types/**/*.ts',
+    ],
   },
   // Its parts are covered where each renders.
   coverageExclude: ['src/app/layout.tsx'],
@@ -395,9 +407,18 @@ export const nextTarget: TargetRecord = {
     start: 'next start',
   },
   testDevDependencies: ['@testing-library/dom', '@testing-library/react'],
-  dependencies: ['next', 'react', 'react-dom'],
+  dependencies: [
+    'next',
+    'react',
+    'react-dom',
+  ],
   // Not `eslint-config-next`; `frameworks/next/nextFramework.ts` says why.
-  devDependencies: [...COMMON_REACT_PLUGINS, '@next/eslint-plugin-next', '@types/react', '@types/react-dom'],
+  devDependencies: [
+    ...COMMON_REACT_PLUGINS,
+    '@next/eslint-plugin-next',
+    '@types/react',
+    '@types/react-dom',
+  ],
   allowBuilds: [],
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMock: 'fragments/test-setup/setupTests.nextRouter.ts',

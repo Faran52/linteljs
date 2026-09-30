@@ -1,6 +1,10 @@
 import type { AliasMap } from '../../../types';
 
-const BUILTIN_GROUP = ['^node:', '^fs$', '^path$'];
+const BUILTIN_GROUP = [
+  '^node:',
+  '^fs$',
+  '^path$',
+];
 
 const PACKAGE_GROUP = [String.raw`^@?\w`];
 
@@ -19,9 +23,24 @@ const STYLE_GROUP = [String.raw`^.+\.s?css$`];
 // In dependency direction, so a sorted import block reads top-down as the architecture.
 const ALIAS_BUCKETS = [
   ['@config', '@typings'],
-  ['@lib', '@store', '@services', '@providers', '@apis', '@utils'],
-  ['@hooks', '@composables', '@primitives'],
-  ['@ui', '@features', '@components'],
+  [
+    '@lib',
+    '@store',
+    '@services',
+    '@providers',
+    '@apis',
+    '@utils',
+  ],
+  [
+    '@hooks',
+    '@composables',
+    '@primitives',
+  ],
+  [
+    '@ui',
+    '@features',
+    '@components',
+  ],
   ['@mocks'],
 ];
 

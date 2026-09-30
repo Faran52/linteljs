@@ -76,7 +76,11 @@ const camel = (name: string): string => {
     });
 };
 
-const layerDirs = ['src/layers', 'src/frameworks', 'src/libraries']
+const layerDirs = [
+  'src/layers',
+  'src/frameworks',
+  'src/libraries',
+]
   .flatMap((dir) => {
     return readdirSync(join(root, dir), { withFileTypes: true })
       .filter((entry) => {

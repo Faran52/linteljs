@@ -120,8 +120,16 @@ it('writes the angular entry with its rejection value typed', async () => {
 
 describe('starter tests', () => {
   it.each<[TargetId, string, string]>([
-    ['react', 'src/App.test.tsx', 'src/App.tsx'],
-    ['webextension', 'src/popup/renderPopup.test.ts', 'src/popup/renderPopup.ts'],
+    [
+      'react',
+      'src/App.test.tsx',
+      'src/App.tsx',
+    ],
+    [
+      'webextension',
+      'src/popup/renderPopup.test.ts',
+      'src/popup/renderPopup.ts',
+    ],
   ])('gates the %s suite %s on the file it covers', (target, suite, covers) => {
     const artifact = artifactFor({ target }, suite);
 
@@ -169,8 +177,16 @@ describe('starter files for a router', () => {
   });
 
   it.each<[Router, string, boolean]>([
-    ['react-router', "from 'react-router'", true],
-    ['tanstack-router', "from '@tanstack/react-router'", false],
+    [
+      'react-router',
+      "from 'react-router'",
+      true,
+    ],
+    [
+      'tanstack-router',
+      "from '@tanstack/react-router'",
+      false,
+    ],
   ])('writes the %s app and nothing generated beside it', async (router, imported, table) => {
     const app = artifactFor({ router }, 'src/App.tsx');
 
@@ -235,10 +251,26 @@ describe('the starter source', () => {
   });
 
   it.each<[TargetId, string, string]>([
-    ['solid', 'src/pages/routes.tsx', 'solid'],
-    ['vue', 'src/views/routes.ts', 'vue'],
-    ['svelte', 'src/config/routes.ts', 'svelte'],
-    ['next', 'src/config/routes.ts', 'shared'],
+    [
+      'solid',
+      'src/pages/routes.tsx',
+      'solid',
+    ],
+    [
+      'vue',
+      'src/views/routes.ts',
+      'vue',
+    ],
+    [
+      'svelte',
+      'src/config/routes.ts',
+      'svelte',
+    ],
+    [
+      'next',
+      'src/config/routes.ts',
+      'shared',
+    ],
   ])('adds contact to the one %s route list', (target, routes, root) => {
     const source = sourcesByTarget({
       target,
@@ -269,11 +301,31 @@ describe('the starter source', () => {
   });
 
   it.each<[TargetId, string, string]>([
-    ['react', 'react', 'react'],
-    ['solid', 'shared', 'solid'],
-    ['vue', 'shared', 'vue'],
-    ['svelte', 'shared', 'svelte'],
-    ['next', 'react', 'react'],
+    [
+      'react',
+      'react',
+      'react',
+    ],
+    [
+      'solid',
+      'shared',
+      'solid',
+    ],
+    [
+      'vue',
+      'shared',
+      'vue',
+    ],
+    [
+      'svelte',
+      'shared',
+      'svelte',
+    ],
+    [
+      'next',
+      'react',
+      'react',
+    ],
   ])('takes the %s api spelling the data answer asks for', (target, root, queryRoot) => {
     const apiFor = (overrides: Partial<Answers>): string | undefined => {
       return sourcesByTarget({

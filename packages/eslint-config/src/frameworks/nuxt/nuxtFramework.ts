@@ -10,7 +10,12 @@ export const nuxtGroup: string[] = [
   '^#',
 ];
 
-const ROUTE_FILES = ['**/pages/**/*.vue', '**/layouts/**/*.vue', '**/app.vue', '**/error.vue'];
+const ROUTE_FILES = [
+  '**/pages/**/*.vue',
+  '**/layouts/**/*.vue',
+  '**/app.vue',
+  '**/error.vue',
+];
 
 export const nuxt = (): Layer => {
   return [

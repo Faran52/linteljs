@@ -122,10 +122,14 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
 export const schemaFor = (answers: Record<AnswerKey, AnswerRecord>): string => {
   const keys = valuesOf(answers);
 
-  const required = ['$schema', 'schemaVersion', ...keys
-    .filter((key) => {
-      return isRequired(key, answers[key]);
-    })];
+  const required = [
+    '$schema',
+    'schemaVersion',
+    ...keys
+      .filter((key) => {
+        return isRequired(key, answers[key]);
+      }),
+  ];
 
   const properties: Record<string, SchemaProperty> = {
     $schema: { const: CONFIG_SCHEMA_URL },

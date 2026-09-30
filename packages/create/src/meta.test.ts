@@ -331,8 +331,17 @@ describe.each(registeredSubjects)('$ring/$name', ({ path, entry }) => {
 });
 
 it('keeps every module to two constants, so a third is a constants.ts', () => {
-  const exempt = new Set(['constants.ts', 'types.ts', 'index.ts', 'rings.ts']);
-  const registries = new Set(['answers/registry.ts', 'emitters/registry.ts', 'targets/registry.ts']);
+  const exempt = new Set([
+    'constants.ts',
+    'types.ts',
+    'index.ts',
+    'rings.ts',
+  ]);
+  const registries = new Set([
+    'answers/registry.ts',
+    'emitters/registry.ts',
+    'targets/registry.ts',
+  ]);
 
   const carrying = sourcesUnder(srcDir)
     .filter((path) => {

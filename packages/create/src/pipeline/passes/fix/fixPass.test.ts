@@ -95,9 +95,21 @@ describe('fixPass', () => {
       1,
       'eslint --fix: 1 file changed',
     ],
-    ['[{"output":"a"},{"output":"b"}]', 1, 'eslint --fix: 2 files changed'],
-    ['[{"filePath":"a.ts"}]', 0, 'eslint --fix: nothing to fix'],
-    ['{"results":[]}', 0, 'eslint --fix: nothing to fix'],
+    [
+      '[{"output":"a"},{"output":"b"}]',
+      1,
+      'eslint --fix: 2 files changed',
+    ],
+    [
+      '[{"filePath":"a.ts"}]',
+      0,
+      'eslint --fix: nothing to fix',
+    ],
+    [
+      '{"results":[]}',
+      0,
+      'eslint --fix: nothing to fix',
+    ],
   ])('reports what eslint fixed, for %s', async (printed, exitCode, notice) => {
     await plantEslint(`console.log(${JSON.stringify(printed)});\nprocess.exit(${String(exitCode)});\n`);
 

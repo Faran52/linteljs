@@ -6,7 +6,12 @@ import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
 
-export const vueGroup: string[] = ['^vue$', '^vue-router$', '^pinia$', '^@vue/'];
+export const vueGroup: string[] = [
+  '^vue$',
+  '^vue-router$',
+  '^pinia$',
+  '^@vue/',
+];
 
 const VUE_EXTENSION = '.vue';
 

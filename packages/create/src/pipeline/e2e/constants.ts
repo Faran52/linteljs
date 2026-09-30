@@ -22,5 +22,9 @@ export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
     lint: ['run', 'lint'],
     check: ['run', 'check'],
   },
-  'bun': { why: ['pm', 'ls', '--all'] },
+  'bun': { why: [
+    'pm',
+    'ls',
+    '--all',
+  ] },
 };

@@ -8,12 +8,36 @@ import {
 import { isAwaitedOrAsyncReturn, outermostCall } from './promiseChainUtils.ts';
 
 const STOPS_WHERE_IT_IS: [string, string, string][] = [
-  ['a `new` callee', 'new promise.Thing();\n', 'MemberExpression'],
-  ['a member expression given as an argument', 'register(promise.then);\n', 'MemberExpression'],
-  ['a call whose result is immediately invoked', 'getHandler()(arg);\n', 'CallExpression'],
-  ['a call in a computed property', 'handlers[getKey()]();\n', 'CallExpression'],
-  ['a member chain that ends in `new`', 'new promise.then.Thing();\n', 'MemberExpression'],
-  ['a chain the surrounding call passes along', 'new Wrapper(register(fetch().then));\n', 'CallExpression'],
+  [
+    'a `new` callee',
+    'new promise.Thing();\n',
+    'MemberExpression',
+  ],
+  [
+    'a member expression given as an argument',
+    'register(promise.then);\n',
+    'MemberExpression',
+  ],
+  [
+    'a call whose result is immediately invoked',
+    'getHandler()(arg);\n',
+    'CallExpression',
+  ],
+  [
+    'a call in a computed property',
+    'handlers[getKey()]();\n',
+    'CallExpression',
+  ],
+  [
+    'a member chain that ends in `new`',
+    'new promise.then.Thing();\n',
+    'MemberExpression',
+  ],
+  [
+    'a chain the surrounding call passes along',
+    'new Wrapper(register(fetch().then));\n',
+    'CallExpression',
+  ],
 ];
 
 describe('outermostCall', () => {

@@ -30,17 +30,78 @@ const shellWrapped = (command: string, depth: number): string => {
 
 describe('parseCommand', () => {
   it.each([
-    ['separators', 'a; b && c || d | e & f\ng', [['a'], ['b'], ['c'], ['d'], ['e'], ['f'], ['g']]],
-    ['quotes and escapes', 'git add "src/a b.ts" \'c d\' e\\ f', [['git', 'add', 'src/a b.ts', 'c d', 'e f']]],
-    ['a comment', 'git status # git stash', [['git', 'status']]],
-    ['a line continuation', 'git add \\\n-A', [['git', 'add', '-A']]],
-    ['assignments and negation', '! A=1 B=2 git status', [['git', 'status']]],
-    ['env, command, exec, nohup, sudo and time', 'env A=1 command exec nohup sudo -u me time -f x git log',
-      [['git', 'log']]],
-    ['env split strings', "env -S 'git log' --oneline", [['git', 'log', '--oneline']]],
-    ['a nested shell', "bash -c 'a; b'", [['a'], ['b']]],
-    ['a shell running a script', 'bash deploy.sh', []],
-    ['a command lookup', 'command -v git', []],
+    [
+      'separators',
+      'a; b && c || d | e & f\ng',
+      [
+        ['a'],
+        ['b'],
+        ['c'],
+        ['d'],
+        ['e'],
+        ['f'],
+        ['g'],
+      ],
+    ],
+    [
+      'quotes and escapes',
+      'git add "src/a b.ts" \'c d\' e\\ f',
+      [[
+        'git',
+        'add',
+        'src/a b.ts',
+        'c d',
+        'e f',
+      ]],
+    ],
+    [
+      'a comment',
+      'git status # git stash',
+      [['git', 'status']],
+    ],
+    [
+      'a line continuation',
+      'git add \\\n-A',
+      [[
+        'git',
+        'add',
+        '-A',
+      ]],
+    ],
+    [
+      'assignments and negation',
+      '! A=1 B=2 git status',
+      [['git', 'status']],
+    ],
+    [
+      'env, command, exec, nohup, sudo and time',
+      'env A=1 command exec nohup sudo -u me time -f x git log',
+      [['git', 'log']],
+    ],
+    [
+      'env split strings',
+      "env -S 'git log' --oneline",
+      [[
+        'git',
+        'log',
+        '--oneline',
+      ]],
+    ],
+    [
+      'a nested shell',
+      "bash -c 'a; b'",
+      [['a'], ['b']],
+    ],
+    [
+      'a shell running a script',
+      'bash deploy.sh',
+      [],
+    ],
+    [
+      'a command lookup',
+      'command -v git',
+      [],
+    ],
   ])('reads %s', (_label, source, expected) => {
     expect(tokensOf(source)).toEqual(expected);
   });
@@ -63,17 +124,63 @@ describe('parseCommand', () => {
   });
 
   it.each([
-    ['backticks as escapes and backslashes as literal', 'git add C:\\src\\a` b.ts',
-      [['git', 'add', 'C:\\src\\a b.ts']]],
-    ['a doubled quote', "echo 'it''s'", [['echo', "it's"]]],
-    ['the call operator', "& 'git' log", [['git', 'log']]],
-    ['a script block as the commands inside it', 'Invoke-Command { git log; git status }',
-      [['git', 'log'], ['git', 'status'], ['Invoke-Command']]],
-    ['a backtick line continuation', 'git add `\r\n-A', [['git', 'add', '-A']]],
-    ['pwsh -Command', 'pwsh -NoProfile -Command git log', [['git', 'log']]],
-    ['cmd /c', 'cmd /s /c "git log"', [['git', 'log']]],
-    ['Invoke-Expression', 'Invoke-Expression -Command "git log"', [['git', 'log']]],
-    ['pwsh running a file', 'pwsh -File build.ps1', []],
+    [
+      'backticks as escapes and backslashes as literal',
+      'git add C:\\src\\a` b.ts',
+      [[
+        'git',
+        'add',
+        'C:\\src\\a b.ts',
+      ]],
+    ],
+    [
+      'a doubled quote',
+      "echo 'it''s'",
+      [['echo', "it's"]],
+    ],
+    [
+      'the call operator',
+      "& 'git' log",
+      [['git', 'log']],
+    ],
+    [
+      'a script block as the commands inside it',
+      'Invoke-Command { git log; git status }',
+      [
+        ['git', 'log'],
+        ['git', 'status'],
+        ['Invoke-Command'],
+      ],
+    ],
+    [
+      'a backtick line continuation',
+      'git add `\r\n-A',
+      [[
+        'git',
+        'add',
+        '-A',
+      ]],
+    ],
+    [
+      'pwsh -Command',
+      'pwsh -NoProfile -Command git log',
+      [['git', 'log']],
+    ],
+    [
+      'cmd /c',
+      'cmd /s /c "git log"',
+      [['git', 'log']],
+    ],
+    [
+      'Invoke-Expression',
+      'Invoke-Expression -Command "git log"',
+      [['git', 'log']],
+    ],
+    [
+      'pwsh running a file',
+      'pwsh -File build.ps1',
+      [],
+    ],
   ])('reads PowerShell %s', (_label, source, expected) => {
     expect(tokensOf(source, 'powershell')).toEqual(expected);
   });
@@ -94,7 +201,11 @@ describe('parseCommand', () => {
       },
     ]);
     expect(parseCommand('Start-Process -FilePath git -ArgumentList log', 'powershell')).toEqual([{
-      tokens: ['git', '-ArgumentList', 'log'],
+      tokens: [
+        'git',
+        '-ArgumentList',
+        'log',
+      ],
       opaque: true,
     }]);
   });
@@ -124,7 +235,12 @@ describe('commandName', () => {
 
 describe('skipOptions', () => {
   it('skips flags and valued options, and stops after --', () => {
-    expect(skipOptions(['-C', 'dir', '--bare', 'log'], 0, new Set(['-C']))).toBe(3);
+    expect(skipOptions([
+      '-C',
+      'dir',
+      '--bare',
+      'log',
+    ], 0, new Set(['-C']))).toBe(3);
     expect(skipOptions(['--', '-x'], 0, new Set())).toBe(1);
   });
 

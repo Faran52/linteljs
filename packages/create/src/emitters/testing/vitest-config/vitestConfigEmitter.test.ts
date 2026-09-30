@@ -258,11 +258,31 @@ export default defineConfig({
   });
 
   it.each<[string, TargetId, string]>([
-    ['merges the vite config where the target builds with vite', 'react', MERGED],
-    ['stands alone, with no plugin, where there is no vite config and no plugin to add', 'next', STANDALONE],
-    ['carries the compiler plugin and its pool where no vite config is merged', 'angular', WITH_PLUGIN_AND_POOL],
-    ["borrows the target's own resolved config through its factory", 'astro', FACTORY],
-    ['runs React Native as a platform project of its own', 'react-native', PLATFORMS],
+    [
+      'merges the vite config where the target builds with vite',
+      'react',
+      MERGED,
+    ],
+    [
+      'stands alone, with no plugin, where there is no vite config and no plugin to add',
+      'next',
+      STANDALONE,
+    ],
+    [
+      'carries the compiler plugin and its pool where no vite config is merged',
+      'angular',
+      WITH_PLUGIN_AND_POOL,
+    ],
+    [
+      "borrows the target's own resolved config through its factory",
+      'astro',
+      FACTORY,
+    ],
+    [
+      'runs React Native as a platform project of its own',
+      'react-native',
+      PLATFORMS,
+    ],
   ])('%s', (_shape, target, expected) => {
     expect(configFor({ target })).toBe(expected);
   });
@@ -279,7 +299,15 @@ export default defineConfig({
   });
 
   it('disables native web storage for every happy-dom target', () => {
-    for (const target of ['react', 'next', 'vue', 'angular', 'svelte', 'solid', 'webextension'] as const) {
+    for (const target of [
+      'react',
+      'next',
+      'vue',
+      'angular',
+      'svelte',
+      'solid',
+      'webextension',
+    ] as const) {
       expect(configFor({ target })).toContain("execArgv: ['--no-experimental-webstorage'],");
     }
 
@@ -293,7 +321,13 @@ export default defineConfig({
     expect(configFor({ target })).toContain(expected);
   });
 
-  it.each<TargetId>(['react', 'next', 'vue', 'angular', 'webextension'])(
+  it.each<TargetId>([
+    'react',
+    'next',
+    'vue',
+    'angular',
+    'webextension',
+  ])(
     'leaves %s on the default resolution',
     (target) => {
       expect(configFor({ target })).not.toContain('conditions');
@@ -362,28 +396,84 @@ describe('the coverage surface', () => {
   });
 
   it.each<[string, AnswerOverrides, string[]]>([
-    ['react', { target: 'react' }, []],
-    ['react in framework mode', {
-      target: 'react',
-      router: 'react-router-framework',
-    }, ['src/root.tsx', 'src/routes/**']],
-    ['next', { target: 'next' }, ['src/app/layout.tsx']],
-    ['vue', { target: 'vue' }, []],
-    ['nuxt', { target: 'nuxt' }, []],
-    ['svelte', { target: 'svelte' }, ['src/routes/+layout.svelte']],
-    ['solid', { target: 'solid' }, []],
-    ['angular', { target: 'angular' }, ['src/app/app.config.ts', 'src/app/app.routes.ts']],
-    ['astro', { target: 'astro' }, ['src/config/**']],
-    ['webextension', { target: 'webextension' }, ['src/background/index.ts']],
-    ['a webextension with a popup alone', {
-      target: 'webextension',
-      surfaces: ['popup'],
-    }, []],
-    ['a webextension with a devtools panel', {
-      target: 'webextension',
-      surfaces: ['devtools-panel'],
-    }, ['src/config/linteljs.ts', 'src/devtools/index.ts', 'src/panel/index.ts']],
-    ['react-native', { target: 'react-native' }, ['src/app/_layout.tsx', 'src/config/routes.ts']],
+    [
+      'react',
+      { target: 'react' },
+      [],
+    ],
+    [
+      'react in framework mode',
+      {
+        target: 'react',
+        router: 'react-router-framework',
+      },
+      ['src/root.tsx', 'src/routes/**'],
+    ],
+    [
+      'next',
+      { target: 'next' },
+      ['src/app/layout.tsx'],
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      [],
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      [],
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      ['src/routes/+layout.svelte'],
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      [],
+    ],
+    [
+      'angular',
+      { target: 'angular' },
+      ['src/app/app.config.ts', 'src/app/app.routes.ts'],
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      ['src/config/**'],
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      ['src/background/index.ts'],
+    ],
+    [
+      'a webextension with a popup alone',
+      {
+        target: 'webextension',
+        surfaces: ['popup'],
+      },
+      [],
+    ],
+    [
+      'a webextension with a devtools panel',
+      {
+        target: 'webextension',
+        surfaces: ['devtools-panel'],
+      },
+      [
+        'src/config/linteljs.ts',
+        'src/devtools/index.ts',
+        'src/panel/index.ts',
+      ],
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      ['src/app/_layout.tsx', 'src/config/routes.ts'],
+    ],
   ])('leaves out of coverage on %s only what it cannot execute', (_label, overrides, excluded) => {
     const [, block = ''] = /coverage: \{[\s\S]*?exclude: \[([^\]]*)\]/u.exec(configFor(overrides) ?? '') ?? [];
 

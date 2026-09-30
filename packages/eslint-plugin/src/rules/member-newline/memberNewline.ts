@@ -96,7 +96,11 @@ export const memberNewline = createRule('member-newline', {
 
       const fix = (fixer: Fixer): Rule.Fix[] => {
         return [...onOneLine, ...blank]
-          .map(([before, after, indent]) => {
+          .map(([
+            before,
+            after,
+            indent,
+          ]) => {
             return fixer.replaceTextRange([rangeOf(before)[1], rangeOf(after)[0]], `${eol}${indent}`);
           });
       };

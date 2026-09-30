@@ -15,7 +15,11 @@ import { cursorArtifacts, cursorRulesEmitter } from './cursorRulesEmitter';
 
 describe('cursorRulesEmitter', () => {
   it('writes the Cursor rules only where Cursor was chosen', () => {
-    expect(cursorRulesEmitter(answersFor(['claude-code', 'codex', 'copilot']))).toEqual([]);
+    expect(cursorRulesEmitter(answersFor([
+      'claude-code',
+      'codex',
+      'copilot',
+    ]))).toEqual([]);
     expect(targets(cursorRulesEmitter(answersFor(['cursor']))))
       .toEqual(targets(cursorArtifacts(answersFor(['cursor']))));
   });

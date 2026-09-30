@@ -67,15 +67,28 @@ describe('astro', () => {
         return name.startsWith('astro/base');
       });
 
-    expect(astroBase).toEqual(['astro/base/plugin', 'astro/base', 'astro/base/javascript', 'astro/base/typescript']);
+    expect(astroBase).toEqual([
+      'astro/base/plugin',
+      'astro/base',
+      'astro/base/javascript',
+      'astro/base/typescript',
+    ]);
   });
 
   it.each([
     'src/pages/index.astro/0_0.ts',
     'src/pages/index.astro/1_1.js',
   ])('leaves the virtual script %s untyped under typescript()', async (path) => {
-    const names = await ruleNamesFor([...base(), ...typescript(), ...astro()], path);
-    const enabled = await enabledRuleIdsFor([...base(), ...typescript(), ...astro()], path);
+    const names = await ruleNamesFor([
+      ...base(),
+      ...typescript(),
+      ...astro(),
+    ], path);
+    const enabled = await enabledRuleIdsFor([
+      ...base(),
+      ...typescript(),
+      ...astro(),
+    ], path);
 
     expect(names).toContain('@typescript-eslint/no-floating-promises');
     expect(enabled).not.toContain('@typescript-eslint/no-floating-promises');

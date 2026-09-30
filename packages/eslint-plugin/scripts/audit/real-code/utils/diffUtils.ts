@@ -9,9 +9,22 @@ interface Parsed {
   comments: Token[];
 }
 
-const CLOSERS = new Set([')', '}', ']', '>']);
-const OPENERS = new Set(['{', '(', '[']);
-const BLOCK_CLOSERS = new Set(['}', ')', ']']);
+const CLOSERS = new Set([
+  ')',
+  '}',
+  ']',
+  '>',
+]);
+const OPENERS = new Set([
+  '{',
+  '(',
+  '[',
+]);
+const BLOCK_CLOSERS = new Set([
+  '}',
+  ')',
+  ']',
+]);
 
 const describeToken = (token: Token): string => {
   return `${token.type} ${JSON.stringify(token.value)}`;

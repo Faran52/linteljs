@@ -151,11 +151,19 @@ describe('nextSteps', () => {
   });
 
   it.each<[string, CliOptions, string]>([
-    ['an existing directory', {
-      ...INSTALL_SKIPPED,
-      existing: true,
-    }, 'demo-app'],
-    ['the directory it stands in', INSTALL_SKIPPED, ''],
+    [
+      'an existing directory',
+      {
+        ...INSTALL_SKIPPED,
+        existing: true,
+      },
+      'demo-app',
+    ],
+    [
+      'the directory it stands in',
+      INSTALL_SKIPPED,
+      '',
+    ],
   ])('enters nothing for %s', (_case, options, name) => {
     expect(nextSteps(name, options, 'pnpm')).toBe('\nDone. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
   });

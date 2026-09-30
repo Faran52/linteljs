@@ -20,7 +20,12 @@ const CWD_SETTINGS: Layer = [{
   settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../../..') } },
 }];
 
-const layer = [...base(), ...react(), ...tailwind(), ...CWD_SETTINGS];
+const layer = [
+  ...base(),
+  ...react(),
+  ...tailwind(),
+  ...CWD_SETTINGS,
+];
 
 const ownBlockOf = (built: Layer): Layer[number] => {
   const block = built
@@ -50,7 +55,12 @@ describe('tailwind', () => {
 
   it('reports a duplicate utility in the template of an astro page', async () => {
     const page = '---\n---\n\n<div class="p-2 p-2">x</div>\n';
-    const astroLayer = [...base({ astro: true }), ...tailwind(), ...CWD_SETTINGS, ...astro()];
+    const astroLayer = [
+      ...base({ astro: true }),
+      ...tailwind(),
+      ...CWD_SETTINGS,
+      ...astro(),
+    ];
     const ruleIds = await ruleIdsFor(astroLayer, page, 'src/pages/index.astro');
 
     expect(ruleIds).toContain('better-tailwindcss/no-duplicate-classes');

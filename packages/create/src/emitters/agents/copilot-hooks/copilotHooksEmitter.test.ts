@@ -13,7 +13,11 @@ import { linteljsPluginEmitter } from '../../always/linteljs-plugin/linteljsPlug
 import { copilotHooksEmitter } from './copilotHooksEmitter';
 
 describe('copilotHooksEmitter', () => {
-  it.each(['claude-code', 'codex', 'cursor'] as const)('writes nothing for %s without Copilot', (agent) => {
+  it.each([
+    'claude-code',
+    'codex',
+    'cursor',
+  ] as const)('writes nothing for %s without Copilot', (agent) => {
     expect(copilotHooksEmitter(answersFor([agent]))).toEqual([]);
   });
 

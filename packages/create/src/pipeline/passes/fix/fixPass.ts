@@ -35,7 +35,11 @@ const parseFixReport = (stdout: string): number => {
 
 // Silent about its count: stylelint's JSON report names files, not which it rewrote.
 const fixStyles = async (cwd: string, answers: Answers, report: (message: string) => void): Promise<void> => {
-  const result = await localBinarySpawn(cwd, 'stylelint', [styleGlob(answers), '--fix', '--allow-empty-input']);
+  const result = await localBinarySpawn(cwd, 'stylelint', [
+    styleGlob(answers),
+    '--fix',
+    '--allow-empty-input',
+  ]);
 
   if (result?.failed === true) {
     report('stylelint --fix could not run; run it yourself once dependencies are installed');
@@ -51,7 +55,12 @@ export const fixPass = async (
   const report = (message: string): void => {
     onNotice?.(message);
   };
-  const result = await localBinarySpawn(cwd, 'eslint', ['.', '--fix', '--format', 'json']);
+  const result = await localBinarySpawn(cwd, 'eslint', [
+    '.',
+    '--fix',
+    '--format',
+    'json',
+  ]);
 
   if (result === null) {
     report(nextStep(answers));

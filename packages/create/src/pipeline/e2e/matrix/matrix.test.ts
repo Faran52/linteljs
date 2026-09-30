@@ -198,7 +198,17 @@ describe('targetCases', () => {
               return answers.hostedFramework === hostedFramework && answers.form === form;
             });
 
-          expect([target, hostedFramework, form, offered]).toEqual([target, hostedFramework, form, accepted]);
+          expect([
+            target,
+            hostedFramework,
+            form,
+            offered,
+          ]).toEqual([
+            target,
+            hostedFramework,
+            form,
+            accepted,
+          ]);
         }
       }
     }

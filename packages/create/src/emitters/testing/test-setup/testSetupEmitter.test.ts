@@ -101,7 +101,11 @@ describe('the shipped test setup', () => {
     return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
   };
 
-  it.each<TargetId>(['react', 'solid', 'react-native'])(
+  it.each<TargetId>([
+    'react',
+    'solid',
+    'react-native',
+  ])(
     'ships the router mocks to %s, which has a binding they could stand in for',
     async (target) => {
       expect(await setupFor({ target })).toContain('export const navigateMock');
@@ -116,7 +120,12 @@ describe('the shipped test setup', () => {
     expect(setup).not.toContain('navigateMock');
   });
 
-  it.each<TargetId>(['vue', 'svelte', 'angular', 'webextension'])(
+  it.each<TargetId>([
+    'vue',
+    'svelte',
+    'angular',
+    'webextension',
+  ])(
     'ships none to %s, whose framework has none of the three',
     async (target) => {
       expect(await setupFor({ target })).not.toContain('navigateMock');

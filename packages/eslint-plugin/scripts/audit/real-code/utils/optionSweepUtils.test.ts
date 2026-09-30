@@ -75,9 +75,13 @@ describe('runOptionSweep', () => {
   it('reports a finding under the configuration that produced it, and a crash, and counts progress', () => {
     const printed = captured();
     const context = auditContext({
-      files: [marked, throws, ...Array.from({ length: 248 }, () => {
-        return clean;
-      })],
+      files: [
+        marked,
+        throws,
+        ...Array.from({ length: 248 }, () => {
+          return clean;
+        }),
+      ],
     });
 
     for (const { options } of configurationsFor('union-newline')) {

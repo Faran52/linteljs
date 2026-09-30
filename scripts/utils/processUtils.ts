@@ -11,7 +11,11 @@ export const run = (command: string, args: string[], cwd: string): string => {
   return execFileSync(command, args, {
     cwd,
     encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'inherit'],
+    stdio: [
+      'ignore',
+      'pipe',
+      'inherit',
+    ],
   });
 };
 
@@ -26,7 +30,11 @@ const emptyDir = (dir: string): void => {
 // `pnpm pack` runs `prepack` and rewrites `catalog:` the way a publish does.
 export const packTarball = (packageDir: string, outDir: string): string => {
   emptyDir(outDir);
-  run('pnpm', ['pack', '--pack-destination', outDir], packageDir);
+  run('pnpm', [
+    'pack',
+    '--pack-destination',
+    outDir,
+  ], packageDir);
 
   const tarball = readdirSync(outDir)
     .find((file) => {

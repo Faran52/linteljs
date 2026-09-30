@@ -67,7 +67,14 @@ const STRICT_ONLY: BannedPattern[] = [
   {
     name: ': unknown',
     re: /:\s*unknown\b/,
-    allowed: [NARROWING_GUARD, GUARD_TYPE, PARSED_JSON, DYNAMIC_IMPORT, CAUGHT_VALUE, CAUGHT_IN_CHAIN],
+    allowed: [
+      NARROWING_GUARD,
+      GUARD_TYPE,
+      PARSED_JSON,
+      DYNAMIC_IMPORT,
+      CAUGHT_VALUE,
+      CAUGHT_IN_CHAIN,
+    ],
   },
   {
     name: '=> unknown',
@@ -166,7 +173,11 @@ const scriptBlocksOnly = (content: string): string => {
   let cursor = 0;
 
   for (const match of content.matchAll(SFC_SCRIPT_BLOCK)) {
-    const [, open = '', body = ''] = match;
+    const [
+      ,
+      open = '',
+      body = '',
+    ] = match;
 
     output += blankSpan(content.slice(cursor, match.index)) + blankSpan(open) + body;
     cursor = match.index + open.length + body.length;

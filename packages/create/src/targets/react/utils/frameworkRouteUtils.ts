@@ -15,7 +15,11 @@ const withoutForm = (answers: Answers): boolean => {
   return isFrameworkMode(answers) && answers.form === undefined;
 };
 
-const PAGES = ['home', 'about', 'version'] as const;
+const PAGES = [
+  'home',
+  'about',
+  'version',
+] as const;
 
 export const frameworkRouteFiles = (): StarterFile[] => {
   return [

@@ -41,7 +41,11 @@ export const run = async (
     const child = spawn(command, args, {
       cwd,
       // `spawn`'s default stdin is an open pipe never ended, so an upstream prompt would hang the case.
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
       // Half the 600s a case gets, so a stalled leg is killed and named; measured cases took 17 to 97 seconds.
       timeout: 300_000,
       killSignal: 'SIGKILL',

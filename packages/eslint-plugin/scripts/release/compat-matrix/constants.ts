@@ -1,7 +1,13 @@
 // The majors the package declares: 6 is the `peerDependencies` floor, 10 what this workspace develops against.
 export type Major = 6 | 7 | 8 | 9 | 10;
 
-export const MAJORS: Major[] = [6, 7, 8, 9, 10];
+export const MAJORS: Major[] = [
+  6,
+  7,
+  8,
+  9,
+  10,
+];
 
 // `ecmaVersion` stated because ESLint 6 defaults to ES5.
 export const FIXTURE = [

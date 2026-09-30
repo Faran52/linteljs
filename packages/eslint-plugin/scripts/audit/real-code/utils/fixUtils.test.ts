@@ -87,7 +87,11 @@ describe('parsedFix', () => {
 
 describe('subsetOf', () => {
   it('keeps the candidates the run names, in candidate order', () => {
-    expect(subsetOf(['a', 'b', 'c'], ['c', 'a'])).toStrictEqual(['a', 'c']);
+    expect(subsetOf([
+      'a',
+      'b',
+      'c',
+    ], ['c', 'a'])).toStrictEqual(['a', 'c']);
   });
 });
 

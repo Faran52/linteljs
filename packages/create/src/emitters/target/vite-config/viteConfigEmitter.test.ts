@@ -43,36 +43,66 @@ describe('emitViteConfig', () => {
   });
 
   it.each<[string, AnswerOverrides, string[], string]>([
-    ['react', { target: 'react' }, [
-      "import react from '@vitejs/plugin-react';",
-      "import { defineConfig } from 'vite';",
-    ], '    react({ compiler: process.env.VITEST === undefined }),'],
-    ['react in framework mode', {
-      target: 'react',
-      router: 'react-router-framework',
-    }, [
-      "import { reactRouter } from '@react-router/dev/vite';",
-      "import react from '@vitejs/plugin-react';",
-      "import { defineConfig } from 'vite';",
-    ], `    ${WELL_KNOWN_404},\n    ...(process.env.VITEST === undefined ? [reactRouter()] : [react()]),`],
-    ['vue', { target: 'vue' }, [
-      "import vue from '@vitejs/plugin-vue';",
-      "import { defineConfig } from 'vite';",
-    ], '    vue(),'],
-    ['svelte', { target: 'svelte' }, [
-      "import adapter from '@sveltejs/adapter-auto';",
-      "import { sveltekit } from '@sveltejs/kit/vite';",
-      "import { defineConfig } from 'vite';",
-    ], '    sveltekit({ adapter: adapter() }),'],
-    ['solid', { target: 'solid' }, [
-      "import solid from 'vite-plugin-solid';",
-      "import { defineConfig } from 'vite';",
-    ], '    solid({ hot: process.env.VITEST === undefined }),'],
-    ['webextension', { target: 'webextension' }, [
-      "import { crx } from '@crxjs/vite-plugin';",
-      "import { defineConfig } from 'vite';",
-      "import manifest from './manifest.json' with { type: 'json' };",
-    ], '    crx({ manifest }),'],
+    [
+      'react',
+      { target: 'react' },
+      [
+        "import react from '@vitejs/plugin-react';",
+        "import { defineConfig } from 'vite';",
+      ],
+      '    react({ compiler: process.env.VITEST === undefined }),',
+    ],
+    [
+      'react in framework mode',
+      {
+        target: 'react',
+        router: 'react-router-framework',
+      },
+      [
+        "import { reactRouter } from '@react-router/dev/vite';",
+        "import react from '@vitejs/plugin-react';",
+        "import { defineConfig } from 'vite';",
+      ],
+      `    ${WELL_KNOWN_404},\n    ...(process.env.VITEST === undefined ? [reactRouter()] : [react()]),`,
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      [
+        "import vue from '@vitejs/plugin-vue';",
+        "import { defineConfig } from 'vite';",
+      ],
+      '    vue(),',
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      [
+        "import adapter from '@sveltejs/adapter-auto';",
+        "import { sveltekit } from '@sveltejs/kit/vite';",
+        "import { defineConfig } from 'vite';",
+      ],
+      '    sveltekit({ adapter: adapter() }),',
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      [
+        "import solid from 'vite-plugin-solid';",
+        "import { defineConfig } from 'vite';",
+      ],
+      '    solid({ hot: process.env.VITEST === undefined }),',
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      [
+        "import { crx } from '@crxjs/vite-plugin';",
+        "import { defineConfig } from 'vite';",
+        "import manifest from './manifest.json' with { type: 'json' };",
+      ],
+      '    crx({ manifest }),',
+    ],
   ])('registers the plugins %s builds with', (_label, overrides, imports, plugins) => {
     const config = configFor(overrides) ?? '';
 
@@ -130,9 +160,21 @@ describe('emitViteConfig', () => {
   });
 
   it.each<[HostedFramework, string, string]>([
-    ['vue', "import vue from '@vitejs/plugin-vue';", 'vue()'],
-    ['svelte', "import { svelte } from '@sveltejs/vite-plugin-svelte';", 'svelte()'],
-    ['solid', "import solid from 'vite-plugin-solid';", 'solid({ hot: process.env.VITEST === undefined })'],
+    [
+      'vue',
+      "import vue from '@vitejs/plugin-vue';",
+      'vue()',
+    ],
+    [
+      'svelte',
+      "import { svelte } from '@sveltejs/vite-plugin-svelte';",
+      'svelte()',
+    ],
+    [
+      'solid',
+      "import solid from 'vite-plugin-solid';",
+      'solid({ hot: process.env.VITEST === undefined })',
+    ],
   ])('builds an extension hosting %s through its framework plugin', (hostedFramework, line, call) => {
     const config = configFor({
       target: 'webextension',

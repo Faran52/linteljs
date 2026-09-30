@@ -290,7 +290,15 @@ log(`${String(paired.size)} pairs, ${String(short.length)} short, ${String(untes
   + `${String(documented.length)} documented exceptions, ${String(outOfScope.length)} out of scope; `
   + `${String(tests.length)} runs at concurrency ${String(concurrency)} in ${String(seconds)}s`);
 
-if ([short, untested, impure, claimedTwice, orphaned, failed, timedOut]
+if ([
+  short,
+  untested,
+  impure,
+  claimedTwice,
+  orphaned,
+  failed,
+  timedOut,
+]
   .some((found) => {
     return found.length > 0;
   })) {

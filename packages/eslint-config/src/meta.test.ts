@@ -70,7 +70,12 @@ describe.each(subjects)('$group/$name', ({
 
     const strays = files
       .filter((file) => {
-        return ![`${entry}.ts`, `${entry}.test.ts`, 'constants.ts', 'utils'].includes(file);
+        return ![
+          `${entry}.ts`,
+          `${entry}.test.ts`,
+          'constants.ts',
+          'utils',
+        ].includes(file);
       });
 
     expect(strays).toEqual([]);
@@ -81,7 +86,11 @@ it('holds compose-config to its entry, its suite and its loaders', () => {
   const composeFiles = readdirSync(join(srcDir, 'compose-config'))
     .toSorted(byName);
 
-  expect(composeFiles).toEqual(['composeConfig.test.ts', 'composeConfig.ts', 'utils']);
+  expect(composeFiles).toEqual([
+    'composeConfig.test.ts',
+    'composeConfig.ts',
+    'utils',
+  ]);
 
   const composeUtils = readdirSync(join(srcDir, 'compose-config', 'utils'))
     .toSorted(byName);

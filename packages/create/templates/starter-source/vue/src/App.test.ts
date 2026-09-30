@@ -10,7 +10,11 @@ const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   await router.push(path);
   await router.isReady();
 
-  return mount(App, { global: { plugins: [router, storeProvider, dataProvider] } });
+  return mount(App, { global: { plugins: [
+    router,
+    storeProvider,
+    dataProvider,
+  ] } });
 };
 
 describe('App', () => {

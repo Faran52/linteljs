@@ -29,7 +29,12 @@ const rootOf = (id: TargetId, shared: true | TargetId | undefined): string => {
 const sourceOf = (id: TargetId, file: StarterFile | StarterTest): string => {
   const asset = file.source ?? file.target;
 
-  return ['starter-source', rootOf(id, file.shared), file.variant, asset]
+  return [
+    'starter-source',
+    rootOf(id, file.shared),
+    file.variant,
+    asset,
+  ]
     .filter(Boolean)
     .join('/');
 };

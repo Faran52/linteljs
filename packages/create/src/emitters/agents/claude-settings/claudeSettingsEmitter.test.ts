@@ -118,19 +118,44 @@ describe('claudeSettingsEmitter', () => {
         preserve,
         removable,
       }) => {
-        return [target, preserve, removable];
+        return [
+          target,
+          preserve,
+          removable,
+        ];
       });
 
     expect(written).toEqual([
-      ['CLAUDE.md', true, undefined],
-      ['.claude/settings.json', undefined, true],
-      ['plugins/linteljs/.claude-plugin/plugin.json', undefined, undefined],
-      ['plugins/linteljs/.claude-plugin/marketplace.json', undefined, undefined],
+      [
+        'CLAUDE.md',
+        true,
+        undefined,
+      ],
+      [
+        '.claude/settings.json',
+        undefined,
+        true,
+      ],
+      [
+        'plugins/linteljs/.claude-plugin/plugin.json',
+        undefined,
+        undefined,
+      ],
+      [
+        'plugins/linteljs/.claude-plugin/marketplace.json',
+        undefined,
+        undefined,
+      ],
     ]);
   });
 
   it('ships the exact minimal local plugin metadata', async () => {
-    const [, , plugin, marketplace] = claudeSettingsEmitter(CLAUDE);
+    const [
+      ,
+      ,
+      plugin,
+      marketplace,
+    ] = claudeSettingsEmitter(CLAUDE);
 
     expect(plugin === undefined ? '' : await shippedAssetsReader(plugin.content)).toBe(`{
   "name": "linteljs",

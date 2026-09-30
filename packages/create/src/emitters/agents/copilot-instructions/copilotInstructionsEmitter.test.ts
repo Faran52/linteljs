@@ -15,7 +15,11 @@ import { copilotArtifacts, copilotInstructionsEmitter } from './copilotInstructi
 
 describe('copilotInstructionsEmitter', () => {
   it('writes the Copilot files only where Copilot was chosen', () => {
-    expect(copilotInstructionsEmitter(answersFor(['claude-code', 'codex', 'cursor']))).toEqual([]);
+    expect(copilotInstructionsEmitter(answersFor([
+      'claude-code',
+      'codex',
+      'cursor',
+    ]))).toEqual([]);
     expect(targets(copilotInstructionsEmitter(answersFor(['copilot']))))
       .toEqual(targets(copilotArtifacts(answersFor(['copilot']))));
   });

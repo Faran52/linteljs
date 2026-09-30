@@ -120,7 +120,11 @@ describe('buildArtifacts', () => {
           libraries: [],
         }),
         styling: 'tailwind',
-        surfaces: ['popup', 'background', 'devtools-panel'],
+        surfaces: [
+          'popup',
+          'background',
+          'devtools-panel',
+        ],
       },
     ];
 
@@ -220,7 +224,15 @@ describe('the project the answers write', () => {
   const SCRIPT = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/u;
   const SPECIFIER = /(?:from |import ?\(?)'([^']+)'/gu;
   const NOT_A_PACKAGE = /^(?:\.|\/|node:|#|~|\$|astro:|virtual:)/u;
-  const RESOLVED = ['', '.ts', '.tsx', '.vue', '.svelte', '.astro', '/index.ts'];
+  const RESOLVED = [
+    '',
+    '.ts',
+    '.tsx',
+    '.vue',
+    '.svelte',
+    '.astro',
+    '/index.ts',
+  ];
 
   const projectsFor = (target: TargetId): Project[] => {
     return targetCases(target)

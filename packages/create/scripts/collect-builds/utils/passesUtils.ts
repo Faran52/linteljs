@@ -41,7 +41,11 @@ export const run = async (
 ): Promise<string> => {
   const child = spawn(command, args, {
     cwd,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: [
+      'ignore',
+      'pipe',
+      'pipe',
+    ],
     env: {
       ...env,
       ...agent === undefined ? {} : { npm_config_user_agent: agent },
@@ -109,9 +113,18 @@ export const PASSES: Record<Collected, Pass> = {
       Reflect.deleteProperty(manifest, 'allowScripts');
       writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
     },
-    install: ['install', '--no-audit', '--no-fund'],
+    install: [
+      'install',
+      '--no-audit',
+      '--no-fund',
+    ],
     list: async (project, registry) => {
-      const listing = await run(NPM[0], [...NPM[1], 'install-scripts', 'ls', '--json'], project, registry);
+      const listing = await run(NPM[0], [
+        ...NPM[1],
+        'install-scripts',
+        'ls',
+        '--json',
+      ], project, registry);
       const opening = listing.indexOf('{');
 
       if (opening === -1) {

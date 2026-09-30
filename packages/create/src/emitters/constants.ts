@@ -280,4 +280,9 @@ export const ROUTER_DEV_DEPENDENCIES: Record<Router, string[]> = {
 
 // Measured with `collect:builds`; Yarn runs install scripts by default and has nothing to approve.
 // `sharp` and `@swc/core` stay: an allowance for an absent package is silent, and removing one buys nothing.
-export const ALLOWED_BUILDS = ['@swc/core', 'fsevents', 'sharp', 'unrs-resolver'];
+export const ALLOWED_BUILDS = [
+  '@swc/core',
+  'fsevents',
+  'sharp',
+  'unrs-resolver',
+];

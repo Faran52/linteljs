@@ -288,7 +288,11 @@ export const allowedBuildNames = (answers: Answers): string[] => {
   // MSW's install script copies `mockServiceWorker.js`; without this the install stops and asks.
   const mocking = answers.mocking === 'msw' ? ['msw'] : [];
 
-  return uniq([...ALLOWED_BUILDS, ...mocking, ...targetFor(answers).allowBuilds])
+  return uniq([
+    ...ALLOWED_BUILDS,
+    ...mocking,
+    ...targetFor(answers).allowBuilds,
+  ])
     .sort((left, right) => {
       return left.localeCompare(right, 'en');
     });

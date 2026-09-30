@@ -7,7 +7,12 @@ import type { Layer } from '../../types';
 
 const VIRTUAL_MODULES = [String.raw`^\$app/`, String.raw`^\$env/`];
 
-export const svelteGroup: string[] = ['^svelte$', '^svelte/', '^@sveltejs/', ...VIRTUAL_MODULES];
+export const svelteGroup: string[] = [
+  '^svelte$',
+  '^svelte/',
+  '^@sveltejs/',
+  ...VIRTUAL_MODULES,
+];
 
 const SVELTEKIT_ROUTE_FILES = [
   '**/routes/**/+*.svelte',

@@ -225,14 +225,25 @@ describe('emitEslintConfig', () => {
   it('emits the resolver conditions a project recorded', () => {
     const output = emitEslintConfig({
       ...answersFor({}),
-      resolveConditions: ['import', 'require', 'node', 'default'],
+      resolveConditions: [
+        'import',
+        'require',
+        'node',
+        'default',
+      ],
     });
 
     expect(output).toContain("  resolver: {\n    conditionNames: ['import', 'require', 'node', 'default'],\n  },");
   });
 
   it('breaks the resolver conditions onto their own lines once they would run past max-len', () => {
-    const conditions = ['1', '2', '3', '4', '5']
+    const conditions = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+    ]
       .map((digit) => {
         return `condition-name-${digit}`;
       });
@@ -346,7 +357,10 @@ describe('emitEslintConfig', () => {
 
 describe('the naming policy', () => {
   it.each<[string, AnswerOverrides, string]>([
-    ['react', { target: 'react' }, `  naming: {
+    [
+      'react',
+      { target: 'react' },
+      `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -354,8 +368,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['next', { target: 'next' }, `  naming: {
+  },`,
+    ],
+    [
+      'next',
+      { target: 'next' },
+      `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -364,8 +382,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['vue', { target: 'vue' }, `  naming: {
+  },`,
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      `  naming: {
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -373,8 +395,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
-    ['nuxt', { target: 'nuxt' }, `  naming: {
+  },`,
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      `  naming: {
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -382,8 +408,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['svelte', { target: 'svelte' }, `  naming: {
+  },`,
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      `  naming: {
     'src/**/*.svelte': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(routes)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -392,8 +422,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['solid', { target: 'solid' }, `  naming: {
+  },`,
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -401,16 +435,24 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['angular', { target: 'angular' }, `  naming: {
+  },`,
+    ],
+    [
+      'angular',
+      { target: 'angular' },
+      `  naming: {
     'src/**/!(*.d).ts': 'KEBAB_CASE',
     'src/**/utils/*.ts': '*-utils',
     'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
-    ['astro', { target: 'astro' }, `  naming: {
+  },`,
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      `  naming: {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -419,8 +461,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['webextension', { target: 'webextension' }, `  naming: {
+  },`,
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      `  naming: {
     'src/components/**/!(*.d|*.test|*.spec).ts': 'PASCAL_CASE',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(components)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -429,8 +475,12 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
-    ['react-native', { target: 'react-native' }, `  naming: {
+  },`,
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -439,11 +489,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['astro hosting react', {
-      target: 'astro',
-      hostedFramework: 'react',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'astro hosting react',
+      {
+        target: 'astro',
+        hostedFramework: 'react',
+      },
+      `  naming: {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -453,11 +507,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['webextension hosting react', {
-      target: 'webextension',
-      hostedFramework: 'react',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'webextension hosting react',
+      {
+        target: 'webextension',
+        hostedFramework: 'react',
+      },
+      `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -465,11 +523,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
-    ['astro hosting vue', {
-      target: 'astro',
-      hostedFramework: 'vue',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'astro hosting vue',
+      {
+        target: 'astro',
+        hostedFramework: 'vue',
+      },
+      `  naming: {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -479,11 +541,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['webextension hosting vue', {
-      target: 'webextension',
-      hostedFramework: 'vue',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'webextension hosting vue',
+      {
+        target: 'webextension',
+        hostedFramework: 'vue',
+      },
+      `  naming: {
     'src/**/*.vue': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -491,11 +557,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
-    ['astro hosting svelte', {
-      target: 'astro',
-      hostedFramework: 'svelte',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'astro hosting svelte',
+      {
+        target: 'astro',
+        hostedFramework: 'svelte',
+      },
+      `  naming: {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -505,11 +575,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['webextension hosting svelte', {
-      target: 'webextension',
-      hostedFramework: 'svelte',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'webextension hosting svelte',
+      {
+        target: 'webextension',
+        hostedFramework: 'svelte',
+      },
+      `  naming: {
     'src/**/*.svelte': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -517,11 +591,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
-    ['astro hosting solid', {
-      target: 'astro',
-      hostedFramework: 'solid',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'astro hosting solid',
+      {
+        target: 'astro',
+        hostedFramework: 'solid',
+      },
+      `  naming: {
     'src/**/*.astro': '!([a-z]*[A-Z]*)',
     'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     'src/!(pages)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
@@ -531,11 +609,15 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': String.raw\`@(+([a-z0-9])*(-+([a-z0-9]))|__tests__|\\[*\\]|\\(*\\)|{*})\`,
-  },`],
-    ['webextension hosting solid', {
-      target: 'webextension',
-      hostedFramework: 'solid',
-    }, `  naming: {
+  },`,
+    ],
+    [
+      'webextension hosting solid',
+      {
+        target: 'webextension',
+        hostedFramework: 'solid',
+      },
+      `  naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
     'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
     '**/utils/*.ts': '*Utils',
@@ -543,7 +625,8 @@ describe('the naming policy', () => {
   },
   folderNaming: {
     'src/**/': '@(+([a-z0-9])*(-+([a-z0-9]))|__tests__)',
-  },`],
+  },`,
+    ],
   ])('names files and folders the %s way', (_label, overrides, block) => {
     const config = emitEslintConfig(answersFor(overrides));
 
@@ -572,7 +655,11 @@ describe('ignores', () => {
 
   it.each<[TargetId, string[]]>([
     ['react', []],
-    ['next', ['.next/**', 'out/**', 'next-env.d.ts']],
+    ['next', [
+      '.next/**',
+      'out/**',
+      'next-env.d.ts',
+    ]],
     ['vue', []],
     ['nuxt', ['.nuxt/**', '.output/**']],
     ['svelte', ['.svelte-kit/**', 'src/app.html']],
@@ -580,7 +667,12 @@ describe('ignores', () => {
     ['angular', ['.angular/**']],
     ['astro', ['.astro/**']],
     ['webextension', []],
-    ['react-native', ['.expo/**', 'android/**', 'ios/**', 'expo-env.d.ts']],
+    ['react-native', [
+      '.expo/**',
+      'android/**',
+      'ios/**',
+      'expo-env.d.ts',
+    ]],
   ])('ignores what %s generates on top of the shared entries', (target, own) => {
     expect(ignoresOf(answersFor({ target })).slice(5)).toEqual(own);
   });

@@ -221,7 +221,11 @@ describe('narrow', () => {
   });
 
   it('answers the smallest slice that still shows the finding', () => {
-    const source = [...lines.slice(0, 30), UNION.trimEnd(), ...lines.slice(30)].join('\n');
+    const source = [
+      ...lines.slice(0, 30),
+      UNION.trimEnd(),
+      ...lines.slice(30),
+    ].join('\n');
     const context = planted({ 'union-newline': swapsPipe });
     const { fixed, findings: [finding] } = evaluate(context, source, 'file.ts', ['union-newline']);
 
@@ -242,7 +246,11 @@ describe('narrow', () => {
         return text.includes('MARK') ? text.replace('|', '&') : text;
       }),
     });
-    const source = ['// MARK', ...lines, UNION.trimEnd()].join('\n');
+    const source = [
+      '// MARK',
+      ...lines,
+      UNION.trimEnd(),
+    ].join('\n');
     const { fixed, findings: [finding] } = evaluate(context, source, 'file.ts', ['union-newline']);
     const [hunk, label] = narrow(context, source, fixed, 'file.ts', finding ?? {
       category: '',

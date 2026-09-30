@@ -111,7 +111,11 @@ describe('versioned', () => {
   });
 
   it('sorts and de-duplicates the names', () => {
-    expect(Object.keys(versioned(['vitest', 'eslint', 'vitest']))).toEqual(['eslint', 'vitest']);
+    expect(Object.keys(versioned([
+      'vitest',
+      'eslint',
+      'vitest',
+    ]))).toEqual(['eslint', 'vitest']);
   });
 });
 
@@ -201,16 +205,66 @@ describe('buildOverrides', () => {
 
 describe('buildDependencies', () => {
   it.each<[TargetId, HostedFramework | undefined, Store, string[]]>([
-    ['react', undefined, 'zustand', ['zustand']],
-    ['react', undefined, 'redux-toolkit', ['@reduxjs/toolkit', 'react-redux']],
-    ['react', undefined, 'tanstack-store', ['@tanstack/react-store']],
-    ['svelte', undefined, 'tanstack-store', ['@tanstack/svelte-store']],
-    ['vue', undefined, 'tanstack-store', ['@tanstack/vue-store']],
-    ['vue', undefined, 'pinia', ['pinia', '@vue/devtools-api']],
-    ['nuxt', undefined, 'pinia', ['pinia', '@vue/devtools-api']],
-    ['angular', undefined, 'ngrx-signals', ['@ngrx/signals']],
-    ['angular', undefined, 'ngrx-store', ['@ngrx/store']],
-    ['astro', 'react', 'nanostores', ['nanostores', '@nanostores/react']],
+    [
+      'react',
+      undefined,
+      'zustand',
+      ['zustand'],
+    ],
+    [
+      'react',
+      undefined,
+      'redux-toolkit',
+      ['@reduxjs/toolkit', 'react-redux'],
+    ],
+    [
+      'react',
+      undefined,
+      'tanstack-store',
+      ['@tanstack/react-store'],
+    ],
+    [
+      'svelte',
+      undefined,
+      'tanstack-store',
+      ['@tanstack/svelte-store'],
+    ],
+    [
+      'vue',
+      undefined,
+      'tanstack-store',
+      ['@tanstack/vue-store'],
+    ],
+    [
+      'vue',
+      undefined,
+      'pinia',
+      ['pinia', '@vue/devtools-api'],
+    ],
+    [
+      'nuxt',
+      undefined,
+      'pinia',
+      ['pinia', '@vue/devtools-api'],
+    ],
+    [
+      'angular',
+      undefined,
+      'ngrx-signals',
+      ['@ngrx/signals'],
+    ],
+    [
+      'angular',
+      undefined,
+      'ngrx-store',
+      ['@ngrx/store'],
+    ],
+    [
+      'astro',
+      'react',
+      'nanostores',
+      ['nanostores', '@nanostores/react'],
+    ],
   ])('installs what %s needs for %s %s: %j', (target, hostedFramework, store, packages) => {
     const dependencyNames = Object.keys(buildDependencies(answersFor({
       target,
@@ -240,8 +294,16 @@ describe('buildDependencies', () => {
   });
 
   it.each<[TargetId, HostedFramework | undefined, string]>([
-    ['vue', undefined, '@tanstack/vue-query'],
-    ['astro', 'react', '@tanstack/react-query'],
+    [
+      'vue',
+      undefined,
+      '@tanstack/vue-query',
+    ],
+    [
+      'astro',
+      'react',
+      '@tanstack/react-query',
+    ],
   ])('binds tanstack query to %s %s: %s', (target, hostedFramework, binding) => {
     const dependencies = buildDependencies(answersFor({
       target,
@@ -292,7 +354,11 @@ describe('buildDependencies', () => {
   });
 
   it('installs the three runtime libraries as plain dependencies', () => {
-    const answers = answersFor({ libraries: ['es-toolkit', 'ts-pattern', 'zod'] });
+    const answers = answersFor({ libraries: [
+      'es-toolkit',
+      'ts-pattern',
+      'zod',
+    ] });
     const dependencies = buildDependencies(answers);
     const devDependencies = buildDevDependencies(answers);
 
@@ -404,11 +470,31 @@ describe('buildDevDependencies', () => {
   });
 
   it.each<[TargetId, string, string]>([
-    ['astro', '@tailwindcss/vite', '@tailwindcss/postcss'],
-    ['nuxt', '@tailwindcss/vite', '@tailwindcss/postcss'],
-    ['next', '@tailwindcss/postcss', '@tailwindcss/vite'],
-    ['angular', '@tailwindcss/postcss', '@tailwindcss/vite'],
-    ['react-native', '@tailwindcss/postcss', '@tailwindcss/vite'],
+    [
+      'astro',
+      '@tailwindcss/vite',
+      '@tailwindcss/postcss',
+    ],
+    [
+      'nuxt',
+      '@tailwindcss/vite',
+      '@tailwindcss/postcss',
+    ],
+    [
+      'next',
+      '@tailwindcss/postcss',
+      '@tailwindcss/vite',
+    ],
+    [
+      'angular',
+      '@tailwindcss/postcss',
+      '@tailwindcss/vite',
+    ],
+    [
+      'react-native',
+      '@tailwindcss/postcss',
+      '@tailwindcss/vite',
+    ],
   ])('gives %s the %s adapter alone', (target, adapter, other) => {
     const devDependencies = buildDevDependencies(answersFor({
       target,
@@ -421,20 +507,64 @@ describe('buildDevDependencies', () => {
   });
 
   it.each<[string, AnswerOverrides, boolean]>([
-    ['react', { target: 'react' }, true],
-    ['react in framework mode', {
-      target: 'react',
-      router: 'react-router-framework',
-    }, false],
-    ['next', { target: 'next' }, false],
-    ['vue', { target: 'vue' }, true],
-    ['nuxt', { target: 'nuxt' }, false],
-    ['svelte', { target: 'svelte' }, true],
-    ['solid', { target: 'solid' }, true],
-    ['angular', { target: 'angular' }, false],
-    ['astro', { target: 'astro' }, false],
-    ['webextension', { target: 'webextension' }, true],
-    ['react-native', { target: 'react-native' }, false],
+    [
+      'react',
+      { target: 'react' },
+      true,
+    ],
+    [
+      'react in framework mode',
+      {
+        target: 'react',
+        router: 'react-router-framework',
+      },
+      false,
+    ],
+    [
+      'next',
+      { target: 'next' },
+      false,
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      true,
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      false,
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      true,
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      true,
+    ],
+    [
+      'angular',
+      { target: 'angular' },
+      false,
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      false,
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      true,
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      false,
+    ],
   ])('installs the html plugins for %s only where the html layer is composed: %s', (_label, overrides, composed) => {
     expect(Object.hasOwn(buildDevDependencies(answersFor(overrides)), '@html-eslint/eslint-plugin')).toBe(composed);
   });
@@ -485,26 +615,89 @@ describe('buildDevDependencies', () => {
   });
 
   it.each<[string, AnswerOverrides, string[]]>([
-    ['react', { target: 'react' }, []],
-    ['next', { target: 'next' }, []],
-    ['vue', { target: 'vue' }, ['vue-demi']],
-    ['nuxt', { target: 'nuxt' }, ['better-sqlite3', 'esbuild', 'vue-demi']],
-    ['svelte', { target: 'svelte' }, []],
-    ['solid', { target: 'solid' }, []],
-    ['angular', { target: 'angular' }, ['@parcel/watcher', 'esbuild', 'lmdb', 'msgpackr-extract']],
-    ['astro', { target: 'astro' }, ['esbuild']],
-    ['an Astro site hosting vue', {
-      target: 'astro',
-      hostedFramework: 'vue',
-    }, ['esbuild', 'vue-demi']],
-    ['webextension', { target: 'webextension' }, []],
-    ['an extension hosting vue', {
-      target: 'webextension',
-      hostedFramework: 'vue',
-    }, ['vue-demi']],
-    ['react-native', { target: 'react-native' }, ['esbuild']],
+    [
+      'react',
+      { target: 'react' },
+      [],
+    ],
+    [
+      'next',
+      { target: 'next' },
+      [],
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      ['vue-demi'],
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      [
+        'better-sqlite3',
+        'esbuild',
+        'vue-demi',
+      ],
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      [],
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      [],
+    ],
+    [
+      'angular',
+      { target: 'angular' },
+      [
+        '@parcel/watcher',
+        'esbuild',
+        'lmdb',
+        'msgpackr-extract',
+      ],
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      ['esbuild'],
+    ],
+    [
+      'an Astro site hosting vue',
+      {
+        target: 'astro',
+        hostedFramework: 'vue',
+      },
+      ['esbuild', 'vue-demi'],
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      [],
+    ],
+    [
+      'an extension hosting vue',
+      {
+        target: 'webextension',
+        hostedFramework: 'vue',
+      },
+      ['vue-demi'],
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      ['esbuild'],
+    ],
   ])('allows the builds %s runs', (_label, overrides, own) => {
-    const expected = [...own, '@swc/core', 'fsevents', 'sharp', 'unrs-resolver']
+    const expected = [
+      ...own,
+      '@swc/core',
+      'fsevents',
+      'sharp',
+      'unrs-resolver',
+    ]
       .sort((left, right) => {
         return left.localeCompare(right, 'en');
       });
@@ -523,9 +716,21 @@ describe('buildDevDependencies', () => {
 
 describe('the router', () => {
   it.each<[Router, string, string[]]>([
-    ['react-router', 'react-router', []],
-    ['tanstack-router', '@tanstack/react-router', ['@tanstack/eslint-plugin-router']],
-    ['react-router-framework', '@react-router/serve', ['@react-router/dev']],
+    [
+      'react-router',
+      'react-router',
+      [],
+    ],
+    [
+      'tanstack-router',
+      '@tanstack/react-router',
+      ['@tanstack/eslint-plugin-router'],
+    ],
+    [
+      'react-router-framework',
+      '@react-router/serve',
+      ['@react-router/dev'],
+    ],
   ])('installs %s as %s, with %j beside it', (router, dependency, tools) => {
     const answers = answersFor({ router });
     const dependencies = buildDependencies(answers);

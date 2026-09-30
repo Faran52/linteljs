@@ -16,7 +16,11 @@ export const widestFor = (target: TargetId): Answers[] => {
   const widest: Answers = {
     ...DEFAULT_ANSWERS,
     target,
-    surfaces: ['popup', 'background', 'devtools-panel'],
+    surfaces: [
+      'popup',
+      'background',
+      'devtools-panel',
+    ],
     libraries: ['zod'],
     styling: 'tailwind',
   };

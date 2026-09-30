@@ -230,14 +230,26 @@ export const listGaps = (
   const close = cursor.value === ',' || !commaSeparated ? mustFind(sourceCode.getTokenAfter(cursor)) : cursor;
 
   return [
-    [open, mustFind(sourceCode.getTokenAfter(open, COMMENTS)), inner],
+    [
+      open,
+      mustFind(sourceCode.getTokenAfter(open, COMMENTS)),
+      inner,
+    ],
     ...ends
       .slice(0, -1)
       .map((end): ListGap => {
         const anchor = trailingEnd(sourceCode, end);
 
-        return [anchor, mustFind(sourceCode.getTokenAfter(anchor, COMMENTS)), inner];
+        return [
+          anchor,
+          mustFind(sourceCode.getTokenAfter(anchor, COMMENTS)),
+          inner,
+        ];
       }),
-    [mustFind(sourceCode.getTokenBefore(close, COMMENTS)), close, outer],
+    [
+      mustFind(sourceCode.getTokenBefore(close, COMMENTS)),
+      close,
+      outer,
+    ],
   ];
 };

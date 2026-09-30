@@ -148,7 +148,11 @@ describe('mergeCursorHooks', () => {
 });
 
 describe('cursorHooksEmitter', () => {
-  it.each(['claude-code', 'codex', 'copilot'] as const)('writes nothing for %s without Cursor', (agent) => {
+  it.each([
+    'claude-code',
+    'codex',
+    'copilot',
+  ] as const)('writes nothing for %s without Cursor', (agent) => {
     expect(cursorHooksEmitter(answersFor([agent]))).toEqual([]);
   });
 

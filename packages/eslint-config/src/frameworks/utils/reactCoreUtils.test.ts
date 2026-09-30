@@ -89,7 +89,11 @@ describe('reactCore', () => {
   });
 
   it('reports through the eslint-react preset it composes', async () => {
-    const ruleIds = await ruleIdsForFile([...base(), ...typescript(), ...reactCore()], JSX_FIXTURE);
+    const ruleIds = await ruleIdsForFile([
+      ...base(),
+      ...typescript(),
+      ...reactCore(),
+    ], JSX_FIXTURE);
 
     expect(ruleIds).toContain('@eslint-react/no-array-index-key');
   });
@@ -133,9 +137,19 @@ describe('reactCore', () => {
     };
     const layer = base({ frameworkGroup: reactGroup });
 
-    await expect(ruleIdsFor(layer, block(['react', 'react-dom', 'react/jsx-runtime', 'react-aria']), 'src/lib/a.ts'))
+    await expect(ruleIdsFor(layer, block([
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react-aria',
+    ]), 'src/lib/a.ts'))
       .resolves.not.toContain('simple-import-sort/imports');
-    await expect(ruleIdsFor(layer, block(['react', 'react/jsx-runtime', 'react-aria', 'react-dom']), 'src/lib/a.ts'))
+    await expect(ruleIdsFor(layer, block([
+      'react',
+      'react/jsx-runtime',
+      'react-aria',
+      'react-dom',
+    ]), 'src/lib/a.ts'))
       .resolves.toContain('simple-import-sort/imports');
   });
 

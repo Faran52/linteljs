@@ -86,10 +86,28 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
 const lint = async (major: Major, dir: string, fix: boolean, typescript: boolean): Promise<[string[], string]> => {
   const bin = join(dir, 'node_modules', 'eslint', 'bin', 'eslint.js');
   const config = isFlat(major)
-    ? [bin, '--no-config-lookup', '-c', configName(major, typescript)]
-    : [bin, '--no-eslintrc', '-c', configName(major, typescript), '--ext', '.ts,.js'];
+    ? [
+        bin,
+        '--no-config-lookup',
+        '-c',
+        configName(major, typescript),
+      ]
+    : [
+        bin,
+        '--no-eslintrc',
+        '-c',
+        configName(major, typescript),
+        '--ext',
+        '.ts,.js',
+      ];
   const result = await lintResultOf(
-    [...config, ...(fix ? ['--fix-dry-run'] : []), '-f', 'json', typescript ? 'fixture.ts' : 'fixture.js'],
+    [
+      ...config,
+      ...(fix ? ['--fix-dry-run'] : []),
+      '-f',
+      'json',
+      typescript ? 'fixture.ts' : 'fixture.js',
+    ],
     dir,
   );
   const fatal = fatalOf(result);

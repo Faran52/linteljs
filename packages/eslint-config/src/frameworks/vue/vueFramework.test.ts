@@ -33,7 +33,11 @@ describe('vue', () => {
   });
 
   it('reports accessibility findings on a template', async () => {
-    const layer = [...base(), ...typescript(), ...vue()];
+    const layer = [
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ];
     const ruleIds = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'Inaccessible.vue'));
 
     expect(ruleIds).toContain('vuejs-accessibility/alt-text');
@@ -41,7 +45,11 @@ describe('vue', () => {
   });
 
   it('accepts a label bound by for, and still reports one bound to nothing', async () => {
-    const layer = [...base(), ...typescript(), ...vue()];
+    const layer = [
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ];
     const messages = await messagesForFile(layer, join(SFC_FIXTURES, 'LabelledField.vue'));
     const labels = messages
       .filter((message) => {
@@ -53,7 +61,11 @@ describe('vue', () => {
   });
 
   it('still types a script block with the a11y preset in the layer', async () => {
-    const layer = [...base(), ...typescript(), ...vue()];
+    const layer = [
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ];
     const messages = await messagesForFile(layer, join(SFC_FIXTURES, 'Inaccessible.vue'));
 
     const fatal = messages
@@ -65,7 +77,11 @@ describe('vue', () => {
   });
 
   it('reaches TypeScript inside a script block with the base rules the preset scopes to .ts', async () => {
-    const layer = [...base(), ...typescript(), ...vue()];
+    const layer = [
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ];
     const ruleIds = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'ScriptUnion.vue'));
 
     expect(ruleIds).toContain('@linteljs/union-newline');
@@ -73,7 +89,11 @@ describe('vue', () => {
   });
 
   it('leaves a plain .js file to parse untyped', async () => {
-    const layer = [...base(), ...typescript(), ...vue()];
+    const layer = [
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ];
     const ruleIds = await ruleIdsFor(layer, 'export const value = 1;\n', 'src/lib/value.js');
 
     expect(ruleIds).not.toContain(null);
@@ -82,7 +102,11 @@ describe('vue', () => {
   it('lets a .ts file pass an imported component along', async () => {
     const file = join(SFC_FIXTURES, 'registerHome.ts');
     const plain = await ruleIdsForFile([...base(), ...typescript()], file);
-    const composed = await ruleIdsForFile([...base(), ...typescript(), ...vue()], file);
+    const composed = await ruleIdsForFile([
+      ...base(),
+      ...typescript(),
+      ...vue(),
+    ], file);
 
     expect(plain).toContain('@typescript-eslint/no-unsafe-argument');
     expect(plain).toContain('@typescript-eslint/no-unsafe-assignment');

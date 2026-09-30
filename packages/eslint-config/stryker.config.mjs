@@ -4,7 +4,12 @@ const config = {
   packageManager: 'pnpm',
   testRunner: 'vitest',
   plugins: ['@stryker-mutator/vitest-runner'],
-  reporters: ['html', 'json', 'clear-text', 'progress'],
+  reporters: [
+    'html',
+    'json',
+    'clear-text',
+    'progress',
+  ],
 
   // Measured against `all`: identical verdicts, same wall time, and `perTest` names the killing test.
   coverageAnalysis: 'perTest',

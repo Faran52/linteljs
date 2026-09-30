@@ -45,7 +45,12 @@ describe('buildScripts', () => {
     );
   });
 
-  it.each<TargetId>(['react', 'astro', 'vue', 'svelte'])('runs the banned patterns over src for %s', (target) => {
+  it.each<TargetId>([
+    'react',
+    'astro',
+    'vue',
+    'svelte',
+  ])('runs the banned patterns over src for %s', (target) => {
     expect(buildScripts(answersFor({ target }))['lint:types']).toBe('node scripts/checkBannedPatterns.ts src');
   });
 

@@ -46,10 +46,26 @@ describe('emitAstroConfig', () => {
   });
 
   it.each<[HostedFramework, string, string]>([
-    ['react', '@astrojs/react', 'react({ compiler: process.env.VITEST === undefined })'],
-    ['vue', '@astrojs/vue', 'vue()'],
-    ['svelte', '@astrojs/svelte', 'svelte()'],
-    ['solid', '@astrojs/solid-js', 'solid()'],
+    [
+      'react',
+      '@astrojs/react',
+      'react({ compiler: process.env.VITEST === undefined })',
+    ],
+    [
+      'vue',
+      '@astrojs/vue',
+      'vue()',
+    ],
+    [
+      'svelte',
+      '@astrojs/svelte',
+      'svelte()',
+    ],
+    [
+      'solid',
+      '@astrojs/solid-js',
+      'solid()',
+    ],
   ])('registers the %s integration', (hostedFramework, specifier, call) => {
     const output = emitAstroConfig(answersFor({ hostedFramework }));
 
@@ -84,7 +100,11 @@ describe('emitAstroConfig', () => {
     expect(output).toContain('vite: { plugins: [tailwindcss()] },');
   });
 
-  it.each<HostedFramework>(['vue', 'svelte', 'solid'])(
+  it.each<HostedFramework>([
+    'vue',
+    'svelte',
+    'solid',
+  ])(
     'emits no compiler wiring for %s',
     (hostedFramework) => {
       const output = emitAstroConfig(answersFor({ hostedFramework }));
@@ -132,10 +152,18 @@ describe('astroConfigEmitter', () => {
         target,
         preserve,
       }) => {
-        return [stage, target, preserve];
+        return [
+          stage,
+          target,
+          preserve,
+        ];
       });
 
-    expect(shapes).toEqual([['standard', 'astro.config.mjs', true]]);
+    expect(shapes).toEqual([[
+      'standard',
+      'astro.config.mjs',
+      true,
+    ]]);
   });
 
   it('writes nothing for a target that is not astro', () => {

@@ -175,15 +175,39 @@ describe('patchPackageJson', () => {
       packageManager: 'bun',
     }));
 
-    expect(bun.trustedDependencies).toEqual(expect.arrayContaining(['sharp', 'unrs-resolver', 'esbuild']));
+    expect(bun.trustedDependencies).toEqual(expect.arrayContaining([
+      'sharp',
+      'unrs-resolver',
+      'esbuild',
+    ]));
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
   });
 
   it.each([
-    ['npm', 'overrides', 'react-native-css', { lightningcss: VERSIONS['lightningcss'] }],
-    ['bun', 'overrides', 'lightningcss', VERSIONS['lightningcss']],
-    ['yarn', 'resolutions', '@expo/metro-config/lightningcss', VERSIONS['lightningcss']],
-    ['yarn-classic', 'resolutions', '**/react-native-css/lightningcss', VERSIONS['lightningcss']],
+    [
+      'npm',
+      'overrides',
+      'react-native-css',
+      { lightningcss: VERSIONS['lightningcss'] },
+    ],
+    [
+      'bun',
+      'overrides',
+      'lightningcss',
+      VERSIONS['lightningcss'],
+    ],
+    [
+      'yarn',
+      'resolutions',
+      '@expo/metro-config/lightningcss',
+      VERSIONS['lightningcss'],
+    ],
+    [
+      'yarn-classic',
+      'resolutions',
+      '**/react-native-css/lightningcss',
+      VERSIONS['lightningcss'],
+    ],
   ] as const)('pins lightningcss for NativeWind under %s in %s, keeping its own', (packageManager, field, key, pin) => {
     const patched = patchPackageJson({ [field]: { 'left-pad': '1.0.0' } }, answersFor({
       target: 'react-native',

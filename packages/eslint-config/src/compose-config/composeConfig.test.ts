@@ -88,8 +88,16 @@ describe('composeConfig', () => {
   });
 
   it.each([
-    ['vue', 'Home.vue', 'vue/'],
-    ['svelte', 'Page.svelte', 'svelte/'],
+    [
+      'vue',
+      'Home.vue',
+      'vue/',
+    ],
+    [
+      'svelte',
+      'Page.svelte',
+      'svelte/',
+    ],
   ])('orders %s after typescript, so its component still parses', async (framework, fixture, prefix) => {
     const config = await composeConfig({
       framework: framework === 'vue' ? 'vue' : 'svelte',
@@ -369,16 +377,56 @@ const WIDEST: ComposeConfigOptions = {
 };
 
 const DUPLICATE_CASES: [string, Framework | undefined, string][] = [
-  ['no framework', undefined, 'src/lib/utils/sample.ts'],
-  ['a test file', undefined, 'src/lib/utils/sample.test.ts'],
-  ['react', 'react', 'src/components/ui/Widget.tsx'],
-  ['next', 'next', 'src/app/page.tsx'],
-  ['react-native', 'react-native', 'src/components/ui/Widget.tsx'],
-  ['vue', 'vue', 'src/components/ui/Card.vue'],
-  ['nuxt', 'nuxt', 'src/components/ui/Card.vue'],
-  ['svelte', 'svelte', 'src/components/ui/Card.svelte'],
-  ['solid', 'solid', 'src/components/ui/Widget.tsx'],
-  ['angular', 'angular', 'src/app/app.component.ts'],
+  [
+    'no framework',
+    undefined,
+    'src/lib/utils/sample.ts',
+  ],
+  [
+    'a test file',
+    undefined,
+    'src/lib/utils/sample.test.ts',
+  ],
+  [
+    'react',
+    'react',
+    'src/components/ui/Widget.tsx',
+  ],
+  [
+    'next',
+    'next',
+    'src/app/page.tsx',
+  ],
+  [
+    'react-native',
+    'react-native',
+    'src/components/ui/Widget.tsx',
+  ],
+  [
+    'vue',
+    'vue',
+    'src/components/ui/Card.vue',
+  ],
+  [
+    'nuxt',
+    'nuxt',
+    'src/components/ui/Card.vue',
+  ],
+  [
+    'svelte',
+    'svelte',
+    'src/components/ui/Card.svelte',
+  ],
+  [
+    'solid',
+    'solid',
+    'src/components/ui/Widget.tsx',
+  ],
+  [
+    'angular',
+    'angular',
+    'src/app/app.component.ts',
+  ],
 ];
 
 describe('one owner per rule name', () => {
@@ -413,19 +461,35 @@ const LAYERS: [string, () => Layer][] = [
 describe('composition', () => {
   it.each(LAYERS)('composes base + typescript + %s', (_name, layer) => {
     expect(() => {
-      composes([...base(), ...typescript(), ...layer()]);
+      composes([
+        ...base(),
+        ...typescript(),
+        ...layer(),
+      ]);
     }).not.toThrow();
   });
 
   it('composes next on top of react, in that order', () => {
     expect(() => {
-      composes([...base(), ...typescript(), ...react(), ...next()]);
+      composes([
+        ...base(),
+        ...typescript(),
+        ...react(),
+        ...next(),
+      ]);
     }).not.toThrow();
   });
 
   it('composes the library and file-type layers alongside a framework', () => {
     expect(() => {
-      composes([...base(), ...typescript(), ...react(), ...tanstackQuery(), ...vitest(), ...html()]);
+      composes([
+        ...base(),
+        ...typescript(),
+        ...react(),
+        ...tanstackQuery(),
+        ...vitest(),
+        ...html(),
+      ]);
     }).not.toThrow();
   });
 
@@ -436,14 +500,32 @@ describe('composition', () => {
       });
 
     expect(() => {
-      composes([...base(), ...typescript(), ...everything, ...next(), ...tanstackQuery(), ...vitest(), ...html()]);
+      composes([
+        ...base(),
+        ...typescript(),
+        ...everything,
+        ...next(),
+        ...tanstackQuery(),
+        ...vitest(),
+        ...html(),
+      ]);
     }).not.toThrow();
   });
 });
 
 const SFC_ORDER: [string, () => Layer, string, string][] = [
-  ['vue', vue, 'Home.vue', 'vue/'],
-  ['svelte', svelte, 'Page.svelte', 'svelte/'],
+  [
+    'vue',
+    vue,
+    'Home.vue',
+    'vue/',
+  ],
+  [
+    'svelte',
+    svelte,
+    'Page.svelte',
+    'svelte/',
+  ],
 ];
 
 const fatalsIn = (messages: Linter.LintMessage[]): string[] => {
@@ -472,8 +554,16 @@ describe('layer order', () => {
     async (_name, layer, fixture, prefix) => {
       const file = join(SFC_FIXTURES, fixture);
 
-      const correct = await messagesForFile([...base(), ...typescript(), ...layer()], file);
-      const wrong = await messagesForFile([...base(), ...layer(), ...typescript()], file);
+      const correct = await messagesForFile([
+        ...base(),
+        ...typescript(),
+        ...layer(),
+      ], file);
+      const wrong = await messagesForFile([
+        ...base(),
+        ...layer(),
+        ...typescript(),
+      ], file);
 
       expect(fatalsIn(correct)).toEqual([]);
       expect(reportsFrom(correct, prefix).length).toBeGreaterThan(0);

@@ -57,7 +57,11 @@ describe('answerOptions', () => {
 
 describe('widthOf', () => {
   it('answers the length of the widest name', () => {
-    expect(widthOf(['lint', 'standard', 'fix'])).toBe(8);
+    expect(widthOf([
+      'lint',
+      'standard',
+      'fix',
+    ])).toBe(8);
   });
 });
 

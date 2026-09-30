@@ -63,10 +63,18 @@ const npmVerdict = (tokens: string[], start: number): Verdict => {
   if (index === undefined) {
     return 'unreadable';
   }
-  if (!['exec', 'x', 'run'].includes(tokens[index] ?? '')) {
+  if (![
+    'exec',
+    'x',
+    'run',
+  ].includes(tokens[index] ?? '')) {
     return 'clear';
   }
-  index = skipOptions(tokens, index + 1, new Set(['--package', '-w', '--workspace']));
+  index = skipOptions(tokens, index + 1, new Set([
+    '--package',
+    '-w',
+    '--workspace',
+  ]));
   if (index === undefined) {
     return 'unreadable';
   }
@@ -91,8 +99,16 @@ const eslintVerdict = (tokens: string[]): Verdict => {
     return scriptRunnerVerdict(
       tokens,
       1,
-      new Set(['-C', '--dir', '--filter']),
-      ['exec', 'dlx', 'run'],
+      new Set([
+        '-C',
+        '--dir',
+        '--filter',
+      ]),
+      [
+        'exec',
+        'dlx',
+        'run',
+      ],
       new Set(['--package']),
     );
   }
@@ -100,7 +116,11 @@ const eslintVerdict = (tokens: string[]): Verdict => {
     return npmVerdict(tokens, 1);
   }
   if (executable === 'yarn') {
-    return scriptRunnerVerdict(tokens, 1, new Set(['--cwd']), ['exec', 'dlx', 'run'], NO_OPTIONS);
+    return scriptRunnerVerdict(tokens, 1, new Set(['--cwd']), [
+      'exec',
+      'dlx',
+      'run',
+    ], NO_OPTIONS);
   }
   if (executable === 'bun') {
     return scriptRunnerVerdict(tokens, 1, new Set(['--cwd']), ['x', 'run'], NO_OPTIONS);

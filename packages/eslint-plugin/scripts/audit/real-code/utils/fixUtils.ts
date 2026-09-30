@@ -130,5 +130,9 @@ export const load = (context: AuditContext, file: string, bucket: Counts): [stri
     return undefined;
   }
 
-  return [source, name, ast];
+  return [
+    source,
+    name,
+    ast,
+  ];
 };

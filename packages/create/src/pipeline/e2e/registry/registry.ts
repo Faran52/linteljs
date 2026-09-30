@@ -211,7 +211,12 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
 
   const verdaccio = spawn(
     join(ROOT, 'node_modules/.bin/verdaccio'),
-    ['--config', config, '--listen', `127.0.0.1:${String(PORT)}`],
+    [
+      '--config',
+      config,
+      '--listen',
+      `127.0.0.1:${String(PORT)}`,
+    ],
     { stdio: 'inherit' },
   );
 
@@ -220,7 +225,13 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
   const version = runVersion(createVersion());
 
   publishedAs(version, () => {
-    check('pnpm', ['-r', 'publish', '--registry', url, '--no-git-checks'], ROOT);
+    check('pnpm', [
+      '-r',
+      'publish',
+      '--registry',
+      url,
+      '--no-git-checks',
+    ], ROOT);
   });
 
   // Installed from the registry like a user's `create @linteljs`, on its published dependency tree.
@@ -231,7 +242,14 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
 
   check(
     'npm',
-    ['install', `@linteljs/create@${version}`, '--registry', url, '--no-audit', '--no-fund'],
+    [
+      'install',
+      `@linteljs/create@${version}`,
+      '--registry',
+      url,
+      '--no-audit',
+      '--no-fund',
+    ],
     cliDir,
   );
 

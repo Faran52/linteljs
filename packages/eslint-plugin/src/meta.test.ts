@@ -38,7 +38,11 @@ const filesIn = (ruleName: string): string[] => {
 const requiredFiles = (ruleName: string): string[] => {
   const module = moduleNameOf(ruleName);
 
-  return [`${module}.ts`, `${module}.test.ts`, 'README.md'];
+  return [
+    `${module}.ts`,
+    `${module}.test.ts`,
+    'README.md',
+  ];
 };
 
 const readJson = (path: string): Record<string, unknown> => {
@@ -139,7 +143,11 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   });
 
   it('declares a valid rule type', () => {
-    expect(['problem', 'suggestion', 'layout']).toContain(meta.type);
+    expect([
+      'problem',
+      'suggestion',
+      'layout',
+    ]).toContain(meta.type);
   });
 
   it('declares at least one message', () => {
@@ -394,7 +402,12 @@ describe('language scoping, resolved by eslint', () => {
       }).length);
   });
 
-  it.each(['example.ts', 'example.tsx', 'example.mts', 'example.cts'])(
+  it.each([
+    'example.ts',
+    'example.tsx',
+    'example.mts',
+    'example.cts',
+  ])(
     'turns every recommended rule on in %s',
     async (filename: string) => {
       expect(await resolve(filename)).toEqual(prefixed(recommendedNames));

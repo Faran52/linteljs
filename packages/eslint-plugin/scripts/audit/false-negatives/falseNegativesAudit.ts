@@ -317,7 +317,11 @@ const load = (file: string): [string, string, Program] | undefined => {
     return undefined;
   }
 
-  return [source, name, ast];
+  return [
+    source,
+    name,
+    ast,
+  ];
 };
 
 const check = (file: string, hungry: ActiveShape[]): void => {
@@ -327,7 +331,11 @@ const check = (file: string, hungry: ActiveShape[]): void => {
     return;
   }
 
-  const [source, name, ast] = loaded;
+  const [
+    source,
+    name,
+    ast,
+  ] = loaded;
   const index = indexAst(ast);
   const cache = new Map<string, Reports>();
 

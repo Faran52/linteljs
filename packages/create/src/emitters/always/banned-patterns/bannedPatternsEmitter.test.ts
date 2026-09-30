@@ -87,7 +87,11 @@ describe('the checker merge', () => {
   const skippingWith = (answers: Answers, ...lines: string[]): string => {
     return shippedFor(answers)
       .replace('const PROJECT_SKIPPED: string[] = [];', () => {
-        return ['const PROJECT_SKIPPED: string[] = [', ...lines, '];'].join('\n');
+        return [
+          'const PROJECT_SKIPPED: string[] = [',
+          ...lines,
+          '];',
+        ].join('\n');
       });
   };
 

@@ -22,7 +22,11 @@ const isStringList = (value: unknown): value is string[] => {
 };
 
 const isScalar = (value: unknown): value is boolean | number | string => {
-  return ['boolean', 'number', 'string'].includes(typeof value);
+  return [
+    'boolean',
+    'number',
+    'string',
+  ].includes(typeof value);
 };
 
 // An option type with no values here throws, so a new option cannot quietly go unswept.
@@ -38,7 +42,11 @@ const valuesFor = (property: JSONSchema4): OptionValue[] => {
   const fallback: unknown = property.default;
 
   if (property.type === 'integer' && typeof fallback === 'number') {
-    return [property.minimum ?? 0, fallback, fallback * 2 + 2];
+    return [
+      property.minimum ?? 0,
+      fallback,
+      fallback * 2 + 2,
+    ];
   }
 
   if (property.type === 'array' && isStringList(fallback)) {

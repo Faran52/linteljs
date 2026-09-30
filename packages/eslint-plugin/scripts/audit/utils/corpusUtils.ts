@@ -9,8 +9,23 @@ import {
 
 export type SkipReason = 'compiled' | 'minified' | 'oversized';
 
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', '.next', 'coverage', '.git', '.stryker-tmp']);
-const SCRIPT_EXTENSIONS = new Set(['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx']);
+const SKIP_DIRS = new Set([
+  'node_modules',
+  'dist',
+  'build',
+  '.next',
+  'coverage',
+  '.git',
+  '.stryker-tmp',
+]);
+const SCRIPT_EXTENSIONS = new Set([
+  '.cjs',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.ts',
+  '.tsx',
+]);
 
 // Above these sit bundled `.d.ts` blobs and minified output that cost seconds to parse and say nothing new.
 const MAX_BYTES = 512 * 1024;

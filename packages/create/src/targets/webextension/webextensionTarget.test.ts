@@ -42,7 +42,11 @@ describe('the webextension record', () => {
 
   it('imports the mark stylesheet only where the popup draws the mark', () => {
     expect(recordFor({ surfaces: ['popup'] }).starterStyles)
-      .toEqual(['./styles/tokens.css', './styles/base.css', './lib/mark/mark.css']);
+      .toEqual([
+        './styles/tokens.css',
+        './styles/base.css',
+        './lib/mark/mark.css',
+      ]);
     expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(['./styles/tokens.css', './styles/base.css']);
   });
 });
@@ -128,7 +132,11 @@ describe('the surfaces axis', () => {
   it('excludes both entry shells and the record no page reads, and covers the panel body', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
 
-    expect(record.coverageExclude).toEqual(['src/config/linteljs.ts', 'src/devtools/index.ts', 'src/panel/index.ts']);
+    expect(record.coverageExclude).toEqual([
+      'src/config/linteljs.ts',
+      'src/devtools/index.ts',
+      'src/panel/index.ts',
+    ]);
     expect(record.starterTests).toContainEqual({
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',
@@ -162,8 +170,16 @@ describe('the surfaces axis', () => {
   });
 
   it.each<[string, Surface[], boolean]>([
-    ['a devtools panel', ['devtools-panel'], true],
-    ['a background alone', ['background'], false],
+    [
+      'a devtools panel',
+      ['devtools-panel'],
+      true,
+    ],
+    [
+      'a background alone',
+      ['background'],
+      false,
+    ],
   ])('writes no popup, mark or popup page for %s', (_label, surfaces, html) => {
     const record = recordFor({ surfaces });
     const written = [...record.starterFiles, ...record.starterTests]

@@ -19,7 +19,11 @@ export const buildNaming = (naming?: NamingMap, folderNaming?: NamingMap): Linte
 
   if (naming) {
     // `useThing.test.ts` is judged on `useThing`.
-    rules['check-file/filename-naming-convention'] = ['error', naming, { ignoreMiddleExtensions: true }];
+    rules['check-file/filename-naming-convention'] = [
+      'error',
+      naming,
+      { ignoreMiddleExtensions: true },
+    ];
   }
 
   if (folderNaming) {

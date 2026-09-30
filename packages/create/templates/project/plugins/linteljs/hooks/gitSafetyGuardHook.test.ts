@@ -431,7 +431,11 @@ describe('gitSafetyGuardHook.ts', () => {
       expect(runHook('gitSafetyGuardHook.ts', commandPayload('cmd /c "git status', tool))).toMatch(UNREADABLE);
     });
 
-    it.each(['cmd /c git status', 'cmd', 'cmd /c "echo git stash"'])('clears %s', (command) => {
+    it.each([
+      'cmd /c git status',
+      'cmd',
+      'cmd /c "echo git stash"',
+    ])('clears %s', (command) => {
       expect(runHook('gitSafetyGuardHook.ts', commandPayload(command, tool))).toBeUndefined();
     });
   });

@@ -72,12 +72,18 @@ export const versionOf = async (pm: PackageManager): Promise<string> => {
 // A flag a target never asks for is refused, so those go only when set.
 export const answerFlags = (answers: Answers): string[] => {
   return [
-    '--target', answers.target,
-    '--testing', answers.testing,
-    '--type-safety', answers.typeSafety,
-    '--libraries', answers.libraries.join(','),
-    '--agents', answers.agents.join(','),
-    '--plugins', answers.plugins.join(','),
+    '--target',
+    answers.target,
+    '--testing',
+    answers.testing,
+    '--type-safety',
+    answers.typeSafety,
+    '--libraries',
+    answers.libraries.join(','),
+    '--agents',
+    answers.agents.join(','),
+    '--plugins',
+    answers.plugins.join(','),
     ...(answers.target === 'webextension' ? ['--browser', answers.browser] : []),
     ...(answers.hostedFramework === undefined ? [] : ['--hosted', answers.hostedFramework]),
     ...(answers.surfaces === undefined ? [] : ['--surfaces', answers.surfaces.join(',')]),
@@ -98,7 +104,11 @@ export const createProject = async (root: string, name: string, answers: Answers
   const agent = agentOf(pm, await versionOf(pm));
 
   return oneAtATime(pm, async () => {
-    return run('node', [registry.cliBin, name, ...answerFlags(answers)], root, agent);
+    return run('node', [
+      registry.cliBin,
+      name,
+      ...answerFlags(answers),
+    ], root, agent);
   });
 };
 

@@ -91,7 +91,11 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
     });
   const hasRtkQuery = dataLayers.includes('rtk-query');
   const rtkQuery = hasRtkQuery
-    ? ['index', 'contactEndpoints', 'contactHooks']
+    ? [
+        'index',
+        'contactEndpoints',
+        'contactHooks',
+      ]
         .map((stem): GateRow => {
           return [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
             form: ANSWERED,

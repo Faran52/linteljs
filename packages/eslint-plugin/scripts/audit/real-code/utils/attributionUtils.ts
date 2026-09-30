@@ -43,7 +43,11 @@ const ORDERED_RULES = [
   'union-newline',
 ];
 
-const MOVE_RULES = [...ORDERED_RULES, 'interface-order', 'sort-hook-dependencies'];
+const MOVE_RULES = [
+  ...ORDERED_RULES,
+  'interface-order',
+  'sort-hook-dependencies',
+];
 
 const attributeTokens = (
   context: AuditContext,
@@ -232,7 +236,15 @@ export const narrow = (
       .join('\n')}\n`;
   };
 
-  for (const pad of [0, 1, 2, 4, 8, 16, 32]) {
+  for (const pad of [
+    0,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+  ]) {
     if (evaluate(context, slice(pad), name, finding.rules).findings
       .some((candidate) => {
         return candidate.category === finding.category;
@@ -241,10 +253,12 @@ export const narrow = (
     }
   }
 
-  return [`${lines
-    .slice(Math.max(0, first - 3), Math.min(lines.length, last + 4))
-    .join('\n')}\n`,
-  'changed hunk, could not narrow'];
+  return [
+    `${lines
+      .slice(Math.max(0, first - 3), Math.min(lines.length, last + 4))
+      .join('\n')}\n`,
+    'changed hunk, could not narrow',
+  ];
 };
 
 export const attribute = (

@@ -55,7 +55,11 @@ export const arrayNewline = createRule('array-newline', {
         node,
         messageId: 'elementsOnNewline',
         * fix(fixer) {
-          for (const [before, after, indent] of onOneLine) {
+          for (const [
+            before,
+            after,
+            indent,
+          ] of onOneLine) {
             yield* spliceOntoNewline(fixer, before, after, indent, eol);
           }
         },

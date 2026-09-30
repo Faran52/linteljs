@@ -67,7 +67,11 @@ describe('frameworkRouteFiles', () => {
       form,
     });
 
-    expect(files).toEqual([...PAGES, 'src/routes.ts with-form', 'src/routes/contact.tsx react-router-framework']);
+    expect(files).toEqual([
+      ...PAGES,
+      'src/routes.ts with-form',
+      'src/routes/contact.tsx react-router-framework',
+    ]);
   });
 });
 

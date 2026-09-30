@@ -27,7 +27,13 @@ const isListedTests = (value: unknown): value is ListedTest[] => {
 };
 
 export const listTests = (cwd: string): string[] => {
-  const listed: unknown = JSON.parse(run('pnpm', ['exec', 'vitest', 'list', '--filesOnly', '--json'], cwd));
+  const listed: unknown = JSON.parse(run('pnpm', [
+    'exec',
+    'vitest',
+    'list',
+    '--filesOnly',
+    '--json',
+  ], cwd));
 
   if (!isListedTests(listed)) {
     throw new Error('vitest list answered something other than a list of files');

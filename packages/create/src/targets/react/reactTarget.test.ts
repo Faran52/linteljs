@@ -75,7 +75,11 @@ describe('reactTarget', () => {
         return file.variant;
       });
 
-    expect(appVariants).toEqual([undefined, 'react-router', 'tanstack-router']);
+    expect(appVariants).toEqual([
+      undefined,
+      'react-router',
+      'tanstack-router',
+    ]);
   });
 
   it('ships the mocking layer only when msw was answered, and picks the handlers by whether a form was', () => {
@@ -155,7 +159,11 @@ const FRAMEWORK_WITH_FORM: readonly Condition[] = [{
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
-  ['src/main.tsx', [{ router: [undefined, 'react-router', 'tanstack-router'] }]],
+  ['src/main.tsx', [{ router: [
+    undefined,
+    'react-router',
+    'tanstack-router',
+  ] }]],
   ['src/App.tsx', NO_ROUTER],
   ['src/App.tsx@react-router', [{ router: ['react-router'] }]],
   ['src/App.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
@@ -204,7 +212,11 @@ const GATES: GateRow[] = [
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [undefined, 'zustand', 'tanstack-store'] }]],
+  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [
+    undefined,
+    'zustand',
+    'tanstack-store',
+  ] }]],
   ['src/lib/providers/store/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
   ['src/lib/store/counter/counterStore.ts@zustand', [{ store: ['zustand'] }]],
   ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],

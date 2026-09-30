@@ -3,7 +3,11 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: ['packages/*'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/*.e2e.test.ts'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/*.e2e.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       include: [

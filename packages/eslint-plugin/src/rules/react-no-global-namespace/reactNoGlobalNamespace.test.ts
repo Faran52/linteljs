@@ -32,7 +32,11 @@ function build() {
       filename: 'globals.ts',
     },
 
-    ...['props.d.ts', 'props.d.cts', 'props.d.mts']
+    ...[
+      'props.d.ts',
+      'props.d.cts',
+      'props.d.mts',
+    ]
       .map((filename) => {
         return {
           code: 'interface Props { children: React.ReactNode }',

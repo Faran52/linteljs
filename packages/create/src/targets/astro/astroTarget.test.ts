@@ -95,10 +95,26 @@ describe('the hosted framework axis', () => {
   });
 
   it.each<[HostedFramework, string, string]>([
-    ['react', 'src/**/*.tsx', '@astrojs/react'],
-    ['vue', 'src/**/*.vue', '@astrojs/vue'],
-    ['svelte', 'src/**/*.svelte', '@astrojs/svelte'],
-    ['solid', 'src/**/*.tsx', '@astrojs/solid-js'],
+    [
+      'react',
+      'src/**/*.tsx',
+      '@astrojs/react',
+    ],
+    [
+      'vue',
+      'src/**/*.vue',
+      '@astrojs/vue',
+    ],
+    [
+      'svelte',
+      'src/**/*.svelte',
+      '@astrojs/svelte',
+    ],
+    [
+      'solid',
+      'src/**/*.tsx',
+      '@astrojs/solid-js',
+    ],
   ])('composes %s as an island', (hostedFramework, componentGlob, integration) => {
     const record = recordFor({ hostedFramework });
 

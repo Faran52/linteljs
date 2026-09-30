@@ -31,7 +31,11 @@ describe('html', () => {
   });
 
   it('survives composition with the type-aware layer', async () => {
-    await expect(ruleIdsFor([...base(), ...typescript(), ...html()], NO_ALT, 'index.html'))
+    await expect(ruleIdsFor([
+      ...base(),
+      ...typescript(),
+      ...html(),
+    ], NO_ALT, 'index.html'))
       .resolves.toContain('@html-eslint/require-img-alt');
   });
 

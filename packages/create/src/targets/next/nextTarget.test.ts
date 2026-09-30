@@ -82,7 +82,11 @@ const GATES: GateRow[] = [
   ['src/lib/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx', NOT_TANSTACK_QUERY],
   ['src/lib/providers/data/DataProvider.tsx@tanstack-query', TANSTACK_QUERY],
-  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [undefined, 'zustand', 'tanstack-store'] }]],
+  ['src/lib/providers/store/StoreProvider.tsx', [{ store: [
+    undefined,
+    'zustand',
+    'tanstack-store',
+  ] }]],
   ['src/lib/providers/store/StoreProvider.tsx@redux-toolkit', [{ store: ['redux-toolkit'] }]],
   ['src/lib/store/counter/counterStore.ts@zustand', [{ store: ['zustand'] }]],
   ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],

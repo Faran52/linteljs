@@ -22,7 +22,11 @@ import base from '../../layers/base/baseLayer';
 
 import stylex from './stylexLibrary';
 
-const layer = [...base(), ...react(), ...stylex()];
+const layer = [
+  ...base(),
+  ...react(),
+  ...stylex(),
+];
 
 const IMPORT = "import * as stylex from '@stylexjs/stylex';";
 
@@ -91,7 +95,12 @@ describe('stylex', () => {
     await expect(fixed(moduleWith("borderBlockEnd: '1px solid red'"))).resolves.toBeUndefined();
   });
 
-  it.each(['animation', 'background', 'borderBlock', 'borderInline'])('says why %s is refused', async (prop) => {
+  it.each([
+    'animation',
+    'background',
+    'borderBlock',
+    'borderInline',
+  ])('says why %s is refused', async (prop) => {
     const messages = await lint(moduleWith(`${prop}: 'var(--card)'`));
 
     expect(messages).toContain('@stylexjs/valid-styles: StyleX drops this shorthand with no error. Use the longhands.');
@@ -152,7 +161,11 @@ describe('stylex', () => {
   });
 
   it.each([
-    ['@stylexjs/valid-shorthands', moduleWith("padding: '1px 2px'"), 'src/components/card/styles.ts'],
+    [
+      '@stylexjs/valid-shorthands',
+      moduleWith("padding: '1px 2px'"),
+      'src/components/card/styles.ts',
+    ],
     [
       '@stylexjs/no-unused',
       `${IMPORT}\n\nconst sheet = stylex.create({ card: { color: 'red' }, unused: { color: 'blue' } });\n\n`
@@ -221,17 +234,33 @@ describe('stylex', () => {
   });
 
   it.each([
-    ['vue', vue, 'StyledCard.vue'],
-    ['svelte', svelte, 'StyledCard.svelte'],
+    [
+      'vue',
+      vue,
+      'StyledCard.vue',
+    ],
+    [
+      'svelte',
+      svelte,
+      'StyledCard.svelte',
+    ],
   ])('reaches the script block of a %s component', async (_label, framework, file) => {
-    await expect(ruleIdsForFile([...base(), ...framework(), ...stylex()], join(SFC_FIXTURES, file)))
+    await expect(ruleIdsForFile([
+      ...base(),
+      ...framework(),
+      ...stylex(),
+    ], join(SFC_FIXTURES, file)))
       .resolves.toContain('@stylexjs/valid-styles');
   });
 
   it('reaches the frontmatter of an astro page', async () => {
     const code = `---\n${moduleWith("background: 'var(--card)'")}---\n\n<div>x</div>\n`;
 
-    await expect(ruleIdsFor([...base(), ...stylex(), ...astro()], code, 'src/pages/index.astro'))
+    await expect(ruleIdsFor([
+      ...base(),
+      ...stylex(),
+      ...astro(),
+    ], code, 'src/pages/index.astro'))
       .resolves.toContain('@stylexjs/valid-styles');
   });
 });

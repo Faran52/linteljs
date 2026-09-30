@@ -154,10 +154,23 @@ export const nuxtTarget: TargetRecord = {
   typecheck: 'nuxt typecheck',
   prepare: 'nuxt prepare',
   testDevDependencies: PARTS.vue.testDevDependencies,
-  dependencies: ['nuxt', ...PARTS.vue.dependencies, 'vue-router'],
+  dependencies: [
+    'nuxt',
+    ...PARTS.vue.dependencies,
+    'vue-router',
+  ],
   // yarn installs no peer the project does not name.
-  devDependencies: [...PARTS.vue.devDependencies, '@vitejs/plugin-vue', 'rolldown', 'vite'],
+  devDependencies: [
+    ...PARTS.vue.devDependencies,
+    '@vitejs/plugin-vue',
+    'rolldown',
+    'vite',
+  ],
   // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
-  allowBuilds: ['vue-demi', 'better-sqlite3', 'esbuild'],
+  allowBuilds: [
+    'vue-demi',
+    'better-sqlite3',
+    'esbuild',
+  ],
   stateRules: ['vue-reactivity.md'],
 };

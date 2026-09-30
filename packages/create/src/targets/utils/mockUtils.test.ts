@@ -32,11 +32,19 @@ describe('mockFiles', () => {
   });
 
   it.each<[string, Partial<Answers>, string]>([
-    ['no form', { mocking: 'msw' }, 'base'],
-    ['a form', {
-      mocking: 'msw',
-      form: 'tanstack-form',
-    }, 'with-form'],
+    [
+      'no form',
+      { mocking: 'msw' },
+      'base',
+    ],
+    [
+      'a form',
+      {
+        mocking: 'msw',
+        form: 'tanstack-form',
+      },
+      'with-form',
+    ],
   ])('writes the worker, the node server and the handlers for %s under msw', (_case, overrides, handlers) => {
     expect(pickedBy(mockFiles(true), overrides)).toEqual([
       'src/lib/utils/fetchExtendedUtils.ts base',
@@ -83,18 +91,30 @@ describe('mockFiles', () => {
 
 describe('mockTests', () => {
   it.each<[string, Partial<Answers>, string[]]>([
-    ['no mocking', {}, ['src/lib/utils/fetchExtendedUtils.test.ts base']],
-    ['msw and no form', { mocking: 'msw' }, [
-      'src/lib/utils/fetchExtendedUtils.test.ts base',
-      '__mocks__/msw/handlers.test.ts base',
-    ]],
-    ['msw and a form', {
-      mocking: 'msw',
-      form: 'tanstack-form',
-    }, [
-      'src/lib/utils/fetchExtendedUtils.test.ts base',
-      '__mocks__/msw/handlers.test.ts with-form',
-    ]],
+    [
+      'no mocking',
+      {},
+      ['src/lib/utils/fetchExtendedUtils.test.ts base'],
+    ],
+    [
+      'msw and no form',
+      { mocking: 'msw' },
+      [
+        'src/lib/utils/fetchExtendedUtils.test.ts base',
+        '__mocks__/msw/handlers.test.ts base',
+      ],
+    ],
+    [
+      'msw and a form',
+      {
+        mocking: 'msw',
+        form: 'tanstack-form',
+      },
+      [
+        'src/lib/utils/fetchExtendedUtils.test.ts base',
+        '__mocks__/msw/handlers.test.ts with-form',
+      ],
+    ],
   ])('follows the files it covers under %s', (_case, overrides, picked) => {
     expect(pickedBy(mockTests(true), overrides)).toEqual(picked);
   });

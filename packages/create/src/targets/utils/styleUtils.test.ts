@@ -22,13 +22,38 @@ const RENAMED: ComponentPaths = {
 
 describe('componentStyles', () => {
   it.each<[string, Partial<Answers>, string[]]>([
-    ['no answers', {}, ['AppHeader', 'Mark']],
-    ['a store', { store: 'zustand' }, ['AppHeader', 'Mark', 'Button']],
-    ['a form', { form: 'tanstack-form' }, ['AppHeader', 'Mark', 'Button', 'TextInput']],
-    ['stylex', {
-      styling: 'stylex',
-      form: 'tanstack-form',
-    }, []],
+    [
+      'no answers',
+      {},
+      ['AppHeader', 'Mark'],
+    ],
+    [
+      'a store',
+      { store: 'zustand' },
+      [
+        'AppHeader',
+        'Mark',
+        'Button',
+      ],
+    ],
+    [
+      'a form',
+      { form: 'tanstack-form' },
+      [
+        'AppHeader',
+        'Mark',
+        'Button',
+        'TextInput',
+      ],
+    ],
+    [
+      'stylex',
+      {
+        styling: 'stylex',
+        form: 'tanstack-form',
+      },
+      [],
+    ],
   ])('ships the stylesheets of the components written under %s', (_case, overrides, components) => {
     const stylesheetNames = pickedBy(componentStyles(), overrides)
       .map((picked) => {

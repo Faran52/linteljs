@@ -23,7 +23,11 @@ interface BuiltPlugin {
   rules: Record<string, object>;
 }
 
-const EXPECTED = ['import-newlines', 'prefer-arrow-functions', 'export-specifier-newline'];
+const EXPECTED = [
+  'import-newlines',
+  'prefer-arrow-functions',
+  'export-specifier-newline',
+];
 
 const FIXTURE = [
   "import { alpha, bravo, charlie } from 'mod';",

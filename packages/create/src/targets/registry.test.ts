@@ -71,7 +71,12 @@ const caseFor = (
     ...(hostedFramework === undefined ? {} : { hostedFramework }),
     ...(surface === undefined ? {} : { surfaces: [surface] }),
   };
-  const label = [base.target, browser, hostedFramework, surface]
+  const label = [
+    base.target,
+    browser,
+    hostedFramework,
+    surface,
+  ]
     .filter(Boolean)
     .join(' on ');
 
@@ -170,18 +175,70 @@ describe('what each target offers', () => {
   it.each<[TargetId, string[] | undefined, string[] | undefined]>([
     [
       'react',
-      ['zustand', 'redux-toolkit', 'tanstack-store'],
-      ['react-router', 'react-router-framework', 'tanstack-router'],
+      [
+        'zustand',
+        'redux-toolkit',
+        'tanstack-store',
+      ],
+      [
+        'react-router',
+        'react-router-framework',
+        'tanstack-router',
+      ],
     ],
-    ['next', ['zustand', 'redux-toolkit', 'tanstack-store'], undefined],
-    ['vue', ['pinia', 'tanstack-store'], undefined],
-    ['nuxt', ['pinia', 'tanstack-store'], undefined],
-    ['svelte', ['tanstack-store'], undefined],
-    ['solid', ['tanstack-store'], undefined],
-    ['angular', ['ngrx-signals', 'ngrx-store'], undefined],
-    ['astro', ['nanostores'], undefined],
-    ['webextension', undefined, undefined],
-    ['react-native', ['zustand', 'redux-toolkit', 'tanstack-store'], undefined],
+    [
+      'next',
+      [
+        'zustand',
+        'redux-toolkit',
+        'tanstack-store',
+      ],
+      undefined,
+    ],
+    [
+      'vue',
+      ['pinia', 'tanstack-store'],
+      undefined,
+    ],
+    [
+      'nuxt',
+      ['pinia', 'tanstack-store'],
+      undefined,
+    ],
+    [
+      'svelte',
+      ['tanstack-store'],
+      undefined,
+    ],
+    [
+      'solid',
+      ['tanstack-store'],
+      undefined,
+    ],
+    [
+      'angular',
+      ['ngrx-signals', 'ngrx-store'],
+      undefined,
+    ],
+    [
+      'astro',
+      ['nanostores'],
+      undefined,
+    ],
+    [
+      'webextension',
+      undefined,
+      undefined,
+    ],
+    [
+      'react-native',
+      [
+        'zustand',
+        'redux-toolkit',
+        'tanstack-store',
+      ],
+      undefined,
+    ],
   ])('offers %s its own stores and routers', (target, stores, routers) => {
     const record = recordFor(target);
 
@@ -189,42 +246,87 @@ describe('what each target offers', () => {
   });
 
   it.each<[string, Answers, string[], string[] | undefined]>([
-    ['react', {
-      ...DEFAULT_ANSWERS,
-      target: 'react',
-    }, ['react-state.md', 'hooks-order.md'], undefined],
-    ['next', {
-      ...DEFAULT_ANSWERS,
-      target: 'next',
-    }, ['react-state.md', 'hooks-order.md'], undefined],
-    ['vue', {
-      ...DEFAULT_ANSWERS,
-      target: 'vue',
-    }, ['vue-reactivity.md'], undefined],
-    ['nuxt', {
-      ...DEFAULT_ANSWERS,
-      target: 'nuxt',
-    }, ['vue-reactivity.md'], undefined],
-    ['svelte', {
-      ...DEFAULT_ANSWERS,
-      target: 'svelte',
-    }, ['svelte-reactivity.md'], ['browser']],
-    ['solid', {
-      ...DEFAULT_ANSWERS,
-      target: 'solid',
-    }, ['solid-reactivity.md'], ['development', 'browser']],
-    ['angular', {
-      ...DEFAULT_ANSWERS,
-      target: 'angular',
-    }, [], undefined],
-    ['astro', {
-      ...DEFAULT_ANSWERS,
-      target: 'astro',
-    }, [], undefined],
-    ['react-native', {
-      ...DEFAULT_ANSWERS,
-      target: 'react-native',
-    }, ['react-state.md', 'hooks-order.md'], undefined],
+    [
+      'react',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'react',
+      },
+      ['react-state.md', 'hooks-order.md'],
+      undefined,
+    ],
+    [
+      'next',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'next',
+      },
+      ['react-state.md', 'hooks-order.md'],
+      undefined,
+    ],
+    [
+      'vue',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'vue',
+      },
+      ['vue-reactivity.md'],
+      undefined,
+    ],
+    [
+      'nuxt',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'nuxt',
+      },
+      ['vue-reactivity.md'],
+      undefined,
+    ],
+    [
+      'svelte',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'svelte',
+      },
+      ['svelte-reactivity.md'],
+      ['browser'],
+    ],
+    [
+      'solid',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'solid',
+      },
+      ['solid-reactivity.md'],
+      ['development', 'browser'],
+    ],
+    [
+      'angular',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'angular',
+      },
+      [],
+      undefined,
+    ],
+    [
+      'astro',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'astro',
+      },
+      [],
+      undefined,
+    ],
+    [
+      'react-native',
+      {
+        ...DEFAULT_ANSWERS,
+        target: 'react-native',
+      },
+      ['react-state.md', 'hooks-order.md'],
+      undefined,
+    ],
     ...HOSTED_FRAMEWORKS
       .flatMap((hostedFramework): [string, Answers, string[], string[] | undefined][] => {
         const rules = {
@@ -242,11 +344,16 @@ describe('what each target offers', () => {
 
         return (['astro', 'webextension'] as const)
           .map((target): [string, Answers, string[], string[] | undefined] => {
-            return [`${target} hosting ${hostedFramework}`, {
-              ...DEFAULT_ANSWERS,
-              target,
-              hostedFramework,
-            }, rules, conditions];
+            return [
+              `${target} hosting ${hostedFramework}`,
+              {
+                ...DEFAULT_ANSWERS,
+                target,
+                hostedFramework,
+              },
+              rules,
+              conditions,
+            ];
           });
       }),
   ])('holds %s to its own state rules and test conditions', (_label, answers, rules, conditions) => {
@@ -266,7 +373,11 @@ describe('targetFor', () => {
   });
 });
 
-const REACT_PLUGINS = ['@eslint-react/eslint-plugin', 'eslint-plugin-react-hooks', 'eslint-plugin-jsx-a11y-x'];
+const REACT_PLUGINS = [
+  '@eslint-react/eslint-plugin',
+  'eslint-plugin-react-hooks',
+  'eslint-plugin-jsx-a11y-x',
+];
 
 const LAYER_PLUGINS: Record<Framework, string[]> = {
   'react': REACT_PLUGINS,
@@ -341,6 +452,11 @@ describe('the emitted naming map on a utils file', () => {
       await findingsOn(answers, `src/lib/utils/${bare}.ts`),
     ];
 
-    expect(findings).toEqual([[], [], [], ['check-file/filename-naming-convention']]);
+    expect(findings).toEqual([
+      [],
+      [],
+      [],
+      ['check-file/filename-naming-convention'],
+    ]);
   });
 });

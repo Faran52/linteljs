@@ -55,7 +55,11 @@ describe('buildTsconfig', () => {
       compilerOptions: {
         rootDir: '.',
         target: 'esnext',
-        lib: ['dom', 'dom.iterable', 'esnext'],
+        lib: [
+          'dom',
+          'dom.iterable',
+          'esnext',
+        ],
         useDefineForClassFields: true,
         jsx: 'react-jsx',
         module: 'esnext',
@@ -81,7 +85,11 @@ describe('buildTsconfig', () => {
         skipLibCheck: true,
         esModuleInterop: true,
         forceConsistentCasingInFileNames: true,
-        types: ['node', 'vite/client', 'vitest/globals'],
+        types: [
+          'node',
+          'vite/client',
+          'vitest/globals',
+        ],
         paths: {
           '@components/*': ['./src/components/*'],
           '@ui/*': ['./src/components/ui/*'],
@@ -95,8 +103,17 @@ describe('buildTsconfig', () => {
           '@mocks/*': ['./__mocks__/*'],
         },
       },
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
-      exclude: ['node_modules', 'dist', 'build', 'coverage'],
+      include: [
+        '**/*.ts',
+        '**/*.tsx',
+        '**/*.mts',
+      ],
+      exclude: [
+        'node_modules',
+        'dist',
+        'build',
+        'coverage',
+      ],
     };
 
     expect(buildTsconfig(answersFor({ target: 'react' }))).toStrictEqual(expected);
@@ -109,7 +126,11 @@ describe('buildTsconfig', () => {
       styling: 'tailwind',
     })).include;
 
-    expect(include).toEqual(['**/*.ts', '**/*.tsx', '**/*.mts']);
+    expect(include).toEqual([
+      '**/*.ts',
+      '**/*.tsx',
+      '**/*.mts',
+    ]);
   });
 
   it('leaves unused-locals to the unused-imports rule', () => {
@@ -127,57 +148,154 @@ describe('buildTsconfig', () => {
   });
 
   it.each<[string, AnswerOverrides, TypesSource]>([
-    ['react', { target: 'react' }, {
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
-      jsx: 'react-jsx',
-    }],
-    ['react in framework mode', {
-      target: 'react',
-      router: 'react-router-framework',
-    }, {
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '.react-router/types/**/*'],
-      jsx: 'react-jsx',
-    }],
-    ['next', { target: 'next' }, {
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts', 'next-env.d.ts', '.next/types/**/*.ts', '.next/dev/types/**/*.ts'],
-      jsx: 'react-jsx',
-    }],
-    ['vue', { target: 'vue' }, {
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.vue'],
-      jsx: 'preserve',
-    }],
-    ['nuxt', { target: 'nuxt' }, {
-      extends: './.nuxt/tsconfig.app.json',
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.vue', '.nuxt/nuxt.d.ts'],
-      jsx: 'preserve',
-    }],
-    ['svelte', { target: 'svelte' }, {
-      extends: './.svelte-kit/tsconfig.json',
-      include: [
-        '**/*.ts', '**/*.tsx', '**/*.mts',
-        '**/*.svelte',
-        '.svelte-kit/ambient.d.ts',
-        '.svelte-kit/env.d.ts',
-        '.svelte-kit/non-ambient.d.ts',
-        '.svelte-kit/types/**/$types.d.ts',
-      ],
-    }],
-    ['solid', { target: 'solid' }, {
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts'],
-      jsx: 'preserve',
-      jsxImportSource: 'solid-js',
-    }],
-    ['angular', { target: 'angular' }, { include: ['**/*.ts', '**/*.tsx', '**/*.mts'] }],
-    ['astro', { target: 'astro' }, {
-      extends: 'astro/tsconfigs/strict',
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '.astro/types.d.ts', '**/*.astro'],
-    }],
-    ['webextension', { target: 'webextension' }, { include: ['**/*.ts', '**/*.tsx', '**/*.mts'] }],
-    ['react-native', { target: 'react-native' }, {
-      extends: 'expo/tsconfig.base',
-      include: ['**/*.ts', '**/*.tsx', '**/*.mts', '.expo/types/**/*.ts', 'expo-env.d.ts'],
-      jsx: 'react-jsx',
-    }],
+    [
+      'react',
+      { target: 'react' },
+      {
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+        ],
+        jsx: 'react-jsx',
+      },
+    ],
+    [
+      'react in framework mode',
+      {
+        target: 'react',
+        router: 'react-router-framework',
+      },
+      {
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          '.react-router/types/**/*',
+        ],
+        jsx: 'react-jsx',
+      },
+    ],
+    [
+      'next',
+      { target: 'next' },
+      {
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          'next-env.d.ts',
+          '.next/types/**/*.ts',
+          '.next/dev/types/**/*.ts',
+        ],
+        jsx: 'react-jsx',
+      },
+    ],
+    [
+      'vue',
+      { target: 'vue' },
+      {
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          '**/*.vue',
+        ],
+        jsx: 'preserve',
+      },
+    ],
+    [
+      'nuxt',
+      { target: 'nuxt' },
+      {
+        extends: './.nuxt/tsconfig.app.json',
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          '**/*.vue',
+          '.nuxt/nuxt.d.ts',
+        ],
+        jsx: 'preserve',
+      },
+    ],
+    [
+      'svelte',
+      { target: 'svelte' },
+      {
+        extends: './.svelte-kit/tsconfig.json',
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          '**/*.svelte',
+          '.svelte-kit/ambient.d.ts',
+          '.svelte-kit/env.d.ts',
+          '.svelte-kit/non-ambient.d.ts',
+          '.svelte-kit/types/**/$types.d.ts',
+        ],
+      },
+    ],
+    [
+      'solid',
+      { target: 'solid' },
+      {
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+        ],
+        jsx: 'preserve',
+        jsxImportSource: 'solid-js',
+      },
+    ],
+    [
+      'angular',
+      { target: 'angular' },
+      { include: [
+        '**/*.ts',
+        '**/*.tsx',
+        '**/*.mts',
+      ] },
+    ],
+    [
+      'astro',
+      { target: 'astro' },
+      {
+        extends: 'astro/tsconfigs/strict',
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          '.astro/types.d.ts',
+          '**/*.astro',
+        ],
+      },
+    ],
+    [
+      'webextension',
+      { target: 'webextension' },
+      { include: [
+        '**/*.ts',
+        '**/*.tsx',
+        '**/*.mts',
+      ] },
+    ],
+    [
+      'react-native',
+      { target: 'react-native' },
+      {
+        extends: 'expo/tsconfig.base',
+        include: [
+          '**/*.ts',
+          '**/*.tsx',
+          '**/*.mts',
+          '.expo/types/**/*.ts',
+          'expo-env.d.ts',
+        ],
+        jsx: 'react-jsx',
+      },
+    ],
   ])('reads %s its own way', (_label, overrides, expected) => {
     const {
       extends: base,
@@ -213,15 +331,40 @@ describe('buildTsconfig', () => {
   });
 
   it.each<[TargetId, string[]]>([
-    ['react', ['node', 'vite/client', 'vitest/globals']],
+    ['react', [
+      'node',
+      'vite/client',
+      'vitest/globals',
+    ]],
     ['next', ['node', 'vitest/globals']],
-    ['vue', ['node', 'vite/client', 'vitest/globals']],
+    ['vue', [
+      'node',
+      'vite/client',
+      'vitest/globals',
+    ]],
     ['nuxt', ['node', 'vitest/globals']],
-    ['svelte', ['node', 'vite/client', 'vitest/globals']],
-    ['solid', ['node', 'vite/client', 'vitest/globals']],
+    ['svelte', [
+      'node',
+      'vite/client',
+      'vitest/globals',
+    ]],
+    ['solid', [
+      'node',
+      'vite/client',
+      'vitest/globals',
+    ]],
     ['angular', ['node', 'vitest/globals']],
-    ['astro', ['node', 'vitest/globals', 'astro/client']],
-    ['webextension', ['node', 'vite/client', 'vitest/globals', 'chrome']],
+    ['astro', [
+      'node',
+      'vitest/globals',
+      'astro/client',
+    ]],
+    ['webextension', [
+      'node',
+      'vite/client',
+      'vitest/globals',
+      'chrome',
+    ]],
     ['react-native', ['node', 'vitest/globals']],
   ])('declares the ambient types %s builds against', (target, types) => {
     expect(buildTsconfig(answersFor({ target })).compilerOptions.types).toEqual(types);
@@ -235,8 +378,16 @@ describe('buildTsconfig', () => {
       return [allowImportingTsExtensions, rewriteRelativeImportExtensions];
     };
 
-    expect([optionsOf('react'), optionsOf('vue'), optionsOf('angular')])
-      .toEqual([[true, undefined], [true, undefined], [false, true]]);
+    expect([
+      optionsOf('react'),
+      optionsOf('vue'),
+      optionsOf('angular'),
+    ])
+      .toEqual([
+        [true, undefined],
+        [true, undefined],
+        [false, true],
+      ]);
   });
 
   it('merges the generated route types into the source tree for framework mode', () => {

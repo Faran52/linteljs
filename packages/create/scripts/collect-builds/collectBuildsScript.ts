@@ -45,7 +45,12 @@ const collectOne = async (
   mkdirSync(root, { recursive: true });
 
   // `--no-install`, so the manifests exist before the allowance is stripped.
-  const flags = [registry.cliBin, name, ...answerFlags(answers), '--no-install'];
+  const flags = [
+    registry.cliBin,
+    name,
+    ...answerFlags(answers),
+    '--no-install',
+  ];
   const created = await run(execPath, flags, root, registry, agent);
 
   try {

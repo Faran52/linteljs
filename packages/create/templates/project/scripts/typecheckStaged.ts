@@ -40,7 +40,11 @@ let output = '';
 try {
   execSync(typecheckCommand, {
     encoding: 'utf8',
-    stdio: ['pipe', 'pipe', 'pipe'],
+    stdio: [
+      'pipe',
+      'pipe',
+      'pipe',
+    ],
   });
 
   exit(0);
