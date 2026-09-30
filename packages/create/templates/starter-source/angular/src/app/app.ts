@@ -8,13 +8,12 @@ import { NAME } from '../config/linteljs';
 @Component({
   imports: [RouterOutlet, AppHeader],
   selector: 'app-root',
-  styleUrl: './app.css',
   templateUrl: './app.html',
 })
 export class App {
   protected readonly name = NAME;
 
-  // Angular has no static place for the title: `index.html` is written before the name is known.
+  // The name lives in code, so the title is set here rather than in `index.html`.
   constructor() {
     inject(Title).setTitle(NAME);
   }

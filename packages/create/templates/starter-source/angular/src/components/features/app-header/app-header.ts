@@ -5,7 +5,6 @@ import { PAGES } from '../../../config/routes';
 
 @Component({
   imports: [RouterLink, RouterLinkActive],
-  // No `styleUrl`: the global stylesheet reaches a component's DOM either way.
   selector: 'app-header',
   templateUrl: './app-header.html',
 })

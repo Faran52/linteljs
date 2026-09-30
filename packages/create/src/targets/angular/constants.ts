@@ -7,7 +7,6 @@ export const ALWAYS: readonly string[] = [
   'src/main.ts',
   'src/app/app.ts',
   'src/app/app.html',
-  'src/app/app.css',
   'src/app/app.config.ts',
   'src/app/app.routes.ts',
   'src/app/home/home.ts',
