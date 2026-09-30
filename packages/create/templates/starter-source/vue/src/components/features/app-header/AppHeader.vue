@@ -11,7 +11,6 @@ interface Props {
 
 defineProps<Props>();
 
-// Not `active-class`, which appends: under StyleX the current tab is a different set of atomic classes.
 const route = useRoute();
 </script>
 

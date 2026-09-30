@@ -2,7 +2,6 @@ import { http, HttpResponse } from 'msw';
 
 import { type ContactValues, validateContact } from '../../src/lib/apis/contact/schemas';
 
-// The contact handler lives with the form, since its route exists only where a form does.
 export const handlers = [
   http.get('/api/version', () => {
     return HttpResponse.json({ status: 'ok' });

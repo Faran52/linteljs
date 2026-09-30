@@ -1,4 +1,3 @@
-// Props, so `AppHeader.tsx` varies by router alone and not by the styling answer too.
 interface ElementProps {
   readonly class: string;
 }

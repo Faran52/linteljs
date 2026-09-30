@@ -12,7 +12,7 @@
   const { name }: Props = $props();
 </script>
 
-<!-- Real links, because SvelteKit routes whatever was answered. -->
+<!-- Real links: SvelteKit routes by URL. -->
 <header {...styles.header}>
   <p {...styles.starterLabel}>LintelJS Starter</p>
   <p {...styles.brand}>{name}</p>

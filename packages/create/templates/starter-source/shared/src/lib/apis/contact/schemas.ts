@@ -5,7 +5,6 @@ export interface ContactValues {
 
 export type ContactErrors = Partial<Record<keyof ContactValues, string>>;
 
-// Answering `zod` replaces this file with a schema and nothing else changes.
 export const validateContact = (values: ContactValues): ContactErrors => {
   const errors: ContactErrors = {};
 

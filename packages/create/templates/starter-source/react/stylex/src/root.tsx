@@ -55,6 +55,4 @@ const Root = (): ReactNode => {
   return <Outlet />;
 };
 
-// No `ErrorBoundary`: its props come from typegen output, and typing them by hand needs a banned `: unknown`.
-
 export default Root;

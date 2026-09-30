@@ -23,7 +23,6 @@ const rootRoute = createRootRoute({
   },
 });
 
-// From the route list, not file-based: a generated tree would need a copy per router and form combination.
 const router = createRouter({
   routeTree: rootRoute.addChildren(ROUTES
     .map(({ path, element }) => {

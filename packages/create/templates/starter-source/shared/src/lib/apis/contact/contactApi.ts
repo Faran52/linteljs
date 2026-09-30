@@ -4,7 +4,7 @@ export interface ContactResult {
   status: number;
 }
 
-// Local: a starter that posted somewhere would fail offline, in CI, and on targets with no server.
+// Local: a starter that posted somewhere would fail offline and in CI.
 export const submitContact = async (values: ContactValues): Promise<ContactResult> => {
   const errors = validateContact(values);
 

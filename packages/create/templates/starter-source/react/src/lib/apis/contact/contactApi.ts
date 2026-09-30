@@ -6,7 +6,7 @@ export interface ContactResult {
   status: number;
 }
 
-// Local: a starter that posted somewhere would fail offline, in CI, and on targets with no server.
+// Local: a starter that posted somewhere would fail offline and in CI.
 export const submitContact = async (values: ContactValues): Promise<ContactResult> => {
   const errors = validateContact(values);
 
@@ -17,7 +17,6 @@ export const submitContact = async (values: ContactValues): Promise<ContactResul
   return await Promise.resolve({ status: 200 });
 };
 
-// A hook by contract: the TanStack Query and RTK Query spellings of this file have to be one.
 export const useSubmitContact = (): ((values: ContactValues) => Promise<ContactResult>) => {
   return useCallback(async (values: ContactValues) => {
     return await submitContact(values);

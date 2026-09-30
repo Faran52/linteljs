@@ -2,7 +2,6 @@ interface ElementProps {
   readonly className: string;
 }
 
-// Invalid is a value, not `[aria-invalid="true"]`: StyleX has no attribute selectors.
 export const styles = {
   field: { className: 'field' },
   label: { className: 'label' },

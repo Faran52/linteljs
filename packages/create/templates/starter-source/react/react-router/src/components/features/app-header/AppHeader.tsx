@@ -10,7 +10,6 @@ export interface AppHeaderProps {
   readonly name: string;
 }
 
-// StyleX has no attribute selector, so the active state is a value rather than a match.
 export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
   return (
     <header {...styles.header}>
