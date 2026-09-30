@@ -52,6 +52,42 @@ describe('Contact', () => {
     expect(message).toBe('Enter a valid email address.');
   });
 
+  it('flags only the field that was left', async () => {
+    const harness = await render();
+    const root = await fill(harness, '#email', 'not-an-address');
+
+    const untouched = root.querySelector('#message-error');
+
+    expect(untouched).toBeNull();
+  });
+
+  it('clears an error as soon as the value is valid', async () => {
+    const harness = await render();
+    const root = await fill(harness, '#email', 'not-an-address');
+    const field = root.querySelector<HTMLInputElement>('#email');
+
+    if (field === null) {
+      throw new Error('No email field');
+    }
+
+    field.value = 'someone@example.com';
+    field.dispatchEvent(new Event('input'));
+    await settle(harness);
+
+    const stale = root.querySelector('#email-error');
+
+    expect(stale).toBeNull();
+  });
+
+  it('keeps Send open while a field is still to fill', async () => {
+    const harness = await render();
+    const root = await fill(harness, '#email', 'someone@example.com');
+
+    const disabled = root.querySelector('button')?.disabled;
+
+    expect(disabled).toBe(false);
+  });
+
   it('sends once both fields are valid', async () => {
     const harness = await render();
 

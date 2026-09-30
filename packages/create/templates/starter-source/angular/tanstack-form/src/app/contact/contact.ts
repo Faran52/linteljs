@@ -20,7 +20,8 @@ export class Contact {
       message: '',
     },
     validators: {
-      onBlur: ({ value }) => {
+      // Every change re-runs the rules; a field shows its result only once it is left.
+      onChange: ({ value }) => {
         const found = validateContact(value);
 
         return Object.keys(found).length > 0 ? { fields: found } : undefined;
@@ -40,7 +41,16 @@ export class Contact {
     // Read inline: `errors` is an `any[]`, so naming its first element would be an unsafe assignment.
     const meta = this.state().fieldMeta[name];
 
-    return meta?.errors[0] === undefined ? undefined : String(meta.errors[0]);
+    if (meta === undefined || (!meta.isBlurred && this.state().submissionAttempts === 0)) {
+      return undefined;
+    }
+
+    return meta.errors[0] === undefined ? undefined : String(meta.errors[0]);
+  }
+
+  // Open until a send is tried, which names what is missing; then held until the rules pass.
+  protected canSubmit(): boolean {
+    return this.state().submissionAttempts === 0 || this.state().canSubmit;
   }
 
   protected set(name: keyof ContactValues, value: string): void {
@@ -48,8 +58,16 @@ export class Contact {
   }
 
   protected blur(name: keyof ContactValues): void {
-    // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
-    void Promise.resolve(this.form.validateField(name, 'blur'));
+    this.form
+      .setFieldMeta(name, (prev) => {
+        return {
+          ...prev,
+          isBlurred: true,
+        };
+      });
+    // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
+    // wrapping settles which for the promise rules.
+    void Promise.resolve(this.form.validateField(name, 'change'));
   }
 
   protected send(event: Event): void {

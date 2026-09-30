@@ -28,6 +28,48 @@ describe('ContactView', () => {
     expect(message).toBe('Enter a valid email address.');
   });
 
+  it('flags only the field that was left', async () => {
+    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+
+    await fill(view, 'input', 'not-an-address');
+    await nextTick();
+
+    const untouched = view
+      .find('#message-error')
+      .exists();
+
+    expect(untouched).toBe(false);
+  });
+
+  it('clears an error as soon as the value is valid', async () => {
+    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+
+    await fill(view, 'input', 'not-an-address');
+    await view
+      .get('input')
+      .setValue('someone@example.com');
+    await nextTick();
+
+    const stale = view
+      .find('#email-error')
+      .exists();
+
+    expect(stale).toBe(false);
+  });
+
+  it('keeps Send open while a field is still to fill', async () => {
+    const view: ReturnType<typeof mount> = mount(ContactView, mounted);
+
+    await fill(view, 'input', 'someone@example.com');
+    await nextTick();
+
+    const disabled = view
+      .get('button')
+      .attributes('disabled');
+
+    expect(disabled).toBeUndefined();
+  });
+
   it('sends once both fields are valid', async () => {
     const view: ReturnType<typeof mount> = mount(ContactView, mounted);
 

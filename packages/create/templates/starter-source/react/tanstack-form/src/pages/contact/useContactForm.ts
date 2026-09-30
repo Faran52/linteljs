@@ -33,7 +33,8 @@ export const useContactForm = (): ContactForm => {
       message: '',
     },
     validators: {
-      onBlur: ({ value }) => {
+      // Every change re-runs the rules; a field shows its result only once it is left.
+      onChange: ({ value }) => {
         const found = validateContact(value);
 
         return Object.keys(found).length > 0 ? { fields: found } : undefined;
@@ -56,15 +57,24 @@ export const useContactForm = (): ContactForm => {
     extra: Partial<TextInputProps> = {},
   ): TextInputProps => {
     const meta = state.fieldMeta[name];
+    const shown = meta !== undefined && (meta.isBlurred || state.submissionAttempts > 0);
 
     return {
       id: name,
       label,
       value: state.values[name],
-      error: meta?.errors[0] === undefined ? undefined : String(meta.errors[0]),
+      error: !shown || meta.errors[0] === undefined ? undefined : String(meta.errors[0]),
       onBlur: () => {
-        // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
-        void Promise.resolve(form.validateField(name, 'blur'));
+        form
+          .setFieldMeta(name, (prev) => {
+            return {
+              ...prev,
+              isBlurred: true,
+            };
+          });
+        // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
+        // wrapping settles which for the promise rules.
+        void Promise.resolve(form.validateField(name, 'change'));
       },
       onChange: (value) => {
         form.setFieldValue(name, value);
@@ -80,7 +90,8 @@ export const useContactForm = (): ContactForm => {
     },
     sent,
     submitting: state.isSubmitting,
-    canSubmit: state.canSubmit,
+    // Open until a send is tried, which names what is missing; then held until the rules pass.
+    canSubmit: state.submissionAttempts === 0 || state.canSubmit,
     onSubmit: (event) => {
       event.preventDefault();
       void form.handleSubmit();

@@ -93,6 +93,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A Contact page flags only a field the user has left, and clears its error as soon as the value passes. TanStack
+  Form (React, Next, Solid, Svelte, Vue, Angular) checks every change with the shared `validateContact` and shows
+  a field's result once it is blurred or a send is tried; Send stays open until a send is tried. React Hook Form
+  moves from `onBlur` to `onTouched`.
 - The web mark's gaps are even: 12 units under the beam and between each line, where the beam had 19, and the
   group sits centred in its viewBox. Both stroke widths and the drift animation are unchanged.
 

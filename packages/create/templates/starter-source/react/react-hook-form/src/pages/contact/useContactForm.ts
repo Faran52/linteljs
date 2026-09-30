@@ -68,7 +68,8 @@ export const useContactForm = (): ContactForm => {
     handleSubmit,
     formState,
   } = useForm<ContactValues>({
-    mode: 'onBlur',
+    // Checked once a field is left, then on every change, so a fixed value clears its error at once.
+    mode: 'onTouched',
     defaultValues: {
       email: '',
       message: '',

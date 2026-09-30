@@ -35,7 +35,8 @@ export const useContactForm = (): ContactForm => {
         message: '',
       },
       validators: {
-        onBlur: ({ value }: ContactSubmission) => {
+        // Every change re-runs the rules; a field shows its result only once it is left.
+        onChange: ({ value }: ContactSubmission) => {
           const found = validateContact(value);
 
           return Object.keys(found).length > 0 ? { fields: found } : undefined;
@@ -67,11 +68,23 @@ export const useContactForm = (): ContactForm => {
         // Read inline: `errors` is an `any[]`, so naming its first element would be an unsafe assignment.
         const meta = state.current.fieldMeta[name];
 
-        return meta?.errors[0] === undefined ? undefined : String(meta.errors[0]);
+        if (meta === undefined || (!meta.isBlurred && state.current.submissionAttempts === 0)) {
+          return undefined;
+        }
+
+        return meta.errors[0] === undefined ? undefined : String(meta.errors[0]);
       },
       onBlur: () => {
-        // `validateField` answers errors or a promise of them; wrapping settles which for the promise rules.
-        void Promise.resolve(form.validateField(name, 'blur'));
+        form
+          .setFieldMeta(name, (prev) => {
+            return {
+              ...prev,
+              isBlurred: true,
+            };
+          });
+        // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
+        // wrapping settles which for the promise rules.
+        void Promise.resolve(form.validateField(name, 'change'));
       },
       onChange: (value) => {
         form.setFieldValue(name, value);
@@ -88,7 +101,8 @@ export const useContactForm = (): ContactForm => {
       return state.current.isSubmitSuccessful;
     },
     get canSubmit() {
-      return state.current.canSubmit;
+      // Open until a send is tried, which names what is missing; then held until the rules pass.
+      return state.current.submissionAttempts === 0 || state.current.canSubmit;
     },
     onSubmit: (event) => {
       event.preventDefault();
