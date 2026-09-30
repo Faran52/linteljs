@@ -15,6 +15,8 @@ jsRuleTester.run('import-newlines', importNewlines, {
     "import alpha, * as namespace from 'mod';",
 
     `import {\n  ${LONG},\n  bravo\n} from 'mod';`,
+    // Collapsing it would run past `maxLineLength`.
+    `import {\n  ${LONG}\n} from 'mod';`,
 
     `import defaultExport, * as namespace from '${LONG}';`,
     `import defaultExport from '${LONG}';`,

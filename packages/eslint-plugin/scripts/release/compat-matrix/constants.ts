@@ -12,6 +12,8 @@ export const FIXTURE = [
   '',
   'const { one, two, three, four } = alpha;',
   '',
+  'const pair = [one, /* two */ two, [three, four]];',
+  '',
   'const { five, six,',
   '  seven } = bravo;',
   '',
