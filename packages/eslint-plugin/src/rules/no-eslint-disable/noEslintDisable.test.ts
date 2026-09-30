@@ -14,6 +14,8 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
     '// v8 ignore next\nexport const value = 1;\n',
     // `eslint-enable` suppresses nothing on its own, and the rule is named for what does.
     '/* eslint-enable no-console */\nexport const value = 1;\n',
+    '/* note eslint no-console: "off" */\nexport const value = 1;\n',
+    '/* eslint complexity: ["error", 0] */\nexport const value = 1;\n',
     '/* eslint no-console: "error" */\nexport const value = 1;\n',
     '/* eslint complexity: ["error", { "max": 0 }] */\nexport const value = 1;\n',
     '// eslint no-console: "off"\nexport const value = 1;\n',
@@ -30,6 +32,22 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
     '/* eslint-disable */\nexport const value = 1;\n',
   ],
   invalid: [
+    {
+      code: '/*eslint no-console:"off"*/\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/*   eslint no-console: [ "off" ] */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint eqeqeq: ["error", "always", { "null": "ignore" }], no-console: "off" */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint eqeqeq: ["error", "always"], no-console: ["off"], no-alert: 0 */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
     {
       code: '/* eslint no-console: "off" */\nconsole.log(1);\n',
       errors: [{ messageId: 'noDisable' }],
@@ -77,7 +95,7 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
 tsxRuleTester.run('no-eslint-disable: allowRules', noEslintDisable, {
   valid: [
     {
-      code: '/* eslint no-console: "off" */\nconsole.log(1);\n',
+      code: '/* eslint "no-console": "off" */\nconsole.log(1);\n',
       options: [{ allowRules: ['no-console'] }],
     },
     {

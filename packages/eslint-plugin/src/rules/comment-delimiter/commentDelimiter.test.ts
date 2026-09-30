@@ -40,6 +40,7 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       '//# sourceMappingURL=out.js.map',
       '//@ sourceURL=out.js',
       '// # sourceMappingURL=out.js.map',
+      '//#sourceURL=out.js',
     ]
       .map((directive) => {
         return `// alpha\n// bravo\n${directive}\n// charlie\n// delta\n`;
@@ -79,6 +80,11 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     '/**\n * Adds two numbers.\n * @returns the sum\n */\nexport const add = 1;\n',
   ],
   invalid: [
+    {
+      code: '// alpha\n// bravo about //# sourceMappingURL=x\n// charlie\n',
+      output: '/**\n * alpha\n * bravo about //# sourceMappingURL=x\n * charlie\n */\n',
+      errors: [{ messageId: 'useJsdoc' }],
+    },
     {
       code: '// alpha\n// bravo\n// charlie\n//# sourceMappingURL=out.js.map\n',
       output: '/**\n * alpha\n * bravo\n * charlie\n */\n//# sourceMappingURL=out.js.map\n',

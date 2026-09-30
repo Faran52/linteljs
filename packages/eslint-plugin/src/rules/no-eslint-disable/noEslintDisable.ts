@@ -5,6 +5,16 @@ import {
   type RuleContext,
 } from '../../utils/ruleUtils.ts';
 
+interface CommentText {
+  type: string;
+  value: string;
+}
+
+interface CommentText {
+  type: string;
+  value: string;
+}
+
 interface NoEslintDisableOptions {
   allowRules: string[];
 }
@@ -32,50 +42,49 @@ const INLINE_CONFIG = /^\s*eslint(?=\s)([\s\S]*)/;
 
 const OFF_SEVERITY = /^\s*(?:\[\s*)?(?:"off"|'off'|0)\s*(?:[,\]]|$)/;
 
-// Split at the commas outside strings and brackets, so an option object's own `key: 0` is not an entry.
+// Marks the commas outside brackets, so an option object's own `key: 0` is not an entry. Strings holding a bracket are
+// not tracked: they cost a missed report at worst.
+const SEPARATOR = '\u0000';
+
 const topLevelEntries = (text: string): string[] => {
-  const entries: string[] = [];
   let depth = 0;
-  let quote = '';
-  let start = 0;
 
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text.charAt(index);
-
-    if (quote !== '') {
-      quote = char === quote ? '' : quote;
-    }
-    else if (char === '"' || char === "'") {
-      quote = char;
-    }
-    else if (char === '[' || char === '{') {
+  const marked = Array.from(text, (char) => {
+    if ('[{'.includes(char)) {
       depth += 1;
     }
-    else if (char === ']' || char === '}') {
+
+    if (']}'.includes(char)) {
       depth -= 1;
     }
-    else if (char === ',' && depth === 0) {
-      entries.push(text.slice(start, index));
-      start = index + 1;
-    }
-  }
 
-  return [...entries, text.slice(start)];
+    return char === ',' && depth === 0 ? SEPARATOR : char;
+  });
+
+  return marked
+    .join('')
+    .split(SEPARATOR);
 };
 
-const rulesTurnedOffBy = (tail: string): string[] => {
+const rulesTurnedOffBy = (comment: CommentText): string[] => {
+  const tail = comment.type === 'Block' ? INLINE_CONFIG.exec(comment.value)?.[1] : undefined;
+
+  if (tail === undefined) {
+    return [];
+  }
+
   return topLevelEntries(tail.replace(DESCRIPTION, ''))
     .flatMap((entry) => {
       const colon = entry.indexOf(':');
 
-      if (colon === -1 || !OFF_SEVERITY.test(entry.slice(colon + 1))) {
+      if (!OFF_SEVERITY.test(entry.slice(colon + 1))) {
         return [];
       }
 
       return [entry
         .slice(0, colon)
         .trim()
-        .replaceAll(/^["']|["']$/gu, '')];
+        .replaceAll(/["']/gu, '')];
     });
 };
 
@@ -112,8 +121,7 @@ export const noEslintDisable = createRule('no-eslint-disable', {
       Program: () => {
         for (const comment of sourceCodeOf(context).getAllComments()) {
           const tail = DIRECTIVE.exec(comment.value)?.[1];
-          const config = comment.type === 'Block' ? INLINE_CONFIG.exec(comment.value)?.[1] : undefined;
-          const named = tail === undefined ? rulesTurnedOffBy(config ?? '') : rulesNamedBy(tail);
+          const named = tail === undefined ? rulesTurnedOffBy(comment) : rulesNamedBy(tail);
 
           if (tail === undefined && named.length === 0) {
             continue;
