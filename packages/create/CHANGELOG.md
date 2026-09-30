@@ -95,6 +95,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev
+  runtime disables its stylesheet link before React hydrates, so the link now suppresses the warning.
 - An answer that fails its pattern now says it must match the pattern, not that it must be a string.
 - The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
 - A generated `eslint.config.js` or `nuxt.config.ts` still parses when an ignore or alias path ends in a backslash or holds a newline.

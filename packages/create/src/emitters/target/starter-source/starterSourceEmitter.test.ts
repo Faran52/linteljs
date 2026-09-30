@@ -178,6 +178,17 @@ describe('starter files for a router', () => {
     expect(targetsFor({ router }).includes('src/routes/router.tsx')).toBe(table);
     expect(targetsFor({ router })).not.toContain('src/routeTree.gen.ts');
   });
+
+  it('lets the stylex dev runtime disable its stylesheet link without a hydration mismatch', async () => {
+    const root = artifactFor({
+      router: 'react-router-framework',
+      styling: 'stylex',
+    }, 'src/root.tsx');
+    const text = root === undefined ? '' : await shippedAssetsReader(root.content);
+    const link = /<link\s+rel="stylesheet"\s+href="\/virtual:stylex\.css"[^>]*>/v.exec(text)?.[0];
+
+    expect(link).toContain('suppressHydrationWarning');
+  });
 });
 
 describe('the starter source', () => {

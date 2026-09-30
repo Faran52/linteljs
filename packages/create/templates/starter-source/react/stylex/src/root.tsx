@@ -37,7 +37,12 @@ export const Layout = ({ children }: LayoutProps): ReactNode => {
           ? (
               <>
                 <script type="module" src="/@id/virtual:stylex:runtime" />
-                <link rel="stylesheet" href="/virtual:stylex.css" />
+                {/* The runtime disables this link once it injects its own `<style>`, before hydration. */}
+                <link
+                  rel="stylesheet"
+                  href="/virtual:stylex.css"
+                  suppressHydrationWarning
+                />
               </>
             )
           : null}
