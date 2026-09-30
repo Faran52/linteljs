@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import { PAGES } from '../../../config/routes';
 
 import AppHeader from './AppHeader.vue';
+import { styles } from './styles';
 
 const open = async (path: string): Promise<ReturnType<typeof mount>> => {
   const router = createRouter({
@@ -38,12 +39,11 @@ describe('AppHeader', () => {
   it('names the project and links every page on the one route list', async () => {
     const header = await open('/');
 
-    const label = header
-      .find('.starter-label')
-      .text();
-    const name = header
-      .find('.brand')
-      .text();
+    const [label, name] = header
+      .findAll('p')
+      .map((paragraph) => {
+        return paragraph.text();
+      });
 
     expect(label).toBe('LintelJS Starter');
     expect(name).toBe('my-app');
@@ -60,5 +60,6 @@ describe('AppHeader', () => {
 
     expect(marked).toHaveLength(1);
     expect(marked[0]?.text()).toBe('About');
+    expect(marked[0]?.attributes('class')).toBe(styles.tab(true).class);
   });
 });

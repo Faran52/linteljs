@@ -6,7 +6,11 @@ import {
 import { hostedPartsFor } from '../utils/frameworkUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  stylexDocument,
+} from '../utils/styleUtils';
 
 import { ALWAYS, SHARED } from './constants';
 
@@ -93,6 +97,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyles(),
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling.
       ...componentStyleModules('solid'),
+      ...stylexDocument('src/layouts/Layout.astro'),
       ...ALWAYS
         .map((target): StarterFile => {
           return { target };

@@ -104,3 +104,20 @@ export const componentStyleModules = (
     })
     .concat(tokens);
 };
+
+// StyleX injects its dev CSS into `index.html`, so a server-rendered document links it itself.
+export const stylexDocument = (target: string): StarterFile[] => {
+  return [
+    {
+      target,
+      when: (answers) => {
+        return !isStylex(answers);
+      },
+    },
+    {
+      target,
+      when: isStylex,
+      variant: 'stylex',
+    },
+  ];
+};

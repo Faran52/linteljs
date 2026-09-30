@@ -6,6 +6,7 @@ import {
   type GateRow,
   mswGates,
   NOT_TANSTACK_QUERY,
+  STYLEX,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
@@ -51,6 +52,8 @@ const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query']),
+  ['src/routes/+layout.svelte', [{ styling: [undefined, 'tailwind'] }]],
+  ['src/routes/+layout.svelte@stylex', STYLEX],
   ['__mocks__/WithData.svelte', [{
     form: ANSWERED,
     testing: ['vitest'],

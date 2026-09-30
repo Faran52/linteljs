@@ -12,6 +12,8 @@ import { sortedImports } from '../../utils/importUtils';
 import { quote } from '../../utils/quoteUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
+import { STYLEX_DEV_HEAD } from './constants';
+
 // `alias`, not tsconfig `paths`, which would replace Nuxt's own `#shared` and `#server` set.
 export const emitNuxtConfig = (answers: Answers, name: string): string => {
   const { styleEntry } = targetFor(answers);
@@ -55,6 +57,7 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     '      }],',
     '    },',
     '  },',
+    ...(answers.styling === 'stylex' ? STYLEX_DEV_HEAD : []),
     `  css: ['~/${styleEntry.replace('src/', '')}'],`,
     '  // Merged into the paths Nuxt generates, which is what keeps its own `#` aliases resolving alongside these.',
     '  alias: {',

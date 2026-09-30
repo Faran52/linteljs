@@ -16,7 +16,11 @@ import {
   mockTests,
 } from '../utils/mockUtils';
 import { sfcNaming } from '../utils/namingUtils';
-import { componentStyleModules, componentStyles } from '../utils/styleUtils';
+import {
+  componentStyleModules,
+  componentStyles,
+  stylexDocument,
+} from '../utils/styleUtils';
 
 import {
   ACCESSORS,
@@ -88,6 +92,7 @@ export const svelteTarget: TargetRecord = {
     ...mockFiles(true),
     ...componentStyles(),
     ...componentStyleModules('solid'),
+    ...stylexDocument('src/routes/+layout.svelte'),
     ...accessorFiles(ACCESSORS),
     // Svelte's query bindings read their client out of context, which needs a component.
     ...([

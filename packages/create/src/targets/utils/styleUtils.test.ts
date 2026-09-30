@@ -9,6 +9,7 @@ import {
   type ComponentPaths,
   componentStyleModules,
   componentStyles,
+  stylexDocument,
 } from './styleUtils';
 
 import type { Answers } from '@config/types';
@@ -92,5 +93,15 @@ describe('componentStyleModules', () => {
       shared: 'solid',
     });
     expect(componentStyleModules()[0]).not.toHaveProperty('shared');
+  });
+});
+
+describe('stylexDocument', () => {
+  it('writes the base document without stylex and the variant linking its dev CSS with it', () => {
+    const plain = pickedBy(stylexDocument('src/layouts/Layout.astro'));
+    const stylex = pickedBy(stylexDocument('src/layouts/Layout.astro'), { styling: 'stylex' });
+
+    expect(plain).toEqual(['src/layouts/Layout.astro base']);
+    expect(stylex).toEqual(['src/layouts/Layout.astro stylex']);
   });
 });

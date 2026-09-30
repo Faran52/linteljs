@@ -3,6 +3,7 @@ import {
   componentStyleGates,
   type GateRow,
   mswGates,
+  STYLEX,
   TAILWIND,
   walkGates,
   WITH_FORM,
@@ -183,6 +184,8 @@ const GATES: GateRow[] = [
   ...mswGates(false),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ['src/styles/theme.css@tailwind', TAILWIND],
+  ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'] }]],
+  ['src/layouts/Layout.astro@stylex', STYLEX],
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
 ];
 

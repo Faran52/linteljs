@@ -702,6 +702,12 @@ PostCSS inside `withNativewind` from `metro.config.js`, because Metro has no Tai
 refused for pinning React Native alone to Tailwind 3 against the latest-only non-goal. The style entry gets
 NativeWind's imports in place of `@import "tailwindcss"`.
 
+**StyleX dev CSS under a server-rendered document.** The Vite plugin serves its dev CSS at `/virtual:stylex.css`
+and links it only through `transformIndexHtml`, which runs on an `index.html`. Nuxt, SvelteKit, Astro and React
+Router framework mode render their own document, so each links it in dev itself, with the runtime that refetches
+it on update. Astro takes the link alone: every page is a full load, and its server render has already compiled
+the page's styles. A build is unaffected, since the plugin appends to the emitted CSS asset.
+
 **The markup does not change with the answer.** Every page is `className="hero"`, `starter.css` ships in every
 case, and what the answer decides is what is installed and wired. `@theme inline` maps Tailwind's colour names onto
 the `tokens.css` custom properties and `defineVars` takes `var(--primary)` as its value: one source, three names.

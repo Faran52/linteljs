@@ -3,6 +3,8 @@ import { useRoute } from 'vue-router';
 
 import { PAGES } from '../../../config/routes';
 
+import { styles } from './styles';
+
 interface Props {
   name: string;
 }
@@ -15,21 +17,21 @@ const route = useRoute();
 
 <!-- `NuxtLink` prefetches a route and keeps the address bar honest. -->
 <template>
-  <header class="header">
-    <p class="starter-label">
+  <header v-bind="styles.header">
+    <p v-bind="styles.starterLabel">
       LintelJS Starter
     </p>
-    <p class="brand">
+    <p v-bind="styles.brand">
       {{ name }}
     </p>
     <nav
-      class="tabs"
+      v-bind="styles.tabs"
       aria-label="Main"
     >
       <NuxtLink
         v-for="page in PAGES"
         :key="page.id"
-        class="tab"
+        v-bind="styles.tab(route.path === page.path)"
         :to="page.path"
         :aria-current="route.path === page.path ? 'page' : undefined"
       >

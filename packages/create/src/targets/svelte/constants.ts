@@ -3,7 +3,6 @@ import type { AccessorNames } from '../utils/mockUtils';
 export const ALWAYS: readonly string[] = [
   'src/app.html',
   'src/app.d.ts',
-  'src/routes/+layout.svelte',
   'src/routes/+error.svelte',
   'src/routes/about/+page.svelte',
   'src/routes/version/+page.svelte',

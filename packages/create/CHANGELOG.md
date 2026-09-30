@@ -194,6 +194,11 @@ when a version's change lives in a sibling it is described there instead:
 - The webextension structure rule lists `lib/mark/`, `style.css`, `devtools.html` and `panel.html` in its tree.
 - React Router framework mode with StyleX links StyleX's dev stylesheet from `root.tsx`, so `dev` is no longer
   unstyled; StyleX's plugin injects it into an `index.html` that framework mode does not have.
+- Nuxt, SvelteKit and Astro with StyleX link StyleX's dev stylesheet from their own document (Nuxt's
+  `$development.app.head`, the root `+layout.svelte`, `Layout.astro`), so `dev` is no longer unstyled; the plugin
+  injects it through `transformIndexHtml`, which a server-rendered page never passes through. Builds were not affected.
+- Nuxt's header takes its classes from its `styles.ts`, as Vue's does, so it is styled under StyleX and marks the
+  current tab under every styling.
 - React Router framework mode's `vite.config.ts` answers `/.well-known/` requests with a plain 404 in dev, so
   Chrome DevTools' probe no longer logs a `No route matches URL` error.
 

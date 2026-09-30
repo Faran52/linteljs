@@ -1,5 +1,4 @@
 export const ALWAYS: readonly string[] = [
-  'src/layouts/Layout.astro',
   'src/pages/index.astro',
   'src/pages/about.astro',
   'src/pages/version.astro',

@@ -87,6 +87,20 @@ export default defineNuxtConfig({
       }],
     },
   },
+  $development: {
+    app: {
+      head: {
+        script: [{
+          type: 'module',
+          src: '/_nuxt/@id/virtual:stylex:runtime',
+        }],
+        link: [{
+          rel: 'stylesheet',
+          href: '/virtual:stylex.css',
+        }],
+      },
+    },
+  },
   css: ['~/styles/main.css'],
   // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
   alias: {

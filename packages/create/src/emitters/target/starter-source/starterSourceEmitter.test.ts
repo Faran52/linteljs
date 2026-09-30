@@ -205,6 +205,26 @@ describe('starter files for a router', () => {
 
     expect(link).toContain('suppressHydrationWarning');
   });
+
+  it.each<[TargetId, string]>([
+    ['svelte', 'src/routes/+layout.svelte'],
+    ['astro', 'src/layouts/Layout.astro'],
+  ])('links the stylex dev css from the %s document only under stylex', async (target, path) => {
+    const read = async (overrides: Partial<Answers>): Promise<string> => {
+      const document = artifactFor({
+        target,
+        ...overrides,
+      }, path);
+
+      return document === undefined ? '' : await shippedAssetsReader(document.content);
+    };
+    const stylex = await read({ styling: 'stylex' });
+    const plain = await read({});
+
+    expect(stylex).toContain('href="/virtual:stylex.css"');
+    expect(plain).toContain('</');
+    expect(plain).not.toContain('virtual:stylex');
+  });
 });
 
 describe('the starter source', () => {

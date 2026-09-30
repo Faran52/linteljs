@@ -1,0 +1,34 @@
+<script lang="ts">
+  import { dev } from '$app/environment';
+
+  import { NAME } from '@config/linteljs';
+
+  import AppHeader from '../components/features/app-header/AppHeader.svelte';
+
+  import type { Snippet } from 'svelte';
+
+  import '../app.css';
+
+  import DataProvider from '$lib/providers/data/DataProvider.svelte';
+
+  interface Props {
+    children: Snippet;
+  }
+
+  const { children }: Props = $props();
+</script>
+
+<!-- SvelteKit has no convention that loads a global stylesheet, so the root layout is where the entry is imported. -->
+<svelte:head>
+  <title>{NAME}</title>
+  <!-- StyleX injects its dev CSS into `index.html`, which SvelteKit does not have. -->
+  {#if dev}
+    <script type="module" src="/@id/virtual:stylex:runtime"></script>
+    <link rel="stylesheet" href="/virtual:stylex.css" />
+  {/if}
+</svelte:head>
+
+<DataProvider>
+  <AppHeader name={NAME} />
+  {@render children()}
+</DataProvider>
