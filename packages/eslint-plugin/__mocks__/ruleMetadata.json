@@ -56,7 +56,7 @@
   },
   "export-specifier-newline": {
     "messages": {
-      "specifiersOnNewline": "Export specifiers must go on a new line."
+      "specifiersOnNewline": "Put each export specifier on its own line, with the braces on their own lines."
     },
     "schema": [],
     "type": "layout",
@@ -65,7 +65,7 @@
       "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
-      "description": "Put each export specifier on its own line."
+      "description": "Put each specifier of an export list with three or more on its own line."
     }
   },
   "import-newlines": {

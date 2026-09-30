@@ -1,24 +1,15 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
-  adjacentPairs,
-  commaToNewline,
   indentReader,
   lineTerminatorOf,
+  listGaps,
   sameLine,
   spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
-import {
-  createRule,
-  mustFind,
-  rebuildLosesComments,
-} from '../../utils/ruleUtils.ts';
+import { createRule, mustFind } from '../../utils/ruleUtils.ts';
 
-import type { AST } from 'eslint';
-
-interface SharedLine {
-  isLast: boolean;
-  token: AST.Token;
-}
+// Two or fewer stay as written, unless half-split.
+const MAX_INLINE = 2;
 
 export const exportSpecifierNewline = createRule('export-specifier-newline', {
   meta: {
@@ -27,11 +18,11 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
       language: 'universal',
       recommended: true,
       fixShape: 'whitespace',
-      description: 'Put each export specifier on its own line.',
+      description: 'Put each specifier of an export list with three or more on its own line.',
     },
     fixable: 'whitespace',
     messages: {
-      specifiersOnNewline: 'Export specifiers must go on a new line.',
+      specifiersOnNewline: 'Put each export specifier on its own line, with the braces on their own lines.',
     },
     schema: [],
   },
@@ -42,62 +33,37 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
 
     return {
       ExportNamedDeclaration: (node) => {
-        if (node.specifiers.length === 0) {
+        const { specifiers } = node;
+
+        if (specifiers.length < 2) {
           return;
         }
 
-        const first = mustFind(node.specifiers[0]);
-        const last = mustFind(node.specifiers[node.specifiers.length - 1]);
-
-        const { outer: indent, inner } = indentsAt(node);
-        const openBrace = sourceCode.getTokenBefore(first);
-        // Past a trailing comma, which stays on the last specifier's line.
-        const closeBrace = mustFind(sourceCode.getTokenAfter(last, {
-          filter: (token) => {
-            return token.value !== ',';
-          },
-        }));
-        const beforeCloseBrace = sourceCode.getTokenBefore(closeBrace);
-
-        const shared: SharedLine[] = [];
-
-        for (const [previous, specifier] of adjacentPairs(node.specifiers)) {
-          const currentToken = mustFind(sourceCode.getFirstToken(specifier));
-
-          if (sameLine(sourceCode.getLastToken(previous), currentToken)) {
-            shared.push({
-              isLast: specifier === last,
-              token: currentToken,
-            });
-          }
-        }
-
-        for (const [position, pair] of shared.entries()) {
-          context.report({
-            loc: pair.token.loc,
-            messageId: 'specifiersOnNewline',
-            node,
-            * fix(fixer) {
-              // Brace gaps are spliced wholesale, so a comment there would be lost.
-              if (rebuildLosesComments(sourceCode, node)) {
-                return;
-              }
-
-              const split = commaToNewline(sourceCode, fixer, pair.token, inner);
-
-              // Brace gaps belong to the statement, so each is emitted once.
-              if (position === 0) {
-                yield* spliceOntoNewline(fixer, openBrace, first, inner, eol);
-              }
-
-              yield split;
-
-              if (pair.isLast) {
-                yield* spliceOntoNewline(fixer, beforeCloseBrace, closeBrace, indent, eol);
-              }
-            },
+        const open = mustFind(sourceCode.getTokenBefore(mustFind(specifiers[0])));
+        const gaps = listGaps(sourceCode, open, specifiers, indentsAt(node), true);
+        const onOneLine = gaps
+          .filter(([before, after]) => {
+            return sameLine(before, after);
           });
+
+        // Crowded: over the count on a shared line. Half-split: some breaks made and some not.
+        if (onOneLine.length === 0 || (specifiers.length <= MAX_INLINE && onOneLine.length === gaps.length)) {
+          return;
         }
+
+        context.report({
+          node,
+          messageId: 'specifiersOnNewline',
+          * fix(fixer) {
+            for (const [
+              before,
+              after,
+              indent,
+            ] of onOneLine) {
+              yield* spliceOntoNewline(fixer, before, after, indent, eol);
+            }
+          },
+        });
       },
     };
   },

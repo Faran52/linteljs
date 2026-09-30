@@ -18,7 +18,7 @@ import {
 } from './functionShapesUtils.ts';
 import {
   exportJoinedCase,
-  exportPairCase,
+  exportTripleCase,
   importBlankLineCase,
   importJoinedCase,
   importLongLineCase,
@@ -63,9 +63,9 @@ export const SHAPES: Record<string, Shape[]> = {
   ],
   'export-specifier-newline': [
     shape(exportJoinedCase, 'specifiers joined onto one line'),
-    shape(exportPairCase('local'), 'second specifier added to a local export'),
-    shape(exportPairCase('from'), 'second specifier added to a re-export'),
-    shape(exportPairCase('type'), 'second specifier added to a type-only export'),
+    shape(exportTripleCase('local'), 'two specifiers added to a local export'),
+    shape(exportTripleCase('from'), 'two specifiers added to a re-export'),
+    shape(exportTripleCase('type'), 'two specifiers added to a type-only export'),
   ],
   'import-newlines': [
     shape(importJoinedCase, 'joined onto one line, over the item limit'),

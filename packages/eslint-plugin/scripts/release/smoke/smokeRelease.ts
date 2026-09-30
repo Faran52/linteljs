@@ -75,7 +75,7 @@ const fixture = [
   '',
   'function greet(name) { return alpha + bravo + charlie + name; }',
   '',
-  'export { alpha, bravo };',
+  'export { alpha, bravo, charlie };',
   '',
 ].join('\n');
 

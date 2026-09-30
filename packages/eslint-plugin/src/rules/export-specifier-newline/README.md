@@ -1,41 +1,44 @@
 # @linteljs/export-specifier-newline
 
-Put each export specifier on its own line.
+Put each specifier of an export list with three or more on its own line.
 
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (whitespace)
 - In `recommended`: yes
 
-The export list is the public surface of a file, and it changes more often than anything else in
-it. One name per line means adding or removing one is a one-line diff instead of a rewritten line
-that has to be read word by word. A list of one is already on one line, so nothing is asked of it.
+Three or more specifiers go one per line, with the braces on lines of their own, the same count
+`array-newline`, `member-newline` and `import-newlines` hold their lists to. Two or fewer sit on one
+line or go fully one per line; a pair broken in one place and not the other is fixed to one per line.
+The rule never joins lines.
 
 ## Examples of incorrect code for this rule
 
 ```ts
-// incorrect: two specifiers sharing a line
-export { alpha, bravo };
+// incorrect: three specifiers sharing a line
+export { alpha, bravo, charlie };
 
 // incorrect: the re-export form, same problem
-export { charlie, delta } from 'mod';
+export { delta, echo, foxtrot } from 'mod';
 
-// incorrect: type exports are held to the same shape
-export type { Alpha, Bravo };
+// incorrect: a half-split pair
+export { alpha,
+  bravo };
 ```
 
 ## Examples of correct code for this rule
 
 ```ts
-// correct: one specifier, nothing to split
-export { alpha };
+// correct: two specifiers may share a line
+export { alpha, bravo };
 
 // correct: one per line
 export {
-  bravo,
-  charlie
+  charlie,
+  delta,
+  echo
 } from 'mod';
 
-// correct: type exports, one per line
+// correct: a pair fully split is left as written
 export type {
   Alpha,
   Bravo
@@ -45,14 +48,8 @@ export type {
 export * from 'other';
 
 // correct: an inline declaration is not a specifier list either
-export const delta = 1;
+export const foxtrot = 1;
 ```
-
-## What it declines to fix
-
-A comment anywhere inside the statement means the rule reports and moves nothing. The fix splices
-the whole gap on each side of the braces, so a comment written in one of those gaps would be
-deleted rather than carried across.
 
 ## Options
 
@@ -60,6 +57,7 @@ None.
 
 ## Notes
 
-The fix puts the braces on their own lines and indents members one step in from the statement.
-Splitting on the commas alone would leave `export { alpha,\nbravo };`, which is neither the input
-nor anything a formatter would produce.
+The fix only replaces whitespace: it breaks the line after the opening brace, after each comma and
+before the closing brace, and indents members one step in from the statement. A comment inside the
+braces stays where it is, and one trailing a comma on the same line stays with the specifier before
+it. A trailing comma stays on the last specifier's line.

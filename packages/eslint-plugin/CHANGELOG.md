@@ -18,6 +18,10 @@ when a version's change lives in a sibling it is described there instead:
   half-split.** `member-newline` keeps its `maxProperties` default of `2` and now holds every list it owns to it:
   two or fewer members sit on one line or go fully one per line, and `const { alpha,\n  bravo }` is fixed to the
   second. It never joins lines, so a split pair is no longer collapsed.
+- **`export-specifier-newline` splits at three or more specifiers**, not two, so `export { alpha, bravo }` is
+  allowed. A half-split pair such as `export { alpha,\n  bravo }` is fixed to one per line, never joined. It
+  reports once per statement, with a new message, and its whitespace-only fix now runs past a comment inside the
+  braces instead of declining.
 - **`member-newline` takes object literals**, which `@stylistic/object-property-newline` split at two. The base
   layer turns that rule off (see `@linteljs/eslint-config`).
 - **`member-newline` loses `maxPropertiesWithRest` and `maxLineLength`.** A rest element counts like any other

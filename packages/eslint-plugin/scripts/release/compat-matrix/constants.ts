@@ -43,7 +43,7 @@ export const FIXTURE = [
   '// eslint-disable-next-line no-alert',
   'const suppressed = two;',
   '',
-  'export { alpha, bravo };',
+  'export { alpha, bravo, charlie };',
   '',
 ].join('\n');
 

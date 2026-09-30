@@ -86,7 +86,8 @@ export const memberNewline = createRule('member-newline', {
         return;
       }
 
-      const gaps = listGaps(sourceCode, node, members, indentsAt(node), commaSeparated);
+      const open = mustFind(sourceCode.getFirstToken(node));
+      const gaps = listGaps(sourceCode, open, members, indentsAt(node), commaSeparated);
       const isOver = members.length > maxCount;
       const onOneLine = gaps
         .filter(([before, after]) => {

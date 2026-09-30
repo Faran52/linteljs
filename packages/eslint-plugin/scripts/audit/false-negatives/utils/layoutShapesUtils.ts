@@ -163,7 +163,7 @@ export const exportJoinedCase: Build = (state) => {
     const [first] = specifiers;
     const last = specifiers.at(-1);
 
-    return specifiers.length < 2 || !first || !last || !spansLines(first, last)
+    return specifiers.length < 3 || !first || !last || !spansLines(first, last)
       ? undefined
       : joinRange(state, first.range[0], last.range[1]);
   });
@@ -177,8 +177,8 @@ const exportKindOf = (node: AstNode): string => {
   return node.source ? 'from' : 'local';
 };
 
-// Re-exporting the same local under a new name is legal in all three forms.
-export const exportPairCase = (kind: string): Build => {
+// Re-exporting the same local under new names is legal in all three forms. Two make a list of three.
+export const exportTripleCase = (kind: string): Build => {
   return (state) => {
     if (state.source.includes(PROBE_ALIAS)) {
       return undefined;
@@ -194,7 +194,9 @@ export const exportPairCase = (kind: string): Build => {
         return undefined;
       }
 
-      return replaced(state, only.range[1], only.range[1], `, ${local.name} as ${PROBE_ALIAS}`);
+      const added = `, ${local.name} as ${PROBE_ALIAS}, ${local.name} as ${PROBE_ALIAS}Two`;
+
+      return replaced(state, only.range[1], only.range[1], added);
     });
   };
 };

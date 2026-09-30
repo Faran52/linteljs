@@ -3,103 +3,95 @@ import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 import { exportSpecifierNewline } from './exportSpecifierNewline.ts';
 
 const declare = 'const alpha = 1, bravo = 2, charlie = 3;\n';
+const declareTypes = 'type Alpha = string;\ntype Bravo = number;\ntype Charlie = boolean;\n';
+const errors = [{ messageId: 'specifiersOnNewline' }];
 
 jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
   valid: [
-    "export { alpha,\n  bravo\n} from 'mod';",
     'export {};',
     `${declare}export { alpha };`,
+    `${declare}export {\n  alpha };`,
     'export const alpha = 1;',
     'const alpha = 1;\nexport default alpha;',
     "export * from 'mod';",
     "export * as namespace from 'mod';",
+    `${declare}export { alpha, bravo };`,
+    "export { alpha, bravo } from 'mod';",
+    `${declare}export { alpha as first, bravo as second };`,
     `${declare}export {\n  alpha,\n  bravo\n};`,
     `${declare}export {\n  alpha,\n  bravo,\n  charlie\n};`,
-    "export {\n  alpha,\n  bravo\n} from 'mod';",
-    `${declare}export {\n  alpha as first,\n  bravo as second\n};`,
+    "export {\n  alpha,\n  bravo,\n  charlie,\n} from 'mod';",
   ],
   invalid: [
     {
-      code: "export {\n  alpha, bravo } from 'mod';",
-      output: "export {\n  alpha,\n  bravo\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
-    },
-    {
-      code: "const pad = {\n  a: 1,\n};\nexport {\n      alpha, bravo } from 'mod';",
-      output: "const pad = {\n  a: 1,\n};\nexport {\n      alpha,\n  bravo\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
-    },
-    {
-      code: `${declare}export { alpha, bravo };`,
-      output: `${declare}export {\n  alpha,\n  bravo\n};`,
-      errors: [{ messageId: 'specifiersOnNewline' }],
-    },
-    {
       code: `${declare}export { alpha, bravo, charlie };`,
       output: `${declare}export {\n  alpha,\n  bravo,\n  charlie\n};`,
-      errors: [
-        { messageId: 'specifiersOnNewline' },
-        { messageId: 'specifiersOnNewline' },
-      ],
+      errors,
     },
     {
-      code: "export { alpha, bravo } from 'mod';",
+      code: "export { alpha, bravo, charlie, } from 'mod';",
+      output: "export {\n  alpha,\n  bravo,\n  charlie,\n} from 'mod';",
+      errors,
+    },
+    {
+      code: `${declare}export { alpha as first, bravo as second, charlie };`,
+      output: `${declare}export {\n  alpha as first,\n  bravo as second,\n  charlie\n};`,
+      errors,
+    },
+    {
+      // A half-split pair goes fully one per line, never back onto one.
+      code: "export {\n  alpha, bravo } from 'mod';",
       output: "export {\n  alpha,\n  bravo\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      errors,
     },
     {
-      code: "export { alpha, bravo, } from 'mod';",
-      output: "export {\n  alpha,\n  bravo,\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      code: "export { alpha,\n  bravo\n} from 'mod';",
+      output: "export {\n  alpha,\n  bravo\n} from 'mod';",
+      errors,
     },
     {
       code: "export { alpha,\n  bravo, charlie } from 'mod';",
       output: "export {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      errors,
     },
     {
-      code: `${declare}export { alpha as first, bravo as second };`,
-      output: `${declare}export {\n  alpha as first,\n  bravo as second\n};`,
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      code: "const pad = {\n  a: 1,\n};\nexport {\n      alpha, bravo, charlie } from 'mod';",
+      output: "const pad = {\n  a: 1,\n};\nexport {\n      alpha,\n  bravo,\n  charlie\n} from 'mod';",
+      errors,
     },
     {
-      code: "if (ready) {\n  module.exports = 1;\n}\nexport { alpha, bravo } from 'mod';",
-      output: "if (ready) {\n  module.exports = 1;\n}\nexport {\n  alpha,\n  bravo\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      code: "if (ready) {\n  module.exports = 1;\n}\nexport { alpha, bravo, charlie } from 'mod';",
+      output: "if (ready) {\n  module.exports = 1;\n}\nexport {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
+      errors,
     },
     {
-      code: "export { alpha, /* keep */ bravo } from 'mod';",
-      output: null,
-      errors: [{ messageId: 'specifiersOnNewline' }],
-    },
-    {
-      code: "export { /* head */ alpha, bravo } from 'mod';",
-      output: null,
-      errors: [{ messageId: 'specifiersOnNewline' }],
-    },
-    {
-      code: "export { alpha, bravo /* tail */ } from 'mod';",
-      output: null,
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      code: "export { /* head */ alpha, /* keep */ bravo, charlie /* tail */ } from 'mod';",
+      output: "export {\n  /* head */ alpha, /* keep */\n  bravo,\n  charlie /* tail */\n} from 'mod';",
+      errors,
     },
   ],
 });
 
 tsRuleTester.run('export-specifier-newline (typescript)', exportSpecifierNewline, {
   valid: [
-    'type Alpha = string;\ntype Bravo = number;\nexport type {\n  Alpha,\n  Bravo\n};',
+    'type Alpha = string;\ntype Bravo = number;\nexport type { Alpha, Bravo };',
     'type Alpha = string;\nexport type { Alpha };',
   ],
   invalid: [
     {
-      code: 'type Alpha = string;\ntype Bravo = number;\nexport type { Alpha, Bravo };',
-      output: 'type Alpha = string;\ntype Bravo = number;\nexport type {\n  Alpha,\n  Bravo\n};',
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      code: `${declareTypes}export type { Alpha, Bravo, Charlie };`,
+      output: `${declareTypes}export type {\n  Alpha,\n  Bravo,\n  Charlie\n};`,
+      errors,
     },
     {
-      code: "export { type Alpha, type Bravo } from 'mod';",
-      output: "export {\n  type Alpha,\n  type Bravo\n} from 'mod';",
-      errors: [{ messageId: 'specifiersOnNewline' }],
+      code: "export { type Alpha, type Bravo, type Charlie } from 'mod';",
+      output: "export {\n  type Alpha,\n  type Bravo,\n  type Charlie\n} from 'mod';",
+      errors,
+    },
+    {
+      code: 'type Alpha = string;\ntype Bravo = number;\nexport type { Alpha,\n  Bravo };',
+      output: 'type Alpha = string;\ntype Bravo = number;\nexport type {\n  Alpha,\n  Bravo\n};',
+      errors,
     },
   ],
 });

@@ -6,7 +6,11 @@ import {
   sameLine,
   spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
-import { createRule, type RuleNode } from '../../utils/ruleUtils.ts';
+import {
+  createRule,
+  mustFind,
+  type RuleNode,
+} from '../../utils/ruleUtils.ts';
 
 import type { SourceCode } from 'eslint';
 
@@ -40,7 +44,8 @@ export const arrayNewline = createRule('array-newline', {
         return;
       }
 
-      const gaps = listGaps(sourceCode, node, elements, indentsAt(node), true);
+      const open = mustFind(sourceCode.getFirstToken(node));
+      const gaps = listGaps(sourceCode, open, elements, indentsAt(node), true);
       const onOneLine = gaps
         .filter(([before, after]) => {
           return sameLine(before, after);

@@ -172,17 +172,6 @@ export const spliceOntoNewline = function* (
   }
 };
 
-export const commaToNewline = (
-  sourceCode: SourceCode,
-  fixer: Fixer,
-  currentToken: AST.Token,
-  indent: string,
-): Rule.Fix => {
-  const comma = mustFind(sourceCode.getTokenBefore(currentToken));
-
-  return fixer.replaceTextRange([comma.range[1], currentToken.range[0]], `${lineTerminatorOf(sourceCode)}${indent}`);
-};
-
 const COMMENTS = { includeComments: true };
 
 // A parenthesised array element ends before its `)`.
@@ -207,15 +196,15 @@ const trailingEnd = (sourceCode: SourceCode, token: AST.Token) => {
   return trailing ?? token;
 };
 
-// `commaSeparated` is false for a TypeScript member, which carries its own `;` or `,`. A hole is a null item.
+// `open` is the brace or bracket, which an export reaches past `export type`. `commaSeparated` is false for a
+// TypeScript member, which carries its own `;` or `,`. A hole is a null item.
 export const listGaps = (
   sourceCode: SourceCode,
-  node: RuleNode,
+  open: AST.Token,
   items: ListItem[],
   { outer, inner }: Indents,
   commaSeparated: boolean,
 ): ListGap[] => {
-  const open = mustFind(sourceCode.getFirstToken(node));
   const ends: AST.Token[] = [];
   let cursor = open;
 

@@ -218,9 +218,9 @@ Every list layout splits at the same count: three or more items, one per line, t
 Two or fewer sit on one line or go fully one per line, and a half-split list, broken in some places and not others,
 is fixed to the second. No rule joins lines. `@linteljs/member-newline` does it for an object literal, an object
 pattern, an interface and a type literal, `@linteljs/array-newline` for an array and an array pattern,
-and `@linteljs/import-newlines` for an import. One node, one owner. Two exceptions are on purpose:
-`export-specifier-newline` splits an export list at two, so a change to a file's public surface is a one-line diff,
-and `union-newline` splits on what a union holds, not on how many members it has. Three rather than two keeps a pair on one line, `const [value, setValue] = useState(0)` among them, without an
+`@linteljs/import-newlines` for an import and `@linteljs/export-specifier-newline` for an export list. One node,
+one owner, and one threshold for all of them. The one exception is on purpose: `union-newline` splits on what a
+union holds, not on how many members it has. Three rather than two keeps a pair on one line, `const [value, setValue] = useState(0)` among them, without an
 exception for tuples.
 
 `@stylistic` 5.10.0 cannot say it, which is why the plugin owns objects and arrays. `object-property-newline` has no

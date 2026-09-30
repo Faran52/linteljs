@@ -12,7 +12,6 @@ import { importNewlines } from '../rules/import-newlines/importNewlines.ts';
 
 import {
   adjacentPairs,
-  commaToNewline,
   fitsOnLine,
   gapIsBlank,
   getIndent,
@@ -307,20 +306,6 @@ describe('spliceOntoNewline', () => {
   });
 });
 
-describe('commaToNewline', () => {
-  it('replaces the gap after the comma with a line break and the given indent', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
-    const second = mustFind(
-      sourceCode.getLastToken(firstNode('ArrayExpression'), 1),
-    );
-
-    expect(commaToNewline(sourceCode, captureFixer(), second, '  ')).toEqual({
-      range: [19, 20],
-      text: '\n  ',
-    });
-  });
-});
-
 describe('fitsOnLine', () => {
   const fitsPattern = (code: string, text: string, limit: number): boolean => {
     const { sourceCode, firstNode } = sourceCodeFrom(code);
@@ -464,6 +449,18 @@ describe('listGaps', () => {
       });
   };
 
+  // Opened at the node's own first token, its brace or bracket.
+  const gapsOf = (
+    sourceCode: SourceCode,
+    node: RuleNode,
+    items: Parameters<typeof listGaps>[2],
+    commaSeparated: boolean,
+  ): string[][] => {
+    const open = mustFind(sourceCode.getFirstToken(node));
+
+    return describeGaps(sourceCode, listGaps(sourceCode, open, items, INDENTS, commaSeparated));
+  };
+
   const elementsOf = (node: RuleNode) => {
     return node.type === 'ArrayExpression' ? node.elements : [];
   };
@@ -471,7 +468,7 @@ describe('listGaps', () => {
   it('finds a gap after the bracket, after each comma and before the close, holes and trailing comma too', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const list = [, alpha, bravo,];');
     const node = firstNode('ArrayExpression');
-    const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
+    const gaps = gapsOf(sourceCode, node, elementsOf(node), true);
 
     expect(gaps).toEqual([
       [
@@ -500,7 +497,7 @@ describe('listGaps', () => {
   it('steps past the parentheses around an element to its comma', () => {
     const { sourceCode, firstNode } = sourceCodeFrom('const list = [(alpha), bravo];');
     const node = firstNode('ArrayExpression');
-    const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
+    const gaps = gapsOf(sourceCode, node, elementsOf(node), true);
 
     expect(gaps[1]).toEqual([
       ',',
@@ -513,7 +510,7 @@ describe('listGaps', () => {
     const code = 'const list = [alpha, /* a */ /* b */ bravo,\n  /* c */ charlie];';
     const { sourceCode, firstNode } = sourceCodeFrom(code);
     const node = firstNode('ArrayExpression');
-    const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
+    const gaps = gapsOf(sourceCode, node, elementsOf(node), true);
 
     expect(gaps).toEqual([
       [
@@ -553,7 +550,7 @@ describe('listGaps', () => {
     const members = [firstNode('TSPropertySignature'), lastNode('TSPropertySignature')];
     const properties = pattern.type === 'ObjectPattern' ? pattern.properties : [];
 
-    expect(describeGaps(sourceCode, listGaps(sourceCode, body, members, INDENTS, false))).toEqual([
+    expect(gapsOf(sourceCode, body, members, false)).toEqual([
       [
         '{',
         'alpha',
@@ -570,7 +567,7 @@ describe('listGaps', () => {
         '',
       ],
     ]);
-    expect(describeGaps(sourceCode, listGaps(sourceCode, pattern, properties, INDENTS, true))).toEqual([
+    expect(gapsOf(sourceCode, pattern, properties, true)).toEqual([
       [
         '{',
         'alpha',

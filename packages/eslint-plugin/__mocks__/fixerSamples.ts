@@ -146,11 +146,15 @@ export const FIXER_SAMPLES: FixerSample[] = [
 
   {
     name: 'export with a comment after the brace',
-    code: "export { /* keep */ alpha, bravo } from 'mod';",
+    code: "export { /* keep */ alpha, bravo, charlie } from 'mod';",
   },
   {
     name: 'export with a trailing comma',
-    code: "export { alpha, bravo, } from 'mod';",
+    code: "export { alpha, bravo, charlie, } from 'mod';",
+  },
+  {
+    name: 'half-split export pair',
+    code: "export { alpha,\n  bravo } from 'mod';",
   },
 
   {
@@ -521,7 +525,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
   },
   {
     name: 'windows line endings, exports',
-    code: "export { alpha, bravo } from 'mod';\r\nconst other = 1;\r\n",
+    code: "export { alpha, bravo, charlie } from 'mod';\r\nconst other = 1;\r\n",
     crlf: true,
   },
   {
