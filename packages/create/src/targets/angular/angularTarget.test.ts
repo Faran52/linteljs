@@ -14,6 +14,7 @@ import {
 } from 'vitest';
 
 import { angularTarget } from './angularTarget';
+import { SHARED } from './constants';
 
 describe('angularTarget', () => {
   it('is the record the angular answer names', () => {
@@ -23,6 +24,27 @@ describe('angularTarget', () => {
   it('has its project file written rather than copied', () => {
     expect(angularTarget.angularProject).toBe(true);
     expect(angularTarget.build).toBe('ng build');
+  });
+
+  it('imports every stylesheet it ships from the style entry, in the order they cascade', () => {
+    const shipped = SHARED
+      .filter((path) => {
+        return path.endsWith('.css');
+      })
+      .map((path) => {
+        return path.replace('src/', './');
+      });
+
+    expect(angularTarget.starterStyles).toEqual(shipped);
+  });
+
+  it('ships the route table with Contact in it, since the Contact page always ships', () => {
+    const routes = angularTarget.starterFiles
+      .find((file) => {
+        return file.target === 'src/config/routes.ts';
+      });
+
+    expect(routes?.variant).toBe('with-form');
   });
 
   it('writes the shared ForbiddenError suite under the kebab spec name the CLI would give it', () => {

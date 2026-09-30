@@ -52,6 +52,13 @@ describe('reactTarget', () => {
     expect(recordFor({ router: 'react-router' }).htmlEntry).toBe('src/main.tsx');
   });
 
+  it('answers the /.well-known/ probes Chrome DevTools sends in framework mode with an empty 404', () => {
+    const [probes = ''] = recordFor({ router: 'react-router-framework' }).vitePlugin?.calls ?? [];
+
+    expect(probes).toContain("request.url?.startsWith('/.well-known/') === true");
+    expect(probes).toContain('response.statusCode = 404;');
+  });
+
   it('installs the compiler only where react() builds', () => {
     expect(recordFor().devDependencies).toContain('oxc-transform-react');
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).not.toContain('oxc-transform-react');
