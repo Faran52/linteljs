@@ -322,6 +322,16 @@ describe('emitEslintConfig', () => {
     expect(config).toContain("'it\\'s/**'");
   });
 
+  it('escapes a trailing backslash and a newline so the config still parses', () => {
+    const config = emitEslintConfig({
+      ...answersFor({}),
+      ignores: ['build\\', 'a\nb'],
+    });
+
+    expect(config).toContain("'build\\\\'");
+    expect(config).toContain("'a\\nb'");
+  });
+
   it('asks for the astro layer on astro alone', () => {
     expect(emitEslintConfig(answersFor({ target: 'astro' }))).toContain('  astro: true,\n');
     expect(emitEslintConfig(answersFor({ target: 'react' }))).not.toContain('astro');

@@ -111,6 +111,12 @@ describe('nuxtConfigEmitter', () => {
     expect(emitNuxtConfig(answersFor())).toBe(PLAIN);
   });
 
+  it('escapes a trailing backslash in an alias path so the config still parses', () => {
+    const config = emitNuxtConfig(answersFor({ aliases: { '@odd/*': './a\\/*' } }));
+
+    expect(config).toContain("'@odd': join(import.meta.dirname, 'a\\\\'),");
+  });
+
   it('reaches tailwind through vite, and only when tailwind was answered', () => {
     const tailwind = emitNuxtConfig(answersFor({ styling: 'tailwind' }));
 

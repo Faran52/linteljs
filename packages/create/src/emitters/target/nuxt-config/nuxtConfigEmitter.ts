@@ -9,6 +9,7 @@ import { targetFor } from '@targets';
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 import { sortedImports } from '../../utils/importUtils';
+import { quote } from '../../utils/quoteUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
 // `alias`, not tsconfig `paths`, which would replace Nuxt's own `#shared` and `#server` set.
@@ -23,9 +24,12 @@ export const emitNuxtConfig = (answers: Answers): string => {
         .replace('/*', '')
         .replace('./', '');
 
+      const wildcard = quote(`${prefix}/*`);
+      const wildcardRoot = quote(`${root}/*`);
+
       return [
-        `    '${prefix}': join(import.meta.dirname, '${root}'),`,
-        `    '${prefix}/*': join(import.meta.dirname, '${root}/*'),`,
+        `    ${quote(prefix)}: join(import.meta.dirname, ${quote(root)}),`,
+        `    ${wildcard}: join(import.meta.dirname, ${wildcardRoot}),`,
       ];
     });
 

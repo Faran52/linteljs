@@ -9,6 +9,7 @@ import { targetFor } from '@targets';
 
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
+import { quote } from '../../utils/quoteUtils';
 
 import {
   BASE_IGNORES,
@@ -33,15 +34,6 @@ const LAYER_ANSWERS: Record<LibraryLayer, (answers: Answers) => boolean> = {
   'stylex': (answers) => {
     return answers.styling === 'stylex';
   },
-};
-
-// `String.raw`, or a backslash parses back as an escape.
-const quote = (value: string): string => {
-  if (value.includes('\\')) {
-    return `String.raw\`${value}\``;
-  }
-
-  return `'${value.replaceAll("'", "\\'")}'`;
 };
 
 const indentOf = (level: number): string => {
