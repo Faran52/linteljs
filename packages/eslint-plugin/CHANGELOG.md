@@ -22,6 +22,12 @@ when a version's change lives in a sibling it is described there instead:
   allowed. A half-split pair such as `export { alpha,\n  bravo }` is fixed to one per line, never joined. It
   reports once per statement, with a new message, and its whitespace-only fix now runs past a comment inside the
   braces instead of declining.
+- **`import-newlines` never joins lines and loses `maxLineLength`.** A split pair such as `import {\n  alpha,\n  bravo\n}`
+  stays split, a half-split pair is fixed to one per line, and a long import under the count is left alone, so
+  the `mustSplitLong` and `mustNotSplit` messages are gone. Only named imports count; a default or namespace import
+  is never moved, and a single named import is never reported, even at `maxItems: 0`. The fix is whitespace only
+  (`fixable: 'whitespace'`), so a comment inside the braces no longer blocks it and a trailing comma or a
+  redundant `as` is left as written. Remove `maxLineLength` from your config.
 - **`member-newline` takes object literals**, which `@stylistic/object-property-newline` split at two. The base
   layer turns that rule off (see `@linteljs/eslint-config`).
 - **`member-newline` loses `maxPropertiesWithRest` and `maxLineLength`.** A rest element counts like any other

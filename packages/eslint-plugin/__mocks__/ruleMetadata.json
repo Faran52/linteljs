@@ -71,8 +71,6 @@
   "import-newlines": {
     "messages": {
       "mustSplitMany": "Imports must be broken into multiple lines if there are more than {{maxItems}} elements.",
-      "mustSplitLong": "Imports must be broken into multiple lines if the line length exceeds {{maxLineLength}} characters.",
-      "mustNotSplit": "Imports must not be broken into multiple lines if there are {{maxItems}} or less elements.",
       "limitLineCount": "Import lines must have one element per line.",
       "noBlankBetween": "Import lines cannot have blank lines between them."
     },
@@ -84,23 +82,18 @@
             "type": "integer",
             "minimum": 0,
             "default": 2
-          },
-          "maxLineLength": {
-            "type": "integer",
-            "minimum": 1,
-            "default": 120
           }
         },
         "additionalProperties": false
       }
     ],
     "type": "layout",
-    "fixable": "code",
+    "fixable": "whitespace",
     "docs": {
       "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
-      "description": "Split import lists when they get crowded or too long."
+      "description": "Put each named import of an import with three or more on its own line."
     }
   },
   "interface-order": {

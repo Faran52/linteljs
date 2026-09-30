@@ -1,33 +1,28 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
-  adjacentPairs,
-  fitsOnLine,
   indentReader,
   lineTerminatorOf,
+  type ListGap,
+  listGaps,
+  sameLine,
+  spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
 import {
   createRule,
-  type Fixer,
   mustFind,
   optionsOf,
-  type TypedNode,
+  rangeOf,
 } from '../../utils/ruleUtils.ts';
-
-import { type ImportNode, writeImport } from './utils/writeUtils.ts';
-
-import type { Rule } from 'eslint';
 
 interface ImportNewlinesOptions {
   maxItems: number;
-  maxLineLength: number;
 }
 
-const isNamedSpecifier = (specifier: TypedNode): boolean => {
-  return specifier.type === 'ImportSpecifier';
-};
-
 const DEFAULT_MAX_ITEMS = 2;
-const DEFAULT_MAX_LINE_LENGTH = 120;
+
+const isBlank = ([before, after]: ListGap): boolean => {
+  return mustFind(after.loc).start.line > mustFind(before.loc).end.line + 1;
+};
 
 export const importNewlines = createRule('import-newlines', {
   meta: {
@@ -36,17 +31,12 @@ export const importNewlines = createRule('import-newlines', {
       language: 'universal',
       recommended: true,
       fixShape: 'whitespace',
-      description: 'Split import lists when they get crowded or too long.',
+      description: 'Put each named import of an import with three or more on its own line.',
     },
-    // `code`, not `whitespace`: rebuilding the clause can drop a redundant `as alpha` or a trailing comma.
-    fixable: 'code',
+    fixable: 'whitespace',
     messages: {
       mustSplitMany:
         'Imports must be broken into multiple lines if there are more than {{maxItems}} elements.',
-      mustSplitLong:
-        'Imports must be broken into multiple lines if the line length exceeds {{maxLineLength}} characters.',
-      mustNotSplit:
-        'Imports must not be broken into multiple lines if there are {{maxItems}} or less elements.',
       limitLineCount:
         'Import lines must have one element per line.',
       noBlankBetween: 'Import lines cannot have blank lines between them.',
@@ -60,11 +50,6 @@ export const importNewlines = createRule('import-newlines', {
             minimum: 0,
             default: DEFAULT_MAX_ITEMS,
           },
-          maxLineLength: {
-            type: 'integer',
-            minimum: 1,
-            default: DEFAULT_MAX_LINE_LENGTH,
-          },
         },
         additionalProperties: false,
       },
@@ -74,131 +59,65 @@ export const importNewlines = createRule('import-newlines', {
     const sourceCode = sourceCodeOf(context);
     const options = optionsOf<ImportNewlinesOptions>(context);
     const maxItems = options.maxItems ?? DEFAULT_MAX_ITEMS;
-    const maxLineLength = options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH;
-    const messageData = {
-      maxItems: String(maxItems),
-      maxLineLength: String(maxLineLength),
-    };
-
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
-    const fixTo = (node: ImportNode, text: string | null): ((fixer: Fixer) => Rule.Fix)
-      | null => {
-      if (text === null) {
-        return null;
-      }
-
-      return (fixer) => {
-        return fixer.replaceText(node, text);
-      };
-    };
-
-    const splitFix = (node: ImportNode): ((fixer: Fixer) => Rule.Fix)
-      | null => {
-      return fixTo(node, writeImport(sourceCode, node, indentsAt(node), eol));
-    };
-
-    // From tokens: a token's `loc` is always present, a node's is optional in the type.
-    const hasBlankLines = (specifiers: ImportNode['specifiers']): boolean => {
-      for (const [previous, specifier] of adjacentPairs(specifiers)) {
-        const before = mustFind(sourceCode.getLastToken(previous));
-        const current = mustFind(sourceCode.getFirstToken(specifier));
-
-        if (current.loc.start.line - before.loc.end.line > 1) {
-          return true;
-        }
-      }
-
-      return false;
-    };
-
-    const checkSingleLineImport = (node: ImportNode, namedCount: number) => {
-      if (sourceCode.getText(node).length + node.loc.start.column > maxLineLength) {
-        if (namedCount > 0) {
-          context.report({
-            node,
-            messageId: 'mustSplitLong',
-            data: messageData,
-            fix: splitFix(node),
-          });
-        }
-
-        return;
-      }
-
-      if (namedCount > maxItems) {
-        context.report({
-          node,
-          messageId: 'mustSplitMany',
-          data: messageData,
-          fix: splitFix(node),
-        });
-      }
-    };
-
-    const collapsedText = (node: ImportNode, namedCount: number): string | null => {
-      const collapsed = namedCount > maxItems ? null : writeImport(sourceCode, node, null, eol);
-
-      return collapsed !== null && fitsOnLine(sourceCode, node, collapsed, maxLineLength) ? collapsed : null;
-    };
-
-    const checkMultiLineImport = (node: ImportNode, namedCount: number, importLineCount: number) => {
-      const collapsed = collapsedText(node, namedCount);
-
-      if (importLineCount !== namedCount + 2) {
-        // A half-split statement under the member count collapses in the end, so the fix goes straight there.
-        context.report({
-          node,
-          messageId: 'limitLineCount',
-          fix: collapsed === null ? splitFix(node) : fixTo(node, collapsed),
-        });
-
-        return;
-      }
-
-      // Reporting what cannot be rewritten would leave an unfixable error.
-      if (collapsed === null) {
-        return;
-      }
-
-      context.report({
-        node,
-        messageId: 'mustNotSplit',
-        data: messageData,
-        fix: fixTo(node, collapsed),
-      });
-    };
-
     return {
       ImportDeclaration: (node) => {
-        const importNode = node as ImportNode;
-        const { specifiers } = importNode;
+        // Only the braced list is laid out: a default or namespace import sits outside it and is never moved.
+        const named = node.specifiers
+          .filter((specifier) => {
+            return specifier.type === 'ImportSpecifier';
+          });
 
-        // Rebuilding a clause-less import yields `import  from 'x'`, unparseable.
-        if (specifiers.length === 0) {
+        if (named.length < 2) {
           return;
         }
 
-        if (hasBlankLines(specifiers)) {
+        const open = mustFind(sourceCode.getTokenBefore(mustFind(named[0])));
+        const gaps = listGaps(sourceCode, open, named, indentsAt(node), true);
+        const onOneLine = gaps
+          .filter(([before, after]) => {
+            return sameLine(before, after);
+          });
+        const blank = gaps.filter(isBlank);
+
+        if (blank.length > 0) {
           context.report({
             node,
             messageId: 'noBlankBetween',
-            fix: splitFix(importNode),
+            fix: (fixer) => {
+              return blank
+                .map(([
+                  before,
+                  after,
+                  indent,
+                ]) => {
+                  return fixer.replaceTextRange([rangeOf(before)[1], rangeOf(after)[0]], `${eol}${indent}`);
+                });
+            },
           });
+        }
 
+        // Crowded: over the count on a shared line. Half-split: some breaks made and some not.
+        if (onOneLine.length === 0 || (named.length <= maxItems && onOneLine.length === gaps.length)) {
           return;
         }
 
-        const namedCount = specifiers.filter(isNamedSpecifier).length;
-        const importLineCount = importNode.source.loc.end.line - importNode.loc.start.line + 1;
-
-        if (importLineCount === 1) {
-          checkSingleLineImport(importNode, namedCount);
-        }
-        else {
-          checkMultiLineImport(importNode, namedCount, importLineCount);
-        }
+        context.report({
+          node,
+          messageId: onOneLine.length === gaps.length ? 'mustSplitMany' : 'limitLineCount',
+          data: { maxItems: String(maxItems) },
+          * fix(fixer) {
+            for (const [
+              before,
+              after,
+              indent,
+            ] of onOneLine) {
+              yield* spliceOntoNewline(fixer, before, after, indent, eol);
+            }
+          },
+        });
       },
     };
   },

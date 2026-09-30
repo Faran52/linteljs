@@ -73,7 +73,6 @@ interface Plan {
 
 type Edit = [AST.Range, string];
 
-// The same figure `member-newline` and `import-newlines` default to.
 const DEFAULT_MAX_LINE_LENGTH = 120;
 
 // `ROUTES.map(...)` is a method on a value, `Object.keys(...)` and `z.string()` are calls into a namespace.

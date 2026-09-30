@@ -159,39 +159,6 @@ export const insertBlankLine = (state: State, previous: AstNode, next: AstNode):
   return comma === -1 || comma > next.range[0] ? undefined : replaced(state, comma + 1, comma + 1, '\n');
 };
 
-// Braces from the member ranges, so an import attribute's `{` cannot be taken for them.
-export const splitBraces = (state: State, members: AstNode[]): Candidate | undefined => {
-  const [first] = members;
-  const last = members.at(-1);
-
-  if (first === undefined || last === undefined) {
-    return undefined;
-  }
-
-  const open = state.source.lastIndexOf('{', first.range[0]);
-  const close = state.source.indexOf('}', last.range[1]);
-
-  if (open === -1 || close === -1) {
-    return undefined;
-  }
-
-  const unsafe = unsafeToReflow(state, open, close + 1);
-
-  if (unsafe !== undefined) {
-    state.skip(unsafe);
-
-    return undefined;
-  }
-
-  const text = members
-    .map((member) => {
-      return textOf(state, member);
-    })
-    .join(',\n  ');
-
-  return replaced(state, open, close + 1, `{\n  ${text}\n}`);
-};
-
 // Members held apart by newlines alone would join into `{ a: string b: number }`.
 export const separatedByPunctuation = (state: State, members: AstNode[]): boolean => {
   return members

@@ -1,35 +1,44 @@
 # @linteljs/import-newlines
 
-Split import lists when they get crowded or too long.
+Put each named import of an import with three or more on its own line.
 
 - Applies to: JavaScript and TypeScript
-- Fixable: yes (code)
+- Fixable: yes (whitespace)
 - In `recommended`: yes
 
-An import with more than two named members, or one that runs past 120 characters, goes one member
-per line. Anything shorter collapses back onto a single line. The point is that the import block at
-the top of a file stays scannable: short imports do not each cost four lines, and long ones do not
-run off the side of the screen.
+Three or more named imports go one per line, with the braces on lines of their own, the same count
+`array-newline`, `member-newline` and `export-specifier-newline` hold their lists to. Two or fewer sit
+on one line or go fully one per line; a pair broken in one place and not the other is fixed to one per
+line. A blank line inside the braces is removed. The rule never joins lines.
 
-Fixable as `code` rather than `whitespace`, because the rebuild also drops a redundant `as alpha`
-and a trailing comma, which is more than spacing.
+Only the braced list counts. A default import and a namespace import sit outside it, are never
+counted and are never moved, so `import React, { useEffect, useState } from 'react'` stays on one line
+and `import alpha, * as namespace from 'mod'` has nothing to split.
 
 ## Examples of incorrect code for this rule
 
 ```ts
 import { alpha, bravo, charlie } from 'mod';
 
-import { createConfiguration, resolveConfiguration } from '../../infrastructure/configuration/environmentAwareConfigLoader';
+import { delta,
+  echo } from 'one';
 
 import {
-  delta
-} from 'one';
+  foxtrot,
+
+  golf
+} from 'two';
 ```
 
 ## Examples of correct code for this rule
 
 ```ts
 import { alpha, bravo } from 'mod';
+
+import {
+  alpha,
+  bravo
+} from 'mod';
 
 import {
   charlie,
@@ -50,29 +59,16 @@ import 'side-effects-only';
 
 ```jsonc
 {
-  "@linteljs/import-newlines": ["error", { "maxItems": 2, "maxLineLength": 120 }]
+  "@linteljs/import-newlines": ["error", { "maxItems": 2 }]
 }
 ```
 
-- `maxItems`: integer, `2` by default. More named members than this and the statement splits one
-  per line. Fewer, and a statement already split collapses back onto one line, provided the result
-  fits inside `maxLineLength`. A half-split statement under the count collapses in that one pass
-  rather than being split first and collapsed on the next.
-- `maxLineLength`: integer, `120` by default. A statement longer than this splits even when it is
-  under the member count. It only applies when there is a named member to break onto a line of its
-  own: a default or namespace import has nothing to split, so it is left alone however long it
-  runs.
-
-## What it declines to fix
-
-The fix rebuilds the statement from its specifiers, so a comment anywhere inside it means the rule
-reports and offers no fix. Reflowing over the comment would delete it silently.
-
-Import attributes survive the rebuild. Everything from the module specifier onwards is copied
-verbatim, so `import data from './x.json' with { type: 'json' }` keeps its `with` clause. That was
-a real bug: rebuilding from `source.raw` dropped the clause and the import stopped resolving.
+- `maxItems`: integer, `2` by default. More named imports than this on one line and the statement
+  splits one per line. A single named import is never reported, whatever the count.
 
 ## Notes
 
-Members land at the statement's own column plus one indentation step, inferred from the file. Exact
-widths are still an indent rule's job.
+The fix only rewrites whitespace between tokens, so a comment inside the braces stays where it is and
+a trailing comma is left for `comma-dangle`. A comment on the same line after a comma stays with the
+import before it. Members land at the statement's own column plus one indentation step, inferred from
+the file. Exact widths are still an indent rule's job.

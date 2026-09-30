@@ -143,6 +143,18 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'half-split import',
     code: "import {\n  alpha, bravo } from 'mod';",
   },
+  {
+    name: 'half-split import pair after a default',
+    code: "import main, { alpha,\n  bravo } from 'mod';",
+  },
+  {
+    name: 'import with a trailing comma and a redundant alias',
+    code: "import { alpha as alpha, bravo, charlie, } from 'mod';",
+  },
+  {
+    name: 'half-split import with a blank line',
+    code: "import { alpha,\n\n  bravo, charlie } from 'mod';",
+  },
 
   {
     name: 'export with a comment after the brace',

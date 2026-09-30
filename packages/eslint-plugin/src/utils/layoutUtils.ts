@@ -1,7 +1,6 @@
 import {
   type Fixer,
   mustFind,
-  rangeOf,
   type RuleNode,
   type SourceCode,
 } from './ruleUtils.ts';
@@ -67,21 +66,6 @@ export const getIndent = (sourceCode: SourceCode, node: Located): string => {
   const line = mustFind(sourceCode.lines[start.line - 1]);
 
   return line.replace(/[^\t ][\s\S]*/u, '');
-};
-
-// The whole line counts: a collapse a length rule cannot satisfy is an unfixable error.
-export const fitsOnLine = (
-  sourceCode: SourceCode,
-  node: RuleNode,
-  text: string,
-  limit: number,
-): boolean => {
-  const [start, end] = rangeOf(node);
-  const before = start - (sourceCode.text.lastIndexOf('\n', start - 1) + 1);
-  const newlineAfter = sourceCode.text.indexOf('\n', end);
-  const after = (newlineAfter === -1 ? sourceCode.text.length : newlineAfter) - end;
-
-  return before + text.length + after <= limit;
 };
 
 // The file's majority: always writing \n mixes a CRLF repo, and one stray CRLF line must not convert an LF file.

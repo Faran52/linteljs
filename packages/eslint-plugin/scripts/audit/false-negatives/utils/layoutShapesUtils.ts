@@ -11,13 +11,11 @@ import {
   replaced,
   separatedByPunctuation,
   spansLines,
-  splitBraces,
   type State,
   textOf,
 } from './editUtils.ts';
 
 const DEFAULT_MAX_ITEMS = 2;
-const DEFAULT_MAX_LINE_LENGTH = 120;
 const DEFAULT_MAX_PROPERTIES = 2;
 
 const PROBE_ALIAS = 'linteljsProbeAlias';
@@ -45,23 +43,6 @@ export const importJoinedCase = importCase((node, named, state) => {
   return named.length <= DEFAULT_MAX_ITEMS || oneLine(node)
     ? undefined
     : joinRange(state, node.range[0], node.range[1]);
-});
-
-export const importSplitCase = importCase((node, named, state) => {
-  return named.length === 0 || named.length > DEFAULT_MAX_ITEMS || !oneLine(node)
-    ? undefined
-    : splitBraces(state, named);
-});
-
-export const importLongLineCase = importCase((node, named, state) => {
-  const end = node.source?.range[1];
-  const needed = DEFAULT_MAX_LINE_LENGTH + 1 - node.loc.start.column - textOf(state, node).length;
-
-  if (named.length === 0 || !oneLine(node) || needed <= 0 || end === undefined) {
-    return undefined;
-  }
-
-  return /['"]/.test(state.source[end - 1] ?? '') ? replaced(state, end - 1, end - 1, 'x'.repeat(needed)) : undefined;
 });
 
 export const importTailJoinedCase = importCase((_, named, state) => {

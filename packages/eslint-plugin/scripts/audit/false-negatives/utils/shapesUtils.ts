@@ -21,8 +21,6 @@ import {
   exportTripleCase,
   importBlankLineCase,
   importJoinedCase,
-  importLongLineCase,
-  importSplitCase,
   importTailJoinedCase,
   interfaceMembers,
   literalMembers,
@@ -69,8 +67,6 @@ export const SHAPES: Record<string, Shape[]> = {
   ],
   'import-newlines': [
     shape(importJoinedCase, 'joined onto one line, over the item limit'),
-    shape(importSplitCase, 'split one per line, under the item limit'),
-    shape(importLongLineCase, 'padded past maxLineLength'),
     shape(importTailJoinedCase, 'two members left sharing a line'),
     shape(importBlankLineCase, 'blank line between two members'),
   ],

@@ -12,9 +12,12 @@ jsRuleTester.run('import-newlines', importNewlines, {
     "import * as namespace from 'mod';",
     "import alpha, { bravo } from 'mod';",
     "import 'mod';",
+    "import {} from 'mod';",
     "import alpha, * as namespace from 'mod';",
+    "import alpha, { bravo, charlie } from 'mod';",
 
     `import {\n  ${LONG},\n  bravo\n} from 'mod';`,
+    `import { alpha, ${LONG} } from 'mod';`,
 
     `import defaultExport, * as namespace from '${LONG}';`,
     `import defaultExport from '${LONG}';`,
@@ -24,17 +27,15 @@ jsRuleTester.run('import-newlines', importNewlines, {
 
     "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod'; // trailing",
 
-    {
-      code: "import { alpha, bravo } from 'mod';",
-      options: [{ maxLineLength: 35 }],
-    },
-
     "import {\n  alpha, // why\n  bravo\n} from 'mod';",
 
-    {
-      code: "  import {\n    alpha,\n    bravo\n  } from 'mod';",
-      options: [{ maxLineLength: 36 }],
-    },
+    // A split pair stays split: nothing joins lines.
+    "import {\n  alpha,\n  bravo\n} from 'mod';",
+    "  import {\n    alpha,\n    bravo\n  } from 'mod';",
+    "import {\n  alpha\n} from 'mod';",
+    "import { alpha\n} from 'mod';",
+    "import defaultExport,\n  * as namespace from 'mod';",
+    "import defaultExport,\n\n  * as namespace from 'mod';",
   ],
   invalid: [
     {
@@ -43,42 +44,9 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
-      code: "  import { alpha, bravo } from 'mod';",
-      output: "  import {\n    alpha,\n    bravo\n  } from 'mod';",
-      options: [{ maxLineLength: 36 }],
-      errors: [{ messageId: 'mustSplitLong' }],
-    },
-    {
-      code: "import alpha, { bravo } from 'mod';",
-      output: "import alpha, {\n  bravo\n} from 'mod';",
-      options: [{ maxLineLength: 30 }],
-      errors: [{ messageId: 'mustSplitLong' }],
-    },
-    {
-      code: "import {\n  alpha,\n  bravo\n} from 'mod';",
-      output: "import { alpha, bravo } from 'mod';",
-      options: [{ maxLineLength: 35 }],
-      errors: [{ messageId: 'mustNotSplit' }],
-    },
-    {
       code: "function load() {\n  import('x');\n}\nimport { alpha, bravo, charlie } from 'mod';",
       output: "function load() {\n  import('x');\n}\nimport {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'mustSplitMany' }],
-    },
-    {
-      code: `import { alpha, ${LONG} } from 'mod';`,
-      output: `import {\n  alpha,\n  ${LONG}\n} from 'mod';`,
-      errors: [{ messageId: 'mustSplitLong' }],
-    },
-    {
-      code: "import {\n  alpha\n} from 'mod';",
-      output: "import { alpha } from 'mod';",
-      errors: [{ messageId: 'mustNotSplit' }],
-    },
-    {
-      code: "import {\n  alpha,\n  bravo\n} from 'mod';",
-      output: "import { alpha, bravo } from 'mod';",
-      errors: [{ messageId: 'mustNotSplit' }],
     },
     {
       code: "import { alpha,\n  bravo, charlie } from 'mod';",
@@ -87,7 +55,22 @@ jsRuleTester.run('import-newlines', importNewlines, {
     },
     {
       code: "import {\n  alpha, bravo } from 'mod';",
-      output: "import { alpha, bravo } from 'mod';",
+      output: "import {\n  alpha,\n  bravo\n} from 'mod';",
+      errors: [{ messageId: 'limitLineCount' }],
+    },
+    {
+      code: "import { alpha,\n  bravo } from 'mod';",
+      output: "import {\n  alpha,\n  bravo\n} from 'mod';",
+      errors: [{ messageId: 'limitLineCount' }],
+    },
+    {
+      code: "  import { alpha,\n    bravo } from 'mod';",
+      output: "  import {\n    alpha,\n    bravo\n  } from 'mod';",
+      errors: [{ messageId: 'limitLineCount' }],
+    },
+    {
+      code: "import defaultExport, { alpha,\n  bravo } from 'mod';",
+      output: "import defaultExport, {\n  alpha,\n  bravo\n} from 'mod';",
       errors: [{ messageId: 'limitLineCount' }],
     },
     {
@@ -97,13 +80,24 @@ jsRuleTester.run('import-newlines', importNewlines, {
     },
     {
       code: "import {\n  alpha, /* keep */ bravo } from 'mod';",
-      output: null,
+      output: "import {\n  alpha, /* keep */\n  bravo\n} from 'mod';",
       errors: [{ messageId: 'limitLineCount' }],
     },
     {
       code: "import {\n  alpha,\n\n  bravo,\n  charlie\n} from 'mod';",
       output: "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'noBlankBetween' }],
+    },
+    {
+      code: "import {\n\n  alpha,\n  bravo\n} from 'mod';",
+      output: "import {\n  alpha,\n  bravo\n} from 'mod';",
+      errors: [{ messageId: 'noBlankBetween' }],
+    },
+    {
+      code: "import { alpha,\n\n  bravo, charlie } from 'mod';",
+      // The two fixes overlap, so the blank line goes on the next pass.
+      output: "import {\n  alpha,\n\n  bravo,\n  charlie\n} from 'mod';",
+      errors: [{ messageId: 'noBlankBetween' }, { messageId: 'limitLineCount' }],
     },
     {
       code: "import defaultExport, { alpha, bravo, charlie } from 'mod';",
@@ -116,24 +110,24 @@ jsRuleTester.run('import-newlines', importNewlines, {
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
+      code: "import { alpha as alpha, bravo, charlie, } from 'mod';",
+      output: "import {\n  alpha as alpha,\n  bravo,\n  charlie,\n} from 'mod';",
+      errors: [{ messageId: 'mustSplitMany' }],
+    },
+    {
       code: "import { alpha, bravo, charlie } from 'mod' with { type: 'json' };",
       output: "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod' with { type: 'json' };",
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
       code: "import { alpha, /* keep */ bravo, charlie } from 'mod';",
-      output: null,
+      output: "import {\n  alpha, /* keep */\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'mustSplitMany' }],
     },
     {
-      code: "import defaultExport,\n\n  * as namespace from 'mod';",
-      output: "import defaultExport, * as namespace from 'mod';",
-      errors: [{ messageId: 'noBlankBetween' }],
-    },
-    {
       code: "import defaultExport,\n\n  { alpha, bravo, charlie } from 'mod';",
-      output: "import defaultExport, {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
-      errors: [{ messageId: 'noBlankBetween' }],
+      output: "import defaultExport,\n\n  {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
+      errors: [{ messageId: 'mustSplitMany' }],
     },
   ],
 });
@@ -149,8 +143,8 @@ jsRuleTester.run('import-newlines (options)', importNewlines, {
       options: [{ maxItems: 4 }],
     },
     {
-      code: `import { alpha, ${LONG} } from 'mod';`,
-      options: [{ maxLineLength: 400 }],
+      code: "import { alpha } from 'mod';",
+      options: [{ maxItems: 0 }],
     },
   ],
   invalid: [
@@ -167,16 +161,10 @@ jsRuleTester.run('import-newlines (options)', importNewlines, {
       errors: [{ message: 'Imports must be broken into multiple lines if there are more than 3 elements.' }],
     },
     {
-      code: "import { alpha, bravo } from 'a-fairly-long-module-path';",
-      output: "import {\n  alpha,\n  bravo\n} from 'a-fairly-long-module-path';",
-      options: [{ maxLineLength: 20 }],
-      errors: [{ message: 'Imports must be broken into multiple lines if the line length exceeds 20 characters.' }],
-    },
-    {
-      code: "import { alpha } from 'mod';",
-      output: "import {\n  alpha\n} from 'mod';",
-      options: [{ maxItems: 0 }],
-      errors: [{ messageId: 'mustSplitMany' }],
+      code: "import { alpha, bravo,\n  charlie } from 'mod';",
+      output: "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
+      options: [{ maxItems: 3 }],
+      errors: [{ messageId: 'limitLineCount' }],
     },
   ],
 });
@@ -185,6 +173,7 @@ tsRuleTester.run('import-newlines (typescript)', importNewlines, {
   valid: [
     "import type { Alpha, Bravo } from 'mod';",
     "import type {\n  Alpha,\n  Bravo,\n  Charlie\n} from 'mod';",
+    "import type {\n  Alpha,\n  Bravo\n} from 'mod';",
   ],
   invalid: [
     {
@@ -196,6 +185,11 @@ tsRuleTester.run('import-newlines (typescript)', importNewlines, {
       code: "import { type Alpha, type Bravo, Charlie } from 'mod';",
       output: "import {\n  type Alpha,\n  type Bravo,\n  Charlie\n} from 'mod';",
       errors: [{ messageId: 'mustSplitMany' }],
+    },
+    {
+      code: "import { type Alpha,\n  Bravo } from 'mod';",
+      output: "import {\n  type Alpha,\n  Bravo\n} from 'mod';",
+      errors: [{ messageId: 'limitLineCount' }],
     },
   ],
 });
