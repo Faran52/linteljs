@@ -20,9 +20,10 @@ interface LineEntry {
 // Three slashes is where the shipped standard moves a note into JSDoc.
 const MIN_JSDOC_LINES = 3;
 
-// Directives are machine-addressed, so never rewritten. Two patterns for the complexity limit.
+// Directives are machine-addressed, so never rewritten or joined into a block. Two patterns for the complexity limit.
 const DIRECTIVE_OPENER = /^#!|^\/\/\/\s*<reference\b/;
 const DIRECTIVE_KEYWORD = /^\/\/\s*(?:eslint-\w+|@?ts-\w+|[vc]8 ignore|istanbul ignore|prettier-ignore)\b/;
+const SOURCE_MAP = /^\/\/\s*[#@]\s*source(?:Mapping)?URL=/;
 
 // Test files carry no comments at all, which is a different rule's business.
 const TEST_FILE_PATTERN = /(?:^|[/\\.])(?:test|spec)\.[cm]?[jt]sx?$|(?:^|[/\\])__tests__(?:[/\\]|$)/;
@@ -31,7 +32,7 @@ const TEST_FILE_PATTERN = /(?:^|[/\\.])(?:test|spec)\.[cm]?[jt]sx?$|(?:^|[/\\])_
 const JSDOC_TAG = /(^|\s)@[a-z]/i;
 
 const isDirective = (raw: string): boolean => {
-  return DIRECTIVE_OPENER.test(raw) || DIRECTIVE_KEYWORD.test(raw);
+  return DIRECTIVE_OPENER.test(raw) || DIRECTIVE_KEYWORD.test(raw) || SOURCE_MAP.test(raw);
 };
 
 const jsdocBodyOf = (comment: CommentNode): string[] => {

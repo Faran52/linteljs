@@ -340,6 +340,10 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
   },
   {
+    name: 'source map comment splits a comment run',
+    code: '// alpha\n// bravo\n//# sourceMappingURL=out.js.map\n// charlie\n// delta\nconst value = 1;\n',
+  },
+  {
     name: 'shebang stays a hashbang',
     code: '#!/usr/bin/env node\nconst value = 1;\n',
   },

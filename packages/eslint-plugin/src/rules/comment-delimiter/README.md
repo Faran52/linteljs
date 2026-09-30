@@ -19,7 +19,8 @@ becomes the same sentences on `//` lines.
 
 Directives are machine-addressed rather than prose, and rewriting one breaks what points at it.
 A shebang, a `/// <reference>`, any `eslint-disable` form, `@ts-expect-error`, `@ts-ignore`,
-`v8 ignore`, `c8 ignore`, `istanbul ignore` and `prettier-ignore` are all skipped, and a directive
+`v8 ignore`, `c8 ignore`, `istanbul ignore`, `prettier-ignore` and the `//# sourceMappingURL=` and
+`//# sourceURL=` lines are all skipped, and a directive
 in the middle of a run also ends the run rather than joining it.
 
 A comment sharing a line with code is skipped too. A trailing note is one line by construction,
