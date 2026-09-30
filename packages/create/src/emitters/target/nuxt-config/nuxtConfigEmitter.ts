@@ -39,7 +39,6 @@ export const emitNuxtConfig = (answers: Answers): string => {
     ...styling.declaration === undefined ? [] : [styling.declaration, ''],
     'export default defineNuxtConfig({',
     "  compatibilityDate: '2025-07-15',",
-    "  // `src/`, not Nuxt 4's own `app/`: one source root, the same as every other target this CLI writes.",
     "  srcDir: 'src/',",
     '  devtools: { enabled: false },',
     `  css: ['~/${styleEntry.replace('src/', '')}'],`,

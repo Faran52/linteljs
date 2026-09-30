@@ -97,7 +97,7 @@ const STRICT_ONLY: BannedPattern[] = [
   },
   {
     name: 'index signature',
-    // The trailing colon: without it this matched a labelled tuple element, as in Vue's typed emits.
+    // The trailing colon keeps a labelled tuple element, as in Vue's typed emits, from matching.
     re: /\[[A-Za-z_]\w*:\s*(?:string|number|symbol)]\s*:/,
   },
 ];

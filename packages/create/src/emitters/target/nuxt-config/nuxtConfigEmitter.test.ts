@@ -25,7 +25,6 @@ import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  // \`src/\`, not Nuxt 4's own \`app/\`: one source root, the same as every other target this CLI writes.
   srcDir: 'src/',
   devtools: { enabled: false },
   css: ['~/styles/main.css'],
@@ -66,7 +65,6 @@ const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  // \`src/\`, not Nuxt 4's own \`app/\`: one source root, the same as every other target this CLI writes.
   srcDir: 'src/',
   devtools: { enabled: false },
   css: ['~/styles/main.css'],

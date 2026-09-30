@@ -44,7 +44,6 @@ describe('reactRouterConfigEmitter', () => {
       "import type { Config } from '@react-router/dev/config';",
       '',
       'export default {',
-      '  // `src`, not the default `app`: one source root, the same as every other target this CLI writes.',
       "  appDirectory: 'src',",
       '  ssr: true,',
       '} satisfies Config;',
