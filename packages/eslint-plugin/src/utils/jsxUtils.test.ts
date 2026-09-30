@@ -404,6 +404,27 @@ describe('descendantElements through an expression', () => {
 
     expect(descendants).toEqual([left, right, consequent, alternate]);
   });
+
+  it('lists the elements inside a fragment an expression renders, not the fragment', () => {
+    const inner = { type: 'JSXElement' };
+    const fragment = {
+      type: 'JSXFragment',
+      children: [{
+        type: 'JSXText',
+        value: 'label',
+      }, inner],
+    };
+
+    const descendants = descendantElements({
+      type: 'JSXElement',
+      children: [{
+        type: 'JSXExpressionContainer',
+        expression: fragment,
+      }],
+    });
+
+    expect(descendants).toEqual([inner]);
+  });
 });
 
 describe('isInteractive', () => {
