@@ -3,15 +3,14 @@ import {
   breakGaps,
   gapsToBreak,
   indentReader,
+  isBlank,
   lineTerminatorOf,
-  type ListGap,
   listGaps,
 } from '../../utils/layoutUtils.ts';
 import {
   createRule,
   mustFind,
   optionsOf,
-  rangeOf,
 } from '../../utils/ruleUtils.ts';
 
 interface ImportNewlinesOptions {
@@ -19,10 +18,6 @@ interface ImportNewlinesOptions {
 }
 
 const DEFAULT_MAX_ITEMS = 2;
-
-const isBlank = ([before, after]: ListGap): boolean => {
-  return mustFind(after.loc).start.line > mustFind(before.loc).end.line + 1;
-};
 
 export const importNewlines = createRule('import-newlines', {
   meta: {
@@ -83,16 +78,7 @@ export const importNewlines = createRule('import-newlines', {
           context.report({
             node,
             messageId: 'noBlankBetween',
-            fix: (fixer) => {
-              return blank
-                .map(([
-                  before,
-                  after,
-                  indent,
-                ]) => {
-                  return fixer.replaceTextRange([rangeOf(before)[1], rangeOf(after)[0]], `${eol}${indent}`);
-                });
-            },
+            fix: breakGaps(blank, eol),
           });
         }
 

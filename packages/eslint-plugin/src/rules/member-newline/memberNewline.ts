@@ -1,21 +1,20 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
+  breakGaps,
+  gapsToBreak,
   indentReader,
+  isBlank,
   lineTerminatorOf,
-  type ListGap,
   listGaps,
-  sameLine,
 } from '../../utils/layoutUtils.ts';
 import {
   createRule,
-  type Fixer,
   mustFind,
   optionsOf,
-  rangeOf,
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-import type { Rule, SourceCode } from 'eslint';
+import type { SourceCode } from 'eslint';
 
 type Member = Parameters<SourceCode['getLastToken']>[0];
 
@@ -37,10 +36,6 @@ interface MemberNewlineOptions {
 }
 
 const DEFAULT_MAX_PROPERTIES = 2;
-
-const isBlank = ([before, after]: ListGap): boolean => {
-  return mustFind(after.loc).start.line > mustFind(before.loc).end.line + 1;
-};
 
 export const memberNewline = createRule('member-newline', {
   meta: {
@@ -88,39 +83,15 @@ export const memberNewline = createRule('member-newline', {
 
       const open = mustFind(sourceCode.getFirstToken(node));
       const gaps = listGaps(sourceCode, open, members, indentsAt(node), commaSeparated);
-      const isOver = members.length > maxCount;
-      const onOneLine = gaps
-        .filter(([before, after]) => {
-          return sameLine(before, after);
-        });
-      const blank = isOver && blanksCount ? gaps.filter(isBlank) : [];
+      const toBreak = gapsToBreak(gaps, maxCount);
+      const blank = members.length > maxCount && blanksCount ? gaps.filter(isBlank) : [];
+      const fix = breakGaps([...toBreak, ...blank], eol);
 
-      const fix = (fixer: Fixer): Rule.Fix[] => {
-        return [...onOneLine, ...blank]
-          .map(([
-            before,
-            after,
-            indent,
-          ]) => {
-            return fixer.replaceTextRange([rangeOf(before)[1], rangeOf(after)[0]], `${eol}${indent}`);
-          });
-      };
-
-      // All on one line is fine up to the count; a list broken anywhere is broken everywhere.
-      if (onOneLine.length === gaps.length) {
-        if (isOver) {
-          context.report({
-            node,
-            messageId: 'mustSplit',
-            data: { maxProperties: String(maxCount) },
-            fix,
-          });
-        }
-      }
-      else if (onOneLine.length > 0) {
+      if (toBreak.length > 0) {
         context.report({
           node,
-          messageId: 'membersOnNewline',
+          messageId: toBreak.length === gaps.length ? 'mustSplit' : 'membersOnNewline',
+          data: { maxProperties: String(maxCount) },
           fix,
         });
       }

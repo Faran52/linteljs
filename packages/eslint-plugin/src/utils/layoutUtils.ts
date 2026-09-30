@@ -1,6 +1,7 @@
 import {
   type Fixer,
   mustFind,
+  rangeOf,
   type RuleNode,
   type SourceCode,
 } from './ruleUtils.ts';
@@ -143,19 +144,6 @@ export const indentReader = (sourceCode: SourceCode): ((node: RuleNode) => Inden
   };
 };
 
-// A gap across lines is the caller's layout, not ours to collapse.
-export const spliceOntoNewline = function* (
-  fixer: Fixer,
-  before: SpliceAnchor | null | undefined,
-  after: SpliceAnchor | null | undefined,
-  indent: string,
-  eol: string,
-): IterableIterator<Rule.Fix> {
-  if (before?.loc?.end.line === after?.loc?.start.line && before?.range && after?.range) {
-    yield fixer.replaceTextRange([before.range[1], after.range[0]], `${eol}${indent}`);
-  }
-};
-
 const COMMENTS = { includeComments: true };
 
 // A parenthesised array element ends before its `)`.
@@ -239,6 +227,11 @@ export const gapsToBreak = (gaps: ListGap[], maxInline: number): ListGap[] => {
   return onOneLine.length === gaps.length && itemCount <= maxInline ? [] : onOneLine;
 };
 
+export const isBlank = ([before, after]: ListGap): boolean => {
+  return mustFind(after.loc).start.line > mustFind(before.loc).end.line + 1;
+};
+
+// Each gap becomes one break and the indent, whether it was on one line or held a blank line.
 export const breakGaps = (gaps: ListGap[], eol: string) => {
   return function* (fixer: Fixer): IterableIterator<Rule.Fix> {
     for (const [
@@ -246,7 +239,7 @@ export const breakGaps = (gaps: ListGap[], eol: string) => {
       after,
       indent,
     ] of gaps) {
-      yield* spliceOntoNewline(fixer, before, after, indent, eol);
+      yield fixer.replaceTextRange([rangeOf(before)[1], rangeOf(after)[0]], `${eol}${indent}`);
     }
   };
 };

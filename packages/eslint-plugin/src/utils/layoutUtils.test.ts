@@ -18,13 +18,13 @@ import {
   getIndent,
   getIndentStep,
   indentReader,
+  isBlank,
   linesInsideTokens,
   lineSpan,
   lineTerminatorOf,
   type ListGap,
   listGaps,
   sameLine,
-  spliceOntoNewline,
 } from './layoutUtils.ts';
 import {
   mustFind,
@@ -272,38 +272,6 @@ describe('sameLine', () => {
 
   it('reports false when neither side has a line', () => {
     expect(sameLine(undefined, undefined)).toBe(false);
-  });
-});
-
-describe('spliceOntoNewline', () => {
-  const fixer = captureFixer();
-
-  it('yields nothing when both anchors are absent', () => {
-    expect([...spliceOntoNewline(fixer, null, null, '  ', '\n')]).toEqual([]);
-  });
-
-  it('yields nothing when both anchors carry no location', () => {
-    expect([...spliceOntoNewline(fixer, {}, {}, '  ', '\n')]).toEqual([]);
-  });
-
-  it('yields nothing when only the first anchor carries a range', () => {
-    expect([...spliceOntoNewline(fixer, { range: [0, 1] }, null, '  ', '\n')]).toEqual([]);
-  });
-
-  it('replaces the gap between two anchors on one line with a break and the indent', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('const alpha = [one, two];\n');
-    const array = firstNode('ArrayExpression');
-
-    expect([...spliceOntoNewline(
-      fixer,
-      sourceCode.getFirstToken(array),
-      sourceCode.getLastToken(array),
-      '  ',
-      '\n',
-    )]).toEqual([{
-      range: [15, 23],
-      text: '\n  ',
-    }]);
   });
 });
 
@@ -599,11 +567,24 @@ describe('gapsToBreak', () => {
   });
 });
 
+describe('isBlank', () => {
+  it('reads a gap with a line between its ends as blank', () => {
+    const blank = arrayGaps('[\n  alpha,\n\n  bravo\n];')
+      .map(isBlank);
+
+    expect(blank).toEqual([
+      false,
+      true,
+      false,
+    ]);
+  });
+});
+
 describe('breakGaps', () => {
   const fixer = captureFixer();
 
-  it('puts each gap it is given onto a new line at its indent, skipping one already across lines', () => {
-    const gaps = arrayGaps('[alpha,\n  bravo];');
+  it('rewrites each gap it is given to one break at its indent, a gap across lines included', () => {
+    const gaps = arrayGaps('[alpha,\n\n  bravo];');
     const fixes = [...breakGaps(gaps, '\r\n')(fixer)];
 
     expect(fixes).toEqual([
@@ -612,7 +593,11 @@ describe('breakGaps', () => {
         text: '\r\n  ',
       },
       {
-        range: [15, 15],
+        range: [7, 11],
+        text: '\r\n  ',
+      },
+      {
+        range: [16, 16],
         text: '\r\n',
       },
     ]);
