@@ -1,2 +1,6 @@
 <app-header [name]="name" />
-<router-outlet />
+@if (crashed()) {
+  <app-status-page [code]="serverError.code" [message]="serverError.message" [onRetry]="retry" />
+} @else {
+  <router-outlet />
+}

@@ -147,6 +147,14 @@ export const angularTarget: TargetRecord = {
       covers: 'src/components/ui/button/button.ts',
     },
     {
+      target: 'src/components/features/status-page/status-page.spec.ts',
+      covers: 'src/components/features/status-page/status-page.ts',
+    },
+    {
+      target: 'src/lib/providers/crash-handler/crash-handler.spec.ts',
+      covers: 'src/lib/providers/crash-handler/crash-handler.ts',
+    },
+    {
       target: 'src/components/ui/text-input/text-input.spec.ts',
       covers: 'src/components/ui/text-input/text-input.ts',
     },

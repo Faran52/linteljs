@@ -1,5 +1,11 @@
-import { type ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import {
+  type ApplicationConfig,
+  ErrorHandler,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+
+import { CrashHandler } from '../lib/providers/crash-handler/crash-handler';
 
 import { routes } from './app.routes';
 
@@ -7,6 +13,10 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
+    {
+      provide: ErrorHandler,
+      useExisting: CrashHandler,
+    },
   ],
 };

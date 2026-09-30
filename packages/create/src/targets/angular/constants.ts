@@ -23,11 +23,15 @@ export const ALWAYS: readonly string[] = [
   'src/components/ui/text-input/text-input.html',
   'src/components/features/app-header/app-header.ts',
   'src/components/features/app-header/app-header.html',
+  'src/components/features/status-page/status-page.ts',
+  'src/components/features/status-page/status-page.html',
+  'src/lib/providers/crash-handler/crash-handler.ts',
 ];
 
 // The Contact page always ships, so its styles do too.
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
+  'src/config/statuses.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'src/components/features/app-header/AppHeader.css',

@@ -30,7 +30,7 @@ when a version's change lives in a sibling it is described there instead:
 ### Added
 
 - Nuxt is a target.
-- Every web starter but Angular, Astro and the extension ships a status page and catches a crash with its
+- Every web starter but Astro and the extension ships a status page and catches a crash with its
   framework's own mechanism: a 500 page with "Try again" on a crash, a 404 for a path nothing routes, and a 403 where
   a loader or a server can refuse (React Router, Nuxt, SvelteKit). One `StatusPage` per framework reads one table,
   `src/config/statuses.ts`. The button now ships under every answer, since the 500 page retries with it.

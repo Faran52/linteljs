@@ -1,3 +1,6 @@
+import { StatusPage } from '../components/features/status-page/status-page';
+import { STATUSES } from '../config/statuses';
+
 import { About } from './about/about';
 import { Home } from './home/home';
 import { Version } from './version/version';
@@ -26,5 +29,11 @@ export const routes: Routes = [
   {
     path: 'version',
     component: Version,
+  },
+  // Last, so it takes only what nothing above matched; its data binds to the page's inputs.
+  {
+    path: '**',
+    component: StatusPage,
+    data: STATUSES.notFound,
   },
 ];
