@@ -57,7 +57,7 @@ describe('emitCiWorkflow', () => {
     ['bun', `    steps:
       - uses: actions/checkout@v7
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - uses: actions/setup-node@v7
         with:
@@ -118,8 +118,10 @@ describe('emitCiWorkflow', () => {
 
   it('pins the third-party action to a commit and keeps the first-party ones on a major', () => {
     const workflow = emitCiWorkflow(hostedAnswersFor({ packageManager: 'pnpm' }));
+    const bunWorkflow = emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' }));
 
     expect(workflow).toMatch(/pnpm\/action-setup@[\da-f]{40} # v\d+\.\d+\.\d+/);
+    expect(bunWorkflow).toMatch(/oven-sh\/setup-bun@[\da-f]{40} # v2\.\d+\.\d+/);
     expect(workflow).toContain('actions/checkout@v7');
     expect(workflow).toContain('actions/setup-node@v7');
   });

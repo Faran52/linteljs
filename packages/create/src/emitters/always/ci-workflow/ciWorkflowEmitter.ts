@@ -39,7 +39,7 @@ const MANAGER_SETUP: Record<PackageManager, ManagerSetup> = {
   },
   // `setup-node` fails outright on a `cache` value it does not know.
   'bun': {
-    before: '- uses: oven-sh/setup-bun@v2',
+    before: '- uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0',
     install: 'bun install --frozen-lockfile',
   },
 };
