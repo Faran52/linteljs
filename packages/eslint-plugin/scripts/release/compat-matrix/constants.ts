@@ -98,10 +98,15 @@ export const TS_FIXTURE = [
   '  target: string;',
   '}',
   '',
+  'export interface Shape {',
+  '  label: string;',
+  '}',
+  '',
 ].join('\n');
 
 export const TS_EXPECTED = [
   '@linteljs/interface-order',
+  '@linteljs/no-duplicate-interface',
   '@linteljs/no-inline-object-types',
   '@linteljs/union-newline',
 ];

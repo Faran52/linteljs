@@ -21,8 +21,8 @@ when a version's change lives in a sibling it is described there instead:
 - **`meta.docs.category` is replaced by `meta.docs.fixShape`**, and the exports `RULE_CATEGORIES` and `RuleCategory`
   by `FIX_SHAPES` and `FixShape`: `whitespace` leaves the tokens identical, `reorder` only reorders them, absent
   may rewrite code.
-- **`recommended` gains four rules**, so a project on it reports more on upgrade: `chain-call-newline`,
-  `interface-order`, `no-eslint-disable` and `no-inline-object-types` (below).
+- **`recommended` gains five rules**, so a project on it reports more on upgrade: `chain-call-newline`,
+  `interface-order`, `no-duplicate-interface`, `no-eslint-disable` and `no-inline-object-types` (below).
 
 ### Added
 
@@ -31,6 +31,9 @@ when a version's change lives in a sibling it is described there instead:
   `Object.keys(x).map(fn)` and `expect(x).toBe(y)` stay on one line. Fixable (whitespace): breaks before each `.`
   and moves the callback's lines a step right; reports without a fix past `maxLineLength` (default `120`) or
   with a comment in the way.
+- `no-duplicate-interface` (TypeScript only) reports a second `interface` of the same name in one scope, which
+  TypeScript merges silently. The top level, each `declare global` and `declare module` block, each `namespace`
+  body and each function block are separate scopes, so augmentation stays allowed. Report-only.
 - `no-eslint-disable` reports `eslint-disable`, `eslint-disable-line` and `eslint-disable-next-line` directives.
   Report-only. `allowRules` names rule ids a directive may carry; a bare directive is never allowed.
 - `no-inline-object-types` (TypeScript only) reports a type literal with members anywhere but directly under a type

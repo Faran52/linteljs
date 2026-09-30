@@ -215,6 +215,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         '@linteljs/union-newline': 'error',
         '@linteljs/interface-order': 'error',
         '@linteljs/no-inline-object-types': 'error',
+        '@linteljs/no-duplicate-interface': 'error',
       },
     },
 

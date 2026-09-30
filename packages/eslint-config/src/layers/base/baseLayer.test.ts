@@ -387,6 +387,17 @@ describe('base: linteljs rules', () => {
     await expect(ruleIdsFor(base(), code, TS_FILE)).resolves.toContain('@linteljs/interface-order');
   });
 
+  it('reports a second interface of one name in a scope, and not a global augmentation', async () => {
+    const code = 'export interface Shape {\n  a: string;\n}\n\nexport interface Shape {\n  b: string;\n}\n\n'
+      + 'declare global {\n  interface Shape {\n    c: string;\n  }\n}\n';
+    const reported = (await ruleIdsFor(base(), code, TS_FILE))
+      .filter((ruleId) => {
+        return ruleId === '@linteljs/no-duplicate-interface';
+      });
+
+    expect(reported).toHaveLength(1);
+  });
+
   const TYPESCRIPT_RULE_IDS = Object.entries(lintelRules)
     .filter(([, rule]) => {
       return rule.meta.docs.language === 'typescript';

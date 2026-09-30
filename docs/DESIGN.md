@@ -238,6 +238,19 @@ and Solid layers.
 - **A spread resets the count.** The same name on either side of `{...props}` is the documented way to offer a
   default. Three occurrences with a spread between the first two still report the third.
 
+### `no-duplicate-interface` rather than `no-redeclare`
+
+TypeScript merges two interfaces of one name in one scope and says nothing, so the second edit to add an
+`interface Props` extends the first. `@typescript-eslint/no-redeclare` does not fit: with `ignoreDeclarationMerge`
+on it returns early when every declaration is an interface, and with it off it also reports a `const` and a `type`
+sharing a name, the value-and-type companion pattern. `import-x/export` sees exported names only.
+
+- **Interface pairs only.** A class and an interface are `no-unsafe-declaration-merging`'s; a namespace, function
+  or value merging with an interface is deliberate.
+- **One scope per block.** The top level, a `declare global` or `declare module` block, a `namespace` body and a
+  function block are compared only with themselves, so augmentation stays allowed.
+- **Report-only.** Merging the bodies guesses which member wins where both declare it.
+
 ### `no-inline-object-types` and `interface-order` are in `recommended`
 
 Both are opinions about types rather than defects. One asks for a name, the other for a position.

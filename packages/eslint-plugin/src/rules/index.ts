@@ -12,6 +12,7 @@ import {
 } from './native-valid-accessibility-actions/nativeValidAccessibilityActions.ts';
 import { nativeValidAccessibilityRole } from './native-valid-accessibility-role/nativeValidAccessibilityRole.ts';
 import { nativeValidAccessibilityState } from './native-valid-accessibility-state/nativeValidAccessibilityState.ts';
+import { noDuplicateInterface } from './no-duplicate-interface/noDuplicateInterface.ts';
 import { noDuplicateJsxProps } from './no-duplicate-jsx-props/noDuplicateJsxProps.ts';
 import { noEslintDisable } from './no-eslint-disable/noEslintDisable.ts';
 import { noImportNamespaceDestructure } from './no-import-namespace-destructure/noImportNamespaceDestructure.ts';
@@ -41,6 +42,7 @@ export const rules = {
   'native-valid-accessibility-actions': nativeValidAccessibilityActions,
   'native-valid-accessibility-role': nativeValidAccessibilityRole,
   'native-valid-accessibility-state': nativeValidAccessibilityState,
+  'no-duplicate-interface': noDuplicateInterface,
   'no-duplicate-jsx-props': noDuplicateJsxProps,
   'no-eslint-disable': noEslintDisable,
   'no-inline-object-types': noInlineObjectTypes,

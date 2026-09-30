@@ -18,9 +18,10 @@ when a version's change lives in a sibling it is described there instead:
   `eslint-plugin-jsx-a11y`. Install the new peer and rename `jsx-a11y/*` overrides to `jsx-a11y-x/*`.
 - **`typescript` `>=5` is a required peer.**
 - **`base` reports more.** The plugin's `recommended` now carries `@linteljs/chain-call-newline`,
-  `@linteljs/no-eslint-disable` and `@linteljs/no-inline-object-types`, and reaches `.vue` and `.svelte` files as
-  well as scripts. `chain-call-newline` splits a chain of two calls, or one call with a callback body, one call
-  per line; its fix does it for you.
+  `@linteljs/no-duplicate-interface`, `@linteljs/no-eslint-disable` and `@linteljs/no-inline-object-types`, and
+  reaches `.vue` and `.svelte` files as well as scripts. `chain-call-newline` splits a chain of two calls, or one
+  call with a callback body, one call per line; its fix does it for you. `no-duplicate-interface` reports a
+  second `interface` of one name in a scope, which TypeScript merges silently; merge or rename it.
   `@stylistic/jsx-max-props-per-line` allows two props on a one-line tag, and `es-toolkit/compat` is a restricted
   import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
 - **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350 and

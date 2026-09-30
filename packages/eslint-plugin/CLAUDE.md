@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-`@linteljs/eslint-plugin`: 23 rules for vertical layout, comment shape, import hygiene, modern idioms in
+`@linteljs/eslint-plugin`: 24 rules for vertical layout, comment shape, import hygiene, modern idioms in
 TypeScript and React, and React Native accessibility. The root `CLAUDE.md` applies; this file adds what is
 the plugin's alone and wins inside the package.
 

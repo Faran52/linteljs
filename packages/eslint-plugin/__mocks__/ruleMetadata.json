@@ -276,6 +276,20 @@
       "description": "Require accessibilityState to be an object of the keys React Native reads."
     }
   },
+  "no-duplicate-interface": {
+    "messages": {
+      "duplicateInterface": "Merge this into the {{name}} interface above or rename it; TypeScript merges them silently."
+    },
+    "schema": [],
+    "type": "problem",
+    "fixable": null,
+    "docs": {
+      "fixShape": null,
+      "language": "typescript",
+      "recommended": true,
+      "description": "Report a second interface of the same name in the same scope."
+    }
+  },
   "no-duplicate-jsx-props": {
     "messages": {
       "duplicateProp": "The {{name}} prop is already on this element; React keeps the last occurrence silently."
