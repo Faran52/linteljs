@@ -11,14 +11,17 @@ export const ROUTERS: readonly Router[] = [
 // Framework mode routes through React Router's own build, so it has no `App.tsx`.
 export const DECLARATIVE_ROUTERS: readonly Router[] = ['react-router', 'tanstack-router'];
 
-export const ALWAYS: readonly string[] = [
-  'src/pages/about/AboutPage.tsx',
-  'src/pages/version/VersionPage.tsx',
-  'src/components/ui/mark/Mark.tsx',
+export const ALWAYS: readonly string[] = ['src/components/ui/mark/Mark.tsx'];
+
+// Page paths without their extension, since each ships a translated twin and a suite.
+export const ALWAYS_PAGES: readonly string[] = [
+  'src/pages/about/AboutPage',
+  'src/pages/version/VersionPage',
 ];
 
+export const CONTACT_PAGE = 'src/pages/contact/ContactPage';
+
 export const SHARED: readonly string[] = [
-  'src/config/standard.ts',
   'src/lib/utils/statusUtils.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',

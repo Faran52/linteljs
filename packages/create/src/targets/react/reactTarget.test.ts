@@ -190,6 +190,15 @@ const FRAMEWORK_WITH_FORM: readonly Condition[] = [{
   form: ANSWERED,
 }];
 
+const FORM_ENGLISH: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: [undefined],
+}];
+const FORM_I18N: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: ANSWERED,
+}];
+
 const DATA_ROUTER: readonly Condition[] = [{ router: ['react-router', 'react-router-framework'] }];
 
 const GATES: GateRow[] = [
@@ -213,6 +222,17 @@ const GATES: GateRow[] = [
   }]],
   ['src/config/statuses.ts', WITHOUT_I18N],
   ['src/config/statuses.ts@i18n', WITH_I18N],
+  ['src/config/standard.ts', WITHOUT_I18N],
+  ['src/config/standard.ts@i18n', WITH_I18N],
+  ...['about/AboutPage', 'version/VersionPage']
+    .flatMap((page): GateRow[] => {
+      return [
+        [`src/pages/${page}.tsx`, WITHOUT_I18N],
+        [`src/pages/${page}.tsx@i18n`, WITH_I18N],
+        [`src/pages/${page}.test.tsx`, WITHOUT_I18N],
+        [`src/pages/${page}.test.tsx@i18n`, WITH_I18N],
+      ];
+    }),
   ['src/components/features/status-page/StatusPage.tsx', WITHOUT_I18N],
   ['src/components/features/status-page/StatusPage.tsx@i18n', WITH_I18N],
   ['src/components/features/status-page/StatusPage.test.tsx', WITHOUT_I18N],
@@ -287,7 +307,10 @@ const GATES: GateRow[] = [
   ['src/components/ui/index.ts', WITHOUT_FORM],
   ['src/components/ui/index.ts@with-form', WITH_FORM],
   ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],
-  ['src/pages/contact/ContactPage.tsx', WITH_FORM],
+  ['src/pages/contact/ContactPage.tsx', FORM_ENGLISH],
+  ['src/pages/contact/ContactPage.tsx@i18n', FORM_I18N],
+  ['src/pages/contact/ContactPage.test.tsx', FORM_ENGLISH],
+  ['src/pages/contact/ContactPage.test.tsx@i18n', FORM_I18N],
   ['src/pages/contact/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
   ['src/pages/contact/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ...contactGates(['tanstack-query', 'rtk-query']),

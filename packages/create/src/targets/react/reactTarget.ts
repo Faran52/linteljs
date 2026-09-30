@@ -140,18 +140,12 @@ const baseReactTarget: TargetRecord = {
       variant: 'with-form',
       shared: true,
     },
-    ...([
-      'src/pages/contact/ContactPage.tsx',
-      'src/components/ui/text-input/TextInput.tsx',
-    ] as const)
-      .map((target): StarterFile => {
-        return {
-          target,
-          when: (answers) => {
-            return answers.form !== undefined;
-          },
-        };
-      }),
+    {
+      target: 'src/components/ui/text-input/TextInput.tsx',
+      when: (answers) => {
+        return answers.form !== undefined;
+      },
+    },
     {
       target: 'src/lib/apis/contact/index.ts',
       when: (answers) => {
@@ -352,18 +346,6 @@ const baseReactTarget: TargetRecord = {
     {
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
-    },
-    {
-      target: 'src/pages/about/AboutPage.test.tsx',
-      covers: 'src/pages/about/AboutPage.tsx',
-    },
-    {
-      target: 'src/pages/version/VersionPage.test.tsx',
-      covers: 'src/pages/version/VersionPage.tsx',
-    },
-    {
-      target: 'src/pages/contact/ContactPage.test.tsx',
-      covers: 'src/pages/contact/ContactPage.tsx',
     },
     {
       target: 'src/components/ui/mark/Mark.test.tsx',

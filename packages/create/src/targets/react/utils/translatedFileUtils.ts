@@ -1,5 +1,6 @@
 import { hasI18n } from '../../utils/gateUtils';
 import { translated } from '../../utils/i18nUtils';
+import { ALWAYS_PAGES, CONTACT_PAGE } from '../constants';
 
 import { isFrameworkMode } from './frameworkRouteUtils';
 
@@ -11,6 +12,10 @@ const LANGUAGE_SELECT = 'src/components/features/language-select/LanguageSelect.
 
 const hasRouter = (answers: Answers): boolean => {
   return answers.router !== undefined;
+};
+
+const hasForm = (answers: Answers): boolean => {
+  return answers.form !== undefined;
 };
 
 // What i18n rewrites in the React starter, each as the pair `translated` makes.
@@ -27,7 +32,19 @@ export const reactI18nFiles = (): StarterFile[] => {
       target: 'src/config/statuses.ts',
       shared: true,
     }),
+    ...translated<StarterFile>({
+      target: 'src/config/standard.ts',
+      shared: true,
+    }),
     ...translated<StarterFile>({ target: 'src/components/features/status-page/StatusPage.tsx' }),
+    ...ALWAYS_PAGES
+      .flatMap((page) => {
+        return translated<StarterFile>({ target: `${page}.tsx` });
+      }),
+    ...translated<StarterFile>({
+      target: `${CONTACT_PAGE}.tsx`,
+      when: hasForm,
+    }),
     // Without a router the header swaps the page from state, so its tabs are controls; a router's are links.
     ...translated<StarterFile>({
       target: HEADER,
@@ -67,6 +84,18 @@ export const reactI18nTests = (): StarterTest[] => {
     ...translated<StarterTest>({
       target: 'src/components/features/status-page/StatusPage.test.tsx',
       covers: 'src/components/features/status-page/StatusPage.tsx',
+    }),
+    ...ALWAYS_PAGES
+      .flatMap((page) => {
+        return translated<StarterTest>({
+          target: `${page}.test.tsx`,
+          covers: `${page}.tsx`,
+        });
+      }),
+    ...translated<StarterTest>({
+      target: `${CONTACT_PAGE}.test.tsx`,
+      covers: `${CONTACT_PAGE}.tsx`,
+      when: hasForm,
     }),
     // `App`'s own suite covers a routed header; standing it alone would need a router context.
     ...translated<StarterTest>({

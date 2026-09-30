@@ -55,6 +55,16 @@ export const widestFor = (target: TargetId): Answers[] => {
           },
         ];
       }),
+    // A language gives a form's page its translated twin.
+    ...(record.i18n === undefined || forms[0] === undefined
+      ? []
+      : [
+          {
+            ...widest,
+            form: forms[0],
+            languages: [...LANGUAGES],
+          },
+        ]),
     // Two StyleX modules ship only beside a form or a store.
     {
       ...widest,

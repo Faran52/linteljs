@@ -9,5 +9,22 @@
   "statusNotFound": "ページが見つかりません",
   "statusServerError": "問題が発生しました",
   "statusRetry": "再試行",
-  "statusHome": "ホームに戻る"
+  "statusHome": "ホームに戻る",
+  "aboutLede": "このプロジェクトは linteljs で生成されました。lint、型、テスト、エージェントの標準をひとつにまとめて適用し、適用し続けます。",
+  "aboutGate": "ゲート",
+  "aboutCheck": "<code>{{command}}</code> がこれらを順に実行します。CI が実行するのもこれです。",
+  "aboutStandard": "標準の置き場所",
+  "aboutCurrent": "最新に保つ",
+  "aboutSync": "<code>{{command}}</code> は更新後に標準を適用し直します。ツールチェーンを書き換えますが、ソースには一切触れません。",
+  "standardEslint": "@linteljs/eslint-config から読み込むレイヤー",
+  "standardSkills": "コーディングエージェントが書く前に読むルール",
+  "standardConfig": "このプロジェクトの生成に使われた回答",
+  "standardHusky": "コミットごとのゲート。lint を通らないものは入りません",
+  "versionLede": "このプロジェクトが動かしているもの、そして生成に使われた回答です。",
+  "versionStack": "スタック",
+  "versionAnswers": "あなたの回答",
+  "versionRecorded": "<code>{{file}}</code> に記録され、<code>{{command}}</code> がそれを読み込みます。",
+  "contactLede": "2 つの入力欄は、フォーカスを外したときに検証されます。どこにも送信されません。",
+  "contactSent": "ありがとうございます。これはスターターなので、何も送信されていません。",
+  "contactSend": "送信"
 }

@@ -24,7 +24,10 @@ describe('reactI18nFiles', () => {
     expect(written).toEqual([
       'src/main.tsx@i18n',
       'src/config/statuses.ts@i18n',
+      'src/config/standard.ts@i18n',
       'src/components/features/status-page/StatusPage.tsx@i18n',
+      'src/pages/about/AboutPage.tsx@i18n',
+      'src/pages/version/VersionPage.tsx@i18n',
       `${HEADER}@i18n`,
       'src/components/features/language-select/LanguageSelect.tsx@i18n',
       'src/i18n/index.ts@i18n',
@@ -38,14 +41,45 @@ describe('reactI18nFiles', () => {
     expect(english).toEqual([
       'src/main.tsx',
       'src/config/statuses.ts',
+      'src/config/standard.ts',
       'src/components/features/status-page/StatusPage.tsx',
+      'src/pages/about/AboutPage.tsx',
+      'src/pages/version/VersionPage.tsx',
       HEADER,
     ]);
     expect(framework).toEqual([
       'src/config/statuses.ts',
+      'src/config/standard.ts',
       'src/components/features/status-page/StatusPage.tsx',
+      'src/pages/about/AboutPage.tsx',
+      'src/pages/version/VersionPage.tsx',
       `${HEADER}@react-router`,
     ]);
+  });
+
+  it('translates the contact page and its suite only beside a form', () => {
+    const contactOf = (answers: Answers): string[] => {
+      return writtenUnder([...reactI18nFiles(), ...reactI18nTests()], answers)
+        .filter((file) => {
+          return file.startsWith('src/pages/contact/');
+        });
+    };
+    const english = contactOf(answersFor({ form: 'tanstack-form' }));
+    const translated = contactOf(answersFor({
+      form: 'react-hook-form',
+      languages: ['ko'],
+    }));
+    const formless = contactOf(answersFor({ languages: ['ko'] }));
+
+    expect(english).toEqual([
+      'src/pages/contact/ContactPage.tsx',
+      'src/pages/contact/ContactPage.test.tsx',
+    ]);
+    expect(translated).toEqual([
+      'src/pages/contact/ContactPage.tsx@i18n',
+      'src/pages/contact/ContactPage.test.tsx@i18n',
+    ]);
+    expect(formless).toEqual([]);
   });
 
   it.each([
@@ -80,6 +114,8 @@ describe('reactI18nTests', () => {
 
     expect(translated).toEqual([
       'src/components/features/status-page/StatusPage.test.tsx@i18n',
+      'src/pages/about/AboutPage.test.tsx@i18n',
+      'src/pages/version/VersionPage.test.tsx@i18n',
       'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
