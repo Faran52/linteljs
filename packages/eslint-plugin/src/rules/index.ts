@@ -1,3 +1,4 @@
+import { arrayNewline } from './array-newline/arrayNewline.ts';
 import { chainCallNewline } from './chain-call-newline/chainCallNewline.ts';
 import { commentDelimiter } from './comment-delimiter/commentDelimiter.ts';
 import { destructuringPropertyNewline } from './destructuring-property-newline/destructuringPropertyNewline.ts';
@@ -30,6 +31,7 @@ import type { LintelRuleModule } from '../types.ts';
 export type RuleName = keyof typeof rules;
 
 export const rules = {
+  'array-newline': arrayNewline,
   'chain-call-newline': chainCallNewline,
   'comment-delimiter': commentDelimiter,
   'destructuring-property-newline': destructuringPropertyNewline,

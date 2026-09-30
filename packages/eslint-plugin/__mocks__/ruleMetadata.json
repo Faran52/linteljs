@@ -1,4 +1,18 @@
 {
+  "array-newline": {
+    "messages": {
+      "elementsOnNewline": "Put each array element on its own line, with the brackets on their own lines."
+    },
+    "schema": [],
+    "type": "layout",
+    "fixable": "whitespace",
+    "docs": {
+      "fixShape": "whitespace",
+      "language": "universal",
+      "recommended": true,
+      "description": "Put each element of an array with two or more on its own line."
+    }
+  },
   "chain-call-newline": {
     "messages": {
       "callOnNewline": "Put each call in this chain on its own line."

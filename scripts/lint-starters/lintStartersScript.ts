@@ -99,6 +99,11 @@ const STARTER_OVERRIDES: Linter.Config[] = [
     languageOptions: { parserOptions: { projectService: false } },
     rules: { 'sonarjs/no-redundant-optional': 'off' },
   },
+  // Off until the reformat commit lands. docs/DESIGN.md: `@linteljs/workspace/pending-list-reformat`
+  {
+    name: '@linteljs/starters/pending-list-reformat',
+    rules: { '@linteljs/array-newline': 'off' },
+  },
 ];
 
 const eslintFor = async (target: TargetId): Promise<Linters> => {

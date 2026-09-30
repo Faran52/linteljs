@@ -103,6 +103,7 @@ Each rule link has examples, options, and cases it declines to fix.
 
 | Rule | Description | Recommended | TypeScript only | Options |
 | --- | --- | --- | --- | --- |
+| [`@linteljs/array-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/array-newline) | Put each element of an array with two or more on its own line. | yes | | |
 | [`@linteljs/chain-call-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/chain-call-newline) | Put each call on its own line once a chain has two calls or a callback with a body. | yes | | `maxLineLength` |
 | [`@linteljs/comment-delimiter`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/comment-delimiter) | Use `//` for short comments and JSDoc blocks for longer prose. | yes | | |
 | [`@linteljs/destructuring-property-newline`](https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/destructuring-property-newline) | Keep destructuring patterns either compact or fully expanded, never half-split. | yes | | |

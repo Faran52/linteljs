@@ -176,6 +176,15 @@ export const FIXER_SAMPLES: FixerSample[] = [
   },
 
   {
+    name: 'array with holes, a spread, comments and a trailing comma',
+    code: 'const list = [, alpha, /* about alpha */ ...rest, [bravo, charlie], // tail\n  delta,];',
+  },
+  {
+    name: 'array element in parentheses',
+    code: 'run([(alpha), bravo]);',
+  },
+
+  {
     name: 'negated function expression',
     code: '!function () {\n  run();\n}();',
   },

@@ -21,11 +21,15 @@ when a version's change lives in a sibling it is described there instead:
 - **`meta.docs.category` is replaced by `meta.docs.fixShape`**, and the exports `RULE_CATEGORIES` and `RuleCategory`
   by `FIX_SHAPES` and `FixShape`: `whitespace` leaves the tokens identical, `reorder` only reorders them, absent
   may rewrite code.
-- **`recommended` gains five rules**, so a project on it reports more on upgrade: `chain-call-newline`,
-  `interface-order`, `no-duplicate-interface`, `no-eslint-disable` and `no-inline-object-types` (below).
+- **`recommended` gains six rules**, so a project on it reports more on upgrade: `array-newline`,
+  `chain-call-newline`, `interface-order`, `no-duplicate-interface`, `no-eslint-disable` and
+  `no-inline-object-types` (below).
 
 ### Added
 
+- `array-newline` puts each element of an array with two or more on its own line, with the brackets on lines of
+  their own. An array of none or one is left as written; the rule never joins lines. Fixable (whitespace), in
+  `recommended`.
 - `chain-call-newline` puts each call in a member chain on its own line once the chain has two calls after its
   head, or one call taking a callback with a block body. The head keeps a namespace call, so
   `Object.keys(x).map(fn)` and `expect(x).toBe(y)` stay on one line. Fixable (whitespace): breaks before each `.`

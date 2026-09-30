@@ -38,6 +38,7 @@ export const FIXTURE = [
 ].join('\n');
 
 export const EXPECTED = [
+  '@linteljs/array-newline',
   '@linteljs/comment-delimiter',
   '@linteljs/destructuring-property-newline',
   '@linteljs/export-specifier-newline',
@@ -94,6 +95,8 @@ export const TS_FIXTURE = [
   '',
   'export const value = 1;',
   '',
+  'export const typed = [value as number, value!];',
+  '',
   'export interface Shape {',
   '  target: string;',
   '}',
@@ -105,6 +108,7 @@ export const TS_FIXTURE = [
 ].join('\n');
 
 export const TS_EXPECTED = [
+  '@linteljs/array-newline',
   '@linteljs/interface-order',
   '@linteljs/no-duplicate-interface',
   '@linteljs/no-inline-object-types',

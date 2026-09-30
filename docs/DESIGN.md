@@ -1432,6 +1432,14 @@ and every assertion lives in `runE2eCase`. `vitest/expect-expect` reads the call
 finds no body, since the helper is passed by reference. Measured: `assertFunctionNames: ['runE2eCase']` does not help,
 because it matches calls inside the body and there is no call. Off for that directory alone.
 
+### `@linteljs/workspace/pending-list-reformat`
+
+`@linteljs/array-newline` is in `recommended` from 2.0.0, and this workspace is not yet formatted to it. Measured
+at the commit that adds the rule: 2008 findings across 282 files under `eslint .`, and 22 in the starters under
+`pnpm lint:starters`, every one autofixable. The reformat is its own commit, reviewed apart from the rule, and it
+deletes this block and the matching `@linteljs/starters/pending-list-reformat` in
+`scripts/lint-starters/lintStartersScript.ts`.
+
 ### Coverage thresholds, in `vitest.config.ts`
 
 A gate, not an aspiration. The root config is what gates: a package's own `vitest.config.ts` coverage block is
