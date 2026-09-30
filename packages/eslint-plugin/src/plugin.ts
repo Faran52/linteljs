@@ -1,5 +1,5 @@
 import { TYPESCRIPT_FILES } from './constants.ts';
-import { type RuleName, rules } from './rules/index.ts';
+import { rules } from './rules/index.ts';
 
 import type { ESLint, Linter } from 'eslint';
 import type { LintelRuleModule, RuleLanguage } from './types.ts';
@@ -26,6 +26,8 @@ interface WithConfigs {
   configs: LintelConfigs;
 }
 
+type RuleEntry = [string, LintelRuleModule];
+
 // The eslintrc form derives the prefix from the package name; a mismatch breaks every ESLint 5 to 8 consumer.
 export const PLUGIN_NAME = '@linteljs';
 
@@ -40,12 +42,12 @@ const plugin = {
   rules,
 } satisfies ESLint.Plugin;
 
-const ruleEntries = Object.entries(rules) as [RuleName, LintelRuleModule][];
+const ruleEntries: RuleEntry[] = Object.entries(rules);
 
 const byLanguage = (
-  selected: [RuleName, LintelRuleModule][],
+  selected: RuleEntry[],
   language: RuleLanguage,
-): [RuleName, LintelRuleModule][] => {
+): RuleEntry[] => {
   return selected
     .filter(([, rule]) => {
       return rule.meta.docs.language === language;
@@ -53,7 +55,7 @@ const byLanguage = (
 };
 
 const toRuleRecord = (
-  selected: [RuleName, LintelRuleModule][],
+  selected: RuleEntry[],
 ): Partial<Record<string, Linter.RuleEntry>> => {
   const record: Partial<Record<string, Linter.RuleEntry>> = {};
 
@@ -67,7 +69,7 @@ const toRuleRecord = (
 // TypeScript-only rules sit behind a `files` glob, so none is enabled on a `.js` file.
 const definePreset = (
   name: string,
-  selected: [RuleName, LintelRuleModule][],
+  selected: RuleEntry[],
 ): Linter.Config[] => {
   return [
     {
@@ -89,13 +91,13 @@ const recommendedEntries = ruleEntries
     return rule.meta.docs.recommended;
   });
 
-const presets: [PresetName, [RuleName, LintelRuleModule][]][] = [
+const presets: [PresetName, RuleEntry[]][] = [
   ['recommended', recommendedEntries],
   ['all', ruleEntries],
 ];
 
 const defineLegacyPreset = (
-  selected: [RuleName, LintelRuleModule][],
+  selected: RuleEntry[],
 ): LegacyPreset => {
   return {
     plugins: [PLUGIN_NAME],
