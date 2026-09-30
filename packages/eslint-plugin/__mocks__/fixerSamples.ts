@@ -181,7 +181,15 @@ export const FIXER_SAMPLES: FixerSample[] = [
   },
   {
     name: 'array element in parentheses',
-    code: 'run([(alpha), bravo]);',
+    code: 'run([(alpha), bravo, charlie]);',
+  },
+  {
+    name: 'half-split pair in an object pattern and an array',
+    code: 'const { alpha,\n  bravo } = [charlie,\n  delta];',
+  },
+  {
+    name: 'object literal with a spread, comments and a trailing comma',
+    code: 'const point = { ...base, /* about base */ x: (1), y, // tail\n  z,};',
   },
 
   {

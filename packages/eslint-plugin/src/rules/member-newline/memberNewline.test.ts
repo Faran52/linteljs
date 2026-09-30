@@ -2,95 +2,94 @@ import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
 import { memberNewline } from './memberNewline.ts';
 
+const mustSplit = [{ messageId: 'mustSplit' }];
+
+const membersOnNewline = [{ messageId: 'membersOnNewline' }];
+
 jsRuleTester.run('member-newline', memberNewline, {
   valid: [
     'const { alpha } = source;',
+    'const {} = source;',
+    'const { alpha, bravo } = source;',
+    'const { alpha, ...rest } = source;',
     'const {\n  alpha,\n  bravo\n} = source;',
     'const {\n  alpha,\n  /* keep */ bravo\n} = source;',
-    'const {} = source;',
-
     'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-
-    'const {\n  alpha,\n  ...rest\n} = source;',
-
     'const {\n  alpha,\n  bravo,\n  charlie,\n} = source;',
-
-    'const {\n  alphaProperty = computeSomethingRatherLong(configuration),\n'
-    + '  bravoProperty = computeSomethingElseEntirely(configuration)\n} = source;',
-
+    'const {\n  alpha,\n\n  bravo\n} = source;',
+    'const { alpha = {\n  first: 1\n}, bravo } = source;',
     'const [alpha, bravo, charlie] = source;',
     'const alpha = source;',
+
+    'const point = {};',
+    'const point = { x: 1 };',
+    'const point = { x: 1, y: 2 };',
+    'const point = { ...base, y: 2 };',
+    'const point = {\n  x: 1,\n  y: 2\n};',
+    'const point = {\n  x: 1,\n  y: 2,\n  z: 3\n};',
+    'const point = {\n  x: 1,\n\n  y: 2,\n  z: 3\n};',
+    'const point = { x: 1, draw: () => {\n  paint();\n} };',
+    'const point = {\n  x: 1, // across\n  y: 2\n};',
   ],
   invalid: [
     {
-      code: 'const { alpha, bravo } = source;',
-      output: 'const {\n  alpha,\n  bravo\n} = source;',
+      code: 'const { alpha, bravo, charlie } = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
       errors: [{
         messageId: 'mustSplit',
-        data: { maxProperties: '1' },
+        data: { maxProperties: '2' },
       }],
+    },
+    {
+      code: 'const { alpha,\n  bravo } = source;',
+      output: 'const {\n  alpha,\n  bravo\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const {\n  alpha, bravo\n} = source;',
+      output: 'const {\n  alpha,\n  bravo\n} = source;',
+      errors: membersOnNewline,
     },
     {
       code: 'const { alpha, bravo,\n  charlie\n} = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      errors: [{ messageId: 'membersOnNewline' }],
-    },
-    {
-      code: 'const {\n  alpha,\n  bravo, charlie\n} = source;',
-      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      errors: [{ messageId: 'membersOnNewline' }],
+      errors: membersOnNewline,
     },
     {
       code: 'const {\n  alpha, bravo, charlie } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: membersOnNewline,
+    },
+    {
+      // The trailing comma stays on the last member's line; `comma-dangle` owns it.
+      code: 'const { alpha, bravo, charlie, } = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  charlie,\n} = source;',
+      errors: mustSplit,
     },
     {
       code: 'const { alpha, /* keep */ bravo, charlie } = source;',
-      output: null,
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const { alpha: {\n  first\n}, bravo, charlie } = source;',
-      output: null,
-      errors: [{ messageId: 'multilineMember' }],
+      output: 'const {\n  alpha, /* keep */\n  bravo,\n  charlie\n} = source;',
+      errors: mustSplit,
     },
     {
       code: 'const { alpha, bravo, charlie /* tail */ } = source;',
-      output: null,
-      errors: [{ messageId: 'mustSplit' }],
+      output: 'const {\n  alpha,\n  bravo,\n  charlie /* tail */\n} = source;',
+      errors: mustSplit,
     },
     {
-      code: 'const { alpha, bravo, charlie } = source;',
-      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      errors: [{ messageId: 'mustSplit' }],
+      code: 'const { alpha: {\n  first\n}, bravo, charlie } = source;',
+      output: 'const {\n  alpha: {\n  first\n},\n  bravo,\n  charlie\n} = source;',
+      errors: mustSplit,
     },
     {
       code: 'function load() {\n  const { alpha, bravo, charlie } = source;\n  return alpha;\n}',
       output: 'function load() {\n  const {\n    alpha,\n    bravo,\n    charlie\n  } = source;\n  return alpha;\n}',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
     {
-      code: 'if (ready) {\n  if (loaded) {\n    const { alpha, bravo, charlie } = source;\n    use(alpha);\n  }\n}',
-      output: `if (ready) {
-  if (loaded) {
-    const {
-      alpha,
-      bravo,
-      charlie
-    } = source;
-    use(alpha);
-  }
-}`,
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const { alpha, ...rest } = source;',
-      output: 'const {\n  alpha,\n  ...rest\n} = source;',
-      errors: [{
-        messageId: 'mustSplit',
-        data: { maxProperties: '1' },
-      }],
+      code: 'const { alpha, bravo, ...rest } = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  ...rest\n} = source;',
+      errors: mustSplit,
     },
     {
       code: 'const {\n  alpha,\n\n  bravo,\n  charlie\n} = source;',
@@ -98,14 +97,30 @@ jsRuleTester.run('member-newline', memberNewline, {
       errors: [{ messageId: 'noBlankBetween' }],
     },
     {
-      code: 'const { alpha = {\n  first: 1\n}, bravo } = source;',
-      output: null,
-      errors: [{ messageId: 'multilineMember' }],
+      code: 'const { alpha, bravo, charlie } = source;\r\n',
+      output: 'const {\r\n  alpha,\r\n  bravo,\r\n  charlie\r\n} = source;\r\n',
+      errors: mustSplit,
+    },
+
+    {
+      code: 'const point = { x: 1, y: 2, z: 3 };',
+      output: 'const point = {\n  x: 1,\n  y: 2,\n  z: 3\n};',
+      errors: mustSplit,
     },
     {
-      code: 'const { alpha, bravo = {\n  first: 1\n} } = source;',
-      output: null,
-      errors: [{ messageId: 'multilineMember' }],
+      code: 'const point = { x: 1,\n  y: 2 };',
+      output: 'const point = {\n  x: 1,\n  y: 2\n};',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const point = { x: (1), y: 2, ...rest };',
+      output: 'const point = {\n  x: (1),\n  y: 2,\n  ...rest\n};',
+      errors: mustSplit,
+    },
+    {
+      code: 'if (ready) {\n    draw({ x, y, z });\n}',
+      output: 'if (ready) {\n    draw({\n        x,\n        y,\n        z\n    });\n}',
+      errors: mustSplit,
     },
   ],
 });
@@ -117,73 +132,20 @@ jsRuleTester.run('member-newline (options)', memberNewline, {
       options: [{ maxProperties: 3 }],
     },
     {
-      code: 'const { alpha, bravo, charlie, delta } = source;',
-      options: [{ maxProperties: 4 }],
-    },
-
-    {
-      // A rest element counts like any other member.
-      code: 'const { alpha, ...rest } = source;',
-      options: [{ maxProperties: 2 }],
-    },
-
-    {
       code: 'const { alpha } = source;',
       options: [{ maxProperties: 0 }],
     },
-
     {
-      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
-      options: [{
-        maxProperties: 2,
-        maxLineLength: 47,
-      }],
-    },
-
-    {
-      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = somewhatLongerSource;',
-      options: [{
-        maxProperties: 2,
-        maxLineLength: 48,
-      }],
+      code: 'const {\n  alpha,\n\n  bravo\n} = source;',
+      options: [{ maxProperties: 2 }],
     },
   ],
   invalid: [
     {
-      code: 'const {\n  alpha,\n  bravo\n} = source;',
-      output: 'const { alpha, bravo } = source;',
-      options: [{ maxProperties: 2 }],
-      errors: [{
-        messageId: 'mustSplit',
-        data: { maxProperties: '2' },
-      }],
-    },
-    {
-      code: 'const {\n  alpha,\n  /* keep */ bravo\n} = source;',
-      output: null,
-      options: [{ maxProperties: 2 }],
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
-      output: 'const { alphaProperty, bravoProperty } = source;',
-      options: [{
-        maxProperties: 2,
-        maxLineLength: 48,
-      }],
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const { alpha, bravo, charlie,\n  delta } = source;',
-      output: 'const {\n  alpha,\n  bravo,\n  charlie,\n  delta\n} = source;',
-      options: [{ maxProperties: 3 }],
-      errors: [{ messageId: 'membersOnNewline' }],
-    },
-    {
-      code: 'const { alpha, bravo, charlie } = source;',
-      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
-      options: [{ maxProperties: 2 }],
-      errors: [{ message: 'Members must be broken into multiple lines if there are more than 2.' }],
+      code: 'const { alpha, bravo } = source;',
+      output: 'const {\n  alpha,\n  bravo\n} = source;',
+      options: [{ maxProperties: 1 }],
+      errors: [{ message: 'Members must be broken into multiple lines if there are more than 1.' }],
     },
     {
       code: 'const { alpha, bravo, charlie, delta } = source;',
@@ -192,10 +154,10 @@ jsRuleTester.run('member-newline (options)', memberNewline, {
       errors: [{ message: 'Members must be broken into multiple lines if there are more than 3.' }],
     },
     {
-      code: 'const {\n  alpha,\n  ...rest\n} = source;',
-      output: 'const { alpha, ...rest } = source;',
+      code: 'const { alpha, bravo, charlie,\n  delta } = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  charlie,\n  delta\n} = source;',
       options: [{ maxProperties: 9 }],
-      errors: [{ message: 'Members must be broken into multiple lines if there are more than 9.' }],
+      errors: membersOnNewline,
     },
   ],
 });
@@ -205,6 +167,8 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
     'interface Small {\n  alpha: string;\n  bravo: number;\n}',
     'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean;\n}',
     'type Pair = {\n  alpha: string;\n  bravo: number;\n};',
+    'type Pair = { alpha: string; bravo: number };',
+    'interface Holder { alpha: {\n  first: string;\n}; bravo: number }',
 
     `interface Documented {
   /** first */
@@ -222,14 +186,6 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
   // third
   charlie: boolean;
 }`,
-    `type Documented = {
-  /** first */
-  alpha: string;
-  /** second */
-  bravo: number;
-  /** third */
-  charlie: boolean;
-};`,
     `interface Mixed {
   alpha: string;
   /**
@@ -245,26 +201,12 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
     'interface Single {\n  alpha: string;\n}',
     'type Single = { alpha: string };',
     'interface Empty {}',
-
-    {
-      code: 'interface Single {\n  alpha: string;\n}',
-      options: [{ maxProperties: 0 }],
-    },
-    {
-      code: 'type Pair = { alpha: string; bravo: number };',
-      options: [{ maxProperties: 2 }],
-    },
   ],
   invalid: [
     {
-      code: 'type Pair = { alpha: string; bravo: number };',
-      output: 'type Pair = {\n  alpha: string;\n  bravo: number\n};',
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
       code: 'interface Wide { alpha: string; bravo: number; charlie: boolean }',
       output: 'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean\n}',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
     {
       code: 'namespace Outer {\n  interface Wide { alpha: string; bravo: number; charlie: boolean }\n}',
@@ -275,22 +217,27 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
     charlie: boolean
   }
 }`,
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'type Wide = { alpha: string; bravo: number; charlie: boolean };',
-      output: 'type Wide = {\n  alpha: string;\n  bravo: number;\n  charlie: boolean\n};',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
     {
       code: 'type Wide = { alpha: string, bravo: number, charlie: boolean };',
       output: 'type Wide = {\n  alpha: string,\n  bravo: number,\n  charlie: boolean\n};',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
+    },
+    {
+      code: 'type Pair = { alpha: string;\n  bravo: number };',
+      output: 'type Pair = {\n  alpha: string;\n  bravo: number\n};',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'interface Pair {\n  alpha: string; bravo: number;\n}',
+      output: 'interface Pair {\n  alpha: string;\n  bravo: number;\n}',
+      errors: membersOnNewline,
     },
     {
       code: 'interface Wide {\n  alpha: string;\n  bravo: number; charlie: boolean;\n}',
       output: 'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean;\n}',
-      errors: [{ messageId: 'membersOnNewline' }],
+      errors: membersOnNewline,
     },
     {
       code: 'interface Wide {\n  alpha: string;\n\n  bravo: number;\n  charlie: boolean;\n}',
@@ -298,80 +245,55 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
       errors: [{ messageId: 'noBlankBetween' }],
     },
     {
-      code: 'interface Holder { alpha: {\n  first: string;\n}; bravo: number }',
-      output: 'interface Holder {\n  alpha: {\n  first: string;\n};\n  bravo: number\n}',
-      errors: [{ messageId: 'multilineMember' }],
+      // A blank line and a crowded pair in one body: both reported, one fix.
+      code: 'interface Wide {\n  alpha: string;\n\n  bravo: number; charlie: boolean;\n}',
+      output: 'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean;\n}',
+      errors: [...membersOnNewline, { messageId: 'noBlankBetween' }],
     },
     {
       code: 'interface Holder { alpha: {\n  first: string;\n}; bravo: number; charlie: boolean }',
       output: 'interface Holder {\n  alpha: {\n  first: string;\n};\n  bravo: number;\n  charlie: boolean\n}',
-      errors: [{ messageId: 'multilineMember' }],
-    },
-    {
-      code: 'interface Shape {\n  alpha: string; bravo: number;\n      charlie: boolean;\n}',
-      output: 'interface Shape {\n  alpha: string;\n  bravo: number;\n      charlie: boolean;\n}',
-      errors: [{ messageId: 'membersOnNewline' }],
+      errors: mustSplit,
     },
     {
       code: 'interface Wide { /** first */ alpha: string; bravo: number; charlie: boolean }',
       output: 'interface Wide {\n  /** first */ alpha: string;\n  bravo: number;\n  charlie: boolean\n}',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
     {
       code: 'interface Wide { alpha: string; /* mid */ bravo: number; charlie: boolean }',
       output: 'interface Wide {\n  alpha: string; /* mid */\n  bravo: number;\n  charlie: boolean\n}',
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'interface Row {\n  alpha: string;\n  // heading for bravo\n  bravo: number; charlie: boolean;\n}',
-      output: 'interface Row {\n  alpha: string;\n  // heading for bravo\n  bravo: number;\n  charlie: boolean;\n}',
-      errors: [{ messageId: 'membersOnNewline' }],
+      errors: mustSplit,
     },
     {
       code: 'interface Row {\n  meta?: string; // describes meta\n  note?: string; last: number;\n}',
       output: 'interface Row {\n  meta?: string; // describes meta\n  note?: string;\n  last: number;\n}',
-      errors: [{ messageId: 'membersOnNewline' }],
-    },
-    {
-      code: 'interface Wide { alpha: string; bravo: number; charlie: boolean; /* end */ }',
-      output: null,
-      errors: [{ messageId: 'mustSplit' }],
+      errors: membersOnNewline,
     },
     {
       code: 'type Wide = { alpha: string; bravo: number; charlie: boolean; /* end */ };',
-      output: null,
-      errors: [{ messageId: 'mustSplit' }],
+      output: 'type Wide = {\n  alpha: string;\n  bravo: number;\n  charlie: boolean; /* end */\n};',
+      errors: mustSplit,
     },
     {
       code: 'const { alpha, bravo, charlie }: Shape = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n}: Shape = source;',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
     {
       code: 'declare function load({ alpha, bravo, charlie }?: Options): void;',
       output: 'declare function load({\n  alpha,\n  bravo,\n  charlie\n}?: Options): void;',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
     {
-      code: 'const load = ({ alpha, bravo, charlie }?: Options): void => {};',
-      output: 'const load = ({\n  alpha,\n  bravo,\n  charlie\n}?: Options): void => {};',
-      errors: [{ messageId: 'mustSplit' }],
+      code: 'const load = ({ alpha,\n  bravo }: Options = {}) => {};',
+      output: 'const load = ({\n  alpha,\n  bravo\n}: Options = {}) => {};',
+      errors: membersOnNewline,
     },
     {
       code: 'interface Loader {\n  load({ alpha, bravo, charlie }?: Options): void;\n}',
       output: 'interface Loader {\n  load({\n    alpha,\n    bravo,\n    charlie\n  }?: Options): void;\n}',
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const load = ({\n  alpha,\n  bravo\n}?: Options) => {};',
-      output: 'const load = ({ alpha, bravo }?: Options) => {};',
-      options: [{ maxProperties: 2 }],
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const load = ({ alpha, bravo, charlie }: Options = {}) => {};',
-      output: 'const load = ({\n  alpha,\n  bravo,\n  charlie\n}: Options = {}) => {};',
-      errors: [{ messageId: 'mustSplit' }],
+      errors: mustSplit,
     },
   ],
 });

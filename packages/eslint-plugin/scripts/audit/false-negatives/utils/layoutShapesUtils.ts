@@ -16,9 +16,9 @@ import {
   textOf,
 } from './editUtils.ts';
 
-const DEFAULT_MAX_ITEMS = 1;
+const DEFAULT_MAX_ITEMS = 2;
 const DEFAULT_MAX_LINE_LENGTH = 120;
-const DEFAULT_MAX_PROPERTIES = 1;
+const DEFAULT_MAX_PROPERTIES = 2;
 
 const PROBE_ALIAS = 'linteljsProbeAlias';
 

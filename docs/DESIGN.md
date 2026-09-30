@@ -214,19 +214,22 @@ touchable produce different interfaces.
 
 ### One item per line, object literals included
 
-`base` enables `@stylistic/object-property-newline` with `allowAllPropertiesOnSameLine: false`, paired with
-`@stylistic/object-curly-newline` scoped to `ObjectExpression`, `TSTypeLiteral` and `TSInterfaceBody`, the three
-nodes the first rule splits. The pairing matters: `object-property-newline` alone fixes to a hanging brace. The
-scope keeps it off imports, exports and destructuring, which the `@linteljs` newline rules own.
+Every list layout splits at the same count: three or more items, one per line, the delimiters on lines of their own.
+Two or fewer sit on one line or go fully one per line, and a half-split list, broken in some places and not others,
+is fixed to the second. No rule joins lines. `@linteljs/member-newline` does it for an object literal, an object
+pattern, an interface and a type literal, `@linteljs/array-newline` for an array and an array pattern,
+and `@linteljs/import-newlines` for an import. One node, one owner. Two exceptions are on purpose:
+`export-specifier-newline` splits an export list at two, so a change to a file's public surface is a one-line diff,
+and `union-newline` splits on what a union holds, not on how many members it has. Three rather than two keeps a pair on one line, `const [value, setValue] = useState(0)` among them, without an
+exception for tuples.
 
-Every list layout splits at the same count: two or more items, one per line, the delimiters on lines of their own.
-`object-property-newline` does it for an object literal, `@linteljs/member-newline` for an object pattern, an
-interface and a type literal, `@linteljs/array-newline` for an array and an array pattern,
-`@linteljs/import-newlines` for an import and `@linteljs/export-specifier-newline` for an export list. One node,
-one owner. Arrays take a plugin rule because `@stylistic` 5.10.0 cannot say it: `array-bracket-newline` in
-`multiline` or `minItems` mode joins a one-element array of a single token past `max-len`, and in `consistent`
-mode it accepts `[a,\n  b]` with a hanging bracket. `union-newline` is the exception on purpose: it splits on
-what a union holds, not on how many members it has.
+`@stylistic` 5.10.0 cannot say it, which is why the plugin owns objects and arrays. `object-property-newline` has no
+count: it splits at two, or with `allowAllPropertiesOnSameLine` passes `{\n  a: 1, b: 2, c: 3\n}` once
+`object-curly-newline`'s `minProperties: 3` has moved the braces, and neither reports `{ a: 1,\n  b: 2 }`, all
+measured. `array-bracket-newline` in `multiline` or `minItems` mode joins a one-element array of a single token past
+`max-len`, and in `consistent` mode it accepts `[a,\n  b]` with a hanging bracket. So `base` turns
+`object-property-newline` off and keeps `object-curly-newline` at `consistent` alone, for the single member the
+plugin rules leave alone; its `multiline` would break the braces of `{ a, draw: () => {...} }` and split a pair.
 
 JSX props take the object form of `@stylistic/jsx-max-props-per-line`, `{ maximum: { single: 2, multi: 1 } }`,
 replacing the preset's `{ maximum: 1, when: 'multiline' }`, which caps a one-line tag at nothing. Two on a line
@@ -1441,13 +1444,13 @@ because it matches calls inside the body and there is no call. Off for that dire
 
 ### `@linteljs/workspace/pending-list-reformat`
 
-2.0.0 moves every list layout to one threshold, two or more items one per line: `@linteljs/array-newline` is new
-in `recommended`, and `member-newline` and `import-newlines` drop their defaults from 2 to 1. This workspace is not
-yet formatted to it. Measured under `eslint .` with the block removed: 2189 `array-newline`, 322
-`import-newlines` and 149 `member-newline` findings across 377 files. Under `pnpm lint:starters`: 32, 156 and 32
-across 142 files. Every one is autofixable. The block turns the new rule off and pins the two old figures, so the
-rest of each rule still holds meanwhile. The reformat is its own commit, reviewed apart from the rules, and it
-deletes this block and `@linteljs/starters/pending-list-reformat` in `scripts/lint-starters/lintStartersScript.ts`.
+2.0.0 moves every list layout to one threshold, three or more items one per line: `@linteljs/array-newline` is new
+in `recommended`, and `member-newline` takes object literals from `@stylistic/object-property-newline`. This
+workspace is not yet formatted to `array-newline`. Measured under `eslint .` with the block removed: 649
+`array-newline` findings across 164 files, and none from `member-newline` or `import-newlines`. Under
+`pnpm lint:starters`: 3 across 3 files. Every one is autofixable. The block turns the new rule off. The reformat is
+its own commit, reviewed apart from the rules, and it deletes this block and
+`@linteljs/starters/pending-list-reformat` in `scripts/lint-starters/lintStartersScript.ts`.
 
 ### Coverage thresholds, in `vitest.config.ts`
 

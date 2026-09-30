@@ -1,24 +1,26 @@
 # @linteljs/array-newline
 
-Put each element of an array or array pattern with two or more on its own line.
+Put each element of an array or array pattern with three or more on its own line.
 
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (whitespace)
 - In `recommended`: yes
 
-An array with two or more elements goes one element per line, with the opening and closing brackets
-on lines of their own, and an array destructuring pattern is held to the same shape. It is the
-threshold `@stylistic/object-property-newline` holds an object literal to,
-[`member-newline`](../member-newline) an object pattern, an interface and a type literal, and
-[`import-newlines`](../import-newlines) an import: two or more items, one per line.
+An array with three or more elements goes one element per line, with the opening and closing
+brackets on lines of their own, and an array destructuring pattern is held to the same shape. It is
+the threshold [`member-newline`](../member-newline) holds an object, an object pattern, an interface
+and a type literal to, and [`import-newlines`](../import-newlines) an import: three or more items,
+one per line.
 
-An array of none or one is left exactly as written. This rule only ever adds line breaks; it never
-joins lines.
+An array of two or fewer may sit on one line or go one per line, so
+`const [value, setValue] = useState(0)` stays as written. What it may not be is half-split, broken
+in some places and not others: `[alpha,\n  bravo]` is fixed to the fully expanded form. This rule
+only ever adds line breaks; it never joins lines.
 
 ## Examples of incorrect code for this rule
 
 ```ts
-const pair = [alpha, bravo];
+const triple = [alpha, bravo, charlie];
 
 const list = [
   alpha, bravo,
@@ -27,7 +29,7 @@ const list = [
 run([alpha,
   bravo]);
 
-const [first, second] = pair;
+const [first, second, third] = triple;
 ```
 
 ## Examples of correct code for this rule
@@ -37,19 +39,19 @@ const empty = [];
 
 const single = [alpha];
 
-const pair = [
+const pair = [alpha, bravo];
+
+const triple = [
   alpha,
-  bravo
+  bravo,
+  charlie
 ];
 
 const one = [{
-  charlie: 1
+  delta: 1
 }];
 
-const [
-  first,
-  second
-] = pair;
+const [value, setValue] = useState(0);
 ```
 
 ## Options
@@ -58,7 +60,7 @@ None.
 
 ## Notes
 
-- **Holes** are slots like any other, so `[, alpha]` puts the lone comma on a line of its own.
+- **Holes** are slots like any other, so `[, alpha, bravo]` puts the lone comma on a line of its own.
 - **A trailing comma** stays on the last element's line. Whether there is one is
   `@stylistic/comma-dangle`'s decision, not this rule's.
 - **Comments** are never moved across a comma or deleted. A comment on the same line after a comma
@@ -74,5 +76,5 @@ None.
 
 `@stylistic/array-bracket-newline` in `multiline` or `minItems` mode joins a one-element array whose
 element is a single token back onto one line, past `max-len` if it has to. In `consistent` mode it
-accepts `[alpha,\n  bravo]` with a hanging bracket. Neither setting says "two or more, one per line,
+accepts `[alpha,\n  bravo]` with a hanging bracket. Neither setting says "three or more, one per line,
 and leave the rest alone", which is the whole of this rule.

@@ -1,6 +1,7 @@
 import { captureFixer } from '@mocks/captureFixer';
 import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
 import { Linter } from 'eslint';
+import tseslint from 'typescript-eslint';
 import {
   describe,
   expect,
@@ -20,10 +21,17 @@ import {
   linesInsideTokens,
   lineSpan,
   lineTerminatorOf,
+  type ListGap,
+  listGaps,
   sameLine,
   spliceOntoNewline,
 } from './layoutUtils.ts';
-import { mustFind } from './ruleUtils.ts';
+import {
+  mustFind,
+  rangeOf,
+  type RuleNode,
+  type SourceCode,
+} from './ruleUtils.ts';
 
 const stepFor = (code: string): string => {
   return getIndentStep(sourceCodeFrom(code).sourceCode);
@@ -419,5 +427,85 @@ describe('inferred indentation', () => {
     ].join('\n');
 
     expect(fixWith(source)).toContain("import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';");
+  });
+});
+
+describe('listGaps', () => {
+  const INDENTS = {
+    outer: '',
+    inner: '  ',
+  };
+
+  // Each gap as the text either side of it and the indent it would take.
+  const describeGaps = (sourceCode: SourceCode, gaps: ListGap[]): string[][] => {
+    return gaps
+      .map(([before, after, indent]) => {
+        return [sourceCode.text.slice(...rangeOf(before)), sourceCode.text.slice(...rangeOf(after)), indent];
+      });
+  };
+
+  const elementsOf = (node: RuleNode) => {
+    return node.type === 'ArrayExpression' ? node.elements : [];
+  };
+
+  it('finds a gap after the bracket, after each comma and before the close, holes and trailing comma too', () => {
+    const { sourceCode, firstNode } = sourceCodeFrom('const list = [, alpha, bravo,];');
+    const node = firstNode('ArrayExpression');
+    const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
+
+    expect(gaps).toEqual([
+      ['[', ',', '  '],
+      [',', 'alpha', '  '],
+      [',', 'bravo', '  '],
+      [',', ']', ''],
+    ]);
+  });
+
+  it('steps past the parentheses around an element to its comma', () => {
+    const { sourceCode, firstNode } = sourceCodeFrom('const list = [(alpha), bravo];');
+    const node = firstNode('ArrayExpression');
+    const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
+
+    expect(gaps[1]).toEqual([',', 'bravo', '  ']);
+  });
+
+  it('breaks after a same-line comment that trails a comma, and before one heading the next line', () => {
+    const code = 'const list = [alpha, /* a */ /* b */ bravo,\n  /* c */ charlie];';
+    const { sourceCode, firstNode } = sourceCodeFrom(code);
+    const node = firstNode('ArrayExpression');
+    const gaps = describeGaps(sourceCode, listGaps(sourceCode, node, elementsOf(node), INDENTS, true));
+
+    expect(gaps).toEqual([
+      ['[', 'alpha', '  '],
+      ['/* b */', 'bravo', '  '],
+      [',', '/* c */', '  '],
+      ['charlie', ']', ''],
+    ]);
+  });
+
+  it('reads a TypeScript member as carrying its own delimiter, and a pattern as closing before its annotation', () => {
+    const {
+      sourceCode,
+      firstNode,
+      lastNode,
+    } = sourceCodeFrom(
+      'interface Shape { alpha: string; bravo: number }\nconst { alpha, bravo }: Shape = source;',
+      tseslint.parser,
+    );
+    const body = firstNode('TSInterfaceBody');
+    const pattern = firstNode('ObjectPattern');
+    const members = [firstNode('TSPropertySignature'), lastNode('TSPropertySignature')];
+    const properties = pattern.type === 'ObjectPattern' ? pattern.properties : [];
+
+    expect(describeGaps(sourceCode, listGaps(sourceCode, body, members, INDENTS, false))).toEqual([
+      ['{', 'alpha', '  '],
+      [';', 'bravo', '  '],
+      ['number', '}', ''],
+    ]);
+    expect(describeGaps(sourceCode, listGaps(sourceCode, pattern, properties, INDENTS, true))).toEqual([
+      ['{', 'alpha', '  '],
+      [',', 'bravo', '  '],
+      ['bravo', '}', ''],
+    ]);
   });
 });

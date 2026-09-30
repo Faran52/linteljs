@@ -1,62 +1,46 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
-  adjacentPairs,
-  fitsOnLine,
   indentReader,
   lineTerminatorOf,
-  spliceOntoNewline,
+  type ListGap,
+  listGaps,
+  sameLine,
 } from '../../utils/layoutUtils.ts';
 import {
   createRule,
   type Fixer,
   mustFind,
-  type ObjectPatternNode,
   optionsOf,
   rangeOf,
-  rebuildLosesComments,
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-import {
-  analyzeProperties,
-  endTokenOf,
-  type PatternAnalysis,
-  type PropertyNode,
-  startTokenOf,
-} from './utils/boundaryUtils.ts';
+import type { Rule, SourceCode } from 'eslint';
 
-import type { Rule } from 'eslint';
-
-interface PatternExtras {
-  optional?: boolean;
-  typeAnnotation?: RuleNode;
-}
-
-type DestructuredPattern = ObjectPatternNode & PatternExtras;
+type Member = Parameters<SourceCode['getLastToken']>[0];
 
 // ESLint 10 checks a selector's handler against `Rule.Node`, which carries neither list.
 interface Bodied {
-  body?: PropertyNode[];
+  body?: Member[];
+}
+
+interface Membered {
+  members?: Member[];
 }
 
 type InterfaceBodyNode = RuleNode & Bodied;
 
-interface Membered {
-  members?: PropertyNode[];
-}
-
 type TypeLiteralNode = RuleNode & Membered;
-
-type ReportFix = (fixer: Fixer) => IterableIterator<Rule.Fix> | Rule.Fix | null;
 
 interface MemberNewlineOptions {
   maxProperties: number;
-  maxLineLength: number;
 }
 
-const DEFAULT_MAX_PROPERTIES = 1;
-// The same figure `import-newlines` defaults to, since both answer the same question about the same line.
-const DEFAULT_MAX_LINE_LENGTH = 120;
+const DEFAULT_MAX_PROPERTIES = 2;
+
+const isBlank = ([before, after]: ListGap): boolean => {
+  return mustFind(after.loc).start.line > mustFind(before.loc).end.line + 1;
+};
 
 export const memberNewline = createRule('member-newline', {
   meta: {
@@ -65,16 +49,15 @@ export const memberNewline = createRule('member-newline', {
       language: 'universal',
       recommended: true,
       fixShape: 'whitespace',
-      description: 'Put each member of an object pattern, interface, or type literal with two or more on its own line.',
+      description:
+        'Put each member of an object, object pattern, interface, or type literal with three or more on its own line.',
     },
-    // `code`: the `ObjectPattern` branch drops a trailing comma, which `--fix-type whitespace` would skip.
-    fixable: 'code',
+    fixable: 'whitespace',
     messages: {
       mustSplit:
         'Members must be broken into multiple lines if there are more than {{maxProperties}}.',
       noBlankBetween: 'Members cannot have blank lines between them.',
-      membersOnNewline: 'Members must be put on newlines.',
-      multilineMember: 'Multiline member must be put on newlines.',
+      membersOnNewline: 'Put each member on its own line, with the braces on lines of their own.',
     },
     schema: [
       {
@@ -85,11 +68,6 @@ export const memberNewline = createRule('member-newline', {
             minimum: 0,
             default: DEFAULT_MAX_PROPERTIES,
           },
-          maxLineLength: {
-            type: 'integer',
-            minimum: 1,
-            default: DEFAULT_MAX_LINE_LENGTH,
-          },
         },
         additionalProperties: false,
       },
@@ -98,121 +76,43 @@ export const memberNewline = createRule('member-newline', {
   create: (context) => {
     const options = optionsOf<MemberNewlineOptions>(context);
     const maxCount = options.maxProperties ?? DEFAULT_MAX_PROPERTIES;
-    const maxLineLength = options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH;
     const sourceCode = sourceCodeOf(context);
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
-    // A string rather than a fix, so the collapsed form is measured against the line limit first.
-    const writePattern = (node: DestructuredPattern, multiLine: boolean): string | null => {
-      if (rebuildLosesComments(sourceCode, node)) {
-        return null;
-      }
-
-      const { outer, inner: indentInner } = indentsAt(node);
-
-      const parts = node.properties
-        .map((prop, index) => {
-          const isLast = index === node.properties.length - 1;
-          const separator = multiLine ? `,${eol}${indentInner}` : ', ';
-          const suffix = isLast ? '' : separator;
-
-          // Not `...` plus `argument.name`, which breaks on a member-expression rest target.
-          return `${sourceCode.getText(prop)}${suffix}`;
-        });
-
-      const inner = parts.join('');
-      const body = multiLine ? `{${eol}${indentInner}${inner}${eol}${outer}}` : `{ ${inner} }`;
-      const annotation = node.typeAnnotation ? sourceCode.getText(node.typeAnnotation) : '';
-      // Dropping the `?` makes the parameter required.
-      const optional = node.optional ? '?' : '';
-
-      return `${body}${optional}${annotation}`;
-    };
-
-    const buildFix = (node: DestructuredPattern, multiLine = true): ((fixer: Fixer) => Rule.Fix | null) => {
-      return (fixer) => {
-        const text = writePattern(node, multiLine);
-
-        return text === null ? null : fixer.replaceText(node, text);
-      };
-    };
-
-    const splitMembers = function* (
-      fixer: Fixer,
-      members: RuleNode[],
-      indentInner: string,
-    ): IterableIterator<Rule.Fix> {
-      // A `TSPropertySignature` covers its own trailing `;` or `,`.
-      for (const [previous, member] of adjacentPairs(members)) {
-        const endToken = mustFind(endTokenOf(sourceCode, previous));
-        const targetToken = mustFind(startTokenOf(sourceCode, member));
-        const endLine = mustFind(endToken.loc).end.line;
-        const targetLine = mustFind(targetToken.loc).start.line;
-
-        if (endLine === targetLine || targetLine > endLine + 1) {
-          yield fixer.replaceTextRange([rangeOf(endToken)[1], rangeOf(targetToken)[0]], `${eol}${indentInner}`);
-        }
-      }
-    };
-
-    const buildMemberFix = (
-      node: RuleNode,
-      members: RuleNode[],
-    ): ((fixer: Fixer) => IterableIterator<Rule.Fix>) => {
-      return function* (fixer) {
-        const firstMember = mustFind(members[0]);
-        const lastMember = mustFind(members[members.length - 1]);
-        const closeBrace = sourceCode.getLastToken(node);
-
-        // `getLastToken` skips comments, so a note in the splice gap would be lost.
-        if (closeBrace && sourceCode.getCommentsBefore(closeBrace).length > 0) {
-          return;
-        }
-
-        const { outer, inner } = indentsAt(node);
-        const openBrace = sourceCode.getFirstToken(node);
-
-        yield* spliceOntoNewline(fixer, openBrace, startTokenOf(sourceCode, firstMember), inner, eol);
-
-        yield* splitMembers(fixer, members, inner);
-
-        yield* spliceOntoNewline(fixer, sourceCode.getLastToken(lastMember), closeBrace, outer, eol);
-      };
-    };
-
-    // The pattern rebuild cannot express a multiline member, so `ObjectPattern` calls this with no fix.
-    const reportedMultilineMember = (
-      node: RuleNode,
-      analysis: PatternAnalysis,
-      fix?: ReportFix,
-    ): boolean => {
-      if (!analysis.hasMultilineProperty || analysis.isMultiLine) {
-        return false;
-      }
-
-      context.report({
-        node,
-        messageId: 'multilineMember',
-        fix,
-      });
-
-      return true;
-    };
-
-    const reportOverThreshold = (node: RuleNode, analysis: PatternAnalysis, fix: ReportFix) => {
-      if (!analysis.isMultiLine) {
-        context.report({
-          node,
-          messageId: 'mustSplit',
-          data: { maxProperties: String(maxCount) },
-          fix,
-        });
-
+    // `blanksCount` is off for an object literal, where a blank line groups properties on purpose.
+    const check = (node: RuleNode, members: Member[], commaSeparated: boolean, blanksCount = true) => {
+      if (members.length < 2) {
         return;
       }
 
-      if (analysis.hasSameLinePairs) {
+      const gaps = listGaps(sourceCode, node, members, indentsAt(node), commaSeparated);
+      const isOver = members.length > maxCount;
+      const onOneLine = gaps
+        .filter(([before, after]) => {
+          return sameLine(before, after);
+        });
+      const blank = isOver && blanksCount ? gaps.filter(isBlank) : [];
+
+      const fix = (fixer: Fixer): Rule.Fix[] => {
+        return [...onOneLine, ...blank]
+          .map(([before, after, indent]) => {
+            return fixer.replaceTextRange([rangeOf(before)[1], rangeOf(after)[0]], `${eol}${indent}`);
+          });
+      };
+
+      // All on one line is fine up to the count; a list broken anywhere is broken everywhere.
+      if (onOneLine.length === gaps.length) {
+        if (isOver) {
+          context.report({
+            node,
+            messageId: 'mustSplit',
+            data: { maxProperties: String(maxCount) },
+            fix,
+          });
+        }
+      }
+      else if (onOneLine.length > 0) {
         context.report({
           node,
           messageId: 'membersOnNewline',
@@ -220,7 +120,7 @@ export const memberNewline = createRule('member-newline', {
         });
       }
 
-      if (analysis.hasBlankBetween) {
+      if (blank.length > 0) {
         context.report({
           node,
           messageId: 'noBlankBetween',
@@ -229,65 +129,21 @@ export const memberNewline = createRule('member-newline', {
       }
     };
 
-    const checkMembers = (node: RuleNode, members: PropertyNode[]) => {
-      if (members.length <= 1) {
-        return;
-      }
-
-      const analysis = analyzeProperties(sourceCode, members);
-      const fix = buildMemberFix(node, members);
-
-      if (reportedMultilineMember(node, analysis, fix)) {
-        return;
-      }
-
-      if (members.length > maxCount) {
-        reportOverThreshold(node, analysis, fix);
-      }
-    };
-
     return {
-      ObjectPattern: (node: DestructuredPattern) => {
-        const properties = node.properties as PropertyNode[];
+      ObjectExpression: (node) => {
+        check(node, node.properties, true, false);
+      },
 
-        if (properties.length <= 1) {
-          return;
-        }
-
-        const analysis = analyzeProperties(sourceCode, properties);
-
-        if (reportedMultilineMember(node, analysis)) {
-          return;
-        }
-
-        if (properties.length > maxCount) {
-          reportOverThreshold(node, analysis, buildFix(node));
-          return;
-        }
-
-        if (analysis.isMultiLine && !analysis.hasMultilineProperty) {
-          const collapsed = writePattern(node, false);
-
-          // A collapse the line cannot hold trades this report for a `max-len` finding no fixer can answer.
-          if (collapsed !== null && !fitsOnLine(sourceCode, node, collapsed, maxLineLength)) {
-            return;
-          }
-
-          context.report({
-            node,
-            messageId: 'mustSplit',
-            data: { maxProperties: String(maxCount) },
-            fix: buildFix(node, false),
-          });
-        }
+      ObjectPattern: (node) => {
+        check(node, node.properties, true);
       },
 
       TSInterfaceBody: (node: InterfaceBodyNode) => {
-        checkMembers(node, mustFind(node.body));
+        check(node, mustFind(node.body), false);
       },
 
       TSTypeLiteral: (node: TypeLiteralNode) => {
-        checkMembers(node, mustFind(node.members));
+        check(node, mustFind(node.members), false);
       },
     };
   },

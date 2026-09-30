@@ -135,21 +135,13 @@ export const base = (options: BaseOptions = {}): Layer => {
             multi: 1,
           },
         }],
-        // One property per line; `object-curly-newline` alone leaves the braces on the first and last property lines.
-        '@stylistic/object-property-newline': 'error',
+        // `@linteljs/member-newline` owns a list of two or more members; `object-property-newline` splits at two.
+        '@stylistic/object-property-newline': 'off',
+        // Braces only, for the one-member list `member-newline` leaves alone. `multiline` would split a pair.
         '@stylistic/object-curly-newline': ['error', {
-          ObjectExpression: {
-            multiline: true,
-            consistent: true,
-          },
-          TSTypeLiteral: {
-            multiline: true,
-            consistent: true,
-          },
-          TSInterfaceBody: {
-            multiline: true,
-            consistent: true,
-          },
+          ObjectExpression: { consistent: true },
+          TSTypeLiteral: { consistent: true },
+          TSInterfaceBody: { consistent: true },
         }],
 
         'import-x/no-unresolved': 'error',

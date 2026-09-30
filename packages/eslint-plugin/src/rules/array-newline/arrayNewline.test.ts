@@ -9,6 +9,8 @@ jsRuleTester.run('array-newline', arrayNewline, {
     'const list = [];',
     'const list = [alpha];',
     'const list = [\n  alpha\n];',
+    // One element is never touched, even with a bracket hanging.
+    'const list = [\n  alpha];',
     'const list = [{\n  alpha: 1\n}];',
     'const list = [,];',
     'const list = [alpha,];',
@@ -19,14 +21,15 @@ jsRuleTester.run('array-newline', arrayNewline, {
     'const list = [\n  ,\n  alpha\n];',
     'const list = [\n  (alpha),\n  bravo\n];',
     'const [alpha] = list;',
+    'const list = [alpha, bravo];',
+    'const list = [alpha, bravo,];',
+    'const list = [{\n  alpha: 1\n}, bravo];',
+    'const [alpha, bravo] = list;',
+    'const [value, setValue] = useState(0);',
+    'for (const [key, value] of Object.entries(record)) {\n  use(key, value);\n}',
     'const [\n  alpha,\n  bravo\n] = list;',
   ],
   invalid: [
-    {
-      code: 'const list = [alpha, bravo];',
-      output: 'const list = [\n  alpha,\n  bravo\n];',
-      errors,
-    },
     {
       code: 'const list = [alpha, bravo, charlie];',
       output: 'const list = [\n  alpha,\n  bravo,\n  charlie\n];',
@@ -34,8 +37,8 @@ jsRuleTester.run('array-newline', arrayNewline, {
     },
     {
       // The trailing comma stays where it is; `comma-dangle` owns it.
-      code: 'const list = [alpha, bravo,];',
-      output: 'const list = [\n  alpha,\n  bravo,\n];',
+      code: 'const list = [alpha, bravo, charlie,];',
+      output: 'const list = [\n  alpha,\n  bravo,\n  charlie,\n];',
       errors,
     },
     {
@@ -54,8 +57,8 @@ jsRuleTester.run('array-newline', arrayNewline, {
       errors,
     },
     {
-      code: 'const list = [...head, tail];',
-      output: 'const list = [\n  ...head,\n  tail\n];',
+      code: 'const list = [...head, middle, tail];',
+      output: 'const list = [\n  ...head,\n  middle,\n  tail\n];',
       errors,
     },
     {
@@ -70,24 +73,24 @@ jsRuleTester.run('array-newline', arrayNewline, {
     },
     {
       // A hole last needs its comma, which stays on its line.
-      code: 'const list = [alpha, ,];',
-      output: 'const list = [\n  alpha,\n  ,\n];',
+      code: 'const list = [alpha, bravo, ,];',
+      output: 'const list = [\n  alpha,\n  bravo,\n  ,\n];',
       errors,
     },
     {
-      code: 'const list = [(alpha), (bravo)];',
-      output: 'const list = [\n  (alpha),\n  (bravo)\n];',
+      code: 'const list = [(alpha), (bravo), charlie];',
+      output: 'const list = [\n  (alpha),\n  (bravo),\n  charlie\n];',
       errors,
     },
     {
-      code: 'const list = [/* heads */ alpha, bravo /* trails */];',
-      output: 'const list = [\n  /* heads */ alpha,\n  bravo /* trails */\n];',
+      code: 'const list = [/* heads */ alpha, bravo, charlie /* trails */];',
+      output: 'const list = [\n  /* heads */ alpha,\n  bravo,\n  charlie /* trails */\n];',
       errors,
     },
     {
       // A note after the comma belongs to the element before it.
-      code: 'const list = [alpha, /* about alpha */ bravo];',
-      output: 'const list = [\n  alpha, /* about alpha */\n  bravo\n];',
+      code: 'const list = [alpha, /* about alpha */ bravo, charlie];',
+      output: 'const list = [\n  alpha, /* about alpha */\n  bravo,\n  charlie\n];',
       errors,
     },
     {
@@ -102,28 +105,28 @@ jsRuleTester.run('array-newline', arrayNewline, {
       errors,
     },
     {
-      code: 'const list = [alpha, /* one */ /* two */ bravo];',
-      output: 'const list = [\n  alpha, /* one */ /* two */\n  bravo\n];',
+      code: 'const list = [alpha, /* one */ /* two */ bravo, charlie];',
+      output: 'const list = [\n  alpha, /* one */ /* two */\n  bravo,\n  charlie\n];',
       errors,
     },
     {
       // The outer array goes first; the inner ones are left for the next pass.
-      code: 'const grid = [[alpha, bravo], [charlie]];',
-      output: 'const grid = [\n  [alpha, bravo],\n  [charlie]\n];',
+      code: 'const grid = [[alpha, bravo, charlie], [delta], [echo]];',
+      output: 'const grid = [\n  [alpha, bravo, charlie],\n  [delta],\n  [echo]\n];',
       errors: [...errors, ...errors],
     },
     {
-      code: 'if (ready) {\n    run([alpha, bravo]);\n}',
-      output: 'if (ready) {\n    run([\n        alpha,\n        bravo\n    ]);\n}',
+      code: 'if (ready) {\n    run([alpha, bravo, charlie]);\n}',
+      output: 'if (ready) {\n    run([\n        alpha,\n        bravo,\n        charlie\n    ]);\n}',
       errors,
     },
     {
-      code: 'const list = [{\n  alpha: 1\n}, bravo];',
-      output: 'const list = [\n  {\n  alpha: 1\n},\n  bravo\n];',
+      code: 'const list = [{\n  alpha: 1\n}, bravo, charlie];',
+      output: 'const list = [\n  {\n  alpha: 1\n},\n  bravo,\n  charlie\n];',
       errors,
     },
     {
-      code: 'const [alpha, bravo] = list;',
+      code: 'const [alpha,\n  bravo] = list;',
       output: 'const [\n  alpha,\n  bravo\n] = list;',
       errors,
     },
@@ -138,13 +141,14 @@ jsRuleTester.run('array-newline', arrayNewline, {
       errors,
     },
     {
-      code: 'for (const [key, value] of pairs) {\n  use(key, value);\n}',
-      output: 'for (const [\n  key,\n  value\n] of pairs) {\n  use(key, value);\n}',
+      // A default or a nested pattern gets no exemption: three or more split.
+      code: 'const [alpha = 1, [bravo], charlie] = list;',
+      output: 'const [\n  alpha = 1,\n  [bravo],\n  charlie\n] = list;',
       errors,
     },
     {
-      code: 'const list = [alpha, bravo];\r\n',
-      output: 'const list = [\r\n  alpha,\r\n  bravo\r\n];\r\n',
+      code: 'const list = [alpha, bravo, charlie];\r\n',
+      output: 'const list = [\r\n  alpha,\r\n  bravo,\r\n  charlie\r\n];\r\n',
       errors,
     },
   ],
@@ -158,13 +162,13 @@ tsRuleTester.run('array-newline', arrayNewline, {
   invalid: [
     {
       // The annotation and the `?` belong to the pattern, after its bracket.
-      code: 'declare function load([alpha, bravo]?: [string, number]): void;',
-      output: 'declare function load([\n  alpha,\n  bravo\n]?: [string, number]): void;',
+      code: 'declare function load([alpha, bravo, charlie]?: [string, number, boolean]): void;',
+      output: 'declare function load([\n  alpha,\n  bravo,\n  charlie\n]?: [string, number, boolean]): void;',
       errors,
     },
     {
-      code: 'const list = [alpha as string, bravo!];',
-      output: 'const list = [\n  alpha as string,\n  bravo!\n];',
+      code: 'const list = [alpha as string, bravo!, charlie];',
+      output: 'const list = [\n  alpha as string,\n  bravo!,\n  charlie\n];',
       errors,
     },
   ],

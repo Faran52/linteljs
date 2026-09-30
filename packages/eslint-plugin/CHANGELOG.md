@@ -12,14 +12,19 @@ when a version's change lives in a sibling it is described there instead:
 
 - **Node `>=18.0.0`**, up from 12. The bundle targets `node18`; CI runs ESLint 6 and 7 on `node:18-alpine`.
 - **ESLint `>=6.0.0`**, up from 5.
-- **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. Its message ids
-  `consistNewline` and `multilineProperty` are now `membersOnNewline` and `multilineMember`, and the messages say
-  "Members". Options and fixes are unchanged.
-- **One threshold for list layouts: two or more items go one per line.** `member-newline`'s `maxProperties`
-  default drops from `2` to `1`, and `import-newlines`' `maxItems` from `2` to `1`, so `const { alpha, bravo }`
-  and `import { alpha, bravo }` now split. Pass the old figure to keep the old layout.
-- **`member-newline` loses `maxPropertiesWithRest`.** At a `maxProperties` of `1` a rest element no longer needs
-  its own, lower threshold; a rest counts like any other member. Remove the option from your config.
+- **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. Its message id
+  `consistNewline` is now `membersOnNewline`, and the messages say "Members".
+- **One threshold for list layouts: three or more items go one per line, and two or fewer may not be
+  half-split.** `member-newline` keeps its `maxProperties` default of `2` and now holds every list it owns to it:
+  two or fewer members sit on one line or go fully one per line, and `const { alpha,\n  bravo }` is fixed to the
+  second. It never joins lines, so a split pair is no longer collapsed.
+- **`member-newline` takes object literals**, which `@stylistic/object-property-newline` split at two. The base
+  layer turns that rule off (see `@linteljs/eslint-config`).
+- **`member-newline` loses `maxPropertiesWithRest` and `maxLineLength`.** A rest element counts like any other
+  member, and with no collapse there is no line to measure. Its `multilineMember` message is gone: a list with a
+  member spanning lines follows the same count. The fix is whitespace only (`fixable: 'whitespace'`), so a comment
+  inside a pattern no longer blocks it, and a trailing comma is left for `comma-dangle`. Remove both options from
+  your config.
 - **`destructuring-property-newline` is removed.** Every shape it reported now belongs to another rule:
   `member-newline` reports a half-split object pattern, and `array-newline` (below) an array pattern.
   Remove the id from your config.
@@ -35,9 +40,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
-- `array-newline` puts each element of an array or array pattern with two or more on its own line, with the
-  brackets on lines of their own. An array of none or one is left as written; the rule never joins lines. Fixable (whitespace), in
-  `recommended`.
+- `array-newline` puts each element of an array or array pattern with three or more on its own line, with the
+  brackets on lines of their own. Two or fewer sit on one line or go fully one per line, so
+  `const [value, setValue] = useState(0)` stays as written and `[alpha,\n  bravo]` is fixed. The rule never
+  joins lines. Fixable (whitespace), in `recommended`.
 - `chain-call-newline` puts each call in a member chain on its own line once the chain has two calls after its
   head, or one call taking a callback with a block body. The head keeps a namespace call, so
   `Object.keys(x).map(fn)` and `expect(x).toBe(y)` stay on one line. Fixable (whitespace): breaks before each `.`

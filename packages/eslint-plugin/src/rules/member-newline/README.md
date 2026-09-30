@@ -1,108 +1,81 @@
 # @linteljs/member-newline
 
-Put each member of an object pattern, interface, or type literal with two or more on its own line.
+Put each member of an object, object pattern, interface, or type literal with three or more on its own line.
 
 - Applies to: JavaScript and TypeScript
-- Fixable: yes (code)
+- Fixable: yes (whitespace)
 - In `recommended`: yes
 
-Two or more members go one per line, with the braces on lines of their own. That is the threshold
-`@stylistic/object-property-newline` holds an object literal to and
-[`@linteljs/array-newline`](../array-newline) holds an array to, so the declaration of an object,
-the object itself and the destructuring of it all read the same way. A rest element counts like
-any other member.
+Three or more members go one per line, with the braces on lines of their own. Two or fewer may sit
+on one line, or go one per line; what they may not be is half-split, broken in some places and not
+others, so `const { alpha,\n  bravo } = source` is fixed to the fully expanded form. That is the
+threshold [`@linteljs/array-newline`](../array-newline) holds an array to and
+[`@linteljs/import-newlines`](../import-newlines) an import, so the declaration of an object, the
+object itself and the destructuring of it all read the same way. A rest or spread element counts
+like any other member.
+
+The rule never joins lines. It only adds breaks, and removes a blank line between the members of a
+pattern, interface or type literal over the count.
 
 ## Examples of incorrect code for this rule
 
 ```ts
-const { alpha, bravo } = source;
+const { alpha, bravo, charlie } = source;
 
-const { charlie, ...rest } = source;
+const { delta,
+  echo } = source;
 
-const { delta, echo,
-  foxtrot } = source;
+const point = { x: 1, y: 2, z: 3 };
 
-interface Wide { golf: string; hotel: number }
+interface Wide { golf: string; hotel: number; india: boolean }
 
 interface Half {
-  india: string; juliet: number;
-  kilo: boolean;
+  juliet: string; kilo: number;
 }
 ```
 
 ## Examples of correct code for this rule
 
 ```ts
-const { alpha } = source;
+const { alpha, bravo } = source;
 
 const {
-  bravo,
-  charlie
-} = source;
-
-const {
+  charlie,
   delta,
   ...rest
 } = other;
 
+const point = { x: 1, y: 2 };
+
 interface Wide {
   echo: string;
   foxtrot: number;
+  golf: boolean;
 }
-```
-
-An optional parameter stays optional, and its type annotation comes back with it:
-
-```ts
-// correct: the `?` and the `: Options` belong to the pattern and are preserved
-declare function load({
-  mike,
-  november
-}?: Options): void;
 ```
 
 ## Options
 
 ```jsonc
 {
-  "@linteljs/member-newline": ["error", {
-    "maxProperties": 1,
-    "maxLineLength": 120
-  }]
+  "@linteljs/member-newline": ["error", { "maxProperties": 2 }]
 }
 ```
 
-- `maxProperties`: integer, `1` by default. More than this and the pattern, interface or type
-  literal splits one member per line. Raise it and a split pattern at or under the count is
-  collapsed back onto one line.
-- `maxLineLength`: integer, `120` by default, and the same figure `import-newlines` uses. Only
-  read when `maxProperties` is raised: a split pattern under the count is only collapsed when the
-  one line it would become fits inside this. Everything on that line counts, not just the pattern,
-  so `const ` in front of it and ` = source;` behind it are measured too.
-
-## What it declines to fix
-
-- A property that itself spans lines while the others sit on the opening line is reported with no
-  fix at all. The rebuild works property by property and has no way to express that shape, so it
-  says what is wrong and leaves the decision to you.
-- A comment between the last member and the closing brace is reported without a fix. The split
-  rewrites that gap to move the brace down, which would take the comment with it.
-- A destructuring pattern with a comment anywhere inside it is reported without a fix. The pattern
-  is rebuilt from the text of its members, which would drop the comment.
-- With `maxProperties` raised, a split pattern whose collapsed form would run past
-  `maxLineLength` is left split and not reported. Collapsing it would trade this rule's report for
-  a `max-len` one that no fixer here can answer.
+- `maxProperties`: integer, `2` by default. More than this and the list splits one member per line.
 
 ## Notes
 
-A doc comment above a member counts as part of that member, so the space it occupies is not read as
-a blank line. That was a real bug: every documented interface reported forever, with no edit that
-could satisfy the rule. A genuine blank line between two members is reported, doc comments or not,
-once the block is over `maxProperties`.
-
-A note written beside a member, as `meta?: string; // describes meta`, belongs to that member. It
-does not count towards where the next one starts, and a split puts the newline after it rather than
-in front of it. Both halves were wrong in 1.0.1: an interface already one member per line reported,
-and the fix moved every note down onto the field below, so each described the wrong thing.
-
-Rebuilt blocks keep the column they came from, indented one step further in.
+- **Blank lines** in an object literal are left alone, since they group properties on purpose. In a
+  pattern, an interface or a type literal over the count they are removed.
+- **Comments** are never moved across a separator or deleted. A comment on the same line after a
+  member or its comma describes that member, so the break goes after the comment:
+  `meta?: string; // describes meta` keeps its note beside `meta`.
+- **A trailing comma** stays on the last member's line. Whether there is one is
+  `@stylistic/comma-dangle`'s decision, not this rule's.
+- **A multi-line member** does not make a list split: `{ x: 1, draw: () => {...} }` has two members
+  and every break between them is on one line, so it stays as written.
+- **Indentation**: members go one step in from the line the list starts on, with the step read off
+  the file. A member that spans lines keeps its inner lines where they were, for `@stylistic/indent`
+  to settle.
+- **An optional pattern parameter** keeps its `?` and type annotation, which sit after its brace.

@@ -24,6 +24,10 @@ when a version's change lives in a sibling it is described there instead:
   second `interface` of one name in a scope, which TypeScript merges silently; merge or rename it.
   `@stylistic/jsx-max-props-per-line` allows two props on a one-line tag, and `es-toolkit/compat` is a restricted
   import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
+- **`base` lays out lists at three or more.** `@stylistic/object-property-newline`, which split an object literal
+  at two properties, is off; `@linteljs/member-newline` now owns object literals, object patterns, interfaces and
+  type literals, and `@linteljs/array-newline` arrays, all at three or more items, one per line. Two or fewer stay
+  as written unless half-split. `@stylistic/object-curly-newline` keeps only `consistent`, for a single member.
 - **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350 and
   `max-lines` at 500, 350 for a `.tsx`, `.jsx`, `.vue` or `.svelte` file and 800 under a `utils/` directory.
   `base({ astro: true })` holds `.astro` files to the same 350. Tests, `__mocks__/` and `e2e/` are exempt from both.

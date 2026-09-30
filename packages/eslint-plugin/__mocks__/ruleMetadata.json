@@ -10,7 +10,7 @@
       "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
-      "description": "Put each element of an array or array pattern with two or more on its own line."
+      "description": "Put each element of an array or array pattern with three or more on its own line."
     }
   },
   "chain-call-newline": {
@@ -83,7 +83,7 @@
           "maxItems": {
             "type": "integer",
             "minimum": 0,
-            "default": 1
+            "default": 2
           },
           "maxLineLength": {
             "type": "integer",
@@ -132,8 +132,7 @@
     "messages": {
       "mustSplit": "Members must be broken into multiple lines if there are more than {{maxProperties}}.",
       "noBlankBetween": "Members cannot have blank lines between them.",
-      "membersOnNewline": "Members must be put on newlines.",
-      "multilineMember": "Multiline member must be put on newlines."
+      "membersOnNewline": "Put each member on its own line, with the braces on lines of their own."
     },
     "schema": [
       {
@@ -142,24 +141,19 @@
           "maxProperties": {
             "type": "integer",
             "minimum": 0,
-            "default": 1
-          },
-          "maxLineLength": {
-            "type": "integer",
-            "minimum": 1,
-            "default": 120
+            "default": 2
           }
         },
         "additionalProperties": false
       }
     ],
     "type": "layout",
-    "fixable": "code",
+    "fixable": "whitespace",
     "docs": {
       "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
-      "description": "Put each member of an object pattern, interface, or type literal with two or more on its own line."
+      "description": "Put each member of an object, object pattern, interface, or type literal with three or more on its own line."
     }
   },
   "native-accessible-name": {

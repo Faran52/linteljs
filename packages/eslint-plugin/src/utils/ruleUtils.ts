@@ -37,14 +37,6 @@ export interface NamedNode {
   name: string;
 }
 
-interface ObjectPatternMatch {
-  type: 'ObjectPattern';
-}
-
-interface ArrayPatternMatch {
-  type: 'ArrayPattern';
-}
-
 interface MemberExpressionMatch {
   type: 'MemberExpression';
 }
@@ -52,10 +44,6 @@ interface MemberExpressionMatch {
 interface FunctionMatch {
   type: 'ArrowFunctionExpression' | 'FunctionDeclaration' | 'FunctionExpression';
 }
-
-export type ObjectPatternNode = Extract<RuleNode, ObjectPatternMatch>;
-
-export type ArrayPatternNode = Extract<RuleNode, ArrayPatternMatch>;
 
 export type MemberExpressionNode = Extract<RuleNode, MemberExpressionMatch>;
 

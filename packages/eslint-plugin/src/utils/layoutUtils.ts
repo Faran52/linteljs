@@ -21,6 +21,12 @@ export interface Indents {
   inner: string;
 }
 
+// `getLastToken` takes any ESTree node, which an array's elements are and `RuleNode` is not.
+type ListItem = Parameters<SourceCode['getLastToken']>[0] | null;
+
+// Each break a one-per-line list needs: before and after the brace or bracket, and between its items.
+export type ListGap = [SpliceAnchor, SpliceAnchor, string];
+
 const MAX_SANE_INDENT = 8;
 
 const MIN_SANE_INDENT = 2;
@@ -175,4 +181,63 @@ export const commaToNewline = (
   const comma = mustFind(sourceCode.getTokenBefore(currentToken));
 
   return fixer.replaceTextRange([comma.range[1], currentToken.range[0]], `${lineTerminatorOf(sourceCode)}${indent}`);
+};
+
+const COMMENTS = { includeComments: true };
+
+// A parenthesised array element ends before its `)`.
+const PAST_PARENS = {
+  filter: (token: AST.Token) => {
+    return token.value !== ')';
+  },
+};
+
+// A same-line comment after a separator trails the item before it, so the break goes after the comment.
+const trailingEnd = (sourceCode: SourceCode, token: AST.Token) => {
+  let trailing;
+
+  for (const comment of sourceCode.getCommentsAfter(token)) {
+    if (!sameLine(token, comment)) {
+      break;
+    }
+
+    trailing = comment;
+  }
+
+  return trailing ?? token;
+};
+
+// `commaSeparated` is false for a TypeScript member, which carries its own `;` or `,`. A hole is a null item.
+export const listGaps = (
+  sourceCode: SourceCode,
+  node: RuleNode,
+  items: ListItem[],
+  { outer, inner }: Indents,
+  commaSeparated: boolean,
+): ListGap[] => {
+  const open = mustFind(sourceCode.getFirstToken(node));
+  const ends: AST.Token[] = [];
+  let cursor = open;
+
+  for (const item of items) {
+    const last = item ? mustFind(sourceCode.getLastToken(item)) : cursor;
+
+    cursor = commaSeparated ? mustFind(sourceCode.getTokenAfter(last, PAST_PARENS)) : last;
+    ends.push(cursor);
+  }
+
+  // Found from the last item, not the node, since a pattern's type annotation comes after its brace.
+  const close = cursor.value === ',' || !commaSeparated ? mustFind(sourceCode.getTokenAfter(cursor)) : cursor;
+
+  return [
+    [open, mustFind(sourceCode.getTokenAfter(open, COMMENTS)), inner],
+    ...ends
+      .slice(0, -1)
+      .map((end): ListGap => {
+        const anchor = trailingEnd(sourceCode, end);
+
+        return [anchor, mustFind(sourceCode.getTokenAfter(anchor, COMMENTS)), inner];
+      }),
+    [mustFind(sourceCode.getTokenBefore(close, COMMENTS)), close, outer],
+  ];
 };
