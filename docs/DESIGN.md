@@ -216,10 +216,17 @@ touchable produce different interfaces.
 
 `base` enables `@stylistic/object-property-newline` with `allowAllPropertiesOnSameLine: false`, paired with
 `@stylistic/object-curly-newline` scoped to `ObjectExpression`, `TSTypeLiteral` and `TSInterfaceBody`, the three
-nodes the first rule splits. Without it a four-property literal stays on one line while the identical
-destructuring pattern is split by `destructuring-property-newline`, and at 120 columns `max-len` never reaches it.
-The pairing matters: `object-property-newline` alone fixes to a hanging brace. The scope keeps it off imports, exports
-and destructuring, which the four `@linteljs` newline rules own.
+nodes the first rule splits. The pairing matters: `object-property-newline` alone fixes to a hanging brace. The
+scope keeps it off imports, exports and destructuring, which the `@linteljs` newline rules own.
+
+Every list layout splits at the same count: two or more items, one per line, the delimiters on lines of their own.
+`object-property-newline` does it for an object literal, `@linteljs/member-newline` for an object pattern, an
+interface and a type literal, `@linteljs/array-newline` for an array and an array pattern,
+`@linteljs/import-newlines` for an import and `@linteljs/export-specifier-newline` for an export list. One node,
+one owner. Arrays take a plugin rule because `@stylistic` 5.10.0 cannot say it: `array-bracket-newline` in
+`multiline` or `minItems` mode joins a one-element array of a single token past `max-len`, and in `consistent`
+mode it accepts `[a,\n  b]` with a hanging bracket. `union-newline` is the exception on purpose: it splits on
+what a union holds, not on how many members it has.
 
 JSX props take the object form of `@stylistic/jsx-max-props-per-line`, `{ maximum: { single: 2, multi: 1 } }`,
 replacing the preset's `{ maximum: 1, when: 'multiline' }`, which caps a one-line tag at nothing. Two on a line
@@ -1434,11 +1441,13 @@ because it matches calls inside the body and there is no call. Off for that dire
 
 ### `@linteljs/workspace/pending-list-reformat`
 
-`@linteljs/array-newline` is in `recommended` from 2.0.0, and this workspace is not yet formatted to it. Measured
-at the commit that adds the rule: 2008 findings across 282 files under `eslint .`, and 22 in the starters under
-`pnpm lint:starters`, every one autofixable. The reformat is its own commit, reviewed apart from the rule, and it
-deletes this block and the matching `@linteljs/starters/pending-list-reformat` in
-`scripts/lint-starters/lintStartersScript.ts`.
+2.0.0 moves every list layout to one threshold, two or more items one per line: `@linteljs/array-newline` is new
+in `recommended`, and `member-newline` and `import-newlines` drop their defaults from 2 to 1. This workspace is not
+yet formatted to it. Measured under `eslint .` with the block removed: 2189 `array-newline`, 322
+`import-newlines` and 149 `member-newline` findings across 377 files. Under `pnpm lint:starters`: 32, 156 and 32
+across 142 files. Every one is autofixable. The block turns the new rule off and pins the two old figures, so the
+rest of each rule still holds meanwhile. The reformat is its own commit, reviewed apart from the rules, and it
+deletes this block and `@linteljs/starters/pending-list-reformat` in `scripts/lint-starters/lintStartersScript.ts`.
 
 ### Coverage thresholds, in `vitest.config.ts`
 

@@ -37,7 +37,6 @@ interface Evaluation {
 }
 
 const ORDERED_RULES = [
-  'destructuring-property-newline',
   'export-specifier-newline',
   'import-newlines',
   'member-newline',

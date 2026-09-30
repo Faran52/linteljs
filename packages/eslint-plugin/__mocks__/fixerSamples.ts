@@ -126,9 +126,9 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'default-only import split over lines',
     code: "import\ndefaultExport from 'mod';",
   },
-  // Under the member count, so the one pass collapses rather than splitting into a shape the next undoes.
+  // The one pass must land on a shape the next pass leaves alone.
   {
-    name: 'half-split import under the member count',
+    name: 'half-split import',
     code: "import {\n  alpha, bravo } from 'mod';",
   },
 
@@ -168,7 +168,7 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'array pattern with a leading hole',
     code: 'const [, alpha, bravo,\n  charlie] = source;',
   },
-  // The collapsed line would run past 120 characters, which no fixer here can shorten.
+  // Collapsing it would run past 120 characters, which no fixer here can shorten.
   {
     name: 'split destructuring too long to collapse',
     code: 'const {\n  alphaProperty = computeSomethingRatherLong(configuration),\n'

@@ -15,7 +15,6 @@ import {
   rangeOf,
   rebuildLosesComments,
   type RuleNode,
-  type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
 import {
@@ -52,16 +51,10 @@ type ReportFix = (fixer: Fixer) => IterableIterator<Rule.Fix> | Rule.Fix | null;
 
 interface MemberNewlineOptions {
   maxProperties: number;
-  maxPropertiesWithRest: number;
   maxLineLength: number;
 }
 
-const isRestElement = (property: TypedNode): boolean => {
-  return property.type === 'RestElement';
-};
-
-const DEFAULT_MAX_PROPERTIES = 2;
-const DEFAULT_MAX_PROPERTIES_WITH_REST = 1;
+const DEFAULT_MAX_PROPERTIES = 1;
 // The same figure `import-newlines` defaults to, since both answer the same question about the same line.
 const DEFAULT_MAX_LINE_LENGTH = 120;
 
@@ -72,7 +65,7 @@ export const memberNewline = createRule('member-newline', {
       language: 'universal',
       recommended: true,
       fixShape: 'whitespace',
-      description: 'Keep crowded destructuring patterns, interfaces, and type literals on separate lines.',
+      description: 'Put each member of an object pattern, interface, or type literal with two or more on its own line.',
     },
     // `code`: the `ObjectPattern` branch drops a trailing comma, which `--fix-type whitespace` would skip.
     fixable: 'code',
@@ -92,11 +85,6 @@ export const memberNewline = createRule('member-newline', {
             minimum: 0,
             default: DEFAULT_MAX_PROPERTIES,
           },
-          maxPropertiesWithRest: {
-            type: 'integer',
-            minimum: 0,
-            default: DEFAULT_MAX_PROPERTIES_WITH_REST,
-          },
           maxLineLength: {
             type: 'integer',
             minimum: 1,
@@ -110,7 +98,6 @@ export const memberNewline = createRule('member-newline', {
   create: (context) => {
     const options = optionsOf<MemberNewlineOptions>(context);
     const maxCount = options.maxProperties ?? DEFAULT_MAX_PROPERTIES;
-    const maxRestCount = options.maxPropertiesWithRest ?? DEFAULT_MAX_PROPERTIES_WITH_REST;
     const maxLineLength = options.maxLineLength ?? DEFAULT_MAX_LINE_LENGTH;
     const sourceCode = sourceCodeOf(context);
     const indentsAt = indentReader(sourceCode);
@@ -213,27 +200,19 @@ export const memberNewline = createRule('member-newline', {
       return true;
     };
 
-    // `threshold` is passed: a pattern with a rest is judged against `maxPropertiesWithRest`.
-    const reportOverThreshold = (
-      node: RuleNode,
-      analysis: PatternAnalysis,
-      threshold: number,
-      fix: ReportFix,
-      // Off for a pattern: `destructuring-property-newline` reports that shape, and one shape is worth one message.
-      reportsSameLinePairs = true,
-    ) => {
+    const reportOverThreshold = (node: RuleNode, analysis: PatternAnalysis, fix: ReportFix) => {
       if (!analysis.isMultiLine) {
         context.report({
           node,
           messageId: 'mustSplit',
-          data: { maxProperties: String(threshold) },
+          data: { maxProperties: String(maxCount) },
           fix,
         });
 
         return;
       }
 
-      if (analysis.hasSameLinePairs && reportsSameLinePairs) {
+      if (analysis.hasSameLinePairs) {
         context.report({
           node,
           messageId: 'membersOnNewline',
@@ -263,7 +242,7 @@ export const memberNewline = createRule('member-newline', {
       }
 
       if (members.length > maxCount) {
-        reportOverThreshold(node, analysis, maxCount, fix);
+        reportOverThreshold(node, analysis, fix);
       }
     };
 
@@ -275,16 +254,14 @@ export const memberNewline = createRule('member-newline', {
           return;
         }
 
-        const hasRest = properties.some(isRestElement);
-        const threshold = hasRest ? maxRestCount : maxCount;
         const analysis = analyzeProperties(sourceCode, properties);
 
         if (reportedMultilineMember(node, analysis)) {
           return;
         }
 
-        if (properties.length > threshold) {
-          reportOverThreshold(node, analysis, threshold, buildFix(node), false);
+        if (properties.length > maxCount) {
+          reportOverThreshold(node, analysis, buildFix(node));
           return;
         }
 
@@ -299,7 +276,7 @@ export const memberNewline = createRule('member-newline', {
           context.report({
             node,
             messageId: 'mustSplit',
-            data: { maxProperties: String(threshold) },
+            data: { maxProperties: String(maxCount) },
             fix: buildFix(node, false),
           });
         }

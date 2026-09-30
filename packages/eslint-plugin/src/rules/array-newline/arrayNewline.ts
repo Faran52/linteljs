@@ -7,6 +7,7 @@ import {
   spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
 import {
+  type ArrayPatternNode,
   createRule,
   mustFind,
   type RuleNode,
@@ -19,7 +20,9 @@ interface ArrayExpressionMatch {
 }
 
 // Holes in `[, , third]` are nulls.
-type Slot = Extract<RuleNode, ArrayExpressionMatch>['elements'][number];
+type Slot
+  = Extract<RuleNode, ArrayExpressionMatch>['elements'][number]
+    | ArrayPatternNode['elements'][number];
 
 type Gap = [SpliceAnchor, SpliceAnchor, string];
 
@@ -39,7 +42,7 @@ export const arrayNewline = createRule('array-newline', {
       language: 'universal',
       recommended: true,
       fixShape: 'whitespace',
-      description: 'Put each element of an array with two or more on its own line.',
+      description: 'Put each element of an array or array pattern with two or more on its own line.',
     },
     fixable: 'whitespace',
     messages: {
@@ -123,6 +126,9 @@ export const arrayNewline = createRule('array-newline', {
 
     return {
       ArrayExpression: (node) => {
+        check(node, node.elements);
+      },
+      ArrayPattern: (node) => {
         check(node, node.elements);
       },
     };

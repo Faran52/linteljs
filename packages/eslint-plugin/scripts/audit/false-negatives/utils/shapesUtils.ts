@@ -29,7 +29,6 @@ import {
   patternBlankLineCase,
   patternGapCase,
   patternJoinedCase,
-  patternSplitCase,
   typeBelowRuntimeCase,
   typeMembersJoinedCase,
   unionGenericCase,
@@ -58,9 +57,8 @@ const shape = (build: Build, name: string, options?: Record<string, OptionValue>
 
 // A rule can be awake on the shape someone tested and asleep on the next.
 export const SHAPES: Record<string, Shape[]> = {
-  'destructuring-property-newline': [
-    shape(patternGapCase('ObjectPattern', false), 'object pattern, last gap closed'),
-    shape(patternGapCase('ObjectPattern', true), 'object pattern, first gap closed'),
+  'array-newline': [
+    shape(patternGapCase('ArrayExpression', false), 'array, last gap closed'),
     shape(patternGapCase('ArrayPattern', false), 'array pattern, last gap closed'),
   ],
   'export-specifier-newline': [
@@ -82,10 +80,10 @@ export const SHAPES: Record<string, Shape[]> = {
     shape(typeBelowRuntimeCase('none'), 'type moved below runtime code, no header'),
   ],
   'member-newline': [
-    shape(patternJoinedCase(false), 'pattern joined onto one line, over maxProperties'),
-    shape(patternJoinedCase(true), 'pattern with a rest element joined onto one line'),
-    shape(patternSplitCase, 'pattern at the threshold split across lines'),
+    shape(patternJoinedCase, 'pattern joined onto one line, over maxProperties'),
     shape(patternBlankLineCase, 'blank line between two properties'),
+    shape(patternGapCase('ObjectPattern', false), 'object pattern, last gap closed'),
+    shape(patternGapCase('ObjectPattern', true), 'object pattern, first gap closed'),
     shape(typeMembersJoinedCase('TSInterfaceBody', interfaceMembers), 'interface body joined onto one line'),
     shape(typeMembersJoinedCase('TSTypeLiteral', literalMembers), 'type literal joined onto one line'),
   ],

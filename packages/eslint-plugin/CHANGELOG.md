@@ -15,6 +15,14 @@ when a version's change lives in a sibling it is described there instead:
 - **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. Its message ids
   `consistNewline` and `multilineProperty` are now `membersOnNewline` and `multilineMember`, and the messages say
   "Members". Options and fixes are unchanged.
+- **One threshold for list layouts: two or more items go one per line.** `member-newline`'s `maxProperties`
+  default drops from `2` to `1`, and `import-newlines`' `maxItems` from `2` to `1`, so `const { alpha, bravo }`
+  and `import { alpha, bravo }` now split. Pass the old figure to keep the old layout.
+- **`member-newline` loses `maxPropertiesWithRest`.** At a `maxProperties` of `1` a rest element no longer needs
+  its own, lower threshold; a rest counts like any other member. Remove the option from your config.
+- **`destructuring-property-newline` is removed.** Every shape it reported now belongs to another rule:
+  `member-newline` reports a half-split object pattern, and `array-newline` (below) an array pattern.
+  Remove the id from your config.
 - **The category presets are gone.** `configs.layout`, `ordering`, `imports`, `functions` and `promises` (and their
   `flat/` forms) are replaced by `configs.all` and `configs['flat/all']`, which carry every rule. Name the rules you
   want, or take `all` and turn off what you do not. `configs.recommended` stays.
@@ -27,8 +35,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
-- `array-newline` puts each element of an array with two or more on its own line, with the brackets on lines of
-  their own. An array of none or one is left as written; the rule never joins lines. Fixable (whitespace), in
+- `array-newline` puts each element of an array or array pattern with two or more on its own line, with the
+  brackets on lines of their own. An array of none or one is left as written; the rule never joins lines. Fixable (whitespace), in
   `recommended`.
 - `chain-call-newline` puts each call in a member chain on its own line once the chain has two calls after its
   head, or one call taking a callback with a block body. The head keeps a namespace call, so

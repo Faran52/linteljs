@@ -10,7 +10,7 @@
       "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
-      "description": "Put each element of an array with two or more on its own line."
+      "description": "Put each element of an array or array pattern with two or more on its own line."
     }
   },
   "chain-call-newline": {
@@ -54,20 +54,6 @@
       "description": "Use `//` for short comments and JSDoc blocks for longer prose."
     }
   },
-  "destructuring-property-newline": {
-    "messages": {
-      "propertiesOnNewline": "Destructuring properties must go on a new line if they aren't all on the same line."
-    },
-    "schema": [],
-    "type": "layout",
-    "fixable": "whitespace",
-    "docs": {
-      "fixShape": "whitespace",
-      "language": "universal",
-      "recommended": true,
-      "description": "Keep destructuring patterns either compact or fully expanded, never half-split."
-    }
-  },
   "export-specifier-newline": {
     "messages": {
       "specifiersOnNewline": "Export specifiers must go on a new line."
@@ -97,7 +83,7 @@
           "maxItems": {
             "type": "integer",
             "minimum": 0,
-            "default": 2
+            "default": 1
           },
           "maxLineLength": {
             "type": "integer",
@@ -156,11 +142,6 @@
           "maxProperties": {
             "type": "integer",
             "minimum": 0,
-            "default": 2
-          },
-          "maxPropertiesWithRest": {
-            "type": "integer",
-            "minimum": 0,
             "default": 1
           },
           "maxLineLength": {
@@ -178,7 +159,7 @@
       "fixShape": "whitespace",
       "language": "universal",
       "recommended": true,
-      "description": "Keep crowded destructuring patterns, interfaces, and type literals on separate lines."
+      "description": "Put each member of an object pattern, interface, or type literal with two or more on its own line."
     }
   },
   "native-accessible-name": {

@@ -26,7 +26,7 @@ const isNamedSpecifier = (specifier: TypedNode): boolean => {
   return specifier.type === 'ImportSpecifier';
 };
 
-const DEFAULT_MAX_ITEMS = 2;
+const DEFAULT_MAX_ITEMS = 1;
 const DEFAULT_MAX_LINE_LENGTH = 120;
 
 export const importNewlines = createRule('import-newlines', {

@@ -198,7 +198,11 @@ const config = [
   // Off until the reformat commit lands. docs/DESIGN.md: `@linteljs/workspace/pending-list-reformat`
   {
     name: '@linteljs/workspace/pending-list-reformat',
-    rules: { '@linteljs/array-newline': 'off' },
+    rules: {
+      '@linteljs/array-newline': 'off',
+      '@linteljs/member-newline': ['error', { maxProperties: 2 }],
+      '@linteljs/import-newlines': ['error', { maxItems: 2 }],
+    },
   },
 ];
 

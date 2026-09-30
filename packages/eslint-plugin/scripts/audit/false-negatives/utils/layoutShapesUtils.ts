@@ -16,9 +16,9 @@ import {
   textOf,
 } from './editUtils.ts';
 
-const DEFAULT_MAX_ITEMS = 2;
+const DEFAULT_MAX_ITEMS = 1;
 const DEFAULT_MAX_LINE_LENGTH = 120;
-const DEFAULT_MAX_PROPERTIES = 2;
+const DEFAULT_MAX_PROPERTIES = 1;
 
 const PROBE_ALIAS = 'linteljsProbeAlias';
 
@@ -80,43 +80,18 @@ export const importBlankLineCase = importCase((_, named, state) => {
     : insertBlankLine(state, first, second);
 });
 
-const hasRest = (properties: AstNode[]): boolean => {
-  return properties
-    .some((property) => {
-      return property.type === 'RestElement';
-    });
-};
-
-// A rest element drops the threshold to one.
-export const patternJoinedCase = (withRest: boolean): Build => {
-  return (state) => {
-    return pickFirst(nodesOf(state, 'ObjectPattern'), (node) => {
-      const properties = node.properties ?? [];
-      const [first] = properties;
-      const last = properties.at(-1);
-      const rest = hasRest(properties);
-
-      if (rest !== withRest || properties.length <= (rest ? 1 : DEFAULT_MAX_PROPERTIES)
-        || first === undefined || last === undefined || !spansLines(first, last)) {
-        return undefined;
-      }
-
-      return joinRange(state, node.range[0], node.range[1]);
-    });
-  };
-};
-
-export const patternSplitCase: Build = (state) => {
+export const patternJoinedCase: Build = (state) => {
   return pickFirst(nodesOf(state, 'ObjectPattern'), (node) => {
     const properties = node.properties ?? [];
-    const [first, second] = properties;
+    const [first] = properties;
+    const last = properties.at(-1);
 
-    if (properties.length !== DEFAULT_MAX_PROPERTIES || hasRest(properties)
-      || first === undefined || second === undefined || spansLines(first, second)) {
+    if (properties.length <= DEFAULT_MAX_PROPERTIES || first === undefined || last === undefined
+      || !spansLines(first, last)) {
       return undefined;
     }
 
-    return splitBraces(state, properties);
+    return joinRange(state, node.range[0], node.range[1]);
   });
 };
 

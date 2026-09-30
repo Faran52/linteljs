@@ -5,7 +5,8 @@ import { memberNewline } from './memberNewline.ts';
 jsRuleTester.run('member-newline', memberNewline, {
   valid: [
     'const { alpha } = source;',
-    'const { alpha, bravo } = source;',
+    'const {\n  alpha,\n  bravo\n} = source;',
+    'const {\n  alpha,\n  /* keep */ bravo\n} = source;',
     'const {} = source;',
 
     'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
@@ -14,9 +15,6 @@ jsRuleTester.run('member-newline', memberNewline, {
 
     'const {\n  alpha,\n  bravo,\n  charlie,\n} = source;',
 
-    'const { alpha, bravo,\n  charlie\n} = source;',
-    'const {\n  alpha,\n  bravo, charlie\n} = source;',
-
     'const {\n  alphaProperty = computeSomethingRatherLong(configuration),\n'
     + '  bravoProperty = computeSomethingElseEntirely(configuration)\n} = source;',
 
@@ -24,6 +22,24 @@ jsRuleTester.run('member-newline', memberNewline, {
     'const alpha = source;',
   ],
   invalid: [
+    {
+      code: 'const { alpha, bravo } = source;',
+      output: 'const {\n  alpha,\n  bravo\n} = source;',
+      errors: [{
+        messageId: 'mustSplit',
+        data: { maxProperties: '1' },
+      }],
+    },
+    {
+      code: 'const { alpha, bravo,\n  charlie\n} = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
+      errors: [{ messageId: 'membersOnNewline' }],
+    },
+    {
+      code: 'const {\n  alpha,\n  bravo, charlie\n} = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
+      errors: [{ messageId: 'membersOnNewline' }],
+    },
     {
       code: 'const {\n  alpha, bravo, charlie } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
@@ -82,25 +98,6 @@ jsRuleTester.run('member-newline', memberNewline, {
       errors: [{ messageId: 'noBlankBetween' }],
     },
     {
-      code: 'const {\n  alpha,\n  bravo\n} = source;',
-      output: 'const { alpha, bravo } = source;',
-      errors: [{
-        messageId: 'mustSplit',
-        data: { maxProperties: '2' },
-      }],
-    },
-    {
-      code: 'const {\n  alpha,\n  /* keep */ bravo\n} = source;',
-      output: null,
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
-      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
-      output: 'const { alphaProperty, bravoProperty } = source;',
-      options: [{ maxLineLength: 48 }],
-      errors: [{ messageId: 'mustSplit' }],
-    },
-    {
       code: 'const { alpha = {\n  first: 1\n}, bravo } = source;',
       output: null,
       errors: [{ messageId: 'multilineMember' }],
@@ -125,8 +122,9 @@ jsRuleTester.run('member-newline (options)', memberNewline, {
     },
 
     {
-      code: 'const { alpha, bravo, ...rest } = source;',
-      options: [{ maxPropertiesWithRest: 3 }],
+      // A rest element counts like any other member.
+      code: 'const { alpha, ...rest } = source;',
+      options: [{ maxProperties: 2 }],
     },
 
     {
@@ -136,23 +134,50 @@ jsRuleTester.run('member-newline (options)', memberNewline, {
 
     {
       code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
-      options: [{ maxLineLength: 47 }],
+      options: [{
+        maxProperties: 2,
+        maxLineLength: 47,
+      }],
     },
 
     {
       code: 'const {\n  alphaProperty,\n  bravoProperty\n} = somewhatLongerSource;',
-      options: [{ maxLineLength: 48 }],
+      options: [{
+        maxProperties: 2,
+        maxLineLength: 48,
+      }],
     },
   ],
   invalid: [
     {
-      code: 'const { alpha, bravo } = source;',
-      output: 'const {\n  alpha,\n  bravo\n} = source;',
-      options: [{ maxProperties: 1 }],
+      code: 'const {\n  alpha,\n  bravo\n} = source;',
+      output: 'const { alpha, bravo } = source;',
+      options: [{ maxProperties: 2 }],
       errors: [{
         messageId: 'mustSplit',
-        data: { maxProperties: '1' },
+        data: { maxProperties: '2' },
       }],
+    },
+    {
+      code: 'const {\n  alpha,\n  /* keep */ bravo\n} = source;',
+      output: null,
+      options: [{ maxProperties: 2 }],
+      errors: [{ messageId: 'mustSplit' }],
+    },
+    {
+      code: 'const {\n  alphaProperty,\n  bravoProperty\n} = source;',
+      output: 'const { alphaProperty, bravoProperty } = source;',
+      options: [{
+        maxProperties: 2,
+        maxLineLength: 48,
+      }],
+      errors: [{ messageId: 'mustSplit' }],
+    },
+    {
+      code: 'const { alpha, bravo, charlie,\n  delta } = source;',
+      output: 'const {\n  alpha,\n  bravo,\n  charlie,\n  delta\n} = source;',
+      options: [{ maxProperties: 3 }],
+      errors: [{ messageId: 'membersOnNewline' }],
     },
     {
       code: 'const { alpha, bravo, charlie } = source;',
@@ -167,22 +192,10 @@ jsRuleTester.run('member-newline (options)', memberNewline, {
       errors: [{ message: 'Members must be broken into multiple lines if there are more than 3.' }],
     },
     {
-      code: 'const { alpha, ...rest } = source;',
-      output: 'const {\n  alpha,\n  ...rest\n} = source;',
-      options: [{
-        maxProperties: 9,
-        maxPropertiesWithRest: 1,
-      }],
-      errors: [{ message: 'Members must be broken into multiple lines if there are more than 1.' }],
-    },
-    {
       code: 'const {\n  alpha,\n  ...rest\n} = source;',
       output: 'const { alpha, ...rest } = source;',
-      options: [{
-        maxProperties: 9,
-        maxPropertiesWithRest: 3,
-      }],
-      errors: [{ message: 'Members must be broken into multiple lines if there are more than 3.' }],
+      options: [{ maxProperties: 9 }],
+      errors: [{ message: 'Members must be broken into multiple lines if there are more than 9.' }],
     },
   ],
 });
@@ -191,7 +204,7 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
   valid: [
     'interface Small {\n  alpha: string;\n  bravo: number;\n}',
     'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean;\n}',
-    'type Pair = { alpha: string; bravo: number };',
+    'type Pair = {\n  alpha: string;\n  bravo: number;\n};',
 
     `interface Documented {
   /** first */
@@ -237,8 +250,17 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
       code: 'interface Single {\n  alpha: string;\n}',
       options: [{ maxProperties: 0 }],
     },
+    {
+      code: 'type Pair = { alpha: string; bravo: number };',
+      options: [{ maxProperties: 2 }],
+    },
   ],
   invalid: [
+    {
+      code: 'type Pair = { alpha: string; bravo: number };',
+      output: 'type Pair = {\n  alpha: string;\n  bravo: number\n};',
+      errors: [{ messageId: 'mustSplit' }],
+    },
     {
       code: 'interface Wide { alpha: string; bravo: number; charlie: boolean }',
       output: 'interface Wide {\n  alpha: string;\n  bravo: number;\n  charlie: boolean\n}',
@@ -343,6 +365,7 @@ tsRuleTester.run('member-newline (typescript)', memberNewline, {
     {
       code: 'const load = ({\n  alpha,\n  bravo\n}?: Options) => {};',
       output: 'const load = ({ alpha, bravo }?: Options) => {};',
+      options: [{ maxProperties: 2 }],
       errors: [{ messageId: 'mustSplit' }],
     },
     {

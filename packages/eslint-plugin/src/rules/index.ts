@@ -1,7 +1,6 @@
 import { arrayNewline } from './array-newline/arrayNewline.ts';
 import { chainCallNewline } from './chain-call-newline/chainCallNewline.ts';
 import { commentDelimiter } from './comment-delimiter/commentDelimiter.ts';
-import { destructuringPropertyNewline } from './destructuring-property-newline/destructuringPropertyNewline.ts';
 import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifierNewline.ts';
 import { importNewlines } from './import-newlines/importNewlines.ts';
 import { interfaceOrder } from './interface-order/interfaceOrder.ts';
@@ -34,7 +33,6 @@ export const rules = {
   'array-newline': arrayNewline,
   'chain-call-newline': chainCallNewline,
   'comment-delimiter': commentDelimiter,
-  'destructuring-property-newline': destructuringPropertyNewline,
   'export-specifier-newline': exportSpecifierNewline,
   'import-newlines': importNewlines,
   'interface-order': interfaceOrder,

@@ -40,7 +40,6 @@ export const FIXTURE = [
 export const EXPECTED = [
   '@linteljs/array-newline',
   '@linteljs/comment-delimiter',
-  '@linteljs/destructuring-property-newline',
   '@linteljs/export-specifier-newline',
   '@linteljs/import-newlines',
   '@linteljs/member-newline',

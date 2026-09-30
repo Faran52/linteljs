@@ -18,7 +18,8 @@ jsRuleTester.run('array-newline', arrayNewline, {
     'const list = [\n  // heads alpha\n  alpha,\n\n  bravo\n];',
     'const list = [\n  ,\n  alpha\n];',
     'const list = [\n  (alpha),\n  bravo\n];',
-    'const [alpha, bravo] = list;',
+    'const [alpha] = list;',
+    'const [\n  alpha,\n  bravo\n] = list;',
   ],
   invalid: [
     {
@@ -122,6 +123,26 @@ jsRuleTester.run('array-newline', arrayNewline, {
       errors,
     },
     {
+      code: 'const [alpha, bravo] = list;',
+      output: 'const [\n  alpha,\n  bravo\n] = list;',
+      errors,
+    },
+    {
+      code: 'const [, alpha = 1, ...rest] = list;',
+      output: 'const [\n  ,\n  alpha = 1,\n  ...rest\n] = list;',
+      errors,
+    },
+    {
+      code: 'const [alpha,\n  bravo, charlie] = list;',
+      output: 'const [\n  alpha,\n  bravo,\n  charlie\n] = list;',
+      errors,
+    },
+    {
+      code: 'for (const [key, value] of pairs) {\n  use(key, value);\n}',
+      output: 'for (const [\n  key,\n  value\n] of pairs) {\n  use(key, value);\n}',
+      errors,
+    },
+    {
       code: 'const list = [alpha, bravo];\r\n',
       output: 'const list = [\r\n  alpha,\r\n  bravo\r\n];\r\n',
       errors,
@@ -135,6 +156,12 @@ tsRuleTester.run('array-newline', arrayNewline, {
     'type Pair = [string, number];',
   ],
   invalid: [
+    {
+      // The annotation and the `?` belong to the pattern, after its bracket.
+      code: 'declare function load([alpha, bravo]?: [string, number]): void;',
+      output: 'declare function load([\n  alpha,\n  bravo\n]?: [string, number]): void;',
+      errors,
+    },
     {
       code: 'const list = [alpha as string, bravo!];',
       output: 'const list = [\n  alpha as string,\n  bravo!\n];',

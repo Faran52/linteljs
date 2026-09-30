@@ -6,10 +6,10 @@ Split import lists when they get crowded or too long.
 - Fixable: yes (code)
 - In `recommended`: yes
 
-An import with more than two named members, or one that runs past 120 characters, goes one member
-per line. Anything shorter collapses back onto a single line. The point is that the import block at
-the top of a file stays scannable: short imports do not each cost four lines, and long ones do not
-run off the side of the screen.
+An import with two or more named members, or one that runs past 120 characters, goes one member
+per line. A single named member collapses back onto one line. Two or more is the threshold every
+list layout in this plugin uses, from `array-newline` to `member-newline`, so an import reads like
+the object and the array beside it.
 
 Fixable as `code` rather than `whitespace`, because the rebuild also drops a redundant `as alpha`
 and a trailing comma, which is more than spacing.
@@ -17,7 +17,7 @@ and a trailing comma, which is more than spacing.
 ## Examples of incorrect code for this rule
 
 ```ts
-import { alpha, bravo, charlie } from 'mod';
+import { alpha, bravo } from 'mod';
 
 import { createConfiguration, resolveConfiguration } from '../../infrastructure/configuration/environmentAwareConfigLoader';
 
@@ -29,10 +29,10 @@ import {
 ## Examples of correct code for this rule
 
 ```ts
-import { alpha, bravo } from 'mod';
+import { alpha } from 'mod';
 
 import {
-  charlie,
+  bravo,
   delta,
   echo
 } from 'one';
@@ -50,11 +50,11 @@ import 'side-effects-only';
 
 ```jsonc
 {
-  "@linteljs/import-newlines": ["error", { "maxItems": 2, "maxLineLength": 120 }]
+  "@linteljs/import-newlines": ["error", { "maxItems": 1, "maxLineLength": 120 }]
 }
 ```
 
-- `maxItems`: integer, `2` by default. More named members than this and the statement splits one
+- `maxItems`: integer, `1` by default. More named members than this and the statement splits one
   per line. Fewer, and a statement already split collapses back onto one line, provided the result
   fits inside `maxLineLength`. A half-split statement under the count collapses in that one pass
   rather than being split first and collapsed on the next.

@@ -1,15 +1,16 @@
 # @linteljs/array-newline
 
-Put each element of an array with two or more on its own line.
+Put each element of an array or array pattern with two or more on its own line.
 
 - Applies to: JavaScript and TypeScript
 - Fixable: yes (whitespace)
 - In `recommended`: yes
 
 An array with two or more elements goes one element per line, with the opening and closing brackets
-on lines of their own. It is the same threshold `@stylistic/object-property-newline` holds an object
-literal to, and `member-newline` holds a destructuring pattern, an interface and a type literal to:
-two or more items, one per line.
+on lines of their own, and an array destructuring pattern is held to the same shape. It is the
+threshold `@stylistic/object-property-newline` holds an object literal to,
+[`member-newline`](../member-newline) an object pattern, an interface and a type literal, and
+[`import-newlines`](../import-newlines) an import: two or more items, one per line.
 
 An array of none or one is left exactly as written. This rule only ever adds line breaks; it never
 joins lines.
@@ -25,6 +26,8 @@ const list = [
 
 run([alpha,
   bravo]);
+
+const [first, second] = pair;
 ```
 
 ## Examples of correct code for this rule
@@ -42,6 +45,11 @@ const pair = [
 const one = [{
   charlie: 1
 }];
+
+const [
+  first,
+  second
+] = pair;
 ```
 
 ## Options
