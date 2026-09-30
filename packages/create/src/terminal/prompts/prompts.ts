@@ -289,7 +289,8 @@ const askAnswer = async (
       const required = record.skippable !== true;
       const picked = await askMulti(prompter, message, offered, [], required, describeFrom(record.values));
 
-      return record.skippable === true && picked.length === 0 ? undefined : picked;
+      // A required checkbox refuses an empty submit, so only a skippable answer comes back empty.
+      return picked.length === 0 ? undefined : picked;
     }
   }
 };

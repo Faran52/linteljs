@@ -14,7 +14,7 @@ export const I18N_CONFIG = 'src/i18n/config.ts';
 
 const identifierOf = (language: Language): string => {
   return language
-    .replace(/-(\w)(\w)$/u, (_match, first: string, second: string) => {
+    .replace(/-(\w)(\w)/u, (_match, first: string, second: string) => {
       return `${first}${second.toLowerCase()}`;
     });
 };

@@ -15,6 +15,7 @@ describe('i18nConfigEmitter', () => {
 
     expect(artifact?.target).toBe('src/i18n/config.ts');
     expect(artifact?.seed).toBe(true);
+    expect(artifact?.stage).toBe('standard');
     expect(artifact?.content).toEqual({ text });
     expect(text.indexOf('id: \'en\'')).toBeLessThan(text.indexOf('id: \'ja\''));
   });
@@ -40,5 +41,38 @@ describe('i18nConfigEmitter', () => {
     expect(text).toContain('  \'zh-TW\': { common: zhTw },');
     expect(text).toContain('export const languageStorageKey = \'language\';');
     expect(text).toContain('export const fallbackLanguage = \'en\';');
+  });
+
+  it('writes the whole module, one block per part', () => {
+    const text = emitI18nConfig(['en', 'ar']);
+
+    expect(text).toBe([
+      'import ar from \'./locales/ar/common.json\';',
+      'import en from \'./locales/en/common.json\';',
+      '',
+      'export const fallbackLanguage = \'en\';',
+      '',
+      '// Written by the language switcher alone: a detected language is never stored.',
+      'export const languageStorageKey = \'language\';',
+      '',
+      'export const languages = [',
+      '  {',
+      '    id: \'en\',',
+      '    label: \'English\',',
+      '    dir: \'ltr\',',
+      '  },',
+      '  {',
+      '    id: \'ar\',',
+      '    label: \'العربية\',',
+      '    dir: \'rtl\',',
+      '  },',
+      '] as const;',
+      '',
+      'export const resources = {',
+      '  \'en\': { common: en },',
+      '  \'ar\': { common: ar },',
+      '};',
+      '',
+    ].join('\n'));
   });
 });
