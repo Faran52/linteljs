@@ -9,7 +9,6 @@ import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
 import {
   hasForm,
   hasStore,
-  pressable,
 } from '../utils/gateUtils';
 import {
   accessorFiles,
@@ -73,12 +72,7 @@ export const nextTarget: TargetRecord = {
     '../styles/base.css',
     '../components/features/app-header/AppHeader.css',
     '../components/ui/mark/Mark.css',
-    {
-      path: '../components/ui/button/Button.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
+    '../components/ui/button/Button.css',
     {
       path: '../components/ui/text-input/TextInput.css',
       when: (answers) => {
@@ -98,7 +92,8 @@ export const nextTarget: TargetRecord = {
     ],
   },
   // Its parts are covered where each renders.
-  coverageExclude: ['src/app/layout.tsx'],
+  // The documents: what each renders is covered where it renders.
+  coverageExclude: ['src/app/layout.tsx', 'src/app/global-error.tsx'],
   publicDirectory: 'public',
   starterFiles: [
     ...mockFiles(true),
@@ -176,22 +171,13 @@ export const nextTarget: TargetRecord = {
     },
     {
       target: 'src/components/ui/button/Button.tsx',
-      when: pressable,
       shared: 'react',
     },
     {
       target: 'src/components/ui/index.ts',
       when: (answers) => {
-        return !pressable(answers);
+        return !hasForm(answers);
       },
-      shared: true,
-    },
-    {
-      target: 'src/components/ui/index.ts',
-      when: (answers) => {
-        return hasStore(answers) && !hasForm(answers);
-      },
-      variant: 'with-store',
       shared: true,
     },
     {
@@ -366,6 +352,19 @@ export const nextTarget: TargetRecord = {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
       shared: 'react',
+    },
+    {
+      target: 'src/components/features/status-page/StatusPage.test.tsx',
+      covers: 'src/components/features/status-page/StatusPage.tsx',
+      shared: 'react',
+    },
+    {
+      target: 'src/app/not-found.test.tsx',
+      covers: 'src/app/not-found.tsx',
+    },
+    {
+      target: 'src/app/error.test.tsx',
+      covers: 'src/app/error.tsx',
     },
     {
       target: 'src/components/ui/button/Button.test.tsx',

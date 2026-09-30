@@ -500,10 +500,11 @@ with the directories:
 
 | component | why it is a component |
 | --- | --- |
-| `ui/button/Button` | two call sites, and the disabled and submit states the form needs |
+| `ui/button/Button` | the status page's retry, the store and the form, and the disabled and submit states |
 | `ui/text-input/TextInput` | the label, error slot, `aria-invalid` and `aria-describedby` wiring; `multiline` rather than a second `TextArea` |
 | `ui/mark/Mark` | the SVG and its animation, rendered once, on Home |
 | `features/app-header/AppHeader` | the name and the nav, and the one place the router and no-router spellings differ |
+| `features/status-page/StatusPage` | the one page a crash and every status render, see [A crash and a status have one page](#a-crash-and-a-status-have-one-page) |
 
 The section label and the key-and-value row on About and Version are classes in the shared stylesheet, not
 components: a flexbox line with no props and no behaviour. The form's label is visible and bound with `for`.
@@ -519,6 +520,32 @@ for `react-native-svg` and Reanimated.
 A header survives the starter and ships to the project's users, and a tool's mark there advertises linteljs to a
 project's customers without the project choosing to. A neutral placeholder mark is refused too: an empty slot says
 "no logo yet" more honestly than a circle standing in for a decision.
+
+### A crash and a status have one page
+
+A starter catches a render error and answers a path nothing routes, each with its framework's own mechanism, and
+both land on one `StatusPage` per framework: the code as the heading, one line under it, "Try again" on a crash and
+"Go home" on every one. The line for each code lives once, in `src/config/statuses.ts`. The page reuses the hero's
+classes and the button, so it carries no styles of its own and nothing varies by styling; its message is the
+`role="alert"`, and "Go home" is a full load, so a crash leaves no state behind (Next takes `Link`, which its
+plugin requires). A status ships only where something can produce it: a 404 needs a router, and a 403 needs a
+loader or a server that can refuse.
+
+| target | 404 | 403 | crash |
+| --- | --- | --- | --- |
+| react, no router | none, nothing routes | no | `ErrorBoundary`, a class, since only `getDerivedStateFromError` catches |
+| react-router | the layout route's `errorElement` | loader | the same `RouteError`; retry navigates to the same place, which resets it |
+| react-router-framework | `ErrorBoundary` exported from `root.tsx` | loader | the same `RouteError` |
+| tanstack-router | `defaultNotFoundComponent` | no | `defaultErrorComponent`, with its `reset` |
+| next | `app/not-found.tsx` | no, `forbidden()` is experimental | `app/error.tsx` and `app/global-error.tsx`, with `reset` |
+| vue | a catch-all route rendering the page | no | `onErrorCaptured` in `ErrorBoundary.vue` around `RouterView` |
+| nuxt | `error.vue` | `createError` | `error.vue`, retry is `clearError()` |
+| svelte | `+error.svelte` | `error(403)` | `+error.svelte`, retry is `invalidateAll()` |
+| solid, no router | none, nothing routes | no | `<ErrorBoundary>` with its `reset` |
+
+Where the boundary runs only inside its framework (Next's `error.tsx`, SvelteKit's `+error.svelte`, Nuxt's
+`error.vue`), the suite renders the file as the page it is and hands it the status or the reset. `global-error.tsx`
+is a document and leaves coverage with `layout.tsx`.
 
 ### Version renders what was recorded, and says so
 

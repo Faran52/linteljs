@@ -52,12 +52,7 @@ const baseReactTarget: TargetRecord = {
     './styles/base.css',
     './components/features/app-header/AppHeader.css',
     './components/ui/mark/Mark.css',
-    {
-      path: './components/ui/button/Button.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
+    './components/ui/button/Button.css',
     {
       path: './components/ui/text-input/TextInput.css',
       when: (answers) => {
@@ -130,16 +125,8 @@ const baseReactTarget: TargetRecord = {
     {
       target: 'src/components/ui/index.ts',
       when: (answers) => {
-        return !hasStore(answers) && answers.form === undefined;
+        return answers.form === undefined;
       },
-      shared: true,
-    },
-    {
-      target: 'src/components/ui/index.ts',
-      when: (answers) => {
-        return hasStore(answers) && answers.form === undefined;
-      },
-      variant: 'with-store',
       shared: true,
     },
     {
@@ -223,12 +210,7 @@ const baseReactTarget: TargetRecord = {
           variant: form,
         };
       }),
-    {
-      target: 'src/components/ui/button/Button.tsx',
-      when: (answers) => {
-        return hasStore(answers) || answers.form !== undefined;
-      },
-    },
+    { target: 'src/components/ui/button/Button.tsx' },
     // Without a router the header swaps the page from state, so its tabs are controls.
     {
       target: 'src/components/features/app-header/AppHeader.tsx',
@@ -241,6 +223,27 @@ const baseReactTarget: TargetRecord = {
       when: (answers) => {
         return !hasRouter(answers);
       },
+    },
+    // A router catches a crash in its own boundary; without one, React needs a class.
+    {
+      target: 'src/components/features/error-boundary/ErrorBoundary.tsx',
+      when: (answers) => {
+        return !hasRouter(answers);
+      },
+    },
+    {
+      target: 'src/components/features/route-error/RouteError.tsx',
+      when: (answers) => {
+        return answers.router === 'react-router' || isFrameworkMode(answers);
+      },
+      variant: 'react-router',
+    },
+    {
+      target: 'src/components/features/route-error/RouteError.tsx',
+      when: (answers) => {
+        return answers.router === 'tanstack-router';
+      },
+      variant: 'tanstack-router',
     },
     {
       target: 'src/lib/providers/store/StoreProvider.tsx',
@@ -382,6 +385,30 @@ const baseReactTarget: TargetRecord = {
     {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
+    },
+    {
+      target: 'src/components/features/status-page/StatusPage.test.tsx',
+      covers: 'src/components/features/status-page/StatusPage.tsx',
+    },
+    {
+      target: 'src/components/features/error-boundary/ErrorBoundary.test.tsx',
+      covers: 'src/components/features/error-boundary/ErrorBoundary.tsx',
+    },
+    {
+      target: 'src/components/features/route-error/RouteError.test.tsx',
+      covers: 'src/components/features/route-error/RouteError.tsx',
+      when: (answers) => {
+        return answers.router === 'react-router' || isFrameworkMode(answers);
+      },
+      variant: 'react-router',
+    },
+    {
+      target: 'src/components/features/route-error/RouteError.test.tsx',
+      covers: 'src/components/features/route-error/RouteError.tsx',
+      when: (answers) => {
+        return answers.router === 'tanstack-router';
+      },
+      variant: 'tanstack-router',
     },
     {
       target: 'src/components/ui/button/Button.test.tsx',

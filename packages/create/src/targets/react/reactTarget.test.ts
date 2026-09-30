@@ -7,7 +7,6 @@ import {
   type GateRow,
   mswGates,
   NOT_TANSTACK_QUERY,
-  PRESSABLE,
   RTK_QUERY,
   TAILWIND,
   TANSTACK_QUERY,
@@ -156,6 +155,8 @@ const FRAMEWORK_WITH_FORM: readonly Condition[] = [{
   form: ANSWERED,
 }];
 
+const DATA_ROUTER: readonly Condition[] = [{ router: ['react-router', 'react-router-framework'] }];
+
 const GATES: GateRow[] = [
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
@@ -168,6 +169,11 @@ const GATES: GateRow[] = [
   ['src/App.tsx@react-router', [{ router: ['react-router'] }]],
   ['src/App.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
   ['src/components/features/app-header/AppHeader.tsx', NO_ROUTER],
+  ['src/components/features/error-boundary/ErrorBoundary.tsx', NO_ROUTER],
+  ['src/components/features/route-error/RouteError.tsx@react-router', DATA_ROUTER],
+  ['src/components/features/route-error/RouteError.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
+  ['src/components/features/route-error/RouteError.test.tsx@react-router', DATA_ROUTER],
+  ['src/components/features/route-error/RouteError.test.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
   [
     'src/components/features/app-header/AppHeader.tsx@react-router',
     [{ router: ['react-router', 'react-router-framework'] }],
@@ -192,16 +198,8 @@ const GATES: GateRow[] = [
   ['src/pages/routes.tsx@with-form', WITH_FORM],
   ['src/pages/home/HomePage.tsx', WITHOUT_STORE],
   ['src/pages/home/HomePage.tsx@with-store', WITH_STORE],
-  ['src/components/ui/index.ts', [{
-    store: [undefined],
-    form: [undefined],
-  }]],
-  ['src/components/ui/index.ts@with-store', [{
-    store: ANSWERED,
-    form: [undefined],
-  }]],
+  ['src/components/ui/index.ts', WITHOUT_FORM],
   ['src/components/ui/index.ts@with-form', WITH_FORM],
-  ['src/components/ui/button/Button.tsx', PRESSABLE],
   ['src/components/ui/text-input/TextInput.tsx', WITH_FORM],
   ['src/pages/contact/ContactPage.tsx', WITH_FORM],
   ['src/pages/contact/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
@@ -229,7 +227,6 @@ const GATES: GateRow[] = [
     data: ['rtk-query'],
   }]],
   ['src/styles/theme.css@tailwind', TAILWIND],
-  ['./components/ui/button/Button.css', PRESSABLE],
   ['./components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/App.test.tsx', NO_ROUTER],
   ['src/App.test.tsx@with-router', [{ router: ['react-router', 'tanstack-router'] }]],

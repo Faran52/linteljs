@@ -25,11 +25,6 @@ describe('componentStyles', () => {
     [
       'no answers',
       {},
-      ['AppHeader', 'Mark'],
-    ],
-    [
-      'a store',
-      { store: 'zustand' },
       [
         'AppHeader',
         'Mark',
@@ -78,11 +73,9 @@ describe('componentStyleModules', () => {
     expect(pickedBy(componentStyleModules())).toEqual([
       'src/components/features/app-header/styles.ts base',
       'src/components/ui/mark/styles.ts base',
+      'src/components/ui/button/styles.ts base',
     ]);
-    const picked = pickedBy(componentStyleModules(), {
-      styling: 'stylex',
-      store: 'zustand',
-    });
+    const picked = pickedBy(componentStyleModules(), { styling: 'stylex' });
 
     expect(picked).toEqual([
       'src/components/features/app-header/styles.ts stylex',

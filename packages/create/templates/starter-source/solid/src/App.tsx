@@ -5,6 +5,7 @@ import {
 } from 'solid-js';
 
 import { AppHeader } from './components/features/app-header/AppHeader';
+import { ErrorBoundary } from './components/features/error-boundary/ErrorBoundary';
 import { NAME } from './config/linteljs';
 import { ROUTES } from './pages/routes';
 
@@ -32,7 +33,7 @@ export const App = (props: AppProps): JSX.Element => {
       {/* `keyed`: without it the block is built once and switching to another page re-renders the first one. */}
       <Show when={current()} keyed>
         {(route) => {
-          return route.element();
+          return <ErrorBoundary>{route.element()}</ErrorBoundary>;
         }}
       </Show>
     </>

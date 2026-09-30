@@ -32,4 +32,13 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'About' })).toBeTruthy();
     expect(window.location.pathname).toBe('/about');
   });
+
+  it('shows the 404 page, under the header, for a path no route matches', async () => {
+    render(wrapped(<App />));
+    window.history.pushState({}, '', '/missing');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+
+    expect(await screen.findByRole('heading', { name: '404' })).toBeTruthy();
+    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
+  });
 });

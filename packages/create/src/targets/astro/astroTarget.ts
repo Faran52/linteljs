@@ -53,12 +53,7 @@ export const astroTarget: TargetBuilder = (answers) => {
       './base.css',
       '../components/features/app-header/AppHeader.css',
       '../components/ui/mark/Mark.css',
-      {
-        path: '../components/ui/button/Button.css',
-        when: (answers) => {
-          return answers.store !== undefined || answers.form !== undefined;
-        },
-      },
+      '../components/ui/button/Button.css',
       {
         path: '../components/ui/text-input/TextInput.css',
         when: (answers) => {

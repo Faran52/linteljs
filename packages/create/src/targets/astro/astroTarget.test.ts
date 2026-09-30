@@ -3,7 +3,6 @@ import {
   componentStyleGates,
   type GateRow,
   mswGates,
-  PRESSABLE,
   TAILWIND,
   walkGates,
   WITH_FORM,
@@ -184,7 +183,6 @@ const GATES: GateRow[] = [
   ...mswGates(false),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ['src/styles/theme.css@tailwind', TAILWIND],
-  ['../components/ui/button/Button.css', PRESSABLE],
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
 ];
 

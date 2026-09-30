@@ -5,7 +5,6 @@ import {
   type GateRow,
   mswGates,
   NOT_TANSTACK_QUERY,
-  PRESSABLE,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
@@ -80,9 +79,8 @@ describe('vueTarget', () => {
     expect(installs(undefined)).toBeUndefined();
   });
 
-  it('ships a button only where something presses it', () => {
-    expect(destinationsFor()).not.toContain('src/components/ui/app-button/AppButton.vue');
-    expect(destinationsFor({ store: 'pinia' })).toContain('src/components/ui/app-button/AppButton.vue');
+  it('ships a button under no answers, since the status page retries with it', () => {
+    expect(destinationsFor()).toContain('src/components/ui/app-button/AppButton.vue');
   });
 
   it('names a single-file component by its own extension', () => {
@@ -100,7 +98,6 @@ const GATES: GateRow[] = [
   ['src/views/HomeView.vue@with-store', WITH_STORE],
   ['src/views/ContactView.vue', WITH_FORM],
   ['src/views/useContactForm.ts', WITH_FORM],
-  ['src/components/ui/app-button/AppButton.vue', PRESSABLE],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
@@ -112,7 +109,6 @@ const GATES: GateRow[] = [
   ['src/lib/store/counter/counterStore.ts@pinia', [{ store: ['pinia'] }]],
   ['src/lib/store/counter/counterStore.ts@tanstack-store', [{ store: ['tanstack-store'] }]],
   ['src/styles/theme.css@tailwind', TAILWIND],
-  ['../components/ui/app-button/AppButton.css', PRESSABLE],
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
   ['src/lib/composables/use-extended-query/useExtendedQuery.test.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/composables/use-extended-mutation/useExtendedMutation.test.ts@tanstack-query', TANSTACK_QUERY],

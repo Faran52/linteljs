@@ -4,7 +4,6 @@ import { FOLDER, PARTS } from '../constants';
 import {
   hasForm,
   hasStore,
-  pressable,
 } from '../utils/gateUtils';
 import {
   accessorFiles,
@@ -42,12 +41,7 @@ export const vueTarget: TargetRecord = {
     '../styles/base.css',
     '../components/features/app-header/AppHeader.css',
     '../components/ui/app-mark/AppMark.css',
-    {
-      path: '../components/ui/app-button/AppButton.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
+    '../components/ui/app-button/AppButton.css',
     {
       path: '../components/ui/text-input/TextInput.css',
       when: (answers) => {
@@ -92,10 +86,7 @@ export const vueTarget: TargetRecord = {
       when: hasStore,
       variant: 'with-store',
     },
-    {
-      target: 'src/components/ui/app-button/AppButton.vue',
-      when: pressable,
-    },
+    { target: 'src/components/ui/app-button/AppButton.vue' },
     ...([
       'src/views/ContactView.vue',
       'src/views/useContactForm.ts',
@@ -210,6 +201,14 @@ export const vueTarget: TargetRecord = {
     {
       target: 'src/components/ui/app-button/AppButton.test.ts',
       covers: 'src/components/ui/app-button/AppButton.vue',
+    },
+    {
+      target: 'src/components/features/status-page/StatusPage.test.ts',
+      covers: 'src/components/features/status-page/StatusPage.vue',
+    },
+    {
+      target: 'src/components/features/error-boundary/ErrorBoundary.test.ts',
+      covers: 'src/components/features/error-boundary/ErrorBoundary.vue',
     },
     {
       target: 'src/views/ContactView.test.ts',

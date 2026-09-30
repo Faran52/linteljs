@@ -3,11 +3,16 @@ export const ALWAYS: readonly string[] = [
   'src/app/layout.tsx',
   'src/app/about/page.tsx',
   'src/app/version/page.tsx',
+  'src/app/not-found.tsx',
+  'src/app/error.tsx',
+  'src/app/global-error.tsx',
+  'src/components/features/status-page/StatusPage.tsx',
   'src/components/features/app-header/AppHeader.tsx',
 ];
 
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
+  'src/config/statuses.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
 ];

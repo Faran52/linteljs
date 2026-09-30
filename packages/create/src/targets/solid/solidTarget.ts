@@ -9,7 +9,6 @@ import {
 import {
   hasForm,
   hasStore,
-  pressable,
 } from '../utils/gateUtils';
 import {
   accessorFiles,
@@ -45,12 +44,7 @@ export const solidTarget: TargetRecord = {
     './styles/base.css',
     './components/features/app-header/AppHeader.css',
     './components/ui/mark/Mark.css',
-    {
-      path: './components/ui/button/Button.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
+    './components/ui/button/Button.css',
     {
       path: './components/ui/text-input/TextInput.css',
       when: (answers) => {
@@ -99,22 +93,11 @@ export const solidTarget: TargetRecord = {
     {
       target: 'src/components/ui/index.ts',
       when: (answers) => {
-        return !hasStore(answers) && !hasForm(answers);
+        return !hasForm(answers);
       },
       shared: true,
     },
-    {
-      target: 'src/components/ui/index.ts',
-      when: (answers) => {
-        return hasStore(answers) && !hasForm(answers);
-      },
-      variant: 'with-store',
-      shared: true,
-    },
-    {
-      target: 'src/components/ui/button/Button.tsx',
-      when: pressable,
-    },
+    { target: 'src/components/ui/button/Button.tsx' },
     ...([
       'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/useContactForm.ts',
@@ -210,6 +193,14 @@ export const solidTarget: TargetRecord = {
     {
       target: 'src/App.test.tsx',
       covers: 'src/App.tsx',
+    },
+    {
+      target: 'src/components/features/status-page/StatusPage.test.tsx',
+      covers: 'src/components/features/status-page/StatusPage.tsx',
+    },
+    {
+      target: 'src/components/features/error-boundary/ErrorBoundary.test.tsx',
+      covers: 'src/components/features/error-boundary/ErrorBoundary.tsx',
     },
     // Its button is a child of that page and nothing else renders it.
     {

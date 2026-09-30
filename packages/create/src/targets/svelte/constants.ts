@@ -4,14 +4,17 @@ export const ALWAYS: readonly string[] = [
   'src/app.html',
   'src/app.d.ts',
   'src/routes/+layout.svelte',
+  'src/routes/+error.svelte',
   'src/routes/about/+page.svelte',
   'src/routes/version/+page.svelte',
   'src/components/ui/mark/Mark.svelte',
   'src/components/features/app-header/AppHeader.svelte',
+  'src/components/features/status-page/StatusPage.svelte',
 ];
 
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
+  'src/config/statuses.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
 ];

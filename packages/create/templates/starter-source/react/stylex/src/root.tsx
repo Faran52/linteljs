@@ -7,6 +7,7 @@ import {
 } from 'react-router';
 
 import { AppHeader } from './components/features/app-header/AppHeader';
+import { RouteError } from './components/features/route-error/RouteError';
 import { NAME } from './config/linteljs';
 import { DataProvider } from './lib/providers/data/DataProvider';
 import { StoreProvider } from './lib/providers/store/StoreProvider';
@@ -64,5 +65,8 @@ export const Layout = ({ children }: LayoutProps): ReactNode => {
 const Root = (): ReactNode => {
   return <Outlet />;
 };
+
+// A path nothing matches, a refused loader and a crash all land here, inside the layout.
+export const ErrorBoundary = RouteError;
 
 export default Root;

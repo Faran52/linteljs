@@ -48,7 +48,6 @@ export const WITH_FORM: readonly Condition[] = [{ form: ANSWERED }];
 export const WITHOUT_FORM: readonly Condition[] = [{ form: [undefined] }];
 export const WITH_STORE: readonly Condition[] = [{ store: ANSWERED }];
 export const WITHOUT_STORE: readonly Condition[] = [{ store: [undefined] }];
-export const PRESSABLE: readonly Condition[] = [{ store: ANSWERED }, { form: ANSWERED }];
 export const TANSTACK_QUERY: readonly Condition[] = [{ data: ['tanstack-query'] }];
 export const NOT_TANSTACK_QUERY: readonly Condition[] = [{ data: [undefined, 'rtk-query'] }];
 export const RTK_QUERY: readonly Condition[] = [{ data: ['rtk-query'] }];
@@ -138,7 +137,7 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
   const components: [string, readonly Condition[]][] = [
     ['src/components/features/app-header/AppHeader', [{}]],
     [`src/components/ui/${mark}`, [{}]],
-    [`src/components/ui/${button}`, PRESSABLE],
+    [`src/components/ui/${button}`, [{}]],
     ['src/components/ui/text-input/TextInput', WITH_FORM],
   ];
   const under = (ships: readonly Condition[], styling: NonNullable<Condition['styling']>): Condition[] => {

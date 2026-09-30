@@ -16,7 +16,11 @@ import {
   SHARED,
 } from './constants';
 
-import type { StarterFile, TargetRecord } from '../types';
+import type {
+  StarterFile,
+  StarterTest,
+  TargetRecord,
+} from '../types';
 
 // A target rather than a mode on `vue`: `docs/DESIGN.md` records why.
 export const nuxtTarget: TargetRecord = {
@@ -38,12 +42,7 @@ export const nuxtTarget: TargetRecord = {
     '../styles/base.css',
     '../components/features/app-header/AppHeader.css',
     '../components/ui/app-mark/AppMark.css',
-    {
-      path: '../components/ui/app-button/AppButton.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
+    '../components/ui/app-button/AppButton.css',
     {
       path: '../components/ui/text-input/TextInput.css',
       when: (answers) => {
@@ -139,6 +138,21 @@ export const nuxtTarget: TargetRecord = {
       target: 'src/pages/about.test.ts',
       covers: 'src/pages/about.vue',
     },
+    {
+      target: 'src/error.test.ts',
+      covers: 'src/error.vue',
+    },
+    ...([
+      'src/components/ui/app-button/AppButton',
+      'src/components/features/status-page/StatusPage',
+    ] as const)
+      .map((path): StarterTest => {
+        return {
+          target: `${path}.test.ts`,
+          covers: `${path}.vue`,
+          shared: 'vue',
+        };
+      }),
     {
       target: 'src/pages/version.test.ts',
       covers: 'src/pages/version.vue',

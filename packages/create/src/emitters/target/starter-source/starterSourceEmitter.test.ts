@@ -208,10 +208,8 @@ describe('starter files for a router', () => {
 });
 
 describe('the starter source', () => {
-  it('writes the button for a store or a form, and for neither writes none', () => {
-    expect(targetsFor({})).not.toContain('src/components/ui/button/Button.tsx');
-    expect(targetsFor({ store: 'zustand' })).toContain('src/components/ui/button/Button.tsx');
-    expect(targetsFor({ form: 'tanstack-form' })).toContain('src/components/ui/button/Button.tsx');
+  it('writes the button under no answers, since the status page retries with it', () => {
+    expect(targetsFor({})).toContain('src/components/ui/button/Button.tsx');
   });
 
   it.each<[TargetId, string[]]>([
@@ -224,23 +222,19 @@ describe('the starter source', () => {
       'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
-      'src/components/ui/button/Button.tsx',
-      'src/components/ui/index.ts',
     ]],
     ['svelte', [
       'src/routes/contact/+page.svelte',
       'src/routes/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.svelte',
-      'src/components/ui/button/Button.svelte',
       'src/lib/apis/contact/index.ts',
     ]],
     ['next', [
       'src/app/contact/page.tsx',
       'src/app/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
-      'src/components/ui/button/Button.tsx',
     ]],
-  ])('writes the %s page, its binding, its control and its button only with a form', (target, files) => {
+  ])('writes the %s page, its binding and its control only with a form', (target, files) => {
     const targets = targetsFor({
       target,
       form: 'tanstack-form',
@@ -388,7 +382,7 @@ describe('the starter source', () => {
     };
 
     expect(barrelFor({})).toBe('starter-source/shared/src/components/ui/index.ts');
-    expect(barrelFor({ store: 'tanstack-store' })).toBe('starter-source/shared/with-store/src/components/ui/index.ts');
+    expect(barrelFor({ store: 'tanstack-store' })).toBe('starter-source/shared/src/components/ui/index.ts');
     expect(barrelFor({ form: 'tanstack-form' })).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
   });
 
@@ -432,7 +426,7 @@ describe('the starter source', () => {
         store: 'zustand',
       })[barrel];
 
-      expect(source).toBe('starter-source/shared/with-store/src/components/ui/index.ts');
+      expect(source).toBe('starter-source/shared/src/components/ui/index.ts');
     });
 
     it('takes the home route the store answer asks for', () => {

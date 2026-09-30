@@ -9,10 +9,13 @@ export const ALWAYS: readonly string[] = [
   'src/views/VersionView.vue',
   'src/components/ui/app-mark/AppMark.vue',
   'src/components/features/app-header/AppHeader.vue',
+  'src/components/features/status-page/StatusPage.vue',
+  'src/components/features/error-boundary/ErrorBoundary.vue',
 ];
 
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
+  'src/config/statuses.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'public/favicon.svg',

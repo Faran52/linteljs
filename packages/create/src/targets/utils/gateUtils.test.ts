@@ -5,20 +5,15 @@ import {
   it,
 } from 'vitest';
 
-import {
-  hasForm,
-  hasStore,
-  pressable,
-} from './gateUtils';
+import { hasForm, hasStore } from './gateUtils';
 
 import type { Answers } from '@config/types';
 
 describe('the starter gates', () => {
-  it.each<[string, Partial<Answers>, boolean, boolean, boolean]>([
+  it.each<[string, Partial<Answers>, boolean, boolean]>([
     [
       'neither',
       {},
-      false,
       false,
       false,
     ],
@@ -27,13 +22,11 @@ describe('the starter gates', () => {
       { store: 'zustand' },
       true,
       false,
-      true,
     ],
     [
       'a form',
       { form: 'tanstack-form' },
       false,
-      true,
       true,
     ],
     [
@@ -44,19 +37,13 @@ describe('the starter gates', () => {
       },
       true,
       true,
-      true,
     ],
-  ])('reads %s as store %s, form %s, pressable %s', (_case, overrides, store, form, press) => {
+  ])('reads %s as store %s, form %s', (_case, overrides, store, form) => {
     const answers = answersFor(overrides);
 
     expect([
       hasStore(answers),
       hasForm(answers),
-      pressable(answers),
-    ]).toEqual([
-      store,
-      form,
-      press,
-    ]);
+    ]).toEqual([store, form]);
   });
 });

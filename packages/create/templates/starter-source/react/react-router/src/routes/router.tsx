@@ -1,6 +1,7 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Outlet } from 'react-router';
 
 import { AppHeader } from '../components/features/app-header/AppHeader';
+import { RouteError } from '../components/features/route-error/RouteError';
 import { NAME } from '../config/linteljs';
 import { ROUTES } from '../pages/routes';
 
@@ -19,10 +20,17 @@ const Shell: FC<ShellProps> = ({ children }) => {
   );
 };
 
-export const router = createBrowserRouter(ROUTES
-  .map(({ path, element }) => {
-    return {
-      path,
-      element: <Shell>{element}</Shell>,
-    };
-  }));
+// A path nothing matches lands on the root's error element, so the fallback keeps the header.
+export const router = createBrowserRouter([
+  {
+    element: <Shell><Outlet /></Shell>,
+    errorElement: <Shell><RouteError /></Shell>,
+    children: ROUTES
+      .map(({ path, element }) => {
+        return {
+          path,
+          element,
+        };
+      }),
+  },
+]);

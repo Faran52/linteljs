@@ -8,7 +8,6 @@ import {
 import {
   hasForm,
   hasStore,
-  pressable,
 } from '../utils/gateUtils';
 import {
   accessorFiles,
@@ -53,12 +52,7 @@ export const svelteTarget: TargetRecord = {
     './styles/base.css',
     './components/features/app-header/AppHeader.css',
     './components/ui/mark/Mark.css',
-    {
-      path: './components/ui/button/Button.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
+    './components/ui/button/Button.css',
     {
       path: './components/ui/text-input/TextInput.css',
       when: (answers) => {
@@ -138,10 +132,7 @@ export const svelteTarget: TargetRecord = {
       when: hasStore,
       variant: 'with-store',
     },
-    {
-      target: 'src/components/ui/button/Button.svelte',
-      when: pressable,
-    },
+    { target: 'src/components/ui/button/Button.svelte' },
     ...([
       'src/routes/contact/+page.svelte',
       'src/routes/contact/useContactForm.ts',
@@ -245,6 +236,14 @@ export const svelteTarget: TargetRecord = {
     {
       target: 'src/routes/layout.test.ts',
       covers: 'src/routes/+layout.svelte',
+    },
+    {
+      target: 'src/routes/error.test.ts',
+      covers: 'src/routes/+error.svelte',
+    },
+    {
+      target: 'src/components/features/status-page/StatusPage.test.ts',
+      covers: 'src/components/features/status-page/StatusPage.svelte',
     },
     {
       target: 'src/routes/page.test.ts',

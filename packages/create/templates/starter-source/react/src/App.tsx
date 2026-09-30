@@ -1,6 +1,7 @@
 import { type FC, useState } from 'react';
 
 import { AppHeader } from './components/features/app-header/AppHeader';
+import { ErrorBoundary } from './components/features/error-boundary/ErrorBoundary';
 import { NAME } from './config/linteljs';
 import { ROUTES } from './pages/routes';
 
@@ -22,7 +23,8 @@ export const App: FC<AppProps> = ({ initialPage = ROUTES[0].id }) => {
         current={page}
         onNavigate={setPage}
       />
-      {current?.element}
+      {/* Keyed by page, so leaving a page that crashed clears the fallback. */}
+      <ErrorBoundary key={page}>{current?.element}</ErrorBoundary>
     </>
   );
 };

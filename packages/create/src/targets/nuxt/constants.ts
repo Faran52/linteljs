@@ -1,5 +1,6 @@
 export const ALWAYS: readonly string[] = [
   'src/app.vue',
+  'src/error.vue',
   'src/components/features/app-header/AppHeader.vue',
   'src/pages/index.vue',
   'src/pages/about.vue',
@@ -10,10 +11,13 @@ export const FROM_VUE: readonly string[] = [
   'src/views/AboutView.vue',
   'src/views/VersionView.vue',
   'src/components/ui/app-mark/AppMark.vue',
+  'src/components/ui/app-button/AppButton.vue',
+  'src/components/features/status-page/StatusPage.vue',
 ];
 
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
+  'src/config/statuses.ts',
   'src/config/routes.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',

@@ -94,7 +94,8 @@ code {
   color: var(--faint);
 }
 
-.hint code {
+.hint code,
+.hint a {
   color: var(--primary);
 }
 

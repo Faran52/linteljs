@@ -149,10 +149,10 @@ describe('the stylesheets a starter ships', () => {
   });
 
   it('imports a gated stylesheet only under the answers that ship it', () => {
-    const button = '@import "./components/ui/button/Button.css";';
+    const input = '@import "./components/ui/text-input/TextInput.css";';
 
-    expect(contentOf(styleEntryEmitter(answersFor({ store: 'zustand' }), EMPTY_PROJECT)[0])).toContain(button);
-    expect(contentOf(styleEntryEmitter(answersFor({}), EMPTY_PROJECT)[0])).not.toContain(button);
+    expect(contentOf(styleEntryEmitter(answersFor({ form: 'tanstack-form' }), EMPTY_PROJECT)[0])).toContain(input);
+    expect(contentOf(styleEntryEmitter(answersFor({}), EMPTY_PROJECT)[0])).not.toContain(input);
   });
 
   it('writes nothing for a target with neither a styling answer nor a starter stylesheet', () => {

@@ -7,7 +7,10 @@ import {
 } from '@tanstack/react-router';
 
 import { AppHeader } from './components/features/app-header/AppHeader';
+import { RouteError } from './components/features/route-error/RouteError';
+import { StatusPage } from './components/features/status-page/StatusPage';
 import { NAME } from './config/linteljs';
+import { STATUSES } from './config/statuses';
 import { ROUTES } from './pages/routes';
 
 import type { FC } from 'react';
@@ -36,6 +39,10 @@ const router = createRouter({
         },
       });
     })),
+  defaultErrorComponent: RouteError,
+  defaultNotFoundComponent: () => {
+    return <StatusPage {...STATUSES.notFound} />;
+  },
 });
 
 declare module '@tanstack/react-router' {

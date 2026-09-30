@@ -8,7 +8,3 @@ export const hasStore = (answers: Answers): boolean => {
 export const hasForm = (answers: Answers): boolean => {
   return answers.form !== undefined;
 };
-
-export const pressable = (answers: Answers): boolean => {
-  return hasStore(answers) || hasForm(answers);
-};

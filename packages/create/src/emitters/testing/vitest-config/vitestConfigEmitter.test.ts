@@ -96,6 +96,7 @@ export default defineConfig({
         '**/*.stylex.{ts,tsx}',
         '**/components/**/styles.{ts,tsx}',
         'src/app/layout.tsx',
+        'src/app/global-error.tsx',
       ],
       thresholds: {
         lines: 100,
@@ -412,7 +413,7 @@ describe('the coverage surface', () => {
     [
       'next',
       { target: 'next' },
-      ['src/app/layout.tsx'],
+      ['src/app/layout.tsx', 'src/app/global-error.tsx'],
     ],
     [
       'vue',

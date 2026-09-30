@@ -56,4 +56,15 @@ describe('App', () => {
       .find('.page-title')
       .text()).toBe('Version');
   });
+
+  it('shows the 404 page, under the header, for a path no route matches', async () => {
+    const app = await open('/missing');
+
+    expect(app
+      .find('h1')
+      .text()).toBe('404');
+    expect(app
+      .find('header')
+      .exists()).toBe(true);
+  });
 });
