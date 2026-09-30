@@ -17,12 +17,14 @@ Reports every directive ESLint honours as a disable:
 - `// eslint-disable-next-line`
 - `// eslint-disable-line`
 - `/* eslint-disable */`
+- `/* eslint no-console: "off" */`, and the `0` and `["off", ...]` spellings: inline configuration that turns
+  a rule off. One that turns a rule on or sets its options is not reported.
 
 A description after `--` changes nothing; ESLint honours the directive either way, so the rule
 reports it either way.
 
 Not reported, because none of them suppresses an ESLint rule: `eslint-enable`, inline configuration
-such as `/* eslint no-console: "off" */`, and another tool's directive such as `prettier-ignore`,
+that leaves every rule on, and another tool's directive such as `prettier-ignore`,
 `@ts-expect-error` or `v8 ignore`.
 
 Prose that opens with the keyword is reported, and that is correct rather than a false positive.

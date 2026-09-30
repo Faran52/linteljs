@@ -45,6 +45,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `no-eslint-disable` reports an inline config comment that turns a rule off, such as
+  `/* eslint no-console: "off" */`.
 - `no-inline-object-types`: `allowIn` matches a qualified name such as `React.PropsWithChildren` by its last
   segment.
 - `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.

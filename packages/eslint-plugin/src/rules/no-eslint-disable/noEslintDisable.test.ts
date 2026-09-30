@@ -14,7 +14,10 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
     '// v8 ignore next\nexport const value = 1;\n',
     // `eslint-enable` suppresses nothing on its own, and the rule is named for what does.
     '/* eslint-enable no-console */\nexport const value = 1;\n',
-    '/* eslint no-console: "off" */\nexport const value = 1;\n',
+    '/* eslint no-console: "error" */\nexport const value = 1;\n',
+    '/* eslint complexity: ["error", { "max": 0 }] */\nexport const value = 1;\n',
+    '// eslint no-console: "off"\nexport const value = 1;\n',
+    '/* eslint eqeqeq: [1, "always"] */\nexport const value = 1;\n',
     /**
      * Not valid code: a limit of what any rule can see. ESLint honours a bare disable before a rule runs, and a bare
      * one names no rules, so it turns this rule off too. A directive naming this rule does the same, though that one
@@ -27,6 +30,23 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
     '/* eslint-disable */\nexport const value = 1;\n',
   ],
   invalid: [
+    {
+      code: '/* eslint no-console: "off" */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint no-console: 0 */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint "no-console": ["off"], eqeqeq: ["error", "always"] */\nconsole.log(1);\n',
+      errors: [{ messageId: 'noDisable' }],
+    },
+    {
+      code: '/* eslint no-restricted-syntax: ["error", { "selector": "X", "message": "a, b: 0" }],'
+        + " no-alert: 'off' -- why */\nalert(1);\n",
+      errors: [{ messageId: 'noDisable' }],
+    },
     {
       code: '// eslint-disable-next-line no-console\nconsole.log(1);\n',
       errors: [{ messageId: 'noDisable' }],
@@ -56,6 +76,10 @@ tsxRuleTester.run('no-eslint-disable', noEslintDisable, {
 
 tsxRuleTester.run('no-eslint-disable: allowRules', noEslintDisable, {
   valid: [
+    {
+      code: '/* eslint no-console: "off" */\nconsole.log(1);\n',
+      options: [{ allowRules: ['no-console'] }],
+    },
     {
       code: '// eslint-disable-next-line no-console\nconsole.log(1);\n',
       options: [{ allowRules: ['no-console'] }],

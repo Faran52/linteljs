@@ -27,6 +27,58 @@ const rulesNamedBy = (tail: string): string[] => {
     });
 };
 
+// `/* eslint rule: "off" */`: only a block comment is read, and `eslint-env` and the rest fail the lookahead.
+const INLINE_CONFIG = /^\s*eslint(?=\s)([\s\S]*)/;
+
+const OFF_SEVERITY = /^\s*(?:\[\s*)?(?:"off"|'off'|0)\s*(?:[,\]]|$)/;
+
+// Split at the commas outside strings and brackets, so an option object's own `key: 0` is not an entry.
+const topLevelEntries = (text: string): string[] => {
+  const entries: string[] = [];
+  let depth = 0;
+  let quote = '';
+  let start = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text.charAt(index);
+
+    if (quote !== '') {
+      quote = char === quote ? '' : quote;
+    }
+    else if (char === '"' || char === "'") {
+      quote = char;
+    }
+    else if (char === '[' || char === '{') {
+      depth += 1;
+    }
+    else if (char === ']' || char === '}') {
+      depth -= 1;
+    }
+    else if (char === ',' && depth === 0) {
+      entries.push(text.slice(start, index));
+      start = index + 1;
+    }
+  }
+
+  return [...entries, text.slice(start)];
+};
+
+const rulesTurnedOffBy = (tail: string): string[] => {
+  return topLevelEntries(tail.replace(DESCRIPTION, ''))
+    .flatMap((entry) => {
+      const colon = entry.indexOf(':');
+
+      if (colon === -1 || !OFF_SEVERITY.test(entry.slice(colon + 1))) {
+        return [];
+      }
+
+      return [entry
+        .slice(0, colon)
+        .trim()
+        .replaceAll(/^["']|["']$/gu, '')];
+    });
+};
+
 export const noEslintDisable = createRule('no-eslint-disable', {
   meta: {
     type: 'problem',
@@ -60,13 +112,14 @@ export const noEslintDisable = createRule('no-eslint-disable', {
       Program: () => {
         for (const comment of sourceCodeOf(context).getAllComments()) {
           const tail = DIRECTIVE.exec(comment.value)?.[1];
+          const config = comment.type === 'Block' ? INLINE_CONFIG.exec(comment.value)?.[1] : undefined;
+          const named = tail === undefined ? rulesTurnedOffBy(config ?? '') : rulesNamedBy(tail);
 
-          if (tail === undefined) {
+          if (tail === undefined && named.length === 0) {
             continue;
           }
 
           // A directive naming an allowed rule beside a forbidden one suppresses both.
-          const named = rulesNamedBy(tail);
           const allowed = named.length > 0 && named
             .every((name) => {
               return allowRules.has(name);
