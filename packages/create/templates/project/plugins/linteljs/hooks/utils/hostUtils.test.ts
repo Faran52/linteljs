@@ -19,6 +19,7 @@ import {
   hostOf,
   readCommand,
   readEdit,
+  readSession,
   writeDecision,
 } from './hostUtils.ts';
 
@@ -106,6 +107,33 @@ describe('readCommand', () => {
   it('reads nothing where there is no command', () => {
     expect(readCommand({ tool_input: {} }, 'beforeShellExecution')).toBeUndefined();
     expect(readCommand({ tool_input: { command: 7 } }, 'beforeShellExecution')).toBeUndefined();
+  });
+});
+
+describe('readSession', () => {
+  const main = {
+    session_id: 'e1d9603e-6671_4aba',
+    transcript_path: '/p/e1d9603e.jsonl',
+    tool_name: 'Bash',
+  };
+
+  it('reads the main session\'s id and transcript', () => {
+    expect(readSession(main)).toEqual({
+      session: 'e1d9603e-6671_4aba',
+      transcript: '/p/e1d9603e.jsonl',
+    });
+  });
+
+  it.each([
+    ['a subagent\'s call', { ...main, agent_id: 'a1' }],
+    ['a Cursor payload', { ...main, cursor_version: '2.4.0' }],
+    ['a Copilot payload', { ...main, toolName: 'bash' }],
+    ['no transcript', { session_id: 'abc' }],
+    ['no session', { transcript_path: '/p/t.jsonl' }],
+    ['a session that is not a plain token', { ...main, session_id: '../x' }],
+    ['an empty session', { ...main, session_id: '' }],
+  ])('reads nothing from %s', (_label, payload) => {
+    expect(readSession(payload)).toBeUndefined();
   });
 });
 

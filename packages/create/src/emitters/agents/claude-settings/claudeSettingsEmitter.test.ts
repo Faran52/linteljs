@@ -11,6 +11,18 @@ import { claudeSettingsEmitter, emitClaudeSettings } from './claudeSettingsEmitt
 
 import type { Answers } from '@config/types';
 
+const STATUS_LINES = {
+  statusLine: {
+    type: 'command',
+    command: 'node "${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/mainStatusLine.ts"',
+    refreshInterval: 5,
+  },
+  subagentStatusLine: {
+    type: 'command',
+    command: 'node "${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/subagentStatusLine.ts"',
+  },
+};
+
 describe('emitClaudeSettings', () => {
   it('enables every selected plugin with its required marketplace', () => {
     const settings: unknown = JSON.parse(emitClaudeSettings([
@@ -21,6 +33,7 @@ describe('emitClaudeSettings', () => {
 
     expect(settings).toEqual({
       includeCoAuthoredBy: false,
+      ...STATUS_LINES,
       enabledPlugins: {
         'linteljs@linteljs': true,
         'ponytail@ponytail': true,
@@ -55,6 +68,7 @@ describe('emitClaudeSettings', () => {
 
     expect(settings).toEqual({
       includeCoAuthoredBy: false,
+      ...STATUS_LINES,
       enabledPlugins: { 'linteljs@linteljs': true },
       extraKnownMarketplaces: {
         linteljs: {
@@ -73,6 +87,7 @@ describe('emitClaudeSettings', () => {
 
     expect(settings).toEqual({
       includeCoAuthoredBy: false,
+      ...STATUS_LINES,
       enabledPlugins: {
         'linteljs@linteljs': true,
         [`${plugin}@claude-plugins-official`]: true,

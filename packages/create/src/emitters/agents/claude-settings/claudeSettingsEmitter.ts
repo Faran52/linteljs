@@ -7,7 +7,15 @@ import {
 import { copied, merged } from '../../utils/artifactUtils';
 import { adapterArtifact } from '../utils/adapterUtils';
 
-import { mergeClaudeSettings } from './utils/mergeUtils';
+import { mergeClaudeSettings, type StatusLine } from './utils/mergeUtils';
+
+// A plugin cannot set `statusLine`, so both badges are wired here, from the plugin the project carries.
+const statusLineOf = (script: string): StatusLine => {
+  return {
+    type: 'command',
+    command: `node "\${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/${script}"`,
+  };
+};
 
 export const emitClaudeSettings = (plugins: Plugin[]): string => {
   const usesOfficialMarketplace = plugins.includes('context7')
@@ -15,6 +23,11 @@ export const emitClaudeSettings = (plugins: Plugin[]): string => {
   const settings = {
     // Every current agent appends `Co-Authored-By` by default, and the generated rules ban rewriting a commit.
     includeCoAuthoredBy: false,
+    statusLine: {
+      ...statusLineOf('mainStatusLine.ts'),
+      refreshInterval: 5,
+    },
+    subagentStatusLine: statusLineOf('subagentStatusLine.ts'),
     enabledPlugins: {
       'linteljs@linteljs': true,
       ...(plugins.includes('ponytail') ? { 'ponytail@ponytail': true } : {}),

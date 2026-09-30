@@ -217,7 +217,12 @@ describe('linteljsPluginEmitter', () => {
       ['plugins/linteljs/hooks/gitSafetyGuardHook.ts', undefined],
       ['plugins/linteljs/hooks/eslintFixWarningHook.ts', undefined],
       ['plugins/linteljs/hooks/bannedPatternGuardHook.ts', undefined],
+      ['plugins/linteljs/hooks/contextWarningHook.ts', undefined],
+      ['plugins/linteljs/hooks/mainStatusLine.ts', undefined],
+      ['plugins/linteljs/hooks/subagentStatusLine.ts', undefined],
+      ['plugins/linteljs/hooks/constants.ts', undefined],
       ['plugins/linteljs/hooks/utils/commandParserUtils.ts', undefined],
+      ['plugins/linteljs/hooks/utils/contextUtils.ts', undefined],
       ['plugins/linteljs/hooks/utils/hostUtils.ts', undefined],
     ]);
   });

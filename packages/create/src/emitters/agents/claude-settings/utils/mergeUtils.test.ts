@@ -25,8 +25,14 @@ interface MergedMarketplace {
   source: MergedSource;
 }
 
+interface MergedStatusLine {
+  command: string;
+}
+
 interface MergedSettings {
   includeCoAuthoredBy?: boolean;
+  statusLine?: MergedStatusLine;
+  subagentStatusLine?: MergedStatusLine;
   hooks?: MergedHooks;
   enabledPlugins: Record<string, boolean>;
   extraKnownMarketplaces: Record<string, MergedMarketplace>;
@@ -87,6 +93,26 @@ describe('mergeClaudeSettings', () => {
     const merged = parsedMerge(`${JSON.stringify({ enabledPlugins: { 'caveman@caveman': true } })}\n`);
 
     expect(merged.includeCoAuthoredBy).toBe(false);
+  });
+
+  it('wires both badges into a project that has no status line', () => {
+    const merged = parsedMerge(THEIRS);
+    const main = merged.statusLine?.command;
+    const subagent = merged.subagentStatusLine?.command;
+
+    expect(main).toContain('mainStatusLine.ts');
+    expect(subagent).toContain('subagentStatusLine.ts');
+  });
+
+  it("leaves a project's own status lines alone", () => {
+    const own = { command: 'bash ./mine.sh' };
+    const merged = parsedMerge(`${JSON.stringify({
+      statusLine: own,
+      subagentStatusLine: own,
+    })}\n`);
+
+    expect(merged.statusLine).toEqual(own);
+    expect(merged.subagentStatusLine).toEqual(own);
   });
 
   it('keeps the keys the project owns', () => {

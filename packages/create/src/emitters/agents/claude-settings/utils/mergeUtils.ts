@@ -10,9 +10,17 @@ interface MarketplaceRef {
   source: MarketplaceLocation;
 }
 
+export interface StatusLine {
+  type: string;
+  command: string;
+  refreshInterval?: number;
+}
+
 interface ClaudeSettings {
   // Explicitly `| undefined`: `exactOptionalPropertyTypes` separates a missing key from one set to undefined.
   includeCoAuthoredBy?: boolean | undefined;
+  statusLine?: StatusLine | undefined;
+  subagentStatusLine?: StatusLine | undefined;
   enabledPlugins?: Record<string, boolean>;
   extraKnownMarketplaces?: Record<string, MarketplaceRef>;
 }
@@ -31,8 +39,10 @@ export const mergeClaudeSettings = (emitted: string, current: string | null): st
   const theirs = settingsIn(current);
 
   const settings: ClaudeSettings = {
-    // Ours first, so a project's own answer wins.
+    // Ours first, so a project's own answer and its own status lines win.
     includeCoAuthoredBy: ours.includeCoAuthoredBy,
+    statusLine: ours.statusLine,
+    subagentStatusLine: ours.subagentStatusLine,
     ...theirs,
     enabledPlugins: {
       ...theirs.enabledPlugins,

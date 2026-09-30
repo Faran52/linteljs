@@ -43,6 +43,9 @@ type Host = 'claude' | 'copilot' | 'cursor';
 
 export type HookScript = 'bannedPatternGuardHook.ts' | 'eslintFixWarningHook.ts' | 'gitSafetyGuardHook.ts';
 
+// Scripts that answer in their own shape rather than a decision, so only `spawnHook` runs them.
+export type ContextScript = 'contextWarningHook.ts' | 'mainStatusLine.ts' | 'subagentStatusLine.ts';
+
 const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
 
 export const commandPayload = (command: string, tool: 'Bash' | 'PowerShell' = 'Bash'): CommandHookPayload => {
@@ -157,13 +160,23 @@ export const expectDecisionOutput = (name: HookScript, stdout: string, host: Hos
 };
 
 // `projectDir` is dropped unless set: the harness exports one, which would point the checker at this workspace.
-export const spawnHook = (name: HookScript, input: object | string, projectDir?: string): string => {
+// `pluginData` alike: a plugin-run harness exports `CLAUDE_PLUGIN_DATA`, where the context hook keeps its marker.
+export const spawnHook = (
+  name: ContextScript | HookScript,
+  input: object | string,
+  projectDir?: string,
+  pluginData?: string,
+): string => {
   const env: typeof process.env = { ...process.env };
 
   delete env['CLAUDE_PROJECT_DIR'];
+  delete env['CLAUDE_PLUGIN_DATA'];
 
   if (projectDir !== undefined) {
     env['CLAUDE_PROJECT_DIR'] = projectDir;
+  }
+  if (pluginData !== undefined) {
+    env['CLAUDE_PLUGIN_DATA'] = pluginData;
   }
 
   const result = spawnSync(process.execPath, [join(HOOKS_ROOT, name)], {

@@ -16,7 +16,7 @@ import {
   it,
 } from 'vitest';
 
-it('registers the three hooks, each run by node from the plugin root', () => {
+it('registers the four hooks, each run by node from the plugin root', () => {
   expect(JSON.parse(readFileSync(join(import.meta.dirname, 'hooks.json'), 'utf8'))).toEqual({
     hooks: {
       PreToolUse: [
@@ -41,6 +41,14 @@ it('registers the three hooks, each run by node from the plugin root', () => {
             {
               type: 'command',
               command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/bannedPatternGuardHook.ts"',
+            },
+          ],
+        },
+        {
+          hooks: [
+            {
+              type: 'command',
+              command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks/contextWarningHook.ts"',
             },
           ],
         },

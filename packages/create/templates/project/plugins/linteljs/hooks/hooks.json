@@ -24,6 +24,14 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/bannedPatternGuardHook.ts\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/contextWarningHook.ts\""
+          }
+        ]
       }
     ]
   }

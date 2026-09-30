@@ -22,10 +22,18 @@ export interface EditInput {
   paths: string[];
 }
 
+export interface SessionInput {
+  session: string;
+  transcript: string;
+}
+
 type Field = 'command' | 'cursor_version' | 'cwd' | 'file_path' | 'filePath' | 'hook_event_name' | 'patch' | 'path'
-  | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName';
+  | 'session_id' | 'tool_input' | 'tool_name' | 'tool_response' | 'toolArgs' | 'toolName' | 'transcript_path';
 
 type FieldValue = object | string | undefined;
+
+// A session id names a state file, so nothing but a plain token is accepted.
+const SESSION_ID = /^[\w-]+$/u;
 
 const PATCHED_FILE = /^\*\*\* (?:Add|Update) File: (.+)$/u;
 
@@ -136,6 +144,21 @@ export const readEdit = (payload: object): EditInput | undefined => {
         return path !== undefined;
       }),
   };
+};
+
+// Claude Code adds `agent_id` to a subagent's tool call, so only the main session's own calls are read.
+export const readSession = (payload: object): SessionInput | undefined => {
+  const session = stringAt(payload, 'session_id');
+  const transcript = stringAt(payload, 'transcript_path');
+  if (hostOf(payload) !== 'claude' || 'agent_id' in payload || transcript === undefined) {
+    return undefined;
+  }
+  return session !== undefined && SESSION_ID.test(session)
+    ? {
+        session,
+        transcript,
+      }
+    : undefined;
 };
 
 const cursorDecision = (kind: DecisionKind, text: string): object => {

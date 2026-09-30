@@ -165,7 +165,12 @@ export const linteljsPluginEmitter = (answers: Answers): Artifact[] => {
     copied('plugins/linteljs/hooks/gitSafetyGuardHook.ts'),
     copied('plugins/linteljs/hooks/eslintFixWarningHook.ts'),
     copied('plugins/linteljs/hooks/bannedPatternGuardHook.ts'),
+    copied('plugins/linteljs/hooks/contextWarningHook.ts'),
+    copied('plugins/linteljs/hooks/mainStatusLine.ts'),
+    copied('plugins/linteljs/hooks/subagentStatusLine.ts'),
+    copied('plugins/linteljs/hooks/constants.ts'),
     copied('plugins/linteljs/hooks/utils/commandParserUtils.ts'),
+    copied('plugins/linteljs/hooks/utils/contextUtils.ts'),
     copied('plugins/linteljs/hooks/utils/hostUtils.ts'),
   ];
 };
