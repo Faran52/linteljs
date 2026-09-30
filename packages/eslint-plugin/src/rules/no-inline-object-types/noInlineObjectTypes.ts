@@ -15,6 +15,8 @@ interface TypeMember {
 
 interface TypeName {
   name?: string;
+  // Set on a qualified name such as `React.PropsWithChildren`, whose last segment is the type.
+  right?: TypeName;
 }
 
 // Named: this rule holds itself to what it reports.
@@ -45,7 +47,7 @@ const argumentToOf = (node: RuleNode): string | undefined => {
   const argument = mustFind(node.parent);
   const reference = mustFind(argument.parent);
 
-  return hasTypeName(reference) ? reference.typeName.name : undefined;
+  return hasTypeName(reference) ? reference.typeName.right?.name ?? reference.typeName.name : undefined;
 };
 
 export const noInlineObjectTypes = createRule('no-inline-object-types', {

@@ -61,8 +61,17 @@ tsRuleTester.run('no-inline-object-types: allowIn', noInlineObjectTypes, {
       code: "interface NodeA {\n  type: 'A';\n}\ntype NotA = Exclude<NodeA, { type: 'A' }>;\n",
       options: [{ allowIn: ['Extract', 'Exclude'] }],
     },
+    {
+      code: 'type Props = React.PropsWithChildren<{ a: string }>;\n',
+      options: [{ allowIn: ['PropsWithChildren'] }],
+    },
   ],
   invalid: [
+    {
+      code: 'type Props = React.PropsWithChildren<{ a: string }>;\n',
+      options: [{ allowIn: ['React'] }],
+      errors: [{ messageId: 'nameTheType' }],
+    },
     {
       code: "interface NodeA {\n  type: 'A';\n}\ntype NotA = Exclude<NodeA, { type: 'A' }>;\n",
       options: [{ allowIn: ['Extract'] }],
@@ -93,7 +102,7 @@ tsRuleTester.run('no-inline-object-types: allowIn', noInlineObjectTypes, {
     {
       code: 'declare namespace ns {\n  export type Wrapper<T> = T;\n}\n'
         + 'export type Wrapped = ns.Wrapper<{ a: string }>;\n',
-      options: [{ allowIn: ['Wrapper', 'ns', 'undefined'] }],
+      options: [{ allowIn: ['ns', 'undefined'] }],
       errors: [{ messageId: 'nameTheType' }],
     },
     {

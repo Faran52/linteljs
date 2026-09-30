@@ -111,6 +111,9 @@ still reported:
 type Wrapped = Extract<Node, { inner: { id: string } }>;
 ```
 
+A qualified name is matched by its last segment, so `allowIn: ['PropsWithChildren']` allows
+`React.PropsWithChildren<{ a: string }>`.
+
 It is per generic, so `allowIn: ['Extract']` says nothing about `Exclude`.
 
 It matches the name as written, not the type it resolves to. A locally declared `Extract` inherits

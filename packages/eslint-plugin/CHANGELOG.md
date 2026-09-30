@@ -45,6 +45,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `no-inline-object-types`: `allowIn` matches a qualified name such as `React.PropsWithChildren` by its last
+  segment.
 - `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.
 - `export-specifier-newline` keeps a trailing comma on the last specifier's line instead of pushing it to column 0.
 - `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later `case` of
