@@ -30,6 +30,9 @@ when a version's change lives in a sibling it is described there instead:
 ### Added
 
 - Nuxt is a target.
+- Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
+  `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
+  130K, red past 150K. A project's own status lines are kept on a sync.
 - Every starter but the extension ships a status page and catches a crash with its framework's own mechanism:
   a 500 page with "Try again" on a crash, a 404 for a path nothing routes, and a 403 where a loader or a server can
   refuse (React Router, Nuxt, SvelteKit). Astro renders at build, so it ships the 404 alone. One `StatusPage` per framework reads one table,

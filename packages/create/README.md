@@ -106,7 +106,9 @@ linteljs wrote for it.
 
 `plugins/linteljs/` holds one plugin every chosen agent reads: the rules as skill references, and hooks that deny
 banned git operations, warn when ESLint runs without `--fix`, and check each file an agent writes for banned
-patterns. The hooks inspect commands, never run them.
+patterns. The hooks inspect commands, never run them. In Claude Code a fourth hook warns once when a session's
+context passes 150K tokens, and `.claude/settings.json` adds a `[CTX nK]` badge for the session and for each
+subagent: green, amber past 130K, red past 150K. A status line of your own is kept.
 
 | Path | Written for | Owned by |
 | --- | --- | --- |

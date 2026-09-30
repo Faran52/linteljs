@@ -1068,6 +1068,24 @@ subexpression, script block or `Start-Process` is read as the commands inside it
 opaque, which the git guard also denies. `cmd /c`, `pwsh -Command` and `Invoke-Expression` are unwrapped the way
 `sh -c` is. It is a guardrail: a variable holding a subcommand still passes, in either shell.
 
+### Context: a warning hook and two status lines
+
+| fact | source |
+| --- | --- |
+| a plugin's `settings.json` applies only `agent` and `subagentStatusLine`; `statusLine` is ignored there | code.claude.com/docs/en/plugins-reference, statusline |
+| both status lines run with `CLAUDE_PROJECT_DIR` exported and expanded in `command` | probe, Claude Code 2.1.286 |
+| the main status line's `context_window.total_input_tokens` equals the transcript's last usage sum | probe, 29520 both |
+| a subagent task's `tokenCount` differs from its transcript's usage sum (14859 against 14725) | probe |
+
+`contextWarningHook.ts` runs after every tool call in Claude Code (other hosts send no transcript and it stays
+silent), reads the transcript's last usage, and warns once past 150K: the marker lives in `CLAUDE_PLUGIN_DATA`, and
+dropping back under the ceiling, as a compact does, clears it. Since a plugin cannot set `statusLine`, both badges
+are written into the generated `.claude/settings.json` and run the plugin's scripts through
+`${CLAUDE_PROJECT_DIR}`. A project's own `statusLine` or `subagentStatusLine` wins on a sync. The main badge reads
+the payload's token count and falls back to the transcript; a subagent row reads its own transcript under
+`subagents/` and falls back to `tokenCount`, since the two are not the same measure. The main badge refreshes every
+5 seconds, so it moves while a long tool call runs. The number is always printed, so colour is never the only cue.
+
 ### Cursor and Copilot: their own hooks files, the same scripts
 
 | fact | source |
