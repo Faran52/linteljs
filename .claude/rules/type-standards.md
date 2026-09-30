@@ -19,7 +19,7 @@ copy. Below is only where this workspace differs.
   `parsedAs` takes), the `JSON.parse` result it narrows, a dynamic `import()` namespace. Where the narrowing can
   be a predicate, write it as one (`isFixReport` in `fixPass.ts`, handed to `parsedAs` in
   `packages/create/src/utils/objectUtils.ts`).
-- **Casts.** Four survive in `eslint-plugin`, listed in that package's `CLAUDE.md`. Add none.
+- **Casts.** Three survive in `eslint-plugin`, listed in that package's `CLAUDE.md`. Add none.
 - **`es-toolkit/compat` is banned** everywhere, enforced by the `base` layer. Use the strict entry or the
   standard library.
 

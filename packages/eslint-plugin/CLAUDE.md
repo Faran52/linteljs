@@ -15,9 +15,9 @@ the plugin's alone and wins inside the package.
   `context.sourceCode`, `context.physicalFilename` or `sourceCode.getScope`/`getAncestors`/
   `getDeclaredVariables` directly: go through `src/utils/compatUtils.ts`, which reads the modern shape
   first and the legacy one second.
-- **No casts to satisfy a type, tests included.** Four survive as tracked debt; add none:
-  `as RuleNode` in `preferArrowFunctions.ts`, `as ImportNode` in `importNewlines.ts`,
-  `{} as LintelConfigs` in `src/plugin.ts`, `as Partial<T>` in `src/utils/ruleUtils.ts`.
+- **No casts to satisfy a type, tests included.** Three survive as tracked debt; add none:
+  `as RuleNode` in `preferArrowFunctions.ts`, `{} as LintelConfigs` in `src/plugin.ts`,
+  `as Partial<T>` in `src/utils/ruleUtils.ts`.
 - **Arrow functions everywhere.** The plugin lints itself with `@linteljs/prefer-arrow-functions`.
 
 ## Layout
