@@ -68,20 +68,6 @@ describe('AppHeader', () => {
     expect(chosen).toEqual(['version']);
   });
 
-  it('offers every language under its own name', () => {
-    renderHeader();
-
-    const options = screen.getAllByRole('option')
-      .map((option) => {
-        return option.textContent;
-      });
-
-    expect(options).toEqual(languages
-      .map(({ label }) => {
-        return label;
-      }));
-  });
-
   it('switches the language, and stores the choice', async () => {
     renderHeader();
     await act(async () => {

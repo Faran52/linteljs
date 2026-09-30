@@ -6,6 +6,9 @@ import { isFrameworkMode } from './frameworkRouteUtils';
 import type { Answers } from '@config/types';
 import type { StarterFile, StarterTest } from '../../types';
 
+const HEADER = 'src/components/features/app-header/AppHeader.tsx';
+const LANGUAGE_SELECT = 'src/components/features/language-select/LanguageSelect.tsx';
+
 const hasRouter = (answers: Answers): boolean => {
   return answers.router !== undefined;
 };
@@ -25,13 +28,32 @@ export const reactI18nFiles = (): StarterFile[] => {
       shared: true,
     }),
     ...translated<StarterFile>({ target: 'src/components/features/status-page/StatusPage.tsx' }),
-    // Without a router the header swaps the page from state, so its tabs are controls.
+    // Without a router the header swaps the page from state, so its tabs are controls; a router's are links.
     ...translated<StarterFile>({
-      target: 'src/components/features/app-header/AppHeader.tsx',
+      target: HEADER,
       when: (answers) => {
         return !hasRouter(answers);
       },
     }),
+    ...translated<StarterFile>({
+      target: HEADER,
+      when: (answers) => {
+        return answers.router === 'react-router' || isFrameworkMode(answers);
+      },
+      variant: 'react-router',
+    }),
+    ...translated<StarterFile>({
+      target: HEADER,
+      when: (answers) => {
+        return answers.router === 'tanstack-router';
+      },
+      variant: 'tanstack-router',
+    }),
+    {
+      target: LANGUAGE_SELECT,
+      when: hasI18n,
+      variant: 'i18n',
+    },
     {
       target: 'src/i18n/index.ts',
       when: hasI18n,
@@ -49,11 +71,17 @@ export const reactI18nTests = (): StarterTest[] => {
     // `App`'s own suite covers a routed header; standing it alone would need a router context.
     ...translated<StarterTest>({
       target: 'src/components/features/app-header/AppHeader.test.tsx',
-      covers: 'src/components/features/app-header/AppHeader.tsx',
+      covers: HEADER,
       when: (answers) => {
         return !hasRouter(answers);
       },
     }),
+    {
+      target: 'src/components/features/language-select/LanguageSelect.test.tsx',
+      covers: LANGUAGE_SELECT,
+      when: hasI18n,
+      variant: 'i18n',
+    },
     {
       target: 'src/i18n/index.test.ts',
       covers: 'src/i18n/index.ts',

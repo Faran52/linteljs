@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { NavLink } from 'react-router';
 
 import { ROUTES } from '../../../pages/routes';
 import { LanguageSelect } from '../language-select/LanguageSelect';
@@ -9,16 +10,9 @@ import type { FC } from 'react';
 
 export interface AppHeaderProps {
   readonly name: string;
-  readonly current: string;
-  readonly onNavigate: (page: string) => void;
 }
 
-// An element that navigates is an anchor; faking one with a button breaks middle-click.
-export const AppHeader: FC<AppHeaderProps> = ({
-  name,
-  current,
-  onNavigate,
-}) => {
+export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
   const { t } = useTranslation();
 
   return (
@@ -27,20 +21,25 @@ export const AppHeader: FC<AppHeaderProps> = ({
       <p {...styles.brand}>{name}</p>
       <nav {...styles.tabs} aria-label="Main">
         {ROUTES
-          .map(({ id }) => {
+          .map(({
+            id,
+            path,
+          }) => {
             return (
-              <button
+              <NavLink
                 key={id}
-                type="button"
-                aria-current={id === current ? 'page' : undefined}
-                {...styles.tab(id === current)}
-                onClick={() => {
-                  onNavigate(id);
+                to={path}
+                end
+                className={({ isActive }) => {
+                  return styles.tab(isActive).className;
+                }}
+                style={({ isActive }) => {
+                  return styles.tab(isActive).style;
                 }}
               >
                 {/* Keyed by route id, so a page added to `ROUTES` needs its own key in every locale. */}
                 {t(id)}
-              </button>
+              </NavLink>
             );
           })}
       </nav>

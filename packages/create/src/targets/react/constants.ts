@@ -1,4 +1,5 @@
 import type { Router } from '@config/types';
+import type { I18nParts } from '../types';
 import type { AccessorNames } from '../utils/mockUtils';
 
 export const ROUTERS: readonly Router[] = [
@@ -49,3 +50,13 @@ export const WELL_KNOWN_404 = `{
           });
       },
     }`;
+
+// i18next is the most used React i18n, and react-i18next and its browser detector are its own.
+export const REACT_I18N: I18nParts = {
+  dependencies: [
+    'i18next',
+    'i18next-browser-languagedetector',
+    'react-i18next',
+  ],
+  testSetup: 'fragments/test-setup/setupTests.i18n.ts',
+};

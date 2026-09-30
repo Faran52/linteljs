@@ -69,7 +69,7 @@ describe('reactTarget', () => {
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).toContain('@vitejs/plugin-react');
   });
 
-  it('translates only the routerless starter, through i18next', () => {
+  it('translates every mode but framework mode, through i18next', () => {
     expect(recordFor().i18n).toEqual({
       dependencies: [
         'i18next',
@@ -78,7 +78,7 @@ describe('reactTarget', () => {
       ],
       testSetup: 'fragments/test-setup/setupTests.i18n.ts',
     });
-    expect(recordFor({ router: 'react-router' }).i18n).toBeUndefined();
+    expect(recordFor({ router: 'tanstack-router' }).i18n).toEqual(recordFor().i18n);
     expect(recordFor({ router: 'react-router-framework' }).i18n).toBeUndefined();
   });
 
@@ -235,11 +235,24 @@ const GATES: GateRow[] = [
   ['src/components/features/route-error/RouteError.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
   ['src/components/features/route-error/RouteError.test.tsx@react-router', DATA_ROUTER],
   ['src/components/features/route-error/RouteError.test.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
-  [
-    'src/components/features/app-header/AppHeader.tsx@react-router',
-    [{ router: ['react-router', 'react-router-framework'] }],
-  ],
-  ['src/components/features/app-header/AppHeader.tsx@tanstack-router', [{ router: ['tanstack-router'] }]],
+  ['src/components/features/app-header/AppHeader.tsx@react-router', [{
+    router: ['react-router', 'react-router-framework'],
+    languages: [undefined],
+  }]],
+  ['src/components/features/app-header/AppHeader.tsx@react-router-i18n', [{
+    router: ['react-router', 'react-router-framework'],
+    languages: ANSWERED,
+  }]],
+  ['src/components/features/app-header/AppHeader.tsx@tanstack-router', [{
+    router: ['tanstack-router'],
+    languages: [undefined],
+  }]],
+  ['src/components/features/app-header/AppHeader.tsx@tanstack-router-i18n', [{
+    router: ['tanstack-router'],
+    languages: ANSWERED,
+  }]],
+  ['src/components/features/language-select/LanguageSelect.tsx@i18n', WITH_I18N],
+  ['src/components/features/language-select/LanguageSelect.test.tsx@i18n', WITH_I18N],
   ['src/routes/router.tsx@react-router', [{ router: ['react-router'] }]],
   ['src/root.tsx@react-router-framework', [{
     router: ['react-router-framework'],

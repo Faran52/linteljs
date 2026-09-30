@@ -89,7 +89,7 @@ export const widestFor = (target: TargetId): Answers[] => {
         };
       }),
     // A router's document can differ per styling: framework mode links StyleX's dev CSS itself.
-    // A form adds a route to framework mode's config.
+    // A form adds a route to framework mode's config, and a language its translated twins.
     ...(record.routers ?? [])
       .flatMap((router): Answers[] => {
         return [
@@ -107,6 +107,13 @@ export const widestFor = (target: TargetId): Answers[] => {
             router,
             form: 'tanstack-form',
           },
+          ...(record.i18n === undefined
+            ? []
+            : [{
+                ...widest,
+                router,
+                languages: [...LANGUAGES],
+              }]),
         ];
       }),
   ];

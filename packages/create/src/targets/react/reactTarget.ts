@@ -28,6 +28,7 @@ import {
   ALWAYS,
   DECLARATIVE_ROUTERS,
   REACT_ACCESSORS,
+  REACT_I18N,
   ROUTERS,
   SHARED,
   WELL_KNOWN_404,
@@ -287,23 +288,14 @@ const baseReactTarget: TargetRecord = {
       variant: 'rtk-query',
     },
     ...DECLARATIVE_ROUTERS
-      .flatMap((router): StarterFile[] => {
-        const chosen = (answers: Answers): boolean => {
-          return answers.router === router;
+      .map((router): StarterFile => {
+        return {
+          target: 'src/App.tsx',
+          when: (answers) => {
+            return answers.router === router;
+          },
+          variant: router,
         };
-
-        return [
-          {
-            target: 'src/App.tsx',
-            when: chosen,
-            variant: router,
-          },
-          {
-            target: 'src/components/features/app-header/AppHeader.tsx',
-            when: chosen,
-            variant: router,
-          },
-        ];
       }),
     ...([
       'src/routes/router.tsx',
@@ -318,11 +310,6 @@ const baseReactTarget: TargetRecord = {
         };
       }),
     // No `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's build owns the entry.
-    {
-      target: 'src/components/features/app-header/AppHeader.tsx',
-      when: isFrameworkMode,
-      variant: 'react-router',
-    },
     // StyleX's dev CSS goes into `index.html`, so its framework document links it itself.
     ...([['react-router-framework', false], ['stylex', true]] as const)
       .map(([variant, stylex]): StarterFile => {
@@ -498,7 +485,7 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
   ],
 };
 
-// A routed starter is not translated yet, so only the routerless one asks for languages.
+// Framework mode is not translated yet, so it alone never asks for languages.
 export const reactTarget: TargetBuilder = (answers) => {
   if (isFrameworkMode(answers)) {
     return {
@@ -507,17 +494,8 @@ export const reactTarget: TargetBuilder = (answers) => {
     };
   }
 
-  return hasRouter(answers)
-    ? baseReactTarget
-    : {
-        ...baseReactTarget,
-        i18n: {
-          dependencies: [
-            'i18next',
-            'i18next-browser-languagedetector',
-            'react-i18next',
-          ],
-          testSetup: 'fragments/test-setup/setupTests.i18n.ts',
-        },
-      };
+  return {
+    ...baseReactTarget,
+    i18n: REACT_I18N,
+  };
 };
