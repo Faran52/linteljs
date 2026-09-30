@@ -149,6 +149,12 @@ describe('targetCases', () => {
     expect(has('react', (answers) => {
       return answers.router === 'react-router-framework' && answers.styling === 'stylex';
     })).toBe(true);
+    expect(has('next', (answers) => {
+      return answers.store === 'zustand' && answers.form === 'tanstack-form';
+    })).toBe(true);
+    expect(has('next', (answers) => {
+      return answers.styling === 'stylex';
+    })).toBe(true);
   });
 
   it('enumerates only answers the CLI accepts', () => {
