@@ -76,6 +76,7 @@ when a version's change lives in a sibling it is described there instead:
   `button` and `text-input` components, a spec each, and ships their styles unconditionally.
 - Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme: `favicon.svg` in the
   public directory (`static/` on SvelteKit), linked from the document head, and `src/app/icon.svg` on Next.
+  React Native's web build ships it in `public/` too, linked from `expo-router/head` in the root layout.
 
 ### Changed
 
@@ -107,6 +108,11 @@ when a version's change lives in a sibling it is described there instead:
 ### Fixed
 
 - A React Router framework project has a document title: `root.tsx` renders the project's name (D2).
+- A Nuxt project has a document title: `nuxt.config.ts` sets `app.head.title` to the project's name (D6).
+- A React Native project's web build has a document title: the root layout sets the project's name through
+  `expo-router/head` (D8).
+- React Native's tab bar no longer lists `+not-found` as a tab: the root layout hides the route with
+  `href: null`.
 - The header no longer overflows a 375px screen on a starter with a Contact tab: below 30rem the
   "LintelJS Starter" label is hidden, in `AppHeader.css` and the StyleX header styles.
 - A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev

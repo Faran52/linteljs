@@ -29,6 +29,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
+      title: 'demo-app',
       link: [{
         rel: 'icon',
         type: 'image/svg+xml',
@@ -78,6 +79,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
+      title: 'demo-app',
       link: [{
         rel: 'icon',
         type: 'image/svg+xml',
@@ -126,24 +128,24 @@ describe('nuxtConfigEmitter', () => {
   });
 
   it('names src as the source root and carries the aliases', () => {
-    expect(emitNuxtConfig(answersFor())).toBe(PLAIN);
+    expect(emitNuxtConfig(answersFor(), 'demo-app')).toBe(PLAIN);
   });
 
   it('escapes a trailing backslash in an alias path so the config still parses', () => {
-    const config = emitNuxtConfig(answersFor({ aliases: { '@odd/*': './a\\/*' } }));
+    const config = emitNuxtConfig(answersFor({ aliases: { '@odd/*': './a\\/*' } }), 'demo-app');
 
     expect(config).toContain("'@odd': join(import.meta.dirname, 'a\\\\'),");
   });
 
   it('reaches tailwind through vite, and only when tailwind was answered', () => {
-    const tailwind = emitNuxtConfig(answersFor({ styling: 'tailwind' }));
+    const tailwind = emitNuxtConfig(answersFor({ styling: 'tailwind' }), 'demo-app');
 
     expect(tailwind).toContain("import tailwindcss from '@tailwindcss/vite';");
     expect(tailwind).toContain('plugins: [tailwindcss()],');
-    expect(emitNuxtConfig(answersFor())).not.toContain('tailwindcss');
+    expect(emitNuxtConfig(answersFor(), 'demo-app')).not.toContain('tailwindcss');
   });
 
   it('names the stylex plugin among the vite plugins', () => {
-    expect(emitNuxtConfig(answersFor({ styling: 'stylex' }))).toBe(WITH_STYLEX);
+    expect(emitNuxtConfig(answersFor({ styling: 'stylex' }), 'demo-app')).toBe(WITH_STYLEX);
   });
 });

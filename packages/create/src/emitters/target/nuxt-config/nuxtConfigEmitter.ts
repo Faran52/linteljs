@@ -13,7 +13,7 @@ import { quote } from '../../utils/quoteUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
 // `alias`, not tsconfig `paths`, which would replace Nuxt's own `#shared` and `#server` set.
-export const emitNuxtConfig = (answers: Answers): string => {
+export const emitNuxtConfig = (answers: Answers, name: string): string => {
   const { styleEntry } = targetFor(answers);
   // Both spellings: Vite resolves by prefix, TypeScript by pattern.
   // Absolute: Nuxt reads the generated paths relative to `.nuxt/`.
@@ -47,6 +47,7 @@ export const emitNuxtConfig = (answers: Answers): string => {
     '  devtools: { enabled: false },',
     '  app: {',
     '    head: {',
+    `      title: ${quote(name)},`,
     '      link: [{',
     "        rel: 'icon',",
     "        type: 'image/svg+xml',",
@@ -72,8 +73,8 @@ export const emitNuxtConfig = (answers: Answers): string => {
   ].join('\n');
 };
 
-export const nuxtConfigEmitter: Emitter = (answers): Artifact[] => {
+export const nuxtConfigEmitter: Emitter = (answers, _project, name): Artifact[] => {
   const { nuxtProject } = targetFor(answers);
 
-  return nuxtProject === true ? [emitted('package', 'nuxt.config.ts', emitNuxtConfig(answers))] : [];
+  return nuxtProject === true ? [emitted('package', 'nuxt.config.ts', emitNuxtConfig(answers, name))] : [];
 };

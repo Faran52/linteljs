@@ -486,7 +486,7 @@ describe('alias coupling', () => {
   it('carries the alias map through nuxt.config for nuxt, whose tsconfig declares none', () => {
     const answers = answersFor({ target: 'nuxt' });
     const aliases = buildAliases(answers);
-    const nuxtConfig = emitNuxtConfig(answers);
+    const nuxtConfig = emitNuxtConfig(answers, 'demo-app');
     const config = emitEslintConfig(answers);
 
     expect(buildTsconfig(answers).compilerOptions.paths).toBeUndefined();

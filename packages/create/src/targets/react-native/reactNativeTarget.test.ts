@@ -74,3 +74,16 @@ describe('the starter gates', () => {
     expect(walk.mismatchOf(key, conditions)).toBeUndefined();
   });
 });
+
+describe('the favicon', () => {
+  it('is the shared Mark, in the public directory Expo serves on the web', () => {
+    const favicon = reactNativeTarget.starterFiles.find((file) => {
+      return file.target === 'public/favicon.svg';
+    });
+
+    expect(favicon).toEqual({
+      target: 'public/favicon.svg',
+      shared: true,
+    });
+  });
+});

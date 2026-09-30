@@ -14,12 +14,13 @@ export const ALWAYS: readonly string[] = [
   'src/styles/starter.ts',
 ];
 
-// React Native has no CSS, so the stylesheets are not shared.
+// React Native has no CSS, so the stylesheets are not shared. Expo serves `public/` on the web.
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/routes.ts',
   'src/config/statuses.ts',
   'src/lib/utils/statusUtils.ts',
+  'public/favicon.svg',
 ];
 
 export const ACCESSORS: AccessorNames = {
