@@ -143,6 +143,14 @@ describe('reactTarget', () => {
 
 const NO_ROUTER: readonly Condition[] = [{ router: [undefined] }];
 const FRAMEWORK_MODE: readonly Condition[] = [{ router: ['react-router-framework'] }];
+const FRAMEWORK_WITHOUT_FORM: readonly Condition[] = [{
+  router: ['react-router-framework'],
+  form: [undefined],
+}];
+const FRAMEWORK_WITH_FORM: readonly Condition[] = [{
+  router: ['react-router-framework'],
+  form: ANSWERED,
+}];
 
 const GATES: GateRow[] = [
   ...mswGates(true),
@@ -166,7 +174,9 @@ const GATES: GateRow[] = [
     router: ['react-router-framework'],
     styling: ['stylex'],
   }]],
-  ['src/routes.ts@react-router-framework', FRAMEWORK_MODE],
+  ['src/routes.ts@react-router-framework', FRAMEWORK_WITHOUT_FORM],
+  ['src/routes.ts@with-form', FRAMEWORK_WITH_FORM],
+  ['src/routes/contact.tsx@react-router-framework', FRAMEWORK_WITH_FORM],
   ['src/routes/home.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/about.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/version.tsx@react-router-framework', FRAMEWORK_MODE],
@@ -213,7 +223,9 @@ const GATES: GateRow[] = [
   ['src/App.test.tsx@with-router', [{ router: ['react-router', 'tanstack-router'] }]],
   ['src/components/features/app-header/AppHeader.test.tsx', NO_ROUTER],
   ['src/components/features/app-header/AppHeader.test.tsx@react-router-framework', FRAMEWORK_MODE],
-  ['src/routes.test.ts@react-router-framework', FRAMEWORK_MODE],
+  ['src/routes.test.ts@react-router-framework', FRAMEWORK_WITHOUT_FORM],
+  ['src/routes.test.ts@with-form', FRAMEWORK_WITH_FORM],
+  ['src/routes/contact.test.tsx@react-router-framework', FRAMEWORK_WITH_FORM],
   ['src/routes/home.test.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/about.test.tsx@react-router-framework', FRAMEWORK_MODE],
   ['src/routes/version.test.tsx@react-router-framework', FRAMEWORK_MODE],

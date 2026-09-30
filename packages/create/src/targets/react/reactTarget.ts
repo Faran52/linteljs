@@ -30,19 +30,15 @@ import {
   SHARED,
   WELL_KNOWN_404,
 } from './constants';
+import {
+  frameworkRouteFiles,
+  frameworkRouteTests,
+  isFrameworkMode,
+} from './utils/frameworkRouteUtils';
 
 import type { Answers } from '@config/types';
 import type { TargetBuilder } from '../registry';
-import type {
-  StarterFile,
-  StarterTest,
-  TargetRecord,
-} from '../types';
-
-// Framework mode moves the build, typecheck, vite plugin and tsconfig, so the record is a function.
-const isFrameworkMode = (answers: Answers): boolean => {
-  return answers.router === 'react-router-framework';
-};
+import type { StarterFile, TargetRecord } from '../types';
 
 const hasRouter = (answers: Answers): boolean => {
   return answers.router !== undefined;
@@ -340,19 +336,7 @@ const baseReactTarget: TargetRecord = {
           variant,
         };
       }),
-    ...([
-      'src/routes.ts',
-      'src/routes/home.tsx',
-      'src/routes/about.tsx',
-      'src/routes/version.tsx',
-    ] as const)
-      .map((target): StarterFile => {
-        return {
-          target,
-          when: isFrameworkMode,
-          variant: 'react-router-framework',
-        };
-      }),
+    ...frameworkRouteFiles(),
   ],
   // The project gates at 100%, so a starter file with no suite fails the gate it ships with.
   starterTests: [
@@ -374,26 +358,7 @@ const baseReactTarget: TargetRecord = {
       },
       variant: 'with-router',
     },
-    ...([
-      ['src/routes.test.ts', 'src/routes.ts'],
-      ['src/routes/about.test.tsx', 'src/routes/about.tsx'],
-      ['src/routes/version.test.tsx', 'src/routes/version.tsx'],
-    ] as const)
-      .map(([target, covers]): StarterTest => {
-        return {
-          target,
-          covers,
-          when: isFrameworkMode,
-          variant: 'react-router-framework',
-        };
-      }),
-    // Wraps the two providers the document wraps: Home carries the counter.
-    {
-      target: 'src/routes/home.test.tsx',
-      covers: 'src/routes/home.tsx',
-      when: isFrameworkMode,
-      variant: 'react-router-framework',
-    },
+    ...frameworkRouteTests(),
     {
       target: 'src/pages/home/HomePage.test.tsx',
       covers: 'src/pages/home/HomePage.tsx',
