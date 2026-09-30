@@ -1,0 +1,16 @@
+---
+import { STATUSES } from '../config/statuses';
+import Layout from '../layouts/Layout.astro';
+
+const { code, message } = STATUSES.notFound;
+---
+
+<Layout title={message}>
+  <main class="hero">
+    <h1 class="title">{code}</h1>
+    <p class="lede" role="alert">{message}</p>
+    <p class="hint">
+      <a href="/">Go home</a>
+    </p>
+  </main>
+</Layout>

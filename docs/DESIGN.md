@@ -543,10 +543,12 @@ loader or a server that can refuse.
 | svelte | `+error.svelte` | `error(403)` | `+error.svelte`, retry is `invalidateAll()` |
 | solid, no router | none, nothing routes | no | `<ErrorBoundary>` with its `reset` |
 | angular | a `**` route rendering the page | no | a custom `ErrorHandler` raises a signal the shell swaps its outlet on; retry lowers it |
+| astro | `src/pages/404.astro` | no | none: static output renders at build, so a crash fails the build, not a visit |
 
 Where the boundary runs only inside its framework (Next's `error.tsx`, SvelteKit's `+error.svelte`, Nuxt's
 `error.vue`), the suite renders the file as the page it is and hands it the status or the reset. `global-error.tsx`
-is a document and leaves coverage with `layout.tsx`.
+is a document and leaves coverage with `layout.tsx`. Astro's `404.astro` is a page no suite executes, like its others; the build's `404.html` is
+the check.
 
 ### Version renders what was recorded, and says so
 
