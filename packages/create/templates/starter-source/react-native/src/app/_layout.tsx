@@ -40,3 +40,6 @@ const RootLayout = (): ReactNode => {
 };
 
 export default RootLayout;
+
+// expo-router wraps the layout in a boundary rendering this, so a crash on any screen lands here.
+export { CrashPage as ErrorBoundary } from '../components/features/crash-page/CrashPage';

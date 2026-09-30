@@ -544,11 +544,16 @@ loader or a server that can refuse.
 | solid, no router | none, nothing routes | no | `<ErrorBoundary>` with its `reset` |
 | angular | a `**` route rendering the page | no | a custom `ErrorHandler` raises a signal the shell swaps its outlet on; retry lowers it |
 | astro | `src/pages/404.astro` | no | none: static output renders at build, so a crash fails the build, not a visit |
+| react-native | `src/app/+not-found.tsx` | no | `ErrorBoundary` exported from the root `_layout.tsx`, with `retry` |
+| webextension | none, no router | no | none: its pages are built node by node, with no framework boundary to use |
 
 Where the boundary runs only inside its framework (Next's `error.tsx`, SvelteKit's `+error.svelte`, Nuxt's
 `error.vue`), the suite renders the file as the page it is and hands it the status or the reset. `global-error.tsx`
 is a document and leaves coverage with `layout.tsx`. Astro's `404.astro` is a page no suite executes, like its others; the build's `404.html` is
-the check.
+the check. React Native's page is the same markup in `StyleSheet` rules from `styles/starter.ts`, which the plain and
+NativeWind starters share. Its suites stand a `Text` in for `Link`, since expo-router's entry loads Expo's
+TypeScript source, which no test transform strips, and its boundary, `Try`, loads the same, so `CrashPage` is
+handed an error and a `retry` rather than a throwing child.
 
 ### Version renders what was recorded, and says so
 

@@ -7,6 +7,9 @@ export const ALWAYS: readonly string[] = [
   'src/app/index.tsx',
   'src/app/about.tsx',
   'src/app/version.tsx',
+  'src/app/+not-found.tsx',
+  'src/components/features/status-page/StatusPage.tsx',
+  'src/components/features/crash-page/CrashPage.tsx',
   'src/components/ui/mark/Mark.tsx',
   'src/styles/starter.ts',
 ];
@@ -15,6 +18,7 @@ export const ALWAYS: readonly string[] = [
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
   'src/config/routes.ts',
+  'src/config/statuses.ts',
 ];
 
 export const ACCESSORS: AccessorNames = {

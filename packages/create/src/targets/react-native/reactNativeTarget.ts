@@ -179,6 +179,18 @@ export const reactNativeTarget: TargetRecord = {
       covers: 'src/app/version.tsx',
     },
     {
+      target: 'src/app-not-found.test.tsx',
+      covers: 'src/app/+not-found.tsx',
+    },
+    {
+      target: 'src/components/features/status-page/StatusPage.test.tsx',
+      covers: 'src/components/features/status-page/StatusPage.tsx',
+    },
+    {
+      target: 'src/components/features/crash-page/CrashPage.test.tsx',
+      covers: 'src/components/features/crash-page/CrashPage.tsx',
+    },
+    {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
     },

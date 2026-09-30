@@ -11,6 +11,7 @@ export interface Palette {
   readonly muted: string;
   readonly border: string;
   readonly primary: string;
+  readonly primaryForeground: string;
 }
 
 export type StarterStyles = ReturnType<typeof sheetsFor>;
@@ -24,6 +25,7 @@ const PALETTES = {
     muted: '#6f6b64',
     border: '#e7e3dd',
     primary: '#a8541c',
+    primaryForeground: '#fff',
   },
   dark: {
     background: '#1f2128',
@@ -32,6 +34,7 @@ const PALETTES = {
     muted: '#8e8a82',
     border: '#32343c',
     primary: '#e8a05c',
+    primaryForeground: '#241505',
   },
 } satisfies Record<'light' | 'dark', Palette>;
 
@@ -61,6 +64,12 @@ const sheetsFor = (colors: Palette) => {
     tabBar: {
       backgroundColor: colors.card,
       borderTopColor: colors.border,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
     },
     header: { backgroundColor: colors.card },
     scene: { backgroundColor: colors.background },
@@ -93,6 +102,15 @@ const sheetsFor = (colors: Palette) => {
       fontSize: 13,
       color: colors.muted,
       textAlign: 'center',
+    },
+    button: {
+      color: colors.primaryForeground,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    link: {
+      color: colors.primary,
+      fontSize: 15,
     },
     pageTitle: {
       fontSize: 22,
