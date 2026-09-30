@@ -45,6 +45,7 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `native-no-nested-touchables` sees a touchable behind `{show && <Pressable />}` or a ternary branch.
 - `comment-delimiter` no longer merges a `//# sourceMappingURL=` or `//# sourceURL=` line into a JSDoc block.
 - `no-eslint-disable` reports an inline config comment that turns a rule off, such as
   `/* eslint no-console: "off" */`.

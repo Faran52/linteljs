@@ -23,6 +23,13 @@ export interface JsxExpression {
   name?: string | undefined;
   properties?: JsxProperty[] | undefined;
   elements?: (JsxExpression | null)[] | undefined;
+  // The branches of `a && <X />` and `a ? <X /> : <Y />`, and the parts of an element or fragment written there.
+  left?: JsxExpression | undefined;
+  right?: JsxExpression | undefined;
+  consequent?: JsxExpression | undefined;
+  alternate?: JsxExpression | undefined;
+  openingElement?: JsxOpeningElement | undefined;
+  children?: JsxChild[] | undefined;
 }
 
 export interface JsxProperty {
@@ -229,12 +236,44 @@ export const isInteractive = (
     || hasProp(elementAttributesOf(element), TOUCH_HANDLER_PROPS);
 };
 
+// The elements a `{}` can render through `&&`, `||`, `??` and `?:`. A call or a variable is not followed.
+const renderedBy = (expression: JsxExpression | undefined): JsxChild[] => {
+  if (expression?.type === 'JSXElement') {
+    const element: JsxChild = {
+      type: expression.type,
+      openingElement: expression.openingElement,
+      children: expression.children,
+    };
+
+    return [element, ...descendantElements(element)];
+  }
+
+  if (expression?.type === 'JSXFragment') {
+    return descendantElements({
+      type: expression.type,
+      children: expression.children,
+    });
+  }
+
+  if (expression?.type === 'LogicalExpression') {
+    return [...renderedBy(expression.left), ...renderedBy(expression.right)];
+  }
+
+  if (expression?.type === 'ConditionalExpression') {
+    return [...renderedBy(expression.consequent), ...renderedBy(expression.alternate)];
+  }
+
+  return [];
+};
+
 export const descendantElements = (node: JsxChild | JsxElement): JsxChild[] => {
   return (node.children ?? NO_CHILDREN)
     .flatMap((child) => {
-      return child.type === 'JSXElement'
-        ? [child, ...descendantElements(child)]
-        : descendantElements(child);
+      if (child.type === 'JSXElement') {
+        return [child, ...descendantElements(child)];
+      }
+
+      return child.type === 'JSXExpressionContainer' ? renderedBy(child.expression) : descendantElements(child);
     });
 };
 

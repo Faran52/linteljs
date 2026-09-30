@@ -373,6 +373,39 @@ describe('descendantElements', () => {
   });
 });
 
+describe('descendantElements through an expression', () => {
+  it('follows the branches of a logical or conditional expression, and nothing else', () => {
+    const left = { type: 'JSXElement' };
+    const right = { type: 'JSXElement' };
+    const consequent = { type: 'JSXElement' };
+    const alternate = { type: 'JSXElement' };
+    const logical = {
+      type: 'LogicalExpression',
+      left,
+      right,
+    };
+    const conditional = {
+      type: 'ConditionalExpression',
+      consequent,
+      alternate,
+    };
+    const call = { type: 'CallExpression' };
+
+    const descendants = descendantElements({
+      type: 'JSXElement',
+      children: [logical, conditional, call]
+        .map((expression) => {
+          return {
+            type: 'JSXExpressionContainer',
+            expression,
+          };
+        }),
+    });
+
+    expect(descendants).toEqual([left, right, consequent, alternate]);
+  });
+});
+
 describe('isInteractive', () => {
   it('reads an element with neither a known name nor a handler as inert', () => {
     expect(isInteractive({ type: 'JSXElement' }, ['Pressable'])).toBe(false);
