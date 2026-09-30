@@ -12,7 +12,9 @@ import { importNewlines } from '../rules/import-newlines/importNewlines.ts';
 
 import {
   adjacentPairs,
+  breakGaps,
   gapIsBlank,
+  gapsToBreak,
   getIndent,
   getIndentStep,
   indentReader,
@@ -554,6 +556,65 @@ describe('listGaps', () => {
         '}',
         '',
       ],
+    ]);
+  });
+});
+
+const arrayGaps = (code: string): ListGap[] => {
+  const { sourceCode, firstNode } = sourceCodeFrom(code);
+  const node = firstNode('ArrayExpression');
+  const elements = node.type === 'ArrayExpression' ? node.elements : [];
+
+  return listGaps(sourceCode, mustFind(sourceCode.getFirstToken(node)), elements, {
+    outer: '',
+    inner: '  ',
+  }, true);
+};
+
+describe('gapsToBreak', () => {
+  it('leaves a list on one line alone up to the count', () => {
+    const toBreak = gapsToBreak(arrayGaps('[alpha, bravo];'), 2);
+
+    expect(toBreak).toEqual([]);
+  });
+
+  it('breaks every gap of a list on one line past the count', () => {
+    const gaps = arrayGaps('[alpha, bravo, charlie];');
+    const toBreak = gapsToBreak(gaps, 2);
+
+    expect(toBreak).toEqual(gaps);
+  });
+
+  it('breaks only the gaps a half-split list left on one line, under the count too', () => {
+    const gaps = arrayGaps('[alpha,\n  bravo];');
+    const toBreak = gapsToBreak(gaps, 2);
+
+    expect(toBreak).toEqual([gaps[0], gaps[2]]);
+  });
+
+  it('leaves a list broken at every gap alone past the count', () => {
+    const toBreak = gapsToBreak(arrayGaps('[\n  alpha,\n  bravo,\n  charlie\n];'), 2);
+
+    expect(toBreak).toEqual([]);
+  });
+});
+
+describe('breakGaps', () => {
+  const fixer = captureFixer();
+
+  it('puts each gap it is given onto a new line at its indent, skipping one already across lines', () => {
+    const gaps = arrayGaps('[alpha,\n  bravo];');
+    const fixes = [...breakGaps(gaps, '\r\n')(fixer)];
+
+    expect(fixes).toEqual([
+      {
+        range: [1, 1],
+        text: '\r\n  ',
+      },
+      {
+        range: [15, 15],
+        text: '\r\n',
+      },
     ]);
   });
 });

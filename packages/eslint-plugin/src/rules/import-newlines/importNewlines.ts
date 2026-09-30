@@ -1,11 +1,11 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
+  breakGaps,
+  gapsToBreak,
   indentReader,
   lineTerminatorOf,
   type ListGap,
   listGaps,
-  sameLine,
-  spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
 import {
   createRule,
@@ -76,10 +76,7 @@ export const importNewlines = createRule('import-newlines', {
 
         const open = mustFind(sourceCode.getTokenBefore(mustFind(named[0])));
         const gaps = listGaps(sourceCode, open, named, indentsAt(node), true);
-        const onOneLine = gaps
-          .filter(([before, after]) => {
-            return sameLine(before, after);
-          });
+        const toBreak = gapsToBreak(gaps, maxItems);
         const blank = gaps.filter(isBlank);
 
         if (blank.length > 0) {
@@ -99,24 +96,15 @@ export const importNewlines = createRule('import-newlines', {
           });
         }
 
-        // Crowded: over the count on a shared line. Half-split: some breaks made and some not.
-        if (onOneLine.length === 0 || (named.length <= maxItems && onOneLine.length === gaps.length)) {
+        if (toBreak.length === 0) {
           return;
         }
 
         context.report({
           node,
-          messageId: onOneLine.length === gaps.length ? 'mustSplitMany' : 'limitLineCount',
+          messageId: toBreak.length === gaps.length ? 'mustSplitMany' : 'limitLineCount',
           data: { maxItems: String(maxItems) },
-          * fix(fixer) {
-            for (const [
-              before,
-              after,
-              indent,
-            ] of onOneLine) {
-              yield* spliceOntoNewline(fixer, before, after, indent, eol);
-            }
-          },
+          fix: breakGaps(toBreak, eol),
         });
       },
     };

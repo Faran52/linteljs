@@ -1,10 +1,10 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
+  breakGaps,
+  gapsToBreak,
   indentReader,
   lineTerminatorOf,
   listGaps,
-  sameLine,
-  spliceOntoNewline,
 } from '../../utils/layoutUtils.ts';
 import { createRule, mustFind } from '../../utils/ruleUtils.ts';
 
@@ -40,29 +40,16 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
         }
 
         const open = mustFind(sourceCode.getTokenBefore(mustFind(specifiers[0])));
-        const gaps = listGaps(sourceCode, open, specifiers, indentsAt(node), true);
-        const onOneLine = gaps
-          .filter(([before, after]) => {
-            return sameLine(before, after);
-          });
+        const toBreak = gapsToBreak(listGaps(sourceCode, open, specifiers, indentsAt(node), true), MAX_INLINE);
 
-        // Crowded: over the count on a shared line. Half-split: some breaks made and some not.
-        if (onOneLine.length === 0 || (specifiers.length <= MAX_INLINE && onOneLine.length === gaps.length)) {
+        if (toBreak.length === 0) {
           return;
         }
 
         context.report({
           node,
           messageId: 'specifiersOnNewline',
-          * fix(fixer) {
-            for (const [
-              before,
-              after,
-              indent,
-            ] of onOneLine) {
-              yield* spliceOntoNewline(fixer, before, after, indent, eol);
-            }
-          },
+          fix: breakGaps(toBreak, eol),
         });
       },
     };

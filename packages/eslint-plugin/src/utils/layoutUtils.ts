@@ -226,3 +226,27 @@ export const listGaps = (
     ],
   ];
 };
+
+// Crowded: over `maxInline` items on one line. Half-split: some breaks made and some not. Neither gives none.
+export const gapsToBreak = (gaps: ListGap[], maxInline: number): ListGap[] => {
+  const onOneLine = gaps
+    .filter(([before, after]) => {
+      return sameLine(before, after);
+    });
+  // A list of n items has n + 1 gaps.
+  const itemCount = gaps.length - 1;
+
+  return onOneLine.length === gaps.length && itemCount <= maxInline ? [] : onOneLine;
+};
+
+export const breakGaps = (gaps: ListGap[], eol: string) => {
+  return function* (fixer: Fixer): IterableIterator<Rule.Fix> {
+    for (const [
+      before,
+      after,
+      indent,
+    ] of gaps) {
+      yield* spliceOntoNewline(fixer, before, after, indent, eol);
+    }
+  };
+};
