@@ -79,7 +79,7 @@ const rulesTurnedOffBy = (comment: CommentText): string[] => {
       return [entry
         .slice(0, colon)
         .trim()
-        .replaceAll(/["']/gu, '')];
+        .replace(/["']/gu, '')];
     });
 };
 
