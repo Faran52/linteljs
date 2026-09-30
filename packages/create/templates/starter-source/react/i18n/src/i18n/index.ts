@@ -1,6 +1,6 @@
 import { initReactI18next } from 'react-i18next';
 
-import i18next from 'i18next';
+import i18next, { type InitOptions } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 import {
@@ -30,13 +30,15 @@ export const chooseLanguage = async (language: string): Promise<void> => {
   await i18next.changeLanguage(language);
 };
 
-export const initI18n = (): typeof i18next => {
+// A server render names its language: it has neither the reader's storage nor their browser.
+export const initI18n = (options: Pick<InitOptions, 'lng'> = {}): typeof i18next => {
   if (!i18next.isInitialized) {
     void i18next
       .use(LanguageDetector)
       .use(initReactI18next)
       .init({
         resources,
+        ...options,
         fallbackLng: fallbackLanguage,
         supportedLngs: languages
           .map((option) => {
@@ -53,7 +55,6 @@ export const initI18n = (): typeof i18next => {
         },
       });
 
-    applyDocumentDirection(i18next.language);
     i18next.on('languageChanged', applyDocumentDirection);
   }
 

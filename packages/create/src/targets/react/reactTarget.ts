@@ -10,7 +10,11 @@ import {
   STATUS_UTILS_TEST,
 } from '../constants';
 import { hasStore } from '../utils/gateUtils';
-import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
+import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -312,14 +316,14 @@ const baseReactTarget: TargetRecord = {
     // No `App.tsx` or `main.tsx`: `root.tsx` is the document and React Router's build owns the entry.
     // StyleX's dev CSS goes into `index.html`, so its framework document links it itself.
     ...([['react-router-framework', false], ['stylex', true]] as const)
-      .map(([variant, stylex]): StarterFile => {
-        return {
+      .flatMap(([variant, stylex]): StarterFile[] => {
+        return translated<StarterFile>({
           target: 'src/root.tsx',
           when: (answers) => {
             return isFrameworkMode(answers) && (answers.styling === 'stylex') === stylex;
           },
           variant,
-        };
+        });
       }),
     ...frameworkRouteFiles(),
   ],
@@ -485,17 +489,10 @@ const FRAMEWORK_MODE: Partial<TargetRecord> = {
   ],
 };
 
-// Framework mode is not translated yet, so it alone never asks for languages.
 export const reactTarget: TargetBuilder = (answers) => {
-  if (isFrameworkMode(answers)) {
-    return {
-      ...baseReactTarget,
-      ...FRAMEWORK_MODE,
-    };
-  }
-
   return {
     ...baseReactTarget,
+    ...(isFrameworkMode(answers) ? FRAMEWORK_MODE : {}),
     i18n: REACT_I18N,
   };
 };

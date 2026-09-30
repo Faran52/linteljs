@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
-import { initI18n } from './i18n';
+import { applyDocumentDirection, initI18n } from './i18n';
 import { DataProvider } from './lib/providers/data/DataProvider';
 import { StoreProvider } from './lib/providers/store/StoreProvider';
 
@@ -15,7 +15,7 @@ if (!root) {
 }
 
 // Before the first render, so the first paint is already in the reader's language and direction.
-initI18n();
+applyDocumentDirection(initI18n().language);
 
 createRoot(root).render(
   <StrictMode>

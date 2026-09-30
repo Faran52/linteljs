@@ -69,7 +69,7 @@ describe('reactTarget', () => {
     expect(recordFor({ router: 'react-router-framework' }).devDependencies).toContain('@vitejs/plugin-react');
   });
 
-  it('translates every mode but framework mode, through i18next', () => {
+  it('translates every mode, through i18next', () => {
     expect(recordFor().i18n).toEqual({
       dependencies: [
         'i18next',
@@ -79,7 +79,7 @@ describe('reactTarget', () => {
       testSetup: 'fragments/test-setup/setupTests.i18n.ts',
     });
     expect(recordFor({ router: 'tanstack-router' }).i18n).toEqual(recordFor().i18n);
-    expect(recordFor({ router: 'react-router-framework' }).i18n).toBeUndefined();
+    expect(recordFor({ router: 'react-router-framework' }).i18n).toEqual(recordFor().i18n);
   });
 
   it('ships one entry and its translated twin, and an App per router it offers plus one for no router', () => {
@@ -257,10 +257,22 @@ const GATES: GateRow[] = [
   ['src/root.tsx@react-router-framework', [{
     router: ['react-router-framework'],
     styling: [undefined, 'tailwind'],
+    languages: [undefined],
+  }]],
+  ['src/root.tsx@react-router-framework-i18n', [{
+    router: ['react-router-framework'],
+    styling: [undefined, 'tailwind'],
+    languages: ANSWERED,
   }]],
   ['src/root.tsx@stylex', [{
     router: ['react-router-framework'],
     styling: ['stylex'],
+    languages: [undefined],
+  }]],
+  ['src/root.tsx@stylex-i18n', [{
+    router: ['react-router-framework'],
+    styling: ['stylex'],
+    languages: ANSWERED,
   }]],
   ['src/routes.ts@react-router-framework', FRAMEWORK_WITHOUT_FORM],
   ['src/routes.ts@with-form', FRAMEWORK_WITH_FORM],

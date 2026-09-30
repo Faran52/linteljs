@@ -109,11 +109,19 @@ export const widestFor = (target: TargetId): Answers[] => {
           },
           ...(record.i18n === undefined
             ? []
-            : [{
-                ...widest,
-                router,
-                languages: [...LANGUAGES],
-              }]),
+            : [
+                {
+                  ...widest,
+                  router,
+                  languages: [...LANGUAGES],
+                },
+                {
+                  ...widest,
+                  router,
+                  styling: 'stylex' as const,
+                  languages: [...LANGUAGES],
+                },
+              ]),
         ];
       }),
   ];
