@@ -93,6 +93,11 @@ const STARTER_OVERRIDES: Linter.Config[] = [
     name: '@linteljs/starters/no-page-tree',
     rules: { '@next/next/no-html-link-for-pages': 'off' },
   },
+  // Under `CI`, typescript-eslint parses a path it has seen through an isolated program; variants share a path.
+  {
+    name: '@linteljs/starters/no-single-run',
+    languageOptions: { parserOptions: { disallowAutomaticSingleRunInference: true } },
+  },
   // `no-redundant-optional` reads the program's `exactOptionalPropertyTypes`, which needs a real tsconfig.
   {
     name: '@linteljs/starters/no-program',
