@@ -18,15 +18,23 @@ export const ALWAYS: readonly string[] = [
   'src/app/version/version.html',
   'src/components/ui/mark/mark.ts',
   'src/components/ui/mark/mark.html',
+  'src/components/ui/button/button.ts',
+  'src/components/ui/button/button.html',
+  'src/components/ui/text-input/text-input.ts',
+  'src/components/ui/text-input/text-input.html',
   'src/components/features/app-header/app-header.ts',
   'src/components/features/app-header/app-header.html',
 ];
 
+// The Contact page always ships, so its styles do too.
 export const SHARED: readonly string[] = [
   'src/config/standard.ts',
-  'src/config/routes.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
+  'src/components/features/app-header/AppHeader.css',
+  'src/components/ui/mark/Mark.css',
+  'src/components/ui/button/Button.css',
+  'src/components/ui/text-input/TextInput.css',
 ];
 
 // Angular has no hooks: this runs in an injection context.

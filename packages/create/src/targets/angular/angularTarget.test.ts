@@ -1,13 +1,11 @@
 import {
   byKey,
-  componentStyleGates,
   type GateRow,
   mswGates,
-  PRESSABLE,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
-  WITH_FORM,
+  WITHOUT_FORM,
 } from '@mocks/starterGates';
 import {
   describe,
@@ -36,13 +34,16 @@ describe('angularTarget', () => {
 
 const GATES: GateRow[] = [
   ...mswGates(false),
-  ...componentStyleGates('mark/Mark', 'button/Button', false),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['.postcssrc.json@tailwind', TAILWIND],
-  ['./components/ui/button/Button.css', PRESSABLE],
-  ['./components/ui/text-input/TextInput.css', WITH_FORM],
+  ['src/app/contact/contact.ts', WITHOUT_FORM],
+  ['src/app/contact/contact.html', WITHOUT_FORM],
+  ['src/app/contact/contact.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ['src/app/contact/contact.html@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ['src/lib/apis/contact/schemas.ts', [{ libraries: [[]] }]],
+  ['src/lib/apis/contact/schemas.ts@zod', [{ libraries: [['zod']] }]],
   ['src/lib/services/extended-query/extended-query.spec.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.spec.ts@tanstack-query', TANSTACK_QUERY],
 ];

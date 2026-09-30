@@ -62,6 +62,9 @@ when a version's change lives in a sibling it is described there instead:
   pipe it prints a line per file and per stage as before.
 - React Native follows Expo SDK 57's own pins (react-native 0.86.3) and declares `@react-native/metro-config`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
+- Angular renders a Contact page under every answer: Reactive Forms, validated by the shared `validateContact`
+  (the Zod schema when `zod` is chosen), or TanStack Form's `injectForm` when `--form tanstack-form`. It brings
+  `button` and `text-input` components, a spec each, and ships their styles unconditionally.
 
 ### Changed
 

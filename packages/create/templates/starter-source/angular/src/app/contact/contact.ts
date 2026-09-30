@@ -1,0 +1,51 @@
+import { Component, signal } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms';
+
+import { Button } from '../../components/ui/button/button';
+import { TextInput } from '../../components/ui/text-input/text-input';
+import { type ContactValues, validateContact } from '../../lib/apis/contact/schemas';
+
+@Component({
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    TextInput,
+  ],
+  selector: 'app-contact',
+  templateUrl: './contact.html',
+})
+export class Contact {
+  protected readonly form = new FormGroup({
+    email: new FormControl('', { nonNullable: true }),
+    message: new FormControl('', { nonNullable: true }),
+  });
+
+  protected readonly sent = signal(false);
+
+  // Shown once a field is left: the form holds the values and what was touched, the rules stay shared.
+  protected errorOf(name: keyof ContactValues): string | undefined {
+    return this.form.controls[name].touched ? validateContact(this.form.getRawValue())[name] : undefined;
+  }
+
+  protected set(name: keyof ContactValues, value: string): void {
+    this.form.controls[name].setValue(value);
+  }
+
+  protected blur(name: keyof ContactValues): void {
+    this.form.controls[name].markAsTouched();
+  }
+
+  protected send(): void {
+    this.form.markAllAsTouched();
+
+    const found = validateContact(this.form.getRawValue());
+
+    if (Object.keys(found).length === 0) {
+      this.sent.set(true);
+    }
+  }
+}

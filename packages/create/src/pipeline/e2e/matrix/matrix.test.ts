@@ -155,6 +155,12 @@ describe('targetCases', () => {
     expect(has('next', (answers) => {
       return answers.styling === 'stylex';
     })).toBe(true);
+    expect(has('angular', (answers) => {
+      return answers.form === undefined;
+    })).toBe(true);
+    expect(has('angular', (answers) => {
+      return answers.form === 'tanstack-form' && answers.libraries.includes('zod');
+    })).toBe(true);
   });
 
   it('enumerates only answers the CLI accepts', () => {

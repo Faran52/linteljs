@@ -1,3 +1,5 @@
+import { hasLibrary } from '@utils/answerUtils';
+
 import { DECLARATION_KEY, FOLDER } from '../constants';
 import {
   accessorFiles,
@@ -5,7 +7,6 @@ import {
   mockFiles,
   mockTests,
 } from '../utils/mockUtils';
-import { componentStyles } from '../utils/styleUtils';
 
 import {
   ACCESSORS,
@@ -42,18 +43,8 @@ export const angularTarget: TargetRecord = {
     './styles/base.css',
     './components/features/app-header/AppHeader.css',
     './components/ui/mark/Mark.css',
-    {
-      path: './components/ui/button/Button.css',
-      when: (answers) => {
-        return answers.store !== undefined || answers.form !== undefined;
-      },
-    },
-    {
-      path: './components/ui/text-input/TextInput.css',
-      when: (answers) => {
-        return answers.form !== undefined;
-      },
-    },
+    './components/ui/button/Button.css',
+    './components/ui/text-input/TextInput.css',
   ],
   tailwindTheme: './styles/theme.css',
   tsconfig: {
@@ -71,7 +62,6 @@ export const angularTarget: TargetRecord = {
   publicDirectory: 'public',
   starterFiles: [
     ...mockFiles(false, true, 'src/lib/utils/fetch-extended-utils.ts'),
-    ...componentStyles(),
     ...accessorFiles(ACCESSORS),
     ...ALWAYS
       .map((target): StarterFile => {
@@ -84,6 +74,45 @@ export const angularTarget: TargetRecord = {
           shared: true,
         };
       }),
+    {
+      target: 'src/config/routes.ts',
+      variant: 'with-form',
+      shared: true,
+    },
+    // Reactive Forms ship with Angular, so the Contact page does too; TanStack Form swaps its component.
+    ...(['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const)
+      .flatMap((target): StarterFile[] => {
+        return [
+          {
+            target,
+            when: (answers) => {
+              return answers.form === undefined;
+            },
+          },
+          {
+            target,
+            when: (answers) => {
+              return answers.form === 'tanstack-form';
+            },
+            variant: 'tanstack-form',
+          },
+        ];
+      }),
+    {
+      target: 'src/lib/apis/contact/schemas.ts',
+      when: (answers) => {
+        return !hasLibrary(answers, 'zod');
+      },
+      shared: true,
+    },
+    {
+      target: 'src/lib/apis/contact/schemas.ts',
+      when: (answers) => {
+        return hasLibrary(answers, 'zod');
+      },
+      variant: 'zod',
+      shared: true,
+    },
     {
       target: 'src/styles/theme.css',
       when: (answers) => {
@@ -108,6 +137,18 @@ export const angularTarget: TargetRecord = {
     {
       target: 'src/app/app.spec.ts',
       covers: 'src/app/app.ts',
+    },
+    {
+      target: 'src/app/contact/contact.spec.ts',
+      covers: 'src/app/contact/contact.ts',
+    },
+    {
+      target: 'src/components/ui/button/button.spec.ts',
+      covers: 'src/components/ui/button/button.ts',
+    },
+    {
+      target: 'src/components/ui/text-input/text-input.spec.ts',
+      covers: 'src/components/ui/text-input/text-input.ts',
     },
   ],
   typecheck: 'tsc --noEmit',

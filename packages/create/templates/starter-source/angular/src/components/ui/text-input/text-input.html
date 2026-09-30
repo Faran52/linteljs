@@ -1,0 +1,34 @@
+<div class="field">
+  <label class="label" [for]="name()">{{ label() }}</label>
+  @if (multiline()) {
+    <textarea
+      #field
+      class="textarea"
+      [class.textarea-invalid]="error() !== undefined"
+      [id]="name()"
+      [name]="name()"
+      [value]="value()"
+      [attr.aria-invalid]="error() !== undefined"
+      [attr.aria-describedby]="describedBy()"
+      (input)="valueChange.emit(field.value)"
+      (blur)="blurred.emit()"
+    ></textarea>
+  } @else {
+    <input
+      #field
+      class="input"
+      [class.input-invalid]="error() !== undefined"
+      [id]="name()"
+      [name]="name()"
+      [type]="type()"
+      [value]="value()"
+      [attr.aria-invalid]="error() !== undefined"
+      [attr.aria-describedby]="describedBy()"
+      (input)="valueChange.emit(field.value)"
+      (blur)="blurred.emit()"
+    />
+  }
+  @if (error() !== undefined) {
+    <p class="error" [id]="name() + '-error'">{{ error() }}</p>
+  }
+</div>
