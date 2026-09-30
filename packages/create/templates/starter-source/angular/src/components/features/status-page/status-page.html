@@ -1,11 +1,10 @@
-<main class="hero">
-  <h1 class="title">{{ code() }}</h1>
-  <p class="lede" role="alert">{{ message() }}</p>
-  <p class="hint">
+<main class="status">
+  <h1 class="status-code">{{ code() }}</h1>
+  <p class="status-message" role="alert">{{ message() }}</p>
+  <div class="status-actions">
     @if (onRetry(); as retry) {
       <app-button (click)="retry()">Try again</app-button>
-      {{ ' ' }}
     }
-    <a href="/">Go home</a>
-  </p>
+    <a class="status-action" [class.status-action-outline]="onRetry()" href="/">Go home</a>
+  </div>
 </main>

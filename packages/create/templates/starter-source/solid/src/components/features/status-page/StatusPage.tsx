@@ -11,19 +11,23 @@ export interface StatusPageProps {
 // Home is a full load, so a crash leaves no state behind.
 export const StatusPage = (props: StatusPageProps): JSX.Element => {
   return (
-    <main class="hero">
-      <h1 class="title">{props.code}</h1>
-      <p class="lede" role="alert">{props.message}</p>
-      <p class="hint">
+    <main class="status">
+      <h1 class="status-code">{props.code}</h1>
+      <p class="status-message" role="alert">{props.message}</p>
+      <div class="status-actions">
         <Show when={props.onRetry}>
           {(retry) => {
             return <Button onClick={retry()}>Try again</Button>;
           }}
         </Show>
-        {' '}
-        {/* A second attribute: alone, Solid writes `<a href=/>`, which parses as an empty href. */}
-        <a href="/" target="_self">Go home</a>
-      </p>
+        <a
+          class="status-action"
+          classList={{ 'status-action-outline': props.onRetry !== undefined }}
+          href="/"
+        >
+          Go home
+        </a>
+      </div>
     </main>
   );
 };

@@ -65,11 +65,33 @@ const sheetsFor = (colors: Palette) => {
       backgroundColor: colors.card,
       borderTopColor: colors.border,
     },
-    button: {
+    // The web status page's measures: 38 high, `--radius-md`, 12 apart.
+    status: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    actions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: 12,
+      marginTop: 24,
+    },
+    action: {
+      height: 38,
+      justifyContent: 'center',
+      paddingHorizontal: 15,
+      borderRadius: 7,
+      borderWidth: 1,
+      borderColor: 'transparent',
       backgroundColor: colors.primary,
-      borderRadius: 8,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
+    },
+    actionOutline: {
+      borderColor: colors.border,
+      backgroundColor: 'transparent',
     },
     header: { backgroundColor: colors.card },
     scene: { backgroundColor: colors.background },
@@ -103,15 +125,27 @@ const sheetsFor = (colors: Palette) => {
       color: colors.muted,
       textAlign: 'center',
     },
-    button: {
+    // 36 is the action's height inside its border, so a link's label sits centred as a button's does.
+    action: {
       color: colors.primaryForeground,
       fontSize: 15,
       fontWeight: '600',
+      lineHeight: 36,
     },
-    link: {
-      color: colors.primary,
-      fontSize: 15,
+    statusCode: {
+      fontSize: 56,
+      fontWeight: '700',
+      lineHeight: 56,
+      letterSpacing: -1.7,
+      color: colors.foreground,
     },
+    statusMessage: {
+      marginTop: 14,
+      fontSize: 18,
+      color: colors.muted,
+      textAlign: 'center',
+    },
+    actionOutline: { color: colors.foreground },
     pageTitle: {
       fontSize: 22,
       fontWeight: '600',

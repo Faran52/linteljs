@@ -32,6 +32,17 @@ code {
   font-size: var(--text-body);
 }
 
+/* Each framework's mount point, so the page under the header takes the height left. */
+#root,
+#app,
+[id="__nuxt"],
+app-root,
+app-status-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 /* The 360px floor is what an extension popup gives you. */
 .hero {
   display: flex;
@@ -203,4 +214,62 @@ code {
     transform: none;
     animation: none;
   }
+}
+
+/* The status pages: a crash, a refusal and a path nothing routes. */
+.status {
+  display: grid;
+  flex: 1;
+  place-content: center;
+  justify-items: center;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.status-code {
+  margin: 0;
+  font-size: clamp(3.5rem, 12vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+}
+
+.status-message {
+  margin: 0.875rem 0 0;
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* The retry is the shared button, so this sets its height too. */
+.status-actions button,
+.status-action {
+  height: 38px;
+}
+
+.status-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.9375rem;
+  font-size: var(--text-ui);
+  font-weight: 540;
+  color: var(--primary-foreground);
+  text-decoration: none;
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+}
+
+.status-action-outline {
+  color: var(--foreground);
+  background: transparent;
+  border-color: var(--border);
 }

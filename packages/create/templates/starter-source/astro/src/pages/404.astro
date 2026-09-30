@@ -6,11 +6,11 @@ const { code, message } = STATUSES.notFound;
 ---
 
 <Layout title={message}>
-  <main class="hero">
-    <h1 class="title">{code}</h1>
-    <p class="lede" role="alert">{message}</p>
-    <p class="hint">
-      <a href="/">Go home</a>
-    </p>
+  <main class="status">
+    <h1 class="status-code">{code}</h1>
+    <p class="status-message" role="alert">{message}</p>
+    <div class="status-actions">
+      <a class="status-action" href="/">Go home</a>
+    </div>
   </main>
 </Layout>

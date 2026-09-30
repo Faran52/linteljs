@@ -24,21 +24,35 @@ export const StatusPage = ({
   const { layout, text } = useStarterStyles();
 
   return (
-    <View style={[layout.screen, layout.hero]}>
-      <Text style={text.title}>{code}</Text>
-      <Text style={text.lede} accessibilityRole="alert">{message}</Text>
-      {onRetry === undefined
-        ? null
-        : (
-            <Pressable
-              style={layout.button}
-              accessibilityRole="button"
-              onPress={onRetry}
-            >
-              <Text style={text.button}>Try again</Text>
-            </Pressable>
-          )}
-      <Link href="/" style={text.link}>Go home</Link>
+    <View style={layout.status}>
+      <Text style={text.statusCode}>{code}</Text>
+      <Text style={text.statusMessage} accessibilityRole="alert">{message}</Text>
+      <View style={layout.actions}>
+        {onRetry === undefined
+          ? null
+          : (
+              <Pressable
+                style={layout.action}
+                accessibilityRole="button"
+                onPress={onRetry}
+              >
+                <Text style={text.action}>Try again</Text>
+              </Pressable>
+            )}
+        <Link
+          href="/"
+          style={onRetry === undefined
+            ? [layout.action, text.action]
+            : [
+                layout.action,
+                layout.actionOutline,
+                text.action,
+                text.actionOutline,
+              ]}
+        >
+          Go home
+        </Link>
+      </View>
     </View>
   );
 };

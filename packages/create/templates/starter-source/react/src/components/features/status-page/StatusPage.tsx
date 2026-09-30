@@ -15,14 +15,15 @@ export const StatusPage: FC<StatusPageProps> = ({
   onRetry,
 }) => {
   return (
-    <main className="hero">
-      <h1 className="title">{code}</h1>
-      <p className="lede" role="alert">{message}</p>
-      <p className="hint">
+    <main className="status">
+      <h1 className="status-code">{code}</h1>
+      <p className="status-message" role="alert">{message}</p>
+      <div className="status-actions">
         {onRetry === undefined ? null : <Button onClick={onRetry}>Try again</Button>}
-        {' '}
-        <a href="/">Go home</a>
-      </p>
+        <a className={onRetry === undefined ? 'status-action' : 'status-action status-action-outline'} href="/">
+          Go home
+        </a>
+      </div>
     </main>
   );
 };

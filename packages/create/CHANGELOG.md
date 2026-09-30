@@ -34,6 +34,8 @@ when a version's change lives in a sibling it is described there instead:
   a 500 page with "Try again" on a crash, a 404 for a path nothing routes, and a 403 where a loader or a server can
   refuse (React Router, Nuxt, SvelteKit). Astro renders at build, so it ships the 404 alone. One `StatusPage` per framework reads one table,
   `src/config/statuses.ts`. The button now ships under every answer, since the 500 page retries with it.
+  The page centres a large code, one muted line and its actions under the header; its styles are the `.status`
+  classes in `base.css`, which every styling answer ships.
 - Every answer is a flag, and one makes the run non-interactive: `--target`, `--browser`, `--surfaces`, `--hosted`,
   `--store`, `--router`, `--testing`, `--type-safety`, `--libraries`, `--styling`, `--data`, `--form`, `--mocking`,
   `--agents`, `--plugins`. `--version` prints the version.
@@ -101,6 +103,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- The header no longer overflows a 375px screen on a starter with a Contact tab: below 30rem the
+  "LintelJS Starter" label is hidden, in `AppHeader.css` and the StyleX header styles.
 - A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev
   runtime disables its stylesheet link before React hydrates, so the link now suppresses the warning.
 - A React Router framework project with a form library no longer serves a 404 at `/contact`: `src/routes.ts`

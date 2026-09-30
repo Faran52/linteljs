@@ -525,8 +525,10 @@ project's customers without the project choosing to. A neutral placeholder mark 
 
 A starter catches a render error and answers a path nothing routes, each with its framework's own mechanism, and
 both land on one `StatusPage` per framework: the code as the heading, one line under it, "Try again" on a crash and
-"Go home" on every one. The line for each code lives once, in `src/config/statuses.ts`. The page reuses the hero's
-classes and the button, so it carries no styles of its own and nothing varies by styling; its message is the
+"Go home" on every one. The line for each code lives once, in `src/config/statuses.ts`. The page's classes are the
+`.status` block in `base.css` and the retry is the shared button, so nothing varies by styling: `base.css` ships
+under every answer, and it makes each framework's mount point a flex column so the page centres in the height
+under the header. Its message is the
 `role="alert"`, and "Go home" is a full load, so a crash leaves no state behind (Next takes `Link`, which its
 plugin requires). A status ships only where something can produce it: a 404 needs a router, and a 403 needs a
 loader or a server that can refuse.

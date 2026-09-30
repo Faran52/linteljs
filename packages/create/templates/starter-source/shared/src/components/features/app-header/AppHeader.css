@@ -65,3 +65,10 @@
   background: none;
   border: 0;
 }
+
+/* Below 30rem the label and a four-tab nav do not fit beside the name, and the label is the one to go. */
+@media (width < 30rem) {
+  .starter-label {
+    display: none;
+  }
+}

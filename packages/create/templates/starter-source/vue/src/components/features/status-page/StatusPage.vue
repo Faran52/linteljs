@@ -13,25 +13,29 @@ defineProps<Props>();
 
 <!-- Home is a full load, so a crash leaves no state behind. -->
 <template>
-  <main class="hero">
-    <h1 class="title">
+  <main class="status">
+    <h1 class="status-code">
       {{ code }}
     </h1>
     <p
-      class="lede"
+      class="status-message"
       role="alert"
     >
       {{ message }}
     </p>
-    <p class="hint">
+    <div class="status-actions">
       <AppButton
         v-if="onRetry"
         @click="onRetry"
       >
         Try again
       </AppButton>
-      {{ ' ' }}
-      <a href="/">Go home</a>
-    </p>
+      <a
+        :class="['status-action', { 'status-action-outline': onRetry }]"
+        href="/"
+      >
+        Go home
+      </a>
+    </div>
   </main>
 </template>

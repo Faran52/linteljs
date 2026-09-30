@@ -17,7 +17,12 @@ const sheet = stylex.create({
     borderBottomColor: tokens.border,
   },
 
+  // Below 30rem the label and a four-tab nav do not fit beside the name, and the label is the one to go.
   starterLabel: {
+    display: {
+      'default': null,
+      '@media (width < 30rem)': 'none',
+    },
     flex: 'none',
     margin: 0,
     fontSize: tokens.textEyebrow,

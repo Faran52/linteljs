@@ -17,13 +17,19 @@
 </script>
 
 <!-- Home is a full load, so a crash leaves no state behind. -->
-<main class="hero">
-  <h1 class="title">{code}</h1>
-  <p class="lede" role="alert">{message}</p>
-  <p class="hint">
+<main class="status">
+  <h1 class="status-code">{code}</h1>
+  <p class="status-message" role="alert">{message}</p>
+  <div class="status-actions">
     {#if onretry}
       <Button onclick={onretry}>Try again</Button>
     {/if}
-    <a href={resolve('/')} data-sveltekit-reload>Go home</a>
-  </p>
+    <a
+      class={['status-action', onretry && 'status-action-outline']}
+      href={resolve('/')}
+      data-sveltekit-reload
+    >
+      Go home
+    </a>
+  </div>
 </main>
