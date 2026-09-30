@@ -73,12 +73,14 @@ export const importNewlines = createRule('import-newlines', {
         const gaps = listGaps(sourceCode, open, named, indentsAt(node), true);
         const toBreak = gapsToBreak(gaps, maxItems);
         const blank = gaps.filter(isBlank);
+        // Both reports carry every break, since two fixes in one statement overlap and the second waits a pass.
+        const fix = breakGaps([...toBreak, ...blank], eol);
 
         if (blank.length > 0) {
           context.report({
             node,
             messageId: 'noBlankBetween',
-            fix: breakGaps(blank, eol),
+            fix,
           });
         }
 
@@ -90,7 +92,7 @@ export const importNewlines = createRule('import-newlines', {
           node,
           messageId: toBreak.length === gaps.length ? 'mustSplitMany' : 'limitLineCount',
           data: { maxItems: String(maxItems) },
-          fix: breakGaps(toBreak, eol),
+          fix,
         });
       },
     };

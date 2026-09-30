@@ -95,8 +95,8 @@ jsRuleTester.run('import-newlines', importNewlines, {
     },
     {
       code: "import { alpha,\n\n  bravo, charlie } from 'mod';",
-      // The two fixes overlap, so the blank line goes on the next pass.
-      output: "import {\n  alpha,\n\n  bravo,\n  charlie\n} from 'mod';",
+      // One pass settles both: each report carries the whole fix.
+      output: "import {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'noBlankBetween' }, { messageId: 'limitLineCount' }],
     },
     {
