@@ -100,8 +100,12 @@ const stringList = (value: JsonValue | undefined, key: string): string[] => {
 };
 
 const textValue = (value: JsonValue | undefined, key: string, pattern: string): string => {
-  if (typeof value !== 'string' || !new RegExp(pattern, 'u').test(value)) {
+  if (typeof value !== 'string') {
     throw new Error(`${key} must be a string`);
+  }
+
+  if (!new RegExp(pattern, 'u').test(value)) {
+    throw new Error(`${key} must match ${pattern}`);
   }
 
   return value;

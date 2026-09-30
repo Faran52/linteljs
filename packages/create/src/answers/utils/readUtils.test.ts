@@ -66,8 +66,16 @@ describe('readAnswer', () => {
       return readAnswer(ANSWERS.packageManagerVersion, 12);
     }).toThrow('packageManagerVersion must be a string');
     expect(() => {
-      return readAnswer(ANSWERS.nodeVersion, '26');
+      return readAnswer(ANSWERS.nodeVersion, 26);
     }).toThrow('nodeVersion must be a string');
+  });
+
+  it('names the pattern a string fails, not a type', () => {
+    const pattern = ANSWERS.nodeVersion.pattern;
+
+    expect(() => {
+      return readAnswer(ANSWERS.nodeVersion, '26');
+    }).toThrow(`nodeVersion must match ${pattern}`);
   });
 
   it('reads a map', () => {

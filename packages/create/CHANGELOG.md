@@ -93,6 +93,7 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- An answer that fails its pattern now says it must match the pattern, not that it must be a string.
 - The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
 - A generated `eslint.config.js` or `nuxt.config.ts` still parses when an ignore or alias path ends in a backslash or holds a newline.
 - A Contact page flags only a field the user has left, and clears its error as soon as the value passes. TanStack
