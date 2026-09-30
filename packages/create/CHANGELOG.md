@@ -30,6 +30,12 @@ when a version's change lives in a sibling it is described there instead:
 ### Added
 
 - Nuxt is a target.
+- React projects speak more languages: `--languages` takes any of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, off by
+  default, with English always shipped as the fallback. The starter adds i18next, a language select in the
+  header, `src/i18n/` with one `common.json` per language and a suite that holds every locale to the same keys.
+  The header, status pages, About, Version and Contact are translated in every router mode. The stored choice wins,
+  then the browser language, which is never stored; Arabic sets `dir="rtl"`. React Router framework mode renders
+  English on the server and switches after hydration.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.

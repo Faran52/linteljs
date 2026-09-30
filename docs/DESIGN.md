@@ -817,6 +817,32 @@ Only the React target has a `routers` slot: `react-router`, declarative, with it
 and `tanstack-router`. Next, SvelteKit, Nuxt, Expo and Astro route by file; Vue installs its router
 unconditionally, because a Vue application routes; Solid and Angular are a `pnpm add`.
 
+### The languages answer
+
+`--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
+optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
+ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
+that is React, in every router mode.
+
+- **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
+  browser detector. No starter hand-rolls a translation core.
+- **A detected language is never stored.** The order is the stored choice, then the browser, then English. The
+  detector's `caches` is empty and the language select is the one writer, so a first visit does not pass for a
+  choice and a later change of browser language still reaches the page.
+- **`src/i18n/config.ts` is emitted, everything else is a template.** Its imports name the chosen locales, so it
+  depends on the answer; it holds data only. Each translated file is a `translated` pair: the English file as
+  before, and an `i18n` twin that replaces it once a language is chosen.
+- **Shared tables hold keys, not text.** The twins of `src/config/statuses.ts` and `src/config/standard.ts` hold a
+  key into the flat, camelCase `common.json`, so every framework translates the same table. Text around a command
+  is one key read through `Trans`, so the command stays in its `<code>` in any word order.
+- **What stays English.** Form labels and validation messages, since the schemas own them; the gate's `runs` and
+  the recorded answer labels on the About and Version pages, since the generator emits them as facts about the
+  project; and the home page, not yet translated.
+- **Direction follows the language.** `<html lang dir>` is set on init and on every change, so Arabic turns the
+  page `rtl`; the starter CSS uses logical properties only. React Router framework mode renders `lang="en"
+  dir="ltr"` on the server, which has neither storage nor the browser, and detects in a `Layout` effect after
+  hydration, so the first client render matches the server's.
+
 ### Recorded answers
 
 `aliases`, `ignores`, `resolveConditions` and `browsers` are recorded, not asked: facts about a project, discovered
