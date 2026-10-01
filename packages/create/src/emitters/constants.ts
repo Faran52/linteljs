@@ -151,7 +151,7 @@ export const VERSIONS: Record<string, string> = {
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
   // Answers requests, never ships in a build.
-  'msw': '^2.15.0',
+  'msw': '^3.0.0',
   // `URLSearchParams` loses an array; this keeps it.
   'qs': '^6.16.0',
   '@types/qs': '^6.15.1',
