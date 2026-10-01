@@ -1,6 +1,6 @@
 import { For, type JSX } from 'solid-js';
 
-import { isMessageKey, t } from '../../../i18n';
+import { t, translateId } from '../../../i18n';
 import { ROUTES } from '../../../pages/routes';
 import { LanguageSelect } from '../language-select/LanguageSelect';
 
@@ -30,8 +30,7 @@ export const AppHeader = (props: AppHeaderProps): JSX.Element => {
                   props.onNavigate(route.id);
                 }}
               >
-                {/* Keyed by route id, so a page added to `ROUTES` keeps its label until every locale names it. */}
-                {isMessageKey(route.id) ? t(route.id) : route.label}
+                {translateId(route.id)}
               </button>
             );
           }}

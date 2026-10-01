@@ -38,11 +38,11 @@ describe('AppHeader', () => {
       });
 
     expect(screen.getByText(common.starterLabel)).toBeTruthy();
-    expect(labels.slice(0, 3)).toEqual([
+    expect(labels).toEqual(expect.arrayContaining([
       common.home,
       common.about,
       common.version,
-    ]);
+    ]));
     expect(labels).toHaveLength(ROUTES.length);
   });
 

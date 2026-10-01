@@ -8,9 +8,9 @@ import {
   chooseLanguage,
   detectLanguage,
   directionOf,
-  isMessageKey,
   language,
   t,
+  translateId,
 } from './index';
 
 const last = languages.at(-1)?.id ?? 'en';
@@ -111,8 +111,10 @@ describe('i18n', () => {
     expect(text).toContain('<code>{command}</code>');
   });
 
-  it('tells its own keys from any other string', () => {
-    expect(isMessageKey('home')).toBe(true);
-    expect(isMessageKey('nowhere')).toBe(false);
+  it('names a page by its id, and shows an id no locale names as itself', () => {
+    applyLanguage(last);
+
+    expect(translateId('home')).toBe(resources[last].common.home);
+    expect(translateId('nowhere')).toBe('nowhere');
   });
 });

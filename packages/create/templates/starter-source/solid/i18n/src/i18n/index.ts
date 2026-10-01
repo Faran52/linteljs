@@ -24,10 +24,12 @@ const [language, setLanguage] = createSignal<Language>(fallbackLanguage);
 export { language };
 
 // The library's own resolver reads `{{x}}`; every target's locales hold `{x}`.
-const resolveTemplate: TemplateResolver = (template, args) => {
+const resolveTemplate: TemplateResolver = (template, ...args) => {
+  const [values] = args;
+
   return template
     .replace(/\{(\w+)\}/gu, (match, name: string) => {
-      return String(args?.[name] ?? match);
+      return String(values?.[name] ?? match);
     });
 };
 
@@ -37,8 +39,13 @@ export const t = createTranslator(() => {
   return resources[language()].common;
 }, resolveTemplate);
 
-export const isMessageKey = (key: string): key is MessageKey => {
+const isMessageKey = (key: string): key is MessageKey => {
   return key in resources[language()].common;
+};
+
+// A page id is its own key, so one no locale names yet shows as the id.
+export const translateId = (id: string): string => {
+  return isMessageKey(id) ? t(id) : id;
 };
 
 export const directionOf = (tag: string): 'ltr' | 'rtl' => {
