@@ -822,12 +822,13 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid and Angular.
+that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular and Astro.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
   browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
-  Paraglide JS, Solid takes @solid-primitives/i18n. Angular alone takes none: its own signal is the whole
-  runtime a switch needs, so the one hand-rolled core is a resolver over a signal.
+  Paraglide JS, Solid takes @solid-primitives/i18n. Angular and Astro take none: Angular's own signal is the
+  whole runtime a switch needs, and an Astro page ships no framework to hold one, so each hand-rolled core is
+  the same single-brace resolver.
 - **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
   the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
   to `{` and `}` to read it too.
@@ -895,6 +896,23 @@ that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid and Angul
   `t` and nothing subscribes. `main.ts` applies the detected language before bootstrap, and with no SSR there is
   no hydration step. Nothing is installed, so `allowBuilds` is unchanged and an Angular project with languages
   audits at no known vulnerabilities under `pnpm audit --prod`.
+- **Astro takes no library, not Astro's i18n routing.** Astro's routing is build-time: one URL per locale, a
+  prefix in every path, and a choice made by the URL or by `Accept-Language`, so a detected language becomes a
+  route and switching is a navigation to another page. The language select needs a runtime switch with the
+  stored choice first and nothing detected stored, so pages render English at build time and each translated
+  element carries `data-i18n` with its key, the values of its placeholders in its own `data-*` attributes.
+  No island renders text, so a host framework needs no i18n of its own.
+- **An inline boot sets `lang` and `dir` before the first paint.** An Astro page is a full load each time, so a
+  bundled module, which runs after parsing, would show each page left to right before Arabic turns it. The
+  layout inlines `bootScript()` in the head with `is:inline`: the source of `bootLanguage`, a self-contained
+  function, called with the config as JSON. It reads the stored choice, then the browser, then English, and
+  writes only `<html lang dir>`. The bundled `startLanguage` then renders each marked element in that
+  language, splitting a message on its `<code>` marks into text and `code` nodes, and wires the select, the one
+  writer of the stored choice. Measured on a built project, `dir` is `rtl` before `<body>` exists and in the
+  first animation frame, on a reload and on a navigation.
+- **The boot test checks the script's shape, not its run.** Evaluating the generated string in a suite is what
+  `sonarjs/code-eval` forbids, so the suite runs `bootLanguage` itself and asserts that `bootScript()` is
+  exactly its source called with the config's JSON, in order.
 
 ### Recorded answers
 

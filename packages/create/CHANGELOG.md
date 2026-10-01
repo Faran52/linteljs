@@ -54,6 +54,10 @@ when a version's change lives in a sibling it is described there instead:
   `common.json` files through it, so a template follows a switch. `@angular/localize` builds once per locale and
   cannot switch at runtime. The header tabs, language select, status page, About, Version and both Contact pages
   are translated.
+- Astro projects take `--languages` with no library, with or without a hosted framework: pages render English at
+  build time, an inline script in the head sets `lang` and `dir` before the first paint, and a client script
+  renders the marked text in the chosen language. Astro's i18n routing gives each locale its own URL and cannot
+  switch at runtime. The header tabs, language select, About, Version and the 404 page are translated.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.
