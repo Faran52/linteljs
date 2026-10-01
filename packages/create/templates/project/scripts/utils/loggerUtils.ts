@@ -1,7 +1,10 @@
 import { env } from 'node:process';
 
+// Destructured: the project reads `env.DEBUG` and this workspace `env['DEBUG']`, each under its own tsconfig.
 const isDebug = (): boolean => {
-  return env['DEBUG'] === 'true';
+  const { DEBUG: debug } = env;
+
+  return debug === 'true';
 };
 
 export const log = (message: string): void => {

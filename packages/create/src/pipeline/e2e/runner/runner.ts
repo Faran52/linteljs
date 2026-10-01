@@ -134,6 +134,11 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
 
+  // Emitted code lands clean: the fix stage brings an existing project into line, and a fresh one needs none.
+  const fixes = create.output.match(/\b(?:eslint|stylelint) --fix: [^\n]*/g);
+
+  expect(fixes).toEqual(['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix']);
+
   // `lint:starters:typed`: an installed project and its own lint alone, the one gate a typed rule shows in.
   if (env['E2E_TYPED_LINT'] === '1') {
     const lint = await runPm(answers.packageManager, [

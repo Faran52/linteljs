@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest';
-
 import { ForbiddenError } from '@utils/statusUtils';
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
 
 describe('ForbiddenError', () => {
   it('is an error a boundary can tell apart by its class and its name', () => {

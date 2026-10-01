@@ -20,7 +20,12 @@ export const StatusPage: FC<StatusPageProps> = ({
       <p className="status-message" role="alert">{message}</p>
       <div className="status-actions">
         {onRetry === undefined ? null : <Button onClick={onRetry}>Try again</Button>}
-        <a className={onRetry === undefined ? 'status-action' : 'status-action status-action-outline'} href="/">
+        <a
+          className={onRetry === undefined
+            ? 'status-action'
+            : 'status-action status-action-outline'}
+          href="/"
+        >
           Go home
         </a>
       </div>

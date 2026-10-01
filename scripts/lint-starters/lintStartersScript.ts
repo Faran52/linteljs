@@ -169,11 +169,17 @@ const lintTarget = async (target: TargetId, eslint: Linters): Promise<[string[],
   const findings: string[] = [];
   const unplaced: string[] = [];
   let fixable = 0;
-  const files = filesOf(target, LINTED_GLOB);
+  const own = destinationsFor(answerSets.get(target) ?? []);
+  // A shared file lints once per target that places it, under that target's layers and at its path there.
+  const shared = filesOf(SHARED_ROOT, LINTED_GLOB)
+    .filter((path) => {
+      return own.has(relative(TEMPLATES, path));
+    });
+  const files = [...filesOf(target, LINTED_GLOB), ...shared];
 
   for (const path of files) {
     const source = relative(TEMPLATES, path);
-    const destination = placement.placed.get(source);
+    const destination = own.get(source) ?? placement.placed.get(source);
 
     if (destination === undefined) {
       unplaced.push(source);

@@ -1,3 +1,4 @@
+import { ApiError, request } from '@utils/fetchExtendedUtils';
 import {
   afterEach,
   beforeEach,
@@ -6,8 +7,6 @@ import {
   it,
   vi,
 } from 'vitest';
-
-import { ApiError, request } from '@utils/fetchExtendedUtils';
 
 interface Named {
   readonly name: string;
@@ -40,27 +39,30 @@ describe('request', () => {
   });
 
   it('answers the parsed body of a request that succeeded', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ name: 'demo' }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ name: 'demo' }));
+      });
 
     await expect(request<Named>('/version')).resolves.toEqual({ name: 'demo' });
     expect(fetchMock).toHaveBeenCalledWith('/api/version', expect.objectContaining({ method: 'GET' }));
   });
 
   it('repeats a key for an array rather than flattening it to one value', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ results: [] }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ results: [] }));
+      });
     await request('/search', { query: { tag: ['a', 'b'], page: 2 } });
 
     expect(fetchMock).toHaveBeenCalledWith('/api/search?tag=a&tag=b&page=2', expect.anything());
   });
 
   it('encodes a query, and writes no question mark without one', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ results: [] }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ results: [] }));
+      });
     await request('/search', { query: { q: 'a b&c', page: 2 } });
     await request('/search');
 
@@ -69,9 +71,10 @@ describe('request', () => {
   });
 
   it('sends a body as json, and sets the header only when there is one', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ status: 'ok' }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ status: 'ok' }));
+      });
     await request('/contact', { method: 'POST', body: { email: 'a@b.co' } });
 
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
@@ -82,9 +85,10 @@ describe('request', () => {
   });
 
   it('throws ApiError carrying the status a failed request came back with', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ message: 'nope' }, 422));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ message: 'nope' }, 422));
+      });
 
     await expect(request('/contact', { method: 'POST' })).rejects.toThrow(ApiError);
     await expect(request('/contact', { method: 'POST' })).rejects.toMatchObject({ status: 422 });
@@ -97,9 +101,10 @@ describe('request', () => {
   });
 
   it('roots a path given without a leading slash, and drops an empty query', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ status: 'ok' }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ status: 'ok' }));
+      });
     await request('version');
     await request('/version', { query: {} });
 
@@ -108,9 +113,10 @@ describe('request', () => {
   });
 
   it('passes an abort signal through when one was given', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(jsonResponse({ status: 'ok' }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(jsonResponse({ status: 'ok' }));
+      });
 
     const controller = new AbortController();
 
@@ -120,9 +126,10 @@ describe('request', () => {
   });
 
   it('answers undefined for an empty body rather than failing to parse one', async () => {
-    fetchMock.mockImplementation(() => {
-      return Promise.resolve(new Response(null, { status: 204 }));
-    });
+    fetchMock
+      .mockImplementation(() => {
+        return Promise.resolve(new Response(null, { status: 204 }));
+      });
 
     await expect(request('/contact', { method: 'DELETE' })).resolves.toBeUndefined();
   });

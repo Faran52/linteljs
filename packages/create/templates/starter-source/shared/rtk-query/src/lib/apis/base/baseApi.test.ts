@@ -59,7 +59,9 @@ describe('baseApi', () => {
   it('prefixes the origin the mocking layer answers on', async () => {
     const store = freshStore();
 
-    await store.dispatch(probeApi.endpoints.probeVersion.initiate(undefined)).unwrap();
+    await store
+      .dispatch(probeApi.endpoints.probeVersion.initiate(undefined))
+      .unwrap();
 
     expect(requested).toEqual(['/api/version']);
   });

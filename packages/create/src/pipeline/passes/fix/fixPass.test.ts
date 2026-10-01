@@ -169,12 +169,37 @@ describe('fixPass', () => {
       "require('node:fs').writeFileSync('stylelint-argv', process.argv.slice(2).join(' '));\n",
     );
 
-    await fixPass(cwd, DEFAULT_ANSWERS, () => {
-      return undefined;
+    const notices: string[] = [];
+
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+      notices.push(message);
     });
 
-    expect(await readFile(join(cwd, 'stylelint-argv'), 'utf8'))
-      .toBe('src/**/*.css --fix --allow-empty-input');
+    const argv = await readFile(join(cwd, 'stylelint-argv'), 'utf8');
+
+    expect(argv).toBe('src/**/*.css --fix --allow-empty-input');
+    expect(notices).toEqual(['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix']);
+  });
+
+  it('counts the style files stylelint rewrote, by their content', async () => {
+    await plantEslint('console.log("[]");\nprocess.exit(0);\n');
+    await mkdir(join(cwd, 'src', 'styles'), { recursive: true });
+    await writeFile(join(cwd, 'src', 'styles', 'a.css'), 'a {}\n', 'utf8');
+    await writeFile(join(cwd, 'src', 'b.css'), 'b {}\n', 'utf8');
+    await writeFile(join(cwd, 'src', 'c.css'), 'c {}\n', 'utf8');
+    await plantStylelint([
+      "const { writeFileSync } = require('node:fs');",
+      "writeFileSync('src/styles/a.css', 'a { }\\n');",
+      "writeFileSync('src/c.css', 'c {}\\n');",
+    ].join('\n'));
+
+    const notices: string[] = [];
+
+    await fixPass(cwd, DEFAULT_ANSWERS, (message) => {
+      notices.push(message);
+    });
+
+    expect(notices).toEqual(['eslint --fix: nothing to fix', 'stylelint --fix: 1 file changed']);
   });
 
   it('warns rather than throwing when stylelint is present but cannot spawn', async () => {

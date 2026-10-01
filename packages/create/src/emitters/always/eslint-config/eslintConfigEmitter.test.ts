@@ -42,7 +42,13 @@ const config = await composeConfig({
   typescript: true,
   vitest: true,
   html: true,
-  ignores: ['dist/**', 'coverage/**', '.claude/**', '.agents/**', 'plugins/linteljs/**'],
+  ignores: [
+    'dist/**',
+    'coverage/**',
+    '.claude/**',
+    '.agents/**',
+    'plugins/linteljs/**',
+  ],
   aliases: {
     '@components/*': './src/components/*',
     '@ui/*': './src/components/ui/*',
@@ -233,7 +239,16 @@ describe('emitEslintConfig', () => {
       ],
     });
 
-    expect(output).toContain("  resolver: {\n    conditionNames: ['import', 'require', 'node', 'default'],\n  },");
+    expect(output).toContain([
+      '  resolver: {',
+      '    conditionNames: [',
+      "      'import',",
+      "      'require',",
+      "      'node',",
+      "      'default',",
+      '    ],',
+      '  },',
+    ].join('\n'));
   });
 
   it('breaks the resolver conditions onto their own lines once they would run past max-len', () => {
@@ -310,18 +325,40 @@ describe('emitEslintConfig', () => {
     );
   });
 
-  it('keeps a list that is exactly max-len long on one line', () => {
+  it('keeps a list of two that is exactly max-len long on one line', () => {
     const line = emitEslintConfig({
       ...answersFor({ target: 'react' }),
-      ignores: ['generated/very-long-name/**'],
+      resolveConditions: ['a'.repeat(90), 'b'],
     })
       .split('\n')
       .find((candidate) => {
-        return candidate.startsWith('  ignores:');
+        return candidate.startsWith('    conditionNames:');
       });
 
     expect(line).toHaveLength(120);
-    expect(line?.endsWith("'generated/very-long-name/**'],")).toBe(true);
+    expect(line?.endsWith("'b'],")).toBe(true);
+  });
+
+  it('breaks a list of two once it would run past max-len', () => {
+    const output = emitEslintConfig({
+      ...answersFor({ target: 'react' }),
+      resolveConditions: ['a'.repeat(91), 'b'],
+    });
+
+    expect(output).toContain(`    conditionNames: [\n      '${'a'.repeat(91)}',\n      'b',\n    ],`);
+  });
+
+  it('breaks a list of three however short it is', () => {
+    const output = emitEslintConfig({
+      ...answersFor({ target: 'react' }),
+      resolveConditions: [
+        'a',
+        'b',
+        'c',
+      ],
+    });
+
+    expect(output).toContain("    conditionNames: [\n      'a',\n      'b',\n      'c',\n    ],");
   });
 
   it('escapes a quote inside a value', () => {

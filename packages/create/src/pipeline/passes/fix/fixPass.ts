@@ -2,6 +2,7 @@ import { MANAGER_BINARIES, RUN_PREFIX } from '@config/constants';
 
 import { parsedAs } from '@utils/objectUtils';
 
+import { globSnapshot } from '@disk';
 import { styleGlob } from '@emitters';
 import { localBinarySpawn } from '@spawns';
 
@@ -33,17 +34,37 @@ const parseFixReport = (stdout: string): number => {
       }).length;
 };
 
-// Silent about its count: stylelint's JSON report names files, not which it rewrote.
+const changedFiles = (fixed: number, tool: string): string => {
+  const files = `${String(fixed)} file${fixed === 1 ? '' : 's'}`;
+
+  return fixed === 0 ? `${tool} --fix: nothing to fix` : `${tool} --fix: ${files} changed`;
+};
+
+// Counted by content: stylelint's JSON report names files, not which it rewrote.
 const fixStyles = async (cwd: string, answers: Answers, report: (message: string) => void): Promise<void> => {
+  const glob = styleGlob(answers);
+  const before = await globSnapshot(cwd, glob);
   const result = await localBinarySpawn(cwd, 'stylelint', [
-    styleGlob(answers),
+    glob,
     '--fix',
     '--allow-empty-input',
   ]);
 
-  if (result?.failed === true) {
-    report('stylelint --fix could not run; run it yourself once dependencies are installed');
+  if (result === null) {
+    return;
   }
+
+  if (result.failed) {
+    report('stylelint --fix could not run; run it yourself once dependencies are installed');
+    return;
+  }
+
+  const after = new Set(await globSnapshot(cwd, glob));
+
+  report(changedFiles(before
+    .filter((entry) => {
+      return !after.has(entry);
+    }).length, 'stylelint'));
 };
 
 // Never fatal: exit 1 on remaining findings is normal.
@@ -73,10 +94,7 @@ export const fixPass = async (
     return;
   }
 
-  const fixed = parseFixReport(result.stdout);
-  const files = `${String(fixed)} file${fixed === 1 ? '' : 's'}`;
-
-  report(fixed === 0 ? 'eslint --fix: nothing to fix' : `eslint --fix: ${files} changed`);
+  report(changedFiles(parseFixReport(result.stdout), 'eslint'));
 
   await fixStyles(cwd, answers, report);
 };

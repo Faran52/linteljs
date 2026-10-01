@@ -11,6 +11,7 @@ export {
 export {
   entryExists,
   exists,
+  globSnapshot,
   isExecutableFile,
   readIfPresent,
   rm,

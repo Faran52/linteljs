@@ -21,6 +21,7 @@ import {
   allPresent,
   entryExists,
   exists,
+  globSnapshot,
   hasCode,
   isExecutableFile,
   readIfPresent,
@@ -148,5 +149,19 @@ describe('allPresent', () => {
     await writeFile(join(cwd, 'a.tsx'), '', 'utf8');
 
     expect(await allPresent(cwd, CANDIDATES)).toEqual(['a.tsx', 'a.ts']);
+  });
+});
+
+describe('globSnapshot', () => {
+  it('answers nothing when nothing matches', async () => {
+    expect(await globSnapshot(cwd, 'src/**/*.css')).toEqual([]);
+  });
+
+  it('pairs every match under the directory with its content, and skips what does not match', async () => {
+    await mkdir(join(cwd, 'src', 'nested'), { recursive: true });
+    await writeFile(join(cwd, 'src', 'nested', 'a.css'), 'a {}', 'utf8');
+    await writeFile(join(cwd, 'src', 'b.ts'), 'b', 'utf8');
+
+    expect(await globSnapshot(cwd, 'src/**/*.css')).toEqual([`${join('src', 'nested', 'a.css')}\0a {}`]);
   });
 });

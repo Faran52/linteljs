@@ -45,7 +45,8 @@ const arrayLiteral = (key: string, values: string[], level = 1): string => {
     .map(quote)
     .join(', ')}]`;
 
-  if (`${indentOf(level)}${key}: ${inline},`.length <= MAX_LINE) {
+  // Three or more break, as `@linteljs/array-newline` has them.
+  if (values.length <= 2 && `${indentOf(level)}${key}: ${inline},`.length <= MAX_LINE) {
     return inline;
   }
 

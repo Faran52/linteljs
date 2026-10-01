@@ -1,6 +1,7 @@
 import {
   accessSync,
   constants,
+  globSync,
   statSync,
 } from 'node:fs';
 import {
@@ -102,4 +103,14 @@ export const allPresent = async (cwd: string, candidates: string[]): Promise<str
     .filter((candidate) => {
       return candidate !== undefined;
     });
+};
+
+// Path and content per match, so two snapshots differ exactly where a file was rewritten.
+export const globSnapshot = async (cwd: string, pattern: string): Promise<string[]> => {
+  const reads = globSync(pattern, { cwd })
+    .map(async (path) => {
+      return `${path}\0${await readFile(join(cwd, path), 'utf8')}`;
+    });
+
+  return await Promise.all(reads);
 };
