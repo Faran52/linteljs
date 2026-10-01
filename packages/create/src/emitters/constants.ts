@@ -18,7 +18,7 @@ export const VERSIONS: Record<string, string> = {
   '@commitlint/cli': '^21.2.3',
   '@commitlint/config-conventional': '^21.2.3',
   '@crxjs/vite-plugin': '^3.0.0',
-  '@eslint-react/eslint-plugin': '^5.20.8',
+  '@eslint-react/eslint-plugin': '^5.22.1',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
   '@inlang/paraglide-js': '^2.25.4',
@@ -66,7 +66,7 @@ export const VERSIONS: Record<string, string> = {
   '@tailwindcss/postcss': '^4.3.3',
   '@tailwindcss/vite': '^4.3.3',
   '@tanstack/angular-query-experimental': '^5.103.2',
-  '@tanstack/eslint-plugin-query': '^5.103.2',
+  '@tanstack/eslint-plugin-query': '^5.104.0',
   '@tanstack/react-query': '^5.103.2',
   '@tanstack/solid-query': '^5.103.2',
   '@tanstack/svelte-query': '^6.2.4',
@@ -92,7 +92,7 @@ export const VERSIONS: Record<string, string> = {
   'astro-eslint-parser': '^3.2.0',
   'eslint': '^10.11.0',
   // Not `eslint-config-next`, which bundles plugins the layers already cover.
-  '@next/eslint-plugin-next': '^16.3.6',
+  '@next/eslint-plugin-next': '^16.3.7',
   // `utils/packageJsonUtils.test.ts` fails the moment the sibling package diverges.
   '@linteljs/eslint-config': '^2.0.0',
   'eslint-plugin-react-hooks': '^7.1.1',
@@ -109,7 +109,7 @@ export const VERSIONS: Record<string, string> = {
   'husky': '^9.1.7',
   'lint-staged': '^17.6.0',
   'postcss-html': '^2.0.0',
-  'next': '^16.3.6',
+  'next': '^16.3.7',
   'next-intl': '^4.14.8',
   // At exactly what the SDK's own template pins, which `expo-doctor` checks. docs/DESIGN.md has why.
   'expo': '~57.0.25',
