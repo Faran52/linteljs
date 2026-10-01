@@ -55,6 +55,18 @@ describe('LanguageSelect', () => {
     expect(localStorage.getItem(languageStorageKey)).toBe(last);
   });
 
+  it('shows a language applied before it renders', () => {
+    applyLanguage(last);
+
+    render(() => {
+      return <LanguageSelect />;
+    });
+
+    const select = screen.getByRole<HTMLSelectElement>('combobox');
+
+    expect(select.value).toBe(last);
+  });
+
   it('takes the style its header gives it', () => {
     render(() => {
       return <LanguageSelect class="tab" />;

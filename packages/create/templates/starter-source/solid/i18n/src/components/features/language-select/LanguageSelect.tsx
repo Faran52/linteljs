@@ -13,7 +13,8 @@ export type LanguageSelectProps = Pick<JSX.SelectHTMLAttributes<HTMLSelectElemen
 export const LanguageSelect = (props: LanguageSelectProps): JSX.Element => {
   return (
     <select
-      {...props}
+      class={props.class}
+      style={props.style}
       aria-label={t('language')}
       value={language()}
       onChange={(event) => {
