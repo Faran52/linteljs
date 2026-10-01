@@ -201,7 +201,7 @@ and placed later it lands on the same glob and takes the `parserOptions` carryin
 
 `@linteljs/vue/sfc-import-seam` turns `no-unsafe-argument` and `no-unsafe-assignment` off for every `.ts` file in a
 Vue or Nuxt project, because the program behind lint reads an SFC import as an error type and `vue-tsc --noEmit`
-checks that seam. Measured on 2026-10-01 against the `lint:starters:typed` projects, every answer on, with the two
+checks that seam. Measured on 2026-10-01 against the `lint:starters` projects, every answer on, with the two
 rules back on: Vue gave 11 findings, every one an SFC import (`createApp(App)` in `main.ts`, a route's `component:`
 in `router/index.ts` and `views/routes.ts`, a `mount(ContactView)` result in its suite); Nuxt gave 2, both a real
 `any` from Vitest's `expect.objectContaining` in the i18n plugin suite, which now reads the head it records instead.
@@ -918,10 +918,6 @@ webextension popup.
   fresh clone and the gate both type against current messages; its Vite plugin compiles again for dev and
   build. Detection stays ours: `getLocale` is overwritten to read a store, so every message follows the
   language select, and the strategy is `baseLocale` so Paraglide neither reads nor writes storage itself.
-- **`lint:starters` counts the compiled module.** The starter linter compiles no project, so the suites that
-  import `.svelte-kit/paraglide/messages.js` and `runtime.js` would not resolve. `writtenPaths` counts both
-  under the `--outdir` the compile command names, the same covered-path mechanism other modules the scaffold
-  writes use, so no stub or template directive is needed.
 - **Solid takes @solid-primitives/i18n.** Version 2.2.1 has no dependencies and no install scripts, so
   `allowBuilds` is unchanged, and a Solid project with it audits at no known vulnerabilities under
   `pnpm audit --prod`. Its own resolver reads `{{name}}`, so `src/i18n/index.ts` hands `translator` a
@@ -1352,50 +1348,30 @@ workspace resolves none of (`@angular/*`, `expo`, `react-native`, `next`, `svelt
 themselves). Making it ordinary source means installing ten targets' runtime and test dependencies into a workspace
 of three ESLint packages.
 
-So `pnpm lint:starters`, a leg of `pnpm check`, lints each file the way the project receiving it will.
-`composeConfig` is the function a generated `eslint.config.js` calls, handed that target's framework and its record's
-`naming` and `folderNaming` maps and `typescript: true` as every generated config has, and each file is judged at the
-path its record places it on, which is what makes the naming rules mean anything. The answers widen per target until
-every file is placed, so a starter nothing ships is reported rather than linted at a guess. It reads the same
-`starterSourceEmitter` as the pipeline, so the two cannot disagree about where a file lives. `lint:starters:fix` runs
-the same config to repair what is autofixable. It repairs the source, not the projects: a generated project is clean
-before any fix stage runs, and `create`'s `fix` stage exists to bring an existing project into line. On a fresh one
-it reports `eslint --fix: nothing to fix` and the same for stylelint, which every e2e case asserts. Every file is
-read with `projectService` off, since it resolves a file against a real `tsconfig.json` and this walk lints text at a
-path nothing on disk holds, so typescript-eslint's `disableTypeChecked` turns its type-aware rules off by name and
-`sonarjs/no-redundant-optional` goes with them, since it reads the program to decide whether to run. Until 2.0 the
-walk left out `typescript: true`, so the whole typescript layer was missing, its rules that need no types included; a
-`type` where the standard wants an `interface` passed here and failed the project.
+So `pnpm lint:starters`, a leg of `pnpm check`, lints each starter where it will run: in a generated project,
+installed, under that project's own `eslint . --max-warnings 0`, type-aware rules included. A text read outside a
+project has no program behind it: measured on 2026-10-01, the project service's default project over the starter
+texts gave 6,261 findings across 488 files, every one from a type-aware rule and 6,210 of them `no-unsafe-*`, since
+each framework import reads as an error type. The walk that preceded this one linted the texts in memory with those
+rules off by name, so a `safeParse` read as `{ issues }` against Zod 4, a props type resolved to `any` across a
+component boundary or a promise dropped from a blur handler reached the end-to-end suite before anything saw it.
 
-The test setup is not a starter but fragments joined into one file, `__mocks__/setupTests.ts`, so the walk also
-joins them as `testSetupEmitter` does, once per distinct join its answer sets produce (one set adds `msw` and
-TanStack Query to reach every fragment), and lints the result at that path. It lints with `fix` off, so what the
-fix stage would have rewritten is a finding: a fragment appended to a target's base loads its modules through
-a top-level `await import`, which keeps every import at the head of the joined file. With nothing on disk to write
-back to, `lint:starters:fix` leaves the setup alone.
+Its scope is the template texts: `STARTER_CASES` in `packages/create/src/pipeline/e2e/starter-cover/` names 62 e2e
+cases that between them write every distinct text a starter template can become (778, per target and destination,
+the joined test setup included), and `starterCover.test.ts` fails when a template, a transform or a new answer
+leaves a text no case writes, naming the labels that would reach it. What the emitters write themselves is left to
+the end-to-end matrix, which runs every pair. Each case is the pipeline's own output (`pipelineRun`, install and fix
+skipped) under `~/.cache/linteljs/typed/projects/`, with `@linteljs/eslint-config` and, through a pnpm override,
+`@linteljs/eslint-plugin` read from `pnpm pack` tarballs named by their hash, so the layers and rules are this
+checkout's. Every lint runs `pnpm install` (a changed tarball is a changed path, so it reinstalls) and `prepare`
+by hand, since regenerating deletes what `prepare` wrote and a no-op install does not rerun it.
 
-What a rule cannot see is a name that resolves to nothing, so the script builds a program too, with
-`@types/chrome`, `@types/firefox-webext-browser`, `@types/react` and `vitest/globals` installed as gate machinery.
-The two extension packages are mutually exclusive, so it is three programs. Only diagnostics naming a name or module
-that could not be found are kept. There is no `declare module '*'`: a wildcard matches every specifier that fails to
-resolve, relative ones included, so a misspelled import would pass. A bare specifier is discarded by its shape and a
-relative one is a finding.
-
-**Its ceiling is stated.** It runs no type-aware rules, because a program over dependencies this workspace does not
-install is not a program. Measured on 2026-10-01: the project service's default project over the same texts gave
-6,261 findings across the 488 files, every one from a type-aware rule and 6,210 of them `no-unsafe-*`, since each
-framework import reads as an error type, and the starters do not resolve one another, since a text opened in the
-service is not a file on disk. So `sonarjs/function-return-type`, `require-await` and `no-floating-promises` stay
-with the real project too. Everything that needs real framework types (a `safeParse` read as `{ issues }` rather than
-`{ error }` against Zod 4, a props type resolved to `any` across a component boundary, a promise dropped from a blur
-handler) is found only by a real project. That loop is `pnpm lint:starters:typed`: the end-to-end harness, its
-Verdaccio and cached registry, under `E2E_TYPED_LINT=1` and `E2E_PM=pnpm`, runs one case per target and per React
-router, since each router ships its own starters: the first pnpm, Vitest and strict case answering the most,
-languages included. It installs and runs only that project's
-`eslint . --max-warnings 0`. A second harness would drift from the one the matrix trusts, so it is a mode of that one.
-It needs the network, so it is outside `pnpm check`. The split is three gates: `lint:starters` is fast, untyped and
-reads every file; `lint:starters:typed` is local, typed and samples twelve cases; the end-to-end matrix is every pair
-and the whole gate.
+A case whose generated tree (less `node_modules`, the lockfile and `.git`) hashes as it did at its last clean lint is
+skipped; `--all` lints every case. Measured on 2026-10-02, ten cores and five at a time: cold, 8.4 minutes; warm
+with `--all`, 4.2 minutes; warm with nothing changed, 49 seconds. So `check` runs the changed mode and CI runs
+`--all` first, with the cache keyed on `create`'s templates and source. A missing cache prints a notice and runs
+cold rather than skip. `lint:starters:fix` writes a fix back to a template copied whole and untransformed, and only
+when every case writing it fixed it the same way, since one text can land under two targets' rules.
 
 `children?: React.ReactNode` with no React import is legal TypeScript, since `@types/react` declares `React`
 globally for JSX. It is a style this standard holds, so it is `@linteljs/react-no-global-namespace`: published,

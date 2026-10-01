@@ -13,7 +13,9 @@ everything below.
 
 - **Layout**: `matrix/matrix.ts` enumerates the cases (`targetCases`), `registry/registry.ts` is the
   `globalSetup`, `runner/runner.ts` runs one case, `targets/targets.e2e.test.ts` is the one file every target's
-  cases run from. The `.e2e.` infix keeps it out of the default run.
+  cases run from. The `.e2e.` infix keeps it out of the default run. `starter-cover/` names the cases
+  `pnpm lint:starters` installs (`STARTER_CASES`) and holds that they write every starter text; it runs in the
+  default suite, and the root script lints those cases outside this harness.
 - **Every pair, not every combination, under pnpm**: per target, a greedy cover keeps enough pnpm combinations
   that every pair of answer values appears once (174), each library its own on/off axis, `agents`, `plugins` and
   `surfaces` at their full value, `typeSafety` strict. `matrix.test.ts` holds that no reachable pair is lost and
