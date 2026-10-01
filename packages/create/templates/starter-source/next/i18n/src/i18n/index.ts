@@ -2,6 +2,7 @@ import {
   fallbackLanguage,
   languages,
   languageStorageKey,
+  lookupTags,
 } from './config';
 
 export type Language = (typeof languages)[number]['id'];
@@ -37,9 +38,7 @@ export const detectLanguage = (): Language => {
   }
 
   return navigator.languages
-    .flatMap((tag) => {
-      return [tag, new Intl.Locale(tag).language];
-    })
+    .flatMap(lookupTags)
     .find(isLanguage) ?? fallbackLanguage;
 };
 

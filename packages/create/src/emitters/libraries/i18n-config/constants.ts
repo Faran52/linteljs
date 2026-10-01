@@ -32,3 +32,18 @@ export const LANGUAGE_NAMES: Record<Language, LanguageName> = {
     dir: 'ltr',
   },
 };
+
+// RFC 4647 lookup, which every target's detection reads: the base language alone misses `zh-TW` in `zh-TW-x-hk`.
+export const LOOKUP_TAGS = [
+  '// The tag, then each shorter prefix of it: `zh-TW-x-hk` reads as `zh-TW`, then `zh`.',
+  'export const lookupTags = (tag: string): string[] => {',
+  '  const subtags = tag.split(\'-\');',
+  '',
+  '  return subtags',
+  '    .map((_subtag, index) => {',
+  '      const kept = subtags.slice(0, subtags.length - index);',
+  '',
+  '      return kept.join(\'-\');',
+  '    });',
+  '};',
+];

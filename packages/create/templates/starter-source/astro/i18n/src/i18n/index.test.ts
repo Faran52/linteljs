@@ -91,6 +91,12 @@ describe('i18n', () => {
     expect(boot()).toBe(base);
   });
 
+  it('reads a longer browser tag as the longest one it offers', () => {
+    browserSpeaks([`${last}-x-test`]);
+
+    expect(boot()).toBe(last);
+  });
+
   it('reads a full browser tag it offers before its base language, and boots right to left', () => {
     browserSpeaks(['ar-EG']);
     bootLanguage([{ id: 'en', dir: 'ltr' }, { id: 'ar-EG', dir: 'rtl' }], languageStorageKey, 'en');

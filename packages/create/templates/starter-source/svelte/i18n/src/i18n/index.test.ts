@@ -57,6 +57,12 @@ describe('i18n', () => {
     expect(detectLanguage()).toBe(base);
   });
 
+  it('reads a longer browser tag as the longest one it offers', () => {
+    browserSpeaks([`${last}-x-test`]);
+
+    expect(detectLanguage()).toBe(last);
+  });
+
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
     localStorage.setItem(languageStorageKey, last);

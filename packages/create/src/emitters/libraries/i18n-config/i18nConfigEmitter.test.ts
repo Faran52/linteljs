@@ -142,6 +142,18 @@ describe('i18nConfigEmitter', () => {
       '  \'ar\': { common: ar },',
       '};',
       '',
+      '// The tag, then each shorter prefix of it: `zh-TW-x-hk` reads as `zh-TW`, then `zh`.',
+      'export const lookupTags = (tag: string): string[] => {',
+      '  const subtags = tag.split(\'-\');',
+      '',
+      '  return subtags',
+      '    .map((_subtag, index) => {',
+      '      const kept = subtags.slice(0, subtags.length - index);',
+      '',
+      '      return kept.join(\'-\');',
+      '    });',
+      '};',
+      '',
     ].join('\n'));
   });
 });

@@ -64,13 +64,22 @@ export const bootLanguage = (
         return option.id === tag;
       });
   };
+  // `lookupTags` from `./config`, inlined since this source cannot import.
+  const prefixesOf = (tag: string): string[] => {
+    const subtags = tag.split('-');
+
+    return subtags
+      .map((_subtag, index) => {
+        const kept = subtags.slice(0, subtags.length - index);
+
+        return kept.join('-');
+      });
+  };
   const stored = localStorage.getItem(storageKey);
   const id = offered(stored)
     ? stored
     : navigator.languages
-      .flatMap((tag) => {
-        return [tag, new Intl.Locale(tag).language];
-      })
+      .flatMap(prefixesOf)
       .find(offered) ?? fallback;
   const root = document.documentElement;
 

@@ -10,7 +10,7 @@ import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
 
-import { LANGUAGE_NAMES } from './constants';
+import { LANGUAGE_NAMES, LOOKUP_TAGS } from './constants';
 
 export const I18N_CONFIG = 'src/i18n/config.ts';
 export const INLANG_SETTINGS = 'project.inlang/settings.json';
@@ -57,6 +57,8 @@ export const emitI18nConfig = (languages: Language[]): string => {
     'export const resources = {',
     ...resources,
     '};',
+    '',
+    ...LOOKUP_TAGS,
     '',
   ].join('\n');
 };

@@ -1,4 +1,8 @@
-import { languages, resources } from './config';
+import {
+  languages,
+  lookupTags,
+  resources,
+} from './config';
 
 type Bundle = Readonly<Record<string, string>>;
 
@@ -26,5 +30,16 @@ describe('locales', () => {
       });
 
     expect(empty).toEqual([]);
+  });
+
+  it('looks a tag up by itself, then each shorter prefix', () => {
+    const tags = lookupTags('zh-TW-x-hk');
+
+    expect(tags).toEqual([
+      'zh-TW-x-hk',
+      'zh-TW-x',
+      'zh-TW',
+      'zh',
+    ]);
   });
 });

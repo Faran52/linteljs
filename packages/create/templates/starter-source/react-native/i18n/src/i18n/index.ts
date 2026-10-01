@@ -8,6 +8,7 @@ import {
   fallbackLanguage,
   languages,
   languageStorageKey,
+  lookupTags,
   resources,
 } from './config';
 
@@ -18,22 +19,17 @@ export const directionOf = (language: string): 'ltr' | 'rtl' => {
     })?.dir ?? 'ltr';
 };
 
-// The exact tag, then its base language: `ja-JP` reads as `ja`.
+// The exact tag, then each shorter prefix: `zh-TW-XX` reads as `zh-TW`, `ja-JP` as `ja`.
 export const matchLanguage = (tag: string | null): string | undefined => {
   const ids: readonly string[] = languages
     .map((option) => {
       return option.id;
     });
-  const base = tag?.split('-')[0];
+  const candidates = tag === null ? [] : lookupTags(tag);
 
-  const exact = ids
-    .find((id) => {
-      return id === tag;
-    });
-
-  return exact ?? ids
-    .find((id) => {
-      return id === base;
+  return candidates
+    .find((candidate) => {
+      return ids.includes(candidate);
     });
 };
 
