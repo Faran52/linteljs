@@ -426,8 +426,9 @@ describe('buildDevDependencies', () => {
     const next = { target: 'next' } as const;
 
     expect(buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }))).toHaveProperty('vite');
-    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'yarn-classic' }))).toHaveProperty('vite');
     expect(buildDevDependencies(answersFor({ ...next, packageManager: 'npm' }))).not.toHaveProperty('vite');
+    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'pnpm' }))).not.toHaveProperty('vite');
+    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'bun' }))).not.toHaveProperty('vite');
   });
 
   it('installs the stylex lint plugin, the build plugin and its peer', () => {

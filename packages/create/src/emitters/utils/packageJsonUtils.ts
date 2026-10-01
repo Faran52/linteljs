@@ -280,7 +280,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
       // Yarn installs no peers, and vitest needs `vite`; npm installs it itself.
       ? [
           ...RUNNER_DEV_DEPENDENCIES,
-          ...answers.packageManager.startsWith('yarn') ? ['vite'] : [],
+          ...answers.packageManager === 'yarn' ? ['vite'] : [],
           ...target.testDevDependencies ?? [],
         ]
       : []),
