@@ -99,6 +99,13 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
 - **Latest version of each framework only.** No version matrix. `VERSIONS` in
   `emitters/constants.ts` is the table that says what latest means, framework runtimes
   included; nothing arrives from a generator's own `package.json`.
+- **A project supports the package-manager version it declares, and no other.** `packageManager` in the
+  generated `package.json` names one manager at one version, and that is the one the project is built and tested
+  against. After generation the environment is the user's: another major on PATH, a global config or a registry
+  mirror is theirs to reconcile, and neither the project nor this CLI adapts to it. Accepted with it: two managers
+  can resolve different versions of the same dependency for the same answers without either failing. The
+  end-to-end suite installs every target once on each manager, so a resolution that breaks fails there; one that
+  differs and still installs and passes `check` on both is not looked for.
 - **No JavaScript output.** `@linteljs/create` generates TypeScript, and there is no question about it. The
   standard it ships is typed end to end: `type-standards.md` is written against a compiler,
   `scripts/typecheckStaged.ts` gates every commit, `tsc --noEmit` is a leg of `check`, and the `.d.ts` naming key
@@ -145,7 +152,7 @@ These are decisions, not omissions. Re-adding any of them needs an argument.
 - **No bundler choice for Next.** Turbopack is the framework's default and `--rspack` its one alternative. A
   generated project takes the default, which is the position every other target is in.
 - **No deprecation notice is muted.** Nothing emitted writes `allowedDeprecatedVersions`, and the end-to-end suite
-  asserts on install warnings for all five managers but never on a deprecation. A deprecation says a third-party
+  asserts on install warnings for every manager but never on a deprecation. A deprecation says a third-party
   package reached end of life; it is true, the package belongs to somebody else, and config in a generated project
   only hides it from the person who could report it. The one that reaches a generated project today is React
   Native's `expo` pulling `uuid@7` through `@expo/config-plugins` and `xcode`.
@@ -1393,15 +1400,23 @@ against the catalog.
 
 ## The end-to-end matrix
 
-Every answer this CLI can be given is covered, in 211 cases rather than the whole product. `matrix.ts` enumerates
-them; nothing is listed by hand. Per target, every legal combination of the single-select axes on every package
-manager is enumerated, and a greedy cover keeps enough of them that every *pair* of answer values appears at least
-once. A multi-select axis is never combined: it is always its full value (`libraries`, `agents`, `plugins`,
-`surfaces`), so every case carries a target's heaviest dependency set. `languages` is the one exception: it is an
-axis of two values, none or all six, since a project without it is byte-identical to one generated before it and
-must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through an exact-tag match. The
-axes are `packageManager`, `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`,
-`languages`, `testing` and `typeSafety`.
+Every answer that changes emitted code is covered, in 214 cases rather than the whole product. `matrix.ts`
+enumerates them; nothing is listed by hand. Per target, every legal combination of the varying axes is enumerated
+under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 174
+cases. The axes are `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `mocking`,
+`languages`, `testing`, and each library on or off as an axis of its own. `agents`, `plugins` and `surfaces` are
+always their full value, and `typeSafety` is always `strict`: neither changes what is installed, and `relaxed` only
+loosens rules over the same files. `languages` is none or all six, since a project without it is byte-identical to
+one generated before it and must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through
+an exact-tag match.
+
+On top of the pairs, 40 more. Per target, the first case answering the most (every library, every optional answer
+the target offers) runs once on each other manager, npm, Yarn 4 and bun: 30 smoke cases. A smoke is the whole case,
+so it holds each manager's config files, the husky install script under the lifecycle husky documents for it
+(`prepare` for npm, pnpm and bun, `postinstall` for Yarn 4), the layout Metro has to read through symlinks, npm's
+`npm ls --all`, and `INSTALL_NOISE` at the same strictness as pnpm. On React, the same case runs again with
+`--skip fix` and with `--no-install`, after which the harness installs and runs `check` itself. On every target a
+browser serves, the same case runs a browser pass after `check`: 8 cases.
 
 An install is around 60% of a case, 19.7 to 30.5 seconds of a 39 to 52 second one, so the full product is days of
 machine time and splitting it across machines divides that rather than reducing it. Installing once per distinct
@@ -1418,7 +1433,7 @@ Every defect the suite has found was a two-way interaction, and none needed a th
 | floating promise in `src/devtools/index.ts` | the extension target, on Chrome |
 | a leftover `app.spec.ts` | Angular, with `testing: none` |
 | `@mocks/renderScreen` importing what is not installed | React Native, with `testing: none` |
-| `customTypes.d.ts` against KEBAB_CASE | Angular, with `typeSafety: relaxed` |
+| `customTypes.d.ts` against KEBAB_CASE | Angular, with `typeSafety: relaxed` (no longer run: strict only) |
 
 Greedy set cover over the legal enumeration: every case it can pick is one `refuseMisfit` accepts, so nothing has to
 be checked for legality and the pair universe is by construction the reachable one. It is deterministic, so a label
@@ -1426,10 +1441,20 @@ that failed names the same case when run again with `-t`. Three-way interactions
 cross product for a pre-release sweep. `matrix.test.ts` pins that no reachable pair is lost, against a pair
 definition of its own rather than the generator's, and that the combination behind each defect above still appears.
 
-The manager is an axis because what it changes is how it resolves the dependency set a target and its answers emit,
-and the files the CLI writes for it (`pnpm-workspace.yaml`, `.yarnrc.yml`, the script spellings): a pair of the
-manager with each answer that moves a dependency. The floor is five managers times a target's widest axis, which is
-what Astro and the extension, at 30 each, sit on.
+The manager is not an axis. What it changes is how the dependency set a target emits is resolved and the files
+the CLI writes for it (`pnpm-workspace.yaml`, `.yarnrc.yml`, the script spellings), and the widest case holds every
+dependency a target can emit, so one smoke per manager and target installs all of them. What a manager resolves
+differently but still installs is the accepted risk under [Non-goals](#non-goals).
+
+### The browser pass
+
+`browser/browser.ts` serves the built project with its own `preview` script (`start` for Next, `ng serve` for
+Angular, which has no preview server), loads `/` in the system Chrome through `playwright-core`, and follows every
+same-origin link the page holds, each loaded fresh so the server answers it too. A console error, an uncaught page
+error, a status other than 200 or a page without an `h1` fails the case. `channel: 'chrome'` rather than a
+downloaded browser, because the CDN playwright downloads from can be blocked where npm is not. The extension and
+React Native have no pass: an extension's pages are loaded by the browser from `dist/`, not served, and React
+Native's web build is not what ships. Measured: 1.8 s on Next, 3.7 s on React, 5.6 s on Angular, on top of a 50 to 60 second case.
 
 ### One registry on a fixed port
 
@@ -1448,9 +1473,9 @@ names one manager, and the suite runs its cases on whatever binary of it is on P
 manager. Unset, a run takes every manager whose binary answers with a version this suite would record as that
 manager.
 
-The jobs are not even and do not need to be: at concurrency two, npm measured 2843
-case-seconds, yarn 1629, pnpm 1622 and bun 1471, so the slowest job is about 24 minutes of cases. The pair cover gives
-each manager 40 to 46 of the 209.
+The jobs are not even and do not need to be: pnpm carries 154 cases and npm, Yarn 4 and bun 10 each.
+Measured on one machine at concurrency two, a 16-case subset (12 pnpm, 4 smokes) took 980 seconds, about 61
+seconds a case; a React Native smoke on npm took 197.
 
 ### Concurrency is real, and caches are shared carefully
 
@@ -1673,8 +1698,8 @@ One global block at 100% rather than a key per package. A glob key takes its fil
 with keys a folder nobody named stays ungated; with one global block every file in `coverage.include` is held, and a
 file joins the gate the moment it is included.
 
-The end-to-end harness (`e2e/registry/`, `e2e/runner/`, `e2e/targets/`, `e2e/utils/` and the files at `e2e/`'s top
-level) is excluded: it spawns, publishes and needs the registry, so it runs only under `test:e2e`, and a helper there
+The end-to-end harness (`e2e/browser/`, `e2e/registry/`, `e2e/runner/`, `e2e/targets/`, `e2e/utils/` and the files
+at `e2e/`'s top level) is excluded: it spawns, publishes and needs the registry, so it runs only under `test:e2e`, and a helper there
 would land as a 0% file against a 100% threshold. `e2e/matrix/` is pure and runs in the default suite, so it is held
 to the gate. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
 `process.argv` and sets `process.exitCode`, and `main` is a function from an argv array to an exit code that

@@ -7,16 +7,23 @@ paths:
 
 # The end-to-end suite
 
-`pnpm --filter @linteljs/create test:e2e` runs 211 cases, each a real generate, install and `check`, and is outside
+`pnpm --filter @linteljs/create test:e2e` runs 214 cases, each a real generate, install and `check`, and is outside
 `pnpm check` because every case hits the network. `docs/DESIGN.md`, "The end-to-end matrix", carries the why of
 everything below.
 
 - **Layout**: `matrix/matrix.ts` enumerates the cases (`targetCases`), `registry/registry.ts` is the
   `globalSetup`, `runner/runner.ts` runs one case, `targets/targets.e2e.test.ts` is the one file every target's
   cases run from. The `.e2e.` infix keeps it out of the default run.
-- **Every pair, not every combination**: per target, a greedy cover keeps enough combinations that every pair of
-  answer values appears once, the package manager among the axes, with every multi-select at its full value.
-  `matrix.test.ts` holds that no reachable pair is lost and that each past defect's combination survives.
+- **Every pair, not every combination, under pnpm**: per target, a greedy cover keeps enough pnpm combinations
+  that every pair of answer values appears once (174), each library its own on/off axis, `agents`, `plugins` and
+  `surfaces` at their full value, `typeSafety` strict. `matrix.test.ts` holds that no reachable pair is lost and
+  that each past defect's combination survives.
+- **One smoke per other manager**: each target's widest case runs once on npm, Yarn 4 and bun (30), so every
+  manager installs every dependency a target emits. React adds a `--skip fix` and a `--no-install` case.
+- **Browser pass**: on the eight served targets the widest pnpm case also serves its build, loads every linked
+  route in the system Chrome (`playwright-core`, `channel: 'chrome'`) and fails on a console error, a non-200 or a
+  missing `h1`. Skipped on webextension (its pages are loaded from `dist/`, not served) and React Native (its web
+  build is not what ships).
 - **It installs the checkout, never npm**: a local Verdaccio on one fixed port publishes the three packages and
   installs the CLI from them. `E2E_UPSTREAM` replaces npmjs as its uplink; start such a run on an empty
   `.e2e-cache/registry`.
