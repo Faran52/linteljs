@@ -1,0 +1,27 @@
+import { Button, TextInput } from '../../components/ui';
+import { t } from '../../i18n';
+
+import { useContactForm } from './useContactForm';
+
+import type { JSX } from 'solid-js';
+
+export const ContactPage = (): JSX.Element => {
+  const form = useContactForm();
+
+  return (
+    <main class="page">
+      <h1 class="page-title">{t('contact')}</h1>
+      <p class="page-lede">{t('contactLede')}</p>
+
+      {form.sent()
+        ? <p class="sent" role="status">{t('contactSent')}</p>
+        : (
+            <form novalidate onSubmit={form.onSubmit}>
+              <TextInput {...form.fields.email} />
+              <TextInput {...form.fields.message} />
+              <Button type="submit" disabled={!form.canSubmit()}>{t('contactSend')}</Button>
+            </form>
+          )}
+    </main>
+  );
+};

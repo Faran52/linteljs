@@ -56,6 +56,7 @@ export const VERSIONS: Record<string, string> = {
   '@stylexjs/stylex': '^0.19.1',
   '@stylexjs/unplugin': '^0.19.1',
   'unplugin': '^2.3.11',
+  '@solid-primitives/i18n': '^2.2.1',
   '@solidjs/testing-library': '^0.8.10',
   // What lets vitest load React Native at all.
   '@srsholmes/vitest-react-native': '^0.1.5',

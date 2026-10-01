@@ -18,12 +18,12 @@ describe('languagesAnswer', () => {
 
   it('takes a slot on a target that translates its starter and on no other', () => {
     const react = targetFor(DEFAULT_ANSWERS);
-    const solid = targetFor({
+    const angular = targetFor({
       ...DEFAULT_ANSWERS,
-      target: 'solid',
+      target: 'angular',
     });
 
     expect(languagesAnswer.slot(react)).toBe(true);
-    expect(languagesAnswer.slot(solid)).toBe(false);
+    expect(languagesAnswer.slot(angular)).toBe(false);
   });
 });

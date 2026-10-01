@@ -734,7 +734,7 @@ describe('the languages answer', () => {
 
   it('is refused on a target that does not translate its starter', () => {
     expect(() => {
-      return parseLinteljsConfig(configWith('solid'));
-    }).toThrow('languages is not an answer for solid');
+      return parseLinteljsConfig(configWith('angular'));
+    }).toThrow('languages is not an answer for angular');
   });
 });

@@ -11,6 +11,7 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -24,7 +25,9 @@ import {
   ACCESSORS,
   ALWAYS,
   SHARED,
+  SOLID_I18N,
 } from './constants';
+import { solidI18nFiles, solidI18nTests } from './utils/translatedFileUtils';
 
 import type { StarterFile, TargetRecord } from '../types';
 
@@ -69,6 +72,8 @@ export const solidTarget: TargetRecord = {
     ...componentStyles(),
     ...componentStyleModules(),
     ...accessorFiles(ACCESSORS),
+    ...solidI18nFiles(),
+    ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
         return { target };
@@ -100,7 +105,6 @@ export const solidTarget: TargetRecord = {
     },
     { target: 'src/components/ui/button/Button.tsx' },
     ...([
-      'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.tsx',
     ] as const)
@@ -192,6 +196,8 @@ export const solidTarget: TargetRecord = {
     ...mockTests(true),
     STATUS_UTILS_TEST,
     ...accessorTests(ACCESSORS),
+    ...solidI18nTests(),
+    LOCALES_TEST,
     {
       target: 'src/App.test.tsx',
       covers: 'src/App.tsx',
@@ -258,5 +264,6 @@ export const solidTarget: TargetRecord = {
   devDependencies: [...PARTS.solid.devDependencies, 'vite'],
   allowBuilds: [],
   stateRules: ['solid-reactivity.md'],
+  i18n: SOLID_I18N,
   routerMock: ROUTER_MOCK,
 };
