@@ -37,7 +37,6 @@ interface Sweep {
   textCount: number;
   classes: TextClass[];
   classOf: Map<string, TextClass>;
-  cases: Map<string, E2eCase>;
   placed: Set<string>;
 }
 
@@ -72,6 +71,11 @@ const signatureOf = (copied: Copied[]): string => {
     .join('\n');
 };
 
+const allCases = (): E2eCase[] => {
+  return valuesOf(ANSWERS.target.values)
+    .flatMap(everyCase);
+};
+
 const buildSweep = (): Sweep => {
   const textIds = new Map<string, number>();
   const bySignature = new Map<string, TextClass>();
@@ -79,7 +83,6 @@ const buildSweep = (): Sweep => {
     textCount: 0,
     classes: [],
     classOf: new Map(),
-    cases: new Map(),
     placed: new Set(),
   };
 
@@ -113,10 +116,7 @@ const buildSweep = (): Sweep => {
     return made;
   };
 
-  const targetCases = valuesOf(ANSWERS.target.values)
-    .flatMap(everyCase);
-
-  for (const item of targetCases) {
+  for (const item of allCases()) {
     const copied = writtenFor(item.answers);
     const written = signatureOf(copied);
     const signature = `${item.answers.target}\n${written}`;
@@ -124,7 +124,6 @@ const buildSweep = (): Sweep => {
 
     bySignature.set(signature, found);
     sweep.classOf.set(item.label, found);
-    sweep.cases.set(item.label, item);
   }
 
   sweep.textCount = textIds.size;
@@ -220,12 +219,17 @@ export const starterCover = (labels: readonly string[]): StarterCover => {
   };
 };
 
+// Without the sweep, so the lint tool pays only for the enumeration.
 export const starterCases = (labels: readonly string[]): E2eCase[] => {
-  const { cases } = sweepOnce();
+  const pairs = allCases()
+    .map((item): [string, E2eCase] => {
+      return [item.label, item];
+    });
+  const byLabel = new Map(pairs);
 
   return labels
     .flatMap((label) => {
-      const found = cases.get(label);
+      const found = byLabel.get(label);
 
       return found === undefined ? [] : [found];
     });
