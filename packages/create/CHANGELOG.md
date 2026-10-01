@@ -123,6 +123,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- **The emitted `.npmrc` no longer sets `legacy-peer-deps`**, and npm projects get none: npm resolves peers
+  itself and fails on a peer conflict rather than silently choosing. `vite` (outside yarn) and StyleX's
+  `@csstools/css-tokenizer` are no longer named for npm; `test-renderer` stays named.
 - **The starter source imports across aliased directories through the most specific alias** (`@ui`,
   `@features/app-header/AppHeader`, `@config/linteljs`) and within one relatively, the shape
   `@linteljs/prefer-alias` asks for, so a new project passes its own typed lint. React Router framework mode's
@@ -173,8 +176,6 @@ when a version's change lives in a sibling it is described there instead:
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every
   git and install it spawns drops the repository variables git exports (`git rev-parse --local-env-vars`), so
   `git init` no longer reinitialises the caller's repository as bare and husky sets its hooks path on the project.
-- An npm project with StyleX passes `lint:css`: it names `@csstools/css-tokenizer` 4 as a dev dependency, so npm
-  no longer hoists the StyleX lint plugin's 3.x where stylelint reads it and fails every `clamp()` and `calc()`.
 - A React Router framework project has a document title: `root.tsx` renders the project's name (D2).
 - A Nuxt project has a document title: `nuxt.config.ts` sets `app.head.title` to the project's name (D6).
 - A React Native project's web build has a document title: the root layout sets the project's name through

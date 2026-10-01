@@ -422,6 +422,14 @@ describe('buildDevDependencies', () => {
     expect(buildDevDependencies(answersFor({ testing: 'none' }))).not.toHaveProperty('vitest');
   });
 
+  it('names vite beside vitest for yarn only, since yarn installs no peers', () => {
+    const next = { target: 'next' } as const;
+
+    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }))).toHaveProperty('vite');
+    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'yarn-classic' }))).toHaveProperty('vite');
+    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'npm' }))).not.toHaveProperty('vite');
+  });
+
   it('installs the stylex lint plugin, the build plugin and its peer', () => {
     const devDependencies = buildDevDependencies(answersFor({ styling: 'stylex' }));
 
@@ -429,19 +437,6 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).toHaveProperty('@stylexjs/eslint-plugin');
     expect(devDependencies).toHaveProperty('unplugin');
     expect(devDependencies).not.toHaveProperty('@stylexjs/babel-plugin');
-  });
-
-  it('names the css tokenizer major stylelint reads beside stylex, on every build route', () => {
-    const vite = buildDevDependencies(answersFor({ styling: 'stylex' }));
-    const next = buildDevDependencies(answersFor({
-      target: 'next',
-      styling: 'stylex',
-    }));
-    const plain = buildDevDependencies(answersFor({}));
-
-    expect(vite['@csstools/css-tokenizer']).toMatch(/^\^4\./);
-    expect(next['@csstools/css-tokenizer']).toMatch(/^\^4\./);
-    expect(plain).not.toHaveProperty('@csstools/css-tokenizer');
   });
 
   it('installs the babel and postcss halves where there is no vite config', () => {

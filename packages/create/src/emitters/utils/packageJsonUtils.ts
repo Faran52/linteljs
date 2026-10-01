@@ -262,8 +262,6 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     // Without the build plugin the emitted config imports a module never installed; `unplugin` is a real peer.
     stylex: [
       '@stylexjs/eslint-plugin',
-      // Else npm roots the lint plugin's 3.x, and stylelint's css-calc fails every `clamp()` and `calc()`.
-      '@csstools/css-tokenizer',
       ...target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin'],
     ],
   };
@@ -279,7 +277,12 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(target.html ? HTML_DEV_DEPENDENCIES : []),
     'typescript',
     ...(hasTests(answers)
-      ? [...RUNNER_DEV_DEPENDENCIES, ...target.testDevDependencies ?? []]
+      // Yarn installs no peers, and vitest needs `vite`; npm installs it itself.
+      ? [
+          ...RUNNER_DEV_DEPENDENCIES,
+          ...answers.packageManager.startsWith('yarn') ? ['vite'] : [],
+          ...target.testDevDependencies ?? [],
+        ]
       : []),
     ...(answers.styling === undefined ? [] : stylingDev[answers.styling]),
     ...(answers.data === undefined ? [] : dataDev[answers.data]),

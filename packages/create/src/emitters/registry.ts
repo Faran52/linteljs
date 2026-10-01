@@ -31,7 +31,6 @@ import { typecheckStagedEmitter } from './always/typecheck-staged/typecheckStage
 import { i18nConfigEmitter } from './libraries/i18n-config/i18nConfigEmitter';
 import { styleEntryEmitter } from './libraries/style-entry/styleEntryEmitter';
 import { bunfigEmitter } from './manager/bunfig/bunfigEmitter';
-import { npmrcEmitter } from './manager/npmrc/npmrcEmitter';
 import { pnpmWorkspaceEmitter } from './manager/pnpm-workspace/pnpmWorkspaceEmitter';
 import { yarnrcEmitter } from './manager/yarnrc/yarnrcEmitter';
 import { angularConfigEmitter } from './target/angular-config/angularConfigEmitter';
@@ -79,7 +78,6 @@ export const BUILD_EMITTERS: Record<string, Emitter> = {
   'target/nuxt-config': nuxtConfigEmitter,
   'testing/vitest-config': vitestConfigEmitter,
   'testing/test-setup': testSetupEmitter,
-  'manager/npmrc': npmrcEmitter,
   'manager/yarnrc': yarnrcEmitter,
   'manager/bunfig': bunfigEmitter,
 };

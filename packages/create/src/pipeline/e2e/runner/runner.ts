@@ -159,6 +159,11 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
   expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
     .not.toHaveProperty('linteljs');
 
+  // Without `legacy-peer-deps` npm exits non-zero on a peer it resolved to an invalid range.
+  if (answers.packageManager === 'npm') {
+    expect(outcome(await runPm('npm', ['ls', '--all'], project), 'npm ls')).toBe('npm ls: ok');
+  }
+
   await verifyLintOutput(answers.packageManager, project);
 
   if (answers.styling === 'stylex') {

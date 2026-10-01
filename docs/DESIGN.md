@@ -167,8 +167,8 @@ An element with no accessible name is the same defect in a Vite React app, a Sol
 layers arrives. Measured against a real Next project: 31 newly error-level rules, zero new findings.
 
 **The plugin is the `-x` fork, and that is a bun decision.** `eslint-plugin-jsx-a11y` caps its `eslint` peer at 9.
-It runs on 10; the metadata is stale. npm waves it through with `legacy-peer-deps`, pnpm with
-`peerDependencyRules` and yarn with `packageExtensions`, but bun has no equivalent: measured against a real
+It runs on 10; the metadata is stale. pnpm waves it through with `peerDependencyRules` and yarn with
+`packageExtensions`, but bun has no equivalent: measured against a real
 install, `.npmrc` `legacy-peer-deps`, `bunfig.toml` `logLevel = "error"`, `install.peer = false`, `--omit=peer`,
 `--silent`, a root `peerDependenciesMeta` and a `bun patch` of the plugin's range all still print
 `warn: incorrect peer dependency`, because bun reads the range from the registry manifest. So the layers take
@@ -1048,11 +1048,12 @@ matched by exact name; Yarn 4.9.4 refuses `npmMinimalAgeGate` as an unrecognized
 `.yarnrc.yml` carries it only when the recorded Yarn is 4.10.1 or later. The
 e2e harness zeroes none of them: each project's own exemption lets the just-published linteljs packages through.
 
-`.npmrc` and `.yarnrc.yml` are load-bearing, measured on React and Next with each removed. Without
-`legacy-peer-deps` npm refuses the install outright; its price is that npm installs no peers, which is why `vite` is
-a named dev dependency wherever vitest is. For the same reason StyleX names `@csstools/css-tokenizer` 4: npm otherwise
-roots `@stylexjs/eslint-plugin`'s 3.x, stylelint's css-calc resolves that against its `^4` peer, and every math
-function in the CSS is reported invalid (measured 2026-10-01, stylelint 17.15.0, css-calc 3.4.1). Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
+`.yarnrc.yml` is load-bearing, measured on React and Next with it removed. npm emits no `.npmrc`: it resolves peers
+itself, and a conflict must fail the install (and the e2e `npm ls --all`) rather than be silently chosen, which
+`legacy-peer-deps` did. Measured 2026-10-01 with npm 11 and the flag off, `vite` for vitest and StyleX's
+`@csstools/css-tokenizer` 4 both install correctly unnamed (`npm ls --all` exit 0, stylelint exit 0 on the
+emitted CSS), so they are not named for npm; yarn installs no peers and still names `vite`. `test-renderer` stays
+named: unnamed, npm picks 1.3.0, whose `react ^19.3.0` peer fails against Expo's 19.2.3 and `npm ls` exits 1. Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
 TypeScript resolver and `check` fails with 46 errors.
 
 `.yarnrc.yml` is emitted, so its `packageExtensions` follow the dependencies a project installs, and it answers a

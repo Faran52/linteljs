@@ -48,8 +48,6 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/solid-store': '^0.11.2',
   '@tanstack/svelte-store': '^0.12.2',
   '@tanstack/vue-store': '^0.11.2',
-  // Stylelint's own major, named beside StyleX; `utils/packageJsonUtils.ts` says why.
-  '@csstools/css-tokenizer': '^4.0.2',
   '@stylexjs/babel-plugin': '^0.19.1',
   '@stylexjs/postcss-plugin': '^0.19.1',
   '@stylexjs/stylex': '^0.19.1',
@@ -144,8 +142,7 @@ export const VERSIONS: Record<string, string> = {
   'svelte-check': '^4.7.6',
   'svelte-eslint-parser': '^1.8.1',
   'tailwindcss': '^4.3.3',
-  // Named: npm under `legacy-peer-deps` skips this peer, and `screen.getByTestId().props` becomes an error type.
-  // Tilde: 1.3.0 peers `react ^19.3.0` and Expo pins 19.2.3. Raise once an Expo SDK ships react 19.3.
+  // Tilde: 1.3.0 peers `react ^19.3.0` and Expo pins 19.2.3, so unnamed, npm installs 1.3.0 and `npm ls` fails.
   'test-renderer': '~1.2.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
@@ -215,12 +212,10 @@ export const SHARED_DEV_DEPENDENCIES = [
   'stylelint-order',
 ];
 
-// `vite` is vitest's required peer; npm under `legacy-peer-deps` installs no peers.
 export const RUNNER_DEV_DEPENDENCIES = [
   '@vitest/coverage-v8',
   '@vitest/eslint-plugin',
   'happy-dom',
-  'vite',
   'vitest',
 ];
 
