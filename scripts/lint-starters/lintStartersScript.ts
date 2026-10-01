@@ -9,6 +9,7 @@ import { join, relative } from 'node:path';
 import process, { argv } from 'node:process';
 
 import { ESLint, type Linter } from 'eslint';
+import tseslint from 'typescript-eslint';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '../../packages/create/src/answers';
 import { targetFor } from '../../packages/create/src/targets';
@@ -98,11 +99,14 @@ const STARTER_OVERRIDES: Linter.Config[] = [
     name: '@linteljs/starters/no-single-run',
     languageOptions: { parserOptions: { disallowAutomaticSingleRunInference: true } },
   },
-  // `no-redundant-optional` reads the program's `exactOptionalPropertyTypes`, which needs a real tsconfig.
+  // No program, so the type-aware rules go off, and `no-redundant-optional`, which reads `exactOptionalPropertyTypes`.
   {
+    ...tseslint.configs.disableTypeChecked,
     name: '@linteljs/starters/no-program',
-    languageOptions: { parserOptions: { projectService: false } },
-    rules: { 'sonarjs/no-redundant-optional': 'off' },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      'sonarjs/no-redundant-optional': 'off',
+    },
   },
 ];
 
@@ -112,6 +116,7 @@ const eslintFor = async (target: TargetId): Promise<Linters> => {
   const config = await composeConfig({
     framework: record.framework,
     astro: record.astro === true,
+    typescript: true,
     vitest: true,
     libraries: ['stylex'],
     naming: record.naming,

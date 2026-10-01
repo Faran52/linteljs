@@ -1319,13 +1319,16 @@ of three ESLint packages.
 
 So `pnpm lint:starters`, a leg of `pnpm check`, lints each file the way the project receiving it will.
 `composeConfig` is the function a generated `eslint.config.js` calls, handed that target's framework and its
-record's `naming` and `folderNaming` maps, and each file is judged at the path its record places it on, which is what makes the naming rules mean anything. The answers widen
+record's `naming` and `folderNaming` maps and `typescript: true` as every generated config has, and each file is judged at the path its record places it on, which is what makes the naming rules mean anything. The answers widen
 per target until every file is placed, so a starter nothing ships is reported rather than linted at a guess. It
 reads the same `starterSourceEmitter` as the pipeline, so the two cannot disagree about where a file lives.
 `lint:starters:fix` runs the same config to repair what is autofixable, because a `create` run's `fix` stage is
-skippable. `.astro`, `.vue` and `.svelte` are read by their own parsers with `projectService` off, since it resolves
-a file against a real `tsconfig.json` and this walk lints text at a path nothing on disk holds; one rule goes off
-with it, `sonarjs/no-redundant-optional`, which reads the program to decide whether to run.
+skippable. Every file is read with `projectService` off, since it resolves a file against a real `tsconfig.json` and
+this walk lints text at a path nothing on disk holds, so typescript-eslint's `disableTypeChecked` turns its
+type-aware rules off by name and `sonarjs/no-redundant-optional` goes with them, since it reads the program to
+decide whether to run. Until 2.0 the walk left out `typescript: true`, so the whole typescript layer was missing,
+its rules that need no types included; a `type` where the standard wants an `interface` passed here and failed
+the project.
 
 The test setup is not a starter but fragments joined into one file, `__mocks__/setupTests.ts`, so the walk also
 joins them as `testSetupEmitter` does, once per distinct join its answer sets produce (one set adds `msw` and
@@ -1341,7 +1344,11 @@ resolve, relative ones included, so a misspelled import would pass. A bare speci
 relative one is a finding.
 
 **Its ceiling is stated.** It runs no type-aware rules, because a program over dependencies this workspace does not
-install is not a program. Everything that needs real framework types (a `safeParse` read as `{ issues }` rather than
+install is not a program. Measured on 2026-10-01: the project service's default project over the same texts gave
+6,261 findings across the 488 files, every one from a type-aware rule and 6,210 of them `no-unsafe-*`, since each
+framework import reads as an error type, and the starters do not resolve one another, since a text opened in the
+service is not a file on disk. So `sonarjs/function-return-type`, `require-await` and `no-floating-promises` stay
+with the real project too. Everything that needs real framework types (a `safeParse` read as `{ issues }` rather than
 `{ error }` against Zod 4, a props type resolved to `any` across a component boundary, a promise dropped from a blur
 handler) is found only by a real project. The fast loop for that is one project on disk, not the matrix: generate
 into a temp directory with `--no-install`, point the two `@linteljs/*` dependencies at packed tarballs through
