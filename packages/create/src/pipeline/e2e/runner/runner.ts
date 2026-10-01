@@ -4,6 +4,7 @@ import {
   readFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { env } from 'node:process';
 
 import { expect } from 'vitest';
 
@@ -132,6 +133,22 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
   const create = await createProject(root, name, answers);
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
+
+  // `lint:starters:typed`: an installed project and its own lint alone, the one gate a typed rule shows in.
+  if (env['E2E_TYPED_LINT'] === '1') {
+    const lint = await runPm(answers.packageManager, [
+      'exec',
+      'eslint',
+      '.',
+      '--max-warnings',
+      '0',
+    ], project);
+
+    expect(outcome(lint, `${name} eslint`)).toBe(`${name} eslint: ok`);
+
+    return;
+  }
+
   expect(create.output).not.toContain('next: ');
   expect(INSTALL_NOISE[answers.packageManager](create.output)).toEqual([]);
   expect(existsSync(join(project, '.husky/_'))).toBe(true);

@@ -241,8 +241,35 @@ const everyCase = (target: TargetId): E2eCase[] => {
     });
 };
 
+// Per router, since each ships its own starters, the first case answering the most: enumeration puts pnpm,
+// Vitest and strict first, so a tie keeps them.
+const typedLintCases = (target: TargetId, every: E2eCase[]): E2eCase[] => {
+  const answeredCount = ({ answers }: E2eCase): number => {
+    return Object.keys(answers).length;
+  };
+
+  return (recordFor(target, {}).routers ?? [undefined])
+    .flatMap((router) => {
+      const routed = every
+        .filter(({ answers }) => {
+          return answers.router === router;
+        });
+      const most = Math.max(...routed.map(answeredCount));
+
+      return routed
+        .filter((candidate) => {
+          return answeredCount(candidate) === most;
+        })
+        .slice(0, 1);
+    });
+};
+
 export const targetCases = (target: TargetId): E2eCase[] => {
   const every = everyCase(target);
+
+  if (env['E2E_TYPED_LINT'] === '1') {
+    return typedLintCases(target, every);
+  }
 
   return env['E2E_FULL'] === '1' ? every : coveringSubset(every);
 };

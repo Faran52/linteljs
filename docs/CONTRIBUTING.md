@@ -30,6 +30,16 @@ Run it for anything that changes what a generated project receives. It has caugh
 gate structurally cannot see, including a package that installs but is never imported and a first
 `pnpm install` that aborts.
 
+Three gates read the starter source, each trading reach for speed:
+
+- `pnpm lint:starters`, a leg of `pnpm check`, lints every starter file in seconds, untyped, since this
+  workspace installs no framework.
+- `pnpm lint:starters:typed` runs the end-to-end harness for one case per target and React router,
+  pnpm with every answer on, and runs only the project's `eslint . --max-warnings 0`, where the
+  type-aware rules run. It needs the network, so it stays out of `pnpm check`; run it for a change to
+  a starter or a layer. `E2E_UPSTREAM` names a mirror where npmjs is out of reach.
+- The end-to-end suite above is the full matrix and the whole gate.
+
 ## The three packages
 
 ```

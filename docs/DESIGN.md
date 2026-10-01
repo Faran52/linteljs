@@ -1350,10 +1350,14 @@ framework import reads as an error type, and the starters do not resolve one ano
 service is not a file on disk. So `sonarjs/function-return-type`, `require-await` and `no-floating-promises` stay
 with the real project too. Everything that needs real framework types (a `safeParse` read as `{ issues }` rather than
 `{ error }` against Zod 4, a props type resolved to `any` across a component boundary, a promise dropped from a blur
-handler) is found only by a real project. The fast loop for that is one project on disk, not the matrix: generate
-into a temp directory with `--no-install`, point the two `@linteljs/*` dependencies at packed tarballs through
-`overrides`, install once, and run the project's own `lint:fix` and `pnpm check`. About ninety seconds, and the same
-gate the matrix runs.
+handler) is found only by a real project. That loop is `pnpm lint:starters:typed`: the end-to-end harness, its
+Verdaccio and cached registry, under `E2E_TYPED_LINT=1` and `E2E_PM=pnpm`, runs one case per target and per React
+router, since each router ships its own starters: the first pnpm, Vitest and strict case answering the most,
+languages included. It installs and runs only that project's
+`eslint . --max-warnings 0`. A second harness would drift from the one the matrix trusts, so it is a mode of that one.
+It needs the network, so it is outside `pnpm check`. The split is three gates: `lint:starters` is fast, untyped and
+reads every file; `lint:starters:typed` is local, typed and samples twelve cases; the end-to-end matrix is every pair
+and the whole gate.
 
 `children?: React.ReactNode` with no React import is legal TypeScript, since `@types/react` declares `React`
 globally for JSX. It is a style this standard holds, so it is `@linteljs/react-no-global-namespace`: published,

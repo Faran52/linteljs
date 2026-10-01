@@ -372,6 +372,49 @@ describe('targetCases', () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 
+  it('runs one pnpm case per target and router under the typed lint, answering as much as any case can', () => {
+    for (const target of TARGET_IDS) {
+      const routers = targetFor({
+        ...DEFAULT_ANSWERS,
+        target,
+      }).routers ?? [undefined];
+
+      vi.stubEnv('E2E_TYPED_LINT', '1');
+
+      const typed = targetCases(target);
+
+      vi.unstubAllEnvs();
+
+      const typedRouters = typed
+        .map(({ answers }) => {
+          return answers.router;
+        });
+
+      expect(typedRouters).toEqual(routers);
+
+      for (const { answers } of typed) {
+        const widestCount = everyCase(target)
+          .filter((item) => {
+            return item.answers.router === answers.router;
+          })
+          .reduce((widest, item) => {
+            return Math.max(widest, Object.keys(item.answers).length);
+          }, 0);
+
+        expect(answers).toMatchObject({
+          packageManager: 'pnpm',
+          testing: 'vitest',
+          typeSafety: 'strict',
+          languages: valuesOf(ANSWERS.languages.values),
+        });
+
+        const answeredCount = Object.keys(answers).length;
+
+        expect(answeredCount).toBe(widestCount);
+      }
+    }
+  });
+
   it('is stable, so a label names the same case twice running', () => {
     for (const target of TARGET_IDS) {
       const firstLabels = targetCases(target)
