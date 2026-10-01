@@ -93,7 +93,7 @@ when a version's change lives in a sibling it is described there instead:
   Router's framework mode, with its own build, route modules and generated types. `libraries`
   adds es-toolkit (the default), ts-pattern and t3-env beside Zod.
 - The state store is a choice: Zustand, Redux Toolkit or TanStack Store on React, Next and React Native; Pinia or
-  TanStack Store on Vue and Nuxt; TanStack Store on Svelte and Solid; NgRx Signals or NgRx Store on Angular; Nano
+  TanStack Store on Vue and Nuxt; TanStack Store on Svelte and Solid; NgRx Signals on Angular; Nano
   Stores on Astro.
 - `sync` removes what a deselected answer left behind, from the record in `plugins/linteljs/managed.json`.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and

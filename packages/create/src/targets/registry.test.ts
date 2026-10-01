@@ -217,7 +217,7 @@ describe('what each target offers', () => {
     ],
     [
       'angular',
-      ['ngrx-signals', 'ngrx-store'],
+      ['ngrx-signals'],
       undefined,
     ],
     [

@@ -253,12 +253,6 @@ describe('buildDependencies', () => {
       ['@ngrx/signals'],
     ],
     [
-      'angular',
-      undefined,
-      'ngrx-store',
-      ['@ngrx/store'],
-    ],
-    [
       'astro',
       'react',
       'nanostores',

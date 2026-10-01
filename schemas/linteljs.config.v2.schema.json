@@ -124,7 +124,6 @@
         "tanstack-store",
         "pinia",
         "ngrx-signals",
-        "ngrx-store",
         "nanostores"
       ]
     },

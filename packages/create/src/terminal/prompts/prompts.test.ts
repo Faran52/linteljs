@@ -216,7 +216,7 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
-      'ngrx-store',
+      'ngrx-signals',
       undefined,
       undefined,
       undefined,
@@ -227,7 +227,7 @@ describe('ask', () => {
     ]);
 
     expect(result.answers.target).toBe('angular');
-    expect(result.answers.store).toBe('ngrx-store');
+    expect(result.answers.store).toBe('ngrx-signals');
 
     const mentionsTypescript = recorded.calls
       .some((message) => {
@@ -548,7 +548,6 @@ describe('the store question', () => {
     expect(recorded.labels['State store']).toEqual([
       'None',
       'NgRx SignalStore',
-      'NgRx Store',
     ]);
   });
 

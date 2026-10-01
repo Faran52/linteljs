@@ -35,7 +35,6 @@ export type Store
     | 'tanstack-store'
     | 'pinia'
     | 'ngrx-signals'
-    | 'ngrx-store'
     | 'nanostores';
 
 export type Data = 'tanstack-query' | 'rtk-query';

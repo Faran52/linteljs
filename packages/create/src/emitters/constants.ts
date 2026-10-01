@@ -36,9 +36,8 @@ export const VERSIONS: Record<string, string> = {
   '@angular/compiler-cli': '^22.2.0',
   'rxjs': '~7.8.2',
   'tslib': '^2.8.1',
-  // Both halves of NgRx 22, released together and peering `@angular/core ^22.0.0`, which is what `ng new` writes.
+  // NgRx 22 peers `@angular/core ^22.0.0`, which is what `ng new` writes.
   '@ngrx/signals': '^22.0.1',
-  '@ngrx/store': '^22.0.1',
   '@nanostores/react': '^2.0.1',
   '@nanostores/solid': '^1.1.1',
   '@nanostores/vue': '^1.1.0',
@@ -246,7 +245,6 @@ export const STORE_DEPENDENCIES: Record<Store, readonly string[]> = {
   // pinia 4 made its devtools a required peer, which only pnpm and bun install unasked.
   'pinia': ['pinia', '@vue/devtools-api'],
   'ngrx-signals': ['@ngrx/signals'],
-  'ngrx-store': ['@ngrx/store'],
   'nanostores': ['nanostores'],
 };
 

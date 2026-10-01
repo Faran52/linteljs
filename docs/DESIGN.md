@@ -808,7 +808,7 @@ it.
 | --- | --- |
 | react, next, react-native | `zustand`, `redux-toolkit`, `tanstack-store` |
 | vue, nuxt | `pinia`, `tanstack-store` |
-| angular | `ngrx-signals`, `ngrx-store` |
+| angular | `ngrx-signals` |
 | svelte, solid | `tanstack-store` |
 | astro | `nanostores`, bound through the hosted framework |
 | webextension | not asked |
@@ -818,10 +818,9 @@ A store installs a dependency and nothing else; none ships ESLint rules, and the
 `solid-js/store`, a `$state` rune in a `.svelte.ts` module. The extension is not asked because an MV3 service worker
 is torn down between events, so in-memory state dies with it and real state belongs in `chrome.storage`.
 
-Angular lists SignalStore first. Both live in the NgRx monorepo on one release train, so maintenance separates
-nothing; `ng new` writes a standalone, signal-first app and SignalStore is the NgRx API built for it, while the
-classic store's actions, reducers, effects and selectors are the RxJS-era shape. Classic stays offered for the
-decade of installed base behind it (981k weekly downloads against SignalStore's 519k, measured 2026-08-06).
+Angular offers SignalStore only. `ng new` writes a standalone, signal-first app and SignalStore is the NgRx API
+built for it; its Events plugin (NgRx 19.2+) covers the Flux style, so classic `@ngrx/store` adds a second
+vocabulary for the same job.
 
 ### The router answer
 

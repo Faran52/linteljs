@@ -49,13 +49,6 @@ export const storeAnswer = {
         return target.stores?.includes('ngrx-signals') === true;
       },
     },
-    'ngrx-store': {
-      label: 'NgRx Store',
-      hint: 'Actions, reducers and selectors',
-      only: (target) => {
-        return target.stores?.includes('ngrx-store') === true;
-      },
-    },
     'nanostores': {
       label: 'Nano Stores',
       hint: 'Atoms shared across islands',
