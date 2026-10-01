@@ -24,7 +24,11 @@ describe('StatusPage', () => {
 
     expect(screen.getByRole('heading', { name: '404' })).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe('Page not found');
-    expect(screen.getByRole('link', { name: 'Go home' }).getAttribute('href')).toBe('/');
+    const home = screen.getByRole('link', { name: 'Go home' });
+
+    expect(home.getAttribute('href')).toBe('/');
+    expect(home.hasAttribute('data-sveltekit-reload')).toBe(true);
+    expect(home.classList.contains('status-action-outline')).toBe(false);
     expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
   });
 
@@ -39,7 +43,10 @@ describe('StatusPage', () => {
     });
     await fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
+    const home = screen.getByRole('link', { name: 'Go home' });
+
     expect(retried).toEqual(['retry']);
+    expect(home.classList.contains('status-action-outline')).toBe(true);
   });
 
   it('speaks the language chosen', async () => {

@@ -1,3 +1,5 @@
+import { tick } from 'svelte';
+
 import {
   fireEvent,
   render,
@@ -25,12 +27,22 @@ describe('LanguageSelect', () => {
       .map((option) => {
         return option.textContent;
       });
+    const tags = screen
+      .getAllByRole('option')
+      .map((option) => {
+        return option.getAttribute('lang');
+      });
     const labels = languages
       .map(({ label }) => {
         return label;
       });
+    const ids = languages
+      .map(({ id }) => {
+        return id;
+      });
 
     expect(options).toEqual(labels);
+    expect(tags).toEqual(ids);
     expect(screen.getByRole('combobox', { name: 'Language' })).toBeTruthy();
   });
 
@@ -45,5 +57,15 @@ describe('LanguageSelect', () => {
     expect(select.className).toBe('tab');
     expect(localStorage.getItem(languageStorageKey)).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
+  });
+
+  it('shows the language applied elsewhere', async () => {
+    render(LanguageSelect);
+    applyLanguage(last);
+    await tick();
+
+    const select: HTMLSelectElement = screen.getByRole('combobox');
+
+    expect(select.value).toBe(last);
   });
 });
