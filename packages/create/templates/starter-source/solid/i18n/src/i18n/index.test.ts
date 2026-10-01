@@ -14,6 +14,11 @@ import {
 } from './index';
 
 const last = languages.at(-1)?.id ?? 'en';
+// A region on a regional tag such as zh-TW makes no tag, so the regional case takes a base one.
+const base = languages
+  .findLast(({ id }) => {
+    return !id.includes('-');
+  })?.id ?? 'en';
 
 const browserSpeaks = (tags: string[]): void => {
   vi.spyOn(navigator, 'languages', 'get').mockReturnValue(tags);
@@ -44,9 +49,9 @@ describe('i18n', () => {
   });
 
   it('reads a regional browser language as its own language', () => {
-    browserSpeaks([`${last}-001`]);
+    browserSpeaks([`${base}-001`]);
 
-    expect(detectLanguage()).toBe(last);
+    expect(detectLanguage()).toBe(base);
   });
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
