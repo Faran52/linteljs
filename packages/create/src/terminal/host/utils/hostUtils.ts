@@ -13,7 +13,6 @@ export interface DetectedManager {
   version: string | undefined;
 }
 
-// A command rather than an id, so a sixth manager is one row.
 const isAgentName = (name: string): name is PackageManager => {
   return isValueOf(name, MANAGER_FLOORS);
 };
@@ -58,7 +57,7 @@ export const managerRefusal = (pm: PackageManager, version: string): string | un
   }
 
   if (pm === 'yarn' && version.startsWith('1.')) {
-    return 'Yarn 1 is no longer supported: install Yarn 4 and run this again.';
+    return 'Yarn 1 is not supported: install Yarn 4 and run this again.';
   }
 
   return `${pm} ${version} ran this, and a project this CLI writes needs ${pm} ${MANAGER_FLOORS[pm]} or `

@@ -127,7 +127,7 @@ describe('yarn', () => {
   });
 
   it('refuses yarn 1 by name, and holds yarn to its floor', () => {
-    expect(managerRefusal('yarn', '1.22.22')).toBe('Yarn 1 is no longer supported: install Yarn 4 and run this again.');
+    expect(managerRefusal('yarn', '1.22.22')).toBe('Yarn 1 is not supported: install Yarn 4 and run this again.');
     expect(managerRefusal('yarn', '2.4.3') ?? '').toContain('needs yarn 4.0.0 or newer');
     expect(managerRefusal('yarn', '4.18.0')).toBeUndefined();
   });

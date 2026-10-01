@@ -127,7 +127,7 @@ describe('hostOf: the manager that ran it', () => {
   it('refuses a yarn 1 under its user agent', async () => {
     vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/? darwin arm64');
 
-    expect(await hostOf(cwd)).toBe('Yarn 1 is no longer supported: install Yarn 4 and run this again.');
+    expect(await hostOf(cwd)).toBe('Yarn 1 is not supported: install Yarn 4 and run this again.');
   });
 
   it('refuses a manager that will not say its version', async () => {
