@@ -239,6 +239,11 @@ describe('base: stylistic', () => {
       'export const pick = (flag) => {\n  const value = 1;\n  if (flag) {\n    return value;\n  }\n  return 2;\n};\n',
       TS_FILE,
     ],
+    [
+      'object-shorthand',
+      'const a = 1;\n\nexport const o = { a: a };\n',
+      TS_FILE,
+    ],
   ])('reports %s', async (rule, code, file) => {
     const ids = await ruleIdsFor(base(), code, file);
 

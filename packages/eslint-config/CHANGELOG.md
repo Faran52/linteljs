@@ -63,6 +63,7 @@ when a version's change lives in a sibling it is described there instead:
   parens on lines of their own.
 - `base` turns on `@stylistic/padding-line-between-statements`: a blank line before and after every function,
   block-like statement and multi-line expression statement.
+- `base` turns on core `object-shorthand` (`always`, with `avoidQuotes`, so a quoted key keeps its long form).
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
 
 ### Fixed

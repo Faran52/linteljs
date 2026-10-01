@@ -217,6 +217,16 @@ export const base = (options: BaseOptions = {}): Layer => {
         // Catches what `@linteljs/prefer-arrow-functions` declines to rewrite.
         'func-style': ['error', 'expression'],
         'prefer-arrow-callback': 'error',
+        // `avoidQuotes`: the preset's `quote-props` quotes every key once one needs it, so `'id': id` stays.
+        'object-shorthand': [
+          'error',
+          'always',
+          {
+            avoidQuotes: true,
+            ignoreConstructors: false,
+            avoidExplicitReturnArrows: false,
+          },
+        ],
 
         'sonarjs/cognitive-complexity': ['error', 15],
 
