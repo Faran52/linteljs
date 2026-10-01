@@ -1,12 +1,35 @@
 import { answersFor } from '@mocks/answersFor';
 
-import { emitI18nConfig, i18nConfigEmitter } from './i18nConfigEmitter';
+import {
+  emitI18nConfig,
+  emitInlangSettings,
+  i18nConfigEmitter,
+} from './i18nConfigEmitter';
 
 describe('i18nConfigEmitter', () => {
   it('writes nothing when no language was chosen', () => {
     const artifacts = i18nConfigEmitter(answersFor({}));
 
     expect(artifacts).toEqual([]);
+  });
+
+  it('seeds the inlang project beside the config only on a target that compiles its catalog', () => {
+    const svelte = i18nConfigEmitter(answersFor({
+      target: 'svelte',
+      languages: ['ja'],
+    }));
+    const react = i18nConfigEmitter(answersFor({ languages: ['ja'] }));
+    const settings: unknown = JSON.parse(emitInlangSettings(['en', 'ja']));
+
+    expect(svelte.at(1)?.target).toBe('project.inlang/settings.json');
+    expect(svelte.at(1)?.seed).toBe(true);
+    expect(svelte.at(1)?.content).toEqual({ text: emitInlangSettings(['en', 'ja']) });
+    expect(settings).toMatchObject({
+      baseLocale: 'en',
+      locales: ['en', 'ja'],
+      modules: ['./node_modules/@inlang/plugin-message-format/dist/index.js'],
+    });
+    expect(react).toHaveLength(1);
   });
 
   it('seeds the config with English first, whatever was chosen', () => {

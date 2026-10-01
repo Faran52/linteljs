@@ -237,6 +237,8 @@ describe('the project the answers write', () => {
     '.astro',
     '/index.ts',
   ];
+  // Written by `svelte-kit sync` and the i18n compiler, never by the scaffolder.
+  const GENERATED = '.svelte-kit/';
 
   const projectsFor = (target: TargetId): Project[] => {
     return targetCases(target)
@@ -346,7 +348,7 @@ describe('the project the answers write', () => {
             ? normalize(join(dirname(path), specifier.replace(/\.js$/u, '')))
             : aliasedPath(project.answers, specifier);
 
-          if (base !== undefined && !RESOLVED
+          if (base !== undefined && !base.startsWith(GENERATED) && !RESOLVED
             .some((extension) => {
               return project.written.has(`${base}${extension}`);
             })) {

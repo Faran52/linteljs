@@ -42,13 +42,22 @@ export interface StarterFile {
   source?: string;
 }
 
-// `include` matters as much as `extensions`, or a web variant resolves under a native test.
+// Compiles the catalog from the inlang project the i18n config emitter writes. `prepare` and `typecheck` run its
+// command first, since lint and the type checker read the output.
+export interface I18nCompiler {
+  command: string;
+  devDependencies: string[];
+  vitePlugin: PluginSpec;
+}
+
 export interface I18nParts {
   dependencies: string[];
   // Absent where each suite wraps its render in the provider instead.
   testSetup?: string;
+  compiler?: I18nCompiler;
 }
 
+// `include` matters as much as `extensions`, or a web variant resolves under a native test.
 export interface TestPlatform {
   name: string;
   extensions: string[];

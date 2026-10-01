@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import {
   ANSWERS,
   DEFAULT_ANSWERS,
@@ -153,11 +155,24 @@ export const destinationsFor = (every: Answers[]): Map<string, string> => {
     }));
 };
 
+// Paraglide writes these on `prepare`, into the outdir its own command names.
+const compiledPaths = (answers: Answers): string[] => {
+  const outdir = /--outdir (\S+)/.exec(targetFor(answers).i18n?.compiler?.command ?? '')?.[1];
+
+  return outdir === undefined
+    ? []
+    : ['messages.js', 'runtime.js']
+        .map((file) => {
+          return join(outdir, file);
+        });
+};
+
 export const writtenPaths = (every: Answers[]): Set<string> => {
   const destinations = every
     .flatMap((answers) => {
       return [
         RECORD_MODULE,
+        ...compiledPaths(answers),
         ...i18nConfigEmitter(answers)
           .map(({ target }) => {
             return target;

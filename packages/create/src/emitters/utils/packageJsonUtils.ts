@@ -289,6 +289,7 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
     ...(answers.data === undefined ? [] : dataDev[answers.data]),
     ...(answers.router === undefined ? [] : ROUTER_DEV_DEPENDENCIES[answers.router]),
     ...(answers.mocking === 'msw' ? ['msw'] : []),
+    ...(localesOf(answers).length === 0 ? [] : target.i18n?.compiler?.devDependencies ?? []),
     // `qs` ships no types of its own.
     '@types/qs',
   ], target.versions);

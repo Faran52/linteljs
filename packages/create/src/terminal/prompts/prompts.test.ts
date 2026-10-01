@@ -65,6 +65,7 @@ describe('ask', () => {
       'tanstack-store',
       undefined,
       undefined,
+      [],
       'relaxed',
       undefined,
       undefined,

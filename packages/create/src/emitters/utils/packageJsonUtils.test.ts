@@ -939,8 +939,8 @@ describe('buildDependencies with languages', () => {
       target: 'vue',
       languages: ['ja'],
     }));
-    const svelte = buildDependencies(answersFor({
-      target: 'svelte',
+    const solid = buildDependencies(answersFor({
+      target: 'solid',
       languages: ['ja'],
     }));
 
@@ -952,6 +952,25 @@ describe('buildDependencies with languages', () => {
     expect(english).not.toHaveProperty('i18next');
     expect(vue).toHaveProperty('vue-i18n');
     expect(vue).not.toHaveProperty('i18next');
-    expect(svelte).not.toHaveProperty('i18next');
+    expect(solid).not.toHaveProperty('i18next');
+  });
+
+  it('adds the target\'s i18n compiler as a dev dependency only once a language is chosen', () => {
+    const translated = buildDevDependencies(answersFor({
+      target: 'svelte',
+      languages: ['ja'],
+    }));
+    const english = buildDevDependencies(answersFor({ target: 'svelte' }));
+    const react = buildDevDependencies(answersFor({ languages: ['ja'] }));
+    const solid = buildDevDependencies(answersFor({
+      target: 'solid',
+      languages: ['ja'],
+    }));
+
+    expect(translated).toHaveProperty('@inlang/paraglide-js');
+    expect(translated).toHaveProperty('@inlang/plugin-message-format');
+    expect(english).not.toHaveProperty('@inlang/paraglide-js');
+    expect(react).not.toHaveProperty('@inlang/paraglide-js');
+    expect(solid).not.toHaveProperty('@inlang/paraglide-js');
   });
 });

@@ -6,11 +6,14 @@ import {
 
 import { localesOf } from '@utils/answerUtils';
 
+import { targetFor } from '@targets';
+
 import { emitted } from '../../utils/artifactUtils';
 
 import { LANGUAGE_NAMES } from './constants';
 
 export const I18N_CONFIG = 'src/i18n/config.ts';
+export const INLANG_SETTINGS = 'project.inlang/settings.json';
 
 const identifierOf = (language: Language): string => {
   return language
@@ -58,15 +61,35 @@ export const emitI18nConfig = (languages: Language[]): string => {
   ].join('\n');
 };
 
+// The compiler's plugin is read from `node_modules`: the documented module is a CDN URL fetched on every compile.
+export const emitInlangSettings = (languages: Language[]): string => {
+  const settings = {
+    '$schema': 'https://inlang.com/schema/project-settings',
+    'baseLocale': 'en',
+    'locales': languages,
+    'modules': ['./node_modules/@inlang/plugin-message-format/dist/index.js'],
+    'plugin.inlang.messageFormat': { pathPattern: './src/i18n/locales/{locale}/common.json' },
+  };
+
+  return `${JSON.stringify(settings, null, 2)}\n`;
+};
+
 export const i18nConfigEmitter = (answers: Answers): Artifact[] => {
   const languages = localesOf(answers);
 
-  return languages.length === 0
-    ? []
-    : [
-        {
-          ...emitted('standard', I18N_CONFIG, emitI18nConfig(languages)),
-          seed: true,
-        },
-      ];
+  if (languages.length === 0) {
+    return [];
+  }
+
+  const seeded = (path: string, content: string): Artifact => {
+    return {
+      ...emitted('standard', path, content),
+      seed: true,
+    };
+  };
+  const config = seeded(I18N_CONFIG, emitI18nConfig(languages));
+
+  return targetFor(answers).i18n?.compiler === undefined
+    ? [config]
+    : [config, seeded(INLANG_SETTINGS, emitInlangSettings(languages))];
 };

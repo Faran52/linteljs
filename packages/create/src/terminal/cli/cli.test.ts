@@ -272,6 +272,7 @@ describe('main: create', () => {
         'tanstack-store',
         undefined,
         undefined,
+        [],
         undefined,
         ['claude-code', 'codex'],
         [],

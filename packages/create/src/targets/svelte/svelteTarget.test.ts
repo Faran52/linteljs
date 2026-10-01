@@ -2,6 +2,7 @@ import {
   ANSWERED,
   byKey,
   componentStyleGates,
+  type Condition,
   contactGates,
   type GateRow,
   mswGates,
@@ -11,8 +12,10 @@ import {
   TANSTACK_QUERY,
   walkGates,
   WITH_FORM,
+  WITH_I18N,
   WITH_STORE,
   WITHOUT_FORM,
+  WITHOUT_I18N,
   WITHOUT_STORE,
 } from '@mocks/starterGates';
 import {
@@ -20,6 +23,8 @@ import {
   expect,
   it,
 } from 'vitest';
+
+import { LANGUAGES } from '@config/constants';
 
 import { FOLDER_ROUTED } from '../constants';
 import { sfcNaming } from '../utils/namingUtils';
@@ -43,12 +48,66 @@ describe('svelteTarget', () => {
     expect(svelteTarget.naming).toEqual(sfcNaming('svelte', 'routes'));
   });
 
+  it('translates through Paraglide, compiled into the kit\'s generated directory', () => {
+    expect(svelteTarget.i18n?.dependencies).toEqual([]);
+    expect(svelteTarget.i18n?.compiler?.command).toContain('--outdir ./.svelte-kit/paraglide');
+    expect(svelteTarget.i18n?.compiler?.devDependencies).toEqual([
+      '@inlang/paraglide-js',
+      '@inlang/plugin-message-format',
+    ]);
+  });
+
   it('admits the route segments a file-based router owns', () => {
     expect(svelteTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
   });
 });
 
+const FORM_ENGLISH: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: [undefined],
+}];
+const FORM_I18N: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: ANSWERED,
+}];
+
+const TRANSLATED_GATES: GateRow[] = [
+  ...[
+    'src/config/statuses.ts',
+    'src/config/standard.ts',
+    'src/routes/about/+page.svelte',
+    'src/routes/version/+page.svelte',
+    'src/routes/layout.test.ts',
+    'src/routes/error.test.ts',
+    'src/components/features/app-header/AppHeader.svelte',
+    'src/components/features/status-page/StatusPage.svelte',
+    'src/components/features/status-page/StatusPage.test.ts',
+  ]
+    .flatMap((key): GateRow[] => {
+      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+    }),
+  ['src/routes/contact/+page.svelte', FORM_ENGLISH],
+  ['src/routes/contact/+page.svelte@i18n', FORM_I18N],
+  ...[
+    'src/components/features/language-select/LanguageSelect.svelte',
+    'src/components/features/language-select/LanguageSelect.test.ts',
+    'src/components/ui/code-text/CodeText.svelte',
+    'src/components/ui/code-text/CodeText.test.ts',
+    'src/i18n/index.ts',
+    'src/i18n/index.test.ts',
+    'src/i18n/locales.test.ts',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, WITH_I18N];
+    }),
+];
+
 const GATES: GateRow[] = [
+  ...TRANSLATED_GATES,
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query']),
@@ -66,7 +125,6 @@ const GATES: GateRow[] = [
   ['src/config/routes.ts@with-form', WITH_FORM],
   ['src/routes/+page.svelte', WITHOUT_STORE],
   ['src/routes/+page.svelte@with-store', WITH_STORE],
-  ['src/routes/contact/+page.svelte', WITH_FORM],
   ['src/routes/contact/useContactForm.ts', WITH_FORM],
   ['src/components/ui/text-input/TextInput.svelte', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],

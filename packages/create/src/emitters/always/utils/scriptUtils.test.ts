@@ -54,6 +54,18 @@ describe('buildScripts', () => {
     expect(buildScripts(answersFor({ target }))['lint:types']).toBe('node scripts/checkBannedPatterns.ts src');
   });
 
+  it('compiles the catalog before prepare and typecheck once a language is chosen', () => {
+    const translated = buildScripts(answersFor({
+      target: 'svelte',
+      languages: ['ja'],
+    }));
+    const english = buildScripts(answersFor({ target: 'svelte' }));
+
+    expect(translated['prepare']).toMatch(/^paraglide-js compile .* && svelte-kit sync && husky$/u);
+    expect(translated['typecheck']).toMatch(/^paraglide-js compile .* && svelte-kit sync && svelte-check /u);
+    expect(english['prepare']).toBe('svelte-kit sync && husky');
+  });
+
   it('gives the linter a fix script beside its gate', () => {
     expect(buildScripts(answersFor({}))).toMatchObject({
       'lint': 'eslint .',

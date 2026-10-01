@@ -13,6 +13,7 @@ import type {
   Answers,
   Data,
   HostedFramework,
+  Language,
   Library,
   Router,
   Styling,
@@ -26,6 +27,7 @@ interface AnswerOverrides {
   router?: Router;
   styling?: Styling;
   data?: Data;
+  languages?: Language[];
 }
 
 const configFor = (overrides: AnswerOverrides): string | null => {
@@ -133,6 +135,18 @@ describe('emitViteConfig', () => {
       + '  server: { port: 3000 },\n'
       + '});\n',
     );
+  });
+
+  it('adds the i18n compiler plugin after the framework one once a language is chosen', () => {
+    const translated = configFor({
+      target: 'svelte',
+      languages: ['ja'],
+    }) ?? '';
+    const english = configFor({ target: 'svelte' }) ?? '';
+
+    expect(translated).toContain("import { paraglideVitePlugin } from '@inlang/paraglide-js';");
+    expect(translated.indexOf('paraglideVitePlugin({')).toBeGreaterThan(translated.indexOf('sveltekit('));
+    expect(english).not.toContain('paraglide');
   });
 
   it('keeps every plugin call inside the line length it emits for itself', () => {

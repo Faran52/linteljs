@@ -1,6 +1,6 @@
 import { RUN_PREFIX } from '@config/constants';
 
-import { hasTests } from '@utils/answerUtils';
+import { hasTests, localesOf } from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
@@ -33,6 +33,8 @@ export const gateScripts = (answers: Answers): string[] => {
 export const buildScripts = (answers: Answers): Record<string, string> & CheckScript => {
   const run = RUN_PREFIX[answers.packageManager];
   const target = targetFor(answers);
+  const compiler = localesOf(answers).length === 0 ? undefined : target.i18n?.compiler;
+  const compile = compiler === undefined ? [] : [compiler.command];
 
   const scripts: Record<string, string> = {
     'lint': 'eslint .',
@@ -42,7 +44,7 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
     // Measured: 87 findings in starter CSS passed check without it. Stylelint exits 2 on an empty glob.
     'lint:css': `stylelint "${styleGlob(answers)}" --allow-empty-input`,
     'lint:css:fix': `stylelint "${styleGlob(answers)}" --fix --allow-empty-input`,
-    'typecheck': target.typecheck,
+    'typecheck': [...compile, target.typecheck].join(' && '),
   };
 
   Object.assign(scripts, target.extraScripts);
@@ -64,6 +66,10 @@ export const buildScripts = (answers: Answers): Record<string, string> & CheckSc
       .join(' && '),
     // Yarn 2+ never runs `prepare`, only `postinstall`: measured on SvelteKit, whose `svelte-kit sync` never ran.
     [answers.packageManager === 'yarn' ? 'postinstall' : 'prepare']:
-      target.prepare === undefined ? 'husky' : `${target.prepare} && husky`,
+      [
+        ...compile,
+        ...target.prepare === undefined ? [] : [target.prepare],
+        'husky',
+      ].join(' && '),
   };
 };

@@ -9,6 +9,7 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -26,7 +27,9 @@ import {
   ACCESSORS,
   ALWAYS,
   SHARED,
+  SVELTE_I18N,
 } from './constants';
+import { svelteI18nFiles, svelteI18nTests } from './utils/translatedFileUtils';
 
 import type {
   StarterFile,
@@ -94,6 +97,8 @@ export const svelteTarget: TargetRecord = {
     ...componentStyleModules('solid'),
     ...stylexDocument('src/routes/+layout.svelte'),
     ...accessorFiles(ACCESSORS),
+    ...svelteI18nFiles(),
+    ...localeFiles(),
     // Svelte's query bindings read their client out of context, which needs a component.
     ...([
       '__mocks__/WithExtendedQuery.svelte',
@@ -139,7 +144,6 @@ export const svelteTarget: TargetRecord = {
     },
     { target: 'src/components/ui/button/Button.svelte' },
     ...([
-      'src/routes/contact/+page.svelte',
       'src/routes/contact/useContactForm.ts',
       'src/components/ui/text-input/TextInput.svelte',
       'src/components/ui/text-input/types.ts',
@@ -238,18 +242,8 @@ export const svelteTarget: TargetRecord = {
           ...test,
         };
       }),
-    {
-      target: 'src/routes/layout.test.ts',
-      covers: 'src/routes/+layout.svelte',
-    },
-    {
-      target: 'src/routes/error.test.ts',
-      covers: 'src/routes/+error.svelte',
-    },
-    {
-      target: 'src/components/features/status-page/StatusPage.test.ts',
-      covers: 'src/components/features/status-page/StatusPage.svelte',
-    },
+    ...svelteI18nTests(),
+    LOCALES_TEST,
     {
       target: 'src/routes/page.test.ts',
       covers: 'src/routes/+page.svelte',
@@ -309,4 +303,5 @@ export const svelteTarget: TargetRecord = {
   ],
   allowBuilds: [],
   stateRules: ['svelte-reactivity.md'],
+  i18n: SVELTE_I18N,
 };

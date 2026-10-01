@@ -21,6 +21,8 @@ export const VERSIONS: Record<string, string> = {
   '@eslint-react/eslint-plugin': '^5.20.8',
   '@html-eslint/eslint-plugin': '^0.66.1',
   '@html-eslint/parser': '^0.66.1',
+  '@inlang/paraglide-js': '^2.25.4',
+  '@inlang/plugin-message-format': '^4.4.4',
   // No `zone.js`: signals and `provideBrowserGlobalErrorListeners` are zoneless, Angular 20's default.
   '@angular/common': '^22.2.0',
   '@angular/compiler': '^22.2.0',

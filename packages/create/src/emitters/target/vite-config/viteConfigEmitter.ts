@@ -1,5 +1,7 @@
 import { type Answers, type Artifact } from '@config/types';
 
+import { localesOf } from '@utils/answerUtils';
+
 import { targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
@@ -11,11 +13,21 @@ import { rollupInputs } from './utils/inputUtils';
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
 
 export const emitViteConfig = (answers: Answers): string | null => {
-  const { vitePlugin, viteInputs } = targetFor(answers);
+  const {
+    vitePlugin: framework,
+    viteInputs,
+    i18n,
+  } = targetFor(answers);
 
-  if (vitePlugin === undefined) {
+  if (framework === undefined) {
     return null;
   }
+
+  const compiler = localesOf(answers).length === 0 ? undefined : i18n?.compiler?.vitePlugin;
+  const vitePlugin = {
+    imports: [...framework.imports, ...compiler?.imports ?? []],
+    calls: [...framework.calls, ...compiler?.calls ?? []],
+  };
 
   const styling = stylingPlugin(answers.styling);
   const imports = sortedImports([
