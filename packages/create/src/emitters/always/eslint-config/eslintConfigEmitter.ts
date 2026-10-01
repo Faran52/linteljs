@@ -126,6 +126,13 @@ const optionRows = (answers: Answers): OptionRow[] => {
     ...answers.ignores ?? [],
   ]));
   rows.push(['aliases', objectLiteral(Object.entries(buildAliases(answers)), 1)]);
+
+  // React Router's typegen reads `src/routes.ts` without the tsconfig aliases.
+  if (answers.router === 'react-router-framework') {
+    rows.push(arrayRow('aliasExempt', ['src/routes.ts']));
+    rows.push(['enforceRelativeImports', 'true']);
+  }
+
   rows.push(['naming', objectLiteral(Object.entries(target.naming), 1)]);
   rows.push(['folderNaming', objectLiteral(Object.entries(target.folderNaming), 1)]);
 

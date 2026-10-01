@@ -51,15 +51,25 @@ const config = await composeConfig({
   ],
   aliases: {
     '@components/*': './src/components/*',
+    '@components': './src/components',
     '@ui/*': './src/components/ui/*',
+    '@ui': './src/components/ui',
     '@features/*': './src/components/features/*',
+    '@features': './src/components/features',
     '@lib/*': './src/lib/*',
+    '@lib': './src/lib',
     '@store/*': './src/lib/store/*',
+    '@store': './src/lib/store',
     '@hooks/*': './src/lib/hooks/*',
+    '@hooks': './src/lib/hooks',
     '@utils/*': './src/lib/utils/*',
+    '@utils': './src/lib/utils',
     '@services/*': './src/lib/services/*',
+    '@services': './src/lib/services',
     '@config/*': './src/config/*',
+    '@config': './src/config',
     '@mocks/*': './__mocks__/*',
+    '@mocks': './__mocks__',
   },
   naming: {
     'src/**/*.tsx': '!([a-z]*[A-Z]*)',
@@ -712,6 +722,22 @@ describe('ignores', () => {
     ]],
   ])('ignores what %s generates on top of the shared entries', (target, own) => {
     expect(ignoresOf(answersFor({ target })).slice(5)).toEqual(own);
+  });
+
+  it('holds src/routes.ts to relative imports in framework mode, and nothing else', () => {
+    const framework = emitEslintConfig(answersFor({
+      target: 'react',
+      router: 'react-router-framework',
+    }));
+    const library = emitEslintConfig(answersFor({
+      target: 'react',
+      router: 'react-router',
+    }));
+    const rows = "  aliasExempt: ['src/routes.ts'],\n  enforceRelativeImports: true,\n";
+
+    expect(framework).toContain(rows);
+    expect(library).not.toContain('aliasExempt');
+    expect(library).not.toContain('enforceRelativeImports');
   });
 
   it('ignores what React Router generates in framework mode', () => {

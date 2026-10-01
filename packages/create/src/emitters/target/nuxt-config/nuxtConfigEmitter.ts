@@ -61,7 +61,8 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     `  css: ['~/${styleEntry.replace('src/', '')}'],`,
     '  // Merged into the paths Nuxt generates, which is what keeps its own `#` aliases resolving alongside these.',
     '  alias: {',
-    ...aliases,
+    // An exact key writes the same two lines as the `/*` key beside it.
+    ...new Set(aliases),
     '  },',
     // The Vite plugin: Nuxt's `postcss-import` reads `@import "tailwindcss"` off disk and fails.
     ...(styling.call === undefined

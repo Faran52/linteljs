@@ -29,6 +29,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside `"@ui/*"`), so a
+  directory index imports as `@ui`; `@i18n/*` and `@i18n` join them when a locale is chosen. With
+  `react-router-framework`, `eslint.config.js` writes `aliasExempt: ['src/routes.ts']` and
+  `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
+  the aliases. `ComposeConfigOptions` mirrors both options.
 - Nuxt is a target.
 - React projects speak more languages: `--languages` takes any of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, off by
   default, with English always shipped as the fallback. The starter adds i18next, a language select in the

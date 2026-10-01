@@ -2,7 +2,11 @@ import { omit } from 'es-toolkit';
 
 import { type AliasMap, type Answers } from '@config/types';
 
-import { hasLibrary, hasTests } from '@utils/answerUtils';
+import {
+  hasLibrary,
+  hasTests,
+  localesOf,
+} from '@utils/answerUtils';
 
 import { targetFor } from '@targets';
 
@@ -23,11 +27,20 @@ export const buildAliases = (answers: Answers): AliasMap => {
     ...(hasLibrary(answers, 'zod') ? { '@apis/*': './src/lib/apis/*' } : {}),
     ...target.extraAliases,
     '@config/*': './src/config/*',
+    ...(localesOf(answers).length > 0 ? { '@i18n/*': './src/i18n/*' } : {}),
     ...(hasTests(answers) ? { '@mocks/*': './__mocks__/*' } : {}),
     // A project's own last, so it can restate a standard one deliberately.
     ...answers.aliases,
   };
 
   // Dropped at the end, to keep the order above intact.
-  return omit(all, [...omitted]);
+  const kept: [string, string][] = Object.entries(omit(all, [...omitted]));
+
+  // Each `/*` key beside an exact one onto its directory, so a directory index imports as `@ui`.
+  return Object.fromEntries(kept
+    .flatMap(([alias, directory]) => {
+      return alias.endsWith('/*') && directory.endsWith('/*')
+        ? [[alias, directory], [alias.slice(0, -2), directory.slice(0, -2)]]
+        : [[alias, directory]];
+    }));
 };
