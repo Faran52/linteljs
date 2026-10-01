@@ -5,6 +5,7 @@ import { valuesOf } from '@utils/objectUtils';
 import { type AnswerKey, type AnswerRecord } from '@answers';
 import { targetFor } from '@targets';
 
+import { MAX_LINE } from '../../../constants';
 import { buildScripts, gateScripts } from '../../utils/scriptUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
@@ -28,6 +29,26 @@ export const literal = (command: string): string => {
       return index === lines.length - 1 ? `'${line}'` : `'${line} '`;
     })
     .join('\n      + ');
+};
+
+// The widest piece line, `    + '` and `';` around it, stays inside the 120 columns.
+const NAME_PIECE = /.{1,110}/g;
+
+export const nameDeclaration = (name: string): string => {
+  const line = `export const NAME = '${name}';`;
+
+  if (line.length <= MAX_LINE) {
+    return line;
+  }
+
+  const pieces = name.matchAll(NAME_PIECE);
+  const quoted = Array
+    .from(pieces, ([piece]) => {
+      return `'${piece}'`;
+    })
+    .join('\n    + ');
+
+  return `export const NAME\n  = ${quoted};`;
 };
 
 // Read off the scripts `package.json` gets, so the page cannot name a command the project does not run.

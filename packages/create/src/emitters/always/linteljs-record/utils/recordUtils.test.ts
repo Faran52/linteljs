@@ -6,6 +6,7 @@ import {
   answerRows,
   gateRows,
   literal,
+  nameDeclaration,
   stackRows,
 } from './recordUtils';
 
@@ -103,6 +104,38 @@ describe('literal', () => {
 
     expect(kept).toBe(`'${full}'`);
     expect(broken).toBe(`'${'a'.repeat(50)} '\n      + '${'b'.repeat(50)}'`);
+  });
+});
+
+describe('nameDeclaration', () => {
+  it('keeps a name that fills 120 columns on one line, and wraps one past them', () => {
+    const full = 'a'.repeat(97);
+    const over = 'a'.repeat(98);
+    const kept = nameDeclaration(full);
+    const wrapped = nameDeclaration(over);
+
+    expect(kept).toBe(`export const NAME = '${full}';`);
+    expect(kept).toHaveLength(120);
+    expect(wrapped).toBe(`export const NAME\n  = '${over}';`);
+  });
+
+  it('breaks the longest name npm takes into joined literals, each inside 120 columns', () => {
+    const name = `@${'s'.repeat(100)}/${'n'.repeat(112)}`;
+    const lines = nameDeclaration(name).split('\n');
+    const joined = lines
+      .slice(1)
+      .map((line) => {
+        return line.replace(/^\s*[=+] '(.*)';?$/u, '$1');
+      })
+      .join('');
+    const fits = lines
+      .every((line) => {
+        return line.length <= 120;
+      });
+
+    expect(lines).toHaveLength(3);
+    expect(fits).toBe(true);
+    expect(joined).toBe(name);
   });
 });
 

@@ -120,6 +120,13 @@ export const ANSWERS = [
     expect(recorded).not.toContain("label: 'Aliases'");
   });
 
+  it('wraps a name too long for one line, so the project passes its own max-len', () => {
+    const name = 'n'.repeat(100);
+    const recorded = emitLinteljsRecord(hostedAnswersFor(), name);
+
+    expect(recorded).toContain(`export const NAME\n  = '${name}';\n`);
+  });
+
   it('joins a multi-select into one line, and leaves an empty one out', () => {
     expect(emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app'))
       .toContain("value: 'zod, es-toolkit'");

@@ -7,6 +7,7 @@ import {
 
 import { targetFor } from '@targets';
 
+import { MAX_LINE } from '../../constants';
 import { buildAliases } from '../../utils/aliasUtils';
 import { emitted } from '../../utils/artifactUtils';
 import { quote } from '../../utils/quoteUtils';
@@ -14,7 +15,6 @@ import { quote } from '../../utils/quoteUtils';
 import {
   BASE_IGNORES,
   LIBRARY_LAYERS,
-  MAX_LINE,
   PACKAGE,
 } from './constants';
 

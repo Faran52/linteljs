@@ -175,6 +175,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `src/config/linteljs.ts` wraps a `NAME` too long for 120 columns into joined literals, so a project with a long
+  name passes its own `max-len`.
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every
   git and install it spawns drops the repository variables git exports (`git rev-parse --local-env-vars`), so
   `git init` no longer reinitialises the caller's repository as bare and husky sets its hooks path on the project.

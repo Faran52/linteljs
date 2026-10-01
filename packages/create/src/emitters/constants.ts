@@ -4,6 +4,9 @@ import {
   type Store,
 } from '@config/types';
 
+// Matches the emitted @stylistic/max-len; looser, React Native's ignores self-reported a finding.
+export const MAX_LINE = 120;
+
 // Caret ranges; an entry this workspace also installs must be at least its `catalog:` version.
 
 export const VERSIONS: Record<string, string> = {

@@ -19,6 +19,3 @@ export const BASE_IGNORES = [
   '.agents/**',
   'plugins/linteljs/**',
 ];
-
-// Matches the emitted @stylistic/max-len; looser, React Native's ignores self-reported a finding.
-export const MAX_LINE = 120;

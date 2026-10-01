@@ -9,6 +9,7 @@ import { emitted } from '../../utils/artifactUtils';
 import {
   answerRows,
   gateRows,
+  nameDeclaration,
   stackRows,
 } from './utils/recordUtils';
 
@@ -24,7 +25,7 @@ export const emitLinteljsRecord = (answers: HostedAnswers, name: string): string
 
   return [
     '// Written once by @linteljs/create. Yours from here; only the starter pages read it.',
-    `export const NAME = '${name}';`,
+    nameDeclaration(name),
     '',
     `export const CHECK = '${RUN_PREFIX[answers.packageManager]} check';`,
     '',
