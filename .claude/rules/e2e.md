@@ -30,8 +30,6 @@ everything below.
 - **Knobs**: `E2E_PM` runs one manager's cases on whatever binary of it is on PATH (a yarn of the wrong major
   fails the run; unset, it runs every manager the machine has). `E2E_CONCURRENCY` sets the width (default two).
   `E2E_FULL=1` runs the whole cross product. `-t '<label>$'` runs one case.
-  `E2E_TYPED_LINT=1` (root `pnpm lint:starters:typed`) runs one case per target and React router, every answer on,
-  and only the project's `eslint . --max-warnings 0`.
 - **It never skips**: a registry that fails to start throws in `globalSetup`. A count shown as skipped is what a
   `-t` filter excluded.
 - **Async spawns only**: cases in a file run together under `maxConcurrency`, so a `spawnSync` install would

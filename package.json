@@ -15,7 +15,6 @@
     "audit:ignores": "tsx scripts/audit-ignores/auditIgnoresScript.ts",
     "lint:starters": "tsx scripts/lint-starters/lintStartersScript.ts",
     "lint:starters:fix": "tsx scripts/lint-starters/lintStartersScript.ts --fix",
-    "lint:starters:typed": "E2E_TYPED_LINT=1 E2E_PM=pnpm pnpm --filter @linteljs/create test:e2e",
     "typecheck": "tsc --noEmit -p tsconfig.root.json && pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",

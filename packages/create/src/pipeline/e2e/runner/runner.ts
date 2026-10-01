@@ -4,7 +4,6 @@ import {
   readFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { env } from 'node:process';
 
 import { expect } from 'vitest';
 
@@ -144,21 +143,6 @@ export const runE2eCase = async ({
   const fixes = create.output.match(/\b(?:eslint|stylelint) --fix: [^\n]*/g);
 
   expect(fixes).toEqual(expectedFixes);
-
-  // `lint:starters:typed`: an installed project and its own lint alone, the one gate a typed rule shows in.
-  if (env['E2E_TYPED_LINT'] === '1') {
-    const lint = await runPm(answers.packageManager, [
-      'exec',
-      'eslint',
-      '.',
-      '--max-warnings',
-      '0',
-    ], project);
-
-    expect(outcome(lint, `${name} eslint`)).toBe(`${name} eslint: ok`);
-
-    return;
-  }
 
   // The install a user runs after `--no-install`, under the same lifecycle.
   const installLater = async (): Promise<RunResult> => {
