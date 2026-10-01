@@ -6,6 +6,7 @@ import { tokens } from '../../../styles/tokens.stylex';
 const sheet = stylex.create({
   header: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '1rem',
     alignItems: 'center',
     justifyContent: 'space-between',
