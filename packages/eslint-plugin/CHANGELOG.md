@@ -32,7 +32,8 @@ when a version's change lives in a sibling it is described there instead:
   layer turns that rule off (see `@linteljs/eslint-config`).
 - **`member-newline` loses `maxPropertiesWithRest` and `maxLineLength`.** A rest element counts like any other
   member, and with no collapse there is no line to measure. Its `multilineMember` message is gone: a list with a
-  member spanning lines follows the same count. The fix is whitespace only (`fixable: 'whitespace'`), so a comment
+  object literal with a member spanning lines follows the same count, and an object pattern on one line
+  holding a multi-line member, `{ alpha = {\n  first\n}, bravo }`, goes one member per line. The fix is whitespace only (`fixable: 'whitespace'`), so a comment
   inside a pattern no longer blocks it, and a trailing comma is left for `comma-dangle`. Remove both options from
   your config.
 - **`destructuring-property-newline` is removed.** Every shape it reported now belongs to another rule:

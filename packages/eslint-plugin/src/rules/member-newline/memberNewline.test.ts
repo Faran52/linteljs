@@ -17,7 +17,10 @@ jsRuleTester.run('member-newline', memberNewline, {
     'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',
     'const {\n  alpha,\n  bravo,\n  charlie,\n} = source;',
     'const {\n  alpha,\n\n  bravo\n} = source;',
-    'const { alpha = {\n  first: 1\n}, bravo } = source;',
+    'const {\n  alpha = {\n    first: 1\n  },\n  bravo\n} = source;',
+    'const { alpha = {\n  first: 1\n} } = source;',
+    'const point = { alpha: {\n  first: 1\n}, bravo };',
+    'const [alpha = {\n  first: 1\n}, bravo] = source;',
     'const [alpha, bravo, charlie] = source;',
     'const alpha = source;',
 
@@ -32,6 +35,91 @@ jsRuleTester.run('member-newline', memberNewline, {
     'const point = {\n  x: 1, // across\n  y: 2\n};',
   ],
   invalid: [
+    {
+      code: 'const { alpha = {\n  first: 1\n}, bravo } = source;',
+      output: 'const {\n  alpha = {\n    first: 1\n  },\n  bravo\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\n  first: 1 // kept\n}, bravo } = source;',
+      output: null,
+      errors: membersOnNewline,
+    },
+    {
+      code: 'function run() {\n  const { alpha = {\n    first: 1\n  }, bravo } = source;\n}',
+      output: 'function run() {\n  const {\n    alpha = {\n      first: 1\n    },\n    bravo\n  } = source;\n}',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha, bravo = [\n  1\n] } = source;',
+      output: 'const {\n  alpha,\n  bravo = [\n    1\n  ]\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\n  first: 1\n}, ...rest } = source;',
+      output: 'const {\n  alpha = {\n    first: 1\n  },\n  ...rest\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const run = ({ alpha = {\n  first: 1\n}, bravo }) => {\n  return alpha;\n};',
+      output: 'const run = ({\n  alpha = {\n    first: 1\n  },\n  bravo\n}) => {\n  return alpha;\n};',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'for (const { alpha = {\n  first: 1\n}, bravo } of sources) {\n  use(alpha);\n}',
+      output: 'for (const {\n  alpha = {\n    first: 1\n  },\n  bravo\n} of sources) {\n  use(alpha);\n}',
+      errors: membersOnNewline,
+    },
+    {
+      code: '({ alpha = {\n  first: 1\n}, bravo } = source);',
+      output: '({\n  alpha = {\n    first: 1\n  },\n  bravo\n} = source);',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\n  first: 1,\n\n  second: 2\n}, bravo } = source;',
+      output: 'const {\n  alpha = {\n    first: 1,\n\n    second: 2\n  },\n  bravo\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\n\tfirst: 1\n}, bravo } = source;\nif (ready) {\n\trun();\n}',
+      output: 'const {\n\talpha = {\n\t\tfirst: 1\n\t},\n\tbravo\n} = source;\nif (ready) {\n\trun();\n}',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\r\n  first: 1\r\n}, bravo } = source;',
+      output: 'const {\r\n  alpha = {\r\n    first: 1\r\n  },\r\n  bravo\r\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = `one\ntwo`, bravo } = source;',
+      output: null,
+      errors: membersOnNewline,
+    },
+    {
+      code: "const { alpha = 'one\\\ntwo', bravo } = source;",
+      output: null,
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\r\n  first: 1,\r\n\r\n  second: 2\r\n}, bravo } = source;',
+      output: 'const {\r\n  alpha = {\r\n    first: 1,\r\n\r\n    second: 2\r\n  },\r\n  bravo\r\n} = source;',
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { /* lead */ alpha = {\n  first: 1\n}, bravo } = source;',
+      output: null,
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha = {\n  first: 1\n}, /* between */ bravo } = source;',
+      output: null,
+      errors: membersOnNewline,
+    },
+    {
+      code: 'const { alpha: { one,\n  two }, bravo } = source;',
+      output: 'const {\n  alpha: { one,\n    two },\n  bravo\n} = source;',
+      errors: [...membersOnNewline, ...membersOnNewline],
+    },
     {
       code: 'const { alpha, bravo, charlie } = source;',
       output: 'const {\n  alpha,\n  bravo,\n  charlie\n} = source;',

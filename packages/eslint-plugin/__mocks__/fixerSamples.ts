@@ -221,6 +221,50 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'const { alpha,\n  bravo } = [charlie,\n  delta];',
   },
   {
+    name: 'one-line object pattern holding a multi-line default',
+    code: 'const { alpha = {\n  first: 1,\n}, bravo } = source;',
+  },
+  {
+    name: 'one-line pattern with a multi-line default inside a function',
+    code: 'function run() {\n  const { alpha = {\n    first: 1,\n  }, bravo } = source;\n\n  return alpha;\n}\n',
+  },
+  {
+    name: 'one-line parameter pattern with a multi-line default',
+    code: 'const run = ({ alpha = {\n  first: 1,\n}, bravo }: Options) => {\n  return alpha ?? bravo;\n};\n',
+    typescript: true,
+  },
+  {
+    name: 'one-line pattern holding a half-split nested pattern',
+    code: 'const { alpha: { one,\n  two }, bravo } = source;\n',
+  },
+  {
+    name: 'one-line pattern with a multi-line default and a blank line inside it',
+    code: 'const { alpha = {\n  first: 1,\n\n  second: 2,\n}, bravo } = source;\n',
+  },
+  {
+    name: 'one-line pattern with a multi-line default, tab indented',
+    code: 'if (ready) {\n\tconst { alpha = {\n\t\tfirst: 1,\n\t}, bravo } = source;\n}\n',
+  },
+  {
+    name: 'one-line pattern with a multi-line default, CRLF',
+    code: 'const { alpha = {\r\n  first: 1,\r\n}, bravo } = source;\r\n',
+    crlf: true,
+  },
+  {
+    name: 'one-line pattern with a multi-line template default',
+    code: 'const { alpha = `one\ntwo`, bravo } = source;\n',
+  },
+  {
+    name: 'one-line pattern with a multi-line JSX default',
+    code: 'const { alpha = (\n  <p>\n    one\n    two\n  </p>\n), bravo } = props;\n',
+    typescript: true,
+    filename: 'view.tsx',
+  },
+  {
+    name: 'one-line pattern with a multi-line default and comments',
+    code: 'const { /* lead */ alpha = {\n  first: 1, // kept\n}, bravo } = source;\n',
+  },
+  {
     name: 'object literal with a spread, comments and a trailing comma',
     code: 'const point = { ...base, /* about base */ x: (1), y, // tail\n  z,};',
   },

@@ -73,8 +73,13 @@ interface Wide {
   `meta?: string; // describes meta` keeps its note beside `meta`.
 - **A trailing comma** stays on the last member's line. Whether there is one is
   `@stylistic/comma-dangle`'s decision, not this rule's.
-- **A multi-line member** does not make a list split: `{ x: 1, draw: () => {...} }` has two members
-  and every break between them is on one line, so it stays as written.
+- **A multi-line member** does not make an object literal split: `{ x: 1, draw: () => {...} }` has
+  two members and every break between them is on one line, so it stays as written. An object pattern
+  does split: `const { alpha = {\n  first\n}, bravo } = source` goes one member per line, since a
+  default buried mid-line hides the names it binds. Each line of that member moves one step in with it.
+  The fix is withheld, and the pattern only reported, when a comment sits inside it or a token spans
+  lines (a template, JSX text, a continued string), since an added indent would change what it holds.
+  A split pattern is never joined back.
 - **Indentation**: members go one step in from the line the list starts on, with the step read off
   the file. A member that spans lines keeps its inner lines where they were, for `@stylistic/indent`
   to settle.
@@ -94,8 +99,9 @@ instead: 15 files, +94 -46. Measured on 2026-10-02 over every combination of `mu
 and off.
 
 The original `destructuring-property-newline` and `newline-destructuring`, which this rule and
-[`@linteljs/array-newline`](../array-newline) replaced in 2.0, ask for three things neither does. A rest
-element lowers the count to two, so `{ alpha, ...rest }` splits. A pair spread over lines is joined
-back onto one. A one-line list holding a multi-line member, `{ alpha = {\n  first\n}, bravo }`, is
-split. Added on top of the two rules, they change 16 of the 68 suite cases and report 41 times in
-31 files of this repo. Their fixer also drops a comment between members and a trailing comma.
+[`@linteljs/array-newline`](../array-newline) replaced in 2.0, asked for three things neither did. This
+rule took back the third, splitting a one-line pattern that holds a multi-line member. The other two
+stay out on purpose: a rest element lowered the count to two, so `{ alpha, ...rest }` split, and a
+pair spread over lines was joined back onto one. Added on top of the two rules, the three changed
+16 of the 68 suite cases and reported 41 times in 31 files of this repo. Their fixer also dropped a comment between members
+and a trailing comma.
