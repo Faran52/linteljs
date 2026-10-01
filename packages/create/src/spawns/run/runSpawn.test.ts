@@ -51,6 +51,20 @@ describe('runSpawn', () => {
     await expect(runSpawn('node', ['-e', script], cwd)).resolves.toBeUndefined();
   });
 
+  it("keeps the caller's repository from the install, so husky's prepare finds this one", async () => {
+    vi.stubEnv('GIT_DIR', '/elsewhere/.git');
+    vi.stubEnv('LINTELJS_KEPT', 'yes');
+
+    try {
+      const script = 'process.exit(process.env.GIT_DIR === undefined && process.env.LINTELJS_KEPT === "yes" ? 0 : 1)';
+
+      await expect(runSpawn('node', ['-e', script], cwd)).resolves.toBeUndefined();
+    }
+    finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('settles on a clean exit with its output captured, saying nothing itself', async () => {
     await expect(runSpawn('node', ['-e', 'console.log("scaffolded")'], cwd, 'capture'))
       .resolves.toBeUndefined();

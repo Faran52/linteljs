@@ -347,6 +347,26 @@ describe('the repository the hooks install into', () => {
     expect(await exists(join(cwd, '.git'))).toBe(true);
   });
 
+  it('initialises one in its own directory when the caller exports another repository', async () => {
+    const outer = await mkdtemp(join(tmpdir(), 'linteljs-outer-'));
+
+    try {
+      await mkdir(join(outer, '.git'));
+      vi.stubEnv('GIT_DIR', join(outer, '.git'));
+
+      const notices = await noticesFromAgent();
+
+      expect(notices).toEqual(['git init: the husky hooks install on the next install']);
+      expect(await exists(join(cwd, '.git'))).toBe(true);
+    }
+    finally {
+      await rm(outer, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
   it('says nothing where the directory is already inside a work tree', async () => {
     await noticesFromAgent();
 

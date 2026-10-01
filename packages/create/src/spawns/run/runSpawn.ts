@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
-import { env } from 'node:process';
+
+import { repositoryFreeEnv } from '../utils/envUtils';
 
 import type { RunOutput } from '@config/types';
 
@@ -23,8 +24,9 @@ export const runSpawn = async (
         : 'inherit',
       shell: false,
       // Angular's CLI otherwise prompts for analytics; Yarn 4 under CI refuses the lockfile a first install writes.
+      // Without the repository variables, husky's `prepare` sets its hooks path on this project, not the caller's.
       env: {
-        ...env,
+        ...repositoryFreeEnv(),
         NG_CLI_ANALYTICS: 'false',
         YARN_ENABLE_IMMUTABLE_INSTALLS: 'false',
       },

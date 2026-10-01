@@ -1,6 +1,7 @@
 import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 
 import { resolvedBinary } from '../utils/binaryUtils';
+import { repositoryFreeEnv } from '../utils/envUtils';
 
 export interface GitOptions {
   cwd: string;
@@ -26,5 +27,6 @@ export const gitSpawn = (args: string[], options: GitOptions): GitMissing | Spaw
   return spawnSync(binary, args, {
     ...options,
     encoding: 'utf8',
+    env: repositoryFreeEnv(),
   });
 };

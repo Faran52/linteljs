@@ -39,6 +39,30 @@ describe('gitSpawn', () => {
     expect(await exists(join(cwd, '.git'))).toBe(true);
   });
 
+  it('acts on the given directory when the caller exports another repository', async () => {
+    const outer = await mkdtemp(join(tmpdir(), 'linteljs-git-outer-'));
+
+    try {
+      gitSpawn(['init', '--quiet'], { cwd: outer });
+      // What a linked worktree's `git rebase --exec` exports.
+      vi.stubEnv('GIT_DIR', join(outer, '.git'));
+
+      const result = gitSpawn(['init', '--quiet'], { cwd });
+      const outerBare = gitSpawn(['config', 'core.bare'], { cwd: outer });
+
+      expect(result.status).toBe(0);
+      expect(await exists(join(cwd, '.git'))).toBe(true);
+      expect(outerBare).toHaveProperty('stdout', 'false\n');
+    }
+    finally {
+      vi.unstubAllEnvs();
+      await rm(outer, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
   it('feeds the input option to the command on stdin', async () => {
     await writeFile(join(cwd, 'a.txt'), 'one\n', 'utf8');
 

@@ -158,6 +158,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every
+  git and install it spawns drops the repository variables git exports (`git rev-parse --local-env-vars`), so
+  `git init` no longer reinitialises the caller's repository as bare and husky sets its hooks path on the project.
 - An npm project with StyleX passes `lint:css`: it names `@csstools/css-tokenizer` 4 as a dev dependency, so npm
   no longer hoists the StyleX lint plugin's 3.x where stylelint reads it and fails every `clamp()` and `calc()`.
 - A React Router framework project has a document title: `root.tsx` renders the project's name (D2).
