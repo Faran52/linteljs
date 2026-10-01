@@ -61,6 +61,7 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | State store | `--store` | the stores the target offers | none |
 | Data fetching | `--data` | `tanstack-query`, `rtk-query` (with `redux-toolkit`) | none |
 | API mocking | `--mocking` | `msw` | none |
+| Languages | `--languages` | `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, with English always shipped (a webextension needs a popup) | none |
 | Type safety | `--type-safety` | `strict`, `relaxed` | `strict` |
 | AI agents | `--agents` | `claude-code`, `codex`, `copilot`, `cursor` | `claude-code` |
 | AI plugins | `--plugins` | `ponytail`, `context7`, `frontend-design` | all three |
