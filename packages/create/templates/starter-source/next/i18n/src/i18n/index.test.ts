@@ -33,9 +33,9 @@ describe('i18n', () => {
   });
 
   it('reads a regional browser language as its own language', () => {
-    browserSpeaks(['en-GB']);
+    browserSpeaks([`${last}-001`]);
 
-    expect(detectLanguage()).toBe('en');
+    expect(detectLanguage()).toBe(last);
   });
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
