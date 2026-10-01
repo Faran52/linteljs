@@ -144,9 +144,29 @@ describe('emitViteConfig', () => {
     }) ?? '';
     const english = configFor({ target: 'svelte' }) ?? '';
 
+    const call = [
+      '    paraglideVitePlugin({',
+      "      project: './project.inlang',",
+      "      outdir: './.svelte-kit/paraglide',",
+      "      strategy: ['baseLocale'],",
+      '      emitTsDeclarations: true,',
+      '    }),',
+    ].join('\n');
+
     expect(translated).toContain("import { paraglideVitePlugin } from '@inlang/paraglide-js';");
+    expect(translated).toContain(call);
     expect(translated.indexOf('paraglideVitePlugin({')).toBeGreaterThan(translated.indexOf('sveltekit('));
     expect(english).not.toContain('paraglide');
+  });
+
+  it('adds no compiler plugin for a language on a target that has no i18n', () => {
+    const translated = configFor({
+      target: 'solid',
+      languages: ['ja'],
+    });
+    const english = configFor({ target: 'solid' });
+
+    expect(translated).toBe(english);
   });
 
   it('keeps every plugin call inside the line length it emits for itself', () => {

@@ -5,6 +5,7 @@ import { ANSWERS } from '@answers';
 import {
   answerRows,
   gateRows,
+  literal,
   stackRows,
 } from './recordUtils';
 
@@ -90,6 +91,18 @@ describe('gateRows', () => {
     expect(lines.length).toBeGreaterThan(1);
     expect(fits).toBe(true);
     expect(joined).toMatch(/^paraglide-js compile .* && svelte-kit sync && svelte-check /u);
+  });
+});
+
+describe('literal', () => {
+  it('keeps a command of 100 columns on one line, and breaks one of 101', () => {
+    const full = `${'a'.repeat(49)} ${'b'.repeat(50)}`;
+    const over = `${'a'.repeat(50)} ${'b'.repeat(50)}`;
+    const kept = literal(full);
+    const broken = literal(over);
+
+    expect(kept).toBe(`'${full}'`);
+    expect(broken).toBe(`'${'a'.repeat(50)} '\n      + '${'b'.repeat(50)}'`);
   });
 });
 

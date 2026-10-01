@@ -60,10 +60,22 @@ describe('buildScripts', () => {
       languages: ['ja'],
     }));
     const english = buildScripts(answersFor({ target: 'svelte' }));
+    const compile = 'paraglide-js compile --project ./project.inlang --outdir ./.svelte-kit/paraglide'
+      + ' --strategy baseLocale --emit-ts-declarations';
 
-    expect(translated['prepare']).toMatch(/^paraglide-js compile .* && svelte-kit sync && husky$/u);
-    expect(translated['typecheck']).toMatch(/^paraglide-js compile .* && svelte-kit sync && svelte-check /u);
+    expect(translated['prepare']).toBe(`${compile} && svelte-kit sync && husky`);
+    expect(translated['typecheck']).toBe(`${compile} && ${english['typecheck'] ?? ''}`);
     expect(english['prepare']).toBe('svelte-kit sync && husky');
+  });
+
+  it('compiles nothing for a language on a target that has no i18n', () => {
+    const translated = buildScripts(answersFor({
+      target: 'solid',
+      languages: ['ja'],
+    }));
+    const english = buildScripts(answersFor({ target: 'solid' }));
+
+    expect(translated).toEqual(english);
   });
 
   it('gives the linter a fix script beside its gate', () => {

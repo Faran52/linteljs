@@ -12,7 +12,7 @@ import type { Answers, HostedAnswers } from '@config/types';
 // A long command breaks at its spaces into joined literals, inside the base layer's 120 columns.
 const RUNS_WIDTH = 100;
 
-const literal = (command: string): string => {
+export const literal = (command: string): string => {
   const lines = command
     .split(' ')
     .reduce<string[]>((joined, word) => {
