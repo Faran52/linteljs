@@ -95,7 +95,12 @@ export const answerFlags = (answers: Answers): string[] => {
   ];
 };
 
-export const createProject = async (root: string, name: string, answers: Answers): Promise<RunResult> => {
+export const createProject = async (
+  root: string,
+  name: string,
+  answers: Answers,
+  flags: readonly string[] = [],
+): Promise<RunResult> => {
   mkdirSync(root, { recursive: true });
 
   const pm = answers.packageManager;
@@ -107,6 +112,7 @@ export const createProject = async (root: string, name: string, answers: Answers
       registry.cliBin,
       name,
       ...answerFlags(answers),
+      ...flags,
     ], root, agent);
   });
 };

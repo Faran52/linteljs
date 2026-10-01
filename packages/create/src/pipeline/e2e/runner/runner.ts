@@ -11,10 +11,13 @@ import { expect } from 'vitest';
 import { CONFIG_PATH, parseLinteljsConfig } from '@answers';
 import { parsePackageJson } from '@emitters';
 
+import { browserProblems } from '../browser/browser';
 import {
+  oneAtATime,
   outcome,
   registry,
   runPm,
+  type RunResult,
 } from '../utils/processUtils';
 import {
   createProject,
@@ -23,7 +26,10 @@ import {
 } from '../utils/workspaceUtils';
 
 import {
+  CLEAN_FIXES,
+  CREATE_FLAGS,
   DEPRECATION,
+  LINT_PROBLEMS,
   STYLEX_CLASSES,
   SVELTEKIT_VERSION_HASH,
 } from './constants';
@@ -75,17 +81,15 @@ const verifyLintOutput = async (pm: PackageManager, project: string): Promise<vo
     expect(why.output).toMatch(new RegExp(`${name}[@ ](npm:)?${version}`));
   }
 
-  // ESLint exits 2 on a configuration failure and 1 on findings.
-  const lint = await runPm(pm, ['lint'], project);
+  const check = await runPm(pm, ['check'], project);
 
-  expect(lint.status < 2 ? 'eslint ran' : `eslint config error\n${lint.output}`).toBe('eslint ran');
+  expect(outcome(check, 'check')).toBe('check: ok');
 
-  // Zero, with no per-target allowance.
-  const found = Number(/✖ (\d+) problem/.exec(lint.output)?.[1] ?? '0');
+  // Zero, warnings included, with no per-target allowance: `eslint .` passes on warnings.
+  const problems = LINT_PROBLEMS.exec(check.output);
+  const found = Number(problems?.[1] ?? '0');
 
-  expect(`${String(found)} findings\n${found === 0 ? '' : lint.output}`).toBe('0 findings\n');
-
-  expect(outcome(await runPm(pm, ['check'], project), 'check')).toBe('check: ok');
+  expect(`${String(found)} findings\n${found === 0 ? '' : check.output}`).toBe('0 findings\n');
 };
 
 // A build that drops the atomic rules still passes `check`.
@@ -118,19 +122,26 @@ const missingStylexRules = (project: string): string => {
     .join(' ');
 };
 
-export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => {
+export const runE2eCase = async ({
+  label,
+  answers,
+  variant,
+}: E2eCase): Promise<void> => {
   const root = join(workspace, label.replaceAll(' ', '-'));
   const name = answers.target;
   const project = join(root, name);
 
-  const create = await createProject(root, name, answers);
+  const flags = variant === undefined ? undefined : CREATE_FLAGS[variant];
+  const create = await createProject(root, name, answers, flags);
+  // A skipped fix pass reports nothing.
+  const expectedFixes = flags === undefined ? CLEAN_FIXES : null;
 
   expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
 
   // Emitted code lands clean: the fix stage brings an existing project into line, and a fresh one needs none.
   const fixes = create.output.match(/\b(?:eslint|stylelint) --fix: [^\n]*/g);
 
-  expect(fixes).toEqual(['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix']);
+  expect(fixes).toEqual(expectedFixes);
 
   // `lint:starters:typed`: an installed project and its own lint alone, the one gate a typed rule shows in.
   if (env['E2E_TYPED_LINT'] === '1') {
@@ -147,8 +158,23 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
     return;
   }
 
+  // The install a user runs after `--no-install`, under the same lifecycle.
+  const installLater = async (): Promise<RunResult> => {
+    return runPm(answers.packageManager, ['install'], project);
+  };
+  let install: RunResult | undefined;
+
+  if (variant === 'no-install') {
+    install = await oneAtATime(answers.packageManager, installLater);
+  }
+
+  const installed = install === undefined ? 'install: ok' : outcome(install, 'install');
+  const installOutput = `${create.output}${install?.output ?? ''}`;
+  const noise = INSTALL_NOISE[answers.packageManager](installOutput);
+
+  expect(installed).toBe('install: ok');
   expect(create.output).not.toContain('next: ');
-  expect(INSTALL_NOISE[answers.packageManager](create.output)).toEqual([]);
+  expect(noise).toEqual([]);
   expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
   // The manager came from the injected user agent, so the recorded config proves it was read.
@@ -168,5 +194,11 @@ export const runE2eCase = async ({ label, answers }: E2eCase): Promise<void> => 
 
   if (answers.styling === 'stylex') {
     expect(missingStylexRules(project)).toBe('');
+  }
+
+  if (variant === 'browser') {
+    const seen = await browserProblems(answers.packageManager, project);
+
+    expect(seen).toEqual([]);
   }
 };
