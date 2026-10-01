@@ -1,4 +1,10 @@
 import { FOLDER_ROUTED, PARTS } from '../constants';
+import { hasI18n } from '../utils/gateUtils';
+import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -7,13 +13,19 @@ import {
 } from '../utils/mockUtils';
 import { sfcNaming } from '../utils/namingUtils';
 import { componentStyleModules, componentStyles } from '../utils/styleUtils';
-import { ACCESSORS as SOURCE_ACCESSORS, COMPONENTS } from '../vue/constants';
+import {
+  ACCESSORS as SOURCE_ACCESSORS,
+  COMPONENTS,
+  I18N_ONLY,
+  VUE_I18N,
+} from '../vue/constants';
 
 import {
   ACCESSORS,
   ALWAYS,
   FROM_VUE,
   SHARED,
+  TRANSLATED_FROM_VUE,
 } from './constants';
 
 import type {
@@ -92,6 +104,42 @@ export const nuxtTarget: TargetRecord = {
           shared: 'vue',
         };
       }),
+    ...(['src/config/statuses.ts', 'src/config/standard.ts'] as const)
+      .flatMap((target) => {
+        return translated<StarterFile>({
+          target,
+          shared: true,
+        });
+      }),
+    ...TRANSLATED_FROM_VUE
+      .flatMap((target) => {
+        return translated<StarterFile>({
+          target,
+          shared: 'vue',
+        });
+      }),
+    ...translated<StarterFile>({ target: 'src/components/features/app-header/AppHeader.vue' }),
+    ...[
+      ...I18N_ONLY
+        .map((component) => {
+          return `${component}.vue`;
+        }),
+      'src/i18n/index.ts',
+    ]
+      .map((target): StarterFile => {
+        return {
+          target,
+          when: hasI18n,
+          variant: 'i18n',
+          shared: 'vue',
+        };
+      }),
+    {
+      target: 'src/plugins/i18n.ts',
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    ...localeFiles(),
     {
       target: 'src/views/HomeView.vue',
     },
@@ -126,10 +174,10 @@ export const nuxtTarget: TargetRecord = {
       target: 'src/components/ui/app-mark/AppMark.test.ts',
       covers: 'src/components/ui/app-mark/AppMark.vue',
     },
-    {
+    ...translated<StarterTest>({
       target: 'src/components/features/app-header/AppHeader.test.ts',
       covers: 'src/components/features/app-header/AppHeader.vue',
-    },
+    }),
     {
       target: 'src/pages/index.test.ts',
       covers: 'src/pages/index.vue',
@@ -138,21 +186,44 @@ export const nuxtTarget: TargetRecord = {
       target: 'src/pages/about.test.ts',
       covers: 'src/pages/about.vue',
     },
-    {
+    ...translated<StarterTest>({
       target: 'src/error.test.ts',
       covers: 'src/error.vue',
+    }),
+    {
+      target: 'src/components/ui/app-button/AppButton.test.ts',
+      covers: 'src/components/ui/app-button/AppButton.vue',
+      shared: 'vue',
     },
-    ...([
-      'src/components/ui/app-button/AppButton',
-      'src/components/features/status-page/StatusPage',
-    ] as const)
-      .map((path): StarterTest => {
+    ...translated<StarterTest>({
+      target: 'src/components/features/status-page/StatusPage.test.ts',
+      covers: 'src/components/features/status-page/StatusPage.vue',
+      shared: 'vue',
+    }),
+    ...I18N_ONLY
+      .map((component): StarterTest => {
         return {
-          target: `${path}.test.ts`,
-          covers: `${path}.vue`,
+          target: `${component}.test.ts`,
+          covers: `${component}.vue`,
+          when: hasI18n,
+          variant: 'i18n',
           shared: 'vue',
         };
       }),
+    {
+      target: 'src/i18n/index.test.ts',
+      covers: 'src/i18n/index.ts',
+      when: hasI18n,
+      variant: 'i18n',
+      shared: 'vue',
+    },
+    {
+      target: 'src/plugins/i18n.test.ts',
+      covers: 'src/plugins/i18n.ts',
+      when: hasI18n,
+      variant: 'i18n',
+    },
+    LOCALES_TEST,
     {
       target: 'src/pages/version.test.ts',
       covers: 'src/pages/version.vue',
@@ -187,4 +258,5 @@ export const nuxtTarget: TargetRecord = {
     'esbuild',
   ],
   stateRules: ['vue-reactivity.md'],
+  i18n: VUE_I18N,
 };
