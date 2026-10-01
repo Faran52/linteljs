@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@ui/*": ["./src/components/ui/*"],
+      "@ui": ["./src/components/ui"],
+      "@lib/*": ["./src/lib/*"],
+      "@utils/*": ["./src/lib/utils/*"],
+      "@config/*": ["./src/config/*"],
+      "@config/flags/*": ["./src/lib/*"],
+      "@generated/*": ["./src/missing/*", "./src/lib/*"],
+      "@app": ["./src/app/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

@@ -212,6 +212,7 @@ export const base = (options: BaseOptions = {}): Layer => {
         '@linteljs/interface-order': 'error',
         '@linteljs/no-inline-object-types': 'error',
         '@linteljs/no-duplicate-interface': 'error',
+        '@linteljs/prefer-alias': 'error',
       },
     },
 

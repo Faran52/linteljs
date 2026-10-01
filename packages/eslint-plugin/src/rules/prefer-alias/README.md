@@ -1,0 +1,52 @@
+# @linteljs/prefer-alias
+
+Import across aliased directories through the tsconfig alias, and within one relatively.
+
+- Applies to: TypeScript only, with type information
+- Fixable: yes (code)
+- In `recommended`: yes
+
+The aliases are the program's own `paths`, read off typescript-eslint's parser services, and the file an
+import points at is the one tsc resolves it to. Without type information the rule reports nothing, and so it
+does in a project that sets `baseUrl`, where any bare specifier may resolve from it and no rewrite can be
+proven to land on the same file.
+
+A parent-relative import (`../`) whose target sits in another aliased directory is fixed to the most specific
+alias: the one whose directory is deepest. An alias import pointing back into the importing file's own aliased
+directory is fixed to a relative one, so a directory never imports itself through its alias. An import stays as
+written when the alias would resolve somewhere else, or when tsc does not resolve it at all.
+
+Only `prefix/*` patterns onto `directory/*` count, by their first substitution. An exact key onto the same
+directory, as `"@ui": ["./src/ui"]` beside `"@ui/*": ["./src/ui/*"]`, names its index: `../ui` is fixed to
+`@ui`. Any other exact key names one file, so nothing can sit inside it.
+
+## Options
+
+- `aliasExempt` (globs, default none): files where nothing is reported. The globs match the path from the
+  tsconfig declaring `paths` and know `**`, `*` and `?`.
+- `enforceRelativeImports` (default `false`): in an `aliasExempt` file, report every alias import and fix it to
+  a relative one, for a file a tool reads without the aliases.
+
+```js
+'@linteljs/prefer-alias': ['error', { aliasExempt: ['src/routes.ts'], enforceRelativeImports: true }]
+```
+
+## Examples of incorrect code for this rule
+
+```ts
+// src/app/page.ts
+import { env } from '../config/env';
+
+// src/config/theme.ts
+import { env } from '@config/env';
+```
+
+## Examples of correct code for this rule
+
+```ts
+// src/app/page.ts
+import { env } from '@config/env';
+
+// src/config/theme.ts
+import { env } from './env';
+```

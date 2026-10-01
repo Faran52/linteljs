@@ -50,6 +50,12 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- `prefer-alias` imports across aliased directories through the tsconfig `paths` alias and within one
+  relatively. A parent-relative import into another aliased directory is fixed to the most specific alias, an
+  exact key onto a directory (`"@ui": ["./src/ui"]` beside `"@ui/*"`) included, and an alias import back into
+  the own directory is fixed to a relative one. Type-aware: without type information, or in a project that sets
+  `baseUrl`, it reports nothing. `aliasExempt` (globs) silences files, and `enforceRelativeImports` fixes every
+  alias import in them to a relative one. Fixable, in `recommended`. Rule docs gain `requiresTypeChecking`.
 - `array-newline` puts each element of an array or array pattern with three or more on its own line, with the
   brackets on lines of their own. Two or fewer sit on one line or go fully one per line, so
   `const [value, setValue] = useState(0)` stays as written and `[alpha,\n  bravo]` is fixed. The rule never

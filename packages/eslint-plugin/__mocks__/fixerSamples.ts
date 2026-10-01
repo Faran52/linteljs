@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { runInNewContext } from 'node:vm';
 
 import * as astroParser from 'astro-eslint-parser';
@@ -14,6 +15,8 @@ import vueParser from 'vue-eslint-parser';
 
 import { rules } from '../src/rules/index.ts';
 
+import { ALIASED_PROJECT } from './ruleTesters.ts';
+
 export interface FixerSample {
   name: string;
   code: string;
@@ -24,6 +27,8 @@ export interface FixerSample {
   crlf?: true;
   // An LF file carrying one CRLF line, which a fixer must not spread.
   strayCrlf?: true;
+  // The directory of a tsconfig to type the sample with; `filename` is then an absolute path inside it.
+  project?: string;
 }
 
 export const FIXER_SAMPLES: FixerSample[] = [
@@ -822,6 +827,14 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: "<script>\n  const rows = [1, 2];\n</script>\n\n<p>{rows.map(String).join(', ')}</p>\n",
     filename: 'Chain.svelte',
   },
+  {
+    name: 'relative imports across aliased directories',
+    code: "import { value } from '../config/env';\nimport { value as ui } from '../components/ui';\n\n"
+      + 'export { ui, value };\n',
+    typescript: true,
+    filename: join(ALIASED_PROJECT, 'src', 'app', 'page.ts'),
+    project: ALIASED_PROJECT,
+  },
 ];
 
 const linter = new Linter();
@@ -851,8 +864,22 @@ const sfcParserFor = (filename?: string): Linter.Parser | undefined => {
 };
 
 // The component parsers nest typescript-eslint for the script inside, which reads plain JavaScript as well.
-const languageOptionsFor = ({ typescript, filename }: Pick<FixerSample, 'filename' | 'typescript'>) => {
+const languageOptionsFor = ({
+  typescript,
+  filename,
+  project,
+}: Pick<FixerSample, 'filename' | 'project' | 'typescript'>) => {
   const sfc = sfcParserFor(filename);
+
+  if (project !== undefined) {
+    return {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: project,
+      },
+    };
+  }
 
   if (sfc !== undefined) {
     return {

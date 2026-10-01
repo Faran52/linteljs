@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import { RuleTester } from 'eslint';
 import svelteParser from 'svelte-eslint-parser';
 import tseslint from 'typescript-eslint';
@@ -34,5 +36,18 @@ export const svelteRuleTester = new RuleTester({
   languageOptions: {
     parser: svelteParser,
     parserOptions: { parser: tseslint.parser },
+  },
+});
+
+export const ALIASED_PROJECT = join(import.meta.dirname, 'fixtures', 'aliased-project');
+
+// Type-aware: `prefer-alias` reads `paths` and resolution off the program this tsconfig builds.
+export const typedRuleTester = new RuleTester({
+  languageOptions: {
+    parser: tseslint.parser,
+    parserOptions: {
+      project: './tsconfig.json',
+      tsconfigRootDir: ALIASED_PROJECT,
+    },
   },
 });

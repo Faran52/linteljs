@@ -10,6 +10,8 @@ export interface LintelRuleDocs {
   language: RuleLanguage;
   // Whether `configs.recommended` enables it. `configs.all` carries it either way.
   recommended: boolean;
+  // Needs typescript-eslint's program; without one the rule reports nothing.
+  requiresTypeChecking?: boolean;
   // Held by `fixerSafety.test.ts`. Absent means it may rewrite code; a rule with no fixer declares nothing.
   fixShape?: FixShape;
   url: string;

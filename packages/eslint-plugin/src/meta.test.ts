@@ -200,6 +200,7 @@ describe('rule metadata', () => {
         fixShape: rule.meta.docs.fixShape ?? null,
         language: rule.meta.docs.language,
         recommended: rule.meta.docs.recommended,
+        requiresTypeChecking: rule.meta.docs.requiresTypeChecking ?? false,
         description: rule.meta.docs.description,
       },
     }).toEqual(expected[name]);

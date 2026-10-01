@@ -17,6 +17,7 @@ import { noDuplicateJsxProps } from './no-duplicate-jsx-props/noDuplicateJsxProp
 import { noEslintDisable } from './no-eslint-disable/noEslintDisable.ts';
 import { noImportNamespaceDestructure } from './no-import-namespace-destructure/noImportNamespaceDestructure.ts';
 import { noInlineObjectTypes } from './no-inline-object-types/noInlineObjectTypes.ts';
+import { preferAlias } from './prefer-alias/preferAlias.ts';
 import { preferArrowFunctions } from './prefer-arrow-functions/preferArrowFunctions.ts';
 import { preferAwaitToThen } from './prefer-await-to-then/preferAwaitToThen.ts';
 import { preferDestructuredProps } from './prefer-destructured-props/preferDestructuredProps.ts';
@@ -47,6 +48,7 @@ export const rules = {
   'no-eslint-disable': noEslintDisable,
   'no-inline-object-types': noInlineObjectTypes,
   'no-import-namespace-destructure': noImportNamespaceDestructure,
+  'prefer-alias': preferAlias,
   'prefer-arrow-functions': preferArrowFunctions,
   'prefer-await-to-then': preferAwaitToThen,
   'prefer-destructured-props': preferDestructuredProps,
