@@ -40,6 +40,9 @@ when a version's change lives in a sibling it is described there instead:
   header, status pages, About, Version and Contact are translated, the server renders English and the page
   switches after hydration. The shared locales use the single-brace ICU placeholder, `{name}`, which React's
   i18next now reads as well.
+- Vue and Nuxt projects take `--languages` through vue-i18n. The header, status pages, About, Version and, in
+  Vue, Contact are translated; a command inside a translation still renders as `<code>`, never as HTML. Nuxt
+  renders English on the server, with `lang="en"` and `dir="ltr"`, and switches after hydration.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.

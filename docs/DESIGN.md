@@ -822,10 +822,11 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, and Next.
+that is React, in every router mode, Next, Vue and Nuxt.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
-  browser detector, Next takes next-intl. No starter hand-rolls a translation core.
+  browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode. No starter hand-rolls a
+  translation core.
 - **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
   the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
   to `{` and `}` to read it too.
@@ -850,6 +851,19 @@ that is React, in every router mode, and Next.
   `I18nProvider` reads the language through `useSyncExternalStore` with an English server snapshot, so hydration
   matches and the client switches after it. The translated pages are client components, and each suite wraps its
   render in the provider, so Next's `i18n` parts carry no test setup.
+- **vue-i18n reads the shared locales as they are, once quoted.** Its message compiler reads `@` as the start of a
+  linked message, so `src/i18n/index.ts` quotes each as the literal `{'@'}` at load, and the shared files stay
+  plain. A translation that carries `<code>` is never rendered as HTML: `CodeText` splits the message on its
+  marks and renders each command as text inside its own `<code>`, so `warnHtmlMessage` is off rather than met
+  with `v-html`. The test setup installs the one `i18n` on every mount, in English until a suite switches.
+- **Nuxt takes vue-i18n directly, not `@nuxtjs/i18n`.** The module detects on the server, from a cookie it
+  writes and `Accept-Language`, which stores a detected language and puts the language in the request rather
+  than the reader's choice; its auto-imported `useI18n` also has nothing to resolve in vitest, which runs
+  outside Nuxt's build. With vue-i18n alone, Nuxt reuses Vue's i18n core, pages and components. A
+  `src/plugins/i18n.ts` installs it and binds the head's `lang` and `dir` to the locale, so the server renders
+  `<html lang="en" dir="ltr">` and Unhead keeps both on the language afterwards. The server never changes the
+  locale; detection runs in `onNuxtReady`, after hydration, so the first client render matches the server's
+  English and the page switches after it, as Next does.
 
 ### Recorded answers
 
