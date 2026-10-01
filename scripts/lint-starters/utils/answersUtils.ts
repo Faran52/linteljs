@@ -16,7 +16,7 @@ import { valuesOf } from '../../../packages/create/src/utils/objectUtils';
 import type { Answers, TargetId } from '../../../packages/create/src/config/types';
 
 // One answer set cannot open every file: several answers pick one module out of many.
-export const widestFor = (target: TargetId): Answers[] => {
+export const widestFor = (target: TargetId): [Answers, ...Answers[]] => {
   const widest: Answers = {
     ...DEFAULT_ANSWERS,
     target,
@@ -54,6 +54,12 @@ export const widestFor = (target: TargetId): Answers[] => {
             ...widest,
             form,
             libraries: [],
+          },
+          // A form's contact page has the mock answer it with handlers of its own.
+          {
+            ...widest,
+            form,
+            mocking: 'msw',
           },
         ];
       }),

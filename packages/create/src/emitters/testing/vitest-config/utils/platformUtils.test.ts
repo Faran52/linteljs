@@ -54,4 +54,20 @@ describe('platformEntries', () => {
       '      ),',
     ].join('\n'));
   });
+
+  it('keeps a list of two on one line', () => {
+    const entries = platformEntries([{
+      name: 'web',
+      extensions: ['.web.tsx', '.tsx'],
+      include: ['src/**/*.test.tsx'],
+    }]);
+
+    expect(entries).toBe([
+      '      platform(',
+      "        'web',",
+      "        ['.web.tsx', '.tsx'],",
+      "        ['src/**/*.test.tsx'],",
+      '      ),',
+    ].join('\n'));
+  });
 });

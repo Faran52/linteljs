@@ -109,7 +109,9 @@ export const allPresent = async (cwd: string, candidates: string[]): Promise<str
 export const globSnapshot = async (cwd: string, pattern: string): Promise<string[]> => {
   const reads = globSync(pattern, { cwd })
     .map(async (path) => {
-      return `${path}\0${await readFile(join(cwd, path), 'utf8')}`;
+      const content = await readFile(join(cwd, path));
+
+      return `${path}\0${content.toString()}`;
     });
 
   return await Promise.all(reads);

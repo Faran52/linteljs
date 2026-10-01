@@ -11,7 +11,7 @@ import process, { argv } from 'node:process';
 import { ESLint, type Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 
-import { ANSWERS, DEFAULT_ANSWERS } from '../../packages/create/src/answers';
+import { ANSWERS } from '../../packages/create/src/answers';
 import { buildAliases } from '../../packages/create/src/emitters/utils/aliasUtils';
 import { targetFor } from '../../packages/create/src/targets';
 import { valuesOf } from '../../packages/create/src/utils/objectUtils';
@@ -112,7 +112,7 @@ const STARTER_OVERRIDES: Linter.Config[] = [
 ];
 
 const eslintFor = async (target: TargetId): Promise<Linters> => {
-  const answers = answerSets.get(target)?.[0] ?? DEFAULT_ANSWERS;
+  const [answers] = widestFor(target);
   const record = targetFor(answers);
   // The record's own naming, or a suite named against it passes here and fails the generated project.
   const config = await composeConfig({
@@ -145,7 +145,7 @@ const eslintFor = async (target: TargetId): Promise<Linters> => {
 
 const lintSetups = async (target: TargetId, eslint: ESLint): Promise<SetupLint> => {
   const findings: string[] = [];
-  const setups = [...setupsFor(answerSets.get(target) ?? []).values()];
+  const setups = [...setupsFor(widestFor(target)).values()];
 
   for (const [destination, sources] of setups) {
     const text = sources
@@ -169,11 +169,13 @@ const lintSetups = async (target: TargetId, eslint: ESLint): Promise<SetupLint> 
   };
 };
 
+const linted = new Set<string>();
+
 const lintTarget = async (target: TargetId, eslint: Linters): Promise<[string[], number, number, string[]]> => {
   const findings: string[] = [];
   const unplaced: string[] = [];
   let fixable = 0;
-  const own = destinationsFor(answerSets.get(target) ?? []);
+  const own = destinationsFor(widestFor(target));
   // A shared file lints once per target that places it, under that target's layers and at its path there.
   const shared = filesOf(SHARED_ROOT, LINTED_GLOB)
     .filter((path) => {
@@ -183,6 +185,8 @@ const lintTarget = async (target: TargetId, eslint: Linters): Promise<[string[],
 
   for (const path of files) {
     const source = relative(TEMPLATES, path);
+
+    linted.add(path);
     const destination = own.get(source) ?? placement.placed.get(source);
 
     if (destination === undefined) {
@@ -276,4 +280,16 @@ if (unplaced.length > 0) {
     + unplaced.join('\n  '));
 }
 
-process.exitCode = findings.length > 0 || unresolved.length > 0 || unplaced.length > 0 ? 1 : 0;
+// A shared starter no target places is linted by none.
+const unlinted = filesOf('', LINTED_GLOB)
+  .filter((path) => {
+    return !linted.has(path);
+  });
+
+if (unlinted.length > 0) {
+  logError(`${String(unlinted.length)} linted by no target:\n  ${unlinted.join('\n  ')}`);
+}
+
+process.exitCode = findings.length > 0 || unresolved.length > 0 || unplaced.length > 0 || unlinted.length > 0
+  ? 1
+  : 0;

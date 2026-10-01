@@ -53,6 +53,22 @@ describe('sortedImports', () => {
     ].join('\n'));
   });
 
+  it('sorts a path segment before a dashed name, and numbers by value, as simple-import-sort does', () => {
+    const sorted = sortedImports([
+      "import dashed from 'a-b';",
+      "import nested from 'a/b';",
+      "import ten from 'x10';",
+      "import two from 'x2';",
+    ]);
+
+    expect(sorted).toBe([
+      "import nested from 'a/b';",
+      "import dashed from 'a-b';",
+      "import two from 'x2';",
+      "import ten from 'x10';",
+    ].join('\n'));
+  });
+
   it('leaves no trailing blank line where the project imports nothing of its own', () => {
     expect(sortedImports(["import { defineConfig } from 'vite';"])).toBe("import { defineConfig } from 'vite';");
   });

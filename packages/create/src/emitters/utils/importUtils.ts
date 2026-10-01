@@ -6,9 +6,7 @@ import type { Framework } from '@config/types';
 
 // The bare module name, unquoted.
 const specifierOf = (line: string): string => {
-  return line
-    .replace(/import .* from /, '')
-    .replace(/^'|';$/g, '');
+  return line.slice(line.indexOf("'") + 1, line.lastIndexOf("'"));
 };
 
 // `simple-import-sort`'s own key: it swaps these four so `vite` sorts before `vite-plugin-solid`.
@@ -28,17 +26,13 @@ export const sortedImports = (lines: string[], framework?: Framework): string =>
       numeric: true,
     });
   };
-  const patterns = (framework === undefined ? [] : FRAMEWORK_GROUPS[framework])
-    .map((pattern) => {
-      return new RegExp(pattern);
-    });
   const [own, external] = partition(lines, (line) => {
     return specifierOf(line).startsWith('.');
   });
   const [leading, packages] = partition(external, (line) => {
-    return patterns
+    return framework !== undefined && FRAMEWORK_GROUPS[framework]
       .some((pattern) => {
-        return pattern.test(specifierOf(line));
+        return new RegExp(pattern).test(specifierOf(line));
       });
   });
 
