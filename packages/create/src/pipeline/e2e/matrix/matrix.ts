@@ -150,7 +150,7 @@ const asCase = (answers: Answers): E2eCase => {
   };
 };
 
-const everyCase = (target: TargetId): E2eCase[] => {
+export const everyCase = (target: TargetId): E2eCase[] => {
   const recordOf = (variant: Partial<Answers>): TargetRecord => {
     return recordFor(target, variant);
   };

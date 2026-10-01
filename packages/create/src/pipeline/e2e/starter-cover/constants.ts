@@ -1,0 +1,79 @@
+import type { ProjectShape } from '@config/types';
+
+// What `pnpm lint:starters` installs and lints: between them, every text a starter template can be written as.
+export const STARTER_CASES: readonly string[] = [
+  'react pnpm vitest tanstack-form react-router-framework zustand stylex'
+  + ' tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'next pnpm vitest tanstack-form zustand stylex tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'svelte pnpm vitest tanstack-form tanstack-store stylex'
+  + ' tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'solid pnpm vitest tanstack-form tanstack-store stylex tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest tanstack-form pinia stylex tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest tanstack-form stylex tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'angular pnpm vitest tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tailwind tanstack-query msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest react-hook-form redux-toolkit rtk-query es-toolkit+ts-pattern+t3-env',
+  'next pnpm vitest react-hook-form redux-toolkit tailwind rtk-query es-toolkit+ts-pattern+t3-env',
+  'astro pnpm vitest host-none tanstack-form stylex msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'svelte pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-none msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env',
+  'solid pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest tanstack-form zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest redux-toolkit rtk-query zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest tanstack-router msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'angular pnpm vitest es-toolkit+ts-pattern+t3-env',
+  'astro pnpm vitest host-none tanstack-form zod+es-toolkit+ts-pattern+t3-env',
+  'next pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest firefox host-none zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest react-router-framework redux-toolkit msw zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest tanstack-form tanstack-store languages zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest tanstack-store msw zod+es-toolkit+ts-pattern+t3-env',
+  'solid pnpm vitest tanstack-form es-toolkit+ts-pattern+t3-env',
+  'svelte pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest react-router tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest react-router-framework tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest tanstack-router tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'next pnpm vitest redux-toolkit tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'next pnpm vitest tanstack-form tanstack-store zod+es-toolkit+ts-pattern+t3-env',
+  'angular pnpm vitest tanstack-form msw zod+es-toolkit+ts-pattern+t3-env',
+  'angular pnpm vitest tanstack-form tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
+  'astro pnpm vitest host-none tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
+  'astro pnpm vitest host-none stylex tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest languages zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tailwind msw zod+es-toolkit+ts-pattern+t3-env',
+  'react pnpm vitest react-router-framework stylex zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest languages zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
+  'vue pnpm vitest tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest languages zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest msw zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
+  'nuxt pnpm vitest tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'svelte pnpm vitest tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'solid pnpm vitest tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-none tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-none tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-react zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-react msw zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-react tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'webextension pnpm vitest chrome host-react tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest msw languages zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tanstack-query zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tanstack-query languages zod+es-toolkit+ts-pattern+t3-env',
+  'react-native pnpm vitest tanstack-query msw zod+es-toolkit+ts-pattern+t3-env',
+];
+
+export const LINTED_FILE = /\.(?:[cm]?[jt]sx?|astro|vue|svelte)$/u;
+
+export const STARTER_ROOT = 'starter-source';
+
+// A new project's shape, which is where the joined test setup lands.
+export const NEW_PROJECT: ProjectShape = {
+  setupTests: [],
+  styleEntries: [],
+};
