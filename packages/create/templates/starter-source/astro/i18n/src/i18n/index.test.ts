@@ -86,6 +86,14 @@ describe('i18n', () => {
     expect(boot()).toBe(last);
   });
 
+  it('reads a full browser tag it offers before its base language, and boots right to left', () => {
+    browserSpeaks(['ar-EG']);
+    bootLanguage([{ id: 'en', dir: 'ltr' }, { id: 'ar-EG', dir: 'rtl' }], languageStorageKey, 'en');
+
+    expect(document.documentElement.lang).toBe('ar-EG');
+    expect(document.documentElement.dir).toBe('rtl');
+  });
+
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
     localStorage.setItem(languageStorageKey, last);
@@ -107,12 +115,21 @@ describe('i18n', () => {
   it('inlines the boot function, called with the config the module reads', () => {
     const script = bootScript();
 
-    expect(script.startsWith(`(${bootLanguage.toString()})(`)).toBe(true);
-    expect(script).toContain(JSON.stringify(languages));
-    expect(script).toContain(JSON.stringify(languageStorageKey));
+    const args = [
+      languages,
+      languageStorageKey,
+      fallbackLanguage,
+    ]
+      .map((arg) => {
+        return JSON.stringify(arg);
+      })
+      .join(', ');
+
+    expect(script).toBe(`(${bootLanguage.toString()})(${args});`);
   });
 
   it('stores a choice, and switches the text, language, direction and select', () => {
+    document.documentElement.dir = 'auto';
     chooseLanguage(last);
 
     const title = marked('title')?.textContent;
