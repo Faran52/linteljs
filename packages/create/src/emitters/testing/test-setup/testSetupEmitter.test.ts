@@ -82,6 +82,19 @@ describe('testSetupEmitter', () => {
     expect(vue?.content).toHaveProperty('sources', expect.not.arrayContaining(i18nSetup));
   });
 
+  it('adds nothing for a target whose suites wrap their own provider', () => {
+    const [next] = testSetupEmitter({
+      ...DEFAULT_ANSWERS,
+      target: 'next',
+      languages: ['ar'],
+    }, FRESH);
+
+    expect(next?.content).toHaveProperty('sources', [
+      'fragments/test-setup/setupTests.ts',
+      'fragments/test-setup/setupTests.nextRouter.ts',
+    ]);
+  });
+
   it('leads with the target setup where the target ships one', () => {
     const [artifact] = testSetupEmitter({
       ...DEFAULT_ANSWERS,

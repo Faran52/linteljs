@@ -46,7 +46,12 @@ export const initI18n = (options: Pick<InitOptions, 'lng'> = {}): typeof i18next
           }),
         defaultNS: 'common',
         initAsync: false,
-        interpolation: { escapeValue: false },
+        // Single braces, as every other target's library reads the same locales.
+        interpolation: {
+          escapeValue: false,
+          prefix: '{',
+          suffix: '}',
+        },
         detection: {
           order: ['localStorage', 'navigator'],
           // Nothing is stored on detection: a first visit would otherwise look like a choice.

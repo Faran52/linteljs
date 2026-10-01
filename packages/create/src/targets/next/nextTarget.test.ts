@@ -1,6 +1,8 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
+  type Condition,
   contactGates,
   type GateRow,
   mswGates,
@@ -11,8 +13,10 @@ import {
   TANSTACK_QUERY,
   walkGates,
   WITH_FORM,
+  WITH_I18N,
   WITH_STORE,
   WITHOUT_FORM,
+  WITHOUT_I18N,
   WITHOUT_STORE,
 } from '@mocks/starterGates';
 import {
@@ -20,6 +24,8 @@ import {
   expect,
   it,
 } from 'vitest';
+
+import { LANGUAGES } from '@config/constants';
 
 import { FOLDER_ROUTED } from '../constants';
 import { componentNaming } from '../utils/namingUtils';
@@ -45,12 +51,67 @@ describe('nextTarget', () => {
     expect(nextTarget.naming).toEqual(componentNaming('app'));
   });
 
+  it('translates through next-intl, with no setup file: each suite wraps its own provider', () => {
+    expect(nextTarget.i18n).toEqual({ dependencies: ['next-intl'] });
+  });
+
   it('admits the route segments a file-based router owns', () => {
     expect(nextTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
   });
 });
 
+const FORM_ENGLISH: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: [undefined],
+}];
+const FORM_I18N: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: ANSWERED,
+}];
+
+const TRANSLATED_GATES: GateRow[] = [
+  ...[
+    'src/config/statuses.ts',
+    'src/config/standard.ts',
+    'src/app/layout.tsx',
+    'src/app/global-error.tsx',
+    'src/app/about/page.tsx',
+    'src/app/about/page.test.tsx',
+    'src/app/version/page.tsx',
+    'src/app/version/page.test.tsx',
+    'src/app/contact/page.test.tsx',
+    'src/app/not-found.test.tsx',
+    'src/app/error.test.tsx',
+    'src/components/features/status-page/StatusPage.tsx',
+    'src/components/features/status-page/StatusPage.test.tsx',
+    'src/components/features/app-header/AppHeader.tsx',
+    'src/components/features/app-header/AppHeader.test.tsx',
+  ]
+    .flatMap((key): GateRow[] => {
+      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+    }),
+  ['src/app/contact/page.tsx', FORM_ENGLISH],
+  ['src/app/contact/page.tsx@i18n', FORM_I18N],
+  ...[
+    'src/components/features/language-select/LanguageSelect.tsx',
+    'src/components/features/language-select/LanguageSelect.test.tsx',
+    'src/lib/providers/i18n/I18nProvider.tsx',
+    'src/lib/providers/i18n/I18nProvider.test.tsx',
+    'src/i18n/index.ts',
+    'src/i18n/index.test.ts',
+    'src/i18n/locales.test.ts',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, WITH_I18N];
+    }),
+];
+
 const GATES: GateRow[] = [
+  ...TRANSLATED_GATES,
   ...mswGates(true),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ...contactGates(['tanstack-query', 'rtk-query']),
@@ -61,7 +122,6 @@ const GATES: GateRow[] = [
   ['src/config/routes.ts@with-form', WITH_FORM],
   ['src/app/page.tsx', WITHOUT_STORE],
   ['src/app/page.tsx@with-store', WITH_STORE],
-  ['src/app/contact/page.tsx', WITH_FORM],
   ['src/app/contact/useContactForm.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
   ['src/app/contact/useContactForm.ts@react-hook-form', [{ form: ['react-hook-form'] }]],
   ['src/components/ui/index.ts', WITHOUT_FORM],

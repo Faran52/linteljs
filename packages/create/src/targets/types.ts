@@ -45,7 +45,8 @@ export interface StarterFile {
 // `include` matters as much as `extensions`, or a web variant resolves under a native test.
 export interface I18nParts {
   dependencies: string[];
-  testSetup: string;
+  // Absent where each suite wraps its render in the provider instead.
+  testSetup?: string;
 }
 
 export interface TestPlatform {

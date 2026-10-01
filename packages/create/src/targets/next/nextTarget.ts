@@ -11,6 +11,7 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -28,8 +29,10 @@ import {
   ACCESSORS,
   ALWAYS,
   FROM_REACT,
+  NEXT_I18N,
   SHARED,
 } from './constants';
+import { nextI18nFiles, nextI18nTests } from './utils/translatedFileUtils';
 
 import type { Store } from '@config/types';
 import type { StarterFile, TargetRecord } from '../types';
@@ -122,6 +125,8 @@ export const nextTarget: TargetRecord = {
       names: SOURCE_ACCESSORS,
     }),
     ...rtkFiles(),
+    ...nextI18nFiles(),
+    ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
         return { target };
@@ -186,10 +191,6 @@ export const nextTarget: TargetRecord = {
       when: hasForm,
       variant: 'with-form',
       shared: true,
-    },
-    {
-      target: 'src/app/contact/page.tsx',
-      when: hasForm,
     },
     ...(['tanstack-form', 'react-hook-form'] as const)
       .map((form): StarterFile => {
@@ -321,6 +322,8 @@ export const nextTarget: TargetRecord = {
       names: SOURCE_ACCESSORS,
     }),
     ...rtkTests(),
+    ...nextI18nTests(),
+    LOCALES_TEST,
     {
       target: 'src/app/page.test.tsx',
       covers: 'src/app/page.tsx',
@@ -335,38 +338,9 @@ export const nextTarget: TargetRecord = {
       variant: 'with-store',
     },
     {
-      target: 'src/app/about/page.test.tsx',
-      covers: 'src/app/about/page.tsx',
-    },
-    {
-      target: 'src/app/version/page.test.tsx',
-      covers: 'src/app/version/page.tsx',
-    },
-    {
-      target: 'src/app/contact/page.test.tsx',
-      covers: 'src/app/contact/page.tsx',
-    },
-    {
-      target: 'src/components/features/app-header/AppHeader.test.tsx',
-      covers: 'src/components/features/app-header/AppHeader.tsx',
-    },
-    {
       target: 'src/components/ui/mark/Mark.test.tsx',
       covers: 'src/components/ui/mark/Mark.tsx',
       shared: 'react',
-    },
-    {
-      target: 'src/components/features/status-page/StatusPage.test.tsx',
-      covers: 'src/components/features/status-page/StatusPage.tsx',
-      shared: 'react',
-    },
-    {
-      target: 'src/app/not-found.test.tsx',
-      covers: 'src/app/not-found.tsx',
-    },
-    {
-      target: 'src/app/error.test.tsx',
-      covers: 'src/app/error.tsx',
     },
     {
       target: 'src/components/ui/button/Button.test.tsx',
@@ -422,5 +396,6 @@ export const nextTarget: TargetRecord = {
   ],
   allowBuilds: [],
   stateRules: ['react-state.md', 'hooks-order.md'],
+  i18n: NEXT_I18N,
   routerMock: 'fragments/test-setup/setupTests.nextRouter.ts',
 };

@@ -107,6 +107,7 @@ export const VERSIONS: Record<string, string> = {
   'lint-staged': '^17.5.1',
   'postcss-html': '^2.0.0',
   'next': '^16.3.6',
+  'next-intl': '^4.14.8',
   // At exactly what the SDK's own template pins, which `expo-doctor` checks. docs/DESIGN.md has why.
   'expo': '~57.0.25',
   'react-native': '0.86.3',
