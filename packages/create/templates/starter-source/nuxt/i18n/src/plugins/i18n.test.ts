@@ -1,8 +1,7 @@
-import { createApp } from 'vue';
+import { createApp, type Ref } from 'vue';
 import {
   type NuxtApp,
   onNuxtReady,
-  useHead,
 } from 'nuxt/app';
 
 import {
@@ -15,11 +14,19 @@ import './i18n';
 
 type Setup = (nuxtApp: Pick<NuxtApp, 'vueApp'>) => void;
 
-// The plugin's setup, kept to run against a real app in each case.
+interface Head {
+  htmlAttrs: Record<'lang' | 'dir', Readonly<Ref<string>>>;
+}
+
+// The plugin's setup, kept to run against a real app in each case, and the head it hands Nuxt.
 const nuxt = vi.hoisted(() => {
   const setups: Setup[] = [];
+  const heads: Head[] = [];
 
-  return { setups };
+  return {
+    setups,
+    heads,
+  };
 });
 
 vi.mock('nuxt/app', () => {
@@ -28,7 +35,9 @@ vi.mock('nuxt/app', () => {
       nuxt.setups.push(setup);
     },
     onNuxtReady: vi.fn(),
-    useHead: vi.fn(),
+    useHead: (head: Head) => {
+      nuxt.heads.push(head);
+    },
   };
 });
 
@@ -78,11 +87,9 @@ describe('the i18n plugin', () => {
     install();
     applyLanguage(id);
 
-    expect(useHead).toHaveBeenLastCalledWith({
-      htmlAttrs: {
-        lang: expect.objectContaining({ value: id }),
-        dir: expect.objectContaining({ value: dir }),
-      },
-    });
+    const htmlAttrs = nuxt.heads.at(-1)?.htmlAttrs;
+
+    expect(htmlAttrs?.lang.value).toBe(id);
+    expect(htmlAttrs?.dir.value).toBe(dir);
   });
 });

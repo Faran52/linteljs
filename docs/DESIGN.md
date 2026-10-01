@@ -192,6 +192,17 @@ loses the whole category.
 Vue's preset is ordered *ahead* of `@linteljs/vue`. Its second entry sets `languageOptions.parser` for `**/*.vue`,
 and placed later it lands on the same glob and takes the `parserOptions` carrying `projectService` with it.
 
+`@linteljs/vue/sfc-import-seam` turns `no-unsafe-argument` and `no-unsafe-assignment` off for every `.ts` file in a
+Vue or Nuxt project, because the program behind lint reads an SFC import as an error type and `vue-tsc --noEmit`
+checks that seam. Measured on 2026-10-01 against the `lint:starters:typed` projects, every answer on, with the two
+rules back on: Vue gave 11 findings, every one an SFC import (`createApp(App)` in `main.ts`, a route's `component:`
+in `router/index.ts` and `views/routes.ts`, a `mount(ContactView)` result in its suite); Nuxt gave 2, both a real
+`any` from Vitest's `expect.objectContaining` in the i18n plugin suite, which now reads the head it records instead.
+The seam is Nuxt's too: a probe `.ts` importing `AppHeader.vue` gives the same error-typed finding, since Nuxt's
+generated types declare no `*.vue` module. So the override stays as it is. A glob cannot name what imports an SFC
+(an entry, a router, a route table and any suite all do), and a list of today's starter paths would miss the first
+such file a project adds.
+
 ### React Native lints as React without the accessibility preset
 
 `Framework` carries a `react-native` member whose layer is `reactCore()`: everything `react()` has except the
