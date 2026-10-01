@@ -65,6 +65,32 @@ describe('gateRows', () => {
       ["command: 'pnpm build'", "runs: 'expo export'"],
     ]);
   });
+
+  it('breaks a command too long for one line into joined literals, each inside the line length', () => {
+    const rows = gateRows(hostedAnswersFor({
+      target: 'svelte',
+      languages: ['ja'],
+    }));
+    const typecheck = rows
+      .find(([command]) => {
+        return command === "command: 'pnpm typecheck'";
+      })?.[1] ?? '';
+    const lines = typecheck.split('\n');
+    const joined = lines
+      .map((line) => {
+        return line.replace(/^\s*(?:runs: |\+ )'(.*)'$/u, '$1');
+      })
+      .join('');
+    // Four columns of row indent sit in front of `runs:`.
+    const fits = lines
+      .every((line) => {
+        return line.length + 4 <= 120;
+      });
+
+    expect(lines.length).toBeGreaterThan(1);
+    expect(fits).toBe(true);
+    expect(joined).toMatch(/^paraglide-js compile .* && svelte-kit sync && svelte-check /u);
+  });
 });
 
 describe('answerRows', () => {

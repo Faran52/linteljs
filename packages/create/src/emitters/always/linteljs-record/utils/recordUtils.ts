@@ -9,6 +9,27 @@ import { buildScripts, gateScripts } from '../../utils/scriptUtils';
 
 import type { Answers, HostedAnswers } from '@config/types';
 
+// A long command breaks at its spaces into joined literals, inside the base layer's 120 columns.
+const RUNS_WIDTH = 100;
+
+const literal = (command: string): string => {
+  const lines = command
+    .split(' ')
+    .reduce<string[]>((joined, word) => {
+      const last = joined.at(-1);
+
+      return last === undefined || last.length + word.length >= RUNS_WIDTH
+        ? [...joined, word]
+        : [...joined.slice(0, -1), `${last} ${word}`];
+    }, []);
+
+  return lines
+    .map((line, index) => {
+      return index === lines.length - 1 ? `'${line}'` : `'${line} '`;
+    })
+    .join('\n      + ');
+};
+
 // Read off the scripts `package.json` gets, so the page cannot name a command the project does not run.
 export const gateRows = (answers: Answers): [string, string][] => {
   const run = RUN_PREFIX[answers.packageManager];
@@ -19,7 +40,7 @@ export const gateRows = (answers: Answers): [string, string][] => {
       return gates.includes(name);
     })
     .map(([name, runs]) => {
-      return [`command: '${run} ${name}'`, `runs: '${runs}'`];
+      return [`command: '${run} ${name}'`, `runs: ${literal(runs)}`];
     });
 };
 
