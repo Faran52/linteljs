@@ -166,6 +166,10 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: "export { /* keep */ alpha, bravo, charlie } from 'mod';",
   },
   {
+    name: 'export with string-literal names and import attributes',
+    code: "export { alpha as 'first-name', 'bravo', charlie } from './data.json' with { type: 'json' };\n",
+  },
+  {
     name: 'export with a trailing comma',
     code: "export { alpha, bravo, charlie, } from 'mod';",
   },

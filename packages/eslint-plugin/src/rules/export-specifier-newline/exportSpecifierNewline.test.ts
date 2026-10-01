@@ -69,6 +69,26 @@ jsRuleTester.run('export-specifier-newline', exportSpecifierNewline, {
       output: "export {\n  /* head */ alpha, /* keep */\n  bravo,\n  charlie /* tail */\n} from 'mod';",
       errors,
     },
+    {
+      code: "export { alpha, // keep\n  bravo } from 'mod';",
+      output: "export {\n  alpha, // keep\n  bravo\n} from 'mod';",
+      errors,
+    },
+    {
+      code: "export { alpha, bravo, charlie } from 'mod';\r\n",
+      output: "export {\r\n  alpha,\r\n  bravo,\r\n  charlie\r\n} from 'mod';\r\n",
+      errors,
+    },
+    {
+      code: "export { alpha as 'first-name', 'bravo', charlie } from 'mod';",
+      output: "export {\n  alpha as 'first-name',\n  'bravo',\n  charlie\n} from 'mod';",
+      errors,
+    },
+    {
+      code: "export { alpha, bravo, charlie } from './data.json' with { type: 'json' };",
+      output: "export {\n  alpha,\n  bravo,\n  charlie\n} from './data.json' with { type: 'json' };",
+      errors,
+    },
   ],
 });
 
@@ -91,6 +111,11 @@ tsRuleTester.run('export-specifier-newline (typescript)', exportSpecifierNewline
     {
       code: 'type Alpha = string;\ntype Bravo = number;\nexport type { Alpha,\n  Bravo };',
       output: 'type Alpha = string;\ntype Bravo = number;\nexport type {\n  Alpha,\n  Bravo\n};',
+      errors,
+    },
+    {
+      code: "declare module 'mod' {\n\texport { Alpha, Bravo, Charlie } from 'other';\n}",
+      output: "declare module 'mod' {\n\texport {\n\t\tAlpha,\n\t\tBravo,\n\t\tCharlie\n\t} from 'other';\n}",
       errors,
     },
   ],
