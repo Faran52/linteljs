@@ -822,10 +822,13 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode.
+that is React, in every router mode, and Next.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
-  browser detector. No starter hand-rolls a translation core.
+  browser detector, Next takes next-intl. No starter hand-rolls a translation core.
+- **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
+  the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
+  to `{` and `}` to read it too.
 - **A detected language is never stored.** The order is the stored choice, then the browser, then English. The
   detector's `caches` is empty and the language select is the one writer, so a first visit does not pass for a
   choice and a later change of browser language still reaches the page.
@@ -842,6 +845,11 @@ that is React, in every router mode.
   page `rtl`; the starter CSS uses logical properties only. React Router framework mode renders `lang="en"
   dir="ltr"` on the server, which has neither storage nor the browser, and detects in a `Layout` effect after
   hydration, so the first client render matches the server's.
+- **Next translates on the client only.** No next-intl plugin, no `request.ts` and no locale segment in the URL:
+  the language is the reader's choice, not a route. The root layout renders `<html lang="en" dir="ltr">`, and
+  `I18nProvider` reads the language through `useSyncExternalStore` with an English server snapshot, so hydration
+  matches and the client switches after it. The translated pages are client components, and each suite wraps its
+  render in the provider, so Next's `i18n` parts carry no test setup.
 
 ### Recorded answers
 

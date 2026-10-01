@@ -36,6 +36,10 @@ when a version's change lives in a sibling it is described there instead:
   The header, status pages, About, Version and Contact are translated in every router mode. The stored choice wins,
   then the browser language, which is never stored; Arabic sets `dir="rtl"`. React Router framework mode renders
   English on the server and switches after hydration.
+- Next projects take `--languages` too, through next-intl on the client: no plugin, no locale in the URL. The
+  header, status pages, About, Version and Contact are translated, the server renders English and the page
+  switches after hydration. The shared locales use the single-brace ICU placeholder, `{name}`, which React's
+  i18next now reads as well.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.
