@@ -1,5 +1,5 @@
 import type { Browser } from '@config/types';
-import type { PluginSpec } from '../types';
+import type { I18nParts, PluginSpec } from '../types';
 
 export interface BrowserParts {
   types: string[];
@@ -30,7 +30,6 @@ export const CRX: PluginSpec = {
 // A popup closes when it loses focus, so it carries no nav and no second page.
 export const POPUP: readonly string[] = [
   'src/main.ts',
-  'src/popup/renderPopup.ts',
   'src/lib/mark/mark.ts',
 ];
 
@@ -38,3 +37,6 @@ export const SHARED: readonly string[] = [
   'src/styles/tokens.css',
   'src/styles/base.css',
 ];
+
+// Only the popup has text to translate, and it reads the shared locales itself: nothing to install.
+export const WEBEXTENSION_I18N: I18nParts = { dependencies: [] };

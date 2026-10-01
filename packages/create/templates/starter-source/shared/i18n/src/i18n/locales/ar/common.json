@@ -26,5 +26,7 @@
   "versionRecorded": "مسجّلة في <code>{file}</code>، الذي يقرؤه <code>{command}</code>.",
   "contactLede": "حقلان، يُتحقّق منهما عند مغادرة الحقل. لا يُرسَل شيء إلى أي مكان.",
   "contactSent": "شكرًا. لم يُرسَل شيء، فهذا مشروع بداية.",
-  "contactSend": "إرسال"
+  "contactSend": "إرسال",
+  "popupLede": "إضافة يبنيها Vite، والمعيار مطبّق عليها مسبقًا.",
+  "popupGate": "شغّل <code>{command}</code> للبوابة الكاملة."
 }

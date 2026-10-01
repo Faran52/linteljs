@@ -26,5 +26,7 @@
   "versionRecorded": "<code>{file}</code>에 기록되며, <code>{command}</code>가 이를 읽습니다.",
   "contactLede": "두 개의 입력란은 포커스를 벗어날 때 검증됩니다. 어디로도 전송되지 않습니다.",
   "contactSent": "감사합니다. 스타터이므로 아무것도 전송되지 않았습니다.",
-  "contactSend": "보내기"
+  "contactSend": "보내기",
+  "popupLede": "Vite로 빌드되고 표준이 이미 적용된 확장 프로그램입니다.",
+  "popupGate": "전체 게이트를 실행하려면 <code>{command}</code>를 실행하세요."
 }

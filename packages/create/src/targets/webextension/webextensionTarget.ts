@@ -10,7 +10,9 @@ import {
   CRX,
   POPUP,
   SHARED,
+  WEBEXTENSION_I18N,
 } from './constants';
+import { popupI18nFiles, popupI18nTests } from './utils/translatedFileUtils';
 
 import type { Answers, Browser } from '@config/types';
 import type { TargetBuilder } from '../registry';
@@ -42,6 +44,7 @@ const surfaceFiles = (answers: Answers, variant: Browser): StarterFile[] => {
         .map((target): StarterFile => {
           return { target };
         }),
+      ...popupI18nFiles(),
       // No components here, so a stylesheet under `components/` would sit beside nothing.
       {
         target: 'src/lib/mark/mark.css',
@@ -149,12 +152,7 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     starterFiles: [...mockFiles(false), ...surfaceFiles(answers, answers.browser)],
     starterTests: [
       ...mockTests(false),
-      ...popup
-        ? [{
-            target: 'src/popup/renderPopup.test.ts',
-            covers: 'src/popup/renderPopup.ts',
-          }]
-        : [],
+      ...popup ? popupI18nTests() : [],
       ...hasSurface(answers, 'background')
         ? [{
             variant: answers.browser,
@@ -188,5 +186,6 @@ export const webextensionTarget: TargetBuilder = (answers) => {
     ...(hosted === undefined ? {} : { testDevDependencies: hosted.testDevDependencies }),
     allowBuilds: [...hosted?.allowBuilds ?? []],
     stateRules: hosted?.stateRules ?? [],
+    ...(popup ? { i18n: WEBEXTENSION_I18N } : {}),
   };
 };

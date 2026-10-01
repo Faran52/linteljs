@@ -711,11 +711,12 @@ describe('the mocking answer', () => {
 });
 
 describe('the languages answer', () => {
-  const configWith = (target: string): string => {
+  const configWith = (target: string, extra: Record<string, string[]> = {}): string => {
     return JSON.stringify({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       target,
+      ...extra,
       testing: 'vitest',
       packageManager: 'pnpm',
       libraries: [],
@@ -732,9 +733,12 @@ describe('the languages answer', () => {
     expect(config.languages).toEqual(['ar', 'ja']);
   });
 
-  it('is refused on a target that does not translate its starter', () => {
+  it('is taken by an extension with a popup and refused by one with no page to translate', () => {
+    const popup = parseLinteljsConfig(configWith('webextension', { surfaces: ['popup'] }));
+
+    expect(popup.languages).toEqual(['ar', 'ja']);
     expect(() => {
-      return parseLinteljsConfig(configWith('webextension'));
+      return parseLinteljsConfig(configWith('webextension', { surfaces: ['background'] }));
     }).toThrow('languages is not an answer for webextension');
   });
 });

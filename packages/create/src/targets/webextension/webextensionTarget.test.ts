@@ -1,5 +1,7 @@
 import {
+  ANSWERED,
   byKey,
+  type Condition,
   type GateRow,
   mswGates,
   TAILWIND,
@@ -10,6 +12,8 @@ import {
   expect,
   it,
 } from 'vitest';
+
+import { LANGUAGES } from '@config/constants';
 
 import { DEFAULT_ANSWERS } from '@answers';
 
@@ -245,6 +249,16 @@ describe('the hosted framework axis', () => {
   });
 });
 
+describe('the languages', () => {
+  it('are offered with a popup, installing nothing, and not without one', () => {
+    const popup = recordFor({ surfaces: ['popup'] }).i18n;
+    const background = recordFor({ surfaces: ['background'] }).i18n;
+
+    expect(popup).toEqual({ dependencies: [] });
+    expect(background).toBeUndefined();
+  });
+});
+
 describe('the host slots', () => {
   it('declares both, so the questionnaire asks them', () => {
     expect(recordFor().hostsBrowser).toBe(true);
@@ -252,9 +266,36 @@ describe('the host slots', () => {
   });
 });
 
+// Only a popup has text to translate, so only a popup takes languages.
+const POPUP_SURFACES: (Surface[] | undefined)[] = [undefined, ['popup']];
+const ENGLISH_POPUP: readonly Condition[] = [{
+  surfaces: POPUP_SURFACES,
+  languages: [undefined],
+}];
+const TRANSLATED_POPUP: readonly Condition[] = [{
+  surfaces: POPUP_SURFACES,
+  languages: ANSWERED,
+}];
+
 const GATES: GateRow[] = [
   ...mswGates(false),
   ['src/styles/theme.css@tailwind', TAILWIND],
+  ...['src/popup/renderPopup.ts', 'src/popup/renderPopup.test.ts']
+    .flatMap((key): GateRow[] => {
+      return [[key, ENGLISH_POPUP], [`${key}@i18n`, TRANSLATED_POPUP]];
+    }),
+  ...[
+    'src/i18n/index.ts',
+    'src/i18n/index.test.ts',
+    'src/i18n/locales.test.ts',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, TRANSLATED_POPUP];
+    }),
 ];
 
 describe('the starter gates', () => {

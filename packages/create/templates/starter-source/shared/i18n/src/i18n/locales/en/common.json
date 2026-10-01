@@ -26,5 +26,7 @@
   "versionRecorded": "Recorded in <code>{file}</code>, which <code>{command}</code> reads.",
   "contactLede": "Two fields, validated on blur. Nothing is sent anywhere.",
   "contactSent": "Thanks. Nothing was sent, this is a starter.",
-  "contactSend": "Send"
+  "contactSend": "Send",
+  "popupLede": "An extension, built by Vite and the standard already applied.",
+  "popupGate": "Run <code>{command}</code> for the full gate."
 }

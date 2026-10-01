@@ -110,6 +110,7 @@ describe('ask', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     ]);
 
     expect(recorded.calls).toContain('Browser');
@@ -125,6 +126,7 @@ describe('ask', () => {
       'chrome',
       ['popup', 'background'],
       'none',
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -598,6 +600,7 @@ describe('the store question', () => {
       'webextension',
       undefined,
       ['popup'],
+      undefined,
       undefined,
       undefined,
       undefined,

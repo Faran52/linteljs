@@ -26,5 +26,7 @@
   "versionRecorded": "<code>{file}</code> に記録され、<code>{command}</code> がそれを読み込みます。",
   "contactLede": "2 つの入力欄は、フォーカスを外したときに検証されます。どこにも送信されません。",
   "contactSent": "ありがとうございます。これはスターターなので、何も送信されていません。",
-  "contactSend": "送信"
+  "contactSend": "送信",
+  "popupLede": "Vite でビルドされ、標準があらかじめ適用された拡張機能です。",
+  "popupGate": "<code>{command}</code> を実行すると、ゲート全体が走ります。"
 }

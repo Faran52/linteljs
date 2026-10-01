@@ -1,10 +1,15 @@
 import { LANGUAGES } from '@config/constants';
 
+import { valuesOf } from '@utils/objectUtils';
+
 import { targetFor } from '@targets';
 
 import { DEFAULT_ANSWERS } from '../../registry';
+import { targetAnswer } from '../../target/target/targetAnswer';
 
 import { languagesAnswer } from './languagesAnswer';
+
+const TARGETS = valuesOf(targetAnswer.values);
 
 describe('languagesAnswer', () => {
   it('is keyed languages and may be skipped', () => {
@@ -16,14 +21,21 @@ describe('languagesAnswer', () => {
     expect(Object.keys(languagesAnswer.values)).toEqual(LANGUAGES);
   });
 
-  it('takes a slot on a target that translates its starter and on no other', () => {
-    const react = targetFor(DEFAULT_ANSWERS);
-    const webextension = targetFor({
+  it('takes a slot on every target, and on an extension only where a popup has text to translate', () => {
+    const slotted = TARGETS
+      .filter((target) => {
+        return languagesAnswer.slot(targetFor({
+          ...DEFAULT_ANSWERS,
+          target,
+        }));
+      });
+    const background = targetFor({
       ...DEFAULT_ANSWERS,
       target: 'webextension',
+      surfaces: ['background'],
     });
 
-    expect(languagesAnswer.slot(react)).toBe(true);
-    expect(languagesAnswer.slot(webextension)).toBe(false);
+    expect(slotted).toEqual(TARGETS);
+    expect(languagesAnswer.slot(background)).toBe(false);
   });
 });

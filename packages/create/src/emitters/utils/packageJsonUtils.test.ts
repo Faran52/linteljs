@@ -948,6 +948,16 @@ describe('buildDependencies with languages', () => {
       target: 'webextension',
       languages: ['ja'],
     }));
+    // No popup, so no i18n parts: a language that slipped past the answers adds nothing.
+    const background = buildDependencies(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+      languages: ['ja'],
+    }));
+    const backgroundInEnglish = buildDependencies(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+    }));
 
     expect(Object.keys(translated)).toEqual(expect.arrayContaining([
       'i18next',
@@ -960,6 +970,7 @@ describe('buildDependencies with languages', () => {
     expect(solid).toHaveProperty('@solid-primitives/i18n');
     expect(webextension).not.toHaveProperty('i18next');
     expect(webextension).not.toHaveProperty('@solid-primitives/i18n');
+    expect(background).toEqual(backgroundInEnglish);
   });
 
   it('adds the target\'s i18n compiler as a dev dependency only once a language is chosen', () => {

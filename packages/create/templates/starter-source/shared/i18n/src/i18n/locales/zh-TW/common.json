@@ -26,5 +26,7 @@
   "versionRecorded": "記錄在 <code>{file}</code> 中，<code>{command}</code> 會讀取它。",
   "contactLede": "兩個欄位，在失去焦點時驗證。不會傳送到任何地方。",
   "contactSent": "謝謝。這是一個入門專案，沒有傳送任何內容。",
-  "contactSend": "傳送"
+  "contactSend": "傳送",
+  "popupLede": "一個由 Vite 建置、已套用標準的擴充功能。",
+  "popupGate": "執行 <code>{command}</code> 以進行完整的檢查關卡。"
 }
