@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import {
   enabledRuleIdsFor,
   ownBlockNames,
+  ruleEntryFor,
   ruleIdsForFile,
   ruleNamesFor,
 } from '@mocks/lintText';
@@ -56,11 +57,50 @@ describe('typescript', () => {
       .resolves.not.toContain('@typescript-eslint/no-floating-promises');
   });
 
+  it('restates the prefer-alias defaults', () => {
+    const block = typescript()
+      .find(({ name }) => {
+        return name === '@linteljs/typescript/prefer-alias';
+      });
+
+    expect(block?.rules).toEqual({
+      '@linteljs/prefer-alias': ['error', {
+        aliasExempt: [],
+        enforceRelativeImports: false,
+      }],
+    });
+  });
+
+  it('configures prefer-alias on every typed extension, the SFCs included', async () => {
+    const layer = [...base(), ...typescript({ aliasExempt: ['src/routes.ts'] })];
+
+    for (const file of [
+      'src/a.ts',
+      'src/a.tsx',
+      'src/A.vue',
+      'src/A.svelte',
+    ]) {
+      const entry = await ruleEntryFor(layer, file, '@linteljs/prefer-alias');
+
+      expect({
+        file,
+        entry,
+      }).toEqual({
+        file,
+        entry: [2, {
+          aliasExempt: ['src/routes.ts'],
+          enforceRelativeImports: false,
+        }],
+      });
+    }
+  });
+
   it('names every block it writes', () => {
     expect(ownBlockNames(typescript())).toEqual([
       '@linteljs/typescript',
       '@linteljs/typescript/untyped',
       '@linteljs/typescript/unused-vars-handover',
+      '@linteljs/typescript/prefer-alias',
       '@linteljs/typescript/asset-requires',
     ]);
   });

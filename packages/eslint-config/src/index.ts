@@ -50,4 +50,5 @@ export type {
   NamingConvention,
   NamingMap,
   ResolverOptions,
+  TypescriptOptions,
 } from './types';

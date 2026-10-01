@@ -54,7 +54,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
           ...baseOptions,
           frameworkGroup: parts.group,
         }),
-    ...(withTypescript === true ? typescript() : []),
+    ...(withTypescript === true ? typescript(options) : []),
     ...(parts === undefined ? [] : parts.layer),
     ...libraryLayers.flat(),
     ...vitestRules,

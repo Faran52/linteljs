@@ -1,9 +1,9 @@
 import tseslint from 'typescript-eslint';
 
-import type { Layer } from '../../types';
+import type { Layer, TypescriptOptions } from '../../types';
 
 // `projectService` types config files outside every tsconfig `include`.
-export const typescript = (): Layer => {
+export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }: TypescriptOptions = {}): Layer => {
   return [
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
@@ -27,6 +27,18 @@ export const typescript = (): Layer => {
     {
       name: '@linteljs/typescript/unused-vars-handover',
       rules: { '@typescript-eslint/no-unused-vars': 'off' },
+    },
+
+    // The SFC parsers nest typescript-eslint with `projectService`, so `.vue` and `.svelte` get a program too.
+    {
+      name: '@linteljs/typescript/prefer-alias',
+      files: ['**/*.{ts,tsx,mts,cts,vue,svelte}'],
+      rules: {
+        '@linteljs/prefer-alias': ['error', {
+          aliasExempt,
+          enforceRelativeImports,
+        }],
+      },
     },
 
     // Metro assets need `require`; a package import is still reported.

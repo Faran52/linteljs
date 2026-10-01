@@ -59,6 +59,20 @@ export const ruleNamesFor = async (config: Layer, filePath: string): Promise<str
   return Object.keys(calculated.rules);
 };
 
+export const ruleEntryFor = async (
+  config: Layer,
+  filePath: string,
+  ruleId: string,
+): Promise<Linter.RuleEntry | undefined> => {
+  const reader: ConfigReader = new ESLint({
+    overrideConfigFile: true,
+    overrideConfig: config,
+  });
+  const calculated = await reader.calculateConfigForFile(filePath);
+
+  return calculated.rules[ruleId];
+};
+
 // One turned off is still a key in the same map.
 export const enabledRuleIdsFor = async (config: Layer, filePath: string): Promise<string[]> => {
   const reader: ConfigReader = new ESLint({

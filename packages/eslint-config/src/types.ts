@@ -30,6 +30,13 @@ export interface BaseOptions {
   astro?: boolean;
 }
 
+export interface TypescriptOptions {
+  // Globs from the tsconfig declaring `paths`: files where `@linteljs/prefer-alias` reports no alias to prefer.
+  aliasExempt?: string[];
+  // In an `aliasExempt` file, fix every alias import to a relative one.
+  enforceRelativeImports?: boolean;
+}
+
 // `next` implies `react` beneath it and `nuxt` implies `vue`; `react-native` is `react` without the a11y preset.
 export type Framework
   = 'react'
@@ -44,7 +51,7 @@ export type Framework
 export type LibraryLayer = 'tanstack-query' | 'tanstack-router' | 'tailwind' | 'stylex';
 
 // `frameworkGroup` is dropped: the composer reads it off the framework layer.
-export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'> {
+export interface ComposeConfigOptions extends Omit<BaseOptions, 'frameworkGroup'>, TypescriptOptions {
   framework?: Framework;
   typescript?: boolean;
   vitest?: boolean;

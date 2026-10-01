@@ -203,6 +203,25 @@ describe('composeConfig', () => {
       .resolves.toContain('better-tailwindcss/no-duplicate-classes');
   });
 
+  it('hands the alias options to the typescript layer', async () => {
+    const config = await composeConfig({
+      typescript: true,
+      aliasExempt: ['src/routes.ts'],
+      enforceRelativeImports: true,
+    });
+    const block = config
+      .find(({ name }) => {
+        return name === '@linteljs/typescript/prefer-alias';
+      });
+
+    expect(block?.rules).toEqual({
+      '@linteljs/prefer-alias': ['error', {
+        aliasExempt: ['src/routes.ts'],
+        enforceRelativeImports: true,
+      }],
+    });
+  });
+
   it('hands the tailwind entry point to the tailwind layer', async () => {
     const config = await composeConfig({
       libraries: ['tailwind'],

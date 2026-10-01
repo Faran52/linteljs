@@ -39,6 +39,7 @@ Each layer switch is off unless you enable it.
 | `astro` | Enables Astro rules for `.astro` templates, and widens `base` to them. It stacks with a framework layer rather than replacing one. |
 | `libraries` | Adds any of `'tanstack-query'`, `'tanstack-router'`, `'tailwind'` and `'stylex'`. |
 | `tailwindEntryPoint` | Path to the CSS file that contains `@import "tailwindcss"`, passed to the Tailwind layer. Ignored unless `libraries` includes `'tailwind'`. |
+| `aliasExempt`, `enforceRelativeImports` | Options of `@linteljs/prefer-alias`, passed to the TypeScript layer. Ignored unless `typescript` is on. |
 | `ignores`, `naming`, `folderNaming`, `aliases`, `resolver` | Passed through to `base` under the same names. |
 
 Without `tailwindEntryPoint`, the Tailwind rules only reason about Tailwind's default theme. Point it at the
@@ -83,7 +84,7 @@ choice for a project config.
 | --- | --- | --- | --- |
 | `composeConfig(options?)` | `/compose-config` | Loads requested layers and orders them. | Those of the layers it loads. |
 | `base(options?)` | `/base` | Shared style, imports, unused imports, naming, complexity, and Lintel rules. It works for JavaScript on its own. On top of the plugin's `recommended`, `base` extends its three TypeScript-only rules to `.vue` and `.svelte` files; the four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
-| `typescript()` | `/typescript` | Strict type-aware rules and an untyped tail for JavaScript and HTML. | None. |
+| `typescript(options?)` | `/typescript` | Strict type-aware rules and an untyped tail for JavaScript and HTML. | `aliasExempt`, `enforceRelativeImports`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |
 | `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro`, `astro-eslint-parser` |

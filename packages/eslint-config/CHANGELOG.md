@@ -38,6 +38,10 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, the
+  SFCs typed through the nested parser, and takes `aliasExempt` and `enforceRelativeImports` for it, as does
+  `composeConfig`. `base()` restates the rule over the SFCs with the other TypeScript-only rules. The new
+  `TypescriptOptions` type is on the barrel.
 - New layers, each on its own subpath, on the barrel, and in `composeConfig`: `reactNative()` at `./react-native`
   and `nuxt()` at `./nuxt` (`framework: 'react-native'` and `'nuxt'`), `tanstackRouter()` at `./tanstack-router`
   and `stylex()` at `./stylex` (`libraries: ['tanstack-router']` and `['stylex']`), over the optional peers

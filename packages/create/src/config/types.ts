@@ -182,6 +182,8 @@ export interface ComposeConfigOptions {
   folderNaming?: NamingMap;
   aliases?: AliasMap;
   resolver?: ResolverOptions;
+  aliasExempt?: string[];
+  enforceRelativeImports?: boolean;
 }
 
 // Redeclared, not imported: this package installs before eslint-config publishes. `src/types.test.ts` pins them equal.
