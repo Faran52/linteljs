@@ -146,9 +146,6 @@ describe('targetCases', () => {
       return answers.typeSafety === 'relaxed';
     })).toBe(true);
     expect(has('react', (answers) => {
-      return answers.packageManager === 'yarn-classic';
-    })).toBe(true);
-    expect(has('react', (answers) => {
       return answers.router === 'react-router-framework' && answers.styling === 'stylex';
     })).toBe(true);
     expect(has('next', (answers) => {

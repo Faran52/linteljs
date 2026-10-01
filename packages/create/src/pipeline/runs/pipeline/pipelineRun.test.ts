@@ -305,12 +305,6 @@ describe('the stages that shell out', () => {
     expect(await invocations()).toHaveLength(2);
   });
 
-  it('names yarn 1 by the command it runs', async () => {
-    await planted('yarn', 0);
-
-    expect(await installNotices('yarn-classic')).toEqual(['installing with yarn']);
-  });
-
   it('stops when the package manager is not installed at all', async () => {
     await planted('yarn', 0);
 

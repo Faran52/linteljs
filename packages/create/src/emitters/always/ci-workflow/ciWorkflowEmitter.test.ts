@@ -98,18 +98,6 @@ describe('emitCiWorkflow', () => {
 
       - run: yarn check
 `],
-    ['yarn-classic', `    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: yarn
-
-      - run: yarn install --frozen-lockfile
-
-      - run: yarn run check
-`],
   ])('writes the steps a %s project runs', (packageManager, steps) => {
     expect(emitCiWorkflow(hostedAnswersFor({ packageManager })).endsWith(steps)).toBe(true);
   });
@@ -134,14 +122,6 @@ describe('emitCiWorkflow', () => {
   it('reads nothing it does not need from the workflow token', () => {
     expect(emitCiWorkflow(hostedAnswersFor({}))).toContain('permissions:\n  contents: read');
   });
-});
-
-it('installs a classic project with the flag 1.x understands', () => {
-  const workflow = emitCiWorkflow(hostedAnswersFor({ packageManager: 'yarn-classic' }));
-
-  expect(workflow).toContain('yarn install --frozen-lockfile');
-  expect(workflow).not.toContain('--immutable');
-  expect(workflow).toContain('cache: yarn');
 });
 
 describe('ciWorkflowEmitter', () => {

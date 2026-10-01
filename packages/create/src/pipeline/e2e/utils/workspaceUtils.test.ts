@@ -25,11 +25,9 @@ const ANSWERED: Record<string, string> = {
 vi.mock('./processUtils', () => {
   return {
     runPm: vi.fn(async (pm: PackageManager) => {
-      const binary = pm === 'yarn-classic' ? 'yarn' : pm;
-
       return Promise.resolve({
         status: 0,
-        output: ANSWERED[binary],
+        output: ANSWERED[pm],
       });
     }),
   };
@@ -81,25 +79,14 @@ describe('versionFrom', () => {
     }).toThrow('bun --version answered spawn bun ENOENT');
   });
 
-  it.each([
-    [
-      'yarn',
-      '1.22.22',
-      '4.0.0',
-    ],
-    [
-      'yarn-classic',
-      '4.18.0',
-      '1.22.22',
-    ],
-  ] as const)('refuses a %s case the yarn on PATH at %s cannot run', (pm, version, floor) => {
+  it('refuses a yarn 1 on PATH', () => {
     expect(() => {
-      return versionFrom(pm, version);
-    }).toThrow(`The yarn on PATH is ${version}, which cannot run the ${pm} cases: put one at ${floor} or above`);
+      return versionFrom('yarn', '1.22.22');
+    }).toThrow('The yarn on PATH is 1.22.22, which cannot run the yarn cases: put one at 4.0.0 or above');
   });
 
-  it('takes the yarn whose major matches', () => {
-    expect([versionFrom('yarn', '4.18.0'), versionFrom('yarn-classic', '1.22.22')]).toEqual(['4.18.0', '1.22.22']);
+  it('takes a yarn 4', () => {
+    expect(versionFrom('yarn', '4.18.0')).toBe('4.18.0');
   });
 });
 
@@ -108,7 +95,6 @@ describe('managersToRun', () => {
     await expect(managersToRun(undefined)).resolves.toEqual([
       'pnpm',
       'npm',
-      'yarn-classic',
     ]);
   });
 
@@ -119,7 +105,7 @@ describe('managersToRun', () => {
   it.each([
     ['yarn', 'The yarn on PATH is 1.22.22'],
     ['bun', 'bun --version answered'],
-    ['pnp', 'E2E_PM is pnp, and is one of pnpm, npm, yarn, yarn-classic, bun or unset'],
+    ['pnp', 'E2E_PM is pnp, and is one of pnpm, npm, yarn, bun or unset'],
   ])('refuses E2E_PM=%s', async (requested, message) => {
     await expect(managersToRun(requested)).rejects.toThrow(message);
   });

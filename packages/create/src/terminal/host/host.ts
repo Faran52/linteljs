@@ -3,7 +3,7 @@ import { env, versions } from 'node:process';
 
 import { NODE_FLOOR } from '@config/constants';
 
-import { entryExists, readIfPresent } from '@disk';
+import { entryExists } from '@disk';
 import { nodeSpawn, packageManagerSpawn } from '@spawns';
 
 import { LOCKFILES } from './constants';
@@ -13,7 +13,6 @@ import {
   managerRefusal,
   nodeRefusal,
   unversionedRefusal,
-  yarnFromLockfile,
 } from './utils/hostUtils';
 
 import type {
@@ -49,8 +48,7 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
     }) ?? 'npm';
 
   return {
-    // `yarn.lock` does not say which yarn, and the two are different managers here.
-    name: found === 'yarn' ? yarnFromLockfile(await readIfPresent(join(cwd, 'yarn.lock'))) : found,
+    name: found,
     version: undefined,
   };
 };

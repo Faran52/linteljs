@@ -21,7 +21,7 @@ import {
   it,
 } from 'vitest';
 
-import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
+import { MANAGER_FLOORS } from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
 
@@ -411,17 +411,12 @@ describe('answers records', () => {
   });
 });
 
-it('gives every package manager both a floor and a command', () => {
-  const commands = Object.keys(MANAGER_BINARIES)
-    .toSorted(byName);
-
+it('gives every package manager a floor', () => {
   const floored = Object.keys(MANAGER_FLOORS)
     .toSorted(byName);
-
-  expect(commands).toEqual(floored);
 
   const managers = valuesOf(ANSWERS.packageManager.values)
     .toSorted(byName);
 
-  expect(commands).toEqual(managers);
+  expect(floored).toEqual(managers);
 });

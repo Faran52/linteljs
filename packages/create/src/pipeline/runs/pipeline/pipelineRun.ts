@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks';
 
-import { MANAGER_BINARIES, STAGES } from '@config/constants';
+import { STAGES } from '@config/constants';
 import {
   type HostedAnswers,
   type RunOutput,
@@ -91,8 +91,7 @@ const stageStandard = async (
 
 // Fatal on purpose: every later step reads `node_modules`.
 const stageInstall = async (options: PipelineOptions): Promise<void> => {
-  // `yarn-classic` is not something anyone can type.
-  const binary = MANAGER_BINARIES[options.answers.packageManager];
+  const binary = options.answers.packageManager;
 
   options.onNotice?.(`installing with ${binary}`);
 

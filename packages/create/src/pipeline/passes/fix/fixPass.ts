@@ -1,4 +1,4 @@
-import { MANAGER_BINARIES, RUN_PREFIX } from '@config/constants';
+import { RUN_PREFIX } from '@config/constants';
 
 import { parsedAs } from '@utils/objectUtils';
 
@@ -13,9 +13,8 @@ interface EslintFixResult {
   output?: string;
 }
 
-// The command rather than the id: `yarn-classic` is not something anyone can type.
 export const nextStep = (answers: Answers): string => {
-  return `next: ${MANAGER_BINARIES[answers.packageManager]} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
+  return `next: ${answers.packageManager} install && ${RUN_PREFIX[answers.packageManager]} lint:fix`;
 };
 
 const isFixReport = (value: unknown): value is EslintFixResult[] => {

@@ -6,7 +6,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { MANAGER_BINARIES, MANAGER_FLOORS } from '@config/constants';
+import { MANAGER_FLOORS } from '@config/constants';
 
 import { PACKAGE_MANAGERS } from '../matrix/constants';
 
@@ -29,12 +29,10 @@ export const afterAllCleanup = (): void => {
   });
 };
 
-// The binary rather than the id: both yarns say `yarn/<version>`.
 const agentOf = (pm: PackageManager, version: string): string => {
-  return `${MANAGER_BINARIES[pm]}/${version} npm/? node/? e2e`;
+  return `${pm}/${version} npm/? node/? e2e`;
 };
 
-// Both yarns answer to `yarn` and the CLI tells them apart by major.
 export const versionFrom = (pm: PackageManager, output: string): string => {
   // The first line: npm appends a new-version notice on stderr.
   const [version = ''] = output
@@ -46,9 +44,9 @@ export const versionFrom = (pm: PackageManager, output: string): string => {
     throw new Error(`${pm} --version answered ${output}`);
   }
 
-  if (MANAGER_BINARIES[pm] === 'yarn' && version.startsWith('1.') !== (pm === 'yarn-classic')) {
-    throw new Error(`The ${MANAGER_BINARIES[pm]} on PATH is ${version}, which cannot run the ${pm} cases: put one `
-      + `at ${MANAGER_FLOORS[pm]} or above, of the same major, first on PATH.`);
+  if (pm === 'yarn' && version.startsWith('1.')) {
+    throw new Error(`The yarn on PATH is ${version}, which cannot run the yarn cases: put one `
+      + `at ${MANAGER_FLOORS[pm]} or above first on PATH.`);
   }
 
   return version;
@@ -113,7 +111,7 @@ export const createProject = async (root: string, name: string, answers: Answers
   });
 };
 
-// Both yarns answer to `yarn`, so no one machine carries all five.
+// A machine without a manager runs the rest.
 export const managersToRun = async (requested: string | undefined): Promise<PackageManager[]> => {
   if (requested === undefined) {
     const read = await Promise.allSettled(PACKAGE_MANAGERS.map(versionOf));

@@ -105,8 +105,7 @@ when a version's change lives in a sibling it is described there instead:
 - A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with
   `onFail: "error"`; Bun gets `engines.bun` only. Its Node floor is `>=22.18`, down from `>=26.8.1`, and the CLI's
   own is `22.13.0`. CI runs the Node major that ran `create`.
-- Yarn 1 is a manager, recorded as `yarn-classic`, with no `.yarnrc.yml` and no install-script gating. The package
-  also provides a `create` binary, which `yarn create @linteljs` looks for.
+- The package also provides a `create` binary, which `yarn create @linteljs` looks for.
 - The React Compiler runs natively through `@vitejs/plugin-react`'s `compiler` and `oxc-transform-react`, with no
   Babel pass; Expo's `app.json` sets `experiments.reactCompiler`. `eslint-plugin-react-compiler` is gone, since
   `eslint-plugin-react-hooks` 7 carries its rules.
@@ -234,7 +233,7 @@ when a version's change lives in a sibling it is described there instead:
 - A React Native project answering `tailwind` pins `lightningcss` to 1.30.1, NativeWind 5's documented version,
   through the manager's own override field; under 1.32 and 1.33 react-native-css failed the Android bundle. The
   pin is scoped to `@expo/metro-config` and react-native-css, the copies react-native-css loads, so every other
-  package keeps its own and yarn 1 no longer warns of an incompatible resolution; bun, which reads scoped overrides
+  package keeps its own; bun, which reads scoped overrides
   only from 1.4, keeps it global.
 - Every starter header carries a "LintelJS Starter" label at its left, and React Native turns on the tab
   navigator's header to show it.

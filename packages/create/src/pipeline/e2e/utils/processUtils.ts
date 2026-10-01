@@ -5,8 +5,6 @@ import { stripVTControlCharacters } from 'node:util';
 
 import { inject } from 'vitest';
 
-import { MANAGER_BINARIES } from '@config/constants';
-
 import { LAUNCHER_KEYS, SPELLINGS } from '../constants';
 
 import type { PackageManager } from '@config/types';
@@ -139,5 +137,5 @@ export const runPm = async (pm: PackageManager, args: string[], project: string)
       return SPELLINGS[pm][arg] ?? [arg];
     });
 
-  return run(MANAGER_BINARIES[pm], mapped, project);
+  return run(pm, mapped, project);
 };

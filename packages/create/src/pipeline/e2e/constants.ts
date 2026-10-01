@@ -10,19 +10,14 @@ export const LAUNCHER_KEYS = new Set([
 ]);
 
 export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
-  'pnpm': {},
-  'yarn': {},
-  // `yarn check` on 1.x is yarn's own lockfile check.
-  'yarn-classic': {
-    lint: ['run', 'lint'],
-    check: ['run', 'check'],
-  },
-  'npm': {
+  pnpm: {},
+  yarn: {},
+  npm: {
     why: ['ls'],
     lint: ['run', 'lint'],
     check: ['run', 'check'],
   },
-  'bun': { why: [
+  bun: { why: [
     'pm',
     'ls',
     '--all',

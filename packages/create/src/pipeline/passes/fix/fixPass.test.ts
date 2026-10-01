@@ -63,15 +63,6 @@ describe('nextStep', () => {
 
     expect(step).toBe('next: bun install && bun run lint:fix');
   });
-
-  it('names yarn 1 by the command it answers to', () => {
-    const step = nextStep({
-      ...DEFAULT_ANSWERS,
-      packageManager: 'yarn-classic',
-    });
-
-    expect(step).toBe('next: yarn install && yarn run lint:fix');
-  });
 });
 
 describe('fixPass', () => {

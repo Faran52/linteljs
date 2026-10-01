@@ -4,7 +4,6 @@ import { type Answers, type Artifact } from '@config/types';
 import { emitted } from '../../utils/artifactUtils';
 
 export const emitAgentAdapter = (answers: Answers): string => {
-  // The only table that knows `yarn run` from `yarn`.
   const run = RUN_PREFIX[answers.packageManager];
 
   return `# LintelJS project

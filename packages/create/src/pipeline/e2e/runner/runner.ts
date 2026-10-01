@@ -26,14 +26,13 @@ import {
   DEPRECATION,
   STYLEX_CLASSES,
   SVELTEKIT_VERSION_HASH,
-  YARN_CLASSIC_UPSTREAM,
 } from './constants';
 
 import type { PackageManager } from '@config/types';
 import type { E2eCase } from '../matrix/matrix';
 
 const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
-  'pnpm': (output) => {
+  pnpm: (output) => {
     // `Request took` and the speed notice are this suite's own registry on a cold fetch.
     return (output.match(/^.*(?:\bWARN\b|Ignored build scripts).*$/gm) ?? [])
       .filter((line) => {
@@ -42,14 +41,14 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
           && !DEPRECATION.test(line);
       });
   },
-  'npm': (output) => {
+  npm: (output) => {
     return (output.match(/^npm (?:warn|WARN).*$/gm) ?? [])
       .filter((line) => {
         return !DEPRECATION.test(line);
       });
   },
   // YN0000, YN0007, YN0013 and YN0085 only narrate a cold install.
-  'yarn': (output) => {
+  yarn: (output) => {
     return output.includes('Done with warnings')
       ? (output.match(/^.*YN0(?!000|007|013|085)\d{3}.*$/gm) ?? [])
           .filter((line) => {
@@ -57,13 +56,7 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
           })
       : [];
   },
-  'yarn-classic': (output) => {
-    return (output.match(/^warning .*$/gm) ?? [])
-      .filter((line) => {
-        return !DEPRECATION.test(line) && !YARN_CLASSIC_UPSTREAM.test(line);
-      });
-  },
-  'bun': (output) => {
+  bun: (output) => {
     return (output.match(/^.*(?:\bwarn:|Blocked \d+ postinstall).*$/gm) ?? [])
       .filter((line) => {
         // `Slow filesystem` names this suite's own cache directory.
@@ -73,7 +66,7 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
 };
 
 const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
-  // One `why` per package: yarn 1 names a dependent without its version.
+  // One `why` per package.
   const version = registry.version.replaceAll('.', String.raw`\.`);
 
   for (const name of ['@linteljs/eslint-plugin', '@linteljs/eslint-config']) {

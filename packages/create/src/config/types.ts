@@ -19,7 +19,7 @@ export type HostedFramework = 'react' | 'vue' | 'svelte' | 'solid';
 
 export type Testing = 'vitest' | 'none';
 
-export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'yarn-classic' | 'bun';
+export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
 
 export type Library = 'zod' | 'es-toolkit' | 'ts-pattern' | 't3-env';
 

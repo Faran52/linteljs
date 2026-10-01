@@ -1,7 +1,6 @@
 import { stdout } from 'node:process';
 
 import {
-  MANAGER_BINARIES,
   RUN_PREFIX,
   STAGES,
 } from '@config/constants';
@@ -59,7 +58,7 @@ export const nextSteps = (name: string, options: CliOptions, packageManager: Pac
   const run = RUN_PREFIX[packageManager];
   const enter = options.existing || name === '' ? [] : [`  cd ${name}`];
   const install = options.skip.includes('install')
-    ? [`  ${MANAGER_BINARIES[packageManager]} install`, `  ${run} lint:fix`]
+    ? [`  ${packageManager} install`, `  ${run} lint:fix`]
     : [];
 
   return [

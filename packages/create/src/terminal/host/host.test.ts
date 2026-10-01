@@ -70,14 +70,6 @@ describe('hostOf: the manager that ran it', () => {
       'pnpm',
     ],
     [
-      'a classic yarn.lock',
-      'yarn.lock',
-      '# yarn lockfile v1\n',
-      'yarn',
-      '1.22.22',
-      'yarn-classic',
-    ],
-    [
       'a berry yarn.lock',
       'yarn.lock',
       '__metadata:\n',
@@ -130,6 +122,12 @@ describe('hostOf: the manager that ran it', () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/10.25.0 npm/? node/? darwin arm64');
 
     expect(await hostOf(cwd)).toContain('needs pnpm 10.26.0 or newer');
+  });
+
+  it('refuses a yarn 1 under its user agent', async () => {
+    vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/? darwin arm64');
+
+    expect(await hostOf(cwd)).toBe('Yarn 1 is no longer supported: install Yarn 4 and run this again.');
   });
 
   it('refuses a manager that will not say its version', async () => {

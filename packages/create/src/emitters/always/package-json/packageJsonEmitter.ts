@@ -1,5 +1,4 @@
 import {
-  MANAGER_BINARIES,
   MANAGER_FLOORS,
   NODE_ENGINE,
 } from '@config/constants';
@@ -52,8 +51,6 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
     ...buildDevDependencies(answers),
   };
   const pm = answers.packageManager;
-  // `yarn-classic` is yarn 1 and declares itself `yarn`.
-  const binary = MANAGER_BINARIES[pm];
   const version = answers.packageManagerVersion ?? MANAGER_FLOORS[pm];
   const overrides = buildOverrides(answers);
   // pnpm reads its overrides from `pnpm-workspace.yaml`; yarn names the field `resolutions`.
@@ -62,7 +59,7 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
   return {
     ...packageJson,
     type: 'module',
-    // Without it yarn 1 warns about a missing license and refuses workspaces, and npm could publish it.
+    // So npm cannot publish it.
     private: true,
     ...(target.packageMain === undefined ? {} : { main: target.packageMain }),
     // A browser worker is a file the page fetches, so it sits where the dev server serves.
@@ -70,17 +67,17 @@ export const patchPackageJson = (existing: PackageJson, answers: Answers): Packa
       ? { msw: { workerDirectory: [target.publicDirectory] } }
       : {}),
     // No bun field: neither corepack nor pnpm's switch knows bun.
-    ...(pm === 'bun' ? {} : { packageManager: `${binary}@${version}` }),
+    ...(pm === 'bun' ? {} : { packageManager: `${pm}@${version}` }),
     engines: {
       node: NODE_ENGINE,
       // The floor, which is what was tested; the exact version is in `packageManager`.
-      [binary]: `>=${MANAGER_FLOORS[pm]}`,
+      [pm]: `>=${MANAGER_FLOORS[pm]}`,
     },
     devEngines: {
       // Spread first, so a scaffolder's own `runtime` entry survives.
       ...existing.devEngines,
       packageManager: {
-        name: binary,
+        name: pm,
         onFail: 'error',
       },
     },

@@ -174,7 +174,7 @@ describe('nextSteps', () => {
 
   it.each([
     ['npm', 'npm install\n  npm run lint:fix\n  npm run check'],
-    ['yarn-classic', 'yarn install\n  yarn run lint:fix\n  yarn run check'],
+    ['yarn', 'yarn install\n  yarn lint:fix\n  yarn check'],
   ] as const)('spells each command the way %s runs it', (manager, commands) => {
     expect(nextSteps('', INSTALL_SKIPPED, manager)).toBe(`\nDone. Next:\n  ${commands}`);
   });

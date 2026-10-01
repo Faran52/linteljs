@@ -44,14 +44,7 @@ describe('adapterArtifact', () => {
   });
 });
 
-it('sends a classic project through run, where berry needs none', () => {
-  const classic = emitAgentAdapter({
-    ...DEFAULT_ANSWERS,
-    packageManager: 'yarn-classic',
-  });
-
-  expect(classic).toContain('`yarn run check`');
-
+it('runs the gate without `run` under yarn', () => {
   const berry = emitAgentAdapter({
     ...DEFAULT_ANSWERS,
     packageManager: 'yarn',

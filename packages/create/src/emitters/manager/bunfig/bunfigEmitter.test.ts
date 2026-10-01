@@ -31,7 +31,6 @@ describe('bunfigEmitter', () => {
     'pnpm',
     'npm',
     'yarn',
-    'yarn-classic',
   ])('writes nothing for %s', (packageManager) => {
     const artifacts = bunfigEmitter({
       ...DEFAULT_ANSWERS,

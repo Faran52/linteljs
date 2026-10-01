@@ -194,7 +194,7 @@ describe('yarnrcEmitter', () => {
     }]);
     const artifacts = yarnrcEmitter({
       ...DEFAULT_ANSWERS,
-      packageManager: 'yarn-classic',
+      packageManager: 'npm',
     });
 
     expect(artifacts).toEqual([]);

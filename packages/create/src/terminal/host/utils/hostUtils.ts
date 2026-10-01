@@ -1,5 +1,4 @@
 import {
-  MANAGER_BINARIES,
   MANAGER_FLOORS,
   NODE_FLOOR,
 } from '@config/constants';
@@ -14,9 +13,9 @@ export interface DetectedManager {
   version: string | undefined;
 }
 
-// A command rather than an id, so `yarn-classic` is refused and a sixth manager is one row.
+// A command rather than an id, so a sixth manager is one row.
 const isAgentName = (name: string): name is PackageManager => {
-  return isValueOf(name, MANAGER_BINARIES) && MANAGER_BINARIES[name] === name;
+  return isValueOf(name, MANAGER_FLOORS);
 };
 
 // pnpm's own agent carries `node/?` rather than a Node version.
@@ -37,16 +36,10 @@ export const managerFromUserAgent = (userAgent: string | undefined): DetectedMan
     .slice(name.length + 1)
     .replace(/\/.*/su, '');
 
-  // Yarn says `yarn` whichever it is, so the major decides; no version is taken for Berry.
   return {
-    name: name === 'yarn' && /^1\.\d+\.\d+$/u.test(version) ? 'yarn-classic' : name,
+    name,
     version: /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined,
   };
-};
-
-// Both yarns write `yarn.lock`: Classic opens with a banner, Berry carries `__metadata`.
-export const yarnFromLockfile = (text: string | null): PackageManager => {
-  return text?.includes('# yarn lockfile v1') === true ? 'yarn-classic' : 'yarn';
 };
 
 export const acceptsManager = (pm: PackageManager, version: string): boolean => {
@@ -64,10 +57,11 @@ export const managerRefusal = (pm: PackageManager, version: string): string | un
     return undefined;
   }
 
-  // `yarn-classic` is not something anyone can type or install.
-  const binary = MANAGER_BINARIES[pm];
+  if (pm === 'yarn' && version.startsWith('1.')) {
+    return 'Yarn 1 is no longer supported: install Yarn 4 and run this again.';
+  }
 
-  return `${binary} ${version} ran this, and a project this CLI writes needs ${binary} ${MANAGER_FLOORS[pm]} or `
+  return `${pm} ${version} ran this, and a project this CLI writes needs ${pm} ${MANAGER_FLOORS[pm]} or `
     + 'newer. Upgrade it and run this again.';
 };
 

@@ -20,9 +20,7 @@ Then `cd my-app` and run `check` (`pnpm check`, `npm run check`, and so on).
 - Node 22.13.0 or newer to run `create`. The project it writes needs Node 22.18 or newer, the first release that
   runs its TypeScript scripts and hooks with plain `node`.
 - The manager that runs `create` becomes the project's, at its exact version: pnpm 10.26+, npm 9.6.5+, Yarn 4+,
-  Yarn 1.22.22 (recorded as `yarn-classic`), or Bun 1.2+. A manager below its floor is refused, never upgraded.
-- Yarn 1 cannot gate install scripts the way `allowBuilds`, `allowScripts`, `trustedDependencies` and
-  `enableScripts` do; everything else is the same. `yarn dlx` needs Yarn 2+, so on Yarn 1 use `yarn create`.
+  or Bun 1.2+. A manager below its floor is refused, never upgraded; Yarn 1 is refused as not supported.
 - With pnpm's `minimumReleaseAge` set, the project starts on the newest versions older than the window. To start
   on today's, pass `pnpm --config.minimum-release-age=0 create @linteljs my-app` (the kebab-case spelling; the
   camel-case one is ignored as a flag), and use the same flag for the first install.

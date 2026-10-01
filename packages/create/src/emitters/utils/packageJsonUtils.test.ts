@@ -164,7 +164,6 @@ describe('buildOverrides', () => {
   it.each([
     ['pnpm', ['@expo/metro-config>lightningcss', 'react-native-css>lightningcss']],
     ['yarn', ['@expo/metro-config/lightningcss', 'react-native-css/lightningcss']],
-    ['yarn-classic', ['**/@expo/metro-config/lightningcss', '**/react-native-css/lightningcss']],
     ['bun', ['lightningcss']],
   ] as const)('pins lightningcss where NativeWind reads it for %s as %j', (packageManager, keys) => {
     const overrides = buildOverrides(answersFor({

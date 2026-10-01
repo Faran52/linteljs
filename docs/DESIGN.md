@@ -1046,7 +1046,7 @@ Every manager that has a release age gate gets two days, linteljs exempt: pnpm `
 (minutes). CI e2e run 36732855202 failed every bun and yarn case on a half-published `@eslint-react/jsx` that
 pnpm's gate held back. Measured 2026-10-01: bun 1.2.23 ignores the keys and 1.3.0 honours them, with exclusions
 matched by exact name; Yarn 4.9.4 refuses `npmMinimalAgeGate` as an unrecognized setting and 4.10.1 reads it, so
-`.yarnrc.yml` carries it only when the recorded Yarn is 4.10.1 or later. Yarn 1 has no such gate. The
+`.yarnrc.yml` carries it only when the recorded Yarn is 4.10.1 or later. The
 e2e harness zeroes none of them: each project's own exemption lets the just-published linteljs packages through.
 
 `.npmrc` and `.yarnrc.yml` are load-bearing, measured on React and Next with each removed. Without
@@ -1095,18 +1095,13 @@ floor is type stripping on by default: the shipped `scripts/*.ts` and the plugin
 declares `^22.13.0 || >=23.5.0`. Pinned tools that want more say so themselves as `EBADENGINE` warnings. CI runs on
 the major that ran `create`, read off the recorded `nodeVersion`.
 
-### Yarn 1 is its own manager, not a lower yarn floor
+### Yarn 1 is not supported
 
-`yarn` means Berry and floors at 4.0.0; `yarn-classic` means 1.22.22, the last classic release. A classic project
-cannot read `.yarnrc.yml`, has no `packageExtensions`, has no `dlx`, and installs with `--frozen-lockfile` rather
-than `--immutable`, so each difference is a row in a table that already varies by manager. It is the one id that is
-not its command, which `MANAGER_BINARIES` exists for: `packageManager`, `engines`, `devEngines` and the refusal
-message all say `yarn`. `yarn create @linteljs` needs a binary called `create`, which yarn 1 looks for by name.
-
-Detection splits the two on the major of the agent's first token, and with no agent on the lockfile: classic
-writes `# yarn lockfile v1`, Berry writes `__metadata`. That is what makes `sync` and `--existing` work in a yarn 1
-repository, which is where an unadopted standard is found. A classic project gets no install-script gate: yarn 1
-runs every install script and has no setting that says otherwise. The README says so too.
+`yarn` means Berry and floors at 4.0.0. A Yarn 1 project cannot read `.yarnrc.yml`, has no `packageExtensions`, no
+`dlx`, no install-script gate (it runs every install script and has no setting that says otherwise), and takes
+`--frozen-lockfile` rather than `--immutable`, so supporting it meant a manager id that was not its own command and a
+row for it in every table that varies by manager. A Yarn 1 agent or binary reads as `yarn` at version 1.x, so the floor refuses it with a message that names
+Yarn 1 rather than a version number.
 
 ## What a project owns
 
@@ -1424,7 +1419,6 @@ Every defect the suite has found was a two-way interaction, and none needed a th
 | a leftover `app.spec.ts` | Angular, with `testing: none` |
 | `@mocks/renderScreen` importing what is not installed | React Native, with `testing: none` |
 | `customTypes.d.ts` against KEBAB_CASE | Angular, with `typeSafety: relaxed` |
-| rolldown's unmet peer, which no `packageExtensions` can mark optional | React, on yarn 1 |
 
 Greedy set cover over the legal enumeration: every case it can pick is one `refuseMisfit` accepts, so nothing has to
 be checked for legality and the pair universe is by construction the reachable one. It is deterministic, so a label
@@ -1448,15 +1442,15 @@ because npmjs serves every manager the same bytes.
 ### The split is by package manager, not vitest's `--shard`
 
 Vitest splits by file, and one file holds every target, so a file split balances nothing. A runner cannot honestly
-hold every manager: yarn 1 and yarn 4 both answer to `yarn`, so one on PATH is only ever one of the two. So `E2E_PM`
+hold every manager: a machine carries one yarn, and the suite needs a 4. So `E2E_PM`
 names one manager, and the suite runs its cases on whatever binary of it is on PATH, reading the version from
 `--version`. A yarn whose major does not match fails the run once, before any case. `e2e.yml` runs one job per
 manager. Unset, a run takes every manager whose binary answers with a version this suite would record as that
-manager, since no machine carries all five.
+manager.
 
-The jobs are not even and do not need to be: at concurrency two, npm measured 2843 case-seconds, yarn-classic 2466,
-yarn 1629, pnpm 1622 and bun 1471, so the slowest job is about 24 minutes of cases. The pair cover gives each
-manager 40 to 46 of the 209.
+The jobs are not even and do not need to be: at concurrency two, npm measured 2843
+case-seconds, yarn 1629, pnpm 1622 and bun 1471, so the slowest job is about 24 minutes of cases. The pair cover gives
+each manager 40 to 46 of the 209.
 
 ### Concurrency is real, and caches are shared carefully
 

@@ -158,19 +158,15 @@ export const versioned = (names: string[], pins: Record<string, string> = {}): R
   return result;
 };
 
-// yarn 1 reads a path from the root, so a parent below it needs `**/`. bun reads a scoped override from 1.4 only,
-// below the 1.2 floor, so its pin stays global.
+// bun reads a scoped override from 1.4 only, below the 1.2 floor, so its pin stays global.
 const SCOPED_KEYS: Record<Exclude<PackageManager, 'npm'>, (parent: string, name: string) => string> = {
-  'pnpm': (parent, name) => {
+  pnpm: (parent, name) => {
     return `${parent}>${name}`;
   },
-  'yarn': (parent, name) => {
+  yarn: (parent, name) => {
     return `${parent}/${name}`;
   },
-  'yarn-classic': (parent, name) => {
-    return `**/${parent}/${name}`;
-  },
-  'bun': (_parent, name) => {
+  bun: (_parent, name) => {
     return name;
   },
 };
