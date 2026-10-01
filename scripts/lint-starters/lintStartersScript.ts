@@ -11,10 +11,12 @@ import process, { argv } from 'node:process';
 import { ESLint, type Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 
+import { valuesOf } from '@utils/objectUtils';
+
+import { buildAliases } from '@emitters/utils/aliasUtils';
+
 import { ANSWERS } from '../../packages/create/src/answers';
-import { buildAliases } from '../../packages/create/src/emitters/utils/aliasUtils';
 import { targetFor } from '../../packages/create/src/targets';
-import { valuesOf } from '../../packages/create/src/utils/objectUtils';
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 import { composeConfig } from '../../packages/eslint-config/src/compose-config/composeConfig';
 
@@ -26,7 +28,7 @@ import {
 } from './utils/answersUtils.ts';
 import { unresolvedNames } from './utils/programUtils.ts';
 
-import type { TargetId } from '../../packages/create/src/config/types';
+import type { TargetId } from '@config/types';
 
 interface Linters {
   starters: ESLint;

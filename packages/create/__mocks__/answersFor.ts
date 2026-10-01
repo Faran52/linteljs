@@ -1,6 +1,6 @@
-import { HOSTED_DEFAULTS } from '@mocks/hostedAnswers';
-
 import { DEFAULT_ANSWERS } from '@answers';
+
+import { HOSTED_DEFAULTS } from './hostedAnswers';
 
 import type { Answers, HostedAnswers } from '@config/types';
 

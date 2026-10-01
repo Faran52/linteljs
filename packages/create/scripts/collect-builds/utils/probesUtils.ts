@@ -1,13 +1,14 @@
+import { valuesOf } from '@utils/objectUtils';
+
 import { ANSWERS, DEFAULT_ANSWERS } from '../../../src/answers';
 import { targetFor } from '../../../src/targets';
-import { valuesOf } from '../../../src/utils/objectUtils';
 
 import type {
   Answers,
   HostedFramework,
   TargetId,
-} from '../../../src/config/types';
-import type { E2eCase } from '../../../src/pipeline/e2e/matrix/matrix';
+} from '@config/types';
+import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
 
 // Everything on, so one run per target covers it.
 const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined): Answers => {

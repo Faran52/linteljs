@@ -7,7 +7,7 @@ import { env, execPath } from 'node:process';
 import { parsePackageJson } from '../../../src/emitters';
 import { logWarn } from '../../../templates/project/scripts/utils/loggerUtils.ts';
 
-import type { E2eRegistry } from '../../../src/pipeline/e2e/registry/registry';
+import type { E2eRegistry } from '@pipeline/e2e/registry/registry';
 
 // npm blocks a superset of pnpm: `@swc/core` and `fsevents` too.
 export type Collected = 'pnpm' | 'npm';

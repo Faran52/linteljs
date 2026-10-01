@@ -1,7 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
 
-import { answersFor } from '@mocks/answersFor';
-
 import { LANGUAGES } from '@config/constants';
 
 import { valuesOf } from '@utils/objectUtils';
@@ -13,6 +11,8 @@ import {
   type TargetBuilder,
   type TargetRecord,
 } from '@targets';
+
+import { answersFor } from './answersFor';
 
 import type { Answers, TargetId } from '@config/types';
 

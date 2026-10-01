@@ -1,19 +1,22 @@
 import { join } from 'node:path';
 
+import { LANGUAGES } from '@config/constants';
+
+import { valuesOf } from '@utils/objectUtils';
+
+import { RECORD_MODULE } from '@emitters/always/linteljs-record/linteljsRecordEmitter';
+import { i18nConfigEmitter } from '@emitters/libraries/i18n-config/i18nConfigEmitter';
+import { starterSourceEmitter } from '@emitters/target/starter-source/starterSourceEmitter';
+import { testSetupEmitter } from '@emitters/testing/test-setup/testSetupEmitter';
+
 import {
   ANSWERS,
   DEFAULT_ANSWERS,
   onlyFor,
 } from '../../../packages/create/src/answers';
-import { LANGUAGES } from '../../../packages/create/src/config/constants';
-import { RECORD_MODULE } from '../../../packages/create/src/emitters/always/linteljs-record/linteljsRecordEmitter';
-import { i18nConfigEmitter } from '../../../packages/create/src/emitters/libraries/i18n-config/i18nConfigEmitter';
-import { starterSourceEmitter } from '../../../packages/create/src/emitters/target/starter-source/starterSourceEmitter';
-import { testSetupEmitter } from '../../../packages/create/src/emitters/testing/test-setup/testSetupEmitter';
 import { targetFor } from '../../../packages/create/src/targets';
-import { valuesOf } from '../../../packages/create/src/utils/objectUtils';
 
-import type { Answers, TargetId } from '../../../packages/create/src/config/types';
+import type { Answers, TargetId } from '@config/types';
 
 // One answer set cannot open every file: several answers pick one module out of many.
 export const widestFor = (target: TargetId): [Answers, ...Answers[]] => {
