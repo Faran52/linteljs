@@ -39,6 +39,45 @@ describe('i18nConfigEmitter', () => {
     expect(solid).toHaveLength(1);
   });
 
+  it('writes the config alone for a language that slipped past the answers onto a target with no i18n', () => {
+    const background = i18nConfigEmitter(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+      languages: ['ja'],
+    }));
+    const targets = background
+      .map((artifact) => {
+        return artifact.target;
+      });
+
+    expect(targets).toEqual(['src/i18n/config.ts']);
+  });
+
+  it('names each language in its own script, and its direction', () => {
+    const text = emitI18nConfig([
+      'ja',
+      'ko',
+      'zh-CN',
+      'zh-TW',
+    ]);
+    const named = text
+      .split('\n')
+      .filter((line) => {
+        return /^ {4}(?:label|dir):/u.test(line);
+      });
+
+    expect(named).toEqual([
+      '    label: \'日本語\',',
+      '    dir: \'ltr\',',
+      '    label: \'한국어\',',
+      '    dir: \'ltr\',',
+      '    label: \'简体中文\',',
+      '    dir: \'ltr\',',
+      '    label: \'繁體中文\',',
+      '    dir: \'ltr\',',
+    ]);
+  });
+
   it('seeds the config with English first, whatever was chosen', () => {
     const [artifact] = i18nConfigEmitter(answersFor({ languages: ['ja'] }));
     const text = emitI18nConfig(['en', 'ja']);
