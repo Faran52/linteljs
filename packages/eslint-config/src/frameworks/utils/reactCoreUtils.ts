@@ -1,8 +1,9 @@
 import eslintReact from '@eslint-react/eslint-plugin';
 import linteljs from '@linteljs/eslint-plugin';
+import stylistic from '@stylistic/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-import { SCRIPT_FILES } from '../../config/constants';
+import { JSX_STYLE_RULES, SCRIPT_FILES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
@@ -43,8 +44,12 @@ export const reactCore = (): Layer => {
     {
       name: '@linteljs/react',
       files: SCRIPT_FILES,
-      plugins: { '@linteljs': linteljs },
+      plugins: {
+        '@linteljs': linteljs,
+        '@stylistic': stylistic,
+      },
       rules: {
+        ...JSX_STYLE_RULES,
         '@linteljs/no-duplicate-jsx-props': 'error',
         '@linteljs/prefer-destructured-props': 'error',
         '@linteljs/react-no-global-namespace': 'error',

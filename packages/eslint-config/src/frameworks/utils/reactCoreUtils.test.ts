@@ -98,6 +98,16 @@ describe('reactCore', () => {
     expect(ruleIds).toContain('@eslint-react/no-array-index-key');
   });
 
+  it.each([
+    ['@stylistic/jsx-self-closing-comp', '<div></div>'],
+    ['@stylistic/jsx-pascal-case', '<My_Box />'],
+  ])('reports %s', async (rule, element) => {
+    const code = `export const Chip = () => {\n  return ${element};\n};\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).toContain(rule);
+  });
+
   it('reports a JSX prop named twice on one element', async () => {
     const code = 'export const Chip = () => {\n  return <span className="a" className="b" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');

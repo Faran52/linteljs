@@ -1,8 +1,9 @@
 import linteljs from '@linteljs/eslint-plugin';
+import stylistic from '@stylistic/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import solidPlugin from 'eslint-plugin-solid';
 
-import { SCRIPT_FILES } from '../../config/constants';
+import { JSX_STYLE_RULES, SCRIPT_FILES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
@@ -22,9 +23,15 @@ export const solid = (): Layer => {
     {
       name: '@linteljs/solid',
       files: SCRIPT_FILES,
-      plugins: { '@linteljs': linteljs },
+      plugins: {
+        '@linteljs': linteljs,
+        '@stylistic': stylistic,
+      },
       // Not the other two React rules: hooks do not exist here and destructured props break reactivity.
-      rules: { '@linteljs/no-duplicate-jsx-props': 'error' },
+      rules: {
+        ...JSX_STYLE_RULES,
+        '@linteljs/no-duplicate-jsx-props': 'error',
+      },
     },
   ];
 };

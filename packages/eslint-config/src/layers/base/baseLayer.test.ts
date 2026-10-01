@@ -193,6 +193,43 @@ describe('base: stylistic', () => {
     await expect(ruleIdsFor(base(), bareLast, TS_FILE)).resolves.not.toContain('@stylistic/member-delimiter-style');
   });
 
+  it.each([
+    [
+      '@stylistic/semi-style',
+      'export const a = 1\n;[1].forEach(String);\n',
+      TS_FILE,
+    ],
+    [
+      '@stylistic/no-extra-semi',
+      'export const a = 1;;\n',
+      TS_FILE,
+    ],
+    [
+      '@stylistic/switch-colon-spacing',
+      'export const pick = (v) => {\n  switch (v) {\n    case 1 :\n      return 1;\n  }\n\n  return 2;\n};\n',
+      TS_FILE,
+    ],
+    [
+      '@stylistic/function-call-spacing',
+      'export const a = String (1);\n',
+      TS_FILE,
+    ],
+    [
+      '@stylistic/linebreak-style',
+      'export const a = 1;\r\n',
+      TS_FILE,
+    ],
+    [
+      'no-debugger',
+      'debugger;\n',
+      TS_FILE,
+    ],
+  ])('reports %s', async (rule, code, file) => {
+    const ids = await ruleIdsFor(base(), code, file);
+
+    expect(ids).toContain(rule);
+  });
+
   it('reports a braceless if', async () => {
     const code = 'export const pick = (flag) => {\n  if (flag) return 1;\n\n  return 2;\n};\n';
 

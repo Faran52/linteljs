@@ -125,6 +125,15 @@ export const base = (options: BaseOptions = {}): Layer => {
         '@stylistic/semi': ['error', 'always'],
         '@stylistic/brace-style': ['error', 'stroustrup'],
         'curly': ['error', 'all'],
+        '@stylistic/semi-style': ['error', 'last'],
+        '@stylistic/no-extra-semi': 'error',
+        '@stylistic/switch-colon-spacing': ['error', {
+          after: true,
+          before: false,
+        }],
+        '@stylistic/function-call-spacing': ['error', 'never'],
+        '@stylistic/linebreak-style': ['error', 'unix'],
+        'no-debugger': 'error',
         // The preset ships `semi: never` and `member-delimiter-style: none` together; `{}` is the plugin's own default.
         '@stylistic/member-delimiter-style': ['error', {}],
         '@stylistic/quotes': [

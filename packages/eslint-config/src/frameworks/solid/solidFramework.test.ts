@@ -30,6 +30,16 @@ describe('solid', () => {
     expect(ruleIds).toContain('jsx-a11y-x/alt-text');
   });
 
+  it.each([
+    ['@stylistic/jsx-self-closing-comp', '<div></div>'],
+    ['@stylistic/jsx-pascal-case', '<My_Box />'],
+  ])('reports %s', async (rule, element) => {
+    const code = `export const Chip = () => {\n  return ${element};\n};\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).toContain(rule);
+  });
+
   it('reports a JSX prop named twice on one element', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');

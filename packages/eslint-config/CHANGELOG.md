@@ -55,6 +55,9 @@ when a version's change lives in a sibling it is described there instead:
 - The React layers enable `@linteljs/react-no-global-namespace`.
 - `resolver.noWarnOnMultipleProjects` passes through to the import resolver, for a workspace whose `project` is a
   glob.
+- `base` turns on `@stylistic/semi-style` (`last`), `no-extra-semi`, `switch-colon-spacing`,
+  `function-call-spacing` (`never`), `linebreak-style` (`unix`) and core `no-debugger`. The React layers and
+  `solid()` turn on `@stylistic/jsx-self-closing-comp` and `jsx-pascal-case` over JSX.
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
 
 ### Fixed
