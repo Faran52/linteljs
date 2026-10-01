@@ -43,6 +43,11 @@ when a version's change lives in a sibling it is described there instead:
 - Vue and Nuxt projects take `--languages` through vue-i18n. The header, status pages, About, Version and, in
   Vue, Contact are translated; a command inside a translation still renders as `<code>`, never as HTML. Nuxt
   renders English on the server, with `lang="en"` and `dir="ltr"`, and switches after hydration.
+- SvelteKit projects take `--languages` through Paraglide JS, which compiles the shared `common.json` files into
+  typed message functions under `.svelte-kit/paraglide` at `prepare` and `typecheck`, and through its Vite plugin
+  for dev and build. `project.inlang/settings.json` loads the message-format plugin from `node_modules`. The
+  header, status pages, About, Version and Contact are translated, rendered in English on the server and switched
+  after hydration.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.
@@ -205,6 +210,8 @@ when a version's change lives in a sibling it is described there instead:
 - `stylelint-order` is an explicit dev dependency, since `stylelint-config-recess-order` peers on it.
 - A config whose single choice names an inherited property, such as `"target": "toString"`, is refused.
 - A recorded `resolveConditions` writes the `resolver` option as a block, within `max-len`.
+- A gate command longer than a line is recorded as joined literals, each within `max-len`, so a SvelteKit record
+  with the Paraglide compile in its `typecheck` passes its own lint.
 - The emitted `checkBannedPatterns.ts` accepts a type guard's own type, `(value: unknown) => value is T`, as a
   parameter or an alias, so a parse helper that takes its guard as an argument passes the floor.
 - The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.

@@ -822,11 +822,11 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, Next, Vue and Nuxt.
+that is React, in every router mode, Next, Vue, Nuxt and SvelteKit.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
-  browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode. No starter hand-rolls a
-  translation core.
+  browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
+  Paraglide JS. No starter hand-rolls a translation core.
 - **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
   the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
   to `{` and `}` to read it too.
@@ -864,6 +864,21 @@ that is React, in every router mode, Next, Vue and Nuxt.
   `<html lang="en" dir="ltr">` and Unhead keeps both on the language afterwards. The server never changes the
   locale; detection runs in `onNuxtReady`, after hydration, so the first client render matches the server's
   English and the page switches after it, as Next does.
+- **SvelteKit takes Paraglide JS, not svelte-i18n.** A SvelteKit project with svelte-i18n 4.0.1 audited at one
+  moderate advisory under `pnpm audit --prod` (GHSA-67mh-4wv8-2f99, the esbuild 0.19 it pins) and two under
+  `pnpm audit`; with Paraglide JS and its message-format plugin the same project audits at none, and installs
+  with no build scripts. `project.inlang/settings.json` is seeded beside the i18n config and points the plugin
+  at the shared `common.json`. It loads the plugin from `node_modules`, not the CDN URL inlang documents, so a
+  compile needs no network and the version is the one the lockfile pins.
+- **Paraglide is a compile step.** `paraglide-js compile` writes typed message functions to
+  `.svelte-kit/paraglide`, with declarations, ahead of `svelte-kit sync` in `prepare` and in `typecheck`, so a
+  fresh clone and the gate both type against current messages; its Vite plugin compiles again for dev and
+  build. Detection stays ours: `getLocale` is overwritten to read a store, so every message follows the
+  language select, and the strategy is `baseLocale` so Paraglide neither reads nor writes storage itself.
+- **`lint:starters` counts the compiled module.** The starter linter compiles no project, so the suites that
+  import `.svelte-kit/paraglide/messages.js` and `runtime.js` would not resolve. `writtenPaths` counts both
+  under the `--outdir` the compile command names, the same covered-path mechanism other modules the scaffold
+  writes use, so no stub or template directive is needed.
 
 ### Recorded answers
 
