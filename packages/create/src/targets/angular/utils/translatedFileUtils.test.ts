@@ -76,17 +76,30 @@ describe('angularI18nTests', () => {
       'src/i18n/index.spec.ts@i18n',
       'src/components/ui/code-text/code-text.spec.ts@i18n',
       'src/components/features/app-header/app-header.spec.ts@i18n',
+      'src/app/about/about.spec.ts@i18n',
+      'src/app/version/version.spec.ts@i18n',
+      'src/app/contact/contact.spec.ts@i18n',
+      'src/components/features/status-page/status-page.spec.ts@i18n',
     ]);
     expect(covers).toEqual([
       'src/i18n/index.ts',
       'src/components/ui/code-text/code-text.ts',
       'src/components/features/app-header/app-header.ts',
+      'src/app/about/about.ts',
+      'src/app/version/version.ts',
+      'src/app/contact/contact.ts',
+      'src/app/contact/contact.ts',
+      'src/components/features/status-page/status-page.ts',
+      'src/components/features/status-page/status-page.ts',
     ]);
   });
 
-  it('adds no suite otherwise', () => {
+  it('writes the English contact and status suites otherwise', () => {
     const written = writtenUnder(angularI18nTests(), answersFor({ target: 'angular' }));
 
-    expect(written).toEqual([]);
+    expect(written).toEqual([
+      'src/app/contact/contact.spec.ts',
+      'src/components/features/status-page/status-page.spec.ts',
+    ]);
   });
 });

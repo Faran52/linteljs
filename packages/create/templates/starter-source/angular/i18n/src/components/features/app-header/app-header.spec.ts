@@ -74,15 +74,23 @@ describe('AppHeader', () => {
     const select = root.querySelector('select');
     const offered = [...root.querySelectorAll('option')]
       .map((option) => {
-        return option.value;
+        return {
+          id: option.value,
+          lang: option.lang,
+          label: option.textContent.trim(),
+        };
       });
 
-    const ids = languages
+    const expected = languages
       .map((option) => {
-        return option.id;
+        return {
+          id: option.id,
+          lang: option.id,
+          label: option.label,
+        };
       });
 
-    expect(offered).toEqual(ids);
+    expect(offered).toEqual(expected);
     expect(select?.value).toBe(last);
   });
 

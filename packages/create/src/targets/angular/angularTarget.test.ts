@@ -90,6 +90,8 @@ const GATES: GateRow[] = [
     'src/config/statuses.ts',
     'src/config/standard.ts',
     ...TRANSLATED,
+    'src/app/contact/contact.spec.ts',
+    'src/components/features/status-page/status-page.spec.ts',
   ]
     .flatMap((key): GateRow[] => {
       return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
@@ -102,6 +104,8 @@ const GATES: GateRow[] = [
     'src/components/ui/code-text/code-text.html',
     'src/components/ui/code-text/code-text.spec.ts',
     'src/components/features/app-header/app-header.spec.ts',
+    'src/app/about/about.spec.ts',
+    'src/app/version/version.spec.ts',
     ...LANGUAGES
       .map((language) => {
         return `src/i18n/locales/${language}/common.json`;

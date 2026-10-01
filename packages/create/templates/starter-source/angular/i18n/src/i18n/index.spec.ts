@@ -105,6 +105,16 @@ describe('i18n', () => {
     expect(text).toContain('<code>npx @linteljs/create sync</code>');
   });
 
+  it('fills every value a message names', () => {
+    const text = t('versionRecorded', {
+      file: 'linteljs.config.json',
+      command: 'sync',
+    });
+
+    expect(text).toContain('<code>linteljs.config.json</code>');
+    expect(text).toContain('<code>sync</code>');
+  });
+
   it('leaves a value it was not given in place', () => {
     const text = t('aboutSync');
 

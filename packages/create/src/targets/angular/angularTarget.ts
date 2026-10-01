@@ -164,16 +164,8 @@ export const angularTarget: TargetRecord = {
       covers: 'src/app/app.ts',
     },
     {
-      target: 'src/app/contact/contact.spec.ts',
-      covers: 'src/app/contact/contact.ts',
-    },
-    {
       target: 'src/components/ui/button/button.spec.ts',
       covers: 'src/components/ui/button/button.ts',
-    },
-    {
-      target: 'src/components/features/status-page/status-page.spec.ts',
-      covers: 'src/components/features/status-page/status-page.ts',
     },
     {
       target: 'src/lib/providers/crash-handler/crash-handler.spec.ts',

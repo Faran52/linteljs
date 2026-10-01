@@ -35,19 +35,30 @@ export const angularI18nFiles = (): StarterFile[] => {
   ];
 };
 
-// `App`'s suite covers the English header; the translated one adds the select, so it takes its own.
+// `App`'s suite covers the English header and pages; translated, each takes its own in another language.
 export const angularI18nTests = (): StarterTest[] => {
   return [
-    'src/i18n/index',
-    CODE_TEXT,
-    'src/components/features/app-header/app-header',
-  ]
-    .map((file): StarterTest => {
-      return {
-        target: `${file}.spec.ts`,
-        covers: `${file}.ts`,
-        when: hasI18n,
-        variant: 'i18n',
-      };
-    });
+    ...[
+      'src/i18n/index',
+      CODE_TEXT,
+      'src/components/features/app-header/app-header',
+      'src/app/about/about',
+      'src/app/version/version',
+    ]
+      .map((file): StarterTest => {
+        return {
+          target: `${file}.spec.ts`,
+          covers: `${file}.ts`,
+          when: hasI18n,
+          variant: 'i18n',
+        };
+      }),
+    ...['src/app/contact/contact', 'src/components/features/status-page/status-page']
+      .flatMap((file) => {
+        return translated<StarterTest>({
+          target: `${file}.spec.ts`,
+          covers: `${file}.ts`,
+        });
+      }),
+  ];
 };
