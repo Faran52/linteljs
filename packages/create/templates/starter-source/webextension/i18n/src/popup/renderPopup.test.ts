@@ -38,6 +38,7 @@ describe('renderPopup', () => {
 
     expect(root.querySelector('h1')?.textContent).toBe(NAME);
     expect(root.querySelector('svg[role="img"]')).not.toBeNull();
+    expect(root.className).toBe('hero');
   });
 
   it('points at the gate, as every home page does', () => {
@@ -56,12 +57,20 @@ describe('renderPopup', () => {
   it('offers every language, each named in itself', () => {
     const options = [...pickerOf(open()).options]
       .map((option) => {
-        return [option.value, option.lang];
+        return [
+          option.value,
+          option.lang,
+          option.textContent,
+        ];
       });
 
     const expected = languages
-      .map(({ id }) => {
-        return [id, id];
+      .map(({ id, label }) => {
+        return [
+          id,
+          id,
+          label,
+        ];
       });
 
     expect(options).toEqual(expected);
@@ -82,15 +91,18 @@ describe('renderPopup', () => {
     const root = open();
     const picker = pickerOf(root);
     const english = root.querySelector('.lede')?.textContent;
+    const englishHint = root.querySelector('.hint')?.textContent;
 
     picker.value = last;
     picker.dispatchEvent(new Event('change'));
 
     const lede = root.querySelector('.lede')?.textContent;
+    const hint = root.querySelector('.hint')?.textContent;
 
     expect(localStorage.getItem(languageStorageKey)).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(root.querySelector('.hint code')?.textContent).toBe(CHECK);
     expect(lede === english).toBe(last === 'en');
+    expect(hint === englishHint).toBe(last === 'en');
   });
 });
