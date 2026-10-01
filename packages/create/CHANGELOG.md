@@ -128,7 +128,10 @@ when a version's change lives in a sibling it is described there instead:
   `@features/app-header/AppHeader`, `@config/linteljs`) and within one relatively, the shape
   `@linteljs/prefer-alias` asks for, so a new project passes its own typed lint. React Router framework mode's
   `src/routes.ts` stays relative. `@apis/*` is emitted whenever `src/lib/apis/` is written (Zod, a form or RTK
-  Query), and Angular keeps its own suites for its two kebab-named utils.
+  Query). The test setup imports the locales through `@i18n`.
+- **One shared starter file serves every target**: where a target writes a file under its own naming (Angular's
+  `status-utils.ts`), a shared file's relative import follows it, so Angular takes the shared utils suites rather
+  than copies of them.
 - **The starter source, hooks and scripts put each chained call on its own line**, the shape
   `@linteljs/chain-call-newline` asks for, so a new project passes its own lint. Starter tests read a named value
   rather than a chain.

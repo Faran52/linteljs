@@ -396,7 +396,9 @@ adapter, and any file two frameworks write to the byte, such as a barrel or the 
 and a target id is that target's tree, so Next reads `shared: 'react'` for the primitives, stores and
 api modules it renders identically. Anything with a framework in it is not shared: React's `className` is not
 Vue's `class`, React destructures props and Solid may not, and React's route element is a node where Solid's has to
-be a function.
+be a function. A target that writes a shared file under its own naming (Angular's `status-utils.ts`) keeps the one
+source: the starter emitter rewrites a shared file's relative imports to the names the target writes, so a
+difference in file naming alone is never a reason for a copy.
 
 **A template names its own asset under each project's convention.** `StarterFile.source` lets one asset land under
 two names: `fetchExtendedUtils.ts` is `fetch-extended-utils.ts` on Angular, which names every file in kebab, the way

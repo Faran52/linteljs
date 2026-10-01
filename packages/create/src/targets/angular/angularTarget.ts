@@ -153,6 +153,8 @@ export const angularTarget: TargetRecord = {
     {
       target: 'src/lib/utils/status-utils.spec.ts',
       covers: 'src/lib/utils/status-utils.ts',
+      source: 'src/lib/utils/statusUtils.test.ts',
+      shared: true,
     },
     ...accessorTests(ACCESSORS),
     ...angularI18nTests(),

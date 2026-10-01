@@ -134,7 +134,7 @@ describe('starter tests', () => {
     const artifact = artifactFor({ target }, suite);
 
     expect(artifact?.requires?.[0]).toBe(covers);
-    expect(artifact?.content).toEqual({ sources: [`starter-source/${target}/${suite}`] });
+    expect(artifact?.content).toMatchObject({ sources: [`starter-source/${target}/${suite}`] });
   });
 
   it('gates a suite that needs nothing else on the file it covers alone', () => {
@@ -465,5 +465,23 @@ describe('the starter source', () => {
       expect(sourceOf({ styling: 'stylex' }, 'src/styles/tokens.stylex.ts'))
         .toBe('starter-source/shared/stylex/src/styles/tokens.stylex.ts');
     });
+  });
+});
+
+describe('a shared file written under the target naming', () => {
+  it.each([
+    ['src/lib/utils/status-utils.spec.ts', "from './status-utils'"],
+    ['src/lib/utils/fetch-extended-utils.test.ts', "from './fetch-extended-utils'"],
+  ])('imports its renamed neighbour by the name the target writes: %s', async (target, imported) => {
+    const suite = artifactFor({ target: 'angular' }, target);
+    const text = suite === undefined ? '' : await shippedAssetsReader(suite.content);
+
+    expect(text).toContain(imported);
+  });
+
+  it('leaves a target that renames nothing reading the shared source as written', () => {
+    const suite = artifactFor({ target: 'react' }, 'src/lib/utils/statusUtils.test.ts');
+
+    expect(suite?.content).toEqual({ sources: ['starter-source/shared/src/lib/utils/statusUtils.test.ts'] });
   });
 });

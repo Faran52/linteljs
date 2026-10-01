@@ -77,8 +77,8 @@ export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER): StarterTes
     {
       target: `${adapter}.test.ts`,
       covers: `${adapter}.ts`,
-      // A suite imports its neighbour relatively, so a renamed adapter's suite is the target's own.
-      ...(adapter === FETCH_ADAPTER && { shared: true }),
+      source: `${FETCH_ADAPTER}.test.ts`,
+      shared: true,
     },
     {
       target: '__mocks__/msw/handlers.test.ts',
