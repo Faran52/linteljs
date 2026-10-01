@@ -109,6 +109,19 @@ left alone. It does not check the indent of a link already on its own line eithe
 `@stylistic/indent`'s job. The fix writes one step in from the line the chain starts on, which is
 what that rule asks for everywhere but inside a multi-line ternary, where it settles the rest.
 
+## Why not `@stylistic`
+
 `@stylistic/newline-per-chained-call` counts differently: it counts the head's own call, so at depth
 one it splits every `expect(x).toBe(y)`, at depth two it misses a two-call chain, and its fix leaves
-a chain half split.
+a chain half split. Measured on 2026-10-02 with this rule swapped for it, at every
+`ignoreChainWithDepth` from 1 to 5, over the workspace and every starter (1,086 files):
+
+| depth | this repo today | the tree before this rule landed | this rule's suite, same fixed output |
+| --- | --- | --- | --- |
+| 1 | 3,531 reports, 416 files rewritten | 374 files differ | 24 of 76 |
+| 2 | no difference | 127 files differ, +669 -948 | 33 of 76 |
+| 3 to 5 | no difference | 127 files differ | 33 of 76 |
+
+Depth 2 and up accepts everything this rule writes and misses most of what it asks for: it leaves
+`items.map(fn).filter(keep)` on one line, leaves `items.map((item) => {...})` with the call on the
+head's line, and leaves `items\n  .map(fn).filter(keep)` half split.

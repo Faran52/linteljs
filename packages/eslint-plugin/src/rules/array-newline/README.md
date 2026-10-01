@@ -78,3 +78,11 @@ None.
 element is a single token back onto one line, past `max-len` if it has to. In `consistent` mode it
 accepts `[alpha,\n  bravo]` with a hanging bracket. Neither setting says "three or more, one per line,
 and leave the rest alone", which is the whole of this rule.
+
+Measured on 2026-10-02 with this rule swapped for the pair, over all 60 combinations of
+`array-bracket-newline` (`always`, `never`, `consistent`, `multiline`, `minItems: 3`, both) and
+`array-element-newline` (the same, and `consistent` with each). The closest, brackets at
+`{ multiline: true, minItems: 3 }` and elements at `{ consistent: true, minItems: 3 }`, gives this
+rule's fixed output on 36 of its 48 suite cases. Over the workspace and every starter (1,086 files)
+it rewrites 123 files (+2,021 -1,471) today and 121 in the tree before this rule landed, nearly all
+by splitting a short list that holds one multi-line element, `['error', {\n  ...\n}]`.

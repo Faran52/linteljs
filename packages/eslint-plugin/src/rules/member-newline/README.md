@@ -79,3 +79,23 @@ interface Wide {
   the file. A member that spans lines keeps its inner lines where they were, for `@stylistic/indent`
   to settle.
 - **An optional pattern parameter** keeps its `?` and type annotation, which sit after its brace.
+
+## Why not `@stylistic`
+
+`@stylistic/object-curly-newline` at `{ minProperties: 3, consistent: true }` on all four node types,
+with `object-property-newline` at `allowAllPropertiesOnSameLine: true`, gives this rule's output
+over the workspace and every starter (1,086 files): no file differs, today or in the tree before
+this rule landed. The cases differ: it matches this rule's fixed output on 34 of the 68 suite
+cases. It passes a half-split pair (`{ alpha,\n  bravo }`), `{\n  alpha, bravo, charlie }`, and an
+interface or type literal of three members on one line, since `object-property-newline` reads
+object literals and patterns only. With `allowAllPropertiesOnSameLine: false` it splits every pair
+instead: 15 files, +94 -46. Measured on 2026-10-02 over every combination of `multiline`,
+`minProperties: 3`, `consistent`, `always` and `never`, with `object-property-newline` in both modes
+and off.
+
+The original `destructuring-property-newline` and `newline-destructuring`, which this rule and
+[`@linteljs/array-newline`](../array-newline) replaced in 2.0, ask for three things neither does. A rest
+element lowers the count to two, so `{ alpha, ...rest }` splits. A pair spread over lines is joined
+back onto one. A one-line list holding a multi-line member, `{ alpha = {\n  first\n}, bravo }`, is
+split. Added on top of the two rules, they change 16 of the 68 suite cases and report 41 times in
+31 files of this repo. Their fixer also drops a comment between members and a trailing comma.
