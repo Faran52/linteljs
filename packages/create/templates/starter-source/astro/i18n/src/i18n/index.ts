@@ -2,6 +2,7 @@ import {
   fallbackLanguage,
   languages,
   languageStorageKey,
+  lookupTags,
   resources,
 } from './config';
 
@@ -52,27 +53,17 @@ export const directionOf = (tag: string): 'ltr' | 'rtl' => {
 };
 
 // The stored choice, then the browser's languages, then English. Nothing detected is stored.
-// Self-contained: the layout inlines its source, so lang and dir are set before the first paint.
+// Self-contained, `prefixesOf` included: the layout inlines its source, so lang and dir are set before the first paint.
 export const bootLanguage = (
   options: readonly LanguageOption[],
   storageKey: string,
   fallback: string,
+  prefixesOf: (tag: string) => string[],
 ): void => {
   const offered = (tag: string | null): tag is string => {
     return options
       .some((option) => {
         return option.id === tag;
-      });
-  };
-  // `lookupTags` from `./config`, inlined since this source cannot import.
-  const prefixesOf = (tag: string): string[] => {
-    const subtags = tag.split('-');
-
-    return subtags
-      .map((_subtag, index) => {
-        const kept = subtags.slice(0, subtags.length - index);
-
-        return kept.join('-');
       });
   };
   const stored = localStorage.getItem(storageKey);
@@ -99,8 +90,9 @@ export const bootScript = (): string => {
     .map((arg) => {
       return JSON.stringify(arg);
     });
+  const call = [...args, lookupTags.toString()].join(', ');
 
-  return `(${bootLanguage.toString()})(${args.join(', ')});`;
+  return `(${bootLanguage.toString()})(${call});`;
 };
 
 // The odd parts of a message sit inside `<code>`.

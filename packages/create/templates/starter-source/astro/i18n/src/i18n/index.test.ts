@@ -2,6 +2,7 @@ import {
   fallbackLanguage,
   languages,
   languageStorageKey,
+  lookupTags,
   resources,
 } from './config';
 import {
@@ -28,7 +29,7 @@ const browserSpeaks = (tags: string[]): void => {
 };
 
 const boot = (): string => {
-  bootLanguage(languages, languageStorageKey, fallbackLanguage);
+  bootLanguage(languages, languageStorageKey, fallbackLanguage, lookupTags);
 
   return document.documentElement.lang;
 };
@@ -99,7 +100,7 @@ describe('i18n', () => {
 
   it('reads a full browser tag it offers before its base language, and boots right to left', () => {
     browserSpeaks(['ar-EG']);
-    bootLanguage([{ id: 'en', dir: 'ltr' }, { id: 'ar-EG', dir: 'rtl' }], languageStorageKey, 'en');
+    bootLanguage([{ id: 'en', dir: 'ltr' }, { id: 'ar-EG', dir: 'rtl' }], languageStorageKey, 'en', lookupTags);
 
     expect(document.documentElement.lang).toBe('ar-EG');
     expect(document.documentElement.dir).toBe('rtl');
@@ -117,7 +118,7 @@ describe('i18n', () => {
   });
 
   it('boots left to right into a fallback it does not offer', () => {
-    bootLanguage([], languageStorageKey, 'xx');
+    bootLanguage([], languageStorageKey, 'xx', lookupTags);
 
     expect(document.documentElement.lang).toBe('xx');
     expect(document.documentElement.dir).toBe('ltr');
@@ -133,10 +134,10 @@ describe('i18n', () => {
     ]
       .map((arg) => {
         return JSON.stringify(arg);
-      })
-      .join(', ');
+      });
+    const call = [...args, lookupTags.toString()].join(', ');
 
-    expect(script).toBe(`(${bootLanguage.toString()})(${args});`);
+    expect(script).toBe(`(${bootLanguage.toString()})(${call});`);
   });
 
   it('stores a choice, and switches the text, language, direction and select', () => {
