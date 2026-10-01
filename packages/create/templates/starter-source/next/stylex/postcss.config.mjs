@@ -4,7 +4,7 @@ const config = {
   plugins: {
     '@stylexjs/postcss-plugin': {
       include: ['src/**/*.{ts,tsx}'],
-      useCSSLayers: true,
+      useCSSLayers: { before: ['reset'] },
     },
   },
 };

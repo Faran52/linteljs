@@ -6,7 +6,7 @@ export interface StylingPlugin {
   call?: string;
 }
 
-const STYLEX_CALL = 'stylex({ useCSSLayers: true })';
+const STYLEX_CALL = "stylex({ useCSSLayers: { before: ['reset'] } })";
 
 // `@stylexjs/unplugin/vite`: the generic adapter lacks `generateBundle` and emits no CSS.
 // Typed `=> any`, so a TypeScript config gives it unplugin's Vite adapter type.

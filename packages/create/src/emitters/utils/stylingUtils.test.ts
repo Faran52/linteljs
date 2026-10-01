@@ -22,14 +22,14 @@ describe('stylingPlugin', () => {
         "import { type VitePlugin } from 'unplugin';",
       ],
       declaration: 'const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;',
-      call: 'stylex({ useCSSLayers: true })',
+      call: "stylex({ useCSSLayers: { before: ['reset'] } })",
     });
   });
 
   it('takes the stylex adapter bare in a javascript config, which nothing type-lints', () => {
     expect(stylingPlugin('stylex', false)).toStrictEqual({
       imports: ["import stylex from '@stylexjs/unplugin/vite';"],
-      call: 'stylex({ useCSSLayers: true })',
+      call: "stylex({ useCSSLayers: { before: ['reset'] } })",
     });
   });
 

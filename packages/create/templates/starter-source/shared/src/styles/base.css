@@ -21,10 +21,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-textarea {
-  font: inherit;
+/* Layered, so a StyleX font rule on a control outranks it: StyleX puts `reset` below its own layers. */
+@layer reset {
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
 }
 
 code {

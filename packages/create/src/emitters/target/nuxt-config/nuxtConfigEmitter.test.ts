@@ -126,7 +126,7 @@ export default defineNuxtConfig({
     '@mocks/*': join(import.meta.dirname, '__mocks__/*'),
   },
   vite: {
-    plugins: [stylex({ useCSSLayers: true })],
+    plugins: [stylex({ useCSSLayers: { before: ['reset'] } })],
   },
 });
 `;

@@ -264,7 +264,7 @@ const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
 
 export default defineConfig({
   plugins: [
-    stylex({ useCSSLayers: true }),
+    stylex({ useCSSLayers: { before: ['reset'] } }),
     vue(),
   ],
   resolve: { tsconfigPaths: true },
