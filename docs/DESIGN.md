@@ -822,11 +822,12 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular and Astro.
+that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular, Astro and React Native.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
   browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
-  Paraglide JS, Solid takes @solid-primitives/i18n. Angular and Astro take none: Angular's own signal is the
+  Paraglide JS, Solid takes @solid-primitives/i18n, React Native takes i18next with react-i18next and no
+  detector. Angular and Astro take none: Angular's own signal is the
   whole runtime a switch needs, and an Astro page ships no framework to hold one, so each hand-rolled core is
   the same single-brace resolver.
 - **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
@@ -913,6 +914,23 @@ that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular 
 - **The boot test checks the script's shape, not its run.** Evaluating the generated string in a suite is what
   `sonarjs/code-eval` forbids, so the suite runs `bootLanguage` itself and asserts that `bootScript()` is
   exactly its source called with the config's JSON, in order.
+- **React Native keeps the choice in AsyncStorage 2.2.0, not 3.x or expo-sqlite.** 2.2.0 is the version Expo
+  SDK 57's `bundledNativeModules.json` pins, so Expo Go and `expo install` agree with it; it is 381 KB unpacked,
+  runs no install script and is `localStorage` on the web. 3.1.1 is 52 MB unpacked and IndexedDB on the web;
+  expo-sqlite 57.0.3, whose `kv-store` reads the same, is 78 MB. An `allowBuilds` entry is not needed.
+- **The device language comes from `Intl`, not expo-localization.** `Intl.DateTimeFormat().resolvedOptions()`
+  gives the locale Hermes and the browser already hold, so no package is added. The order is the stored
+  choice, then the exact tag, then its base language, then English, and nothing detected is stored. iOS
+  resolves `Intl` against the app's own localizations, so a device in Japanese reads as `en-JP` in Expo Go.
+- **The first render is English.** The static web export (`web.output: static`) is rendered in English, and
+  hydration has to match it, so `initI18n` starts in English and `restoreLanguage` switches in an effect of
+  the root layout once the stored or detected language is read.
+- **The picker is a button opening a `Modal`.** React Native has no select: the header's button names the
+  language in use and opens a radiogroup of every language under its own name, the one in use checked.
+- **Native direction takes effect on the next launch.** On the web `<html lang dir>` is set on every switch.
+  Native lays out its direction at launch, so `I18nManager.allowRTL` and `forceRTL` are called on every switch
+  and show from the next launch on. Reloading at once would take expo-updates' `reloadAsync`, a new
+  dependency for one call, so there is no reload.
 
 ### Recorded answers
 
