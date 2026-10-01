@@ -840,6 +840,10 @@ export const FIXER_SAMPLES: FixerSample[] = [
   },
   {
     // A break before `.` must not end a statement.
+    name: 'chained calls through a computed read, awaited',
+    code: "const run = async (items) => {\n  return await items.map(fn)['0'].trim().run();\n};\n",
+  },
+  {
     name: 'chained calls without semicolons',
     code: 'const items = [3, 1, 2]\nconst joined = items.map((item) => {\n  return item * 2\n})'
       + '.filter(Boolean).join()\nconst fixed = 1 .toFixed(2).trim()\n',

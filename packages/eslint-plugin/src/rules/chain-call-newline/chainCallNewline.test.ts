@@ -397,6 +397,17 @@ tsRuleTester.run('chain-call-newline', chainCallNewline, {
       errors: [error],
     },
     {
+      code: 'const run = async (items: Item[]) => {\n  return await items.map(fn).filter(keep);\n};',
+      output: 'const run = async (items: Item[]) => {\n  return await items\n    .map(fn)\n    .filter(keep);\n};',
+      errors: [error],
+    },
+    {
+      // A computed read ends the run; an undeclared head reads as a namespace and keeps its first call.
+      code: "items.map(fn)['0'].trim().run();",
+      output: "items.map(fn)['0']\n  .trim()\n  .run();",
+      errors: [error],
+    },
+    {
       code: 'items.find(fn)!.map(fn).filter(keep);',
       output: 'items.find(fn)!\n  .map(fn)\n  .filter(keep);',
       errors: [error],
