@@ -25,8 +25,22 @@ describe('pairsOf', () => {
   it('pairs every two axes once', () => {
     const pairs = pairsOf(DEFAULT_ANSWERS);
 
-    expect(pairs).toHaveLength(66);
-    expect(new Set(pairs).size).toBe(66);
+    expect(pairs).toHaveLength(120);
+    expect(new Set(pairs).size).toBe(120);
+  });
+
+  it('pairs each library as its own axis, on or off', () => {
+    const pairs = pairsOf(DEFAULT_ANSWERS);
+    const libraryPairs = [
+      'zod:false|es-toolkit:true',
+      'ts-pattern:false|t3-env:false',
+    ];
+    const missing = libraryPairs
+      .filter((pair) => {
+        return !pairs.includes(pair);
+      });
+
+    expect(missing).toEqual([]);
   });
 
   it('names an unset answer none', () => {

@@ -3,6 +3,8 @@ import { env } from 'node:process';
 import {
   type Answers,
   type HostedFramework,
+  type Library,
+  type PackageManager,
   type Router,
   type TargetId,
 } from '@config/types';
@@ -24,27 +26,49 @@ import {
   LANGUAGES,
   LIBRARIES,
   MOCKING_CHOICES,
+  NO_BROWSER_PASS,
   PACKAGE_MANAGERS,
   PLUGINS,
   STYLING_CHOICES,
   SURFACES,
   TESTING_CHOICES,
-  TYPE_SAFETY_CHOICES,
 } from './constants';
 import { coveringSubset } from './utils/pairwiseUtils';
+
+// A run other than create, install and `check`: `browser` loads the built starter afterwards.
+export type E2eVariant = 'browser' | 'skip-fix' | 'no-install';
 
 export interface E2eCase {
   label: string;
   answers: Answers;
+  variant?: E2eVariant;
 }
 
-// Every pair rather than every combination: every defect found so far was a two-way interaction.
+// Every pair rather than every combination, under pnpm alone: every defect found so far was a two-way interaction.
 // `E2E_FULL=1` runs the cross product instead.
 
-// Always every value, so one case carries the whole set.
-const everyMultiSelect = (target: TargetId): Partial<Answers> => {
+// Each library on and off, the full set first, so the widest case carries every one.
+const withAndWithout = (sets: Library[][], library: Library): Library[][] => {
+  const withIt = sets
+    .map((set) => {
+      const grown = [...set, library];
+
+      return grown;
+    });
+  const both = [...withIt, ...sets];
+
+  return both;
+};
+
+const NO_LIBRARIES: Library[][] = [[]];
+
+const LIBRARY_SETS = LIBRARIES.reduce(withAndWithout, NO_LIBRARIES);
+
+// pnpm and strict alone, and every multi-select but the libraries at its full value.
+const fixedAnswers = (target: TargetId): Partial<Answers> => {
   return {
-    libraries: [...LIBRARIES],
+    packageManager: 'pnpm',
+    typeSafety: 'strict',
     agents: [...AGENTS],
     plugins: [...PLUGINS],
     // Refused on a target that has no surfaces to name.
@@ -106,7 +130,6 @@ const labelFor = (answers: Answers): string => {
     answers.target,
     answers.packageManager,
     answers.testing,
-    answers.typeSafety,
     ...(record.hostsBrowser === true ? [answers.browser] : []),
     ...(record.hostsFramework === true ? [`host-${answers.hostedFramework ?? 'none'}`] : []),
     ...(answers.form === undefined ? [] : [answers.form]),
@@ -116,6 +139,7 @@ const labelFor = (answers: Answers): string => {
     ...(answers.data === undefined ? [] : [answers.data]),
     ...(answers.mocking === undefined ? [] : [answers.mocking]),
     ...(answers.languages === undefined ? [] : ['languages']),
+    answers.libraries.length === 0 ? 'no-libraries' : answers.libraries.join('+'),
   ].join(' ');
 };
 
@@ -219,36 +243,33 @@ const everyCase = (target: TargetId): E2eCase[] => {
     };
   });
 
-  const testings = across(languages, () => {
-    return [...TESTING_CHOICES];
+  const libraries = across(languages, () => {
+    return LIBRARY_SETS;
+  }, (variant, set) => {
+    const chosen = {
+      ...variant,
+      libraries: [...set],
+    };
+
+    return chosen;
+  });
+
+  return across(libraries, () => {
+    const testings = [...TESTING_CHOICES];
+
+    return testings;
   }, (variant, testing) => {
-    return {
+    const tested = {
       ...variant,
       testing,
     };
-  });
 
-  const safeties = across(testings, () => {
-    return [...TYPE_SAFETY_CHOICES];
-  }, (variant, typeSafety) => {
-    return {
-      ...variant,
-      typeSafety,
-    };
-  });
-
-  return across(safeties, () => {
-    return [...PACKAGE_MANAGERS];
-  }, (variant, packageManager) => {
-    return {
-      ...variant,
-      packageManager,
-    };
+    return tested;
   })
     .map((variant) => {
       return asCase({
         ...DEFAULT_ANSWERS,
-        ...everyMultiSelect(target),
+        ...fixedAnswers(target),
         ...variant,
         target,
       });
@@ -278,6 +299,50 @@ const typedLintCases = (target: TargetId, every: E2eCase[]): E2eCase[] => {
     });
 };
 
+const answerCount = ({ answers }: E2eCase): number => {
+  return Object.keys(answers).length;
+};
+
+// The first case answering the most, as one smoke per other manager and the browser pass under pnpm.
+const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
+  const onManager = (packageManager: PackageManager): E2eCase => {
+    const answers = {
+      ...widest.answers,
+      packageManager,
+    };
+
+    return asCase(answers);
+  };
+  const smokes = PACKAGE_MANAGERS
+    .filter((pm) => {
+      return pm !== 'pnpm';
+    })
+    .map(onManager);
+  const variants: E2eVariant[] = [];
+
+  if (!NO_BROWSER_PASS.has(target)) {
+    variants.push('browser');
+  }
+
+  if (target === 'react') {
+    variants.push('skip-fix', 'no-install');
+  }
+
+  const asVariant = (variant: E2eVariant): E2eCase => {
+    const labelled = {
+      ...widest,
+      label: `${widest.label} ${variant}`,
+      variant,
+    };
+
+    return labelled;
+  };
+  const varied = variants.map(asVariant);
+  const extra = [...smokes, ...varied];
+
+  return extra;
+};
+
 export const targetCases = (target: TargetId): E2eCase[] => {
   const every = everyCase(target);
 
@@ -285,5 +350,19 @@ export const targetCases = (target: TargetId): E2eCase[] => {
     return typedLintCases(target, every);
   }
 
-  return env['E2E_FULL'] === '1' ? every : coveringSubset(every);
+  const paired = env['E2E_FULL'] === '1' ? every : coveringSubset(every);
+  // Stable, so a tie keeps the first.
+  const byWidth = (left: E2eCase, right: E2eCase): number => {
+    return answerCount(right) - answerCount(left);
+  };
+  const widest = every
+    .toSorted(byWidth)
+    .slice(0, 1);
+  const extra = widest
+    .flatMap((item) => {
+      return fullCases(target, item);
+    });
+  const cases = [...paired, ...extra];
+
+  return cases;
 };

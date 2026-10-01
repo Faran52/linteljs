@@ -16,13 +16,15 @@ import {
 } from '@answers';
 import { targetFor } from '@targets';
 
-import { targetCases } from './matrix';
+import { type E2eCase, targetCases } from './matrix';
 
 import type { Answers } from '@config/types';
 
 interface Answered {
   answers: Answers;
 }
+
+type TestedTarget = (typeof TARGET_IDS)[number];
 
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
@@ -40,6 +42,10 @@ const pairsOf = (answers: Answers): string[] => {
     languages: answers.languages?.join(','),
     testing: answers.testing,
     typeSafety: answers.typeSafety,
+    ...Object.fromEntries(valuesOf(ANSWERS.libraries.values)
+      .map((library) => {
+        return [library, String(answers.libraries.includes(library))];
+      })),
   })
     .map(([axis, value]) => {
       return `${axis}=${value ?? '-'}`;
@@ -64,7 +70,22 @@ const coveredBy = (cases: Answered[]): Set<string> => {
   return new Set(coveredPairs);
 };
 
-const everyCase = (target: (typeof TARGET_IDS)[number]): Answered[] => {
+// Each enumeration once per target, since the cover takes seconds; the stability test calls targetCases afresh.
+const memoised = <T>(compute: (target: TestedTarget) => T): ((target: TestedTarget) => T) => {
+  const cache = new Map<TestedTarget, T>();
+
+  return (target) => {
+    const known = cache.get(target) ?? compute(target);
+
+    cache.set(target, known);
+
+    return known;
+  };
+};
+
+const pairedCases = memoised(targetCases);
+
+const everyCase = memoised((target) => {
   vi.stubEnv('E2E_FULL', '1');
 
   const every = targetCases(target);
@@ -72,7 +93,7 @@ const everyCase = (target: (typeof TARGET_IDS)[number]): Answered[] => {
   vi.unstubAllEnvs();
 
   return every;
-};
+});
 
 const accepts = (answers: Answers): boolean => {
   try {
@@ -96,7 +117,7 @@ const everyTargetsCases = (): Answered[] => {
 describe('targetCases', () => {
   it('covers every pair of answers the full enumeration reaches', () => {
     for (const target of TARGET_IDS) {
-      const covered = coveredBy(targetCases(target));
+      const covered = coveredBy(pairedCases(target));
       const missing = [...coveredBy(everyCase(target))]
         .filter((pair) => {
           return !covered.has(pair);
@@ -109,7 +130,7 @@ describe('targetCases', () => {
   it('is a fraction of the cross product it covers', () => {
     const reduced = TARGET_IDS
       .reduce((total, target) => {
-        return total + targetCases(target).length;
+        return total + pairedCases(target).length;
       }, 0);
     const every = TARGET_IDS
       .reduce((total, target) => {
@@ -121,7 +142,7 @@ describe('targetCases', () => {
 
   it('keeps the combination behind every defect the matrix has found', () => {
     const has = (target: (typeof TARGET_IDS)[number], match: (answers: Answers) => boolean): boolean => {
-      return targetCases(target)
+      return pairedCases(target)
         .some((item) => {
           return match(item.answers);
         });
@@ -141,9 +162,6 @@ describe('targetCases', () => {
     })).toBe(true);
     expect(has('react-native', (answers) => {
       return answers.testing === 'none';
-    })).toBe(true);
-    expect(has('angular', (answers) => {
-      return answers.typeSafety === 'relaxed';
     })).toBe(true);
     expect(has('react', (answers) => {
       return answers.router === 'react-router-framework' && answers.styling === 'stylex';
@@ -182,7 +200,7 @@ describe('targetCases', () => {
       'angular',
       'astro',
     ] as const) {
-      const regional = targetCases(target)
+      const regional = pairedCases(target)
         .some(({ answers }) => {
           return answers.languages?.includes('zh-TW') === true;
         });
@@ -279,7 +297,7 @@ describe('targetCases', () => {
     })).toEqual(all(valuesOf(ANSWERS.testing.values), false));
     expect(seen(({ typeSafety }) => {
       return typeSafety;
-    })).toEqual(all(valuesOf(ANSWERS.typeSafety.values), false));
+    })).toEqual(['strict']);
     expect(seen(({ browser }) => {
       return browser;
     })).toEqual(all(valuesOf(ANSWERS.browser.values), false));
@@ -306,9 +324,14 @@ describe('targetCases', () => {
     })).toEqual(all(valuesOf(ANSWERS.mocking.values), true));
   });
 
-  it('carries every multi-select at its full value, and surfaces only where a target has them', () => {
+  it('carries every multi-select but libraries at its full value, and surfaces only where a target has them', () => {
     for (const { answers } of everyTargetsCases()) {
-      expect(answers.libraries).toEqual(valuesOf(ANSWERS.libraries.values));
+      const inOrder = valuesOf(ANSWERS.libraries.values)
+        .filter((library) => {
+          return answers.libraries.includes(library);
+        });
+
+      expect(answers.libraries).toEqual(inOrder);
       expect(answers.agents).toEqual(valuesOf(ANSWERS.agents.values));
       expect(answers.plugins).toEqual(valuesOf(ANSWERS.plugins.values));
       expect(answers.surfaces).toEqual(answers.target === 'webextension'
@@ -318,13 +341,16 @@ describe('targetCases', () => {
   });
 
   it('labels each case by every answer that can vary on its target', () => {
-    for (const { label, answers } of TARGET_IDS.flatMap(targetCases)) {
+    for (const {
+      label,
+      answers,
+      variant,
+    } of TARGET_IDS.flatMap(pairedCases)) {
       const record = targetFor(answers);
       const expected = [
         answers.target,
         answers.packageManager,
         answers.testing,
-        answers.typeSafety,
         record.hostsBrowser === true ? answers.browser : undefined,
         record.hostsFramework === true ? `host-${answers.hostedFramework ?? 'none'}` : undefined,
         answers.form,
@@ -334,6 +360,8 @@ describe('targetCases', () => {
         answers.data,
         answers.mocking,
         answers.languages === undefined ? undefined : 'languages',
+        answers.libraries.length === 0 ? 'no-libraries' : answers.libraries.join('+'),
+        variant,
       ]
         .filter((part) => {
           return part !== undefined;
@@ -343,9 +371,87 @@ describe('targetCases', () => {
     }
   });
 
+  it('varies the answers under pnpm alone, and runs the widest case once on every other manager', () => {
+    const byLabel = (left: string, right: string): number => {
+      return left.localeCompare(right);
+    };
+    const asPnpm = ({ answers }: E2eCase): string => {
+      const onPnpm = {
+        ...answers,
+        packageManager: 'pnpm',
+      };
+
+      return JSON.stringify(onPnpm);
+    };
+    const otherManagers = valuesOf(ANSWERS.packageManager.values)
+      .filter((pm) => {
+        return pm !== 'pnpm';
+      })
+      .toSorted(byLabel);
+    const allLibraries = valuesOf(ANSWERS.libraries.values);
+
+    for (const target of TARGET_IDS) {
+      const counts = everyCase(target)
+        .map(({ answers }) => {
+          return Object.keys(answers).length;
+        });
+      const widest = Math.max(...counts);
+      const others = pairedCases(target)
+        .filter(({ answers }) => {
+          return answers.packageManager !== 'pnpm';
+        });
+      const managers = others
+        .map(({ answers }) => {
+          return answers.packageManager;
+        })
+        .toSorted(byLabel);
+      const shapes = new Set(others.map(asPnpm));
+      const [smoke] = others;
+      const answered = smoke === undefined ? 0 : Object.keys(smoke.answers).length;
+      const ranOn = [target, managers];
+      const expected = [target, otherManagers];
+
+      expect(ranOn).toEqual(expected);
+      expect(shapes.size).toBe(1);
+      expect(answered).toBe(widest);
+      expect(smoke?.answers.libraries).toEqual(allLibraries);
+      expect(smoke?.variant).toBeUndefined();
+    }
+  });
+
+  it('runs the browser pass on every target a browser serves, and each create flag once', () => {
+    const byLabel = (left: string, right: string): number => {
+      return left.localeCompare(right);
+    };
+    const variants = TARGET_IDS
+      .flatMap(pairedCases)
+      .filter(({ variant }) => {
+        return variant !== undefined;
+      })
+      .map(({ answers, variant }) => {
+        return `${answers.target} ${answers.packageManager} ${String(variant)}`;
+      })
+      .toSorted(byLabel);
+    const browsed = TARGET_IDS
+      .filter((target) => {
+        return target !== 'webextension' && target !== 'react-native';
+      })
+      .map((target) => {
+        return `${target} pnpm browser`;
+      });
+    const expected = [
+      ...browsed,
+      'react pnpm no-install',
+      'react pnpm skip-fix',
+    ];
+    const sorted = expected.toSorted(byLabel);
+
+    expect(variants).toEqual(sorted);
+  });
+
   it('runs every target on every package manager', () => {
     for (const target of TARGET_IDS) {
-      const ran = targetCases(target)
+      const ran = pairedCases(target)
         .map((item) => {
           return item.answers.packageManager;
         });
@@ -365,7 +471,7 @@ describe('targetCases', () => {
   it('gives every case its own label, which names the directory it runs in', () => {
     const labels = TARGET_IDS
       .flatMap((target) => {
-        return targetCases(target)
+        return pairedCases(target)
           .map((item) => {
             return item.label;
           });
@@ -419,7 +525,7 @@ describe('targetCases', () => {
 
   it('is stable, so a label names the same case twice running', () => {
     for (const target of TARGET_IDS) {
-      const firstLabels = targetCases(target)
+      const firstLabels = pairedCases(target)
         .map((item) => {
           return item.label;
         });

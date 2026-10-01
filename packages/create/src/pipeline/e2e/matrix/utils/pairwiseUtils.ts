@@ -1,3 +1,5 @@
+import { LIBRARIES } from '../constants';
+
 import type { Answers } from '@config/types';
 
 export interface PairwiseCase {
@@ -19,6 +21,10 @@ const axesOf = (answers: Answers): string[] => {
     `languages:${answers.languages?.join(',') ?? 'none'}`,
     `testing:${answers.testing}`,
     `safety:${answers.typeSafety}`,
+    ...LIBRARIES
+      .map((library) => {
+        return `${library}:${String(answers.libraries.includes(library))}`;
+      }),
   ];
 };
 
@@ -36,64 +42,84 @@ export const pairsOf = (answers: Answers): string[] => {
 };
 
 export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
-  const scored = cases
+  // Each axis value as a small integer and each pair as left * count + right, so a case costs twenty lookups
+  // rather than a string per pair, and a round scores a candidate by array reads.
+  const valueIds = new Map<string, number>();
+  const idOf = (value: string): number => {
+    const known = valueIds.get(value) ?? valueIds.size;
+
+    valueIds.set(value, known);
+
+    return known;
+  };
+  const interned = cases
     .map((item) => {
+      const axes = axesOf(item.answers)
+        .map(idOf);
+
       return {
         item,
-        pairs: pairsOf(item.answers),
+        axes,
       };
     });
-  const scoredPairs = scored
-    .flatMap(({ pairs }) => {
-      return pairs;
-    });
+  const valueCount = valueIds.size;
+  const scored = interned
+    .map(({ item, axes }) => {
+      const pairs = axes
+        .flatMap((left, axis) => {
+          return axes
+            .slice(axis + 1)
+            .map((right) => {
+              return left * valueCount + right;
+            });
+        });
 
-  const uncovered = new Set(scoredPairs);
-  const gainOf = (pairs: string[]): number => {
+      // A gain only falls as pairs are covered, so a stale one bounds it.
+      return {
+        item,
+        pairs,
+        staleGain: pairs.length,
+      };
+    });
+  const uncovered = new Uint8Array(valueCount * valueCount)
+    .fill(1);
+  const gainOf = (pairs: number[]): number => {
     return pairs
       .filter((pair) => {
-        return uncovered.has(pair);
+        return uncovered[pair] === 1;
       }).length;
   };
-  const chosen: T[] = [];
-  let remaining = scored;
+  type Scored = (typeof scored)[number];
+  // A candidate that cannot beat the leader is not rescored, and the picks match a full rescore.
+  const bestCandidate = (): Scored | undefined => {
+    let best: Scored | undefined;
+    let bestGain = 0;
 
-  // Each pick covers a pair, so the uncovered count bounds the rounds. No early exit: past an empty pool a round
-  // does nothing, and an exit a mutant could drop would only cost time.
-  Array.from({ length: uncovered.size })
-    .forEach(() => {
-      const ranked = remaining
-        .map((candidate) => {
-          return {
-            candidate,
-            gain: gainOf(candidate.pairs),
-          };
-        })
-        .filter(({ gain }) => {
-          return gain > 0;
-        });
+    for (const candidate of scored) {
+      if (candidate.staleGain > bestGain) {
+        candidate.staleGain = gainOf(candidate.pairs);
 
-      remaining = ranked
-        .map(({ candidate }) => {
-          return candidate;
-        });
-
-      const [first, ...rest] = ranked;
-
-      if (first !== undefined) {
-        // Ties go to the earlier case, so a label names the same case every run.
-        const best = rest
-          .reduce((leader, entry) => {
-            return entry.gain > leader.gain ? entry : leader;
-          }, first);
-
-        for (const pair of best.candidate.pairs) {
-          uncovered.delete(pair);
+        // Strictly greater, so a tie goes to the earlier case and a label names the same case every run.
+        if (candidate.staleGain > bestGain) {
+          best = candidate;
+          bestGain = candidate.staleGain;
         }
-
-        chosen.push(best.candidate.item);
       }
-    });
+    }
+
+    return best;
+  };
+  const chosen: T[] = [];
+  let picked = bestCandidate();
+
+  while (picked !== undefined) {
+    for (const pair of picked.pairs) {
+      uncovered[pair] = 0;
+    }
+
+    chosen.push(picked.item);
+    picked = bestCandidate();
+  }
 
   return chosen;
 };
