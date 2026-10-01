@@ -25,6 +25,16 @@ tsRuleTester.run('prefer-alias untyped', preferAlias, {
 typedRuleTester.run('prefer-alias', preferAlias, {
   valid: [
     {
+      // An exact key: tsc takes it over `@utils/*`, so `./special` is another file.
+      code: "import { value } from '@utils/special';",
+      filename: at('lib/utils/format.ts'),
+    },
+    {
+      // `@utils/special` is an exact key onto `special-name.ts`.
+      code: "import { value } from '../lib/utils/special';",
+      filename: at('app/page.ts'),
+    },
+    {
       code: "import { value } from './env';",
       filename: at('config/theme.ts'),
     },

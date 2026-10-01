@@ -18,7 +18,8 @@ written when the alias would resolve somewhere else, or when tsc does not resolv
 
 Only `prefix/*` patterns onto `directory/*` count, by their first substitution. An exact key onto the same
 directory, as `"@ui": ["./src/ui"]` beside `"@ui/*": ["./src/ui/*"]`, names its index: `../ui` is fixed to
-`@ui`. Any other exact key names one file, so nothing can sit inside it.
+`@ui`. Any other exact key names one file, which tsc takes before any `prefix/*`: an import spelled as that key,
+or a fix that would spell it, stays as written.
 
 ## Options
 

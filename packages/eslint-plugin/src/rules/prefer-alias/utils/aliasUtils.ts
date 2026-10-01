@@ -12,6 +12,8 @@ export interface Alias {
 export interface AliasedProject {
   base: string;
   aliases: Alias[];
+  // Exact keys onto a file: tsc takes them before any `prefix/*`, so the prefix arithmetic is wrong for them.
+  pinned: string[];
 }
 
 const endsInOneStar = (pattern: string, tail: string): boolean => {
@@ -47,12 +49,24 @@ const aliasesOf = (paths: Record<string, string[]>, base: string): Alias[] => {
 export const aliasedProjectOf = (options: CompilerOptions): AliasedProject | undefined => {
   const { paths, pathsBasePath } = options;
 
-  return paths && typeof pathsBasePath === 'string' && !('baseUrl' in options)
-    ? {
-        base: pathsBasePath,
-        aliases: aliasesOf(paths, pathsBasePath),
-      }
-    : undefined;
+  if (!paths || typeof pathsBasePath !== 'string' || 'baseUrl' in options) {
+    return undefined;
+  }
+
+  const aliases = aliasesOf(paths, pathsBasePath);
+  const pinned = Object.keys(paths)
+    .filter((key) => {
+      return !key.includes('*') && !aliases
+        .some((alias) => {
+          return alias.exact === key;
+        });
+    });
+
+  return {
+    base: pathsBasePath,
+    aliases,
+    pinned,
+  };
 };
 
 const longest = (aliases: Alias[], length: (alias: Alias) => number): Alias | undefined => {

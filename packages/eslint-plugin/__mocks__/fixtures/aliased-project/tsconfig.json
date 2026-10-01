@@ -14,7 +14,8 @@
       "@config/*": ["./src/config/*"],
       "@config/flags/*": ["./src/lib/*"],
       "@generated/*": ["./src/missing/*", "./src/lib/*"],
-      "@app": ["./src/app/index.ts"]
+      "@app": ["./src/app/index.ts"],
+      "@utils/special": ["./src/lib/utils/special-name.ts"]
     }
   },
   "include": ["src"]

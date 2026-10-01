@@ -57,7 +57,21 @@ describe('aliasedProjectOf', () => {
     expect(project).toEqual({
       base: '/p',
       aliases: [CONFIG],
+      pinned: [],
     });
+  });
+
+  it('pins the exact keys onto a file, not those naming an alias directory', () => {
+    const project = aliasedProjectOf({
+      paths: {
+        '@ui/*': ['./src/ui/*'],
+        '@ui': ['./src/ui'],
+        '@config/env': ['./src/config/env-file.ts'],
+      },
+      pathsBasePath: '/p',
+    });
+
+    expect(project?.pinned).toEqual(['@config/env']);
   });
 
   it('keeps only a trailing-star pattern onto a directory, by its first substitution', () => {

@@ -107,7 +107,11 @@ export const preferAlias = createRule('prefer-alias', {
       return {};
     }
 
-    const { base, aliases } = project;
+    const {
+      base,
+      aliases,
+      pinned,
+    } = project;
     const { aliasExempt = [], enforceRelativeImports = false } = optionsOf<Options>(context);
     const checker = typed.program.getTypeChecker();
 
@@ -158,14 +162,14 @@ export const preferAlias = createRule('prefer-alias', {
         const replacement = throughAlias(alias, path);
 
         // Only when tsc would read the alias back to the same path.
-        if (aliasMatching(aliases, replacement) === alias) {
+        if (!pinned.includes(replacement) && aliasMatching(aliases, replacement) === alias) {
           report(node, 'preferAlias', specifier, replacement);
         }
 
         return;
       }
 
-      const alias: Alias | undefined = aliasMatching(aliases, specifier);
+      const alias: Alias | undefined = pinned.includes(specifier) ? undefined : aliasMatching(aliases, specifier);
 
       // A later fallback in the `paths` entry resolved it, so the first one is not where it points.
       if (!alias || !resolved.startsWith(`${alias.directory}/`)) {
