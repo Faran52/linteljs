@@ -56,6 +56,20 @@ describe('angular', () => {
     expect(overLimit).toContain('max-lines-per-function');
   });
 
+  it('reports a bypassed sanitizer, a sonarjs Angular rule base leaves off', async () => {
+    const code = [
+      "import { DomSanitizer } from '@angular/platform-browser';",
+      '',
+      'export const trust = (sanitizer: DomSanitizer, html: string) => {',
+      '  return sanitizer.bypassSecurityTrustHtml(html);',
+      '};',
+      '',
+    ].join('\n');
+    const ruleIds = await ruleIdsFor(angular(), code, 'src/app/trust.ts');
+
+    expect(ruleIds).toContain('sonarjs/no-angular-bypass-sanitization');
+  });
+
   it('reports on a template', async () => {
     const code = '<div *ngIf="on">{{ label }}</div>\n<button (click)="go()"></button>\n';
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.html');
@@ -110,6 +124,7 @@ describe('angular', () => {
     expect(ownBlockNames(angular())).toEqual([
       '@linteljs/angular/inline-templates',
       '@linteljs/angular/decorated-classes',
+      '@linteljs/angular/sonarjs',
     ]);
   });
 

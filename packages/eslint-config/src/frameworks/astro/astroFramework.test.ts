@@ -43,6 +43,12 @@ describe('astro', () => {
     expect(ruleIds).toContain('astro/jsx-a11y/alt-text');
   });
 
+  it('lays out a template as JSX, which base leaves to the JSX frameworks', async () => {
+    const ruleIds = await ruleIdsFor(WITH_BASE, PAGE("<p class='x'>a</p>"), 'src/pages/index.astro');
+
+    expect(ruleIds).toContain('@stylistic/jsx-quotes');
+  });
+
   it('enables no astro rule on a TypeScript file', async () => {
     const enabled = await enabledRuleIdsFor(WITH_BASE, 'src/lib/utils/sample.ts');
 
@@ -125,6 +131,7 @@ describe('astro', () => {
   it('names every block it writes', () => {
     expect(ownBlockNames(astro())).toEqual([
       '@linteljs/astro/typescript',
+      '@linteljs/astro/jsx-layout',
       '@linteljs/astro/text-whitespace',
       '@linteljs/astro/typescript-scripts',
       '@linteljs/astro/untyped',

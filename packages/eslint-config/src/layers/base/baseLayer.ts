@@ -103,7 +103,8 @@ export const base = (options: BaseOptions = {}): Layer => {
 
     // Script parsers only: Angular markup crashes `@stylistic/indent`.
     ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', scriptFiles),
-    ...presetOf(stylistic.configs.recommended, 'stylistic/recommended', scriptFiles),
+    // `recommended` with its JSX rules left to the JSX frameworks: a `.ts` or `.vue` file holds no JSX.
+    ...presetOf(stylistic.configs.customize({ jsx: false }), 'stylistic/customize', scriptFiles),
     ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', scriptFiles),
 
     {
@@ -165,13 +166,6 @@ export const base = (options: BaseOptions = {}): Layer => {
           'single',
           { avoidEscape: true },
         ],
-        // The preset's `when: 'multiline'` caps nothing on a one-line element.
-        '@stylistic/jsx-max-props-per-line': ['error', {
-          maximum: {
-            single: 2,
-            multi: 1,
-          },
-        }],
         // `@linteljs/member-newline` owns a list of two or more members; `object-property-newline` splits at two.
         '@stylistic/object-property-newline': 'off',
         // Braces only, for the one-member list `member-newline` leaves alone. `multiline` would split a pair.
@@ -213,6 +207,18 @@ export const base = (options: BaseOptions = {}): Layer => {
         // `typescript-eslint` owns both; sonarjs's copies report the same defect twice once `typescript()` is composed.
         'sonarjs/no-array-delete': 'off',
         'sonarjs/prefer-regexp-exec': 'off',
+
+        // Framework rules in a framework-blind preset; the React core, `vue()` and `angular()` turn them back on.
+        'sonarjs/jsx-no-leaked-render': 'off',
+        'sonarjs/no-hook-setter-in-body': 'off',
+        'sonarjs/no-useless-react-setstate': 'off',
+        'sonarjs/no-uniq-key': 'off',
+        'sonarjs/prefer-read-only-props': 'off',
+        'sonarjs/no-debounce-throttle-in-render': 'off',
+        'sonarjs/no-vue-class-component': 'off',
+        'sonarjs/no-vue-mixins': 'off',
+        'sonarjs/no-mutate-reactive-state-in-updated-hook': 'off',
+        'sonarjs/no-angular-bypass-sanitization': 'off',
 
         // Catches what `@linteljs/prefer-arrow-functions` declines to rewrite.
         'func-style': ['error', 'expression'],

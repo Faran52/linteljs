@@ -33,6 +33,7 @@ describe('solid', () => {
   it.each([
     ['@stylistic/jsx-self-closing-comp', '<div></div>'],
     ['@stylistic/jsx-pascal-case', '<My_Box />'],
+    ['@stylistic/jsx-quotes', "<div class='x' />"],
   ])('reports %s', async (rule, element) => {
     const code = `export const Chip = () => {\n  return ${element};\n};\n`;
     const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/components/ui/Chip.tsx');

@@ -4,8 +4,9 @@ import stylistic from '@stylistic/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 import { JSX_STYLE_RULES, SCRIPT_FILES } from '../../config/constants';
-import { presetOf } from '../../utils/presetUtils';
+import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
+import type { Linter } from 'eslint';
 import type { Layer } from '../../types';
 
 export const reactGroup: string[] = [
@@ -15,6 +16,16 @@ export const reactGroup: string[] = [
   '^react-',
   '^@react',
 ];
+
+// `sonarjs/recommended`'s React rules, which `base` turns off.
+const REACT_SONARJS_RULES = {
+  'sonarjs/jsx-no-leaked-render': 'error',
+  'sonarjs/no-hook-setter-in-body': 'error',
+  'sonarjs/no-useless-react-setstate': 'error',
+  'sonarjs/no-uniq-key': 'error',
+  'sonarjs/prefer-read-only-props': 'error',
+  'sonarjs/no-debounce-throttle-in-render': 'error',
+} satisfies Linter.RulesRecord;
 
 // Its own module: importing it from `reactFramework.ts` would make React Native resolve `eslint-plugin-jsx-a11y-x`.
 export const reactCore = (): Layer => {
@@ -40,6 +51,8 @@ export const reactCore = (): Layer => {
         '@eslint-react/use-memo': 'off',
       },
     },
+
+    ...sonarjsRules('@linteljs/react/sonarjs', REACT_SONARJS_RULES, SCRIPT_FILES),
 
     {
       name: '@linteljs/react',

@@ -108,6 +108,45 @@ describe('reactCore', () => {
     expect(ruleIds).toContain(rule);
   });
 
+  it('reports a single-quoted jsx attribute', async () => {
+    const layer = [...base(), ...reactCore()];
+    const code = "export const Widget = () => {\n  return <div className='x' />;\n};\n";
+
+    await expect(ruleIdsFor(layer, code, 'src/components/ui/Widget.tsx'))
+      .resolves.toContain('@stylistic/jsx-quotes');
+  });
+
+  it('caps a single-line tag at two props and a multiline one at one per line', async () => {
+    const layer = [...base(), ...reactCore()];
+    const widget = 'src/components/ui/Widget.tsx';
+    const two = 'export const Widget = () => {\n  return <div id="a" lang="b" />;\n};\n';
+    const three = 'export const Widget = () => {\n  return <div id="a" lang="b" title="c" />;\n};\n';
+    const multiline = 'export const Widget = () => {\n  return (\n    <div\n      id="a" lang="b"\n    />\n  );\n};\n';
+
+    await expect(ruleIdsFor(layer, two, widget)).resolves.not.toContain('@stylistic/jsx-max-props-per-line');
+    await expect(ruleIdsFor(layer, three, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
+    await expect(ruleIdsFor(layer, multiline, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
+  });
+
+  it('reports a state setter called with its own state, a sonarjs React rule base leaves off', async () => {
+    const code = [
+      "import { useState } from 'react';",
+      '',
+      'export const Chip = () => {',
+      '  const [open, setOpen] = useState(false);',
+      '  const close = () => {',
+      '    setOpen(open);',
+      '  };',
+      '',
+      '  return <button onClick={close}>x</button>;',
+      '};',
+      '',
+    ].join('\n');
+    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).toContain('sonarjs/no-useless-react-setstate');
+  });
+
   it('reports a JSX prop named twice on one element', async () => {
     const code = 'export const Chip = () => {\n  return <span className="a" className="b" />;\n};\n';
     const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
@@ -197,6 +236,7 @@ describe('reactCore', () => {
   it('names every block it writes', () => {
     expect(ownBlockNames(reactCore())).toEqual([
       '@linteljs/react/hooks-one-owner',
+      '@linteljs/react/sonarjs',
       '@linteljs/react',
     ]);
   });

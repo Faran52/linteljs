@@ -1,3 +1,5 @@
+import sonarjs from 'eslint-plugin-sonarjs';
+
 import type { ESLint, Linter } from 'eslint';
 
 type PluginConfigs = NonNullable<ESLint.Plugin['configs']>;
@@ -44,4 +46,17 @@ export const presetOf = (config: PluginConfig | undefined, label: string, files?
   }
 
   return scopedTo([config], files);
+};
+
+// Off the preset rather than the default export: the preset's plugin is its own object, and ESLint refuses a second
+// one under the same name once `base` has registered it.
+export const sonarjsRules = (name: string, rules: Linter.RulesRecord, files: string[]): Linter.Config[] => {
+  return presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', files)
+    .map((preset) => {
+      return {
+        ...preset,
+        name,
+        rules,
+      };
+    });
 };

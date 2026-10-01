@@ -1,6 +1,8 @@
+import stylistic from '@stylistic/eslint-plugin';
 import astroPlugin from 'eslint-plugin-astro';
 import tseslint from 'typescript-eslint';
 
+import { JSX_LAYOUT_RULES } from '../../config/constants';
 import { presetOf } from '../../utils/presetUtils';
 
 import type { Layer } from '../../types';
@@ -40,6 +42,12 @@ export const astro = (): Layer => {
       files: ASTRO_FILES,
       languageOptions: { parserOptions: { parser: tseslint.parser } },
       processor: 'astro/client-side-ts',
+    },
+    {
+      name: '@linteljs/astro/jsx-layout',
+      files: ASTRO_FILES,
+      plugins: { '@stylistic': stylistic },
+      rules: JSX_LAYOUT_RULES,
     },
     // Astro keeps a text node's line break as a space, so splitting `<code>x</code>, which` renders ` , which`.
     {

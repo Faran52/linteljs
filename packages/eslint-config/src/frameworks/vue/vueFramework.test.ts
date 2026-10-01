@@ -126,8 +126,17 @@ describe('vue', () => {
   it('names every block it writes', () => {
     expect(ownBlockNames(vue())).toEqual([
       '@linteljs/vue',
+      '@linteljs/vue/sonarjs',
       '@linteljs/vue/sfc-import-seam',
     ]);
+  });
+
+  it('reports reactive state mutated in the updated hook, a sonarjs Vue rule base leaves off', async () => {
+    const script = "import { ref } from 'vue';\n\nconst count = ref(0);\n\n"
+      + 'export default { updated() { count.value++; } };\n';
+    const ruleIds = await ruleIdsForSfc([...base(), ...vue()], `<script>\n${script}</script>\n`, 'Card.vue');
+
+    expect(ruleIds).toContain('sonarjs/no-mutate-reactive-state-in-updated-hook');
   });
 
   it('caps a component file at 350 lines of code, template and script together', async () => {

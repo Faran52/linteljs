@@ -85,6 +85,7 @@ describe('reactNative', () => {
   it('names every block it writes', () => {
     expect(ownBlockNames(reactNative())).toEqual([
       '@linteljs/react/hooks-one-owner',
+      '@linteljs/react/sonarjs',
       '@linteljs/react',
       '@linteljs/react-native/accessibility',
     ]);

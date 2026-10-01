@@ -1,8 +1,9 @@
 import angularEslint from 'angular-eslint';
 import tseslint from 'typescript-eslint';
 
-import { presetOf } from '../../utils/presetUtils';
+import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
+import type { Linter } from 'eslint';
 import type { Layer } from '../../types';
 
 export const angularGroup: string[] = [
@@ -14,6 +15,8 @@ export const angularGroup: string[] = [
 const TS_FILES = ['**/*.ts'];
 
 const TEMPLATE_FILES = ['**/*.html'];
+
+const ANGULAR_SONARJS_RULES: Linter.RulesRecord = { 'sonarjs/no-angular-bypass-sanitization': 'error' };
 
 // Brings its own template parser, so it is the one target without `html()`.
 export const angular = (): Layer => {
@@ -34,6 +37,9 @@ export const angular = (): Layer => {
       plugins: { '@typescript-eslint': tseslint.plugin },
       rules: { '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }] },
     },
+
+    // `sonarjs/recommended`'s Angular rule, which `base` turns off.
+    ...sonarjsRules('@linteljs/angular/sonarjs', ANGULAR_SONARJS_RULES, TS_FILES),
 
     ...presetOf(angularEslint.configs.templateRecommended, 'angular-eslint/template', TEMPLATE_FILES),
 

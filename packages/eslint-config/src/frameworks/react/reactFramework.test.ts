@@ -28,6 +28,7 @@ describe('react', () => {
   it('names every block it writes', () => {
     expect(ownBlockNames(react())).toEqual([
       '@linteljs/react/hooks-one-owner',
+      '@linteljs/react/sonarjs',
       '@linteljs/react',
     ]);
   });

@@ -13,6 +13,7 @@ import {
   codeLines,
   enabledRuleIdsFor,
   fixedTextFor,
+  frameworkRuleIdsFor,
   functionOf,
   ownBlockNames,
   ruleIdsFor,
@@ -38,6 +39,10 @@ import type { Layer } from '../../types';
 
 interface FlatConfigsBearing {
   flatConfigs: object;
+}
+
+interface ConfigsBearing {
+  configs: object;
 }
 
 const TS_FILE = 'src/lib/utils/sample.ts';
@@ -119,24 +124,6 @@ describe('base: stylistic', () => {
 
     expect(reported).not.toContain('@stylistic/object-property-newline');
     expect(reported).not.toContain('@stylistic/object-curly-newline');
-  });
-
-  it('reports a single-quoted jsx attribute', async () => {
-    const code = "export const Widget = () => {\n  return <div className='x' />;\n};\n";
-
-    await expect(ruleIdsFor(base(), code, 'src/components/ui/Widget.tsx'))
-      .resolves.toContain('@stylistic/jsx-quotes');
-  });
-
-  it('caps a single-line tag at two props and a multiline one at one per line', async () => {
-    const widget = 'src/components/ui/Widget.tsx';
-    const two = 'export const Widget = () => {\n  return <div id="a" lang="b" />;\n};\n';
-    const three = 'export const Widget = () => {\n  return <div id="a" lang="b" title="c" />;\n};\n';
-    const multiline = 'export const Widget = () => {\n  return (\n    <div\n      id="a" lang="b"\n    />\n  );\n};\n';
-
-    await expect(ruleIdsFor(base(), two, widget)).resolves.not.toContain('@stylistic/jsx-max-props-per-line');
-    await expect(ruleIdsFor(base(), three, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
-    await expect(ruleIdsFor(base(), multiline, widget)).resolves.toContain('@stylistic/jsx-max-props-per-line');
   });
 
   it('reports a same-line else', async () => {
@@ -501,6 +488,16 @@ describe('base: linteljs rules', () => {
       return `@linteljs/${name}`;
     });
 
+  it.each([
+    'src/lib/utils/sample.ts',
+    'src/lib/utils/sample.js',
+    'src/components/Card.vue',
+  ])('enables no framework rule on %s, JSX layout and sonarjs React and Vue rules included', async (file) => {
+    const leaked = await frameworkRuleIdsFor(base(), file);
+
+    expect(leaked).toStrictEqual([]);
+  });
+
   it('has more than one TypeScript-only rule to restate, so the assertions below are not vacuous', () => {
     expect(TYPESCRIPT_RULE_IDS.length).toBeGreaterThan(1);
   });
@@ -670,10 +667,20 @@ describe('base: presets', () => {
     expect(layer).toThrow('sonarjs/recommended is not published');
   });
 
-  it('names the stylistic preset when the plugin stops publishing it', async () => {
-    const layer = await layerWithoutConfig('@stylistic/eslint-plugin', 'recommended', loadBase);
+  it('names the stylistic preset when the plugin stops building it', async () => {
+    const layer = await layerWithout('@stylistic/eslint-plugin', (plugin: ConfigsBearing) => {
+      return {
+        ...plugin,
+        configs: {
+          ...plugin.configs,
+          customize: () => {
+            return undefined;
+          },
+        },
+      };
+    }, loadBase);
 
-    expect(layer).toThrow('stylistic/recommended is not published');
+    expect(layer).toThrow('stylistic/customize is not published');
   });
 
   it('names the linteljs preset when the plugin stops publishing it', async () => {

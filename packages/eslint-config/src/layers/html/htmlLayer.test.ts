@@ -1,5 +1,6 @@
 import {
   enabledRuleIdsFor,
+  frameworkRuleIdsFor,
   ownBlockNames,
   ruleIdsFor,
   startsWith,
@@ -37,6 +38,15 @@ describe('html', () => {
       ...html(),
     ], NO_ALT, 'index.html'))
       .resolves.toContain('@html-eslint/require-img-alt');
+  });
+
+  it.each([
+    'src/index.html',
+    'src/lib/utils/sample.ts',
+  ])('enables no framework rule on %s', async (file) => {
+    const leaked = await frameworkRuleIdsFor([...base(), ...html()], file);
+
+    expect(leaked).toStrictEqual([]);
   });
 
   it('names every block it writes', () => {

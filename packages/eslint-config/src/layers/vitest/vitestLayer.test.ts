@@ -1,4 +1,8 @@
-import { ownBlockNames, ruleIdsFor } from '@mocks/lintText';
+import {
+  frameworkRuleIdsFor,
+  ownBlockNames,
+  ruleIdsFor,
+} from '@mocks/lintText';
 import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
@@ -52,6 +56,12 @@ describe('vitest', () => {
       + "it('adds', () => {\n  expect(1 + 1, label).toBe(2);\n});\n";
 
     await expect(ruleIdsFor(layer, code, 'src/lib/utils/sample.test.ts')).resolves.not.toContain('vitest/valid-expect');
+  });
+
+  it('enables no framework rule on a suite', async () => {
+    const leaked = await frameworkRuleIdsFor(layer, 'src/lib/utils/sample.test.ts');
+
+    expect(leaked).toStrictEqual([]);
   });
 
   it('names every block it writes', () => {

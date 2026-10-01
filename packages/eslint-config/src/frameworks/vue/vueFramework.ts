@@ -2,8 +2,10 @@ import vuePlugin from 'eslint-plugin-vue';
 import vueA11y from 'eslint-plugin-vuejs-accessibility';
 import tseslint from 'typescript-eslint';
 
-import { presetOf } from '../../utils/presetUtils';
+import { SCRIPT_AND_SFC_FILES } from '../../config/constants';
+import { presetOf, sonarjsRules } from '../../utils/presetUtils';
 
+import type { Linter } from 'eslint';
 import type { Layer } from '../../types';
 
 export const vueGroup: string[] = [
@@ -16,6 +18,12 @@ export const vueGroup: string[] = [
 const VUE_EXTENSION = '.vue';
 
 const VUE_FILES = [`**/*${VUE_EXTENSION}`];
+
+const VUE_SONARJS_RULES = {
+  'sonarjs/no-vue-class-component': 'error',
+  'sonarjs/no-vue-mixins': 'error',
+  'sonarjs/no-mutate-reactive-state-in-updated-hook': 'error',
+} satisfies Linter.RulesRecord;
 
 // After `typescript()`: `vue-eslint-parser` is the top-level SFC parser, and placed earlier it is overwritten.
 export const vue = (): Layer => {
@@ -41,6 +49,9 @@ export const vue = (): Layer => {
         'vuejs-accessibility/label-has-for': ['error', { required: { every: ['id'] } }],
       },
     },
+
+    // `sonarjs/recommended`'s Vue rules, which `base` turns off.
+    ...sonarjsRules('@linteljs/vue/sonarjs', VUE_SONARJS_RULES, SCRIPT_AND_SFC_FILES),
 
     {
       // `vue-tsc --noEmit` covers SFC imports. Measured: `@vue/typescript-plugin` trades 2 findings for 376.

@@ -317,6 +317,14 @@ The numbers govern this workspace too. Measured the way the rules count, in non-
 the layer carried any; both are gone, since a workspace-only number would be a second standard the published one
 does not state.
 
+### `base` carries no framework rule
+
+`@stylistic`'s `recommended` and `sonarjs/recommended` are framework-blind: the first ships fourteen JSX rules, the
+second React, Vue and Angular rules, to every file. `base` builds the stylistic preset with `jsx: false` and turns
+the ten sonarjs framework rules off; each framework turns its own back on (`JSX_STYLE_RULES`, `sonarjsRules`), and
+an `.astro` template, which parses as JSX, keeps the layout set. The layer suites hold `base`, `typescript()`,
+`vitest()` and `html()` to no framework rule at all. Solid gets the JSX layout but not sonarjs's React rules.
+
 ### Rules `base` leaves off, measured
 
 Each was tried against the workspace and the 670 starter files with `base` as it stands.

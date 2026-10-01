@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import {
   enabledRuleIdsFor,
+  frameworkRuleIdsFor,
   ownBlockNames,
   ruleEntryFor,
   ruleIdsForFile,
@@ -94,6 +95,12 @@ describe('typescript', () => {
         }],
       });
     }
+  });
+
+  it('enables no framework rule on a TypeScript file', async () => {
+    const leaked = await frameworkRuleIdsFor([...base(), ...typescript()], 'src/lib/utils/sample.ts');
+
+    expect(leaked).toStrictEqual([]);
   });
 
   it('names every block it writes', () => {

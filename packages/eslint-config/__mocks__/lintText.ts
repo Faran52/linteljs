@@ -92,6 +92,34 @@ export const enabledRuleIdsFor = async (config: Layer, filePath: string): Promis
     });
 };
 
+const FRAMEWORK_RULE_PREFIX
+  = /^(?:@stylistic\/jsx-|react|@eslint-react\/|jsx-a11y|vue\/|svelte\/|astro\/|solid\/|@angular-eslint\/)/u;
+
+// `sonarjs/recommended` ships these to every file; a framework turns them back on.
+const SONARJS_FRAMEWORK_RULES = new Set([
+  'sonarjs/jsx-no-leaked-render',
+  'sonarjs/no-hook-setter-in-body',
+  'sonarjs/no-useless-react-setstate',
+  'sonarjs/no-uniq-key',
+  'sonarjs/prefer-read-only-props',
+  'sonarjs/no-debounce-throttle-in-render',
+  'sonarjs/no-vue-class-component',
+  'sonarjs/no-vue-mixins',
+  'sonarjs/no-mutate-reactive-state-in-updated-hook',
+  'sonarjs/no-angular-bypass-sanitization',
+]);
+
+export const frameworkRuleIdsFor = async (config: Layer, filePath: string): Promise<string[]> => {
+  const enabled = await enabledRuleIdsFor(config, filePath);
+
+  return enabled
+    .filter((ruleId) => {
+      const isFrameworkRule = FRAMEWORK_RULE_PREFIX.test(ruleId) || SONARJS_FRAMEWORK_RULES.has(ruleId);
+
+      return isFrameworkRule;
+    });
+};
+
 // `overrideConfigFile: true` keeps this workspace's own `eslint.config.ts` out of the run.
 export const ruleIdsFor = async (config: Layer, code: string, filePath: string): Promise<(string | null)[]> => {
   const eslint = new ESLint({

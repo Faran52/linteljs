@@ -35,6 +35,13 @@ when a version's change lives in a sibling it is described there instead:
   with its own `astro` switch, and gives the frontmatter and template of a `.astro` file every rule a script gets:
   stylistic, sonarjs, import sorting and the Lintel rules. The Tailwind layer reaches `.astro` class attributes too.
   `@stylistic/jsx-one-expression-per-line` stays off in `.astro`, where a line break in text renders as a space.
+- **`base` carries no framework rule.** `@stylistic`'s fourteen JSX layout rules, `jsx-max-props-per-line` among
+  them, move to `react()`, `react-native()`, `next()`, `solid()` and the `.astro` template. sonarjs's React rules
+  (`jsx-no-leaked-render`, `no-hook-setter-in-body`, `no-useless-react-setstate`, `no-uniq-key`,
+  `prefer-read-only-props`, `no-debounce-throttle-in-render`) move to the React frameworks, its Vue rules
+  (`no-vue-class-component`, `no-vue-mixins`, `no-mutate-reactive-state-in-updated-hook`) to `vue()` and `nuxt()`,
+  and `no-angular-bypass-sanitization` to `angular()`. An override of one of them in a `base`-only config now names
+  a rule that is off.
 
 ### Added
 
