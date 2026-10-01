@@ -167,6 +167,14 @@ describe('base: stylistic', () => {
       .resolves.not.toContain('@stylistic/object-curly-newline');
   });
 
+  it('lets one member sit between braces on their own lines in a type literal and an interface', async () => {
+    const literal = await ruleIdsFor(base(), 'export type Value = {\n  a: number;\n};\n', TS_FILE);
+    const body = await ruleIdsFor(base(), 'export interface Value {\n  a: number;\n}\n', TS_FILE);
+
+    expect(literal).not.toContain('@stylistic/object-curly-newline');
+    expect(body).not.toContain('@stylistic/object-curly-newline');
+  });
+
   it('ends every member of a multiline type with a semicolon, the last one included', async () => {
     const comma = 'export interface Shape {\n  a: string,\n  b: string;\n}\n';
     const bareLast = 'export interface Shape {\n  a: string;\n  b: string\n}\n';
