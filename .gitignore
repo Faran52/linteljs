@@ -19,6 +19,9 @@ packages/eslint-plugin/docs/
 packages/*/reports/
 .stryker-tmp/
 
+# Throwaway scripts: never committed, linted or typechecked.
+*.tmp.ts
+
 # pnpm's local content-addressed store, created when a run sets store-dir inside the repo.
 .pnpm-store/
 

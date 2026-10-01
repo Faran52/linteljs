@@ -82,6 +82,7 @@
     "node_modules",
     "dist",
     "build",
-    "coverage"
+    "coverage",
+    "**/*.tmp.ts"
   ]
 }

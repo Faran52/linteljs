@@ -33,6 +33,10 @@ A pnpm workspace of three published packages: `@linteljs/create`, `@linteljs/esl
 
 Claim nothing that has not been run.
 
+- A throwaway script (a probe, a one-off comparison, a measurement) is named `*.tmp.ts` and sits at the repo or a
+  package root, never under `src/`, `scripts/` or `templates/`. It is gitignored and outside lint and typecheck: it
+  only has to do its job. Delete it when done, and never commit or import one.
+
 - New or touched code carries zero loose types, TypeScript errors and ESLint findings before it is declared done.
 - One code file has exactly one test file beside it; a data-only `constants.ts` and a pure re-export barrel have
   none. `pnpm test:isolated` holds each source to its own suite.
