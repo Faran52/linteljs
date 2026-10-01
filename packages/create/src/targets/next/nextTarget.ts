@@ -394,7 +394,8 @@ export const nextTarget: TargetRecord = {
     '@types/react',
     '@types/react-dom',
   ],
-  allowBuilds: [],
+  // next-intl pulls `@parcel/watcher`, whose install script pnpm refuses without this.
+  allowBuilds: ['@parcel/watcher'],
   stateRules: ['react-state.md', 'hooks-order.md'],
   i18n: NEXT_I18N,
   routerMock: 'fragments/test-setup/setupTests.nextRouter.ts',

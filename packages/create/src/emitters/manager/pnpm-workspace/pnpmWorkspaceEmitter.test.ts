@@ -144,6 +144,6 @@ describe('the NativeWind lightningcss pin', () => {
 it('adds allowBuilds to a next scaffold that has none', () => {
   const merged = mergePnpmWorkspace('ignoredBuiltDependencies:\n  - sharp\n', answersFor({ target: 'next' }));
 
-  expect(merged).toContain("allowBuilds:\n  '@swc/core': true");
+  expect(merged).toContain("allowBuilds:\n  '@parcel/watcher': true\n  '@swc/core': true");
   expect(merged).not.toContain('ignoredBuiltDependencies');
 });

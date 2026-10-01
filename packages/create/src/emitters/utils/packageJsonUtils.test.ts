@@ -636,7 +636,7 @@ describe('buildDevDependencies', () => {
     [
       'next',
       { target: 'next' },
-      [],
+      ['@parcel/watcher'],
     ],
     [
       'vue',
