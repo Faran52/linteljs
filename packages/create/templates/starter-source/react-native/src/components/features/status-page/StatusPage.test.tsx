@@ -1,9 +1,10 @@
-import { renderScreen } from '@mocks/renderScreen';
 import { fireEvent, screen } from '@testing-library/react-native';
 
-import { StatusPage } from './StatusPage';
+import { renderScreen } from '@mocks/renderScreen';
 
 import { STATUSES } from '@/config/statuses';
+
+import { StatusPage } from './StatusPage';
 
 // expo-router's entry reaches Expo's TypeScript source, which no test transform strips; a text stands in.
 vi.mock('expo-router', async () => {

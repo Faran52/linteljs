@@ -1,9 +1,10 @@
-import { CHECK, NAME } from '@config/linteljs';
 import {
   fireEvent,
   render,
   screen,
 } from '@testing-library/svelte';
+
+import { CHECK, NAME } from '@config/linteljs';
 
 import Page from './+page.svelte';
 

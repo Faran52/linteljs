@@ -1,6 +1,7 @@
-import { renderScreen } from '@mocks/renderScreen';
 import { act, screen } from '@testing-library/react-native';
 import i18next from 'i18next';
+
+import { renderScreen } from '@mocks/renderScreen';
 
 import AboutScreen from '@/app/about';
 import { GATE } from '@/config/linteljs';

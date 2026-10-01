@@ -3,13 +3,13 @@
 
   import { NAME } from '@config/linteljs';
 
+  import DataProvider from '$lib/providers/data/DataProvider.svelte';
+
   import AppHeader from '../components/features/app-header/AppHeader.svelte';
 
   import type { Snippet } from 'svelte';
 
   import '../app.css';
-
-  import DataProvider from '$lib/providers/data/DataProvider.svelte';
 
   interface Props {
     children: Snippet;

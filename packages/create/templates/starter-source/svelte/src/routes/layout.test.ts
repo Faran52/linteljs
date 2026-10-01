@@ -1,7 +1,8 @@
 import { createRawSnippet } from 'svelte';
 
-import { NAME } from '@config/linteljs';
 import { render, screen } from '@testing-library/svelte';
+
+import { NAME } from '@config/linteljs';
 
 import Layout from './+layout.svelte';
 

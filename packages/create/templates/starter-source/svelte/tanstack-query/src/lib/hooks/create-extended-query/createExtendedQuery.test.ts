@@ -1,4 +1,3 @@
-import WithExtendedQuery from '@mocks/WithExtendedQuery.svelte';
 import {
   render,
   screen,
@@ -12,6 +11,8 @@ import {
   it,
   vi,
 } from 'vitest';
+
+import WithExtendedQuery from '@mocks/WithExtendedQuery.svelte';
 
 interface Version {
   readonly status: string;

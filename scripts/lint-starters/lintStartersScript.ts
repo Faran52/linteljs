@@ -12,6 +12,7 @@ import { ESLint, type Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 
 import { ANSWERS, DEFAULT_ANSWERS } from '../../packages/create/src/answers';
+import { buildAliases } from '../../packages/create/src/emitters/utils/aliasUtils';
 import { targetFor } from '../../packages/create/src/targets';
 import { valuesOf } from '../../packages/create/src/utils/objectUtils';
 import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
@@ -111,7 +112,8 @@ const STARTER_OVERRIDES: Linter.Config[] = [
 ];
 
 const eslintFor = async (target: TargetId): Promise<Linters> => {
-  const record = targetFor(answerSets.get(target)?.[0] ?? DEFAULT_ANSWERS);
+  const answers = answerSets.get(target)?.[0] ?? DEFAULT_ANSWERS;
+  const record = targetFor(answers);
   // The record's own naming, or a suite named against it passes here and fails the generated project.
   const config = await composeConfig({
     framework: record.framework,
@@ -121,6 +123,8 @@ const eslintFor = async (target: TargetId): Promise<Linters> => {
     libraries: ['stylex'],
     naming: record.naming,
     folderNaming: record.folderNaming,
+    // As the generated eslint.config.js passes them, so import grouping sees the aliases.
+    aliases: buildAliases(answers),
   });
 
   const overrideConfig = [...config, ...STARTER_OVERRIDES];

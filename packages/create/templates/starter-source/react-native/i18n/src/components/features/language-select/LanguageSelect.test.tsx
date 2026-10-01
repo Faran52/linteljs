@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { renderScreen } from '@mocks/renderScreen';
 import {
   act,
   fireEvent,
@@ -10,9 +9,11 @@ import {
 } from '@testing-library/react-native';
 import i18next from 'i18next';
 
-import { LanguageSelect } from './LanguageSelect';
+import { renderScreen } from '@mocks/renderScreen';
 
 import { languages, languageStorageKey } from '@/i18n/config';
+
+import { LanguageSelect } from './LanguageSelect';
 
 const last = languages.at(-1) ?? languages[0];
 

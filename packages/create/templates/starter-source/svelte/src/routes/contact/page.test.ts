@@ -1,10 +1,11 @@
-import WithData from '@mocks/WithData.svelte';
 import {
   fireEvent,
   render,
   screen,
   waitFor,
 } from '@testing-library/svelte';
+
+import WithData from '@mocks/WithData.svelte';
 
 import Page from './+page.svelte';
 

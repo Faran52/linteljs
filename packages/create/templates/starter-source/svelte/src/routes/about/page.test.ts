@@ -1,5 +1,6 @@
-import { GATE } from '@config/linteljs';
 import { render, screen } from '@testing-library/svelte';
+
+import { GATE } from '@config/linteljs';
 
 import Page from './+page.svelte';
 

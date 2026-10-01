@@ -1,4 +1,3 @@
-import { ApiError, request } from '@utils/fetchExtendedUtils';
 import {
   afterEach,
   beforeEach,
@@ -7,6 +6,8 @@ import {
   it,
   vi,
 } from 'vitest';
+
+import { ApiError, request } from '@utils/fetchExtendedUtils';
 
 interface Named {
   readonly name: string;

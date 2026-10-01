@@ -1,12 +1,13 @@
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 
-import { STATUSES } from '@config/statuses';
 import {
   fireEvent,
   render,
   screen,
 } from '@testing-library/svelte';
+
+import { STATUSES } from '@config/statuses';
 
 import { resources } from '../i18n/config';
 

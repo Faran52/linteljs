@@ -1,11 +1,12 @@
 import { tick } from 'svelte';
 
-import { STATUSES } from '@config/statuses';
 import {
   fireEvent,
   render,
   screen,
 } from '@testing-library/svelte';
+
+import { STATUSES } from '@config/statuses';
 
 import { applyLanguage } from '../../../i18n';
 import { languages, resources } from '../../../i18n/config';

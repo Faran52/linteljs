@@ -1,5 +1,6 @@
-import { renderScreen } from '@mocks/renderScreen';
 import { screen } from '@testing-library/react-native';
+
+import { renderScreen } from '@mocks/renderScreen';
 
 import NotFoundScreen from '@/app/+not-found';
 import { STATUSES } from '@/config/statuses';

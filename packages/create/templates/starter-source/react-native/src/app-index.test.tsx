@@ -1,5 +1,6 @@
-import { renderScreen } from '@mocks/renderScreen';
 import { screen } from '@testing-library/react-native';
+
+import { renderScreen } from '@mocks/renderScreen';
 
 import HomeScreen from '@/app/index';
 import { CHECK, NAME } from '@/config/linteljs';

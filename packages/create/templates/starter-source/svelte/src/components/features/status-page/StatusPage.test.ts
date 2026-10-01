@@ -1,9 +1,10 @@
-import { STATUSES } from '@config/statuses';
 import {
   fireEvent,
   render,
   screen,
 } from '@testing-library/svelte';
+
+import { STATUSES } from '@config/statuses';
 
 import StatusPage from './StatusPage.svelte';
 

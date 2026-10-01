@@ -1,4 +1,3 @@
-import WithExtendedMutation from '@mocks/WithExtendedMutation.svelte';
 import { QueryClient } from '@tanstack/svelte-query';
 import {
   fireEvent,
@@ -14,6 +13,8 @@ import {
   it,
   vi,
 } from 'vitest';
+
+import WithExtendedMutation from '@mocks/WithExtendedMutation.svelte';
 
 interface Accepted {
   readonly status: string;

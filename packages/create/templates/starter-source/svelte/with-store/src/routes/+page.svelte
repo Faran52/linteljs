@@ -1,10 +1,10 @@
 <script lang="ts">
   import { CHECK, NAME } from '@config/linteljs';
 
+  import { useCounter } from '$lib/store/counter/counterStore';
+
   import Button from '../components/ui/button/Button.svelte';
   import Mark from '../components/ui/mark/Mark.svelte';
-
-  import { useCounter } from '$lib/store/counter/counterStore';
 
   const counter = useCounter();
 </script>

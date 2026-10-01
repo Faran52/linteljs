@@ -1,5 +1,6 @@
-import { STACK } from '@config/linteljs';
 import { render, screen } from '@testing-library/svelte';
+
+import { STACK } from '@config/linteljs';
 
 import Page from './+page.svelte';
 

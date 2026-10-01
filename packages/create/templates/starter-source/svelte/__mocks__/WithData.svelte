@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Component } from 'svelte';
-
   import DataProvider from '$lib/providers/data/DataProvider.svelte';
+
+  import type { Component } from 'svelte';
 
   interface Props {
     page: Component;

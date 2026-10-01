@@ -1,7 +1,8 @@
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { renderScreen } from '@mocks/renderScreen';
 import { screen } from '@testing-library/react-native';
+
+import { renderScreen } from '@mocks/renderScreen';
 
 import { Mark } from './Mark';
 

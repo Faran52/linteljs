@@ -1,5 +1,6 @@
-import { pathnameMock } from '@mocks/setupTests';
 import { render, screen } from '@testing-library/react';
+
+import { pathnameMock } from '@mocks/setupTests';
 
 import { PAGES } from '../../../config/routes';
 

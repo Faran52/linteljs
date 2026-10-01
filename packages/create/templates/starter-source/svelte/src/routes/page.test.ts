@@ -1,5 +1,6 @@
-import { CHECK, NAME } from '@config/linteljs';
 import { render, screen } from '@testing-library/svelte';
+
+import { CHECK, NAME } from '@config/linteljs';
 
 import Page from './+page.svelte';
 
