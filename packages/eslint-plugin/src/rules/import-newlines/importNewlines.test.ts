@@ -129,6 +129,22 @@ jsRuleTester.run('import-newlines', importNewlines, {
       output: "import defaultExport,\n\n  {\n  alpha,\n  bravo,\n  charlie\n} from 'mod';",
       errors: [{ messageId: 'mustSplitMany' }],
     },
+    {
+      code: "import { alpha, bravo, charlie } from 'mod';\r\n",
+      output: "import {\r\n  alpha,\r\n  bravo,\r\n  charlie\r\n} from 'mod';\r\n",
+      errors: [{ messageId: 'mustSplitMany' }],
+    },
+    {
+      code: "import { 'first-name' as first, alpha, bravo } from 'mod';",
+      output: "import {\n  'first-name' as first,\n  alpha,\n  bravo\n} from 'mod';",
+      errors: [{ messageId: 'mustSplitMany' }],
+    },
+    {
+      // The comment heading a specifier stays with it; only the blank line goes.
+      code: "import {\n  alpha,\n\n  // heads bravo\n  bravo\n} from 'mod';",
+      output: "import {\n  alpha,\n  // heads bravo\n  bravo\n} from 'mod';",
+      errors: [{ messageId: 'noBlankBetween' }],
+    },
   ],
 });
 
