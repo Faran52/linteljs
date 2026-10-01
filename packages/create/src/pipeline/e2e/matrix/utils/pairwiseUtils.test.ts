@@ -25,8 +25,8 @@ describe('pairsOf', () => {
   it('pairs every two axes once', () => {
     const pairs = pairsOf(DEFAULT_ANSWERS);
 
-    expect(pairs).toHaveLength(55);
-    expect(new Set(pairs).size).toBe(55);
+    expect(pairs).toHaveLength(66);
+    expect(new Set(pairs).size).toBe(66);
   });
 
   it('names an unset answer none', () => {

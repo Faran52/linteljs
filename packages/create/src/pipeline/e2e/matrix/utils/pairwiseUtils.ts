@@ -15,6 +15,7 @@ const axesOf = (answers: Answers): string[] => {
     `router:${answers.router ?? 'none'}`,
     `store:${answers.store ?? 'none'}`,
     `data:${answers.data ?? 'none'}`,
+    `mocking:${answers.mocking ?? 'none'}`,
     `languages:${answers.languages?.join(',') ?? 'none'}`,
     `testing:${answers.testing}`,
     `safety:${answers.typeSafety}`,

@@ -36,6 +36,7 @@ const pairsOf = (answers: Answers): string[] => {
     router: answers.router,
     store: answers.store,
     data: answers.data,
+    mocking: answers.mocking,
     languages: answers.languages?.join(','),
     testing: answers.testing,
     typeSafety: answers.typeSafety,
@@ -303,6 +304,9 @@ describe('targetCases', () => {
     expect(seen(({ data }) => {
       return data;
     })).toEqual(all(valuesOf(ANSWERS.data.values), true));
+    expect(seen(({ mocking }) => {
+      return mocking;
+    })).toEqual(all(valuesOf(ANSWERS.mocking.values), true));
   });
 
   it('carries every multi-select at its full value, and surfaces only where a target has them', () => {
@@ -331,6 +335,7 @@ describe('targetCases', () => {
         answers.store,
         answers.styling,
         answers.data,
+        answers.mocking,
         answers.languages === undefined ? undefined : 'languages',
       ]
         .filter((part) => {

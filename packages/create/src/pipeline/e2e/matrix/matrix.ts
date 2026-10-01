@@ -23,6 +23,7 @@ import {
   HOSTED_FRAMEWORKS,
   LANGUAGES,
   LIBRARIES,
+  MOCKING_CHOICES,
   PACKAGE_MANAGERS,
   PLUGINS,
   STYLING_CHOICES,
@@ -113,6 +114,7 @@ const labelFor = (answers: Answers): string => {
     ...(answers.store === undefined ? [] : [answers.store]),
     ...(answers.styling === undefined ? [] : [answers.styling]),
     ...(answers.data === undefined ? [] : [answers.data]),
+    ...(answers.mocking === undefined ? [] : [answers.mocking]),
     ...(answers.languages === undefined ? [] : ['languages']),
   ].join(' ');
 };
@@ -195,8 +197,20 @@ const everyCase = (target: TargetId): E2eCase[] => {
     };
   });
 
+  const mockings = across(datas, (variant) => {
+    return offered(MOCKING_CHOICES, ANSWERS.mocking, recordOf(variant), {
+      ...DEFAULT_ANSWERS,
+      ...variant,
+    });
+  }, (variant, mocking) => {
+    return {
+      ...variant,
+      ...(mocking === undefined ? {} : { mocking }),
+    };
+  });
+
   // Every target asks. The full set holds both zh tags, so only an exact-tag match resolves zh-TW.
-  const languages = across(datas, () => {
+  const languages = across(mockings, () => {
     return [undefined, LANGUAGES];
   }, (variant, chosen) => {
     return {

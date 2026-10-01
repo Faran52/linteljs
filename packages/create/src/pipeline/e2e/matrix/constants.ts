@@ -8,6 +8,7 @@ export const DATA_CHOICES = valuesOf(ANSWERS.data.values);
 export const FORMS = valuesOf(ANSWERS.form.values);
 export const HOSTED_FRAMEWORKS = valuesOf(ANSWERS.hostedFramework.values);
 export const LANGUAGES = valuesOf(ANSWERS.languages.values);
+export const MOCKING_CHOICES = valuesOf(ANSWERS.mocking.values);
 export const LIBRARIES = valuesOf(ANSWERS.libraries.values);
 export const PACKAGE_MANAGERS = valuesOf(ANSWERS.packageManager.values);
 export const PLUGINS = valuesOf(ANSWERS.plugins.values);

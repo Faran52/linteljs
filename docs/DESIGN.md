@@ -1393,7 +1393,7 @@ against the catalog.
 
 ## The end-to-end matrix
 
-Every answer this CLI can be given is covered, in 208 cases rather than the whole product. `matrix.ts` enumerates
+Every answer this CLI can be given is covered, in 211 cases rather than the whole product. `matrix.ts` enumerates
 them; nothing is listed by hand. Per target, every legal combination of the single-select axes on every package
 manager is enumerated, and a greedy cover keeps enough of them that every *pair* of answer values appears at least
 once. A multi-select axis is never combined: it is always its full value (`libraries`, `agents`, `plugins`,
