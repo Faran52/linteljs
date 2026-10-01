@@ -765,6 +765,7 @@ describe('parsePackageJson', () => {
 
 const PINNED_TIGHTER: Record<string, string> = {
   '@angular/build': '~',
+  '@react-native-async-storage/async-storage': '',
   '@react-native/metro-config': '',
   'expo': '~',
   'expo-constants': '~',

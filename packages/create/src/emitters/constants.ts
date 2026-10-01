@@ -126,6 +126,7 @@ export const VERSIONS: Record<string, string> = {
   'react-native-reanimated': '4.5.1',
   'react-native-worklets': '0.10.1',
   'react-native-web': '~0.21.0',
+  '@react-native-async-storage/async-storage': '2.2.0',
   // A vanilla or Astro scaffold installs no framework, so a hosted one brings its own.
   'react': '^19.3.0',
   'react-dom': '^19.3.0',

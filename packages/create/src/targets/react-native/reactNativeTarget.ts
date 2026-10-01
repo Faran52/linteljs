@@ -7,6 +7,7 @@ import {
   STATUS_UTILS_TEST,
 } from '../constants';
 import { REACT_ACCESSORS as SOURCE_ACCESSORS } from '../react/constants';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -20,8 +21,10 @@ import { componentNaming } from '../utils/namingUtils';
 import {
   ACCESSORS,
   ALWAYS,
+  REACT_NATIVE_I18N,
   SHARED,
 } from './constants';
+import { reactNativeI18nFiles, reactNativeI18nTests } from './utils/translatedFileUtils';
 
 import type { Answers } from '@config/types';
 import type { StarterFile, TargetRecord } from '../types';
@@ -128,18 +131,8 @@ export const reactNativeTarget: TargetRecord = {
           shared: true,
         };
       }),
-    // The root layout imports the stylesheet, which Metro reads only through NativeWind.
-    {
-      target: 'src/app/_layout.tsx',
-      when: (answers) => {
-        return !isTailwind(answers);
-      },
-    },
-    {
-      target: 'src/app/_layout.tsx',
-      when: isTailwind,
-      variant: 'tailwind',
-    },
+    ...reactNativeI18nFiles(),
+    ...localeFiles(),
     {
       target: '__mocks__/renderScreen.tsx',
       // `testing: none` never installs `@testing-library/react-native` or writes `@mocks/*`.
@@ -173,22 +166,6 @@ export const reactNativeTarget: TargetRecord = {
       covers: 'src/app/index.tsx',
     },
     {
-      target: 'src/app-about.test.tsx',
-      covers: 'src/app/about.tsx',
-    },
-    {
-      target: 'src/app-version.test.tsx',
-      covers: 'src/app/version.tsx',
-    },
-    {
-      target: 'src/app-not-found.test.tsx',
-      covers: 'src/app/+not-found.tsx',
-    },
-    {
-      target: 'src/components/features/status-page/StatusPage.test.tsx',
-      covers: 'src/components/features/status-page/StatusPage.tsx',
-    },
-    {
       target: 'src/components/features/crash-page/CrashPage.test.tsx',
       covers: 'src/components/features/crash-page/CrashPage.tsx',
     },
@@ -200,6 +177,8 @@ export const reactNativeTarget: TargetRecord = {
       target: 'src/styles/starter.test.ts',
       covers: 'src/styles/starter.ts',
     },
+    ...reactNativeI18nTests(),
+    LOCALES_TEST,
   ],
   typecheck: 'tsc --noEmit',
   // `eas build` needs a remote account; an export of every platform needs no Xcode or Android SDK.
@@ -252,6 +231,7 @@ export const reactNativeTarget: TargetRecord = {
     'react-dom': '19.2.3',
     '@types/react': '~19.2.2',
   },
+  i18n: REACT_NATIVE_I18N,
   stateRules: ['react-state.md', 'hooks-order.md'],
   routerMock: ROUTER_MOCK,
 };

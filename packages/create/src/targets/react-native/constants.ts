@@ -1,3 +1,4 @@
+import type { I18nParts } from '../types';
 import type { AccessorNames } from '../utils/mockUtils';
 
 // `app.json` carries the project's name three times, so it is emitted.
@@ -5,10 +6,7 @@ export const ALWAYS: readonly string[] = [
   'expo-env.d.ts',
   'src/typings/assets.d.ts',
   'src/app/index.tsx',
-  'src/app/about.tsx',
-  'src/app/version.tsx',
   'src/app/+not-found.tsx',
-  'src/components/features/status-page/StatusPage.tsx',
   'src/components/features/crash-page/CrashPage.tsx',
   'src/components/ui/mark/Mark.tsx',
   'src/styles/starter.ts',
@@ -16,9 +14,7 @@ export const ALWAYS: readonly string[] = [
 
 // React Native has no CSS, so the stylesheets are not shared. Expo serves `public/` on the web.
 export const SHARED: readonly string[] = [
-  'src/config/standard.ts',
   'src/config/routes.ts',
-  'src/config/statuses.ts',
   'src/lib/utils/statusUtils.ts',
   'public/favicon.svg',
 ];
@@ -28,4 +24,14 @@ export const ACCESSORS: AccessorNames = {
   query: 'useExtendedQuery',
   mutation: 'useExtendedMutation',
   testSuffix: '.test.ts',
+};
+
+// React's i18next, less its browser detector: Expo SDK 57's own AsyncStorage keeps the choice.
+export const REACT_NATIVE_I18N: I18nParts = {
+  dependencies: [
+    'i18next',
+    'react-i18next',
+    '@react-native-async-storage/async-storage',
+  ],
+  testSetup: 'fragments/test-setup/setupTests.reactNativeI18n.ts',
 };

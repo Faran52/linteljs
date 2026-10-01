@@ -1,4 +1,5 @@
 import {
+  ANSWERED,
   byKey,
   type GateRow,
   mswGates,
@@ -6,6 +7,8 @@ import {
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
+  WITH_I18N,
+  WITHOUT_I18N,
 } from '@mocks/starterGates';
 import {
   describe,
@@ -13,12 +16,25 @@ import {
   it,
 } from 'vitest';
 
+import { LANGUAGES } from '@config/constants';
+
 import { FOLDER_ROUTED } from '../constants';
 import { componentNaming } from '../utils/namingUtils';
 
 import { reactNativeTarget } from './reactNativeTarget';
 
 describe('reactNativeTarget', () => {
+  it('translates through i18next, its choice kept in Expo\'s AsyncStorage, every suite set up in English', () => {
+    expect(reactNativeTarget.i18n).toEqual({
+      dependencies: [
+        'i18next',
+        'react-i18next',
+        '@react-native-async-storage/async-storage',
+      ],
+      testSetup: 'fragments/test-setup/setupTests.reactNativeI18n.ts',
+    });
+  });
+
   it('is the record the react-native answer names', () => {
     expect(reactNativeTarget.id).toBe('react-native');
   });
@@ -47,8 +63,38 @@ const GATES: GateRow[] = [
   ['metro.config.js@tailwind', TAILWIND],
   ['nativewind-env.d.ts@tailwind', TAILWIND],
   ['postcss.config.mjs@tailwind', TAILWIND],
-  ['src/app/_layout.tsx', [{ styling: [undefined, 'stylex'] }]],
-  ['src/app/_layout.tsx@tailwind', TAILWIND],
+  ['src/app/_layout.tsx', [{ styling: [undefined, 'stylex'], languages: [undefined] }]],
+  ['src/app/_layout.tsx@i18n', [{ styling: [undefined, 'stylex'], languages: ANSWERED }]],
+  ['src/app/_layout.tsx@tailwind', [{ styling: ['tailwind'], languages: [undefined] }]],
+  ['src/app/_layout.tsx@tailwind-i18n', [{ styling: ['tailwind'], languages: ANSWERED }]],
+  ...[
+    'src/config/statuses.ts',
+    'src/config/standard.ts',
+    'src/app/about.tsx',
+    'src/app/version.tsx',
+    'src/app-about.test.tsx',
+    'src/app-version.test.tsx',
+    'src/app-not-found.test.tsx',
+    'src/components/features/status-page/StatusPage.tsx',
+    'src/components/features/status-page/StatusPage.test.tsx',
+  ]
+    .flatMap((key): GateRow[] => {
+      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+    }),
+  ...[
+    'src/i18n/index.ts',
+    'src/i18n/index.test.ts',
+    'src/i18n/locales.test.ts',
+    'src/components/features/language-select/LanguageSelect.tsx',
+    'src/components/features/language-select/LanguageSelect.test.tsx',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, WITH_I18N];
+    }),
   ['src/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/apis/base/baseApi.ts@rtk-query', RTK_QUERY],
