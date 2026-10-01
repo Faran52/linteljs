@@ -9,6 +9,7 @@ import {
   hasForm,
   hasStore,
 } from '../utils/gateUtils';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import {
   accessorFiles,
   accessorTests,
@@ -23,7 +24,9 @@ import {
   ALWAYS,
   COMPONENTS,
   SHARED,
+  VUE_I18N,
 } from './constants';
+import { vueI18nFiles, vueI18nTests } from './utils/translatedFileUtils';
 
 import type { StarterFile, TargetRecord } from '../types';
 
@@ -68,6 +71,8 @@ export const vueTarget: TargetRecord = {
     // Vue renames two of the four, so each carries its own path.
     ...componentStyleModules('solid', COMPONENTS),
     ...accessorFiles(ACCESSORS),
+    ...vueI18nFiles(),
+    ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
         return { target };
@@ -92,7 +97,6 @@ export const vueTarget: TargetRecord = {
     },
     { target: 'src/components/ui/app-button/AppButton.vue' },
     ...([
-      'src/views/ContactView.vue',
       'src/views/useContactForm.ts',
       'src/components/ui/text-input/TextInput.vue',
       'src/components/ui/text-input/types.ts',
@@ -199,17 +203,11 @@ export const vueTarget: TargetRecord = {
     ...mockTests(true),
     STATUS_UTILS_TEST,
     ...accessorTests(ACCESSORS),
-    {
-      target: 'src/App.test.ts',
-      covers: 'src/App.vue',
-    },
+    ...vueI18nTests(),
+    LOCALES_TEST,
     {
       target: 'src/components/ui/app-button/AppButton.test.ts',
       covers: 'src/components/ui/app-button/AppButton.vue',
-    },
-    {
-      target: 'src/components/features/status-page/StatusPage.test.ts',
-      covers: 'src/components/features/status-page/StatusPage.vue',
     },
     {
       target: 'src/components/features/error-boundary/ErrorBoundary.test.ts',
@@ -253,4 +251,5 @@ export const vueTarget: TargetRecord = {
   // `@tanstack/vue-query` pulls `vue-demi`, whose postinstall pnpm refuses without this.
   allowBuilds: ['vue-demi'],
   stateRules: ['vue-reactivity.md'],
+  i18n: VUE_I18N,
 };

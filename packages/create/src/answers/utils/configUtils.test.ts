@@ -734,7 +734,7 @@ describe('the languages answer', () => {
 
   it('is refused on a target that does not translate its starter', () => {
     expect(() => {
-      return parseLinteljsConfig(configWith('vue'));
-    }).toThrow('languages is not an answer for vue');
+      return parseLinteljsConfig(configWith('svelte'));
+    }).toThrow('languages is not an answer for svelte');
   });
 });

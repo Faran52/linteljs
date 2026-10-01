@@ -158,6 +158,7 @@ export const VERSIONS: Record<string, string> = {
   // nuxt 4.5's own peer range.
   'rolldown': '~1.2.11',
   // A Vue application routes, and this target asks no router question.
+  'vue-i18n': '^11.4.12',
   'vue-router': '^5.3.1',
   'pinia': '^4.0.3',
   '@vue/devtools-api': '^8.2.1',

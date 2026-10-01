@@ -18,12 +18,12 @@ describe('languagesAnswer', () => {
 
   it('takes a slot on a target that translates its starter and on no other', () => {
     const react = targetFor(DEFAULT_ANSWERS);
-    const vue = targetFor({
+    const svelte = targetFor({
       ...DEFAULT_ANSWERS,
-      target: 'vue',
+      target: 'svelte',
     });
 
     expect(languagesAnswer.slot(react)).toBe(true);
-    expect(languagesAnswer.slot(vue)).toBe(false);
+    expect(languagesAnswer.slot(svelte)).toBe(false);
   });
 });

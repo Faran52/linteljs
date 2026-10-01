@@ -1,6 +1,8 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
+  type Condition,
   contactGates,
   type GateRow,
   mswGates,
@@ -9,8 +11,10 @@ import {
   TANSTACK_QUERY,
   walkGates,
   WITH_FORM,
+  WITH_I18N,
   WITH_STORE,
   WITHOUT_FORM,
+  WITHOUT_I18N,
   WITHOUT_STORE,
 } from '@mocks/starterGates';
 import {
@@ -18,6 +22,8 @@ import {
   expect,
   it,
 } from 'vitest';
+
+import { LANGUAGES } from '@config/constants';
 
 import { DEFAULT_ANSWERS } from '@answers';
 
@@ -45,9 +51,9 @@ describe('vueTarget', () => {
   it('routes whatever was answered', () => {
     expect(destinationsFor()).toContain('src/router/index.ts');
 
-    const headers = vueTarget.starterFiles
-      .filter((file) => {
-        return file.target === 'src/components/features/app-header/AppHeader.vue';
+    const headers = destinationsFor({ languages: ['ar'] })
+      .filter((target) => {
+        return target === 'src/components/features/app-header/AppHeader.vue';
       });
 
     expect(headers).toHaveLength(1);
@@ -86,9 +92,61 @@ describe('vueTarget', () => {
   it('names a single-file component by its own extension', () => {
     expect(vueTarget.sfcExtension).toBe('vue');
   });
+
+  it('translates through vue-i18n, installed on every mount by the test setup', () => {
+    expect(vueTarget.i18n).toEqual({
+      dependencies: ['vue-i18n'],
+      testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
+    });
+  });
 });
 
+const FORM_ENGLISH: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: [undefined],
+}];
+const FORM_I18N: readonly Condition[] = [{
+  form: ANSWERED,
+  languages: ANSWERED,
+}];
+
+const TRANSLATED_GATES: GateRow[] = [
+  ...[
+    'src/config/statuses.ts',
+    'src/config/standard.ts',
+    'src/main.ts',
+    'src/App.test.ts',
+    'src/views/AboutView.vue',
+    'src/views/VersionView.vue',
+    'src/components/features/app-header/AppHeader.vue',
+    'src/components/features/status-page/StatusPage.vue',
+    'src/components/features/status-page/StatusPage.test.ts',
+  ]
+    .flatMap((key): GateRow[] => {
+      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+    }),
+  ['src/views/ContactView.vue', FORM_ENGLISH],
+  ['src/views/ContactView.vue@i18n', FORM_I18N],
+  ...[
+    'src/components/features/language-select/LanguageSelect.vue',
+    'src/components/features/language-select/LanguageSelect.test.ts',
+    'src/components/ui/code-text/CodeText.vue',
+    'src/components/ui/code-text/CodeText.test.ts',
+    'src/i18n/index.ts',
+    'src/i18n/index.test.ts',
+    'src/i18n/locales.test.ts',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, WITH_I18N];
+    }),
+];
+
 const GATES: GateRow[] = [
+  ...TRANSLATED_GATES,
   ...mswGates(true),
   ...componentStyleGates('app-mark/AppMark', 'app-button/AppButton', true),
   ...contactGates(['tanstack-query']),
@@ -96,7 +154,6 @@ const GATES: GateRow[] = [
   ['src/views/routes.ts@with-form', WITH_FORM],
   ['src/views/HomeView.vue', WITHOUT_STORE],
   ['src/views/HomeView.vue@with-store', WITH_STORE],
-  ['src/views/ContactView.vue', WITH_FORM],
   ['src/views/useContactForm.ts', WITH_FORM],
   ['src/components/ui/text-input/TextInput.vue', WITH_FORM],
   ['src/components/ui/text-input/types.ts', WITH_FORM],

@@ -1406,7 +1406,7 @@ unawaited promise, and an SFC pair. Linting them reports the defect each exists 
 `.svelte` pair cannot parse without the layers those tests compose.
 
 `templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts`,
-`setupTests.i18n.ts` and `templates/starter-source/**` are shipped
+`setupTests.i18n.ts`, `setupTests.vueI18n.ts` and `templates/starter-source/**` are shipped
 source, copied to disk and never imported here. Each imports the framework it is written for, none of which is
 installed here, so every import is unresolvable and every call through one untyped. The MSW setup differs only in
 what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here; the i18n setup

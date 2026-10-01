@@ -939,6 +939,10 @@ describe('buildDependencies with languages', () => {
       target: 'vue',
       languages: ['ja'],
     }));
+    const svelte = buildDependencies(answersFor({
+      target: 'svelte',
+      languages: ['ja'],
+    }));
 
     expect(Object.keys(translated)).toEqual(expect.arrayContaining([
       'i18next',
@@ -946,6 +950,8 @@ describe('buildDependencies with languages', () => {
       'react-i18next',
     ]));
     expect(english).not.toHaveProperty('i18next');
+    expect(vue).toHaveProperty('vue-i18n');
     expect(vue).not.toHaveProperty('i18next');
+    expect(svelte).not.toHaveProperty('i18next');
   });
 });
