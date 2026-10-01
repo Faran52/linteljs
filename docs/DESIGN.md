@@ -822,11 +822,12 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, Next, Vue, Nuxt, SvelteKit and Solid.
+that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid and Angular.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
   browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
-  Paraglide JS, Solid takes @solid-primitives/i18n. No starter hand-rolls a translation core.
+  Paraglide JS, Solid takes @solid-primitives/i18n. Angular alone takes none: its own signal is the whole
+  runtime a switch needs, so the one hand-rolled core is a resolver over a signal.
 - **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
   the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
   to `{` and `}` to read it too.
@@ -886,6 +887,14 @@ that is React, in every router mode, Next, Vue, Nuxt, SvelteKit and Solid.
 - **`translator` is imported as `createTranslator`.** `solid/reactivity` reads a `create*` call as a reactive
   primitive, so the dictionary accessor passed to it counts as tracked, which it is: every `t()` reads the
   language signal afresh. Under the library's own name the rule warns that the accessor's reactivity is ignored.
+- **Angular takes no library, not `@angular/localize`.** Angular's own i18n extracts messages at build time and
+  emits one build per locale, so a language is a URL and a deploy, and switching it is a page load into another
+  bundle; the shared `common.json` would also have to become XLIFF. The language select needs a runtime switch
+  over the shared files, so `src/i18n/index.ts` holds a module-level `signal` and `t` reads the locales through
+  it with the single-brace resolver. A template that calls `t` re-renders on a switch, so each component exposes
+  `t` and nothing subscribes. `main.ts` applies the detected language before bootstrap, and with no SSR there is
+  no hydration step. Nothing is installed, so `allowBuilds` is unchanged and an Angular project with languages
+  audits at no known vulnerabilities under `pnpm audit --prod`.
 
 ### Recorded answers
 

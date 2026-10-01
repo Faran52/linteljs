@@ -50,6 +50,10 @@ when a version's change lives in a sibling it is described there instead:
   after hydration.
 - Solid projects take `--languages` through @solid-primitives/i18n, with a single-brace resolver for the shared
   `common.json` files. The header tabs, language select, status page, About, Version and Contact are translated.
+- Angular projects take `--languages` with no library: a signal holds the language, and `t` reads the shared
+  `common.json` files through it, so a template follows a switch. `@angular/localize` builds once per locale and
+  cannot switch at runtime. The header tabs, language select, status page, About, Version and both Contact pages
+  are translated.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.
