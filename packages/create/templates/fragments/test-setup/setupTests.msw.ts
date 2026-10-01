@@ -1,10 +1,4 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-} from 'vitest';
-
-import { server } from './msw/node';
+const { server } = await import('./msw/node');
 
 // `onUnhandledRequest: 'error'`: a request with no handler is a test reaching the network.
 beforeAll(() => {

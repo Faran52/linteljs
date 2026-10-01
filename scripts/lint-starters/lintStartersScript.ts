@@ -29,7 +29,7 @@ import type { TargetId } from '../../packages/create/src/config/types';
 
 interface Linters {
   starters: ESLint;
-  // Always fixing: the project's own fix stage rewrites the joined setup at birth, so only what survives it counts.
+  // Never fixing: a joined setup has no file to write back, and it must land clean without the fix stage.
   setups: ESLint;
 }
 
@@ -134,7 +134,7 @@ const eslintFor = async (target: TargetId): Promise<Linters> => {
     setups: new ESLint({
       overrideConfigFile: true,
       overrideConfig,
-      fix: true,
+      fix: false,
     }),
   };
 };
