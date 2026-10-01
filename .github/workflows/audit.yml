@@ -5,8 +5,8 @@ name: audit
 
 on:
   schedule:
-    # Sunday 03:17 UTC: nothing releases at the weekend, and an odd minute avoids the on-the-hour queue.
-    - cron: '17 3 * * 0'
+    # Sunday noon UTC: nothing releases at the weekend.
+    - cron: '0 12 * * 0'
   workflow_dispatch:
 
 permissions:

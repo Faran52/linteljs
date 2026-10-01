@@ -5,6 +5,9 @@ name: e2e
 on:
   push:
     branches: [main, 'v*']
+  schedule:
+    # Sunday noon UTC: nothing releases at the weekend, so this catches transitive drift after a release.
+    - cron: '0 12 * * 0'
   workflow_dispatch:
 
 permissions:
