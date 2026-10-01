@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { ANSWERS, STACK } from '../../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 import type { ReactNode } from 'react';
 

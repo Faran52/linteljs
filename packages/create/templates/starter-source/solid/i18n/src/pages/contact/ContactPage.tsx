@@ -1,5 +1,6 @@
-import { Button, TextInput } from '../../components/ui';
-import { t } from '../../i18n';
+import { t } from '@i18n';
+
+import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './useContactForm';
 

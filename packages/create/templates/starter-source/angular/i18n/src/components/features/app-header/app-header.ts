@@ -1,14 +1,15 @@
 import { Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
-import { PAGES } from '../../../config/routes';
 import {
   chooseLanguage,
   language,
   t,
   translateId,
-} from '../../../i18n';
-import { languages } from '../../../i18n/config';
+} from '@i18n';
+import { languages } from '@i18n/config';
+
+import { PAGES } from '@config/routes';
 
 @Component({
   imports: [RouterLink, RouterLinkActive],

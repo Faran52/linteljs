@@ -1,5 +1,6 @@
-import { StatusPage } from '../components/features/status-page/status-page';
-import { STATUSES } from '../config/statuses';
+import { STATUSES } from '@config/statuses';
+
+import { StatusPage } from '@features/status-page/status-page';
 
 import { About } from './about/about';
 import { Home } from './home/home';

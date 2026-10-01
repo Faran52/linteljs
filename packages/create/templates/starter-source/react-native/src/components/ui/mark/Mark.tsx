@@ -5,7 +5,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 
-import { useStarterStyles } from '../../../styles/starter';
+import { useStarterStyles } from '@/styles/starter';
 
 import type { ReactNode } from 'react';
 

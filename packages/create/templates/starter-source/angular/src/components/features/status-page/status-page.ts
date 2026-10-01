@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-import { Button } from '../../ui/button/button';
+import { Button } from '@ui/button/button';
 
 // Home is a full load, so a crash leaves no state behind.
 @Component({

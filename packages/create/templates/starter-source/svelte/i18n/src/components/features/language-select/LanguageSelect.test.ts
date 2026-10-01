@@ -1,13 +1,12 @@
 import { tick } from 'svelte';
 
+import { applyLanguage, directionOf } from '@i18n';
+import { languages, languageStorageKey } from '@i18n/config';
 import {
   fireEvent,
   render,
   screen,
 } from '@testing-library/svelte';
-
-import { applyLanguage, directionOf } from '../../../i18n';
-import { languages, languageStorageKey } from '../../../i18n/config';
 
 import LanguageSelect from './LanguageSelect.svelte';
 

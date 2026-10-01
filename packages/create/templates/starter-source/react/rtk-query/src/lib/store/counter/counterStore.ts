@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { configureStore, createSlice } from '@reduxjs/toolkit';
 
-import { baseApi } from '../../apis/base/baseApi';
+import { baseApi } from '@apis/base/baseApi';
 
 export interface Counter {
   count: number;

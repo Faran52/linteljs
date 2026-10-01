@@ -1,8 +1,9 @@
 import { Tabs } from 'expo-router';
 import Head from 'expo-router/head';
 
-import { NAME } from '../config/linteljs';
-import { PAGES } from '../config/routes';
+import { NAME } from '@config/linteljs';
+import { PAGES } from '@config/routes';
+
 import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
@@ -60,4 +61,4 @@ const RootLayout = (): ReactNode => {
 export default RootLayout;
 
 // expo-router wraps the layout in a boundary rendering this, so a crash on any screen lands here.
-export { CrashPage as ErrorBoundary } from '../components/features/crash-page/CrashPage';
+export { CrashPage as ErrorBoundary } from '@features/crash-page/CrashPage';

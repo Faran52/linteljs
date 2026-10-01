@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CHECK, NAME } from '@config/linteljs';
 
-  import Mark from '../components/ui/mark/Mark.svelte';
+  import Mark from '@ui/mark/Mark.svelte';
 </script>
 
 <main class="hero">

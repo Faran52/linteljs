@@ -5,10 +5,12 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 
-import { Button } from '../../components/ui/button/button';
-import { TextInput } from '../../components/ui/text-input/text-input';
-import { t } from '../../i18n';
-import { type ContactValues, validateContact } from '../../lib/apis/contact/schemas';
+import { t } from '@i18n';
+
+import { type ContactValues, validateContact } from '@apis/contact/schemas';
+
+import { Button } from '@ui/button/button';
+import { TextInput } from '@ui/text-input/text-input';
 
 @Component({
   imports: [

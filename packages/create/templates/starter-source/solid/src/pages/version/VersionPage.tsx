@@ -1,6 +1,6 @@
 import { For, type JSX } from 'solid-js';
 
-import { ANSWERS, STACK } from '../../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 // Recorded at birth: a browser cannot read its machine's Node or package manager.
 export const VersionPage = (): JSX.Element => {

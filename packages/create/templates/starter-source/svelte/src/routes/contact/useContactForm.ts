@@ -6,7 +6,7 @@ import {
   validateContact,
 } from '$lib/apis/contact';
 
-import type { TextInputProps } from '../../components/ui/text-input/types';
+import type { TextInputProps } from '@ui/text-input/types';
 
 // Named because an inline shape cannot be referenced.
 interface ContactSubmission {

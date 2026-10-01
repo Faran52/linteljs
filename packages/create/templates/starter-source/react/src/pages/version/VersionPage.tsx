@@ -1,4 +1,4 @@
-import { ANSWERS, STACK } from '../../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 import type { FC } from 'react';
 

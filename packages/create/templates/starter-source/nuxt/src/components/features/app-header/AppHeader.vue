@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 
-import { PAGES } from '../../../config/routes';
+import { PAGES } from '@config/routes';
 
 import { styles } from './styles';
 

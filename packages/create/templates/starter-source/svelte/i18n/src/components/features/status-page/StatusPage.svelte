@@ -1,10 +1,11 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
 
-  import { m } from '../../../i18n';
-  import Button from '../../ui/button/Button.svelte';
+  import { m } from '@i18n';
 
-  import type { STATUSES } from '../../../config/statuses';
+  import Button from '@ui/button/Button.svelte';
+
+  import type { STATUSES } from '@config/statuses';
 
   interface Props {
     code: number;

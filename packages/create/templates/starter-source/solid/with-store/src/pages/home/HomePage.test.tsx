@@ -4,7 +4,7 @@ import {
   screen,
 } from '@solidjs/testing-library';
 
-import { StoreProvider } from '../../lib/providers/store/StoreProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { HomePage } from './HomePage';
 

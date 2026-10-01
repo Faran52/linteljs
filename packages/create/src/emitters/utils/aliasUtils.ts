@@ -10,6 +10,14 @@ import {
 
 import { targetFor } from '@targets';
 
+// Zod's schemas go there; otherwise read off the starter, so the alias names a directory the project has.
+const writesApis = (answers: Answers): boolean => {
+  return hasLibrary(answers, 'zod') || targetFor(answers).starterFiles
+    .some((file) => {
+      return file.target.startsWith('src/lib/apis/') && (file.when === undefined || file.when(answers));
+    });
+};
+
 // The order is the dependency direction, so a sorted import block reads as the architecture.
 export const buildAliases = (answers: Answers): AliasMap => {
   const target = targetFor(answers);
@@ -24,7 +32,7 @@ export const buildAliases = (answers: Answers): AliasMap => {
     ...target.hooksAlias,
     '@utils/*': './src/lib/utils/*',
     '@services/*': './src/lib/services/*',
-    ...(hasLibrary(answers, 'zod') ? { '@apis/*': './src/lib/apis/*' } : {}),
+    ...(writesApis(answers) ? { '@apis/*': './src/lib/apis/*' } : {}),
     ...target.extraAliases,
     '@config/*': './src/config/*',
     ...(localesOf(answers).length > 0 ? { '@i18n/*': './src/i18n/*' } : {}),

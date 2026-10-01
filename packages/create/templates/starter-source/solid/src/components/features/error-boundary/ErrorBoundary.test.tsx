@@ -4,7 +4,7 @@ import {
   screen,
 } from '@solidjs/testing-library';
 
-import { ForbiddenError } from '../../../lib/utils/statusUtils';
+import { ForbiddenError } from '@utils/statusUtils';
 
 import { ErrorBoundary } from './ErrorBoundary';
 

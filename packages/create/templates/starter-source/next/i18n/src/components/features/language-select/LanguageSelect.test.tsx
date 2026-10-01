@@ -1,3 +1,4 @@
+import { languages, languageStorageKey } from '@i18n/config';
 import {
   act,
   fireEvent,
@@ -5,8 +6,7 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { languages, languageStorageKey } from '../../../i18n/config';
-import { I18nProvider } from '../../../lib/providers/i18n/I18nProvider';
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 
 import { LanguageSelect } from './LanguageSelect';
 

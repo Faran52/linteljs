@@ -1,13 +1,13 @@
+import { initI18n } from '@i18n';
+import { languages, resources } from '@i18n/config';
 import {
   act,
   render,
   screen,
 } from '@testing-library/react';
 
-import { GATE } from '../../config/linteljs';
-import { STANDARD_PATHS } from '../../config/standard';
-import { initI18n } from '../../i18n';
-import { languages, resources } from '../../i18n/config';
+import { GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
 
 import { AboutPage } from './AboutPage';
 

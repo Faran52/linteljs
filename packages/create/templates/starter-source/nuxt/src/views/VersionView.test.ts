@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 
-import { STACK } from '../config/linteljs';
+import { STACK } from '@config/linteljs';
 
 import VersionView from './VersionView.vue';
 

@@ -4,8 +4,8 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { I18nProvider } from '../lib/providers/i18n/I18nProvider';
-import { ForbiddenError } from '../lib/utils/statusUtils';
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import { ForbiddenError } from '@utils/statusUtils';
 
 import RouteError from './error';
 

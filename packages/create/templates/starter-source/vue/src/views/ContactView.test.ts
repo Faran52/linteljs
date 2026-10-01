@@ -1,7 +1,7 @@
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { dataProvider } from '../lib/providers/data/dataProvider';
+import { dataProvider } from '@lib/providers/data/dataProvider';
 
 import ContactView from './ContactView.vue';
 

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { PAGES } from '../../../config/routes';
+import { PAGES } from '@config/routes';
 
 import { styles } from './styles';
 

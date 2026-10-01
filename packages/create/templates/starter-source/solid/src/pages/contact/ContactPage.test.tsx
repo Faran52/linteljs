@@ -5,7 +5,7 @@ import {
   waitFor,
 } from '@solidjs/testing-library';
 
-import { DataProvider } from '../../lib/providers/data/DataProvider';
+import { DataProvider } from '@lib/providers/data/DataProvider';
 
 import { ContactPage } from './ContactPage';
 

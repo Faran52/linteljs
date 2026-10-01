@@ -11,10 +11,11 @@ import {
   ANSWERS,
   GATE,
   NAME,
-} from '../config/linteljs';
-import { PAGES } from '../config/routes';
-import { CrashHandler } from '../lib/providers/crash-handler/crash-handler';
-import { ForbiddenError } from '../lib/utils/status-utils';
+} from '@config/linteljs';
+import { PAGES } from '@config/routes';
+
+import { CrashHandler } from '@lib/providers/crash-handler/crash-handler';
+import { ForbiddenError } from '@utils/status-utils';
 
 import { App } from './app';
 import { routes } from './app.routes';

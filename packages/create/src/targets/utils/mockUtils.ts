@@ -16,6 +16,8 @@ export interface AccessorSource {
   readonly names: AccessorNames;
 }
 
+const FETCH_ADAPTER = 'src/lib/utils/fetchExtendedUtils';
+
 const usesMsw = (answers: Answers): boolean => {
   return answers.mocking === 'msw';
 };
@@ -70,13 +72,13 @@ export const mockFiles = (
   ];
 };
 
-export const mockTests = (contact: boolean, adapter = 'src/lib/utils/fetchExtendedUtils'): StarterTest[] => {
+export const mockTests = (contact: boolean, adapter = FETCH_ADAPTER): StarterTest[] => {
   return [
     {
       target: `${adapter}.test.ts`,
-      source: 'src/lib/utils/fetchExtendedUtils.test.ts',
       covers: `${adapter}.ts`,
-      shared: true,
+      // A suite imports its neighbour relatively, so a renamed adapter's suite is the target's own.
+      ...(adapter === FETCH_ADAPTER && { shared: true }),
     },
     {
       target: '__mocks__/msw/handlers.test.ts',

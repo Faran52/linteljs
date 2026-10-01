@@ -2,8 +2,9 @@ import { screen } from '@testing-library/react-native';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import VersionScreen from '@/app/version';
 import { ANSWERS, STACK } from '@/config/linteljs';
+
+import VersionScreen from './app/version';
 
 describe('the version screen', () => {
   it('renders every recorded row of the stack', async () => {

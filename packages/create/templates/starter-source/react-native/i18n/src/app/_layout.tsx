@@ -1,13 +1,15 @@
 import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { initI18n, restoreLanguage } from '@i18n';
 import { Tabs } from 'expo-router';
 import Head from 'expo-router/head';
 
-import { LanguageSelect } from '../components/features/language-select/LanguageSelect';
-import { NAME } from '../config/linteljs';
-import { PAGES } from '../config/routes';
-import { initI18n, restoreLanguage } from '../i18n';
+import { NAME } from '@config/linteljs';
+import { PAGES } from '@config/routes';
+
+import { LanguageSelect } from '@features/language-select/LanguageSelect';
+
 import { useStarterStyles } from '../styles/starter';
 
 initI18n();
@@ -70,4 +72,4 @@ const RootLayout = (): ReactNode => {
 export default RootLayout;
 
 // expo-router wraps the layout in a boundary rendering this, so a crash on any screen lands here.
-export { CrashPage as ErrorBoundary } from '../components/features/crash-page/CrashPage';
+export { CrashPage as ErrorBoundary } from '@features/crash-page/CrashPage';

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import AppButton from '../components/ui/app-button/AppButton.vue';
-import AppMark from '../components/ui/app-mark/AppMark.vue';
-import { CHECK, NAME } from '../config/linteljs';
-import { useCounter } from '../lib/store/counter/counterStore';
+import { CHECK, NAME } from '@config/linteljs';
+
+import { useCounter } from '@store/counter/counterStore';
+
+import AppButton from '@ui/app-button/AppButton.vue';
+import AppMark from '@ui/app-mark/AppMark.vue';
 
 const counter = useCounter();
 </script>

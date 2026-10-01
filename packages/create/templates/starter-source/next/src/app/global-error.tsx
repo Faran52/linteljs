@@ -1,9 +1,10 @@
 'use client';
 
-import { AppHeader } from '../components/features/app-header/AppHeader';
-import { StatusPage } from '../components/features/status-page/StatusPage';
-import { NAME } from '../config/linteljs';
-import { STATUSES } from '../config/statuses';
+import { NAME } from '@config/linteljs';
+import { STATUSES } from '@config/statuses';
+
+import { AppHeader } from '@features/app-header/AppHeader';
+import { StatusPage } from '@features/status-page/StatusPage';
 
 import type { ReactNode } from 'react';
 

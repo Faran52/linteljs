@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 
-import { GATE } from '../config/linteljs';
-import { STANDARD_PATHS } from '../config/standard';
+import { GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
 
 import AboutView from './AboutView.vue';
 

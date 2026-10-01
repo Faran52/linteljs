@@ -1,4 +1,4 @@
-import { NAME } from '../config/linteljs';
+import { NAME } from '@config/linteljs';
 
 import { AboutPage } from './about/AboutPage';
 import { HomePage } from './home/HomePage';

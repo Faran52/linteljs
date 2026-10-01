@@ -1,3 +1,5 @@
+import { chooseLanguage } from '@i18n';
+import { languages, resources } from '@i18n/config';
 import {
   act,
   fireEvent,
@@ -6,11 +8,9 @@ import {
   waitFor,
 } from '@testing-library/react';
 
-import { chooseLanguage } from '../../i18n';
-import { languages, resources } from '../../i18n/config';
-import { DataProvider } from '../../lib/providers/data/DataProvider';
-import { I18nProvider } from '../../lib/providers/i18n/I18nProvider';
-import { StoreProvider } from '../../lib/providers/store/StoreProvider';
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import ContactPage from './page';
 

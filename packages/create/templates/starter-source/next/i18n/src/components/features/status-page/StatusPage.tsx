@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '../../ui';
+import { Button } from '@ui';
 
 import type { FC } from 'react';
 

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 
-import { STATUSES } from '../../../config/statuses';
+import { STATUSES } from '@config/statuses';
 
 import StatusPage from './StatusPage.vue';
 

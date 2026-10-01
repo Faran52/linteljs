@@ -4,8 +4,9 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { CHECK, NAME } from '../config/linteljs';
-import { StoreProvider } from '../lib/providers/store/StoreProvider';
+import { CHECK, NAME } from '@config/linteljs';
+
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import HomePage from './page';
 

@@ -1,7 +1,7 @@
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { mount } from '@vue/test-utils';
 
-import { PAGES } from '../../../config/routes';
+import { PAGES } from '@config/routes';
 
 import AppHeader from './AppHeader.vue';
 import { styles } from './styles';

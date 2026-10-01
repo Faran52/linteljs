@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import CodeText from '../components/ui/code-text/CodeText.vue';
-import { CHECK, GATE } from '../config/linteljs';
-import { STANDARD_PATHS } from '../config/standard';
+import { CHECK, GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
+
+import CodeText from '@ui/code-text/CodeText.vue';
 
 const { t } = useI18n();
 </script>

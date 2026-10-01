@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import CodeText from '../components/ui/code-text/CodeText.vue';
-import { ANSWERS, STACK } from '../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
+
+import CodeText from '@ui/code-text/CodeText.vue';
 
 const { t } = useI18n();
 </script>

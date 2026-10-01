@@ -3,9 +3,10 @@ import i18next from 'i18next';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import VersionScreen from '@/app/version';
 import { ANSWERS, STACK } from '@/config/linteljs';
 import { languages, resources } from '@/i18n/config';
+
+import VersionScreen from './app/version';
 
 const last = languages.at(-1)?.id ?? 'en';
 

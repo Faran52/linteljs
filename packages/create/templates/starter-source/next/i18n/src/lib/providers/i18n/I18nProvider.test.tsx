@@ -1,18 +1,17 @@
 import { renderToString } from 'react-dom/server';
 
+import { chooseLanguage } from '@i18n';
+import {
+  languages,
+  languageStorageKey,
+  resources,
+} from '@i18n/config';
 import {
   act,
   render,
   screen,
 } from '@testing-library/react';
 import { useTranslations } from 'next-intl';
-
-import { chooseLanguage } from '../../../i18n';
-import {
-  languages,
-  languageStorageKey,
-  resources,
-} from '../../../i18n/config';
 
 import { I18nProvider } from './I18nProvider';
 

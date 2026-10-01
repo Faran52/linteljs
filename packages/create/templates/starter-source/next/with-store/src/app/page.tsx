@@ -1,8 +1,10 @@
 'use client';
 
-import { Button, Mark } from '../components/ui';
-import { CHECK, NAME } from '../config/linteljs';
-import { useCounter } from '../lib/store/counter/counterStore';
+import { CHECK, NAME } from '@config/linteljs';
+
+import { useCounter } from '@store/counter/counterStore';
+
+import { Button, Mark } from '@ui';
 
 import type { ReactNode } from 'react';
 

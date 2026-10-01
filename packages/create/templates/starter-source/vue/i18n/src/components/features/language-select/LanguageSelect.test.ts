@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 
-import { applyLanguage, directionOf } from '../../../i18n';
-import { languages, languageStorageKey } from '../../../i18n/config';
+import { applyLanguage, directionOf } from '@i18n';
+import { languages, languageStorageKey } from '@i18n/config';
 
 import LanguageSelect from './LanguageSelect.vue';
 

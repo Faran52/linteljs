@@ -4,8 +4,8 @@ import {
   chooseLanguage,
   language,
   t,
-} from '../../../i18n';
-import { languages } from '../../../i18n/config';
+} from '@i18n';
+import { languages } from '@i18n/config';
 
 export type LanguageSelectProps = Pick<JSX.SelectHTMLAttributes<HTMLSelectElement>, 'class' | 'style'>;
 

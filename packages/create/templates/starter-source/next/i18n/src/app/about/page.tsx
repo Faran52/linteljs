@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { CHECK, GATE } from '../../config/linteljs';
-import { STANDARD_PATHS } from '../../config/standard';
+import { CHECK, GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
 
 import type { ReactNode } from 'react';
 

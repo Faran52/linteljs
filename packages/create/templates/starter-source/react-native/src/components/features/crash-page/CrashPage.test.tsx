@@ -1,8 +1,8 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 
-import { renderScreen } from '@mocks/renderScreen';
+import { ForbiddenError } from '@utils/statusUtils';
 
-import { ForbiddenError } from '../../../lib/utils/statusUtils';
+import { renderScreen } from '@mocks/renderScreen';
 
 import { CrashPage } from './CrashPage';
 

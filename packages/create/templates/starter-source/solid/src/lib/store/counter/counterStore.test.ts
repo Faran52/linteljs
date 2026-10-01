@@ -1,6 +1,6 @@
 import { renderHook } from '@solidjs/testing-library';
 
-import { StoreProvider } from '../../providers/store/StoreProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { useCounter } from './counterStore';
 

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ForbiddenError } from '../../utils/status-utils';
+import { ForbiddenError } from '@utils/status-utils';
 
 import { CrashHandler } from './crash-handler';
 

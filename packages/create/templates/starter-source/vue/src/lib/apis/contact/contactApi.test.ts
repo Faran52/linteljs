@@ -6,7 +6,7 @@ import {
 } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { dataProvider } from '../../providers/data/dataProvider';
+import { dataProvider } from '@lib/providers/data/dataProvider';
 
 import { useSubmitContact } from './contactApi';
 

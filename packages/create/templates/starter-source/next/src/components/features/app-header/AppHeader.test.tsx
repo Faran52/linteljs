@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import { pathnameMock } from '@mocks/setupTests';
+import { PAGES } from '@config/routes';
 
-import { PAGES } from '../../../config/routes';
+import { pathnameMock } from '@mocks/setupTests';
 
 import { AppHeader } from './AppHeader';
 

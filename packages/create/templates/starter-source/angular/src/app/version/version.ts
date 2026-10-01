@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { ANSWERS, STACK } from '../../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 // What was recorded at birth: a browser cannot read its machine's Node or package manager.
 @Component({

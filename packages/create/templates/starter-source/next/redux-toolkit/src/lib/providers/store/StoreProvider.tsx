@@ -2,7 +2,7 @@
 
 import { Provider } from 'react-redux';
 
-import { store } from '../../store/counter/counterStore';
+import { store } from '@store/counter/counterStore';
 
 import type { FC, ReactNode } from 'react';
 

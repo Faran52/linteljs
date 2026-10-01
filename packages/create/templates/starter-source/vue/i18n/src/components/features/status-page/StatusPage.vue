@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import AppButton from '../../ui/app-button/AppButton.vue';
+import AppButton from '@ui/app-button/AppButton.vue';
 
 interface Props {
   code: number;

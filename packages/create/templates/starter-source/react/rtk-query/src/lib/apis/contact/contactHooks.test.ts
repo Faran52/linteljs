@@ -6,8 +6,8 @@ import {
 
 import { act, renderHook } from '@testing-library/react';
 
-import { DataProvider } from '../../providers/data/DataProvider';
-import { StoreProvider } from '../../providers/store/StoreProvider';
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { useSubmitContact } from './contactHooks';
 

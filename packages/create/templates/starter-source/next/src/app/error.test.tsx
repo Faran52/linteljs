@@ -4,7 +4,7 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { ForbiddenError } from '../lib/utils/statusUtils';
+import { ForbiddenError } from '@utils/statusUtils';
 
 import RouteError from './error';
 

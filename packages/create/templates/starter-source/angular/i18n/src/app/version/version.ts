@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 
-import { CodeText } from '../../components/ui/code-text/code-text';
-import { ANSWERS, STACK } from '../../config/linteljs';
-import { t } from '../../i18n';
+import { t } from '@i18n';
+
+import { ANSWERS, STACK } from '@config/linteljs';
+
+import { CodeText } from '@ui/code-text/code-text';
 
 // What was recorded at birth: a browser cannot read its machine's Node or package manager.
 @Component({

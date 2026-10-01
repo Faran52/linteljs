@@ -1,6 +1,7 @@
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 
+import { resources } from '@i18n/config';
 import {
   fireEvent,
   render,
@@ -8,8 +9,6 @@ import {
 } from '@testing-library/svelte';
 
 import { STATUSES } from '@config/statuses';
-
-import { resources } from '../i18n/config';
 
 import ErrorPage from './+error.svelte';
 

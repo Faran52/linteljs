@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Button from '../../components/ui/button/Button.svelte';
-  import TextInput from '../../components/ui/text-input/TextInput.svelte';
+  import Button from '@ui/button/Button.svelte';
+  import TextInput from '@ui/text-input/TextInput.svelte';
 
   import { useContactForm } from './useContactForm';
 

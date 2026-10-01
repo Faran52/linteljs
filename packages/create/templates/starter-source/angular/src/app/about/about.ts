@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
-import { CHECK, GATE } from '../../config/linteljs';
-import { STANDARD_PATHS } from '../../config/standard';
+import { CHECK, GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
 
 @Component({
   selector: 'app-about',

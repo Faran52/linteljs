@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { CHECK, NAME } from '../config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
 
 import HomePage from './page';
 

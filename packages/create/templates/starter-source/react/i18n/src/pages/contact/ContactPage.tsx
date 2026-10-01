@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { Button, TextInput } from '../../components/ui';
+import { Button, TextInput } from '@ui';
 
 import { useContactForm } from './useContactForm';
 

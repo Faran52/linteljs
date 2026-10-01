@@ -152,9 +152,7 @@ export const angularTarget: TargetRecord = {
     ...mockTests(false, 'src/lib/utils/fetch-extended-utils'),
     {
       target: 'src/lib/utils/status-utils.spec.ts',
-      source: 'src/lib/utils/statusUtils.test.ts',
       covers: 'src/lib/utils/status-utils.ts',
-      shared: true,
     },
     ...accessorTests(ACCESSORS),
     ...angularI18nTests(),

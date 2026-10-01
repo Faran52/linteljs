@@ -1,12 +1,12 @@
+import { initI18n } from '@i18n';
+import { languages, resources } from '@i18n/config';
 import {
   act,
   render,
   screen,
 } from '@testing-library/react';
 
-import { ANSWERS, STACK } from '../../config/linteljs';
-import { initI18n } from '../../i18n';
-import { languages, resources } from '../../i18n/config';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 import { VersionPage } from './VersionPage';
 

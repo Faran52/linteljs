@@ -2,8 +2,9 @@ import { screen } from '@testing-library/react-native';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import HomeScreen from '@/app/index';
 import { CHECK, NAME } from '@/config/linteljs';
+
+import HomeScreen from './app/index';
 
 describe('the home screen', () => {
   it('carries the project name and the mark', async () => {

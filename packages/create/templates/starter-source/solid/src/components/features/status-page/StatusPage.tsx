@@ -1,6 +1,6 @@
 import { type JSX, Show } from 'solid-js';
 
-import { Button } from '../../ui';
+import { Button } from '@ui';
 
 export interface StatusPageProps {
   readonly code: number;

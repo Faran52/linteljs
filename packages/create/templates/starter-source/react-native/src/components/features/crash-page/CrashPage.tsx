@@ -1,5 +1,7 @@
-import { STATUSES } from '../../../config/statuses';
-import { ForbiddenError } from '../../../lib/utils/statusUtils';
+import { STATUSES } from '@config/statuses';
+
+import { ForbiddenError } from '@utils/statusUtils';
+
 import { StatusPage } from '../status-page/StatusPage';
 
 import type { ErrorBoundaryProps } from 'expo-router';

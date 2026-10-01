@@ -1,8 +1,10 @@
 import { For, type JSX } from 'solid-js';
 
-import { CodeText } from '../../components/ui/code-text/CodeText';
-import { ANSWERS, STACK } from '../../config/linteljs';
-import { t } from '../../i18n';
+import { t } from '@i18n';
+
+import { ANSWERS, STACK } from '@config/linteljs';
+
+import { CodeText } from '@ui/code-text/CodeText';
 
 // Recorded at birth: a browser cannot read its machine's Node or package manager.
 export const VersionPage = (): JSX.Element => {

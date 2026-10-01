@@ -1,7 +1,7 @@
 import { Trans, useTranslation } from 'react-i18next';
 
-import { CHECK, GATE } from '../../config/linteljs';
-import { STANDARD_PATHS } from '../../config/standard';
+import { CHECK, GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
 
 import type { FC } from 'react';
 

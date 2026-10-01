@@ -1,5 +1,6 @@
-import { Mark } from '../../components/ui';
-import { CHECK } from '../../config/linteljs';
+import { CHECK } from '@config/linteljs';
+
+import { Mark } from '@ui';
 
 import type { JSX } from 'solid-js';
 

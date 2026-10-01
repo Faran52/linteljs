@@ -7,8 +7,8 @@ import {
 import {
   applyLanguage,
   i18n,
-} from '../i18n';
-import { languages, languageStorageKey } from '../i18n/config';
+} from '@i18n';
+import { languages, languageStorageKey } from '@i18n/config';
 
 import './i18n';
 

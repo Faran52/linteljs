@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { STATUSES } from '../../../config/statuses';
+import { STATUSES } from '@config/statuses';
 
 import { StatusPage } from './status-page';
 

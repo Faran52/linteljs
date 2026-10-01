@@ -2,11 +2,13 @@ import { Component, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 
-import { AppHeader } from '../components/features/app-header/app-header';
-import { StatusPage } from '../components/features/status-page/status-page';
-import { NAME } from '../config/linteljs';
-import { STATUSES } from '../config/statuses';
-import { CrashHandler } from '../lib/providers/crash-handler/crash-handler';
+import { NAME } from '@config/linteljs';
+import { STATUSES } from '@config/statuses';
+
+import { CrashHandler } from '@lib/providers/crash-handler/crash-handler';
+
+import { AppHeader } from '@features/app-header/app-header';
+import { StatusPage } from '@features/status-page/status-page';
 
 @Component({
   imports: [

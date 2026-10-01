@@ -1,6 +1,6 @@
 import { Trans, useTranslation } from 'react-i18next';
 
-import { ANSWERS, STACK } from '../../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 import type { FC } from 'react';
 

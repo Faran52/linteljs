@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 
-import { Mark } from '../../components/ui/mark/mark';
-import { CHECK, NAME } from '../../config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
+
+import { Mark } from '@ui/mark/mark';
 
 @Component({
   imports: [Mark],

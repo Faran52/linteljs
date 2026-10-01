@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
 
-  import Button from '../../ui/button/Button.svelte';
+  import Button from '@ui/button/Button.svelte';
 
   interface Props {
     code: number;

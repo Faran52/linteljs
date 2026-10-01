@@ -2,8 +2,9 @@ import { screen } from '@testing-library/react-native';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import AboutScreen from '@/app/about';
 import { GATE } from '@/config/linteljs';
+
+import AboutScreen from './app/about';
 
 describe('the about screen', () => {
   it('lists every leg of the gate', async () => {

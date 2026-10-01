@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 
-import { CodeText } from '../../components/ui/code-text/code-text';
-import { CHECK, GATE } from '../../config/linteljs';
-import { STANDARD_PATHS } from '../../config/standard';
-import { t } from '../../i18n';
+import { t } from '@i18n';
+
+import { CHECK, GATE } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
+
+import { CodeText } from '@ui/code-text/code-text';
 
 @Component({
   imports: [CodeText],

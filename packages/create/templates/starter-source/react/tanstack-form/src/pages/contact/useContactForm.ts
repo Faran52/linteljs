@@ -6,9 +6,9 @@ import {
   type ContactValues,
   useSubmitContact,
   validateContact,
-} from '../../lib/apis/contact';
+} from '@apis/contact';
 
-import type { TextInputProps } from '../../components/ui';
+import type { TextInputProps } from '@ui';
 
 export interface ContactFields {
   email: TextInputProps;

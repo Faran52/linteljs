@@ -1,6 +1,6 @@
 import { renderHook } from '@solidjs/testing-library';
 
-import { DataProvider } from '../../providers/data/DataProvider';
+import { DataProvider } from '@lib/providers/data/DataProvider';
 
 import { useSubmitContact } from './contactApi';
 

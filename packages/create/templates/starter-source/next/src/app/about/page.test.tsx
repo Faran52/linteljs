@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { GATE } from '../../config/linteljs';
+import { GATE } from '@config/linteljs';
 
 import AboutPage from './page';
 

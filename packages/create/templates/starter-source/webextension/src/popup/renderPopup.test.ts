@@ -1,4 +1,4 @@
-import { CHECK, NAME } from '../config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
 
 import { renderPopup } from './renderPopup';
 

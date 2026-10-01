@@ -4,7 +4,7 @@ import {
   screen,
 } from '@solidjs/testing-library';
 
-import { STATUSES } from '../../../config/statuses';
+import { STATUSES } from '@config/statuses';
 
 import { StatusPage } from './StatusPage';
 

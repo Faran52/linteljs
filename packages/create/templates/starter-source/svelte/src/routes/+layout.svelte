@@ -1,9 +1,9 @@
 <script lang="ts">
   import { NAME } from '@config/linteljs';
 
-  import DataProvider from '$lib/providers/data/DataProvider.svelte';
+  import AppHeader from '@features/app-header/AppHeader.svelte';
 
-  import AppHeader from '../components/features/app-header/AppHeader.svelte';
+  import DataProvider from '$lib/providers/data/DataProvider.svelte';
 
   import type { Snippet } from 'svelte';
 

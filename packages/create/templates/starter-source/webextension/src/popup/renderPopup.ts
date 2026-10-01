@@ -1,5 +1,6 @@
-import { CHECK, NAME } from '../config/linteljs';
-import { markSvg } from '../lib/mark/mark';
+import { CHECK, NAME } from '@config/linteljs';
+
+import { markSvg } from '@lib/mark/mark';
 
 // Built node by node: a kept reference cannot be null, and an extension's CSP has no reason to trust markup.
 export const renderPopup = (root: HTMLElement): void => {

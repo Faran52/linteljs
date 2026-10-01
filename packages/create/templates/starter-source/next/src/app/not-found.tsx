@@ -1,5 +1,6 @@
-import { StatusPage } from '../components/features/status-page/StatusPage';
-import { STATUSES } from '../config/statuses';
+import { STATUSES } from '@config/statuses';
+
+import { StatusPage } from '@features/status-page/StatusPage';
 
 import type { ReactNode } from 'react';
 

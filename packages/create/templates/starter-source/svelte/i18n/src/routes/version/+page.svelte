@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { m } from '@i18n';
+
   import { ANSWERS, STACK } from '@config/linteljs';
 
-  import CodeText from '../../components/ui/code-text/CodeText.svelte';
-  import { m } from '../../i18n';
+  import CodeText from '@ui/code-text/CodeText.svelte';
 </script>
 
 <!-- What was recorded at birth: a browser cannot read its machine's Node or package manager. -->

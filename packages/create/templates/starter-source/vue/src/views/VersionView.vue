@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ANSWERS, STACK } from '../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 </script>
 
 <template>

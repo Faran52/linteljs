@@ -5,7 +5,7 @@ import {
 } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { storeProvider } from '../../providers/store/storeProvider';
+import { storeProvider } from '@lib/providers/store/storeProvider';
 
 import { useCounter } from './counterStore';
 

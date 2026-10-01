@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 
 import { useTranslations } from 'next-intl';
 
-import { PAGES } from '../../../config/routes';
+import { PAGES } from '@config/routes';
+
 import { LanguageSelect } from '../language-select/LanguageSelect';
 
 import { styles } from './styles';

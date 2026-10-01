@@ -1,13 +1,14 @@
+import { chooseLanguage } from '@i18n';
+import { languages, resources } from '@i18n/config';
 import {
   act,
   render,
   screen,
 } from '@testing-library/react';
 
-import { CHECK, GATE } from '../../config/linteljs';
-import { chooseLanguage } from '../../i18n';
-import { languages, resources } from '../../i18n/config';
-import { I18nProvider } from '../../lib/providers/i18n/I18nProvider';
+import { CHECK, GATE } from '@config/linteljs';
+
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 
 import AboutPage from './page';
 

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import { chooseLanguage } from '../../../i18n';
-import { languages } from '../../../i18n/config';
+import { chooseLanguage } from '@i18n';
+import { languages } from '@i18n/config';
 
 import type { ComponentProps, FC } from 'react';
 

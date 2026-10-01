@@ -1,19 +1,20 @@
 import {
+  languages,
+  languageStorageKey,
+  resources,
+} from '@i18n/config';
+import {
   act,
   fireEvent,
   render,
   screen,
 } from '@testing-library/react';
 
-import { pathnameMock } from '@mocks/setupTests';
+import { PAGES } from '@config/routes';
 
-import { PAGES } from '../../../config/routes';
-import {
-  languages,
-  languageStorageKey,
-  resources,
-} from '../../../i18n/config';
-import { I18nProvider } from '../../../lib/providers/i18n/I18nProvider';
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+
+import { pathnameMock } from '@mocks/setupTests';
 
 import { AppHeader } from './AppHeader';
 

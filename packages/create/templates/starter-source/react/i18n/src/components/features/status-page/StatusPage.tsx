@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '../../ui';
+import { Button } from '@ui';
 
 import type { FC } from 'react';
 

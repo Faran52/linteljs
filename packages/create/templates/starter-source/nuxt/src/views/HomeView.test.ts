@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 
-import { NAME } from '../config/linteljs';
+import { NAME } from '@config/linteljs';
 
 import HomeView from './HomeView.vue';
 

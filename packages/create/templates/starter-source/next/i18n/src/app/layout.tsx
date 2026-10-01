@@ -1,8 +1,10 @@
-import { AppHeader } from '../components/features/app-header/AppHeader';
-import { NAME } from '../config/linteljs';
-import { DataProvider } from '../lib/providers/data/DataProvider';
-import { I18nProvider } from '../lib/providers/i18n/I18nProvider';
-import { StoreProvider } from '../lib/providers/store/StoreProvider';
+import { NAME } from '@config/linteljs';
+
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
+
+import { AppHeader } from '@features/app-header/AppHeader';
 
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';

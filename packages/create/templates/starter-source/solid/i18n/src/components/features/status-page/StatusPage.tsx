@@ -1,7 +1,8 @@
 import { type JSX, Show } from 'solid-js';
 
-import { type MessageKey, t } from '../../../i18n';
-import { Button } from '../../ui';
+import { type MessageKey, t } from '@i18n';
+
+import { Button } from '@ui';
 
 export interface StatusPageProps {
   readonly code: number;

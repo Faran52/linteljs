@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
 
-  import { PAGES } from '../../../config/routes';
+  import { PAGES } from '@config/routes';
 
   import { styles } from './styles';
 

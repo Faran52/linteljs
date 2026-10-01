@@ -1,8 +1,10 @@
 'use client';
 
-import { StatusPage } from '../components/features/status-page/StatusPage';
-import { STATUSES } from '../config/statuses';
-import { ForbiddenError } from '../lib/utils/statusUtils';
+import { STATUSES } from '@config/statuses';
+
+import { ForbiddenError } from '@utils/statusUtils';
+
+import { StatusPage } from '@features/status-page/StatusPage';
 
 import type { ReactNode } from 'react';
 

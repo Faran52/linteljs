@@ -4,7 +4,7 @@
 
   import { STATUSES } from '@config/statuses';
 
-  import StatusPage from '../components/features/status-page/StatusPage.svelte';
+  import StatusPage from '@features/status-page/StatusPage.svelte';
 
   // Any other status is a crash, and invalidating runs what failed again.
   const known = $derived([STATUSES.forbidden, STATUSES.notFound]

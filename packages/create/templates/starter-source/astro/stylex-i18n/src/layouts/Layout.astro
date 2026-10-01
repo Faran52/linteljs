@@ -1,11 +1,13 @@
 ---
-import AppHeader from '../components/features/app-header/AppHeader.astro';
-import { NAME } from '../config/linteljs';
 import {
   bootScript,
   type MessageKey,
   t,
-} from '../i18n';
+} from '@i18n';
+
+import { NAME } from '@config/linteljs';
+
+import AppHeader from '@features/app-header/AppHeader.astro';
 
 import '../styles/global.css';
 
@@ -38,7 +40,7 @@ const title = titleKey === undefined ? NAME : t(titleKey);
     <AppHeader name={NAME} />
     <slot />
     <script>
-      import { startLanguage } from '../i18n';
+      import { startLanguage } from '@i18n';
 
       startLanguage();
     </script>

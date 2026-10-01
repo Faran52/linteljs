@@ -10,7 +10,7 @@ import {
   detectLanguage,
   directionOf,
   i18n,
-} from '../i18n';
+} from '@i18n';
 
 // The server has neither storage nor the browser, so it renders English and detection waits for hydration.
 export default defineNuxtPlugin((nuxtApp) => {

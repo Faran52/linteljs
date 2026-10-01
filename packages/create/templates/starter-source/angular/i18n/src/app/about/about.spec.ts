@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CHECK } from '../../config/linteljs';
-import { STANDARD_PATHS } from '../../config/standard';
-import { applyLanguage } from '../../i18n';
-import { languages, resources } from '../../i18n/config';
+import { applyLanguage } from '@i18n';
+import { languages, resources } from '@i18n/config';
+
+import { CHECK } from '@config/linteljs';
+import { STANDARD_PATHS } from '@config/standard';
 
 import { About } from './about';
 

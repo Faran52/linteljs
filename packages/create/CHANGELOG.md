@@ -124,6 +124,11 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Changed
 
+- **The starter source imports across aliased directories through the most specific alias** (`@ui`,
+  `@features/app-header/AppHeader`, `@config/linteljs`) and within one relatively, the shape
+  `@linteljs/prefer-alias` asks for, so a new project passes its own typed lint. React Router framework mode's
+  `src/routes.ts` stays relative. `@apis/*` is emitted whenever `src/lib/apis/` is written (Zod, a form or RTK
+  Query), and Angular keeps its own suites for its two kebab-named utils.
 - **The starter source, hooks and scripts put each chained call on its own line**, the shape
   `@linteljs/chain-call-newline` asks for, so a new project passes its own lint. Starter tests read a named value
   rather than a chain.

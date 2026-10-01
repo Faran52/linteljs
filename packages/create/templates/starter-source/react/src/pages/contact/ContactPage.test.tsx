@@ -5,8 +5,8 @@ import {
   waitFor,
 } from '@testing-library/react';
 
-import { DataProvider } from '../../lib/providers/data/DataProvider';
-import { StoreProvider } from '../../lib/providers/store/StoreProvider';
+import { DataProvider } from '@lib/providers/data/DataProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { ContactPage } from './ContactPage';
 

@@ -5,7 +5,7 @@ import {
 } from 'vue';
 import { mount } from '@vue/test-utils';
 
-import { ForbiddenError } from '../../../lib/utils/statusUtils';
+import { ForbiddenError } from '@utils/statusUtils';
 
 import ErrorBoundary from './ErrorBoundary.vue';
 

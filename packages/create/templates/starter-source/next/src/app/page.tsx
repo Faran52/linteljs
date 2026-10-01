@@ -1,5 +1,6 @@
-import { Mark } from '../components/ui';
-import { CHECK, NAME } from '../config/linteljs';
+import { CHECK, NAME } from '@config/linteljs';
+
+import { Mark } from '@ui';
 
 import type { ReactNode } from 'react';
 

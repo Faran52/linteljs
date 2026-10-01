@@ -2,8 +2,9 @@ import { screen } from '@testing-library/react-native';
 
 import { renderScreen } from '@mocks/renderScreen';
 
-import NotFoundScreen from '@/app/+not-found';
 import { STATUSES } from '@/config/statuses';
+
+import NotFoundScreen from './app/+not-found';
 
 // expo-router's entry reaches Expo's TypeScript source, which no test transform strips; a text stands in.
 vi.mock('expo-router', async () => {

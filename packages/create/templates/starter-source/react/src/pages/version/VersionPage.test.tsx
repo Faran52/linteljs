@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { ANSWERS, STACK } from '../../config/linteljs';
+import { ANSWERS, STACK } from '@config/linteljs';
 
 import { VersionPage } from './VersionPage';
 

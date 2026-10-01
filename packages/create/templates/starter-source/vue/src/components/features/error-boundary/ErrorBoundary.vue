@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onErrorCaptured, ref } from 'vue';
 
-import { STATUSES } from '../../../config/statuses';
-import { ForbiddenError } from '../../../lib/utils/statusUtils';
+import { STATUSES } from '@config/statuses';
+
+import { ForbiddenError } from '@utils/statusUtils';
+
 import StatusPage from '../status-page/StatusPage.vue';
 
 const failed = ref<'forbidden' | 'crashed'>();

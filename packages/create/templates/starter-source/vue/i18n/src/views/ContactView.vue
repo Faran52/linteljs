@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-import AppButton from '../components/ui/app-button/AppButton.vue';
-import TextInput from '../components/ui/text-input/TextInput.vue';
+import AppButton from '@ui/app-button/AppButton.vue';
+import TextInput from '@ui/text-input/TextInput.vue';
 
 import { useContactForm } from './useContactForm';
 

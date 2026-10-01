@@ -2,9 +2,10 @@ import { nextTick } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { mount } from '@vue/test-utils';
 
-import { PAGES } from '../../../config/routes';
-import { applyLanguage } from '../../../i18n';
-import { languages, resources } from '../../../i18n/config';
+import { applyLanguage } from '@i18n';
+import { languages, resources } from '@i18n/config';
+
+import { PAGES } from '@config/routes';
 
 import AppHeader from './AppHeader.vue';
 import { styles } from './styles';

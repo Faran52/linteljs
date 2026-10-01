@@ -81,9 +81,32 @@ describe('buildAliases', () => {
     expect(aliases['@flat']).toBeUndefined();
   });
 
-  it('adds @apis only when Zod is selected', () => {
-    expect(buildAliases(answersFor({}))['@apis/*']).toBeUndefined();
-    expect(buildAliases(answersFor({ libraries: ['zod'] }))['@apis/*']).toBe('./src/lib/apis/*');
+  it('adds @apis with Zod or when the starter writes src/lib/apis', () => {
+    const none = buildAliases(answersFor({ target: 'react' }))['@apis/*'];
+    const zod = buildAliases(answersFor({
+      target: 'react',
+      libraries: ['zod'],
+    }))['@apis/*'];
+    const query = buildAliases(answersFor({
+      target: 'react',
+      data: 'tanstack-query',
+    }))['@apis/*'];
+    const form = buildAliases(answersFor({
+      target: 'react',
+      form: 'tanstack-form',
+    }))['@apis/*'];
+    const rtk = buildAliases(answersFor({
+      target: 'react',
+      data: 'rtk-query',
+    }))['@apis/*'];
+    const angular = buildAliases(answersFor({ target: 'angular' }))['@apis/*'];
+
+    expect(none).toBeUndefined();
+    expect(query).toBeUndefined();
+    expect(zod).toBe('./src/lib/apis/*');
+    expect(form).toBe('./src/lib/apis/*');
+    expect(rtk).toBe('./src/lib/apis/*');
+    expect(angular).toBe('./src/lib/apis/*');
   });
 
   it('carries the extra aliases only one target has, at the tail of the lib family', () => {

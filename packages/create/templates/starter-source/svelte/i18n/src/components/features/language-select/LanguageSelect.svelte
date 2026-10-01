@@ -3,8 +3,8 @@
     chooseLanguage,
     locale,
     m,
-  } from '../../../i18n';
-  import { languages } from '../../../i18n/config';
+  } from '@i18n';
+  import { languages } from '@i18n/config';
 
   import type { HTMLSelectAttributes } from 'svelte/elements';
 

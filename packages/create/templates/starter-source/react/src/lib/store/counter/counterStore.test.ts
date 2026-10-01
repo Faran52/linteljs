@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 
-import { StoreProvider } from '../../providers/store/StoreProvider';
+import { StoreProvider } from '@lib/providers/store/StoreProvider';
 
 import { useCounter } from './counterStore';
 

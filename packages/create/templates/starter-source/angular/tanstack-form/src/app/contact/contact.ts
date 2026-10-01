@@ -2,9 +2,10 @@ import { Component, signal } from '@angular/core';
 
 import { injectForm, injectStore } from '@tanstack/angular-form';
 
-import { Button } from '../../components/ui/button/button';
-import { TextInput } from '../../components/ui/text-input/text-input';
-import { type ContactValues, validateContact } from '../../lib/apis/contact/schemas';
+import { type ContactValues, validateContact } from '@apis/contact/schemas';
+
+import { Button } from '@ui/button/button';
+import { TextInput } from '@ui/text-input/text-input';
 
 @Component({
   imports: [Button, TextInput],

@@ -2,13 +2,14 @@ import { provideLocationMocks } from '@angular/common/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { PAGES } from '../../../config/routes';
-import { applyLanguage, language } from '../../../i18n';
+import { applyLanguage, language } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
-} from '../../../i18n/config';
+} from '@i18n/config';
+
+import { PAGES } from '@config/routes';
 
 import { AppHeader } from './app-header';
 

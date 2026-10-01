@@ -1,8 +1,10 @@
 <script lang="ts">
-  import CodeText from '../../components/ui/code-text/CodeText.svelte';
-  import { CHECK, GATE } from '../../config/linteljs';
-  import { STANDARD_PATHS } from '../../config/standard';
-  import { m } from '../../i18n';
+  import { m } from '@i18n';
+
+  import { CHECK, GATE } from '@config/linteljs';
+  import { STANDARD_PATHS } from '@config/standard';
+
+  import CodeText from '@ui/code-text/CodeText.svelte';
 </script>
 
 <main class="page">

@@ -1,3 +1,5 @@
+import { chooseLanguage } from '@i18n';
+import { languages, resources } from '@i18n/config';
 import {
   act,
   fireEvent,
@@ -5,10 +7,9 @@ import {
   screen,
 } from '@testing-library/react';
 
-import { STATUSES } from '../../../config/statuses';
-import { chooseLanguage } from '../../../i18n';
-import { languages, resources } from '../../../i18n/config';
-import { I18nProvider } from '../../../lib/providers/i18n/I18nProvider';
+import { STATUSES } from '@config/statuses';
+
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 
 import { StatusPage } from './StatusPage';
 

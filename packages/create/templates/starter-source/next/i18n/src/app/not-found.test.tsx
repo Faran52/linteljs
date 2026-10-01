@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { I18nProvider } from '../lib/providers/i18n/I18nProvider';
+import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
 
 import NotFound from './not-found';
 
