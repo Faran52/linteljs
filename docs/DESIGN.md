@@ -1329,23 +1329,26 @@ themselves). Making it ordinary source means installing ten targets' runtime and
 of three ESLint packages.
 
 So `pnpm lint:starters`, a leg of `pnpm check`, lints each file the way the project receiving it will.
-`composeConfig` is the function a generated `eslint.config.js` calls, handed that target's framework and its
-record's `naming` and `folderNaming` maps and `typescript: true` as every generated config has, and each file is judged at the path its record places it on, which is what makes the naming rules mean anything. The answers widen
-per target until every file is placed, so a starter nothing ships is reported rather than linted at a guess. It
-reads the same `starterSourceEmitter` as the pipeline, so the two cannot disagree about where a file lives.
-`lint:starters:fix` runs the same config to repair what is autofixable, because a `create` run's `fix` stage is
-skippable. Every file is read with `projectService` off, since it resolves a file against a real `tsconfig.json` and
-this walk lints text at a path nothing on disk holds, so typescript-eslint's `disableTypeChecked` turns its
-type-aware rules off by name and `sonarjs/no-redundant-optional` goes with them, since it reads the program to
-decide whether to run. Until 2.0 the walk left out `typescript: true`, so the whole typescript layer was missing,
-its rules that need no types included; a `type` where the standard wants an `interface` passed here and failed
-the project.
+`composeConfig` is the function a generated `eslint.config.js` calls, handed that target's framework and its record's
+`naming` and `folderNaming` maps and `typescript: true` as every generated config has, and each file is judged at the
+path its record places it on, which is what makes the naming rules mean anything. The answers widen per target until
+every file is placed, so a starter nothing ships is reported rather than linted at a guess. It reads the same
+`starterSourceEmitter` as the pipeline, so the two cannot disagree about where a file lives. `lint:starters:fix` runs
+the same config to repair what is autofixable. It repairs the source, not the projects: a generated project is clean
+before any fix stage runs, and `create`'s `fix` stage exists to bring an existing project into line. On a fresh one
+it reports `eslint --fix: nothing to fix` and the same for stylelint, which every e2e case asserts. Every file is
+read with `projectService` off, since it resolves a file against a real `tsconfig.json` and this walk lints text at a
+path nothing on disk holds, so typescript-eslint's `disableTypeChecked` turns its type-aware rules off by name and
+`sonarjs/no-redundant-optional` goes with them, since it reads the program to decide whether to run. Until 2.0 the
+walk left out `typescript: true`, so the whole typescript layer was missing, its rules that need no types included; a
+`type` where the standard wants an `interface` passed here and failed the project.
 
 The test setup is not a starter but fragments joined into one file, `__mocks__/setupTests.ts`, so the walk also
 joins them as `testSetupEmitter` does, once per distinct join its answer sets produce (one set adds `msw` and
-TanStack Query to reach every fragment), and lints the result at that path. It lints with `fix` on and reports only
-what survives: the joined text puts a later fragment's imports mid-file, and the project's own `fix` stage hoists
-them at birth. With nothing on disk to write back to, `lint:starters:fix` leaves the setup alone.
+TanStack Query to reach every fragment), and lints the result at that path. It lints with `fix` off, so what the
+fix stage would have rewritten is a finding: a fragment appended to a target's base loads its modules through
+a top-level `await import`, which keeps every import at the head of the joined file. With nothing on disk to write
+back to, `lint:starters:fix` leaves the setup alone.
 
 What a rule cannot see is a name that resolves to nothing, so the script builds a program too, with
 `@types/chrome`, `@types/firefox-webext-browser`, `@types/react` and `vitest/globals` installed as gate machinery.

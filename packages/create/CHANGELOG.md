@@ -124,6 +124,14 @@ when a version's change lives in a sibling it is described there instead:
   rather than a chain.
 - The starter source, hooks and scripts put each item of a list of three or more on its own line, the shape
   `@linteljs/array-newline` asks for, so a new project passes its own lint.
+- **A new project needs nothing from the fix stage**: every emitted file lands as `eslint --fix` and `stylelint --fix`
+  would leave it. Imports group by framework and by the project's own aliases, `eslint.config.js`,
+  `checkBannedPatterns.ts` and React Native's `vitest.config.ts` break a list of three or more, `index.html` and the
+  extension's `devtools.html` and `panel.html` take the html layer's layout, and a test setup fragment past
+  the target's base loads its modules through a top-level `await import`, so the joined `setupTests` keeps every
+  import at its head. The fix stage stays, to bring an existing project into line.
+- The fix stage reports per tool: `eslint --fix: 3 files changed` or `eslint --fix: nothing to fix`, and the same for
+  `stylelint --fix`, which said nothing unless it could not run.
 - An Angular project's `pnpm-workspace.yaml` loses its `peerDependencyRules` block and its `.yarnrc.yml` its
   `logFilters`, since `@angular/build` 22.2 admits vitest 5. No target discards a peer warning any more; the two
   the filter hid on Yarn, under TanStack Form and TanStack Query, are answered in `packageExtensions`.
