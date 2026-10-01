@@ -27,10 +27,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@types/chrome": "^0.3.4",
-    "@types/firefox-webext-browser": "^143.0.1",
     "@types/node": "catalog:",
-    "@types/react": "^19.3.0",
     "@vitest/coverage-v8": "catalog:",
     "es-toolkit": "catalog:",
     "eslint": "catalog:",

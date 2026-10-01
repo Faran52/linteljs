@@ -23,8 +23,8 @@
     "scripts/**/*.ts",
 
     /**
-     * `scripts/lint-starters/` composes a project's layers out of `eslint-config`'s source, which pulls every
-     * framework layer into this program. Those layers lean on that package's ambient shims for the plugins that
+     * `eslint.config.ts` composes its layers out of `eslint-config`'s source, which pulls every framework layer
+     * into this program. Those layers lean on that package's ambient shims for the plugins that
      * ship no types of their own, so the shims have to come with them or `solidFramework.ts` fails here and nowhere
      * else.
      */
