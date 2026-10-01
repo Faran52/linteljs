@@ -433,6 +433,11 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'inert.tsx',
   },
   {
+    name: 'misplaced type holding a whitespace line in a template literal',
+    code: 'const value = 1;\n\ntype Pad = `a\n  \nb`;\n',
+    typescript: true,
+  },
+  {
     name: 'deprecated tag on one line',
     code: '/** @deprecated use `other` */\nexport const old = 1;\n',
   },

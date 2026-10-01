@@ -2,6 +2,7 @@ import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
   getIndent,
+  linesInsideTokens,
   lineTerminatorOf,
   type Located,
 } from '../../utils/layoutUtils.ts';
@@ -28,6 +29,7 @@ interface ScriptElement {
 
 interface TypeCut {
   node: ProgramEntry;
+  startLine: number;
   text: string;
   removeRange: [number, number];
 }
@@ -36,16 +38,8 @@ interface InterfaceOrderOptions {
   trimBlankLines: boolean;
 }
 
-interface Texted {
-  text: string;
-}
-
-const readText = (entry: Texted): string => {
-  return entry.text;
-};
-
-// An editor leaves this in a blank line, and a move would carry it along.
-const WHITESPACE_LINE = /^[\t ]+$/gmu;
+// An editor leaves this in a blank line, and a move would carry it along. The lookahead keeps a CRLF line ending.
+const WHITESPACE_LINE = /^[\t ]+(?=\r?$)/u;
 
 const startLineOf = (node: Located): number => {
   return mustFind(node.loc).start.line;
@@ -124,6 +118,7 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
 
   return {
     node: typeNode,
+    startLine: sourceCode.getLocFromIndex(startPos).line,
     text: sourceCode.text.slice(startPos, endPos),
     removeRange: [rangeOf(lastRetained ?? previous)[1], endPos],
   };
@@ -176,10 +171,20 @@ export const interfaceOrder = createRule('interface-order', {
     const eol = lineTerminatorOf(sourceCode);
     const trimBlankLines = optionsOf<InterfaceOrderOptions>(context).trimBlankLines ?? true;
 
-    const movedText = (entry: Texted): string => {
-      const text = readText(entry);
+    const insideTokens = linesInsideTokens(sourceCode);
 
-      return trimBlankLines ? text.replace(WHITESPACE_LINE, '') : text;
+    // A line inside a token is content: a template literal type keeps its whitespace lines.
+    const movedText = ({ startLine, text }: TypeCut): string => {
+      if (!trimBlankLines) {
+        return text;
+      }
+
+      return text
+        .split('\n')
+        .map((line, index) => {
+          return insideTokens.has(startLine + index) ? line : line.replace(WHITESPACE_LINE, '');
+        })
+        .join('\n');
     };
 
     const check = (body: ProgramEntry[]): void => {

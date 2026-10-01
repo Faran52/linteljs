@@ -166,6 +166,22 @@ const value = thing;`,
       output: 'type Instance = InstanceType<typeof Service>;\n\nclass Service {}',
       errors: [{ messageId: 'moveAfterImports' }],
     },
+    {
+      // A whitespace line inside a template literal type is part of the type, so it moves untrimmed.
+      code: 'const value = 1;\n\ntype Pad = `a\n  \nb`;\n',
+      output: 'type Pad = `a\n  \nb`;\n\nconst value = 1;\n',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
+      code: 'const value = 1;\r\n\r\ninterface Alpha {\r\n  first: string;\r\n  \r\n}\r\n',
+      output: 'interface Alpha {\r\n  first: string;\r\n\r\n}\r\n\r\nconst value = 1;\r\n',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
+    {
+      code: 'const value = 1;\n\nexport type Alpha = string;\nexport interface Bravo {\n\tfirst: Alpha;\n}\n',
+      output: 'export type Alpha = string;\n\nexport interface Bravo {\n\tfirst: Alpha;\n}\n\nconst value = 1;\n',
+      errors: [{ messageId: 'moveAfterImports' }],
+    },
   ],
 });
 
