@@ -34,6 +34,7 @@ export const buildAliases = (answers: Answers): AliasMap => {
     '@services/*': './src/lib/services/*',
     ...(writesApis(answers) ? { '@apis/*': './src/lib/apis/*' } : {}),
     ...target.extraAliases,
+    '@styles/*': './src/styles/*',
     '@config/*': './src/config/*',
     ...(localesOf(answers).length > 0 ? { '@i18n/*': './src/i18n/*' } : {}),
     ...(hasTests(answers) ? { '@mocks/*': './__mocks__/*' } : {}),

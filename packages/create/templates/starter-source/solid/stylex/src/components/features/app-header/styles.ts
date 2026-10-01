@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 
-import { tokens } from '../../../styles/tokens.stylex';
+import { tokens } from '@styles/tokens.stylex';
 
 // A pseudo-class is a nested object: `default` is the base and the key beside it the condition.
 const sheet = stylex.create({

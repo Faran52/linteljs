@@ -1,10 +1,9 @@
 import { Text, View } from 'react-native';
 
 import { CHECK, NAME } from '@config/linteljs';
+import { useStarterStyles } from '@styles/starter';
 
 import { Mark } from '@ui/mark/Mark';
-
-import { useStarterStyles } from '../styles/starter';
 
 import type { ReactNode } from 'react';
 

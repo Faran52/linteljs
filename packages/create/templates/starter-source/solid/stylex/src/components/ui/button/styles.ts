@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 
-import { tokens } from '../../../styles/tokens.stylex';
+import { tokens } from '@styles/tokens.stylex';
 
 // StyleX orders `:disabled` after `:hover`, so no `:not(:disabled)`.
 // Longhand: StyleX refuses a shorthand a longhand elsewhere could contradict.

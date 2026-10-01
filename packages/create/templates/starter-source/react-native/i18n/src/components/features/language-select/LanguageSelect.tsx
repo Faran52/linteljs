@@ -8,10 +8,10 @@ import {
   View,
 } from 'react-native';
 
+import { useStarterStyles } from '@styles/starter';
+
 import { chooseLanguage } from '@i18n';
 import { languages } from '@i18n/config';
-
-import { useStarterStyles } from '@/styles/starter';
 
 const styles = StyleSheet.create({
   trigger: {

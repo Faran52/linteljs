@@ -29,6 +29,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- Every target gains `@styles/*` and `@styles` onto `src/styles/`, so the shared StyleX modules and React Native's
+  starter read their tokens the same way on every target, Nuxt's `~` root included.
 - Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside `"@ui/*"`), so a
   directory index imports as `@ui`; `@i18n/*` and `@i18n` join them when a locale is chosen. With
   `react-router-framework`, `eslint.config.js` writes `aliasExempt: ['src/routes.ts']` and

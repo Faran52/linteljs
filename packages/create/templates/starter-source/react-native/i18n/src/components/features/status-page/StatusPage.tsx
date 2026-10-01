@@ -7,7 +7,7 @@ import {
 
 import { Link } from 'expo-router';
 
-import { useStarterStyles } from '@/styles/starter';
+import { useStarterStyles } from '@styles/starter';
 
 import type { ReactNode } from 'react';
 

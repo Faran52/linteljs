@@ -75,6 +75,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- `simple-import-sort` files `@styles` with `@config` and `@typings`, rather than in the trailing group of aliases
+  no bucket names.
 - `simple-import-sort` files `@i18n` with `@lib`, `@utils` and the other library aliases, rather than in the
   trailing group of aliases no bucket names.
 - `@stylistic/object-curly-newline` also covers type literals and interface bodies, so a one-line

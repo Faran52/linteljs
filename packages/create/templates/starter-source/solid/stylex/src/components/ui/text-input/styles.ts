@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 
-import { tokens } from '../../../styles/tokens.stylex';
+import { tokens } from '@styles/tokens.stylex';
 
 // Invalid is passed in: StyleX does not support `[aria-invalid="true"]`.
 const sheet = stylex.create({

@@ -3,8 +3,7 @@ import Head from 'expo-router/head';
 
 import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
-
-import { useStarterStyles } from '../styles/starter';
+import { useStarterStyles } from '@styles/starter';
 
 import type { ReactNode } from 'react';
 

@@ -7,8 +7,7 @@ import {
 
 import { GATE } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
-
-import { useStarterStyles } from '../styles/starter';
+import { useStarterStyles } from '@styles/starter';
 
 import type { ReactNode } from 'react';
 

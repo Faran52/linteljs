@@ -6,12 +6,11 @@ import Head from 'expo-router/head';
 
 import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
+import { useStarterStyles } from '@styles/starter';
 
 import { initI18n, restoreLanguage } from '@i18n';
 
 import { LanguageSelect } from '@features/language-select/LanguageSelect';
-
-import { useStarterStyles } from '../styles/starter';
 
 initI18n();
 

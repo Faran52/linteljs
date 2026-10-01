@@ -107,6 +107,8 @@ describe('buildTsconfig', () => {
           '@utils': ['./src/lib/utils'],
           '@services/*': ['./src/lib/services/*'],
           '@services': ['./src/lib/services'],
+          '@styles/*': ['./src/styles/*'],
+          '@styles': ['./src/styles'],
           '@config/*': ['./src/config/*'],
           '@config': ['./src/config'],
           '@mocks/*': ['./__mocks__/*'],

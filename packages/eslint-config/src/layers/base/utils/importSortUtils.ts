@@ -22,7 +22,11 @@ const STYLE_GROUP = [String.raw`^.+\.s?css$`];
 
 // In dependency direction, so a sorted import block reads top-down as the architecture.
 const ALIAS_BUCKETS = [
-  ['@config', '@typings'],
+  [
+    '@config',
+    '@typings',
+    '@styles',
+  ],
   [
     '@lib',
     '@store',

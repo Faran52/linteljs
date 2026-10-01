@@ -137,6 +137,7 @@ describe('buildGroups', () => {
     const named = [
       '@config',
       '@typings',
+      '@styles',
       '@lib',
       '@store',
       '@services',
@@ -162,7 +163,11 @@ describe('buildGroups', () => {
     };
 
     expect(buildGroups(aliases).slice(2, -4)).toEqual([
-      ['@config', '@typings'].map(pattern),
+      [
+        '@config',
+        '@typings',
+        '@styles',
+      ].map(pattern),
       [
         '@lib',
         '@store',

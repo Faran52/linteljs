@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 
-import { tokens } from '../../../styles/tokens.stylex';
+import { tokens } from '@styles/tokens.stylex';
 
 // Slow apart and fast back: decay reads as drift and correction as the fix.
 const cascade = stylex.keyframes({
