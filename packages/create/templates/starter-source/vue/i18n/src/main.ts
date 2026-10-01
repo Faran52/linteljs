@@ -18,6 +18,7 @@ const app = createApp(App);
 applyLanguage(detectLanguage());
 storeProvider(app);
 dataProvider(app);
+
 app
   .use(i18n)
   .use(router)

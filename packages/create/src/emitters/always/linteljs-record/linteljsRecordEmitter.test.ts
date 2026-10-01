@@ -123,6 +123,7 @@ export const ANSWERS = [
   it('joins a multi-select into one line, and leaves an empty one out', () => {
     expect(emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app'))
       .toContain("value: 'zod, es-toolkit'");
+
     expect(emitLinteljsRecord(hostedAnswersFor({ agents: [] }), 'my-app')).not.toContain("label: 'AI agents'");
   });
 });

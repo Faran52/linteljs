@@ -38,11 +38,13 @@ describe('About', () => {
 
     expect(root.querySelector('.page-title')?.textContent).toBe(common.about);
     expect(root.querySelector('.page-lede')?.textContent).toBe(common.aboutLede);
+
     expect(textsOf(root, '.section-title')).toEqual([
       common.aboutGate,
       common.aboutStandard,
       common.aboutCurrent,
     ]);
+
     expect(textsOf(root, 'dd')).toEqual(holds);
     expect(textsOf(root, '.note code')).toEqual([CHECK, 'npx @linteljs/create sync']);
     expect(root.textContent).not.toMatch(/[{}<>]/u);

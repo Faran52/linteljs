@@ -75,6 +75,7 @@ export const applyLanguage = (next: Language): void => {
   setLanguage(() => {
     return next;
   });
+
   root.lang = next;
   root.dir = directionOf(next);
 };

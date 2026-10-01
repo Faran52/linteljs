@@ -78,6 +78,7 @@ describe('reactTarget', () => {
       ],
       testSetup: 'fragments/test-setup/setupTests.i18n.ts',
     });
+
     expect(recordFor({ router: 'tanstack-router' }).i18n).toEqual(recordFor().i18n);
     expect(recordFor({ router: 'react-router-framework' }).i18n).toEqual(recordFor().i18n);
   });

@@ -71,6 +71,7 @@ describe('App', () => {
     expect((await open('/about'))
       .find('.page-title')
       .text()).toBe('About');
+
     expect((await open('/version'))
       .find('.page-title')
       .text()).toBe('Version');
@@ -88,6 +89,7 @@ describe('App', () => {
     for (const route of ROUTES.slice(1)) {
       await router.push(route.path);
       await nextTick();
+
       headings.push(app
         .find('.page-title')
         .text());
@@ -110,6 +112,7 @@ describe('App', () => {
     expect(app
       .find('h1')
       .text()).toBe('404');
+
     expect(app
       .find('header')
       .exists()).toBe(true);

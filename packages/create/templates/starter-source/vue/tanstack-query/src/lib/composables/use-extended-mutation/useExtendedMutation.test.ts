@@ -77,6 +77,7 @@ describe('useExtendedMutation', () => {
     const mutation = await runMutation('/contact');
 
     await expect(mutation.send({ message: 'hello there' })).resolves.toEqual({ status: 'accepted' });
+
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
       body: '{"message":"hello there"}',

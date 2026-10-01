@@ -35,6 +35,7 @@ describe('presetOf', () => {
       name: 'probe/two',
       files: ['**/*.vue'],
     }]);
+
     expect(presetOf({ name: 'probe' }, 'probe', ['**/*.ts'])).toEqual([{
       name: 'probe',
       files: ['**/*.ts'],

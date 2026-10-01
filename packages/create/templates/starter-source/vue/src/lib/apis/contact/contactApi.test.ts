@@ -17,6 +17,7 @@ const probeFor = (values: ContactValues): ReturnType<typeof defineComponent> => 
     setup: () => {
       const submit = useSubmitContact();
       const outcome = ref('waiting');
+
       const press = async (): Promise<void> => {
         try {
           const result = await submit(values);
@@ -46,9 +47,11 @@ const press = async (values: ContactValues): Promise<string> => {
   await probe
     .get('button')
     .trigger('click');
+
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
+
   await nextTick();
 
   return probe

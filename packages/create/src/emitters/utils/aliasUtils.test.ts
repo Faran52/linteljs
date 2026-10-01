@@ -42,6 +42,7 @@ describe('buildAliases', () => {
   it('renames the hooks alias per target', () => {
     expect(buildAliases(answersFor({ target: 'vue' }))['@composables/*'])
       .toBe('./src/lib/composables/*');
+
     expect(buildAliases(answersFor({ target: 'vue' }))['@hooks/*']).toBeUndefined();
   });
 

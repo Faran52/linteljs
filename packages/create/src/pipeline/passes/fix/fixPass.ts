@@ -75,6 +75,7 @@ export const fixPass = async (
   const report = (message: string): void => {
     onNotice?.(message);
   };
+
   const result = await localBinarySpawn(cwd, 'eslint', [
     '.',
     '--fix',

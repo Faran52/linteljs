@@ -54,6 +54,7 @@ describe('AppHeader', () => {
         onNavigate={onNavigate}
       />,
     );
+
     fireEvent.click(screen.getByRole('button', { name: 'Version' }));
 
     expect(chosen).toEqual(['version']);

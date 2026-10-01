@@ -63,6 +63,7 @@ describe('nextI18nFiles', () => {
           return file.startsWith('src/app/contact/');
         });
     };
+
     const english = contactOf(answersFor({
       target: 'next',
       form: 'tanstack-form',
@@ -114,6 +115,7 @@ describe('nextI18nTests', () => {
       'src/components/features/status-page/StatusPage.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
     ]);
+
     expect(covers).toContain('src/app/not-found.tsx');
     expect(covers).toContain('src/i18n/index.ts');
   });

@@ -51,6 +51,7 @@ describe('the webextension record', () => {
         './styles/base.css',
         './lib/mark/mark.css',
       ]);
+
     expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(['./styles/tokens.css', './styles/base.css']);
   });
 });
@@ -87,10 +88,12 @@ describe('the browser axis', () => {
       target: 'src/background/index.ts',
       variant: browser,
     });
+
     expect(record.starterFiles).toContainEqual({
       target: 'src/background/onInstalled.ts',
       variant: browser,
     });
+
     expect(record.starterTests).toContainEqual({
       target: 'src/background/onInstalled.test.ts',
       covers: 'src/background/onInstalled.ts',
@@ -141,6 +144,7 @@ describe('the surfaces axis', () => {
       'src/devtools/index.ts',
       'src/panel/index.ts',
     ]);
+
     expect(record.starterTests).toContainEqual({
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',

@@ -35,6 +35,7 @@ describe('the version screen', () => {
 
   it('speaks the language chosen', async () => {
     await renderScreen(<VersionScreen />);
+
     await act(async () => {
       await i18next.changeLanguage(last);
     });

@@ -31,6 +31,7 @@ describe('StatusPage', () => {
         retried.push('retry');
       },
     });
+
     await fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     const home = screen.getByRole('link', { name: 'Go home' });

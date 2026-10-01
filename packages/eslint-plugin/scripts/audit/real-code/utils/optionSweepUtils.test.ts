@@ -16,6 +16,7 @@ import { runOptionSweep } from './optionSweepUtils.ts';
 import type { Rule } from 'eslint';
 
 const dir = mkdtempSync(join(tmpdir(), 'option-sweep-'));
+
 const write = (name: string, text: string): string => {
   const file = join(dir, name);
 
@@ -92,8 +93,10 @@ describe('runOptionSweep', () => {
 
     expect(printed()).toContain('[ERROR] under union-newline { maxGenericMembers: 1 }');
     expect(printed()).toContain(`[ERROR] token loss: ${marked}`);
+
     expect(printed()).toContain(`[ERROR] threw: ${throws}\n  Error while loading rule '@linteljs/union-newline': `
       + 'rule crashed');
+
     expect(printed()).toContain('[INFO] 250/250 files, 4 findings');
     expect(printed()).toContain('[ERROR] 4 findings');
   });

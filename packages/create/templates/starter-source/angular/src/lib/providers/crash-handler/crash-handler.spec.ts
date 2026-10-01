@@ -20,6 +20,7 @@ describe('CrashHandler', () => {
   it('names a ForbiddenError apart from a crash', () => {
     vi.spyOn(console, 'error')
       .mockReturnValue(undefined);
+
     const handler = TestBed.inject(CrashHandler);
 
     handler.handleError(new ForbiddenError());

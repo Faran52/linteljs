@@ -39,6 +39,7 @@ describe('AppHeader', () => {
 
   afterEach(async () => {
     localStorage.clear();
+
     await act(async () => {
       await i18n.changeLanguage('en');
     });
@@ -70,6 +71,7 @@ describe('AppHeader', () => {
 
   it('switches the language, and stores the choice', async () => {
     renderHeader();
+
     await act(async () => {
       fireEvent.change(screen.getByRole('combobox', { name: 'Language' }), { target: { value: last } });
       await i18n.changeLanguage(last);

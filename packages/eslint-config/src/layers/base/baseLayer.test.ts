@@ -234,10 +234,22 @@ describe('base: stylistic', () => {
       'debugger;\n',
       TS_FILE,
     ],
+    [
+      '@stylistic/padding-line-between-statements',
+      'export const pick = (flag) => {\n  const value = 1;\n  if (flag) {\n    return value;\n  }\n  return 2;\n};\n',
+      TS_FILE,
+    ],
   ])('reports %s', async (rule, code, file) => {
     const ids = await ruleIdsFor(base(), code, file);
 
     expect(ids).toContain(rule);
+  });
+
+  it('leaves a barrel of re-exports packed, since a blank line between them never settles', async () => {
+    const code = "export { a } from './a';\nexport { b } from './b';\n";
+    const ids = await ruleIdsFor(base(), code, 'src/lib/index.ts');
+
+    expect(ids).not.toContain('@stylistic/padding-line-between-statements');
   });
 
   it('reports a braceless if', async () => {
@@ -273,6 +285,7 @@ describe('base: ignores', () => {
     }
     finally {
       spy.mockRestore();
+
       await rm(root, {
         recursive: true,
         force: true,
@@ -314,6 +327,7 @@ describe('base: ignores', () => {
     }
     finally {
       spy.mockRestore();
+
       await rm(root, {
         recursive: true,
         force: true,
@@ -336,6 +350,7 @@ describe('base: ignores', () => {
     }
     finally {
       spy.mockRestore();
+
       await rm(root, {
         recursive: true,
         force: true,
@@ -366,8 +381,10 @@ describe('base: quality', () => {
 
     await expect(ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts'))
       .resolves.not.toContain('sonarjs/code-eval');
+
     await expect(ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts'))
       .resolves.not.toContain('sonarjs/code-eval');
+
     await expect(ruleIdsFor(base(), code, 'src/runner.ts'))
       .resolves.toContain('sonarjs/code-eval');
   });
@@ -380,8 +397,10 @@ describe('base: quality', () => {
   it('allows console in a build script, and nowhere near it', async () => {
     await expect(ruleIdsFor(base(), 'console.log(1);\n', 'scripts/generateIcons.js'))
       .resolves.not.toContain('no-console');
+
     await expect(ruleIdsFor(base(), 'console.log(1);\n', 'scripts/nested/build.ts'))
       .resolves.not.toContain('no-console');
+
     await expect(ruleIdsFor(base(), 'console.log(1);\n', 'src/scripts/tool.ts'))
       .resolves.toContain('no-console');
   });
@@ -423,8 +442,10 @@ describe('base: restricted imports', () => {
 
     await expect(ruleIdsFor(base(), importing('es-toolkit/compat'), TS_FILE))
       .resolves.toContain('no-restricted-imports');
+
     await expect(ruleIdsFor(base(), importing('es-toolkit/compat/array/sortBy'), TS_FILE))
       .resolves.toContain('no-restricted-imports');
+
     await expect(ruleIdsFor(base(), importing('es-toolkit'), TS_FILE))
       .resolves.not.toContain('no-restricted-imports');
   });
@@ -576,6 +597,7 @@ describe('base: resolver options', () => {
         project: 'packages/*/tsconfig.json',
       },
     });
+
     expect(settings).toHaveProperty('import-x/parsers');
   });
 
@@ -608,6 +630,7 @@ describe('base: resolver options', () => {
         },
       },
     });
+
     expect(settingsOf(base())).toMatchObject({ 'import-x/resolver': { typescript: { alwaysTryTypes: true } } });
   });
 });
@@ -710,6 +733,7 @@ describe('base: size', () => {
     const component = (lines: number): string => {
       return `export const Page = () => {\n${codeLines(lines - 3, '  ')}  return <main />;\n};\n`;
     };
+
     const atLimit = await ruleIdsFor(base(), component(350), 'src/pages/page/Page.tsx');
     const overLimit = await ruleIdsFor(base(), component(351), 'src/pages/page/Page.tsx');
 

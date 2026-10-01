@@ -51,6 +51,7 @@ describe('answerOptions', () => {
       type: 'string',
       multiple: true,
     });
+
     expect(options['target']).toEqual({ type: 'string' });
   });
 });

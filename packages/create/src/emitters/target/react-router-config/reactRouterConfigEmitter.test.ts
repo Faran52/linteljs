@@ -35,6 +35,7 @@ describe('reactRouterConfigEmitter', () => {
       target: 'react-router.config.ts',
       content: { text: emitReactRouterConfig() },
     }]);
+
     expect(targetsOf({ router: 'react-router' })).toEqual([]);
     expect(targetsOf({})).toEqual([]);
   });

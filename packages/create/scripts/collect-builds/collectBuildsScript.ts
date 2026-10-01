@@ -112,10 +112,12 @@ const report = (found: [string, Record<Collected, string[]>][]): void => {
         return `  ${label.padEnd(28)}${(pnpm.join(', ') || '(none)').padEnd(46)}${extra.join(', ') || '-'}`;
       }),
   ].join('\n'));
+
   log(`Union, for allowBuilds:\n${sorted(found
     .flatMap(([, { pnpm, npm }]) => {
       return [...pnpm, ...npm];
     }))}`);
+
   log(`Blocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${sorted(rows
     .flatMap(({ extra }) => {
       return extra;
@@ -166,6 +168,7 @@ const main = async (): Promise<void> => {
   }
   finally {
     stop();
+
     rmSync(workspace, {
       recursive: true,
       force: true,

@@ -85,9 +85,11 @@ const tailwindDevDependencies = (target: TargetRecord): string[] => {
 
 const libraryDependencies = (answers: Answers, target: TargetRecord): string[] => {
   const { framework } = target;
+
   const bound = (bindings: Record<Framework, string>): string[] => {
     return framework === undefined ? [] : [bindings[framework]];
   };
+
   const runtime: Record<Library, string[]> = {
     'zod': ['zod'],
     'es-toolkit': ['es-toolkit'],

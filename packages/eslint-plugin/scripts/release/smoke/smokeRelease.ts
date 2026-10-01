@@ -283,4 +283,5 @@ rmSync(smokeDir, {
   recursive: true,
   force: true,
 });
+
 log('packed artifact smoke test passed');

@@ -19,15 +19,20 @@ const CHECKER = join('scripts', 'checkBannedPatterns.ts');
 // The payload's `cwd` need not be the project root, so the checker is searched for upwards.
 const checkerAbove = (start: string): string | undefined => {
   let directory = start;
+
   for (;;) {
     const candidate = join(directory, CHECKER);
+
     if (existsSync(candidate)) {
       return candidate;
     }
+
     const parent = dirname(directory);
+
     if (parent === directory) {
       return undefined;
     }
+
     directory = parent;
   }
 };
@@ -49,18 +54,23 @@ const decide = (input: EditInput): string | undefined => {
     if (!CHECKED.test(file) || !existsSync(file)) {
       continue;
     }
+
     // No checker anywhere above is a project with no floor to enforce, which is not a violation to report.
     const checker = findChecker(cwd);
+
     if (checker === undefined) {
       return undefined;
     }
+
     const result = spawnSync(process.execPath, [checker, file], { encoding: 'utf8' });
+
     if (result.status !== 0) {
       const findings = `${result.stdout}${result.stderr}`.trim();
       return `${file} now holds a banned pattern, so the edit was blocked. Build the real type instead of casting `
         + `or suppressing, then write the file again.\n${findings}`;
     }
   }
+
   return undefined;
 };
 

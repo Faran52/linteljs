@@ -51,6 +51,7 @@ describe('svelteTarget', () => {
   it('translates through Paraglide, compiled into the kit\'s generated directory', () => {
     expect(svelteTarget.i18n?.dependencies).toEqual([]);
     expect(svelteTarget.i18n?.compiler?.command).toContain('--outdir ./.svelte-kit/paraglide');
+
     expect(svelteTarget.i18n?.compiler?.devDependencies).toEqual([
       '@inlang/paraglide-js',
       '@inlang/plugin-message-format',

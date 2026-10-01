@@ -23,6 +23,7 @@ describe('CodeText', () => {
     expect(text
       .find('code')
       .exists()).toBe(false);
+
     expect(text.text()).toBe('<b>plain</b>');
   });
 });

@@ -81,6 +81,7 @@ describe('angularI18nTests', () => {
       'src/app/contact/contact.spec.ts@i18n',
       'src/components/features/status-page/status-page.spec.ts@i18n',
     ]);
+
     expect(covers).toEqual([
       'src/i18n/index.ts',
       'src/components/ui/code-text/code-text.ts',

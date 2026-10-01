@@ -40,6 +40,7 @@ describe('VersionPage', () => {
 
   it('speaks the language chosen', async () => {
     render(<VersionPage />);
+
     await act(async () => {
       await i18n.changeLanguage(last);
     });

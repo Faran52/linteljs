@@ -67,6 +67,7 @@ const attributeTokens = (
 
       return after ? diff(tokens, after.tokens) : undefined;
     };
+
     const detail = breaks(subset);
 
     if (detail !== undefined) {
@@ -95,11 +96,13 @@ const attributeCommentMoves = (
   names: string[],
 ): Finding | undefined => {
   const subset = subsetOf(ORDERED_RULES, names);
+
   const moves = (rules: string[]): string | undefined => {
     const after = parsedFix(context, source, name, rules);
 
     return after ? commentMoveDiff(ast, after) : undefined;
   };
+
   const detail = moves(subset);
 
   if (detail === undefined) {
@@ -230,6 +233,7 @@ export const narrow = (
 ): [string, string] => {
   const lines = source.split('\n');
   const [first, last] = changedLines(source, fixed);
+
   const slice = (pad: number): string => {
     return `${lines
       .slice(Math.max(0, first - pad), Math.min(lines.length, last + pad + 1))
@@ -281,6 +285,7 @@ export const attribute = (
 export const dominantRule = (context: AuditContext, file: string): Dominant => {
   const source = readFileSync(file, 'utf8');
   const name = nameFor(file, source);
+
   const timed = (names: string[]): number => {
     const started = performance.now();
 

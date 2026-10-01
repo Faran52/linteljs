@@ -17,6 +17,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const { locale } = i18n.global;
 
   nuxtApp.vueApp.use(i18n);
+
   useHead({
     htmlAttrs: {
       lang: locale,
@@ -25,6 +26,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       }),
     },
   });
+
   onNuxtReady(() => {
     applyLanguage(detectLanguage());
   });

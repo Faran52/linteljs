@@ -218,6 +218,7 @@ describe('starter files for a router', () => {
 
       return document === undefined ? '' : await shippedAssetsReader(document.content);
     };
+
     const stylex = await read({ styling: 'stylex' });
     const plain = await read({});
 
@@ -350,6 +351,7 @@ describe('the starter source', () => {
     };
 
     expect(apiFor({})).toBe(`starter-source/${root}/src/lib/apis/contact/contactApi.ts`);
+
     expect(apiFor({ data: 'tanstack-query' }))
       .toBe(`starter-source/${queryRoot}/tanstack-query/src/lib/apis/contact/contactApi.ts`);
   });
@@ -418,8 +420,10 @@ describe('the starter source', () => {
     it('takes react\'s store in the spelling the store answer asks for', () => {
       expect(sourceOf({ store: 'zustand' }, 'src/lib/store/counter/counterStore.ts'))
         .toBe('starter-source/react/zustand/src/lib/store/counter/counterStore.ts');
+
       expect(sourceOf({ store: 'tanstack-store' }, 'src/lib/store/counter/counterStore.ts'))
         .toBe('starter-source/react/tanstack-store/src/lib/store/counter/counterStore.ts');
+
       expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/store/counter/counterStore.ts'))
         .toBe('starter-source/react/redux-toolkit/src/lib/store/counter/counterStore.ts');
     });
@@ -427,10 +431,13 @@ describe('the starter source', () => {
     it('keeps both client slots in its own tree', () => {
       expect(sourceOf({}, 'src/lib/providers/store/StoreProvider.tsx'))
         .toBe('starter-source/next/src/lib/providers/store/StoreProvider.tsx');
+
       expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/providers/store/StoreProvider.tsx'))
         .toBe('starter-source/next/redux-toolkit/src/lib/providers/store/StoreProvider.tsx');
+
       expect(sourceOf({}, 'src/lib/providers/data/DataProvider.tsx'))
         .toBe('starter-source/next/src/lib/providers/data/DataProvider.tsx');
+
       expect(sourceOf({ data: 'tanstack-query' }, 'src/lib/providers/data/DataProvider.tsx'))
         .toBe('starter-source/next/tanstack-query/src/lib/providers/data/DataProvider.tsx');
     });
@@ -439,8 +446,10 @@ describe('the starter source', () => {
       const barrel = 'src/components/ui/index.ts';
 
       expect(sourceOf({}, barrel)).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
+
       expect(sourcesByTarget({ target: 'next' })[barrel])
         .toBe('starter-source/shared/src/components/ui/index.ts');
+
       const source = sourcesByTarget({
         target: 'next',
         store: 'zustand',
@@ -462,6 +471,7 @@ describe('the starter source', () => {
     it('takes the styling answer\'s own token spelling', () => {
       expect(sourceOf({ styling: 'tailwind' }, 'src/styles/theme.css'))
         .toBe('starter-source/shared/tailwind/src/styles/theme.css');
+
       expect(sourceOf({ styling: 'stylex' }, 'src/styles/tokens.stylex.ts'))
         .toBe('starter-source/shared/stylex/src/styles/tokens.stylex.ts');
     });

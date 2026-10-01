@@ -147,6 +147,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       const [declarationStart] = rangeOf(fn);
       const [, blockEnd] = rangeOf(fn.parent);
       const previous = sourceCode.getTokenBefore(fn);
+
       // Only a declaration is hoisted; one inside another function is called from there, once `fn` exists.
       // The Program holds `fn`, so the walk always stops before it runs out of parents.
       const outermostDeclarationOf = (reference: Scope.Reference): FunctionDeclarationNode | undefined => {
@@ -174,6 +175,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
       // A Set visits each declaration once however often it is added, so mutual calls cannot loop.
       const hoisted = new Set<FunctionDeclarationNode>();
+
       const follow = (reference: Scope.Reference): boolean => {
         if (runsEarly(reference)) {
           return true;
@@ -333,6 +335,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         if (referencesOwnName(fn)) {
           return;
         }
+
         const arrow = writeArrowFunction(sourceCode, fn, isTsx);
 
         if (!property.method) {

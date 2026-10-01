@@ -145,6 +145,7 @@ describe('reactCore', () => {
         '',
       ].join('\n');
     };
+
     const layer = base({ frameworkGroup: reactGroup });
 
     await expect(ruleIdsFor(layer, block([
@@ -154,6 +155,7 @@ describe('reactCore', () => {
       'react-aria',
     ]), 'src/lib/a.ts'))
       .resolves.not.toContain('simple-import-sort/imports');
+
     await expect(ruleIdsFor(layer, block([
       'react',
       'react/jsx-runtime',

@@ -76,6 +76,7 @@ const recommendedNames = Object.entries(rules)
 const packageJson = readJson('package.json');
 const ruleNames = Object.keys(rules);
 const ruleCases: [string, LintelRuleModule][] = Object.entries(rules);
+
 const prefixed = (names: string[]): string[] => {
   return names
     .map((name) => {

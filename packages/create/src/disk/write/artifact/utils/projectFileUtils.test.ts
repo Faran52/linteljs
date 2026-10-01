@@ -73,6 +73,7 @@ describe('projectFileWriter', () => {
 
     await expect(projectFileWriter(cwd, 'generated.txt', 'generated\n'))
       .rejects.toThrow('Refusing to write generated.txt: target is a symbolic link');
+
     await expect(readlink(target)).resolves.toBe(external);
     await expect(readIfPresent(external)).resolves.toBe(original);
   });
@@ -85,6 +86,7 @@ describe('projectFileWriter', () => {
 
     await expect(projectFileWriter(cwd, 'nested/generated.txt', 'generated\n'))
       .rejects.toThrow('Refusing to use nested/generated.txt: a parent directory is a symbolic link');
+
     await expect(readIfPresent(join(external, 'generated.txt'))).resolves.toBeNull();
   });
 

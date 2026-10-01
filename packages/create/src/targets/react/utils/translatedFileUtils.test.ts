@@ -47,6 +47,7 @@ describe('reactI18nFiles', () => {
       'src/pages/version/VersionPage.tsx',
       HEADER,
     ]);
+
     expect(framework).toEqual([
       'src/config/statuses.ts',
       'src/config/standard.ts',
@@ -64,6 +65,7 @@ describe('reactI18nFiles', () => {
           return file.startsWith('src/pages/contact/');
         });
     };
+
     const english = contactOf(answersFor({ form: 'tanstack-form' }));
     const translated = contactOf(answersFor({
       form: 'react-hook-form',
@@ -75,10 +77,12 @@ describe('reactI18nFiles', () => {
       'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/ContactPage.test.tsx',
     ]);
+
     expect(translated).toEqual([
       'src/pages/contact/ContactPage.tsx@i18n',
       'src/pages/contact/ContactPage.test.tsx@i18n',
     ]);
+
     expect(formless).toEqual([]);
   });
 
@@ -93,6 +97,7 @@ describe('reactI18nFiles', () => {
           return file.startsWith(HEADER);
         });
     };
+
     const english = headerOf(answersFor({ router }));
     const translated = headerOf(answersFor({
       router,
@@ -120,6 +125,7 @@ describe('reactI18nTests', () => {
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
     ]);
+
     expect(routed).not.toContain('src/components/features/app-header/AppHeader.test.tsx@i18n');
   });
 });

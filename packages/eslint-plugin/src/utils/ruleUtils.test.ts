@@ -58,10 +58,12 @@ describe('isIdentifierNamed', () => {
       type: 'Identifier',
       name: 'stylex',
     }, 'stylex')).toBe(true);
+
     expect(isIdentifierNamed({
       type: 'Identifier',
       name: 'css',
     }, 'stylex')).toBe(false);
+
     expect(isIdentifierNamed({
       type: 'PrivateIdentifier',
       name: 'stylex',

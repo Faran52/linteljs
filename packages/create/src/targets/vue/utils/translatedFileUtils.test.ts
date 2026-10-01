@@ -67,6 +67,7 @@ describe('vueI18nFiles', () => {
           return file.startsWith('src/views/ContactView');
         });
     };
+
     const english = contactOf(answersFor({
       target: 'vue',
       form: 'tanstack-form',
@@ -108,6 +109,7 @@ describe('vueI18nTests', () => {
       'src/components/ui/code-text/CodeText.test.ts@i18n',
       'src/i18n/index.test.ts@i18n',
     ]);
+
     expect(covers).toContain('src/App.vue');
     expect(covers).toContain('src/components/ui/code-text/CodeText.vue');
     expect(covers).toContain('src/i18n/index.ts');

@@ -51,6 +51,7 @@ describe('StatusPage', () => {
         onRetry={retry}
       />,
     );
+
     await fireEvent.press(screen.getByRole('button'));
 
     expect(retry).toHaveBeenCalledOnce();
@@ -64,6 +65,7 @@ describe('StatusPage', () => {
         onRetry={vi.fn()}
       />,
     );
+
     await act(async () => {
       await i18next.changeLanguage(last);
     });

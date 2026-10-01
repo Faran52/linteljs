@@ -139,6 +139,7 @@ describe('nuxtConfigEmitter', () => {
       target: 'nuxt.config.ts',
       content: { text: PLAIN },
     }]);
+
     expect(nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app')).toEqual([]);
   });
 

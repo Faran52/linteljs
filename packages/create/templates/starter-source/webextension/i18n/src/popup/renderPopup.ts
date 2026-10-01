@@ -35,8 +35,10 @@ export const renderPopup = (root: HTMLElement): void => {
     document.documentElement.lang = language;
     document.documentElement.dir = directionOf(language);
     lede.textContent = t('popupLede', language);
+
     hint.replaceChildren(...partsOf(t('popupGate', language, { command: CHECK }))
       .map(nodeOf));
+
     picker.value = language;
     picker.setAttribute('aria-label', t('language', language));
   };
@@ -45,6 +47,7 @@ export const renderPopup = (root: HTMLElement): void => {
   title.textContent = NAME;
   lede.className = 'lede';
   hint.className = 'hint';
+
   picker.append(...languages
     .map((option) => {
       const item = document.createElement('option');
@@ -55,6 +58,7 @@ export const renderPopup = (root: HTMLElement): void => {
 
       return item;
     }));
+
   picker
     .addEventListener('change', () => {
       chooseLanguage(picker.value);

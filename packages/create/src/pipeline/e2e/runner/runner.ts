@@ -95,6 +95,7 @@ const verifyLintOutput = async (pm: PackageManager, project: string): Promise<vo
 // A build that drops the atomic rules still passes `check`.
 const missingStylexRules = (project: string): string => {
   const files = globSync('{dist,build,.output,.svelte-kit/output,.next}/**/*.{js,mjs,html,css}', { cwd: project });
+
   const joined = (css: boolean): string => {
     return files
       .filter((file) => {
@@ -105,6 +106,7 @@ const missingStylexRules = (project: string): string => {
       })
       .join('\n');
   };
+
   const styles = joined(true);
   const classNames = (joined(false)
     .replaceAll(SVELTEKIT_VERSION_HASH, '')
@@ -162,6 +164,7 @@ export const runE2eCase = async ({
   const installLater = async (): Promise<RunResult> => {
     return runPm(answers.packageManager, ['install'], project);
   };
+
   let install: RunResult | undefined;
 
   if (variant === 'no-install') {
@@ -177,11 +180,13 @@ export const runE2eCase = async ({
   expect(noise).toEqual([]);
   expect(existsSync(join(project, '.husky/_'))).toBe(true);
   expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
+
   // The manager came from the injected user agent, so the recorded config proves it was read.
   expect(parseLinteljsConfig(readFileSync(join(project, CONFIG_PATH), 'utf8'))).toMatchObject({
     ...answers,
     packageManagerVersion: await versionOf(answers.packageManager),
   });
+
   expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
     .not.toHaveProperty('linteljs');
 

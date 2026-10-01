@@ -39,9 +39,12 @@ describe('emitCiWorkflow', () => {
   it('installs without letting the manager edit the lockfile', () => {
     expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'pnpm' })))
       .toContain('pnpm install --frozen-lockfile');
+
     expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'npm' }))).toContain('npm ci');
+
     expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'yarn' })))
       .toContain('yarn install --immutable');
+
     expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' })))
       .toContain('bun install --frozen-lockfile');
   });

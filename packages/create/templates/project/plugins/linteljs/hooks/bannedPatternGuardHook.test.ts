@@ -31,6 +31,7 @@ describe('bannedPatternGuardHook.ts', () => {
     checkerLog = join(cwd, 'checker.log');
     mkdirSync(join(cwd, 'scripts'));
     mkdirSync(join(cwd, 'src'));
+
     writeFileSync(
       join(cwd, 'scripts/checkBannedPatterns.ts'),
       [
@@ -46,6 +47,7 @@ describe('bannedPatternGuardHook.ts', () => {
         '',
       ].join('\n'),
     );
+
     writeFileSync(join(cwd, 'src/app.ts'), 'fail\n');
     writeFileSync(join(cwd, 'src/app.md'), '# safe\n');
   });
@@ -143,6 +145,7 @@ describe('bannedPatternGuardHook.ts', () => {
     });
 
     expect(output).toContain('bad cast');
+
     expect(checkedPaths()).toEqual([
       join(cwd, 'src/first.ts'),
       join(cwd, 'src/second.ts'),
@@ -205,10 +208,12 @@ describe('bannedPatternGuardHook.ts', () => {
       cwd,
       tool_input: { file_path: 'src/missing.ts' },
     })).toBeUndefined();
+
     expect(runHook('bannedPatternGuardHook.ts', {
       cwd,
       tool_input: '*** Update File: src/app.md',
     })).toBeUndefined();
+
     expect(checkedPaths()).toEqual([]);
   });
 
@@ -227,6 +232,7 @@ describe('bannedPatternGuardHook.ts', () => {
       tool_name: 'Write',
       tool_input: { file_path: 'src/app.ts' },
     })).toBeUndefined();
+
     expect(checkedPaths()).toEqual([]);
   });
 });

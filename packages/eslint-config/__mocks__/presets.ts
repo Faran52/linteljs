@@ -17,6 +17,7 @@ export const layerWithout = async <P>(
   load: () => Promise<() => Layer>,
 ): Promise<() => Layer> => {
   vi.resetModules();
+
   vi.doMock(specifier, async (importOriginal) => {
     const original = await importOriginal<PluginModule<P>>();
 

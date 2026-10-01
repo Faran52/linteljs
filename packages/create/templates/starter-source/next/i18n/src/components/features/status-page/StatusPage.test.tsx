@@ -41,6 +41,7 @@ describe('StatusPage', () => {
       />,
       { wrapper: I18nProvider },
     );
+
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(retried).toEqual(['retry']);
@@ -48,6 +49,7 @@ describe('StatusPage', () => {
 
   it('speaks the language chosen', () => {
     render(<StatusPage {...STATUSES.forbidden} />, { wrapper: I18nProvider });
+
     act(() => {
       chooseLanguage(last);
     });

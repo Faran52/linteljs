@@ -29,6 +29,7 @@ describe('StatusPage', () => {
         }}
       />,
     );
+
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(retried).toEqual(['retry']);

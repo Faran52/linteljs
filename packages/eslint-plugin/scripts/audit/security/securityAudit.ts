@@ -119,6 +119,7 @@ if (missing.length > 0) {
         return `  sonarjs/${name}  (${String(SECURITY_RULES[name])})`;
       })
       .join('\n')}\nThe plugin renamed or dropped them. Update SECURITY_RULES, do not delete the line.`);
+
   process.exit(1);
 }
 
@@ -183,6 +184,7 @@ if (fatal.length > 0) {
       return `  ${finding.file}:${String(finding.line)}  ${finding.text}`;
     })
     .join('\n')}`);
+
   process.exit(1);
 }
 
@@ -195,6 +197,7 @@ const reported = findings
 const byRule = countBy(reported, (finding) => {
   return String(finding.rule);
 });
+
 const lineOf = ({
   file,
   line,
@@ -219,6 +222,7 @@ if (reported.length > 0) {
   logError(`${String(reported.length)} finding(s):\n${reported
     .map(lineOf)
     .join('\n')}`);
+
   process.exit(1);
 }
 

@@ -80,6 +80,7 @@ beforeEach(async () => {
 afterEach(async () => {
   vi.unstubAllEnvs();
   chdir(entered);
+
   await rm(project, {
     recursive: true,
     force: true,
@@ -291,6 +292,7 @@ describe('main: create', () => {
       agents: ['claude-code', 'codex'],
       plugins: [],
     });
+
     expect(printed).toContain('wrote AGENTS.md');
   });
 
@@ -363,11 +365,13 @@ describe('main: patching a project that already exists', () => {
     const written = await configAt();
 
     expect(code).toBe(0);
+
     expect(written).toMatchObject({
       target: 'svelte',
       packageManager: 'npm',
       nodeVersion: versions.node,
     });
+
     expect(written).not.toHaveProperty('packageManagerVersion');
   });
 });
@@ -442,6 +446,7 @@ describe('main: sync', () => {
 
   it('says what it removed once the config stops selecting a host', async () => {
     await generated();
+
     await writeConfig({
       ...DEFAULT_ANSWERS,
       agents: ['codex'],
@@ -513,6 +518,7 @@ describe('main: answers given as flags', () => {
 
     expect(code).toBe(0);
     expect(asked.calls).toEqual([]);
+
     expect(await configAt()).toMatchObject({
       target: 'svelte',
       packageManager: 'bun',
@@ -556,6 +562,7 @@ describe('main: what a run reports', () => {
     ]);
 
     expect(code).toBe(0);
+
     expect(printed.endsWith('\n\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n'))
       .toBe(true);
   });

@@ -37,6 +37,7 @@ describe('the about route', () => {
 
   it('speaks the language chosen', () => {
     render(<AboutPage />, { wrapper: I18nProvider });
+
     act(() => {
       chooseLanguage(last);
     });

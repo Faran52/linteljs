@@ -66,6 +66,7 @@ describe('the build it owns', () => {
 
     expect(record.vitePlugin).toBeUndefined();
     expect(record.vitestFactory?.call).toBe('getViteConfig');
+
     expect(record.vitestFactory?.imports).toEqual([
       "import { getViteConfig } from 'astro/config';",
       '',

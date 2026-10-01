@@ -156,6 +156,7 @@ describe('buildGroups', () => {
       .map((name) => {
         return [`${name}/*`, `./src/${name.slice(1)}/*`];
       }));
+
     const pattern = (name: string): string => {
       return `^${name}(?:/|$)`;
     };

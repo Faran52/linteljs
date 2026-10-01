@@ -313,6 +313,7 @@ const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
 
     return asCase(answers);
   };
+
   const smokes = PACKAGE_MANAGERS
     .filter((pm) => {
       return pm !== 'pnpm';
@@ -337,6 +338,7 @@ const fullCases = (target: TargetId, widest: E2eCase): E2eCase[] => {
 
     return labelled;
   };
+
   const varied = variants.map(asVariant);
   const extra = [...smokes, ...varied];
 
@@ -351,10 +353,12 @@ export const targetCases = (target: TargetId): E2eCase[] => {
   }
 
   const paired = env['E2E_FULL'] === '1' ? every : coveringSubset(every);
+
   // Stable, so a tie keeps the first.
   const byWidth = (left: E2eCase, right: E2eCase): number => {
     return answerCount(right) - answerCount(left);
   };
+
   const widest = every
     .toSorted(byWidth)
     .slice(0, 1);

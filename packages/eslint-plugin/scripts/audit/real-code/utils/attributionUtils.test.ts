@@ -50,6 +50,7 @@ describe('evaluate', () => {
       findings: [],
       fixed: 'type = ;\n',
     });
+
     expect(evaluate(context, UNION, 'file.ts', ['union-newline'], parse(UNION, 'file.ts')).changed).toBe(false);
   });
 

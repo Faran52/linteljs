@@ -20,6 +20,7 @@ describe('copilotInstructionsEmitter', () => {
       'codex',
       'cursor',
     ]))).toEqual([]);
+
     expect(targets(copilotInstructionsEmitter(answersFor(['copilot']))))
       .toEqual(targets(copilotArtifacts(answersFor(['copilot']))));
   });

@@ -53,6 +53,7 @@ describe('typescript', () => {
   it('turns the type-aware rules off a plain .js file', async () => {
     await expect(ruleNamesFor([...base(), ...typescript()], 'src/tool.js'))
       .resolves.toContain('@typescript-eslint/no-floating-promises');
+
     await expect(enabledRuleIdsFor([...base(), ...typescript()], 'src/tool.js'))
       .resolves.not.toContain('@typescript-eslint/no-floating-promises');
   });

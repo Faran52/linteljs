@@ -50,6 +50,7 @@ describe('sharedSlots', () => {
   it('adds the test and coverage rows only when there is a test runner', () => {
     expect(sharedSlots('demo-app', answersFor({ testing: 'vitest' }))['TEST_ROWS'])
       .toContain('| test | `pnpm test` |');
+
     expect(sharedSlots('demo-app', answersFor({ testing: 'none' }))['TEST_ROWS']).toBe('');
   });
 });

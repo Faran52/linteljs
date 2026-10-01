@@ -54,6 +54,7 @@ describe('request', () => {
       .mockImplementation(() => {
         return Promise.resolve(jsonResponse({ results: [] }));
       });
+
     await request('/search', { query: { tag: ['a', 'b'], page: 2 } });
 
     expect(fetchMock).toHaveBeenCalledWith('/api/search?tag=a&tag=b&page=2', expect.anything());
@@ -64,6 +65,7 @@ describe('request', () => {
       .mockImplementation(() => {
         return Promise.resolve(jsonResponse({ results: [] }));
       });
+
     await request('/search', { query: { q: 'a b&c', page: 2 } });
     await request('/search');
 
@@ -76,6 +78,7 @@ describe('request', () => {
       .mockImplementation(() => {
         return Promise.resolve(jsonResponse({ status: 'ok' }));
       });
+
     await request('/contact', { method: 'POST', body: { email: 'a@b.co' } });
 
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
@@ -106,6 +109,7 @@ describe('request', () => {
       .mockImplementation(() => {
         return Promise.resolve(jsonResponse({ status: 'ok' }));
       });
+
     await request('version');
     await request('/version', { query: {} });
 

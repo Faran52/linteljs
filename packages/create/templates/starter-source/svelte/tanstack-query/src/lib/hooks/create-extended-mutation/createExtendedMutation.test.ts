@@ -47,6 +47,7 @@ describe('createExtendedMutation', () => {
     await waitFor(() => {
       expect(screen.getByTestId('status').textContent).toBe('success');
     });
+
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
       body: '{"message":"hello there"}',
@@ -74,6 +75,7 @@ describe('createExtendedMutation', () => {
       client,
       invalidates: ['/version'],
     });
+
     await fireEvent.click(screen.getByRole('button', { name: 'send' }));
 
     await waitFor(() => {

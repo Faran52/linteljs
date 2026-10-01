@@ -254,6 +254,7 @@ describe('stageReport on a terminal', () => {
       });
 
       expect(SPINNER_FRAMES.charAt(2)).not.toBe(SPINNER_FRAMES.charAt(1));
+
       expect(output).toBe([
         `\u001B[K  ${SPINNER_FRAMES.charAt(1)} standard\r`,
         `\u001B[K  ${SPINNER_FRAMES.charAt(2)} standard\r`,

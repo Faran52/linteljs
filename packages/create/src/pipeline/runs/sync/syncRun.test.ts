@@ -314,6 +314,7 @@ describe('applySync', () => {
 
     await expect(applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']))
       .rejects.toThrow('Refusing to write eslint.config.js: target is a symbolic link');
+
     await expect(readFile(external, 'utf8')).resolves.toBe('// external config\n');
   });
 
@@ -321,17 +322,20 @@ describe('applySync', () => {
     const external = join(cwd, 'external-claude');
 
     await mkdir(join(cwd, 'plugins', 'linteljs'), { recursive: true });
+
     await writeFile(
       join(cwd, MANAGED_PATH),
       `${JSON.stringify({ removable: ['.claude/settings.json'] })}\n`,
       'utf8',
     );
+
     await mkdir(external);
     await writeFile(join(external, 'settings.json'), '{"external":true}\n', 'utf8');
     await symlink(external, join(cwd, '.claude'));
 
     await expect(applySync(cwd, CODEX_ONLY, ['.claude/settings.json']))
       .rejects.toThrow('Refusing to use .claude/settings.json: a parent directory is a symbolic link');
+
     await expect(readFile(join(external, 'settings.json'), 'utf8')).resolves.toBe('{"external":true}\n');
   });
 
@@ -410,6 +414,7 @@ describe('applySync', () => {
     ];
 
     await applyPending(HOSTED_DEFAULTS);
+
     await writeFile(
       join(cwd, MANAGED_PATH),
       `${JSON.stringify({ removable: retired })}\n`,

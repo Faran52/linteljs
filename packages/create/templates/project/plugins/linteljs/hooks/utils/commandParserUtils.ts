@@ -64,13 +64,16 @@ export const skipOptions = (tokens: string[], start: number, valued: Set<string>
 
   while ((tokens[index] ?? '').startsWith('-')) {
     const option = tokens[index] ?? '';
+
     if (option === '--') {
       return index + 1;
     }
+
     if (valued.has(option)) {
       if (index + 1 >= tokens.length) {
         return undefined;
       }
+
       index += 2;
     }
     else {
@@ -89,18 +92,21 @@ const emitToken = (state: TokenizerState): void => {
   if (state.active) {
     state.tokens.push(state.token);
   }
+
   state.token = '';
   state.active = false;
 };
 
 const emitSegment = (state: TokenizerState): void => {
   emitToken(state);
+
   if (state.tokens.length > 0) {
     state.segments.push({
       opaque: state.opaque,
       tokens: state.tokens,
     });
   }
+
   state.tokens = [];
   state.opaque = false;
 };
@@ -108,10 +114,12 @@ const emitSegment = (state: TokenizerState): void => {
 // A PowerShell group is read as the commands inside it, and the command it sits in cannot be vouched for.
 const openGroup = (state: TokenizerState): void => {
   emitToken(state);
+
   state.groups.push({
     opaque: true,
     tokens: state.tokens,
   });
+
   state.tokens = [];
   state.opaque = false;
 };
@@ -119,9 +127,11 @@ const openGroup = (state: TokenizerState): void => {
 const closeGroup = (state: TokenizerState): boolean => {
   emitSegment(state);
   const outer = state.groups.pop();
+
   if (outer === undefined) {
     return false;
   }
+
   state.tokens = outer.tokens;
   state.opaque = outer.opaque;
   return true;
@@ -133,19 +143,23 @@ const escapeCharacter = (state: TokenizerState): string => {
 
 const readQuotedCharacter = (source: string, index: number, state: TokenizerState): number | undefined => {
   const character = source.charAt(index);
+
   if (character === state.quote) {
     // PowerShell doubles a quote to escape it.
     if (state.dialect === 'powershell' && source[index + 1] === character) {
       state.token += character;
       return index + 1;
     }
+
     state.quote = '';
   }
   else if (character === escapeCharacter(state) && state.quote === '"') {
     index += 1;
+
     if (index >= source.length) {
       return undefined;
     }
+
     state.token += source.charAt(index);
   }
   else if (state.dialect === 'powershell' && state.quote === '"' && source.startsWith('$(', index)) {
@@ -154,6 +168,7 @@ const readQuotedCharacter = (source: string, index: number, state: TokenizerStat
   else {
     state.token += character;
   }
+
   state.active = true;
   return index;
 };
@@ -161,12 +176,15 @@ const readQuotedCharacter = (source: string, index: number, state: TokenizerStat
 // An escaped line break continues the line, in bash by vanishing and in PowerShell as a space between tokens.
 const readEscaped = (source: string, index: number, state: TokenizerState): number => {
   const lineBreak = /^(?:\r\n|\r|\n)/u.exec(source.slice(index, index + 2))?.[0];
+
   if (lineBreak !== undefined) {
     if (state.dialect === 'powershell') {
       emitToken(state);
     }
+
     return index + lineBreak.length - 1;
   }
+
   state.token += source.charAt(index);
   state.active = true;
   return index;
@@ -177,27 +195,33 @@ const POWERSHELL_GROUP = /^(?:<#|@["'({]|\$\(|[(){}])/u;
 const readPowerShellGroup = (source: string, index: number, state: TokenizerState): number | undefined => {
   const character = source.charAt(index);
   const pair = source.slice(index, index + 2);
+
   if (pair === '<#' || pair === '@"' || pair === "@'") {
     return undefined;
   }
+
   if (pair === '$(' || pair === '@(' || pair === '@{') {
     openGroup(state);
     return index + 1;
   }
+
   if (character === '(' || character === '{') {
     openGroup(state);
     return index;
   }
+
   return closeGroup(state) ? index : undefined;
 };
 
 const readPlainCharacter = (source: string, index: number, state: TokenizerState): number => {
   const character = source.charAt(index);
+
   if (character === '#' && !state.active) {
     const lineEnd = source.indexOf('\n', index);
     emitSegment(state);
     return lineEnd === -1 ? source.length : lineEnd;
   }
+
   if (character === '\n') {
     emitSegment(state);
   }
@@ -212,6 +236,7 @@ const readPlainCharacter = (source: string, index: number, state: TokenizerState
     state.token += character;
     state.active = true;
   }
+
   return index;
 };
 
@@ -219,15 +244,19 @@ const readUnquotedCharacter = (source: string, index: number, state: TokenizerSt
   if (state.dialect === 'powershell' && POWERSHELL_GROUP.test(source.slice(index, index + 2))) {
     return readPowerShellGroup(source, index, state);
   }
+
   const character = source.charAt(index);
+
   if (character === '"' || character === "'") {
     state.quote = character;
     state.active = true;
     return index;
   }
+
   if (character === escapeCharacter(state)) {
     return index + 1 < source.length ? readEscaped(source, index + 1, state) : undefined;
   }
+
   return readPlainCharacter(source, index, state);
 };
 
@@ -244,28 +273,34 @@ const segmentsOf = (source: string, dialect: Dialect): Segment[] | undefined => 
   };
 
   let index = 0;
+
   while (index < source.length) {
     const next = state.quote === ''
       ? readUnquotedCharacter(source, index, state)
       : readQuotedCharacter(source, index, state);
+
     if (next === undefined) {
       return undefined;
     }
+
     index = next + 1;
   }
 
   if (state.quote !== '' || state.groups.length > 0) {
     return undefined;
   }
+
   emitSegment(state);
   return state.segments;
 };
 
 const skipAssignments = (tokens: string[], start: number): number => {
   let index = start;
+
   while (isAssignment(tokens[index] ?? '')) {
     index += 1;
   }
+
   return index;
 };
 
@@ -290,14 +325,17 @@ const splitStringOf = (option: string, operand: string | undefined): string | un
   if (option === '-S' || option === '--split-string') {
     return operand;
   }
+
   if (option.startsWith('--split-string=')) {
     return option.slice('--split-string='.length);
   }
+
   return option.startsWith('-S') && option.length > 2 ? option.slice(2) : undefined;
 };
 
 const envOption = (tokens: string[], index: number): Step => {
   const option = tokens[index] ?? '';
+
   if (option === '-P' || [
     '-u',
     '--unset',
@@ -308,9 +346,11 @@ const envOption = (tokens: string[], index: number): Step => {
   ].includes(option)) {
     return valuedOperand(tokens, index);
   }
+
   if (option.startsWith('-P') && option.length > 2) {
     return next(index + 1);
   }
+
   if ([
     '-',
     '-0',
@@ -322,6 +362,7 @@ const envOption = (tokens: string[], index: number): Step => {
   ].includes(option)) {
     return next(index + 1);
   }
+
   return UNREADABLE;
 };
 
@@ -330,9 +371,11 @@ const envSplit = (tokens: string[], index: number, depth: number): Step | undefi
   const option = tokens[index] ?? '';
   const separate = option === '-S' || option === '--split-string';
   const splitString = splitStringOf(option, tokens[index + 1]);
+
   if (splitString === undefined) {
     return separate ? UNREADABLE : undefined;
   }
+
   const effective = splitEnvArguments(splitString, tokens.slice(index + (separate ? 2 : 1)));
   return effective === undefined ? UNREADABLE : envWrapper(effective, 0, depth + 1);
 };
@@ -341,26 +384,36 @@ const envWrapper = (tokens: string[], start: number, depth: number): Step => {
   if (depth > MAX_DEPTH) {
     return UNREADABLE;
   }
+
   let index = start;
+
   while (index < tokens.length) {
     const option = tokens[index] ?? '';
+
     if (option === '--') {
       index += 1;
       break;
     }
+
     if (isAssignment(option) || !option.startsWith('-')) {
       break;
     }
+
     const split = envSplit(tokens, index, depth);
+
     if (split !== undefined) {
       return split;
     }
+
     const step = envOption(tokens, index);
+
     if (step.kind !== 'next') {
       return step;
     }
+
     index = step.index;
   }
+
   return {
     kind: 'next',
     index: skipAssignments(tokens, index),
@@ -370,11 +423,14 @@ const envWrapper = (tokens: string[], start: number, depth: number): Step => {
 
 const commandWrapper = (tokens: string[], start: number): Step => {
   let index = start;
+
   while ((tokens[index] ?? '').startsWith('-')) {
     const option = tokens[index] ?? '';
+
     if (option === '--') {
       return next(index + 1);
     }
+
     // `command -v` looks a name up rather than running it.
     if (option.includes('v') || option.includes('V')) {
       return {
@@ -382,28 +438,35 @@ const commandWrapper = (tokens: string[], start: number): Step => {
         commands: [],
       };
     }
+
     index += 1;
   }
+
   return next(index);
 };
 
 const execWrapper = (tokens: string[], start: number): Step => {
   let index = start;
+
   while ((tokens[index] ?? '').startsWith('-')) {
     const option = tokens[index] ?? '';
+
     if (option === '--') {
       return next(skipAssignments(tokens, index + 1));
     }
+
     if (option === '-a' || option === '--argv0') {
       if (index + 1 >= tokens.length) {
         return UNREADABLE;
       }
+
       index += 2;
     }
     else {
       index += 1;
     }
   }
+
   return next(skipAssignments(tokens, index));
 };
 
@@ -430,17 +493,21 @@ const NO_COMMAND: Step = {
 const shellWrapper = (tokens: string[], start: number, depth: number): Step => {
   for (let index = start; index < tokens.length; index += 1) {
     const option = tokens[index] ?? '';
+
     if (option === '--') {
       continue;
     }
+
     if (/^-[^-]*c/u.test(option)) {
       const command = tokens[index + 1];
       return command === undefined ? UNREADABLE : nested(command, 'bash', depth);
     }
+
     if (!option.startsWith('-')) {
       break;
     }
   }
+
   return NO_COMMAND;
 };
 
@@ -468,44 +535,53 @@ const isPrefixOf = (option: string, name: string, shortest: number): boolean => 
 const powerShellWrapper = (tokens: string[], start: number, depth: number): Step => {
   for (let index = start; index < tokens.length; index += 1) {
     const option = (tokens[index] ?? '').toLowerCase();
+
     if (!option.startsWith('-')) {
       const command = tokens
         .slice(index)
         .join(' ');
       return nested(command, 'powershell', depth);
     }
+
     if (isPrefixOf(option, '-command', 1)) {
       const command = tokens
         .slice(index + 1)
         .join(' ');
       return nested(command, 'powershell', depth);
     }
+
     if (isPrefixOf(option, '-encodedcommand', 1) || option === '-ec') {
       return UNREADABLE;
     }
+
     if (isPrefixOf(option, '-file', 1)) {
       return NO_COMMAND;
     }
+
     if (POWERSHELL_VALUED.has(option)) {
       index += 1;
     }
   }
+
   return NO_COMMAND;
 };
 
 const cmdWrapper = (tokens: string[], start: number, depth: number): Step => {
   for (let index = start; index < tokens.length; index += 1) {
     const option = (tokens[index] ?? '').toLowerCase();
+
     if (option === '/c' || option === '/k') {
       const command = tokens
         .slice(index + 1)
         .join(' ');
       return nested(command, 'powershell', depth);
     }
+
     if (!option.startsWith('/')) {
       break;
     }
   }
+
   return NO_COMMAND;
 };
 
@@ -524,8 +600,10 @@ const START_PROCESS_VALUED = new Set([
 // The program is named, but its arguments arrive as a PowerShell array, so the command is opaque.
 const startProcessWrapper = (tokens: string[], start: number): Step => {
   let index = start;
+
   while (index < tokens.length) {
     const option = (tokens[index] ?? '').toLowerCase();
+
     if (option === '-filepath') {
       return {
         kind: 'next',
@@ -533,11 +611,14 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
         opaque: true,
       };
     }
+
     if (!option.startsWith('-')) {
       break;
     }
+
     index += START_PROCESS_VALUED.has(option) ? 2 : 1;
   }
+
   return {
     kind: 'next',
     index,
@@ -547,18 +628,23 @@ const startProcessWrapper = (tokens: string[], start: number): Step => {
 
 const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
   const name = commandName(tokens[index] ?? '');
+
   if (name === 'env') {
     return envWrapper(tokens, index + 1, depth);
   }
+
   if (name === 'command') {
     return commandWrapper(tokens, index + 1);
   }
+
   if (name === 'exec') {
     return execWrapper(tokens, index + 1);
   }
+
   if (name === 'nohup') {
     return next(tokens[index + 1] === '--' ? index + 2 : index + 1);
   }
+
   if (name === 'sudo') {
     return optionWrapper(tokens, index + 1, new Set([
       '-u',
@@ -577,6 +663,7 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
       '--type',
     ]));
   }
+
   if (name === 'time') {
     return optionWrapper(tokens, index + 1, new Set([
       '-f',
@@ -585,6 +672,7 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
       '--output',
     ]));
   }
+
   if ([
     'sh',
     'bash',
@@ -594,12 +682,15 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
   ].includes(name)) {
     return shellWrapper(tokens, index + 1, depth);
   }
+
   if (name === 'pwsh' || name === 'powershell') {
     return powerShellWrapper(tokens, index + 1, depth);
   }
+
   if (name === 'cmd') {
     return cmdWrapper(tokens, index + 1, depth);
   }
+
   if (name === 'iex' || name === 'invoke-expression') {
     const start = (tokens[index + 1] ?? '').toLowerCase() === '-command' ? index + 2 : index + 1;
     const command = tokens
@@ -607,30 +698,38 @@ const wrapperStep = (tokens: string[], index: number, depth: number): Step => {
       .join(' ');
     return nested(command, 'powershell', depth);
   }
+
   if (name === 'start-process' || name === 'saps' || name === 'start') {
     return startProcessWrapper(tokens, index + 1);
   }
+
   return { kind: 'none' };
 };
 
 const unwrapSegment = (segment: Segment, depth: number): ParsedCommand[] | undefined => {
   let { tokens, opaque } = segment;
   let index = skipAssignments(tokens, tokens[0] === '!' ? 1 : 0);
+
   while (index < tokens.length) {
     const step = wrapperStep(tokens, index, depth);
+
     if (step.kind === 'none') {
       break;
     }
+
     if (step.kind === 'unreadable') {
       return undefined;
     }
+
     if (step.kind === 'nested') {
       return step.commands;
     }
+
     tokens = step.tokens ?? tokens;
     index = step.index;
     opaque ||= step.opaque === true;
   }
+
   const command = tokens.slice(index);
   return command.length === 0
     ? []
@@ -644,18 +743,25 @@ const commandsIn = (source: string, dialect: Dialect, depth: number): ParsedComm
   if (depth > MAX_DEPTH) {
     return undefined;
   }
+
   const segments = segmentsOf(source, dialect);
+
   if (segments === undefined) {
     return undefined;
   }
+
   const commands: ParsedCommand[] = [];
+
   for (const segment of segments) {
     const unwrapped = unwrapSegment(segment, depth);
+
     if (unwrapped === undefined) {
       return undefined;
     }
+
     commands.push(...unwrapped);
   }
+
   return commands;
 };
 

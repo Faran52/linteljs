@@ -52,6 +52,7 @@ describe('App', () => {
     expect((await open('/about'))
       .find('.page-title')
       .text()).toBe('About');
+
     expect((await open('/version'))
       .find('.page-title')
       .text()).toBe('Version');
@@ -63,6 +64,7 @@ describe('App', () => {
     expect(app
       .find('h1')
       .text()).toBe('404');
+
     expect(app
       .find('header')
       .exists()).toBe(true);

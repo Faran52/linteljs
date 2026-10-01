@@ -156,6 +156,7 @@ describe('fixPass', () => {
 
   it('runs the stylelint pass over the css glob once eslint has run', async () => {
     await plantEslint('console.log("[]");\nprocess.exit(0);\n');
+
     await plantStylelint(
       "require('node:fs').writeFileSync('stylelint-argv', process.argv.slice(2).join(' '));\n",
     );
@@ -178,6 +179,7 @@ describe('fixPass', () => {
     await writeFile(join(cwd, 'src', 'styles', 'a.css'), 'a {}\n', 'utf8');
     await writeFile(join(cwd, 'src', 'b.css'), 'b {}\n', 'utf8');
     await writeFile(join(cwd, 'src', 'c.css'), 'c {}\n', 'utf8');
+
     await plantStylelint([
       "const { writeFileSync } = require('node:fs');",
       "writeFileSync('src/styles/a.css', 'a { }\\n');",

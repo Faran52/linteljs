@@ -67,6 +67,7 @@ describe('svelteI18nFiles', () => {
           return file.startsWith('src/routes/contact/');
         });
     };
+
     const english = contactOf(answersFor({
       target: 'svelte',
       form: 'tanstack-form',
@@ -108,6 +109,7 @@ describe('svelteI18nTests', () => {
       'src/components/ui/code-text/CodeText.test.ts@i18n',
       'src/i18n/index.test.ts@i18n',
     ]);
+
     expect(covers).toContain('src/routes/+layout.svelte');
     expect(covers).toContain('src/components/ui/code-text/CodeText.svelte');
     expect(covers).toContain('src/i18n/index.ts');

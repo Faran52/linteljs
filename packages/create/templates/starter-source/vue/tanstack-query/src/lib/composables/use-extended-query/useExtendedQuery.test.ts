@@ -53,6 +53,7 @@ const runQuery = async (
       }]],
     },
   });
+
   await flushPromises();
 
   if (captured === undefined) {

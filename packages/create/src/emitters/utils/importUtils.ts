@@ -26,6 +26,7 @@ export const sortedImports = (lines: string[], framework?: Framework): string =>
       numeric: true,
     });
   };
+
   const [own, external] = partition(lines, (line) => {
     return specifierOf(line).startsWith('.');
   });

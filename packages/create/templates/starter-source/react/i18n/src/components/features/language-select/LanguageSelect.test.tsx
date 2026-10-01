@@ -16,6 +16,7 @@ const last = languages.at(-1)?.id ?? 'en';
 describe('LanguageSelect', () => {
   afterEach(async () => {
     localStorage.clear();
+
     await act(async () => {
       await i18n.changeLanguage('en');
     });
@@ -38,6 +39,7 @@ describe('LanguageSelect', () => {
 
   it('switches the language, and stores the choice', async () => {
     render(<LanguageSelect className="tab" />);
+
     await act(async () => {
       fireEvent.change(screen.getByRole('combobox', { name: 'Language' }), { target: { value: last } });
       await i18n.changeLanguage(last);

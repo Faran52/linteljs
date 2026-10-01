@@ -36,6 +36,7 @@ describe('StatusPage', () => {
         />
       );
     });
+
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
     const home = screen.getByRole('link', { name: 'Go home' });

@@ -135,6 +135,7 @@ describe('astro', () => {
     const component = (lines: number): string => {
       return `---\n${codeLines(lines - 3)}---\n\n<main></main>\n`;
     };
+
     const atLimit = await ruleIdsFor(WITH_BASE, component(350), 'src/components/Big.astro');
     const overLimit = await ruleIdsFor(WITH_BASE, component(351), 'src/components/Big.astro');
 
@@ -147,6 +148,7 @@ describe('astro', () => {
     const component = (lines: number): string => {
       return `---\n${functionOf(lines)}---\n`;
     };
+
     const atLimit = await ruleIdsFor(WITH_BASE, component(350), 'src/components/Big.astro');
     const overLimit = await ruleIdsFor(WITH_BASE, component(351), 'src/components/Big.astro');
 

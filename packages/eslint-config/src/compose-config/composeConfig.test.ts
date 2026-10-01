@@ -68,6 +68,7 @@ describe('composeConfig', () => {
 
     await expect(ruleIdsFor(baseOnly, 'export const value = "x";\n', 'src/lib/utils/sample.ts'))
       .resolves.toContain('@stylistic/quotes');
+
     await expect(ruleIdsForFile(baseOnly, TYPED_FILE))
       .resolves.not.toContain('@typescript-eslint/no-floating-promises');
   });
@@ -258,6 +259,7 @@ describe('composeConfig', () => {
 
     await expect(enabledRuleIdsFor(config, 'src/components/badge.vue'))
       .resolves.toContain('vue/multi-word-component-names');
+
     await expect(enabledRuleIdsFor(config, 'src/pages/about.vue'))
       .resolves.not.toContain('vue/multi-word-component-names');
   });
@@ -268,6 +270,7 @@ describe('composeConfig', () => {
 
     await expect(ruleIdsFor(await composeConfig({ vitest: true }), code, path))
       .resolves.toContain('vitest/no-focused-tests');
+
     await expect(ruleIdsFor(await composeConfig(), code, path))
       .resolves.not.toContain('vitest/no-focused-tests');
   });
@@ -281,6 +284,7 @@ describe('composeConfig', () => {
     }), code, 'index.html');
 
     await expect(ruleIds).resolves.toContain('@html-eslint/require-img-alt');
+
     await expect(ruleIdsFor(await composeConfig({ typescript: true }), code, 'index.html'))
       .resolves.not.toContain('@html-eslint/require-img-alt');
   });
@@ -294,6 +298,7 @@ describe('composeConfig', () => {
     }), page, 'src/pages/index.astro');
 
     await expect(ruleIds).resolves.toContain('astro/jsx-a11y/alt-text');
+
     await expect(ruleIdsFor(await composeConfig({ typescript: true }), page, 'src/pages/index.astro'))
       .resolves.not.toContain('astro/jsx-a11y/alt-text');
   });

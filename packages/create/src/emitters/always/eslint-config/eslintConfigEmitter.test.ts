@@ -121,6 +121,7 @@ describe('emitEslintConfig', () => {
     expect(emitEslintConfig(answersFor({ target: 'vue' }))).toContain(
       "'@composables/*': './src/lib/composables/*',",
     );
+
     expect(emitEslintConfig(answersFor({ target: 'vue' }))).not.toContain("'@hooks/*'");
 
     expect(emitEslintConfig(answersFor({ target: 'solid' }))).toContain(
@@ -135,6 +136,7 @@ describe('emitEslintConfig', () => {
 
   it('emits @apis only with Zod', () => {
     expect(emitEslintConfig(answersFor({}))).not.toContain("'@apis/*'");
+
     expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).toContain(
       "'@apis/*': './src/lib/apis/*',",
     );

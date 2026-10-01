@@ -19,6 +19,7 @@ describe('gateScripts', () => {
       'test:coverage',
       'build',
     ]);
+
     expect(gateScripts(answersFor({ testing: 'none' }))).not.toContain('test:coverage');
   });
 });
@@ -36,9 +37,11 @@ describe('buildScripts', () => {
       'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck'
       + ' && pnpm test:coverage && pnpm build',
     );
+
     expect(buildScripts(answersFor({ testing: 'none' })).check).toBe(
       'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck && pnpm build',
     );
+
     expect(buildScripts(answersFor({ packageManager: 'npm' })).check).toBe(
       'npm run lint && npm run lint:types && npm run lint:css && npm run typecheck'
       + ' && npm run test:coverage && npm run build',
@@ -90,6 +93,7 @@ describe('buildScripts', () => {
       'lint:css': 'stylelint "src/**/*.css" --allow-empty-input',
       'lint:css:fix': 'stylelint "src/**/*.css" --fix --allow-empty-input',
     });
+
     expect(buildScripts(answersFor({ target: 'vue' }))).toMatchObject({
       'lint:css': 'stylelint "src/**/*.{css,vue}" --allow-empty-input',
       'lint:css:fix': 'stylelint "src/**/*.{css,vue}" --fix --allow-empty-input',

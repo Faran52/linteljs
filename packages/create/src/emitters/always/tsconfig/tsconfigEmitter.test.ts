@@ -431,6 +431,7 @@ describe('buildTsconfig', () => {
   it('drops noEmit only on angular, whose vitest compiler has to emit', () => {
     expect(buildTsconfig(answersFor({ target: 'angular' })).compilerOptions.noEmit)
       .toBeUndefined();
+
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.noEmit).toBe(true);
   });
 });
@@ -562,8 +563,10 @@ describe('alias coupling', () => {
     expect(paths?.['@model/*']).toEqual(['./src/lib/model/*']);
     expect(paths).not.toHaveProperty('@store/*');
     expect(paths).not.toHaveProperty('@providers/*');
+
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
       .toHaveProperty('@store/*');
+
     expect(buildTsconfig(answersFor({ target: 'react' })).compilerOptions.paths)
       .not.toHaveProperty('@providers/*');
   });
@@ -610,6 +613,7 @@ describe('a hosted framework brings its own JSX settings', () => {
     })).compilerOptions;
 
     expect(compilerOptions).not.toHaveProperty('jsx');
+
     expect(buildTsconfig(answersFor({ target: 'webextension' })).compilerOptions)
       .not.toHaveProperty('jsx');
   });

@@ -130,10 +130,12 @@ describe('patchPackageJson', () => {
 
     expect(patched.type).toBe('module');
     expect(patched.packageManager).toBe('pnpm@12.5.1');
+
     expect(patched.engines).toEqual({
       node: '>=22.18',
       pnpm: `>=${MANAGER_FLOORS.pnpm}`,
     });
+
     expect(patched.devEngines).toEqual({
       packageManager: {
         name: 'pnpm',
@@ -149,10 +151,12 @@ describe('patchPackageJson', () => {
     }));
 
     expect(patched).not.toHaveProperty('packageManager');
+
     expect(patched.engines).toEqual({
       node: NODE_ENGINE,
       bun: `>=${MANAGER_FLOORS.bun}`,
     });
+
     expect(patched.devEngines?.['packageManager']).toEqual({
       name: 'bun',
       onFail: 'error',
@@ -180,6 +184,7 @@ describe('patchPackageJson', () => {
       'unrs-resolver',
       'esbuild',
     ]));
+
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
   });
 
@@ -244,6 +249,7 @@ describe('patchPackageJson', () => {
       'fsevents': true,
       'unrs-resolver': true,
     });
+
     expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('allowScripts');
   });
 });

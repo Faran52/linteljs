@@ -66,6 +66,7 @@ export const bootLanguage = (
         return option.id === tag;
       });
   };
+
   const stored = localStorage.getItem(storageKey);
   const id = offered(stored)
     ? stored
@@ -75,6 +76,7 @@ export const bootLanguage = (
   const root = document.documentElement;
 
   root.lang = id;
+
   root.dir = options
     .find((option) => {
       return option.id === id;
@@ -132,6 +134,7 @@ export const applyLanguage = (language: Language): void => {
 
   root.lang = language;
   root.dir = directionOf(language);
+
   document.querySelectorAll<HTMLElement>('[data-i18n]')
     .forEach((element) => {
       render(element, language);
@@ -162,5 +165,6 @@ export const startLanguage = (): void => {
     ?.addEventListener('change', () => {
       chooseLanguage(picker.value);
     });
+
   applyLanguage(isLanguage(lang) ? lang : fallbackLanguage);
 };

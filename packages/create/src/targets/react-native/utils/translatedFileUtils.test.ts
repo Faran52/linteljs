@@ -107,6 +107,7 @@ describe('reactNativeI18nTests', () => {
       'src/i18n/index.test.ts@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
     ]);
+
     expect(covers).toEqual([
       'src/app/about.tsx',
       'src/app/about.tsx',

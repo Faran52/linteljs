@@ -23,6 +23,7 @@ describe('angular', () => {
 
     await expect(ruleIdsFor([...base(), ...angular()], decorated, 'src/app/mark.ts'))
       .resolves.not.toContain('@typescript-eslint/no-extraneous-class');
+
     await expect(ruleIdsFor([...base(), ...angular()], bare, 'src/app/bag.ts'))
       .resolves.toContain('@typescript-eslint/no-extraneous-class');
   });
@@ -31,6 +32,7 @@ describe('angular', () => {
     const component = (lines: number): string => {
       return `@Component({ selector: 'app-big' })\nexport class Big {}\n${codeLines(lines - 2)}`;
     };
+
     const atLimit = await ruleIdsFor([...base(), ...angular()], component(500), 'src/app/big.component.ts');
     const overLimit = await ruleIdsFor([...base(), ...angular()], component(501), 'src/app/big.component.ts');
 
@@ -45,6 +47,7 @@ describe('angular', () => {
 
       return `@Component({ selector: 'app-big' })\nexport class Big {\n${method}}\n`;
     };
+
     const atLimit = await ruleIdsFor([...base(), ...angular()], component(350), 'src/app/big.component.ts');
     const overLimit = await ruleIdsFor([...base(), ...angular()], component(351), 'src/app/big.component.ts');
 

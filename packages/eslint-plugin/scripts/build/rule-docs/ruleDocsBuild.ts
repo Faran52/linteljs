@@ -18,6 +18,7 @@ rmSync(docsDir, {
   recursive: true,
   force: true,
 });
+
 mkdirSync(docsDir, { recursive: true });
 
 const ruleIds = readdirSync(rulesDir, { withFileTypes: true })

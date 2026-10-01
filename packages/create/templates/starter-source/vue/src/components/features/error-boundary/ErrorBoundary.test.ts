@@ -32,6 +32,7 @@ describe('ErrorBoundary', () => {
   beforeEach(() => {
     failure.armed = true;
     failure.error = new Error('render failed');
+
     // The boundary reports what it caught, which is the case under test.
     vi.spyOn(console, 'error')
       .mockReturnValue(undefined);
@@ -45,6 +46,7 @@ describe('ErrorBoundary', () => {
     expect(boundary
       .find('h1')
       .text()).toBe('500');
+
     expect(boundary
       .find('[role="alert"]')
       .text()).toBe('Something went wrong');
@@ -59,6 +61,7 @@ describe('ErrorBoundary', () => {
     expect(boundary
       .find('h1')
       .text()).toBe('403');
+
     expect(boundary
       .find('button')
       .exists()).toBe(false);
@@ -69,6 +72,7 @@ describe('ErrorBoundary', () => {
 
     await nextTick();
     failure.armed = false;
+
     await boundary
       .find('button')
       .trigger('click');

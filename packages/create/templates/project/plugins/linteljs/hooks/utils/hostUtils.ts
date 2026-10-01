@@ -59,9 +59,11 @@ const stringAt = (value: FieldValue, key: Field): string | undefined => {
 // Copilot CLI sends `toolArgs` as JSON text and its SDK as an object, so both read as the object.
 const toolArgumentsOf = (payload: object): object | undefined => {
   const toolArguments = valueAt(payload, 'toolArgs');
+
   if (typeof toolArguments !== 'string') {
     return toolArguments;
   }
+
   try {
     const parsed: unknown = JSON.parse(toolArguments);
     return isObject(parsed) ? parsed : undefined;
@@ -76,6 +78,7 @@ export const hostOf = (payload: object): Host => {
   if (stringAt(payload, 'cursor_version') !== undefined) {
     return 'cursor';
   }
+
   return 'toolName' in payload ? 'copilot' : 'claude';
 };
 
@@ -101,13 +104,17 @@ export const readCommand = (
   platform: NodeJS.Platform = process.platform,
 ): CommandInput | undefined => {
   const host = hostOf(payload);
+
   if (host === 'cursor' && stringAt(payload, 'hook_event_name') !== cursorEvent) {
     return undefined;
   }
+
   const command = stringAt(toolInputOf(payload, host), 'command') ?? stringAt(payload, 'command');
+
   if (command === undefined) {
     return undefined;
   }
+
   const tool = stringAt(payload, 'tool_name') ?? stringAt(payload, 'toolName');
   const powershell = host === 'cursor' ? platform === 'win32' : tool?.toLowerCase() === 'powershell';
   return {
@@ -120,9 +127,11 @@ export const readCommand = (
 // Cursor documents no file path on the one edit event that can answer the agent.
 export const readEdit = (payload: object): EditInput | undefined => {
   const host = hostOf(payload);
+
   if (host === 'cursor') {
     return undefined;
   }
+
   const input = toolInputOf(payload, host);
   const named = [
     stringAt(input, 'file_path'),
@@ -150,9 +159,11 @@ export const readEdit = (payload: object): EditInput | undefined => {
 export const readSession = (payload: object): SessionInput | undefined => {
   const session = stringAt(payload, 'session_id');
   const transcript = stringAt(payload, 'transcript_path');
+
   if (hostOf(payload) !== 'claude' || 'agent_id' in payload || transcript === undefined) {
     return undefined;
   }
+
   return session !== undefined && SESSION_ID.test(session)
     ? {
         session,
@@ -187,6 +198,7 @@ const claudeDecision = (kind: DecisionKind, text: string): object => {
       reason: text,
     };
   }
+
   return {
     hookSpecificOutput: kind === 'deny'
       ? {
@@ -206,15 +218,18 @@ export const decisionOf = (host: Host, kind: DecisionKind, text: string | undefi
   if (text === undefined) {
     return host === 'cursor' && kind === 'deny' ? { permission: 'allow' } : undefined;
   }
+
   if (host === 'cursor') {
     return cursorDecision(kind, text);
   }
+
   return host === 'copilot' ? copilotDecision(kind, text) : claudeDecision(kind, text);
 };
 
 // Stdout is the decision JSON on one line or nothing: a host parses it whole, and a stray line voids the decision.
 export const writeDecision = (host: Host, kind: DecisionKind, text: string | undefined): void => {
   const decision = decisionOf(host, kind, text);
+
   if (decision !== undefined) {
     process.stdout.write(`${JSON.stringify(decision)}\n`);
   }

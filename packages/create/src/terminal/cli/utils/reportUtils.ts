@@ -129,6 +129,7 @@ const liveReport = (): StageReport => {
         writes: 0,
         notice: '',
       };
+
       // Unreferenced, so a stage that throws cannot leave a timer holding the process open.
       turning = setInterval(paint, SPINNER_INTERVAL).unref();
       paint();

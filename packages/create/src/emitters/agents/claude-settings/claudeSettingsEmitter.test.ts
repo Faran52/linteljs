@@ -107,6 +107,7 @@ describe('emitClaudeSettings', () => {
         },
       },
     });
+
     expect(output.endsWith('\n')).toBe(true);
   });
 });
@@ -179,6 +180,7 @@ describe('claudeSettingsEmitter', () => {
   "author": { "name": "Faran Ali" }
 }
 `);
+
     expect(marketplace === undefined ? '' : await shippedAssetsReader(marketplace.content)).toBe(`{
   "name": "linteljs",
   "owner": { "name": "Faran Ali" },
@@ -202,17 +204,20 @@ describe('claudeSettingsEmitter', () => {
       .find(({ target }) => {
         return target === '.claude/settings.json';
       });
+
     const merge = settings !== undefined && 'merge' in settings.content
       ? settings.content.merge
       : () => {
           return '';
         };
+
     const merged: unknown = JSON.parse(merge(`${JSON.stringify({ enabledPlugins: { 'caveman@caveman': true } })}\n`));
 
     expect(merged).toHaveProperty('enabledPlugins', expect.objectContaining({
       'caveman@caveman': true,
       'linteljs@linteljs': true,
     }));
+
     expect(merge(null)).toBe(emitClaudeSettings(answers.plugins));
   });
 });

@@ -66,6 +66,7 @@ describe('useExtendedMutation', () => {
     }, { wrapper: wrapperFor(freshClient()) });
 
     await expect(result.current.send({ message: 'hello there' })).resolves.toEqual({ status: 'accepted' });
+
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
       body: '{"message":"hello there"}',
@@ -80,6 +81,7 @@ describe('useExtendedMutation', () => {
     }, { wrapper: wrapperFor(freshClient()) });
 
     await expect(result.current.send({ message: 'no' })).rejects.toMatchObject({ status: 422 });
+
     await waitFor(() => {
       expect(result.current.status).toBe('error');
     });

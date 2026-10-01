@@ -264,6 +264,7 @@ const attempt = (entry: ActiveShape, file: string, state: State, name: string, c
   }
 
   bucket.misses += 1;
+
   logError([
     `false negative: @linteljs/${entry.rule}`,
     `  shape: ${describeShape(entry)}`,
@@ -394,6 +395,7 @@ for (const file of interleave(sources).take(maxFiles)) {
   if (Date.now() - lastPrint > 3000) {
     log(`${String(visited)} files, ${String(counts.scanned)} linted, `
       + `${String(activeShapes.length - shapesStillHungry().length)}/${String(activeShapes.length)} shapes full`);
+
     lastPrint = Date.now();
   }
 }

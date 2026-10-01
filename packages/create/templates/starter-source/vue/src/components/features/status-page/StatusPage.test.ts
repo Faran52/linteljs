@@ -11,12 +11,15 @@ describe('StatusPage', () => {
     expect(page
       .find('h1')
       .text()).toBe('404');
+
     expect(page
       .find('[role="alert"]')
       .text()).toBe('Page not found');
+
     expect(page
       .find('a')
       .attributes('href')).toBe('/');
+
     expect(page
       .find('button')
       .exists()).toBe(false);

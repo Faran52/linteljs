@@ -127,6 +127,7 @@ describe('answerRows', () => {
       label,
       "value: 'codex, cursor'",
     ]);
+
     const labels = answerRows(hostedAnswersFor({ agents: [] }), ANSWERS)
       .map(([row]) => {
         return row;

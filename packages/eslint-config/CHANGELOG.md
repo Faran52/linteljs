@@ -61,6 +61,8 @@ when a version's change lives in a sibling it is described there instead:
 - `base` lays out a call's arguments as one list: `@stylistic/function-call-argument-newline` (`consistent`) and
   `function-paren-newline` (`multiline-arguments`) together move `fn(a,\n  b)` to one argument per line with the
   parens on lines of their own.
+- `base` turns on `@stylistic/padding-line-between-statements`: a blank line before and after every function,
+  block-like statement and multi-line expression statement.
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
 
 ### Fixed

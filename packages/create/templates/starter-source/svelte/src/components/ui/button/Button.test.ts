@@ -28,6 +28,7 @@ describe('Button', () => {
         pressed.push('add');
       },
     });
+
     await fireEvent.click(screen.getByRole('button', { name: 'Add one' }));
 
     expect(pressed).toEqual(['add']);

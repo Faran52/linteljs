@@ -55,11 +55,13 @@ describe('AppHeader', () => {
       });
 
     expect(root.querySelector('.starter-label')?.textContent).toBe(common.starterLabel);
+
     expect(labels).toEqual(expect.arrayContaining([
       common.home,
       common.about,
       common.version,
     ]));
+
     expect(labels).toHaveLength(PAGES.length);
     const label = root
       .querySelector('select')

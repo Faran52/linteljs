@@ -69,6 +69,7 @@ export class Contact {
           isBlurred: true,
         };
       });
+
     // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
     // wrapping settles which for the promise rules.
     void Promise.resolve(this.form.validateField(name, 'change'));

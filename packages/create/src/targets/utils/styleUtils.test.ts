@@ -65,6 +65,7 @@ describe('componentStyles', () => {
       source: 'src/components/ui/mark/Mark.css',
       shared: true,
     });
+
     expect(componentStyles()[1]).not.toHaveProperty('source');
   });
 });
@@ -76,6 +77,7 @@ describe('componentStyleModules', () => {
       'src/components/ui/mark/styles.ts base',
       'src/components/ui/button/styles.ts base',
     ]);
+
     const picked = pickedBy(componentStyleModules(), { styling: 'stylex' });
 
     expect(picked).toEqual([
@@ -92,6 +94,7 @@ describe('componentStyleModules', () => {
       source: 'src/components/ui/mark/styles.ts',
       shared: 'solid',
     });
+
     expect(componentStyleModules()[0]).not.toHaveProperty('shared');
   });
 });

@@ -93,10 +93,12 @@ describe('emitManifest', () => {
     const manifest = manifestFor();
 
     expect(manifest.action).toEqual({ default_popup: 'index.html' });
+
     expect(manifest.background).toEqual({
       service_worker: 'src/background/index.ts',
       type: 'module',
     });
+
     expect(manifest.devtools_page).toBeUndefined();
   });
 
@@ -106,6 +108,7 @@ describe('emitManifest', () => {
         service_worker: 'src/background/index.ts',
         type: 'module',
       });
+
     expect(manifestFor({ browser: 'firefox' }).background)
       .toEqual({ scripts: ['src/background/index.ts'] });
   });
@@ -117,6 +120,7 @@ describe('emitManifest', () => {
         strict_min_version: '140.0',
       },
     });
+
     expect(manifestFor({ browser: 'chrome' }).browser_specific_settings).toBeUndefined();
   });
 
@@ -177,6 +181,7 @@ describe('manifestEmitter', () => {
       'manifest.json',
       true,
     ]]);
+
     expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
   });
 

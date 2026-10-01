@@ -18,14 +18,17 @@ describe('managerFromUserAgent', () => {
       name: 'pnpm',
       version: '12.5.1',
     });
+
     expect(managerFromUserAgent('npm/11.19.1 node/v26.9.0 darwin arm64 workspaces/false')).toEqual({
       name: 'npm',
       version: '11.19.1',
     });
+
     expect(managerFromUserAgent('yarn/4.18.0 npm/? node/v26.9.0 darwin arm64')).toEqual({
       name: 'yarn',
       version: '4.18.0',
     });
+
     expect(managerFromUserAgent('bun/1.3.14 npm/? node/v24.3.0 darwin arm64')).toEqual({
       name: 'bun',
       version: '1.3.14',
@@ -84,6 +87,7 @@ describe('managerRefusal', () => {
     expect(managerRefusal('npm', '9.6.4') ?? '').toBe(
       'npm 9.6.4 ran this, and a project this CLI writes needs npm 9.6.5 or newer. Upgrade it and run this again.',
     );
+
     expect(managerRefusal('bun', '1.1.0') ?? '').toContain('needs bun 1.2.0 or newer');
   });
 });
@@ -122,6 +126,7 @@ describe('yarn', () => {
       name: 'yarn',
       version: '1.22.22',
     });
+
     expect(managerFromUserAgent('yarn/4.18.0 npm/? node/v26.9.0 darwin arm64')?.name).toBe('yarn');
     expect(managerFromUserAgent('yarn/? npm/? node/?')?.name).toBe('yarn');
   });

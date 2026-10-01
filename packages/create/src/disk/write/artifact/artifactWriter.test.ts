@@ -38,6 +38,7 @@ afterEach(async () => {
     recursive: true,
     force: true,
   });
+
   await rm(external, {
     recursive: true,
     force: true,
@@ -110,6 +111,7 @@ describe('artifactWriter', () => {
     });
 
     await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
+
     await expect(readFile(join(cwd, 'settings.json'), 'utf8'))
       .resolves.toBe('current\nmerged\n');
   });

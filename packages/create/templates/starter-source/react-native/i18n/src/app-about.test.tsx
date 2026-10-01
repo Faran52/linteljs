@@ -33,6 +33,7 @@ describe('the about screen', () => {
 
   it('speaks the language chosen', async () => {
     await renderScreen(<AboutScreen />);
+
     await act(async () => {
       await i18next.changeLanguage(last);
     });

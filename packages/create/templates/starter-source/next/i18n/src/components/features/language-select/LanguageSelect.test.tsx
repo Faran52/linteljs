@@ -34,6 +34,7 @@ describe('LanguageSelect', () => {
 
   it('switches the language, and stores the choice', () => {
     render(<LanguageSelect className="tab" />, { wrapper: I18nProvider });
+
     act(() => {
       fireEvent.change(screen.getByRole('combobox', { name: 'Language' }), { target: { value: last } });
     });

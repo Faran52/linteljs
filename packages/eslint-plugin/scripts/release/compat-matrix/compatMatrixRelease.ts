@@ -58,11 +58,13 @@ const prepare = async (major: Major, tarball: string): Promise<string> => {
   const dir = join(matrixDir, `eslint-${String(major)}`);
 
   mkdirSync(join(dir, 'node_modules'), { recursive: true });
+
   writeFileSync(join(dir, 'package.json'), JSON.stringify({
     name: `compat-${String(major)}`,
     private: true,
     type: isFlat(major) ? 'module' : 'commonjs',
   }, null, 2));
+
   writeFileSync(join(dir, 'fixture.js'), FIXTURE);
   writeFileSync(join(dir, 'fixture.ts'), TS_FIXTURE);
   writeFileSync(join(dir, configName(major, false)), isFlat(major) ? flatConfig : legacyConfig);

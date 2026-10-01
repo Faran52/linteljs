@@ -28,6 +28,7 @@ describe('copilotHooksEmitter', () => {
     expect(artifact?.stage).toBe('standard');
     expect(artifact?.target).toBe('.github/hooks/linteljs.json');
     expect(artifact?.preserve).toBeUndefined();
+
     expect(JSON.parse(artifact === undefined ? '' : await shippedAssetsReader(artifact.content))).toEqual({
       version: 1,
       hooks: {

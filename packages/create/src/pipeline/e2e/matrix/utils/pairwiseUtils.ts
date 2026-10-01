@@ -45,6 +45,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
   // Each axis value as a small integer and each pair as left * count + right, so a case costs twenty lookups
   // rather than a string per pair, and a round scores a candidate by array reads.
   const valueIds = new Map<string, number>();
+
   const idOf = (value: string): number => {
     const known = valueIds.get(value) ?? valueIds.size;
 
@@ -52,6 +53,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
 
     return known;
   };
+
   const interned = cases
     .map((item) => {
       const axes = axesOf(item.answers)
@@ -83,13 +85,16 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
     });
   const uncovered = new Uint8Array(valueCount * valueCount)
     .fill(1);
+
   const gainOf = (pairs: number[]): number => {
     return pairs
       .filter((pair) => {
         return uncovered[pair] === 1;
       }).length;
   };
+
   type Scored = (typeof scored)[number];
+
   // A candidate that cannot beat the leader is not rescored, and the picks match a full rescore.
   const bestCandidate = (): Scored | undefined => {
     let best: Scored | undefined;
@@ -109,6 +114,7 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
 
     return best;
   };
+
   const chosen: T[] = [];
   let picked = bestCandidate();
 

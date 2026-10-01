@@ -69,6 +69,7 @@ describe('physicalFilenameOf', () => {
 
   it('falls back to the reported filename, in both spellings', () => {
     expect(physicalFilenameOf({ filename: '/repo/src/a.ts' })).toBe('/repo/src/a.ts');
+
     expect(physicalFilenameOf({
       getFilename: () => {
         return '/repo/src/b.ts';
@@ -95,6 +96,7 @@ describe('the scope readers', () => {
 
     expect(scopeIn(none, legacy, node)).toBe(sourceCode.getScope(node));
     expect(ancestorsIn(none, legacy, node)).toEqual(sourceCode.getAncestors(node));
+
     expect(declaredVariablesIn(none, legacy, node))
       .toEqual(sourceCode.getDeclaredVariables(node));
   });
@@ -105,9 +107,11 @@ describe('the scope readers', () => {
     expect(() => {
       return scopeIn(none, {}, node);
     }).toThrow('needs a scope');
+
     expect(() => {
       return ancestorsIn(none, {}, node);
     }).toThrow('needs the ancestors');
+
     expect(() => {
       return declaredVariablesIn(none, {}, node);
     }).toThrow('needs the declared variables');
@@ -118,6 +122,7 @@ describe('ancestorReaderOf', () => {
   it('hands the helpers one reader whichever major is underneath', () => {
     expect(ancestorReaderOf(modern).getAncestors(node))
       .toEqual(sourceCode.getAncestors(node));
+
     expect(ancestorReaderOf(legacy).getAncestors(node))
       .toEqual(sourceCode.getAncestors(node));
   });

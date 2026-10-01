@@ -37,8 +37,10 @@ describe('ruleArtifacts', () => {
 
     expect(targets(artifacts)).toContain('.rules/repo-structure.mdc');
     expect(artifacts[0]?.stage).toBe('standard');
+
     expect(transformOf(artifacts, '.rules/repo-structure.mdc')(RULE, null))
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
+
     expect(transformOf(artifacts, '.rules/repo-structure.mdc')(RULE.replace('---\n\n#', '---\n\n\n#'), null))
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
   });

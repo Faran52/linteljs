@@ -128,6 +128,7 @@ const check = (context: AuditContext, config: Linter.Config[], file: string): vo
       flavour,
       ...finding,
     });
+
     show(file, finding, around(source, finding.line), `reported at line ${String(finding.line)}`);
   }
 
@@ -163,6 +164,7 @@ const check = (context: AuditContext, config: Linter.Config[], file: string): vo
       flavour,
       ...named,
     });
+
     show(file, named, snippet, label);
   }
 };
@@ -218,6 +220,7 @@ export const runFixPass = (context: AuditContext): number => {
         flavour: flavourOf(file),
         ...finding,
       });
+
       show(file, finding, '', 'no snippet');
     }
 

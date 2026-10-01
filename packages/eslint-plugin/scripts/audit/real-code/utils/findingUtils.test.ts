@@ -24,6 +24,7 @@ describe('show', () => {
       '  token 3 went missing',
       '  minimal reproduction:',
     ]);
+
     expect(lines.slice(4)).toHaveLength(40);
     expect(lines.at(-1)).toBe('    line 39');
   });

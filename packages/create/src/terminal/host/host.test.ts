@@ -45,6 +45,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.unstubAllEnvs();
+
   await rm(cwd, {
     recursive: true,
     force: true,
@@ -209,6 +210,7 @@ describe('filled', () => {
       packageManager: 'npm',
       nodeVersion: HOST.nodeVersion,
     });
+
     expect(answers).not.toHaveProperty('packageManagerVersion');
   });
 

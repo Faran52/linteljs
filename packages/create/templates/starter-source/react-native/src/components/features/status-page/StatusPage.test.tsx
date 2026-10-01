@@ -38,6 +38,7 @@ describe('StatusPage', () => {
         onRetry={retry}
       />,
     );
+
     await fireEvent.press(screen.getByRole('button'));
 
     expect(retry).toHaveBeenCalledOnce();

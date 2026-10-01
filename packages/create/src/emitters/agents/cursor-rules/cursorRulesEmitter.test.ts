@@ -20,6 +20,7 @@ describe('cursorRulesEmitter', () => {
       'codex',
       'copilot',
     ]))).toEqual([]);
+
     expect(targets(cursorRulesEmitter(answersFor(['cursor']))))
       .toEqual(targets(cursorArtifacts(answersFor(['cursor']))));
   });

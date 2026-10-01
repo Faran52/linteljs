@@ -56,6 +56,7 @@ describe('gitSpawn', () => {
     }
     finally {
       vi.unstubAllEnvs();
+
       await rm(outer, {
         recursive: true,
         force: true,

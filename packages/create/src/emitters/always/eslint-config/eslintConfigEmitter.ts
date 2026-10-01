@@ -125,6 +125,7 @@ const optionRows = (answers: Answers): OptionRow[] => {
     ...target.ignores,
     ...answers.ignores ?? [],
   ]));
+
   rows.push(['aliases', objectLiteral(Object.entries(buildAliases(answers)), 1)]);
 
   // React Router's typegen reads `src/routes.ts` without the tsconfig aliases.

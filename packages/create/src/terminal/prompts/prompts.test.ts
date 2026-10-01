@@ -440,6 +440,7 @@ describe('ask', () => {
       agents: [],
       plugins: [],
     });
+
     expect(recorded.calls).not.toContain('AI plugins');
   });
 
@@ -519,6 +520,7 @@ describe('the store question', () => {
 
     expect(result.answers.store).toBe('redux-toolkit');
     expect(recorded.calls[7]).toBe('State store');
+
     expect(recorded.labels['State store']).toEqual([
       'None',
       'Zustand',
@@ -740,6 +742,7 @@ describe('the form library and router questions', () => {
     ]);
 
     expect(vue.recorded.labels['Form library']).toEqual(['None', 'TanStack Form']);
+
     expect(hostedReact.recorded.labels['Form library']).toEqual([
       'None',
       'TanStack Form',
@@ -839,6 +842,7 @@ describe('inquirerPrompter', () => {
     });
 
     expect(answer).toBe('react');
+
     expect(vi.mocked(select).mock.calls[0]?.[0]).toStrictEqual({
       message: 'Framework',
       default: 'react',
@@ -878,6 +882,7 @@ describe('inquirerPrompter', () => {
     });
 
     expect(answer).toEqual(['zod']);
+
     expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toStrictEqual({
       message: 'Libraries',
       required: false,

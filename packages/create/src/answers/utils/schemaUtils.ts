@@ -107,11 +107,13 @@ const propertyFor = (record: AnswerRecord): SchemaProperty => {
     }
 
     case 'multi':
+
     case 'optionalMulti': {
       return enumListProperty(record);
     }
 
     case 'choice':
+
     case 'optionalChoice': {
       return enumProperty(record);
     }

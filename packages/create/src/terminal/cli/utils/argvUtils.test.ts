@@ -58,6 +58,7 @@ describe('parseCliArgs', () => {
       'background',
     ]).answers)
       .toEqual({ surfaces: ['popup', 'background'] });
+
     expect(parseCliArgs(['--surfaces', 'popup,background']).answers)
       .toEqual({ surfaces: ['popup', 'background'] });
   });

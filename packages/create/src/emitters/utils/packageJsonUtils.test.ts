@@ -392,6 +392,7 @@ describe('buildDependencies', () => {
       'react': '19.2.3',
       'react-dom': '19.2.3',
     });
+
     expect(buildDevDependencies(native)['@types/react']).toBe('~19.2.2');
     expect(buildDependencies(answersFor({}))['react']).toBe(VERSIONS['react']);
   });
@@ -602,6 +603,7 @@ describe('buildDevDependencies', () => {
   it('declares the metro-config of react-native\'s own release, on React Native alone', () => {
     expect(buildDevDependencies(answersFor({ target: 'react-native' }))['@react-native/metro-config'])
       .toBe(VERSIONS['react-native']);
+
     expect(buildDevDependencies(answersFor({}))).not.toHaveProperty('@react-native/metro-config');
   });
 
@@ -953,6 +955,7 @@ describe('buildDependencies with languages', () => {
       'i18next-browser-languagedetector',
       'react-i18next',
     ]));
+
     expect(english).not.toHaveProperty('i18next');
     expect(vue).toHaveProperty('vue-i18n');
     expect(vue).not.toHaveProperty('i18next');

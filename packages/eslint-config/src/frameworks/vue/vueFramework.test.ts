@@ -134,6 +134,7 @@ describe('vue', () => {
     const component = (lines: number): string => {
       return `<template>\n  <main />\n</template>\n\n<script setup>\n${codeLines(lines - 5)}</script>\n`;
     };
+
     const atLimit = await ruleIdsForSfc([...base(), ...vue()], component(350), 'Big.vue');
     const overLimit = await ruleIdsForSfc([...base(), ...vue()], component(351), 'Big.vue');
 
@@ -146,6 +147,7 @@ describe('vue', () => {
     const component = (lines: number): string => {
       return `<script>\n${functionOf(lines)}</script>\n`;
     };
+
     const atLimit = await ruleIdsForSfc([...base(), ...vue()], component(350), 'Big.vue');
     const overLimit = await ruleIdsForSfc([...base(), ...vue()], component(351), 'Big.vue');
 

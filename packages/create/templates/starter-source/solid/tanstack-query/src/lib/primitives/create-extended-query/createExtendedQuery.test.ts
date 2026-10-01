@@ -74,6 +74,7 @@ describe('createExtendedQuery', () => {
     await waitFor(() => {
       expect(result.status()).toBe('success');
     });
+
     expect(result.response()).toEqual({ status: 'ok' });
     expect(result.isFetching()).toBe(false);
   });
@@ -101,6 +102,7 @@ describe('createExtendedQuery', () => {
     await waitFor(() => {
       expect(result.status()).toBe('error');
     });
+
     expect(result.error()).toMatchObject({ status: 500 });
   });
 
@@ -112,6 +114,7 @@ describe('createExtendedQuery', () => {
     await waitFor(() => {
       expect(result.status()).toBe('success');
     });
+
     result.refetch();
 
     await waitFor(() => {

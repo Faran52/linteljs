@@ -56,39 +56,51 @@ const gitVerdict = ({ tokens, opaque }: ParsedCommand): string | undefined => {
   if (commandName(tokens[0] ?? '') !== 'git') {
     return undefined;
   }
+
   const index = opaque ? undefined : skipOptions(tokens, 1, GLOBAL_VALUED);
+
   if (index === undefined) {
     return UNREADABLE_REASON;
   }
+
   const subcommand = tokens[index]?.toLowerCase();
   const options = beforeSeparator(tokens.slice(index + 1));
 
   if (subcommand === 'stash') {
     return STASH;
   }
+
   if (subcommand === 'reset') {
     return RESET;
   }
+
   if (options.includes('--no-verify')) {
     return NO_VERIFY;
   }
+
   if (subcommand === 'commit' && options.includes('--amend')) {
     return AMEND;
   }
+
   if (subcommand === 'add' && addIsBanned(tokens.slice(index + 1))) {
     return ADD_ALL;
   }
+
   return undefined;
 };
 
 const decide = (input: CommandInput): string | undefined => {
   const commands = parseCommand(input.command, input.dialect);
+
   if (commands === undefined) {
     return UNREADABLE_REASON;
   }
+
   let unreadable = false;
+
   for (const command of commands) {
     const verdict = gitVerdict(command);
+
     if (verdict === UNREADABLE_REASON) {
       unreadable = true;
     }
@@ -96,6 +108,7 @@ const decide = (input: CommandInput): string | undefined => {
       return `Blocked \`${command.tokens.join(' ')}\`. ${verdict}`;
     }
   }
+
   return unreadable ? UNREADABLE_REASON : undefined;
 };
 

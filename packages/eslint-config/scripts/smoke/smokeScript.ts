@@ -169,4 +169,5 @@ rmSync(smokeDir, {
   recursive: true,
   force: true,
 });
+
 log(`all ${String(subpaths.length)} subpaths resolve from the packed tarball`);

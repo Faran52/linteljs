@@ -151,30 +151,39 @@ describe('targetCases', () => {
     expect(has('astro', (answers) => {
       return answers.hostedFramework === 'vue' && answers.data === 'tanstack-query';
     })).toBe(true);
+
     expect(has('webextension', (answers) => {
       return answers.hostedFramework === 'vue' && answers.data === 'tanstack-query';
     })).toBe(true);
+
     expect(has('webextension', (answers) => {
       return answers.browser === 'chrome';
     })).toBe(true);
+
     expect(has('angular', (answers) => {
       return answers.testing === 'none';
     })).toBe(true);
+
     expect(has('react-native', (answers) => {
       return answers.testing === 'none';
     })).toBe(true);
+
     expect(has('react', (answers) => {
       return answers.router === 'react-router-framework' && answers.styling === 'stylex';
     })).toBe(true);
+
     expect(has('next', (answers) => {
       return answers.store === 'zustand' && answers.form === 'tanstack-form';
     })).toBe(true);
+
     expect(has('next', (answers) => {
       return answers.styling === 'stylex';
     })).toBe(true);
+
     expect(has('angular', (answers) => {
       return answers.form === undefined;
     })).toBe(true);
+
     expect(has('angular', (answers) => {
       return answers.form === 'tanstack-form' && answers.libraries.includes('zod');
     })).toBe(true);
@@ -276,12 +285,14 @@ describe('targetCases', () => {
       .map(({ answers }) => {
         return answers;
       });
+
     const seen = (read: (answers: Answers) => string | undefined): (string | undefined)[] => {
       return [...new Set(answered.map(read))]
         .toSorted((left, right) => {
           return (left ?? '').localeCompare(right ?? '');
         });
     };
+
     const all = (values: readonly string[], optional: boolean): (string | undefined)[] => {
       return [...(optional ? [undefined] : []), ...values]
         .toSorted((left, right) => {
@@ -292,33 +303,43 @@ describe('targetCases', () => {
     expect(seen(({ packageManager }) => {
       return packageManager;
     })).toEqual(all(valuesOf(ANSWERS.packageManager.values), false));
+
     expect(seen(({ testing }) => {
       return testing;
     })).toEqual(all(valuesOf(ANSWERS.testing.values), false));
+
     expect(seen(({ typeSafety }) => {
       return typeSafety;
     })).toEqual(['strict']);
+
     expect(seen(({ browser }) => {
       return browser;
     })).toEqual(all(valuesOf(ANSWERS.browser.values), false));
+
     expect(seen(({ hostedFramework }) => {
       return hostedFramework;
     })).toEqual(all(valuesOf(ANSWERS.hostedFramework.values), true));
+
     expect(seen(({ styling }) => {
       return styling;
     })).toEqual(all(valuesOf(ANSWERS.styling.values), true));
+
     expect(seen(({ form }) => {
       return form;
     })).toEqual(all(valuesOf(ANSWERS.form.values), true));
+
     expect(seen(({ router }) => {
       return router;
     })).toEqual(all(valuesOf(ANSWERS.router.values), true));
+
     expect(seen(({ store }) => {
       return store;
     })).toEqual(all(valuesOf(ANSWERS.store.values), true));
+
     expect(seen(({ data }) => {
       return data;
     })).toEqual(all(valuesOf(ANSWERS.data.values), true));
+
     expect(seen(({ mocking }) => {
       return mocking;
     })).toEqual(all(valuesOf(ANSWERS.mocking.values), true));
@@ -334,6 +355,7 @@ describe('targetCases', () => {
       expect(answers.libraries).toEqual(inOrder);
       expect(answers.agents).toEqual(valuesOf(ANSWERS.agents.values));
       expect(answers.plugins).toEqual(valuesOf(ANSWERS.plugins.values));
+
       expect(answers.surfaces).toEqual(answers.target === 'webextension'
         ? valuesOf(ANSWERS.surfaces.values)
         : undefined);
@@ -375,6 +397,7 @@ describe('targetCases', () => {
     const byLabel = (left: string, right: string): number => {
       return left.localeCompare(right);
     };
+
     const asPnpm = ({ answers }: E2eCase): string => {
       const onPnpm = {
         ...answers,
@@ -383,6 +406,7 @@ describe('targetCases', () => {
 
       return JSON.stringify(onPnpm);
     };
+
     const otherManagers = valuesOf(ANSWERS.packageManager.values)
       .filter((pm) => {
         return pm !== 'pnpm';
@@ -423,6 +447,7 @@ describe('targetCases', () => {
     const byLabel = (left: string, right: string): number => {
       return left.localeCompare(right);
     };
+
     const variants = TARGET_IDS
       .flatMap(pairedCases)
       .filter(({ variant }) => {

@@ -68,6 +68,7 @@ describe('lineSpan', () => {
       4,
       5,
     ]);
+
     expect(lineSpan(4, 4)).toEqual([4]);
   });
 
@@ -239,6 +240,7 @@ describe('indentReader', () => {
     const indentsAt = indentReader(sourceCode);
 
     expect(indentsAt(firstNode('ObjectPattern'))).toEqual(indentsAt(firstNode('ObjectPattern')));
+
     expect(indentsAt(firstNode('Program'))).toEqual({
       outer: '',
       inner: '  ',
@@ -508,6 +510,7 @@ describe('listGaps', () => {
         '',
       ],
     ]);
+
     expect(gapsOf(sourceCode, pattern, properties, true)).toEqual([
       [
         '{',

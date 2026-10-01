@@ -37,6 +37,7 @@ describe('mergeCursorHooks', () => {
       version: 1,
       hooks: OURS,
     });
+
     expect(merged.endsWith('}\n')).toBe(true);
   });
 
@@ -58,6 +59,7 @@ describe('mergeCursorHooks', () => {
         beforeShellExecution: OURS.beforeShellExecution,
       },
     });
+
     expect(mergeCursorHooks(once)).toBe(once);
   });
 
@@ -163,6 +165,7 @@ describe('cursorHooksEmitter', () => {
     expect(artifact?.stage).toBe('standard');
     expect(artifact?.target).toBe('.cursor/hooks.json');
     expect(artifact?.removable).toBe(true);
+
     expect(artifact !== undefined && 'merge' in artifact.content ? artifact.content.merge(null) : '')
       .toBe(mergeCursorHooks(null));
   });

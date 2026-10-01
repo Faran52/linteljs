@@ -52,6 +52,7 @@ describe('serveArgs', () => {
       '--port',
       '4000',
     ]);
+
     expect(next).toEqual([
       'exec',
       'next',

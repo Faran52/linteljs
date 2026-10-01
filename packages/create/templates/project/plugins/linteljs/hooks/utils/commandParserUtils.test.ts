@@ -200,6 +200,7 @@ describe('parseCommand', () => {
         opaque: false,
       },
     ]);
+
     expect(parseCommand('Start-Process -FilePath git -ArgumentList log', 'powershell')).toEqual([{
       tokens: [
         'git',
@@ -241,6 +242,7 @@ describe('skipOptions', () => {
       '--bare',
       'log',
     ], 0, new Set(['-C']))).toBe(3);
+
     expect(skipOptions(['--', '-x'], 0, new Set())).toBe(1);
   });
 

@@ -28,6 +28,7 @@ describe('i18nConfigEmitter', () => {
     expect(svelte.at(1)?.target).toBe('project.inlang/settings.json');
     expect(svelte.at(1)?.seed).toBe(true);
     expect(svelte.at(1)?.content).toEqual({ text: emitInlangSettings(['en', 'ja']) });
+
     expect(settings).toEqual({
       '$schema': 'https://inlang.com/schema/project-settings',
       'baseLocale': 'en',
@@ -35,6 +36,7 @@ describe('i18nConfigEmitter', () => {
       'modules': ['./node_modules/@inlang/plugin-message-format/dist/index.js'],
       'plugin.inlang.messageFormat': { pathPattern: './src/i18n/locales/{locale}/common.json' },
     });
+
     expect(react).toHaveLength(1);
     expect(solid).toHaveLength(1);
   });
@@ -106,6 +108,7 @@ describe('i18nConfigEmitter', () => {
       'import en from \'./locales/en/common.json\';',
       'import zhTw from \'./locales/zh-TW/common.json\';',
     ]);
+
     expect(text).toContain('  {\n    id: \'ar\',\n    label: \'العربية\',\n    dir: \'rtl\',\n  },');
     expect(text).toContain('  \'zh-TW\': { common: zhTw },');
     expect(text).toContain('export const languageStorageKey = \'language\';');

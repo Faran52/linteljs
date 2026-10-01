@@ -325,6 +325,9 @@ Each was tried against the workspace and the 670 starter files with `base` as it
   `catch {` with a `// why` line under it that `base` allows (six findings, four unfixable); with
   `consistent: true` added it finds nothing, and on every one-line block it reports the same two braces
   `@stylistic/brace-style` already does.
+- The `export` entry of `@stylistic/padding-line-between-statements`: a blank line before every export never
+  settles in a barrel of re-exports, where the fix does not apply (46 findings left after `--fix`, every one in an
+  `index.ts`). The rest of the list ships; `import-x/newline-after-import` already owns the line after imports.
 
 ## Targets
 

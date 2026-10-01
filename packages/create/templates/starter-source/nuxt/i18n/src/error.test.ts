@@ -33,12 +33,15 @@ describe('the error page', () => {
     expect(page
       .find('h1')
       .text()).toBe(String(code));
+
     expect(page
       .find('[role="alert"]')
       .text()).toBe(resources.en.common[message]);
+
     expect(page
       .find('app-header-stub')
       .exists()).toBe(true);
+
     expect(page
       .find('button')
       .exists()).toBe(false);

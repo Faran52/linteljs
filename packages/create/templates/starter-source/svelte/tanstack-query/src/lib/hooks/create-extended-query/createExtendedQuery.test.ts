@@ -44,11 +44,13 @@ describe('createExtendedQuery', () => {
     await waitFor(() => {
       expect(screen.getByTestId('status').textContent).toBe('success');
     });
+
     expect(screen.getByTestId('body').textContent).toBe('{"status":"ok"}');
   });
 
   it('sends the query through to the adapter', async () => {
     answering({ status: 'ok' });
+
     render(WithExtendedQuery, {
       path: '/version',
       query: { tag: ['a', 'b'] },

@@ -74,9 +74,11 @@ const entryOf = (line: string): object | undefined => {
 
 const assistantTokensOf = (line: string): number | undefined => {
   const entry = entryOf(line);
+
   if (entry === undefined || stringAt(entry, 'type') !== 'assistant') {
     return undefined;
   }
+
   const usage = objectAt(objectAt(entry, 'message'), 'usage');
   return usage === undefined ? undefined : usageTokensOf(usage);
 };
@@ -84,6 +86,7 @@ const assistantTokensOf = (line: string): number | undefined => {
 const tailOf = (path: string): string | undefined => {
   try {
     const descriptor = openSync(path, 'r');
+
     try {
       const { size } = fstatSync(descriptor);
       const length = Math.min(size, TRANSCRIPT_TAIL_BYTES);
@@ -103,12 +106,15 @@ const tailOf = (path: string): string | undefined => {
 // Live context is the last assistant entry's prompt size; a line the tail cut in half fails to parse and is skipped.
 export const contextOf = (transcript: string): number => {
   const lines = (tailOf(transcript) ?? '').split('\n');
+
   for (let index = lines.length - 1; index >= 0; index -= 1) {
     const tokens = assistantTokensOf(lines[index] ?? '');
+
     if (tokens !== undefined) {
       return tokens;
     }
   }
+
   return 0;
 };
 
@@ -119,12 +125,14 @@ export const subagentTranscriptOf = (transcript: string, agentId: string): strin
 // The number is always printed, so the colour is never the only cue.
 export const badgeOf = (tokens: number): string => {
   let colour: number = BADGE_COLOURS.over;
+
   if (tokens < CONTEXT_WARN_TOKENS) {
     colour = BADGE_COLOURS.under;
   }
   else if (tokens < CONTEXT_CEILING_TOKENS) {
     colour = BADGE_COLOURS.near;
   }
+
   return `\u001B[38;5;${String(colour)}m[CTX ${String(Math.floor(tokens / 1000))}K]\u001B[0m`;
 };
 
@@ -142,9 +150,11 @@ export const subagentRowsOf = (payload: object): SubagentRow[] => {
     .filter(isObject)
     .flatMap((task) => {
       const id = stringAt(task, 'id');
+
       if (id === undefined || stringAt(task, 'type') !== 'local_agent') {
         return [];
       }
+
       const read = contextOf(subagentTranscriptOf(transcript, id));
       const tokens = read === 0 ? numberAt(task, 'tokenCount') ?? 0 : read;
       const label = stringAt(task, 'label') ?? stringAt(task, 'description');

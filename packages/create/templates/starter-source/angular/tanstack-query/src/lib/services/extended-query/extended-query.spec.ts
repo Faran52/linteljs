@@ -60,6 +60,7 @@ describe('injectExtendedQuery', () => {
     await vi.waitFor(() => {
       expect(query.status()).toBe('success');
     });
+
     expect(query.data()).toEqual({ status: 'ok' });
   });
 
@@ -79,6 +80,7 @@ describe('injectExtendedQuery', () => {
     await vi.waitFor(() => {
       expect(query.status()).toBe('error');
     });
+
     expect(query.error()).toMatchObject({ status: 500 });
   });
 });

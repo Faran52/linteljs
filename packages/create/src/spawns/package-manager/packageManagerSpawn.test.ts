@@ -26,6 +26,7 @@ describe('packageManagerSpawn', () => {
     spawn.mockReturnValueOnce(spawnExit(0, '12.5.1\n'));
 
     expect(packageManagerSpawn('pnpm')).toBe('12.5.1');
+
     expect(spawn.mock.calls).toEqual([[
       'pnpm',
       ['--version'],

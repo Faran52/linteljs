@@ -81,6 +81,7 @@ describe('mockFiles', () => {
       });
 
     expect(targets).not.toContain('__mocks__/msw/browser.ts');
+
     expect(files[0]).toEqual({
       target: 'src/lib/utils/fetch-extended-utils.ts',
       source: 'src/lib/utils/fetchExtendedUtils.ts',
@@ -151,6 +152,7 @@ describe('accessorFiles', () => {
       'src/lib/hooks/use-extended-query/useExtendedQuery.ts tanstack-query',
       'src/lib/hooks/use-extended-mutation/useExtendedMutation.ts tanstack-query',
     ]);
+
     expect(pickedBy(accessorFiles(HOOKS), { data: 'rtk-query' })).toEqual([]);
   });
 
@@ -229,6 +231,7 @@ describe('the rtk query api', () => {
       'src/lib/apis/base/baseApi.ts rtk-query',
       'src/lib/apis/base/baseApi.test.ts rtk-query',
     ]);
+
     expect(pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' })).toEqual([]);
   });
 });
@@ -245,6 +248,7 @@ describe('the rtk query contact api', () => {
       'src/lib/apis/contact/contactEndpoints.ts rtk-query',
       'src/lib/apis/contact/contactHooks.ts rtk-query',
     ]);
+
     expect(pickedBy(rtkContactFiles(), { data: 'rtk-query' })).toEqual([]);
     expect(pickedBy(rtkContactFiles(), { form: 'tanstack-form' })).toEqual([]);
   });

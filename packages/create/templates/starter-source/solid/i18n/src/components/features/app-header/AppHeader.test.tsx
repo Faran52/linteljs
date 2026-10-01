@@ -44,11 +44,13 @@ describe('AppHeader', () => {
       });
 
     expect(screen.getByText(common.starterLabel)).toBeTruthy();
+
     expect(labels).toEqual(expect.arrayContaining([
       common.home,
       common.about,
       common.version,
     ]));
+
     expect(labels).toHaveLength(ROUTES.length);
   });
 

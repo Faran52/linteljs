@@ -27,6 +27,7 @@ export const FUNCTION_TYPES = new Set([
 // `parseForESLint` hands back a bare tree, and three edits climb.
 export const indexAst = (ast: Program): Map<string, AstNode[]> => {
   const byType = new Map<string, AstNode[]>();
+
   const visit = (node: AstNode, parent: AstNode | undefined): void => {
     node.parent = parent;
 

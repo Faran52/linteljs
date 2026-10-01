@@ -26,6 +26,7 @@ import type { PackageManager } from '@config/types';
 const freePort = async (): Promise<string> => {
   return new Promise((settle) => {
     const server = createServer();
+
     const release = (): void => {
       const address = server.address();
       const port = typeof address === 'object' && address !== null ? address.port : 0;
@@ -117,6 +118,7 @@ const crawl = async (origin: string): Promise<string[]> => {
           problems.push(`${page.url()} console: ${message.text()}`);
         }
       });
+
     page
       .on('pageerror', (error) => {
         problems.push(`${page.url()} page error: ${error.message}`);

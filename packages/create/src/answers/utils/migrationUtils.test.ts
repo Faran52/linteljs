@@ -30,6 +30,7 @@ describe('migrateLifted', () => {
       libraries: ['zod'],
       styling: 'tailwind',
     });
+
     expect(migrateLifted({ libraries: ['tanstack-query'] }, true, 'data', ANSWERS.data.values)).toEqual({
       libraries: [],
       data: 'tanstack-query',

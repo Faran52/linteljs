@@ -93,4 +93,5 @@ rmSync(smokeDir, {
   recursive: true,
   force: true,
 });
+
 log(`packed artifact smoke test passed: the binary documents its flags, ${String(packed.size)} assets packed`);

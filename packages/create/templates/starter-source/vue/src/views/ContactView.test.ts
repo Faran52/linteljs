@@ -45,9 +45,11 @@ describe('ContactView', () => {
     const view: ReturnType<typeof mount> = mount(ContactView, mounted);
 
     await fill(view, 'input', 'not-an-address');
+
     await view
       .get('input')
       .setValue('someone@example.com');
+
     await nextTick();
 
     const stale = view
@@ -75,12 +77,15 @@ describe('ContactView', () => {
 
     await fill(view, 'input', 'someone@example.com');
     await fill(view, 'textarea', 'Ten characters, at least.');
+
     await view
       .get('form')
       .trigger('submit');
+
     await new Promise((resolve) => {
       setTimeout(resolve, 0);
     });
+
     await nextTick();
 
     const confirmed = view

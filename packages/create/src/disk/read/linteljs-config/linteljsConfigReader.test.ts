@@ -54,10 +54,12 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.mocked(lstat).mockRestore();
+
   await rm(cwd, {
     recursive: true,
     force: true,
   });
+
   await rm(external, {
     recursive: true,
     force: true,
@@ -106,6 +108,7 @@ describe('linteljsConfigReader', () => {
     await expect(linteljsConfigReader(cwd)).rejects.toThrow(
       'linteljs.config.json must be a regular file; symbolic links are not allowed',
     );
+
     await expect(readlink(path)).resolves.toBe(target);
     await expect(readIfPresent(target)).resolves.toBe(original);
   });

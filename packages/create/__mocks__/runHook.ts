@@ -90,9 +90,11 @@ const hostOf = (input: object | string): Host => {
   if (typeof input === 'string') {
     return 'claude';
   }
+
   if ('cursor_version' in input) {
     return 'cursor';
   }
+
   return 'toolName' in input ? 'copilot' : 'claude';
 };
 
@@ -108,6 +110,7 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
         }
       : { additional_context: text };
   }
+
   if (host === 'copilot') {
     return name === 'gitSafetyGuardHook.ts'
       ? {
@@ -116,12 +119,14 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
         }
       : { additionalContext: text };
   }
+
   if (name === 'bannedPatternGuardHook.ts') {
     return {
       decision: 'block',
       reason: text,
     };
   }
+
   return {
     hookSpecificOutput: name === 'gitSafetyGuardHook.ts'
       ? {
@@ -141,9 +146,11 @@ const textOf = (stdout: string): string => {
     = /"(?:permissionDecisionReason|additionalContext|additional_context|agent_message|reason)":("(?:\\.|[^"\\])*")/u
       .exec(stdout);
   const encoded = match?.[1];
+
   if (encoded === undefined) {
     return '';
   }
+
   const text: unknown = JSON.parse(encoded);
   return typeof text === 'string' ? text : '';
 };
@@ -152,6 +159,7 @@ export const expectDecisionOutput = (name: HookScript, stdout: string, host: Hos
   if (stdout === '' || (host === 'cursor' && name === 'gitSafetyGuardHook.ts' && stdout === CURSOR_ALLOW)) {
     return undefined;
   }
+
   const text = textOf(stdout);
 
   expect(stdout).toBe(`${JSON.stringify(decisionOf(name, host, text))}\n`);
@@ -175,6 +183,7 @@ export const spawnHook = (
   if (projectDir !== undefined) {
     env['CLAUDE_PROJECT_DIR'] = projectDir;
   }
+
   if (pluginData !== undefined) {
     env['CLAUDE_PLUGIN_DATA'] = pluginData;
   }

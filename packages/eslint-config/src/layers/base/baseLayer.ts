@@ -60,6 +60,7 @@ export const base = (options: BaseOptions = {}): Layer => {
   const reaching = (files: string[]): string[] => {
     return astro ? [...files, ...ASTRO_FILES] : files;
   };
+
   const scriptFiles = reaching(SCRIPT_AND_SFC_FILES);
 
   // No default `conditionNames`: `import` ahead of `types` sends `react-native` to its Flow `index.js`.
@@ -127,6 +128,27 @@ export const base = (options: BaseOptions = {}): Layer => {
         'curly': ['error', 'all'],
         '@stylistic/function-call-argument-newline': ['error', 'consistent'],
         '@stylistic/function-paren-newline': ['error', 'multiline-arguments'],
+        '@stylistic/padding-line-between-statements': [
+          'error',
+          {
+            blankLine: 'always',
+            prev: '*',
+            next: [
+              'function',
+              'block-like',
+              'multiline-expression',
+            ],
+          },
+          {
+            blankLine: 'always',
+            prev: [
+              'function',
+              'block-like',
+              'multiline-expression',
+            ],
+            next: '*',
+          },
+        ],
         '@stylistic/semi-style': ['error', 'last'],
         '@stylistic/no-extra-semi': 'error',
         '@stylistic/switch-colon-spacing': ['error', {

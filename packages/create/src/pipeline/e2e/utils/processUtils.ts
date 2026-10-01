@@ -79,6 +79,7 @@ export const run = async (
     // Joined at the end: interleaving by chunk can split a line the line-anchored matchers read.
     const out: string[] = [];
     const err: string[] = [];
+
     // Without colour: a launcher's `FORCE_COLOR` puts escape codes between a package's name and version.
     const joined = (): string => {
       return stripVTControlCharacters(`${out.join('')}${err.join('')}`);
@@ -88,10 +89,12 @@ export const run = async (
       .on('data', (chunk: Buffer) => {
         out.push(chunk.toString('utf8'));
       });
+
     child.stderr
       .on('data', (chunk: Buffer) => {
         err.push(chunk.toString('utf8'));
       });
+
     // A manager that is not installed is a failure to report, not one to throw through.
     child
       .on('error', (error) => {
@@ -100,6 +103,7 @@ export const run = async (
           output: `${joined()}${error.message}`,
         });
       });
+
     child
       .on('close', (code) => {
         settle({
@@ -123,6 +127,7 @@ export const oneAtATime = async (pm: PackageManager, work: () => Promise<RunResu
 
     return work();
   };
+
   const next = queued();
 
   installs.set(pm, next);

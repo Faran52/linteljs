@@ -175,6 +175,7 @@ export const interfaceOrder = createRule('interface-order', {
     const sourceCode = sourceCodeOf(context);
     const eol = lineTerminatorOf(sourceCode);
     const trimBlankLines = optionsOf<InterfaceOrderOptions>(context).trimBlankLines ?? true;
+
     const movedText = (entry: Texted): string => {
       const text = readText(entry);
 

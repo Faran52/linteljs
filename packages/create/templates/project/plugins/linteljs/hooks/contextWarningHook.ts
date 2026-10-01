@@ -38,6 +38,7 @@ const input = payload === undefined ? undefined : readSession(payload);
 if (input !== undefined) {
   const tokens = contextOf(input.transcript);
   const marker = markerOf(input.session);
+
   if (tokens < CONTEXT_CEILING_TOKENS) {
     rmSync(marker, { force: true });
   }

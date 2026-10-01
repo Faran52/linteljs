@@ -66,11 +66,13 @@ export const run = async (
     .on('data', (chunk: string) => {
       out.push(chunk);
     });
+
   child.stderr
     .setEncoding('utf8')
     .on('data', (chunk: string) => {
       err.push(chunk);
     });
+
   await once(child, 'close');
 
   return [...out, ...err].join('');

@@ -62,6 +62,7 @@ describe('solidI18nFiles', () => {
           return file.startsWith('src/pages/contact/');
         });
     };
+
     const english = contactOf(answersFor({
       target: 'solid',
       form: 'tanstack-form',
@@ -100,6 +101,7 @@ describe('solidI18nTests', () => {
       'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
     ]);
+
     expect(covers).toEqual([
       'src/components/features/language-select/LanguageSelect.tsx',
       'src/components/ui/code-text/CodeText.tsx',

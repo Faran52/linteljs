@@ -42,6 +42,7 @@ const importsBySource = (): [string, string[]][] => {
 it.each(Object.entries(WORLDS))('keeps what reaches %s inside that ring', (name, world) => {
   const sources = importsBySource();
   const worldRings = Object.keys(WORLDS);
+
   const reaching = (specifiers: string[]): string[] => {
     return specifiers
       .filter((specifier) => {

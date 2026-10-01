@@ -250,6 +250,7 @@ describe('emitVitestConfig', () => {
     });
 
     expect(config).toContain("import stylexVite from '@stylexjs/unplugin/vite';");
+
     expect(config).toContain(`import { defineConfig } from 'vitest/config';
 
 const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
@@ -257,6 +258,7 @@ const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
 export default defineConfig({
   plugins: [stylex({ useCSSLayers: { before: ['reset'] } })],
 `);
+
     const nuxt = configFor({
       target: 'nuxt',
       styling: 'stylex',
@@ -265,6 +267,7 @@ export default defineConfig({
     expect(nuxt).toContain("import vue from '@vitejs/plugin-vue';");
     expect(nuxt).toContain("  plugins: [stylex({ useCSSLayers: { before: ['reset'] } }), vue()],\n");
   });
+
   it('writes nothing when testing is declined', () => {
     expect(configFor({ testing: 'none' })).toBeNull();
   });

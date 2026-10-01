@@ -20,6 +20,7 @@ const settle = async (harness: ComponentFixture<Contact>): Promise<HTMLElement> 
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
+
   await harness.whenStable();
 
   return harness.nativeElement as HTMLElement;

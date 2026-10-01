@@ -24,10 +24,12 @@ describe('TextInput', () => {
       .subscribe((value) => {
         typed.push(value);
       });
+
     harness.componentInstance.blurred
       .subscribe(() => {
         left += 1;
       });
+
     await harness.whenStable();
 
     const root = harness.nativeElement as HTMLElement;
@@ -56,10 +58,12 @@ describe('TextInput', () => {
       .subscribe((value) => {
         typed.push(value);
       });
+
     harness.componentInstance.blurred
       .subscribe(() => {
         left += 1;
       });
+
     await harness.whenStable();
 
     const root = harness.nativeElement as HTMLElement;

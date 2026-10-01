@@ -77,11 +77,13 @@ describe('App', () => {
   it('swaps the page for the 500 page on a crash, and brings it back on retry', async () => {
     vi.spyOn(console, 'error')
       .mockReturnValue(undefined);
+
     const root = await open('/');
     const settled = TestBed.inject(ApplicationRef);
 
     TestBed.inject(CrashHandler)
       .handleError(new Error('render failed'));
+
     await settled.whenStable();
 
     expect(root.querySelector('h1')?.textContent).toBe('500');
@@ -90,6 +92,7 @@ describe('App', () => {
     root
       .querySelector('button')
       ?.click();
+
     await settled.whenStable();
 
     expect(root.querySelector('.mark')).not.toBeNull();
@@ -98,11 +101,13 @@ describe('App', () => {
   it('swaps the page for the 403 page, with no retry, on a ForbiddenError', async () => {
     vi.spyOn(console, 'error')
       .mockReturnValue(undefined);
+
     const root = await open('/');
     const settled = TestBed.inject(ApplicationRef);
 
     TestBed.inject(CrashHandler)
       .handleError(new ForbiddenError());
+
     await settled.whenStable();
 
     expect(root.querySelector('h1')?.textContent).toBe('403');

@@ -145,6 +145,7 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
     [`src/components/ui/${button}`, [{}]],
     ['src/components/ui/text-input/TextInput', WITH_FORM],
   ];
+
   const under = (ships: readonly Condition[], styling: NonNullable<Condition['styling']>): Condition[] => {
     return ships
       .map((condition) => {

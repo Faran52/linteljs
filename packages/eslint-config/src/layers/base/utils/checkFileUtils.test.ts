@@ -61,6 +61,7 @@ describe('base: check-file', () => {
   it('accepts a PascalCase component and a camelCase module', async () => {
     await expect(ruleIdsFor(layer, SOURCE, 'src/components/ui/Widget.tsx'))
       .resolves.not.toContain('check-file/filename-naming-convention');
+
     await expect(ruleIdsFor(layer, SOURCE, 'src/lib/utils/formatDate.ts'))
       .resolves.not.toContain('check-file/filename-naming-convention');
   });

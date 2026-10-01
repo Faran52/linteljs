@@ -90,6 +90,7 @@ export const interleave = function* (dirs: string[]): Generator<string> {
       .flatMap((step) => {
         return step.done === true ? [] : [step.value];
       });
+
     live = live
       .filter((_, index) => {
         return round[index]?.done !== true;

@@ -199,6 +199,7 @@ describe('stylex', () => {
 
     await expect(ruleIdsFor(layer, code, 'src/styles/tokens.ts'))
       .resolves.toContain('@stylexjs/enforce-extension');
+
     await expect(ruleIdsFor(layer, code, 'src/styles/tokens.stylex.ts'))
       .resolves.not.toContain('@stylexjs/enforce-extension');
   });

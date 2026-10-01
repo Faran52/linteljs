@@ -112,6 +112,7 @@ describe('referenceArtifacts', () => {
 
   it('emits the zod rule only with zod', () => {
     expect(targetsOf({ libraries: [] })).not.toContain(reference('type-standards-zod.md'));
+
     expect(sourcesOf(find({ libraries: ['zod'] }, reference('type-standards-zod.md'))))
       .toEqual(['fragments/claude-rules/type-standards-zod.md']);
   });

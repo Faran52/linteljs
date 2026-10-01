@@ -54,6 +54,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.unstubAllEnvs();
+
   await rm(cwd, {
     recursive: true,
     force: true,
@@ -107,6 +108,7 @@ describe('runPipeline against a directory that already exists', () => {
       'vite.config.ts',
       'vitest.config.ts',
     ]));
+
     expect(written).not.toContain('AGENTS.md');
     expect(written).not.toContain('.agents/plugins/marketplace.json');
     expect(written).not.toContain('src/App.tsx');
@@ -338,6 +340,7 @@ describe('the repository the hooks install into', () => {
     expect(await noticesFromAgent()).toEqual([
       'git init: the husky hooks install on the next install',
     ]);
+
     expect(await exists(join(cwd, '.git'))).toBe(true);
   });
 
@@ -437,6 +440,7 @@ describe('what create and sync each discover about a project', () => {
     await generate({ target: 'react' });
 
     expect(await exists(join(cwd, '__mocks__/setupTests.tsx'))).toBe(false);
+
     expect(await readFile(join(cwd, 'vitest.config.ts'), 'utf8'))
       .toContain('__mocks__/setupTests.ts');
   });

@@ -28,6 +28,7 @@ describe('schemaFor', () => {
     const schema = JSON.parse(schemaFor(ANSWERS)) as GeneratedSchema;
 
     expect(schema.required).not.toContain('browser');
+
     expect(schema.required).toEqual([
       '$schema',
       'schemaVersion',

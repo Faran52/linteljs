@@ -25,6 +25,7 @@ const open = async (): Promise<void> => {
 describe('LanguageSelect', () => {
   afterEach(async () => {
     await AsyncStorage.clear();
+
     await act(async () => {
       await i18next.changeLanguage('en');
     });
@@ -57,6 +58,7 @@ describe('LanguageSelect', () => {
   it('switches the language, stores the choice and closes', async () => {
     await open();
     await fireEvent.press(screen.getByRole('radio', { name: last.label }));
+
     await waitFor(() => {
       expect(i18next.language).toBe(last.id);
     });

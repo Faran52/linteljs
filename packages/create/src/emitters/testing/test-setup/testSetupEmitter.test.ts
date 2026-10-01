@@ -77,6 +77,7 @@ describe('testSetupEmitter', () => {
       'fragments/test-setup/setupTests.router.ts',
       'fragments/test-setup/setupTests.i18n.ts',
     ]);
+
     const i18nSetup = ['fragments/test-setup/setupTests.i18n.ts'];
 
     expect(vue?.content).toHaveProperty('sources', expect.not.arrayContaining(i18nSetup));

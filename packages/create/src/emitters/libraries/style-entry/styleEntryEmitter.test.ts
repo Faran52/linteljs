@@ -163,8 +163,10 @@ describe('the stylesheets a starter ships', () => {
     const first = mergeStyleEntry(null, ['@import "./a.css";', '@import "./b.css";']);
 
     expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";'])).toBe(first);
+
     expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']))
       .toBe(`@import "./c.css";\n\n${first}`);
+
     expect(mergeStyleEntry('.a {}\n', ['@import "./c.css";', '@import "./d.css";']))
       .toBe('@import "./c.css";\n@import "./d.css";\n\n.a {}\n');
   });
@@ -216,6 +218,7 @@ describe('the styling answer and the component stylesheets', () => {
 
     expect(first).toBe(':root {\n  color: red;\n}\n\n@stylex;\n');
     expect(mergeStyleEntry(first, [], STYLEX_AT_RULE)).toBe(first);
+
     expect(mergeStyleEntry(null, [TAILWIND_IMPORT], STYLEX_AT_RULE))
       .toBe(`${TAILWIND_IMPORT}\n\n@stylex;\n`);
   });

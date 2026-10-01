@@ -102,6 +102,7 @@ describe('emitCodexMarketplace', () => {
         },
       ],
     });
+
     expect(output.endsWith('\n')).toBe(true);
   });
 
@@ -165,6 +166,7 @@ describe('codexMarketplaceEmitter', () => {
         undefined,
       ],
     ]);
+
     expect(artifacts[1]?.content).toEqual({ text: emitCodexMarketplace(CODEX.plugins) });
   });
 

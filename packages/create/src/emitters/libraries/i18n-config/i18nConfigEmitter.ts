@@ -89,6 +89,7 @@ export const i18nConfigEmitter = (answers: Answers): Artifact[] => {
       seed: true,
     };
   };
+
   const config = seeded(I18N_CONFIG, emitI18nConfig(languages));
 
   return targetFor(answers).i18n?.compiler === undefined

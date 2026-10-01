@@ -40,6 +40,7 @@ describe('AboutPage', () => {
 
   it('speaks the language chosen', async () => {
     render(<AboutPage />);
+
     await act(async () => {
       await i18n.changeLanguage(last);
     });

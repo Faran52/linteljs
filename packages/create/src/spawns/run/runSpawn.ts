@@ -40,6 +40,7 @@ export const runSpawn = async (
     child.stderr?.on('data', keep);
 
     child.on('error', fail);
+
     child
       .on('close', (code) => {
         if (code === 0) {

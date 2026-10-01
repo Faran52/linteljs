@@ -82,10 +82,12 @@ describe('createExtendedMutation', () => {
     expect(mutation.isPending()).toBe(false);
 
     await expect(mutation.send({ message: 'hello there' })).resolves.toEqual({ status: 'accepted' });
+
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
       body: '{"message":"hello there"}',
     }));
+
     await waitFor(() => {
       expect(mutation.status()).toBe('success');
     });
@@ -97,6 +99,7 @@ describe('createExtendedMutation', () => {
     const mutation = runMutation('/contact');
 
     await expect(mutation.send({ message: 'no' })).rejects.toMatchObject({ status: 422 });
+
     await waitFor(() => {
       expect(mutation.error()).toMatchObject({ status: 422 });
     });

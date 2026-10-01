@@ -74,6 +74,7 @@ const requireFreePort = async (port: number): Promise<void> => {
       .once('error', () => {
         reject(new Error(`127.0.0.1:${String(port)} is in use: a verdaccio from an earlier run is still listening`));
       });
+
     probe
       .once('listening', () => {
         probe
@@ -81,6 +82,7 @@ const requireFreePort = async (port: number): Promise<void> => {
             resolve();
           });
       });
+
     probe.listen(port, '127.0.0.1');
   });
 };
@@ -198,6 +200,7 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
     recursive: true,
     force: true,
   });
+
   mkdirSync(RUN_DIR, { recursive: true });
   mkdirSync(storage, { recursive: true });
   pruneBunCache();

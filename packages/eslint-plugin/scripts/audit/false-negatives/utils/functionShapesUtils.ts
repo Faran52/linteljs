@@ -466,6 +466,7 @@ const isDeclaringUse = (node: AstNode): boolean => {
   switch (parent?.type) {
     case 'VariableDeclarator':
     case 'ClassDeclaration':
+
     case 'ClassExpression': {
       return parent.id === node;
     }
@@ -488,12 +489,14 @@ const isDeclaringUse = (node: AstNode): boolean => {
 
     case 'FunctionDeclaration':
     case 'FunctionExpression':
+
     case 'ArrowFunctionExpression': {
       return parent.id === node || (parent.params?.includes(node) ?? false);
     }
 
     case 'ImportSpecifier':
     case 'ImportDefaultSpecifier':
+
     case 'ImportNamespaceSpecifier': {
       return parent.local === node;
     }

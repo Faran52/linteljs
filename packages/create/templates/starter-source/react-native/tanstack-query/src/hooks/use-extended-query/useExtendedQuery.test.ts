@@ -64,6 +64,7 @@ describe('useExtendedQuery', () => {
     await waitFor(() => {
       expect(result.current.status).toBe('success');
     });
+
     expect(result.current.response).toEqual({ status: 'ok' });
     expect(result.current.isFetching).toBe(false);
   });
@@ -98,6 +99,7 @@ describe('useExtendedQuery', () => {
     await waitFor(() => {
       expect(result.current.status).toBe('error');
     });
+
     expect(result.current.error).toMatchObject({ status: 500 });
   });
 
@@ -111,6 +113,7 @@ describe('useExtendedQuery', () => {
     await waitFor(() => {
       expect(result.current.status).toBe('success');
     });
+
     result.current.refetch();
 
     await waitFor(() => {

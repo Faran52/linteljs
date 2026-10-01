@@ -11,6 +11,7 @@ const app = createApp(App);
 
 storeProvider(app);
 dataProvider(app);
+
 app
   .use(router)
   .mount('#root');

@@ -21,6 +21,7 @@ describe('TEMPLATES_ROOT', () => {
 
   it('stops at the filesystem root when no templates directory sits above it', async () => {
     vi.resetModules();
+
     vi.doMock('node:fs', async (importOriginal) => {
       return {
         ...await importOriginal<typeof import('node:fs')>(),

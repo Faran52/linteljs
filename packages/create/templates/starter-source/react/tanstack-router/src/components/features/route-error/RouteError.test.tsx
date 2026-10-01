@@ -41,6 +41,7 @@ describe('RouteError', () => {
   beforeEach(() => {
     failure.armed = true;
     failure.error = new Error('render failed');
+
     // React reports every caught render error, which is the case under test.
     vi.spyOn(console, 'error')
       .mockReturnValue(undefined);

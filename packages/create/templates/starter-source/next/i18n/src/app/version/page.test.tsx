@@ -44,6 +44,7 @@ describe('the version route', () => {
 
   it('speaks the language chosen', () => {
     render(<VersionPage />, { wrapper: I18nProvider });
+
     act(() => {
       chooseLanguage(last);
     });

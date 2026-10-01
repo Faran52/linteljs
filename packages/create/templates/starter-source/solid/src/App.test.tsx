@@ -50,6 +50,7 @@ describe('App', () => {
     open(() => {
       return <App />;
     });
+
     fireEvent.click(screen.getByRole('button', { name: 'About' }));
 
     const about = document.body.textContent;

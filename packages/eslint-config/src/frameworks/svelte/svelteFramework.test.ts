@@ -71,6 +71,7 @@ describe('svelte', () => {
     const code = `import { a } from '${specifier}';\n\nexport const value = a;\n`;
 
     await expect(ruleIdsFor(base(), code, 'src/lib/sample.ts')).resolves.toContain('import-x/no-unresolved');
+
     await expect(ruleIdsFor([...base(), ...svelte()], code, 'src/lib/sample.ts'))
       .resolves.not.toContain('import-x/no-unresolved');
   });
@@ -115,6 +116,7 @@ describe('svelte', () => {
     const component = (lines: number): string => {
       return `<script>\n${codeLines(lines - 3)}</script>\n\n<main></main>\n`;
     };
+
     const atLimit = await ruleIdsForSfc([...base(), ...svelte()], component(350), 'Big.svelte');
     const overLimit = await ruleIdsForSfc([...base(), ...svelte()], component(351), 'Big.svelte');
 
@@ -127,6 +129,7 @@ describe('svelte', () => {
     const component = (lines: number): string => {
       return `<script>\n${functionOf(lines)}</script>\n`;
     };
+
     const atLimit = await ruleIdsForSfc([...base(), ...svelte()], component(350), 'Big.svelte');
     const overLimit = await ruleIdsForSfc([...base(), ...svelte()], component(351), 'Big.svelte');
 

@@ -88,6 +88,7 @@ describe('the contact route', () => {
 
   it('speaks the language chosen', () => {
     open();
+
     act(() => {
       chooseLanguage(last);
     });

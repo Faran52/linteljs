@@ -97,6 +97,7 @@ describe('subsetOf', () => {
 
 describe('load', () => {
   const dir = mkdtempSync(join(tmpdir(), 'fix-utils-'));
+
   const write = (name: string, text: string): string => {
     const file = join(dir, name);
 
@@ -114,6 +115,7 @@ describe('load', () => {
     expect(load(context, write('broken.ts', 'const = ;\n'), bucket)).toBeUndefined();
     expect(load(context, good, bucket)?.slice(0, 2)).toStrictEqual(['const a = 1;\n', 'file.ts']);
     expect(load(context, write('copy.ts', 'const a = 1;\n'), bucket)).toBeUndefined();
+
     expect(bucket).toStrictEqual({
       ...emptyCounts(),
       compiled: 1,

@@ -737,6 +737,7 @@ describe('the languages answer', () => {
     const popup = parseLinteljsConfig(configWith('webextension', { surfaces: ['popup'] }));
 
     expect(popup.languages).toEqual(['ar', 'ja']);
+
     expect(() => {
       return parseLinteljsConfig(configWith('webextension', { surfaces: ['background'] }));
     }).toThrow('languages is not an answer for webextension');

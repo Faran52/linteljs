@@ -41,9 +41,11 @@ describe('emitYarnrc', () => {
     const output = emitYarnrc(answersFor({ target: 'vue' }));
 
     expect(output).toContain('nodeLinker: node-modules\n');
+
     expect(output).toContain(
       '  "@commitlint/cli@*":\n    peerDependencies:\n      "@types/node": "*"\n      typescript: "*"\n',
     );
+
     expect(output).toContain('  "@commitlint/load@*":\n');
   });
 
@@ -115,10 +117,12 @@ describe('emitYarnrc', () => {
     expect(emitYarnrc(answersFor({ router: 'tanstack-router' }))).toContain(
       '  "@tanstack/eslint-plugin-router@*":\n    peerDependencies:\n      typescript: "*"\n',
     );
+
     expect(emitYarnrc(answersFor({ target: 'nuxt' }))).toContain(
       '  "nuxt@*":\n    peerDependencies:\n      vite: "*"\n'
       + '  "@nuxt/devtools@*":\n    peerDependencies:\n      vue: "*"\n',
     );
+
     expect(emitYarnrc(answersFor({ target: 'vue' }))).not.toContain('"nuxt@*"');
     expect(emitYarnrc(answersFor({}))).not.toContain('eslint-plugin-router');
   });
@@ -139,12 +143,15 @@ describe('emitYarnrc', () => {
     const vue = emitYarnrc(answersFor({ target: 'vue' }));
 
     expect(vue).toContain('  "postcss-html@*":\n    dependencies:\n      postcss: "^8.5.0"\n');
+
     expect(vue).toContain(
       '  "@vue/test-utils@*":\n    peerDependenciesMeta:\n      "@vue/compiler-dom":\n        optional: true\n',
     );
+
     expect(vue).toContain(
       '  "eslint-plugin-vuejs-accessibility@*":\n    peerDependenciesMeta:\n      globals:\n        optional: true\n',
     );
+
     const svelte = emitYarnrc(answersFor({ target: 'svelte' }));
 
     expect(svelte).toContain('  "postcss-html@*":\n');
@@ -192,6 +199,7 @@ describe('yarnrcEmitter', () => {
       target: '.yarnrc.yml',
       content: { text: emitYarnrc(answersFor({})) },
     }]);
+
     const artifacts = yarnrcEmitter({
       ...DEFAULT_ANSWERS,
       packageManager: 'npm',

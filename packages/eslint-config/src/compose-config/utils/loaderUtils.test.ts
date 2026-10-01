@@ -101,6 +101,7 @@ describe('LIBRARIES', () => {
   it('hands tailwind the entry point it was given, and none when it was given none', async () => {
     await expect(LIBRARIES.tailwind({ tailwindEntryPoint: 'src/styles/app.css' }))
       .resolves.toEqual(tailwind('src/styles/app.css'));
+
     await expect(LIBRARIES.tailwind({})).resolves.toEqual(tailwind());
   });
 });

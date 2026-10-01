@@ -11,6 +11,7 @@ import type { TextRecord } from '../types';
 describe('readAnswer', () => {
   it('reads a choice', () => {
     expect(readAnswer(ANSWERS.testing, 'none')).toBe('none');
+
     expect(() => {
       return readAnswer(ANSWERS.testing, 'jest');
     }).toThrow('testing must be one of: vitest, none');
@@ -19,6 +20,7 @@ describe('readAnswer', () => {
   it('reads an optional choice', () => {
     expect(readAnswer(ANSWERS.form, 'tanstack-form')).toBe('tanstack-form');
     expect(readAnswer(ANSWERS.form, undefined)).toBeUndefined();
+
     expect(() => {
       return readAnswer(ANSWERS.form, 'formik');
     }).toThrow('form must be one of: tanstack-form, react-hook-form');
@@ -26,9 +28,11 @@ describe('readAnswer', () => {
 
   it('reads a multi', () => {
     expect(readAnswer(ANSWERS.agents, ['codex', 'cursor'])).toEqual(['codex', 'cursor']);
+
     expect(() => {
       return readAnswer(ANSWERS.agents, ['gemini']);
     }).toThrow('agents must be one of: claude-code, codex, copilot, cursor');
+
     expect(() => {
       return readAnswer(ANSWERS.agents, 'codex');
     }).toThrow('agents must be an array');
@@ -37,9 +41,11 @@ describe('readAnswer', () => {
   it('reads an optional multi', () => {
     expect(readAnswer(ANSWERS.surfaces, ['popup'])).toEqual(['popup']);
     expect(readAnswer(ANSWERS.surfaces, undefined)).toBeUndefined();
+
     expect(() => {
       return readAnswer(ANSWERS.surfaces, ['sidebar']);
     }).toThrow('surfaces must be one of: popup, background, devtools-panel');
+
     expect(() => {
       return readAnswer(ANSWERS.browsers, []);
     }).toThrow('browsers must contain at least 1 value');
@@ -48,12 +54,15 @@ describe('readAnswer', () => {
   it('reads a list', () => {
     expect(readAnswer(ANSWERS.ignores, ['generated/api.ts'])).toEqual(['generated/api.ts']);
     expect(readAnswer(ANSWERS.ignores, undefined)).toBeUndefined();
+
     expect(() => {
       return readAnswer(ANSWERS.ignores, []);
     }).toThrow('ignores must be a non-empty array');
+
     expect(() => {
       return readAnswer(ANSWERS.ignores, ['a', '']);
     }).toThrow('ignores must contain only non-empty strings');
+
     expect(() => {
       return readAnswer(ANSWERS.ignores, ['a', 2]);
     }).toThrow('ignores must contain only non-empty strings');
@@ -62,9 +71,11 @@ describe('readAnswer', () => {
   it('reads a text', () => {
     expect(readAnswer(ANSWERS.packageManagerVersion, '12.5.1')).toBe('12.5.1');
     expect(readAnswer(ANSWERS.packageManagerVersion, undefined)).toBeUndefined();
+
     expect(() => {
       return readAnswer(ANSWERS.packageManagerVersion, 12);
     }).toThrow('packageManagerVersion must be a string');
+
     expect(() => {
       return readAnswer(ANSWERS.nodeVersion, 26);
     }).toThrow('nodeVersion must be a string');
@@ -81,15 +92,19 @@ describe('readAnswer', () => {
   it('reads a map', () => {
     expect(readAnswer(ANSWERS.aliases, { '@app/*': 'src/*' })).toEqual({ '@app/*': 'src/*' });
     expect(readAnswer(ANSWERS.aliases, undefined)).toBeUndefined();
+
     expect(() => {
       return readAnswer(ANSWERS.aliases, { 'app/*': 'src/*' });
     }).toThrow('aliases key must start with @ or $: app/*');
+
     expect(() => {
       return readAnswer(ANSWERS.aliases, ['@app/*']);
     }).toThrow('aliases must be an object');
+
     expect(() => {
       return readAnswer(ANSWERS.aliases, { '@app/*': '' });
     }).toThrow('aliases.@app/* must be a non-empty string');
+
     expect(() => {
       return readAnswer(ANSWERS.aliases, { '@app/*': 3 });
     }).toThrow('aliases.@app/* must be a non-empty string');
@@ -101,9 +116,11 @@ describe('readAnswer, on the wrong shape', () => {
     expect(() => {
       return readAnswer(ANSWERS.testing, ['vitest']);
     }).toThrow('testing must be one of: vitest, none');
+
     expect(() => {
       return readAnswer(ANSWERS.agents, [['codex']]);
     }).toThrow('agents must be one of: claude-code, codex, copilot, cursor');
+
     expect(() => {
       return readAnswer(ANSWERS.packageManagerVersion, ['12.5.1']);
     }).toThrow('packageManagerVersion must be a string');
@@ -153,6 +170,7 @@ describe('refuseDuplicates', () => {
     expect(() => {
       refuseDuplicates(['esm', 'esm'], 'resolveConditions');
     }).toThrow('resolveConditions must not contain duplicate values');
+
     expect(() => {
       refuseDuplicates(['esm', 'cjs'], 'resolveConditions');
     }).not.toThrow();
