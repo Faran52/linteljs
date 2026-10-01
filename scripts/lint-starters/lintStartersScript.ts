@@ -1,299 +1,176 @@
-// Nothing in `pnpm check` reads the starter tree otherwise; type-aware rules stay with the e2e suite.
+// Every starter text, written into a real project, installed and linted with type information.
 import {
-  globSync,
-  readdirSync,
+  existsSync,
+  mkdirSync,
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { join, relative } from 'node:path';
-import process, { argv } from 'node:process';
+import { availableParallelism } from 'node:os';
+import { join } from 'node:path';
+import process from 'node:process';
+import { parseArgs } from 'node:util';
 
-import { ESLint, type Linter } from 'eslint';
-import tseslint from 'typescript-eslint';
+import PQueue from 'p-queue';
 
-import { LANGUAGES } from '@config/constants';
-
-import { valuesOf } from '@utils/objectUtils';
-
-import { buildAliases } from '@emitters/utils/aliasUtils';
-
-import { ANSWERS } from '../../packages/create/src/answers';
-import { targetFor } from '../../packages/create/src/targets';
-import { log, logError } from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
-import { composeConfig } from '../../packages/eslint-config/src/compose-config/composeConfig';
+import { STARTER_CASES } from '@pipeline/e2e/starter-cover/constants';
+import { starterCases } from '@pipeline/e2e/starter-cover/starterCover';
 
 import {
-  destinationsFor,
-  setupsFor,
-  widestFor,
-  writtenPaths,
-} from './utils/answersUtils.ts';
-import { unresolvedNames } from './utils/programUtils.ts';
+  log,
+  logError,
+  logWarn,
+} from '../../packages/create/templates/project/scripts/utils/loggerUtils.ts';
 
-import type { TargetId } from '@config/types';
+import {
+  CACHE_ROOT,
+  CONFIG_PACKAGE,
+  PLUGIN_PACKAGE,
+  PROJECTS,
+  STAMPS,
+} from './constants.ts';
+import {
+  fixedCopies,
+  generate,
+  packed,
+  pruneTarballs,
+  slugOf,
+  spawnIn,
+  stampOf,
+  type Tarballs,
+  writeAgreed,
+} from './utils/caseUtils.ts';
 
-interface Linters {
-  starters: ESLint;
-  // Never fixing: a joined setup has no file to write back, and it must land clean without the fix stage.
-  setups: ESLint;
+import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
+
+type Outcome = 'linted' | 'unchanged' | 'failed';
+
+const flags = {
+  all: { type: 'boolean' },
+  fix: { type: 'boolean' },
+} as const;
+const { values } = parseArgs({ options: flags });
+const every = values.all === true;
+const fixing = values.fix === true;
+
+if (!existsSync(CACHE_ROOT)) {
+  logWarn(`No cache at ${CACHE_ROOT}: installing ${String(STARTER_CASES.length)} projects from scratch, `
+    + 'which takes several minutes. Later runs reinstall only what changed.');
 }
 
-interface SetupLint {
-  findings: string[];
-  count: number;
-}
+mkdirSync(STAMPS, { recursive: true });
 
-const TEMPLATES = 'packages/create/templates';
-const STARTERS = `${TEMPLATES}/starter-source`;
-const SCRIPT_GLOB = '**/*.{ts,tsx,mts,cts,js,jsx}';
-const LINTED_GLOB = '**/*.{ts,tsx,mts,cts,js,jsx,astro,vue,svelte}';
+const tarballs: Tarballs = {
+  config: packed(CONFIG_PACKAGE),
+  plugin: packed(PLUGIN_PACKAGE),
+};
 
-// The frameworks are not installed and `@/` names scaffolder output.
-const UNRESOLVABLE = 'import-x/no-unresolved';
+pruneTarballs(tarballs);
 
-const SHARED_ROOT = 'shared';
+const readStamp = (path: string): string => {
+  return existsSync(path) ? readFileSync(path, 'utf8') : '';
+};
 
-const fixing = argv.includes('--fix');
-const targets = valuesOf(ANSWERS.target.values);
+const fail = (label: string, step: string, output: string): Outcome => {
+  logError(`${label}: ${step} failed\n${output}`);
 
-const unknown = readdirSync(STARTERS)
-  .filter((name) => {
-    return name !== SHARED_ROOT && !targets
-      .some((target) => {
-        return target === name;
+  return 'failed';
+};
+
+const copies: Map<string, string>[] = [];
+
+// Install every time, so a changed tarball path reinstalls; `prepare` by hand, since a no-op install skips it
+// and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
+const lintCase = async (item: E2eCase): Promise<Outcome> => {
+  const slug = slugOf(item.label);
+  const dir = join(PROJECTS, slug);
+  const stampPath = join(STAMPS, slug);
+
+  await generate(item, dir, tarballs);
+
+  const stamp = stampOf(dir);
+  const isUnchanged = !every && !fixing && readStamp(stampPath) === stamp;
+
+  if (isUnchanged) {
+    return 'unchanged';
+  }
+
+  const installArgs = ['install', '--no-frozen-lockfile'];
+  const installed = await spawnIn(dir, installArgs);
+
+  if (!installed.ok) {
+    return fail(item.label, 'install', installed.output);
+  }
+
+  const prepareArgs = [
+    'run',
+    '--if-present',
+    'prepare',
+  ];
+  const prepared = await spawnIn(dir, prepareArgs);
+
+  if (!prepared.ok) {
+    return fail(item.label, 'prepare', prepared.output);
+  }
+
+  const lintArgs = [
+    'exec',
+    'eslint',
+    '.',
+    '--max-warnings',
+    '0',
+  ];
+  const fixArgs = fixing ? ['--fix'] : [];
+  const linted = await spawnIn(dir, [...lintArgs, ...fixArgs]);
+
+  if (fixing) {
+    copies.push(fixedCopies(item, dir));
+  }
+
+  if (!linted.ok) {
+    return fail(item.label, 'lint', linted.output);
+  }
+
+  writeFileSync(stampPath, stamp, 'utf8');
+
+  return 'linted';
+};
+
+const concurrency = Math.max(1, Math.floor(availableParallelism() / 2));
+const queue = new PQueue({ concurrency });
+const cases = starterCases(STARTER_CASES);
+const runs = cases
+  .map(async (item) => {
+    return await queue
+      .add(async () => {
+        return await lintCase(item);
       });
   });
+const outcomes = await Promise.all(runs);
 
-if (unknown.length > 0) {
-  logError(`Not a target, so never linted: ${unknown.join(', ')}`);
-  process.exit(1);
-}
-
-const answerSets = new Map(targets
-  .map((target) => {
-    return [target, widestFor(target)];
-  }));
-
-const placement = {
-  placed: new Map([...answerSets.values()]
-    .flatMap((every) => {
-      return [...destinationsFor(every)];
-    })),
-  covered: new Map([...answerSets]
-    .map(([target, every]) => {
-      return [target, writtenPaths(every)];
-    })),
+const countOf = (outcome: Outcome): number => {
+  return outcomes
+    .filter((each) => {
+      return each === outcome;
+    })
+    .length;
 };
 
-const filesOf = (target: string, pattern: string): string[] => {
-  return globSync(pattern, { cwd: join(STARTERS, target) })
-    .map((path) => {
-      return join(STARTERS, target, path);
-    });
-};
+const failed = countOf('failed');
 
-// Two rules cannot run on text at a path nothing on disk holds.
-const STARTER_OVERRIDES: Linter.Config[] = [
-  // Resolves `pages/` against the working directory and finds this workspace instead.
-  {
-    name: '@linteljs/starters/no-page-tree',
-    rules: { '@next/next/no-html-link-for-pages': 'off' },
-  },
-  // Under `CI`, typescript-eslint parses a path it has seen through an isolated program; variants share a path.
-  {
-    name: '@linteljs/starters/no-single-run',
-    languageOptions: { parserOptions: { disallowAutomaticSingleRunInference: true } },
-  },
-  // No program, so the type-aware rules go off, and `no-redundant-optional`, which reads `exactOptionalPropertyTypes`.
-  {
-    ...tseslint.configs.disableTypeChecked,
-    name: '@linteljs/starters/no-program',
-    rules: {
-      ...tseslint.configs.disableTypeChecked.rules,
-      'sonarjs/no-redundant-optional': 'off',
-    },
-  },
-];
+if (fixing) {
+  const written = writeAgreed(copies);
 
-const eslintFor = async (target: TargetId): Promise<Linters> => {
-  const [answers] = widestFor(target);
-  const record = targetFor(answers);
-  // The record's own naming, or a suite named against it passes here and fails the generated project.
-  const config = await composeConfig({
-    framework: record.framework,
-    astro: record.astro === true,
-    typescript: true,
-    vitest: true,
-    libraries: ['stylex'],
-    naming: record.naming,
-    folderNaming: record.folderNaming,
-    // As the generated eslint.config.js passes them, `@i18n` included, so import grouping sees the aliases.
-    aliases: buildAliases({ ...answers, languages: [...LANGUAGES] }),
-  });
-
-  const overrideConfig = [...config, ...STARTER_OVERRIDES];
-
-  return {
-    starters: new ESLint({
-      overrideConfigFile: true,
-      overrideConfig,
-      fix: fixing,
-    }),
-    setups: new ESLint({
-      overrideConfigFile: true,
-      overrideConfig,
-      fix: false,
-    }),
-  };
-};
-
-const lintSetups = async (target: TargetId, eslint: ESLint): Promise<SetupLint> => {
-  const findings: string[] = [];
-  const setups = [...setupsFor(widestFor(target)).values()];
-
-  for (const [destination, sources] of setups) {
-    const text = sources
-      .map((source) => {
-        return readFileSync(join(TEMPLATES, source), 'utf8');
-      })
-      .join('\n');
-    const [result] = await eslint.lintText(text, { filePath: destination });
-
-    for (const message of result?.messages ?? []) {
-      if (message.ruleId !== UNRESOLVABLE) {
-        findings.push(`${sources.join(' + ')} as ${destination}:${String(message.line)} `
-          + `${message.ruleId ?? 'parse error'}  ${message.message}`);
-      }
-    }
-  }
-
-  return {
-    findings,
-    count: setups.length,
-  };
-};
-
-const linted = new Set<string>();
-
-const lintTarget = async (target: TargetId, eslint: Linters): Promise<[string[], number, number, string[]]> => {
-  const findings: string[] = [];
-  const unplaced: string[] = [];
-  let fixable = 0;
-  const own = destinationsFor(widestFor(target));
-  // A shared file lints once per target that places it, under that target's layers and at its path there.
-  const shared = filesOf(SHARED_ROOT, LINTED_GLOB)
-    .filter((path) => {
-      return own.has(relative(TEMPLATES, path));
-    });
-  const files = [...filesOf(target, LINTED_GLOB), ...shared];
-
-  for (const path of files) {
-    const source = relative(TEMPLATES, path);
-
-    linted.add(path);
-    const destination = own.get(source) ?? placement.placed.get(source);
-
-    if (destination === undefined) {
-      unplaced.push(source);
-    }
-
-    const [result] = await eslint.starters.lintText(readFileSync(path, 'utf8'), {
-      filePath: destination ?? join('src', relative(join(STARTERS, target), path)),
-    });
-
-    // Written back, so the shipped bytes are what the fix stage would make them.
-    if (fixing && result?.output !== undefined) {
-      writeFileSync(path, result.output, 'utf8');
-    }
-
-    for (const message of result?.messages ?? []) {
-      if (message.ruleId !== UNRESOLVABLE) {
-        fixable += message.fix === undefined ? 0 : 1;
-        findings.push(`${source}:${String(message.line)} ${message.ruleId ?? 'parse error'}  ${message.message}`);
-      }
-    }
-  }
-
-  const setups = await lintSetups(target, eslint.setups);
-
-  return [
-    [...findings, ...setups.findings],
-    fixable,
-    files.length + setups.count,
-    unplaced,
-  ];
-};
-
-// In turn: two lazy `composeConfig` loads racing read a half-built module.
-const linters: [TargetId, Linters][] = [];
-
-for (const target of targets) {
-  linters.push([target, await eslintFor(target)]);
+  log(`${String(written.length)} starter templates fixed:\n  ${written.join('\n  ')}`);
 }
 
-const lints = linters
-  .map(async ([target, eslint]) => {
-    return await lintTarget(target, eslint);
-  });
+log(`${String(cases.length)} starter projects: ${String(countOf('linted'))} linted, `
+  + `${String(countOf('unchanged'))} unchanged since their last clean lint, ${String(failed)} failed`);
 
-const results = await Promise.all(lints);
-const findings = results
-  .flatMap(([found]) => {
-    return found;
-  });
-const unplaced = results
-  .flatMap(([
-    ,
-    ,
-    ,
-    missing,
-  ]) => {
-    return missing;
-  });
-const fixable = results
-  .reduce((total, [, count]) => {
-    return total + count;
-  }, 0);
-const checked = results
-  .reduce((total, [
-    ,
-    ,
-    count,
-  ]) => {
-    return total + count;
-  }, 0);
+// A label that names no case would lint nothing and say nothing.
+const isShort = cases.length !== STARTER_CASES.length;
 
-const scripts = targets
-  .flatMap((target) => {
-    return filesOf(target, SCRIPT_GLOB);
-  });
-
-const unresolved = unresolvedNames(STARTERS, scripts, placement);
-
-for (const finding of [...findings, ...unresolved]) {
-  logError(finding);
+if (isShort) {
+  logError(`${String(STARTER_CASES.length - cases.length)} starter labels name no e2e case`);
 }
 
-log(`${String(checked)} starter files linted through their own target's layers, ${String(findings.length)} findings, `
-  + `${String(findings.length - fixable)} of them not autofixable, ${String(unresolved.length)} names neither imported `
-  + 'nor global');
-
-// A file no record places reaches no project.
-if (unplaced.length > 0) {
-  logError(`${String(unplaced.length)} not named by any target record, linted under src/ as a guess:\n  `
-    + unplaced.join('\n  '));
-}
-
-// A shared starter no target places is linted by none.
-const unlinted = filesOf('', LINTED_GLOB)
-  .filter((path) => {
-    return !linted.has(path);
-  });
-
-if (unlinted.length > 0) {
-  logError(`${String(unlinted.length)} linted by no target:\n  ${unlinted.join('\n  ')}`);
-}
-
-process.exitCode = findings.length > 0 || unresolved.length > 0 || unplaced.length > 0 || unlinted.length > 0
-  ? 1
-  : 0;
+process.exitCode = failed > 0 || isShort ? 1 : 0;

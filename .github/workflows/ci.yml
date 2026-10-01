@@ -32,6 +32,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Every starter case, warm or not: too slow for `check`, whose leg then lints only what changed.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/linteljs/typed
+          key: typed-${{ hashFiles('packages/create/templates/**', 'packages/create/src/**') }}
+          restore-keys: typed-
+
+      - run: pnpm lint:starters --all
+
       # Build first: the packages typecheck against each other's built declarations.
       - run: pnpm check
 
