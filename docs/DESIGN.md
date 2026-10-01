@@ -822,7 +822,8 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular, Astro and React Native.
+that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular, Astro, React Native and the
+webextension popup.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
   browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
@@ -931,6 +932,14 @@ that is React, in every router mode, Next, Vue, Nuxt, SvelteKit, Solid, Angular,
   Native lays out its direction at launch, so `I18nManager.allowRTL` and `forceRTL` are called on every switch
   and show from the next launch on. Reloading at once would take expo-updates' `reloadAsync`, a new
   dependency for one call, so there is no reload.
+- **The webextension popup takes no library, not `chrome.i18n`.** `chrome.i18n` follows the browser's UI
+  language and cannot switch at runtime, and its `_locales/*/messages.json` would duplicate the shared
+  locales. The popup is plain DOM under every host, so it reads the shared locales through the same
+  single-brace resolver as Angular and Astro, keeps the choice in `localStorage` and paints a native select.
+- **Only an extension with a popup is asked.** The background, content script and devtools panel show no text,
+  so the `i18n` parts ride on the popup surface, and an extension without one is not offered languages.
+- **The popup is translated, though the home pages are not.** A popup is the extension's whole interface, a
+  lede and a gate hint, so leaving it English would leave the answer with nothing to change.
 
 ### Recorded answers
 

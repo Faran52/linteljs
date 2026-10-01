@@ -63,6 +63,9 @@ when a version's change lives in a sibling it is described there instead:
   from `Intl`, the first render is English so the static web export hydrates, and the header's button opens a
   `Modal` listing every language. Arabic turns the web page right to left at once and a native app from its
   next launch. The header tabs, language picker, status page, About, Version and the 404 screen are translated.
+- Webextension projects with a popup take `--languages` with no library: the popup reads the shared locales
+  through a single-brace resolver, keeps the choice in `localStorage` and shows a native select. `chrome.i18n`
+  follows the browser's UI language and cannot switch at runtime. An extension without a popup is not asked.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.
