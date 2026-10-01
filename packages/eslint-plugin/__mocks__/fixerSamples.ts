@@ -213,6 +213,10 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'const list = [, alpha, /* about alpha */ ...rest, [bravo, charlie], // tail\n  delta,];',
   },
   {
+    name: 'array under tab indentation holding a multi-line template',
+    code: 'if (ready) {\n\trun([`alpha\n  bravo`, charlie, delta]);\n}',
+  },
+  {
     name: 'array element in parentheses',
     code: 'run([(alpha), bravo, charlie]);',
   },

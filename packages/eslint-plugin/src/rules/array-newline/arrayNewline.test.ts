@@ -151,6 +151,23 @@ jsRuleTester.run('array-newline', arrayNewline, {
       output: 'const list = [\r\n  alpha,\r\n  bravo,\r\n  charlie\r\n];\r\n',
       errors,
     },
+    {
+      // One CRLF line elsewhere does not make the file CRLF.
+      code: 'const first = 1;\r\nconst second = 2;\nconst list = [alpha, bravo, charlie];\n',
+      output: 'const first = 1;\r\nconst second = 2;\nconst list = [\n  alpha,\n  bravo,\n  charlie\n];\n',
+      errors,
+    },
+    {
+      code: 'if (ready) {\n\trun([alpha, bravo, charlie]);\n}',
+      output: 'if (ready) {\n\trun([\n\t\talpha,\n\t\tbravo,\n\t\tcharlie\n\t]);\n}',
+      errors,
+    },
+    {
+      // A template spanning lines moves whole; its inside is text, not layout.
+      code: 'const list = [`alpha\n  bravo`, charlie, delta];',
+      output: 'const list = [\n  `alpha\n  bravo`,\n  charlie,\n  delta\n];',
+      errors,
+    },
   ],
 });
 
@@ -170,6 +187,12 @@ tsRuleTester.run('array-newline', arrayNewline, {
       code: 'const list = [alpha as string, bravo!, charlie];',
       output: 'const list = [\n  alpha as string,\n  bravo!,\n  charlie\n];',
       errors,
+    },
+    {
+      code: 'const view = [<Alpha />, <Bravo />, <Charlie />];',
+      output: 'const view = [\n  <Alpha />,\n  <Bravo />,\n  <Charlie />\n];',
+      errors,
+      filename: 'view.tsx',
     },
   ],
 });
