@@ -65,12 +65,21 @@ describe('ContactPage', () => {
     expect(await screen.findByText('Write at least ten characters.')).toBeTruthy();
   });
 
+  it('names itself and says what it does', () => {
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'Contact' })).toBeTruthy();
+    expect(screen.getByText('Two fields, validated on blur. Nothing is sent anywhere.')).toBeTruthy();
+  });
+
   it('sends once both fields are valid', async () => {
     renderPage();
     fill('Email', 'someone@example.com');
     fill('Message', 'Ten characters, at least.');
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(await screen.findByRole('status')).toBeTruthy();
+    const sent = await screen.findByRole('status');
+
+    expect(sent.textContent).toBe('Thanks. Nothing was sent, this is a starter.');
   });
 });

@@ -5,6 +5,7 @@ import {
 } from '@solidjs/testing-library';
 
 import { App } from './App';
+import { CHECK } from './config/linteljs';
 import { DataProvider } from './lib/providers/data/DataProvider';
 import { StoreProvider } from './lib/providers/store/StoreProvider';
 import { ROUTES } from './pages/routes';
@@ -43,6 +44,25 @@ describe('App', () => {
     }
 
     expect(screen.queryByRole('img', { name: 'linteljs' })).toBeNull();
+  });
+
+  it('gives the about and version pages their copy, every value filled', () => {
+    open(() => {
+      return <App />;
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'About' }));
+
+    const about = document.body.textContent;
+
+    fireEvent.click(screen.getByRole('button', { name: 'Version' }));
+
+    const version = document.body.textContent;
+
+    expect(about).toContain('which applies one lint, type, test and agent standard and keeps applying it.');
+    expect(about).toContain(`${CHECK} runs them in order, and is what CI runs.`);
+    expect(about).toContain('The layers, imported from @linteljs/eslint-config');
+    expect(version).toContain('What this project is running, and the answers it was generated from.');
+    expect(screen.getByRole('heading', { name: 'Stack' })).toBeTruthy();
   });
 
   it('opens on the page it was given', () => {

@@ -31,12 +31,21 @@ describe('LanguageSelect', () => {
       .map((option) => {
         return option.getAttribute('value');
       });
+    const names = options
+      .map((option) => {
+        return option.textContent;
+      });
+    const labels = languages
+      .map((option) => {
+        return option.label;
+      });
     const tags = options
       .map((option) => {
         return option.getAttribute('lang');
       });
 
     expect(values).toEqual(ids);
+    expect(names).toEqual(labels);
     expect(tags).toEqual(ids);
   });
 
@@ -69,9 +78,12 @@ describe('LanguageSelect', () => {
 
   it('takes the style its header gives it', () => {
     render(() => {
-      return <LanguageSelect class="tab" />;
+      return <LanguageSelect class="tab" style={{ color: 'red' }} />;
     });
 
-    expect(screen.getByRole('combobox').getAttribute('class')).toBe('tab');
+    const select = screen.getByRole('combobox');
+
+    expect(select.getAttribute('class')).toBe('tab');
+    expect(select.style.color).toBe('red');
   });
 });
