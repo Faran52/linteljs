@@ -1,0 +1,24 @@
+<header class="header">
+  <p class="starter-label">{{ t('starterLabel') }}</p>
+  <p class="brand">{{ name() }}</p>
+  <nav class="tabs" aria-label="Main">
+    @for (page of pages; track page.id) {
+      <a
+        class="tab"
+        [routerLink]="page.path"
+        routerLinkActive="is-current"
+        [routerLinkActiveOptions]="{ exact: page.path === '/' }"
+        ariaCurrentWhenActive="page"
+      >
+        {{ translateId(page.id) }}
+      </a>
+    }
+  </nav>
+  <select #picker class="tab" [attr.aria-label]="t('language')" (change)="chooseLanguage(picker.value)">
+    @for (option of languages; track option.id) {
+      <option [value]="option.id" [attr.lang]="option.id" [selected]="option.id === language()">
+        {{ option.label }}
+      </option>
+    }
+  </select>
+</header>

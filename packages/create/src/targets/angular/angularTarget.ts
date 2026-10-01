@@ -2,6 +2,11 @@ import { hasLibrary } from '@utils/answerUtils';
 
 import { DECLARATION_KEY, FOLDER } from '../constants';
 import {
+  localeFiles,
+  LOCALES_TEST,
+  translated,
+} from '../utils/i18nUtils';
+import {
   accessorFiles,
   accessorTests,
   mockFiles,
@@ -11,8 +16,10 @@ import {
 import {
   ACCESSORS,
   ALWAYS,
+  ANGULAR_I18N,
   SHARED,
 } from './constants';
+import { angularI18nFiles, angularI18nTests } from './utils/translatedFileUtils';
 
 import type { StarterFile, TargetRecord } from '../types';
 
@@ -71,6 +78,8 @@ export const angularTarget: TargetRecord = {
       shared: true,
     },
     ...accessorFiles(ACCESSORS),
+    ...angularI18nFiles(),
+    ...localeFiles(),
     ...ALWAYS
       .map((target): StarterFile => {
         return { target };
@@ -91,19 +100,19 @@ export const angularTarget: TargetRecord = {
     ...(['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const)
       .flatMap((target): StarterFile[] => {
         return [
-          {
+          ...translated<StarterFile>({
             target,
             when: (answers) => {
               return answers.form === undefined;
             },
-          },
-          {
+          }),
+          ...translated<StarterFile>({
             target,
             when: (answers) => {
               return answers.form === 'tanstack-form';
             },
             variant: 'tanstack-form',
-          },
+          }),
         ];
       }),
     {
@@ -148,6 +157,8 @@ export const angularTarget: TargetRecord = {
       shared: true,
     },
     ...accessorTests(ACCESSORS),
+    ...angularI18nTests(),
+    LOCALES_TEST,
     {
       target: 'src/app/app.spec.ts',
       covers: 'src/app/app.ts',
@@ -201,5 +212,6 @@ export const angularTarget: TargetRecord = {
     'msgpackr-extract',
   ],
   stateRules: [],
+  i18n: ANGULAR_I18N,
   testSetup: 'fragments/test-setup/setupTests.angular.ts',
 };

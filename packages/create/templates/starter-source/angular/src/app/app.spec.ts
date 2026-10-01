@@ -39,7 +39,7 @@ describe('App', () => {
 
     expect(root.querySelector('.starter-label')?.textContent).toBe('LintelJS Starter');
     expect(root.querySelector('.brand')?.textContent).toContain(NAME);
-    expect(root.querySelectorAll('.tab')).toHaveLength(PAGES.length);
+    expect(root.querySelectorAll('nav .tab')).toHaveLength(PAGES.length);
   });
 
   it('opens on the home page, mark and all', async () => {

@@ -1,11 +1,13 @@
 import {
+  ANSWERED,
   byKey,
   type GateRow,
   mswGates,
   TAILWIND,
   TANSTACK_QUERY,
   walkGates,
-  WITHOUT_FORM,
+  WITH_I18N,
+  WITHOUT_I18N,
 } from '@mocks/starterGates';
 import {
   describe,
@@ -13,8 +15,10 @@ import {
   it,
 } from 'vitest';
 
+import { LANGUAGES } from '@config/constants';
+
 import { angularTarget } from './angularTarget';
-import { SHARED } from './constants';
+import { SHARED, TRANSLATED } from './constants';
 
 describe('angularTarget', () => {
   it('is the record the angular answer names', () => {
@@ -56,6 +60,10 @@ describe('angularTarget', () => {
     expect(suite?.target).toBe('src/lib/utils/status-utils.spec.ts');
   });
 
+  it('translates through a signal of its own, with no library, compiler or test setup', () => {
+    expect(angularTarget.i18n).toEqual({ dependencies: [] });
+  });
+
   it('names every module the way the CLI would, and leaves declarations to their own key', () => {
     expect(angularTarget.naming['src/**/!(*.d).ts']).toBe('KEBAB_CASE');
     expect(angularTarget.naming).not.toHaveProperty('src/**/*.ts');
@@ -69,10 +77,39 @@ const GATES: GateRow[] = [
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['.postcssrc.json@tailwind', TAILWIND],
-  ['src/app/contact/contact.ts', WITHOUT_FORM],
-  ['src/app/contact/contact.html', WITHOUT_FORM],
-  ['src/app/contact/contact.ts@tanstack-form', [{ form: ['tanstack-form'] }]],
-  ['src/app/contact/contact.html@tanstack-form', [{ form: ['tanstack-form'] }]],
+  ...(['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const)
+    .flatMap((key): GateRow[] => {
+      return [
+        [key, [{ form: [undefined], languages: [undefined] }]],
+        [`${key}@i18n`, [{ form: [undefined], languages: ANSWERED }]],
+        [`${key}@tanstack-form`, [{ form: ['tanstack-form'], languages: [undefined] }]],
+        [`${key}@tanstack-form-i18n`, [{ form: ['tanstack-form'], languages: ANSWERED }]],
+      ];
+    }),
+  ...[
+    'src/config/statuses.ts',
+    'src/config/standard.ts',
+    ...TRANSLATED,
+  ]
+    .flatMap((key): GateRow[] => {
+      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+    }),
+  ...[
+    'src/i18n/index.ts',
+    'src/i18n/index.spec.ts',
+    'src/i18n/locales.test.ts',
+    'src/components/ui/code-text/code-text.ts',
+    'src/components/ui/code-text/code-text.html',
+    'src/components/ui/code-text/code-text.spec.ts',
+    'src/components/features/app-header/app-header.spec.ts',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, WITH_I18N];
+    }),
   ['src/lib/apis/contact/schemas.ts', [{ libraries: [[]] }]],
   ['src/lib/apis/contact/schemas.ts@zod', [{ libraries: [['zod']] }]],
   ['src/lib/services/extended-query/extended-query.spec.ts@tanstack-query', TANSTACK_QUERY],
