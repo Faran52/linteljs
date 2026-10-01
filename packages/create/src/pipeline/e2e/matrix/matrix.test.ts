@@ -36,6 +36,7 @@ const pairsOf = (answers: Answers): string[] => {
     router: answers.router,
     store: answers.store,
     data: answers.data,
+    languages: answers.languages?.join(','),
     testing: answers.testing,
     typeSafety: answers.typeSafety,
   })
@@ -161,6 +162,35 @@ describe('targetCases', () => {
     expect(has('angular', (answers) => {
       return answers.form === 'tanstack-form' && answers.libraries.includes('zod');
     })).toBe(true);
+  });
+
+  it('offers no languages or every one on every target', () => {
+    for (const target of TARGET_IDS) {
+      const chosen = everyCase(target)
+        .map(({ answers }) => {
+          return answers.languages?.join(',') ?? 'none';
+        });
+      const expected = ['none', valuesOf(ANSWERS.languages.values).join(',')];
+
+      expect([target, [...new Set(chosen)]]).toEqual([target, expected]);
+    }
+  });
+
+  it('runs a regional language on an SSR, a compiled and a library-free target', () => {
+    for (const target of [
+      'next',
+      'nuxt',
+      'svelte',
+      'angular',
+      'astro',
+    ] as const) {
+      const regional = targetCases(target)
+        .some(({ answers }) => {
+          return answers.languages?.includes('zh-TW') === true;
+        });
+
+      expect([target, regional]).toEqual([target, true]);
+    }
   });
 
   it('enumerates only answers the CLI accepts', () => {
@@ -301,6 +331,7 @@ describe('targetCases', () => {
         answers.store,
         answers.styling,
         answers.data,
+        answers.languages === undefined ? undefined : 'languages',
       ]
         .filter((part) => {
           return part !== undefined;

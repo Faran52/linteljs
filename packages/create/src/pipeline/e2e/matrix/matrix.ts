@@ -21,6 +21,7 @@ import {
   DATA_CHOICES,
   FORMS,
   HOSTED_FRAMEWORKS,
+  LANGUAGES,
   LIBRARIES,
   PACKAGE_MANAGERS,
   PLUGINS,
@@ -112,6 +113,7 @@ const labelFor = (answers: Answers): string => {
     ...(answers.store === undefined ? [] : [answers.store]),
     ...(answers.styling === undefined ? [] : [answers.styling]),
     ...(answers.data === undefined ? [] : [answers.data]),
+    ...(answers.languages === undefined ? [] : ['languages']),
   ].join(' ');
 };
 
@@ -193,7 +195,17 @@ const everyCase = (target: TargetId): E2eCase[] => {
     };
   });
 
-  const testings = across(datas, () => {
+  // Every target asks. The full set holds both zh tags, so only an exact-tag match resolves zh-TW.
+  const languages = across(datas, () => {
+    return [undefined, LANGUAGES];
+  }, (variant, chosen) => {
+    return {
+      ...variant,
+      ...(chosen === undefined ? {} : { languages: [...chosen] }),
+    };
+  });
+
+  const testings = across(languages, () => {
     return [...TESTING_CHOICES];
   }, (variant, testing) => {
     return {

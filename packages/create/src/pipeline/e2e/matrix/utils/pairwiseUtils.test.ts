@@ -25,8 +25,8 @@ describe('pairsOf', () => {
   it('pairs every two axes once', () => {
     const pairs = pairsOf(DEFAULT_ANSWERS);
 
-    expect(pairs).toHaveLength(45);
-    expect(new Set(pairs).size).toBe(45);
+    expect(pairs).toHaveLength(55);
+    expect(new Set(pairs).size).toBe(55);
   });
 
   it('names an unset answer none', () => {
@@ -35,7 +35,14 @@ describe('pairsOf', () => {
       'styling:none|form:none',
       'router:none|store:none',
       'store:none|data:none',
+      'data:none|languages:none',
     ]));
+  });
+
+  it('names chosen languages by their tags', () => {
+    const pairs = pairsOf(answersFor({ languages: ['en', 'zh-TW'] }));
+
+    expect(pairs).toContain('languages:en,zh-TW|testing:vitest');
   });
 });
 

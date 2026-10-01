@@ -1371,12 +1371,15 @@ against the catalog.
 
 ## The end-to-end matrix
 
-Every answer this CLI can be given is covered, in 209 cases rather than the whole product. `matrix.ts` enumerates
+Every answer this CLI can be given is covered, in 208 cases rather than the whole product. `matrix.ts` enumerates
 them; nothing is listed by hand. Per target, every legal combination of the single-select axes on every package
 manager is enumerated, and a greedy cover keeps enough of them that every *pair* of answer values appears at least
 once. A multi-select axis is never combined: it is always its full value (`libraries`, `agents`, `plugins`,
-`surfaces`), so every case carries a target's heaviest dependency set. The axes are `packageManager`,
-`hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `testing` and `typeSafety`.
+`surfaces`), so every case carries a target's heaviest dependency set. `languages` is the one exception: it is an
+axis of two values, none or all six, since a project without it is byte-identical to one generated before it and
+must stay covered, and the full set holds both zh tags, so `zh-TW` resolves only through an exact-tag match. The
+axes are `packageManager`, `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`,
+`languages`, `testing` and `typeSafety`.
 
 An install is around 60% of a case, 19.7 to 30.5 seconds of a 39 to 52 second one, so the full product is days of
 machine time and splitting it across machines divides that rather than reducing it. Installing once per distinct

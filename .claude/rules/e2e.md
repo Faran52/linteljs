@@ -7,7 +7,7 @@ paths:
 
 # The end-to-end suite
 
-`pnpm --filter @linteljs/create test:e2e` runs 209 cases, each a real generate, install and `check`, and is outside
+`pnpm --filter @linteljs/create test:e2e` runs 208 cases, each a real generate, install and `check`, and is outside
 `pnpm check` because every case hits the network. `docs/DESIGN.md`, "The end-to-end matrix", carries the why of
 everything below.
 
