@@ -1,14 +1,15 @@
 import { createRawSnippet } from 'svelte';
 
+import { render, screen } from '@testing-library/svelte';
+
+import { NAME } from '@config/linteljs';
+
 import { applyLanguage } from '@i18n';
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
-import { render, screen } from '@testing-library/svelte';
-
-import { NAME } from '@config/linteljs';
 
 import Layout from './+layout.svelte';
 

@@ -1,5 +1,3 @@
-import { initI18n } from '@i18n';
-import { languages, resources } from '@i18n/config';
 import {
   act,
   render,
@@ -7,6 +5,9 @@ import {
 } from '@testing-library/react';
 
 import { ANSWERS, STACK } from '@config/linteljs';
+
+import { initI18n } from '@i18n';
+import { languages, resources } from '@i18n/config';
 
 import { VersionPage } from './VersionPage';
 

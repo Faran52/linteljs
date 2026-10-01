@@ -1,12 +1,13 @@
 import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { initI18n, restoreLanguage } from '@i18n';
 import { Tabs } from 'expo-router';
 import Head from 'expo-router/head';
 
 import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
+
+import { initI18n, restoreLanguage } from '@i18n';
 
 import { LanguageSelect } from '@features/language-select/LanguageSelect';
 

@@ -30,6 +30,7 @@ const ALIAS_BUCKETS = [
     '@providers',
     '@apis',
     '@utils',
+    '@i18n',
   ],
   [
     '@hooks',

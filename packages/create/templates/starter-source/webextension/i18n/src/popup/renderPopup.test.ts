@@ -1,10 +1,10 @@
+import { CHECK, NAME } from '@config/linteljs';
+
 import {
   languages,
   languageStorageKey,
   resources,
 } from '@i18n/config';
-
-import { CHECK, NAME } from '@config/linteljs';
 
 import { renderPopup } from './renderPopup';
 

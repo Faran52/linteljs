@@ -1,15 +1,16 @@
-import { initI18n } from '@i18n';
-import {
-  languages,
-  languageStorageKey,
-  resources,
-} from '@i18n/config';
 import {
   act,
   fireEvent,
   render,
   screen,
 } from '@testing-library/react';
+
+import { initI18n } from '@i18n';
+import {
+  languages,
+  languageStorageKey,
+  resources,
+} from '@i18n/config';
 
 import { AppHeader } from './AppHeader';
 

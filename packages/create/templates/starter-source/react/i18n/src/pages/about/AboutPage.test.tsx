@@ -1,5 +1,3 @@
-import { initI18n } from '@i18n';
-import { languages, resources } from '@i18n/config';
 import {
   act,
   render,
@@ -8,6 +6,9 @@ import {
 
 import { GATE } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
+
+import { initI18n } from '@i18n';
+import { languages, resources } from '@i18n/config';
 
 import { AboutPage } from './AboutPage';
 

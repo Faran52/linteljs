@@ -143,6 +143,7 @@ describe('buildGroups', () => {
       '@providers',
       '@apis',
       '@utils',
+      '@i18n',
       '@hooks',
       '@composables',
       '@primitives',
@@ -168,6 +169,7 @@ describe('buildGroups', () => {
         '@providers',
         '@apis',
         '@utils',
+        '@i18n',
       ].map(pattern),
       [
         '@hooks',

@@ -1,9 +1,4 @@
 import {
-  languages,
-  languageStorageKey,
-  resources,
-} from '@i18n/config';
-import {
   act,
   fireEvent,
   render,
@@ -13,6 +8,11 @@ import {
 import { PAGES } from '@config/routes';
 
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import {
+  languages,
+  languageStorageKey,
+  resources,
+} from '@i18n/config';
 
 import { pathnameMock } from '@mocks/setupTests';
 

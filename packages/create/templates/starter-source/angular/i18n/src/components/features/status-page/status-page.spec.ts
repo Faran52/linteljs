@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
+import { STATUSES } from '@config/statuses';
+
 import { applyLanguage } from '@i18n';
 import { languages, resources } from '@i18n/config';
-
-import { STATUSES } from '@config/statuses';
 
 import { StatusPage } from './status-page';
 

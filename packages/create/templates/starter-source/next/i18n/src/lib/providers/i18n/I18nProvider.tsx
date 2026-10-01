@@ -6,13 +6,14 @@ import {
   useSyncExternalStore,
 } from 'react';
 
+import { NextIntlClientProvider } from 'next-intl';
+
 import {
   applyDocumentDirection,
   detectLanguage,
   subscribeLanguage,
 } from '@i18n';
 import { fallbackLanguage, resources } from '@i18n/config';
-import { NextIntlClientProvider } from 'next-intl';
 
 export interface I18nProviderProps {
   readonly children: ReactNode;

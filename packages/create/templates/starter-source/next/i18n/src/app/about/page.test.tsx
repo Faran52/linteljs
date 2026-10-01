@@ -1,5 +1,3 @@
-import { chooseLanguage } from '@i18n';
-import { languages, resources } from '@i18n/config';
 import {
   act,
   render,
@@ -9,6 +7,8 @@ import {
 import { CHECK, GATE } from '@config/linteljs';
 
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import { chooseLanguage } from '@i18n';
+import { languages, resources } from '@i18n/config';
 
 import AboutPage from './page';
 

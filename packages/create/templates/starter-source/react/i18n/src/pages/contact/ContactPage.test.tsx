@@ -1,5 +1,3 @@
-import { initI18n } from '@i18n';
-import { languages, resources } from '@i18n/config';
 import {
   act,
   fireEvent,
@@ -10,6 +8,8 @@ import {
 
 import { DataProvider } from '@lib/providers/data/DataProvider';
 import { StoreProvider } from '@lib/providers/store/StoreProvider';
+import { initI18n } from '@i18n';
+import { languages, resources } from '@i18n/config';
 
 import { ContactPage } from './ContactPage';
 

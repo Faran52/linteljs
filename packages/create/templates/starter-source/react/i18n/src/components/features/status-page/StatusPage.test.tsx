@@ -1,5 +1,3 @@
-import { initI18n } from '@i18n';
-import { languages, resources } from '@i18n/config';
 import {
   act,
   fireEvent,
@@ -8,6 +6,9 @@ import {
 } from '@testing-library/react';
 
 import { STATUSES } from '@config/statuses';
+
+import { initI18n } from '@i18n';
+import { languages, resources } from '@i18n/config';
 
 import { StatusPage } from './StatusPage';
 

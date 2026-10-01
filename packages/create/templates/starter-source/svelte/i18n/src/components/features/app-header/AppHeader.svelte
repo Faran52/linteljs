@@ -2,13 +2,13 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
 
+  import { PAGES } from '@config/routes';
+
   import {
     applyLanguage,
     detectLanguage,
     m,
   } from '@i18n';
-
-  import { PAGES } from '@config/routes';
 
   import LanguageSelect from '../language-select/LanguageSelect.svelte';
 

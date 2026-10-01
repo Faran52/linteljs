@@ -1,8 +1,9 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
+
 import { chooseLanguage } from '@i18n';
 import { languages } from '@i18n/config';
-import { useLocale, useTranslations } from 'next-intl';
 
 import type { ComponentProps, ReactNode } from 'react';
 

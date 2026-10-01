@@ -1,4 +1,3 @@
-import { languages, languageStorageKey } from '@i18n/config';
 import {
   act,
   fireEvent,
@@ -7,6 +6,7 @@ import {
 } from '@testing-library/react';
 
 import { I18nProvider } from '@lib/providers/i18n/I18nProvider';
+import { languages, languageStorageKey } from '@i18n/config';
 
 import { LanguageSelect } from './LanguageSelect';
 

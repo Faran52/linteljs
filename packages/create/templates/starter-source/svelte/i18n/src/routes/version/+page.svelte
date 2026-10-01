@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { m } from '@i18n';
-
   import { ANSWERS, STACK } from '@config/linteljs';
+
+  import { m } from '@i18n';
 
   import CodeText from '@ui/code-text/CodeText.svelte';
 </script>

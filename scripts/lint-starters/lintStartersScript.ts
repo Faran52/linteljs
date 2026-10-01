@@ -11,6 +11,8 @@ import process, { argv } from 'node:process';
 import { ESLint, type Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 
+import { LANGUAGES } from '@config/constants';
+
 import { valuesOf } from '@utils/objectUtils';
 
 import { buildAliases } from '@emitters/utils/aliasUtils';
@@ -125,8 +127,8 @@ const eslintFor = async (target: TargetId): Promise<Linters> => {
     libraries: ['stylex'],
     naming: record.naming,
     folderNaming: record.folderNaming,
-    // As the generated eslint.config.js passes them, so import grouping sees the aliases.
-    aliases: buildAliases(answers),
+    // As the generated eslint.config.js passes them, `@i18n` included, so import grouping sees the aliases.
+    aliases: buildAliases({ ...answers, languages: [...LANGUAGES] }),
   });
 
   const overrideConfig = [...config, ...STARTER_OVERRIDES];

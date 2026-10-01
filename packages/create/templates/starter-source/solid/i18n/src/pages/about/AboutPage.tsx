@@ -1,9 +1,9 @@
 import { For, type JSX } from 'solid-js';
 
-import { t } from '@i18n';
-
 import { CHECK, GATE } from '@config/linteljs';
 import { STANDARD_PATHS } from '@config/standard';
+
+import { t } from '@i18n';
 
 import { CodeText } from '@ui/code-text/CodeText';
 
