@@ -39,7 +39,15 @@ describe('the version screen', () => {
 
     const { common } = resources[last];
 
-    expect(screen.getByText(common.versionLede)).toBeTruthy();
-    expect(screen.getByText(common.versionAnswers)).toBeTruthy();
+    const shown = [
+      common.version,
+      common.versionLede,
+      common.versionStack,
+      common.versionAnswers,
+    ];
+
+    for (const text of shown) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
   });
 });

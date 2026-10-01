@@ -37,7 +37,16 @@ describe('the about screen', () => {
 
     const { common } = resources[last];
 
-    expect(screen.getByText(common.aboutGate)).toBeTruthy();
-    expect(screen.getByText(common.standardEslint)).toBeTruthy();
+    const shown = [
+      common.about,
+      common.aboutLede,
+      common.aboutGate,
+      common.aboutStandard,
+      common.standardEslint,
+    ];
+
+    for (const text of shown) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
   });
 });

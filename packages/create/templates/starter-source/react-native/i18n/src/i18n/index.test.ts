@@ -63,10 +63,20 @@ describe('i18n', () => {
   });
 
   it('initialises once, in English, so the first render matches the web export', () => {
+    const init = vi.spyOn(i18next, 'init');
     const i18n = initI18n();
 
     expect(initI18n()).toBe(i18n);
-    expect(i18n.language).toBe('en');
+    expect(init).not.toHaveBeenCalled();
+    expect(i18n.options.lng).toBe('en');
+  });
+
+  it('fills single braces and leaves the value unescaped, as the shared locales are written', () => {
+    const command = '<a & b>';
+    const filled = i18next.t('aboutCheck', { command });
+
+    expect(filled).toContain(command);
+    expect(filled).not.toContain('{command}');
   });
 
   it('stores a choice and switches to it', async () => {
@@ -93,6 +103,8 @@ describe('i18n', () => {
   it('sets the document language and direction on the web', () => {
     const documentElement = { lang: '', dir: '' };
 
+    const forceRTL = vi.spyOn(I18nManager, 'forceRTL');
+
     vi.spyOn(Platform, 'OS', 'get').mockReturnValue('web');
     vi.stubGlobal('document', { documentElement });
 
@@ -101,6 +113,8 @@ describe('i18n', () => {
 
       expect(documentElement).toEqual({ lang: id, dir });
     }
+
+    expect(forceRTL).not.toHaveBeenCalled();
   });
 
   it('applies the direction on every switch', async () => {
