@@ -26,6 +26,8 @@ const STANDARD_ACTIONS = [
 
 const ACTION_KEYS = ['name', 'label'];
 
+const NOT_ARRAY_TYPES = ['Literal', 'ObjectExpression'];
+
 export const nativeValidAccessibilityActions = createRule('native-valid-accessibility-actions', {
   meta: {
     type: 'problem',
@@ -63,6 +65,11 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
             data: { key },
           });
         }
+      }
+
+      // A spread or a computed key may carry the name or the label.
+      if (keys.includes(undefined)) {
+        return;
       }
 
       if (!named) {
@@ -111,7 +118,7 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
 
         const expression = expressionOf(actions);
 
-        if (!expression || expression.type === 'Literal') {
+        if (!expression || NOT_ARRAY_TYPES.includes(expression.type)) {
           context.report({
             node,
             messageId: 'notAnArray',

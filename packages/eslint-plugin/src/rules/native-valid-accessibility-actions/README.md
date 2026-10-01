@@ -34,6 +34,8 @@ not.
 - An array or a name computed at runtime. `accessibilityActions={actions}` and
   `{ name: chosen }` cannot be read here.
 - A spread inside the array. `[...base]` carries entries this rule cannot enumerate.
+- A missing name or label in an entry with a spread or a computed key. `{ ...base }` and
+  `{ [key]: 'mute' }` may carry either one. A key it can read, such as `hint`, is still reported.
 - Whether the handler actually handles each declared name. That needs following the function to
   its definition and reading a `switch`, which is a different kind of analysis.
 - Anything else about the array once the two halves are unpaired: the pairing is reported on its
