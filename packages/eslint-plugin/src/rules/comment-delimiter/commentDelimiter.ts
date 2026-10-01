@@ -139,21 +139,29 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
     return;
   }
 
+  // A tag inert in `//` lines turns live in a block: `@jsxImportSource` would switch the JSX runtime.
+  const tagged = run
+    .some((entry) => {
+      return JSDOC_TAG.test(entry.text);
+    });
+
   context.report({
     node: first.comment,
     messageId: 'useJsdoc',
-    fix: (fixer: Fixer) => {
-      const texts = run
-        .map((entry) => {
-          return entry.text;
-        });
+    fix: tagged
+      ? null
+      : (fixer: Fixer) => {
+          const texts = run
+            .map((entry) => {
+              return entry.text;
+            });
 
-      return fixer.replaceTextRange([rangeOf(first.comment)[0], rangeOf(last.comment)[1]], jsdocTextFor(
-        first.indent,
-        texts,
-        eol,
-      ));
-    },
+          return fixer.replaceTextRange([rangeOf(first.comment)[0], rangeOf(last.comment)[1]], jsdocTextFor(
+            first.indent,
+            texts,
+            eol,
+          ));
+        },
   });
 };
 

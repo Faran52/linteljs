@@ -33,6 +33,9 @@ rather than prose, and every reader of one stops at `/**`: `/** @type {import('t
 `// @deprecated`. Anything matching `@` at the start of a line or after whitespace counts, so an
 email address in prose still converts.
 
+The same holds the other way: a run of `//` lines carrying a tag is reported but not fixed, since
+merging it into a block would wake a tag that is inert where it stands.
+
 A plain `/* */` block is not JSDoc and is not this rule's business.
 
 Test files are skipped entirely: the same standard says a test carries no comments at all, which

@@ -423,6 +423,12 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'styled.tsx',
   },
   {
+    name: 'slash run carrying an inert jsx pragma',
+    code: '// alpha\n// @jsxImportSource preact\n// charlie\nconst value = 1;\n',
+    typescript: true,
+    filename: 'inert.tsx',
+  },
+  {
     name: 'deprecated tag on one line',
     code: '/** @deprecated use `other` */\nexport const old = 1;\n',
   },

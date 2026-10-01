@@ -13,6 +13,7 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
     'const value = 1; // why it is one\n',
     'const value = /* measured */ 1;\n',
     'const value = /** measured */ 1;\n',
+    '/** measured */ export const value = 1;\n',
     '/* v8 ignore next 3 -- a parsed node always carries a location */\nexport const value = 1;\n',
     '#!/usr/bin/env node\nexport const value = 1;\n',
     '/// <reference lib="dom" />\nexport const value = 1;\n',
@@ -195,6 +196,33 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       code: '/** ask faran@example.com first */\nexport const value = 1;',
       output: '// ask faran@example.com first\nexport const value = 1;',
       errors: [{ messageId: 'useSlashes' }],
+    },
+    {
+      // TypeScript reads `@jsxImportSource` only from a block, so merging would switch the runtime.
+      code: '// alpha\n// @jsxImportSource preact\n// charlie\nexport const value = 1;',
+      output: null,
+      errors: [{ messageId: 'useJsdoc' }],
+    },
+    {
+      code: '// alpha\r\n// bravo\r\n// charlie\r\nexport const value = 1;\r\n',
+      output: '/**\r\n * alpha\r\n * bravo\r\n * charlie\r\n */\r\nexport const value = 1;\r\n',
+      errors: [{ messageId: 'useJsdoc' }],
+    },
+    {
+      code: '/**\r\n * First.\r\n * Second.\r\n */\r\nexport const value = 1;\r\n',
+      output: '// First.\r\n// Second.\r\nexport const value = 1;\r\n',
+      errors: [{ messageId: 'useSlashes' }],
+    },
+    {
+      code: 'export const run = () => {\n\t// alpha\n\t// bravo\n\t// charlie\n\treturn 1;\n};',
+      output: 'export const run = () => {\n\t/**\n\t * alpha\n\t * bravo\n\t * charlie\n\t */\n\treturn 1;\n};',
+      errors: [{ messageId: 'useJsdoc' }],
+    },
+    {
+      // An empty line keeps the run whole and leaves no trailing space.
+      code: '// alpha\n//\n// charlie\nexport const value = 1;',
+      output: '/**\n * alpha\n *\n * charlie\n */\nexport const value = 1;',
+      errors: [{ messageId: 'useJsdoc' }],
     },
   ],
 });
