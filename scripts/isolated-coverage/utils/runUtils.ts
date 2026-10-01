@@ -74,6 +74,7 @@ export const coverageRun = async (
     detached: true,
   });
   const deadline = AbortSignal.timeout(timeoutMs);
+
   const kill = (): void => {
     if (child.pid !== undefined) {
       process.kill(-child.pid, 'SIGKILL');

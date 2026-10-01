@@ -108,6 +108,7 @@ const linesOf = (file: FileCoverage, keys: Iterable<string>): Set<number> => {
 
 export const metricsOf = (file: FileCoverage, hits: Set<string>): string => {
   const all = entriesOf(file);
+
   const ratio = (kind: string): string => {
     const ofKind = all
       .filter((key) => {

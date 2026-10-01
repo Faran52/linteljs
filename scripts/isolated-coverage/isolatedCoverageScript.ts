@@ -228,6 +228,7 @@ for (const [file, coverage] of [...maps]
       .filter((key) => {
         return !key.startsWith('s:');
       }))}`);
+
     continue;
   }
 
@@ -278,11 +279,14 @@ listed('Test files with no source beside them', orphaned.map(relativeTo));
 listed('Runs that wrote no coverage report', failed.map(relativeTo));
 listed(`Runs killed at the ${String(timeoutSeconds)}s deadline`, timedOut.map(relativeTo));
 listed(`Data, a ${DATA_FILE}, so no suite of its own`, data);
+
 listed(
   'Skipped: the documented exceptions in .claude/rules/repo-structure.md, suites of a package rather than one file',
   documented.map(relativeTo),
 );
+
 listed('Out of scope, their source is outside the coverage include set', outOfScope.map(relativeTo));
+
 log(`${String(paired.size)} pairs, ${String(short.length)} short, ${String(untested.length)} untested, `
   + `${String(impure.length)} impure ${DATA_FILE}, ${String(claimedTwice.length)} claimed twice, `
   + `${String(orphaned.length)} orphaned, ${String(data.length)} data, ${String(barrels)} barrels, `

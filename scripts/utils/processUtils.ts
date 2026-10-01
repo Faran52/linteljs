@@ -24,12 +24,14 @@ const emptyDir = (dir: string): void => {
     recursive: true,
     force: true,
   });
+
   mkdirSync(dir, { recursive: true });
 };
 
 // `pnpm pack` runs `prepack` and rewrites `catalog:` the way a publish does.
 export const packTarball = (packageDir: string, outDir: string): string => {
   emptyDir(outDir);
+
   run('pnpm', [
     'pack',
     '--pack-destination',
