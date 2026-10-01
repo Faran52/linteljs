@@ -128,6 +128,10 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
     'const view = <View accessibilityRole={role} />;',
     'const view = <View role={role} />;',
     'const view = <View />;',
+    "const view = <View accessibilityRole={'button'} />;",
+    'const view = <View accessibilityRole={`buton`} />;',
+    'const view = <View {...props} role="button" />;',
+    'const view = <Animated.View /* tappable */ accessibilityRole="button" />;',
   ],
   invalid: [
     {
@@ -207,6 +211,76 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
           prop: 'role',
           value: 'buton',
         },
+      }],
+    },
+    ...[
+      {
+        written: '""',
+        value: '',
+      },
+      {
+        written: '"Button"',
+        value: 'Button',
+      },
+      {
+        written: '" button"',
+        value: ' button',
+      },
+      {
+        written: '{5}',
+        value: '5',
+      },
+      {
+        written: '{null}',
+        value: 'null',
+      },
+      {
+        written: "{'buton'}",
+        value: 'buton',
+      },
+    ]
+      .map(({ written, value }) => {
+        return {
+          code: `const view = <View accessibilityRole=${written} />;`,
+          errors: [{
+            messageId: 'invalidRole' as const,
+            data: {
+              prop: 'accessibilityRole',
+              value,
+            },
+          }],
+        };
+      }),
+    {
+      code: 'const view = <View role="adjustable" />;',
+      errors: [{
+        messageId: 'invalidRole',
+        data: {
+          prop: 'role',
+          value: 'adjustable',
+        },
+      }],
+    },
+    {
+      code: 'const view = <View {...props} accessibilityRole="buton" />;',
+      errors: [{
+        messageId: 'invalidRole',
+        data: {
+          prop: 'accessibilityRole',
+          value: 'buton',
+        },
+      }],
+    },
+    {
+      code: 'const view = <Animated.View /* tappable */ role="buton"><Text>Go</Text></Animated.View>;',
+      errors: [{
+        messageId: 'invalidRole',
+        data: {
+          prop: 'role',
+          value: 'buton',
+        },
+        column: 14,
+        endColumn: 57,
       }],
     },
   ],
