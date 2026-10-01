@@ -264,7 +264,12 @@ export const buildDevDependencies = (answers: Answers): Record<string, string> =
   const stylingDev: Record<Styling, string[]> = {
     tailwind: ['eslint-plugin-better-tailwindcss', ...tailwindDevDependencies(target)],
     // Without the build plugin the emitted config imports a module never installed; `unplugin` is a real peer.
-    stylex: ['@stylexjs/eslint-plugin', ...target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin']],
+    stylex: [
+      '@stylexjs/eslint-plugin',
+      // Else npm roots the lint plugin's 3.x, and stylelint's css-calc fails every `clamp()` and `calc()`.
+      '@csstools/css-tokenizer',
+      ...target.stylexBuild ?? ['@stylexjs/unplugin', 'unplugin'],
+    ],
   };
   const dataDev: Record<Data, string[]> = {
     'tanstack-query': ['@tanstack/eslint-plugin-query'],

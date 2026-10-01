@@ -438,6 +438,19 @@ describe('buildDevDependencies', () => {
     expect(devDependencies).not.toHaveProperty('@stylexjs/babel-plugin');
   });
 
+  it('names the css tokenizer major stylelint reads beside stylex, on every build route', () => {
+    const vite = buildDevDependencies(answersFor({ styling: 'stylex' }));
+    const next = buildDevDependencies(answersFor({
+      target: 'next',
+      styling: 'stylex',
+    }));
+    const plain = buildDevDependencies(answersFor({}));
+
+    expect(vite['@csstools/css-tokenizer']).toMatch(/^\^4\./);
+    expect(next['@csstools/css-tokenizer']).toMatch(/^\^4\./);
+    expect(plain).not.toHaveProperty('@csstools/css-tokenizer');
+  });
+
   it('installs the babel and postcss halves where there is no vite config', () => {
     const devDependencies = buildDevDependencies(answersFor({
       target: 'next',

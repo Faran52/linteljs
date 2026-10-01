@@ -940,7 +940,9 @@ e2e harness zeroes none of them: each project's own exemption lets the just-publ
 
 `.npmrc` and `.yarnrc.yml` are load-bearing, measured on React and Next with each removed. Without
 `legacy-peer-deps` npm refuses the install outright; its price is that npm installs no peers, which is why `vite` is
-a named dev dependency wherever vitest is. Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
+a named dev dependency wherever vitest is. For the same reason StyleX names `@csstools/css-tokenizer` 4: npm otherwise
+roots `@stylexjs/eslint-plugin`'s 3.x, stylelint's css-calc resolves that against its `^4` peer, and every math
+function in the CSS is reported invalid (measured 2026-10-01, stylelint 17.15.0, css-calc 3.4.1). Without `nodeLinker: node-modules` yarn's PnP breaks the ESLint
 TypeScript resolver and `check` fails with 46 errors.
 
 `.yarnrc.yml` is emitted, so its `packageExtensions` follow the dependencies a project installs, and it answers a

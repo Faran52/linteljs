@@ -116,6 +116,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- An npm project with StyleX passes `lint:css`: it names `@csstools/css-tokenizer` 4 as a dev dependency, so npm
+  no longer hoists the StyleX lint plugin's 3.x where stylelint reads it and fails every `clamp()` and `calc()`.
 - A React Router framework project has a document title: `root.tsx` renders the project's name (D2).
 - A Nuxt project has a document title: `nuxt.config.ts` sets `app.head.title` to the project's name (D6).
 - A React Native project's web build has a document title: the root layout sets the project's name through

@@ -47,6 +47,8 @@ export const VERSIONS: Record<string, string> = {
   '@tanstack/solid-store': '^0.11.1',
   '@tanstack/svelte-store': '^0.12.1',
   '@tanstack/vue-store': '^0.11.1',
+  // Stylelint's own major, named beside StyleX; `utils/packageJsonUtils.ts` says why.
+  '@csstools/css-tokenizer': '^4.0.2',
   '@stylexjs/babel-plugin': '^0.19.1',
   '@stylexjs/postcss-plugin': '^0.19.1',
   '@stylexjs/stylex': '^0.19.1',
