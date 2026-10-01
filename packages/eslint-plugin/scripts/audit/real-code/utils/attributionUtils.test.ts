@@ -165,8 +165,11 @@ describe('evaluate', () => {
       return text.replace('1; //', '1;  //');
     });
 
-    const categories = categoriesOf(planted({ 'prefer-arrow-functions': moves }), source.replace('1; ', '1;  '),
-      ['prefer-arrow-functions']);
+    const categories = categoriesOf(
+      planted({ 'prefer-arrow-functions': moves }),
+      source.replace('1; ', '1;  '),
+      ['prefer-arrow-functions'],
+    );
 
     expect(categories).toStrictEqual([]);
 

@@ -217,12 +217,18 @@ export const judge = (report: Linter.LintMessage, shapes: Shapes, probed: Set<st
   const hazard = bodyHazard(fn);
 
   if (hazard !== undefined) {
-    return finding(ruleId, 'CRITICAL: guard leaked',
-      `converted a function whose own body uses \`${hazard}\`, which an arrow rebinds`);
+    return finding(
+      ruleId,
+      'CRITICAL: guard leaked',
+      `converted a function whose own body uses \`${hazard}\`, which an arrow rebinds`,
+    );
   }
 
   return fn.type === 'FunctionDeclaration' && probed.has(spot)
-    ? finding(ruleId, 'CRITICAL: guard leaked',
-        'converted a declaration called above itself, which a `const` cannot support')
+    ? finding(
+        ruleId,
+        'CRITICAL: guard leaked',
+        'converted a declaration called above itself, which a `const` cannot support',
+      )
     : undefined;
 };

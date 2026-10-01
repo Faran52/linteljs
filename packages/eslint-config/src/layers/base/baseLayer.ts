@@ -125,6 +125,8 @@ export const base = (options: BaseOptions = {}): Layer => {
         '@stylistic/semi': ['error', 'always'],
         '@stylistic/brace-style': ['error', 'stroustrup'],
         'curly': ['error', 'all'],
+        '@stylistic/function-call-argument-newline': ['error', 'consistent'],
+        '@stylistic/function-paren-newline': ['error', 'multiline-arguments'],
         '@stylistic/semi-style': ['error', 'last'],
         '@stylistic/no-extra-semi': 'error',
         '@stylistic/switch-colon-spacing': ['error', {

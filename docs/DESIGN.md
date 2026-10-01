@@ -317,6 +317,15 @@ The numbers govern this workspace too. Measured the way the rules count, in non-
 the layer carried any; both are gone, since a workspace-only number would be a second standard the published one
 does not state.
 
+### Rules `base` leaves off, measured
+
+Each was tried against the workspace and the 670 starter files with `base` as it stands.
+
+- `@stylistic/curly-newline`: with `minElements: 1` alone it reports a block holding only a comment, the
+  `catch {` with a `// why` line under it that `base` allows (six findings, four unfixable); with
+  `consistent: true` added it finds nothing, and on every one-line block it reports the same two braces
+  `@stylistic/brace-style` already does.
+
 ## Targets
 
 Ten: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, and a Manifest V3

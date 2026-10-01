@@ -58,6 +58,9 @@ when a version's change lives in a sibling it is described there instead:
 - `base` turns on `@stylistic/semi-style` (`last`), `no-extra-semi`, `switch-colon-spacing`,
   `function-call-spacing` (`never`), `linebreak-style` (`unix`) and core `no-debugger`. The React layers and
   `solid()` turn on `@stylistic/jsx-self-closing-comp` and `jsx-pascal-case` over JSX.
+- `base` lays out a call's arguments as one list: `@stylistic/function-call-argument-newline` (`consistent`) and
+  `function-paren-newline` (`multiline-arguments`) together move `fn(a,\n  b)` to one argument per line with the
+  parens on lines of their own.
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
 
 ### Fixed

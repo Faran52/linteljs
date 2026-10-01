@@ -221,8 +221,12 @@ export const unionGenericCase: Build = (state) => {
       return undefined;
     }
 
-    return replaced(state, first.range[0], first.range[1],
-      `${textOf(state, first)} | 'linteljsProbeB' | 'linteljsProbeC' | 'linteljsProbeD'`);
+    return replaced(
+      state,
+      first.range[0],
+      first.range[1],
+      `${textOf(state, first)} | 'linteljsProbeB' | 'linteljsProbeC' | 'linteljsProbeD'`,
+    );
   });
 };
 

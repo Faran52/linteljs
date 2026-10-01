@@ -322,8 +322,12 @@ export const asyncReturnHandlerCase: Build = (state) => {
       return undefined;
     }
 
-    return replaced(state, argument.range[0], argument.range[1],
-      `(${textOf(state, argument)}).catch(${PROBE_HANDLER})`);
+    return replaced(
+      state,
+      argument.range[0],
+      argument.range[1],
+      `(${textOf(state, argument)}).catch(${PROBE_HANDLER})`,
+    );
   });
 };
 

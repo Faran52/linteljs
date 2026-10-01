@@ -200,6 +200,16 @@ describe('base: stylistic', () => {
       TS_FILE,
     ],
     [
+      '@stylistic/function-call-argument-newline',
+      'export const a = Math.max(1,\n  2, 3);\n',
+      TS_FILE,
+    ],
+    [
+      '@stylistic/function-paren-newline',
+      'export const a = Math.max(1,\n  2);\n',
+      TS_FILE,
+    ],
+    [
       '@stylistic/no-extra-semi',
       'export const a = 1;;\n',
       TS_FILE,
