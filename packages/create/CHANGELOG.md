@@ -48,6 +48,8 @@ when a version's change lives in a sibling it is described there instead:
   for dev and build. `project.inlang/settings.json` loads the message-format plugin from `node_modules`. The
   header, status pages, About, Version and Contact are translated, rendered in English on the server and switched
   after hydration.
+- Solid projects take `--languages` through @solid-primitives/i18n, with a single-brace resolver for the shared
+  `common.json` files. The header tabs, language select, status page, About, Version and Contact are translated.
 - Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
   `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
   130K, red past 150K. A project's own status lines are kept on a sync.
@@ -138,6 +140,10 @@ when a version's change lives in a sibling it is described there instead:
   `href: null`.
 - The header no longer overflows a 375px screen on a starter with a Contact tab: below 30rem the
   "LintelJS Starter" label is hidden, in `AppHeader.css` and the StyleX header styles.
+- With languages on, the header wraps instead of overflowing a 375px screen in Japanese: the tabs and the
+  language select no longer fit on one line.
+- StyleX font sizes and weights reach buttons and inputs: the shared `font: inherit` reset sits in `@layer reset`,
+  which StyleX is told to put below its own layers.
 - A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev
   runtime disables its stylesheet link before React hydrates, so the link now suppresses the warning.
 - A React Router framework project with a form library no longer serves a 404 at `/contact`: `src/routes.ts`

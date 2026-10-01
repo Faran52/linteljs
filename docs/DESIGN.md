@@ -822,11 +822,11 @@ unconditionally, because a Vue application routes; Solid and Angular are a `pnpm
 `--languages` takes any subset of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, and defaults to none, like every
 optional library: a project without it is byte-identical to one generated before the answer existed. Any choice
 ships English as well, since it is the fallback. Only a target whose record carries `i18n` parts is asked; so far
-that is React, in every router mode, Next, Vue, Nuxt and SvelteKit.
+that is React, in every router mode, Next, Vue, Nuxt, SvelteKit and Solid.
 
 - **One library per framework, the most used and maintained one.** React takes i18next with react-i18next and its
   browser detector, Next takes next-intl, Vue and Nuxt take vue-i18n in composition mode, SvelteKit takes
-  Paraglide JS. No starter hand-rolls a translation core.
+  Paraglide JS, Solid takes @solid-primitives/i18n. No starter hand-rolls a translation core.
 - **Placeholders are single-brace ICU, `{name}`.** The shared `common.json` is read by every framework, and ICU is
   the form next-intl, vue-i18n and Paraglide read; React's i18next init sets `interpolation.prefix` and `suffix`
   to `{` and `}` to read it too.
@@ -879,6 +879,13 @@ that is React, in every router mode, Next, Vue, Nuxt and SvelteKit.
   import `.svelte-kit/paraglide/messages.js` and `runtime.js` would not resolve. `writtenPaths` counts both
   under the `--outdir` the compile command names, the same covered-path mechanism other modules the scaffold
   writes use, so no stub or template directive is needed.
+- **Solid takes @solid-primitives/i18n.** Version 2.2.1 has no dependencies and no install scripts, so
+  `allowBuilds` is unchanged, and a Solid project with it audits at no known vulnerabilities under
+  `pnpm audit --prod`. Its own resolver reads `{{name}}`, so `src/i18n/index.ts` hands `translator` a
+  single-brace one, which leaves a value it was not given in place, as the other libraries do.
+- **`translator` is imported as `createTranslator`.** `solid/reactivity` reads a `create*` call as a reactive
+  primitive, so the dictionary accessor passed to it counts as tracked, which it is: every `t()` reads the
+  language signal afresh. Under the library's own name the rule warns that the accessor's reactivity is ignored.
 
 ### Recorded answers
 
