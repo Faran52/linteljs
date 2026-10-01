@@ -17,12 +17,7 @@ export interface RunResult {
 export const registry = inject('registry');
 
 // `LAUNCHER_KEYS` strips the launcher's `npm_config_user_agent`, so a case names its manager.
-export const run = async (
-  command: string,
-  args: string[],
-  cwd: string,
-  agent?: string,
-): Promise<RunResult> => {
+export const launcherFreeEnv = (): Record<string, string | undefined> => {
   // `run-p` reads `npm_execpath`, so a launcher's value would run its manager inside the case's project.
   const inherited = Object.entries(env)
     .filter(([key]) => {
@@ -32,7 +27,16 @@ export const run = async (
         && !key.startsWith('VITEST');
     });
 
-  const parentEnv = Object.fromEntries(inherited);
+  return Object.fromEntries(inherited);
+};
+
+export const run = async (
+  command: string,
+  args: string[],
+  cwd: string,
+  agent?: string,
+): Promise<RunResult> => {
+  const parentEnv = launcherFreeEnv();
 
   // `spawn`: a synchronous spawn blocks the event loop, so concurrent cases would run one at a time.
   return new Promise<RunResult>((settle) => {

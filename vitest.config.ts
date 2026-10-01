@@ -19,6 +19,7 @@ export default defineConfig({
         '**/*.test.ts',
         '**/types.ts',
         '**/e2e/*.ts',
+        '**/e2e/browser/**',
         '**/e2e/registry/**',
         '**/e2e/runner/**',
         '**/e2e/targets/**',
