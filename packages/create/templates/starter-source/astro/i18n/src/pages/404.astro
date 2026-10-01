@@ -1,0 +1,27 @@
+---
+import { STATUSES } from '../config/statuses';
+import { t } from '../i18n';
+import Layout from '../layouts/Layout.astro';
+
+const { code, message } = STATUSES.notFound;
+---
+
+<Layout titleKey={message}>
+  <main class="status">
+    <h1 class="status-code">{code}</h1>
+    <p
+      class="status-message"
+      role="alert"
+      data-i18n={message}
+    >{t(message)}
+    </p>
+    <div class="status-actions">
+      <a
+        class="status-action"
+        href="/"
+        data-i18n="statusHome"
+      >{t('statusHome')}
+      </a>
+    </div>
+  </main>
+</Layout>

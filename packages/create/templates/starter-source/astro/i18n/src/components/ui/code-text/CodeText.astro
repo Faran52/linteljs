@@ -1,0 +1,14 @@
+---
+import { partsOf } from '../../../i18n';
+
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+{partsOf(text)
+  .map((part, index) => {
+    return index % 2 === 0 ? part : <code>{part}</code>;
+  })}

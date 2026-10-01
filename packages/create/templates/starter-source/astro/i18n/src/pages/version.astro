@@ -1,0 +1,57 @@
+---
+import CodeText from '../components/ui/code-text/CodeText.astro';
+import { ANSWERS, STACK } from '../config/linteljs';
+import { t } from '../i18n';
+import Layout from '../layouts/Layout.astro';
+
+const RECORDED = {
+  file: 'linteljs.config.json',
+  command: 'sync',
+};
+---
+
+<!-- What was recorded at birth: a page rendered on the server still cannot read the machine that generated it. -->
+<Layout titleKey="version">
+  <main class="page">
+    <h1 class="page-title" data-i18n="version">{t('version')}</h1>
+    <p class="page-lede" data-i18n="versionLede">{t('versionLede')}</p>
+
+    <section class="section">
+      <h2 class="section-title" data-i18n="versionStack">{t('versionStack')}</h2>
+      <dl class="rows">
+        {STACK
+          .map((entry) => {
+            return (
+              <div class="row">
+                <dt>{entry.name}</dt>
+                <dd>{entry.version}</dd>
+              </div>
+            );
+          })}
+      </dl>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title" data-i18n="versionAnswers">{t('versionAnswers')}</h2>
+      <dl class="rows">
+        {ANSWERS
+          .map((entry) => {
+            return (
+              <div class="row">
+                <dt>{entry.label}</dt>
+                <dd>{entry.value}</dd>
+              </div>
+            );
+          })}
+      </dl>
+      <p
+        class="note"
+        data-i18n="versionRecorded"
+        data-file={RECORDED.file}
+        data-command={RECORDED.command}
+      >
+        <CodeText text={t('versionRecorded', RECORDED)} />
+      </p>
+    </section>
+  </main>
+</Layout>

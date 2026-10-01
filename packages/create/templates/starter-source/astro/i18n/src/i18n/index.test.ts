@@ -1,0 +1,228 @@
+import {
+  fallbackLanguage,
+  languages,
+  languageStorageKey,
+  resources,
+} from './config';
+import {
+  applyLanguage,
+  bootLanguage,
+  bootScript,
+  chooseLanguage,
+  directionOf,
+  partsOf,
+  startLanguage,
+  t,
+  translateId,
+} from './index';
+
+const last = languages.at(-1)?.id ?? 'en';
+
+const browserSpeaks = (tags: string[]): void => {
+  vi.spyOn(navigator, 'languages', 'get').mockReturnValue(tags);
+};
+
+const boot = (): string => {
+  bootLanguage(languages, languageStorageKey, fallbackLanguage);
+
+  return document.documentElement.lang;
+};
+
+const PAGE = `
+  <title data-i18n="about">About</title>
+  <p data-i18n="aboutSync" data-command="npx @linteljs/create sync">old</p>
+  <p data-i18n="notAKey">kept</p>
+  <select data-language>
+    ${languages
+      .map(({ id }) => {
+        return `<option value="${id}">${id}</option>`;
+      })
+      .join('')}
+  </select>
+`;
+
+const marked = (selector: string): Element | null => {
+  return document.querySelector(selector);
+};
+
+const pickerOf = (): HTMLSelectElement => {
+  const picker = marked('select');
+
+  if (!(picker instanceof HTMLSelectElement)) {
+    throw new TypeError('The page has no language select');
+  }
+
+  return picker;
+};
+
+describe('i18n', () => {
+  beforeEach(() => {
+    document.body.innerHTML = PAGE;
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    applyLanguage('en');
+    vi.restoreAllMocks();
+  });
+
+  it('falls back to English for a browser language it does not offer', () => {
+    browserSpeaks(['fr-FR']);
+
+    expect(boot()).toBe('en');
+  });
+
+  it('follows the browser, and stores nothing it detected', () => {
+    browserSpeaks(['fr-FR', last]);
+
+    expect(boot()).toBe(last);
+    expect(document.documentElement.dir).toBe(directionOf(last));
+    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+  });
+
+  it('reads a regional browser language as its own language', () => {
+    browserSpeaks([`${last}-001`]);
+
+    expect(boot()).toBe(last);
+  });
+
+  it('puts a stored choice before the browser, and ignores one it does not offer', () => {
+    browserSpeaks(['fr-FR']);
+    localStorage.setItem(languageStorageKey, last);
+
+    expect(boot()).toBe(last);
+
+    localStorage.setItem(languageStorageKey, 'xx');
+
+    expect(boot()).toBe('en');
+  });
+
+  it('boots left to right into a fallback it does not offer', () => {
+    bootLanguage([], languageStorageKey, 'xx');
+
+    expect(document.documentElement.lang).toBe('xx');
+    expect(document.documentElement.dir).toBe('ltr');
+  });
+
+  it('inlines the boot function, called with the config the module reads', () => {
+    const script = bootScript();
+
+    expect(script.startsWith(`(${bootLanguage.toString()})(`)).toBe(true);
+    expect(script).toContain(JSON.stringify(languages));
+    expect(script).toContain(JSON.stringify(languageStorageKey));
+  });
+
+  it('stores a choice, and switches the text, language, direction and select', () => {
+    chooseLanguage(last);
+
+    const title = marked('title')?.textContent;
+    const picker = pickerOf();
+
+    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    expect(document.documentElement.lang).toBe(last);
+    expect(document.documentElement.dir).toBe(directionOf(last));
+    expect(title).toBe(resources[last].common.about);
+    expect(picker.value).toBe(last);
+    expect(picker.getAttribute('aria-label')).toBe(resources[last].common.language);
+  });
+
+  it('switches a page that has no select', () => {
+    document.body.innerHTML = '<p data-i18n="home">Home</p>';
+    applyLanguage(last);
+
+    const home = marked('p')?.textContent;
+
+    expect(home).toBe(resources[last].common.home);
+  });
+
+  it('ignores a choice it does not offer', () => {
+    chooseLanguage('xx');
+
+    expect(document.documentElement.lang).toBe('en');
+    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+  });
+
+  it('fills a value from the element, and renders a marked command as code', () => {
+    applyLanguage(last);
+
+    const code = marked('[data-command] code')?.textContent;
+
+    expect(code).toBe('npx @linteljs/create sync');
+  });
+
+  it('leaves an element whose key no locale names', () => {
+    applyLanguage(last);
+
+    const kept = marked('[data-i18n="notAKey"]')?.textContent;
+
+    expect(kept).toBe('kept');
+  });
+
+  it('starts in the language on the root, and switches when the select changes', () => {
+    document.documentElement.lang = last;
+    startLanguage();
+
+    const picker = pickerOf();
+
+    expect(picker.value).toBe(last);
+
+    picker.value = 'en';
+    picker.dispatchEvent(new Event('change'));
+
+    expect(localStorage.getItem(languageStorageKey)).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+  });
+
+  it('starts in English when the root names no language it offers', () => {
+    document.documentElement.lang = 'xx';
+    startLanguage();
+
+    expect(document.documentElement.lang).toBe('en');
+  });
+
+  it('reads each language direction from the config, and left to right for any other', () => {
+    for (const { id, dir } of languages) {
+      expect(directionOf(id)).toBe(dir);
+    }
+
+    expect(directionOf('xx')).toBe('ltr');
+  });
+
+  it('renders English by default, and the language it is given', () => {
+    const english = t('home');
+    const other = t('home', undefined, last);
+
+    expect(english).toBe(resources.en.common.home);
+    expect(other).toBe(resources[last].common.home);
+  });
+
+  it('fills every value a message names, and leaves one it was not given', () => {
+    const filled = t('versionRecorded', {
+      file: 'linteljs.config.json',
+      command: 'sync',
+    });
+    const unfilled = t('aboutSync');
+
+    expect(filled).toContain('<code>linteljs.config.json</code>');
+    expect(filled).toContain('<code>sync</code>');
+    expect(unfilled).toContain('{command}');
+  });
+
+  it('splits a message so its odd parts are code', () => {
+    const parts = partsOf('Run <code>pnpm check</code> now');
+
+    expect(parts).toEqual([
+      'Run ',
+      'pnpm check',
+      ' now',
+    ]);
+  });
+
+  it('translates a page id that is a key, and shows any other as the id', () => {
+    const home = translateId('home');
+    const other = translateId('elsewhere');
+
+    expect(home).toBe(resources.en.common.home);
+    expect(other).toBe('elsewhere');
+  });
+});

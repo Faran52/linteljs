@@ -67,6 +67,16 @@ export const widestFor = (target: TargetId): Answers[] => {
             languages: [...LANGUAGES],
           },
         ]),
+    // A StyleX document takes its own translated twin.
+    ...(record.i18n === undefined
+      ? []
+      : [
+          {
+            ...widest,
+            styling: 'stylex' as const,
+            languages: [...LANGUAGES],
+          },
+        ]),
     // Two StyleX modules ship only beside a form or a store.
     {
       ...widest,

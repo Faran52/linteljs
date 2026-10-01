@@ -1,12 +1,14 @@
 import {
+  ANSWERED,
   byKey,
   componentStyleGates,
   type GateRow,
   mswGates,
-  STYLEX,
   TAILWIND,
   walkGates,
   WITH_FORM,
+  WITH_I18N,
+  WITHOUT_I18N,
 } from '@mocks/starterGates';
 import {
   describe,
@@ -14,9 +16,12 @@ import {
   it,
 } from 'vitest';
 
+import { LANGUAGES } from '@config/constants';
+
 import { DEFAULT_ANSWERS } from '@answers';
 
 import { astroTarget } from './astroTarget';
+import { TRANSLATED } from './constants';
 
 import type { Answers, HostedFramework } from '@config/types';
 
@@ -46,6 +51,12 @@ describe('the astro record', () => {
       dev: 'astro dev',
       preview: 'astro preview',
     });
+  });
+});
+
+describe('i18n', () => {
+  it('translates through a client script of its own, with no library, compiler or test setup', () => {
+    expect(recordFor().i18n).toEqual({ dependencies: [] });
   });
 });
 
@@ -184,8 +195,31 @@ const GATES: GateRow[] = [
   ...mswGates(false),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
   ['src/styles/theme.css@tailwind', TAILWIND],
-  ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'] }]],
-  ['src/layouts/Layout.astro@stylex', STYLEX],
+  ['src/layouts/Layout.astro', [{ styling: [undefined, 'tailwind'], languages: [undefined] }]],
+  ['src/layouts/Layout.astro@i18n', [{ styling: [undefined, 'tailwind'], languages: ANSWERED }]],
+  ['src/layouts/Layout.astro@stylex', [{ styling: ['stylex'], languages: [undefined] }]],
+  ['src/layouts/Layout.astro@stylex-i18n', [{ styling: ['stylex'], languages: ANSWERED }]],
+  ...[
+    'src/config/statuses.ts',
+    'src/config/standard.ts',
+    ...TRANSLATED,
+  ]
+    .flatMap((key): GateRow[] => {
+      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+    }),
+  ...[
+    'src/i18n/index.ts',
+    'src/i18n/index.test.ts',
+    'src/i18n/locales.test.ts',
+    'src/components/ui/code-text/CodeText.astro',
+    ...LANGUAGES
+      .map((language) => {
+        return `src/i18n/locales/${language}/common.json`;
+      }),
+  ]
+    .map((key): GateRow => {
+      return [`${key}@i18n`, WITH_I18N];
+    }),
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
 ];
 

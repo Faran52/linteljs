@@ -18,12 +18,12 @@ describe('languagesAnswer', () => {
 
   it('takes a slot on a target that translates its starter and on no other', () => {
     const react = targetFor(DEFAULT_ANSWERS);
-    const astro = targetFor({
+    const webextension = targetFor({
       ...DEFAULT_ANSWERS,
-      target: 'astro',
+      target: 'webextension',
     });
 
     expect(languagesAnswer.slot(react)).toBe(true);
-    expect(languagesAnswer.slot(astro)).toBe(false);
+    expect(languagesAnswer.slot(webextension)).toBe(false);
   });
 });

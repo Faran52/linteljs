@@ -4,15 +4,17 @@ import {
   FOLDER_ROUTED,
 } from '../constants';
 import { hostedPartsFor } from '../utils/frameworkUtils';
+import { localeFiles, LOCALES_TEST } from '../utils/i18nUtils';
 import { mockFiles, mockTests } from '../utils/mockUtils';
 import { scriptKeys } from '../utils/namingUtils';
-import {
-  componentStyleModules,
-  componentStyles,
-  stylexDocument,
-} from '../utils/styleUtils';
+import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 
-import { ALWAYS, SHARED } from './constants';
+import {
+  ALWAYS,
+  ASTRO_I18N,
+  SHARED,
+} from './constants';
+import { astroI18nFiles, astroI18nTests } from './utils/translatedFileUtils';
 
 import type { HostedFramework } from '@config/types';
 import type { TargetBuilder } from '../registry';
@@ -97,7 +99,8 @@ export const astroTarget: TargetBuilder = (answers) => {
       ...componentStyles(),
       // An `.astro` template spreads DOM attributes, so it takes Solid's `class` spelling.
       ...componentStyleModules('solid'),
-      ...stylexDocument('src/layouts/Layout.astro'),
+      ...astroI18nFiles(),
+      ...localeFiles(),
       ...ALWAYS
         .map((target): StarterFile => {
           return { target };
@@ -121,6 +124,8 @@ export const astroTarget: TargetBuilder = (answers) => {
     // Astro serves `/about` and `/about/` as one page, so the helper's comparison is real logic.
     starterTests: [
       ...mockTests(false),
+      ...astroI18nTests(),
+      LOCALES_TEST,
       {
         target: 'src/lib/utils/currentPathUtils.test.ts',
         covers: 'src/lib/utils/currentPathUtils.ts',
@@ -143,5 +148,6 @@ export const astroTarget: TargetBuilder = (answers) => {
     // Astro's build pulls esbuild, whose install script pnpm refuses without this (ERR_PNPM_IGNORED_BUILDS).
     allowBuilds: ['esbuild', ...hosted?.allowBuilds ?? []],
     stateRules: hosted?.stateRules ?? [],
+    i18n: ASTRO_I18N,
   };
 };

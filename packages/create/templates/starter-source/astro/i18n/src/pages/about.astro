@@ -1,0 +1,64 @@
+---
+import CodeText from '../components/ui/code-text/CodeText.astro';
+import { CHECK, GATE } from '../config/linteljs';
+import { STANDARD_PATHS } from '../config/standard';
+import { t } from '../i18n';
+import Layout from '../layouts/Layout.astro';
+
+const SYNC = 'npx @linteljs/create sync';
+---
+
+<Layout titleKey="about">
+  <main class="page">
+    <h1 class="page-title" data-i18n="about">{t('about')}</h1>
+    <p class="page-lede" data-i18n="aboutLede">{t('aboutLede')}</p>
+
+    <section class="section">
+      <h2 class="section-title" data-i18n="aboutGate">{t('aboutGate')}</h2>
+      <ul class="rows">
+        {GATE
+          .map((leg) => {
+            return (
+              <li class="row">
+                <code class="key">{leg.command}</code>
+                <span class="value">{leg.runs}</span>
+              </li>
+            );
+          })}
+      </ul>
+      <p
+        class="note"
+        data-i18n="aboutCheck"
+        data-command={CHECK}
+      >
+        <CodeText text={t('aboutCheck', { command: CHECK })} />
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title" data-i18n="aboutStandard">{t('aboutStandard')}</h2>
+      <dl class="rows">
+        {STANDARD_PATHS
+          .map((entry) => {
+            return (
+              <div class="row">
+                <dt><code>{entry.path}</code></dt>
+                <dd data-i18n={entry.holds}>{t(entry.holds)}</dd>
+              </div>
+            );
+          })}
+      </dl>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title" data-i18n="aboutCurrent">{t('aboutCurrent')}</h2>
+      <p
+        class="note"
+        data-i18n="aboutSync"
+        data-command={SYNC}
+      >
+        <CodeText text={t('aboutSync', { command: SYNC })} />
+      </p>
+    </section>
+  </main>
+</Layout>

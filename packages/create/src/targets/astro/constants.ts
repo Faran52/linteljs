@@ -1,19 +1,26 @@
+import type { I18nParts } from '../types';
+
 export const ALWAYS: readonly string[] = [
   'src/pages/index.astro',
-  'src/pages/about.astro',
-  'src/pages/version.astro',
-  'src/pages/404.astro',
   'src/components/ui/mark/Mark.astro',
-  'src/components/features/app-header/AppHeader.astro',
   'src/lib/utils/currentPathUtils.ts',
 ];
 
 // Astro takes the spelling with no contact page: a form here would be an island, its own decision.
 export const SHARED: readonly string[] = [
-  'src/config/standard.ts',
   'src/config/routes.ts',
-  'src/config/statuses.ts',
   'src/styles/tokens.css',
   'src/styles/base.css',
   'public/favicon.svg',
 ];
+
+// Each ships a translated twin under `i18n`.
+export const TRANSLATED: readonly string[] = [
+  'src/pages/about.astro',
+  'src/pages/version.astro',
+  'src/pages/404.astro',
+  'src/components/features/app-header/AppHeader.astro',
+];
+
+// A client script over the shared locales: no library, so nothing to install.
+export const ASTRO_I18N: I18nParts = { dependencies: [] };
