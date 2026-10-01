@@ -143,10 +143,10 @@ when a version's change lives in a sibling it is described there instead:
 - Under RTK Query, a React or Next project's `lib/apis/contact/` splits `contactApi.ts` into `contactEndpoints.ts`
   (the injected endpoints, exported as `contactApi`) and `contactHooks.ts` (`useSubmitContact`), each with its own
   test, and its `index.ts` re-exports both.
-- Emitted floors moved to the newest releases at least two days old: `msw` `^3.0.0`, `@eslint-react/eslint-plugin`
-  `^5.22.1`, `next` `^16.3.7`, the TanStack query packages `^5.104.0` (`svelte-query` `^6.3.0`), the TanStack stores
-  `^0.11.2` (`svelte-store` `^0.12.2`), `@reduxjs/toolkit` `^2.13.0`, `react-hook-form` `^7.89.0`. React Native's
-  Expo pins, `typescript` `~6.0.3`, `oxc-transform-react` and `unplugin` stay where their peers hold them.
+- Emitted floors moved to the newest releases at least two days old: `@eslint-react/eslint-plugin` `^5.22.1`,
+  `next` `^16.3.7`, the TanStack query packages `^5.104.0` (`svelte-query` `^6.3.0`), the TanStack stores `^0.11.2`
+  (`svelte-store` `^0.12.2`), `@reduxjs/toolkit` `^2.13.0`, `react-hook-form` `^7.89.0`. React Native's Expo pins,
+  `typescript` `~6.0.3`, `msw` `^2.15.0`, `oxc-transform-react` and `unplugin` stay where their peers hold them.
 
 ### Fixed
 

@@ -150,8 +150,9 @@ export const VERSIONS: Record<string, string> = {
   'test-renderer': '~1.2.0',
   // Tilde: `typescript-eslint` peers `<6.1.0`, so a caret would admit a compiler the type-aware layer refuses.
   'typescript': '~6.0.3',
-  // Answers requests, never ships in a build.
-  'msw': '^3.0.0',
+  // Answers requests, never ships in a build. Held at 2: `@vitest/mocker` peers `msw: ^2.4.9`
+  // (vitest-dev/vitest#11412).
+  'msw': '^2.15.0',
   // `URLSearchParams` loses an array; this keeps it.
   'qs': '^6.16.0',
   '@types/qs': '^6.15.1',
