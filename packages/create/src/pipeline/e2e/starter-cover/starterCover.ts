@@ -104,6 +104,7 @@ const buildSweep = (): Sweep => {
 
       return idOf(`${item.answers.target}\n${file.target}\n${text}`);
     };
+
     const ids = copied.map(keyOf);
     const texts = new Set(ids);
     const made = {
@@ -150,12 +151,14 @@ const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] =>
     texts: new Set(),
   };
   const picked: string[] = [];
+
   const reach = (item: TextClass): number => {
     return [...item.texts]
       .filter((text) => {
         return remaining.has(text);
       }).length;
   };
+
   const wider = (best: TextClass, item: TextClass): TextClass => {
     return reach(item) > reach(best) ? item : best;
   };
