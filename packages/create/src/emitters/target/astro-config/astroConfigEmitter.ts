@@ -7,6 +7,7 @@ import {
 import { OUTSIDE_TESTS, targetFor } from '@targets';
 
 import { emitted } from '../../utils/artifactUtils';
+import { sortedImports } from '../../utils/importUtils';
 import { stylingPlugin } from '../../utils/stylingUtils';
 
 interface Integration {
@@ -42,13 +43,13 @@ export const emitAstroConfig = (answers: Answers): string | null => {
   const framework = answers.hostedFramework;
   const styling = stylingPlugin(answers.styling, false);
 
-  const imports = [
+  const imports = sortedImports([
     "import { defineConfig } from 'astro/config';",
     ...(framework === undefined
       ? []
       : [`import ${framework} from '${INTEGRATIONS[framework].specifier}';`]),
     ...styling.imports,
-  ].join('\n');
+  ]);
 
   const integrations = framework === undefined
     ? ''

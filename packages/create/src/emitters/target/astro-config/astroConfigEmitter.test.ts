@@ -80,8 +80,8 @@ describe('emitAstroConfig', () => {
     }));
 
     expect(output).toBe(
-      "import { defineConfig } from 'astro/config';\n"
-      + "import react from '@astrojs/react';\n"
+      "import react from '@astrojs/react';\n"
+      + "import { defineConfig } from 'astro/config';\n"
       + '\n'
       + 'export default defineConfig({\n'
       + '  integrations: [react({ compiler: process.env.VITEST === undefined })],\n'

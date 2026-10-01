@@ -13,15 +13,15 @@ describe('emitHtmlEntry', () => {
     expect(html).toBe([
       '<!doctype html>',
       '<html lang="en">',
-      '  <head>',
-      '    <meta charset="UTF-8" />',
-      '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
-      '    <title>my-app</title>',
-      '  </head>',
-      '  <body>',
-      '    <div id="root"></div>',
-      '    <script type="module" src="/src/main.tsx"></script>',
-      '  </body>',
+      '    <head>',
+      '        <meta charset="UTF-8">',
+      '        <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+      '        <title>my-app</title>',
+      '    </head>',
+      '    <body>',
+      '        <div id="root"></div>',
+      '        <script type="module" src="/src/main.tsx"></script>',
+      '    </body>',
       '</html>',
       '',
     ].join('\n'));
@@ -29,10 +29,16 @@ describe('emitHtmlEntry', () => {
 
   it('links the favicon only when asked to', () => {
     const html = emitHtmlEntry('my-app', 'src/main.tsx', true);
-    const link = '    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />';
+    const link = [
+      '        <link',
+      '            rel="icon"',
+      '            type="image/svg+xml"',
+      '            href="/favicon.svg"',
+      '        >',
+    ];
     const lines = html.split('\n');
 
-    expect(lines[6]).toBe(link);
+    expect(lines.slice(6, 11)).toEqual(link);
   });
 });
 

@@ -66,9 +66,10 @@ export default defineNuxtConfig({
 
 const WITH_STYLEX = `import { join } from 'node:path';
 
+import { defineNuxtConfig } from 'nuxt/config';
+
 import { type UserOptions } from '@stylexjs/unplugin';
 import stylexVite from '@stylexjs/unplugin/vite';
-import { defineNuxtConfig } from 'nuxt/config';
 import { type VitePlugin } from 'unplugin';
 
 const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
@@ -154,7 +155,9 @@ describe('nuxtConfigEmitter', () => {
   it('reaches tailwind through vite, and only when tailwind was answered', () => {
     const tailwind = emitNuxtConfig(answersFor({ styling: 'tailwind' }), 'demo-app');
 
-    expect(tailwind).toContain("import tailwindcss from '@tailwindcss/vite';");
+    const imports = "import { defineNuxtConfig } from 'nuxt/config';\n\nimport tailwindcss from '@tailwindcss/vite';";
+
+    expect(tailwind).toContain(imports);
     expect(tailwind).toContain('plugins: [tailwindcss()],');
     expect(emitNuxtConfig(answersFor(), 'demo-app')).not.toContain('tailwindcss');
   });

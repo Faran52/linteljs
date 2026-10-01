@@ -25,14 +25,23 @@ const scannedExtensions = (answers: Answers): string[] => {
 };
 
 const withExtensions = (source: string, answers: Answers): string => {
+  const quoted = scannedExtensions(answers)
+    .map((extension) => {
+      return `'${extension}'`;
+    });
+  // Three or more break, as `@linteljs/array-newline` has them.
+  const list = quoted.length <= 2
+    ? quoted.join(', ')
+    : `\n${quoted
+      .map((extension) => {
+        return `  ${extension},\n`;
+      })
+      .join('')}`;
+
   return replaceAnchored(
     source,
     "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];",
-    `const SCANNED_EXTENSIONS: string[] = [${scannedExtensions(answers)
-      .map((extension) => {
-        return `'${extension}'`;
-      })
-      .join(', ')}];`,
+    `const SCANNED_EXTENSIONS: string[] = [${list}];`,
   );
 };
 

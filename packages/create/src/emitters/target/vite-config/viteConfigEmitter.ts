@@ -13,11 +13,12 @@ import { rollupInputs } from './utils/inputUtils';
 // `resolve: { tsconfigPaths: true }` reads the same alias list the ESLint config does.
 
 export const emitViteConfig = (answers: Answers): string | null => {
+  const record = targetFor(answers);
   const {
     vitePlugin: framework,
     viteInputs,
     i18n,
-  } = targetFor(answers);
+  } = record;
 
   if (framework === undefined) {
     return null;
@@ -34,7 +35,7 @@ export const emitViteConfig = (answers: Answers): string | null => {
     "import { defineConfig } from 'vite';",
     ...vitePlugin.imports,
     ...styling.imports,
-  ]);
+  ], record.framework);
 
   // StyleX first, as its documentation asks: after the framework plugin it breaks Fast Refresh.
   const stylingCalls = styling.call === undefined ? [] : [styling.call];

@@ -16,7 +16,7 @@ import { STYLEX_DEV_HEAD } from './constants';
 
 // `alias`, not tsconfig `paths`, which would replace Nuxt's own `#shared` and `#server` set.
 export const emitNuxtConfig = (answers: Answers, name: string): string => {
-  const { styleEntry } = targetFor(answers);
+  const { styleEntry, framework } = targetFor(answers);
   // Both spellings: Vite resolves by prefix, TypeScript by pattern.
   // Absolute: Nuxt reads the generated paths relative to `.nuxt/`.
   const aliases = Object.entries(buildAliases(answers))
@@ -40,7 +40,7 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
   return [
     "import { join } from 'node:path';",
     '',
-    sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"]),
+    sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"], framework),
     '',
     ...styling.declaration === undefined ? [] : [styling.declaration, ''],
     'export default defineNuxtConfig({',

@@ -146,6 +146,7 @@ export default defineConfig({
 `;
 
 const FACTORY = `import { getViteConfig } from 'astro/config';
+
 import 'vitest/config';
 
 export default getViteConfig({
@@ -203,7 +204,17 @@ export default defineConfig({
     projects: [
       platform(
         'native',
-        ['.ios.tsx', '.ios.ts', '.native.tsx', '.native.ts', '.tsx', '.ts', '.jsx', '.js', '.json'],
+        [
+          '.ios.tsx',
+          '.ios.ts',
+          '.native.tsx',
+          '.native.ts',
+          '.tsx',
+          '.ts',
+          '.jsx',
+          '.js',
+          '.json',
+        ],
         ['src/**/*.test.{ts,tsx}'],
       ),
     ],

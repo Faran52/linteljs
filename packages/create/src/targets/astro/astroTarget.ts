@@ -79,6 +79,8 @@ export const astroTarget: TargetBuilder = (answers) => {
     vitestFactory: {
       imports: [
         "import { getViteConfig } from 'astro/config';",
+        // Its own group, as the import sort keeps a side-effect import.
+        '',
         // A bare import: the reference-types directive is banned by this standard.
         "import 'vitest/config';",
       ],

@@ -32,4 +32,26 @@ describe('platformEntries', () => {
       '      ),',
     ].join('\n'));
   });
+
+  it('breaks a list of three or more one value per line', () => {
+    expect(platformEntries([{
+      name: 'native',
+      extensions: [
+        '.native.tsx',
+        '.tsx',
+        '.ts',
+      ],
+      include: ['src/**/*.test.tsx'],
+    }])).toBe([
+      '      platform(',
+      "        'native',",
+      '        [',
+      "          '.native.tsx',",
+      "          '.tsx',",
+      "          '.ts',",
+      '        ],',
+      "        ['src/**/*.test.tsx'],",
+      '      ),',
+    ].join('\n'));
+  });
 });

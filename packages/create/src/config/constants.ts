@@ -1,4 +1,5 @@
 import {
+  type Framework,
   type Language,
   type PackageManager,
   type ProjectShape,
@@ -63,3 +64,52 @@ export const LANGUAGES: readonly Language[] = [
   'zh-CN',
   'zh-TW',
 ];
+
+const REACT_GROUP = [
+  '^react$',
+  '^react-dom$',
+  '^react/',
+  '^react-',
+  '^@react',
+];
+const VUE_GROUP = [
+  '^vue$',
+  '^vue-router$',
+  '^pinia$',
+  '^@vue/',
+];
+
+// Each framework's import group, sorted first; `src/types.test.ts` pins them to eslint-config's.
+export const FRAMEWORK_GROUPS: Record<Framework, string[]> = {
+  'react': REACT_GROUP,
+  'next': [
+    ...REACT_GROUP,
+    '^next$',
+    '^next/',
+  ],
+  'react-native': REACT_GROUP,
+  'vue': VUE_GROUP,
+  'nuxt': [
+    ...VUE_GROUP,
+    '^nuxt$',
+    '^nuxt/',
+    '^#',
+  ],
+  'svelte': [
+    '^svelte$',
+    '^svelte/',
+    '^@sveltejs/',
+    String.raw`^\$app/`,
+    String.raw`^\$env/`,
+  ],
+  'solid': [
+    '^solid-js$',
+    '^solid-js/',
+    '^@solidjs/',
+  ],
+  'angular': [
+    '^@angular/',
+    '^rxjs$',
+    '^rxjs/',
+  ],
+};

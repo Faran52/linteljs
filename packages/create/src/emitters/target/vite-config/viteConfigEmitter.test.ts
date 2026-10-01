@@ -90,8 +90,8 @@ describe('emitViteConfig', () => {
       'solid',
       { target: 'solid' },
       [
-        "import solid from 'vite-plugin-solid';",
         "import { defineConfig } from 'vite';",
+        "import solid from 'vite-plugin-solid';",
       ],
       '    solid({ hot: process.env.VITEST === undefined }),',
     ],
@@ -115,6 +115,15 @@ describe('emitViteConfig', () => {
 
     expect(importLines).toEqual(imports);
     expect(/ {2}plugins: \[\n([\s\S]*?)\n {2}\],/u.exec(config)?.[1]).toBe(plugins);
+  });
+
+  it('sets the framework group apart, as the emitted import sort has it', () => {
+    const config = configFor({
+      target: 'react',
+      router: 'react-router-framework',
+    }) ?? '';
+
+    expect(config).toContain("import { reactRouter } from '@react-router/dev/vite';\n\nimport react");
   });
 
   it('declares the compiler in the plugin call', () => {

@@ -56,8 +56,8 @@ describe('checkerArtifact', () => {
   it.each<[TargetId, string]>([
     ['react', "['.ts', '.tsx']"],
     ['astro', "['.ts', '.tsx']"],
-    ['vue', "['.ts', '.tsx', '.vue']"],
-    ['svelte', "['.ts', '.tsx', '.svelte']"],
+    ['vue', "[\n  '.ts',\n  '.tsx',\n  '.vue',\n]"],
+    ['svelte', "[\n  '.ts',\n  '.tsx',\n  '.svelte',\n]"],
   ])('writes the extensions a directory is scanned for on %s', (target, extensions) => {
     expect(transformOf(answersFor({ target }))(readFileSync(SHIPPED, 'utf8'), null))
       .toContain(`const SCANNED_EXTENSIONS: string[] = ${extensions};`);
