@@ -206,13 +206,13 @@ export const preferAlias = createRule('prefer-alias', {
       }
     };
 
-    const listeners: Rule.RuleListener = {
+    const visitors: Rule.RuleListener = {
       ImportDeclaration: check,
       ExportNamedDeclaration: check,
       ExportAllDeclaration: check,
       ImportExpression: check,
     };
 
-    return listeners;
+    return visitors;
   },
 });
