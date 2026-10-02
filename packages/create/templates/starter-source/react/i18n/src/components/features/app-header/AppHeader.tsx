@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import { ROUTES } from '../../../pages/routes';
+import { ROUTES } from '@pages/routes';
+
 import { LanguageSelect } from '../language-select/LanguageSelect';
 
 import { styles } from './styles';

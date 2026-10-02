@@ -1,4 +1,4 @@
-import { AboutPage } from '../pages/about/AboutPage';
+import { AboutPage } from '@pages/about/AboutPage';
 
 import type { ReactNode } from 'react';
 

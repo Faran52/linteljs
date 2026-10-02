@@ -1,6 +1,6 @@
 import { NAME } from '@config/linteljs';
 
-import { HomePage } from '../pages/home/HomePage';
+import { HomePage } from '@pages/home/HomePage';
 
 import type { ReactNode } from 'react';
 

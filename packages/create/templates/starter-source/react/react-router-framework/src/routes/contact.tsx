@@ -1,4 +1,4 @@
-import { ContactPage } from '../pages/contact/ContactPage';
+import { ContactPage } from '@pages/contact/ContactPage';
 
 import type { ReactNode } from 'react';
 

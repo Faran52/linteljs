@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router';
 
-import { ROUTES } from '../../../pages/routes';
+import { ROUTES } from '@pages/routes';
 
 import { styles } from './styles';
 

@@ -1,4 +1,4 @@
-import { VersionPage } from '../pages/version/VersionPage';
+import { VersionPage } from '@pages/version/VersionPage';
 
 import type { ReactNode } from 'react';
 

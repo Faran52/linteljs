@@ -5,7 +5,7 @@ import { NAME } from '@config/linteljs';
 import { AppHeader } from '@features/app-header/AppHeader';
 import { RouteError } from '@features/route-error/RouteError';
 
-import { ROUTES } from '../pages/routes';
+import { ROUTES } from '@pages/routes';
 
 import type { FC, ReactNode } from 'react';
 

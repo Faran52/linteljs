@@ -154,6 +154,8 @@ export interface TargetRecord {
   ignores: string[];
   naming: NamingMap;
   folderNaming: NamingMap;
+  // The route unit's directory, first: it imports every layer below it.
+  routeAlias?: AliasMap;
   hooksAlias?: AliasMap;
   extraAliases?: AliasMap;
   // So none names a directory that is not there.

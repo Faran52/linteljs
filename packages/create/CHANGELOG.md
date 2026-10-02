@@ -186,6 +186,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- A starter's route unit has an alias, first in `paths` since it imports every layer below it: `@pages` on React
+  and Solid, `@views` on Vue and Nuxt, `@layouts` on Astro. The app header, the routers and Nuxt's pages import
+  through it instead of `../../../pages/routes`, and Astro's layout and pages take `@styles` and `@layouts`.
 - `src/config/linteljs.ts` wraps a `NAME` too long for 120 columns into joined literals, so a project with a long
   name passes its own `max-len`.
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every

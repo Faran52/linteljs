@@ -47,6 +47,7 @@ export const nuxtTarget: TargetRecord = {
   // A dynamic route is `[slug].vue`, so a directory may be one too.
   folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: { '@composables/*': './src/lib/composables/*' },
+  routeAlias: { '@views/*': './src/views/*' },
   publicDirectory: 'public',
   styleEntry: 'src/styles/main.css',
   starterStyles: [

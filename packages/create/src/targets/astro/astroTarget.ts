@@ -51,6 +51,7 @@ export const astroTarget: TargetBuilder = (answers) => {
     },
     // A dynamic route is `[slug].astro`, so a directory may be one too.
     folderNaming: { 'src/**/': FOLDER_ROUTED },
+    routeAlias: { '@layouts/*': './src/layouts/*' },
     // Vitest executes no template, so a module only a page imports would sit at zero.
     coverageExclude: ['src/config/**'],
     styleEntry: 'src/styles/global.css',

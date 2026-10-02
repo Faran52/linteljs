@@ -40,6 +40,8 @@ export default defineNuxtConfig({
   css: ['~/styles/main.css'],
   // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
   alias: {
+    '@views': join(import.meta.dirname, 'src/views'),
+    '@views/*': join(import.meta.dirname, 'src/views/*'),
     '@components': join(import.meta.dirname, 'src/components'),
     '@components/*': join(import.meta.dirname, 'src/components/*'),
     '@ui': join(import.meta.dirname, 'src/components/ui'),
@@ -108,6 +110,8 @@ export default defineNuxtConfig({
   css: ['~/styles/main.css'],
   // Merged into the paths Nuxt generates, which is what keeps its own \`#\` aliases resolving alongside these.
   alias: {
+    '@views': join(import.meta.dirname, 'src/views'),
+    '@views/*': join(import.meta.dirname, 'src/views/*'),
     '@components': join(import.meta.dirname, 'src/components'),
     '@components/*': join(import.meta.dirname, 'src/components/*'),
     '@ui': join(import.meta.dirname, 'src/components/ui'),

@@ -24,6 +24,7 @@ export const buildAliases = (answers: Answers): AliasMap => {
   const omitted = new Set(target.omitAliases);
 
   const all: AliasMap = {
+    ...target.routeAlias,
     '@components/*': './src/components/*',
     '@ui/*': './src/components/ui/*',
     '@features/*': './src/components/features/*',

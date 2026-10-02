@@ -41,6 +41,7 @@ export const solidTarget: TargetRecord = {
   naming: componentNaming(),
   folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: { '@primitives/*': './src/lib/primitives/*' },
+  routeAlias: { '@pages/*': './src/pages/*' },
   publicDirectory: 'public',
   styleEntry: 'src/index.css',
   starterStyles: [

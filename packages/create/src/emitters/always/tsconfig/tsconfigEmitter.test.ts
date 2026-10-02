@@ -91,6 +91,8 @@ describe('buildTsconfig', () => {
           'vitest/globals',
         ],
         paths: {
+          '@pages/*': ['./src/pages/*'],
+          '@pages': ['./src/pages'],
           '@components/*': ['./src/components/*'],
           '@components': ['./src/components'],
           '@ui/*': ['./src/components/ui/*'],
@@ -524,7 +526,7 @@ describe('alias coupling', () => {
     const aliases = buildAliases(answers);
 
     expect(aliases['@utils/*']).toBe('./src/shared/utils/*');
-    expect(Object.keys(aliases)[0]).toBe('@components/*');
+    expect(Object.keys(aliases)[0]).toBe('@pages/*');
   });
 
   it('carries the target-only aliases through all three consumers', () => {

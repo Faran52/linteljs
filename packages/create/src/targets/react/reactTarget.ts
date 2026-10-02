@@ -81,6 +81,7 @@ const baseReactTarget: TargetRecord = {
   naming: componentNaming(),
   folderNaming: { 'src/**/': FOLDER_ROUTED },
   hooksAlias: HOOKS_ALIAS,
+  routeAlias: { '@pages/*': './src/pages/*' },
   publicDirectory: 'public',
   styleEntry: 'src/index.css',
   vitePlugin: REACT_VITE_PLUGIN,

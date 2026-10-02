@@ -4,7 +4,7 @@ import { STATUSES } from '@config/statuses';
 
 import StatusPage from '@features/status-page/StatusPage.vue';
 
-import { ROUTES } from '../views/routes';
+import { ROUTES } from '@views/routes';
 
 export const router = createRouter({
   // A project served from a sub-path passes its base here.

@@ -2,7 +2,7 @@ import { MemoryRouter } from 'react-router';
 
 import { render, screen } from '@testing-library/react';
 
-import { ROUTES } from '../../../pages/routes';
+import { ROUTES } from '@pages/routes';
 
 import { AppHeader } from './AppHeader';
 

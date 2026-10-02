@@ -41,6 +41,7 @@ export const vueTarget: TargetRecord = {
   naming: sfcNaming('vue'),
   folderNaming: { 'src/**/': FOLDER },
   hooksAlias: { '@composables/*': './src/lib/composables/*' },
+  routeAlias: { '@views/*': './src/views/*' },
   publicDirectory: 'public',
   styleEntry: 'src/styles/main.css',
   starterStyles: [
