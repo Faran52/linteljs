@@ -340,6 +340,7 @@ describe('base: ignores', () => {
         '@linteljs/base/utils-size',
         '@linteljs/base/test-size',
         '@linteljs/base/magic-numbers',
+        '@linteljs/base/name-before-use',
         '@linteljs/base/naming',
       ];
       expect(baseBlocks).toEqual(expected);
@@ -877,6 +878,45 @@ describe('base: magic numbers', () => {
     const ruleIds = await ruleIdsFor(base(), 'export let limit = 40;\n', 'src/shape.ts');
 
     expect(ruleIds).toContain(RULE);
+  });
+});
+
+describe('base: name before use', () => {
+  const RULE = '@linteljs/name-before-use';
+  const UNNAMED = [
+    'export const check = async (load) => {',
+    '  if (await load()) {',
+    '    load();',
+    '  }',
+    '};',
+    '',
+  ].join('\n');
+
+  it.each([
+    'src/check.ts',
+    'src/check.js',
+    'src/check.test.ts',
+  ])('reports an await in a condition in %s', async (file) => {
+    const ruleIds = await ruleIdsFor(base(), UNNAMED, file);
+
+    expect(ruleIds).toContain(RULE);
+  });
+
+  it('reports a literal reached through an operator in an argument', async () => {
+    const code = 'export const run = (go, source) => go(source ?? [source]);\n';
+    const ruleIds = await ruleIdsFor(base(), code, 'src/shape.ts');
+
+    expect(ruleIds).toContain(RULE);
+  });
+
+  it.each([
+    ['an empty literal', 'export const listOf = (items) => items ?? [];\n'],
+    ['a literal passed to a call', 'export const pair = new Set([1, 2]);\n'],
+  ])('accepts %s', async (_shape, code) => {
+    const ruleIds = await ruleIdsFor(base(), code, 'src/shape.ts');
+
+    expect(ruleIds).not.toContain(null);
+    expect(ruleIds).not.toContain(RULE);
   });
 });
 

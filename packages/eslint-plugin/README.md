@@ -69,8 +69,9 @@ export default [
 There are two presets and no others. A rule's subject is in its id rather than in a preset name:
 the five `native-*` rules are React Native accessibility, and `react-no-global-namespace`,
 `no-duplicate-jsx-props`, `prefer-destructured-props` and `sort-hook-dependencies` are for React-style
-components. Those nine are opt-outs, so `recommended` does not carry them; name the ones you want, or
-take `all` and turn off what you do not.
+components. Those nine are opt-outs, so `recommended` does not carry them, and neither does it carry
+`name-before-use`, a house style `@linteljs/eslint-config`'s `base` turns on. Name the ones you want, or take `all`
+and turn off what you do not.
 
 ```js
 export default [

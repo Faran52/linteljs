@@ -333,8 +333,14 @@ every one already a named entry. `1000` is not allowed, and is `MS_PER_SECOND` i
 `@linteljs/name-before-use` asks for an `await`, a call that takes a call, or an inline array or object to be named
 in a `const` before it is used. It is report-only: the fix would have to invent the name, and an invented name reads
 worse than the inline code it replaces. `ignoreEmptyLiterals` and `ignoreLiteralArguments` relax it for `[]`, `{}`
-and a literal passed straight to a call. It is outside `recommended`, and turning it on in `base` is a separate
-decision. The plugin's own rules already follow it: `create` returns a named `visitors: Rule.RuleListener`.
+and a literal passed straight to a call. It is outside `recommended`, like the other opinionated rules a layer turns
+on itself, and `base` turns it on with both options for every script and SFC file, suites included. The plugin's own
+rules follow it: `create` returns a named `visitors: Rule.RuleListener`.
+
+A suite that asserts on parsed JSON names it `const parsed: unknown = JSON.parse(text)`, the shape the banned-pattern
+checker already grants and 16 suite sites used before the rule was on. Hoisting it bare would type it `any`, and a
+typed read helper or a `JSON.parse` exemption would each be a second way to say the same thing. Every finding in the
+workspace was fixed in the code, so the root config carries no exemption for it.
 
 ### `base` carries no framework rule
 

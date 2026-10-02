@@ -388,6 +388,18 @@ export const base = (options: BaseOptions = {}): Layer => {
       },
     },
 
+    // Outside the plugin's `recommended`, so restated here; suites included.
+    {
+      name: '@linteljs/base/name-before-use',
+      files: scriptFiles,
+      rules: {
+        '@linteljs/name-before-use': ['error', {
+          ignoreEmptyLiterals: true,
+          ignoreLiteralArguments: true,
+        }],
+      },
+    },
+
     ...buildNaming(naming, folderNaming),
 
   ];
