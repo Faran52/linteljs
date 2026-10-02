@@ -32,7 +32,13 @@ to the same shape; only code is ever broken, never string content.
 
 ## Examples of incorrect code for this rule
 
+`users`, `values` and `text` are declared in the file, so none of them is a namespace.
+
 ```ts
+const users = loadUsers();
+const values = loadValues();
+const text = loadText();
+
 // incorrect: two calls on one line
 const names = users.filter(isActive).map(nameOf);
 
@@ -69,7 +75,18 @@ const doubled = values
   });
 ```
 
-## What it declines to fix
+## Options
+
+```jsonc
+{
+  "@linteljs/chain-call-newline": ["error", { "maxLineLength": 120 }]
+}
+```
+
+- `maxLineLength`: integer, `120` by default. Set it to the width your line-length rule enforces,
+  so the fix never writes a line that rule would report.
+
+## What it leaves alone
 
 The fix replaces the whitespace in front of each `.` or `?.` it breaks at with a newline and the
 chain's indent plus one step, and moves the lines a callback spans one step right with its call.
@@ -90,17 +107,6 @@ checks above is left, with every chain inside it, to the next pass.
 A chain that starts on a line another chain's fix breaks goes in that fix too, indented from where
 the break leaves it: `run(a.map(f).filter(g), b.map(f).filter(g))` puts `b`'s calls one step past
 the line `.filter(g), b`.
-
-## Options
-
-```jsonc
-{
-  "@linteljs/chain-call-newline": ["error", { "maxLineLength": 120 }]
-}
-```
-
-- `maxLineLength`: integer, `120` by default. Set it to the width your line-length rule enforces,
-  so the fix never writes a line that rule would report.
 
 ## Notes
 

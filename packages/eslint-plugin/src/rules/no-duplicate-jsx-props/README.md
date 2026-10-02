@@ -7,9 +7,7 @@ Report duplicate JSX props on the same element.
 - In `recommended`: no, opt in explicitly
 
 React keeps the last occurrence of a duplicated prop and silently drops the rest, so the first
-value disappears without a word from the compiler, the type checker or any other rule. Two
-overlapping edits left `usage={null} nowMs={0}` twice on eight call sites in one file with every
-gate green. This rule reports the second and later occurrences.
+value disappears without a word from the compiler, the type checker or any other rule. This rule reports the second and later occurrences.
 
 It is not fixable. Deleting one of the two is a guess at which value the author meant, and the
 two values usually differ.
@@ -59,5 +57,5 @@ None.
 ## Notes
 
 The plugin ships no JSX layer of its own, so this rule is not in `recommended`: it turns on in
-the React and Solid layers of `@linteljs/eslint-config`, the two that render JSX. Vue and Svelte
+the React, React Native and Solid layers of `@linteljs/eslint-config`, the ones that render JSX. Vue and Svelte
 templates are not JSX and take nothing.

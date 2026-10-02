@@ -30,17 +30,6 @@ directory, as `"@ui": ["./src/ui"]` beside `"@ui/*": ["./src/ui/*"]`, names its 
 `@ui`. Any other exact key names one file, which tsc takes before any `prefix/*`: an import spelled as that key,
 or a fix that would spell it, stays as written.
 
-## Options
-
-- `aliasExempt` (globs, default none): files where nothing is reported. The globs match the path from the
-  tsconfig declaring `paths` and know `**`, `*` and `?`.
-- `enforceRelativeImports` (default `false`): in an `aliasExempt` file, report every alias import and fix it to
-  a relative one, for a file a tool reads without the aliases.
-
-```js
-'@linteljs/prefer-alias': ['error', { aliasExempt: ['src/routes.ts'], enforceRelativeImports: true }]
-```
-
 ## Examples of incorrect code for this rule
 
 ```ts
@@ -59,4 +48,15 @@ import { env } from '@config/env';
 
 // src/config/theme.ts
 import { env } from './env';
+```
+
+## Options
+
+- `aliasExempt` (globs, default none): files where nothing is reported. The globs match the path from the
+  tsconfig declaring `paths` and know `**`, `*` and `?`.
+- `enforceRelativeImports` (default `false`): in an `aliasExempt` file, report every alias import and fix it to
+  a relative one, for a file a tool reads without the aliases.
+
+```js
+'@linteljs/prefer-alias': ['error', { aliasExempt: ['src/routes.ts'], enforceRelativeImports: true }]
 ```

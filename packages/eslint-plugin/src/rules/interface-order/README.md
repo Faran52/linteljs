@@ -91,8 +91,7 @@ type Size = (typeof SIZES)[number];
 const SIZES = ['small', 'large'] as const;
 ```
 
-TypeScript resolves type positions lazily, so this compiles. That was checked against `tsc` for
-aliases, interfaces, enums, classes, functions and qualified names before the rule relied on it.
+TypeScript resolves type positions lazily, so this compiles.
 
 A comment above a declaration belongs to it and travels with it. The fix deletes from the end of
 the preceding statement, so the blank line that separated them goes too and the file does not come

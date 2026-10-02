@@ -30,21 +30,6 @@ ten of the accessibility roles, `dropdownlist`, `grid`, `pager`, `scrollview`,
 rule that refused them would report valid code on 0.87, and on 0.86 the type checker rejects them
 first.
 
-## What it does not report
-
-- A value computed at runtime. `accessibilityRole={role}` is unreadable here rather than wrong,
-  and reporting it would be a guess.
-- Whether a role is *right* for the element. `accessibilityRole="header"` on a button is valid
-  and wrong, and no linter can tell.
-- A missing role. An unnamed control is
-  [`native-accessible-name`](../native-accessible-name); which role it should carry
-  is a judgment this rule does not make.
-
-It is not fixable. `"buton"` is probably `"button"`, but `"img"` could be `"image"` or
-`"imagebutton"` and those announce differently, and a wrong role is harder to find later than a
-missing one. Nearest-match repair of an accessibility annotation is a guess with a cost, so this
-reports and stops.
-
 ## Examples of incorrect code for this rule
 
 ```tsx
@@ -80,6 +65,21 @@ reports and stops.
 ## Options
 
 None.
+
+## What it leaves alone
+
+- A value computed at runtime. `accessibilityRole={role}` is unreadable here rather than wrong,
+  and reporting it would be a guess.
+- Whether a role is *right* for the element. `accessibilityRole="header"` on a button is valid
+  and wrong, and no linter can tell.
+- A missing role. An unnamed control is
+  [`native-accessible-name`](../native-accessible-name); which role it should carry
+  is a judgment this rule does not make.
+
+It is not fixable. `"buton"` is probably `"button"`, but `"img"` could be `"image"` or
+`"imagebutton"` and those announce differently, and a wrong role is harder to find later than a
+missing one. Nearest-match repair of an accessibility annotation is a guess with a cost, so this
+reports and stops.
 
 ## Notes
 

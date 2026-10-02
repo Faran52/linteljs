@@ -23,21 +23,6 @@ An element counts as a control when it is one of React Native's touchables (`Pre
 The fix is usually one of two things: move `accessible` onto the control itself so the control is
 the focus stop, or drop it from the container and let each child keep its own.
 
-## What it does not report
-
-- A container with no `accessible` prop. Without it, nothing is collapsed.
-- `accessible={false}`, which is the default for a `View` anyway.
-- A value computed at runtime. `accessible={isGrouped}` may well be false, and reporting needs the
-  certainty that it is not.
-- A container whose children are text and images. Grouping those is the intended use.
-- A control that *is* the accessible element. `<Pressable accessible>` is correct: the focus stop
-  and the control are the same node.
-
-It is not fixable. The two repairs are opposites and produce different interfaces: hoisting
-`accessible` onto the control merges the surrounding text into the button's name, dropping it
-leaves the text and the button as separate stops. Which one is right depends on whether the card
-is one thing or several, and only the author knows.
-
 ## Examples of incorrect code for this rule
 
 ```tsx
@@ -89,6 +74,21 @@ whose buttons are not named after a React Native primitive.
   }],
 }
 ```
+
+## What it leaves alone
+
+- A container with no `accessible` prop. Without it, nothing is collapsed.
+- `accessible={false}`, which is the default for a `View` anyway.
+- A value computed at runtime. `accessible={isGrouped}` may well be false, and reporting needs the
+  certainty that it is not.
+- A container whose children are text and images. Grouping those is the intended use.
+- A control that *is* the accessible element. `<Pressable accessible>` is correct: the focus stop
+  and the control are the same node.
+
+It is not fixable. The two repairs are opposites and produce different interfaces: hoisting
+`accessible` onto the control merges the surrounding text into the button's name, dropping it
+leaves the text and the button as separate stops. Which one is right depends on whether the card
+is one thing or several, and only the author knows.
 
 ## Notes
 

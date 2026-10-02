@@ -52,7 +52,20 @@ import React from 'react';
 React.createElement('div');
 ```
 
-## Fix
+## Options
+
+None.
+
+## What it leaves alone
+
+A declaration file, and any file whose body carries a top-level `declare` and no import at all.
+Adding an import turns a script into a module: `declare module '*.svg'` becomes an augmentation of a
+module that does not exist and every global in the file stops being global. There is nothing to
+report either, because the file cannot take the import the message asks for.
+
+## Notes
+
+### Fix
 
 The name is imported from `react` and the member access is replaced with it. A type position takes a
 `type` specifier.
@@ -86,18 +99,7 @@ access would quietly mean something else.
 A reach with a comment inside it, such as `React./* why */useState`, reports without a fix too: the
 rewrite would drop the comment.
 
-## What it leaves alone
-
-A declaration file, and any file whose body carries a top-level `declare` and no import at all.
-Adding an import turns a script into a module: `declare module '*.svg'` becomes an augmentation of a
-module that does not exist and every global in the file stops being global. There is nothing to
-report either, because the file cannot take the import the message asks for.
-
-## Options
-
-None.
-
-## When not to use it
+### When not to use it
 
 A codebase that prefers `React.FC` and `React.ReactNode` as a house style. This rule is off in
-`recommended` for that reason and is enabled by the React layer in `@linteljs/eslint-config`.
+`recommended` for that reason and is enabled by the React and React Native layers in `@linteljs/eslint-config`.

@@ -67,5 +67,4 @@ rule can see. So it reports and you make the edit.
 
 ## Notes
 
-Resolving the binding up the scope chain was a real bug fix. The first version of this rule looked
-in the immediate scope only, so it was dead inside any function or block.
+The binding is resolved up the scope chain, so a destructure inside a function or block is reported too.

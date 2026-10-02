@@ -90,8 +90,8 @@ const handover = async () => {
 }
 ```
 
-- `strict`: boolean, `false` by default. When `true`, every exemption listed below is dropped,
-  including the handover to `prefer-try-catch`, so the two rules deliberately overlap.
+- `strict`: boolean, `false` by default. When `true`, every exemption in the Notes but the top level
+  is dropped, including the handover to `prefer-try-catch`, so the two rules deliberately overlap.
 
 ## Why there is no autofix
 
@@ -114,7 +114,7 @@ The second is the whole subtree, not the awaited value alone. In
 from the `await` and is still exempt, because the expression it belongs to is awaited and the
 function around it is already async. `strict: true` reports it.
 
-The last two are where `prefer-try-catch` picks up. With the default options the two rules never
+An `await` and an async return are where `prefer-try-catch` picks up. With the default options the two rules never
 report the same line. Under `strict: true` they do, which is the point of the option.
 
 A computed access is not a promise method. In `promise[then](parse)` the property is an identifier

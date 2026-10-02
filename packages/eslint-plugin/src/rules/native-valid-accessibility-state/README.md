@@ -26,19 +26,6 @@ This rule reports four things:
 `pressed` is the common wrong key. It is an ARIA state with no React Native equivalent, and a
 button written with it announces as an ordinary button forever.
 
-## What it does not report
-
-- A state computed at runtime. `accessibilityState={state}` and `{{ disabled: isDisabled }}` are
-  the caller's to get right; only a value written down is judged.
-- A key behind a spread or a computed name. `{{ ...base }}` and `{{ [key]: true }}` name nothing
-  this rule can check.
-- Whether the state is *true*. Saying `disabled` when the control is enabled is a bug this rule
-  cannot see.
-
-It is not fixable. `'true'` is presumably `true`, but a string is also what someone reaches for
-when the value came from a form or an API, and rewriting it would change what the program does
-rather than how it is annotated.
-
 ## Examples of incorrect code for this rule
 
 ```tsx
@@ -71,6 +58,19 @@ rather than how it is annotated.
 ## Options
 
 None.
+
+## What it leaves alone
+
+- A state computed at runtime. `accessibilityState={state}` and `{{ disabled: isDisabled }}` are
+  the caller's to get right; only a value written down is judged.
+- A key behind a spread or a computed name. `{{ ...base }}` and `{{ [key]: true }}` name nothing
+  this rule can check.
+- Whether the state is *true*. Saying `disabled` when the control is enabled is a bug this rule
+  cannot see.
+
+It is not fixable. `'true'` is presumably `true`, but a string is also what someone reaches for
+when the value came from a form or an API, and rewriting it would change what the program does
+rather than how it is annotated.
 
 ## Notes
 

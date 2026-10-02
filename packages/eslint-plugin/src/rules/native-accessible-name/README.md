@@ -28,29 +28,6 @@ everywhere produces noise and teaches people to write the label twice.
 overrides the text below the element, so an empty one silences a button that would otherwise have
 announced its own contents.
 
-## What it does not report
-
-- An element with a spread. `{...props}` may carry the label, so nothing here can be called
-  missing.
-- An element hidden from assistive technology with `aria-hidden`, `accessibilityElementsHidden`
-  or `importantForAccessibility="no-hide-descendants"`. Decorative content is hidden rather than
-  labelled, and giving it a name is the wrong fix.
-- An element with text below it. React Native builds a missing label by accumulating the `Text`
-  nodes underneath, so `<Pressable><Text>Save</Text></Pressable>` is correct as written.
-- An element whose children include an expression. `{label}` renders something this rule cannot
-  read, and assuming it renders text costs a missed report where assuming it does not costs a
-  false one on the commonest pattern in the language.
-- A name computed at runtime. `accessibilityLabel={title}` is a label whatever `title` holds.
-- A `Button` with a `title`, which is where React Native gets that component's label from.
-
-Both spellings count as a name: `accessibilityLabel` and `aria-label`, `accessibilityLabelledBy`
-and `aria-labelledby`. React Native maps the ARIA alias onto the legacy prop, so a rule that knew
-only one of the two would report components that are already accessible.
-
-It is not fixable, and deliberately so. A label is a sentence about what the control does, which
-only the author knows. A fixer would have to invent one, and an invented label is worse than no
-label: it silences this rule, reads as done, and ships a button that announces the wrong thing.
-
 ## Examples of incorrect code for this rule
 
 ```tsx
@@ -102,6 +79,29 @@ they are named, unless they happen to carry one of the touch handlers above.
   }],
 }
 ```
+
+## What it leaves alone
+
+- An element with a spread. `{...props}` may carry the label, so nothing here can be called
+  missing.
+- An element hidden from assistive technology with `aria-hidden`, `accessibilityElementsHidden`
+  or `importantForAccessibility="no-hide-descendants"`. Decorative content is hidden rather than
+  labelled, and giving it a name is the wrong fix.
+- An element with text below it. React Native builds a missing label by accumulating the `Text`
+  nodes underneath, so `<Pressable><Text>Save</Text></Pressable>` is correct as written.
+- An element whose children include an expression. `{label}` renders something this rule cannot
+  read, and assuming it renders text costs a missed report where assuming it does not costs a
+  false one on the commonest pattern in the language.
+- A name computed at runtime. `accessibilityLabel={title}` is a label whatever `title` holds.
+- An element with a `title`, which is where React Native's `Button` gets its label from.
+
+Both spellings count as a name: `accessibilityLabel` and `aria-label`, `accessibilityLabelledBy`
+and `aria-labelledby`. React Native maps the ARIA alias onto the legacy prop, so a rule that knew
+only one of the two would report components that are already accessible.
+
+It is not fixable, and deliberately so. A label is a sentence about what the control does, which
+only the author knows. A fixer would have to invent one, and an invented label is worse than no
+label: it silences this rule, reads as done, and ships a button that announces the wrong thing.
 
 ## Notes
 

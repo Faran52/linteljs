@@ -83,7 +83,7 @@ interface Holder {
   once it has more members than this. It has no effect on a union containing an object, function,
   constructor or mapped type: that one always splits, whatever this is set to.
 
-## What it declines to fix
+## What it leaves alone
 
 A comment written between a member and the pipe that follows it stops the split. The fix replaces
 that gap with a line break, so the comment would go with it. The rule reports and moves nothing, not even
@@ -96,8 +96,7 @@ This rule only visits TypeScript union nodes, so every shipped config scopes it 
 glob and it never runs on a `.js` file.
 
 Continuation lines sit one indentation step in from the line the union starts on, with the step
-read off the file. Emitting them at column 0 put `| string` hard against the margin, which inside
-an interface body is visibly wrong. A union that opens with a `|` on its own line is the exception: its
+read off the file, so `| string` never lands at column 0 inside an interface body. A union that opens with a `|` on its own line is the exception: its
 continuation pipes line up under that one.
 
 An object type inside an intersection, `({ first: string } & Base) | string`, does not count as an

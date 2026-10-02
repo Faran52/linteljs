@@ -12,7 +12,7 @@ explicit `return`.
 
 The second half of the title is the important half. A conversion that would change what the program
 does is not offered, and the list of those cases is long and specific. Read
-[What it declines to convert](#what-it-declines-to-convert) before wondering why a particular
+[What it declines to convert](#what-it-leaves-alone) before wondering why a particular
 function was left alone.
 
 ## Examples of incorrect code for this rule
@@ -72,7 +72,7 @@ notify();
   can throw `ReferenceError`, which is the whole reason it is off by default. Read
   [Hoisting](#hoisting) before turning it on.
 
-## What it declines to convert
+## What it leaves alone
 
 A `function` is left alone whenever an arrow would not mean the same thing. Every entry below is
 about that conversion; none of them holds back the explicit-return half, which turns an arrow into
@@ -198,9 +198,6 @@ function declaration, that declaration is hoisted too, so the rule asks the same
 called above it. The walk follows any number of such hops. A reference in a later `case` of a
 `switch` than the declaration also declines, since a jump to that case skips the one that would
 initialise the `const`.
-
-That defect is why this rule exists in its current shape. The version this was ported from
-converted such a function and turned working code into a `ReferenceError`.
 
 ### TSX
 

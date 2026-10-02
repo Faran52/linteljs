@@ -27,23 +27,6 @@ The six names the platform already has words for are `activate`, `increment`, `d
 label, or a screen reader announces the identifier: "mute" is tolerable, "archive_thread_v2" is
 not.
 
-## What it does not report
-
-- An element with a spread. `{...props}` may carry either half, so an unpaired one is not yet a
-  missing one.
-- An array or a name computed at runtime. `accessibilityActions={actions}` and
-  `{ name: chosen }` cannot be read here.
-- A spread inside the array. `[...base]` carries entries this rule cannot enumerate.
-- A missing name or label in an entry with a spread or a computed key. `{ ...base }` and
-  `{ [key]: 'mute' }` may carry either one. A key it can read, such as `hint`, is still reported.
-- Whether the handler actually handles each declared name. That needs following the function to
-  its definition and reading a `switch`, which is a different kind of analysis.
-- Anything else about the array once the two halves are unpaired: the pairing is reported on its
-  own, since with no handler nothing inside the array can run either way.
-
-It is not fixable. The missing half is a function body only the author can write, and the missing
-label is a phrase a screen reader will read out.
-
 ## Examples of incorrect code for this rule
 
 ```tsx
@@ -82,6 +65,23 @@ label is a phrase a screen reader will read out.
 ## Options
 
 None.
+
+## What it leaves alone
+
+- An element with a spread. `{...props}` may carry either half, so an unpaired one is not yet a
+  missing one.
+- An array or a name computed at runtime. `accessibilityActions={actions}` and
+  `{ name: chosen }` cannot be read here.
+- A spread inside the array. `[...base]` carries entries this rule cannot enumerate.
+- A missing name or label in an entry with a spread or a computed key. `{ ...base }` and
+  `{ [key]: 'mute' }` may carry either one. A key it can read, such as `hint`, is still reported.
+- Whether the handler actually handles each declared name. That needs following the function to
+  its definition and reading a `switch`, which is a different kind of analysis.
+- Anything else about the array once the two halves are unpaired: the pairing is reported on its
+  own, since with no handler nothing inside the array can run either way.
+
+It is not fixable. The missing half is a function body only the author can write, and the missing
+label is a phrase a screen reader will read out.
 
 ## Notes
 

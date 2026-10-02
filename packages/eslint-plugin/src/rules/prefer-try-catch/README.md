@@ -79,10 +79,6 @@ equivalent. In `then(a, b)` the handler `b` does not see anything `a` throws, an
 at all when the promise rejects. Neither `then(a).catch(b)` nor `catch(b).then(a)` preserves both
 of those.
 
-This is not a theoretical worry. The rule this one replaced did offer that fix: it rewrote
-`then(a, b)` into `catch(b).then(a)`, a different program, and on `then(a, b, extra)` it deleted
-the middle argument outright. This rule reports the smell and leaves the rewrite to a human.
-
 ## Notes
 
 A computed access is not a promise method. In `promise[then](a, b)` the property is an identifier

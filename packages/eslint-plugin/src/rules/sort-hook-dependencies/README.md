@@ -74,7 +74,7 @@ useSomethingElse(() => {}, [bravo, alpha]);
   `["useEffect", "useCallback", "useMemo"]`. These are the call names to check, matched exactly.
   Setting it replaces the defaults rather than adding to them, so list every hook you want checked.
 
-## What it declines to fix
+## What it leaves alone
 
 An array is only touched when every element is a plain identifier. A member expression, a call or a
 spread means the rule leaves it alone entirely: it does not report and it does not reorder, because
@@ -84,11 +84,13 @@ The fix swaps the names in place, so the commas, a trailing comma and the line b
 written. A comment inside the array is reported without a fix: it would stay where it is and end up
 beside a different name.
 
-## Framework independence
+## Notes
+
+### Framework independence
 
 This rule matches on the call name only. It does not import React, does not require it as a
 dependency, and does not inspect what the callee resolves to. The defaults are the React names
-because Preact and Solid use them verbatim, but nothing about the rule is React-specific.
+because Preact uses them verbatim, but nothing about the rule is React-specific.
 
 Point it at whatever your project actually calls:
 

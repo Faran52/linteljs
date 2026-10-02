@@ -73,7 +73,7 @@ const Widget = (props) => <props.Icon />;
 
 None.
 
-## What it declines to report
+## What it leaves alone
 
 Any whole-value use of the parameter ends the analysis: a JSX spread, an argument, a return, a
 spread into an object, an alias, a reassignment, a computed read with a dynamic key, a JSX member
