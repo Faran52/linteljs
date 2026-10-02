@@ -1,4 +1,4 @@
-import { jsRuleTester } from '@mocks/ruleTesters';
+import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
 import { sortHookDependencies } from './sortHookDependencies.ts';
 
@@ -44,6 +44,12 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
       code: 'useEffect(() => {}, [item1, item001]);',
       options: [{ order: 'desc' }],
     },
+
+    'useEffect(() => {}, [alpha, alpha]);',
+    'useEffect(() => {}, [bravo, alpha], options);',
+    'useEffect(...[bravo, alpha]);',
+    'new useEffect(() => {}, [bravo, alpha]);',
+    'useEffect`${[bravo, alpha]}`;',
   ],
   invalid: [
     {
@@ -99,12 +105,82 @@ jsRuleTester.run('sort-hook-dependencies', sortHookDependencies, {
       errors: [{ messageId: 'sort' }],
     },
     {
+      code: 'useEffect(() => {}, [bravo, alpha,]);',
+      output: 'useEffect(() => {}, [alpha, bravo,]);',
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [\n  charlie,\n  bravo,\n  alpha,\n]);',
+      output: 'useEffect(() => {}, [\n  alpha,\n  bravo,\n  charlie,\n]);',
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [bravo, /* why */ alpha]);',
+      output: null,
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [bravo,alpha]);',
+      output: 'useEffect(() => {}, [alpha,bravo]);',
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect?.(() => {}, [bravo, alpha]);',
+      output: 'useEffect?.(() => {}, [alpha, bravo]);',
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [alpha, Alpha, Bravo, bravo]);',
+      output: 'useEffect(() => {}, [alpha, Alpha, bravo, Bravo]);',
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [item2, item10]);',
+      output: 'useEffect(() => {}, [item10, item2]);',
+      options: [{ order: 'desc' }],
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {\n  useMemo(() => 1, [bravo, alpha]);\n}, [delta, charlie]);',
+      output: 'useEffect(() => {\n  useMemo(() => 1, [alpha, bravo]);\n}, [charlie, delta]);',
+      errors: [{ messageId: 'sort' }, { messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [bravo, alpha]);',
+      output: 'useEffect(() => {}, [alpha, bravo]);',
+      options: [{}],
+      errors: [{ messageId: 'sort' }],
+    },
+    {
+      code: 'useEffect(() => {}, [alpha, bravo]);',
+      output: 'useEffect(() => {}, [bravo, alpha]);',
+      options: [{
+        order: 'desc',
+        hooks: ['useEffect'],
+      }],
+      errors: [{ messageId: 'sort' }],
+    },
+    {
       code: 'createEffect(() => {}, [bravo, alpha]);',
       output: 'createEffect(() => {}, [alpha, bravo]);',
       options: [{
         hooks: ['createEffect'],
         order: 'asc',
       }],
+      errors: [{ messageId: 'sort' }],
+    },
+  ],
+});
+
+tsRuleTester.run('sort-hook-dependencies (typescript)', sortHookDependencies, {
+  valid: [
+    'useEffect(() => {}, [bravo!, alpha]);',
+    'useEffect(() => {}, [bravo as Value, alpha]);',
+  ],
+  invalid: [
+    {
+      code: 'useMemo<Value>(() => value, [bravo, alpha]);',
+      output: 'useMemo<Value>(() => value, [alpha, bravo]);',
       errors: [{ messageId: 'sort' }],
     },
   ],

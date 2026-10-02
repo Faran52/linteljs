@@ -80,8 +80,9 @@ An array is only touched when every element is a plain identifier. A member expr
 spread means the rule leaves it alone entirely: it does not report and it does not reorder, because
 moving text it cannot verify is free of side effects is not worth the risk.
 
-A comment inside the array is reported without a fix. Rewriting the array from the sorted names
-alone would drop the comment, and the hand-written line breaks with it.
+The fix swaps the names in place, so the commas, a trailing comma and the line breaks stay as
+written. A comment inside the array is reported without a fix: it would stay where it is and end up
+beside a different name.
 
 ## Framework independence
 

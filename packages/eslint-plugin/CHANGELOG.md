@@ -105,6 +105,8 @@ when a version's change lives in a sibling it is described there instead:
   async function off to it.
 - `react-no-global-namespace` reports a member or JSX tag with a comment inside it, such as
   `React./* why */useState`, without a fix, where the fix dropped the comment.
+- `sort-hook-dependencies` swaps the names in place, keeping a trailing comma and an array laid out one name a
+  line, where its fix rewrote the array onto one line without them.
 - A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
 
 ## 1.5.3

@@ -381,6 +381,11 @@ export const FIXER_SAMPLES: FixerSample[] = [
     name: 'hook dependencies with a comment',
     code: 'useEffect(() => {}, [\n  bravo, // needed\n  alpha,\n]);',
   },
+  {
+    // The trailing comma and the line breaks belong to the author, not the sort.
+    name: 'hook dependencies on their own lines with a trailing comma',
+    code: 'useEffect(() => {}, [\n  charlie,\n  bravo,\n  alpha,\n]);\nuseMemo(() => 1, [bravo, alpha,]);\n',
+  },
 
   {
     name: 'union with a comment before the pipe',

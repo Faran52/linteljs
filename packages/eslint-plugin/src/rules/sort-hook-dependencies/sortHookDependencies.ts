@@ -1,6 +1,7 @@
 import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   createRule,
+  mustFind,
   type NamedNode,
   optionsOf,
   rebuildLosesComments,
@@ -116,7 +117,11 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
               return null;
             }
 
-            return fixer.replaceText(lastArg, `[${sorted.join(', ')}]`);
+            // Name by name, so a trailing comma and the line breaks survive.
+            return sorted
+              .map((name, index) => {
+                return fixer.replaceText(mustFind(elements[index]), name);
+              });
           },
         });
       },
