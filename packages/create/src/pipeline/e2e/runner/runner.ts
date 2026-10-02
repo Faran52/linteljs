@@ -73,16 +73,18 @@ const INSTALL_NOISE: Record<PackageManager, (output: string) => string[]> = {
 const verifyLintOutput = async (pm: PackageManager, project: string): Promise<void> => {
   // One `why` per package.
   const version = registry.version.replaceAll('.', String.raw`\.`);
+  const configPackages = ['@linteljs/eslint-plugin', '@linteljs/eslint-config'];
 
-  for (const name of ['@linteljs/eslint-plugin', '@linteljs/eslint-config']) {
+  for (const name of configPackages) {
     const why = await runPm(pm, ['why', name], project);
 
     expect(why.output).toMatch(new RegExp(`${name}[@ ](npm:)?${version}`));
   }
 
   const check = await runPm(pm, ['check'], project);
+  const checked = outcome(check, 'check');
 
-  expect(outcome(check, 'check')).toBe('check: ok');
+  expect(checked).toBe('check: ok');
 
   // Zero, warnings included, with no per-target allowance: `eslint .` passes on warnings.
   const problems = LINT_PROBLEMS.exec(check.output);
@@ -101,7 +103,9 @@ const missingStylexRules = (project: string): string => {
         return file.endsWith('.css') === css;
       })
       .map((file) => {
-        return readFileSync(join(project, file), 'utf8');
+        const path = join(project, file);
+
+        return readFileSync(path, 'utf8');
       })
       .join('\n');
   };
@@ -115,12 +119,13 @@ const missingStylexRules = (project: string): string => {
     });
 
   const classes = new Set(classNames);
-
-  return [...classes]
+  const missing = [...classes]
     .filter((name) => {
       return !new RegExp(String.raw`\.${name}\b`).test(styles);
     })
     .join(' ');
+
+  return missing;
 };
 
 export const runE2eCase = async ({
@@ -137,7 +142,9 @@ export const runE2eCase = async ({
   // A skipped fix pass reports nothing.
   const expectedFixes = flags === undefined ? CLEAN_FIXES : null;
 
-  expect(outcome(create, '@linteljs/create')).toBe('@linteljs/create: ok');
+  const created = outcome(create, '@linteljs/create');
+
+  expect(created).toBe('@linteljs/create: ok');
 
   // Emitted code lands clean: the fix stage brings an existing project into line, and a fresh one needs none.
   const fixes = create.output.match(/\b(?:eslint|stylelint) --fix: [^\n]*/g);
@@ -162,27 +169,45 @@ export const runE2eCase = async ({
   expect(installed).toBe('install: ok');
   expect(create.output).not.toContain('next: ');
   expect(noise).toEqual([]);
-  expect(existsSync(join(project, '.husky/_'))).toBe(true);
-  expect(existsSync(join(project, 'eslint.config.js'))).toBe(true);
+
+  const hasHooks = existsSync(join(project, '.husky/_'));
+
+  expect(hasHooks).toBe(true);
+
+  const hasLintConfig = existsSync(join(project, 'eslint.config.js'));
+
+  expect(hasLintConfig).toBe(true);
 
   // The manager came from the injected user agent, so the recorded config proves it was read.
-  expect(parseLinteljsConfig(readFileSync(join(project, CONFIG_PATH), 'utf8'))).toMatchObject({
+  const configText = readFileSync(join(project, CONFIG_PATH), 'utf8');
+  const recorded = parseLinteljsConfig(configText);
+  const managerVersion = await versionOf(answers.packageManager);
+
+  expect(recorded).toMatchObject({
     ...answers,
-    packageManagerVersion: await versionOf(answers.packageManager),
+    packageManagerVersion: managerVersion,
   });
 
-  expect(parsePackageJson(readFileSync(join(project, 'package.json'), 'utf8')))
+  const manifestText = readFileSync(join(project, 'package.json'), 'utf8');
+  const manifest = parsePackageJson(manifestText);
+
+  expect(manifest)
     .not.toHaveProperty('linteljs');
 
   // npm exits non-zero on a peer it resolved to an invalid range.
   if (answers.packageManager === 'npm') {
-    expect(outcome(await runPm('npm', ['ls', '--all'], project), 'npm ls')).toBe('npm ls: ok');
+    const listing = await runPm('npm', ['ls', '--all'], project);
+    const listed = outcome(listing, 'npm ls');
+
+    expect(listed).toBe('npm ls: ok');
   }
 
   await verifyLintOutput(answers.packageManager, project);
 
   if (answers.styling === 'stylex') {
-    expect(missingStylexRules(project)).toBe('');
+    const unstyled = missingStylexRules(project);
+
+    expect(unstyled).toBe('');
   }
 
   if (variant === 'browser') {

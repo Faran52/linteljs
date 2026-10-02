@@ -143,7 +143,9 @@ export const outcome = (result: RunResult, label: string): string => {
 export const runPm = async (pm: PackageManager, args: string[], project: string): Promise<RunResult> => {
   const mapped = args
     .flatMap((arg) => {
-      return SPELLINGS[pm][arg] ?? [arg];
+      const spelled = SPELLINGS[pm][arg] ?? [arg];
+
+      return spelled;
     });
 
   return run(pm, mapped, project);

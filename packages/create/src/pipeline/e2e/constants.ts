@@ -1,3 +1,6 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import type { PackageManager } from '@config/types';
 
 // Not handed on: a config asking `process.env.VITEST === undefined` took its test branch under the harness.
@@ -23,3 +26,5 @@ export const SPELLINGS: Record<PackageManager, Record<string, string[]>> = {
     '--all',
   ] },
 };
+
+export const WORKSPACE_PREFIX = join(tmpdir(), 'linteljs-e2e-');

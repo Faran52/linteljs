@@ -66,7 +66,7 @@ const LIBRARY_SETS = LIBRARIES.reduce(withAndWithout, NO_LIBRARIES);
 
 // pnpm and strict alone, and every multi-select but the libraries at its full value.
 const fixedAnswers = (target: TargetId): Partial<Answers> => {
-  return {
+  const fixed: Partial<Answers> = {
     packageManager: 'pnpm',
     typeSafety: 'strict',
     agents: [...AGENTS],
@@ -74,6 +74,8 @@ const fixedAnswers = (target: TargetId): Partial<Answers> => {
     // Refused on a target that has no surfaces to name.
     ...(target === 'webextension' ? { surfaces: [...SURFACES] } : {}),
   };
+
+  return fixed;
 };
 
 const recordFor = (target: TargetId, variant: Partial<Answers>): TargetRecord => {
@@ -91,20 +93,26 @@ const offered = <V extends string>(
   target: TargetRecord,
   answered: Answers,
 ): (V | undefined)[] => {
-  return [undefined, ...values
+  const choices = [undefined, ...values
     .filter((value) => {
       const only = onlyFor(record, value);
 
       return only === undefined || only(target, answered);
     })];
+
+  return choices;
 };
 
 const hostedFor = (record: TargetRecord): (HostedFramework | undefined)[] => {
-  return record.hostsFramework === true ? [undefined, ...HOSTED_FRAMEWORKS] : [undefined];
+  const frameworks = record.hostsFramework === true ? [undefined, ...HOSTED_FRAMEWORKS] : [undefined];
+
+  return frameworks;
 };
 
 const routersFor = (record: TargetRecord): (Router | undefined)[] => {
-  return [undefined, ...record.routers ?? []];
+  const routers = [undefined, ...record.routers ?? []];
+
+  return routers;
 };
 
 // A hosted framework decides both the form libraries and the naming, so the axis reads the variant.
@@ -125,8 +133,7 @@ const across = <T>(
 // Every varying axis, so two cases never share a label or directory.
 const labelFor = (answers: Answers): string => {
   const record = targetFor(answers);
-
-  return [
+  const label = [
     answers.target,
     answers.packageManager,
     answers.testing,
@@ -141,13 +148,17 @@ const labelFor = (answers: Answers): string => {
     ...(answers.languages === undefined ? [] : ['languages']),
     answers.libraries.length === 0 ? 'no-libraries' : answers.libraries.join('+'),
   ].join(' ');
+
+  return label;
 };
 
 const asCase = (answers: Answers): E2eCase => {
-  return {
+  const e2eCase: E2eCase = {
     label: labelFor(answers),
     answers,
   };
+
+  return e2eCase;
 };
 
 export const everyCase = (target: TargetId): E2eCase[] => {
@@ -156,91 +167,128 @@ export const everyCase = (target: TargetId): E2eCase[] => {
   };
 
   const hosted = across([{}], () => {
-    return hostedFor(recordOf({}));
+    const record = recordOf({});
+
+    return hostedFor(record);
   }, (variant, hostedFramework) => {
-    return {
+    const withHost: Partial<Answers> = {
       ...variant,
       ...(hostedFramework === undefined ? {} : { hostedFramework }),
     };
+
+    return withHost;
   });
 
   const browsers = across(hosted, (variant) => {
-    return recordOf(variant).hostsBrowser === true ? [...BROWSERS] : [DEFAULT_ANSWERS.browser];
+    const choices = recordOf(variant).hostsBrowser === true ? [...BROWSERS] : [DEFAULT_ANSWERS.browser];
+
+    return choices;
   }, (variant, browser) => {
-    return {
+    const withBrowser: Partial<Answers> = {
       ...variant,
       browser,
     };
+
+    return withBrowser;
   });
 
   const stylings = across(browsers, (variant) => {
-    return offered(STYLING_CHOICES, ANSWERS.styling, recordOf(variant), DEFAULT_ANSWERS);
+    const record = recordOf(variant);
+
+    return offered(STYLING_CHOICES, ANSWERS.styling, record, DEFAULT_ANSWERS);
   }, (variant, styling) => {
-    return {
+    const withStyling: Partial<Answers> = {
       ...variant,
       ...(styling === undefined ? {} : { styling }),
     };
+
+    return withStyling;
   });
 
   const forms = across(stylings, (variant) => {
-    return offered(FORMS, ANSWERS.form, recordOf(variant), DEFAULT_ANSWERS);
+    const record = recordOf(variant);
+
+    return offered(FORMS, ANSWERS.form, record, DEFAULT_ANSWERS);
   }, (variant, form) => {
-    return {
+    const withForm: Partial<Answers> = {
       ...variant,
       ...(form === undefined ? {} : { form }),
     };
+
+    return withForm;
   });
 
   const routers = across(forms, (variant) => {
-    return routersFor(recordOf(variant));
+    const record = recordOf(variant);
+
+    return routersFor(record);
   }, (variant, router) => {
-    return {
+    const withRouter: Partial<Answers> = {
       ...variant,
       ...(router === undefined ? {} : { router }),
     };
+
+    return withRouter;
   });
 
   const stores = across(routers, (variant) => {
-    return [undefined, ...recordOf(variant).stores ?? []];
+    const record = recordOf(variant);
+    const choices = [undefined, ...record.stores ?? []];
+
+    return choices;
   }, (variant, store) => {
-    return {
+    const withStore: Partial<Answers> = {
       ...variant,
       ...(store === undefined ? {} : { store }),
     };
+
+    return withStore;
   });
 
   const datas = across(stores, (variant) => {
-    return offered(DATA_CHOICES, ANSWERS.data, recordOf(variant), {
+    const record = recordOf(variant);
+
+    return offered(DATA_CHOICES, ANSWERS.data, record, {
       ...DEFAULT_ANSWERS,
       ...variant,
     });
   }, (variant, data) => {
-    return {
+    const withData: Partial<Answers> = {
       ...variant,
       ...(data === undefined ? {} : { data }),
     };
+
+    return withData;
   });
 
   const mockings = across(datas, (variant) => {
-    return offered(MOCKING_CHOICES, ANSWERS.mocking, recordOf(variant), {
+    const record = recordOf(variant);
+
+    return offered(MOCKING_CHOICES, ANSWERS.mocking, record, {
       ...DEFAULT_ANSWERS,
       ...variant,
     });
   }, (variant, mocking) => {
-    return {
+    const withMocking: Partial<Answers> = {
       ...variant,
       ...(mocking === undefined ? {} : { mocking }),
     };
+
+    return withMocking;
   });
 
   // Every target asks. The full set holds both zh tags, so only an exact-tag match resolves zh-TW.
   const languages = across(mockings, () => {
-    return [undefined, LANGUAGES];
+    const choices = [undefined, LANGUAGES];
+
+    return choices;
   }, (variant, chosen) => {
-    return {
+    const withLanguages: Partial<Answers> = {
       ...variant,
       ...(chosen === undefined ? {} : { languages: [...chosen] }),
     };
+
+    return withLanguages;
   });
 
   const libraries = across(languages, () => {

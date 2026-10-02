@@ -122,7 +122,8 @@ const check = (command: string, args: string[], cwd: string): void => {
 };
 
 const createVersion = (): string => {
-  const { version } = parsePackageJson(readFileSync(join(ROOT, 'packages/create/package.json'), 'utf8'));
+  const manifest = readFileSync(join(ROOT, 'packages/create/package.json'), 'utf8');
+  const { version } = parsePackageJson(manifest);
 
   if (version === undefined) {
     throw new Error('packages/create/package.json carries no version');
@@ -139,17 +140,21 @@ const runVersion = (base: string): string => {
     throw new Error(`packages/create/package.json carries no major.minor: ${base}`);
   }
 
-  return `${major}.${minor}.${String(Math.floor(Date.now() / 1000))}`;
+  const epochSeconds = Math.floor(Date.now() / 1000);
+
+  return `${major}.${minor}.${String(epochSeconds)}`;
 };
 
 // A version published once never goes stale, so every resolution cache can persist.
 const publishedAs = (version: string, publish: () => void): void => {
   const originals = WORKSPACE_MANIFESTS
     .map((path) => {
-      return {
+      const original = {
         path,
         text: readFileSync(path, 'utf8'),
       };
+
+      return original;
     });
 
   try {
@@ -169,7 +174,7 @@ const publishedAs = (version: string, publish: () => void): void => {
 // Exported apart from `setup`: `collectBuildsScript.ts` needs the same registry and CLI.
 // `E2E_UPSTREAM` stands in for npmjs where only a mirror is reachable.
 export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string => {
-  return [
+  const lines = [
     `storage: ${storage}`,
     'uplinks:',
     '  npmjs:',
@@ -189,7 +194,9 @@ export const verdaccioConfig = (storage: string, upstream = UPSTREAM): string =>
     '  type: stdout',
     '  level: error',
     '',
-  ].join('\n');
+  ];
+
+  return lines.join('\n');
 };
 
 export const startRegistry = async (): Promise<StartedRegistry> => {
@@ -256,7 +263,7 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
     cliDir,
   );
 
-  return {
+  const started: StartedRegistry = {
     registry: {
       url,
       version,
@@ -268,6 +275,8 @@ export const startRegistry = async (): Promise<StartedRegistry> => {
       verdaccio.kill();
     },
   };
+
+  return started;
 };
 
 export const setup = async (project: TestProject): Promise<() => void> => {

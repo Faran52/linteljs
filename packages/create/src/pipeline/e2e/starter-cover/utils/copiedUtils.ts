@@ -38,9 +38,11 @@ export const copiedOf = (artifact: Artifact): Copied[] => {
     return content.transform === undefined ? joined : content.transform(joined, null);
   };
 
-  return [{
+  const copied: Copied[] = [{
     target: artifact.target,
     sources: content.sources,
     text,
   }];
+
+  return copied;
 };

@@ -4,8 +4,9 @@ import { dirname, join } from 'node:path';
 // Walked up rather than counted in `..`: only the e2e suite reads it, and `pnpm check` excludes that.
 const workspaceRootFrom = (from: string): string => {
   let directory = from;
+  let marker = join(directory, 'pnpm-workspace.yaml');
 
-  while (!existsSync(join(directory, 'pnpm-workspace.yaml'))) {
+  while (!existsSync(marker)) {
     const parent = dirname(directory);
 
     if (parent === directory) {
@@ -13,6 +14,7 @@ const workspaceRootFrom = (from: string): string => {
     }
 
     directory = parent;
+    marker = join(directory, 'pnpm-workspace.yaml');
   }
 
   return directory;

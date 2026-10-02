@@ -8,7 +8,7 @@ export interface PairwiseCase {
 
 // A constant axis costs a pair any case covers, so all are listed rather than filtered per target.
 const axesOf = (answers: Answers): string[] => {
-  return [
+  const axes = [
     `pm:${answers.packageManager}`,
     `host:${answers.hostedFramework ?? 'none'}`,
     `browser:${answers.browser}`,
@@ -23,9 +23,13 @@ const axesOf = (answers: Answers): string[] => {
     `safety:${answers.typeSafety}`,
     ...LIBRARIES
       .map((library) => {
-        return `${library}:${String(answers.libraries.includes(library))}`;
+        const isChosen = answers.libraries.includes(library);
+
+        return `${library}:${String(isChosen)}`;
       }),
   ];
+
+  return axes;
 };
 
 export const pairsOf = (answers: Answers): string[] => {
@@ -58,11 +62,12 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
     .map((item) => {
       const axes = axesOf(item.answers)
         .map(idOf);
-
-      return {
+      const internedCase = {
         item,
         axes,
       };
+
+      return internedCase;
     });
   const valueCount = valueIds.size;
   const scored = interned
@@ -77,11 +82,13 @@ export const coveringSubset = <T extends PairwiseCase>(cases: T[]): T[] => {
         });
 
       // A gain only falls as pairs are covered, so a stale one bounds it.
-      return {
+      const scoredCase = {
         item,
         pairs,
         staleGain: pairs.length,
       };
+
+      return scoredCase;
     });
   const uncovered = new Uint8Array(valueCount * valueCount)
     .fill(1);

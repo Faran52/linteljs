@@ -182,7 +182,9 @@ export const browserProblems = async (pm: PackageManager, project: string): Prom
     const isUp = await answers(origin);
 
     if (!isUp) {
-      return [`no server on ${origin}`];
+      const noServer = [`no server on ${origin}`];
+
+      return noServer;
     }
 
     const problems = await crawl(origin);

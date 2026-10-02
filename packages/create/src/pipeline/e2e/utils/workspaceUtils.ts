@@ -3,11 +3,10 @@ import {
   mkdtempSync,
   rmSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 
 import { MANAGER_FLOORS } from '@config/constants';
 
+import { WORKSPACE_PREFIX } from '../constants';
 import { PACKAGE_MANAGERS } from '../matrix/constants';
 
 import {
@@ -20,7 +19,7 @@ import {
 
 import type { Answers, PackageManager } from '@config/types';
 
-export const workspace = mkdtempSync(join(tmpdir(), 'linteljs-e2e-'));
+export const workspace = mkdtempSync(WORKSPACE_PREFIX);
 
 export const afterAllCleanup = (): void => {
   rmSync(workspace, {
@@ -53,7 +52,9 @@ export const versionFrom = (pm: PackageManager, output: string): string => {
 };
 
 const readVersion = async (pm: PackageManager): Promise<string> => {
-  return versionFrom(pm, (await runPm(pm, ['--version'], workspace)).output);
+  const printed = await runPm(pm, ['--version'], workspace);
+
+  return versionFrom(pm, printed.output);
 };
 
 // The promise is cached: the cases in a file run together, so two misses would both spawn.
@@ -69,7 +70,7 @@ export const versionOf = async (pm: PackageManager): Promise<string> => {
 
 // A flag a target never asks for is refused, so those go only when set.
 export const answerFlags = (answers: Answers): string[] => {
-  return [
+  const flags = [
     '--target',
     answers.target,
     '--testing',
@@ -93,6 +94,8 @@ export const answerFlags = (answers: Answers): string[] => {
     ...(answers.mocking === undefined ? [] : ['--mocking', answers.mocking]),
     ...(answers.languages === undefined ? [] : ['--languages', answers.languages.join(',')]),
   ];
+
+  return flags;
 };
 
 export const createProject = async (
@@ -104,8 +107,9 @@ export const createProject = async (
   mkdirSync(root, { recursive: true });
 
   const pm = answers.packageManager;
+  const version = await versionOf(pm);
   // Injected, because no flag names a manager.
-  const agent = agentOf(pm, await versionOf(pm));
+  const agent = agentOf(pm, version);
 
   return oneAtATime(pm, async () => {
     return run('node', [
@@ -139,5 +143,7 @@ export const managersToRun = async (requested: string | undefined): Promise<Pack
 
   await versionOf(pm);
 
-  return [pm];
+  const managers = [pm];
+
+  return managers;
 };

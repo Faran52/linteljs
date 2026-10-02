@@ -157,7 +157,9 @@ const greedyLabels = (classes: TextClass[], uncovered: Set<number>): string[] =>
   const picked: string[] = [];
 
   const reach = (item: TextClass): number => {
-    return [...item.texts]
+    const texts = [...item.texts];
+
+    return texts
       .filter((text) => {
         return remaining.has(text);
       }).length;
@@ -195,8 +197,9 @@ export const starterCover = (labels: readonly string[]): StarterCover => {
   const found = labels
     .flatMap((label) => {
       const item = sweep.classOf.get(label);
+      const known = item === undefined ? [] : [item];
 
-      return item === undefined ? [] : [item];
+      return known;
     });
   const unknown = labels
     .filter((label) => {
@@ -204,7 +207,9 @@ export const starterCover = (labels: readonly string[]): StarterCover => {
     });
   const reached = found
     .flatMap((item) => {
-      return [...item.texts];
+      const texts = [...item.texts];
+
+      return texts;
     });
   const covered = new Set(reached);
   const span = { length: sweep.textCount };
@@ -217,27 +222,32 @@ export const starterCover = (labels: readonly string[]): StarterCover => {
     });
   const uncovered = new Set(missed);
 
-  return {
+  const cover: StarterCover = {
     texts: sweep.textCount,
     uncovered: uncovered.size,
     suggested: greedyLabels(sweep.classes, uncovered),
     unknown,
     unplaced: unplacedOf(sweep.placed),
   };
+
+  return cover;
 };
 
 // Without the sweep, so the lint tool pays only for the enumeration.
 export const starterCases = (labels: readonly string[]): E2eCase[] => {
   const pairs = allCases()
-    .map((item): [string, E2eCase] => {
-      return [item.label, item];
+    .map((item) => {
+      const pair: [string, E2eCase] = [item.label, item];
+
+      return pair;
     });
   const byLabel = new Map(pairs);
 
   return labels
     .flatMap((label) => {
       const found = byLabel.get(label);
+      const known = found === undefined ? [] : [found];
 
-      return found === undefined ? [] : [found];
+      return known;
     });
 };
