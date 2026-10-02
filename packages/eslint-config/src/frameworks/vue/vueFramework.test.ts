@@ -29,8 +29,8 @@ describe('vue', () => {
     const ruleIds = await ruleIdsForFile(vue(), join(SFC_FIXTURES, 'Home.vue'));
 
     expect(ruleIds).not.toContain(null);
-    const anyMatch = ruleIds.some(startsWith('vue/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('vue/'));
+    expect(pluginReported).toBe(true);
   });
 
   it('reports accessibility findings on a template', async () => {
@@ -102,14 +102,14 @@ describe('vue', () => {
 
   it('lets a .ts file pass an imported component along', async () => {
     const file = join(SFC_FIXTURES, 'registerHome.ts');
-    const config = [...base(), ...typescript()];
-    const plain = await ruleIdsForFile(config, file);
-    const ruleIdsForFileConfig = [
+    const plainConfig = [...base(), ...typescript()];
+    const plain = await ruleIdsForFile(plainConfig, file);
+    const composedConfig = [
       ...base(),
       ...typescript(),
       ...vue(),
     ];
-    const composed = await ruleIdsForFile(ruleIdsForFileConfig, file);
+    const composed = await ruleIdsForFile(composedConfig, file);
 
     expect(plain).toContain('@typescript-eslint/no-unsafe-argument');
     expect(plain).toContain('@typescript-eslint/no-unsafe-assignment');
@@ -123,8 +123,8 @@ describe('vue', () => {
     'pinia',
     '@vue/test-utils',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: vueGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: vueGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 
@@ -154,8 +154,7 @@ describe('vue', () => {
 
     const config = [...base(), ...vue()];
     const atLimit = await ruleIdsForSfc(config, component(350), 'Big.vue');
-    const ruleIdsForSfcConfig = [...base(), ...vue()];
-    const overLimit = await ruleIdsForSfc(ruleIdsForSfcConfig, component(351), 'Big.vue');
+    const overLimit = await ruleIdsForSfc(config, component(351), 'Big.vue');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');
@@ -169,8 +168,7 @@ describe('vue', () => {
 
     const config = [...base(), ...vue()];
     const atLimit = await ruleIdsForSfc(config, component(350), 'Big.vue');
-    const ruleIdsForSfcConfig = [...base(), ...vue()];
-    const overLimit = await ruleIdsForSfc(ruleIdsForSfcConfig, component(351), 'Big.vue');
+    const overLimit = await ruleIdsForSfc(config, component(351), 'Big.vue');
 
     expect(atLimit).not.toContain('max-lines-per-function');
     expect(overLimit).toContain('max-lines-per-function');

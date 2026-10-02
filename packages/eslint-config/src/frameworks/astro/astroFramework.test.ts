@@ -20,8 +20,7 @@ import typescript from '../../layers/typescript/typescriptLayer';
 
 import astro from './astroFramework';
 
-const baseOptions = { astro: true } as const;
-const WITH_BASE = [...base(baseOptions), ...astro()];
+const WITH_BASE = [...base({ astro: true }), ...astro()];
 
 const PAGE = (body: string): string => {
   return `---\nconst title = 'Home';\n---\n\n<h1>{title}</h1>\n${body}\n`;
@@ -35,8 +34,8 @@ describe('astro', () => {
       'src/pages/index.astro',
     );
 
-    const anyMatch = ruleIds.some(startsWith('astro/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('astro/'));
+    expect(pluginReported).toBe(true);
   });
 
   it('reports an image with no alt text in a template', async () => {
@@ -95,12 +94,7 @@ describe('astro', () => {
       ...astro(),
     ];
     const names = await ruleNamesFor(config, path);
-    const enabledRuleIdsForConfig = [
-      ...base(),
-      ...typescript(),
-      ...astro(),
-    ];
-    const enabled = await enabledRuleIdsFor(enabledRuleIdsForConfig, path);
+    const enabled = await enabledRuleIdsFor(config, path);
 
     expect(names).toContain('@typescript-eslint/no-floating-promises');
     expect(enabled).not.toContain('@typescript-eslint/no-floating-promises');

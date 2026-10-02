@@ -12,7 +12,7 @@ import tanstackRouter from './tanstackRouterLibrary';
 
 describe('tanstackRouter', () => {
   it('reports a loader declared ahead of the beforeLoad it depends on', async () => {
-    const joinList = [
+    const lines = [
       "import { createFileRoute } from '@tanstack/react-router';",
       '',
       "export const Route = createFileRoute('/')({",
@@ -21,12 +21,12 @@ describe('tanstackRouter', () => {
       '});',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
     const config = [...react(), ...tanstackRouter()];
     const ruleIds = await ruleIdsFor(config, code, 'src/routes/index.tsx');
 
-    const anyMatch = ruleIds.some(startsWith('@tanstack/router/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('@tanstack/router/'));
+    expect(pluginReported).toBe(true);
   });
 
   it.each([

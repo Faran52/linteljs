@@ -104,8 +104,7 @@ describe('LIBRARIES', () => {
   });
 
   it('hands tailwind the entry point it was given, and none when it was given none', async () => {
-    const tailwindOptions = { tailwindEntryPoint: 'src/styles/app.css' } as const;
-    const withEntryPoint = await LIBRARIES.tailwind(tailwindOptions);
+    const withEntryPoint = await LIBRARIES.tailwind({ tailwindEntryPoint: 'src/styles/app.css' });
     expect(withEntryPoint).toEqual(tailwind('src/styles/app.css'));
 
     const withoutEntryPoint = await LIBRARIES.tailwind({});

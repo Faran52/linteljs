@@ -25,8 +25,7 @@ describe('angular', () => {
     const decoratedRuleIds = await ruleIdsFor(config, decorated, 'src/app/mark.ts');
     expect(decoratedRuleIds).not.toContain('@typescript-eslint/no-extraneous-class');
 
-    const ruleIdsForConfig = [...base(), ...angular()];
-    const bareRuleIds = await ruleIdsFor(ruleIdsForConfig, bare, 'src/app/bag.ts');
+    const bareRuleIds = await ruleIdsFor(config, bare, 'src/app/bag.ts');
     expect(bareRuleIds).toContain('@typescript-eslint/no-extraneous-class');
   });
 
@@ -37,8 +36,7 @@ describe('angular', () => {
 
     const config = [...base(), ...angular()];
     const atLimit = await ruleIdsFor(config, component(500), 'src/app/big.component.ts');
-    const ruleIdsForConfig = [...base(), ...angular()];
-    const overLimit = await ruleIdsFor(ruleIdsForConfig, component(501), 'src/app/big.component.ts');
+    const overLimit = await ruleIdsFor(config, component(501), 'src/app/big.component.ts');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');
@@ -54,8 +52,7 @@ describe('angular', () => {
 
     const config = [...base(), ...angular()];
     const atLimit = await ruleIdsFor(config, component(350), 'src/app/big.component.ts');
-    const ruleIdsForConfig = [...base(), ...angular()];
-    const overLimit = await ruleIdsFor(ruleIdsForConfig, component(351), 'src/app/big.component.ts');
+    const overLimit = await ruleIdsFor(config, component(351), 'src/app/big.component.ts');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines-per-function');
@@ -63,7 +60,7 @@ describe('angular', () => {
   });
 
   it('reports a bypassed sanitizer, a sonarjs Angular rule base leaves off', async () => {
-    const joinList = [
+    const lines = [
       "import { DomSanitizer } from '@angular/platform-browser';",
       '',
       'export const trust = (sanitizer: DomSanitizer, html: string) => {',
@@ -71,7 +68,7 @@ describe('angular', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/trust.ts');
 
     expect(ruleIds).toContain('sonarjs/no-angular-bypass-sanitization');
@@ -82,8 +79,8 @@ describe('angular', () => {
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.html');
 
     expect(ruleIds).not.toContain(null);
-    const anyMatch = ruleIds.some(startsWith('@angular-eslint/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('@angular-eslint/'));
+    expect(pluginReported).toBe(true);
   });
 
   it('reports accessibility findings on a template', async () => {
@@ -95,7 +92,7 @@ describe('angular', () => {
   });
 
   it('reports a component class that breaks an angular-eslint convention', async () => {
-    const joinList = [
+    const lines = [
       "import { Component } from '@angular/core';",
       '',
       "@Component({ selector: 'app-home', template: '' })",
@@ -104,20 +101,20 @@ describe('angular', () => {
       '}',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.ts');
 
-    const anyMatch = ruleIds.some(startsWith('@angular-eslint/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('@angular-eslint/'));
+    expect(pluginReported).toBe(true);
   });
 
   it('reports on a template written inline in a component', async () => {
-    const joinList = [
+    const lines = [
       "@Component({ selector: 'app-logo', template: '<img src=\"/a.png\">' })",
       'export class LogoComponent {}',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/logo.component.ts');
 
     expect(ruleIds).toContain('@angular-eslint/template/alt-text');
@@ -128,8 +125,8 @@ describe('angular', () => {
     'rxjs',
     'rxjs/operators',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: angularGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: angularGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 

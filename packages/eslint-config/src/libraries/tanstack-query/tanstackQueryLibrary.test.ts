@@ -12,7 +12,7 @@ import tanstackQuery from './tanstackQueryLibrary';
 
 describe('tanstackQuery', () => {
   it('reports a query key missing a dependency', async () => {
-    const joinList = [
+    const lines = [
       "import { useQuery } from '@tanstack/react-query';",
       '',
       'export const useThing = (id) => {',
@@ -20,12 +20,12 @@ describe('tanstackQuery', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
     const config = [...react(), ...tanstackQuery()];
     const ruleIds = await ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts');
 
-    const anyMatch = ruleIds.some(startsWith('@tanstack/query/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('@tanstack/query/'));
+    expect(pluginReported).toBe(true);
   });
 
   it.each([

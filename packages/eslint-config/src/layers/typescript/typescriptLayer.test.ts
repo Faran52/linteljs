@@ -127,8 +127,7 @@ describe('typescript', () => {
     const ruleNames = await ruleNamesFor(config, 'src/tool.js');
     expect(ruleNames).toContain('@typescript-eslint/no-floating-promises');
 
-    const enabledRuleIdsForConfig = [...base(), ...typescript()];
-    const enabledRuleIds = await enabledRuleIdsFor(enabledRuleIdsForConfig, 'src/tool.js');
+    const enabledRuleIds = await enabledRuleIdsFor(config, 'src/tool.js');
     expect(enabledRuleIds).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
@@ -148,17 +147,16 @@ describe('typescript', () => {
   });
 
   it('configures prefer-alias on every typed extension, the SFCs included', async () => {
-    const typescriptOptions = { aliasExempt: ['src/routes.ts'] };
-    const layer = [...base(), ...typescript(typescriptOptions)];
+    const layer = [...base(), ...typescript({ aliasExempt: ['src/routes.ts'] })];
 
-    const itList = [
+    const files = [
       'src/a.ts',
       'src/a.tsx',
       'src/A.vue',
       'src/A.svelte',
     ];
 
-    for (const file of itList) {
+    for (const file of files) {
       const entry = await ruleEntryFor(layer, file, '@linteljs/prefer-alias');
 
       const actual = {

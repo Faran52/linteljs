@@ -124,8 +124,8 @@ describe('next', () => {
     'next',
     'next/link',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: nextGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: nextGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 

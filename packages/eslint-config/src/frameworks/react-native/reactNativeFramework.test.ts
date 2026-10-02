@@ -49,14 +49,14 @@ describe('reactNative', () => {
 
   it('drops the accessibility preset that react keeps', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
-    const config = [...base(), ...react()];
-    const web = await ruleIdsFor(config, code, 'src/Logo.tsx');
-    const ruleIdsForConfig = [...base(), ...reactNative()];
-    const native = await ruleIdsFor(ruleIdsForConfig, code, 'src/Logo.tsx');
+    const webConfig = [...base(), ...react()];
+    const web = await ruleIdsFor(webConfig, code, 'src/Logo.tsx');
+    const nativeConfig = [...base(), ...reactNative()];
+    const native = await ruleIdsFor(nativeConfig, code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
-    const anyMatch = native.some(startsWith('jsx-a11y-x/'));
-    expect(anyMatch).toBe(false);
+    const webA11yReported = native.some(startsWith('jsx-a11y-x/'));
+    expect(webA11yReported).toBe(false);
   });
 
   it.each([
@@ -86,19 +86,19 @@ describe('reactNative', () => {
 
   it('reaches no module that imports the web accessibility plugin', async () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const mapList = ['reactNativeFramework.ts', '../utils/reactCoreUtils.ts'];
-    const reads = mapList
-      .map(async (name) => {
-        const readFileJoin = await readFile(join(here, name), 'utf8');
-        return readFileJoin;
+    const modules = ['reactNativeFramework.ts', '../utils/reactCoreUtils.ts'];
+    const reads = modules
+      .map((name) => {
+        const path = join(here, name);
+        return readFile(path, 'utf8');
       });
 
     const sources = await Promise.all(reads);
 
     const specifiers = sources
       .flatMap((source) => {
-        const mapList = [...source.matchAll(/from '([^']+)'/gu)];
-        return mapList
+        const imports = [...source.matchAll(/from '([^']+)'/gu)];
+        return imports
           .map(([, specifier]) => {
             return specifier;
           });

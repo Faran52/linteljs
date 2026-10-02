@@ -32,7 +32,7 @@ interface FlatNamespaced {
 
 describe('reactCore', () => {
   it('reports a hook called inside a condition', async () => {
-    const joinList = [
+    const lines = [
       "import { useState } from 'react';",
       '',
       'export const Widget = ({ on }) => {',
@@ -46,14 +46,14 @@ describe('reactCore', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const ruleIds = await ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx');
     expect(ruleIds).toContain('react-hooks/rules-of-hooks');
   });
 
   it('reports an unsorted hook dependency array through the linteljs rule it adds', async () => {
-    const joinList = [
+    const lines = [
       "import { useEffect } from 'react';",
       '',
       'export const Widget = ({ b, a }) => {',
@@ -65,20 +65,20 @@ describe('reactCore', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const ruleIds = await ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx');
     expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
   });
 
   it('reports a component reading its props member by member', async () => {
-    const joinList = [
+    const lines = [
       'export const Widget = (props) => {',
       '  return <div>{props.title}</div>;',
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const config = [...base(), ...reactCore()];
     const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Widget.tsx');
@@ -86,13 +86,13 @@ describe('reactCore', () => {
   });
 
   it('stays quiet on a component that forwards its props whole', async () => {
-    const joinList = [
+    const lines = [
       'export const Widget = (props) => {',
       '  return <input {...props} />;',
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const config = [...base(), ...reactCore()];
     const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Widget.tsx');
@@ -145,7 +145,7 @@ describe('reactCore', () => {
   });
 
   it('reports a state setter called with its own state, a sonarjs React rule base leaves off', async () => {
-    const joinList = [
+    const lines = [
       "import { useState } from 'react';",
       '',
       'export const Chip = () => {',
@@ -158,7 +158,7 @@ describe('reactCore', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
     const config = [...base(), ...reactCore()];
     const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
@@ -189,14 +189,14 @@ describe('reactCore', () => {
     'react-native',
     '@react-navigation/native',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: reactGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: reactGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 
   it('sorts react-dom straight after react, ahead of react/ and the react-* packages', async () => {
     const block = (specifiers: string[]): string => {
-      const joinList = [
+      const lines = [
         ...specifiers
           .map((specifier, index) => {
             return `import { a${String(index)} } from '${specifier}';`;
@@ -205,29 +205,28 @@ describe('reactCore', () => {
         'export const value = 1;',
         '',
       ];
-      return joinList.join('\n');
+      return lines.join('\n');
     };
 
-    const baseOptions = { frameworkGroup: reactGroup } as const;
-    const layer = base(baseOptions);
+    const layer = base({ frameworkGroup: reactGroup });
 
-    const blockSpecifiers = [
+    const sortedSpecifiers = [
       'react',
       'react-dom',
       'react/jsx-runtime',
       'react-aria',
     ];
-    const ruleIds = await ruleIdsFor(layer, block(blockSpecifiers), 'src/lib/a.ts');
-    expect(ruleIds).not.toContain('simple-import-sort/imports');
+    const sortedRuleIds = await ruleIdsFor(layer, block(sortedSpecifiers), 'src/lib/a.ts');
+    expect(sortedRuleIds).not.toContain('simple-import-sort/imports');
 
-    const blockList = [
+    const unsortedSpecifiers = [
       'react',
       'react/jsx-runtime',
       'react-aria',
       'react-dom',
     ];
-    const layerRuleIds = await ruleIdsFor(layer, block(blockList), 'src/lib/a.ts');
-    expect(layerRuleIds).toContain('simple-import-sort/imports');
+    const unsortedRuleIds = await ruleIdsFor(layer, block(unsortedSpecifiers), 'src/lib/a.ts');
+    expect(unsortedRuleIds).toContain('simple-import-sort/imports');
   });
 
   it.each([

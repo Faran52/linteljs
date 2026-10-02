@@ -25,8 +25,8 @@ describe('solid', () => {
     const config = [...base(), ...solid()];
     const ruleIds = await ruleIdsFor(config, code, 'src/pages/Note.tsx');
 
-    const anyMatch = ruleIds.some(startsWith('solid/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('solid/'));
+    expect(pluginReported).toBe(true);
   });
 
   it('reports an image with no alt text', async () => {
@@ -99,8 +99,8 @@ describe('solid', () => {
     'solid-js/web',
     '@solidjs/router',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: solidGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: solidGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 

@@ -33,8 +33,7 @@ describe('presetOf', () => {
       name: 'probe/two',
       files: ['**/*.vue'],
     }];
-    const files = ['**/*.ts'];
-    const preset = presetOf(config, 'probe', files);
+    const preset = presetOf(config, 'probe', ['**/*.ts']);
 
     const expected = [{
       name: 'probe/one',
@@ -45,9 +44,7 @@ describe('presetOf', () => {
     }];
     expect(preset).toEqual(expected);
 
-    const presetOfConfig = { name: 'probe' } as const;
-    const presetOfFiles = ['**/*.ts'];
-    const singlePreset = presetOf(presetOfConfig, 'probe', presetOfFiles);
+    const singlePreset = presetOf({ name: 'probe' }, 'probe', ['**/*.ts']);
     const expectedSingle = [{
       name: 'probe',
       files: ['**/*.ts'],
@@ -74,9 +71,7 @@ describe('presetOf', () => {
 
 describe('sonarjsRules', () => {
   const rule = 'sonarjs/no-mutate-reactive-state-in-updated-hook';
-  const rules = { [rule]: 'error' } as const;
-  const files = ['**/*.ts'];
-  const mutating = sonarjsRules('test/sonarjs', rules, files);
+  const mutating = sonarjsRules('test/sonarjs', { [rule]: 'error' }, ['**/*.ts']);
   const code = "import { ref } from 'vue';\n\nconst count = ref(0);\n\n"
     + 'export default { updated() { count.value++; } };\n';
 

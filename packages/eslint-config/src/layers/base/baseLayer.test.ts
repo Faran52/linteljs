@@ -52,24 +52,24 @@ describe('base: stylistic', () => {
   it('reports a line past 120 columns', async () => {
     const long = `export const value = '${'x'.repeat(130)}';`;
 
-    const ruleIdsForBase = ruleIdsFor(base(), long, TS_FILE);
-    await expect(ruleIdsForBase).resolves.toContain('@stylistic/max-len');
+    const ruleIds = ruleIdsFor(base(), long, TS_FILE);
+    await expect(ruleIds).resolves.toContain('@stylistic/max-len');
   });
 
   it('exempts a line that is only a long attribute value', async () => {
     const path = `  d="${'M10 3.22l-.61-.6a5.5 5.5 0 0 0-7.666.105 '.repeat(30)}"`;
 
-    const ruleIdsForBase = ruleIdsFor(base(), `const svg = \`\n${path}\n\`;\n`, TS_FILE);
+    const ruleIds = ruleIdsFor(base(), `const svg = \`\n${path}\n\`;\n`, TS_FILE);
 
-    await expect(ruleIdsForBase)
+    await expect(ruleIds)
       .resolves.not.toContain('@stylistic/max-len');
   });
 
   it('still reports real code that happens to sit beside one', async () => {
     const long = `export const d = "x" + '${'y'.repeat(130)}';`;
 
-    const ruleIdsForBase = ruleIdsFor(base(), long, TS_FILE);
-    await expect(ruleIdsForBase).resolves.toContain('@stylistic/max-len');
+    const ruleIds = ruleIdsFor(base(), long, TS_FILE);
+    await expect(ruleIds).resolves.toContain('@stylistic/max-len');
   });
 
   it.each([
@@ -104,9 +104,9 @@ describe('base: stylistic', () => {
       '@stylistic/brace-style',
     ],
   ])('%s', async (_title, code, rule) => {
-    const ruleIdsForBase = ruleIdsFor(base(), code, TS_FILE);
+    const ruleIds = ruleIdsFor(base(), code, TS_FILE);
 
-    await expect(ruleIdsForBase).resolves.toContain(rule);
+    await expect(ruleIds).resolves.toContain(rule);
   });
 
   it.each([
@@ -148,21 +148,21 @@ describe('base: stylistic', () => {
   it('exempts a line whose length is a URL', async () => {
     const code = `// https://example.com/${'a'.repeat(130)}\nexport const value = 1;\n`;
 
-    const ruleIdsForBase = ruleIdsFor(base(), code, TS_FILE);
-    await expect(ruleIdsForBase).resolves.not.toContain('@stylistic/max-len');
+    const ruleIds = ruleIdsFor(base(), code, TS_FILE);
+    await expect(ruleIds).resolves.not.toContain('@stylistic/max-len');
   });
 
   it('lets a string take the other quote rather than escape one', async () => {
-    const ruleIdsForBase = ruleIdsFor(base(), 'export const value = "it\'s";\n', TS_FILE);
+    const ruleIds = ruleIdsFor(base(), 'export const value = "it\'s";\n', TS_FILE);
 
-    await expect(ruleIdsForBase)
+    await expect(ruleIds)
       .resolves.not.toContain('@stylistic/quotes');
   });
 
   it('lets one property sit between braces on their own lines', async () => {
-    const ruleIdsForBase = ruleIdsFor(base(), 'export const value = {\n  a: 1,\n};\n', TS_FILE);
+    const ruleIds = ruleIdsFor(base(), 'export const value = {\n  a: 1,\n};\n', TS_FILE);
 
-    await expect(ruleIdsForBase)
+    await expect(ruleIds)
       .resolves.not.toContain('@stylistic/object-curly-newline');
   });
 
@@ -179,22 +179,22 @@ describe('base: stylistic', () => {
     const bareLast = 'export interface Shape {\n  a: string;\n  b: string\n}\n';
     const closed = 'export interface Shape {\n  a: string;\n  b: string;\n}\n';
 
-    const ruleIdsForBase = ruleIdsFor(base(), comma, TS_FILE);
-    await expect(ruleIdsForBase).resolves.toContain('@stylistic/member-delimiter-style');
-    const ruleIdsForBaseBareLast = ruleIdsFor(base(), bareLast, TS_FILE);
-    await expect(ruleIdsForBaseBareLast).resolves.toContain('@stylistic/member-delimiter-style');
-    const ruleIdsForBaseClosed = ruleIdsFor(base(), closed, TS_FILE);
-    await expect(ruleIdsForBaseClosed).resolves.not.toContain('@stylistic/member-delimiter-style');
+    const commaRuleIds = ruleIdsFor(base(), comma, TS_FILE);
+    await expect(commaRuleIds).resolves.toContain('@stylistic/member-delimiter-style');
+    const bareLastRuleIds = ruleIdsFor(base(), bareLast, TS_FILE);
+    await expect(bareLastRuleIds).resolves.toContain('@stylistic/member-delimiter-style');
+    const closedRuleIds = ruleIdsFor(base(), closed, TS_FILE);
+    await expect(closedRuleIds).resolves.not.toContain('@stylistic/member-delimiter-style');
   });
 
   it('separates a one-line type with semicolons and leaves its last member bare', async () => {
     const comma = 'export const value = (shape: { a: string, b: string }) => shape;\n';
     const bareLast = 'export const value = (shape: { a: string; b: string }) => shape;\n';
 
-    const ruleIdsForBase = ruleIdsFor(base(), comma, TS_FILE);
-    await expect(ruleIdsForBase).resolves.toContain('@stylistic/member-delimiter-style');
-    const ruleIdsForBaseBareLast = ruleIdsFor(base(), bareLast, TS_FILE);
-    await expect(ruleIdsForBaseBareLast).resolves.not.toContain('@stylistic/member-delimiter-style');
+    const commaRuleIds = ruleIdsFor(base(), comma, TS_FILE);
+    await expect(commaRuleIds).resolves.toContain('@stylistic/member-delimiter-style');
+    const bareLastRuleIds = ruleIdsFor(base(), bareLast, TS_FILE);
+    await expect(bareLastRuleIds).resolves.not.toContain('@stylistic/member-delimiter-style');
   });
 
   it.each([
@@ -264,8 +264,8 @@ describe('base: stylistic', () => {
   it('reports a braceless if', async () => {
     const code = 'export const pick = (flag) => {\n  if (flag) return 1;\n\n  return 2;\n};\n';
 
-    const ruleIdsForBase = ruleIdsFor(base(), code, TS_FILE);
-    await expect(ruleIdsForBase).resolves.toContain('curly');
+    const ruleIds = ruleIdsFor(base(), code, TS_FILE);
+    await expect(ruleIds).resolves.toContain('curly');
   });
 });
 
@@ -279,15 +279,15 @@ describe('base: ignores', () => {
   });
 
   it('reports nothing under a path the ignore list covers', async () => {
-    const baseOptions = { ignores: ['src/generated/**'] };
-    const ruleIds = await ruleIdsFor(base(baseOptions), doubleQuoted, built);
+    const config = base({ ignores: ['src/generated/**'] });
+    const ruleIds = await ruleIdsFor(config, doubleQuoted, built);
     expect(ruleIds).not.toContain('@stylistic/quotes');
   });
 
   it('reports nothing under a path only .gitignore covers', async () => {
-    const joinTmpdir = join(tmpdir(), 'linteljs-gitignore-');
-    const mkdtempJoin = await mkdtemp(joinTmpdir);
-    const root = await realpath(mkdtempJoin);
+    const prefix = join(tmpdir(), 'linteljs-gitignore-');
+    const tempDir = await mkdtemp(prefix);
+    const root = await realpath(tempDir);
 
     await writeFile(join(root, '.gitignore'), 'dist\n');
 
@@ -300,29 +300,28 @@ describe('base: ignores', () => {
     finally {
       spy.mockRestore();
 
-      const rmOptions = {
+      await rm(root, {
         recursive: true,
         force: true,
-      } as const;
-      await rm(root, rmOptions);
+      });
     }
   });
 
   it('names every block it writes', async () => {
-    const joinTmpdir = join(tmpdir(), 'linteljs-names-');
-    const mkdtempJoin = await mkdtemp(joinTmpdir);
-    const root = await realpath(mkdtempJoin);
+    const prefix = join(tmpdir(), 'linteljs-names-');
+    const tempDir = await mkdtemp(prefix);
+    const root = await realpath(tempDir);
 
     await writeFile(join(root, '.gitignore'), 'dist\n');
 
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
 
     try {
-      const baseOptions = {
+      const config = base({
         ignores: ['build/**'],
         naming: { 'src/**/*.ts': 'CAMEL_CASE' },
-      };
-      const names = ownBlockNames(base(baseOptions));
+      });
+      const names = ownBlockNames(config);
 
       const baseBlocks = names
         .filter((name) => {
@@ -347,17 +346,16 @@ describe('base: ignores', () => {
     finally {
       spy.mockRestore();
 
-      const rmOptions = {
+      await rm(root, {
         recursive: true,
         force: true,
-      } as const;
-      await rm(root, rmOptions);
+      });
     }
   });
 
   it('still builds a config where there is no .gitignore to read', async () => {
-    const joinTmpdir = join(tmpdir(), 'linteljs-nogit-');
-    const root = await mkdtemp(joinTmpdir);
+    const prefix = join(tmpdir(), 'linteljs-nogit-');
+    const root = await mkdtemp(prefix);
     const spy = vi.spyOn(process, 'cwd').mockReturnValue(root);
 
     try {
@@ -373,11 +371,10 @@ describe('base: ignores', () => {
     finally {
       spy.mockRestore();
 
-      const rmOptions = {
+      await rm(root, {
         recursive: true,
         force: true,
-      } as const;
-      await rm(root, rmOptions);
+      });
     }
   });
 });
@@ -389,12 +386,12 @@ describe('base: quality', () => {
   });
 
   it('reports console.log but not console.warn or console.error', async () => {
-    const logResult = await ruleIdsFor(base(), 'console.log(1);\n', TS_FILE);
-    expect(logResult).toContain('no-console');
-    const warnResult = await ruleIdsFor(base(), 'console.warn(1);\n', TS_FILE);
-    expect(warnResult).not.toContain('no-console');
-    const errorResult = await ruleIdsFor(base(), 'console.error(1);\n', TS_FILE);
-    expect(errorResult).not.toContain('no-console');
+    const logRuleIds = await ruleIdsFor(base(), 'console.log(1);\n', TS_FILE);
+    expect(logRuleIds).toContain('no-console');
+    const warnRuleIds = await ruleIdsFor(base(), 'console.warn(1);\n', TS_FILE);
+    expect(warnRuleIds).not.toContain('no-console');
+    const errorRuleIds = await ruleIdsFor(base(), 'console.error(1);\n', TS_FILE);
+    expect(errorRuleIds).not.toContain('no-console');
   });
 
   it('reports console.log in a .js file too', async () => {
@@ -406,14 +403,14 @@ describe('base: quality', () => {
     const code = "import { runInThisContext } from 'node:vm';\n\nexport const run = (source: string): unknown => {\n"
       + '  return runInThisContext(source);\n};\n';
 
-    const mocksResult = await ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts');
-    expect(mocksResult).not.toContain('sonarjs/code-eval');
+    const mocksRuleIds = await ruleIdsFor(base(), code, '__mocks__/chromeFixture.ts');
+    expect(mocksRuleIds).not.toContain('sonarjs/code-eval');
 
-    const nestedMocksResult = await ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts');
-    expect(nestedMocksResult).not.toContain('sonarjs/code-eval');
+    const nestedMocksRuleIds = await ruleIdsFor(base(), code, 'packages/app/__mocks__/chromeFixture.ts');
+    expect(nestedMocksRuleIds).not.toContain('sonarjs/code-eval');
 
-    const srcResult = await ruleIdsFor(base(), code, 'src/runner.ts');
-    expect(srcResult).toContain('sonarjs/code-eval');
+    const srcRuleIds = await ruleIdsFor(base(), code, 'src/runner.ts');
+    expect(srcRuleIds).toContain('sonarjs/code-eval');
   });
 
   it('grants a fixture nothing beyond that one rule', async () => {
@@ -422,18 +419,18 @@ describe('base: quality', () => {
   });
 
   it('allows console in a build script, and nowhere near it', async () => {
-    const scriptResult = await ruleIdsFor(base(), 'console.log(1);\n', 'scripts/generateIcons.js');
-    expect(scriptResult).not.toContain('no-console');
+    const scriptRuleIds = await ruleIdsFor(base(), 'console.log(1);\n', 'scripts/generateIcons.js');
+    expect(scriptRuleIds).not.toContain('no-console');
 
-    const nestedScriptResult = await ruleIdsFor(base(), 'console.log(1);\n', 'scripts/nested/build.ts');
-    expect(nestedScriptResult).not.toContain('no-console');
+    const nestedScriptRuleIds = await ruleIdsFor(base(), 'console.log(1);\n', 'scripts/nested/build.ts');
+    expect(nestedScriptRuleIds).not.toContain('no-console');
 
-    const srcScriptsResult = await ruleIdsFor(base(), 'console.log(1);\n', 'src/scripts/tool.ts');
-    expect(srcScriptsResult).toContain('no-console');
+    const srcScriptsRuleIds = await ruleIdsFor(base(), 'console.log(1);\n', 'src/scripts/tool.ts');
+    expect(srcScriptsRuleIds).toContain('no-console');
   });
 
   it('prefers destructuring in an object declaration only', async () => {
-    const joinList = [
+    const lines = [
       'const source = { width: 1, height: 2 };',
       'const pair = [1, 2];',
       'export const width = source.width;',
@@ -443,9 +440,9 @@ describe('base: quality', () => {
       'late = source.width;',
       '',
     ];
-    const code = joinList.join('\n');
-    const ruleIdsForBase = await ruleIdsFor(base(), code, 'src/tool.js');
-    const reported = ruleIdsForBase
+    const code = lines.join('\n');
+    const ruleIds = await ruleIdsFor(base(), code, 'src/tool.js');
+    const reported = ruleIds
       .filter((ruleId) => {
         return ruleId === 'prefer-destructuring';
       });
@@ -512,14 +509,14 @@ describe('base: restricted imports', () => {
       return `import { sortBy } from '${from}';\n\nexport const run = sortBy;\n`;
     };
 
-    const compatResult = await ruleIdsFor(base(), importing('es-toolkit/compat'), TS_FILE);
-    expect(compatResult).toContain('no-restricted-imports');
+    const compatRuleIds = await ruleIdsFor(base(), importing('es-toolkit/compat'), TS_FILE);
+    expect(compatRuleIds).toContain('no-restricted-imports');
 
-    const compatSubpathResult = await ruleIdsFor(base(), importing('es-toolkit/compat/array/sortBy'), TS_FILE);
-    expect(compatSubpathResult).toContain('no-restricted-imports');
+    const compatSubpathRuleIds = await ruleIdsFor(base(), importing('es-toolkit/compat/array/sortBy'), TS_FILE);
+    expect(compatSubpathRuleIds).toContain('no-restricted-imports');
 
-    const toolkitResult = await ruleIdsFor(base(), importing('es-toolkit'), TS_FILE);
-    expect(toolkitResult).not.toContain('no-restricted-imports');
+    const toolkitRuleIds = await ruleIdsFor(base(), importing('es-toolkit'), TS_FILE);
+    expect(toolkitRuleIds).not.toContain('no-restricted-imports');
   });
 });
 
@@ -541,24 +538,24 @@ describe('base: linteljs rules', () => {
       '@linteljs/interface-order',
     ],
   ])('%s', async (_title, code, rule) => {
-    const ruleIdsForBase = ruleIdsFor(base(), code, TS_FILE);
+    const ruleIds = ruleIdsFor(base(), code, TS_FILE);
 
-    await expect(ruleIdsForBase).resolves.toContain(rule);
+    await expect(ruleIds).resolves.toContain(rule);
   });
 
   it('reports nothing on a chain split one call per line', async () => {
     const code = 'export const names = (users: string[]): string[] => {\n  return users\n    .filter(Boolean)\n'
       + '    .map((user) => {\n      return user.trim();\n    });\n};\n';
 
-    const ruleIdsForBase = ruleIdsFor(base(), code, TS_FILE);
-    await expect(ruleIdsForBase).resolves.toEqual([]);
+    const ruleIds = ruleIdsFor(base(), code, TS_FILE);
+    await expect(ruleIds).resolves.toEqual([]);
   });
 
   it('reports a second interface of one name in a scope, and not a global augmentation', async () => {
     const code = 'export interface Shape {\n  a: string;\n}\n\nexport interface Shape {\n  b: string;\n}\n\n'
       + 'declare global {\n  interface Shape {\n    c: string;\n  }\n}\n';
-    const ruleIdsForBase = await ruleIdsFor(base(), code, TS_FILE);
-    const reported = ruleIdsForBase
+    const ruleIds = await ruleIdsFor(base(), code, TS_FILE);
+    const reported = ruleIds
       .filter((ruleId) => {
         return ruleId === '@linteljs/no-duplicate-interface';
       });
@@ -593,24 +590,24 @@ describe('base: linteljs rules', () => {
     const names = await ruleNamesFor(base(), 'src/lib/utils/sample.js');
 
     for (const ruleId of TYPESCRIPT_RULE_IDS) {
-      const stringNamesIncludes = String(names.includes(ruleId));
-      expect(`${ruleId}: ${stringNamesIncludes}`).toBe(`${ruleId}: false`);
+      const state = String(names.includes(ruleId));
+      expect(`${ruleId}: ${state}`).toBe(`${ruleId}: false`);
     }
   });
 
   it('keeps every one of them on for TypeScript and for an SFC, which is why they are restated at all', async () => {
-    const itList = [
+    const files = [
       'src/lib/utils/sample.ts',
       'src/components/Card.vue',
       'src/components/Card.svelte',
     ];
 
-    for (const file of itList) {
+    for (const file of files) {
       const enabled = await enabledRuleIdsFor(base(), file);
 
       for (const ruleId of TYPESCRIPT_RULE_IDS) {
-        const stringEnabledIncludes = String(enabled.includes(ruleId));
-        expect(`${file} ${ruleId}: ${stringEnabledIncludes}`).toBe(`${file} ${ruleId}: true`);
+        const state = String(enabled.includes(ruleId));
+        expect(`${file} ${ruleId}: ${state}`).toBe(`${file} ${ruleId}: true`);
       }
     }
   });
@@ -619,8 +616,8 @@ describe('base: linteljs rules', () => {
 describe('base: astro', () => {
   it('gives a .astro file every rule a TypeScript file gets, on request', async () => {
     const script = await enabledRuleIdsFor(base(), 'src/lib/utils/sample.ts');
-    const baseOptions = { astro: true } as const;
-    const component = await enabledRuleIdsFor(base(baseOptions), 'src/pages/index.astro');
+    const astroConfig = base({ astro: true });
+    const component = await enabledRuleIdsFor(astroConfig, 'src/pages/index.astro');
     const unordered = new Set(component);
 
     expect(unordered).toEqual(new Set(script));
@@ -628,11 +625,10 @@ describe('base: astro', () => {
 
   it('lints the frontmatter of a .astro file only on request', async () => {
     const page = '---\nfunction title() {\n  return 1;\n}\n---\n\n<h1>{title()}</h1>\n';
-    const baseOptions = { astro: true } as const;
-    const config = [...base(baseOptions), ...astro()];
-    const requested = await ruleIdsFor(config, page, 'src/pages/index.astro');
-    const ruleIdsForConfig = [...base(), ...astro()];
-    const unrequested = await ruleIdsFor(ruleIdsForConfig, page, 'src/pages/index.astro');
+    const requestedConfig = [...base({ astro: true }), ...astro()];
+    const requested = await ruleIdsFor(requestedConfig, page, 'src/pages/index.astro');
+    const unrequestedConfig = [...base(), ...astro()];
+    const unrequested = await ruleIdsFor(unrequestedConfig, page, 'src/pages/index.astro');
 
     expect(requested).toContain('func-style');
     expect(unrequested).not.toContain('func-style');
@@ -729,8 +725,8 @@ describe('base: resolver options', () => {
   });
 
   it('points the resolver at a named tsconfig when one is supplied, keeping the defaults', () => {
-    const baseOptions = { resolver: { project: 'packages/*/tsconfig.json' } } as const;
-    const settings = settingsOf(base(baseOptions));
+    const config = base({ resolver: { project: 'packages/*/tsconfig.json' } });
+    const settings = settingsOf(config);
 
     const expected = {
       typescript: {
@@ -745,8 +741,8 @@ describe('base: resolver options', () => {
 
   it('passes through the conditions a project asks for', () => {
     const conditionNames = ['import', 'types'];
-    const baseOptions = { resolver: { conditionNames } } as const;
-    const settings = settingsOf(base(baseOptions));
+    const config = base({ resolver: { conditionNames } });
+    const settings = settingsOf(config);
 
     const expected = {
       typescript: {
@@ -758,13 +754,13 @@ describe('base: resolver options', () => {
   });
 
   it('passes noWarnOnMultipleProjects through only when asked', () => {
-    const baseOptions = {
+    const config = base({
       resolver: {
         project: 'packages/*/tsconfig.json',
         noWarnOnMultipleProjects: true,
       },
-    } as const;
-    const settings = settingsOf(base(baseOptions));
+    });
+    const settings = settingsOf(config);
 
     const expected = {
       'import-x/resolver': {

@@ -40,7 +40,7 @@ const SFC_FIXTURES = join(import.meta.dirname, '../../__mocks__/fixtures/sfc');
 const TYPED_FILE = join(import.meta.dirname, '../../__mocks__/fixtures/typed/floating.ts');
 
 const sortedFor = (specifier: string): string => {
-  const joinList = [
+  const lines = [
     `import framework from '${specifier}';`,
     '',
     "import { z } from 'zod';",
@@ -48,7 +48,7 @@ const sortedFor = (specifier: string): string => {
     'export const value = [framework, z];',
     '',
   ];
-  return joinList.join('\n');
+  return lines.join('\n');
 };
 
 const FRAMEWORK_PACKAGES: [Framework, string][] = [
@@ -75,9 +75,8 @@ describe('composeConfig', () => {
   });
 
   it('composes the type-aware layer on request', async () => {
-    const composeConfigOptions = { typescript: true } as const;
-    const composeConfigTypescript = await composeConfig(composeConfigOptions);
-    const ruleIds = await ruleIdsForFile(composeConfigTypescript, TYPED_FILE);
+    const config = await composeConfig({ typescript: true });
+    const ruleIds = await ruleIdsForFile(config, TYPED_FILE);
 
     expect(ruleIds).toContain('@typescript-eslint/no-floating-promises');
   });
@@ -85,12 +84,11 @@ describe('composeConfig', () => {
   it.each(FRAMEWORK_PACKAGES)('gives base the sort bucket %s owns', async (framework, specifier) => {
     const code = sortedFor(specifier);
 
-    const composeConfigOptions = { framework } as const;
-    const composeConfigFramework = await composeConfig(composeConfigOptions);
-    const config = [...composeConfigFramework, ...NEXT_PROJECT];
+    const composed = await composeConfig({ framework });
+    const config = [...composed, ...NEXT_PROJECT];
     const own = await ruleIdsFor(config, code, 'src/app/entry.ts');
-    const composeConfigResult = await composeConfig();
-    const none = await ruleIdsFor(composeConfigResult, code, 'src/app/entry.ts');
+    const defaults = await composeConfig();
+    const none = await ruleIdsFor(defaults, code, 'src/app/entry.ts');
 
     expect(own).not.toContain(SORT_RULE);
     expect(none).toContain(SORT_RULE);
@@ -108,11 +106,10 @@ describe('composeConfig', () => {
       'svelte/',
     ],
   ])('orders %s after typescript, so its component still parses', async (framework, fixture, prefix) => {
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       framework: framework === 'vue' ? 'vue' : 'svelte',
       typescript: true,
-    } as const;
-    const config = await composeConfig(composeConfigOptions);
+    });
     const messages = await messagesForFile(config, join(SFC_FIXTURES, fixture));
 
     const fatal = messages
@@ -131,7 +128,7 @@ describe('composeConfig', () => {
   });
 
   it('puts react underneath next rather than beside it', async () => {
-    const joinList = [
+    const lines = [
       "import { useEffect } from 'react';",
       '',
       'export const Page = ({ a, b }) => {',
@@ -143,11 +140,10 @@ describe('composeConfig', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
-    const composeConfigOptions = { framework: 'next' } as const;
-    const composeConfigNext = await composeConfig(composeConfigOptions);
-    const ruleIds = await ruleIdsFor(composeConfigNext, code, 'src/app/page.tsx');
+    const config = await composeConfig({ framework: 'next' });
+    const ruleIds = await ruleIdsFor(config, code, 'src/app/page.tsx');
 
     expect(ruleIds).toContain('@next/next/no-img-element');
     expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
@@ -155,12 +151,10 @@ describe('composeConfig', () => {
 
   it('composes react-native as react without the accessibility preset', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" src="/b.png" />;\n};\n';
-    const composeConfigOptions = { framework: 'react-native' } as const;
-    const composeConfigReactNative = await composeConfig(composeConfigOptions);
-    const native = await ruleIdsFor(composeConfigReactNative, code, 'src/Logo.tsx');
-    const options = { framework: 'react' } as const;
-    const composeConfigReact = await composeConfig(options);
-    const web = await ruleIdsFor(composeConfigReact, code, 'src/Logo.tsx');
+    const nativeConfig = await composeConfig({ framework: 'react-native' });
+    const native = await ruleIdsFor(nativeConfig, code, 'src/Logo.tsx');
+    const webConfig = await composeConfig({ framework: 'react' });
+    const web = await ruleIdsFor(webConfig, code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
     expect(native).not.toContain('jsx-a11y-x/alt-text');
@@ -168,7 +162,7 @@ describe('composeConfig', () => {
   });
 
   it('composes the library layers on top of the framework', async () => {
-    const joinList = [
+    const lines = [
       "import { useQuery } from '@tanstack/react-query';",
       '',
       'export const useThing = (id) => {',
@@ -176,20 +170,19 @@ describe('composeConfig', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['tanstack-query'],
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
 
     const ruleIds = await ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts');
     expect(ruleIds).toContain('@tanstack/query/exhaustive-deps');
   });
 
   it('composes the tanstack-router layer through the same door', async () => {
-    const joinList = [
+    const lines = [
       "import { createFileRoute } from '@tanstack/react-router';",
       '',
       "export const Route = createFileRoute('/')({",
@@ -198,12 +191,11 @@ describe('composeConfig', () => {
       '});',
       '',
     ];
-    const code = joinList.join('\n');
-    const composeConfigOptions: ComposeConfigOptions = {
+    const code = lines.join('\n');
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['tanstack-router'],
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
 
     const ruleIds = await ruleIdsFor(config, code, 'src/routes/index.tsx');
     expect(ruleIds).toContain('@tanstack/router/create-route-property-order');
@@ -211,11 +203,10 @@ describe('composeConfig', () => {
 
   it('composes the tailwind layer through the same door', async () => {
     const code = 'export const Card = () => {\n  return <div className="p-2 p-2">x</div>;\n};\n';
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['tailwind'],
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
     const pinned = [...config, {
       settings: { 'better-tailwindcss': { cwd: join(import.meta.dirname, '../..') } },
     }];
@@ -225,12 +216,11 @@ describe('composeConfig', () => {
   });
 
   it('hands the alias options to the typescript layer', async () => {
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       typescript: true,
       aliasExempt: ['src/routes.ts'],
       enforceRelativeImports: true,
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
     const block = config
       .find(({ name }) => {
         return name === '@linteljs/typescript/prefer-alias';
@@ -246,11 +236,10 @@ describe('composeConfig', () => {
   });
 
   it('hands the tailwind entry point to the tailwind layer', async () => {
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       libraries: ['tailwind'],
       tailwindEntryPoint: './src/app/globals.css',
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
     const block = config
       .find(({ name }) => {
         return name === '@linteljs/tailwind';
@@ -261,7 +250,7 @@ describe('composeConfig', () => {
   });
 
   it('composes the stylex layer through the same door', async () => {
-    const joinList = [
+    const lines = [
       "import * as stylex from '@stylexjs/stylex';",
       '',
       "const sheet = stylex.create({ card: { background: 'var(--card)' } });",
@@ -269,20 +258,18 @@ describe('composeConfig', () => {
       'export const styles = { card: stylex.props(sheet.card) };',
       '',
     ];
-    const code = joinList.join('\n');
-    const composeConfigOptions: ComposeConfigOptions = {
+    const code = lines.join('\n');
+    const config = await composeConfig({
       framework: 'react',
       libraries: ['stylex'],
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
 
     const ruleIds = await ruleIdsFor(config, code, 'src/components/card/styles.ts');
     expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 
   it('puts vue underneath nuxt rather than beside it', async () => {
-    const composeConfigOptions = { framework: 'nuxt' } as const;
-    const config = await composeConfig(composeConfigOptions);
+    const config = await composeConfig({ framework: 'nuxt' });
 
     const enabledRuleIds = await enabledRuleIdsFor(config, 'src/components/badge.vue');
     expect(enabledRuleIds).toContain('vue/multi-word-component-names');
@@ -295,71 +282,64 @@ describe('composeConfig', () => {
     const code = "import { it } from 'vitest';\n\nit.only('runs', () => {\n  expect(1).toBe(1);\n});\n";
     const path = 'src/lib/utils/sample.test.ts';
 
-    const composeConfigOptions = { vitest: true } as const;
-    const composeConfigVitest = await composeConfig(composeConfigOptions);
-    const vitestRuleIds = await ruleIdsFor(composeConfigVitest, code, path);
+    const vitestConfig = await composeConfig({ vitest: true });
+    const vitestRuleIds = await ruleIdsFor(vitestConfig, code, path);
     expect(vitestRuleIds).toContain('vitest/no-focused-tests');
 
-    const composeConfigResult = await composeConfig();
-    const plainRuleIds = await ruleIdsFor(composeConfigResult, code, path);
+    const plainConfig = await composeConfig();
+    const plainRuleIds = await ruleIdsFor(plainConfig, code, path);
     expect(plainRuleIds).not.toContain('vitest/no-focused-tests');
   });
 
   it('composes the html layer on request and not otherwise', async () => {
     const code = '<!doctype html>\n<html lang="en">\n  <body><img src="a.png"></body>\n</html>\n';
 
-    const composeConfigOptions: ComposeConfigOptions = {
+    const htmlConfig = await composeConfig({
       html: true,
       typescript: true,
-    } as const;
-    const composeConfigHtmlTypescript = await composeConfig(composeConfigOptions);
-    const ruleIds = ruleIdsFor(composeConfigHtmlTypescript, code, 'index.html');
+    });
+    const ruleIds = ruleIdsFor(htmlConfig, code, 'index.html');
 
     await expect(ruleIds).resolves.toContain('@html-eslint/require-img-alt');
 
-    const options = { typescript: true } as const;
-    const composeConfigTypescript = await composeConfig(options);
-    const typescriptRuleIds = await ruleIdsFor(composeConfigTypescript, code, 'index.html');
+    const typescriptConfig = await composeConfig({ typescript: true });
+    const typescriptRuleIds = await ruleIdsFor(typescriptConfig, code, 'index.html');
     expect(typescriptRuleIds).not.toContain('@html-eslint/require-img-alt');
   });
 
   it('composes the astro layer on request and not otherwise', async () => {
     const page = "---\nconst title = 'Home';\n---\n\n<img src='/a.png' />\n";
 
-    const composeConfigOptions: ComposeConfigOptions = {
+    const astroConfig = await composeConfig({
       astro: true,
       typescript: true,
-    } as const;
-    const composeConfigAstroTypescript = await composeConfig(composeConfigOptions);
-    const ruleIds = ruleIdsFor(composeConfigAstroTypescript, page, 'src/pages/index.astro');
+    });
+    const ruleIds = ruleIdsFor(astroConfig, page, 'src/pages/index.astro');
 
     await expect(ruleIds).resolves.toContain('astro/jsx-a11y/alt-text');
 
-    const options = { typescript: true } as const;
-    const composeConfigTypescript = await composeConfig(options);
-    const typescriptRuleIds = await ruleIdsFor(composeConfigTypescript, page, 'src/pages/index.astro');
+    const typescriptConfig = await composeConfig({ typescript: true });
+    const typescriptRuleIds = await ruleIdsFor(typescriptConfig, page, 'src/pages/index.astro');
     expect(typescriptRuleIds).not.toContain('astro/jsx-a11y/alt-text');
   });
 
   it('widens base to the frontmatter when astro is asked for', async () => {
     const page = '---\nfunction title() {\n  return 1;\n}\n---\n\n<h1>{title()}</h1>\n';
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       astro: true,
       typescript: true,
-    } as const;
-    const config = await composeConfig(composeConfigOptions);
+    });
     const ruleIds = await ruleIdsFor(config, page, 'src/pages/index.astro');
 
     expect(ruleIds).toContain('func-style');
   });
 
   it('composes the astro layer beside a hosted framework rather than instead of one', async () => {
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       astro: true,
       framework: 'solid',
       typescript: true,
-    } as const;
-    const config = await composeConfig(composeConfigOptions);
+    });
     const rules = config
       .flatMap((entry) => {
         return Object.keys(entry.rules ?? {});
@@ -381,15 +361,14 @@ describe('composeConfig', () => {
   });
 
   it('passes the base options through under the names base already uses', async () => {
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       framework: 'react',
       ignores: ['generated/**'],
       naming: {
         'src/**/*.ts': 'CAMEL_CASE',
         'generated/**/*.ts': 'CAMEL_CASE',
       },
-    };
-    const config = await composeConfig(composeConfigOptions);
+    });
 
     const ruleIds = await ruleIdsFor(config, 'export const value = 1;\n', 'src/lib/utils/Bad-Name.ts');
     expect(ruleIds).toContain('check-file/filename-naming-convention');
@@ -407,12 +386,12 @@ const namesUnderTwoIds = (ruleIds: string[]): string[] => {
   for (const ruleId of ruleIds) {
     const name = ruleId.slice(ruleId.lastIndexOf('/') + 1);
 
-    const setValue = [...idsByName.get(name) ?? [], ruleId];
-    idsByName.set(name, setValue);
+    const ids = [...idsByName.get(name) ?? [], ruleId];
+    idsByName.set(name, ids);
   }
 
-  const filterList = [...idsByName.values()];
-  return filterList
+  const idGroups = [...idsByName.values()];
+  return idGroups
     .filter((ids) => {
       return ids.length > 1;
     })
@@ -500,14 +479,13 @@ const DUPLICATE_CASES: [string, Framework | undefined, string][] = [
 
 describe('one owner per rule name', () => {
   it.each(DUPLICATE_CASES)('enables no rule name under two ids: %s', async (_label, framework, filePath) => {
-    const composeConfigOptions: ComposeConfigOptions = {
+    const config = await composeConfig({
       ...WIDEST,
       framework,
-    } as const;
-    const config = await composeConfig(composeConfigOptions);
+    });
 
-    const enabledRuleIdsForConfig = await enabledRuleIdsFor(config, filePath);
-    const duplicated = namesUnderTwoIds(enabledRuleIdsForConfig)
+    const enabled = await enabledRuleIdsFor(config, filePath);
+    const duplicated = namesUnderTwoIds(enabled)
       .filter((pair) => {
         return !LOOKALIKES.includes(pair);
       });
@@ -635,12 +613,12 @@ describe('layer order', () => {
         ...layer(),
       ];
       const correct = await messagesForFile(config, file);
-      const messagesForFileConfig = [
+      const misordered = [
         ...base(),
         ...layer(),
         ...typescript(),
       ];
-      const wrong = await messagesForFile(messagesForFileConfig, file);
+      const wrong = await messagesForFile(misordered, file);
 
       const fatals = fatalsIn(correct);
       expect(fatals).toEqual([]);

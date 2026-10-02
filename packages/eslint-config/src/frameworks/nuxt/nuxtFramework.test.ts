@@ -41,8 +41,8 @@ describe('nuxt', () => {
     const ruleIds = await ruleIdsForFile(layer, join(SFC_FIXTURES, 'Inaccessible.vue'));
 
     expect(ruleIds).not.toContain(null);
-    const anyMatch = ruleIds.some(startsWith('vue'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('vue'));
+    expect(pluginReported).toBe(true);
   });
 
   it.each([
@@ -63,14 +63,14 @@ describe('nuxt', () => {
     'nuxt/app',
     '#imports',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: nuxtGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: nuxtGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 
   it('leaves ~/ out of the framework bucket', async () => {
-    const baseOptions = { frameworkGroup: nuxtGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), '~/utils');
+    const config = base({ frameworkGroup: nuxtGroup });
+    const actual = await sortsAheadOfPackages(config, '~/utils');
     expect(actual).toBe(false);
   });
 

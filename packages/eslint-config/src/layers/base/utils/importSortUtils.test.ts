@@ -84,30 +84,27 @@ describe('buildGroups', () => {
   });
 
   it('gives an alias no bucket names its own group rather than losing it to node_modules', () => {
-    const aliases = { '@/*': './src/*' } as const;
-    const groups = buildGroups(aliases);
+    const groups = buildGroups({ '@/*': './src/*' });
 
     const actual = indexOfPattern(groups, '^@(?:/|$)');
     expect(actual).toBeGreaterThan(indexOfPattern(groups, String.raw`^@?\w`));
   });
 
   it('sorts the unnamed aliases so the group is stable between runs', () => {
-    const aliases = {
+    const groups = buildGroups({
       '@widgets/*': './src/widgets/*',
       '@assets/*': './src/assets/*',
-    } as const;
-    const groups = buildGroups(aliases);
+    });
 
     const expected = ['^@assets(?:/|$)', '^@widgets(?:/|$)'];
     expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(expected);
   });
 
   it('matches a bare alias as well as a deep one', () => {
-    const aliases = {
+    const groups = buildGroups({
       '@engine': './src/engine',
       '@utils/*': './src/utils/*',
-    } as const;
-    const groups = buildGroups(aliases);
+    });
     const engine = new RegExp(groups
       .flat()
       .find((pattern) => {
@@ -125,9 +122,8 @@ describe('buildGroups', () => {
   });
 
   it('matches a bare alias in a named bucket too', () => {
-    const aliases = { '@utils': './src/utils' } as const;
     const utils = new RegExp(
-      buildGroups(aliases)
+      buildGroups({ '@utils': './src/utils' })
         .flat()
         .find((pattern) => {
           return pattern.startsWith('^@utils');
@@ -141,16 +137,15 @@ describe('buildGroups', () => {
   });
 
   it('escapes an alias whose name is regex syntax', () => {
-    const aliases = {
+    const patterns = buildGroups({
       '$lib': './src/lib',
       '$lib/*': './src/lib/*',
-    } as const;
-    const patterns = buildGroups(aliases).flat();
+    }).flat();
 
     expect(patterns).toContain(String.raw`^\$lib(?:/|$)`);
     expect(patterns).not.toContain('^$lib(?:/|$)');
-    const startsWithLib = '$lib/store/user'.startsWith('$lib/');
-    expect(startsWithLib).toBe(true);
+    const prefixed = '$lib/store/user'.startsWith('$lib/');
+    expect(prefixed).toBe(true);
     const escapedMatch = new RegExp(String.raw`^\$lib(?:/|$)`).exec('$lib/store/user');
     expect(escapedMatch).not.toBeNull();
     const rawMatch = new RegExp('^$lib(?:/|$)').exec('$lib/store/user');
@@ -177,11 +172,11 @@ describe('buildGroups', () => {
       '@components',
       '@mocks',
     ];
-    const mapList = [...named, '@widgets'];
-    const aliases = Object.fromEntries(mapList
+    const aliasNames = [...named, '@widgets'];
+    const aliases = Object.fromEntries(aliasNames
       .map((name) => {
-        const aliasEntry = [`${name}/*`, `./src/${name.slice(1)}/*`] as const;
-        return aliasEntry;
+        const entry = [`${name}/*`, `./src/${name.slice(1)}/*`] as const;
+        return entry;
       }));
 
     const pattern = (name: string): string => {
@@ -232,11 +227,10 @@ describe('buildGroups', () => {
   });
 
   it('matches an alias whose wildcard sits mid-key', () => {
-    const aliases = {
+    const patterns = buildGroups({
       '@features/*/api': './src/features/*/api',
       '@app/shared/*': './src/app/shared/*',
-    } as const;
-    const patterns = buildGroups(aliases).flat();
+    }).flat();
 
     expect(patterns).toContain('^@features(?:/|$)');
     expect(patterns).toContain('^@app/shared(?:/|$)');
@@ -253,14 +247,14 @@ describe('buildGroups', () => {
 
 describe('base: simple-import-sort', () => {
   it('reports a misordered import block', async () => {
-    const joinList = [
+    const lines = [
       "import { helper } from './helper';",
       "import { readFile } from 'node:fs/promises';",
       '',
       'export const value = helper(readFile);',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const ruleIds = await ruleIdsFor(base(), code, 'src/lib/utils/sample.ts');
     expect(ruleIds).toContain('simple-import-sort/imports');

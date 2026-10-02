@@ -32,8 +32,8 @@ describe('svelte', () => {
     const ruleIds = await ruleIdsForFile(config, join(SFC_FIXTURES, 'Page.svelte'));
 
     expect(ruleIds).not.toContain(null);
-    const anyMatch = ruleIds.some(startsWith('svelte/'));
-    expect(anyMatch).toBe(true);
+    const pluginReported = ruleIds.some(startsWith('svelte/'));
+    expect(pluginReported).toBe(true);
   });
 
   it.each([
@@ -48,11 +48,10 @@ describe('svelte', () => {
     const naming = { 'src/**/!(*.test|*.spec).ts': 'CAMEL_CASE' } as const;
     const code = 'export const value = 1;\n';
 
-    const baseOptions = { naming } as const;
-    const unexempted = await ruleIdsFor(base(baseOptions), code, path);
-    const options = { naming } as const;
-    const config = [...base(options), ...svelte()];
-    const exempted = await ruleIdsFor(config, code, path);
+    const baseConfig = base({ naming });
+    const unexempted = await ruleIdsFor(baseConfig, code, path);
+    const svelteConfig = [...base({ naming }), ...svelte()];
+    const exempted = await ruleIdsFor(svelteConfig, code, path);
 
     const included = unexempted.includes(FILENAME_RULE);
     expect(included).toBe(reserved);
@@ -65,12 +64,11 @@ describe('svelte', () => {
   ])('holds check-file off the route file %s', async (path) => {
     const naming = { 'src/**/*.{js,svelte}': 'CAMEL_CASE' } as const;
 
-    const baseOptions = { naming } as const;
-    const baseEnabled = await enabledRuleIdsFor(base(baseOptions), path);
+    const baseConfig = base({ naming });
+    const baseEnabled = await enabledRuleIdsFor(baseConfig, path);
     expect(baseEnabled).toContain(FILENAME_RULE);
-    const options = { naming } as const;
-    const config = [...base(options), ...svelte()];
-    const svelteEnabled = await enabledRuleIdsFor(config, path);
+    const svelteConfig = [...base({ naming }), ...svelte()];
+    const svelteEnabled = await enabledRuleIdsFor(svelteConfig, path);
     expect(svelteEnabled).not.toContain(FILENAME_RULE);
   });
 
@@ -116,8 +114,8 @@ describe('svelte', () => {
     '$app/navigation',
     '$env/static/public',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const baseOptions = { frameworkGroup: svelteGroup } as const;
-    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
+    const config = base({ frameworkGroup: svelteGroup });
+    const actual = await sortsAheadOfPackages(config, specifier);
     expect(actual).toBe(true);
   });
 
@@ -138,8 +136,7 @@ describe('svelte', () => {
 
     const config = [...base(), ...svelte()];
     const atLimit = await ruleIdsForSfc(config, component(350), 'Big.svelte');
-    const ruleIdsForSfcConfig = [...base(), ...svelte()];
-    const overLimit = await ruleIdsForSfc(ruleIdsForSfcConfig, component(351), 'Big.svelte');
+    const overLimit = await ruleIdsForSfc(config, component(351), 'Big.svelte');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');
@@ -153,8 +150,7 @@ describe('svelte', () => {
 
     const config = [...base(), ...svelte()];
     const atLimit = await ruleIdsForSfc(config, component(350), 'Big.svelte');
-    const ruleIdsForSfcConfig = [...base(), ...svelte()];
-    const overLimit = await ruleIdsForSfc(ruleIdsForSfcConfig, component(351), 'Big.svelte');
+    const overLimit = await ruleIdsForSfc(config, component(351), 'Big.svelte');
 
     expect(atLimit).not.toContain('max-lines-per-function');
     expect(overLimit).toContain('max-lines-per-function');

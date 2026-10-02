@@ -31,7 +31,7 @@ const layer = [
 const IMPORT = "import * as stylex from '@stylexjs/stylex';";
 
 const moduleWith = (rules: string, preamble: string[] = []): string => {
-  const joinList = [
+  const lines = [
     IMPORT,
     ...preamble,
     '',
@@ -42,31 +42,29 @@ const moduleWith = (rules: string, preamble: string[] = []): string => {
     'export const styles = { card: stylex.props(sheet.card) };',
     '',
   ];
-  return joinList.join('\n');
+  return lines.join('\n');
 };
 
 const lintCard = async (code: string, fix: boolean): Promise<ESLint.LintResult | undefined> => {
-  const eslintOptions: ESLint.Options = {
+  const eslint = new ESLint({
     overrideConfigFile: true,
     overrideConfig: layer,
     fix,
     fixTypes: ['problem'],
-  };
-  const eslint = new ESLint(eslintOptions);
-  const lintTextOptions = { filePath: 'src/components/card/styles.ts' } as const;
-  const [result] = await eslint.lintText(code, lintTextOptions);
+  });
+  const [result] = await eslint.lintText(code, { filePath: 'src/components/card/styles.ts' });
 
   return result;
 };
 
 const fixed = async (code: string): Promise<string | undefined> => {
-  const lintCardCode = await lintCard(code, true);
-  return lintCardCode?.output;
+  const result = await lintCard(code, true);
+  return result?.output;
 };
 
 const lint = async (code: string): Promise<string[]> => {
-  const lintCardCode = await lintCard(code, false);
-  return lintCardCode?.messages
+  const result = await lintCard(code, false);
+  return result?.messages
     .map((message) => {
       return `${message.ruleId ?? ''}: ${message.message
         .split('\n')
@@ -123,8 +121,8 @@ describe('stylex', () => {
   it('takes a custom property as a key', async () => {
     const ruleIds = await ruleIdsFor(layer, moduleWith("'--card-gap': '4px'"), 'src/components/card/styles.ts');
 
-    const anyMatch = ruleIds.some(startsWith('@stylexjs/'));
-    expect(anyMatch).toBe(false);
+    const pluginReported = ruleIds.some(startsWith('@stylexjs/'));
+    expect(pluginReported).toBe(false);
   });
 
   it('names its one block', () => {
@@ -134,7 +132,7 @@ describe('stylex', () => {
   });
 
   it('reports a style nothing reads', async () => {
-    const joinList = [
+    const lines = [
       IMPORT,
       '',
       "const sheet = stylex.create({ card: { color: 'red' }, unused: { color: 'blue' } });",
@@ -142,7 +140,7 @@ describe('stylex', () => {
       'export const styles = { card: stylex.props(sheet.card) };',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
     expect(ruleIds).toContain('@stylexjs/no-unused');
@@ -157,7 +155,7 @@ describe('stylex', () => {
   });
 
   it('reports className beside a spread of stylex.props', async () => {
-    const joinList = [
+    const lines = [
       IMPORT,
       '',
       "const sheet = stylex.create({ card: { color: 'red' } });",
@@ -167,7 +165,7 @@ describe('stylex', () => {
       '};',
       '',
     ];
-    const code = joinList.join('\n');
+    const code = lines.join('\n');
 
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
     expect(ruleIds).toContain('@stylexjs/no-conflicting-props');
@@ -246,8 +244,8 @@ describe('stylex', () => {
     );
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
 
-    const anyMatch = ruleIds.some(startsWith('@stylexjs/'));
-    expect(anyMatch).toBe(false);
+    const pluginReported = ruleIds.some(startsWith('@stylexjs/'));
+    expect(pluginReported).toBe(false);
   });
 
   it.each([
