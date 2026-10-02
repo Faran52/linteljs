@@ -13,3 +13,12 @@ export const TYPESCRIPT_FILES = [
 
 // A childless node's children: the recursive JSX walks end on it.
 export const NO_CHILDREN: readonly never[] = [];
+
+// Nodes that wrap an expression without changing its value: an optional chain, or a TS type wrapper.
+export const TRANSPARENT_WRAPPER_TYPES = new Set([
+  'ChainExpression',
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+]);

@@ -149,7 +149,11 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
 });
 
 tsRuleTester.run('prefer-await-to-then (typescript)', preferAwaitToThen, {
-  valid: ['(promise as Promise<number>).then(parse);'],
+  valid: [
+    '(promise as Promise<number>).then(parse);',
+    'async function load(): Promise<number> {\n  return promise.then(parse) as Promise<number>;\n}',
+    'async function load(): Promise<number> {\n  return promise.then(parse)!;\n}',
+  ],
   invalid: [
     {
       code: 'function load(): Promise<number> {\n  return (promise as Promise<number>).then(parse);\n}',

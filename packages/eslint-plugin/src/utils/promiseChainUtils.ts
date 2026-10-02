@@ -1,3 +1,5 @@
+import { TRANSPARENT_WRAPPER_TYPES } from '../constants.ts';
+
 import {
   type Ancestor,
   type AncestorReader,
@@ -19,16 +21,19 @@ const isCalledMember = (node: RuleNode): node is MemberExpressionNode => {
     && node.parent.callee === node;
 };
 
-// An optional chain is wrapped in a ChainExpression, so the await or return sits above it.
 const climbChain = (current: RuleNode): RuleNode => {
   // Only Program has no parent.
   const parent = mustFind(current.parent);
+
+  if (TRANSPARENT_WRAPPER_TYPES.has(parent.type)) {
+    return climbChain(parent);
+  }
 
   if (isCalledMember(parent) && parent.object === current) {
     return climbChain(parent.parent);
   }
 
-  return parent.type === 'ChainExpression' ? parent : current;
+  return current;
 };
 
 export const outermostCall = (node: RuleNode): RuleNode => {

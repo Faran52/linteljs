@@ -1,4 +1,5 @@
 import { sourceCodeFrom } from '@mocks/sourceCodeFrom';
+import tseslint from 'typescript-eslint';
 import {
   describe,
   expect,
@@ -40,6 +41,13 @@ const STOPS_WHERE_IT_IS: [string, string, string][] = [
   ],
 ];
 
+const TYPE_WRAPPERS: [string, string][] = [
+  ['TSAsExpression', 'await (fetch(url).catch(handle) as Promise<Data>);\n'],
+  ['TSNonNullExpression', 'await fetch(url).catch(handle)!;\n'],
+  ['TSSatisfiesExpression', 'await (fetch(url).catch(handle) satisfies Promise<Data>);\n'],
+  ['TSTypeAssertion', 'await <Promise<Data>>fetch(url).catch(handle);\n'],
+];
+
 describe('outermostCall', () => {
   it('climbs to the end of a fluent chain', () => {
     const parsed = sourceCodeFrom('fetch(url).then(parse).catch(handle);\n');
@@ -66,6 +74,27 @@ describe('outermostCall', () => {
 
     expect(outermostCall(parsed.firstNode('CallExpression')))
       .toBe(parsed.firstNode('ChainExpression'));
+  });
+
+  it.each(TYPE_WRAPPERS)('climbs through a %s around the chain', (type, code) => {
+    const parsed = sourceCodeFrom(code, tseslint.parser);
+    const outer = outermostCall(parsed.lastNode('CallExpression'));
+
+    expect(outer).toBe(parsed.firstNode(type));
+  });
+
+  it('climbs on through a type wrapper inside the chain', () => {
+    const parsed = sourceCodeFrom('(fetch(url) as Promise<Data>).catch(handle);\n', tseslint.parser);
+    const outer = outermostCall(parsed.lastNode('CallExpression'));
+
+    expect(outer).toBe(parsed.firstNode('CallExpression'));
+  });
+
+  it('climbs on past a parenthesised optional chain', () => {
+    const parsed = sourceCodeFrom('(api?.fetch(url)).catch(handle);\n');
+    const outer = outermostCall(parsed.lastNode('CallExpression'));
+
+    expect(outer).toBe(parsed.firstNode('CallExpression'));
   });
 });
 
@@ -102,6 +131,16 @@ describe('isAwaitedOrAsyncReturn', () => {
 
   it('reports false for a return from a plain function', () => {
     expect(answerFor('function run() {\n  return queue.catch(log);\n}\n')).toBe(false);
+  });
+
+  it('reports true for a type-asserted return from an async function', () => {
+    const parsed = sourceCodeFrom(
+      'async function run() {\n  return queue.catch(log) as Promise<void>;\n}\n',
+      tseslint.parser,
+    );
+    const answer = isAwaitedOrAsyncReturn(parsed.sourceCode, parsed.lastNode('CallExpression'));
+
+    expect(answer).toBe(true);
   });
 
   it('reads the nearest enclosing function, not the outermost', () => {

@@ -99,6 +99,10 @@ when a version's change lives in a sibling it is described there instead:
   inside `stylex.create()`, which the compiler refuses.
 - `prefer-await-to-then` no longer reports a chain in a block at the top level of a file, such as an `if` or a
   `for` body, which no function encloses and so none could make async.
+- `prefer-try-catch` reports an awaited or async-returned chain behind a type wrapper, such as
+  `await (fetch(url).catch(handle) as Promise<Data>)` or `await fetch(url).catch(handle)!`, which it and
+  `prefer-await-to-then` both skipped. `prefer-await-to-then` now hands `return p.then(x) as Promise<T>` in an
+  async function off to it.
 - A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
 
 ## 1.5.3

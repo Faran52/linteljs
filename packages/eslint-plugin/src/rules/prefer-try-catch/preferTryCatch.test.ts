@@ -1,4 +1,4 @@
-import { jsRuleTester } from '@mocks/ruleTesters';
+import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
 import { preferTryCatch } from './preferTryCatch.ts';
 
@@ -53,6 +53,12 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
   return [first, second];
 }`,
     'async function load() {\n  return await Promise.allSettled([fetch(one).catch(handle)]);\n}',
+
+    'async function* stream() {\n  yield queue.catch(report);\n}',
+    'const load = async () => items.map((item) => item.catch(handle));',
+    'async function load() {\n  return await (0, fetch(url).catch(handle));\n}',
+    // One spread argument may hold only the fulfilment handler, so it is left alone.
+    'async function load() {\n  return await fetch(url).then(...handlers);\n}',
   ],
   invalid: [
     {
@@ -137,6 +143,82 @@ jsRuleTester.run('prefer-try-catch', preferTryCatch, {
     },
     {
       code: 'async function load() {\n  return await fetch(url).then(parse).catch(handle);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await fetch(url).catch(...handlers);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await fetch(url).then(parse, ...rest);\n}',
+      errors: [{ messageId: 'preferTryCatchOverThenHandler' }],
+    },
+    {
+      code: 'async function load() {\n  return await fetch(url).then(parse, handle, extra);\n}',
+      errors: [{ messageId: 'preferTryCatchOverThenHandler' }],
+    },
+    {
+      code: 'async function load() {\n  return await fetch(url)?.catch(handle);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await (api?.fetch(url)).catch(handle);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: [
+        'async function load() {',
+        '  return await fetch(url) // fetch first',
+        '    /* then recover */ .catch(/* log */ handle);',
+        '}',
+      ].join('\n'),
+      errors: [
+        {
+          messageId: 'preferTryCatchOverCatch',
+          line: 3,
+          column: 25,
+        },
+      ],
+    },
+  ],
+});
+
+tsRuleTester.run('prefer-try-catch (typescript)', preferTryCatch, {
+  valid: [
+    'function load() {\n  return fetch(url).catch(handle) as Promise<Data>;\n}',
+    'async function load() {\n  const pending = fetch(url).catch(handle) as Promise<Data>;\n\n  return pending;\n}',
+  ],
+  invalid: [
+    {
+      code: 'async function load() {\n  return await (fetch(url).catch(handle) as Promise<Data>);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await fetch(url).catch(handle)!;\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await (fetch(url).then(parse, handle) satisfies Promise<Data>);\n}',
+      errors: [{ messageId: 'preferTryCatchOverThenHandler' }],
+    },
+    {
+      code: 'async function load() {\n  return await <Promise<Data>>fetch(url).catch(handle);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return fetch(url).catch(handle) as Promise<Data>;\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'const load = async () => fetch(url).catch(handle) as Promise<Data>;',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await (fetch(url) as Promise<Response>).catch(handle);\n}',
+      errors: [{ messageId: 'preferTryCatchOverCatch' }],
+    },
+    {
+      code: 'async function load() {\n  return await api?.fetch(url).catch(handle)!;\n}',
       errors: [{ messageId: 'preferTryCatchOverCatch' }],
     },
   ],

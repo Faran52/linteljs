@@ -87,3 +87,6 @@ the middle argument outright. This rule reports the smell and leaves the rewrite
 
 A computed access is not a promise method. In `promise[then](a, b)` the property is an identifier
 named `then`, but it is a variable holding whatever it holds, so nothing is reported.
+
+A type wrapper is seen through. `await (fetch(url).catch(handle) as Promise<Data>)` and
+`await fetch(url).catch(handle)!` are reported like the bare chain.
