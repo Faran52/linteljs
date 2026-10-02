@@ -390,38 +390,38 @@ const POWERSHELL_CLEARED: CommandProbe[] = [
 
 describe('gitSafetyGuardHook.ts', () => {
   it.each(DENIED)('denies $label', ({ command }) => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command));
-    expect(hookResult).toMatch(BLOCKED);
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command));
+    expect(reply).toMatch(BLOCKED);
   });
 
   it.each(UNREADABLE_COMMANDS)('cannot read $label, and denies it', ({ command }) => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command));
-    expect(hookResult).toMatch(UNREADABLE);
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command));
+    expect(reply).toMatch(UNREADABLE);
   });
 
   it.each(CLEARED)('clears $label', ({ command }) => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command));
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command));
+    expect(reply).toBeUndefined();
   });
 
   it.each(POWERSHELL_DENIED)('denies PowerShell $label', ({ command }) => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command, 'PowerShell'));
-    expect(hookResult).toMatch(BLOCKED);
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command, 'PowerShell'));
+    expect(reply).toMatch(BLOCKED);
   });
 
   it.each(POWERSHELL_UNREADABLE)('cannot read PowerShell with $label, and denies it', ({ command }) => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command, 'PowerShell'));
-    expect(hookResult).toMatch(UNREADABLE);
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command, 'PowerShell'));
+    expect(reply).toMatch(UNREADABLE);
   });
 
   it.each(POWERSHELL_CLEARED)('clears PowerShell $label', ({ command }) => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command, 'PowerShell'));
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command, 'PowerShell'));
+    expect(reply).toBeUndefined();
   });
 
   it('reaches PowerShell from bash through pwsh -c', () => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload("pwsh -c 'git stash'"));
-    expect(hookResult).toMatch(BLOCKED);
+    const reply = runHook('gitSafetyGuardHook.ts', commandPayload("pwsh -c 'git stash'"));
+    expect(reply).toMatch(BLOCKED);
   });
 
   describe.each<'Bash' | 'PowerShell'>(['Bash', 'PowerShell'])('Command Prompt reached from %s', (tool) => {
@@ -431,13 +431,13 @@ describe('gitSafetyGuardHook.ts', () => {
       'cmd /k "git add -A"',
       'cmd /s /c "git status & git reset --hard HEAD"',
     ])('denies %s', (command) => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command, tool));
-      expect(hookResult).toMatch(BLOCKED);
+      const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command, tool));
+      expect(reply).toMatch(BLOCKED);
     });
 
     it('cannot read an unterminated quote, and denies it', () => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload('cmd /c "git status', tool));
-      expect(hookResult).toMatch(UNREADABLE);
+      const reply = runHook('gitSafetyGuardHook.ts', commandPayload('cmd /c "git status', tool));
+      expect(reply).toMatch(UNREADABLE);
     });
 
     it.each([
@@ -445,8 +445,8 @@ describe('gitSafetyGuardHook.ts', () => {
       'cmd',
       'cmd /c "echo git stash"',
     ])('clears %s', (command) => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', commandPayload(command, tool));
-      expect(hookResult).toBeUndefined();
+      const reply = runHook('gitSafetyGuardHook.ts', commandPayload(command, tool));
+      expect(reply).toBeUndefined();
     });
   });
 
@@ -464,36 +464,36 @@ describe('gitSafetyGuardHook.ts', () => {
   });
 
   it('stays silent on malformed JSON', () => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', '{');
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('gitSafetyGuardHook.ts', '{');
+    expect(reply).toBeUndefined();
   });
 
   it('stays silent when the payload carries no command', () => {
-    const hookResult = runHook('gitSafetyGuardHook.ts', { tool_input: {} });
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('gitSafetyGuardHook.ts', { tool_input: {} });
+    expect(reply).toBeUndefined();
   });
 
   describe('on Copilot and Cursor', () => {
     it.each(['bash', 'powershell'])('denies a banned git operation Copilot runs in %s', (tool) => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', copilotPayload(tool, { command: 'git stash' }));
-      expect(hookResult).toMatch(BLOCKED);
+      const reply = runHook('gitSafetyGuardHook.ts', copilotPayload(tool, { command: 'git stash' }));
+      expect(reply).toMatch(BLOCKED);
     });
 
     it('reads a Copilot powershell command as PowerShell', () => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', copilotPayload('powershell', { command: 'git add `\n.' }));
+      const reply = runHook('gitSafetyGuardHook.ts', copilotPayload('powershell', { command: 'git add `\n.' }));
 
-      expect(hookResult)
+      expect(reply)
         .toMatch(BLOCKED);
     });
 
     it('clears a Copilot command with nothing to deny', () => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', copilotPayload('bash', { command: 'git status' }));
-      expect(hookResult).toBeUndefined();
+      const reply = runHook('gitSafetyGuardHook.ts', copilotPayload('bash', { command: 'git status' }));
+      expect(reply).toBeUndefined();
     });
 
     it('denies at Cursor\'s shell gate, and allows a clear command there explicitly', () => {
-      const hookResult = runHook('gitSafetyGuardHook.ts', cursorShellPayload('git commit --amend'));
-      expect(hookResult).toMatch(BLOCKED);
+      const reply = runHook('gitSafetyGuardHook.ts', cursorShellPayload('git commit --amend'));
+      expect(reply).toMatch(BLOCKED);
       const actual = spawnHook('gitSafetyGuardHook.ts', cursorShellPayload('git status'));
       expect(actual).toBe('{"permission":"allow"}\n');
     });
