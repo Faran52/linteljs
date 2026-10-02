@@ -103,6 +103,17 @@ describe('planSync', () => {
     expect(plan.pending).toEqual(plan.entries);
   });
 
+  it('finds no dependency drift without a package.json', async () => {
+    const plan = await planSync(cwd, HOSTED_DEFAULTS);
+
+    const expected = {
+      dependencies: {},
+      devDependencies: {},
+    };
+    expect(plan.upgrades).toEqual([]);
+    expect(plan.missing).toEqual(expected);
+  });
+
   it('never plans the recorded config or its own record', async () => {
     const { entries } = await planSync(cwd, HOSTED_DEFAULTS);
     const targets = entries
