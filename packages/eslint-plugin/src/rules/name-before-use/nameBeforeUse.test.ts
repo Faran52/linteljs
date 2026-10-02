@@ -47,6 +47,8 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     'const value = source?.read(parse(text));',
     'const results = await Promise.all(items.map(load));',
     'const value = await load(parse(text));',
+    'const run = async () => {\n  return await load(parse(text));\n};',
+    'const run = async () => {\n  return flag ? await load() : fallback;\n};',
 
     // A ternary's branches and a logical's right side stand where the whole expression does.
     'const rules = withVitest === true ? await loadVitest() : [];',
@@ -90,7 +92,19 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       ],
     },
     {
-      code: 'const run = async () => {\n  return await load();\n};',
+      code: 'const run = async () => {\n  return (await load()).data;\n};',
+      errors: [awaitError],
+    },
+    {
+      code: 'const run = async () => {\n  return [await load()];\n};',
+      errors: [literalError, awaitError],
+    },
+    {
+      code: 'const run = () => {\n  return format(parse(text));\n};',
+      errors: [callError],
+    },
+    {
+      code: 'const run = async () => await load();',
       errors: [awaitError],
     },
     {

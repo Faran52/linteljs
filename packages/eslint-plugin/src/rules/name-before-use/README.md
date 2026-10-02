@@ -13,10 +13,11 @@ those three stand only where they get a name or stand alone:
 - the right side of a `const`, `let` or `var`, an assignment, a default value or a class field;
 - a bare statement, such as `await run();` or `log(format(value));`;
 - `export default`;
-- the operand of an `await`, which is judged itself.
+- the operand of an `await`, which is judged itself;
+- for an await alone, a `return` it fills, as in `return await load(id);`.
 
-Everywhere else (conditions, `for` headers, a ternary's test, call arguments, `expect`, `return`, an
-arrow's body, templates, spreads, operands, JSX attributes) it reports. A literal nested in a literal is part
+Everywhere else (conditions, `for` headers, a ternary's test, call arguments, `expect`, any other
+`return`, an arrow's body, templates, spreads, operands, JSX attributes) it reports. A literal nested in a literal is part
 of the outer one's value and is judged there, including one reached through a spread or a branch, as in
 `{ ...(exact && { exact }) }`. `as`, `satisfies`, `!`, an angle-bracket assertion and optional chaining pass the
 position through.
@@ -98,6 +99,13 @@ expect(parsed).toBe(expected);
 // correct: the const names both branches and the right side
 const rules = withVitest ? await loadVitest() : [];
 const config = source ?? await loadConfig();
+```
+
+```ts
+// correct: the return names the await it holds whole
+const read = async (id) => {
+  return await load(id);
+};
 ```
 
 ```ts

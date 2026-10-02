@@ -204,7 +204,11 @@ export const nameBeforeUse = createRule('name-before-use', {
       CallExpression: reportNestedCall,
       NewExpression: reportNestedCall,
       AwaitExpression: (node) => {
-        if (!standsNamed(node)) {
+        const [, parent] = usingParentOf(node, isBranch);
+        // An await that is the whole returned value is named by the return.
+        const isReturned = parent.type === 'ReturnStatement';
+
+        if (!isReturned && !standsNamed(node)) {
           context.report({
             messageId: 'nameAwait',
             node,
