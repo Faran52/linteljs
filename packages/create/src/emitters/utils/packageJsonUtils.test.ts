@@ -68,13 +68,27 @@ const FORMS = valuesOf(ANSWERS.form.values);
 const LIBRARIES = valuesOf(ANSWERS.libraries.values);
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
+const hostedFor = (hostedFramework: HostedFramework | undefined): Partial<Answers> => {
+  if (hostedFramework === undefined) {
+    return {};
+  }
+
+  const hosted = { hostedFramework };
+  return hosted;
+};
+
 const storeFor = (target: TargetId): Partial<Answers> => {
   const [store] = targetFor({
     ...DEFAULT_ANSWERS,
     target,
   }).stores ?? [];
 
-  return store === undefined ? {} : { store };
+  if (store === undefined) {
+    return {};
+  }
+
+  const answered = { store };
+  return answered;
 };
 
 describe('versioned', () => {
@@ -88,7 +102,8 @@ describe('versioned', () => {
         });
 
         expect(() => {
-          return [buildDependencies(answers), buildDevDependencies(answers)];
+          buildDependencies(answers);
+          buildDevDependencies(answers);
         }).not.toThrow();
       }
 
@@ -100,7 +115,8 @@ describe('versioned', () => {
         });
 
         expect(() => {
-          return [buildDependencies(answers), buildDevDependencies(answers)];
+          buildDependencies(answers);
+          buildDevDependencies(answers);
         }).not.toThrow();
       }
     }
@@ -127,15 +143,15 @@ describe('the mocking answer', () => {
   it('installs msw as a dev dependency, and only when it was answered', () => {
     const devDependencies = buildDevDependencies(answersFor({ mocking: 'msw' }));
     expect(devDependencies).toHaveProperty('msw');
-    const devDependencies2 = buildDevDependencies(answersFor({}));
-    expect(devDependencies2).not.toHaveProperty('msw');
+    const unmocked = buildDevDependencies(answersFor({}));
+    expect(unmocked).not.toHaveProperty('msw');
   });
 
   it('allows the install script that copies the worker', () => {
     const actual = allowedBuildNames(answersFor({ mocking: 'msw' }));
     expect(actual).toContain('msw');
-    const actual2 = allowedBuildNames(answersFor({}));
-    expect(actual2).not.toContain('msw');
+    const unmocked = allowedBuildNames(answersFor({}));
+    expect(unmocked).not.toContain('msw');
   });
 });
 
@@ -183,7 +199,8 @@ describe('buildOverrides', () => {
     }));
     const expected = Object.fromEntries(keys
       .map((key) => {
-        return [key, VERSIONS['lightningcss']];
+        const pin: [string, string | undefined] = [key, VERSIONS['lightningcss']];
+        return pin;
       }));
 
     expect(overrides).toEqual(expected);
@@ -270,11 +287,12 @@ describe('buildDependencies', () => {
       ['nanostores', '@nanostores/react'],
     ],
   ])('installs what %s needs for %s %s: %j', (target, hostedFramework, store, packages) => {
-    const dependencyNames = Object.keys(buildDependencies(answersFor({
+    const dependencies = buildDependencies(answersFor({
       target,
-      ...(hostedFramework === undefined ? {} : { hostedFramework }),
+      ...hostedFor(hostedFramework),
       store,
-    })));
+    }));
+    const dependencyNames = Object.keys(dependencies);
 
     expect(dependencyNames).toEqual(expect.arrayContaining(packages));
   });
@@ -282,16 +300,17 @@ describe('buildDependencies', () => {
   it('installs no store where none was chosen', () => {
     const dependencies = buildDependencies(answersFor({}));
     expect(dependencies).not.toHaveProperty('zustand');
-    const dependencies2 = buildDependencies(answersFor({ target: 'vue' }));
-    expect(dependencies2).not.toHaveProperty('@vue/devtools-api');
+    const vueDependencies = buildDependencies(answersFor({ target: 'vue' }));
+    expect(vueDependencies).not.toHaveProperty('@vue/devtools-api');
   });
 
   it('installs no binding where the framework needs none', () => {
-    const nanostores = Object.keys(buildDependencies(answersFor({
+    const dependencies = buildDependencies(answersFor({
       target: 'astro',
       hostedFramework: 'svelte',
       store: 'nanostores',
-    })))
+    }));
+    const nanostores = Object.keys(dependencies)
       .filter((name) => {
         return name.startsWith('@nanostores/');
       });
@@ -313,7 +332,7 @@ describe('buildDependencies', () => {
   ])('binds tanstack query to %s %s: %s', (target, hostedFramework, binding) => {
     const dependencies = buildDependencies(answersFor({
       target,
-      ...(hostedFramework === undefined ? {} : { hostedFramework }),
+      ...hostedFor(hostedFramework),
       libraries: [],
       data: 'tanstack-query',
     }));
@@ -322,11 +341,12 @@ describe('buildDependencies', () => {
   });
 
   it('installs no TanStack binding for the one target that has none', () => {
-    const dependencyNames = Object.keys(buildDependencies(answersFor({
+    const dependencies = buildDependencies(answersFor({
       target: 'webextension',
       libraries: [],
       data: 'tanstack-query',
-    })));
+    }));
+    const dependencyNames = Object.keys(dependencies);
 
     const expected = ['qs'];
     expect(dependencyNames).toEqual(expected);
@@ -350,8 +370,8 @@ describe('buildDependencies', () => {
   });
 
   it('gives Next its own t3-env package and every other target the core one', () => {
-    const dependencies2 = buildDependencies(answersFor({ libraries: ['t3-env'] }));
-    expect(dependencies2).toHaveProperty('@t3-oss/env-core');
+    const coreEnv = buildDependencies(answersFor({ libraries: ['t3-env'] }));
+    expect(coreEnv).toHaveProperty('@t3-oss/env-core');
 
     const dependencies = buildDependencies(answersFor({
       target: 'next',
@@ -414,8 +434,10 @@ describe('buildDependencies', () => {
     };
     expect(dependencies).toMatchObject(expected);
 
-    expect(buildDevDependencies(native)['@types/react']).toBe('~19.2.2');
-    expect(buildDependencies(answersFor({}))['react']).toBe(VERSIONS['react']);
+    const nativeDevDependencies = buildDevDependencies(native);
+    const webDependencies = buildDependencies(answersFor({}));
+    expect(nativeDevDependencies['@types/react']).toBe('~19.2.2');
+    expect(webDependencies['react']).toBe(VERSIONS['react']);
   });
 
   it('takes NativeWind on React Native, where Metro has no Tailwind pipeline', () => {
@@ -427,8 +449,7 @@ describe('buildDependencies', () => {
 
     const nativeDependencies = buildDependencies(native);
     expect(nativeDependencies).toHaveProperty('nativewind');
-    const dependencies2 = buildDependencies(native);
-    expect(dependencies2).toHaveProperty('react-native-css');
+    expect(nativeDependencies).toHaveProperty('react-native-css');
     const devDependencies = buildDevDependencies(native);
     expect(devDependencies).toHaveProperty('postcss');
 
@@ -445,21 +466,21 @@ describe('buildDevDependencies', () => {
   it('installs the test runner only where testing was answered', () => {
     const devDependencies = buildDevDependencies(answersFor({}));
     expect(devDependencies).toHaveProperty('vitest');
-    const devDependencies2 = buildDevDependencies(answersFor({ testing: 'none' }));
-    expect(devDependencies2).not.toHaveProperty('vitest');
+    const untested = buildDevDependencies(answersFor({ testing: 'none' }));
+    expect(untested).not.toHaveProperty('vitest');
   });
 
   it('names vite beside vitest for yarn only, since yarn installs no peers', () => {
     const next = { target: 'next' } as const;
 
-    const devDependencies = buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }));
-    expect(devDependencies).toHaveProperty('vite');
-    const devDependencies2 = buildDevDependencies(answersFor({ ...next, packageManager: 'npm' }));
-    expect(devDependencies2).not.toHaveProperty('vite');
-    const devDependencies3 = buildDevDependencies(answersFor({ ...next, packageManager: 'pnpm' }));
-    expect(devDependencies3).not.toHaveProperty('vite');
-    const devDependencies4 = buildDevDependencies(answersFor({ ...next, packageManager: 'bun' }));
-    expect(devDependencies4).not.toHaveProperty('vite');
+    const yarn = buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }));
+    expect(yarn).toHaveProperty('vite');
+    const npm = buildDevDependencies(answersFor({ ...next, packageManager: 'npm' }));
+    expect(npm).not.toHaveProperty('vite');
+    const pnpm = buildDevDependencies(answersFor({ ...next, packageManager: 'pnpm' }));
+    expect(pnpm).not.toHaveProperty('vite');
+    const bun = buildDevDependencies(answersFor({ ...next, packageManager: 'bun' }));
+    expect(bun).not.toHaveProperty('vite');
   });
 
   it('installs the stylex lint plugin, the build plugin and its peer', () => {
@@ -488,8 +509,8 @@ describe('buildDevDependencies', () => {
 
     expect(devDependencies).toHaveProperty('postcss-html');
     expect(devDependencies).toHaveProperty('postcss');
-    const devDependencies2 = buildDevDependencies(answersFor({ target: 'react' }));
-    expect(devDependencies2).not.toHaveProperty('postcss-html');
+    const reactDevDependencies = buildDevDependencies(answersFor({ target: 'react' }));
+    expect(reactDevDependencies).not.toHaveProperty('postcss-html');
   });
 
   it('installs the class linter beside the tailwind toolchain', () => {
@@ -601,7 +622,8 @@ describe('buildDevDependencies', () => {
       false,
     ],
   ])('installs the html plugins for %s only where the html layer is composed: %s', (_label, overrides, composed) => {
-    const actual = Object.hasOwn(buildDevDependencies(answersFor(overrides)), '@html-eslint/eslint-plugin');
+    const devDependencies = buildDevDependencies(answersFor(overrides));
+    const actual = Object.hasOwn(devDependencies, '@html-eslint/eslint-plugin');
     expect(actual).toBe(composed);
   });
 
@@ -634,8 +656,8 @@ describe('buildDevDependencies', () => {
   });
 
   it('declares the metro-config of react-native\'s own release, on React Native alone', () => {
-    expect(buildDevDependencies(answersFor({ target: 'react-native' }))['@react-native/metro-config'])
-      .toBe(VERSIONS['react-native']);
+    const nativeDevDependencies = buildDevDependencies(answersFor({ target: 'react-native' }));
+    expect(nativeDevDependencies['@react-native/metro-config']).toBe(VERSIONS['react-native']);
 
     const devDependencies = buildDevDependencies(answersFor({}));
     expect(devDependencies).not.toHaveProperty('@react-native/metro-config');
@@ -729,14 +751,15 @@ describe('buildDevDependencies', () => {
       ['esbuild'],
     ],
   ])('allows the builds %s runs', (_label, overrides, own) => {
-    const expected = [
+    const builds = [
       ...own,
       '@swc/core',
       'fsevents',
       'sharp',
       'unrs-resolver',
-    ]
-      .sort((left, right) => {
+    ];
+    const expected = builds
+      .toSorted((left, right) => {
         return left.localeCompare(right, 'en');
       });
 
@@ -820,10 +843,10 @@ describe('VERSIONS', () => {
     for (const [name, range] of Object.entries(VERSIONS)) {
       const operator = PINNED_TIGHTER[name] ?? '^';
 
-      const sliced = range.slice(0, operator.length);
-      expect(sliced, name).toBe(operator);
-      const sliced2 = range.slice(operator.length);
-      expect(sliced2, name).toMatch(/^\d+\.\d+\.\d+(?:-[\da-z.]+)?$/u);
+      const leading = range.slice(0, operator.length);
+      expect(leading, name).toBe(operator);
+      const version = range.slice(operator.length);
+      expect(version, name).toMatch(/^\d+\.\d+\.\d+(?:-[\da-z.]+)?$/u);
     }
   });
 });
@@ -836,10 +859,11 @@ const siblingIn = (directory: string): Sibling => {
     throw new Error(`${path} declares no name or version`);
   }
 
-  return {
+  const sibling: Sibling = {
     name,
     version,
   };
+  return sibling;
 };
 
 describe('VERSIONS against the workspace', () => {
@@ -1051,11 +1075,11 @@ describe('dependencyDrift', () => {
     expect(drift.missing.devDependencies).toHaveProperty('husky');
     expect(drift.missing.dependencies).toHaveProperty('qs');
 
-    const expected2 = [{
+    const upgrades = [{
       name: '@linteljs/eslint-config',
       to: VERSIONS['@linteljs/eslint-config'],
     }];
-    expect(fresh.upgrades).toEqual(expected2);
+    expect(fresh.upgrades).toEqual(upgrades);
   });
 
   it('never moves a newer range, or one that is not a version', () => {
@@ -1093,7 +1117,7 @@ describe('upgradedPackageJson', () => {
     };
     expect(upgraded).toEqual(expected);
 
-    const expected2 = { devDependencies: {} };
-    expect(bare).toEqual(expected2);
+    const emptied = { devDependencies: {} };
+    expect(bare).toEqual(emptied);
   });
 });

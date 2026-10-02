@@ -15,13 +15,15 @@ describe('sortedImports', () => {
       "import alias from './alias';",
     ]);
 
-    expect(sorted).toBe([
+    const lines = [
       "import vue from '@vitejs/plugin-vue';",
       "import { defineConfig } from 'vite';",
       '',
       "import alias from './alias';",
       "import local from './local';",
-    ].join('\n'));
+    ];
+    const expected = lines.join('\n');
+    expect(sorted).toBe(expected);
   });
 
   it('leads with the framework group, as the emitted import sort has it', () => {
@@ -31,12 +33,14 @@ describe('sortedImports', () => {
       "import vue from '@vitejs/plugin-vue';",
     ], 'nuxt');
 
-    expect(sorted).toBe([
+    const lines = [
       "import { defineNuxtConfig } from 'nuxt/config';",
       '',
       "import tailwindcss from '@tailwindcss/vite';",
       "import vue from '@vitejs/plugin-vue';",
-    ].join('\n'));
+    ];
+    const expected = lines.join('\n');
+    expect(sorted).toBe(expected);
   });
 
   it('sorts a name before a longer one it prefixes, as simple-import-sort does', () => {
@@ -46,11 +50,13 @@ describe('sortedImports', () => {
       "import tailwindcss from '@tailwindcss/vite';",
     ]);
 
-    expect(sorted).toBe([
+    const lines = [
       "import tailwindcss from '@tailwindcss/vite';",
       "import { defineConfig } from 'vite';",
       "import solid from 'vite-plugin-solid';",
-    ].join('\n'));
+    ];
+    const expected = lines.join('\n');
+    expect(sorted).toBe(expected);
   });
 
   it('sorts a path segment before a dashed name, and numbers by value, as simple-import-sort does', () => {
@@ -61,12 +67,14 @@ describe('sortedImports', () => {
       "import two from 'x2';",
     ]);
 
-    expect(sorted).toBe([
+    const lines = [
       "import nested from 'a/b';",
       "import dashed from 'a-b';",
       "import two from 'x2';",
       "import ten from 'x10';",
-    ].join('\n'));
+    ];
+    const expected = lines.join('\n');
+    expect(sorted).toBe(expected);
   });
 
   it('leaves no trailing blank line where the project imports nothing of its own', () => {

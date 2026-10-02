@@ -17,8 +17,9 @@ describe('projectSpelling', () => {
   it("takes the target's own over another the project also has, whatever the order", () => {
     const actual = projectSpelling('src/style.css', CANDIDATES);
     expect(actual).toBe('src/style.css');
-    const actual2 = projectSpelling('src/style.css', [...CANDIDATES].reverse());
-    expect(actual2).toBe('src/style.css');
+    const reversed = CANDIDATES.toReversed();
+    const fromReversed = projectSpelling('src/style.css', reversed);
+    expect(fromReversed).toBe('src/style.css');
   });
 
   it("takes the project's first when the target's own is not among them", () => {
@@ -29,8 +30,8 @@ describe('projectSpelling', () => {
   it('takes the default when the project holds none of them', () => {
     const actual = projectSpelling('src/style.css', []);
     expect(actual).toBe('src/style.css');
-    const actual2 = projectSpelling('src/style.css', EMPTY_PROJECT.styleEntries);
-    expect(actual2).toBe('src/style.css');
+    const fromEmptyProject = projectSpelling('src/style.css', EMPTY_PROJECT.styleEntries);
+    expect(fromEmptyProject).toBe('src/style.css');
   });
 });
 

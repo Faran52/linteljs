@@ -31,14 +31,14 @@ describe('removableIn', () => {
   });
 
   it('takes a merge that says it is removable', () => {
-    const removable2 = removableIn([{
+    const removable = removableIn([{
       ...merged('standard', '.claude/settings.json', () => {
         return '';
       }),
       removable: true,
     }]);
     const expected = ['.claude/settings.json'];
-    expect(removable2).toEqual(expected);
+    expect(removable).toEqual(expected);
   });
 });
 
@@ -53,7 +53,7 @@ describe('managedRecord', () => {
   it('is stable across two runs of the same set', () => {
     const actual = managedRecord(['B.js', 'a.js']);
     expect(actual).toBe(managedRecord(['a.js', 'B.js']));
-    const actual2 = managedRecord(['a.js']);
-    expect(actual2).toMatch(/\n$/u);
+    const single = managedRecord(['a.js']);
+    expect(single).toMatch(/\n$/u);
   });
 });

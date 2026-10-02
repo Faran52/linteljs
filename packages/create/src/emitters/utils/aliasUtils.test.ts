@@ -67,32 +67,39 @@ describe('buildAliases', () => {
       './src/layouts/*',
     ],
   ] as const)('leads the %s map with its route unit', (target, alias, directory) => {
-    const first = Object.entries(buildAliases(answersFor({ target })))[0];
+    const aliases = buildAliases(answersFor({ target }));
+    const first = Object.entries(aliases)[0];
 
     const expected = [alias, directory];
     expect(first).toEqual(expected);
   });
 
   it('gives a target with no route unit no route alias', () => {
-    const keys = Object.keys(buildAliases(answersFor({ target: 'next' })));
+    const aliases = buildAliases(answersFor({ target: 'next' }));
+    const keys = Object.keys(aliases);
 
     expect(keys[0]).toBe('@components/*');
   });
 
   it('renames the hooks alias per target', () => {
-    expect(buildAliases(answersFor({ target: 'vue' }))['@composables/*'])
-      .toBe('./src/lib/composables/*');
+    const vue = buildAliases(answersFor({ target: 'vue' }));
 
-    expect(buildAliases(answersFor({ target: 'vue' }))['@hooks/*']).toBeUndefined();
+    expect(vue['@composables/*']).toBe('./src/lib/composables/*');
+    expect(vue['@hooks/*']).toBeUndefined();
   });
 
   it('omits the hooks alias for a target with no hook equivalent', () => {
-    expect(buildAliases(answersFor({ target: 'angular' }))['@hooks/*']).toBeUndefined();
-    expect(buildAliases(answersFor({ target: 'webextension' }))['@hooks/*']).toBeUndefined();
+    const angular = buildAliases(answersFor({ target: 'angular' }));
+    const webextension = buildAliases(answersFor({ target: 'webextension' }));
+
+    expect(angular['@hooks/*']).toBeUndefined();
+    expect(webextension['@hooks/*']).toBeUndefined();
   });
 
   it('drops the exact key with the omitted alias it pairs', () => {
-    expect(buildAliases(answersFor({ target: 'angular' }))['@hooks']).toBeUndefined();
+    const angular = buildAliases(answersFor({ target: 'angular' }));
+
+    expect(angular['@hooks']).toBeUndefined();
   });
 
   it('adds @i18n and its exact key only when a locale is chosen', () => {
@@ -138,39 +145,40 @@ describe('buildAliases', () => {
   });
 
   it('adds @apis with Zod or when the starter writes src/lib/apis', () => {
-    const none = buildAliases(answersFor({ target: 'react' }))['@apis/*'];
+    const none = buildAliases(answersFor({ target: 'react' }));
     const zod = buildAliases(answersFor({
       target: 'react',
       libraries: ['zod'],
-    }))['@apis/*'];
+    }));
     const query = buildAliases(answersFor({
       target: 'react',
       data: 'tanstack-query',
-    }))['@apis/*'];
+    }));
     const form = buildAliases(answersFor({
       target: 'react',
       form: 'tanstack-form',
-    }))['@apis/*'];
+    }));
     const rtk = buildAliases(answersFor({
       target: 'react',
       data: 'rtk-query',
-    }))['@apis/*'];
-    const angular = buildAliases(answersFor({ target: 'angular' }))['@apis/*'];
+    }));
+    const angular = buildAliases(answersFor({ target: 'angular' }));
 
-    expect(none).toBeUndefined();
-    expect(query).toBeUndefined();
-    expect(zod).toBe('./src/lib/apis/*');
-    expect(form).toBe('./src/lib/apis/*');
-    expect(rtk).toBe('./src/lib/apis/*');
-    expect(angular).toBe('./src/lib/apis/*');
+    expect(none['@apis/*']).toBeUndefined();
+    expect(query['@apis/*']).toBeUndefined();
+    expect(zod['@apis/*']).toBe('./src/lib/apis/*');
+    expect(form['@apis/*']).toBe('./src/lib/apis/*');
+    expect(rtk['@apis/*']).toBe('./src/lib/apis/*');
+    expect(angular['@apis/*']).toBe('./src/lib/apis/*');
   });
 
   it('carries the extra aliases only one target has, at the tail of the lib family', () => {
     const next = buildAliases(answersFor({ target: 'next' }));
+    const react = buildAliases(answersFor({ target: 'react' }));
 
     expect(next['@server/*']).toBe('./src/lib/server/*');
     expect(next['@content/*']).toBe('./src/content/*');
-    expect(buildAliases(answersFor({ target: 'react' }))['@server/*']).toBeUndefined();
+    expect(react['@server/*']).toBeUndefined();
   });
 
   it('omits shared aliases a target does not have', () => {
@@ -182,7 +190,8 @@ describe('buildAliases', () => {
 
   it('aliases providers on no target at all', () => {
     for (const target of TARGET_IDS) {
-      expect(buildAliases(answersFor({ target }))['@providers/*']).toBeUndefined();
+      const aliases = buildAliases(answersFor({ target }));
+      expect(aliases['@providers/*']).toBeUndefined();
     }
   });
 
