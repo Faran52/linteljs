@@ -146,7 +146,8 @@ describe('buildArtifacts', () => {
           return artifact.target;
         });
 
-      expect(targets).toEqual([...new Set(targets)]);
+      const expected = [...new Set(targets)];
+      expect(targets).toEqual(expected);
     }
 
     const accessChecks = [...new Set(sources)]
@@ -358,7 +359,8 @@ describe('the project the answers write', () => {
       }
     }
 
-    expect([...unresolved]).toEqual([]);
+    const actual = [...unresolved];
+    expect(actual).toEqual([]);
   });
 
   const declaredIn = async (project: Project): Promise<Set<string>> => {
@@ -393,7 +395,8 @@ describe('the project the answers write', () => {
       }
     }
 
-    expect([...undeclared]).toEqual([]);
+    const actual = [...undeclared];
+    expect(actual).toEqual([]);
   });
 
   it.each(TARGET_IDS)('writes or declares every stylesheet the %s style entry imports', async (target) => {
@@ -414,7 +417,8 @@ describe('the project the answers write', () => {
       }
     }
 
-    expect([...missing]).toEqual([]);
+    const actual = [...missing];
+    expect(actual).toEqual([]);
   });
 
   it.each(TARGET_IDS)('excludes from the %s coverage only files the project writes', (target) => {
@@ -428,7 +432,8 @@ describe('the project the answers write', () => {
       }
     }
 
-    expect([...stale]).toEqual([]);
+    const actual = [...stale];
+    expect(actual).toEqual([]);
   });
 
   it.each(TARGET_IDS)('writes every %s starter suite under some answers', (target) => {
@@ -631,7 +636,7 @@ describe('the emitted checker against the emitted starter code', () => {
         await writeFile(join(cwd, file.target), file.text, 'utf8');
       }
 
-      expect([
+      const actual = [
         scanned
           .some(({ target: path }) => {
             return path === 'scripts/typecheckStaged.ts';
@@ -640,7 +645,9 @@ describe('the emitted checker against the emitted starter code', () => {
           .filter(({ target: path }) => {
             return path.startsWith('src/');
           }).length > 1,
-      ]).toEqual([true, true]);
+      ];
+      const expected = [true, true];
+      expect(actual).toEqual(expected);
 
       const { status, stderr } = spawnSync(
         execPath,

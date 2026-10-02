@@ -150,7 +150,8 @@ describe('TARGETS', () => {
 
     const missing = await Promise.all(missingChecks);
 
-    expect(missing.filter(Boolean)).toEqual([]);
+    const filtered = missing.filter(Boolean);
+    expect(filtered).toEqual([]);
   });
 
   it.each(axisCases())('has every suite on %s cover a file the target writes', (_label, answers) => {
@@ -242,7 +243,9 @@ describe('what each target offers', () => {
   ])('offers %s its own stores and routers', (target, stores, routers) => {
     const record = recordFor(target);
 
-    expect([record.stores, record.routers]).toEqual([stores, routers]);
+    const actual = [record.stores, record.routers];
+    const expected = [stores, routers];
+    expect(actual).toEqual(expected);
   });
 
   it.each<[string, Answers, string[], string[] | undefined]>([
@@ -359,7 +362,9 @@ describe('what each target offers', () => {
   ])('holds %s to its own state rules and test conditions', (_label, answers, rules, conditions) => {
     const record = targetFor(answers);
 
-    expect([record.stateRules, record.testConditions]).toEqual([rules, conditions]);
+    const actual = [record.stateRules, record.testConditions];
+    const expected = [rules, conditions];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -369,7 +374,8 @@ describe('targetFor', () => {
   });
 
   it('returns a different record for a different id', () => {
-    expect(recordFor('react')).not.toBe(recordFor('vue'));
+    const record = recordFor('react');
+    expect(record).not.toBe(recordFor('vue'));
   });
 });
 
@@ -403,13 +409,15 @@ describe('a framework layer and the plugins it loads', () => {
         return !installed.includes(name);
       });
 
-    expect({
+    const actual = {
       label,
       missing,
-    }).toEqual({
+    };
+    const expected = {
       label,
       missing: [],
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -452,11 +460,12 @@ describe('the emitted naming map on a utils file', () => {
       await findingsOn(answers, `src/lib/utils/${bare}.ts`),
     ];
 
-    expect(findings).toEqual([
+    const expected = [
       [],
       [],
       [],
       ['check-file/filename-naming-convention'],
-    ]);
+    ];
+    expect(findings).toEqual(expected);
   });
 });

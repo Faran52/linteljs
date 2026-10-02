@@ -13,27 +13,32 @@ import {
 
 describe('emitted', () => {
   it('carries the given stage and target with the text as its content', () => {
-    expect(emitted('lint', 'eslint.config.js', 'export default {};')).toEqual({
+    const actual = emitted('lint', 'eslint.config.js', 'export default {};');
+    const expected = {
       stage: 'lint',
       target: 'eslint.config.js',
       content: { text: 'export default {};' },
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 });
 
 describe('copied', () => {
   it('always tags the artifact stage standard, regardless of what the caller runs at', () => {
-    expect(copied('.claude/settings.json')).toEqual({
+    const actual = copied('.claude/settings.json');
+    const expected = {
       stage: 'standard',
       target: '.claude/settings.json',
       content: { sources: ['project/.claude/settings.json'] },
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 
   it('reads a nested file from the same path under `project/` that it lands on', () => {
-    expect(copied('scripts/typecheckStaged.ts').content).toEqual({
+    const expected = {
       sources: ['project/scripts/typecheckStaged.ts'],
-    });
+    };
+    expect(copied('scripts/typecheckStaged.ts').content).toEqual(expected);
   });
 });
 
@@ -44,7 +49,7 @@ describe('joined', () => {
       'fragments/test-setup/setupTests.router.ts',
     ]);
 
-    expect(artifact).toEqual({
+    const expected = {
       stage: 'standard',
       target: 'src/setupTests.ts',
       content: {
@@ -53,7 +58,8 @@ describe('joined', () => {
           'fragments/test-setup/setupTests.router.ts',
         ],
       },
-    });
+    };
+    expect(artifact).toEqual(expected);
   });
 });
 
@@ -63,11 +69,13 @@ describe('merged', () => {
       return current ?? '';
     };
 
-    expect(merged('package', 'package.json', merge)).toEqual({
+    const actual = merged('package', 'package.json', merge);
+    const expected = {
       stage: 'package',
       target: 'package.json',
       content: { merge },
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -81,9 +89,10 @@ describe('merged with a resync', () => {
       return current;
     };
 
-    expect(merged('package', 'package.json', merge, resync).content).toEqual({
+    const expected = {
       merge,
       resync,
-    });
+    };
+    expect(merged('package', 'package.json', merge, resync).content).toEqual(expected);
   });
 });

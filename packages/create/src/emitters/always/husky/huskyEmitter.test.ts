@@ -8,7 +8,8 @@ import { huskyEmitter } from './huskyEmitter';
 
 describe('huskyEmitter', () => {
   it('writes both hooks executable, the pre-commit one first', () => {
-    expect(huskyEmitter()).toEqual([
+    const husky = huskyEmitter();
+    const expected = [
       {
         stage: 'standard',
         target: '.husky/pre-commit',
@@ -21,6 +22,7 @@ describe('huskyEmitter', () => {
         content: { sources: ['project/.husky/commit-msg'] },
         executable: true,
       },
-    ]);
+    ];
+    expect(husky).toEqual(expected);
   });
 });

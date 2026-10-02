@@ -14,8 +14,10 @@ import { allowBuildsBlock, RELEASE_AGE_BLOCK } from './utils/emitUtils';
 
 describe('pnpmWorkspaceEmitter', () => {
   it('owns the workspace file only under pnpm', () => {
-    expect(pnpmWorkspaceEmitter(answersFor({ packageManager: 'pnpm' }))).toHaveLength(1);
-    expect(pnpmWorkspaceEmitter(answersFor({ packageManager: 'npm' }))).toEqual([]);
+    const pnpmWorkspace = pnpmWorkspaceEmitter(answersFor({ packageManager: 'pnpm' }));
+    expect(pnpmWorkspace).toHaveLength(1);
+    const pnpmWorkspace2 = pnpmWorkspaceEmitter(answersFor({ packageManager: 'npm' }));
+    expect(pnpmWorkspace2).toEqual([]);
   });
 
   it("drops create-next-app's build opt-out, which would fail the install, and keeps the rest of the file", () => {
@@ -33,7 +35,8 @@ describe('mergePnpmWorkspace', () => {
   it('writes the emitted block alone when there is no existing file', () => {
     const expected = `${allowBuildsBlock(answersFor({}))}\n${RELEASE_AGE_BLOCK}`;
 
-    expect(mergePnpmWorkspace(null, answersFor({}))).toBe(expected);
+    const mergedPnpmWorkspace = mergePnpmWorkspace(null, answersFor({}));
+    expect(mergedPnpmWorkspace).toBe(expected);
   });
 
   it('prepends the allowBuilds block to an existing file that has none', () => {
@@ -47,14 +50,18 @@ describe('mergePnpmWorkspace', () => {
   it('drops the ignoredBuiltDependencies block a scaffolder wrote, list and all', () => {
     const existing = 'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
 
-    expect(mergePnpmWorkspace(existing, answersFor({})))
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
+
+    expect(mergedPnpmWorkspace)
       .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('drops a superseded list across a blank line inside it', () => {
     const existing = 'ignoredBuiltDependencies:\n  - sharp\n\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
 
-    expect(mergePnpmWorkspace(existing, answersFor({})))
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
+
+    expect(mergedPnpmWorkspace)
       .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
@@ -64,20 +71,24 @@ describe('mergePnpmWorkspace', () => {
   });
 
   it('closes the gap the blank lines opening a file would leave under the prepended block', () => {
-    expect(mergePnpmWorkspace('\n\nonlyBuiltDependencies:\n  - foo\n', answersFor({})))
+    const mergedPnpmWorkspace = mergePnpmWorkspace('\n\nonlyBuiltDependencies:\n  - foo\n', answersFor({}));
+
+    expect(mergedPnpmWorkspace)
       .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('keeps the document marker a file opens with', () => {
     const existing = "---\nallowBuilds:\n  'some-native': true\n";
 
-    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
+    expect(mergedPnpmWorkspace).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('leaves a release-age policy the project set alone', () => {
     const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\n";
 
-    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(existing);
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
+    expect(mergedPnpmWorkspace).toBe(existing);
   });
 
   it('adds the block to a file that only mentions it in a comment', () => {
@@ -89,7 +100,8 @@ describe('mergePnpmWorkspace', () => {
   it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {
     const existing = "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n  'custom-pkg': true\n";
 
-    expect(mergePnpmWorkspace(existing, answersFor({}))).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
+    expect(mergedPnpmWorkspace).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('keeps content that follows the dropped block, not just what precedes it', () => {
@@ -102,7 +114,8 @@ describe('mergePnpmWorkspace', () => {
 
 describe('the release age policy', () => {
   it('adds the policy to a file that only mentions it in a comment', () => {
-    expect(mergePnpmWorkspace('# minimumReleaseAge: is added\n', answersFor({}))).toMatch(/^minimumReleaseAge:/mu);
+    const mergedPnpmWorkspace = mergePnpmWorkspace('# minimumReleaseAge: is added\n', answersFor({}));
+    expect(mergedPnpmWorkspace).toMatch(/^minimumReleaseAge:/mu);
   });
 });
 
@@ -123,11 +136,13 @@ describe('the NativeWind lightningcss pin', () => {
   it('leaves an overrides block the project wrote alone', () => {
     const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\noverrides:\n  left-pad: 1.0.0\n";
 
-    expect(mergePnpmWorkspace(existing, nativewind)).toBe(existing);
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, nativewind);
+    expect(mergedPnpmWorkspace).toBe(existing);
   });
 
   it('adds the override block to a file that only mentions it in a comment', () => {
-    expect(mergePnpmWorkspace('# overrides: are added\n', nativewind)).toMatch(/^overrides:/mu);
+    const mergedPnpmWorkspace = mergePnpmWorkspace('# overrides: are added\n', nativewind);
+    expect(mergedPnpmWorkspace).toMatch(/^overrides:/mu);
   });
 
   it('parts the override block from a policy the project set by one blank line', () => {
@@ -135,7 +150,8 @@ describe('the NativeWind lightningcss pin', () => {
     const metro = "'@expo/metro-config>lightningcss': '1.30.1'";
     const css = "'react-native-css>lightningcss': '1.30.1'";
 
-    expect(mergePnpmWorkspace(existing, nativewind)).toBe(`${existing}\noverrides:\n  ${metro}\n  ${css}\n`);
+    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, nativewind);
+    expect(mergedPnpmWorkspace).toBe(`${existing}\noverrides:\n  ${metro}\n  ${css}\n`);
   });
 
   it('writes no override without NativeWind', () => {
@@ -162,6 +178,7 @@ describe('resyncPnpmWorkspace', () => {
 
     expect(resynced).toContain(owned);
     expect(resynced).toContain(RELEASE_AGE_BLOCK);
-    expect(resyncPnpmWorkspace(owned, answersFor({}))).toBe(resynced);
+    const resyncedPnpmWorkspace = resyncPnpmWorkspace(owned, answersFor({}));
+    expect(resyncedPnpmWorkspace).toBe(resynced);
   });
 });

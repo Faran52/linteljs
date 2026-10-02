@@ -18,7 +18,8 @@ describe('fillSlots', () => {
   });
 
   it('replaces a slot repeated more than once', () => {
-    expect(fillSlots('{{A}}-{{A}}', { A: 'x' }, 'label')).toBe('x-x');
+    const filledSlots = fillSlots('{{A}}-{{A}}', { A: 'x' }, 'label');
+    expect(filledSlots).toBe('x-x');
   });
 
   it('throws naming the label and every slot left unfilled', () => {
@@ -30,7 +31,8 @@ describe('fillSlots', () => {
   });
 
   it('leaves a template with no slots untouched', () => {
-    expect(fillSlots('plain text', {}, 'label')).toBe('plain text');
+    const filledSlots = fillSlots('plain text', {}, 'label');
+    expect(filledSlots).toBe('plain text');
   });
 });
 

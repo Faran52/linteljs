@@ -71,34 +71,42 @@ afterEach(() => {
 
 describe('stageLine', () => {
   it('counts the files a stage wrote', () => {
-    expect(stageLine('standard', 44, '', 123)).toBe('standard  44 files, 0.1s');
+    const actual = stageLine('standard', 44, '', 123);
+    expect(actual).toBe('standard  44 files, 0.1s');
   });
 
   it('counts one file in the singular', () => {
-    expect(stageLine('lint', 1, '', 40)).toBe('lint      1 file, 0.0s');
+    const actual = stageLine('lint', 1, '', 40);
+    expect(actual).toBe('lint      1 file, 0.0s');
   });
 
   it('falls back to what a stage said where it wrote nothing', () => {
-    expect(stageLine('install', 0, 'installing with pnpm', 12_100)).toBe('install   installing with pnpm, 12.1s');
+    const actual = stageLine('install', 0, 'installing with pnpm', 12_100);
+    expect(actual).toBe('install   installing with pnpm, 12.1s');
   });
 
   it('omits the time while the stage is still running', () => {
-    expect(stageLine('standard', 12, '')).toBe('standard  12 files');
+    const actual = stageLine('standard', 12, '');
+    expect(actual).toBe('standard  12 files');
   });
 
   it('carries the time alone where a stage neither wrote nor spoke', () => {
-    expect(stageLine('fix', 0, '', 8400)).toBe('fix       8.4s');
+    const actual = stageLine('fix', 0, '', 8400);
+    expect(actual).toBe('fix       8.4s');
   });
 
   it('is the stage name alone where there is nothing yet to say', () => {
-    expect(stageLine('fix', 0, '')).toBe('fix');
+    const actual = stageLine('fix', 0, '');
+    expect(actual).toBe('fix');
   });
 });
 
 describe('stepsPlan', () => {
   it('numbers every stage in order', () => {
-    expect(stepsPlan(OPTIONS)).toContain('  1. lint:');
-    expect(stepsPlan(OPTIONS)).toContain('  4. install');
+    const actual = stepsPlan(OPTIONS);
+    expect(actual).toContain('  1. lint:');
+    const actual2 = stepsPlan(OPTIONS);
+    expect(actual2).toContain('  4. install');
   });
 
   it('marks a skipped stage, and the fix that skipping lint takes with it', () => {
@@ -113,7 +121,8 @@ describe('stepsPlan', () => {
   });
 
   it('is a header and one numbered line per stage, none marked where nothing was skipped', () => {
-    expect(stepsPlan(OPTIONS).split('\n')).toEqual([
+    const parts = stepsPlan(OPTIONS).split('\n');
+    const expected = [
       '',
       'Steps:',
       '  1. lint: eslint and stylelint config',
@@ -121,7 +130,8 @@ describe('stepsPlan', () => {
       '  3. standard: hooks, agent files, test setup and starter tests',
       '  4. install',
       '  5. fix: eslint and stylelint --fix',
-    ]);
+    ];
+    expect(parts).toEqual(expected);
   });
 
   it('marks only the stages lint takes with it, not every stage after it', () => {
@@ -147,7 +157,9 @@ describe('nextSteps', () => {
   };
 
   it('enters the directory a named create made, then the steps it skipped', () => {
-    expect(nextSteps('demo-app', INSTALL_SKIPPED, 'pnpm'))
+    const actual = nextSteps('demo-app', INSTALL_SKIPPED, 'pnpm');
+
+    expect(actual)
       .toBe('\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
   });
 
@@ -166,26 +178,30 @@ describe('nextSteps', () => {
       '',
     ],
   ])('enters nothing for %s', (_case, options, name) => {
-    expect(nextSteps(name, options, 'pnpm')).toBe('\nDone. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
+    const actual = nextSteps(name, options, 'pnpm');
+    expect(actual).toBe('\nDone. Next:\n  pnpm install\n  pnpm lint:fix\n  pnpm check');
   });
 
   it('leaves only the gate once it installed', () => {
-    expect(nextSteps('', OPTIONS, 'pnpm')).toBe('\nDone. Next:\n  pnpm check');
+    const actual = nextSteps('', OPTIONS, 'pnpm');
+    expect(actual).toBe('\nDone. Next:\n  pnpm check');
   });
 
   it.each([
     ['npm', 'npm install\n  npm run lint:fix\n  npm run check'],
     ['yarn', 'yarn install\n  yarn lint:fix\n  yarn check'],
   ] as const)('spells each command the way %s runs it', (manager, commands) => {
-    expect(nextSteps('', INSTALL_SKIPPED, manager)).toBe(`\nDone. Next:\n  ${commands}`);
+    const actual = nextSteps('', INSTALL_SKIPPED, manager);
+    expect(actual).toBe(`\nDone. Next:\n  ${commands}`);
   });
 });
 
 describe('say', () => {
   it('writes one line', () => {
-    expect(printed(() => {
+    const actual = printed(() => {
       say('a line');
-    })).toBe('a line\n');
+    });
+    expect(actual).toBe('a line\n');
   });
 });
 
@@ -254,7 +270,8 @@ describe('stageReport on a terminal', () => {
         vi.advanceTimersByTime(SPINNER_INTERVAL);
       });
 
-      expect(SPINNER_FRAMES.charAt(2)).not.toBe(SPINNER_FRAMES.charAt(1));
+      const char = SPINNER_FRAMES.charAt(2);
+      expect(char).not.toBe(SPINNER_FRAMES.charAt(1));
 
       expect(output).toBe([
         `\u001B[K  ${SPINNER_FRAMES.charAt(1)} standard\r`,
@@ -281,7 +298,8 @@ describe('stageReport on a terminal', () => {
         report.onStage('package', 2, 5);
       });
 
-      expect(output.endsWith(`\u001B[K  ${SPINNER_FRAMES.charAt(2)} package\r`)).toBe(true);
+      const actual = output.endsWith(`\u001B[K  ${SPINNER_FRAMES.charAt(2)} package\r`);
+      expect(actual).toBe(true);
     }
     finally {
       vi.useRealTimers();
@@ -301,7 +319,8 @@ describe('stageReport on a terminal', () => {
         vi.advanceTimersByTime(SPINNER_INTERVAL * 3);
       });
 
-      expect(output.endsWith('✓ install   0.0s\n')).toBe(true);
+      const install00sEndsWith = output.endsWith('✓ install   0.0s\n');
+      expect(install00sEndsWith).toBe(true);
     }
     finally {
       vi.useRealTimers();
@@ -360,13 +379,15 @@ describe('syncTable', () => {
       },
     });
 
-    expect(table.split('\n')).toEqual([
+    const parts = table.split('\n');
+    const expected = [
       '  update   .husky/pre-commit',
       '  add      scripts/new.ts',
       '  delete   .claude/settings.json',
       '  upgrade  @linteljs/eslint-config ^1.5.0 -> ^2.0.0',
       '  upgrade  @linteljs/eslint-plugin none -> ^2.0.0',
-    ]);
+    ];
+    expect(parts).toEqual(expected);
   });
 });
 
@@ -380,10 +401,11 @@ describe('installCommands', () => {
       },
     });
 
-    expect(commands).toEqual([
+    const expected = [
       '  npm install "qs@^6.0.0"',
       '  npm install -D "husky@^9.0.0" "lint-staged@^16.0.0"',
-    ]);
+    ];
+    expect(commands).toEqual(expected);
   });
 
   it('prints nothing when nothing is missing', () => {

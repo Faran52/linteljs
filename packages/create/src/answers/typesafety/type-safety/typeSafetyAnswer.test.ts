@@ -6,6 +6,7 @@ describe('typeSafetyAnswer', () => {
   });
 
   it('defaults to a value it offers', () => {
-    expect(Object.keys(typeSafetyAnswer.values)).toContain(typeSafetyAnswer.default);
+    const actual = Object.keys(typeSafetyAnswer.values);
+    expect(actual).toContain(typeSafetyAnswer.default);
   });
 });

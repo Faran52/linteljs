@@ -60,11 +60,12 @@ describe('componentStyles', () => {
   });
 
   it('reads a renamed component from the shared asset under its own name', () => {
-    expect(componentStyles(RENAMED)[1]).toMatchObject({
+    const expected = {
       target: 'src/components/ui/app-mark/AppMark.css',
       source: 'src/components/ui/mark/Mark.css',
       shared: true,
-    });
+    };
+    expect(componentStyles(RENAMED)[1]).toMatchObject(expected);
 
     expect(componentStyles()[1]).not.toHaveProperty('source');
   });
@@ -72,28 +73,32 @@ describe('componentStyles', () => {
 
 describe('componentStyleModules', () => {
   it('writes the class-name module without stylex and the compiled one and its tokens with it', () => {
-    expect(pickedBy(componentStyleModules())).toEqual([
+    const actual = pickedBy(componentStyleModules());
+    const expected = [
       'src/components/features/app-header/styles.ts base',
       'src/components/ui/mark/styles.ts base',
       'src/components/ui/button/styles.ts base',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
     const picked = pickedBy(componentStyleModules(), { styling: 'stylex' });
 
-    expect(picked).toEqual([
+    const expected2 = [
       'src/components/features/app-header/styles.ts stylex',
       'src/components/ui/mark/styles.ts stylex',
       'src/components/ui/button/styles.ts stylex',
       'src/styles/tokens.stylex.ts stylex',
-    ]);
+    ];
+    expect(picked).toEqual(expected2);
   });
 
   it('takes another target\'s bytes into its own directories', () => {
-    expect(componentStyleModules('solid', RENAMED)[2]).toMatchObject({
+    const expected = {
       target: 'src/components/ui/app-mark/styles.ts',
       source: 'src/components/ui/mark/styles.ts',
       shared: 'solid',
-    });
+    };
+    expect(componentStyleModules('solid', RENAMED)[2]).toMatchObject(expected);
 
     expect(componentStyleModules()[0]).not.toHaveProperty('shared');
   });
@@ -104,7 +109,9 @@ describe('stylexDocument', () => {
     const plain = pickedBy(stylexDocument('src/layouts/Layout.astro'));
     const stylex = pickedBy(stylexDocument('src/layouts/Layout.astro'), { styling: 'stylex' });
 
-    expect(plain).toEqual(['src/layouts/Layout.astro base']);
-    expect(stylex).toEqual(['src/layouts/Layout.astro stylex']);
+    const expected = ['src/layouts/Layout.astro base'];
+    expect(plain).toEqual(expected);
+    const expected2 = ['src/layouts/Layout.astro stylex'];
+    expect(stylex).toEqual(expected2);
   });
 });

@@ -21,8 +21,10 @@ describe('storeAnswer', () => {
       target: 'webextension',
     });
 
-    expect(storeAnswer.slot(react)).toBe(true);
-    expect(storeAnswer.slot(extension)).toBe(false);
+    const actual = storeAnswer.slot(react);
+    expect(actual).toBe(true);
+    const actual2 = storeAnswer.slot(extension);
+    expect(actual2).toBe(false);
   });
 
   it.each(valuesOf(storeAnswer.values))('offers %s only to a target that lists it', (store) => {

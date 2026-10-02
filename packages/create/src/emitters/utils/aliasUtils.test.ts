@@ -15,7 +15,8 @@ const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 describe('buildAliases', () => {
   it('builds the default React alias map, ordered as the spine reads top-down', () => {
-    expect(buildAliases(answersFor({ target: 'react' }))).toEqual({
+    const aliases = buildAliases(answersFor({ target: 'react' }));
+    const expected = {
       '@pages/*': './src/pages/*',
       '@pages': './src/pages',
       '@components/*': './src/components/*',
@@ -40,7 +41,8 @@ describe('buildAliases', () => {
       '@config': './src/config',
       '@mocks/*': './__mocks__/*',
       '@mocks': './__mocks__',
-    });
+    };
+    expect(aliases).toEqual(expected);
   });
 
   it.each([
@@ -67,7 +69,8 @@ describe('buildAliases', () => {
   ] as const)('leads the %s map with its route unit', (target, alias, directory) => {
     const first = Object.entries(buildAliases(answersFor({ target })))[0];
 
-    expect(first).toEqual([alias, directory]);
+    const expected = [alias, directory];
+    expect(first).toEqual(expected);
   });
 
   it('gives a target with no route unit no route alias', () => {
@@ -118,13 +121,14 @@ describe('buildAliases', () => {
         return !(alias in standard);
       });
 
-    expect(added).toEqual([
+    const expected = [
       '@engine/*',
       '@engine',
       '@entry',
       '@flat/*',
       '@glob',
-    ]);
+    ];
+    expect(added).toEqual(expected);
 
     expect(aliases['@engine']).toBe('./src/engine');
     expect(aliases['@ui']).toBe('./src/ui-kit');

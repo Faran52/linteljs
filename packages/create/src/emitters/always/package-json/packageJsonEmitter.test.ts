@@ -59,7 +59,8 @@ describe('the mocking answer', () => {
       mocking: 'msw',
     }));
 
-    expect(patched).toMatchObject({ msw: { workerDirectory: [directory] } });
+    const expected = { msw: { workerDirectory: [directory] } };
+    expect(patched).toMatchObject(expected);
   });
 
   it('names the worker directory for a target that serves one, and omits the key otherwise', () => {
@@ -68,8 +69,10 @@ describe('the mocking answer', () => {
       mocking: 'msw',
     }));
 
-    expect(onReact).toMatchObject({ msw: { workerDirectory: ['public'] } });
-    expect(patchPackageJson({}, answersFor({ target: 'react' }))).not.toHaveProperty('msw');
+    const expected = { msw: { workerDirectory: ['public'] } };
+    expect(onReact).toMatchObject(expected);
+    const patchedPackageJson = patchPackageJson({}, answersFor({ target: 'react' }));
+    expect(patchedPackageJson).not.toHaveProperty('msw');
 
     const onNative = patchPackageJson({}, answersFor({
       target: 'react-native',
@@ -135,17 +138,19 @@ describe('patchPackageJson', () => {
     expect(patched.type).toBe('module');
     expect(patched.packageManager).toBe('pnpm@12.5.1');
 
-    expect(patched.engines).toEqual({
+    const expected = {
       node: '>=22.18',
       pnpm: `>=${MANAGER_FLOORS.pnpm}`,
-    });
+    };
+    expect(patched.engines).toEqual(expected);
 
-    expect(patched.devEngines).toEqual({
+    const expected2 = {
       packageManager: {
         name: 'pnpm',
         onFail: 'error',
       },
-    });
+    };
+    expect(patched.devEngines).toEqual(expected2);
   });
 
   it('writes no packageManager field for bun', () => {
@@ -156,20 +161,24 @@ describe('patchPackageJson', () => {
 
     expect(patched).not.toHaveProperty('packageManager');
 
-    expect(patched.engines).toEqual({
+    const expected = {
       node: NODE_ENGINE,
       bun: `>=${MANAGER_FLOORS.bun}`,
-    });
+    };
+    expect(patched.engines).toEqual(expected);
 
-    expect(patched.devEngines?.['packageManager']).toEqual({
+    const expected2 = {
       name: 'bun',
       onFail: 'error',
-    });
+    };
+    expect(patched.devEngines?.['packageManager']).toEqual(expected2);
   });
 
   it('names the entry only for the target whose runtime reads it', () => {
-    expect(patchPackageJson({}, answersFor({ target: 'react-native' }))).toHaveProperty('main', 'expo-router/entry');
-    expect(patchPackageJson({}, answersFor({}))).not.toHaveProperty('main');
+    const patchedPackageJson = patchPackageJson({}, answersFor({ target: 'react-native' }));
+    expect(patchedPackageJson).toHaveProperty('main', 'expo-router/entry');
+    const patchedPackageJson2 = patchPackageJson({}, answersFor({}));
+    expect(patchedPackageJson2).not.toHaveProperty('main');
   });
 
   it('marks every generated project private', () => {
@@ -189,7 +198,8 @@ describe('patchPackageJson', () => {
       'esbuild',
     ]));
 
-    expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('trustedDependencies');
+    const patchedPackageJson = patchPackageJson({}, answersFor({ packageManager: 'pnpm' }));
+    expect(patchedPackageJson).not.toHaveProperty('trustedDependencies');
   });
 
   it.each([
@@ -218,10 +228,11 @@ describe('patchPackageJson', () => {
       packageManager,
     }));
 
-    expect(patched[field]).toMatchObject({
+    const expected = {
       'left-pad': '1.0.0',
       [key]: pin,
-    });
+    };
+    expect(patched[field]).toMatchObject(expected);
   });
 
   it('writes no override field under pnpm, nor without NativeWind', () => {
@@ -246,15 +257,17 @@ describe('patchPackageJson', () => {
       packageManager: 'npm',
     }));
 
-    expect(npm.allowScripts).toMatchObject({
+    const expected = {
       'some-native': true,
       'esbuild': true,
       'lmdb': true,
       'fsevents': true,
       'unrs-resolver': true,
-    });
+    };
+    expect(npm.allowScripts).toMatchObject(expected);
 
-    expect(patchPackageJson({}, answersFor({ packageManager: 'pnpm' }))).not.toHaveProperty('allowScripts');
+    const patchedPackageJson = patchPackageJson({}, answersFor({ packageManager: 'pnpm' }));
+    expect(patchedPackageJson).not.toHaveProperty('allowScripts');
   });
 });
 
@@ -305,14 +318,17 @@ describe('resyncPackageJson', () => {
       : '';
     const synced = parsePackageJson(resynced);
 
-    expect(synced.dependencies).toEqual({ react: '^99.0.0' });
-    expect(synced.devDependencies).toEqual({ '@linteljs/eslint-config': VERSIONS['@linteljs/eslint-config'] });
+    const expected = { react: '^99.0.0' };
+    expect(synced.dependencies).toEqual(expected);
+    const expected2 = { '@linteljs/eslint-config': VERSIONS['@linteljs/eslint-config'] };
+    expect(synced.devDependencies).toEqual(expected2);
     expect(synced.scripts).toBeUndefined();
   });
 
   it('hands back the bytes it was given when nothing of linteljs is behind', () => {
     const current = '{ "devDependencies": { "@linteljs/eslint-config": "^9.0.0" } }';
 
-    expect(resyncPackageJson(current, answersFor({}))).toBe(current);
+    const resyncedPackageJson = resyncPackageJson(current, answersFor({}));
+    expect(resyncedPackageJson).toBe(current);
   });
 });

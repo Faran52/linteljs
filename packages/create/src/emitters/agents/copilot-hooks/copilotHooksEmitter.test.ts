@@ -18,7 +18,8 @@ describe('copilotHooksEmitter', () => {
     'codex',
     'cursor',
   ] as const)('writes nothing for %s without Copilot', (agent) => {
-    expect(copilotHooksEmitter(answersFor([agent]))).toEqual([]);
+    const copilotHooks = copilotHooksEmitter(answersFor([agent]));
+    expect(copilotHooks).toEqual([]);
   });
 
   it('writes one hooks file linteljs owns outright', async () => {

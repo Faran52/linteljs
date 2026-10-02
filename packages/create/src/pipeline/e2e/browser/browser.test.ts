@@ -45,19 +45,21 @@ describe('serveArgs', () => {
     const vite = serveArgs(projectWith('vite preview'), '4000');
     const next = serveArgs(projectWith('next start'), '4000');
 
-    expect(vite).toEqual([
+    const expected = [
       'exec',
       'vite',
       'preview',
       '--port',
       '4000',
-    ]);
+    ];
+    expect(vite).toEqual(expected);
 
-    expect(next).toEqual([
+    const expected2 = [
       'exec',
       'next',
       'start',
-    ]);
+    ];
+    expect(next).toEqual(expected2);
   });
 });
 

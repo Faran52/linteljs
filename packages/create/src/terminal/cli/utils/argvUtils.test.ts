@@ -13,7 +13,8 @@ describe('parseCliArgs', () => {
   });
 
   it('turns --no-install into skipping both the install and the fix that needs it', () => {
-    expect(parseCliArgs(['demo-app', '--no-install']).skip).toEqual(['install', 'fix']);
+    const expected = ['install', 'fix'];
+    expect(parseCliArgs(['demo-app', '--no-install']).skip).toEqual(expected);
   });
 
   it('carries --seed through for a directory the CLI did not make', () => {
@@ -62,8 +63,10 @@ describe('parseCliArgs', () => {
       'nonsense',
     ]);
 
-    expect(options.skip).toEqual(['standard']);
-    expect(options.unknownSkips).toEqual(['nonsense']);
+    const expected = ['standard'];
+    expect(options.skip).toEqual(expected);
+    const expected2 = ['nonsense'];
+    expect(options.unknownSkips).toEqual(expected2);
   });
 
   it('reports nothing unknown for a valid skip list', () => {
@@ -75,40 +78,49 @@ describe('parseCliArgs', () => {
   });
 
   it('collects an optional list flag given more than once, or comma-separated', () => {
+    const expected = { surfaces: ['popup', 'background'] };
+
     expect(parseCliArgs([
       '--surfaces',
       'popup',
       '--surfaces',
       'background',
     ]).answers)
-      .toEqual({ surfaces: ['popup', 'background'] });
+      .toEqual(expected);
+
+    const expected2 = { surfaces: ['popup', 'background'] };
 
     expect(parseCliArgs(['--surfaces', 'popup,background']).answers)
-      .toEqual({ surfaces: ['popup', 'background'] });
+      .toEqual(expected2);
   });
 
   it('reads an empty list flag as none', () => {
     const { answers } = parseCliArgs(['--libraries', '']);
 
-    expect(answers).toEqual({ libraries: [] });
+    const expected = { libraries: [] };
+    expect(answers).toEqual(expected);
   });
 
   it('carries a single answer flag under its answer key, unsplit', () => {
+    const expected = {
+      target: 'svelte',
+      typeSafety: 'relaxed',
+    };
+
     expect(parseCliArgs([
       '--target',
       'svelte',
       '--type-safety',
       'relaxed',
     ]).answers)
-      .toEqual({
-        target: 'svelte',
-        typeSafety: 'relaxed',
-      });
+      .toEqual(expected);
   });
 
   it('keeps extra positional arguments for main to reject', () => {
-    expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(['extra']);
-    expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(['extra']);
+    const expected = ['extra'];
+    expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(expected);
+    const expected2 = ['extra'];
+    expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(expected2);
   });
 });
 
@@ -150,11 +162,14 @@ describe('argumentError', () => {
       'Not a stage: lnt, fx.',
     ],
   ])('refuses %s', (_case, argv, message) => {
-    expect(argumentError(parseCliArgs(argv))?.startsWith(message)).toBe(true);
+    const messageStartsWith = argumentError(parseCliArgs(argv))?.startsWith(message);
+    expect(messageStartsWith).toBe(true);
   });
 
   it('names the stages it does know beside one it does not', () => {
-    expect(argumentError(parseCliArgs(['--skip', 'lnt'])))
+    const actual = argumentError(parseCliArgs(['--skip', 'lnt']));
+
+    expect(actual)
       .toContain('Pass one of: lint, package, standard, install, fix.');
   });
 
@@ -163,6 +178,7 @@ describe('argumentError', () => {
     ['no name', []],
     ['sync', ['sync']],
   ])('refuses nothing for %s', (_case, argv) => {
-    expect(argumentError(parseCliArgs(argv))).toBeUndefined();
+    const actual = argumentError(parseCliArgs(argv));
+    expect(actual).toBeUndefined();
   });
 });

@@ -62,7 +62,8 @@ export default config;
 
 describe('emitStylelintConfig', () => {
   it('extends the standard and the property order', () => {
-    expect(emitStylelintConfig(DEFAULT_ANSWERS)).toBe(PLAIN);
+    const stylelintConfig = emitStylelintConfig(DEFAULT_ANSWERS);
+    expect(stylelintConfig).toBe(PLAIN);
 
     const config = emitStylelintConfig({
       ...DEFAULT_ANSWERS,
@@ -179,10 +180,12 @@ describe('the tailwind nesting carve-out', () => {
 
 describe('stylelintConfigEmitter', () => {
   it('writes the emitted text to stylelint.config.js at the lint stage', () => {
-    expect(stylelintConfigEmitter(DEFAULT_ANSWERS)).toEqual([{
+    const stylelintConfig = stylelintConfigEmitter(DEFAULT_ANSWERS);
+    const expected = [{
       stage: 'lint',
       target: 'stylelint.config.js',
       content: { text: emitStylelintConfig(DEFAULT_ANSWERS) },
-    }]);
+    }];
+    expect(stylelintConfig).toEqual(expected);
   });
 });

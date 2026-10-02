@@ -78,7 +78,8 @@ describe('emitAngularConfig', () => {
   });
 
   it('names the package manager the project was created with', () => {
-    expect(emitAngularConfig('demo-app', 'yarn')).toContain('"cli": {\n    "packageManager": "yarn"\n  }');
+    const angularConfig = emitAngularConfig('demo-app', 'yarn');
+    expect(angularConfig).toContain('"cli": {\n    "packageManager": "yarn"\n  }');
   });
 });
 
@@ -89,14 +90,17 @@ describe('angularConfigEmitter', () => {
       target: 'angular',
     };
 
-    expect(angularConfigEmitter(answers, EMPTY_PROJECT, 'demo-app')).toEqual([{
+    const angularConfig = angularConfigEmitter(answers, EMPTY_PROJECT, 'demo-app');
+    const expected = [{
       stage: 'standard',
       target: 'angular.json',
       content: { text: emitAngularConfig('demo-app', answers.packageManager) },
-    }]);
+    }];
+    expect(angularConfig).toEqual(expected);
   });
 
   it('writes nothing for any other target', () => {
-    expect(angularConfigEmitter(HOSTED_DEFAULTS, EMPTY_PROJECT, 'demo-app')).toEqual([]);
+    const angularConfig = angularConfigEmitter(HOSTED_DEFAULTS, EMPTY_PROJECT, 'demo-app');
+    expect(angularConfig).toEqual([]);
   });
 });

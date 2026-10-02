@@ -37,12 +37,15 @@ const entryPathOf = (target: TargetId, styleEntries: string[]): string | undefin
 
 describe('the entry path', () => {
   it("takes the project's own entry over the target's default", () => {
-    expect(entryPathOf('webextension', ['src/styles/tailwind.css'])).toBe('src/styles/tailwind.css');
+    const entryPath = entryPathOf('webextension', ['src/styles/tailwind.css']);
+    expect(entryPath).toBe('src/styles/tailwind.css');
   });
 
   it('falls back to the target default when the project has none', () => {
-    expect(entryPathOf('webextension', [])).toBe('src/style.css');
-    expect(entryPathOf('next', [])).toBe('src/app/globals.css');
+    const entryPath = entryPathOf('webextension', []);
+    expect(entryPath).toBe('src/style.css');
+    const nextEntryPath = entryPathOf('next', []);
+    expect(nextEntryPath).toBe('src/app/globals.css');
   });
 
   it('can discover every default a target declares', () => {
@@ -56,21 +59,26 @@ describe('the entry path', () => {
   });
 
   it("takes the target's own entry over another the project also has", () => {
-    expect(entryPathOf('webextension', ['src/styles/global.css', 'src/style.css'])).toBe('src/style.css');
+    const entryPath = entryPathOf('webextension', ['src/styles/global.css', 'src/style.css']);
+    expect(entryPath).toBe('src/style.css');
   });
 
   it('takes the discovered one when the target default is absent', () => {
-    expect(entryPathOf('webextension', ['src/styles/global.css'])).toBe('src/styles/global.css');
+    const entryPath = entryPathOf('webextension', ['src/styles/global.css']);
+    expect(entryPath).toBe('src/styles/global.css');
   });
 });
 
 describe('mergeStyleEntry', () => {
   it('writes the import alone when there is no stylesheet yet', () => {
-    expect(mergeStyleEntry(null)).toBe(`${TAILWIND_IMPORT}\n`);
+    const mergedStyleEntry = mergeStyleEntry(null);
+    expect(mergedStyleEntry).toBe(`${TAILWIND_IMPORT}\n`);
   });
 
   it('prepends the import to a stylesheet the scaffolder wrote', () => {
-    expect(mergeStyleEntry(':root {\n  color: red;\n}\n')).toBe(
+    const mergedStyleEntry = mergeStyleEntry(':root {\n  color: red;\n}\n');
+
+    expect(mergedStyleEntry).toBe(
       `${TAILWIND_IMPORT}\n\n:root {\n  color: red;\n}\n`,
     );
   });
@@ -78,35 +86,42 @@ describe('mergeStyleEntry', () => {
   it('leaves a stylesheet that already imports tailwind untouched', () => {
     const current = `${TAILWIND_IMPORT}\n\n:root {\n  color: red;\n}\n`;
 
-    expect(mergeStyleEntry(current)).toBe(current);
+    const mergedStyleEntry = mergeStyleEntry(current);
+    expect(mergedStyleEntry).toBe(current);
   });
 
   it('recognises the other quoting a project may have used', () => {
     const current = "@import 'tailwindcss';\n";
 
-    expect(mergeStyleEntry(current)).toBe(current);
+    const mergedStyleEntry = mergeStyleEntry(current);
+    expect(mergedStyleEntry).toBe(current);
   });
 
   it('is idempotent', () => {
     const once = mergeStyleEntry('body { margin: 0; }\n');
 
-    expect(mergeStyleEntry(once)).toBe(once);
+    const mergedStyleEntry = mergeStyleEntry(once);
+    expect(mergedStyleEntry).toBe(once);
   });
 
   it('adds a line that is not an @import', () => {
-    expect(mergeStyleEntry('a {}\n', ['@layer base;'])).toContain('@layer base;');
+    const mergedStyleEntry = mergeStyleEntry('a {}\n', ['@layer base;']);
+    expect(mergedStyleEntry).toContain('@layer base;');
   });
 
   it('does not repeat an import spelled with two spaces', () => {
-    expect(mergeStyleEntry('@import  "./a.css";\n', ['@import  "./a.css";'])).toBe('@import  "./a.css";\n');
+    const mergedStyleEntry = mergeStyleEntry('@import  "./a.css";\n', ['@import  "./a.css";']);
+    expect(mergedStyleEntry).toBe('@import  "./a.css";\n');
   });
 
   it('tells two specifiers apart by their last character', () => {
-    expect(mergeStyleEntry('@import "./tokens1";\n', ['@import "./tokens2";'])).toContain('@import "./tokens2";');
+    const mergedStyleEntry = mergeStyleEntry('@import "./tokens1";\n', ['@import "./tokens2";']);
+    expect(mergedStyleEntry).toContain('@import "./tokens2";');
   });
 
   it('reads a dot in a specifier as a dot, not as any character', () => {
-    expect(mergeStyleEntry('@import "./aXcss";\n', ['@import "./a.css";'])).toContain('@import "./a.css";');
+    const mergedStyleEntry = mergeStyleEntry('@import "./aXcss";\n', ['@import "./a.css";']);
+    expect(mergedStyleEntry).toContain('@import "./a.css";');
   });
 });
 
@@ -119,7 +134,8 @@ describe('an entry that already imports tailwind another way', () => {
     ['more than one space', '@import  "tailwindcss";\n'],
     ['a subpath', '@import "tailwindcss/preflight.css";\n'],
   ])('leaves %s alone', (_label, current) => {
-    expect(mergeStyleEntry(current)).toBe(current);
+    const mergedStyleEntry = mergeStyleEntry(current);
+    expect(mergedStyleEntry).toBe(current);
   });
 });
 
@@ -127,13 +143,15 @@ describe('a target with its own import block', () => {
   const NATIVE = ['@import "tailwindcss/theme.css" layer(theme);', '@import "nativewind/theme";'];
 
   it('writes the block it was given', () => {
-    expect(mergeStyleEntry(null, NATIVE)).toBe(`${NATIVE.join('\n')}\n`);
+    const mergedStyleEntry = mergeStyleEntry(null, NATIVE);
+    expect(mergedStyleEntry).toBe(`${NATIVE.join('\n')}\n`);
   });
 
   it('is idempotent on a subpath import', () => {
     const once = mergeStyleEntry('.a { color: red; }\n', NATIVE);
 
-    expect(mergeStyleEntry(once, NATIVE)).toBe(once);
+    const mergedStyleEntry = mergeStyleEntry(once, NATIVE);
+    expect(mergedStyleEntry).toBe(once);
   });
 });
 
@@ -151,23 +169,31 @@ describe('the stylesheets a starter ships', () => {
   it('imports a gated stylesheet only under the answers that ship it', () => {
     const input = '@import "./components/ui/text-input/TextInput.css";';
 
-    expect(contentOf(styleEntryEmitter(answersFor({ form: 'tanstack-form' }), EMPTY_PROJECT)[0])).toContain(input);
-    expect(contentOf(styleEntryEmitter(answersFor({}), EMPTY_PROJECT)[0])).not.toContain(input);
+    const content = contentOf(styleEntryEmitter(answersFor({ form: 'tanstack-form' }), EMPTY_PROJECT)[0]);
+    expect(content).toContain(input);
+    const content2 = contentOf(styleEntryEmitter(answersFor({}), EMPTY_PROJECT)[0]);
+    expect(content2).not.toContain(input);
   });
 
   it('writes nothing for a target with neither a styling answer nor a starter stylesheet', () => {
-    expect(styleEntryEmitter(answersFor({ target: 'react-native' }), EMPTY_PROJECT)).toEqual([]);
+    const styleEntry = styleEntryEmitter(answersFor({ target: 'react-native' }), EMPTY_PROJECT);
+    expect(styleEntry).toEqual([]);
   });
 
   it('adds only what is missing, so a second run changes nothing', () => {
     const first = mergeStyleEntry(null, ['@import "./a.css";', '@import "./b.css";']);
 
-    expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";'])).toBe(first);
+    const mergedStyleEntry = mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";']);
+    expect(mergedStyleEntry).toBe(first);
 
-    expect(mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']))
+    const firstMergedStyleEntry = mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']);
+
+    expect(firstMergedStyleEntry)
       .toBe(`@import "./c.css";\n\n${first}`);
 
-    expect(mergeStyleEntry('.a {}\n', ['@import "./c.css";', '@import "./d.css";']))
+    const aMergedStyleEntry = mergeStyleEntry('.a {}\n', ['@import "./c.css";', '@import "./d.css";']);
+
+    expect(aMergedStyleEntry)
       .toBe('@import "./c.css";\n@import "./d.css";\n\n.a {}\n');
   });
 });
@@ -179,7 +205,8 @@ describe('the tailwind answer', () => {
       .split('\n');
 
     expect(lines[0]).toBe(TAILWIND_IMPORT);
-    expect(lines.at(-1)).toBe('@import "./styles/theme.css";');
+    const actual = lines.at(-1);
+    expect(actual).toBe('@import "./styles/theme.css";');
   });
 
   it('takes the block a target names in place of the bare import, and no theme where it names none', () => {
@@ -207,19 +234,26 @@ describe('the styling answer and the component stylesheets', () => {
       }, EMPTY_PROJECT)[0]);
     };
 
-    expect(entryFor(undefined)).toContain('app-header/AppHeader.css');
-    expect(entryFor('stylex')).not.toContain('app-header/AppHeader.css');
-    expect(entryFor('stylex')).toContain('tokens.css');
-    expect(entryFor('stylex')).toContain('base.css');
+    const entry = entryFor(undefined);
+    expect(entry).toContain('app-header/AppHeader.css');
+    const stylexEntry = entryFor('stylex');
+    expect(stylexEntry).not.toContain('app-header/AppHeader.css');
+    const entry2 = entryFor('stylex');
+    expect(entry2).toContain('tokens.css');
+    const entry3 = entryFor('stylex');
+    expect(entry3).toContain('base.css');
   });
 
   it('appends the stylex at-rule last, and only once', () => {
     const first = mergeStyleEntry(':root {\n  color: red;\n}\n', [], STYLEX_AT_RULE);
 
     expect(first).toBe(':root {\n  color: red;\n}\n\n@stylex;\n');
-    expect(mergeStyleEntry(first, [], STYLEX_AT_RULE)).toBe(first);
+    const mergedStyleEntry = mergeStyleEntry(first, [], STYLEX_AT_RULE);
+    expect(mergedStyleEntry).toBe(first);
 
-    expect(mergeStyleEntry(null, [TAILWIND_IMPORT], STYLEX_AT_RULE))
+    const mergedStyleEntry2 = mergeStyleEntry(null, [TAILWIND_IMPORT], STYLEX_AT_RULE);
+
+    expect(mergedStyleEntry2)
       .toBe(`${TAILWIND_IMPORT}\n\n@stylex;\n`);
   });
 
@@ -231,7 +265,9 @@ describe('the styling answer and the component stylesheets', () => {
       }, EMPTY_PROJECT)[0]);
     };
 
-    expect(entryFor('next')).toContain(STYLEX_AT_RULE);
-    expect(entryFor('react')).not.toContain(STYLEX_AT_RULE);
+    const entry = entryFor('next');
+    expect(entry).toContain(STYLEX_AT_RULE);
+    const reactEntry = entryFor('react');
+    expect(reactEntry).not.toContain(STYLEX_AT_RULE);
   });
 });

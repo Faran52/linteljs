@@ -8,7 +8,8 @@ describe('pluginsAnswer', () => {
   });
 
   it('defaults to values it offers', () => {
-    expect(Object.keys(pluginsAnswer.values)).toEqual(expect.arrayContaining([...pluginsAnswer.default]));
+    const actual = Object.keys(pluginsAnswer.values);
+    expect(actual).toEqual(expect.arrayContaining([...pluginsAnswer.default]));
   });
 
   it('is asked only once an agent has been chosen', () => {

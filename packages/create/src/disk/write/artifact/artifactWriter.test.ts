@@ -54,8 +54,10 @@ describe('artifactWriter', () => {
       preserve: true,
     } satisfies Artifact;
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(false);
-    await expect(readFile(join(cwd, 'kept.txt'), 'utf8')).resolves.toBe('project\n');
+    const cwdArtifact = await artifactWriter(cwd, artifact);
+    expect(cwdArtifact).toBe(false);
+    const file = await readFile(join(cwd, 'kept.txt'), 'utf8');
+    expect(file).toBe('project\n');
   });
 
   it('leaves an existing preserved artifact alone on a run that plants seeds too', async () => {
@@ -66,8 +68,10 @@ describe('artifactWriter', () => {
       preserve: true,
     } satisfies Artifact;
 
-    await expect(artifactWriter(cwd, artifact, true)).resolves.toBe(false);
-    await expect(readFile(join(cwd, 'kept.txt'), 'utf8')).resolves.toBe('project\n');
+    const cwdArtifact = await artifactWriter(cwd, artifact, true);
+    expect(cwdArtifact).toBe(false);
+    const file = await readFile(join(cwd, 'kept.txt'), 'utf8');
+    expect(file).toBe('project\n');
   });
 
   it('leaves a preserved artifact alone behind a live or a dangling symbolic link', async () => {
@@ -87,10 +91,14 @@ describe('artifactWriter', () => {
       await expect(written).resolves.toBe(false);
     }
 
-    await expect(readlink(join(cwd, 'live.md'))).resolves.toBe(live);
-    await expect(readlink(join(cwd, 'dangling.md'))).resolves.toBe(dangling);
-    await expect(readFile(live, 'utf8')).resolves.toBe('external\n');
-    await expect(stat(dangling)).rejects.toThrow('ENOENT');
+    const actual = await readlink(join(cwd, 'live.md'));
+    expect(actual).toBe(live);
+    const actual2 = await readlink(join(cwd, 'dangling.md'));
+    expect(actual2).toBe(dangling);
+    const file = await readFile(live, 'utf8');
+    expect(file).toBe('external\n');
+    const promise = stat(dangling);
+    await expect(promise).rejects.toThrow('ENOENT');
   });
 
   it('plants a seed artifact only on a run that plants seeds', async () => {
@@ -99,8 +107,10 @@ describe('artifactWriter', () => {
       seed: true,
     } satisfies Artifact;
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(false);
-    await expect(artifactWriter(cwd, artifact, true)).resolves.toBe(true);
+    const cwdArtifact = await artifactWriter(cwd, artifact);
+    expect(cwdArtifact).toBe(false);
+    const artifact2 = await artifactWriter(cwd, artifact, true);
+    expect(artifact2).toBe(true);
   });
 
   it('gives a merged artifact the current file and reports its write', async () => {
@@ -110,10 +120,11 @@ describe('artifactWriter', () => {
       return `${current ?? ''}merged\n`;
     });
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
+    const cwdArtifact = await artifactWriter(cwd, artifact);
+    expect(cwdArtifact).toBe(true);
 
-    await expect(readFile(join(cwd, 'settings.json'), 'utf8'))
-      .resolves.toBe('current\nmerged\n');
+    const file = await readFile(join(cwd, 'settings.json'), 'utf8');
+    expect(file).toBe('current\nmerged\n');
   });
 
   it('writes an artifact that requires files only once every one of them is there', async () => {
@@ -125,11 +136,13 @@ describe('artifactWriter', () => {
     await mkdir(join(cwd, 'src'));
     await writeFile(join(cwd, 'src/App.tsx'), '', 'utf8');
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(false);
+    const cwdArtifact = await artifactWriter(cwd, artifact);
+    expect(cwdArtifact).toBe(false);
 
     await writeFile(join(cwd, 'src/main.tsx'), '', 'utf8');
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
+    const artifact2 = await artifactWriter(cwd, artifact);
+    expect(artifact2).toBe(true);
   });
 
   it('gives a transformed artifact the current file', async () => {
@@ -146,8 +159,10 @@ describe('artifactWriter', () => {
       },
     } satisfies Artifact;
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
-    await expect(readFile(join(cwd, 'checker.ts'), 'utf8')).resolves.toBe('current\ntransformed\n');
+    const cwdArtifact = await artifactWriter(cwd, artifact);
+    expect(cwdArtifact).toBe(true);
+    const file = await readFile(join(cwd, 'checker.ts'), 'utf8');
+    expect(file).toBe('current\ntransformed\n');
   });
 
   it('makes an executable artifact executable', async () => {
@@ -156,12 +171,14 @@ describe('artifactWriter', () => {
       executable: true,
     } satisfies Artifact;
 
-    await expect(artifactWriter(cwd, artifact)).resolves.toBe(true);
+    const cwdArtifact = await artifactWriter(cwd, artifact);
+    expect(cwdArtifact).toBe(true);
     expect((await stat(join(cwd, 'hook.sh'))).mode & 0o111).toBe(0o111);
   });
 
   it('leaves an ordinary artifact without an execute bit', async () => {
-    await expect(artifactWriter(cwd, emitted('standard', 'notes.md', '# notes\n'))).resolves.toBe(true);
+    const artifact = await artifactWriter(cwd, emitted('standard', 'notes.md', '# notes\n'));
+    expect(artifact).toBe(true);
     expect((await stat(join(cwd, 'notes.md'))).mode & 0o111).toBe(0);
   });
 });

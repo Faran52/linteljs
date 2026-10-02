@@ -6,6 +6,7 @@ describe('agentsAnswer', () => {
   });
 
   it('defaults to values it offers', () => {
-    expect(Object.keys(agentsAnswer.values)).toEqual(expect.arrayContaining([...agentsAnswer.default]));
+    const actual = Object.keys(agentsAnswer.values);
+    expect(actual).toEqual(expect.arrayContaining([...agentsAnswer.default]));
   });
 });

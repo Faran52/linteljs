@@ -4,11 +4,13 @@ import { mockingAnswer } from './mockingAnswer';
 
 describe('mockingAnswer', () => {
   it('reads msw as the one mocking layer', () => {
-    expect(readAnswer(mockingAnswer, 'msw')).toBe('msw');
+    const answer = readAnswer(mockingAnswer, 'msw');
+    expect(answer).toBe('msw');
   });
 
   it('reads an absent answer as no mocking layer rather than refusing it', () => {
-    expect(readAnswer(mockingAnswer, undefined)).toBeUndefined();
+    const answer = readAnswer(mockingAnswer, undefined);
+    expect(answer).toBeUndefined();
   });
 
   it('refuses a layer it does not offer, naming the field and what it takes', () => {

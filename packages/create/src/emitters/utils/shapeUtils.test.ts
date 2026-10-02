@@ -15,17 +15,22 @@ describe('projectSpelling', () => {
   const CANDIDATES = ['src/styles/global.css', 'src/style.css'];
 
   it("takes the target's own over another the project also has, whatever the order", () => {
-    expect(projectSpelling('src/style.css', CANDIDATES)).toBe('src/style.css');
-    expect(projectSpelling('src/style.css', [...CANDIDATES].reverse())).toBe('src/style.css');
+    const actual = projectSpelling('src/style.css', CANDIDATES);
+    expect(actual).toBe('src/style.css');
+    const actual2 = projectSpelling('src/style.css', [...CANDIDATES].reverse());
+    expect(actual2).toBe('src/style.css');
   });
 
   it("takes the project's first when the target's own is not among them", () => {
-    expect(projectSpelling('src/index.css', CANDIDATES)).toBe('src/styles/global.css');
+    const actual = projectSpelling('src/index.css', CANDIDATES);
+    expect(actual).toBe('src/styles/global.css');
   });
 
   it('takes the default when the project holds none of them', () => {
-    expect(projectSpelling('src/style.css', [])).toBe('src/style.css');
-    expect(projectSpelling('src/style.css', EMPTY_PROJECT.styleEntries)).toBe('src/style.css');
+    const actual = projectSpelling('src/style.css', []);
+    expect(actual).toBe('src/style.css');
+    const actual2 = projectSpelling('src/style.css', EMPTY_PROJECT.styleEntries);
+    expect(actual2).toBe('src/style.css');
   });
 });
 
@@ -36,12 +41,14 @@ describe('setupTestsPath', () => {
     ['vue', '__mocks__/setupTests.ts'],
     ['solid', '__mocks__/setupTests.ts'],
   ])('names the %s setup file %s', (target, path) => {
-    expect(setupTestsPath(answersFor({ target }))).toBe(path);
+    const actual = setupTestsPath(answersFor({ target }));
+    expect(actual).toBe(path);
   });
 
   it('keeps the spelling a project already holds', () => {
     const answers = answersFor({ target: 'react' });
 
-    expect(setupTestsPath(answers, ['__mocks__/setupTests.ts'])).toBe('__mocks__/setupTests.ts');
+    const actual = setupTestsPath(answers, ['__mocks__/setupTests.ts']);
+    expect(actual).toBe('__mocks__/setupTests.ts');
   });
 });

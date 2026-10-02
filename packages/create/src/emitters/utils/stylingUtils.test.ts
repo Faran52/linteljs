@@ -10,15 +10,18 @@ const STYLEX_CALL = "stylex({ aliases: stylexAliases, useCSSLayers: { before: ['
 
 describe('stylingPlugin', () => {
   it('runs tailwind through its own vite plugin', () => {
-    expect(stylingPlugin('tailwind')).toStrictEqual({
+    const actual = stylingPlugin('tailwind');
+    const expected = {
       imports: ["import tailwindcss from '@tailwindcss/vite';"],
       declarations: [],
       call: 'tailwindcss()',
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 
   it('runs stylex through its own vite adapter, typed, in css layers', () => {
-    expect(stylingPlugin('stylex')).toStrictEqual({
+    const actual = stylingPlugin('stylex');
+    const expected = {
       imports: [
         "import { type UserOptions } from '@stylexjs/unplugin';",
         "import stylexVite from '@stylexjs/unplugin/vite';",
@@ -29,15 +32,18 @@ describe('stylingPlugin', () => {
         "const stylexAliases = { '@styles/*': [`${import.meta.dirname}/src/styles/*`] };",
       ],
       call: STYLEX_CALL,
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 
   it('takes the stylex adapter bare in a javascript config, which nothing type-lints', () => {
-    expect(stylingPlugin('stylex', false)).toStrictEqual({
+    const actual = stylingPlugin('stylex', false);
+    const expected = {
       imports: ["import stylex from '@stylexjs/unplugin/vite';"],
       declarations: ["const stylexAliases = { '@styles/*': [`${import.meta.dirname}/src/styles/*`] };"],
       call: STYLEX_CALL,
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 
   // The babel plugin reads no tsconfig paths: without this, `@styles/tokens.stylex` fails every stylex build.
@@ -49,9 +55,11 @@ describe('stylingPlugin', () => {
   });
 
   it('adds nothing without a styling answer', () => {
-    expect(stylingPlugin(undefined)).toStrictEqual({
+    const actual = stylingPlugin(undefined);
+    const expected = {
       imports: [],
       declarations: [],
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 });

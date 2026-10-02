@@ -46,10 +46,12 @@ describe('the starter gates', () => {
   ])('reads %s as store %s, form %s', (_case, overrides, store, form) => {
     const answers = answersFor(overrides);
 
-    expect([
+    const actual = [
       hasStore(answers),
       hasForm(answers),
-    ]).toEqual([store, form]);
+    ];
+    const expected = [store, form];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -68,18 +70,22 @@ describe('starterApplies', () => {
       }, answers),
     ];
 
-    expect(applies).toEqual([
+    const expected = [
       true,
       true,
       false,
-    ]);
+    ];
+    expect(applies).toEqual(expected);
   });
 });
 
 describe('hasI18n', () => {
   it('holds once any language is chosen', () => {
-    expect(hasI18n(answersFor({}))).toBe(false);
-    expect(hasI18n(answersFor({ languages: [] }))).toBe(false);
-    expect(hasI18n(answersFor({ languages: ['ko'] }))).toBe(true);
+    const actual = hasI18n(answersFor({}));
+    expect(actual).toBe(false);
+    const actual2 = hasI18n(answersFor({ languages: [] }));
+    expect(actual2).toBe(false);
+    const actual3 = hasI18n(answersFor({ languages: ['ko'] }));
+    expect(actual3).toBe(true);
   });
 });

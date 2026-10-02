@@ -148,45 +148,55 @@ describe('targetCases', () => {
         });
     };
 
-    expect(has('astro', (answers) => {
+    const astroHas = has('astro', (answers) => {
       return answers.hostedFramework === 'vue' && answers.data === 'tanstack-query';
-    })).toBe(true);
+    });
+    expect(astroHas).toBe(true);
 
-    expect(has('webextension', (answers) => {
+    const webextensionHas = has('webextension', (answers) => {
       return answers.hostedFramework === 'vue' && answers.data === 'tanstack-query';
-    })).toBe(true);
+    });
+    expect(webextensionHas).toBe(true);
 
-    expect(has('webextension', (answers) => {
+    const webextensionHas2 = has('webextension', (answers) => {
       return answers.browser === 'chrome';
-    })).toBe(true);
+    });
+    expect(webextensionHas2).toBe(true);
 
-    expect(has('angular', (answers) => {
+    const angularHas = has('angular', (answers) => {
       return answers.testing === 'none';
-    })).toBe(true);
+    });
+    expect(angularHas).toBe(true);
 
-    expect(has('react-native', (answers) => {
+    const reactNativeHas = has('react-native', (answers) => {
       return answers.testing === 'none';
-    })).toBe(true);
+    });
+    expect(reactNativeHas).toBe(true);
 
-    expect(has('react', (answers) => {
+    const reactHas = has('react', (answers) => {
       return answers.router === 'react-router-framework' && answers.styling === 'stylex';
-    })).toBe(true);
+    });
+    expect(reactHas).toBe(true);
 
-    expect(has('next', (answers) => {
+    const nextHas = has('next', (answers) => {
       return answers.store === 'zustand' && answers.form === 'tanstack-form';
-    })).toBe(true);
+    });
+    expect(nextHas).toBe(true);
 
-    expect(has('next', (answers) => {
+    const nextHas2 = has('next', (answers) => {
       return answers.styling === 'stylex';
-    })).toBe(true);
+    });
+    expect(nextHas2).toBe(true);
 
-    expect(has('angular', (answers) => {
+    const angularHas2 = has('angular', (answers) => {
       return answers.form === undefined;
-    })).toBe(true);
+    });
+    expect(angularHas2).toBe(true);
 
-    expect(has('angular', (answers) => {
+    const angularHas3 = has('angular', (answers) => {
       return answers.form === 'tanstack-form' && answers.libraries.includes('zod');
-    })).toBe(true);
+    });
+    expect(angularHas3).toBe(true);
   });
 
   it('offers no languages or every one on every target', () => {
@@ -197,7 +207,9 @@ describe('targetCases', () => {
         });
       const expected = ['none', valuesOf(ANSWERS.languages.values).join(',')];
 
-      expect([target, [...new Set(chosen)]]).toEqual([target, expected]);
+      const actual = [target, [...new Set(chosen)]];
+      const expected2 = [target, expected];
+      expect(actual).toEqual(expected2);
     }
   });
 
@@ -214,7 +226,9 @@ describe('targetCases', () => {
           return answers.languages?.includes('zh-TW') === true;
         });
 
-      expect([target, regional]).toEqual([target, true]);
+      const actual = [target, regional];
+      const expected = [target, true];
+      expect(actual).toEqual(expected);
     }
   });
 
@@ -226,7 +240,9 @@ describe('targetCases', () => {
           answers: item.answers,
         };
       })) {
-      expect([label, accepts(answers)]).toEqual([label, true]);
+      const actual = [label, accepts(answers)];
+      const expected = [label, true];
+      expect(actual).toEqual(expected);
     }
   });
 
@@ -253,17 +269,19 @@ describe('targetCases', () => {
               return answers.hostedFramework === hostedFramework && answers.form === form;
             });
 
-          expect([
+          const actual = [
             target,
             hostedFramework,
             form,
             offered,
-          ]).toEqual([
+          ];
+          const expected = [
             target,
             hostedFramework,
             form,
             accepted,
-          ]);
+          ];
+          expect(actual).toEqual(expected);
         }
       }
     }
@@ -300,49 +318,61 @@ describe('targetCases', () => {
         });
     };
 
-    expect(seen(({ packageManager }) => {
+    const actual = seen(({ packageManager }) => {
       return packageManager;
-    })).toEqual(all(valuesOf(ANSWERS.packageManager.values), false));
+    });
+    expect(actual).toEqual(all(valuesOf(ANSWERS.packageManager.values), false));
 
-    expect(seen(({ testing }) => {
+    const actual2 = seen(({ testing }) => {
       return testing;
-    })).toEqual(all(valuesOf(ANSWERS.testing.values), false));
+    });
+    expect(actual2).toEqual(all(valuesOf(ANSWERS.testing.values), false));
 
-    expect(seen(({ typeSafety }) => {
+    const actual3 = seen(({ typeSafety }) => {
       return typeSafety;
-    })).toEqual(['strict']);
+    });
+    const expected = ['strict'];
+    expect(actual3).toEqual(expected);
 
-    expect(seen(({ browser }) => {
+    const actual4 = seen(({ browser }) => {
       return browser;
-    })).toEqual(all(valuesOf(ANSWERS.browser.values), false));
+    });
+    expect(actual4).toEqual(all(valuesOf(ANSWERS.browser.values), false));
 
-    expect(seen(({ hostedFramework }) => {
+    const actual5 = seen(({ hostedFramework }) => {
       return hostedFramework;
-    })).toEqual(all(valuesOf(ANSWERS.hostedFramework.values), true));
+    });
+    expect(actual5).toEqual(all(valuesOf(ANSWERS.hostedFramework.values), true));
 
-    expect(seen(({ styling }) => {
+    const actual6 = seen(({ styling }) => {
       return styling;
-    })).toEqual(all(valuesOf(ANSWERS.styling.values), true));
+    });
+    expect(actual6).toEqual(all(valuesOf(ANSWERS.styling.values), true));
 
-    expect(seen(({ form }) => {
+    const actual7 = seen(({ form }) => {
       return form;
-    })).toEqual(all(valuesOf(ANSWERS.form.values), true));
+    });
+    expect(actual7).toEqual(all(valuesOf(ANSWERS.form.values), true));
 
-    expect(seen(({ router }) => {
+    const actual8 = seen(({ router }) => {
       return router;
-    })).toEqual(all(valuesOf(ANSWERS.router.values), true));
+    });
+    expect(actual8).toEqual(all(valuesOf(ANSWERS.router.values), true));
 
-    expect(seen(({ store }) => {
+    const actual9 = seen(({ store }) => {
       return store;
-    })).toEqual(all(valuesOf(ANSWERS.store.values), true));
+    });
+    expect(actual9).toEqual(all(valuesOf(ANSWERS.store.values), true));
 
-    expect(seen(({ data }) => {
+    const actual10 = seen(({ data }) => {
       return data;
-    })).toEqual(all(valuesOf(ANSWERS.data.values), true));
+    });
+    expect(actual10).toEqual(all(valuesOf(ANSWERS.data.values), true));
 
-    expect(seen(({ mocking }) => {
+    const actual11 = seen(({ mocking }) => {
       return mocking;
-    })).toEqual(all(valuesOf(ANSWERS.mocking.values), true));
+    });
+    expect(actual11).toEqual(all(valuesOf(ANSWERS.mocking.values), true));
   });
 
   it('carries every multi-select but libraries at its full value, and surfaces only where a target has them', () => {
@@ -483,13 +513,15 @@ describe('targetCases', () => {
 
       const managers = new Set(ran);
 
-      expect([target, [...managers]
+      const actual = [target, [...managers]
         .sort((left, right) => {
           return left.localeCompare(right);
-        })]).toEqual([target, valuesOf(ANSWERS.packageManager.values)
+        })];
+      const expected = [target, valuesOf(ANSWERS.packageManager.values)
         .toSorted((left, right) => {
           return left.localeCompare(right);
-        })]);
+        })];
+      expect(actual).toEqual(expected);
     }
   });
 

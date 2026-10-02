@@ -8,10 +8,12 @@ import { commitlintEmitter } from './commitlintEmitter';
 
 describe('commitlintEmitter', () => {
   it('copies the shipped config from the path it lands on', () => {
-    expect(commitlintEmitter()).toEqual([{
+    const commitlint = commitlintEmitter();
+    const expected = [{
       stage: 'standard',
       target: 'commitlint.config.js',
       content: { sources: ['project/commitlint.config.js'] },
-    }]);
+    }];
+    expect(commitlint).toEqual(expected);
   });
 });

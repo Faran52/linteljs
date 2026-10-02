@@ -12,7 +12,9 @@ const recorded = (name: string): string => {
 
 describe('emitLinteljsRecord', () => {
   it('names the project and carries the framework the target renders with', () => {
-    expect(emitLinteljsRecord(hostedAnswersFor({ packageManagerVersion: '12.4.1' }), 'my-app')).toBe(`\
+    const linteljsRecord = emitLinteljsRecord(hostedAnswersFor({ packageManagerVersion: '12.4.1' }), 'my-app');
+
+    expect(linteljsRecord).toBe(`\
 // Written once by @linteljs/create. Yours from here; only the starter pages read it.
 export const NAME = 'my-app';
 
@@ -109,7 +111,8 @@ export const ANSWERS = [
 
     expect(recorded).toContain("version: '26.9.0'");
     expect(recorded).toContain("version: '12.4.1'");
-    expect(emitLinteljsRecord(hostedAnswersFor(), 'my-app')).not.toContain("name: 'pnpm'");
+    const linteljsRecord = emitLinteljsRecord(hostedAnswersFor(), 'my-app');
+    expect(linteljsRecord).not.toContain("name: 'pnpm'");
   });
 
   it('prints every answer a prompt asked, and nothing a record never asks', () => {
@@ -128,10 +131,13 @@ export const ANSWERS = [
   });
 
   it('joins a multi-select into one line, and leaves an empty one out', () => {
-    expect(emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app'))
+    const linteljsRecord = emitLinteljsRecord(hostedAnswersFor({ libraries: ['zod', 'es-toolkit'] }), 'my-app');
+
+    expect(linteljsRecord)
       .toContain("value: 'zod, es-toolkit'");
 
-    expect(emitLinteljsRecord(hostedAnswersFor({ agents: [] }), 'my-app')).not.toContain("label: 'AI agents'");
+    const linteljsRecord2 = emitLinteljsRecord(hostedAnswersFor({ agents: [] }), 'my-app');
+    expect(linteljsRecord2).not.toContain("label: 'AI agents'");
   });
 });
 
@@ -146,10 +152,12 @@ describe('the gate it records', () => {
 
 describe('linteljsRecordEmitter', () => {
   it('writes it where every starter reads it', () => {
-    expect(linteljsRecordEmitter(hostedAnswersFor(), EMPTY_PROJECT, 'my-app')).toEqual([{
+    const linteljsRecord = linteljsRecordEmitter(hostedAnswersFor(), EMPTY_PROJECT, 'my-app');
+    const expected = [{
       stage: 'standard',
       target: 'src/config/linteljs.ts',
       content: { text: emitLinteljsRecord(hostedAnswersFor(), 'my-app') },
-    }]);
+    }];
+    expect(linteljsRecord).toEqual(expected);
   });
 });

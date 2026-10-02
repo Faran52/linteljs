@@ -49,7 +49,8 @@ const destinationsFor = (overrides: Partial<Answers> = {}): string[] => {
 
 describe('vueTarget', () => {
   it('routes whatever was answered', () => {
-    expect(destinationsFor()).toContain('src/router/index.ts');
+    const destinations = destinationsFor();
+    expect(destinations).toContain('src/router/index.ts');
 
     const headers = destinationsFor({ languages: ['ar'] })
       .filter((target) => {
@@ -60,9 +61,12 @@ describe('vueTarget', () => {
   });
 
   it('takes one store module per store it offers, and none without one', () => {
-    expect(destinationsFor()).not.toContain('src/lib/store/counter/counterStore.ts');
-    expect(destinationsFor({ store: 'pinia' })).toContain('src/lib/store/counter/counterStore.ts');
-    expect(destinationsFor({ store: 'tanstack-store' })).toContain('src/lib/store/counter/counterStore.ts');
+    const destinations = destinationsFor();
+    expect(destinations).not.toContain('src/lib/store/counter/counterStore.ts');
+    const destinations2 = destinationsFor({ store: 'pinia' });
+    expect(destinations2).toContain('src/lib/store/counter/counterStore.ts');
+    const destinations3 = destinationsFor({ store: 'tanstack-store' });
+    expect(destinations3).toContain('src/lib/store/counter/counterStore.ts');
   });
 
   it('installs a store plugin only for the store that needs one', () => {
@@ -80,13 +84,17 @@ describe('vueTarget', () => {
         })?.variant;
     };
 
-    expect(installs('pinia')).toBe('pinia');
-    expect(installs('tanstack-store')).toBeUndefined();
-    expect(installs(undefined)).toBeUndefined();
+    const actual = installs('pinia');
+    expect(actual).toBe('pinia');
+    const actual2 = installs('tanstack-store');
+    expect(actual2).toBeUndefined();
+    const actual3 = installs(undefined);
+    expect(actual3).toBeUndefined();
   });
 
   it('ships a button under no answers, since the status page retries with it', () => {
-    expect(destinationsFor()).toContain('src/components/ui/app-button/AppButton.vue');
+    const destinations = destinationsFor();
+    expect(destinations).toContain('src/components/ui/app-button/AppButton.vue');
   });
 
   it('names a single-file component by its own extension', () => {
@@ -94,10 +102,11 @@ describe('vueTarget', () => {
   });
 
   it('translates through vue-i18n, installed on every mount by the test setup', () => {
-    expect(vueTarget.i18n).toEqual({
+    const expected = {
       dependencies: ['vue-i18n'],
       testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
-    });
+    };
+    expect(vueTarget.i18n).toEqual(expected);
   });
 });
 
@@ -181,11 +190,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -195,9 +206,10 @@ describe('the favicon', () => {
       return file.target === 'public/favicon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

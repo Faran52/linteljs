@@ -10,7 +10,9 @@ import { adapterArtifact, emitAgentAdapter } from './adapterUtils';
 
 describe('emitAgentAdapter', () => {
   it('points at the skill, the gate, the comment rule and the git bans, and nothing else', () => {
-    expect(emitAgentAdapter(DEFAULT_ANSWERS)).toBe(`# LintelJS project
+    const agentAdapter = emitAgentAdapter(DEFAULT_ANSWERS);
+
+    expect(agentAdapter).toBe(`# LintelJS project
 
 - Before a change, follow \`plugins/linteljs/skills/linteljs/SKILL.md\`: it names the rule file for that kind of change.
 - Read \`package.json\` for exact scripts and dependency versions.

@@ -53,7 +53,8 @@ describe('emitYarnrc', () => {
     const output = emitYarnrc(answersFor({ form: 'tanstack-form' }));
 
     expect(output).toContain('  "@tanstack/react-form@*":\n    peerDependencies:\n      react-dom: "*"\n');
-    expect(emitYarnrc(answersFor({}))).not.toContain('@tanstack/react-form');
+    const yarnrc = emitYarnrc(answersFor({}));
+    expect(yarnrc).not.toContain('@tanstack/react-form');
   });
 
   it('answers the peers beneath the Angular TanStack packages only when they are chosen', () => {
@@ -78,8 +79,10 @@ describe('emitYarnrc', () => {
     expect(angular).toContain('  "@napi-rs/wasm-runtime@*":\n');
     expect(astro).toContain('  "@astrojs/language-server@*":\n');
     expect(astro).toContain('  "@napi-rs/wasm-runtime@*":\n');
-    expect(emitYarnrc(answersFor({ target: 'next' }))).toContain('  "@next/eslint-plugin-next@*":\n');
-    expect(emitYarnrc(answersFor({}))).not.toContain('@napi-rs/wasm-runtime');
+    const yarnrc = emitYarnrc(answersFor({ target: 'next' }));
+    expect(yarnrc).toContain('  "@next/eslint-plugin-next@*":\n');
+    const yarnrc2 = emitYarnrc(answersFor({}));
+    expect(yarnrc2).not.toContain('@napi-rs/wasm-runtime');
   });
 
   it('writes every extension under packageExtensions', () => {
@@ -109,22 +112,30 @@ describe('emitYarnrc', () => {
     expect(native).toContain('  "expo-linking@*":\n    peerDependencies:\n      expo: "*"\n');
     expect(native).not.toContain('react-native-css');
     expect(styled).toContain(css);
-    expect(emitYarnrc(answersFor({}))).not.toContain('react-native-worklets');
-    expect(emitYarnrc(answersFor({}))).not.toContain('@expo/cli');
+    const yarnrc = emitYarnrc(answersFor({}));
+    expect(yarnrc).not.toContain('react-native-worklets');
+    const yarnrc2 = emitYarnrc(answersFor({}));
+    expect(yarnrc2).not.toContain('@expo/cli');
   });
 
   it('walks the peers up that the router plugin and nuxt leave short', () => {
-    expect(emitYarnrc(answersFor({ router: 'tanstack-router' }))).toContain(
+    const yarnrc = emitYarnrc(answersFor({ router: 'tanstack-router' }));
+
+    expect(yarnrc).toContain(
       '  "@tanstack/eslint-plugin-router@*":\n    peerDependencies:\n      typescript: "*"\n',
     );
 
-    expect(emitYarnrc(answersFor({ target: 'nuxt' }))).toContain(
+    const yarnrc2 = emitYarnrc(answersFor({ target: 'nuxt' }));
+
+    expect(yarnrc2).toContain(
       '  "nuxt@*":\n    peerDependencies:\n      vite: "*"\n'
       + '  "@nuxt/devtools@*":\n    peerDependencies:\n      vue: "*"\n',
     );
 
-    expect(emitYarnrc(answersFor({ target: 'vue' }))).not.toContain('"nuxt@*"');
-    expect(emitYarnrc(answersFor({}))).not.toContain('eslint-plugin-router');
+    const yarnrc3 = emitYarnrc(answersFor({ target: 'vue' }));
+    expect(yarnrc3).not.toContain('"nuxt@*"');
+    const yarnrc4 = emitYarnrc(answersFor({}));
+    expect(yarnrc4).not.toContain('eslint-plugin-router');
   });
 
   it('discards no warning code on any target', () => {
@@ -135,7 +146,8 @@ describe('emitYarnrc', () => {
     ] as const) {
       const output = emitYarnrc(answersFor({ target }));
 
-      expect(output.startsWith(`${HEAD}packageExtensions:\n`)).toBe(true);
+      const actual = output.startsWith(`${HEAD}packageExtensions:\n`);
+      expect(actual).toBe(true);
     }
   });
 
@@ -156,7 +168,8 @@ describe('emitYarnrc', () => {
 
     expect(svelte).toContain('  "postcss-html@*":\n');
     expect(svelte).not.toContain('@vue/test-utils');
-    expect(emitYarnrc(answersFor({}))).not.toContain('postcss-html');
+    const yarnrc = emitYarnrc(answersFor({}));
+    expect(yarnrc).not.toContain('postcss-html');
   });
 
   it.each([
@@ -194,11 +207,13 @@ describe('emitYarnrc', () => {
 
 describe('yarnrcEmitter', () => {
   it('writes the yarnrc for berry and nothing for any other manager', () => {
-    expect(yarnrcEmitter(answersFor({}))).toEqual([{
+    const yarnrc = yarnrcEmitter(answersFor({}));
+    const expected = [{
       stage: 'package',
       target: '.yarnrc.yml',
       content: { text: emitYarnrc(answersFor({})) },
-    }]);
+    }];
+    expect(yarnrc).toEqual(expected);
 
     const artifacts = yarnrcEmitter({
       ...DEFAULT_ANSWERS,

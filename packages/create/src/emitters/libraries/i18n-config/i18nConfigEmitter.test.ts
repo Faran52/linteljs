@@ -27,15 +27,17 @@ describe('i18nConfigEmitter', () => {
 
     expect(svelte.at(1)?.target).toBe('project.inlang/settings.json');
     expect(svelte.at(1)?.seed).toBe(true);
-    expect(svelte.at(1)?.content).toEqual({ text: emitInlangSettings(['en', 'ja']) });
+    const expected = { text: emitInlangSettings(['en', 'ja']) };
+    expect(svelte.at(1)?.content).toEqual(expected);
 
-    expect(settings).toEqual({
+    const expected2 = {
       '$schema': 'https://inlang.com/schema/project-settings',
       'baseLocale': 'en',
       'locales': ['en', 'ja'],
       'modules': ['./node_modules/@inlang/plugin-message-format/dist/index.js'],
       'plugin.inlang.messageFormat': { pathPattern: './src/i18n/locales/{locale}/common.json' },
-    });
+    };
+    expect(settings).toEqual(expected2);
 
     expect(react).toHaveLength(1);
     expect(solid).toHaveLength(1);
@@ -52,7 +54,8 @@ describe('i18nConfigEmitter', () => {
         return artifact.target;
       });
 
-    expect(targets).toEqual(['src/i18n/config.ts']);
+    const expected = ['src/i18n/config.ts'];
+    expect(targets).toEqual(expected);
   });
 
   it('names each language in its own script, and its direction', () => {
@@ -68,7 +71,7 @@ describe('i18nConfigEmitter', () => {
         return /^ {4}(?:label|dir):/u.test(line);
       });
 
-    expect(named).toEqual([
+    const expected = [
       '    label: \'日本語\',',
       '    dir: \'ltr\',',
       '    label: \'한국어\',',
@@ -77,7 +80,8 @@ describe('i18nConfigEmitter', () => {
       '    dir: \'ltr\',',
       '    label: \'繁體中文\',',
       '    dir: \'ltr\',',
-    ]);
+    ];
+    expect(named).toEqual(expected);
   });
 
   it('seeds the config with English first, whatever was chosen', () => {
@@ -87,8 +91,10 @@ describe('i18nConfigEmitter', () => {
     expect(artifact?.target).toBe('src/i18n/config.ts');
     expect(artifact?.seed).toBe(true);
     expect(artifact?.stage).toBe('standard');
-    expect(artifact?.content).toEqual({ text });
-    expect(text.indexOf('id: \'en\'')).toBeLessThan(text.indexOf('id: \'ja\''));
+    const expected = { text };
+    expect(artifact?.content).toEqual(expected);
+    const index = text.indexOf('id: \'en\'');
+    expect(index).toBeLessThan(text.indexOf('id: \'ja\''));
   });
 
   it('imports each locale under a sorted, valid name and marks Arabic right to left', () => {
@@ -103,11 +109,12 @@ describe('i18nConfigEmitter', () => {
         return line.startsWith('import');
       });
 
-    expect(imports).toEqual([
+    const expected = [
       'import ar from \'./locales/ar/common.json\';',
       'import en from \'./locales/en/common.json\';',
       'import zhTw from \'./locales/zh-TW/common.json\';',
-    ]);
+    ];
+    expect(imports).toEqual(expected);
 
     expect(text).toContain('  {\n    id: \'ar\',\n    label: \'العربية\',\n    dir: \'rtl\',\n  },');
     expect(text).toContain('  \'zh-TW\': { common: zhTw },');

@@ -28,6 +28,7 @@ describe('DEFAULT_ANSWERS', () => {
       ...DEFAULT_ANSWERS,
     };
 
-    expect(parseLinteljsConfig(JSON.stringify(config))).toEqual(config);
+    const actual = parseLinteljsConfig(JSON.stringify(config));
+    expect(actual).toEqual(config);
   });
 });

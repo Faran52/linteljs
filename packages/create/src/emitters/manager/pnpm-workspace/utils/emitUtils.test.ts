@@ -20,7 +20,9 @@ describe('overridesBlock', () => {
 
 describe('allowBuildsBlock', () => {
   it('allows the four builds every target approves, sorted', () => {
-    expect(allowBuildsBlock(answersFor({ target: 'svelte' }))).toBe(
+    const actual = allowBuildsBlock(answersFor({ target: 'svelte' }));
+
+    expect(actual).toBe(
       'allowBuilds:\n'
       + "  '@swc/core': true\n"
       + "  'fsevents': true\n"
@@ -30,7 +32,9 @@ describe('allowBuildsBlock', () => {
   });
 
   it('allows only the shared builds for the react target', () => {
-    expect(allowBuildsBlock(answersFor({ target: 'react' }))).toBe(
+    const actual = allowBuildsBlock(answersFor({ target: 'react' }));
+
+    expect(actual).toBe(
       'allowBuilds:\n'
       + "  '@swc/core': true\n"
       + "  'fsevents': true\n"
@@ -56,8 +60,10 @@ describe('allowBuildsBlock', () => {
   });
 
   it('names no framework build where the host hosts none', () => {
-    expect(allowBuildsBlock(answersFor({ target: 'astro' }))).not.toContain('vue-demi');
-    expect(allowBuildsBlock(answersFor({ target: 'webextension' }))).not.toContain('vue-demi');
+    const actual = allowBuildsBlock(answersFor({ target: 'astro' }));
+    expect(actual).not.toContain('vue-demi');
+    const actual2 = allowBuildsBlock(answersFor({ target: 'webextension' }));
+    expect(actual2).not.toContain('vue-demi');
   });
 
   it('merges in the builds a target needs beyond the shared four, sorted with them', () => {

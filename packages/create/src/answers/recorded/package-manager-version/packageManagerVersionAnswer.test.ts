@@ -12,7 +12,9 @@ describe('packageManagerVersionAnswer', () => {
   it('accepts three fields and refuses a bare major', () => {
     const pattern = new RegExp(packageManagerVersionAnswer.pattern, 'u');
 
-    expect(pattern.test('12.5.1')).toBe(true);
-    expect(pattern.test('12')).toBe(false);
+    const matches = pattern.test('12.5.1');
+    expect(matches).toBe(true);
+    const matches2 = pattern.test('12');
+    expect(matches2).toBe(false);
   });
 });

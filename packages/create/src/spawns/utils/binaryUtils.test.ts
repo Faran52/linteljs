@@ -31,17 +31,20 @@ describe('resolvedBinary', () => {
     const resolved = resolvedBinary('node') ?? '';
 
     expect(resolved).toMatch(/node$/u);
-    expect(resolved.startsWith('/')).toBe(true);
+    const actual = resolved.startsWith('/');
+    expect(actual).toBe(true);
   });
 
   it('answers nothing for a name PATH does not carry', () => {
-    expect(resolvedBinary('linteljs-no-such-binary')).toBeUndefined();
+    const actual = resolvedBinary('linteljs-no-such-binary');
+    expect(actual).toBeUndefined();
   });
 
   it('answers nothing where PATH is unset', () => {
     vi.stubEnv('PATH', undefined);
 
-    expect(resolvedBinary('node')).toBeUndefined();
+    const actual = resolvedBinary('node');
+    expect(actual).toBeUndefined();
   });
 
   it('skips an empty PATH entry rather than reading it as the working directory', async () => {
@@ -52,10 +55,12 @@ describe('resolvedBinary', () => {
       await chmod(join(dir, 'tool'), 0o755);
 
       vi.stubEnv('PATH', dir);
-      expect(resolvedBinary('tool')).toBe(join(dir, 'tool'));
+      const actual = resolvedBinary('tool');
+      expect(actual).toBe(join(dir, 'tool'));
 
       vi.stubEnv('PATH', delimiter);
-      expect(resolvedBinary(relative(cwd(), join(dir, 'tool')))).toBeUndefined();
+      const actual2 = resolvedBinary(relative(cwd(), join(dir, 'tool')));
+      expect(actual2).toBeUndefined();
     }
     finally {
       await rm(dir, {

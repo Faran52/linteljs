@@ -10,7 +10,8 @@ import type { TextRecord } from '../types';
 
 describe('readAnswer', () => {
   it('reads a choice', () => {
-    expect(readAnswer(ANSWERS.testing, 'none')).toBe('none');
+    const answer = readAnswer(ANSWERS.testing, 'none');
+    expect(answer).toBe('none');
 
     expect(() => {
       return readAnswer(ANSWERS.testing, 'jest');
@@ -18,8 +19,10 @@ describe('readAnswer', () => {
   });
 
   it('reads an optional choice', () => {
-    expect(readAnswer(ANSWERS.form, 'tanstack-form')).toBe('tanstack-form');
-    expect(readAnswer(ANSWERS.form, undefined)).toBeUndefined();
+    const answer = readAnswer(ANSWERS.form, 'tanstack-form');
+    expect(answer).toBe('tanstack-form');
+    const answer2 = readAnswer(ANSWERS.form, undefined);
+    expect(answer2).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.form, 'formik');
@@ -27,7 +30,9 @@ describe('readAnswer', () => {
   });
 
   it('reads a multi', () => {
-    expect(readAnswer(ANSWERS.agents, ['codex', 'cursor'])).toEqual(['codex', 'cursor']);
+    const answer = readAnswer(ANSWERS.agents, ['codex', 'cursor']);
+    const expected = ['codex', 'cursor'];
+    expect(answer).toEqual(expected);
 
     expect(() => {
       return readAnswer(ANSWERS.agents, ['gemini']);
@@ -39,8 +44,11 @@ describe('readAnswer', () => {
   });
 
   it('reads an optional multi', () => {
-    expect(readAnswer(ANSWERS.surfaces, ['popup'])).toEqual(['popup']);
-    expect(readAnswer(ANSWERS.surfaces, undefined)).toBeUndefined();
+    const answer = readAnswer(ANSWERS.surfaces, ['popup']);
+    const expected = ['popup'];
+    expect(answer).toEqual(expected);
+    const answer2 = readAnswer(ANSWERS.surfaces, undefined);
+    expect(answer2).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.surfaces, ['sidebar']);
@@ -52,8 +60,11 @@ describe('readAnswer', () => {
   });
 
   it('reads a list', () => {
-    expect(readAnswer(ANSWERS.ignores, ['generated/api.ts'])).toEqual(['generated/api.ts']);
-    expect(readAnswer(ANSWERS.ignores, undefined)).toBeUndefined();
+    const answer = readAnswer(ANSWERS.ignores, ['generated/api.ts']);
+    const expected = ['generated/api.ts'];
+    expect(answer).toEqual(expected);
+    const answer2 = readAnswer(ANSWERS.ignores, undefined);
+    expect(answer2).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.ignores, []);
@@ -69,8 +80,10 @@ describe('readAnswer', () => {
   });
 
   it('reads a text', () => {
-    expect(readAnswer(ANSWERS.packageManagerVersion, '12.5.1')).toBe('12.5.1');
-    expect(readAnswer(ANSWERS.packageManagerVersion, undefined)).toBeUndefined();
+    const answer = readAnswer(ANSWERS.packageManagerVersion, '12.5.1');
+    expect(answer).toBe('12.5.1');
+    const answer2 = readAnswer(ANSWERS.packageManagerVersion, undefined);
+    expect(answer2).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.packageManagerVersion, 12);
@@ -90,8 +103,11 @@ describe('readAnswer', () => {
   });
 
   it('reads a map', () => {
-    expect(readAnswer(ANSWERS.aliases, { '@app/*': 'src/*' })).toEqual({ '@app/*': 'src/*' });
-    expect(readAnswer(ANSWERS.aliases, undefined)).toBeUndefined();
+    const answer = readAnswer(ANSWERS.aliases, { '@app/*': 'src/*' });
+    const expected = { '@app/*': 'src/*' };
+    expect(answer).toEqual(expected);
+    const answer2 = readAnswer(ANSWERS.aliases, undefined);
+    expect(answer2).toBeUndefined();
 
     expect(() => {
       return readAnswer(ANSWERS.aliases, { 'app/*': 'src/*' });
@@ -133,35 +149,47 @@ describe('readAnswer, on the wrong shape', () => {
       pattern: '^.$',
     };
 
-    expect(readAnswer(record, '\u{1F600}')).toBe('\u{1F600}');
+    const answer = readAnswer(record, '\u{1F600}');
+    expect(answer).toBe('\u{1F600}');
   });
 });
 
 describe('unaskedValueOf', () => {
   it('lets the kind decide, not a default the record carries', () => {
-    expect(unaskedValueOf({
+    const unaskedValue = unaskedValueOf({
       ...ANSWERS.testing,
       kind: 'optionalChoice',
       none: { label: 'None' },
-    })).toBeUndefined();
+    });
+    expect(unaskedValue).toBeUndefined();
   });
 
   it('answers nothing for a kind a target never asks', () => {
-    expect(unaskedValueOf(ANSWERS.store)).toBeUndefined();
-    expect(unaskedValueOf(ANSWERS.router)).toBeUndefined();
+    const unaskedValue = unaskedValueOf(ANSWERS.store);
+    expect(unaskedValue).toBeUndefined();
+    const unaskedValue2 = unaskedValueOf(ANSWERS.router);
+    expect(unaskedValue2).toBeUndefined();
   });
 
   it('answers the default for the two kinds required in Answers', () => {
-    expect(unaskedValueOf(ANSWERS.testing)).toBe('vitest');
-    expect(unaskedValueOf(ANSWERS.agents)).toEqual(['claude-code']);
+    const unaskedValue = unaskedValueOf(ANSWERS.testing);
+    expect(unaskedValue).toBe('vitest');
+    const unaskedValue2 = unaskedValueOf(ANSWERS.agents);
+    const expected = ['claude-code'];
+    expect(unaskedValue2).toEqual(expected);
   });
 
   it('answers undefined for the five kinds optional in Answers', () => {
-    expect(unaskedValueOf(ANSWERS.form)).toBeUndefined();
-    expect(unaskedValueOf(ANSWERS.surfaces)).toBeUndefined();
-    expect(unaskedValueOf(ANSWERS.ignores)).toBeUndefined();
-    expect(unaskedValueOf(ANSWERS.aliases)).toBeUndefined();
-    expect(unaskedValueOf(ANSWERS.nodeVersion)).toBeUndefined();
+    const unaskedValue = unaskedValueOf(ANSWERS.form);
+    expect(unaskedValue).toBeUndefined();
+    const unaskedValue2 = unaskedValueOf(ANSWERS.surfaces);
+    expect(unaskedValue2).toBeUndefined();
+    const unaskedValue3 = unaskedValueOf(ANSWERS.ignores);
+    expect(unaskedValue3).toBeUndefined();
+    const unaskedValue4 = unaskedValueOf(ANSWERS.aliases);
+    expect(unaskedValue4).toBeUndefined();
+    const unaskedValue5 = unaskedValueOf(ANSWERS.nodeVersion);
+    expect(unaskedValue5).toBeUndefined();
   });
 });
 

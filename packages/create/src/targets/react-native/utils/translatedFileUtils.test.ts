@@ -50,11 +50,12 @@ describe('reactNativeI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...translatedOf(ENGLISH_FILES),
       'src/app/_layout.tsx@i18n',
       ...I18N_ONLY,
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the Tailwind layout translated under Tailwind', () => {
@@ -64,11 +65,12 @@ describe('reactNativeI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...translatedOf(ENGLISH_FILES),
       'src/app/_layout.tsx@tailwind-i18n',
       ...I18N_ONLY,
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise, its layout per styling', () => {
@@ -78,8 +80,10 @@ describe('reactNativeI18nFiles', () => {
       styling: 'tailwind',
     }));
 
-    expect(plain).toEqual([...ENGLISH_FILES, 'src/app/_layout.tsx']);
-    expect(tailwind).toEqual([...ENGLISH_FILES, 'src/app/_layout.tsx@tailwind']);
+    const expected = [...ENGLISH_FILES, 'src/app/_layout.tsx'];
+    expect(plain).toEqual(expected);
+    const expected2 = [...ENGLISH_FILES, 'src/app/_layout.tsx@tailwind'];
+    expect(tailwind).toEqual(expected2);
   });
 });
 
@@ -102,13 +106,14 @@ describe('reactNativeI18nTests', () => {
         return test.covers;
       });
 
-    expect(written).toEqual([
+    const expected = [
       ...translatedOf(SUITES),
       'src/i18n/index.test.ts@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
 
-    expect(covers).toEqual([
+    const expected2 = [
       'src/app/about.tsx',
       'src/app/about.tsx',
       'src/app/version.tsx',
@@ -119,7 +124,8 @@ describe('reactNativeI18nTests', () => {
       `${STATUS_PAGE}.tsx`,
       'src/i18n/index.ts',
       'src/components/features/language-select/LanguageSelect.tsx',
-    ]);
+    ];
+    expect(covers).toEqual(expected2);
   });
 
   it('writes the English suites otherwise', () => {

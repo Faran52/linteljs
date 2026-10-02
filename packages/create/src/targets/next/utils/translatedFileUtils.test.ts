@@ -39,7 +39,7 @@ describe('nextI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...ENGLISH_FILES
         .map((file) => {
           return `${file}@i18n`;
@@ -47,7 +47,8 @@ describe('nextI18nFiles', () => {
       'src/components/features/language-select/LanguageSelect.tsx@i18n',
       'src/lib/providers/i18n/I18nProvider.tsx@i18n',
       'src/i18n/index.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise', () => {
@@ -78,8 +79,10 @@ describe('nextI18nFiles', () => {
       languages: ['ko'],
     }));
 
-    expect(english).toEqual(['src/app/contact/page.tsx']);
-    expect(translated).toEqual(['src/app/contact/page.tsx@i18n']);
+    const expected = ['src/app/contact/page.tsx'];
+    expect(english).toEqual(expected);
+    const expected2 = ['src/app/contact/page.tsx@i18n'];
+    expect(translated).toEqual(expected2);
     expect(formless).toEqual([]);
   });
 });
@@ -105,7 +108,7 @@ describe('nextI18nTests', () => {
         return test.covers;
       });
 
-    expect(written).toEqual([
+    const expected = [
       ...SUITES
         .map((suite) => {
           return `${suite}@i18n`;
@@ -114,7 +117,8 @@ describe('nextI18nTests', () => {
       'src/lib/providers/i18n/I18nProvider.test.tsx@i18n',
       'src/components/features/status-page/StatusPage.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
 
     expect(covers).toContain('src/app/not-found.tsx');
     expect(covers).toContain('src/i18n/index.ts');
@@ -123,9 +127,10 @@ describe('nextI18nTests', () => {
   it('keeps the English suites, the status page from React', () => {
     const written = writtenUnder(nextI18nTests(), answersFor({ target: 'next' }));
 
-    expect(written).toEqual([
+    const expected = [
       ...SUITES,
       'react:src/components/features/status-page/StatusPage.test.tsx',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 });

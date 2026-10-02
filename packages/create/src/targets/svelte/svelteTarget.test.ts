@@ -52,14 +52,16 @@ describe('svelteTarget', () => {
     expect(svelteTarget.i18n?.dependencies).toEqual([]);
     expect(svelteTarget.i18n?.compiler?.command).toContain('--outdir ./.svelte-kit/paraglide');
 
-    expect(svelteTarget.i18n?.compiler?.devDependencies).toEqual([
+    const expected = [
       '@inlang/paraglide-js',
       '@inlang/plugin-message-format',
-    ]);
+    ];
+    expect(svelteTarget.i18n?.compiler?.devDependencies).toEqual(expected);
   });
 
   it('admits the route segments a file-based router owns', () => {
-    expect(svelteTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
+    const expected = { 'src/**/': FOLDER_ROUTED };
+    expect(svelteTarget.folderNaming).toEqual(expected);
   });
 });
 
@@ -152,11 +154,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -166,10 +170,11 @@ describe('the favicon', () => {
       return file.target === 'static/favicon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'static/favicon.svg',
       shared: true,
       source: 'public/favicon.svg',
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

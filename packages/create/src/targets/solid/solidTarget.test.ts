@@ -44,11 +44,13 @@ describe('solidTarget', () => {
   });
 
   it('admits the route segments a file-based router owns', () => {
-    expect(solidTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
+    const expected = { 'src/**/': FOLDER_ROUTED };
+    expect(solidTarget.folderNaming).toEqual(expected);
   });
 
   it('translates through the Solid primitive alone, with no compiler and no test setup', () => {
-    expect(solidTarget.i18n).toEqual({ dependencies: ['@solid-primitives/i18n'] });
+    const expected = { dependencies: ['@solid-primitives/i18n'] };
+    expect(solidTarget.i18n).toEqual(expected);
   });
 });
 
@@ -131,11 +133,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -145,9 +149,10 @@ describe('the favicon', () => {
       return file.target === 'public/favicon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

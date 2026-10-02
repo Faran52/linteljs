@@ -43,7 +43,7 @@ describe('svelteI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...ENGLISH_FILES
         .map((file) => {
           return `${file}@i18n`;
@@ -51,7 +51,8 @@ describe('svelteI18nFiles', () => {
       'src/components/features/language-select/LanguageSelect.svelte@i18n',
       'src/components/ui/code-text/CodeText.svelte@i18n',
       'src/i18n/index.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise', () => {
@@ -82,8 +83,10 @@ describe('svelteI18nFiles', () => {
       languages: ['ko'],
     }));
 
-    expect(english).toEqual(['src/routes/contact/+page.svelte']);
-    expect(translated).toEqual(['src/routes/contact/+page.svelte@i18n']);
+    const expected = ['src/routes/contact/+page.svelte'];
+    expect(english).toEqual(expected);
+    const expected2 = ['src/routes/contact/+page.svelte@i18n'];
+    expect(translated).toEqual(expected2);
     expect(formless).toEqual([]);
   });
 });
@@ -100,7 +103,7 @@ describe('svelteI18nTests', () => {
         return test.covers;
       });
 
-    expect(written).toEqual([
+    const expected = [
       ...SUITES
         .map((suite) => {
           return `${suite}@i18n`;
@@ -108,7 +111,8 @@ describe('svelteI18nTests', () => {
       'src/components/features/language-select/LanguageSelect.test.ts@i18n',
       'src/components/ui/code-text/CodeText.test.ts@i18n',
       'src/i18n/index.test.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
 
     expect(covers).toContain('src/routes/+layout.svelte');
     expect(covers).toContain('src/components/ui/code-text/CodeText.svelte');

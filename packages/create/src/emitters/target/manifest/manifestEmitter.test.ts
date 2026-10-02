@@ -69,12 +69,15 @@ const manifestFor = (overrides: AnswerOverrides = {}): Manifest => {
 
 describe('emitManifest', () => {
   it('writes nothing for a target that is not an extension', () => {
-    expect(emitManifest(answersFor({ target: 'react' }), 'demo-app')).toBeNull();
-    expect(emitManifest(answersFor({ target: 'astro' }), 'demo-app')).toBeNull();
+    const manifest = emitManifest(answersFor({ target: 'react' }), 'demo-app');
+    expect(manifest).toBeNull();
+    const manifest2 = emitManifest(answersFor({ target: 'astro' }), 'demo-app');
+    expect(manifest2).toBeNull();
   });
 
   it('names the project and ships an empty permission surface', () => {
-    expect(manifestFor()).toStrictEqual({
+    const manifest = manifestFor();
+    const expected = {
       manifest_version: 3,
       name: 'demo-app',
       version: '0.1.0',
@@ -86,40 +89,48 @@ describe('emitManifest', () => {
       },
       permissions: [],
       host_permissions: [],
-    });
+    };
+    expect(manifest).toStrictEqual(expected);
   });
 
   it('defaults to a popup and a background entry', () => {
     const manifest = manifestFor();
 
-    expect(manifest.action).toEqual({ default_popup: 'index.html' });
+    const expected = { default_popup: 'index.html' };
+    expect(manifest.action).toEqual(expected);
 
-    expect(manifest.background).toEqual({
+    const expected2 = {
       service_worker: 'src/background/index.ts',
       type: 'module',
-    });
+    };
+    expect(manifest.background).toEqual(expected2);
 
     expect(manifest.devtools_page).toBeUndefined();
   });
 
   it('spells the background entry the way the browser expects', () => {
+    const expected = {
+      service_worker: 'src/background/index.ts',
+      type: 'module',
+    };
+
     expect(manifestFor({ browser: 'chrome' }).background)
-      .toEqual({
-        service_worker: 'src/background/index.ts',
-        type: 'module',
-      });
+      .toEqual(expected);
+
+    const expected2 = { scripts: ['src/background/index.ts'] };
 
     expect(manifestFor({ browser: 'firefox' }).background)
-      .toEqual({ scripts: ['src/background/index.ts'] });
+      .toEqual(expected2);
   });
 
   it('carries gecko settings on firefox and not on chrome', () => {
-    expect(manifestFor({ browser: 'firefox' }).browser_specific_settings).toEqual({
+    const expected = {
       gecko: {
         id: 'demo-app@example.com',
         strict_min_version: '140.0',
       },
-    });
+    };
+    expect(manifestFor({ browser: 'firefox' }).browser_specific_settings).toEqual(expected);
 
     expect(manifestFor({ browser: 'chrome' }).browser_specific_settings).toBeUndefined();
   });
@@ -147,7 +158,8 @@ describe('emitManifest', () => {
   it('emits formatted json ending in a newline', () => {
     const emitted = emitManifest(answersFor(), 'demo-app');
 
-    expect(emitted?.endsWith('}\n')).toBe(true);
+    const actual = emitted?.endsWith('}\n');
+    expect(actual).toBe(true);
     expect(emitted).toContain('\n  "manifest_version": 3,');
   });
 });
@@ -176,11 +188,12 @@ describe('manifestEmitter', () => {
         ];
       });
 
-    expect(shapes).toEqual([[
+    const expected = [[
       'standard',
       'manifest.json',
       true,
-    ]]);
+    ]];
+    expect(shapes).toEqual(expected);
 
     expect(manifestsFor({})['manifest.json']?.name).toBe('demo-app');
   });
@@ -197,7 +210,9 @@ describe('manifestEmitter', () => {
   it('writes a second manifest, named for its browser, for a project packaged for two stores', () => {
     const manifests = manifestsFor({ browsers: ['chrome', 'firefox'] });
 
-    expect(Object.keys(manifests)).toEqual(['manifest.json', 'manifest.firefox.json']);
+    const actual = Object.keys(manifests);
+    const expected = ['manifest.json', 'manifest.firefox.json'];
+    expect(actual).toEqual(expected);
     expect(manifests['manifest.json']?.browser_specific_settings).toBeUndefined();
     expect(manifests['manifest.firefox.json']?.browser_specific_settings).toBeDefined();
     expect(manifests['manifest.json']?.background).toHaveProperty('service_worker');

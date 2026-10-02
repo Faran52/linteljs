@@ -38,7 +38,7 @@ describe('solidI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...ENGLISH_FILES
         .map((file) => {
           return `${file}@i18n`;
@@ -46,7 +46,8 @@ describe('solidI18nFiles', () => {
       'src/components/features/language-select/LanguageSelect.tsx@i18n',
       'src/components/ui/code-text/CodeText.tsx@i18n',
       'src/i18n/index.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise', () => {
@@ -77,8 +78,10 @@ describe('solidI18nFiles', () => {
       languages: ['ko'],
     }));
 
-    expect(english).toEqual(['src/pages/contact/ContactPage.tsx']);
-    expect(translated).toEqual(['src/pages/contact/ContactPage.tsx@i18n']);
+    const expected = ['src/pages/contact/ContactPage.tsx'];
+    expect(english).toEqual(expected);
+    const expected2 = ['src/pages/contact/ContactPage.tsx@i18n'];
+    expect(translated).toEqual(expected2);
     expect(formless).toEqual([]);
   });
 });
@@ -95,19 +98,21 @@ describe('solidI18nTests', () => {
         return test.covers;
       });
 
-    expect(written).toEqual([
+    const expected = [
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
       'src/components/ui/code-text/CodeText.test.tsx@i18n',
       'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
 
-    expect(covers).toEqual([
+    const expected2 = [
       'src/components/features/language-select/LanguageSelect.tsx',
       'src/components/ui/code-text/CodeText.tsx',
       'src/components/features/app-header/AppHeader.tsx',
       'src/i18n/index.ts',
-    ]);
+    ];
+    expect(covers).toEqual(expected2);
   });
 
   it('adds no suite otherwise', () => {

@@ -37,13 +37,16 @@ describe('bannedPatternsEmitter', () => {
         return target;
       });
 
-    expect(targets).toEqual(['scripts/checkBannedPatterns.ts']);
+    const expected = ['scripts/checkBannedPatterns.ts'];
+    expect(targets).toEqual(expected);
   });
 });
 
 describe('checkerArtifact', () => {
   it.each<TypeSafety>(['strict', 'relaxed'])('writes the %s floor into the shipped checker', (typeSafety) => {
-    expect(transformOf(answersFor({ typeSafety }))(readFileSync(SHIPPED, 'utf8'), null))
+    const actual = transformOf(answersFor({ typeSafety }))(readFileSync(SHIPPED, 'utf8'), null);
+
+    expect(actual)
       .toContain(`const TYPE_SAFETY: TypeSafety = '${typeSafety}';`);
   });
 
@@ -59,7 +62,9 @@ describe('checkerArtifact', () => {
     ['vue', "[\n  '.ts',\n  '.tsx',\n  '.vue',\n]"],
     ['svelte', "[\n  '.ts',\n  '.tsx',\n  '.svelte',\n]"],
   ])('writes the extensions a directory is scanned for on %s', (target, extensions) => {
-    expect(transformOf(answersFor({ target }))(readFileSync(SHIPPED, 'utf8'), null))
+    const actual = transformOf(answersFor({ target }))(readFileSync(SHIPPED, 'utf8'), null);
+
+    expect(actual)
       .toContain(`const SCANNED_EXTENSIONS: string[] = ${extensions};`);
   });
 
@@ -73,7 +78,8 @@ describe('checkerArtifact', () => {
     const source = "const TYPE_SAFETY: TypeSafety = 'strict';\n"
       + "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];\nconst PROJECT_SKIPPED: string[] = [];\n";
 
-    expect(transformOf(answersFor({}))(source, null)).toBe(source);
+    const actual = transformOf(answersFor({}))(source, null);
+    expect(actual).toBe(source);
   });
 });
 

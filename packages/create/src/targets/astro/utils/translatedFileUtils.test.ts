@@ -42,7 +42,7 @@ describe('astroI18nFiles', () => {
   it('writes the translated starter once a language is chosen, with its client script', () => {
     const written = writtenUnder(astroI18nFiles(), withLanguage());
 
-    expect(written).toEqual([
+    const expected = [
       'src/layouts/Layout.astro@i18n',
       ...ENGLISH_FILES
         .map((file) => {
@@ -50,7 +50,8 @@ describe('astroI18nFiles', () => {
         }),
       'src/i18n/index.ts@i18n',
       'src/components/ui/code-text/CodeText.astro@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('translates the StyleX layout as its own twin', () => {
@@ -63,7 +64,8 @@ describe('astroI18nFiles', () => {
   it('writes the English starter otherwise', () => {
     const written = writtenUnder(astroI18nFiles(), answersFor({ target: 'astro' }));
 
-    expect(written).toEqual(['src/layouts/Layout.astro', ...ENGLISH_FILES]);
+    const expected = ['src/layouts/Layout.astro', ...ENGLISH_FILES];
+    expect(written).toEqual(expected);
   });
 });
 
@@ -72,7 +74,8 @@ describe('astroI18nTests', () => {
     const written = writtenUnder(astroI18nTests(), withLanguage());
     const english = writtenUnder(astroI18nTests(), answersFor({ target: 'astro' }));
 
-    expect(written).toEqual(['src/i18n/index.test.ts@i18n']);
+    const expected = ['src/i18n/index.test.ts@i18n'];
+    expect(written).toEqual(expected);
     expect(english).toEqual([]);
   });
 });

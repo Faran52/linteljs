@@ -38,7 +38,8 @@ describe('mergeCursorHooks', () => {
       hooks: OURS,
     });
 
-    expect(merged.endsWith('}\n')).toBe(true);
+    const actual = merged.endsWith('}\n');
+    expect(actual).toBe(true);
   });
 
   it('keeps a project\'s own hooks and writes its own exactly once however often it runs', () => {
@@ -60,7 +61,8 @@ describe('mergeCursorHooks', () => {
       },
     });
 
-    expect(mergeCursorHooks(once)).toBe(once);
+    const mergedCursorHooks = mergeCursorHooks(once);
+    expect(mergedCursorHooks).toBe(once);
   });
 
   it('drops its own stale entries and an event they alone filled', () => {
@@ -155,7 +157,8 @@ describe('cursorHooksEmitter', () => {
     'codex',
     'copilot',
   ] as const)('writes nothing for %s without Cursor', (agent) => {
-    expect(cursorHooksEmitter(answersFor([agent]))).toEqual([]);
+    const cursorHooks = cursorHooksEmitter(answersFor([agent]));
+    expect(cursorHooks).toEqual([]);
   });
 
   it('merges .cursor/hooks.json and marks it removable', () => {

@@ -74,7 +74,7 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(result).toEqual({
+    const expected = {
       name: 'demo-app',
       answers: {
         target: 'svelte',
@@ -92,7 +92,8 @@ describe('ask', () => {
           'frontend-design',
         ],
       },
-    });
+    };
+    expect(result).toEqual(expected);
   });
 
   it('asks the browser and the UI framework for an extension, and records both', async () => {
@@ -162,7 +163,8 @@ describe('ask', () => {
     ]);
 
     expect(recorded.calls).toContain('Surfaces');
-    expect(result.answers.surfaces).toEqual(['devtools-panel']);
+    const expected = ['devtools-panel'];
+    expect(result.answers.surfaces).toEqual(expected);
   });
 
   it('will not take the surfaces question left untouched, which ticks none', async () => {
@@ -241,13 +243,15 @@ describe('ask', () => {
   it('throws before the first answer when the terminal is already gone', async () => {
     const recorded = scripted([]);
 
-    await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
+    const promise = ask(recorded.prompter);
+    await expect(promise).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
   it('throws once the script runs out, even partway through', async () => {
     const recorded = scripted(['demo-app']);
 
-    await expect(ask(recorded.prompter)).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
+    const promise = ask(recorded.prompter);
+    await expect(promise).rejects.toThrow(NOTHING_ANSWERED_MESSAGE);
   });
 
   it('throws a distinct, calm error when a person cancels mid-questionnaire', async () => {
@@ -276,10 +280,11 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(result).toEqual({
+    const expected = {
       name: 'demo-app',
       answers: DEFAULT_ANSWERS,
-    });
+    };
+    expect(result).toEqual(expected);
   });
 
   it.each<[string, string[], string[] | undefined]>([
@@ -334,10 +339,11 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(result.answers).toMatchObject({
+    const expected = {
       agents: ['claude-code', 'codex'],
       plugins: [],
-    });
+    };
+    expect(result.answers).toMatchObject(expected);
   });
 
   it('selects one agent and a plugin subset, normalized to declaration order', async () => {
@@ -359,10 +365,11 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(result.answers).toMatchObject({
+    const expected = {
       agents: ['codex'],
       plugins: ['ponytail', 'frontend-design'],
-    });
+    };
+    expect(result.answers).toMatchObject(expected);
   });
 
   it('offers every option in the product\'s own name and casing', async () => {
@@ -383,7 +390,7 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(recorded.labels).toMatchObject({
+    const expected = {
       'Testing': ['Vitest', 'None'],
       'Libraries': [
         'Zod',
@@ -415,7 +422,8 @@ describe('ask', () => {
         'GitHub Copilot',
         'Cursor',
       ],
-    });
+    };
+    expect(recorded.labels).toMatchObject(expected);
   });
 
   it('skips the plugins question when no agent was chosen', async () => {
@@ -437,10 +445,11 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(result.answers).toMatchObject({
+    const expected = {
       agents: [],
       plugins: [],
-    });
+    };
+    expect(result.answers).toMatchObject(expected);
 
     expect(recorded.calls).not.toContain('AI plugins');
   });
@@ -464,13 +473,14 @@ describe('ask', () => {
       undefined,
     ]);
 
-    expect(recorded.labels).toMatchObject({
+    const expected = {
       'AI plugins': [
         'Ponytail',
         'Context7',
         'Frontend Design',
       ],
-    });
+    };
+    expect(recorded.labels).toMatchObject(expected);
   });
 
   describe('a name already resolved', () => {
@@ -522,12 +532,13 @@ describe('the store question', () => {
     expect(result.answers.store).toBe('redux-toolkit');
     expect(recorded.calls[7]).toBe('State store');
 
-    expect(recorded.labels['State store']).toEqual([
+    const expected = [
       'None',
       'Zustand',
       'Redux Toolkit',
       'TanStack Store',
-    ]);
+    ];
+    expect(recorded.labels['State store']).toEqual(expected);
   });
 
   it('names the stores the target actually brings, not React\'s', async () => {
@@ -548,10 +559,11 @@ describe('the store question', () => {
       undefined,
     ]);
 
-    expect(recorded.labels['State store']).toEqual([
+    const expected = [
       'None',
       'NgRx SignalStore',
-    ]);
+    ];
+    expect(recorded.labels['State store']).toEqual(expected);
   });
 
   it('takes None as an answer of its own', async () => {
@@ -682,7 +694,8 @@ describe('the form library and router questions', () => {
       undefined,
     ]);
 
-    expect(result.answers.libraries).toEqual(['zod']);
+    const expected = ['zod'];
+    expect(result.answers.libraries).toEqual(expected);
     expect(result.answers.styling).toBe('tailwind');
     expect(result.answers.form).toBe('react-hook-form');
   });
@@ -742,13 +755,15 @@ describe('the form library and router questions', () => {
       undefined,
     ]);
 
-    expect(vue.recorded.labels['Form library']).toEqual(['None', 'TanStack Form']);
+    const expected = ['None', 'TanStack Form'];
+    expect(vue.recorded.labels['Form library']).toEqual(expected);
 
-    expect(hostedReact.recorded.labels['Form library']).toEqual([
+    const expected2 = [
       'None',
       'TanStack Form',
       'React Hook Form',
-    ]);
+    ];
+    expect(hostedReact.recorded.labels['Form library']).toEqual(expected2);
   });
 
   it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
@@ -769,11 +784,12 @@ describe('the form library and router questions', () => {
       undefined,
     ]);
 
-    expect(recorded.labels['Form library']).toEqual([
+    const expected = [
       'None',
       'TanStack Form',
       'React Hook Form',
-    ]);
+    ];
+    expect(recorded.labels['Form library']).toEqual(expected);
   });
 
   it('asks for a router on React alone, and records the one chosen', async () => {
@@ -829,18 +845,22 @@ describe('confirm', () => {
     const no = await confirm(recorded.prompter, 'Apply?');
     const defaulted = await confirm(recorded.prompter, 'Apply?');
 
-    expect([
+    const actual = [
       yes,
       no,
       defaulted,
-    ]).toEqual([
+    ];
+    const expected = [
       true,
       false,
       false,
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
-    expect(recorded.labels['Apply?']).toEqual(['Yes', 'No']);
-    await expect(confirm(recorded.prompter, 'Apply?')).rejects.toBeInstanceOf(RunCancelled);
+    const expected2 = ['Yes', 'No'];
+    expect(recorded.labels['Apply?']).toEqual(expected2);
+    const promise = confirm(recorded.prompter, 'Apply?');
+    await expect(promise).rejects.toBeInstanceOf(RunCancelled);
   });
 });
 
@@ -872,7 +892,7 @@ describe('inquirerPrompter', () => {
 
     expect(answer).toBe('react');
 
-    expect(vi.mocked(select).mock.calls[0]?.[0]).toStrictEqual({
+    const expected = {
       message: 'Framework',
       default: 'react',
       pageSize: 2,
@@ -887,7 +907,8 @@ describe('inquirerPrompter', () => {
           name: 'Vue',
         },
       ],
-    });
+    };
+    expect(vi.mocked(select).mock.calls[0]?.[0]).toStrictEqual(expected);
   });
 
   it('asks a multi as a checkbox, ticking what the record defaults to', async () => {
@@ -910,9 +931,10 @@ describe('inquirerPrompter', () => {
       ],
     });
 
-    expect(answer).toEqual(['zod']);
+    const expected = ['zod'];
+    expect(answer).toEqual(expected);
 
-    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toStrictEqual({
+    const expected2 = {
       message: 'Libraries',
       required: false,
       pageSize: 2,
@@ -929,7 +951,8 @@ describe('inquirerPrompter', () => {
           checked: false,
         },
       ],
-    });
+    };
+    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toStrictEqual(expected2);
   });
 
   it('asks the name as an input, translating what its validation answers', async () => {
@@ -947,8 +970,10 @@ describe('inquirerPrompter', () => {
     const asked = vi.mocked(input).mock.calls[0]?.[0];
 
     expect(asked?.message).toBe('Project name');
-    expect(asked?.validate?.('my-app')).toBe(true);
-    expect(asked?.validate?.('My-App')).toBe('must be a name');
+    const actual = asked?.validate?.('my-app');
+    expect(actual).toBe(true);
+    const actual2 = asked?.validate?.('My-App');
+    expect(actual2).toBe('must be a name');
   });
 
   it('answers the cancel symbol when the question is exited', async () => {
@@ -963,7 +988,8 @@ describe('inquirerPrompter', () => {
       },
     });
 
-    expect(inquirerPrompter.isCancel(answer)).toBe(true);
+    const answerIsCancel = inquirerPrompter.isCancel(answer);
+    expect(answerIsCancel).toBe(true);
   });
 
   it('rethrows anything that is not an exit', async () => {
@@ -979,7 +1005,9 @@ describe('inquirerPrompter', () => {
   });
 
   it('knows a value from the cancel symbol', () => {
-    expect(inquirerPrompter.isCancel('react')).toBe(false);
-    expect(inquirerPrompter.isCancel(['zod'])).toBe(false);
+    const reactIsCancel = inquirerPrompter.isCancel('react');
+    expect(reactIsCancel).toBe(false);
+    const actual = inquirerPrompter.isCancel(['zod']);
+    expect(actual).toBe(false);
   });
 });

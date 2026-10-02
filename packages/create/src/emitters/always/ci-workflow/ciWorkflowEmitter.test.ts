@@ -13,7 +13,8 @@ import type { PackageManager } from '@config/types';
 
 describe('emitCiWorkflow', () => {
   it('runs the same gate the project runs locally', () => {
-    expect(emitCiWorkflow(hostedAnswersFor({}))).toContain('- run: pnpm check');
+    const ciWorkflow = emitCiWorkflow(hostedAnswersFor({}));
+    expect(ciWorkflow).toContain('- run: pnpm check');
   });
 
   it('names a script the project actually declares', () => {
@@ -33,19 +34,27 @@ describe('emitCiWorkflow', () => {
   });
 
   it('runs CI on the major of the node that made the project', () => {
-    expect(emitCiWorkflow(hostedAnswersFor({ nodeVersion: '26.9.0' }))).toContain('node-version: 26\n');
+    const ciWorkflow = emitCiWorkflow(hostedAnswersFor({ nodeVersion: '26.9.0' }));
+    expect(ciWorkflow).toContain('node-version: 26\n');
   });
 
   it('installs without letting the manager edit the lockfile', () => {
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'pnpm' })))
+    const ciWorkflow = emitCiWorkflow(hostedAnswersFor({ packageManager: 'pnpm' }));
+
+    expect(ciWorkflow)
       .toContain('pnpm install --frozen-lockfile');
 
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'npm' }))).toContain('npm ci');
+    const ciWorkflow2 = emitCiWorkflow(hostedAnswersFor({ packageManager: 'npm' }));
+    expect(ciWorkflow2).toContain('npm ci');
 
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'yarn' })))
+    const ciWorkflow3 = emitCiWorkflow(hostedAnswersFor({ packageManager: 'yarn' }));
+
+    expect(ciWorkflow3)
       .toContain('yarn install --immutable');
 
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' })))
+    const ciWorkflow4 = emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' }));
+
+    expect(ciWorkflow4)
       .toContain('bun install --frozen-lockfile');
   });
 
@@ -102,14 +111,19 @@ describe('emitCiWorkflow', () => {
       - run: yarn check
 `],
   ])('writes the steps a %s project runs', (packageManager, steps) => {
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager })).endsWith(steps)).toBe(true);
+    const stepsEndsWith = emitCiWorkflow(hostedAnswersFor({ packageManager })).endsWith(steps);
+    expect(stepsEndsWith).toBe(true);
   });
 
   it('sets the two managers up that the runner does not carry', () => {
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'pnpm' }))).toContain('pnpm/action-setup@');
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' }))).toContain('oven-sh/setup-bun@');
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'npm' }))).not.toContain('action-setup');
-    expect(emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' }))).not.toContain('cache:');
+    const ciWorkflow = emitCiWorkflow(hostedAnswersFor({ packageManager: 'pnpm' }));
+    expect(ciWorkflow).toContain('pnpm/action-setup@');
+    const ciWorkflow2 = emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' }));
+    expect(ciWorkflow2).toContain('oven-sh/setup-bun@');
+    const ciWorkflow3 = emitCiWorkflow(hostedAnswersFor({ packageManager: 'npm' }));
+    expect(ciWorkflow3).not.toContain('action-setup');
+    const ciWorkflow4 = emitCiWorkflow(hostedAnswersFor({ packageManager: 'bun' }));
+    expect(ciWorkflow4).not.toContain('cache:');
   });
 
   it('pins the third-party action to a commit and keeps the first-party ones on a major', () => {
@@ -123,17 +137,20 @@ describe('emitCiWorkflow', () => {
   });
 
   it('reads nothing it does not need from the workflow token', () => {
-    expect(emitCiWorkflow(hostedAnswersFor({}))).toContain('permissions:\n  contents: read');
+    const ciWorkflow = emitCiWorkflow(hostedAnswersFor({}));
+    expect(ciWorkflow).toContain('permissions:\n  contents: read');
   });
 });
 
 describe('ciWorkflowEmitter', () => {
   it('writes the emitted text to .github/workflows/ci.yml at the standard stage, once, at birth', () => {
-    expect(ciWorkflowEmitter(hostedAnswersFor({}))).toEqual([{
+    const ciWorkflow = ciWorkflowEmitter(hostedAnswersFor({}));
+    const expected = [{
       stage: 'standard',
       target: '.github/workflows/ci.yml',
       content: { text: emitCiWorkflow(hostedAnswersFor({})) },
       preserve: true,
-    }]);
+    }];
+    expect(ciWorkflow).toEqual(expected);
   });
 });

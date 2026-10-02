@@ -52,7 +52,8 @@ const plantStylelint = async (body: string): Promise<void> => {
 
 describe('nextStep', () => {
   it('names the install and lint:fix commands for the chosen package manager', () => {
-    expect(nextStep(DEFAULT_ANSWERS)).toBe('next: pnpm install && pnpm lint:fix');
+    const actual = nextStep(DEFAULT_ANSWERS);
+    expect(actual).toBe('next: pnpm install && pnpm lint:fix');
   });
 
   it('uses run for a package manager whose script form needs it', () => {
@@ -73,7 +74,8 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual(['next: pnpm install && pnpm lint:fix']);
+    const expected = ['next: pnpm install && pnpm lint:fix'];
+    expect(notices).toEqual(expected);
   });
 
   it('does nothing observable when no callback is given', async () => {
@@ -110,7 +112,8 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual([notice]);
+    const expected = [notice];
+    expect(notices).toEqual(expected);
   });
 
   it('runs eslint over the whole project, fixing, with the JSON formatter', async () => {
@@ -125,7 +128,8 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual(['eslint --fix: 1 file changed']);
+    const expected = ['eslint --fix: 1 file changed'];
+    expect(notices).toEqual(expected);
   });
 
   it('survives eslint output that is not parseable JSON, counting nothing fixed', async () => {
@@ -137,7 +141,8 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual(['eslint --fix: nothing to fix']);
+    const expected = ['eslint --fix: nothing to fix'];
+    expect(notices).toEqual(expected);
   });
 
   it('degrades to a warning rather than throwing when eslint exits with a config failure', async () => {
@@ -149,9 +154,10 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual([
+    const expected = [
       'eslint --fix could not run; run it yourself once dependencies are installed',
-    ]);
+    ];
+    expect(notices).toEqual(expected);
   });
 
   it('runs the stylelint pass over the css glob once eslint has run', async () => {
@@ -170,7 +176,8 @@ describe('fixPass', () => {
     const argv = await readFile(join(cwd, 'stylelint-argv'), 'utf8');
 
     expect(argv).toBe('src/**/*.css --fix --allow-empty-input');
-    expect(notices).toEqual(['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix']);
+    const expected = ['eslint --fix: nothing to fix', 'stylelint --fix: nothing to fix'];
+    expect(notices).toEqual(expected);
   });
 
   it('counts the style files stylelint rewrote, by their content', async () => {
@@ -192,7 +199,8 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual(['eslint --fix: nothing to fix', 'stylelint --fix: 1 file changed']);
+    const expected = ['eslint --fix: nothing to fix', 'stylelint --fix: 1 file changed'];
+    expect(notices).toEqual(expected);
   });
 
   it('warns rather than throwing when stylelint is present but cannot spawn', async () => {
@@ -206,10 +214,11 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual([
+    const expected = [
       'eslint --fix: nothing to fix',
       'stylelint --fix could not run; run it yourself once dependencies are installed',
-    ]);
+    ];
+    expect(notices).toEqual(expected);
   });
 
   it('does not run stylelint at all when there is no binary for it', async () => {
@@ -221,6 +230,7 @@ describe('fixPass', () => {
       notices.push(message);
     });
 
-    expect(notices).toEqual(['eslint --fix: nothing to fix']);
+    const expected = ['eslint --fix: nothing to fix'];
+    expect(notices).toEqual(expected);
   });
 });

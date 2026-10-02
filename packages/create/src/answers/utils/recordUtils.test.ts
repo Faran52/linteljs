@@ -14,12 +14,15 @@ describe('refusedValue', () => {
   });
 
   it('names the value its target refuses, and nothing where it fits', () => {
-    expect(refusedValue(formAnswer, 'react-hook-form', vue, DEFAULT_ANSWERS)).toBe('react-hook-form');
-    expect(refusedValue(formAnswer, 'react-hook-form', targetFor(DEFAULT_ANSWERS), DEFAULT_ANSWERS)).toBeUndefined();
+    const actual = refusedValue(formAnswer, 'react-hook-form', vue, DEFAULT_ANSWERS);
+    expect(actual).toBe('react-hook-form');
+    const actual2 = refusedValue(formAnswer, 'react-hook-form', targetFor(DEFAULT_ANSWERS), DEFAULT_ANSWERS);
+    expect(actual2).toBeUndefined();
   });
 
   it('refuses nothing that is not a string, however it reads', () => {
-    expect(refusedValue(formAnswer, ['react-hook-form'], vue, DEFAULT_ANSWERS)).toBeUndefined();
+    const actual = refusedValue(formAnswer, ['react-hook-form'], vue, DEFAULT_ANSWERS);
+    expect(actual).toBeUndefined();
   });
 });
 
@@ -65,8 +68,11 @@ describe('onlyFor', () => {
   });
 
   it('answers undefined where there is no predicate to answer with', () => {
-    expect(onlyFor(formAnswer, 'tanstack-form')).toBeUndefined();
-    expect(onlyFor(formAnswer, 'formik')).toBeUndefined();
-    expect(onlyFor(nodeVersionAnswer, '26.1.0')).toBeUndefined();
+    const only = onlyFor(formAnswer, 'tanstack-form');
+    expect(only).toBeUndefined();
+    const formAnswerOnly = onlyFor(formAnswer, 'formik');
+    expect(formAnswerOnly).toBeUndefined();
+    const nodeVersionAnswerOnly = onlyFor(nodeVersionAnswer, '26.1.0');
+    expect(nodeVersionAnswerOnly).toBeUndefined();
   });
 });

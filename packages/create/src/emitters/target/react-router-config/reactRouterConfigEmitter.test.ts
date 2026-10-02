@@ -30,18 +30,23 @@ describe('reactRouterConfigEmitter', () => {
       router: 'react-router-framework',
     }, EMPTY_PROJECT, 'demo-app');
 
-    expect(artifacts).toEqual([{
+    const expected = [{
       stage: 'package',
       target: 'react-router.config.ts',
       content: { text: emitReactRouterConfig() },
-    }]);
+    }];
+    expect(artifacts).toEqual(expected);
 
-    expect(targetsOf({ router: 'react-router' })).toEqual([]);
-    expect(targetsOf({})).toEqual([]);
+    const targets = targetsOf({ router: 'react-router' });
+    expect(targets).toEqual([]);
+    const targets2 = targetsOf({});
+    expect(targets2).toEqual([]);
   });
 
   it('names src as the source root, so nothing downstream learns a second one', () => {
-    expect(emitReactRouterConfig()).toBe([
+    const reactRouterConfig = emitReactRouterConfig();
+
+    expect(reactRouterConfig).toBe([
       "import type { Config } from '@react-router/dev/config';",
       '',
       'export default {',

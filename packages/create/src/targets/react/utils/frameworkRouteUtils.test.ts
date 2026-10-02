@@ -58,7 +58,8 @@ describe('frameworkRouteFiles', () => {
   it('routes the three pages without a form', () => {
     const files = pickedBy(frameworkRouteFiles(), FRAMEWORK);
 
-    expect(files).toEqual([...PAGES, 'src/routes.ts react-router-framework']);
+    const expected = [...PAGES, 'src/routes.ts react-router-framework'];
+    expect(files).toEqual(expected);
   });
 
   it.each(['tanstack-form', 'react-hook-form'] as const)('routes the contact page under %s', (form) => {
@@ -67,11 +68,12 @@ describe('frameworkRouteFiles', () => {
       form,
     });
 
-    expect(files).toEqual([
+    const expected = [
       ...PAGES,
       'src/routes.ts with-form',
       'src/routes/contact.tsx react-router-framework',
-    ]);
+    ];
+    expect(files).toEqual(expected);
   });
 });
 
@@ -89,7 +91,8 @@ describe('frameworkRouteTests', () => {
   it('suites the route config without a form', () => {
     const suites = pickedBy(frameworkRouteTests(), FRAMEWORK);
 
-    expect(suites).toEqual([...PAGE_SUITES, 'src/routes.test.ts react-router-framework']);
+    const expected = [...PAGE_SUITES, 'src/routes.test.ts react-router-framework'];
+    expect(suites).toEqual(expected);
   });
 
   it('suites the contact route under a form', () => {
@@ -98,11 +101,12 @@ describe('frameworkRouteTests', () => {
       form: 'tanstack-form',
     });
 
-    expect(suites).toEqual([
+    const expected = [
       ...PAGE_SUITES,
       'src/routes.test.ts with-form',
       'src/routes/contact.test.tsx react-router-framework',
-    ]);
+    ];
+    expect(suites).toEqual(expected);
   });
 
   it('covers each route module with its own suite', () => {
@@ -111,13 +115,14 @@ describe('frameworkRouteTests', () => {
         return `${covers} ${target}`;
       });
 
-    expect(pairs).toEqual([
+    const expected = [
       'src/routes/home.tsx src/routes/home.test.tsx',
       'src/routes/about.tsx src/routes/about.test.tsx',
       'src/routes/version.tsx src/routes/version.test.tsx',
       'src/routes.ts src/routes.test.ts',
       'src/routes.ts src/routes.test.ts',
       'src/routes/contact.tsx src/routes/contact.test.tsx',
-    ]);
+    ];
+    expect(pairs).toEqual(expected);
   });
 });

@@ -9,7 +9,8 @@ describe('isValidProjectName', () => {
     ['dots and underscores', 'demo.app_2'],
     ['the longest npm allows', 'a'.repeat(214)],
   ])('accepts %s', (_case, name) => {
-    expect(isValidProjectName(name)).toBe(true);
+    const nameIsValidProjectName = isValidProjectName(name);
+    expect(nameIsValidProjectName).toBe(true);
   });
 
   it.each([
@@ -23,7 +24,8 @@ describe('isValidProjectName', () => {
     ['the npm reserved asset', 'favicon.ico'],
     ['one character too many', 'a'.repeat(215)],
   ])('rejects %s', (_case, name) => {
-    expect(isValidProjectName(name)).toBe(false);
+    const nameIsValidProjectName = isValidProjectName(name);
+    expect(nameIsValidProjectName).toBe(false);
   });
 
   it('describes the rule it enforces, for the message the question shows', () => {

@@ -143,17 +143,21 @@ export default defineNuxtConfig({
 
 describe('nuxtConfigEmitter', () => {
   it('writes only for the target that reads the file', () => {
-    expect(nuxtConfigEmitter(answersFor(), EMPTY_PROJECT, 'demo-app')).toEqual([{
+    const nuxtConfig = nuxtConfigEmitter(answersFor(), EMPTY_PROJECT, 'demo-app');
+    const expected = [{
       stage: 'package',
       target: 'nuxt.config.ts',
       content: { text: PLAIN },
-    }]);
+    }];
+    expect(nuxtConfig).toEqual(expected);
 
-    expect(nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app')).toEqual([]);
+    const nuxtConfig2 = nuxtConfigEmitter(answersFor({ target: 'vue' }), EMPTY_PROJECT, 'demo-app');
+    expect(nuxtConfig2).toEqual([]);
   });
 
   it('names src as the source root and carries the aliases', () => {
-    expect(emitNuxtConfig(answersFor(), 'demo-app')).toBe(PLAIN);
+    const nuxtConfig = emitNuxtConfig(answersFor(), 'demo-app');
+    expect(nuxtConfig).toBe(PLAIN);
   });
 
   it('escapes a trailing backslash in an alias path so the config still parses', () => {
@@ -169,10 +173,12 @@ describe('nuxtConfigEmitter', () => {
 
     expect(tailwind).toContain(imports);
     expect(tailwind).toContain('plugins: [tailwindcss()],');
-    expect(emitNuxtConfig(answersFor(), 'demo-app')).not.toContain('tailwindcss');
+    const nuxtConfig = emitNuxtConfig(answersFor(), 'demo-app');
+    expect(nuxtConfig).not.toContain('tailwindcss');
   });
 
   it('names the stylex plugin among the vite plugins', () => {
-    expect(emitNuxtConfig(answersFor({ styling: 'stylex' }), 'demo-app')).toBe(WITH_STYLEX);
+    const nuxtConfig = emitNuxtConfig(answersFor({ styling: 'stylex' }), 'demo-app');
+    expect(nuxtConfig).toBe(WITH_STYLEX);
   });
 });

@@ -40,8 +40,10 @@ const configFor = (overrides: AnswerOverrides): string | null => {
 
 describe('emitViteConfig', () => {
   it('writes nothing for the two targets that own their own build', () => {
-    expect(configFor({ target: 'next' })).toBeNull();
-    expect(configFor({ target: 'angular' })).toBeNull();
+    const config = configFor({ target: 'next' });
+    expect(config).toBeNull();
+    const config2 = configFor({ target: 'angular' });
+    expect(config2).toBeNull();
   });
 
   it.each<[string, AnswerOverrides, string[], string]>([
@@ -164,7 +166,8 @@ describe('emitViteConfig', () => {
 
     expect(translated).toContain("import { paraglideVitePlugin } from '@inlang/paraglide-js';");
     expect(translated).toContain(call);
-    expect(translated.indexOf('paraglideVitePlugin({')).toBeGreaterThan(translated.indexOf('sveltekit('));
+    const index = translated.indexOf('paraglideVitePlugin({');
+    expect(index).toBeGreaterThan(translated.indexOf('sveltekit('));
     expect(english).not.toContain('paraglide');
   });
 
@@ -317,8 +320,10 @@ describe('extra rollup inputs', () => {
 
 describe('the router', () => {
   it('adds nothing for either router', () => {
-    expect(configFor({ router: 'tanstack-router' })).not.toContain('tanstackRouter');
-    expect(configFor({ router: 'react-router' })).not.toContain('tanstackRouter');
+    const config = configFor({ router: 'tanstack-router' });
+    expect(config).not.toContain('tanstackRouter');
+    const config2 = configFor({ router: 'react-router' });
+    expect(config2).not.toContain('tanstackRouter');
   });
 });
 
@@ -329,7 +334,8 @@ describe('viteConfigEmitter', () => {
         return [target, preserve];
       });
 
-    expect(shapes).toEqual([['vite.config.ts', true]]);
+    const expected = [['vite.config.ts', true]];
+    expect(shapes).toEqual(expected);
   });
 
   it('writes nothing for a target whose build is not vite', () => {

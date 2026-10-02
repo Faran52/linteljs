@@ -272,7 +272,8 @@ export default defineConfig({
   });
 
   it('writes nothing when testing is declined', () => {
-    expect(configFor({ testing: 'none' })).toBeNull();
+    const config = configFor({ testing: 'none' });
+    expect(config).toBeNull();
   });
 
   it.each<[string, TargetId, string]>([
@@ -302,18 +303,24 @@ export default defineConfig({
       PLATFORMS,
     ],
   ])('%s', (_shape, target, expected) => {
-    expect(configFor({ target })).toBe(expected);
+    const config = configFor({ target });
+    expect(config).toBe(expected);
   });
 
   it('names the setup file the artifact list writes', () => {
-    expect(configFor()).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
-    expect(configFor({ target: 'react-native' })).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
+    const config = configFor();
+    expect(config).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
+    const config2 = configFor({ target: 'react-native' });
+    expect(config2).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
   });
 
   it('covers the single-file component extension where the target has one', () => {
-    expect(configFor({ target: 'vue' })).toContain(',vue}');
-    expect(configFor({ target: 'nuxt' })).toContain(',vue}');
-    expect(configFor({ target: 'react' })).not.toContain('vue');
+    const config = configFor({ target: 'vue' });
+    expect(config).toContain(',vue}');
+    const config2 = configFor({ target: 'nuxt' });
+    expect(config2).toContain(',vue}');
+    const config3 = configFor({ target: 'react' });
+    expect(config3).not.toContain('vue');
   });
 
   it('disables native web storage for every happy-dom target', () => {
@@ -326,17 +333,20 @@ export default defineConfig({
       'solid',
       'webextension',
     ] as const) {
-      expect(configFor({ target })).toContain("execArgv: ['--no-experimental-webstorage'],");
+      const config = configFor({ target });
+      expect(config).toContain("execArgv: ['--no-experimental-webstorage'],");
     }
 
-    expect(configFor({ target: 'react-native' })).not.toContain('execArgv');
+    const config = configFor({ target: 'react-native' });
+    expect(config).not.toContain('execArgv');
   });
 
   it.each<[TargetId, string]>([
     ['svelte', "resolve: { conditions: ['browser'] },"],
     ['solid', "resolve: { conditions: ['development', 'browser'] },"],
   ])('gives %s the resolve conditions its runtime needs', (target, expected) => {
-    expect(configFor({ target })).toContain(expected);
+    const config = configFor({ target });
+    expect(config).toContain(expected);
   });
 
   it.each<TargetId>([
@@ -348,28 +358,33 @@ export default defineConfig({
   ])(
     'leaves %s on the default resolution',
     (target) => {
-      expect(configFor({ target })).not.toContain('conditions');
+      const config = configFor({ target });
+      expect(config).not.toContain('conditions');
     },
   );
 
   it.each<TargetId>(['next', 'angular'])(
     'resolves the tsconfig aliases for %s, which has no vite config to merge',
     (target) => {
-      expect(configFor({ target })).toContain('resolve: { tsconfigPaths: true },');
+      const config = configFor({ target });
+      expect(config).toContain('resolve: { tsconfigPaths: true },');
     },
   );
 });
 
 describe('the styling system', () => {
   it('keeps a StyleX token table out of coverage', () => {
-    expect(configFor({ styling: 'stylex' })).toContain("'**/*.stylex.{ts,tsx}'");
+    const config = configFor({ styling: 'stylex' });
+    expect(config).toContain("'**/*.stylex.{ts,tsx}'");
   });
 });
 
 describe('the router', () => {
   it('keeps the route table out of coverage', () => {
-    expect(configFor({ router: 'react-router' })).toContain("'src/routes/**'");
-    expect(configFor({})).not.toContain('src/routes/**');
+    const config = configFor({ router: 'react-router' });
+    expect(config).toContain("'src/routes/**'");
+    const config2 = configFor({});
+    expect(config2).not.toContain('src/routes/**');
   });
 
   it('excludes nothing for TanStack Router', () => {
@@ -382,12 +397,14 @@ describe('the router', () => {
 
 describe('vitestConfigEmitter', () => {
   it('hands the config to the project after the first write', () => {
-    expect(vitestConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT)).toEqual([{
+    const vitestConfig = vitestConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT);
+    const expected = [{
       stage: 'standard',
       target: 'vitest.config.ts',
       content: { text: MERGED },
       preserve: true,
-    }]);
+    }];
+    expect(vitestConfig).toEqual(expected);
   });
 
   it('writes nothing when testing is declined', () => {
@@ -402,7 +419,8 @@ describe('vitestConfigEmitter', () => {
 
 describe('the coverage surface', () => {
   it('never counts the bootstrap entry, whose only assertion is about the framework', () => {
-    expect(configFor()).toContain("'src/{main,index}.{ts,tsx}'");
+    const config = configFor();
+    expect(config).toContain("'src/{main,index}.{ts,tsx}'");
   });
 
   it.each<[TargetId, string]>([
@@ -410,7 +428,8 @@ describe('the coverage surface', () => {
     ['svelte', ',svelte'],
     ['vue', ',vue'],
   ])('measures only what v8 can instrument on %s, plus its component format', (target, format) => {
-    expect(configFor({ target })).toContain(`include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}']`);
+    const config = configFor({ target });
+    expect(config).toContain(`include: ['src/**/*.{ts,tsx,mts,js,jsx,mjs${format}}']`);
   });
 
   it.each<[string, AnswerOverrides, string[]]>([
@@ -500,7 +519,7 @@ describe('the coverage surface', () => {
         return entry;
       });
 
-    expect(entries).toEqual([
+    const expected = [
       '**/*.test.*',
       '**/*.d.ts',
       'src/typings/**',
@@ -508,11 +527,14 @@ describe('the coverage surface', () => {
       '**/*.stylex.{ts,tsx}',
       '**/components/**/styles.{ts,tsx}',
       ...excluded,
-    ]);
+    ];
+    expect(entries).toEqual(expected);
   });
 
   it.each(valuesOf(ANSWERS.target.values))('keeps the thresholds at 100 on %s', (target) => {
-    expect(configFor({ target }))
+    const config = configFor({ target });
+
+    expect(config)
       .toMatch(/thresholds: \{\s*lines: 100,\s*branches: 100,\s*functions: 100,\s*statements: 100,\s*\}/u);
   });
 });

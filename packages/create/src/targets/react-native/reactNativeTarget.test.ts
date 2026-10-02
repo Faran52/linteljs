@@ -25,14 +25,15 @@ import { reactNativeTarget } from './reactNativeTarget';
 
 describe('reactNativeTarget', () => {
   it('translates through i18next, its choice kept in Expo\'s AsyncStorage, every suite set up in English', () => {
-    expect(reactNativeTarget.i18n).toEqual({
+    const expected = {
       dependencies: [
         'i18next',
         'react-i18next',
         '@react-native-async-storage/async-storage',
       ],
       testSetup: 'fragments/test-setup/setupTests.reactNativeI18n.ts',
-    });
+    };
+    expect(reactNativeTarget.i18n).toEqual(expected);
   });
 
   it('is the record the react-native answer names', () => {
@@ -53,7 +54,8 @@ describe('reactNativeTarget', () => {
 
   it('names files the way any JSX target does, less the route root', () => {
     expect(reactNativeTarget.naming).toEqual(componentNaming('app'));
-    expect(reactNativeTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
+    const expected = { 'src/**/': FOLDER_ROUTED };
+    expect(reactNativeTarget.folderNaming).toEqual(expected);
   });
 });
 
@@ -113,11 +115,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -127,9 +131,10 @@ describe('the favicon', () => {
       return file.target === 'public/favicon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

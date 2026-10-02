@@ -44,7 +44,9 @@ describe('pairsOf', () => {
   });
 
   it('names an unset answer none', () => {
-    expect(pairsOf(DEFAULT_ANSWERS)).toEqual(expect.arrayContaining([
+    const pairs = pairsOf(DEFAULT_ANSWERS);
+
+    expect(pairs).toEqual(expect.arrayContaining([
       'host:none|browser:chrome',
       'styling:none|form:none',
       'router:none|store:none',
@@ -100,7 +102,8 @@ describe('coveringSubset', () => {
   });
 
   it('drops a case whose pairs another already covers', () => {
-    expect(coveringSubset([caseFor({}), caseFor({})])).toHaveLength(1);
+    const actual = coveringSubset([caseFor({}), caseFor({})]);
+    expect(actual).toHaveLength(1);
   });
 
   it('breaks a tie towards the earlier case', () => {
@@ -124,18 +127,21 @@ describe('coveringSubset', () => {
       typeSafety: 'relaxed',
     });
 
-    expect(coveringSubset([
+    const actual = coveringSubset([
       base,
       oneAxis,
       twoAxes,
-    ])).toEqual([
-      base,
-      twoAxes,
-      oneAxis,
     ]);
+    const expected = [
+      base,
+      twoAxes,
+      oneAxis,
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('answers nothing for nothing', () => {
-    expect(coveringSubset([])).toEqual([]);
+    const actual = coveringSubset([]);
+    expect(actual).toEqual([]);
   });
 });

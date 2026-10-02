@@ -141,8 +141,10 @@ describe('planSync', () => {
         return [target, status];
       });
 
-    expect(statuses).toEqual([[TYPE_STANDARDS, 'changed']]);
-    expect(await readFile(join(cwd, TYPE_STANDARDS), 'utf8')).toBe('# local edit\n');
+    const expected = [[TYPE_STANDARDS, 'changed']];
+    expect(statuses).toEqual(expected);
+    const file = await readFile(join(cwd, TYPE_STANDARDS), 'utf8');
+    expect(file).toBe('# local edit\n');
   });
 
   it('marks a locally edited artifact changed and pending', async () => {
@@ -163,20 +165,24 @@ describe('planSync', () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['CLAUDE.md']);
     await writeFile(join(cwd, 'CLAUDE.md'), '# our own instructions\n', 'utf8');
 
-    expect(await entryOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toEqual({
+    const entry = await entryOf(HOSTED_DEFAULTS, 'CLAUDE.md');
+    const expected = {
       target: 'CLAUDE.md',
       status: 'unchanged',
-    });
+    };
+    expect(entry).toEqual(expected);
 
     await rm(join(cwd, 'CLAUDE.md'));
 
-    expect(await statusOf(HOSTED_DEFAULTS, 'CLAUDE.md')).toBe('missing');
+    const hostedDefaultsStatus = await statusOf(HOSTED_DEFAULTS, 'CLAUDE.md');
+    expect(hostedDefaultsStatus).toBe('missing');
   });
 
   it('rejects rather than reporting missing when a target cannot be read for a reason other than absence', async () => {
     await mkdir(join(cwd, 'eslint.config.js'));
 
-    await expect(planSync(cwd, HOSTED_DEFAULTS)).rejects.toThrow();
+    const promise = planSync(cwd, HOSTED_DEFAULTS);
+    await expect(promise).rejects.toThrow();
   });
 
   it('marks a generated agent file obsolete once the answers stop selecting its host', async () => {
@@ -209,7 +215,8 @@ describe('planSync', () => {
         return entry.target;
       });
 
-    expect(obsolete).toEqual(['.claude/settings.json']);
+    const expected = ['.claude/settings.json'];
+    expect(obsolete).toEqual(expected);
     expect(obsolete).not.toContain('CLAUDE.md');
   });
 
@@ -229,10 +236,13 @@ describe('applySync', () => {
   it('writes only the targets it is given', async () => {
     const { written, removed } = await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
 
-    expect(written).toEqual(['eslint.config.js']);
+    const expected = ['eslint.config.js'];
+    expect(written).toEqual(expected);
     expect(removed).toEqual([]);
-    expect(await exists(join(cwd, 'eslint.config.js'))).toBe(true);
-    expect(await exists(join(cwd, 'stylelint.config.js'))).toBe(false);
+    const eslintConfigJsExists = await exists(join(cwd, 'eslint.config.js'));
+    expect(eslintConfigJsExists).toBe(true);
+    const stylelintConfigJsExists = await exists(join(cwd, 'stylelint.config.js'));
+    expect(stylelintConfigJsExists).toBe(false);
   });
 
   it('writes the file content that planSync would call unchanged afterwards', async () => {
@@ -255,11 +265,13 @@ describe('applySync', () => {
         return [target, status];
       });
 
-    expect(statuses).toEqual([['eslint.config.js', 'changed'], ['tsconfig.json', 'missing']]);
+    const expected = [['eslint.config.js', 'changed'], ['tsconfig.json', 'missing']];
+    expect(statuses).toEqual(expected);
 
     const { written } = await applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js', 'tsconfig.json']);
 
-    expect(written).toEqual(['eslint.config.js', 'tsconfig.json']);
+    const expected2 = ['eslint.config.js', 'tsconfig.json'];
+    expect(written).toEqual(expected2);
     expect((await planSync(cwd, HOSTED_DEFAULTS)).pending).toEqual([]);
   });
 
@@ -269,10 +281,13 @@ describe('applySync', () => {
     await writeFile(external, '// external config\n', 'utf8');
     await symlink(external, join(cwd, 'eslint.config.js'));
 
-    await expect(applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']))
+    const syncResultPromise = applySync(cwd, HOSTED_DEFAULTS, ['eslint.config.js']);
+
+    await expect(syncResultPromise)
       .rejects.toThrow('Refusing to write eslint.config.js: target is a symbolic link');
 
-    await expect(readFile(external, 'utf8')).resolves.toBe('// external config\n');
+    const file = await readFile(external, 'utf8');
+    expect(file).toBe('// external config\n');
   });
 
   it('refuses to remove an obsolete file through a symbolic-link parent', async () => {
@@ -290,10 +305,13 @@ describe('applySync', () => {
     await writeFile(join(external, 'settings.json'), '{"external":true}\n', 'utf8');
     await symlink(external, join(cwd, '.claude'));
 
-    await expect(applySync(cwd, CODEX_ONLY, ['.claude/settings.json']))
+    const syncResultPromise = applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);
+
+    await expect(syncResultPromise)
       .rejects.toThrow('Refusing to use .claude/settings.json: a parent directory is a symbolic link');
 
-    await expect(readFile(join(external, 'settings.json'), 'utf8')).resolves.toBe('{"external":true}\n');
+    const file = await readFile(join(external, 'settings.json'), 'utf8');
+    expect(file).toBe('{"external":true}\n');
   });
 
   it('makes an executable artifact executable on disk', async () => {
@@ -308,14 +326,16 @@ describe('applySync', () => {
     const setup = '__mocks__/setupTests.tsx';
     const first = await applySync(cwd, HOSTED_DEFAULTS, [setup]);
 
-    expect(first.written).toEqual([setup]);
+    const expected = [setup];
+    expect(first.written).toEqual(expected);
 
     await writeFile(join(cwd, setup), '// the project own setup\n', 'utf8');
 
     const second = await applySync(cwd, HOSTED_DEFAULTS, [setup]);
 
     expect(second.written).toEqual([]);
-    expect(await readFile(join(cwd, setup), 'utf8')).toBe('// the project own setup\n');
+    const file = await readFile(join(cwd, setup), 'utf8');
+    expect(file).toBe('// the project own setup\n');
   });
 
   it('removes the obsolete files it is given and reports each one', async () => {
@@ -326,12 +346,16 @@ describe('applySync', () => {
     expect(removed).toEqual(CLAUDE_ONLY);
 
     for (const target of CLAUDE_ONLY) {
-      expect(await exists(join(cwd, target))).toBe(false);
+      const targetExists = await exists(join(cwd, target));
+      expect(targetExists).toBe(false);
     }
 
-    expect(await exists(join(cwd, 'AGENTS.md'))).toBe(true);
-    expect(await exists(join(cwd, '.agents/plugins/marketplace.json'))).toBe(true);
-    expect(await exists(join(cwd, 'CLAUDE.md'))).toBe(true);
+    const agentsMdExists = await exists(join(cwd, 'AGENTS.md'));
+    expect(agentsMdExists).toBe(true);
+    const actual = await exists(join(cwd, '.agents/plugins/marketplace.json'));
+    expect(actual).toBe(true);
+    const claudeMdExists = await exists(join(cwd, 'CLAUDE.md'));
+    expect(claudeMdExists).toBe(true);
   });
 
   it('keeps the Cursor and Copilot hooks files current and removes them once their agents are dropped', async () => {
@@ -352,14 +376,18 @@ describe('applySync', () => {
     await writeFile(join(cwd, '.cursor/hooks.json'), own, 'utf8');
     await applyPending(hosted);
 
-    expect(await readFile(join(cwd, '.cursor/hooks.json'), 'utf8')).toContain('.cursor/hooks/format.sh');
-    expect(await readFile(join(cwd, '.cursor/hooks.json'), 'utf8')).toContain('gitSafetyGuardHook.ts');
+    const file = await readFile(join(cwd, '.cursor/hooks.json'), 'utf8');
+    expect(file).toContain('.cursor/hooks/format.sh');
+    const cursorHooksJsonFile = await readFile(join(cwd, '.cursor/hooks.json'), 'utf8');
+    expect(cursorHooksJsonFile).toContain('gitSafetyGuardHook.ts');
 
     const { removed } = await applyPending(CODEX_ONLY);
 
     expect(removed).toEqual(expect.arrayContaining(hooksFiles));
-    expect(await exists(join(cwd, '.cursor/hooks.json'))).toBe(false);
-    expect(await exists(join(cwd, '.github/hooks/linteljs.json'))).toBe(false);
+    const cursorHooksJsonExists = await exists(join(cwd, '.cursor/hooks.json'));
+    expect(cursorHooksJsonExists).toBe(false);
+    const actual = await exists(join(cwd, '.github/hooks/linteljs.json'));
+    expect(actual).toBe(false);
   });
 
   it('removes the retired shell hooks and parser a previous run recorded, and keeps what replaced them', async () => {
@@ -399,13 +427,18 @@ describe('applySync', () => {
     expect(removed).toEqual(retired);
 
     for (const target of retired) {
-      expect(await exists(join(cwd, target))).toBe(false);
+      const targetExists = await exists(join(cwd, target));
+      expect(targetExists).toBe(false);
     }
 
-    expect(await exists(join(cwd, 'plugins/linteljs/hooks/hooks.json'))).toBe(true);
-    expect(await exists(join(cwd, 'plugins/linteljs/hooks/gitSafetyGuardHook.ts'))).toBe(true);
-    expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/commandParserUtils.ts'))).toBe(true);
-    expect(await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'))).toBe(true);
+    const actual = await exists(join(cwd, 'plugins/linteljs/hooks/hooks.json'));
+    expect(actual).toBe(true);
+    const actual2 = await exists(join(cwd, 'plugins/linteljs/hooks/gitSafetyGuardHook.ts'));
+    expect(actual2).toBe(true);
+    const actual3 = await exists(join(cwd, 'plugins/linteljs/hooks/utils/commandParserUtils.ts'));
+    expect(actual3).toBe(true);
+    const actual4 = await exists(join(cwd, 'plugins/linteljs/hooks/utils/hostUtils.ts'));
+    expect(actual4).toBe(true);
   });
 
   it('names a package.json it writes from nothing after the directory', async () => {
@@ -428,18 +461,24 @@ describe('applySync', () => {
 
     const { removed } = await applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);
 
-    expect(removed).toEqual(['.claude/settings.json']);
-    expect(await exists(join(cwd, 'plugins/linteljs/.claude-plugin/plugin.json'))).toBe(true);
+    const expected = ['.claude/settings.json'];
+    expect(removed).toEqual(expected);
+    const actual = await exists(join(cwd, 'plugins/linteljs/.claude-plugin/plugin.json'));
+    expect(actual).toBe(true);
   });
 
   it('drops the directories that empty out and keeps the ones that do not', async () => {
     await applyPending(HOSTED_DEFAULTS);
     await applyPending(CODEX_ONLY);
 
-    expect(await exists(join(cwd, '.claude'))).toBe(false);
-    expect(await exists(join(cwd, 'plugins/linteljs/.claude-plugin'))).toBe(false);
-    expect(await exists(join(cwd, 'plugins/linteljs'))).toBe(true);
-    expect(await exists(join(cwd, 'plugins'))).toBe(true);
+    const claudeExists = await exists(join(cwd, '.claude'));
+    expect(claudeExists).toBe(false);
+    const actual = await exists(join(cwd, 'plugins/linteljs/.claude-plugin'));
+    expect(actual).toBe(false);
+    const pluginsLinteljsExists = await exists(join(cwd, 'plugins/linteljs'));
+    expect(pluginsLinteljsExists).toBe(true);
+    const pluginsExists = await exists(join(cwd, 'plugins'));
+    expect(pluginsExists).toBe(true);
   });
 
   it('drops a directory whose emptying waits on a deeper one met after it', async () => {
@@ -454,7 +493,8 @@ describe('applySync', () => {
     }
 
     expect((await applyPending(HOSTED_DEFAULTS)).removed).toEqual(retired);
-    expect(await exists(join(cwd, 'retired'))).toBe(false);
+    const retiredExists = await exists(join(cwd, 'retired'));
+    expect(retiredExists).toBe(false);
   });
 
   it('keeps a directory a project put its own file in', async () => {
@@ -463,8 +503,10 @@ describe('applySync', () => {
 
     await applySync(cwd, CODEX_ONLY, ['.claude/settings.json']);
 
-    expect(await exists(join(cwd, '.claude/settings.json'))).toBe(false);
-    expect(await readFile(join(cwd, '.claude/notes.md'), 'utf8')).toBe('# ours\n');
+    const claudeSettingsJsonExists = await exists(join(cwd, '.claude/settings.json'));
+    expect(claudeSettingsJsonExists).toBe(false);
+    const file = await readFile(join(cwd, '.claude/notes.md'), 'utf8');
+    expect(file).toBe('# ours\n');
   });
 });
 
@@ -497,20 +539,24 @@ describe('sync limits itself to what linteljs owns', () => {
     const { upgrades } = await planSync(cwd, HOSTED_DEFAULTS);
     const synced = await syncedPackageJson();
 
-    expect(upgrades).toEqual([{
+    const expected = [{
       name: '@linteljs/eslint-config',
       from: '^1.5.0',
       to: '^2.0.0',
-    }]);
+    }];
+    expect(upgrades).toEqual(expected);
 
-    expect(synced.dependencies).toEqual({ react: '^99.0.0' });
+    const expected2 = { react: '^99.0.0' };
+    expect(synced.dependencies).toEqual(expected2);
 
-    expect(synced.devDependencies).toEqual({
+    const expected3 = {
       '@linteljs/eslint-config': '^2.0.0',
       'typescript': '^99.0.0',
-    });
+    };
+    expect(synced.devDependencies).toEqual(expected3);
 
-    expect(synced.scripts).toEqual({ check: 'our own gate' });
+    const expected4 = { check: 'our own gate' };
+    expect(synced.scripts).toEqual(expected4);
   });
 
   it('reports a dependency linteljs needs and the project lacks, and never writes it', async () => {
@@ -521,13 +567,15 @@ describe('sync limits itself to what linteljs owns', () => {
 
     expect(upgrades).toEqual([]);
     expect(missing.devDependencies).toHaveProperty('husky');
-    expect(synced.devDependencies).toEqual({ '@linteljs/eslint-config': '^2.0.0' });
+    const expected = { '@linteljs/eslint-config': '^2.0.0' };
+    expect(synced.devDependencies).toEqual(expected);
   });
 
   it('plans package.json unchanged, byte for byte, when no @linteljs/* version is behind', async () => {
     await plantPackageJson({ '@linteljs/eslint-config': '^2.1.0' });
 
-    expect(await statusOf(HOSTED_DEFAULTS, 'package.json')).toBe('unchanged');
+    const status = await statusOf(HOSTED_DEFAULTS, 'package.json');
+    expect(status).toBe('unchanged');
   });
 
   it('never moves a @linteljs/* range that is not a version', async () => {
@@ -545,7 +593,8 @@ describe('sync limits itself to what linteljs owns', () => {
 
     const synced = await syncedPackageJson();
 
-    expect(synced.dependencies).toEqual({ '@linteljs/eslint-config': '^2.0.0' });
+    const expected = { '@linteljs/eslint-config': '^2.0.0' };
+    expect(synced.dependencies).toEqual(expected);
     expect(synced.devDependencies).toEqual({});
   });
 
@@ -558,11 +607,13 @@ describe('sync limits itself to what linteljs owns', () => {
     await applyPending(HOSTED_DEFAULTS);
 
     expect(status).toBe('unchanged');
-    expect(await readFile(join(cwd, CI), 'utf8')).toBe('name: ours\n');
+    const file = await readFile(join(cwd, CI), 'utf8');
+    expect(file).toBe('name: ours\n');
 
     await rm(join(cwd, CI));
 
-    expect(await statusOf(HOSTED_DEFAULTS, CI)).toBe('missing');
+    const hostedDefaultsStatus = await statusOf(HOSTED_DEFAULTS, CI);
+    expect(hostedDefaultsStatus).toBe('missing');
   });
 
   it('keeps the build opt-outs a project wrote into pnpm-workspace.yaml', async () => {
@@ -571,6 +622,7 @@ describe('sync limits itself to what linteljs owns', () => {
     await writeFile(join(cwd, 'pnpm-workspace.yaml'), workspace, 'utf8');
     await applyPending(HOSTED_DEFAULTS);
 
-    expect(await readFile(join(cwd, 'pnpm-workspace.yaml'), 'utf8')).toContain(workspace);
+    const file = await readFile(join(cwd, 'pnpm-workspace.yaml'), 'utf8');
+    expect(file).toContain(workspace);
   });
 });

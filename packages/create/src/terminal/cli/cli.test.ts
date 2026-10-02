@@ -197,7 +197,8 @@ describe('main: what it prints and what it returns', () => {
     expect(code).toBe(1);
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain(message);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
+    const eslintConfigJsExists = await exists(join(project, 'eslint.config.js'));
+    expect(eslintConfigJsExists).toBe(false);
   });
 
   it('fails with one line when the directory it stands in is gone', async () => {
@@ -210,7 +211,8 @@ describe('main: what it prints and what it returns', () => {
     const { code, errors } = await runMain(['my-app']);
 
     expect(code).toBe(1);
-    expect(errors).toEqual([expect.stringContaining('ENOENT')]);
+    const expected = [expect.stringContaining('ENOENT')];
+    expect(errors).toEqual(expected);
   });
 
   it('scaffolds into the directory it stands in when --yes gave no name', async () => {
@@ -223,15 +225,18 @@ describe('main: what it prints and what it returns', () => {
     const { code } = await runMain(['--no-install', '--yes']);
 
     expect(code).toBe(0);
-    expect(await nameAt(named)).toBe('demo-app');
+    const name = await nameAt(named);
+    expect(name).toBe('demo-app');
   });
 
   it('asks for a missing name rather than requiring it, and still refuses with no terminal', async () => {
     const { code, errors } = await runMain([]);
 
     expect(code).toBe(1);
-    expect(errors.join('\n')).not.toContain('A project name is required');
-    expect(errors).toEqual([expect.stringContaining('answer every question')]);
+    const joined = errors.join('\n');
+    expect(joined).not.toContain('A project name is required');
+    const expected = [expect.stringContaining('answer every question')];
+    expect(errors).toEqual(expected);
   });
 });
 
@@ -250,7 +255,8 @@ describe('main: cancelled mid-questionnaire', () => {
     expect(printed).toContain(RUN_CANCELLED_MESSAGE);
     expect(printed).not.toContain('answer every question');
     expect(errors).toEqual([]);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
+    const eslintConfigJsExists = await exists(join(project, 'eslint.config.js'));
+    expect(eslintConfigJsExists).toBe(false);
   });
 });
 
@@ -258,7 +264,8 @@ describe('main: create', () => {
   it('names the project after the directory when no name was given', async () => {
     await generated();
 
-    expect(await nameAt(project)).toContain('linteljs-cli-');
+    const name = await nameAt(project);
+    expect(name).toContain('linteljs-cli-');
   });
 
   it('runs the questionnaire when --yes was not passed, and records what it answered with the host', async () => {
@@ -280,7 +287,8 @@ describe('main: create', () => {
       ]),
     );
 
-    expect(await configAt()).toEqual({
+    const config = await configAt();
+    const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
@@ -291,7 +299,8 @@ describe('main: create', () => {
       store: 'tanstack-store',
       agents: ['claude-code', 'codex'],
       plugins: [],
-    });
+    };
+    expect(config).toEqual(expected);
 
     expect(printed).toContain('wrote AGENTS.md');
   });
@@ -319,7 +328,8 @@ describe('main: create', () => {
 
     expect(code).toBe(0);
     expect(asked.calls[0]).toContain('Project name');
-    expect(await nameAt(join(project, 'asked-app'))).toBe('asked-app');
+    const name = await nameAt(join(project, 'asked-app'));
+    expect(name).toBe('asked-app');
   });
 
   it('patches the directory the scaffolder made, not the one it was run from', async () => {
@@ -332,9 +342,12 @@ describe('main: create', () => {
     ]);
 
     expect(code).toBe(0);
-    expect(await exists(join(project, 'demo-app', 'eslint.config.js'))).toBe(true);
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-    expect(await nameAt(join(project, 'demo-app'))).toBe('demo-app');
+    const eslintConfigJsExists = await exists(join(project, 'demo-app', 'eslint.config.js'));
+    expect(eslintConfigJsExists).toBe(true);
+    const eslintConfigJsExists2 = await exists(join(project, 'eslint.config.js'));
+    expect(eslintConfigJsExists2).toBe(false);
+    const name = await nameAt(join(project, 'demo-app'));
+    expect(name).toBe('demo-app');
   });
 
   it('names the project after the argument even where no scaffolder ran', async () => {
@@ -345,7 +358,8 @@ describe('main: create', () => {
       '--yes',
     ]);
 
-    expect(await nameAt(project)).toBe('demo-app');
+    const name = await nameAt(project);
+    expect(name).toBe('demo-app');
   });
 });
 
@@ -366,11 +380,12 @@ describe('main: patching a project that already exists', () => {
 
     expect(code).toBe(0);
 
-    expect(written).toMatchObject({
+    const expected = {
       target: 'svelte',
       packageManager: 'npm',
       nodeVersion: versions.node,
-    });
+    };
+    expect(written).toMatchObject(expected);
 
     expect(written).not.toHaveProperty('packageManagerVersion');
   });
@@ -396,11 +411,13 @@ describe('main: sync', () => {
     const { code, printed } = await runMain(['sync'], asked);
 
     expect(code).toBe(0);
-    expect(asked.calls).toEqual(['Apply these changes?']);
+    const expected = ['Apply these changes?'];
+    expect(asked.calls).toEqual(expected);
     expect(printed).toContain(`sync would change:\n  update  ${RULE}\n`);
     expect(printed).toContain('Nothing was written.');
     expect(printed).not.toContain('local edit');
-    expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
+    const file = await readFile(join(project, RULE), 'utf8');
+    expect(file).toBe('# local edit\n');
   });
 
   it('writes once the question is answered yes', async () => {
@@ -410,7 +427,8 @@ describe('main: sync', () => {
     const { printed } = await runMain(['sync'], scripted(['yes']));
 
     expect(printed).toContain(`wrote ${RULE}`);
-    expect(await readFile(join(project, RULE), 'utf8')).not.toBe('# local edit\n');
+    const file = await readFile(join(project, RULE), 'utf8');
+    expect(file).not.toBe('# local edit\n');
   });
 
   it('writes under --yes without asking', async () => {
@@ -431,8 +449,10 @@ describe('main: sync', () => {
     const { code, errors } = await runMain(['sync']);
 
     expect(code).toBe(1);
-    expect(errors).toEqual([SYNC_NEEDS_YES]);
-    expect(await readFile(join(project, RULE), 'utf8')).toBe('# local edit\n');
+    const expected = [SYNC_NEEDS_YES];
+    expect(errors).toEqual(expected);
+    const file = await readFile(join(project, RULE), 'utf8');
+    expect(file).toBe('# local edit\n');
   });
 
   it('prints the install command for a dependency the project lacks, and leaves package.json without it', async () => {
@@ -463,7 +483,8 @@ describe('main: sync', () => {
     const { code, errors } = await runMain(['sync', '--force']);
 
     expect(code).toBe(1);
-    expect(errors.join('\n')).toContain("Unknown option '--force'");
+    const joined = errors.join('\n');
+    expect(joined).toContain("Unknown option '--force'");
   });
 
   it('says what it removed once the config stops selecting a host', async () => {
@@ -493,11 +514,14 @@ describe('main: sync', () => {
     } = await runMain(['sync', '--yes'], asked);
 
     expect(code).toBe(1);
-    expect(errors.join('\n')).toContain('linteljs.config.json was not found; this is not a LintelJS-managed project');
+    const joined = errors.join('\n');
+    expect(joined).toContain('linteljs.config.json was not found; this is not a LintelJS-managed project');
     expect(asked.calls).toEqual([]);
     expect(printed).toBe('');
-    expect(await exists(join(project, 'eslint.config.js'))).toBe(false);
-    expect(await exists(join(project, CONFIG_PATH))).toBe(false);
+    const eslintConfigJsExists = await exists(join(project, 'eslint.config.js'));
+    expect(eslintConfigJsExists).toBe(false);
+    const configPathExists = await exists(join(project, CONFIG_PATH));
+    expect(configPathExists).toBe(false);
   });
 
   it('plans an extension from the browser and framework the config recorded', async () => {
@@ -511,7 +535,8 @@ describe('main: sync', () => {
     const asked = scripted(['no']);
     const { printed } = await runMain(['sync'], asked);
 
-    expect(asked.calls).toEqual(['Apply these changes?']);
+    const expected = ['Apply these changes?'];
+    expect(asked.calls).toEqual(expected);
     expect(printed).toMatch(/add +plugins\/linteljs\/skills\/linteljs\/references\/solid-reactivity\.md\n/u);
   });
 });
@@ -541,7 +566,8 @@ describe('main: answers given as flags', () => {
     expect(code).toBe(0);
     expect(asked.calls).toEqual([]);
 
-    expect(await configAt()).toMatchObject({
+    const config = await configAt();
+    const expected = {
       target: 'svelte',
       packageManager: 'bun',
       libraries: ['zod', 'es-toolkit'],
@@ -550,7 +576,8 @@ describe('main: answers given as flags', () => {
       typeSafety: 'relaxed',
       agents: ['codex'],
       plugins: [...DEFAULT_ANSWERS.plugins],
-    });
+    };
+    expect(config).toMatchObject(expected);
   });
 });
 
@@ -559,7 +586,8 @@ describe('main: what a run reports', () => {
     const { code, printed } = await runMain(['--version']);
 
     expect(code).toBe(0);
-    expect(printed.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+    const trimmed = printed.trim();
+    expect(trimmed).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
   it('opens a create run with the release it is, and a sync with nothing', async () => {
@@ -570,7 +598,8 @@ describe('main: what a run reports', () => {
     ]);
     const synced = await runMain(['sync', '--yes']);
 
-    expect(created.printed.startsWith(`@linteljs/create ${packageJson.version}\n`)).toBe(true);
+    const actual = created.printed.startsWith(`@linteljs/create ${packageJson.version}\n`);
+    expect(actual).toBe(true);
     expect(synced.printed).not.toContain('@linteljs/create');
   });
 
@@ -585,7 +614,9 @@ describe('main: what a run reports', () => {
 
     expect(code).toBe(0);
 
-    expect(printed.endsWith('\n\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n'))
+    const actual = printed.endsWith('\n\nDone. Next:\n  cd demo-app\n  pnpm install\n  pnpm lint:fix\n  pnpm check\n');
+
+    expect(actual)
       .toBe(true);
   });
 });
@@ -597,6 +628,7 @@ describe('main, when argument parsing throws', () => {
         throw runInNewContext('new Error("from another realm")');
       });
 
-    await expect(main(['--help'])).rejects.toThrow('from another realm');
+    const promise = main(['--help']);
+    await expect(promise).rejects.toThrow('from another realm');
   });
 });

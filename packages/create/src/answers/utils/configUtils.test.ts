@@ -45,12 +45,15 @@ const config = (overrides: ConfigOverrides = {}): string => {
 
 describe('parseLinteljsConfig', () => {
   it('reads the current envelope and every answer', () => {
-    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS)))
-      .toStrictEqual({
-        $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: CURRENT_SCHEMA_VERSION,
-        ...DEFAULT_ANSWERS,
-      });
+    const actual = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
+    const expected = {
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...DEFAULT_ANSWERS,
+    };
+
+    expect(actual)
+      .toStrictEqual(expected);
   });
 
   it('defaults the extension axes when a config predates them', () => {
@@ -71,7 +74,9 @@ describe('parseLinteljsConfig', () => {
     expect(config.browser).toBe('chrome');
     expect(config.hostedFramework).toBeUndefined();
     expect(config.surfaces).toBeUndefined();
-    expect(surfacesOf(config)).toEqual(['popup', 'background']);
+    const configSurfaces = surfacesOf(config);
+    const expected = ['popup', 'background'];
+    expect(configSurfaces).toEqual(expected);
   });
 
   it('round-trips all three extension axes', () => {
@@ -83,12 +88,15 @@ describe('parseLinteljsConfig', () => {
       surfaces: ['devtools-panel'],
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers)))
-      .toEqual({
-        $schema: CONFIG_SCHEMA_URL,
-        schemaVersion: CURRENT_SCHEMA_VERSION,
-        ...answers,
-      });
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = {
+      $schema: CONFIG_SCHEMA_URL,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      ...answers,
+    };
+
+    expect(actual)
+      .toEqual(expected);
   });
 
   it.each([
@@ -114,11 +122,13 @@ describe('parseLinteljsConfig', () => {
       nodeVersion: '26.1.0',
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 
   it('round-trips the resolver conditions', () => {
@@ -127,11 +137,13 @@ describe('parseLinteljsConfig', () => {
       resolveConditions: ['import', 'default'],
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -159,11 +171,13 @@ describe('parseLinteljsConfig', () => {
       },
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -187,11 +201,13 @@ describe('parseLinteljsConfig', () => {
       browsers: ['chrome', 'firefox'],
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -214,11 +230,13 @@ describe('parseLinteljsConfig', () => {
       ignores: ['src/lib/compat-data/generatedRegistry.ts'],
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toEqual({
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = {
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...answers,
-    });
+    };
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -411,8 +429,11 @@ describe('the router and the form libraries', () => {
       router: 'tanstack-router' as const,
     };
 
-    expect(parseLinteljsConfig(emitLinteljsConfig(answers))).toMatchObject({ router: 'tanstack-router' });
-    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('router');
+    const actual = parseLinteljsConfig(emitLinteljsConfig(answers));
+    const expected = { router: 'tanstack-router' };
+    expect(actual).toMatchObject(expected);
+    const actual2 = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
+    expect(actual2).not.toHaveProperty('router');
   });
 
   it('rejects an unknown router', () => {
@@ -428,9 +449,11 @@ describe('the router and the form libraries', () => {
     };
     const parsed = parseLinteljsConfig(emitLinteljsConfig(answers));
 
-    expect(parsed).toMatchObject({ form: 'tanstack-form' });
+    const expected = { form: 'tanstack-form' };
+    expect(parsed).toMatchObject(expected);
     expect(parsed.libraries).not.toContain('tanstack-form');
-    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('form');
+    const actual = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
+    expect(actual).not.toHaveProperty('form');
   });
 
   it('round-trips a styling system, and keeps it out of libraries', () => {
@@ -439,9 +462,11 @@ describe('the router and the form libraries', () => {
       styling: 'tailwind',
     }));
 
-    expect(parsed).toMatchObject({ styling: 'tailwind' });
+    const expected = { styling: 'tailwind' };
+    expect(parsed).toMatchObject(expected);
     expect(parsed.libraries).not.toContain('tailwind');
-    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('styling');
+    const actual = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
+    expect(actual).not.toHaveProperty('styling');
   });
 
   it('round-trips a data layer, and keeps it out of libraries', () => {
@@ -450,9 +475,11 @@ describe('the router and the form libraries', () => {
       data: 'tanstack-query',
     }));
 
-    expect(parsed).toMatchObject({ data: 'tanstack-query' });
+    const expected = { data: 'tanstack-query' };
+    expect(parsed).toMatchObject(expected);
     expect(parsed.libraries).not.toContain('tanstack-query');
-    expect(parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS))).not.toHaveProperty('data');
+    const actual = parseLinteljsConfig(emitLinteljsConfig(DEFAULT_ANSWERS));
+    expect(actual).not.toHaveProperty('data');
   });
 
   it('refuses rtk-query without the Redux store that ships it', () => {
@@ -462,7 +489,8 @@ describe('the router and the form libraries', () => {
       data: 'rtk-query',
     }));
 
-    expect(parsed).toMatchObject({ data: 'rtk-query' });
+    const expected = { data: 'rtk-query' };
+    expect(parsed).toMatchObject(expected);
 
     expect(() => {
       return parseLinteljsConfig(emitLinteljsConfig({
@@ -519,7 +547,8 @@ describe('a version-one config', () => {
   });
 
   it('carries no store where the config said no', () => {
-    expect(parseLinteljsConfig(v1({ store: false }))).not.toHaveProperty('store');
+    const actual = parseLinteljsConfig(v1({ store: false }));
+    expect(actual).not.toHaveProperty('store');
   });
 
   it('carries no store where the target no longer offers one', () => {
@@ -730,13 +759,15 @@ describe('the languages answer', () => {
   it('round-trips through a config rather than being dropped', () => {
     const config = parseLinteljsConfig(configWith('react'));
 
-    expect(config.languages).toEqual(['ar', 'ja']);
+    const expected = ['ar', 'ja'];
+    expect(config.languages).toEqual(expected);
   });
 
   it('is taken by an extension with a popup and refused by one with no page to translate', () => {
     const popup = parseLinteljsConfig(configWith('webextension', { surfaces: ['popup'] }));
 
-    expect(popup.languages).toEqual(['ar', 'ja']);
+    const expected = ['ar', 'ja'];
+    expect(popup.languages).toEqual(expected);
 
     expect(() => {
       return parseLinteljsConfig(configWith('webextension', { surfaces: ['background'] }));

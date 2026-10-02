@@ -31,10 +31,11 @@ describe('nuxtTarget', () => {
   });
 
   it('translates through vue-i18n, as Vue does', () => {
-    expect(nuxtTarget.i18n).toEqual({
+    const expected = {
       dependencies: ['vue-i18n'],
       testSetup: 'fragments/test-setup/setupTests.vueI18n.ts',
-    });
+    };
+    expect(nuxtTarget.i18n).toEqual(expected);
   });
 });
 
@@ -95,11 +96,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -109,9 +112,10 @@ describe('the favicon', () => {
       return file.target === 'public/favicon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

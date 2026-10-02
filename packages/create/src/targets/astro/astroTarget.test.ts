@@ -47,16 +47,18 @@ describe('the astro record', () => {
   it('runs its dev server and preview the way every other target does', () => {
     const scripts = recordFor().extraScripts;
 
-    expect(scripts).toEqual({
+    const expected = {
       dev: 'astro dev',
       preview: 'astro preview',
-    });
+    };
+    expect(scripts).toEqual(expected);
   });
 });
 
 describe('i18n', () => {
   it('translates through a client script of its own, with no library, compiler or test setup', () => {
-    expect(recordFor().i18n).toEqual({ dependencies: [] });
+    const expected = { dependencies: [] };
+    expect(recordFor().i18n).toEqual(expected);
   });
 });
 
@@ -67,11 +69,12 @@ describe('the build it owns', () => {
     expect(record.vitePlugin).toBeUndefined();
     expect(record.vitestFactory?.call).toBe('getViteConfig');
 
-    expect(record.vitestFactory?.imports).toEqual([
+    const expected = [
       "import { getViteConfig } from 'astro/config';",
       '',
       "import 'vitest/config';",
-    ]);
+    ];
+    expect(record.vitestFactory?.imports).toEqual(expected);
   });
 
   it('gates on astro check, after a sync', () => {
@@ -103,7 +106,8 @@ describe('the hosted framework axis', () => {
     expect(record.hostsFramework).toBe(true);
     expect(record.framework).toBeUndefined();
     expect(record.stateRules).toEqual([]);
-    expect(record.dependencies).toEqual(['astro']);
+    const expected = ['astro'];
+    expect(record.dependencies).toEqual(expected);
     expect(record.naming['src/**/*.astro']).toBe('!([a-z]*[A-Z]*)');
   });
 
@@ -147,9 +151,12 @@ describe('the hosted framework axis', () => {
   it('brings the framework itself and its testing library beside astro', () => {
     const record = recordFor({ hostedFramework: 'vue' });
 
-    expect(record.dependencies).toEqual(['astro', 'vue']);
-    expect(record.testDevDependencies).toEqual(['@vue/test-utils']);
-    expect(record.stateRules).toEqual(['vue-reactivity.md']);
+    const expected = ['astro', 'vue'];
+    expect(record.dependencies).toEqual(expected);
+    const expected2 = ['@vue/test-utils'];
+    expect(record.testDevDependencies).toEqual(expected2);
+    const expected3 = ['vue-reactivity.md'];
+    expect(record.stateRules).toEqual(expected3);
   });
 
   it('declares astro once, as a runtime dependency, hosted or not', () => {
@@ -233,11 +240,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -249,10 +258,11 @@ describe('the favicon', () => {
         return file.target === 'public/favicon.svg';
       });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });
 
@@ -264,10 +274,11 @@ describe('the status pages', () => {
         return /^src\/pages\/\d{3}\.astro$/u.test(file.target);
       });
 
-    expect(pages).toEqual([
+    const expected = [
       { target: 'src/pages/403.astro' },
       { target: 'src/pages/404.astro' },
       { target: 'src/pages/500.astro' },
-    ]);
+    ];
+    expect(pages).toEqual(expected);
   });
 });

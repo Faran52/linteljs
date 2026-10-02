@@ -43,7 +43,7 @@ describe('vueI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...ENGLISH_FILES
         .map((file) => {
           return `${file}@i18n`;
@@ -51,7 +51,8 @@ describe('vueI18nFiles', () => {
       'src/components/features/language-select/LanguageSelect.vue@i18n',
       'src/components/ui/code-text/CodeText.vue@i18n',
       'src/i18n/index.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise', () => {
@@ -82,8 +83,10 @@ describe('vueI18nFiles', () => {
       languages: ['ko'],
     }));
 
-    expect(english).toEqual(['src/views/ContactView.vue']);
-    expect(translated).toEqual(['src/views/ContactView.vue@i18n']);
+    const expected = ['src/views/ContactView.vue'];
+    expect(english).toEqual(expected);
+    const expected2 = ['src/views/ContactView.vue@i18n'];
+    expect(translated).toEqual(expected2);
     expect(formless).toEqual([]);
   });
 });
@@ -100,7 +103,7 @@ describe('vueI18nTests', () => {
         return test.covers;
       });
 
-    expect(written).toEqual([
+    const expected = [
       ...SUITES
         .map((suite) => {
           return `${suite}@i18n`;
@@ -108,7 +111,8 @@ describe('vueI18nTests', () => {
       'src/components/features/language-select/LanguageSelect.test.ts@i18n',
       'src/components/ui/code-text/CodeText.test.ts@i18n',
       'src/i18n/index.test.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
 
     expect(covers).toContain('src/App.vue');
     expect(covers).toContain('src/components/ui/code-text/CodeText.vue');

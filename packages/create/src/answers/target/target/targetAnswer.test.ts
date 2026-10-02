@@ -6,6 +6,7 @@ describe('targetAnswer', () => {
   });
 
   it('defaults to a value it offers', () => {
-    expect(Object.keys(targetAnswer.values)).toContain(targetAnswer.default);
+    const actual = Object.keys(targetAnswer.values);
+    expect(actual).toContain(targetAnswer.default);
   });
 });

@@ -31,12 +31,16 @@ describe('runSpawn', () => {
   });
 
   it('rejects with the command and the status it failed on', async () => {
-    await expect(runSpawn('node', ['-e', 'process.exit(2)'], cwd))
+    const spawnResultPromise = runSpawn('node', ['-e', 'process.exit(2)'], cwd);
+
+    await expect(spawnResultPromise)
       .rejects.toThrow(/^node -e process\.exit\(2\) exited with 2$/u);
   });
 
   it('leaves what an inherited command printed out of the failure', async () => {
-    await expect(runSpawn('node', ['-e', 'console.log("in" + "herited"); process.exit(1)'], cwd))
+    const spawnResultPromise = runSpawn('node', ['-e', 'console.log("in" + "herited"); process.exit(1)'], cwd);
+
+    await expect(spawnResultPromise)
       .rejects.toThrow(/exited with 1$/u);
   });
 

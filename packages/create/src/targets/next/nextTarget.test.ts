@@ -52,11 +52,13 @@ describe('nextTarget', () => {
   });
 
   it('translates through next-intl, with no setup file: each suite wraps its own provider', () => {
-    expect(nextTarget.i18n).toEqual({ dependencies: ['next-intl'] });
+    const expected = { dependencies: ['next-intl'] };
+    expect(nextTarget.i18n).toEqual(expected);
   });
 
   it('admits the route segments a file-based router owns', () => {
-    expect(nextTarget.folderNaming).toEqual({ 'src/**/': FOLDER_ROUTED });
+    const expected = { 'src/**/': FOLDER_ROUTED };
+    expect(nextTarget.folderNaming).toEqual(expected);
   });
 });
 
@@ -167,11 +169,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -181,10 +185,11 @@ describe('the favicon', () => {
       return file.target === 'src/app/icon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'src/app/icon.svg',
       shared: true,
       source: 'public/favicon.svg',
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

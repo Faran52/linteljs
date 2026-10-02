@@ -70,14 +70,15 @@ describe('reactTarget', () => {
   });
 
   it('translates every mode, through i18next', () => {
-    expect(recordFor().i18n).toEqual({
+    const expected = {
       dependencies: [
         'i18next',
         'i18next-browser-languagedetector',
         'react-i18next',
       ],
       testSetup: 'fragments/test-setup/setupTests.i18n.ts',
-    });
+    };
+    expect(recordFor().i18n).toEqual(expected);
 
     expect(recordFor({ router: 'tanstack-router' }).i18n).toEqual(recordFor().i18n);
     expect(recordFor({ router: 'react-router-framework' }).i18n).toEqual(recordFor().i18n);
@@ -92,7 +93,8 @@ describe('reactTarget', () => {
         return variant;
       });
 
-    expect(mains).toEqual([undefined, 'i18n']);
+    const expected = [undefined, 'i18n'];
+    expect(mains).toEqual(expected);
 
     const appVariants = recordFor().starterFiles
       .filter((file) => {
@@ -102,11 +104,12 @@ describe('reactTarget', () => {
         return file.variant;
       });
 
-    expect(appVariants).toEqual([
+    const expected2 = [
       undefined,
       'react-router',
       'tanstack-router',
-    ]);
+    ];
+    expect(appVariants).toEqual(expected2);
   });
 
   it('ships the mocking layer only when msw was answered, and picks the handlers by whether a form was', () => {
@@ -126,8 +129,10 @@ describe('reactTarget', () => {
         }));
     };
 
-    expect(sourcesFor({})).not.toHaveProperty('__mocks__/msw/handlers.ts');
-    expect(sourcesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtendedUtils.ts');
+    const sources = sourcesFor({});
+    expect(sources).not.toHaveProperty('__mocks__/msw/handlers.ts');
+    const sources2 = sourcesFor({ mocking: 'msw' });
+    expect(sources2).toHaveProperty('src/lib/utils/fetchExtendedUtils.ts');
     expect(sourcesFor({ mocking: 'msw' })['__mocks__/msw/handlers.ts']).toBeUndefined();
 
     const source = sourcesFor({
@@ -155,9 +160,11 @@ describe('reactTarget', () => {
         }));
     };
 
-    expect(suitesFor({})).not.toHaveProperty('__mocks__/msw/handlers.test.ts');
+    const suites = suitesFor({});
+    expect(suites).not.toHaveProperty('__mocks__/msw/handlers.test.ts');
     expect(suitesFor({ mocking: 'msw' })['__mocks__/msw/handlers.test.ts']).toBeUndefined();
-    expect(suitesFor({ mocking: 'msw' })).toHaveProperty('src/lib/utils/fetchExtendedUtils.test.ts');
+    const suites2 = suitesFor({ mocking: 'msw' });
+    expect(suites2).toHaveProperty('src/lib/utils/fetchExtendedUtils.test.ts');
 
     const suite = suitesFor({
       mocking: 'msw',
@@ -361,11 +368,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -377,9 +386,10 @@ describe('the favicon', () => {
         return file.target === 'public/favicon.svg';
       });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

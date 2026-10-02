@@ -103,7 +103,8 @@ describe('emitEslintConfig', () => {
     const output = emitEslintConfig(answersFor({ target: 'vue' }));
 
     expect(output).not.toContain("from '@linteljs/eslint-config'");
-    expect(output.match(/^import /gm)).toHaveLength(1);
+    const actual = output.match(/^import /gm);
+    expect(actual).toHaveLength(1);
     expect(output).toContain("import { composeConfig } from '@linteljs/eslint-config/compose-config';");
   });
 
@@ -116,32 +117,45 @@ describe('emitEslintConfig', () => {
   });
 
   it('names the framework rather than an order for every target that has one', () => {
-    expect(emitEslintConfig(answersFor({ target: 'svelte' }))).toContain("framework: 'svelte',");
-    expect(emitEslintConfig(answersFor({ target: 'angular' }))).toContain("framework: 'angular',");
-    expect(emitEslintConfig(answersFor({ target: 'solid' }))).toContain("framework: 'solid',");
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'svelte' }));
+    expect(eslintConfig).toContain("framework: 'svelte',");
+    const eslintConfig2 = emitEslintConfig(answersFor({ target: 'angular' }));
+    expect(eslintConfig2).toContain("framework: 'angular',");
+    const eslintConfig3 = emitEslintConfig(answersFor({ target: 'solid' }));
+    expect(eslintConfig3).toContain("framework: 'solid',");
   });
 
   it('renames the hooks alias per framework', () => {
-    expect(emitEslintConfig(answersFor({ target: 'vue' }))).toContain(
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'vue' }));
+
+    expect(eslintConfig).toContain(
       "'@composables/*': './src/lib/composables/*',",
     );
 
-    expect(emitEslintConfig(answersFor({ target: 'vue' }))).not.toContain("'@hooks/*'");
+    const eslintConfig2 = emitEslintConfig(answersFor({ target: 'vue' }));
+    expect(eslintConfig2).not.toContain("'@hooks/*'");
 
-    expect(emitEslintConfig(answersFor({ target: 'solid' }))).toContain(
+    const eslintConfig3 = emitEslintConfig(answersFor({ target: 'solid' }));
+
+    expect(eslintConfig3).toContain(
       "'@primitives/*': './src/lib/primitives/*',",
     );
   });
 
   it('omits the hooks alias where the framework has no hook equivalent', () => {
-    expect(emitEslintConfig(answersFor({ target: 'angular' }))).not.toContain('/src/lib/hooks/');
-    expect(emitEslintConfig(answersFor({ target: 'webextension' }))).not.toContain('/src/lib/hooks/');
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'angular' }));
+    expect(eslintConfig).not.toContain('/src/lib/hooks/');
+    const eslintConfig2 = emitEslintConfig(answersFor({ target: 'webextension' }));
+    expect(eslintConfig2).not.toContain('/src/lib/hooks/');
   });
 
   it('emits @apis only with Zod', () => {
-    expect(emitEslintConfig(answersFor({}))).not.toContain("'@apis/*'");
+    const eslintConfig = emitEslintConfig(answersFor({}));
+    expect(eslintConfig).not.toContain("'@apis/*'");
 
-    expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).toContain(
+    const eslintConfig2 = emitEslintConfig(answersFor({ libraries: ['zod'] }));
+
+    expect(eslintConfig2).toContain(
       "'@apis/*': './src/lib/apis/*',",
     );
   });
@@ -161,8 +175,10 @@ describe('emitEslintConfig', () => {
   });
 
   it('asks for the vitest layer only where a suite was chosen', () => {
-    expect(emitEslintConfig(answersFor({ testing: 'vitest' }))).toContain('vitest: true');
-    expect(emitEslintConfig(answersFor({ testing: 'none' }))).not.toContain('vitest');
+    const eslintConfig = emitEslintConfig(answersFor({ testing: 'vitest' }));
+    expect(eslintConfig).toContain('vitest: true');
+    const eslintConfig2 = emitEslintConfig(answersFor({ testing: 'none' }));
+    expect(eslintConfig2).not.toContain('vitest');
   });
 
   it('keeps every emitted line inside the max-len the emitted config enforces', () => {
@@ -173,13 +189,15 @@ describe('emitEslintConfig', () => {
           return line.length > 120;
         });
 
-      expect({
+      const actual = {
         target,
         tooLong,
-      }).toEqual({
+      };
+      const expected = {
         target,
         tooLong: [],
-      });
+      };
+      expect(actual).toEqual(expected);
     }
   });
 
@@ -212,7 +230,8 @@ describe('emitEslintConfig', () => {
     }));
 
     expect(withStylex).toContain("libraries: ['stylex'],");
-    expect(emitEslintConfig(answersFor({ libraries: ['zod'] }))).not.toContain('libraries:');
+    const eslintConfig = emitEslintConfig(answersFor({ libraries: ['zod'] }));
+    expect(eslintConfig).not.toContain('libraries:');
   });
 
   it('asks for no layer for the other value of the answer that gates it', () => {
@@ -296,7 +315,8 @@ describe('emitEslintConfig', () => {
   });
 
   it('emits no resolver at all where none was recorded', () => {
-    expect(emitEslintConfig(answersFor({}))).not.toContain('resolver');
+    const eslintConfig = emitEslintConfig(answersFor({}));
+    expect(eslintConfig).not.toContain('resolver');
   });
 
   it('names no tailwind entry point when tailwind was not selected', () => {
@@ -309,9 +329,12 @@ describe('emitEslintConfig', () => {
   });
 
   it('omits the html layer where there is no markup for it to lint', () => {
-    expect(emitEslintConfig(answersFor({ target: 'angular' }))).not.toContain('html');
-    expect(emitEslintConfig(answersFor({ target: 'next' }))).not.toContain('html');
-    expect(emitEslintConfig(answersFor({ target: 'react' }))).toContain('html: true,');
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'angular' }));
+    expect(eslintConfig).not.toContain('html');
+    const eslintConfig2 = emitEslintConfig(answersFor({ target: 'next' }));
+    expect(eslintConfig2).not.toContain('html');
+    const eslintConfig3 = emitEslintConfig(answersFor({ target: 'react' }));
+    expect(eslintConfig3).toContain('html: true,');
   });
 
   it('gives Next the aliases for the directories only it has', () => {
@@ -325,7 +348,9 @@ describe('emitEslintConfig', () => {
   });
 
   it('carries the target ignores on top of the shared ones', () => {
-    expect(emitEslintConfig(answersFor({ target: 'next' }))).toContain(
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'next' }));
+
+    expect(eslintConfig).toContain(
       [
         '  ignores: [',
         "    'dist/**',",
@@ -352,7 +377,8 @@ describe('emitEslintConfig', () => {
       });
 
     expect(line).toHaveLength(120);
-    expect(line?.endsWith("'b'],")).toBe(true);
+    const bEndsWith = line?.endsWith("'b'],");
+    expect(bEndsWith).toBe(true);
   });
 
   it('breaks a list of two once it would run past max-len', () => {
@@ -397,13 +423,16 @@ describe('emitEslintConfig', () => {
   });
 
   it('asks for the astro layer on astro alone', () => {
-    expect(emitEslintConfig(answersFor({ target: 'astro' }))).toContain('  astro: true,\n');
-    expect(emitEslintConfig(answersFor({ target: 'react' }))).not.toContain('astro');
+    const eslintConfig = emitEslintConfig(answersFor({ target: 'astro' }));
+    expect(eslintConfig).toContain('  astro: true,\n');
+    const eslintConfig2 = emitEslintConfig(answersFor({ target: 'react' }));
+    expect(eslintConfig2).not.toContain('astro');
   });
 
   it('turns the typescript layer on for every target', () => {
     for (const target of TARGET_IDS) {
-      expect(emitEslintConfig(answersFor({ target }))).toContain('typescript: true,');
+      const eslintConfig = emitEslintConfig(answersFor({ target }));
+      expect(eslintConfig).toContain('typescript: true,');
     }
   });
 });
@@ -683,7 +712,8 @@ describe('the naming policy', () => {
   ])('names files and folders the %s way', (_label, overrides, block) => {
     const config = emitEslintConfig(answersFor(overrides));
 
-    expect(config.slice(config.indexOf('  naming: {'), config.indexOf('\n});'))).toBe(block);
+    const sliced = config.slice(config.indexOf('  naming: {'), config.indexOf('\n});'));
+    expect(sliced).toBe(block);
   });
 });
 
@@ -727,7 +757,8 @@ describe('ignores', () => {
       'expo-env.d.ts',
     ]],
   ])('ignores what %s generates on top of the shared entries', (target, own) => {
-    expect(ignoresOf(answersFor({ target })).slice(5)).toEqual(own);
+    const sliced = ignoresOf(answersFor({ target })).slice(5);
+    expect(sliced).toEqual(own);
   });
 
   it('holds src/routes.ts to relative imports in framework mode, and nothing else', () => {
@@ -747,10 +778,12 @@ describe('ignores', () => {
   });
 
   it('ignores what React Router generates in framework mode', () => {
-    expect(ignoresOf(answersFor({
+    const sliced = ignoresOf(answersFor({
       target: 'react',
       router: 'react-router-framework',
-    })).slice(5)).toEqual(['.react-router/**', 'build/**']);
+    })).slice(5);
+    const expected = ['.react-router/**', 'build/**'];
+    expect(sliced).toEqual(expected);
   });
 
   it('never repeats an entry for any target', () => {
@@ -796,10 +829,12 @@ describe('the router', () => {
 
 describe('eslintConfigEmitter', () => {
   it('writes the emitted text to eslint.config.js at the lint stage', () => {
-    expect(eslintConfigEmitter(answersFor({}))).toEqual([{
+    const eslintConfig = eslintConfigEmitter(answersFor({}));
+    const expected = [{
       stage: 'lint',
       target: 'eslint.config.js',
       content: { text: emitEslintConfig(answersFor({})) },
-    }]);
+    }];
+    expect(eslintConfig).toEqual(expected);
   });
 });

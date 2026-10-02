@@ -24,10 +24,11 @@ describe('customTypesEmitter', () => {
       typeSafety: 'relaxed',
     });
 
-    expect(artifacts).toEqual([{
+    const expected = [{
       stage: 'standard',
       target: 'src/typings/customTypes.d.ts',
       content: { sources: ['project/src/typings/customTypes.d.ts'] },
-    }]);
+    }];
+    expect(artifacts).toEqual(expected);
   });
 });

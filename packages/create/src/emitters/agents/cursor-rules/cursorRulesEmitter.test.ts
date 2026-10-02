@@ -15,13 +15,16 @@ import { cursorArtifacts, cursorRulesEmitter } from './cursorRulesEmitter';
 
 describe('cursorRulesEmitter', () => {
   it('writes the Cursor rules only where Cursor was chosen', () => {
-    expect(cursorRulesEmitter(answersFor([
+    const cursorRules = cursorRulesEmitter(answersFor([
       'claude-code',
       'codex',
       'copilot',
-    ]))).toEqual([]);
+    ]));
+    expect(cursorRules).toEqual([]);
 
-    expect(targets(cursorRulesEmitter(answersFor(['cursor']))))
+    const actual = targets(cursorRulesEmitter(answersFor(['cursor'])));
+
+    expect(actual)
       .toEqual(targets(cursorArtifacts(answersFor(['cursor']))));
   });
 });
@@ -56,7 +59,9 @@ describe('cursorArtifacts', () => {
   it('always applies with no paths list, and falls back to a description when there is no heading', () => {
     const transform = transformOf(cursorArtifacts(answersFor(['cursor'])), '.cursor/rules/type-standards.mdc');
 
-    expect(transform(UNSCOPED, null)).toBe(
+    const transformed = transform(UNSCOPED, null);
+
+    expect(transformed).toBe(
       '---\ndescription: LintelJS project standard\nalwaysApply: true\n---\n\nNo frontmatter here.\n',
     );
   });

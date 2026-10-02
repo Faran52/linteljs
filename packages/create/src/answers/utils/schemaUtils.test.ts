@@ -29,7 +29,7 @@ describe('schemaFor', () => {
 
     expect(schema.required).not.toContain('browser');
 
-    expect(schema.required).toEqual([
+    const expected = [
       '$schema',
       'schemaVersion',
       'target',
@@ -39,6 +39,7 @@ describe('schemaFor', () => {
       'typeSafety',
       'agents',
       'plugins',
-    ]);
+    ];
+    expect(schema.required).toEqual(expected);
   });
 });

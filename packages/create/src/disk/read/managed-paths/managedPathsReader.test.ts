@@ -41,17 +41,21 @@ describe('managedPathsReader', () => {
   it('reads the paths a previous run recorded', async () => {
     await record('{ "removable": [".claude/settings.json"] }');
 
-    await expect(managedPathsReader(cwd)).resolves.toEqual(['.claude/settings.json']);
+    const managedPaths = await managedPathsReader(cwd);
+    const expected = ['.claude/settings.json'];
+    expect(managedPaths).toEqual(expected);
   });
 
   it('answers nothing when there is no record', async () => {
-    await expect(managedPathsReader(cwd)).resolves.toEqual([]);
+    const managedPaths = await managedPathsReader(cwd);
+    expect(managedPaths).toEqual([]);
   });
 
   it('answers nothing for a record that is not json', async () => {
     await record('{ not json');
 
-    await expect(managedPathsReader(cwd)).resolves.toEqual([]);
+    const managedPaths = await managedPathsReader(cwd);
+    expect(managedPaths).toEqual([]);
   });
 
   it.each([
@@ -61,12 +65,15 @@ describe('managedPathsReader', () => {
   ])('answers nothing for a record that is %s', async (_case, text) => {
     await record(text);
 
-    await expect(managedPathsReader(cwd)).resolves.toEqual([]);
+    const managedPaths = await managedPathsReader(cwd);
+    expect(managedPaths).toEqual([]);
   });
 
   it('keeps only the entries that are strings', async () => {
     await record('{ "removable": ["a.js", 7, null, "b.js"] }');
 
-    await expect(managedPathsReader(cwd)).resolves.toEqual(['a.js', 'b.js']);
+    const managedPaths = await managedPathsReader(cwd);
+    const expected = ['a.js', 'b.js'];
+    expect(managedPaths).toEqual(expected);
   });
 });

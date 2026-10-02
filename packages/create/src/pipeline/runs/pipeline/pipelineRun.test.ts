@@ -112,7 +112,8 @@ describe('runPipeline against a directory that already exists', () => {
     expect(written).not.toContain('AGENTS.md');
     expect(written).not.toContain('.agents/plugins/marketplace.json');
     expect(written).not.toContain('src/App.tsx');
-    expect(await readFile(join(cwd, 'README.md'), 'utf8')).toContain('# demo-app');
+    const file = await readFile(join(cwd, 'README.md'), 'utf8');
+    expect(file).toContain('# demo-app');
   });
 
   it('writes nothing of a stage it was told to skip', async () => {
@@ -135,7 +136,8 @@ describe('runPipeline against a directory that already exists', () => {
 
     expect(written).toContain('package.json');
     expect(written).not.toContain('eslint.config.js');
-    expect(await exists(join(cwd, 'eslint.config.js'))).toBe(false);
+    const eslintConfigJsExists = await exists(join(cwd, 'eslint.config.js'));
+    expect(eslintConfigJsExists).toBe(false);
   });
 
   it('records the answers it was given before the package.json they imply', async () => {
@@ -148,8 +150,10 @@ describe('runPipeline against a directory that already exists', () => {
 
     const written = await generate(answers);
 
-    expect(await readFile(join(cwd, CONFIG_PATH), 'utf8')).toBe(emitLinteljsConfig(answers));
-    expect(written.indexOf(CONFIG_PATH)).toBeLessThan(written.indexOf('package.json'));
+    const file = await readFile(join(cwd, CONFIG_PATH), 'utf8');
+    expect(file).toBe(emitLinteljsConfig(answers));
+    const index = written.indexOf(CONFIG_PATH);
+    expect(index).toBeLessThan(written.indexOf('package.json'));
   });
 });
 
@@ -201,7 +205,7 @@ describe('stage timing', () => {
       },
     });
 
-    expect(started).toEqual([[
+    const expected = [[
       'lint',
       1,
       5,
@@ -209,7 +213,8 @@ describe('stage timing', () => {
       'standard',
       3,
       5,
-    ]]);
+    ]];
+    expect(started).toEqual(expected);
   });
 
   it('reports each stage by the time it took rather than a clock reading', async () => {
@@ -289,8 +294,12 @@ describe('the stages that shell out', () => {
   it('installs with the manager the answers named, inside the project, with a listener or without', async () => {
     await planted('yarn', 0);
 
-    expect(await installNotices('yarn')).toEqual(['installing with yarn']);
-    expect(await invocations()).toEqual([`${await realpath(cwd)} install`]);
+    const actual = await installNotices('yarn');
+    const expected = ['installing with yarn'];
+    expect(actual).toEqual(expected);
+    const actual2 = await invocations();
+    const expected2 = [`${await realpath(cwd)} install`];
+    expect(actual2).toEqual(expected2);
 
     await pipelineRun({
       name: 'demo-app',
@@ -304,13 +313,15 @@ describe('the stages that shell out', () => {
       ],
     });
 
-    expect(await invocations()).toHaveLength(2);
+    const actual3 = await invocations();
+    expect(actual3).toHaveLength(2);
   });
 
   it('stops when the package manager is not installed at all', async () => {
     await planted('yarn', 0);
 
-    await expect(installNotices('bun')).rejects.toThrow('ENOENT');
+    const promise = installNotices('bun');
+    await expect(promise).rejects.toThrow('ENOENT');
   });
 });
 
@@ -337,11 +348,14 @@ describe('the repository the hooks install into', () => {
   };
 
   it('initialises one where the scaffolder left none, and says so', async () => {
-    expect(await noticesFromAgent()).toEqual([
+    const actual = await noticesFromAgent();
+    const expected = [
       'git init: the husky hooks install on the next install',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
-    expect(await exists(join(cwd, '.git'))).toBe(true);
+    const gitExists = await exists(join(cwd, '.git'));
+    expect(gitExists).toBe(true);
   });
 
   it('initialises one in its own directory when the caller exports another repository', async () => {
@@ -353,8 +367,10 @@ describe('the repository the hooks install into', () => {
 
       const notices = await noticesFromAgent();
 
-      expect(notices).toEqual(['git init: the husky hooks install on the next install']);
-      expect(await exists(join(cwd, '.git'))).toBe(true);
+      const expected = ['git init: the husky hooks install on the next install'];
+      expect(notices).toEqual(expected);
+      const gitExists = await exists(join(cwd, '.git'));
+      expect(gitExists).toBe(true);
     }
     finally {
       await rm(outer, {
@@ -367,15 +383,18 @@ describe('the repository the hooks install into', () => {
   it('says nothing where the directory is already inside a work tree', async () => {
     await noticesFromAgent();
 
-    expect(await noticesFromAgent()).toEqual([]);
+    const actual = await noticesFromAgent();
+    expect(actual).toEqual([]);
   });
 
   it('says the hooks will not install when it cannot make one', async () => {
     await writeFile(join(cwd, '.git'), 'not a gitfile\n', 'utf8');
 
-    expect(await noticesFromAgent()).toEqual([
+    const actual = await noticesFromAgent();
+    const expected = [
       'no git repository here, so the husky hooks will not install until there is one',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('skips the repository and says why when git is not on PATH, with a listener or without', async () => {
@@ -385,7 +404,8 @@ describe('the repository the hooks install into', () => {
 
     expect(notices).toHaveLength(1);
     expect(notices[0]).toContain('git was not found on PATH');
-    expect(await exists(join(cwd, '.git'))).toBe(false);
+    const gitExists = await exists(join(cwd, '.git'));
+    expect(gitExists).toBe(false);
 
     const run = pipelineRun({
       name: 'demo-app',
@@ -424,11 +444,14 @@ describe('the fix stage', () => {
   };
 
   it('runs after the others and reports the install step it is waiting on', async () => {
-    expect(await noticesFrom(['install'])).toEqual(['next: pnpm install && pnpm lint:fix']);
+    const notices = await noticesFrom(['install']);
+    const expected = ['next: pnpm install && pnpm lint:fix'];
+    expect(notices).toEqual(expected);
   });
 
   it('does not run when the lint stage was skipped', async () => {
-    expect(await noticesFrom(['lint', 'install'])).toEqual([]);
+    const notices = await noticesFrom(['lint', 'install']);
+    expect(notices).toEqual([]);
   });
 });
 
@@ -439,9 +462,12 @@ describe('what create and sync each discover about a project', () => {
 
     await generate({ target: 'react' });
 
-    expect(await exists(join(cwd, '__mocks__/setupTests.tsx'))).toBe(false);
+    const actual = await exists(join(cwd, '__mocks__/setupTests.tsx'));
+    expect(actual).toBe(false);
 
-    expect(await readFile(join(cwd, 'vitest.config.ts'), 'utf8'))
+    const file = await readFile(join(cwd, 'vitest.config.ts'), 'utf8');
+
+    expect(file)
       .toContain('__mocks__/setupTests.ts');
   });
 

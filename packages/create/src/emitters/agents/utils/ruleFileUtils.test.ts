@@ -15,16 +15,21 @@ import { globsOf, ruleArtifacts } from './ruleFileUtils';
 
 describe('globsOf', () => {
   it('reads the shared paths list as one glob string, and an absent one as empty', () => {
-    expect(globsOf(RULE)).toBe('src/**/*.ts,src/**/*.tsx,tsconfig.json');
-    expect(globsOf('# No frontmatter here.\n')).toBe('');
+    const globs = globsOf(RULE);
+    expect(globs).toBe('src/**/*.ts,src/**/*.tsx,tsconfig.json');
+    const noFrontmatterHereGlobs = globsOf('# No frontmatter here.\n');
+    expect(noFrontmatterHereGlobs).toBe('');
   });
 
   it('reads paths only from frontmatter that opens the file', () => {
-    expect(globsOf('# Title\n\n---\npaths:\n  - "src/**"\n---\n')).toBe('');
+    const globs = globsOf('# Title\n\n---\npaths:\n  - "src/**"\n---\n');
+    expect(globs).toBe('');
   });
 
   it('expands every brace group, since both tools split the string on its commas', () => {
-    expect(globsOf('---\npaths:\n  - "**/*.{test,spec}.{ts,tsx}"\n---\n'))
+    const globs = globsOf('---\npaths:\n  - "**/*.{test,spec}.{ts,tsx}"\n---\n');
+
+    expect(globs)
       .toBe('**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx');
   });
 });
@@ -35,13 +40,18 @@ describe('ruleArtifacts', () => {
       return '---\napplyTo: src\n---\n';
     });
 
-    expect(targets(artifacts)).toContain('.rules/repo-structure.mdc');
+    const actual = targets(artifacts);
+    expect(actual).toContain('.rules/repo-structure.mdc');
     expect(artifacts[0]?.stage).toBe('standard');
 
-    expect(transformOf(artifacts, '.rules/repo-structure.mdc')(RULE, null))
+    const actual2 = transformOf(artifacts, '.rules/repo-structure.mdc')(RULE, null);
+
+    expect(actual2)
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
 
-    expect(transformOf(artifacts, '.rules/repo-structure.mdc')(RULE.replace('---\n\n#', '---\n\n\n#'), null))
+    const actual3 = transformOf(artifacts, '.rules/repo-structure.mdc')(RULE.replace('---\n\n#', '---\n\n\n#'), null);
+
+    expect(actual3)
       .toBe('---\napplyTo: src\n---\n# Repository Structure\n\nBody.\n');
   });
 });

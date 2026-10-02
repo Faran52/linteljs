@@ -28,7 +28,9 @@ const HOOKS: AccessorNames = {
 
 describe('mockFiles', () => {
   it('writes the adapter alone without msw', () => {
-    expect(pickedBy(mockFiles(true))).toEqual(['src/lib/utils/fetchExtendedUtils.ts base']);
+    const actual = pickedBy(mockFiles(true));
+    const expected = ['src/lib/utils/fetchExtendedUtils.ts base'];
+    expect(actual).toEqual(expected);
   });
 
   it.each<[string, Partial<Answers>, string]>([
@@ -46,12 +48,14 @@ describe('mockFiles', () => {
       'with-form',
     ],
   ])('writes the worker, the node server and the handlers for %s under msw', (_case, overrides, handlers) => {
-    expect(pickedBy(mockFiles(true), overrides)).toEqual([
+    const actual = pickedBy(mockFiles(true), overrides);
+    const expected = [
       'src/lib/utils/fetchExtendedUtils.ts base',
       '__mocks__/msw/node.ts base',
       '__mocks__/msw/browser.ts base',
       `__mocks__/msw/handlers.ts ${handlers}`,
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('writes the bare handlers under a form where the target writes no contact page', () => {
@@ -82,11 +86,12 @@ describe('mockFiles', () => {
 
     expect(targets).not.toContain('__mocks__/msw/browser.ts');
 
-    expect(files[0]).toEqual({
+    const expected = {
       target: 'src/lib/utils/fetch-extended-utils.ts',
       source: 'src/lib/utils/fetchExtendedUtils.ts',
       shared: true,
-    });
+    };
+    expect(files[0]).toEqual(expected);
   });
 });
 
@@ -117,7 +122,8 @@ describe('mockTests', () => {
       ],
     ],
   ])('follows the files it covers under %s', (_case, overrides, picked) => {
-    expect(pickedBy(mockTests(true), overrides)).toEqual(picked);
+    const actual = pickedBy(mockTests(true), overrides);
+    expect(actual).toEqual(picked);
   });
 
   it('covers the bare handlers under a form where the target writes no contact page', () => {
@@ -139,21 +145,25 @@ describe('mockTests', () => {
   });
 
   it('names the suite after the adapter it covers', () => {
-    expect(mockTests(true, 'src/lib/utils/fetch-extended-utils')[0]).toMatchObject({
+    const expected = {
       target: 'src/lib/utils/fetch-extended-utils.test.ts',
       covers: 'src/lib/utils/fetch-extended-utils.ts',
-    });
+    };
+    expect(mockTests(true, 'src/lib/utils/fetch-extended-utils')[0]).toMatchObject(expected);
   });
 });
 
 describe('accessorFiles', () => {
   it('writes both accessors in their own kebab directory under tanstack query alone', () => {
-    expect(pickedBy(accessorFiles(HOOKS), { data: 'tanstack-query' })).toEqual([
+    const actual = pickedBy(accessorFiles(HOOKS), { data: 'tanstack-query' });
+    const expected = [
       'src/lib/hooks/use-extended-query/useExtendedQuery.ts tanstack-query',
       'src/lib/hooks/use-extended-mutation/useExtendedMutation.ts tanstack-query',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
-    expect(pickedBy(accessorFiles(HOOKS), { data: 'rtk-query' })).toEqual([]);
+    const actual2 = pickedBy(accessorFiles(HOOKS), { data: 'rtk-query' });
+    expect(actual2).toEqual([]);
   });
 
   it('reads another target\'s accessor where one is taken', () => {
@@ -165,22 +175,24 @@ describe('accessorFiles', () => {
       names: HOOKS,
     })[0];
 
-    expect(files).toMatchObject({
+    const expected = {
       target: 'src/hooks/use-extended-query/useExtendedQuery.ts',
       variant: 'tanstack-query',
       shared: 'react',
       source: 'src/lib/hooks/use-extended-query/useExtendedQuery.ts',
-    });
+    };
+    expect(files).toMatchObject(expected);
   });
 });
 
 describe('accessorTests', () => {
   it('puts each suite beside its accessor, covering it', () => {
-    expect(accessorTests(HOOKS)[0]).toMatchObject({
+    const expected = {
       target: 'src/lib/hooks/use-extended-query/useExtendedQuery.test.ts',
       covers: 'src/lib/hooks/use-extended-query/useExtendedQuery.ts',
       variant: 'tanstack-query',
-    });
+    };
+    expect(accessorTests(HOOKS)[0]).toMatchObject(expected);
   });
 
   it('names a suite with the target\'s own suffix', () => {
@@ -191,10 +203,11 @@ describe('accessorTests', () => {
       testSuffix: '.spec.ts',
     })[1];
 
-    expect(tests).toMatchObject({
+    const expected = {
       target: 'src/lib/services/extended-mutation/extended-mutation.spec.ts',
       covers: 'src/lib/services/extended-mutation/extended-mutation.ts',
-    });
+    };
+    expect(tests).toMatchObject(expected);
   });
 
   it('reads another target\'s suite where one is taken', () => {
@@ -206,7 +219,7 @@ describe('accessorTests', () => {
       names: HOOKS,
     });
 
-    expect(tests).toMatchObject([{
+    const expected = [{
       target: 'src/hooks/use-extended-query/useExtendedQuery.test.ts',
       covers: 'src/hooks/use-extended-query/useExtendedQuery.ts',
       shared: 'react',
@@ -216,23 +229,29 @@ describe('accessorTests', () => {
       covers: 'src/hooks/use-extended-mutation/useExtendedMutation.ts',
       shared: 'react',
       source: 'src/lib/hooks/use-extended-mutation/useExtendedMutation.test.ts',
-    }]);
+    }];
+    expect(tests).toMatchObject(expected);
   });
 
   it('writes both suites under tanstack query alone', () => {
-    expect(pickedBy(accessorTests(HOOKS), { data: 'tanstack-query' })).toHaveLength(2);
-    expect(pickedBy(accessorTests(HOOKS))).toEqual([]);
+    const actual = pickedBy(accessorTests(HOOKS), { data: 'tanstack-query' });
+    expect(actual).toHaveLength(2);
+    const actual2 = pickedBy(accessorTests(HOOKS));
+    expect(actual2).toEqual([]);
   });
 });
 
 describe('the rtk query api', () => {
   it('writes the base api and its suite under rtk query alone', () => {
-    expect(pickedBy([...rtkFiles(), ...rtkTests()], { data: 'rtk-query' })).toEqual([
+    const actual = pickedBy([...rtkFiles(), ...rtkTests()], { data: 'rtk-query' });
+    const expected = [
       'src/lib/apis/base/baseApi.ts rtk-query',
       'src/lib/apis/base/baseApi.test.ts rtk-query',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
-    expect(pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' })).toEqual([]);
+    const actual2 = pickedBy([...rtkFiles(), ...rtkTests()], { data: 'tanstack-query' });
+    expect(actual2).toEqual([]);
   });
 });
 
@@ -243,14 +262,17 @@ describe('the rtk query contact api', () => {
       data: 'rtk-query',
     });
 
-    expect(withForm).toEqual([
+    const expected = [
       'src/lib/apis/contact/index.ts rtk-query',
       'src/lib/apis/contact/contactEndpoints.ts rtk-query',
       'src/lib/apis/contact/contactHooks.ts rtk-query',
-    ]);
+    ];
+    expect(withForm).toEqual(expected);
 
-    expect(pickedBy(rtkContactFiles(), { data: 'rtk-query' })).toEqual([]);
-    expect(pickedBy(rtkContactFiles(), { form: 'tanstack-form' })).toEqual([]);
+    const actual = pickedBy(rtkContactFiles(), { data: 'rtk-query' });
+    expect(actual).toEqual([]);
+    const actual2 = pickedBy(rtkContactFiles(), { form: 'tanstack-form' });
+    expect(actual2).toEqual([]);
   });
 
   it('takes both from the react tree, a suite each', () => {
@@ -263,9 +285,10 @@ describe('the rtk query contact api', () => {
         return `${target} ${covers} ${String(shared)}`;
       });
 
-    expect(tests).toEqual([
+    const expected = [
       'src/lib/apis/contact/contactEndpoints.test.ts src/lib/apis/contact/contactEndpoints.ts react',
       'src/lib/apis/contact/contactHooks.test.ts src/lib/apis/contact/contactHooks.ts react',
-    ]);
+    ];
+    expect(tests).toEqual(expected);
   });
 });

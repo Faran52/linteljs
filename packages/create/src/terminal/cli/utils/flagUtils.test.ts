@@ -47,39 +47,49 @@ describe('answerOptions', () => {
   it('declares a list answer repeatable and a single one not', () => {
     const options = answerOptions(FLAGGED);
 
-    expect(options['libraries']).toEqual({
+    const expected = {
       type: 'string',
       multiple: true,
-    });
+    };
+    expect(options['libraries']).toEqual(expected);
 
-    expect(options['target']).toEqual({ type: 'string' });
+    const expected2 = { type: 'string' };
+    expect(options['target']).toEqual(expected2);
   });
 });
 
 describe('widthOf', () => {
   it('answers the length of the widest name', () => {
-    expect(widthOf([
+    const width = widthOf([
       'lint',
       'standard',
       'fix',
-    ])).toBe(8);
+    ]);
+    expect(width).toBe(8);
   });
 });
 
 describe('answerUsage', () => {
   it('shapes each answer line from its record: list or value, every choice, and any note', () => {
-    expect(lineFor('libraries')).toMatch(/^ {2}--libraries <list> /u);
-    expect(lineFor('target')).toMatch(/^ {2}--target <value> /u);
-    expect(lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '))).toBe(true);
-    expect(lineFor('router').endsWith(` (${ANSWERS.router.note})`)).toBe(true);
+    const line = lineFor('libraries');
+    expect(line).toMatch(/^ {2}--libraries <list> /u);
+    const targetLine = lineFor('target');
+    expect(targetLine).toMatch(/^ {2}--target <value> /u);
+    const actual = lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '));
+    expect(actual).toBe(true);
+    const actual2 = lineFor('router').endsWith(` (${ANSWERS.router.note})`);
+    expect(actual2).toBe(true);
   });
 
   it('does not scope --form to react, since only one of its values is', () => {
-    expect(lineFor('form')).toContain('react-hook-form');
-    expect(lineFor('form')).not.toContain('react only');
+    const line = lineFor('form');
+    expect(line).toContain('react-hook-form');
+    const formLine = lineFor('form');
+    expect(formLine).not.toContain('react only');
   });
 
   it('lines up every answer description on one column, store included', () => {
-    expect(lineFor('store').indexOf('zustand')).toBe(lineFor('type-safety').indexOf('strict'));
+    const index = lineFor('store').indexOf('zustand');
+    expect(index).toBe(lineFor('type-safety').indexOf('strict'));
   });
 });

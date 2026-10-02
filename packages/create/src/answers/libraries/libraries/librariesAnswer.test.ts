@@ -6,6 +6,7 @@ describe('librariesAnswer', () => {
   });
 
   it('defaults to values it offers', () => {
-    expect(Object.keys(librariesAnswer.values)).toEqual(expect.arrayContaining([...librariesAnswer.default]));
+    const actual = Object.keys(librariesAnswer.values);
+    expect(actual).toEqual(expect.arrayContaining([...librariesAnswer.default]));
   });
 });

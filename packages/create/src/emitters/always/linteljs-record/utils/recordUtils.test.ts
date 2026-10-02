@@ -18,37 +18,48 @@ const VERSIONS = {
 
 describe('stackRows', () => {
   it('states the version as recorded, without the range it was written with, in the order a reader wants', () => {
-    expect(stackRows(hostedAnswersFor({ packageManagerVersion: '12.4.1' }), VERSIONS)).toEqual([
+    const actual = stackRows(hostedAnswersFor({ packageManagerVersion: '12.4.1' }), VERSIONS);
+    const expected = [
       ["name: 'linteljs'", "version: '2.0.0'"],
       ["name: 'react'", "version: '19.3.0'"],
       ["name: 'typescript'", "version: '5.9.3'"],
       ["name: 'node'", "version: '26.9.0'"],
       ["name: 'pnpm'", "version: '12.4.1'"],
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('prints no framework row for a target that renders with none', () => {
-    expect(stackRows(hostedAnswersFor({ target: 'webextension' }), VERSIONS)).toEqual([
+    const actual = stackRows(hostedAnswersFor({ target: 'webextension' }), VERSIONS);
+    const expected = [
       ["name: 'linteljs'", "version: '2.0.0'"],
       ["name: 'typescript'", "version: '5.9.3'"],
       ["name: 'node'", "version: '26.9.0'"],
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('strips only a leading range sigil from a recorded version', () => {
-    expect(stackRows(hostedAnswersFor({ target: 'webextension' }), {
+    const actual = stackRows(hostedAnswersFor({ target: 'webextension' }), {
       '@linteljs/eslint-config': 'workspace:^',
       'typescript': '5.9.3',
-    })).toContainEqual(["name: 'linteljs'", "version: 'workspace:^'"]);
+    });
+    const expected = ["name: 'linteljs'", "version: 'workspace:^'"];
+    expect(actual).toContainEqual(expected);
   });
 
   it('reads no framework version for a target that renders with none', () => {
-    expect(stackRows(hostedAnswersFor({ target: 'webextension' }), { undefined: '1.0.0' }))
-      .toEqual([["name: 'node'", "version: '26.9.0'"]]);
+    const actual = stackRows(hostedAnswersFor({ target: 'webextension' }), { undefined: '1.0.0' });
+    const expected = [["name: 'node'", "version: '26.9.0'"]];
+
+    expect(actual)
+      .toEqual(expected);
   });
 
   it('leaves out a row whose version is unknown', () => {
-    expect(stackRows(hostedAnswersFor(), {})).toEqual([["name: 'node'", "version: '26.9.0'"]]);
+    const actual = stackRows(hostedAnswersFor(), {});
+    const expected = [["name: 'node'", "version: '26.9.0'"]];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -59,13 +70,14 @@ describe('gateRows', () => {
       testing: 'none',
     }));
 
-    expect(rows).toEqual([
+    const expected = [
       ["command: 'pnpm lint'", "runs: 'eslint .'"],
       ["command: 'pnpm lint:types'", "runs: 'node scripts/checkBannedPatterns.ts src'"],
       ["command: 'pnpm lint:css'", "runs: 'stylelint \"src/**/*.css\" --allow-empty-input'"],
       ["command: 'pnpm typecheck'", "runs: 'tsc --noEmit'"],
       ["command: 'pnpm build'", "runs: 'expo export'"],
-    ]);
+    ];
+    expect(rows).toEqual(expected);
   });
 
   it('breaks a command too long for one line into joined literals, each inside the line length', () => {
@@ -141,7 +153,8 @@ describe('nameDeclaration', () => {
 
 describe('answerRows', () => {
   it('prints the answers a prompt asked, and nothing else', () => {
-    expect(answerRows(hostedAnswersFor({ store: 'zustand' }), ANSWERS)).toEqual([
+    const actual = answerRows(hostedAnswersFor({ store: 'zustand' }), ANSWERS);
+    const expected = [
       ["label: 'Framework'", "value: 'react'"],
       ["label: 'Browser'", "value: 'chrome'"],
       ["label: 'Testing'", "value: 'vitest'"],
@@ -150,16 +163,19 @@ describe('answerRows', () => {
       ["label: 'Type safety'", "value: 'strict'"],
       ["label: 'AI agents'", "value: 'claude-code'"],
       ["label: 'AI plugins'", "value: 'ponytail, context7, frontend-design'"],
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('prints a list answer joined, and no row for an empty one', () => {
     const label = `label: '${ANSWERS.agents.prompt}'`;
 
-    expect(answerRows(hostedAnswersFor({ agents: ['codex', 'cursor'] }), ANSWERS)).toContainEqual([
+    const actual = answerRows(hostedAnswersFor({ agents: ['codex', 'cursor'] }), ANSWERS);
+    const expected = [
       label,
       "value: 'codex, cursor'",
-    ]);
+    ];
+    expect(actual).toContainEqual(expected);
 
     const labels = answerRows(hostedAnswersFor({ agents: [] }), ANSWERS)
       .map(([row]) => {

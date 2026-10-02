@@ -28,7 +28,8 @@ describe('emitReadme', () => {
   it('fills the run prefix and check chain', () => {
     const template = 'run: {{RUN}} check\n\n{{CHECK_CHAIN}}\n';
 
-    expect(emitReadme(template, 'demo-app', DEFAULT_ANSWERS)).toContain('run: pnpm check');
+    const readme = emitReadme(template, 'demo-app', DEFAULT_ANSWERS);
+    expect(readme).toContain('run: pnpm check');
   });
 
   it('throws naming README.md when a slot the template needs is missing from what sharedSlots provides', () => {

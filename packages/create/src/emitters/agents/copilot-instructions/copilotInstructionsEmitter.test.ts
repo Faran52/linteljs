@@ -15,13 +15,16 @@ import { copilotArtifacts, copilotInstructionsEmitter } from './copilotInstructi
 
 describe('copilotInstructionsEmitter', () => {
   it('writes the Copilot files only where Copilot was chosen', () => {
-    expect(copilotInstructionsEmitter(answersFor([
+    const copilotInstructions = copilotInstructionsEmitter(answersFor([
       'claude-code',
       'codex',
       'cursor',
-    ]))).toEqual([]);
+    ]));
+    expect(copilotInstructions).toEqual([]);
 
-    expect(targets(copilotInstructionsEmitter(answersFor(['copilot']))))
+    const actual = targets(copilotInstructionsEmitter(answersFor(['copilot'])));
+
+    expect(actual)
       .toEqual(targets(copilotArtifacts(answersFor(['copilot']))));
   });
 });
@@ -41,7 +44,9 @@ describe('copilotArtifacts', () => {
       '.github/instructions/repo-structure.instructions.md',
     );
 
-    expect(transform(RULE, null))
+    const transformed = transform(RULE, null);
+
+    expect(transformed)
       .toBe('---\napplyTo: "src/**/*.ts,src/**/*.tsx,tsconfig.json"\n---\n\n# Repository Structure\n\nBody.\n');
   });
 
@@ -58,6 +63,7 @@ describe('copilotArtifacts', () => {
       '.github/instructions/type-standards.instructions.md',
     );
 
-    expect(transform(UNSCOPED, null)).toBe('---\napplyTo: "**"\n---\n\nNo frontmatter here.\n');
+    const transformed = transform(UNSCOPED, null);
+    expect(transformed).toBe('---\napplyTo: "**"\n---\n\nNo frontmatter here.\n');
   });
 });

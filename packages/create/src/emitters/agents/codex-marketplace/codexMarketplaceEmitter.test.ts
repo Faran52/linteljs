@@ -19,7 +19,7 @@ describe('emitCodexMarketplace', () => {
       'frontend-design',
     ]));
 
-    expect(marketplace).toEqual({
+    const expected = {
       name: 'linteljs',
       interface: { displayName: 'LintelJS project plugins' },
       plugins: [
@@ -77,14 +77,15 @@ describe('emitCodexMarketplace', () => {
           category: 'Design',
         },
       ],
-    });
+    };
+    expect(marketplace).toEqual(expected);
   });
 
   it('retains only the local LintelJS declaration with no selected plugins', () => {
     const output = emitCodexMarketplace([]);
     const marketplace: unknown = JSON.parse(output);
 
-    expect(marketplace).toEqual({
+    const expected = {
       name: 'linteljs',
       interface: { displayName: 'LintelJS project plugins' },
       plugins: [
@@ -101,9 +102,11 @@ describe('emitCodexMarketplace', () => {
           category: 'Developer Tools',
         },
       ],
-    });
+    };
+    expect(marketplace).toEqual(expected);
 
-    expect(output.endsWith('\n')).toBe(true);
+    const actual = output.endsWith('\n');
+    expect(actual).toBe(true);
   });
 
   it('preserves the selected plugin declaration order', () => {
@@ -112,13 +115,14 @@ describe('emitCodexMarketplace', () => {
       'ponytail',
     ]));
 
-    expect(marketplace).toMatchObject({
+    const expected = {
       plugins: [
         { name: 'linteljs' },
         { name: 'frontend-design' },
         { name: 'ponytail' },
       ],
-    });
+    };
+    expect(marketplace).toMatchObject(expected);
   });
 });
 
@@ -130,7 +134,8 @@ describe('codexMarketplaceEmitter', () => {
   };
 
   it('writes nothing unless Codex was chosen', () => {
-    expect(codexMarketplaceEmitter(DEFAULT_ANSWERS)).toEqual([]);
+    const codexMarketplace = codexMarketplaceEmitter(DEFAULT_ANSWERS);
+    expect(codexMarketplace).toEqual([]);
   });
 
   it('writes the adapter, the marketplace of the chosen plugins and the plugin manifest', () => {
@@ -149,7 +154,7 @@ describe('codexMarketplaceEmitter', () => {
         ];
       });
 
-    expect(shapes).toEqual([
+    const expected = [
       [
         'standard',
         'AGENTS.md',
@@ -165,9 +170,11 @@ describe('codexMarketplaceEmitter', () => {
         'plugins/linteljs/.codex-plugin/plugin.json',
         undefined,
       ],
-    ]);
+    ];
+    expect(shapes).toEqual(expected);
 
-    expect(artifacts[1]?.content).toEqual({ text: emitCodexMarketplace(CODEX.plugins) });
+    const expected2 = { text: emitCodexMarketplace(CODEX.plugins) };
+    expect(artifacts[1]?.content).toEqual(expected2);
   });
 
   it('ships the exact minimal local plugin metadata', async () => {

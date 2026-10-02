@@ -9,7 +9,8 @@ import { verdaccioConfig } from './registry';
 
 describe('verdaccioConfig', () => {
   it('proxies to npmjs unless told otherwise', () => {
-    expect(verdaccioConfig('/storage')).toContain(`  npmjs:\n    url: ${UPSTREAM}\n`);
+    const actual = verdaccioConfig('/storage');
+    expect(actual).toContain(`  npmjs:\n    url: ${UPSTREAM}\n`);
   });
 
   it('proxies to the upstream E2E_UPSTREAM names', () => {

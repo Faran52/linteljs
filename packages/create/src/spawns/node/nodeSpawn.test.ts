@@ -30,20 +30,25 @@ describe('nodeSpawn', () => {
   it('answers the version it printed, with the v stripped', () => {
     spawn.mockReturnValueOnce(spawnExit(0, 'v26.9.0\n'));
 
-    expect(nodeSpawn()).toBe('26.9.0');
-    expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), ['--version'], { encoding: 'utf8' });
+    const actual = nodeSpawn();
+    expect(actual).toBe('26.9.0');
+    const expected = ['--version'];
+    const expected2 = { encoding: 'utf8' };
+    expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), expected, expected2);
   });
 
   it('answers nothing, and spawns nothing, where PATH carries no node', () => {
     vi.stubEnv('PATH', '');
 
-    expect(nodeSpawn()).toBeUndefined();
+    const actual = nodeSpawn();
+    expect(actual).toBeUndefined();
     expect(spawn).not.toHaveBeenCalled();
   });
 
   it('answers nothing where the one it found would not run', () => {
     spawn.mockReturnValueOnce(spawnExit(1));
 
-    expect(nodeSpawn()).toBeUndefined();
+    const actual = nodeSpawn();
+    expect(actual).toBeUndefined();
   });
 });

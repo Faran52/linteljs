@@ -190,7 +190,8 @@ const fileRings = SHAPES
 
 describe.each(fileRings)('$name', (ring) => {
   it('holds no subject', () => {
-    expect(directoriesIn(join(srcDir, ring.name))).toEqual([]);
+    const directories = directoriesIn(join(srcDir, ring.name));
+    expect(directories).toEqual([]);
   });
 });
 
@@ -271,11 +272,13 @@ describe.each(registeredRings)('$name registry', (ring) => {
 
 describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
   it('holds one entry, named for the directory', () => {
-    expect(entriesIn(path)).toContain(`${entry}.ts`);
+    const entries = entriesIn(path);
+    expect(entries).toContain(`${entry}.ts`);
   });
 
   it('holds no index', () => {
-    expect(entriesIn(path)).not.toContain('index.ts');
+    const entries = entriesIn(path);
+    expect(entries).not.toContain('index.ts');
   });
 
   it('holds nothing but its entry, its constants and a utils directory', () => {
@@ -326,7 +329,8 @@ const registeredSubjects = RINGED
 
 describe.each(registeredSubjects)('$ring/$name', ({ path, entry }) => {
   it('exports that entry under the same name', () => {
-    expect(readFileSync(join(path, `${entry}.ts`), 'utf8')).toMatch(new RegExp(`export const ${entry}[ :]`, 'u'));
+    const file = readFileSync(join(path, `${entry}.ts`), 'utf8');
+    expect(file).toMatch(new RegExp(`export const ${entry}[ :]`, 'u'));
   });
 });
 
@@ -374,7 +378,8 @@ it('keeps every module to two constants, so a third is a constants.ts', () => {
 const instrumented = process.env['STRYKER_MUTATOR_WORKER'] !== undefined;
 
 it.skipIf(instrumented)('leaves the emitter assembler nothing to branch on', () => {
-  expect(readFileSync(join(srcDir, 'emitters/registry.ts'), 'utf8')).not.toMatch(/\bif\s*\(/u);
+  const file = readFileSync(join(srcDir, 'emitters/registry.ts'), 'utf8');
+  expect(file).not.toMatch(/\bif\s*\(/u);
 });
 
 describe('answers records', () => {

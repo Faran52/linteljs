@@ -21,7 +21,7 @@ describe('reactI18nFiles', () => {
   it('writes the translated starter once a language is chosen', () => {
     const written = writtenUnder(reactI18nFiles(), answersFor({ languages: ['ar'] }));
 
-    expect(written).toEqual([
+    const expected = [
       'src/main.tsx@i18n',
       'src/config/statuses.ts@i18n',
       'src/config/standard.ts@i18n',
@@ -31,14 +31,15 @@ describe('reactI18nFiles', () => {
       `${HEADER}@i18n`,
       'src/components/features/language-select/LanguageSelect.tsx@i18n',
       'src/i18n/index.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise, and no entry where React Router owns it', () => {
     const english = writtenUnder(reactI18nFiles(), answersFor({}));
     const framework = writtenUnder(reactI18nFiles(), answersFor({ router: 'react-router-framework' }));
 
-    expect(english).toEqual([
+    const expected = [
       'src/main.tsx',
       'src/config/statuses.ts',
       'src/config/standard.ts',
@@ -46,16 +47,18 @@ describe('reactI18nFiles', () => {
       'src/pages/about/AboutPage.tsx',
       'src/pages/version/VersionPage.tsx',
       HEADER,
-    ]);
+    ];
+    expect(english).toEqual(expected);
 
-    expect(framework).toEqual([
+    const expected2 = [
       'src/config/statuses.ts',
       'src/config/standard.ts',
       'src/components/features/status-page/StatusPage.tsx',
       'src/pages/about/AboutPage.tsx',
       'src/pages/version/VersionPage.tsx',
       `${HEADER}@react-router`,
-    ]);
+    ];
+    expect(framework).toEqual(expected2);
   });
 
   it('translates the contact page and its suite only beside a form', () => {
@@ -73,15 +76,17 @@ describe('reactI18nFiles', () => {
     }));
     const formless = contactOf(answersFor({ languages: ['ko'] }));
 
-    expect(english).toEqual([
+    const expected = [
       'src/pages/contact/ContactPage.tsx',
       'src/pages/contact/ContactPage.test.tsx',
-    ]);
+    ];
+    expect(english).toEqual(expected);
 
-    expect(translated).toEqual([
+    const expected2 = [
       'src/pages/contact/ContactPage.tsx@i18n',
       'src/pages/contact/ContactPage.test.tsx@i18n',
-    ]);
+    ];
+    expect(translated).toEqual(expected2);
 
     expect(formless).toEqual([]);
   });
@@ -104,8 +109,10 @@ describe('reactI18nFiles', () => {
       languages: ['ja'],
     }));
 
-    expect(english).toEqual([`${HEADER}@${variant}`]);
-    expect(translated).toEqual([`${HEADER}@${variant}-i18n`]);
+    const expected = [`${HEADER}@${variant}`];
+    expect(english).toEqual(expected);
+    const expected2 = [`${HEADER}@${variant}-i18n`];
+    expect(translated).toEqual(expected2);
   });
 });
 
@@ -117,14 +124,15 @@ describe('reactI18nTests', () => {
       languages: ['ar'],
     }));
 
-    expect(translated).toEqual([
+    const expected = [
       'src/components/features/status-page/StatusPage.test.tsx@i18n',
       'src/pages/about/AboutPage.test.tsx@i18n',
       'src/pages/version/VersionPage.test.tsx@i18n',
       'src/components/features/app-header/AppHeader.test.tsx@i18n',
       'src/components/features/language-select/LanguageSelect.test.tsx@i18n',
       'src/i18n/index.test.ts@i18n',
-    ]);
+    ];
+    expect(translated).toEqual(expected);
 
     expect(routed).not.toContain('src/components/features/app-header/AppHeader.test.tsx@i18n');
   });

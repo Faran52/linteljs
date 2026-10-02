@@ -42,7 +42,7 @@ describe('angularI18nFiles', () => {
       languages: ['ar'],
     }));
 
-    expect(written).toEqual([
+    const expected = [
       ...ENGLISH_FILES
         .map((file) => {
           return `${file}@i18n`;
@@ -50,7 +50,8 @@ describe('angularI18nFiles', () => {
       'src/i18n/index.ts@i18n',
       'src/components/ui/code-text/code-text.ts@i18n',
       'src/components/ui/code-text/code-text.html@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('writes the English starter otherwise', () => {
@@ -72,7 +73,7 @@ describe('angularI18nTests', () => {
         return test.covers;
       });
 
-    expect(written).toEqual([
+    const expected = [
       'src/i18n/index.spec.ts@i18n',
       'src/components/ui/code-text/code-text.spec.ts@i18n',
       'src/components/features/app-header/app-header.spec.ts@i18n',
@@ -80,9 +81,10 @@ describe('angularI18nTests', () => {
       'src/app/version/version.spec.ts@i18n',
       'src/app/contact/contact.spec.ts@i18n',
       'src/components/features/status-page/status-page.spec.ts@i18n',
-    ]);
+    ];
+    expect(written).toEqual(expected);
 
-    expect(covers).toEqual([
+    const expected2 = [
       'src/i18n/index.ts',
       'src/components/ui/code-text/code-text.ts',
       'src/components/features/app-header/app-header.ts',
@@ -92,15 +94,17 @@ describe('angularI18nTests', () => {
       'src/app/contact/contact.ts',
       'src/components/features/status-page/status-page.ts',
       'src/components/features/status-page/status-page.ts',
-    ]);
+    ];
+    expect(covers).toEqual(expected2);
   });
 
   it('writes the English contact and status suites otherwise', () => {
     const written = writtenUnder(angularI18nTests(), answersFor({ target: 'angular' }));
 
-    expect(written).toEqual([
+    const expected = [
       'src/app/contact/contact.spec.ts',
       'src/components/features/status-page/status-page.spec.ts',
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 });

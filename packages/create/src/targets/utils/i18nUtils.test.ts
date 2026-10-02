@@ -22,8 +22,12 @@ describe('translated', () => {
     const [base, twin] = translated<StarterFile>({ target: 'src/a.ts' });
 
     expect(twin?.variant).toBe('i18n');
-    expect([whenOf(base)(ENGLISH), whenOf(twin)(ENGLISH)]).toEqual([true, false]);
-    expect([whenOf(base)(ARABIC), whenOf(twin)(ARABIC)]).toEqual([false, true]);
+    const actual = [whenOf(base)(ENGLISH), whenOf(twin)(ENGLISH)];
+    const expected = [true, false];
+    expect(actual).toEqual(expected);
+    const actual2 = [whenOf(base)(ARABIC), whenOf(twin)(ARABIC)];
+    const expected2 = [false, true];
+    expect(actual2).toEqual(expected2);
   });
 
   it('keeps the file\'s own condition on both sides, and suffixes its variant', () => {
@@ -37,7 +41,9 @@ describe('translated', () => {
     const formless = answersFor({ languages: ['ar'] });
 
     expect(twin?.variant).toBe('with-form-i18n');
-    expect([whenOf(base)(formless), whenOf(twin)(formless)]).toEqual([false, false]);
+    const actual = [whenOf(base)(formless), whenOf(twin)(formless)];
+    const expected = [false, false];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -51,22 +57,26 @@ describe('localeFiles', () => {
         return target;
       });
 
-    expect(written).toEqual(['src/i18n/locales/en/common.json', 'src/i18n/locales/ja/common.json']);
+    const expected = ['src/i18n/locales/en/common.json', 'src/i18n/locales/ja/common.json'];
+    expect(written).toEqual(expected);
   });
 
   it('reads each from the shared i18n tree', () => {
     const [english] = localeFiles();
 
-    expect(english).toMatchObject({
+    const expected = {
       variant: 'i18n',
       shared: true,
-    });
+    };
+    expect(english).toMatchObject(expected);
   });
 });
 
 describe('LOCALES_TEST', () => {
   it('runs only in a translated project', () => {
-    expect(LOCALES_TEST.when?.(ENGLISH)).toBe(false);
-    expect(LOCALES_TEST.when?.(ARABIC)).toBe(true);
+    const actual = LOCALES_TEST.when?.(ENGLISH);
+    expect(actual).toBe(false);
+    const actual2 = LOCALES_TEST.when?.(ARABIC);
+    expect(actual2).toBe(true);
   });
 });

@@ -80,7 +80,8 @@ const parsedMerge = (current: string | null): MergedSettings => {
 
 describe('mergeClaudeSettings', () => {
   it('writes the emitted file unchanged when there is nothing on disk', () => {
-    expect(mergeClaudeSettings(OURS, null)).toBe(OURS);
+    const mergedClaudeSettings = mergeClaudeSettings(OURS, null);
+    expect(mergedClaudeSettings).toBe(OURS);
   });
 
   it('leaves a project that wants the trailer alone', () => {
@@ -152,8 +153,11 @@ describe('mergeClaudeSettings', () => {
   });
 
   it('falls back to the emitted file when what is there is not usable', () => {
-    expect(mergeClaudeSettings(OURS, '{ not json')).toBe(OURS);
-    expect(mergeClaudeSettings(OURS, '["an array"]')).toBe(OURS);
-    expect(mergeClaudeSettings(OURS, 'null')).toBe(OURS);
+    const mergedClaudeSettings = mergeClaudeSettings(OURS, '{ not json');
+    expect(mergedClaudeSettings).toBe(OURS);
+    const oursMergedClaudeSettings = mergeClaudeSettings(OURS, '["an array"]');
+    expect(oursMergedClaudeSettings).toBe(OURS);
+    const mergedClaudeSettings2 = mergeClaudeSettings(OURS, 'null');
+    expect(mergedClaudeSettings2).toBe(OURS);
   });
 });

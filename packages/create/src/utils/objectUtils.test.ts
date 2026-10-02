@@ -17,7 +17,8 @@ describe('isJsonObject', () => {
     ['an object with keys', { name: 'demo' }],
     ['a parsed object', JSON.parse('{ "a": 1 }')],
   ])('takes %s', (_case, value) => {
-    expect(isJsonObject(value)).toBe(true);
+    const valueIsJsonObject = isJsonObject(value);
+    expect(valueIsJsonObject).toBe(true);
   });
 
   it.each([
@@ -32,7 +33,8 @@ describe('isJsonObject', () => {
     ['a map', new Map()],
     ['a null-prototype object', Object.create(null)],
   ])('refuses %s', (_case, value) => {
-    expect(isJsonObject(value)).toBe(false);
+    const valueIsJsonObject = isJsonObject(value);
+    expect(valueIsJsonObject).toBe(false);
   });
 });
 
@@ -43,7 +45,8 @@ describe('valuesOf', () => {
       vue: 'Vue',
     });
 
-    expect(values).toEqual(['react', 'vue']);
+    const expected = ['react', 'vue'];
+    expect(values).toEqual(expected);
   });
 });
 
@@ -54,15 +57,18 @@ describe('isValueOf', () => {
   };
 
   it('takes a key the record carries', () => {
-    expect(isValueOf('pnpm', MANAGERS)).toBe(true);
+    const pnpmIsValueOf = isValueOf('pnpm', MANAGERS);
+    expect(pnpmIsValueOf).toBe(true);
   });
 
   it('refuses a name the record does not carry', () => {
-    expect(isValueOf('deno', MANAGERS)).toBe(false);
+    const denoIsValueOf = isValueOf('deno', MANAGERS);
+    expect(denoIsValueOf).toBe(false);
   });
 
   it.each(['toString', 'constructor'])('refuses %s, which every object inherits', (name) => {
-    expect(isValueOf(name, MANAGERS)).toBe(false);
+    const nameIsValueOf = isValueOf(name, MANAGERS);
+    expect(nameIsValueOf).toBe(false);
   });
 });
 
@@ -72,7 +78,9 @@ describe('parsedAs', () => {
   };
 
   it('answers the parsed value the guard accepts', () => {
-    expect(parsedAs('["a"]', isList)).toEqual(['a']);
+    const actual = parsedAs('["a"]', isList);
+    const expected = ['a'];
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -80,6 +88,7 @@ describe('parsedAs', () => {
     ['text that is not JSON', '{'],
     ['no file', null],
   ])('answers null for %s', (_label, text) => {
-    expect(parsedAs(text, isList)).toBeNull();
+    const actual = parsedAs(text, isList);
+    expect(actual).toBeNull();
   });
 });

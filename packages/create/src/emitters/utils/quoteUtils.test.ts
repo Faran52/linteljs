@@ -8,12 +8,15 @@ import { quote } from './quoteUtils';
 
 describe('quote', () => {
   it('single-quotes an ordinary value and escapes a quote', () => {
-    expect(quote('src/**')).toBe("'src/**'");
-    expect(quote("it's")).toBe("'it\\'s'");
+    const quoted = quote('src/**');
+    expect(quoted).toBe("'src/**'");
+    const itSQuoted = quote("it's");
+    expect(itSQuoted).toBe("'it\\'s'");
   });
 
   it('keeps a backslash literal through String.raw', () => {
-    expect(quote('a\\[b]')).toBe('String.raw`a\\[b]`');
+    const quoted = quote('a\\[b]');
+    expect(quoted).toBe('String.raw`a\\[b]`');
   });
 
   it('escapes a trailing backslash instead of ending the template early', () => {

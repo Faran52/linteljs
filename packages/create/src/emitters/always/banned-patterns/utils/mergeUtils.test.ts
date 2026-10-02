@@ -30,7 +30,8 @@ const withBlocks = (skipped: string, banned: string): string => {
 
 describe('mergeChecker', () => {
   it('answers the shipped file whole when there is nothing on disk', () => {
-    expect(mergeChecker(SHIPPED, null)).toBe(SHIPPED);
+    const mergedChecker = mergeChecker(SHIPPED, null);
+    expect(mergedChecker).toBe(SHIPPED);
   });
 
   it('lifts both of the project blocks over the shipped ones', () => {
@@ -39,7 +40,8 @@ describe('mergeChecker', () => {
       "const PROJECT_BANNED: Banned[] = [{ pattern: 'TODO' }];",
     );
 
-    expect(mergeChecker(SHIPPED, current)).toBe(current);
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toBe(current);
   });
 
   it('keeps the shipped declarations outside those two blocks', () => {
@@ -48,8 +50,10 @@ describe('mergeChecker', () => {
       'const PROJECT_BANNED: Banned[] = [];',
     ).replace('export const run = () => {};', 'export const run = () => { old(); };');
 
-    expect(mergeChecker(SHIPPED, current)).toContain('export const run = () => {};');
-    expect(mergeChecker(SHIPPED, current)).not.toContain('old();');
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toContain('export const run = () => {};');
+    const shippedMergedChecker = mergeChecker(SHIPPED, current);
+    expect(shippedMergedChecker).not.toContain('old();');
   });
 
   it('takes the block that opens a line, not one a comment names first', () => {
@@ -58,8 +62,10 @@ describe('mergeChecker', () => {
       'const PROJECT_BANNED: Banned[] = [];',
     );
 
-    expect(mergeChecker(SHIPPED, current)).toContain("\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
-    expect(mergeChecker(SHIPPED, current)).not.toContain("const PROJECT_SKIPPED: string[] = ['src/old.ts'];");
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toContain("\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
+    const shippedMergedChecker = mergeChecker(SHIPPED, current);
+    expect(shippedMergedChecker).not.toContain("const PROJECT_SKIPPED: string[] = ['src/old.ts'];");
   });
 
   it('takes the block of that exact name, not a longer one declared ahead of it', () => {
@@ -68,8 +74,10 @@ describe('mergeChecker', () => {
       'const PROJECT_BANNED: Banned[] = [];',
     );
 
-    expect(mergeChecker(SHIPPED, current)).toContain("\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
-    expect(mergeChecker(SHIPPED, current)).not.toContain('PROJECT_SKIPPED_LEGACY');
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toContain("\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
+    const shippedMergedChecker = mergeChecker(SHIPPED, current);
+    expect(shippedMergedChecker).not.toContain('PROJECT_SKIPPED_LEGACY');
   });
 
   it('reads a multi-line block to its own closing bracket, not to a semicolon inside a reason', () => {
@@ -81,26 +89,30 @@ describe('mergeChecker', () => {
     ].join('\n');
     const current = withBlocks(skipped, 'const PROJECT_BANNED: Banned[] = [];');
 
-    expect(mergeChecker(SHIPPED, current)).toBe(current);
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toBe(current);
   });
 
   it('finds a block however near the top of the file it opens', () => {
     const current = "\nconst PROJECT_SKIPPED: string[] = ['src/legacy.ts'];\n";
 
-    expect(mergeChecker(SHIPPED, current)).toContain("const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toContain("const PROJECT_SKIPPED: string[] = ['src/legacy.ts'];");
   });
 
   it('carries a project block verbatim when its text reads as a replacement pattern', () => {
     const skipped = "const PROJECT_SKIPPED: string[] = ['$& and $\' are literal'];";
     const current = withBlocks(skipped, 'const PROJECT_BANNED: Banned[] = [];');
 
-    expect(mergeChecker(SHIPPED, current)).toContain(skipped);
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toContain(skipped);
   });
 
   it('leaves the shipped block alone when the project never declared one', () => {
     const current = 'const BASE_SKIPPED = [];\n\nexport const run = () => {};';
 
-    expect(mergeChecker(SHIPPED, current)).toBe(SHIPPED);
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toBe(SHIPPED);
   });
 
   it('leaves the project block behind when the shipped file no longer declares it', () => {
@@ -110,12 +122,14 @@ describe('mergeChecker', () => {
       'const PROJECT_BANNED: Banned[] = [];',
     );
 
-    expect(mergeChecker(shipped, current)).toBe(shipped);
+    const mergedChecker = mergeChecker(shipped, current);
+    expect(mergedChecker).toBe(shipped);
   });
 
   it('leaves the shipped block alone when the project left one unterminated', () => {
     const current = "const PROJECT_BANNED: Banned[] = [\n  { pattern: 'TODO' },\n";
 
-    expect(mergeChecker(SHIPPED, current)).toBe(SHIPPED);
+    const mergedChecker = mergeChecker(SHIPPED, current);
+    expect(mergedChecker).toBe(SHIPPED);
   });
 });

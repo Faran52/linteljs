@@ -11,6 +11,7 @@ describe('packageManagerAnswer', () => {
   });
 
   it('defaults to a value it offers', () => {
-    expect(Object.keys(packageManagerAnswer.values)).toContain(packageManagerAnswer.default);
+    const actual = Object.keys(packageManagerAnswer.values);
+    expect(actual).toContain(packageManagerAnswer.default);
   });
 });

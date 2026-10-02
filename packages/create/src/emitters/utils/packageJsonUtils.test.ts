@@ -113,29 +113,35 @@ describe('versioned', () => {
   });
 
   it('sorts and de-duplicates the names', () => {
-    expect(Object.keys(versioned([
+    const actual = Object.keys(versioned([
       'vitest',
       'eslint',
       'vitest',
-    ]))).toEqual(['eslint', 'vitest']);
+    ]));
+    const expected = ['eslint', 'vitest'];
+    expect(actual).toEqual(expected);
   });
 });
 
 describe('the mocking answer', () => {
   it('installs msw as a dev dependency, and only when it was answered', () => {
-    expect(buildDevDependencies(answersFor({ mocking: 'msw' }))).toHaveProperty('msw');
-    expect(buildDevDependencies(answersFor({}))).not.toHaveProperty('msw');
+    const devDependencies = buildDevDependencies(answersFor({ mocking: 'msw' }));
+    expect(devDependencies).toHaveProperty('msw');
+    const devDependencies2 = buildDevDependencies(answersFor({}));
+    expect(devDependencies2).not.toHaveProperty('msw');
   });
 
   it('allows the install script that copies the worker', () => {
-    expect(allowedBuildNames(answersFor({ mocking: 'msw' }))).toContain('msw');
-    expect(allowedBuildNames(answersFor({}))).not.toContain('msw');
+    const actual = allowedBuildNames(answersFor({ mocking: 'msw' }));
+    expect(actual).toContain('msw');
+    const actual2 = allowedBuildNames(answersFor({}));
+    expect(actual2).not.toContain('msw');
   });
 });
 
 describe('pinned', () => {
   it('pins each scoped override to its own package\'s version', () => {
-    expect(pinned([
+    const actual = pinned([
       {
         parent: 'metro',
         name: 'lightningcss',
@@ -147,7 +153,8 @@ describe('pinned', () => {
     ], {
       lightningcss: '1.30.1',
       semver: '7.7.2',
-    })).toEqual([
+    });
+    const expected = [
       {
         parent: 'metro',
         name: 'lightningcss',
@@ -158,7 +165,8 @@ describe('pinned', () => {
         name: 'semver',
         version: '7.7.2',
       },
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -189,10 +197,11 @@ describe('buildOverrides', () => {
     }));
     const pin = { lightningcss: VERSIONS['lightningcss'] };
 
-    expect(overrides).toEqual({
+    const expected = {
       '@expo/metro-config': pin,
       'react-native-css': pin,
-    });
+    };
+    expect(overrides).toEqual(expected);
   });
 
   it('pins nothing for Tailwind on the web or for React Native without it', () => {
@@ -271,8 +280,10 @@ describe('buildDependencies', () => {
   });
 
   it('installs no store where none was chosen', () => {
-    expect(buildDependencies(answersFor({}))).not.toHaveProperty('zustand');
-    expect(buildDependencies(answersFor({ target: 'vue' }))).not.toHaveProperty('@vue/devtools-api');
+    const dependencies = buildDependencies(answersFor({}));
+    expect(dependencies).not.toHaveProperty('zustand');
+    const dependencies2 = buildDependencies(answersFor({ target: 'vue' }));
+    expect(dependencies2).not.toHaveProperty('@vue/devtools-api');
   });
 
   it('installs no binding where the framework needs none', () => {
@@ -317,7 +328,8 @@ describe('buildDependencies', () => {
       data: 'tanstack-query',
     })));
 
-    expect(dependencyNames).toEqual(['qs']);
+    const expected = ['qs'];
+    expect(dependencyNames).toEqual(expected);
   });
 
   it('binds the form library per framework, and the zod resolver only beside zod', () => {
@@ -338,7 +350,8 @@ describe('buildDependencies', () => {
   });
 
   it('gives Next its own t3-env package and every other target the core one', () => {
-    expect(buildDependencies(answersFor({ libraries: ['t3-env'] }))).toHaveProperty('@t3-oss/env-core');
+    const dependencies2 = buildDependencies(answersFor({ libraries: ['t3-env'] }));
+    expect(dependencies2).toHaveProperty('@t3-oss/env-core');
 
     const dependencies = buildDependencies(answersFor({
       target: 'next',
@@ -364,7 +377,8 @@ describe('buildDependencies', () => {
   });
 
   it('installs the StyleX runtime the styles call', () => {
-    expect(buildDependencies(answersFor({ styling: 'stylex' }))).toHaveProperty('@stylexjs/stylex');
+    const dependencies = buildDependencies(answersFor({ styling: 'stylex' }));
+    expect(dependencies).toHaveProperty('@stylexjs/stylex');
   });
 
   it('installs nothing for RTK Query beyond its store', () => {
@@ -374,8 +388,10 @@ describe('buildDependencies', () => {
       data: 'rtk-query',
     });
 
-    expect(buildDependencies(withQuery)).toEqual(buildDependencies(redux));
-    expect(buildDevDependencies(withQuery)).toEqual(buildDevDependencies(redux));
+    const dependencies = buildDependencies(withQuery);
+    expect(dependencies).toEqual(buildDependencies(redux));
+    const devDependencies = buildDevDependencies(withQuery);
+    expect(devDependencies).toEqual(buildDevDependencies(redux));
   });
 
   it('installs Reanimated, its worklets and the gesture handler on every React Native project', () => {
@@ -384,16 +400,19 @@ describe('buildDependencies', () => {
     expect(native).toHaveProperty('react-native-reanimated');
     expect(native).toHaveProperty('react-native-worklets');
     expect(native).toHaveProperty('react-native-gesture-handler');
-    expect(buildDependencies(answersFor({}))).not.toHaveProperty('react-native-reanimated');
+    const dependencies = buildDependencies(answersFor({}));
+    expect(dependencies).not.toHaveProperty('react-native-reanimated');
   });
 
   it('pins react to what Expo SDK 57 ships, on React Native alone', () => {
     const native = answersFor({ target: 'react-native' });
 
-    expect(buildDependencies(native)).toMatchObject({
+    const dependencies = buildDependencies(native);
+    const expected = {
       'react': '19.2.3',
       'react-dom': '19.2.3',
-    });
+    };
+    expect(dependencies).toMatchObject(expected);
 
     expect(buildDevDependencies(native)['@types/react']).toBe('~19.2.2');
     expect(buildDependencies(answersFor({}))['react']).toBe(VERSIONS['react']);
@@ -406,9 +425,12 @@ describe('buildDependencies', () => {
       styling: 'tailwind',
     });
 
-    expect(buildDependencies(native)).toHaveProperty('nativewind');
-    expect(buildDependencies(native)).toHaveProperty('react-native-css');
-    expect(buildDevDependencies(native)).toHaveProperty('postcss');
+    const nativeDependencies = buildDependencies(native);
+    expect(nativeDependencies).toHaveProperty('nativewind');
+    const dependencies2 = buildDependencies(native);
+    expect(dependencies2).toHaveProperty('react-native-css');
+    const devDependencies = buildDevDependencies(native);
+    expect(devDependencies).toHaveProperty('postcss');
 
     const dependencies = buildDependencies(answersFor({
       libraries: [],
@@ -421,17 +443,23 @@ describe('buildDependencies', () => {
 
 describe('buildDevDependencies', () => {
   it('installs the test runner only where testing was answered', () => {
-    expect(buildDevDependencies(answersFor({}))).toHaveProperty('vitest');
-    expect(buildDevDependencies(answersFor({ testing: 'none' }))).not.toHaveProperty('vitest');
+    const devDependencies = buildDevDependencies(answersFor({}));
+    expect(devDependencies).toHaveProperty('vitest');
+    const devDependencies2 = buildDevDependencies(answersFor({ testing: 'none' }));
+    expect(devDependencies2).not.toHaveProperty('vitest');
   });
 
   it('names vite beside vitest for yarn only, since yarn installs no peers', () => {
     const next = { target: 'next' } as const;
 
-    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }))).toHaveProperty('vite');
-    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'npm' }))).not.toHaveProperty('vite');
-    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'pnpm' }))).not.toHaveProperty('vite');
-    expect(buildDevDependencies(answersFor({ ...next, packageManager: 'bun' }))).not.toHaveProperty('vite');
+    const devDependencies = buildDevDependencies(answersFor({ ...next, packageManager: 'yarn' }));
+    expect(devDependencies).toHaveProperty('vite');
+    const devDependencies2 = buildDevDependencies(answersFor({ ...next, packageManager: 'npm' }));
+    expect(devDependencies2).not.toHaveProperty('vite');
+    const devDependencies3 = buildDevDependencies(answersFor({ ...next, packageManager: 'pnpm' }));
+    expect(devDependencies3).not.toHaveProperty('vite');
+    const devDependencies4 = buildDevDependencies(answersFor({ ...next, packageManager: 'bun' }));
+    expect(devDependencies4).not.toHaveProperty('vite');
   });
 
   it('installs the stylex lint plugin, the build plugin and its peer', () => {
@@ -460,7 +488,8 @@ describe('buildDevDependencies', () => {
 
     expect(devDependencies).toHaveProperty('postcss-html');
     expect(devDependencies).toHaveProperty('postcss');
-    expect(buildDevDependencies(answersFor({ target: 'react' }))).not.toHaveProperty('postcss-html');
+    const devDependencies2 = buildDevDependencies(answersFor({ target: 'react' }));
+    expect(devDependencies2).not.toHaveProperty('postcss-html');
   });
 
   it('installs the class linter beside the tailwind toolchain', () => {
@@ -471,7 +500,8 @@ describe('buildDevDependencies', () => {
 
     expect(withTailwind).toHaveProperty('eslint-plugin-better-tailwindcss');
     expect(withTailwind).toHaveProperty('tailwindcss');
-    expect(buildDevDependencies(answersFor({ libraries: [] }))).not.toHaveProperty('eslint-plugin-better-tailwindcss');
+    const devDependencies = buildDevDependencies(answersFor({ libraries: [] }));
+    expect(devDependencies).not.toHaveProperty('eslint-plugin-better-tailwindcss');
   });
 
   it.each<[TargetId, string, string]>([
@@ -571,7 +601,8 @@ describe('buildDevDependencies', () => {
       false,
     ],
   ])('installs the html plugins for %s only where the html layer is composed: %s', (_label, overrides, composed) => {
-    expect(Object.hasOwn(buildDevDependencies(answersFor(overrides)), '@html-eslint/eslint-plugin')).toBe(composed);
+    const actual = Object.hasOwn(buildDevDependencies(answersFor(overrides)), '@html-eslint/eslint-plugin');
+    expect(actual).toBe(composed);
   });
 
   it('installs the tanstack query lint plugin beside the query library', () => {
@@ -606,7 +637,8 @@ describe('buildDevDependencies', () => {
     expect(buildDevDependencies(answersFor({ target: 'react-native' }))['@react-native/metro-config'])
       .toBe(VERSIONS['react-native']);
 
-    expect(buildDevDependencies(answersFor({}))).not.toHaveProperty('@react-native/metro-config');
+    const devDependencies = buildDevDependencies(answersFor({}));
+    expect(devDependencies).not.toHaveProperty('@react-native/metro-config');
   });
 
   it('installs neither the React plugin nor its Rolldown preset for an Astro React island', () => {
@@ -708,7 +740,8 @@ describe('buildDevDependencies', () => {
         return left.localeCompare(right, 'en');
       });
 
-    expect(allowedBuildNames(answersFor(overrides))).toEqual(expected);
+    const actual = allowedBuildNames(answersFor(overrides));
+    expect(actual).toEqual(expected);
   });
 
   it('names the peers nuxt asks the project for', () => {
@@ -716,7 +749,8 @@ describe('buildDevDependencies', () => {
 
     expect(nuxt).toHaveProperty('rolldown');
     expect(nuxt).toHaveProperty('vite');
-    expect(buildDevDependencies(answersFor({ target: 'vue' }))).not.toHaveProperty('rolldown');
+    const devDependencies = buildDevDependencies(answersFor({ target: 'vue' }));
+    expect(devDependencies).not.toHaveProperty('rolldown');
   });
 });
 
@@ -743,7 +777,8 @@ describe('the router', () => {
     const devDependencies = buildDevDependencies(answers);
 
     expect(dependencies).toHaveProperty(dependency);
-    expect(Object.keys(devDependencies)).toEqual(expect.arrayContaining(tools));
+    const actual = Object.keys(devDependencies);
+    expect(actual).toEqual(expect.arrayContaining(tools));
     expect(devDependencies).not.toHaveProperty('@tanstack/router-plugin');
   });
 });
@@ -785,8 +820,10 @@ describe('VERSIONS', () => {
     for (const [name, range] of Object.entries(VERSIONS)) {
       const operator = PINNED_TIGHTER[name] ?? '^';
 
-      expect(range.slice(0, operator.length), name).toBe(operator);
-      expect(range.slice(operator.length), name).toMatch(/^\d+\.\d+\.\d+(?:-[\da-z.]+)?$/u);
+      const sliced = range.slice(0, operator.length);
+      expect(sliced, name).toBe(operator);
+      const sliced2 = range.slice(operator.length);
+      expect(sliced2, name).toMatch(/^\d+\.\d+\.\d+(?:-[\da-z.]+)?$/u);
     }
   });
 });
@@ -904,14 +941,16 @@ describe('VERSIONS against what this workspace builds with', () => {
     const dependencies = configDependencies();
 
     expect(dependencies.length).toBeGreaterThan(0);
-    expect(staleAgainst(dependencies, 'eslint-config')).toEqual([]);
+    const actual = staleAgainst(dependencies, 'eslint-config');
+    expect(actual).toEqual([]);
   });
 
   it('ships nothing older than the version this workspace installs', () => {
     const entries = catalogEntries();
 
     expect(entries.length).toBeGreaterThan(0);
-    expect(staleAgainst(entries, 'catalog')).toEqual([]);
+    const actual = staleAgainst(entries, 'catalog');
+    expect(actual).toEqual([]);
   });
 });
 
@@ -921,7 +960,8 @@ describe('MANAGER_FLOORS against the workspace', () => {
     const { packageManager } = parsePackageJson(readFileSync(path, 'utf8'));
     const running = String(packageManager).replace('pnpm@', '');
 
-    expect(atLeast(running, MANAGER_FLOORS.pnpm)).toBe(true);
+    const actual = atLeast(running, MANAGER_FLOORS.pnpm);
+    expect(actual).toBe(true);
   });
 });
 
@@ -952,7 +992,9 @@ describe('buildDependencies with languages', () => {
       surfaces: ['background'],
     }));
 
-    expect(Object.keys(translated)).toEqual(expect.arrayContaining([
+    const actual = Object.keys(translated);
+
+    expect(actual).toEqual(expect.arrayContaining([
       'i18next',
       'i18next-browser-languagedetector',
       'react-i18next',
@@ -998,20 +1040,22 @@ describe('dependencyDrift', () => {
     }, DEFAULT_ANSWERS);
     const fresh = dependencyDrift({}, DEFAULT_ANSWERS);
 
-    expect(drift.upgrades).toEqual([{
+    const expected = [{
       name: '@linteljs/eslint-config',
       from: '^1.5.0',
       to: VERSIONS['@linteljs/eslint-config'],
-    }]);
+    }];
+    expect(drift.upgrades).toEqual(expected);
 
     expect(drift.missing.devDependencies).not.toHaveProperty('typescript');
     expect(drift.missing.devDependencies).toHaveProperty('husky');
     expect(drift.missing.dependencies).toHaveProperty('qs');
 
-    expect(fresh.upgrades).toEqual([{
+    const expected2 = [{
       name: '@linteljs/eslint-config',
       to: VERSIONS['@linteljs/eslint-config'],
-    }]);
+    }];
+    expect(fresh.upgrades).toEqual(expected2);
   });
 
   it('never moves a newer range, or one that is not a version', () => {
@@ -1042,12 +1086,14 @@ describe('upgradedPackageJson', () => {
     ]);
     const bare = upgradedPackageJson({}, []);
 
-    expect(upgraded).toEqual({
+    const expected = {
       name: 'kept',
       dependencies: { '@linteljs/eslint-config': '^2.0.0' },
       devDependencies: { '@linteljs/eslint-plugin': '^2.0.0' },
-    });
+    };
+    expect(upgraded).toEqual(expected);
 
-    expect(bare).toEqual({ devDependencies: {} });
+    const expected2 = { devDependencies: {} };
+    expect(bare).toEqual(expected2);
   });
 });

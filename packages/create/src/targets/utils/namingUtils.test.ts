@@ -12,45 +12,57 @@ import {
 
 describe('scriptKeys', () => {
   it('reaches every script under src/ where no route directory is named', () => {
-    expect(scriptKeys()).toStrictEqual({
+    const actual = scriptKeys();
+    const expected = {
       'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
       '**/utils/*.ts': '*Utils',
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 
   it('takes a second key for the file sitting directly in src/ where one is', () => {
-    expect(scriptKeys('app')).toStrictEqual({
+    const actual = scriptKeys('app');
+    const expected = {
       'src/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
       'src/!(app)/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
       '**/utils/*.ts': '*Utils',
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 });
 
 describe('componentNaming', () => {
   it('names every tsx a component, every other script camelCase and every declaration file', () => {
-    expect(componentNaming()).toStrictEqual({
+    const actual = componentNaming();
+    const expected = {
       'src/**/*.tsx': '!([a-z]*[A-Z]*)',
       'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
       '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
-    });
+    };
+    expect(actual).toStrictEqual(expected);
   });
 
   it('routes the script keys around the route directory it is given', () => {
-    expect(componentNaming('app')).toHaveProperty(['src/!(app)/**/!(*.d|*.test|*.spec).ts'], 'CAMEL_CASE');
+    const actual = componentNaming('app');
+    const expected = ['src/!(app)/**/!(*.d|*.test|*.spec).ts'];
+    expect(actual).toHaveProperty(expected, 'CAMEL_CASE');
   });
 });
 
 describe('sfcNaming', () => {
   it('marks the component by the framework extension it is given', () => {
-    expect(sfcNaming('vue')).toStrictEqual({
+    const actual = sfcNaming('vue');
+    const expected = {
       'src/**/*.vue': '!([a-z]*[A-Z]*)',
       'src/**/!(*.d|*.test|*.spec).ts': 'CAMEL_CASE',
       '**/utils/*.ts': '*Utils',
       'src/**/*.d.ts': '@(+([a-z0-9])*(-+([a-z0-9]))|+([a-z])*([a-zA-Z0-9]))',
-    });
+    };
+    expect(actual).toStrictEqual(expected);
 
-    expect(sfcNaming('svelte', 'routes')).toHaveProperty(['src/**/*.svelte'], '!([a-z]*[A-Z]*)');
+    const actual2 = sfcNaming('svelte', 'routes');
+    const expected2 = ['src/**/*.svelte'];
+    expect(actual2).toHaveProperty(expected2, '!([a-z]*[A-Z]*)');
   });
 });

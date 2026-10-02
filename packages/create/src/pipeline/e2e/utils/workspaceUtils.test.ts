@@ -70,7 +70,8 @@ describe('answerFlags', () => {
 
 describe('versionFrom', () => {
   it('reads the first line, past the notice npm appends', () => {
-    expect(versionFrom('npm', ANSWERED['npm'] ?? '')).toBe('11.0.0');
+    const version = versionFrom('npm', ANSWERED['npm'] ?? '');
+    expect(version).toBe('11.0.0');
   });
 
   it('refuses a spawn error rather than injecting it as a version', () => {
@@ -86,20 +87,25 @@ describe('versionFrom', () => {
   });
 
   it('takes a yarn 4', () => {
-    expect(versionFrom('yarn', '4.18.0')).toBe('4.18.0');
+    const version = versionFrom('yarn', '4.18.0');
+    expect(version).toBe('4.18.0');
   });
 });
 
 describe('managersToRun', () => {
   it('runs every manager this machine answers for when E2E_PM is unset', async () => {
-    await expect(managersToRun(undefined)).resolves.toEqual([
+    const actual = await managersToRun(undefined);
+    const expected = [
       'pnpm',
       'npm',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('runs only the manager E2E_PM names', async () => {
-    await expect(managersToRun('npm')).resolves.toEqual(['npm']);
+    const actual = await managersToRun('npm');
+    const expected = ['npm'];
+    expect(actual).toEqual(expected);
   });
 
   it.each([
@@ -107,6 +113,7 @@ describe('managersToRun', () => {
     ['bun', 'bun --version answered'],
     ['pnp', 'E2E_PM is pnp, and is one of pnpm, npm, yarn, bun or unset'],
   ])('refuses E2E_PM=%s', async (requested, message) => {
-    await expect(managersToRun(requested)).rejects.toThrow(message);
+    const promise = managersToRun(requested);
+    await expect(promise).rejects.toThrow(message);
   });
 });

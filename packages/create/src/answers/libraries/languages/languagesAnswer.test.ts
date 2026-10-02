@@ -18,7 +18,8 @@ describe('languagesAnswer', () => {
   });
 
   it('offers every language a project can list, in its order', () => {
-    expect(Object.keys(languagesAnswer.values)).toEqual(LANGUAGES);
+    const actual = Object.keys(languagesAnswer.values);
+    expect(actual).toEqual(LANGUAGES);
   });
 
   it('takes a slot on every target, and on an extension only where a popup has text to translate', () => {
@@ -36,6 +37,7 @@ describe('languagesAnswer', () => {
     });
 
     expect(slotted).toEqual(TARGETS);
-    expect(languagesAnswer.slot(background)).toBe(false);
+    const actual = languagesAnswer.slot(background);
+    expect(actual).toBe(false);
   });
 });

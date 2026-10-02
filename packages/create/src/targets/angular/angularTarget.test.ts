@@ -61,7 +61,8 @@ describe('angularTarget', () => {
   });
 
   it('translates through a signal of its own, with no library, compiler or test setup', () => {
-    expect(angularTarget.i18n).toEqual({ dependencies: [] });
+    const expected = { dependencies: [] };
+    expect(angularTarget.i18n).toEqual(expected);
   });
 
   it('names every module the way the CLI would, and leaves declarations to their own key', () => {
@@ -130,11 +131,13 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });
 
@@ -144,9 +147,10 @@ describe('the favicon', () => {
       return file.target === 'public/favicon.svg';
     });
 
-    expect(favicon).toEqual({
+    const expected = {
       target: 'public/favicon.svg',
       shared: true,
-    });
+    };
+    expect(favicon).toEqual(expected);
   });
 });

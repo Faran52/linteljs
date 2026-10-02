@@ -36,7 +36,8 @@ describe('gitSpawn', () => {
     const result = gitSpawn(['init'], { cwd });
 
     expect(result.status).toBe(0);
-    expect(await exists(join(cwd, '.git'))).toBe(true);
+    const gitExists = await exists(join(cwd, '.git'));
+    expect(gitExists).toBe(true);
   });
 
   it('acts on the given directory when the caller exports another repository', async () => {
@@ -51,7 +52,8 @@ describe('gitSpawn', () => {
       const outerBare = gitSpawn(['config', 'core.bare'], { cwd: outer });
 
       expect(result.status).toBe(0);
-      expect(await exists(join(cwd, '.git'))).toBe(true);
+      const gitExists = await exists(join(cwd, '.git'));
+      expect(gitExists).toBe(true);
       expect(outerBare).toHaveProperty('stdout', 'false\n');
     }
     finally {

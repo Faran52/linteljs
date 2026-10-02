@@ -38,7 +38,8 @@ describe('emitHtmlEntry', () => {
     ];
     const lines = html.split('\n');
 
-    expect(lines.slice(6, 11)).toEqual(link);
+    const sliced = lines.slice(6, 11);
+    expect(sliced).toEqual(link);
   });
 });
 

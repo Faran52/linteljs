@@ -34,7 +34,8 @@ describe('testSetupEmitter', () => {
   });
 
   it('joins the target setup and its router mocks into the spelling React needs', () => {
-    expect(testSetupEmitter(DEFAULT_ANSWERS, FRESH)).toEqual([{
+    const testSetup = testSetupEmitter(DEFAULT_ANSWERS, FRESH);
+    const expected = [{
       stage: 'standard',
       target: '__mocks__/setupTests.tsx',
       content: {
@@ -44,7 +45,8 @@ describe('testSetupEmitter', () => {
         ],
       },
       preserve: true,
-    }]);
+    }];
+    expect(testSetup).toEqual(expected);
   });
 
   it('appends the fragment a selected library brings', () => {
@@ -54,11 +56,12 @@ describe('testSetupEmitter', () => {
       data: 'tanstack-query',
     }, FRESH);
 
-    expect(artifact?.content).toHaveProperty('sources', [
+    const expected = [
       'fragments/test-setup/setupTests.ts',
       'fragments/test-setup/setupTests.router.ts',
       'fragments/test-setup/setupTests.tanstackQuery.ts',
-    ]);
+    ];
+    expect(artifact?.content).toHaveProperty('sources', expected);
   });
 
   it('initialises i18n where the target translates, and nowhere else', () => {
@@ -72,11 +75,12 @@ describe('testSetupEmitter', () => {
       languages: ['ar'],
     }, FRESH);
 
-    expect(react?.content).toHaveProperty('sources', [
+    const expected = [
       'fragments/test-setup/setupTests.ts',
       'fragments/test-setup/setupTests.router.ts',
       'fragments/test-setup/setupTests.i18n.ts',
-    ]);
+    ];
+    expect(react?.content).toHaveProperty('sources', expected);
 
     const i18nSetup = ['fragments/test-setup/setupTests.i18n.ts'];
 
@@ -90,10 +94,11 @@ describe('testSetupEmitter', () => {
       languages: ['ar'],
     }, FRESH);
 
-    expect(next?.content).toHaveProperty('sources', [
+    const expected = [
       'fragments/test-setup/setupTests.ts',
       'fragments/test-setup/setupTests.nextRouter.ts',
-    ]);
+    ];
+    expect(next?.content).toHaveProperty('sources', expected);
   });
 
   it('leads with the target setup where the target ships one', () => {
@@ -102,7 +107,8 @@ describe('testSetupEmitter', () => {
       target: 'angular',
     }, FRESH);
 
-    expect(artifact?.content).toHaveProperty('sources', ['fragments/test-setup/setupTests.angular.ts']);
+    const expected = ['fragments/test-setup/setupTests.angular.ts'];
+    expect(artifact?.content).toHaveProperty('sources', expected);
   });
 });
 
@@ -119,8 +125,10 @@ describe('the mocking answer', () => {
       return artifact !== undefined && 'sources' in artifact.content ? artifact.content.sources : [];
     };
 
-    expect(sourcesFor('msw').at(-1)).toBe('fragments/test-setup/setupTests.msw.ts');
-    expect(sourcesFor(undefined)).not.toContain('fragments/test-setup/setupTests.msw.ts');
+    const actual = sourcesFor('msw').at(-1);
+    expect(actual).toBe('fragments/test-setup/setupTests.msw.ts');
+    const undefinedSources = sourcesFor(undefined);
+    expect(undefinedSources).not.toContain('fragments/test-setup/setupTests.msw.ts');
   });
 });
 
@@ -143,7 +151,8 @@ describe('the shipped test setup', () => {
   ])(
     'ships the router mocks to %s, which has a binding they could stand in for',
     async (target) => {
-      expect(await setupFor({ target })).toContain('export const navigateMock');
+      const setup = await setupFor({ target });
+      expect(setup).toContain('export const navigateMock');
     },
   );
 
@@ -163,7 +172,8 @@ describe('the shipped test setup', () => {
   ])(
     'ships none to %s, whose framework has none of the three',
     async (target) => {
-      expect(await setupFor({ target })).not.toContain('navigateMock');
+      const setup = await setupFor({ target });
+      expect(setup).not.toContain('navigateMock');
     },
   );
 
@@ -176,7 +186,8 @@ describe('the shipped test setup', () => {
   });
 
   it('appends the query defaults only when tanstack-query was chosen', async () => {
-    expect(await setupFor({})).not.toContain('TEST_QUERY_OPTIONS');
+    const setup = await setupFor({});
+    expect(setup).not.toContain('TEST_QUERY_OPTIONS');
 
     const withoutQuery = await setupFor({
       libraries: ['zod'],
@@ -210,8 +221,10 @@ describe('the shipped test setup', () => {
       data: 'tanstack-query',
     });
 
-    expect(setup.indexOf("vi.mock('expo-device'")).toBeLessThan(setup.indexOf('navigateMock'));
-    expect(setup.indexOf('navigateMock')).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
+    const index = setup.indexOf("vi.mock('expo-device'");
+    expect(index).toBeLessThan(setup.indexOf('navigateMock'));
+    const navigateMockIndex = setup.indexOf('navigateMock');
+    expect(navigateMockIndex).toBeLessThan(setup.indexOf('TEST_QUERY_OPTIONS'));
   });
 
   it.each(FRAGMENTS)('keeps %s import-free', async (fragment) => {

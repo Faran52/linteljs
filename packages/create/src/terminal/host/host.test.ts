@@ -54,11 +54,13 @@ afterEach(async () => {
 
 describe('hostOf: the manager that ran it', () => {
   it('reads the manager and its version off the user agent', async () => {
-    expect(await hostOf(cwd)).toEqual({
+    const host = await hostOf(cwd);
+    const expected = {
       packageManager: 'pnpm',
       packageManagerVersion: '12.5.1',
       nodeVersion: versions.node,
-    });
+    };
+    expect(host).toEqual(expected);
   });
 
   it.each([
@@ -106,36 +108,43 @@ describe('hostOf: the manager that ran it', () => {
     await writeFile(join(cwd, lockfile), text, 'utf8');
     await plantBinary(join(cwd, 'fake-bin'), binary, [`console.log('${version}');`]);
 
-    expect(await hostOf(cwd)).toMatchObject({
+    const host = await hostOf(cwd);
+    const expected = {
       packageManager: manager,
       packageManagerVersion: version,
-    });
+    };
+    expect(host).toMatchObject(expected);
   });
 
   it('falls back to npm where there is neither', async () => {
     vi.stubEnv('npm_config_user_agent', '');
     await plantBinary(join(cwd, 'fake-bin'), 'npm', ["console.log('11.19.1');"]);
 
-    expect(await hostOf(cwd)).toMatchObject({ packageManager: 'npm' });
+    const host = await hostOf(cwd);
+    const expected = { packageManager: 'npm' };
+    expect(host).toMatchObject(expected);
   });
 
   it('refuses a manager below the floor a generated project needs', async () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/10.25.0 npm/? node/? darwin arm64');
 
-    expect(await hostOf(cwd)).toContain('needs pnpm 10.26.0 or newer');
+    const host = await hostOf(cwd);
+    expect(host).toContain('needs pnpm 10.26.0 or newer');
   });
 
   it('refuses a yarn 1 under its user agent', async () => {
     vi.stubEnv('npm_config_user_agent', 'yarn/1.22.22 npm/? node/? darwin arm64');
 
-    expect(await hostOf(cwd)).toBe('Yarn 1 is not supported: install Yarn 4 and run this again.');
+    const host = await hostOf(cwd);
+    expect(host).toBe('Yarn 1 is not supported: install Yarn 4 and run this again.');
   });
 
   it('refuses a manager that will not say its version', async () => {
     vi.stubEnv('npm_config_user_agent', 'pnpm/? npm/? node/? darwin arm64');
     await plantBinary(join(cwd, 'fake-bin'), 'pnpm', ['process.exit(1);']);
 
-    expect(await hostOf(cwd)).toContain('pnpm --version');
+    const host = await hostOf(cwd);
+    expect(host).toContain('pnpm --version');
   });
 });
 
@@ -163,14 +172,18 @@ describe('hostOf: the Node a project records', () => {
   it('records the Node running it under node, not the first one on PATH', async () => {
     await plantNode('v24.99.0');
 
-    expect(await hostOf(cwd)).toMatchObject({ nodeVersion: versions.node });
+    const host = await hostOf(cwd);
+    const expected = { nodeVersion: versions.node };
+    expect(host).toMatchObject(expected);
   });
 
   it('records the Node on PATH under bun', async () => {
     await plantNode('v24.99.0');
     asBun();
 
-    expect(await hostOf(cwd)).toMatchObject({ nodeVersion: '24.99.0' });
+    const host = await hostOf(cwd);
+    const expected = { nodeVersion: '24.99.0' };
+    expect(host).toMatchObject(expected);
   });
 
   it('refuses under bun with no Node on PATH, and names the floor to install', async () => {
@@ -197,7 +210,8 @@ describe('hosted', () => {
 
 describe('filled', () => {
   it('keeps the manager a config recorded and fills only what it lacks', () => {
-    expect(filled(DEFAULT_ANSWERS, HOST)).toMatchObject(HOST);
+    const actual = filled(DEFAULT_ANSWERS, HOST);
+    expect(actual).toMatchObject(HOST);
   });
 
   it('fills no version where the machine runs a different manager than the config records', () => {
@@ -206,10 +220,11 @@ describe('filled', () => {
       packageManager: 'npm',
     }, HOST);
 
-    expect(answers).toMatchObject({
+    const expected = {
       packageManager: 'npm',
       nodeVersion: HOST.nodeVersion,
-    });
+    };
+    expect(answers).toMatchObject(expected);
 
     expect(answers).not.toHaveProperty('packageManagerVersion');
   });
@@ -221,9 +236,10 @@ describe('filled', () => {
       nodeVersion: '24.11.0',
     }, HOST);
 
-    expect(completed).toMatchObject({
+    const expected = {
       packageManagerVersion: '10.30.0',
       nodeVersion: '24.11.0',
-    });
+    };
+    expect(completed).toMatchObject(expected);
   });
 });

@@ -19,8 +19,10 @@ describe('routerAnswer', () => {
       target: 'vue',
     });
 
-    expect(routerAnswer.slot(react)).toBe(true);
-    expect(routerAnswer.slot(vue)).toBe(false);
+    const actual = routerAnswer.slot(react);
+    expect(actual).toBe(true);
+    const actual2 = routerAnswer.slot(vue);
+    expect(actual2).toBe(false);
   });
 
   it('offers each router only to a target that lists it', () => {
@@ -33,11 +35,17 @@ describe('routerAnswer', () => {
       routers: ['react-router'],
     } as const;
 
-    expect(routerAnswer.values['react-router'].only(react)).toBe(true);
-    expect(routerAnswer.values['tanstack-router'].only(react)).toBe(true);
-    expect(routerAnswer.values['react-router-framework'].only(react)).toBe(true);
-    expect(routerAnswer.values['react-router'].only(declarativeOnly)).toBe(true);
-    expect(routerAnswer.values['tanstack-router'].only(declarativeOnly)).toBe(false);
-    expect(routerAnswer.values['react-router-framework'].only(declarativeOnly)).toBe(false);
+    const actual = routerAnswer.values['react-router'].only(react);
+    expect(actual).toBe(true);
+    const actual2 = routerAnswer.values['tanstack-router'].only(react);
+    expect(actual2).toBe(true);
+    const actual3 = routerAnswer.values['react-router-framework'].only(react);
+    expect(actual3).toBe(true);
+    const actual4 = routerAnswer.values['react-router'].only(declarativeOnly);
+    expect(actual4).toBe(true);
+    const actual5 = routerAnswer.values['tanstack-router'].only(declarativeOnly);
+    expect(actual5).toBe(false);
+    const actual6 = routerAnswer.values['react-router-framework'].only(declarativeOnly);
+    expect(actual6).toBe(false);
   });
 });

@@ -44,10 +44,12 @@ const plant = async (relative: string): Promise<void> => {
 
 describe('projectShapeReader', () => {
   it('reads an empty directory as a project holding none of them', async () => {
-    expect(await projectShapeReader(cwd)).toEqual({
+    const projectShape = await projectShapeReader(cwd);
+    const expected = {
       setupTests: [],
       styleEntries: [],
-    });
+    };
+    expect(projectShape).toEqual(expected);
   });
 
   it('answers every spelling the project has, in candidate order', async () => {
@@ -55,10 +57,12 @@ describe('projectShapeReader', () => {
     await plant('src/style.css');
     await plant('src/styles/global.css');
 
-    expect(await projectShapeReader(cwd)).toEqual({
+    const projectShape = await projectShapeReader(cwd);
+    const expected = {
       setupTests: ['__mocks__/setupTests.ts'],
       styleEntries: ['src/styles/global.css', 'src/style.css'],
-    });
+    };
+    expect(projectShape).toEqual(expected);
   });
 });
 

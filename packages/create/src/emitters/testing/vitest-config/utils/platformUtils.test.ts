@@ -2,13 +2,14 @@ import { platformEntries, quoted } from './platformUtils';
 
 describe('quoted', () => {
   it('quotes each value and separates them for an array literal', () => {
-    expect(quoted(['.ios.tsx', '.tsx'])).toBe("'.ios.tsx', '.tsx'");
+    const actual = quoted(['.ios.tsx', '.tsx']);
+    expect(actual).toBe("'.ios.tsx', '.tsx'");
   });
 });
 
 describe('platformEntries', () => {
   it('writes one platform call per project, each on its own lines', () => {
-    expect(platformEntries([
+    const actual = platformEntries([
       {
         name: 'ios',
         extensions: ['.ios.tsx'],
@@ -19,7 +20,9 @@ describe('platformEntries', () => {
         extensions: ['.android.tsx'],
         include: ['src/**/*.test.tsx'],
       },
-    ])).toBe([
+    ]);
+
+    expect(actual).toBe([
       '      platform(',
       "        'ios',",
       "        ['.ios.tsx'],",
@@ -34,7 +37,7 @@ describe('platformEntries', () => {
   });
 
   it('breaks a list of three or more one value per line', () => {
-    expect(platformEntries([{
+    const actual = platformEntries([{
       name: 'native',
       extensions: [
         '.native.tsx',
@@ -42,7 +45,9 @@ describe('platformEntries', () => {
         '.ts',
       ],
       include: ['src/**/*.test.tsx'],
-    }])).toBe([
+    }]);
+
+    expect(actual).toBe([
       '      platform(',
       "        'native',",
       '        [',

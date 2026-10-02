@@ -35,12 +35,16 @@ const answersFor = (overrides: AnswerOverrides = {}): Answers => {
 
 describe('emitAstroConfig', () => {
   it('writes nothing for a target that is not astro', () => {
-    expect(emitAstroConfig(answersFor({ target: 'react' }))).toBeNull();
-    expect(emitAstroConfig(answersFor({ target: 'webextension' }))).toBeNull();
+    const astroConfig = emitAstroConfig(answersFor({ target: 'react' }));
+    expect(astroConfig).toBeNull();
+    const astroConfig2 = emitAstroConfig(answersFor({ target: 'webextension' }));
+    expect(astroConfig2).toBeNull();
   });
 
   it('writes a bare config for a site that hosts nothing and takes no library', () => {
-    expect(emitAstroConfig(answersFor({ libraries: [] }))).toBe(
+    const astroConfig = emitAstroConfig(answersFor({ libraries: [] }));
+
+    expect(astroConfig).toBe(
       "import { defineConfig } from 'astro/config';\n\nexport default defineConfig({\n});\n",
     );
   });
@@ -163,11 +167,12 @@ describe('astroConfigEmitter', () => {
         ];
       });
 
-    expect(shapes).toEqual([[
+    const expected = [[
       'standard',
       'astro.config.mjs',
       true,
-    ]]);
+    ]];
+    expect(shapes).toEqual(expected);
   });
 
   it('writes nothing for a target that is not astro', () => {

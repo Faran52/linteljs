@@ -19,7 +19,9 @@ describe('browsersAnswer', () => {
       target: 'react',
     });
 
-    expect(browsersAnswer.slot(webextension)).toBe(true);
-    expect(browsersAnswer.slot(react)).toBe(false);
+    const actual = browsersAnswer.slot(webextension);
+    expect(actual).toBe(true);
+    const actual2 = browsersAnswer.slot(react);
+    expect(actual2).toBe(false);
   });
 });

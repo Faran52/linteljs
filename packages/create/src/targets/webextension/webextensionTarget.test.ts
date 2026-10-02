@@ -45,14 +45,17 @@ describe('the webextension record', () => {
   });
 
   it('imports the mark stylesheet only where the popup draws the mark', () => {
-    expect(recordFor({ surfaces: ['popup'] }).starterStyles)
-      .toEqual([
-        './styles/tokens.css',
-        './styles/base.css',
-        './lib/mark/mark.css',
-      ]);
+    const expected = [
+      './styles/tokens.css',
+      './styles/base.css',
+      './lib/mark/mark.css',
+    ];
 
-    expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(['./styles/tokens.css', './styles/base.css']);
+    expect(recordFor({ surfaces: ['popup'] }).starterStyles)
+      .toEqual(expected);
+
+    const expected2 = ['./styles/tokens.css', './styles/base.css'];
+    expect(recordFor({ surfaces: ['background'] }).starterStyles).toEqual(expected2);
   });
 });
 
@@ -61,7 +64,8 @@ describe('the browser axis', () => {
     ['chrome', 'chrome'],
     ['firefox', 'firefox-webext-browser'],
   ])('gives %s its own ambient types', (browser, types) => {
-    expect(recordFor({ browser }).tsconfig.types).toEqual([types]);
+    const expected = [types];
+    expect(recordFor({ browser }).tsconfig.types).toEqual(expected);
   });
 
   it('keeps crx as the bundler for both browsers', () => {
@@ -84,21 +88,24 @@ describe('the browser axis', () => {
   ])('marks %s as the browser its background starter is written for', (browser) => {
     const record = recordFor({ browser });
 
-    expect(record.starterFiles).toContainEqual({
+    const expected = {
       target: 'src/background/index.ts',
       variant: browser,
-    });
+    };
+    expect(record.starterFiles).toContainEqual(expected);
 
-    expect(record.starterFiles).toContainEqual({
+    const expected2 = {
       target: 'src/background/onInstalled.ts',
       variant: browser,
-    });
+    };
+    expect(record.starterFiles).toContainEqual(expected2);
 
-    expect(record.starterTests).toContainEqual({
+    const expected3 = {
       target: 'src/background/onInstalled.test.ts',
       covers: 'src/background/onInstalled.ts',
       variant: browser,
-    });
+    };
+    expect(record.starterTests).toContainEqual(expected3);
   });
 });
 
@@ -112,7 +119,8 @@ describe('the surfaces axis', () => {
 
     expect(targets).toContain('src/popup/renderPopup.ts');
     expect(targets).toContain('src/background/onInstalled.ts');
-    expect(record.coverageExclude).toEqual(['src/background/index.ts']);
+    const expected = ['src/background/index.ts'];
+    expect(record.coverageExclude).toEqual(expected);
     expect(record.viteInputs).toBeUndefined();
   });
 
@@ -133,22 +141,25 @@ describe('the surfaces axis', () => {
       expect(targets).toContain(page);
     }
 
-    expect(record.viteInputs).toEqual({ panel: 'panel.html' });
+    const expected = { panel: 'panel.html' };
+    expect(record.viteInputs).toEqual(expected);
   });
 
   it('excludes both entry shells and the record no page reads, and covers the panel body', () => {
     const record = recordFor({ surfaces: ['devtools-panel'] });
 
-    expect(record.coverageExclude).toEqual([
+    const expected = [
       'src/config/linteljs.ts',
       'src/devtools/index.ts',
       'src/panel/index.ts',
-    ]);
+    ];
+    expect(record.coverageExclude).toEqual(expected);
 
-    expect(record.starterTests).toContainEqual({
+    const expected2 = {
       target: 'src/panel/renderPanel.test.ts',
       covers: 'src/panel/renderPanel.ts',
-    });
+    };
+    expect(record.starterTests).toContainEqual(expected2);
   });
 
   it.each<[Browser]>([
@@ -160,10 +171,11 @@ describe('the surfaces axis', () => {
       surfaces: ['devtools-panel'],
     });
 
-    expect(starterFiles).toContainEqual({
+    const expected = {
       target: 'src/devtools/index.ts',
       variant: browser,
-    });
+    };
+    expect(starterFiles).toContainEqual(expected);
   });
 
   it('writes the popup and nothing else for a popup alone', () => {
@@ -228,18 +240,23 @@ describe('the hosted framework axis', () => {
   });
 
   it('runs the framework plugin ahead of crx', () => {
+    const expected = ['solid({ hot: process.env.VITEST === undefined })', 'crx({ manifest })'];
+
     expect(recordFor({ hostedFramework: 'solid' }).vitePlugin?.calls)
-      .toEqual(['solid({ hot: process.env.VITEST === undefined })', 'crx({ manifest })']);
+      .toEqual(expected);
   });
 
   it('brings the framework itself, its lint plugins and its testing library', () => {
     const record = recordFor({ hostedFramework: 'vue' });
 
-    expect(record.dependencies).toEqual(['vue']);
+    const expected = ['vue'];
+    expect(record.dependencies).toEqual(expected);
     expect(record.devDependencies).toContain('eslint-plugin-vue');
     expect(record.devDependencies).toContain('@vitejs/plugin-vue');
-    expect(record.testDevDependencies).toEqual(['@vue/test-utils']);
-    expect(record.stateRules).toEqual(['vue-reactivity.md']);
+    const expected2 = ['@vue/test-utils'];
+    expect(record.testDevDependencies).toEqual(expected2);
+    const expected3 = ['vue-reactivity.md'];
+    expect(record.stateRules).toEqual(expected3);
   });
 
   it('carries the single-file-component extension where the framework has one', () => {
@@ -248,7 +265,8 @@ describe('the hosted framework axis', () => {
   });
 
   it('carries the resolve conditions the framework needs under test', () => {
-    expect(recordFor({ hostedFramework: 'svelte' }).testConditions).toEqual(['browser']);
+    const expected = ['browser'];
+    expect(recordFor({ hostedFramework: 'svelte' }).testConditions).toEqual(expected);
     expect(recordFor({ hostedFramework: 'react' }).testConditions).toBeUndefined();
   });
 });
@@ -258,7 +276,8 @@ describe('the languages', () => {
     const popup = recordFor({ surfaces: ['popup'] }).i18n;
     const background = recordFor({ surfaces: ['background'] }).i18n;
 
-    expect(popup).toEqual({ dependencies: [] });
+    const expected = { dependencies: [] };
+    expect(popup).toEqual(expected);
     expect(background).toBeUndefined();
   });
 });
@@ -310,10 +329,12 @@ describe('the starter gates', () => {
   });
 
   it('are each pinned below, and nothing else is', () => {
-    expect(byKey(GATES)).toEqual(walk.gated);
+    const actual = byKey(GATES);
+    expect(actual).toEqual(walk.gated);
   });
 
   it.each(GATES)('%s', (key, conditions) => {
-    expect(walk.mismatchOf(key, conditions)).toBeUndefined();
+    const mismatch = walk.mismatchOf(key, conditions);
+    expect(mismatch).toBeUndefined();
   });
 });

@@ -10,7 +10,8 @@ describe('browserAnswer', () => {
   });
 
   it('defaults to a value it offers', () => {
-    expect(Object.keys(browserAnswer.values)).toContain(browserAnswer.default);
+    const actual = Object.keys(browserAnswer.values);
+    expect(actual).toContain(browserAnswer.default);
   });
 
   it('takes a slot on a target that hosts a browser and on no other', () => {
@@ -23,7 +24,9 @@ describe('browserAnswer', () => {
       target: 'react',
     });
 
-    expect(browserAnswer.slot(webextension)).toBe(true);
-    expect(browserAnswer.slot(react)).toBe(false);
+    const actual = browserAnswer.slot(webextension);
+    expect(actual).toBe(true);
+    const actual2 = browserAnswer.slot(react);
+    expect(actual2).toBe(false);
   });
 });

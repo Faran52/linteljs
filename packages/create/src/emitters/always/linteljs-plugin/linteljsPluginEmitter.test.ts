@@ -64,10 +64,12 @@ describe('referenceArtifacts', () => {
   it('names the repo structure source after the target', () => {
     const artifact = find({ target: 'svelte' }, reference('repo-structure.md'));
 
-    expect(sourcesOf(artifact)).toEqual([
+    const sources = sourcesOf(artifact);
+    const expected = [
       'fragments/claude-rules/repo-structure.svelte.md',
       'fragments/claude-rules/repo-structure.standard.md',
-    ]);
+    ];
+    expect(sources).toEqual(expected);
   });
 
   it('removes Claude path frontmatter from every emitted reference', async () => {
@@ -106,20 +108,29 @@ describe('referenceArtifacts', () => {
     ['vue', 'vue-reactivity.md'],
     ['svelte', 'svelte-reactivity.md'],
   ])('gives %s its own reactivity rule and no react-state', (target, rule) => {
-    expect(sourcesOf(find({ target }, reference(rule)))).toEqual([`fragments/claude-rules/${rule}`]);
-    expect(targetsOf({ target })).not.toContain(reference('react-state.md'));
+    const sources = sourcesOf(find({ target }, reference(rule)));
+    const expected = [`fragments/claude-rules/${rule}`];
+    expect(sources).toEqual(expected);
+    const targets = targetsOf({ target });
+    expect(targets).not.toContain(reference('react-state.md'));
   });
 
   it('emits the zod rule only with zod', () => {
-    expect(targetsOf({ libraries: [] })).not.toContain(reference('type-standards-zod.md'));
+    const targets = targetsOf({ libraries: [] });
+    expect(targets).not.toContain(reference('type-standards-zod.md'));
 
-    expect(sourcesOf(find({ libraries: ['zod'] }, reference('type-standards-zod.md'))))
-      .toEqual(['fragments/claude-rules/type-standards-zod.md']);
+    const sources = sourcesOf(find({ libraries: ['zod'] }, reference('type-standards-zod.md')));
+    const expected = ['fragments/claude-rules/type-standards-zod.md'];
+
+    expect(sources)
+      .toEqual(expected);
   });
 
   it('drops the testing rule when there is nothing to govern', () => {
-    expect(targetsOf({})).toContain(reference('testing.md'));
-    expect(targetsOf({ testing: 'none' })).not.toContain(reference('testing.md'));
+    const targets = targetsOf({});
+    expect(targets).toContain(reference('testing.md'));
+    const targets2 = targetsOf({ testing: 'none' });
+    expect(targets2).not.toContain(reference('testing.md'));
   });
 
   it('composes testing.md from the target head and the shared standard', async () => {
@@ -127,7 +138,8 @@ describe('referenceArtifacts', () => {
 
     expect(testing).toContain('@solidjs/testing-library');
     expect(testing).toContain('## Standard');
-    expect(testing.indexOf('## Infrastructure')).toBeLessThan(testing.indexOf('## Standard'));
+    const index = testing.indexOf('## Infrastructure');
+    expect(index).toBeLessThan(testing.indexOf('## Standard'));
   });
 
   it('appends the deviations section to the type rule only when relaxed', async () => {
@@ -166,19 +178,22 @@ describe('referenceArtifacts', () => {
   ])('reads the %s condition off the answers', (condition, answers) => {
     const source = `kept\ngated <!-- when ${condition} -->`;
 
-    expect(forAnswers(answersFor(answers), source)).toBe('kept\ngated');
+    const actual = forAnswers(answersFor(answers), source);
+    expect(actual).toBe('kept\ngated');
     const opposite = answers.store === undefined ? answersFor({ store: 'zustand' }) : answersFor();
 
-    expect(forAnswers({
+    const actual2 = forAnswers({
       ...opposite,
       surfaces: [],
-    }, source)).toBe('kept');
+    }, source);
+    expect(actual2).toBe('kept');
   });
 
   it('treats a marker mid-line as text', () => {
     const line = 'a <!-- when msw --> and more';
 
-    expect(forAnswers(answersFor(), line)).toBe(line);
+    const actual = forAnswers(answersFor(), line);
+    expect(actual).toBe(line);
   });
 
   it('refuses a condition no answer decides', () => {
@@ -188,7 +203,8 @@ describe('referenceArtifacts', () => {
   });
 
   it.each(valuesOf(ANSWERS.target.values))('leaves no condition marker in the %s structure rule', async (target) => {
-    expect(await textOf({ target }, 'repo-structure.md')).not.toContain('<!--');
+    const text = await textOf({ target }, 'repo-structure.md');
+    expect(text).not.toContain('<!--');
   });
 });
 
@@ -201,7 +217,8 @@ const targetsOf = (answers: Answers): string[] => {
 
 describe('linteljsPluginEmitter', () => {
   it.each(valuesOf(ANSWERS.agents.values))('writes the same tree for %s as for no agent at all', (agent) => {
-    expect(targetsOf(answersFor({ agents: [agent] }))).toEqual(targetsOf(answersFor({ agents: [] })));
+    const targets = targetsOf(answersFor({ agents: [agent] }));
+    expect(targets).toEqual(targetsOf(answersFor({ agents: [] })));
   });
 
   it('ships the hooks and the parser and host adapter they share', () => {
@@ -213,7 +230,7 @@ describe('linteljsPluginEmitter', () => {
         return [target, executable];
       });
 
-    expect(hooks).toEqual([
+    const expected = [
       ['plugins/linteljs/hooks/hooks.json', undefined],
       ['plugins/linteljs/hooks/gitSafetyGuardHook.ts', undefined],
       ['plugins/linteljs/hooks/eslintFixWarningHook.ts', undefined],
@@ -225,7 +242,8 @@ describe('linteljsPluginEmitter', () => {
       ['plugins/linteljs/hooks/utils/commandParserUtils.ts', undefined],
       ['plugins/linteljs/hooks/utils/contextUtils.ts', undefined],
       ['plugins/linteljs/hooks/utils/hostUtils.ts', undefined],
-    ]);
+    ];
+    expect(hooks).toEqual(expected);
   });
 });
 
@@ -266,10 +284,12 @@ describe('SKILL.md', () => {
     const description = "This project's LintelJS rules for file placement, types, framework state and tests. "
       + 'Use before adding, moving, renaming or editing any source file, state, test, mock or test setup.';
 
-    expect(Object.fromEntries(frontmatter)).toEqual({
+    const record = Object.fromEntries(frontmatter);
+    const expected = {
       name: 'linteljs',
       description,
-    });
+    };
+    expect(record).toEqual(expected);
   });
 
   it.each([

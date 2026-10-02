@@ -17,14 +17,15 @@ describe('bunfigEmitter', () => {
       packageManager: 'bun',
     });
 
-    expect(artifacts).toEqual([{
+    const expected = [{
       stage: 'package',
       target: 'bunfig.toml',
       content: {
         text: '[install]\nminimumReleaseAge = 172800\n'
           + 'minimumReleaseAgeExcludes = ["@linteljs/eslint-config", "@linteljs/eslint-plugin"]\n',
       },
-    }]);
+    }];
+    expect(artifacts).toEqual(expected);
   });
 
   it.each<PackageManager>([

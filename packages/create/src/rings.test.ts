@@ -12,7 +12,9 @@ import {
 } from './rings';
 
 it('names every ring once', () => {
-  expect([...new Set(RINGS)]).toStrictEqual([...RINGS]);
+  const actual = [...new Set(RINGS)];
+  const expected = [...RINGS];
+  expect(actual).toStrictEqual(expected);
 });
 
 it('gives every outer ring but the pipeline a world', () => {
@@ -21,7 +23,8 @@ it('gives every outer ring but the pipeline a world', () => {
       return ring !== 'pipeline';
     });
 
-  expect(Object.keys(WORLDS)).toStrictEqual(owningRings);
+  const actual = Object.keys(WORLDS);
+  expect(actual).toStrictEqual(owningRings);
 });
 
 const importsBySource = (): [string, string[]][] => {

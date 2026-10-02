@@ -25,10 +25,12 @@ describe('emitLinteljsConfig', () => {
 
 describe('linteljsConfigEmitter', () => {
   it('writes the emitted text to the recorded config path at the package stage', () => {
-    expect(linteljsConfigEmitter(DEFAULT_ANSWERS)).toEqual([{
+    const linteljsConfig = linteljsConfigEmitter(DEFAULT_ANSWERS);
+    const expected = [{
       stage: 'package',
       target: CONFIG_PATH,
       content: { text: emitLinteljsConfig(DEFAULT_ANSWERS) },
-    }]);
+    }];
+    expect(linteljsConfig).toEqual(expected);
   });
 });

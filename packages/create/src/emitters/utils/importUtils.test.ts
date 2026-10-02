@@ -70,6 +70,7 @@ describe('sortedImports', () => {
   });
 
   it('leaves no trailing blank line where the project imports nothing of its own', () => {
-    expect(sortedImports(["import { defineConfig } from 'vite';"])).toBe("import { defineConfig } from 'vite';");
+    const actual = sortedImports(["import { defineConfig } from 'vite';"]);
+    expect(actual).toBe("import { defineConfig } from 'vite';");
   });
 });

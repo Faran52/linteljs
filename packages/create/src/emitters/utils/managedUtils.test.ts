@@ -9,7 +9,9 @@ import { managedRecord, removableIn } from './managedUtils';
 
 describe('removableIn', () => {
   it('takes what this CLI writes whole', () => {
-    expect(removableIn([emitted('standard', 'eslint.config.js', '')])).toEqual(['eslint.config.js']);
+    const removable = removableIn([emitted('standard', 'eslint.config.js', '')]);
+    const expected = ['eslint.config.js'];
+    expect(removable).toEqual(expected);
   });
 
   it('leaves a preserved artifact out', () => {
@@ -22,18 +24,21 @@ describe('removableIn', () => {
   });
 
   it('leaves a merge out', () => {
-    expect(removableIn([merged('standard', 'pnpm-workspace.yaml', () => {
+    const removable = removableIn([merged('standard', 'pnpm-workspace.yaml', () => {
       return '';
-    })])).toEqual([]);
+    })]);
+    expect(removable).toEqual([]);
   });
 
   it('takes a merge that says it is removable', () => {
-    expect(removableIn([{
+    const removable2 = removableIn([{
       ...merged('standard', '.claude/settings.json', () => {
         return '';
       }),
       removable: true,
-    }])).toEqual(['.claude/settings.json']);
+    }]);
+    const expected = ['.claude/settings.json'];
+    expect(removable2).toEqual(expected);
   });
 });
 
@@ -41,11 +46,14 @@ describe('managedRecord', () => {
   it('is json a later run can read back, ordered by locale rather than by code unit', () => {
     const parsed: unknown = JSON.parse(managedRecord(['B.js', 'a.js']));
 
-    expect(parsed).toEqual({ removable: ['a.js', 'B.js'] });
+    const expected = { removable: ['a.js', 'B.js'] };
+    expect(parsed).toEqual(expected);
   });
 
   it('is stable across two runs of the same set', () => {
-    expect(managedRecord(['B.js', 'a.js'])).toBe(managedRecord(['a.js', 'B.js']));
-    expect(managedRecord(['a.js'])).toMatch(/\n$/u);
+    const actual = managedRecord(['B.js', 'a.js']);
+    expect(actual).toBe(managedRecord(['a.js', 'B.js']));
+    const actual2 = managedRecord(['a.js']);
+    expect(actual2).toMatch(/\n$/u);
   });
 });

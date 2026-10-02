@@ -31,7 +31,7 @@ describe('emitClaudeSettings', () => {
       'frontend-design',
     ]));
 
-    expect(settings).toEqual({
+    const expected = {
       includeCoAuthoredBy: false,
       ...STATUS_LINES,
       enabledPlugins: {
@@ -60,13 +60,14 @@ describe('emitClaudeSettings', () => {
           },
         },
       },
-    });
+    };
+    expect(settings).toEqual(expected);
   });
 
   it('retains only the local LintelJS declaration with no selected plugins', () => {
     const settings: unknown = JSON.parse(emitClaudeSettings([]));
 
-    expect(settings).toEqual({
+    const expected = {
       includeCoAuthoredBy: false,
       ...STATUS_LINES,
       enabledPlugins: { 'linteljs@linteljs': true },
@@ -78,14 +79,15 @@ describe('emitClaudeSettings', () => {
           },
         },
       },
-    });
+    };
+    expect(settings).toEqual(expected);
   });
 
   it.each(['context7', 'frontend-design'] as const)('declares the official marketplace for %s alone', (plugin) => {
     const output = emitClaudeSettings([plugin]);
     const settings: unknown = JSON.parse(output);
 
-    expect(settings).toEqual({
+    const expected = {
       includeCoAuthoredBy: false,
       ...STATUS_LINES,
       enabledPlugins: {
@@ -106,9 +108,11 @@ describe('emitClaudeSettings', () => {
           },
         },
       },
-    });
+    };
+    expect(settings).toEqual(expected);
 
-    expect(output.endsWith('\n')).toBe(true);
+    const actual = output.endsWith('\n');
+    expect(actual).toBe(true);
   });
 });
 
@@ -141,7 +145,7 @@ describe('claudeSettingsEmitter', () => {
         ];
       });
 
-    expect(written).toEqual([
+    const expected = [
       [
         'CLAUDE.md',
         true,
@@ -162,7 +166,8 @@ describe('claudeSettingsEmitter', () => {
         undefined,
         undefined,
       ],
-    ]);
+    ];
+    expect(written).toEqual(expected);
   });
 
   it('ships the exact minimal local plugin metadata', async () => {
@@ -218,6 +223,7 @@ describe('claudeSettingsEmitter', () => {
       'linteljs@linteljs': true,
     }));
 
-    expect(merge(null)).toBe(emitClaudeSettings(answers.plugins));
+    const merged2 = merge(null);
+    expect(merged2).toBe(emitClaudeSettings(answers.plugins));
   });
 });

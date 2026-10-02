@@ -41,15 +41,17 @@ describe('TEMPLATES_ROOT', () => {
 
 describe('shippedAssetsReader', () => {
   it('returns emitted text unchanged', async () => {
-    expect(await shippedAssetsReader({ text: 'export default {};' })).toBe('export default {};');
+    const shippedAssets = await shippedAssetsReader({ text: 'export default {};' });
+    expect(shippedAssets).toBe('export default {};');
   });
 
   it('hands a merge the current text and returns what it composes', async () => {
-    expect(await shippedAssetsReader({
+    const shippedAssets = await shippedAssetsReader({
       merge: (current) => {
         return `${current ?? 'nothing'} merged`;
       },
-    }, 'on disk')).toBe('on disk merged');
+    }, 'on disk');
+    expect(shippedAssets).toBe('on disk merged');
   });
 
   it('reads and joins copied sources in the order they are listed', async () => {
@@ -83,6 +85,7 @@ describe('shippedAssetsReader', () => {
   it('returns the joined text as-is when no transform is given', async () => {
     const original = await readFile(join(TEMPLATES_ROOT, SKILL), 'utf8');
 
-    expect(await shippedAssetsReader({ sources: [SKILL] })).toBe(original);
+    const shippedAssets = await shippedAssetsReader({ sources: [SKILL] });
+    expect(shippedAssets).toBe(original);
   });
 });

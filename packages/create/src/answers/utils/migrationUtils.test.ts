@@ -4,37 +4,52 @@ import { migratedStore, migrateLifted } from './migrationUtils';
 
 describe('migrateLifted', () => {
   it('lifts nothing out of a nested list, however its text reads', () => {
-    expect(migrateLifted({ libraries: [['react-hook-form']] }, true, 'form', ANSWERS.form.values))
-      .toStrictEqual({ libraries: [['react-hook-form']] });
+    const migratedLifted = migrateLifted({ libraries: [['react-hook-form']] }, true, 'form', ANSWERS.form.values);
+    const expected = { libraries: [['react-hook-form']] };
+
+    expect(migratedLifted)
+      .toStrictEqual(expected);
   });
 
   it('leaves a config alone where the lift does not apply', () => {
-    expect(migrateLifted({ libraries: ['zod', 'react-hook-form'] }, false, 'form', ANSWERS.form.values))
-      .toEqual({ libraries: ['zod', 'react-hook-form'] });
+    const migratedLifted = migrateLifted({ libraries: ['zod', 'react-hook-form'] }, false, 'form', ANSWERS.form.values);
+    const expected = { libraries: ['zod', 'react-hook-form'] };
+
+    expect(migratedLifted)
+      .toEqual(expected);
   });
 
   it('leaves a config alone when its libraries name none of the lifted values', () => {
-    expect(migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values))
-      .toStrictEqual({ libraries: ['zod'] });
+    const migratedLifted = migrateLifted({ libraries: ['zod'] }, true, 'form', ANSWERS.form.values);
+    const expected = { libraries: ['zod'] };
+
+    expect(migratedLifted)
+      .toStrictEqual(expected);
   });
 
   it('lifts the one value listed out of libraries and into its own field', () => {
-    expect(migrateLifted({ libraries: ['zod', 'react-hook-form'] }, true, 'form', ANSWERS.form.values)).toEqual({
+    const migratedLifted = migrateLifted({ libraries: ['zod', 'react-hook-form'] }, true, 'form', ANSWERS.form.values);
+    const expected = {
       libraries: ['zod'],
       form: 'react-hook-form',
-    });
+    };
+    expect(migratedLifted).toEqual(expected);
   });
 
   it('lifts tailwind into styling and tanstack-query into data, which v2 lifts alongside the form library', () => {
-    expect(migrateLifted({ libraries: ['zod', 'tailwind'] }, true, 'styling', ANSWERS.styling.values)).toEqual({
+    const migratedLifted = migrateLifted({ libraries: ['zod', 'tailwind'] }, true, 'styling', ANSWERS.styling.values);
+    const expected = {
       libraries: ['zod'],
       styling: 'tailwind',
-    });
+    };
+    expect(migratedLifted).toEqual(expected);
 
-    expect(migrateLifted({ libraries: ['tanstack-query'] }, true, 'data', ANSWERS.data.values)).toEqual({
+    const migratedLifted2 = migrateLifted({ libraries: ['tanstack-query'] }, true, 'data', ANSWERS.data.values);
+    const expected2 = {
       libraries: [],
       data: 'tanstack-query',
-    });
+    };
+    expect(migratedLifted2).toEqual(expected2);
   });
 
   it('refuses a config listing two, which the field it lifts into has no room for', () => {
@@ -50,16 +65,19 @@ describe('migratedStore', () => {
   };
 
   it('lands a yes on the store that question was about', () => {
-    expect(migratedStore(true, offered)).toBe('zustand');
+    const actual = migratedStore(true, offered);
+    expect(actual).toBe('zustand');
   });
 
   it('answers nothing for a no, which is an absent answer rather than a false', () => {
-    expect(migratedStore(false, offered)).toBeUndefined();
+    const actual = migratedStore(false, offered);
+    expect(actual).toBeUndefined();
   });
 
   it('answers nothing where the target offers no store at all', () => {
-    expect(migratedStore(true, () => {
+    const actual = migratedStore(true, () => {
       return undefined;
-    })).toBeUndefined();
+    });
+    expect(actual).toBeUndefined();
   });
 });

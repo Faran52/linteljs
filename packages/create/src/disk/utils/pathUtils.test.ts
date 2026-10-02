@@ -32,34 +32,40 @@ afterEach(async () => {
 
 describe('safeProjectPath', () => {
   it('resolves a relative target against the project root', async () => {
-    await expect(safeProjectPath(cwd, 'src/main.tsx')).resolves.toBe(join(cwd, 'src', 'main.tsx'));
+    const actual = await safeProjectPath(cwd, 'src/main.tsx');
+    expect(actual).toBe(join(cwd, 'src', 'main.tsx'));
   });
 
   it('resolves a target at the root of a project that is itself a symbolic link', async () => {
     await mkdir(join(cwd, 'real'));
     await symlink(join(cwd, 'real'), join(cwd, 'linked'));
 
-    await expect(safeProjectPath(join(cwd, 'linked'), 'package.json'))
-      .resolves.toBe(join(cwd, 'linked', 'package.json'));
+    const actual = await safeProjectPath(join(cwd, 'linked'), 'package.json');
+    expect(actual).toBe(join(cwd, 'linked', 'package.json'));
   });
 
   it('refuses an absolute target', async () => {
-    await expect(safeProjectPath(cwd, join(cwd, 'src/main.tsx'))).rejects.toThrow('must be a relative path');
+    const promise = safeProjectPath(cwd, join(cwd, 'src/main.tsx'));
+    await expect(promise).rejects.toThrow('must be a relative path');
   });
 
   it('refuses a target that climbs out of the project', async () => {
-    await expect(safeProjectPath(cwd, '../x')).rejects.toThrow('must be a relative path');
-    await expect(safeProjectPath(cwd, '..')).rejects.toThrow('must be a relative path');
+    const promise = safeProjectPath(cwd, '../x');
+    await expect(promise).rejects.toThrow('must be a relative path');
+    const cwdPromise = safeProjectPath(cwd, '..');
+    await expect(cwdPromise).rejects.toThrow('must be a relative path');
   });
 
   it.each(['', '.'])('refuses %j, which names the project root', async (target) => {
-    await expect(safeProjectPath(cwd, target)).rejects.toThrow('must be a relative path');
+    const promise = safeProjectPath(cwd, target);
+    await expect(promise).rejects.toThrow('must be a relative path');
   });
 
   it('refuses a target reached through a symbolic link', async () => {
     await mkdir(join(cwd, 'real'));
     await symlink(join(cwd, 'real'), join(cwd, 'linked'));
 
-    await expect(safeProjectPath(cwd, 'linked/a.txt')).rejects.toThrow('symbolic link');
+    const promise = safeProjectPath(cwd, 'linked/a.txt');
+    await expect(promise).rejects.toThrow('symbolic link');
   });
 });

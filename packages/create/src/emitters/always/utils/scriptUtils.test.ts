@@ -11,16 +11,19 @@ import type { TargetId } from '@config/types';
 
 describe('gateScripts', () => {
   it('lists the legs of check in order, the coverage leg only with tests', () => {
-    expect(gateScripts(answersFor({}))).toEqual([
+    const actual = gateScripts(answersFor({}));
+    const expected = [
       'lint',
       'lint:types',
       'lint:css',
       'typecheck',
       'test:coverage',
       'build',
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
-    expect(gateScripts(answersFor({ testing: 'none' }))).not.toContain('test:coverage');
+    const actual2 = gateScripts(answersFor({ testing: 'none' }));
+    expect(actual2).not.toContain('test:coverage');
   });
 });
 
@@ -82,22 +85,28 @@ describe('buildScripts', () => {
   });
 
   it('gives the linter a fix script beside its gate', () => {
-    expect(buildScripts(answersFor({}))).toMatchObject({
+    const scripts = buildScripts(answersFor({}));
+    const expected = {
       'lint': 'eslint .',
       'lint:fix': 'eslint . --fix',
-    });
+    };
+    expect(scripts).toMatchObject(expected);
   });
 
   it('gives css a fix script beside its gate', () => {
-    expect(buildScripts(answersFor({}))).toMatchObject({
+    const scripts = buildScripts(answersFor({}));
+    const expected = {
       'lint:css': 'stylelint "src/**/*.css" --allow-empty-input',
       'lint:css:fix': 'stylelint "src/**/*.css" --fix --allow-empty-input',
-    });
+    };
+    expect(scripts).toMatchObject(expected);
 
-    expect(buildScripts(answersFor({ target: 'vue' }))).toMatchObject({
+    const scripts2 = buildScripts(answersFor({ target: 'vue' }));
+    const expected2 = {
       'lint:css': 'stylelint "src/**/*.{css,vue}" --allow-empty-input',
       'lint:css:fix': 'stylelint "src/**/*.{css,vue}" --fix --allow-empty-input',
-    });
+    };
+    expect(scripts2).toMatchObject(expected2);
   });
 
   it.each<[TargetId, Record<string, string>]>([
@@ -172,7 +181,8 @@ describe('buildScripts', () => {
       prepare: 'husky',
     }],
   ])('writes the scripts %s runs its own toolchain with', (target, own) => {
-    expect(buildScripts(answersFor({ target }))).toMatchObject(own);
+    const scripts = buildScripts(answersFor({ target }));
+    expect(scripts).toMatchObject(own);
   });
 
   it('writes the scripts React Router runs in framework mode', () => {
@@ -181,14 +191,15 @@ describe('buildScripts', () => {
       router: 'react-router-framework',
     });
 
-    expect(scripts).toMatchObject({
+    const expected = {
       typecheck: 'react-router typegen && tsc --noEmit',
       build: 'react-router build',
       dev: 'react-router dev',
       start: 'react-router-serve ./build/server/index.js',
       preview: 'react-router-serve ./build/server/index.js',
       prepare: 'react-router typegen && husky',
-    });
+    };
+    expect(scripts).toMatchObject(expected);
   });
 
   it('names vitest for every target that has a suite', () => {

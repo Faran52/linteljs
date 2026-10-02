@@ -48,14 +48,16 @@ describe('projectFileWriter', () => {
       await projectFileWriter(cwd, 'file.txt', text);
     }
 
-    expect(await readdir('/dev/fd')).toHaveLength(before);
+    const entries = await readdir('/dev/fd');
+    expect(entries).toHaveLength(before);
   });
 
   it('creates parent directories and overwrites a regular file', async () => {
     await projectFileWriter(cwd, 'nested/file.txt', 'first\n');
     await projectFileWriter(cwd, 'nested/file.txt', 'second\n');
 
-    await expect(readFile(join(cwd, 'nested/file.txt'), 'utf8')).resolves.toBe('second\n');
+    const file = await readFile(join(cwd, 'nested/file.txt'), 'utf8');
+    expect(file).toBe('second\n');
   });
 
   it.each([
@@ -71,11 +73,15 @@ describe('projectFileWriter', () => {
 
     await symlink(external, target);
 
-    await expect(projectFileWriter(cwd, 'generated.txt', 'generated\n'))
+    const projectFilePromise = projectFileWriter(cwd, 'generated.txt', 'generated\n');
+
+    await expect(projectFilePromise)
       .rejects.toThrow('Refusing to write generated.txt: target is a symbolic link');
 
-    await expect(readlink(target)).resolves.toBe(external);
-    await expect(readIfPresent(external)).resolves.toBe(original);
+    const actual = await readlink(target);
+    expect(actual).toBe(external);
+    const file = await readIfPresent(external);
+    expect(file).toBe(original);
   });
 
   it('refuses a symbolic-link parent without touching its destination', async () => {
@@ -84,10 +90,13 @@ describe('projectFileWriter', () => {
     await mkdir(external);
     await symlink(external, join(cwd, 'nested'));
 
-    await expect(projectFileWriter(cwd, 'nested/generated.txt', 'generated\n'))
+    const projectFilePromise = projectFileWriter(cwd, 'nested/generated.txt', 'generated\n');
+
+    await expect(projectFilePromise)
       .rejects.toThrow('Refusing to use nested/generated.txt: a parent directory is a symbolic link');
 
-    await expect(readIfPresent(join(external, 'generated.txt'))).resolves.toBeNull();
+    const file = await readIfPresent(join(external, 'generated.txt'));
+    expect(file).toBeNull();
   });
 
   it.each([
@@ -98,13 +107,16 @@ describe('projectFileWriter', () => {
       return '../outside.txt';
     }],
   ])('refuses %s', async (_case, targetFor) => {
-    await expect(projectFileWriter(cwd, targetFor(cwd), 'generated\n'))
+    const projectFilePromise = projectFileWriter(cwd, targetFor(cwd), 'generated\n');
+
+    await expect(projectFilePromise)
       .rejects.toThrow('target must be a relative path inside the project');
   });
 
   it('surfaces a non-symbolic-link write failure unchanged', async () => {
     await mkdir(join(cwd, 'generated.txt'));
 
-    await expect(projectFileWriter(cwd, 'generated.txt', 'generated\n')).rejects.toThrow(/EISDIR/);
+    const projectFilePromise = projectFileWriter(cwd, 'generated.txt', 'generated\n');
+    await expect(projectFilePromise).rejects.toThrow(/EISDIR/);
   });
 });
