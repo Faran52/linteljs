@@ -15,6 +15,8 @@ export interface LintResult {
 
 const execFileAsync = promisify(execFile);
 
+const STDOUT_PREVIEW_CHARS = 200;
+
 const isLintResult = (value: unknown): value is LintResult => {
   return typeof value === 'object' && value !== null && 'messages' in value && Array.isArray(value.messages);
 };
@@ -47,7 +49,7 @@ export const lintResultOf = async (args: string[], cwd: string): Promise<LintRes
   const result: unknown = Array.isArray(parsed) ? parsed.at(0) : undefined;
 
   if (!isLintResult(result)) {
-    throw new Error(`eslint did not answer a JSON result array:\n${stdout.slice(0, 200)}`);
+    throw new Error(`eslint did not answer a JSON result array:\n${stdout.slice(0, STDOUT_PREVIEW_CHARS)}`);
   }
 
   return result;

@@ -60,6 +60,10 @@ interface Stats {
 
 const DEFAULT_CASES_PER_SHAPE = 40;
 
+const SNIPPET_CONTEXT_LINES = 2;
+
+const PROGRESS_INTERVAL_MS = 3000;
+
 const { values: flags, positionals } = parseArgs({
   allowPositionals: true,
   options: {
@@ -222,11 +226,11 @@ const describeShape = (entry: ActiveShape): string => {
 const snippetAt = (source: string, offset: number): string => {
   const preceding = source.slice(0, offset);
   const line = countMatches(preceding, /\n/g) + 1;
-  const firstShown = Math.max(0, line - 2);
+  const firstShown = Math.max(0, line - SNIPPET_CONTEXT_LINES);
 
   return source
     .split('\n')
-    .slice(firstShown, line + 3)
+    .slice(firstShown, line + SNIPPET_CONTEXT_LINES + 1)
     .join('\n');
 };
 
@@ -408,7 +412,7 @@ for (const file of interleave(sources).take(maxFiles)) {
     logError(`threw: ${file}\n  ${messageOf(error)}`);
   }
 
-  if (Date.now() - lastPrint > 3000) {
+  if (Date.now() - lastPrint > PROGRESS_INTERVAL_MS) {
     log(`${String(visited)} files, ${String(counts.scanned)} linted, `
       + `${String(activeShapes.length - shapesStillHungry().length)}/${String(activeShapes.length)} shapes full`);
 

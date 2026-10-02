@@ -9,6 +9,7 @@ import {
   type Token,
 } from '../../utils/astUtils.ts';
 import { messageOf } from '../../utils/corpusUtils.ts';
+import { HUNK_CONTEXT_LINES, REPRODUCTION_PADS } from '../constants.ts';
 
 import {
   commentDiff,
@@ -255,17 +256,7 @@ export const narrow = (
       .join('\n')}\n`;
   };
 
-  const pads = [
-    0,
-    1,
-    2,
-    4,
-    8,
-    16,
-    32,
-  ];
-
-  for (const pad of pads) {
+  for (const pad of REPRODUCTION_PADS) {
     const padded = slice(pad);
     const reproduces = evaluate(context, padded, name, finding.rules).findings
       .some((candidate) => {
@@ -279,7 +270,7 @@ export const narrow = (
     }
   }
 
-  const hunk: [string, string] = [slice(3), 'changed hunk, could not narrow'];
+  const hunk: [string, string] = [slice(HUNK_CONTEXT_LINES), 'changed hunk, could not narrow'];
 
   return hunk;
 };

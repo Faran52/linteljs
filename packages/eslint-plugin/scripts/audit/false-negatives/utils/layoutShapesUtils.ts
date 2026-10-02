@@ -18,6 +18,9 @@ import {
 const DEFAULT_MAX_ITEMS = 2;
 const DEFAULT_MAX_PROPERTIES = 2;
 
+// A list that stays split once one of its breaks is joined.
+const MIN_LIST_LENGTH = 3;
+
 const PROBE_ALIAS = 'linteljsProbeAlias';
 
 const namedImports = (node: AstNode): AstNode[] => {
@@ -50,9 +53,9 @@ export const importJoinedCase = importCase((node, named, state) => {
 });
 
 export const importTailJoinedCase = importCase((_, named, state) => {
-  const [previous, last] = named.slice(-2);
+  const [previous, last] = named.slice(named.length - 2);
 
-  return named.length < 3 || !fullySplit(named) || previous === undefined || last === undefined
+  return named.length < MIN_LIST_LENGTH || !fullySplit(named) || previous === undefined || last === undefined
     ? undefined
     : joinRange(state, previous.range[1], last.range[0]);
 });
@@ -141,7 +144,9 @@ export const patternGapCase = (type: string, fromStart: boolean): Build => {
       const index = fromStart ? 1 : members.length - 1;
       const [previous, current] = [members[index - 1], members[index]];
 
-      if (members.length < 3 || members.length !== raw.length || !fullySplit(members) || !previous || !current) {
+      const whole = members.length >= MIN_LIST_LENGTH && members.length === raw.length;
+
+      if (!whole || !fullySplit(members) || !previous || !current) {
         return undefined;
       }
 
@@ -158,7 +163,7 @@ export const exportJoinedCase: Build = (state) => {
     const [first] = specifiers;
     const last = specifiers.at(-1);
 
-    return specifiers.length < 3 || !first || !last || !spansLines(first, last)
+    return specifiers.length < MIN_LIST_LENGTH || !first || !last || !spansLines(first, last)
       ? undefined
       : joinRange(state, first.range[0], last.range[1]);
   });

@@ -28,8 +28,11 @@ const SCRIPT_EXTENSIONS = new Set([
 ]);
 
 // Above these sit bundled `.d.ts` blobs and minified output that cost seconds to parse and say nothing new.
-const MAX_BYTES = 512 * 1024;
+const MAX_BYTES = 524_288;
 const MAX_LINE = 1000;
+const MAX_AVERAGE_LINE = 200;
+
+const MAX_MESSAGE_CHARS = 160;
 
 // The workspace store: pnpm fills this package's `node_modules` with symlinks the walk skips.
 const HOME = homedir();
@@ -131,7 +134,7 @@ export const skipReason = (source: string): SkipReason | undefined => {
       return Math.max(widest, line.length);
     }, 0);
 
-  return source.length / lines.length > 200 || longest > MAX_LINE ? 'minified' : undefined;
+  return source.length / lines.length > MAX_AVERAGE_LINE || longest > MAX_LINE ? 'minified' : undefined;
 };
 
 // Vendored copies of one file count once.
@@ -151,5 +154,5 @@ export const messageOf = (error: unknown): string => {
   return (error instanceof Error ? error.message : String(error))
     .split('\n', 1)
     .join('')
-    .slice(0, 160);
+    .slice(0, MAX_MESSAGE_CHARS);
 };

@@ -16,6 +16,8 @@ export interface AliasedProject {
   pinned: string[];
 }
 
+const WILDCARD = '/*';
+
 const endsInOneStar = (pattern: string, tail: string): boolean => {
   return pattern.endsWith(tail) && pattern.indexOf('*') === pattern.length - 1;
 };
@@ -26,11 +28,11 @@ const aliasesOf = (paths: Record<string, string[]>, base: string): Alias[] => {
 
   return entries
     .flatMap(([pattern, [substitution = '']]) => {
-      if (!endsInOneStar(pattern, '*') || !endsInOneStar(substitution, '/*')) {
+      if (!endsInOneStar(pattern, '*') || !endsInOneStar(substitution, WILDCARD)) {
         return [];
       }
 
-      const directory = posix.resolve(base, substitution.slice(0, -2));
+      const directory = posix.resolve(base, substitution.slice(0, -WILDCARD.length));
       const exact = entries
         .find(([key, [target]]) => {
           return target !== undefined && !key.includes('*') && posix.resolve(base, target) === directory;

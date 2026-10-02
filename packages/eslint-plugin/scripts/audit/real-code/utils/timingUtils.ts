@@ -1,6 +1,17 @@
 import { orderBy, sum } from 'es-toolkit';
 
 import { log, logWarn } from '../../../../../create/templates/project/scripts/utils/loggerUtils.ts';
+import {
+  BUCKET_WIDTH,
+  BYTES_PER_KIB,
+  MEDIAN,
+  MS_PER_SECOND,
+  NS_PER_MS,
+  P99,
+  SAMPLE_WIDTH,
+  SHOWN_SAMPLES,
+  SIZE_BUCKETS,
+} from '../constants.ts';
 
 export interface Timing {
   bytes: number;
@@ -30,15 +41,6 @@ const OUTLIER_FACTOR = 25;
 const SUPERLINEAR_MIN_FILES = 20;
 const SUPERLINEAR_RATIO = 3;
 
-const SIZE_BUCKETS: [string, number][] = [
-  ['under 1 KiB', 1024],
-  ['1 to 4 KiB', 4096],
-  ['4 to 16 KiB', 16_384],
-  ['16 to 64 KiB', 65_536],
-  ['64 to 256 KiB', 262_144],
-  ['over 256 KiB', Infinity],
-];
-
 // Nearest-rank, so the answer is a time some file took.
 const quantile = (sorted: number[], fraction: number): number => {
   const rank = Math.floor(sorted.length * fraction);
@@ -53,15 +55,15 @@ const medianOf = (values: number[]): number => {
       return left - right;
     });
 
-  return quantile(ascending, 0.5);
+  return quantile(ascending, MEDIAN);
 };
 
 const nanosPerByte = (sample: Timing): number => {
-  return (sample.ms * 1e6) / sample.bytes;
+  return (sample.ms * NS_PER_MS) / sample.bytes;
 };
 
 const kib = (bytes: number): string => {
-  return `${(bytes / 1024).toFixed(1)} KiB`;
+  return `${(bytes / BYTES_PER_KIB).toFixed(1)} KiB`;
 };
 
 const bucketRows = (timings: Timing[]): BucketRow[] => {
@@ -143,7 +145,7 @@ const outlierLines = (timings: Timing[]): string[] => {
     + `${median.toFixed(0)} ns/byte, among files over ${String(OUTLIER_FLOOR_BYTES)} bytes and `
     + `${String(OUTLIER_FLOOR_MS)}ms`,
     ...outliers
-      .slice(0, 20)
+      .slice(0, SHOWN_SAMPLES)
       .map((sample) => {
         return `  ! ${sample.ms.toFixed(1)}ms ${kib(sample.bytes)} `
           + `${nanosPerByte(sample).toFixed(0)} ns/byte  ${sample.file}`;
@@ -167,40 +169,41 @@ export const showTiming = (timings: Timing[], wallMs: number, dominantRule: (fil
     .sort((left, right) => {
       return left - right;
     });
-  const lintSeconds = sum(sortedMs) / 1000;
+  const lintSeconds = sum(sortedMs) / MS_PER_SECOND;
   const rows = bucketRows(timings);
-  const slowest = orderBy(timings, ['ms'], ['desc']).slice(0, 20);
+  const slowest = orderBy(timings, ['ms'], ['desc']).slice(0, SHOWN_SAMPLES);
 
   const report = [
     'timing: one whole-plugin --fix pass per linted file, the audit pass excluded',
     `  ${String(timings.length)} files in ${lintSeconds.toFixed(1)}s of fix time, `
-    + `${(timings.length / lintSeconds).toFixed(1)} files/s (${(wallMs / 1000).toFixed(1)}s wall, `
+    + `${(timings.length / lintSeconds).toFixed(1)} files/s (${(wallMs / MS_PER_SECOND).toFixed(1)}s wall, `
     + 'the rest is reading, parsing and the audit)',
-    `  per file: median ${quantile(sortedMs, 0.5).toFixed(2)}ms, p99 ${quantile(sortedMs, 0.99).toFixed(2)}ms, `
+    `  per file: median ${quantile(sortedMs, MEDIAN).toFixed(2)}ms, p99 ${quantile(sortedMs, P99).toFixed(2)}ms, `
     + `slowest ${(sortedMs.at(-1) ?? 0).toFixed(2)}ms`,
     '  time per byte by size:',
-    `    ${'size'.padEnd(14)}${'files'.padStart(7)}${'median ms'.padStart(12)}${'ns/byte'.padStart(10)}`,
+    `    ${'size'.padEnd(BUCKET_WIDTH.size)}${'files'.padStart(BUCKET_WIDTH.files)}`
+    + `${'median ms'.padStart(BUCKET_WIDTH.medianMs)}${'ns/byte'.padStart(BUCKET_WIDTH.nsPerByte)}`,
     ...rows
       .map((row) => {
-        return `    ${row.label.padEnd(14)}${String(row.files).padStart(7)}`
+        return `    ${row.label.padEnd(BUCKET_WIDTH.size)}${String(row.files).padStart(BUCKET_WIDTH.files)}`
           + `${row.medianMs
             .toFixed(2)
-            .padStart(12)}${row.nsPerByte
+            .padStart(BUCKET_WIDTH.medianMs)}${row.nsPerByte
             .toFixed(0)
-            .padStart(10)}`;
+            .padStart(BUCKET_WIDTH.nsPerByte)}`;
       }),
     `  ${superlinearVerdict(rows)}`,
-    '  slowest 20, with the rule that dominates each:',
+    `  slowest ${String(SHOWN_SAMPLES)}, with the rule that dominates each:`,
     ...slowest
       .flatMap((sample) => {
         const dominant = dominantRule(sample.file);
         const sampleLines = [
           `    ${sample.ms
             .toFixed(1)
-            .padStart(8)}ms ${kib(sample.bytes).padStart(11)} `
+            .padStart(SAMPLE_WIDTH.ms)}ms ${kib(sample.bytes).padStart(SAMPLE_WIDTH.kib)} `
             + `${nanosPerByte(sample)
               .toFixed(0)
-              .padStart(6)} ns/byte  ${dominant.rule} `
+              .padStart(SAMPLE_WIDTH.nsPerByte)} ns/byte  ${dominant.rule} `
               + `${dominant.ms.toFixed(1)}ms over a ${dominant.baseline.toFixed(1)}ms parse`,
           `      ${sample.file}`,
         ];

@@ -4,6 +4,12 @@ import { countBy, orderBy } from 'es-toolkit';
 
 import { log, logError } from '../../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import { messageOf } from '../../utils/corpusUtils.ts';
+import {
+  BUSIEST_FILES_SHOWN,
+  COUNT_WIDTH,
+  FIX_PROGRESS_EVERY,
+  SNIPPET_CONTEXT_LINES,
+} from '../constants.ts';
 
 import {
   attribute,
@@ -37,11 +43,11 @@ interface AuditFinding extends Finding {
 const TS_EXTENSIONS = new Set(['.ts', '.tsx']);
 
 const around = (source: string, line: number): string => {
-  const firstShown = Math.max(0, line - 3);
+  const firstShown = Math.max(0, line - SNIPPET_CONTEXT_LINES - 1);
 
   return `${source
     .split('\n')
-    .slice(firstShown, line + 2)
+    .slice(firstShown, line + SNIPPET_CONTEXT_LINES)
     .join('\n')}\n`;
 };
 
@@ -238,7 +244,7 @@ export const runFixPass = (context: AuditContext): number => {
       show(file, finding, '', 'no snippet');
     }
 
-    if ((index + 1) % 500 === 0) {
+    if ((index + 1) % FIX_PROGRESS_EVERY === 0) {
       log(`${String(index + 1)}/${String(files.length)} files, ${String(counts.ts.changed + counts.js.changed)} `
         + `fixed, ${String(findings.length)} findings`);
     }
@@ -265,13 +271,13 @@ export const runFixPass = (context: AuditContext): number => {
     'reports across the corpus:',
     ...orderBy([...context.auditCounts], [1], ['desc'])
       .map(([ruleId, count]) => {
-        return `  ${String(count).padStart(7)}  ${ruleId}`;
+        return `  ${String(count).padStart(COUNT_WIDTH)}  ${ruleId}`;
       }),
     'busiest files:',
     ...orderBy(context.auditVolume, [0], ['desc'])
-      .slice(0, 5)
+      .slice(0, BUSIEST_FILES_SHOWN)
       .map(([count, file]) => {
-        return `  ${String(count).padStart(7)}  ${file}`;
+        return `  ${String(count).padStart(COUNT_WIDTH)}  ${file}`;
       }),
   ].join('\n');
 

@@ -15,6 +15,7 @@ import {
 
 import {
   EXPECTED,
+  FIRST_FLAT_MAJOR,
   FIXTURE,
   flatConfig,
   legacyConfig,
@@ -41,9 +42,8 @@ const expectedFor = (typescript: boolean): string[] => {
   return typescript ? TS_EXPECTED : EXPECTED;
 };
 
-// Flat config is the default from 9, and the only format 10 reads.
 const isFlat = (major: Major): boolean => {
-  return major >= 9;
+  return major >= FIRST_FLAT_MAJOR;
 };
 
 const configName = (major: Major, typescript: boolean): string => {

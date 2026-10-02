@@ -5,6 +5,7 @@ import {
 } from '../../../../../create/templates/project/scripts/utils/loggerUtils.ts';
 import { messageOf } from '../../utils/corpusUtils.ts';
 import { type Configuration, configurationsFor } from '../../utils/optionUtils.ts';
+import { SWEEP_PROGRESS_EVERY, SWEEP_WIDTH } from '../constants.ts';
 
 import { evaluate, narrow } from './attributionUtils.ts';
 import { show } from './findingUtils.ts';
@@ -105,7 +106,7 @@ export const runOptionSweep = (context: AuditContext): number => {
       hits += 1;
     }
 
-    if ((index + 1) % 250 === 0) {
+    if ((index + 1) % SWEEP_PROGRESS_EVERY === 0) {
       log(`${String(index + 1)}/${String(files.length)} files, ${String(hits)} findings`);
     }
   }
@@ -119,8 +120,9 @@ export const runOptionSweep = (context: AuditContext): number => {
         findings,
         scanned,
       }) => {
-        return `  ${String(scanned).padStart(6)} ${String(changed).padStart(6)} `
-          + `${String(findings).padStart(4)}  ${configuration.label}`;
+        return `  ${String(scanned).padStart(SWEEP_WIDTH.scanned)} `
+          + `${String(changed).padStart(SWEEP_WIDTH.changed)} `
+          + `${String(findings).padStart(SWEEP_WIDTH.findings)}  ${configuration.label}`;
       }),
   ].join('\n');
 

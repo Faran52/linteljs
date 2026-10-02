@@ -245,11 +245,11 @@ assert.deepEqual(
 );
 
 // The `engines.node` floor is 18, where a bundler downlevels new syntax but leaves `array.toSorted()`.
-const POST_NODE_18: [string, number][] = [
-  ['.toSorted(', 20],
-  ['.toReversed(', 20],
-  ['.toSpliced(', 20],
-];
+const POST_NODE_18: Record<string, number> = {
+  '.toSorted(': 20,
+  '.toReversed(': 20,
+  '.toSpliced(': 20,
+};
 
 for (const file of readdirSync(distDir)) {
   const contents = readFileSync(join(distDir, file), 'utf8');
@@ -263,7 +263,7 @@ for (const file of readdirSync(distDir)) {
 
   assert.ok(!contents.includes('tslib'), `${file} references tslib, which is not a runtime dependency`);
 
-  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? POST_NODE_18 : []) {
+  for (const [api, since] of file.endsWith('.js') || file.endsWith('.mjs') ? Object.entries(POST_NODE_18) : []) {
     assert.ok(!contents.includes(api), `${file} uses ${api}, which needs Node ${String(since)}, above the floor of 18`);
   }
 }

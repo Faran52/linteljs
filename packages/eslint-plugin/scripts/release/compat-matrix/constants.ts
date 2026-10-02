@@ -1,6 +1,9 @@
 // The majors the package declares: 6 is the `peerDependencies` floor, 10 what this workspace develops against.
 export type Major = 6 | 7 | 8 | 9 | 10;
 
+// Flat config is the default from 9, and the only format 10 reads.
+export const FIRST_FLAT_MAJOR: Major = 9;
+
 export const MAJORS: Major[] = [
   6,
   7,
