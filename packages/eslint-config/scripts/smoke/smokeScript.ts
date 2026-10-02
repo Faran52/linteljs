@@ -27,13 +27,14 @@ const root = resolve(import.meta.dirname, '../..');
 const smokeDir = join(root, '.smoke');
 
 const isPackedManifest = (value: unknown): value is PackedManifest => {
-  return typeof value === 'object'
-    && value !== null
-    && 'name' in value
-    && typeof value.name === 'string'
-    && 'exports' in value
-    && typeof value.exports === 'object'
-    && value.exports !== null;
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const hasName = 'name' in value && typeof value.name === 'string';
+  const hasExports = 'exports' in value && typeof value.exports === 'object' && value.exports !== null;
+
+  return hasName && hasExports;
 };
 
 log('packing and extracting the tarball');
