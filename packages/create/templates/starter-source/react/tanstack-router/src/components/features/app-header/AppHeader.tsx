@@ -4,7 +4,7 @@ import { ROUTES } from '@pages/routes';
 
 import { styles } from './styles';
 
-import type { FC } from 'react';
+import type { AnchorHTMLAttributes, FC } from 'react';
 
 export interface AppHeaderProps {
   readonly name: string;
@@ -12,6 +12,11 @@ export interface AppHeaderProps {
 
 // An element that navigates is an anchor; faking one with a button breaks middle-click.
 export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
+  const activeProps: AnchorHTMLAttributes<HTMLAnchorElement> = {
+    'aria-current': 'page',
+    ...styles.tab(true),
+  };
+
   return (
     <header {...styles.header}>
       <p {...styles.starterLabel}>LintelJS Starter</p>
@@ -28,10 +33,7 @@ export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
                 key={id}
                 to={path}
                 {...styles.tab(false)}
-                activeProps={{
-                  'aria-current': 'page',
-                  ...styles.tab(true),
-                }}
+                activeProps={activeProps}
               >
                 {label}
               </Link>

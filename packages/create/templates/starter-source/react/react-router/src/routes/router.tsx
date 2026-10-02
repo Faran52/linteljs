@@ -29,10 +29,12 @@ export const router = createBrowserRouter([
     errorElement: <Shell><RouteError /></Shell>,
     children: ROUTES
       .map(({ path, element }) => {
-        return {
+        const route = {
           path,
           element,
         };
+
+        return route;
       }),
   },
 ]);

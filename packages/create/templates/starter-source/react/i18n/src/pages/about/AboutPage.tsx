@@ -6,6 +6,8 @@ import { STANDARD_PATHS } from '@config/standard';
 import type { FC } from 'react';
 
 const CODE = { code: <code /> };
+const CHECK_VALUES = { command: CHECK };
+const SYNC_VALUES = { command: 'npx @linteljs/create sync' };
 
 export const AboutPage: FC = () => {
   const { t } = useTranslation();
@@ -31,7 +33,7 @@ export const AboutPage: FC = () => {
         <p className="note">
           <Trans
             i18nKey="aboutCheck"
-            values={{ command: CHECK }}
+            values={CHECK_VALUES}
             components={CODE}
           />
         </p>
@@ -57,7 +59,7 @@ export const AboutPage: FC = () => {
         <p className="note">
           <Trans
             i18nKey="aboutSync"
-            values={{ command: 'npx @linteljs/create sync' }}
+            values={SYNC_VALUES}
             components={CODE}
           />
         </p>

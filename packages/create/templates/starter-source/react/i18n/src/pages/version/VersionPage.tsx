@@ -4,6 +4,12 @@ import { ANSWERS, STACK } from '@config/linteljs';
 
 import type { FC } from 'react';
 
+const CODE = { code: <code /> };
+const RECORDED_VALUES = {
+  file: 'linteljs.config.json',
+  command: 'sync',
+};
+
 // Recorded at birth: a browser cannot read its machine's Node or package manager.
 export const VersionPage: FC = () => {
   const { t } = useTranslation();
@@ -44,11 +50,8 @@ export const VersionPage: FC = () => {
         <p className="note">
           <Trans
             i18nKey="versionRecorded"
-            values={{
-              file: 'linteljs.config.json',
-              command: 'sync',
-            }}
-            components={{ code: <code /> }}
+            values={RECORDED_VALUES}
+            components={CODE}
           />
         </p>
       </section>

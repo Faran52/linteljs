@@ -9,7 +9,7 @@ export interface Counter {
 
 export type RootState = ReturnType<typeof store.getState>;
 
-const counter = createSlice({
+const counterSlice = createSlice({
   name: 'counter',
   initialState: { count: 0 },
   reducers: {
@@ -19,7 +19,7 @@ const counter = createSlice({
   },
 });
 
-export const store = configureStore({ reducer: { counter: counter.reducer } });
+export const store = configureStore({ reducer: { counter: counterSlice.reducer } });
 
 export const useCounter = (): Counter => {
   const count = useSelector((state: RootState) => {
@@ -27,10 +27,12 @@ export const useCounter = (): Counter => {
   });
   const dispatch = useDispatch();
 
-  return {
+  const counter = {
     count,
     add: () => {
-      dispatch(counter.actions.add());
+      dispatch(counterSlice.actions.add());
     },
   };
+
+  return counter;
 };

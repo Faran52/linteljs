@@ -48,7 +48,7 @@ const useField = ({
     name,
   });
 
-  return {
+  const props = {
     id: name,
     label,
     multiline,
@@ -58,6 +58,8 @@ const useField = ({
     onBlur: field.onBlur,
     onChange: field.onChange,
   };
+
+  return props;
 };
 
 export const useContactForm = (): ContactForm => {
@@ -78,20 +80,24 @@ export const useContactForm = (): ContactForm => {
       const found = validateContact(values);
       const errors = Object.fromEntries(Object.entries(found)
         .map(([name, message]) => {
-          return [name, {
+          const entry = [name, {
             type: 'validate',
             message,
-          }];
+          }] as const;
+
+          return entry;
         }));
 
-      return {
+      const result = {
         errors,
         values: Object.keys(found).length > 0 ? {} : values,
       };
+
+      return result;
     },
   });
 
-  return {
+  const contactForm: ContactForm = {
     fields: {
       email: useField({
         control,
@@ -117,4 +123,6 @@ export const useContactForm = (): ContactForm => {
       })(event);
     },
   };
+
+  return contactForm;
 };

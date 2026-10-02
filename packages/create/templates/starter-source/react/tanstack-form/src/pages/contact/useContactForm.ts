@@ -37,7 +37,9 @@ export const useContactForm = (): ContactForm => {
       onChange: ({ value }) => {
         const found = validateContact(value);
 
-        return Object.keys(found).length > 0 ? { fields: found } : undefined;
+        const errors = Object.keys(found).length > 0 ? { fields: found } : undefined;
+
+        return errors;
       },
     },
     onSubmit: async ({ value }) => {
@@ -59,7 +61,7 @@ export const useContactForm = (): ContactForm => {
     const meta = state.fieldMeta[name];
     const shown = meta !== undefined && (meta.isBlurred || state.submissionAttempts > 0);
 
-    return {
+    const props: TextInputProps = {
       id: name,
       label,
       value: state.values[name],
@@ -67,24 +69,30 @@ export const useContactForm = (): ContactForm => {
       onBlur: () => {
         form
           .setFieldMeta(name, (prev) => {
-            return {
+            const blurred = {
               ...prev,
               isBlurred: true,
             };
+
+            return blurred;
           });
 
         // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
         // wrapping settles which for the promise rules.
-        void Promise.resolve(form.validateField(name, 'change'));
+        const validation = form.validateField(name, 'change');
+
+        void Promise.resolve(validation);
       },
       onChange: (value) => {
         form.setFieldValue(name, value);
       },
       ...extra,
     };
+
+    return props;
   };
 
-  return {
+  const contactForm: ContactForm = {
     fields: {
       email: field('email', 'Email', { type: 'email' }),
       message: field('message', 'Message', { multiline: true }),
@@ -98,4 +106,6 @@ export const useContactForm = (): ContactForm => {
       void form.handleSubmit();
     },
   };
+
+  return contactForm;
 };

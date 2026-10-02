@@ -11,7 +11,7 @@ export interface Counter {
 
 export type RootState = ReturnType<typeof store.getState>;
 
-const counter = createSlice({
+const counterSlice = createSlice({
   name: 'counter',
   initialState: { count: 0 },
   reducers: {
@@ -24,7 +24,7 @@ const counter = createSlice({
 // The middleware gives an endpoint its cache and invalidation; the reducer alone leaves the hooks inert.
 export const store = configureStore({
   reducer: {
-    counter: counter.reducer,
+    counter: counterSlice.reducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) => {
@@ -38,10 +38,12 @@ export const useCounter = (): Counter => {
   });
   const dispatch = useDispatch();
 
-  return {
+  const counter = {
     count,
     add: () => {
-      dispatch(counter.actions.add());
+      dispatch(counterSlice.actions.add());
     },
   };
+
+  return counter;
 };

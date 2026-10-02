@@ -26,8 +26,10 @@ describe('AppHeader', () => {
   });
 
   it('marks the page it is on', () => {
+    const history = ['/about'];
+
     render(
-      <MemoryRouter initialEntries={['/about']}>
+      <MemoryRouter initialEntries={history}>
         <AppHeader name="my-app" />
       </MemoryRouter>,
     );

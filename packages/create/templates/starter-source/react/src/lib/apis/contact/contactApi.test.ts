@@ -18,7 +18,9 @@ interface WrapperProps {
 }
 
 const Providers: FC<WrapperProps> = ({ children }) => {
-  return createElement(StoreProvider, null, createElement(DataProvider, null, children));
+  const data = createElement(DataProvider, null, children);
+
+  return createElement(StoreProvider, null, data);
 };
 
 const outcomeOf = async (values: ContactValues): Promise<string> => {

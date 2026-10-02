@@ -2,6 +2,8 @@ import { baseApi } from '../base/baseApi';
 
 import { type ContactValues, validateContact } from './schemas';
 
+import type { FetchBaseQueryError, QueryReturnValue } from '@reduxjs/toolkit/query';
+
 export interface ContactResult {
   status: number;
 }
@@ -10,13 +12,13 @@ export interface ContactResult {
 // `queryFn`: the documented place for an endpoint that is not a request, so this stays offline.
 export const contactApi = baseApi.injectEndpoints({
   endpoints: (build) => {
-    return {
+    const endpoints = {
       submitContact: build.mutation<ContactResult, ContactValues>({
         queryFn: (values) => {
           const errors = validateContact(values);
 
           // `CUSTOM_ERROR` is the arm for an error no request produced.
-          return Object.keys(errors).length > 0
+          const result: QueryReturnValue<ContactResult, FetchBaseQueryError> = Object.keys(errors).length > 0
             ? {
                 error: {
                   status: 'CUSTOM_ERROR',
@@ -24,8 +26,12 @@ export const contactApi = baseApi.injectEndpoints({
                 },
               }
             : { data: { status: 200 } };
+
+          return result;
         },
       }),
     };
+
+    return endpoints;
   },
 });

@@ -16,13 +16,17 @@ export const useCounter = (): Counter => {
     return state.count;
   });
 
-  return {
+  const counter = {
     count,
     add: () => {
       store
         .setState((state) => {
-          return { count: state.count + 1 };
+          const next = { count: state.count + 1 };
+
+          return next;
         });
     },
   };
+
+  return counter;
 };

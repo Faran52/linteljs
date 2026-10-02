@@ -30,7 +30,10 @@ const fetchMock = vi.fn();
 const answering = (body: Version, status = 200): void => {
   fetchMock
     .mockImplementation(() => {
-      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+      const json = JSON.stringify(body);
+      const response = new Response(json, { status });
+
+      return Promise.resolve(response);
     });
 };
 
@@ -57,9 +60,11 @@ describe('useExtendedQuery', () => {
   it('answers the parsed response once the request settles', async () => {
     answering({ status: 'ok' });
 
+    const client = freshClient();
+
     const { result } = renderHook(() => {
       return useExtendedQuery<Version>('/version');
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     await waitFor(() => {
       expect(result.current.status).toBe('success');
@@ -72,9 +77,11 @@ describe('useExtendedQuery', () => {
   it('sends the query through to the adapter', async () => {
     answering({ status: 'ok' });
 
+    const client = freshClient();
+
     renderHook(() => {
       return useExtendedQuery<Version>('/version', { query: { page: 2 } });
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith('/api/version?page=2', expect.anything());
@@ -82,9 +89,11 @@ describe('useExtendedQuery', () => {
   });
 
   it('asks for nothing while it is disabled', () => {
+    const client = freshClient();
+
     renderHook(() => {
       return useExtendedQuery<Version>('/version', { enabled: false });
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -92,9 +101,11 @@ describe('useExtendedQuery', () => {
   it('carries the adapter error through rather than swallowing it', async () => {
     answering({ status: 'no' }, 500);
 
+    const client = freshClient();
+
     const { result } = renderHook(() => {
       return useExtendedQuery<Version>('/version');
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     await waitFor(() => {
       expect(result.current.status).toBe('error');
@@ -107,9 +118,11 @@ describe('useExtendedQuery', () => {
   it('refetches without handing back a promise nobody awaits', async () => {
     answering({ status: 'ok' });
 
+    const client = freshClient();
+
     const { result } = renderHook(() => {
       return useExtendedQuery<Version>('/version');
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     await waitFor(() => {
       expect(result.current.status).toBe('success');

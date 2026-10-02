@@ -50,7 +50,7 @@ export const useExtendedQuery = <TResponse>(
     staleTime,
   });
 
-  return {
+  const result = {
     response: data,
     error,
     isFetching,
@@ -59,4 +59,6 @@ export const useExtendedQuery = <TResponse>(
       void refetch();
     },
   };
+
+  return result;
 };

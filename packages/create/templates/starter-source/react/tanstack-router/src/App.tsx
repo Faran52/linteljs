@@ -26,19 +26,21 @@ const rootRoute = createRootRoute({
   },
 });
 
+const pageRoutes = ROUTES
+  .map(({ path, element }) => {
+    return createRoute({
+      getParentRoute: () => {
+        return rootRoute;
+      },
+      path,
+      component: () => {
+        return element;
+      },
+    });
+  });
+
 const router = createRouter({
-  routeTree: rootRoute.addChildren(ROUTES
-    .map(({ path, element }) => {
-      return createRoute({
-        getParentRoute: () => {
-          return rootRoute;
-        },
-        path,
-        component: () => {
-          return element;
-        },
-      });
-    })),
+  routeTree: rootRoute.addChildren(pageRoutes),
   defaultErrorComponent: RouteError,
   defaultNotFoundComponent: () => {
     return <StatusPage {...STATUSES.notFound} />;

@@ -28,7 +28,9 @@ describe('App', () => {
 
   it('routes from the header, and the address bar follows', async () => {
     render(wrapped(<App />));
-    fireEvent.click(await screen.findByRole('link', { name: 'About' }));
+    const link = await screen.findByRole('link', { name: 'About' });
+
+    fireEvent.click(link);
 
     const element = await screen.findByRole('heading', { name: 'About' });
     expect(element).toBeTruthy();

@@ -8,7 +8,7 @@ import { LanguageSelect } from '../language-select/LanguageSelect';
 
 import { styles } from './styles';
 
-import type { FC } from 'react';
+import type { AnchorHTMLAttributes, FC } from 'react';
 
 export interface AppHeaderProps {
   readonly name: string;
@@ -16,6 +16,11 @@ export interface AppHeaderProps {
 
 // An element that navigates is an anchor; faking one with a button breaks middle-click.
 export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
+  const activeProps: AnchorHTMLAttributes<HTMLAnchorElement> = {
+    'aria-current': 'page',
+    ...styles.tab(true),
+  };
+
   const { t } = useTranslation();
 
   return (
@@ -33,10 +38,7 @@ export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
                 key={id}
                 to={path}
                 {...styles.tab(false)}
-                activeProps={{
-                  'aria-current': 'page',
-                  ...styles.tab(true),
-                }}
+                activeProps={activeProps}
               >
                 {/* Keyed by route id, so a page added to `ROUTES` needs its own key in every locale. */}
                 {t(id)}

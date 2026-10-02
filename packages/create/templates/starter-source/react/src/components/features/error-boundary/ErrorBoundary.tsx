@@ -23,10 +23,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   };
 
   static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
-    return {
+    const state = {
       failed: true,
       forbidden: error instanceof ForbiddenError,
     };
+
+    return state;
   }
 
   override render(): ReactNode {

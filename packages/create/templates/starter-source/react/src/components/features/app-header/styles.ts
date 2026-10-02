@@ -12,6 +12,8 @@ export const styles = {
   tabs: { className: 'tabs' },
 
   tab: (current: boolean): ElementProps => {
-    return { className: current ? 'tab tab-button tab-current' : 'tab tab-button' };
+    const props = { className: current ? 'tab tab-button tab-current' : 'tab tab-button' };
+
+    return props;
   },
 };

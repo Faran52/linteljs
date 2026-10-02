@@ -34,7 +34,10 @@ const fetchMock = vi.fn();
 const answering = (body: Accepted, status = 200): void => {
   fetchMock
     .mockImplementation(() => {
-      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+      const json = JSON.stringify(body);
+      const response = new Response(json, { status });
+
+      return Promise.resolve(response);
     });
 };
 
@@ -61,9 +64,11 @@ describe('useExtendedMutation', () => {
   it('posts the body and answers what came back', async () => {
     answering({ status: 'accepted' });
 
+    const client = freshClient();
+
     const { result } = renderHook(() => {
       return useExtendedMutation<Accepted, Message>('/contact');
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     const actual = await result.current.send({ message: 'hello there' });
     const expected = { status: 'accepted' };
@@ -78,9 +83,11 @@ describe('useExtendedMutation', () => {
   it('rejects with the adapter error, so a form sees the status a server sent', async () => {
     answering({ status: 'no' }, 422);
 
+    const client = freshClient();
+
     const { result } = renderHook(() => {
       return useExtendedMutation<Accepted, Message>('/contact');
-    }, { wrapper: wrapperFor(freshClient()) });
+    }, { wrapper: wrapperFor(client) });
 
     const promise = result.current.send({ message: 'no' });
     const expected = { status: 422 };
