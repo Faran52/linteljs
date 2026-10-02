@@ -1,4 +1,8 @@
-import { type JSX, Show } from 'solid-js';
+import {
+  createMemo,
+  type JSX,
+  Show,
+} from 'solid-js';
 
 import { Button } from '@ui';
 
@@ -10,6 +14,12 @@ export interface StatusPageProps {
 
 // Home is a full load, so a crash leaves no state behind.
 export const StatusPage = (props: StatusPageProps): JSX.Element => {
+  const actionClasses = createMemo(() => {
+    const classList = { 'status-action-outline': props.onRetry !== undefined };
+
+    return classList;
+  });
+
   return (
     <main class="status">
       <h1 class="status-code">{props.code}</h1>
@@ -24,7 +34,7 @@ export const StatusPage = (props: StatusPageProps): JSX.Element => {
         <a
           href="/"
           class="status-action"
-          classList={{ 'status-action-outline': props.onRetry !== undefined }}
+          classList={actionClasses()}
         >
           Go home
         </a>
