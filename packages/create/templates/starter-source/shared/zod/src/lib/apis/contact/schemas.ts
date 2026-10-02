@@ -4,11 +4,13 @@ export type ContactValues = z.input<typeof contactSchema>;
 
 export type ContactErrors = Partial<Record<keyof ContactValues, string>>;
 
+const MIN_MESSAGE_LENGTH = 10;
+
 export const contactSchema = z.object({
   email: z.email('Enter a valid email address.'),
   message: z.string()
     .trim()
-    .min(10, 'Write at least ten characters.'),
+    .min(MIN_MESSAGE_LENGTH, 'Write at least ten characters.'),
 });
 
 export const validateContact = (values: ContactValues): ContactErrors => {

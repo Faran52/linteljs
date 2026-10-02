@@ -5,6 +5,8 @@ export interface ContactValues {
 
 export type ContactErrors = Partial<Record<keyof ContactValues, string>>;
 
+const MIN_MESSAGE_LENGTH = 10;
+
 export const validateContact = (values: ContactValues): ContactErrors => {
   const errors: ContactErrors = {};
 
@@ -13,7 +15,7 @@ export const validateContact = (values: ContactValues): ContactErrors => {
     errors.email = 'Enter a valid email address.';
   }
 
-  if (values.message.trim().length < 10) {
+  if (values.message.trim().length < MIN_MESSAGE_LENGTH) {
     errors.message = 'Write at least ten characters.';
   }
 

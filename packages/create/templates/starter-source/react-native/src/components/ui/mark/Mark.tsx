@@ -28,6 +28,11 @@ const LINES = [
   },
 ] as const;
 
+// Control points of the easing back from the drift, which swings past rest before it settles.
+const OVERSHOOT_START = 0.3;
+const OVERSHOOT_PEAK = 1.6;
+const OVERSHOOT_SETTLE = 0.5;
+
 const cascade = (drift: number): CSSAnimationKeyframes => {
   const keyframes: CSSAnimationKeyframes = {
     '0%': {
@@ -41,7 +46,7 @@ const cascade = (drift: number): CSSAnimationKeyframes => {
     '58%': { transform: [{ translateX: drift }] },
     '70%': {
       transform: [{ translateX: drift }],
-      animationTimingFunction: cubicBezier(0.3, 1.6, 0.5, 1),
+      animationTimingFunction: cubicBezier(OVERSHOOT_START, OVERSHOOT_PEAK, OVERSHOOT_SETTLE, 1),
     },
     '82%': { transform: [{ translateX: 0 }] },
     '100%': { transform: [{ translateX: 0 }] },
