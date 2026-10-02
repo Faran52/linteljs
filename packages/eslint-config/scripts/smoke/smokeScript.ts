@@ -40,7 +40,8 @@ log('packing and extracting the tarball');
 
 const pkgDir = unpackTarball(root, smokeDir);
 
-const manifest: unknown = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));
+const manifestText = readFileSync(join(pkgDir, 'package.json'), 'utf8');
+const manifest: unknown = JSON.parse(manifestText);
 
 assert.ok(isPackedManifest(manifest), 'the packed package.json has no `name` and `exports`');
 
@@ -82,7 +83,9 @@ const layerDirs = [
   'src/libraries',
 ]
   .flatMap((dir) => {
-    return readdirSync(join(root, dir), { withFileTypes: true })
+    const entries = readdirSync(join(root, dir), { withFileTypes: true });
+
+    return entries
       .filter((entry) => {
         return entry.isDirectory() && entry.name !== 'utils';
       })
@@ -101,10 +104,12 @@ const layerNames = layerDirs.map(camel);
 
 const specifiers = subpaths
   .map((subpath) => {
-    return {
+    const specifier = {
       subpath,
       specifier: manifest.name + subpath.slice(1),
     };
+
+    return specifier;
   });
 
 const checks = `

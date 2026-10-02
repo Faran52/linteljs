@@ -66,8 +66,11 @@ describe('astro', () => {
 
   it('carries each base entry of the plugin once', () => {
     const names = astro()
-      .flatMap(({ name }) => {
-        return name === undefined ? [] : [name];
+      .map(({ name }) => {
+        return name;
+      })
+      .filter((name) => {
+        return name !== undefined;
       });
 
     const astroBase = names

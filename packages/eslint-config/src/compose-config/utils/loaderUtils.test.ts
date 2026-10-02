@@ -17,63 +17,52 @@ import { tailwind } from '../../libraries/tailwind/tailwindLibrary';
 import { tanstackQuery } from '../../libraries/tanstack-query/tanstackQueryLibrary';
 import { tanstackRouter } from '../../libraries/tanstack-router/tanstackRouterLibrary';
 
-import {
-  type FrameworkParts,
-  FRAMEWORKS,
-  LIBRARIES,
-} from './loaderUtils';
+import { FRAMEWORKS, LIBRARIES } from './loaderUtils';
 
-import type { Framework } from '../../types';
+import type { Framework, Layer } from '../../types';
 
-const FRAMEWORK_PARTS: [Framework, () => FrameworkParts][] = [
-  ['react', () => {
-    return {
-      layer: react(),
-      group: reactGroup,
-    };
-  }],
-  ['next', () => {
-    return {
-      layer: [...react(), ...next()],
-      group: nextGroup,
-    };
-  }],
-  ['react-native', () => {
-    return {
-      layer: reactNative(),
-      group: reactNativeGroup,
-    };
-  }],
-  ['vue', () => {
-    return {
-      layer: vue(),
-      group: vueGroup,
-    };
-  }],
-  ['nuxt', () => {
-    return {
-      layer: [...vue(), ...nuxt()],
-      group: nuxtGroup,
-    };
-  }],
-  ['svelte', () => {
-    return {
-      layer: svelte(),
-      group: svelteGroup,
-    };
-  }],
-  ['solid', () => {
-    return {
-      layer: solid(),
-      group: solidGroup,
-    };
-  }],
-  ['angular', () => {
-    return {
-      layer: angular(),
-      group: angularGroup,
-    };
-  }],
+// Each layer the framework spreads, in order, and its import group.
+const FRAMEWORK_PARTS: [Framework, (() => Layer)[], string[]][] = [
+  [
+    'react',
+    [react],
+    reactGroup,
+  ],
+  [
+    'next',
+    [react, next],
+    nextGroup,
+  ],
+  [
+    'react-native',
+    [reactNative],
+    reactNativeGroup,
+  ],
+  [
+    'vue',
+    [vue],
+    vueGroup,
+  ],
+  [
+    'nuxt',
+    [vue, nuxt],
+    nuxtGroup,
+  ],
+  [
+    'svelte',
+    [svelte],
+    svelteGroup,
+  ],
+  [
+    'solid',
+    [solid],
+    solidGroup,
+  ],
+  [
+    'angular',
+    [angular],
+    angularGroup,
+  ],
 ];
 
 describe('FRAMEWORKS', () => {
@@ -87,9 +76,18 @@ describe('FRAMEWORKS', () => {
     expect(actual).toEqual(withParts);
   });
 
-  it.each(FRAMEWORK_PARTS)('loads %s', async (framework, parts) => {
+  it.each(FRAMEWORK_PARTS)('loads %s', async (framework, layers, group) => {
     const actual = await FRAMEWORKS[framework]();
-    expect(actual).toEqual(parts());
+    const layer = layers
+      .flatMap((build) => {
+        return build();
+      });
+
+    const expected = {
+      layer,
+      group,
+    };
+    expect(actual).toEqual(expected);
   });
 });
 

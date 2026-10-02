@@ -131,7 +131,9 @@ describe('tsdown entries', () => {
   it('match the exports subpaths one to one', () => {
     const exported = Object.values(packageJson.exports)
       .flatMap((target) => {
-        return typeof target === 'object' ? [target.import.default.replace(/^\.\/dist\/(.*)\.mjs$/u, '$1')] : [];
+        const entry = typeof target === 'object' ? [target.import.default.replace(/^\.\/dist\/(.*)\.mjs$/u, '$1')] : [];
+
+        return entry;
       });
 
     const entryKeys = entries
