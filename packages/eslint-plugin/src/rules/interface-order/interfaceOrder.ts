@@ -118,12 +118,14 @@ const cutFor = (sourceCode: SourceCode, typeNode: ProgramEntry, previous: Progra
   const noteRange = trailingNoteOf(sourceCode, typeNode);
   const endPos = noteRange ? noteRange[1] : rangeOf(typeNode)[1];
 
-  return {
+  const cut: TypeCut = {
     node: typeNode,
     startLine: sourceCode.getLocFromIndex(startPos).line,
     text: sourceCode.text.slice(startPos, endPos),
     removeRange: [rangeOf(lastRetained ?? previous)[1], endPos],
   };
+
+  return cut;
 };
 
 // `typeof` is safe to move too: TypeScript resolves type positions lazily.
@@ -131,7 +133,9 @@ const cutsFor = (sourceCode: SourceCode, body: ProgramEntry[], firstRuntimeIndex
   const cuts: TypeCut[] = [];
 
   // With no runtime statement the index is -1 and the slice is the last entry alone, which pairs with nothing.
-  for (const [previous, candidate] of adjacentPairs(body.slice(firstRuntimeIndex))) {
+  const runtimeOnward = body.slice(firstRuntimeIndex);
+
+  for (const [previous, candidate] of adjacentPairs(runtimeOnward)) {
     if (isTypeDeclaration(candidate)) {
       cuts.push(cutFor(sourceCode, candidate, previous));
     }

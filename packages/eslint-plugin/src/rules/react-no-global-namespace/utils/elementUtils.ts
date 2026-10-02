@@ -45,5 +45,7 @@ export const globalNamespaceTags = (node: TypedNode, namespace: string): JsxTagN
 
   const closing = node.closingElement?.name;
 
-  return closing === undefined ? [name] : [name, closing];
+  const tags = closing === undefined ? [name] : [name, closing];
+
+  return tags;
 };

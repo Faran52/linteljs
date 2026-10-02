@@ -56,14 +56,18 @@ const typedOf = ({ parserServices }: ServicesHost): Typed | undefined => {
   const { program } = parserServices;
   const map = parserServices.esTreeNodeToTSNodeMap;
 
-  return program && map
-    ? {
-        program,
-        nodeOf: (node) => {
-          return map.get(node);
-        },
-      }
-    : undefined;
+  if (!program || !map) {
+    return undefined;
+  }
+
+  const typed: Typed = {
+    program,
+    nodeOf: (node) => {
+      return map.get(node);
+    },
+  };
+
+  return typed;
 };
 
 export const preferAlias = createRule('prefer-alias', {

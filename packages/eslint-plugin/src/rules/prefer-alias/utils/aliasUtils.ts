@@ -36,11 +36,13 @@ const aliasesOf = (paths: Record<string, string[]>, base: string): Alias[] => {
           return target !== undefined && !key.includes('*') && posix.resolve(base, target) === directory;
         });
 
-      return [{
+      const patternAliases = [{
         prefix: pattern.slice(0, -1),
         directory,
         ...(exact && { exact: exact[0] }),
       }];
+
+      return patternAliases;
     });
 };
 
@@ -62,11 +64,13 @@ export const aliasedProjectOf = (options: CompilerOptions): AliasedProject | und
         });
     });
 
-  return {
+  const project: AliasedProject = {
     base: pathsBasePath,
     aliases,
     pinned,
   };
+
+  return project;
 };
 
 const longest = (aliases: Alias[], length: (alias: Alias) => number): Alias | undefined => {

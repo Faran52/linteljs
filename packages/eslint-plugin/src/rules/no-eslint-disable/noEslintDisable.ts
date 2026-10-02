@@ -71,7 +71,9 @@ const rulesTurnedOffBy = (comment: CommentText): string[] => {
     return [];
   }
 
-  return topLevelEntries(tail.replace(DESCRIPTION, ''))
+  const settings = tail.replace(DESCRIPTION, '');
+
+  return topLevelEntries(settings)
     .flatMap((entry) => {
       const colon = entry.indexOf(':');
 
@@ -81,10 +83,12 @@ const rulesTurnedOffBy = (comment: CommentText): string[] => {
         return [];
       }
 
-      return [entry
+      const ruleIds = [entry
         .slice(0, colon)
         .trim()
         .replace(/["']/gu, '')];
+
+      return ruleIds;
     });
 };
 

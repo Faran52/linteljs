@@ -292,7 +292,9 @@ export const chainCallNewline = createRule('chain-call-newline', {
         }
       }
 
-      return [...spanned]
+      const spannedLines = [...spanned];
+
+      return spannedLines
         .filter((line) => {
           return !insideTokens.has(line) && lineText(line).trim() !== '';
         });

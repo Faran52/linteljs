@@ -78,7 +78,9 @@ const usingParentOf = (node: RuleNode, passesPosition: PassesPosition): [RuleNod
     parent = mustFind(child.parent);
   }
 
-  return [child, parent];
+  const pair: [RuleNode, RuleNode] = [child, parent];
+
+  return pair;
 };
 
 const standsNamed = (node: RuleNode): boolean => {
@@ -176,7 +178,13 @@ export const nameBeforeUse = createRule('name-before-use', {
     };
 
     const reportLiteral = (node: LiteralNode): void => {
-      if (isInsideLiteral(node) || standsNamed(chainEndOf(node)) || isIgnoredLiteral(node)) {
+      if (isInsideLiteral(node)) {
+        return;
+      }
+
+      const chainEnd = chainEndOf(node);
+
+      if (standsNamed(chainEnd) || isIgnoredLiteral(node)) {
         return;
       }
 

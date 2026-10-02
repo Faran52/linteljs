@@ -116,7 +116,9 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
     const source = sourceCodeOf(context);
 
     // An import would turn a declaration file into a module, and every global in it would stop being global.
-    if (DECLARATION_FILE.test(physicalFilenameOf(context))
+    const filename = physicalFilenameOf(context);
+
+    if (DECLARATION_FILE.test(filename)
       || (source.ast.body.some(isAmbient) && !source.ast.body.some(isImport))) {
       return {};
     }
@@ -230,20 +232,22 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
         // A second `import { ... } from 'react'` beside these is valid, which rewriting them into one is not.
         if (mergeable === undefined) {
-          return [
-            fixer.insertTextBeforeRange(
-              rangeOf(anchor),
-              `import { ${specifiers} } from '${MODULE}';\n\n${getIndent(source, anchor)}`,
-            ),
-            ...replaced,
-          ];
+          const anchorRange = rangeOf(anchor);
+          const importFix = fixer.insertTextBeforeRange(
+            anchorRange,
+            `import { ${specifiers} } from '${MODULE}';\n\n${getIndent(source, anchor)}`,
+          );
+          const withNewImport = [importFix, ...replaced];
+
+          return withNewImport;
         }
 
         // Rewriting the statement text can write `import * as R, { X } from 'react'`, which does not parse.
-        return [
-          fixer.insertTextBeforeRange(rangeOf(mergeable), `${specifiers}, `),
-          ...replaced,
-        ];
+        const mergeableRange = rangeOf(mergeable);
+        const specifierFix = fixer.insertTextBeforeRange(mergeableRange, `${specifiers}, `);
+        const withMergedImport = [specifierFix, ...replaced];
+
+        return withMergedImport;
       };
     };
 
@@ -263,13 +267,19 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           anchor,
           fixable,
         } of reaches) {
+          let fix: Rule.ReportFixer | null = null;
+
+          if (fixable && anchor !== undefined) {
+            const group = mustFind(groups.get(anchor));
+
+            fix = rewriteAll(anchor, group);
+          }
+
           context.report({
             node: member,
             messageId: 'globalNamespace',
             data: { name },
-            fix: !fixable || anchor === undefined
-              ? null
-              : rewriteAll(anchor, mustFind(groups.get(anchor))),
+            fix,
           });
         }
       },
@@ -300,7 +310,9 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           return;
         }
 
-        note(node, mustFind(nameOf(node.property)), false, [rangeOf(node)]);
+        const propertyName = mustFind(nameOf(node.property));
+
+        note(node, propertyName, false, [rangeOf(node)]);
       },
     };
 

@@ -122,7 +122,9 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
             // Name by name, so a trailing comma and the line breaks survive.
             return sorted
               .map((name, index) => {
-                return fixer.replaceText(mustFind(elements[index]), name);
+                const element = mustFind(elements[index]);
+
+                return fixer.replaceText(element, name);
               });
           },
         });

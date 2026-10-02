@@ -47,7 +47,13 @@ export const preferTryCatch = createRule('prefer-try-catch', {
         }
 
         // A detached `queue.catch(report)` is fire and forget, so rewriting it would change behaviour.
-        if (!messageId || !isAwaitedOrAsyncReturn(ancestorReaderOf(context), node)) {
+        if (!messageId) {
+          return;
+        }
+
+        const ancestorReader = ancestorReaderOf(context);
+
+        if (!isAwaitedOrAsyncReturn(ancestorReader, node)) {
           return;
         }
 

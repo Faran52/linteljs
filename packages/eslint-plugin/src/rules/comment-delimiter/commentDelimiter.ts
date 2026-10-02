@@ -9,7 +9,7 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
-import type { Rule } from 'eslint';
+import type { AST, Rule } from 'eslint';
 
 type CommentNode = ReturnType<SourceCode['getAllComments']>[number];
 
@@ -90,14 +90,16 @@ const slashTextFor = (indent: string, body: string[], eol: string): string => {
 };
 
 const jsdocTextFor = (indent: string, contents: string[], eol: string): string => {
-  return [
+  const lines = [
     '/**',
     ...contents
       .map((line) => {
         return `${indent} * ${line}`.trimEnd();
       }),
     `${indent} */`,
-  ].join(eol);
+  ];
+
+  return lines.join(eol);
 };
 
 // Read off the text rather than `loc`, which ESTree types as nullable.
@@ -114,15 +116,19 @@ const lineEntryOf = (sourceCode: SourceCode, comment: CommentNode, raw: string):
 
   const indent = wholeLineIndentOf(sourceCode, comment);
 
-  return indent === null
-    ? null
-    : {
-        comment,
-        indent,
-        text: raw
-          .slice(2)
-          .trim(),
-      };
+  if (indent === null) {
+    return null;
+  }
+
+  const entry = {
+    comment,
+    indent,
+    text: raw
+      .slice(2)
+      .trim(),
+  };
+
+  return entry;
 };
 
 const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void => {
@@ -158,11 +164,10 @@ const reportRun = (context: RuleContext, run: LineEntry[], eol: string): void =>
               return entry.text;
             });
 
-          return fixer.replaceTextRange([rangeOf(first.comment)[0], rangeOf(last.comment)[1]], jsdocTextFor(
-            first.indent,
-            texts,
-            eol,
-          ));
+          const runRange: AST.Range = [rangeOf(first.comment)[0], rangeOf(last.comment)[1]];
+          const jsdocText = jsdocTextFor(first.indent, texts, eol);
+
+          return fixer.replaceTextRange(runRange, jsdocText);
         },
   });
 };
@@ -197,7 +202,10 @@ const reportShortJsdoc = (
     node: comment,
     messageId: 'useSlashes',
     fix: (fixer: Fixer) => {
-      return fixer.replaceTextRange(rangeOf(comment), slashTextFor(indent, body, eol));
+      const commentRange = rangeOf(comment);
+      const slashText = slashTextFor(indent, body, eol);
+
+      return fixer.replaceTextRange(commentRange, slashText);
     },
   });
 };
@@ -219,7 +227,9 @@ export const commentDelimiter = createRule('comment-delimiter', {
     schema: [],
   },
   create: (context) => {
-    if (TEST_FILE_PATTERN.test(physicalFilenameOf(context))) {
+    const filename = physicalFilenameOf(context);
+
+    if (TEST_FILE_PATTERN.test(filename)) {
       return {};
     }
 

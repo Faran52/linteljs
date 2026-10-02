@@ -25,7 +25,11 @@ import {
   writeArrowFunction,
 } from './utils/writeUtils.ts';
 
-import type { Rule, Scope } from 'eslint';
+import type {
+  AST,
+  Rule,
+  Scope,
+} from 'eslint';
 
 interface FunctionFrame {
   node: FunctionLike;
@@ -81,11 +85,13 @@ const isStylexStyle = (fn: FunctionLike): boolean => {
 };
 
 const buildFrame = (fn: FunctionLike): FunctionFrame => {
-  return {
+  const frame: FunctionFrame = {
     node: fn,
     isArrow: fn.type === 'ArrowFunctionExpression',
     isClassBound: isClassMemberValue(fn),
   };
+
+  return frame;
 };
 
 export const preferArrowFunctions = createRule('prefer-arrow-functions', {
@@ -196,8 +202,13 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
       for (const declaration of hoisted) {
         // An anonymous default export has no name this file could call it by.
-        if (getFunctionId(declaration) !== null
-          && mustFind(nameVariableOf(context, declaration)).references.some(follow)) {
+        if (getFunctionId(declaration) === null) {
+          continue;
+        }
+
+        const declarationVariable = mustFind(nameVariableOf(context, declaration));
+
+        if (declarationVariable.references.some(follow)) {
           return true;
         }
       }
@@ -256,10 +267,15 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
               const [bodyStart] = rangeOf(fn.body);
               const body = sourceCode.getText(fn.body);
 
+              if (!replacement.endsWith(body)) {
+                return fixer.replaceText(target, replacement);
+              }
+
               // A body kept verbatim stays out of the edit, so a fix nested inside it lands in the same pass.
-              return replacement.endsWith(body)
-                ? fixer.replaceTextRange([start, bodyStart], replacement.slice(0, -body.length))
-                : fixer.replaceText(target, replacement);
+              const headRange: AST.Range = [start, bodyStart];
+              const head = replacement.slice(0, -body.length);
+
+              return fixer.replaceTextRange(headRange, head);
             },
       });
     };
@@ -275,7 +291,9 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
 
       'ThisExpression': () => {
         // Reversed on a copy, since the stack belongs to the two visitors.
-        for (const frame of [...functionStack].reverse()) {
+        const innermostFirst = [...functionStack].reverse();
+
+        for (const frame of innermostFirst) {
           containsThis.add(frame.node);
 
           if (!frame.isArrow || frame.isClassBound) {

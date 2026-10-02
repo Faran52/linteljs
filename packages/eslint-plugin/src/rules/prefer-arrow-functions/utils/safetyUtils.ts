@@ -42,8 +42,13 @@ export const sitsInUnsafePosition = (sourceCode: SourceCode, fn: FunctionLike): 
 
   // `(function(){})()` keeps the parens on the arrow; Crockford's `(function(){}())` leaves it bare.
   if (parent.type === 'CallExpression') {
-    return parent.callee === fn
-      && mustFind(sourceCode.getTokenAfter(fn)).value !== ')';
+    if (parent.callee !== fn) {
+      return false;
+    }
+
+    const nextToken = mustFind(sourceCode.getTokenAfter(fn));
+
+    return nextToken.value !== ')';
   }
 
   return !SAFE_FUNCTION_PARENTS.has(parent.type);
@@ -64,8 +69,11 @@ const hasThisParameter = (fn: FunctionLike): boolean => {
 // Identifiers only is exhaustive: any other param makes the list non-simple, where repeats are a SyntaxError.
 const hasDuplicateParameters = (fn: FunctionLike): boolean => {
   const names = fn.params
-    .flatMap((param) => {
-      return param.type === 'Identifier' ? [param.name] : [];
+    .filter((param) => {
+      return param.type === 'Identifier';
+    })
+    .map((param) => {
+      return param.name;
     });
 
   return new Set(names).size !== names.length;
@@ -81,7 +89,10 @@ const containsToken = (sourceCode: SourceCode, node: RuleNode, type: string, val
 
 // `node.arguments.length` is an Identifier too, so only a `.`/`?.` in front rules it out.
 const readsArgumentsObject = (sourceCode: SourceCode, fn: FunctionLike): boolean => {
-  return [...adjacentPairs(sourceCode.getTokens(fn))]
+  const tokens = sourceCode.getTokens(fn);
+  const tokenPairs = [...adjacentPairs(tokens)];
+
+  return tokenPairs
     .some(([before, token]) => {
       return token.type === 'Identifier'
         && token.value === 'arguments'
