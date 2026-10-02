@@ -60,6 +60,14 @@ const valuesFor = (property: JSONSchema4): OptionValue[] => {
     return hookLists;
   }
 
+  // An array with no string default, such as `aliasExempt`, has no list to extend, so the empty one stands in.
+  if (property.type === 'array') {
+    const emptyList: string[] = [];
+    const samples = [emptyList];
+
+    return samples;
+  }
+
   throw new Error(`no values known for a schema property of type ${JSON.stringify(property.type)}`);
 };
 
