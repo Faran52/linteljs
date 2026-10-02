@@ -33,7 +33,7 @@ export const astro = (): Layer => {
         });
     });
 
-  return [
+  const layer: Layer = [
     ...recommended,
     ...a11y,
     // The plugin looks for typescript-eslint from `process.cwd()` and falls back to espree when that fails.
@@ -67,6 +67,8 @@ export const astro = (): Layer => {
       files: ASTRO_TYPELESS,
     },
   ];
+
+  return layer;
 };
 
 export default astro;

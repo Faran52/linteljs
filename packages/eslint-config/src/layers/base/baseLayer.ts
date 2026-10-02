@@ -62,6 +62,7 @@ export const base = (options: BaseOptions = {}): Layer => {
   };
 
   const scriptFiles = reaching(SCRIPT_AND_SFC_FILES);
+  const stylisticPreset = stylistic.configs.customize({ jsx: false });
 
   // No default `conditionNames`: `import` ahead of `types` sends `react-native` to its Flow `index.js`.
   // Measured: 127 findings on a clean React Native project.
@@ -74,7 +75,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     },
   };
 
-  return [
+  const layer: Layer = [
     ...gitignored(),
     ...(ignores
       ? [{
@@ -86,13 +87,15 @@ export const base = (options: BaseOptions = {}): Layer => {
     // Read once, through `presetOf`, so a release without the preset fails with its name rather than a TypeError.
     ...presetOf(importX.flatConfigs.typescript, 'import-x/typescript')
       .map((preset) => {
-        return {
+        const resolving = {
           ...preset,
           settings: {
             ...preset.settings,
             'import-x/resolver': importResolver,
           },
         };
+
+        return resolving;
       }),
 
     {
@@ -104,7 +107,7 @@ export const base = (options: BaseOptions = {}): Layer => {
     // Script parsers only: Angular markup crashes `@stylistic/indent`.
     ...presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', scriptFiles),
     // `recommended` with its JSX rules left to the JSX frameworks: a `.ts` or `.vue` file holds no JSX.
-    ...presetOf(stylistic.configs.customize({ jsx: false }), 'stylistic/customize', scriptFiles),
+    ...presetOf(stylisticPreset, 'stylistic/customize', scriptFiles),
     ...presetOf(linteljs.configs['flat/recommended'], '@linteljs/flat/recommended', scriptFiles),
 
     {
@@ -343,6 +346,8 @@ export const base = (options: BaseOptions = {}): Layer => {
     ...buildNaming(naming, folderNaming),
 
   ];
+
+  return layer;
 };
 
 export default base;

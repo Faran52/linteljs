@@ -8,7 +8,7 @@ import type { Layer } from '../../types';
 const TEST_FILES = [`**/*.{test,spec}.{${SCRIPT_EXTENSIONS}}`];
 
 export const vitest = (): Layer => {
-  return [
+  const layer: Layer = [
     {
       ...presetOf(vitestPlugin.configs.recommended, 'vitest/recommended')[0],
       files: TEST_FILES,
@@ -28,6 +28,8 @@ export const vitest = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default vitest;

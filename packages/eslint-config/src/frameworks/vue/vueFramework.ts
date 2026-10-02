@@ -27,7 +27,7 @@ const VUE_SONARJS_RULES = {
 
 // After `typescript()`: `vue-eslint-parser` is the top-level SFC parser, and placed earlier it is overwritten.
 export const vue = (): Layer => {
-  return [
+  const layer: Layer = [
     ...presetOf(vuePlugin.configs['flat/recommended'], 'vue/flat/recommended'),
 
     // Ahead of the block below: the preset sets its own parser, and later it would drop `projectService`.
@@ -64,6 +64,8 @@ export const vue = (): Layer => {
     },
 
   ];
+
+  return layer;
 };
 
 export default vue;

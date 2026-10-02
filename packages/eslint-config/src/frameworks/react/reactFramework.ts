@@ -9,7 +9,7 @@ import type { Layer } from '../../types';
 export { reactGroup };
 
 export const react = (): Layer => {
-  return [
+  const layer: Layer = [
     ...reactCore(),
     ...presetOf(jsxA11y.configs.recommended, 'jsx-a11y-x/recommended', SCRIPT_FILES),
 
@@ -25,6 +25,8 @@ export const react = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default react;

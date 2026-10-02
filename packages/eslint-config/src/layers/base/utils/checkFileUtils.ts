@@ -31,10 +31,12 @@ export const buildNaming = (naming?: NamingMap, folderNaming?: NamingMap): Linte
   }
 
   // Registered again: the folder glob reaches `.css`/`.html`, which the script blocks never match.
-  return [{
+  const configs: Linter.Config[] = [{
     name: '@linteljs/base/naming',
     files,
     plugins: { 'check-file': checkFile },
     rules,
   }];
+
+  return configs;
 };

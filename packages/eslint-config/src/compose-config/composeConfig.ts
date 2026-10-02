@@ -47,7 +47,7 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
   // `astro` also stays in `baseOptions`, which widens `base()` to `.astro`.
   const astroRules = baseOptions.astro === true ? await loadAstro() : [];
 
-  return [
+  const configs: Layer = [
     ...base(parts === undefined
       ? baseOptions
       : {
@@ -61,4 +61,6 @@ export const composeConfig = async (options: ComposeConfigOptions = {}): Promise
     ...htmlRules,
     ...astroRules,
   ];
+
+  return configs;
 };

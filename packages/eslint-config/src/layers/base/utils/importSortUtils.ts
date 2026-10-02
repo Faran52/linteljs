@@ -74,7 +74,9 @@ const unknownAliasesIn = (aliases: string[]): string[] => {
 
   const unknownPatterns = aliases
     .filter((alias) => {
-      return !known.has(aliasNameOf(alias));
+      const name = aliasNameOf(alias);
+
+      return !known.has(name);
     })
     .map(patternFor);
 
@@ -106,7 +108,7 @@ export const buildGroups = (aliases: AliasMap = {}, frameworkGroup?: string[]): 
   const declared = Object.keys(aliases);
   const unknown = unknownAliasesIn(declared);
 
-  return [
+  const groups = [
     BUILTIN_GROUP,
     ...(frameworkGroup && frameworkGroup.length > 0 ? [frameworkGroup] : []),
     PACKAGE_GROUP,
@@ -117,4 +119,6 @@ export const buildGroups = (aliases: AliasMap = {}, frameworkGroup?: string[]): 
     TYPE_GROUP,
     STYLE_GROUP,
   ];
+
+  return groups;
 };

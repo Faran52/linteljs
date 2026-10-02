@@ -29,7 +29,7 @@ const REACT_SONARJS_RULES = {
 
 // Its own module: importing it from `reactFramework.ts` would make React Native resolve `eslint-plugin-jsx-a11y-x`.
 export const reactCore = (): Layer => {
-  return [
+  const layer: Layer = [
     ...presetOf(eslintReact.configs['recommended-typescript'], 'eslint-react/typescript', SCRIPT_FILES),
     // `configs.flat.recommended`: the bare name is still the eslintrc form.
     ...presetOf(reactHooks.configs.flat.recommended, 'react-hooks/flat/recommended', SCRIPT_FILES),
@@ -85,4 +85,6 @@ export const reactCore = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };

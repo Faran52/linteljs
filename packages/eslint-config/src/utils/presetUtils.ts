@@ -25,10 +25,12 @@ const scopedTo = (configs: Linter.Config[], files?: string[]): Linter.Config[] =
 
   return configs
     .map((config) => {
-      return {
+      const scoped = {
         ...config,
         files: config.files ?? files,
       };
+
+      return scoped;
     });
 };
 
@@ -53,10 +55,12 @@ export const presetOf = (config: PluginConfig | undefined, label: string, files?
 export const sonarjsRules = (name: string, rules: Linter.RulesRecord, files: string[]): Linter.Config[] => {
   return presetOf(sonarjs.configs?.['recommended'], 'sonarjs/recommended', files)
     .map((preset) => {
-      return {
+      const named = {
         ...preset,
         name,
         rules,
       };
+
+      return named;
     });
 };

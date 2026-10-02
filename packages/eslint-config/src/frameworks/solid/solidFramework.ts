@@ -16,7 +16,7 @@ export const solidGroup: string[] = [
 
 // Scoped, since the preset carries no `files` glob.
 export const solid = (): Layer => {
-  return [
+  const layer: Layer = [
     ...presetOf(solidPlugin.configs['flat/typescript'], 'solid/flat/typescript', SCRIPT_FILES),
     ...presetOf(jsxA11y.configs.recommended, 'jsx-a11y-x/recommended', SCRIPT_FILES),
     ...sonarjsRules('@linteljs/solid/sonarjs', { 'sonarjs/jsx-no-leaked-render': 'error' }, SCRIPT_FILES),
@@ -35,6 +35,8 @@ export const solid = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default solid;

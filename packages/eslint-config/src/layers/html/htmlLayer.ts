@@ -7,7 +7,7 @@ import type { Layer } from '../../types';
 
 // Every target but Angular, whose template processor covers markup.
 export const html = (): Layer => {
-  return [
+  const layer: Layer = [
     {
       ...presetOf(htmlPlugin.configs['flat/recommended'], 'html-eslint/flat/recommended')[0],
       name: '@linteljs/html',
@@ -15,6 +15,8 @@ export const html = (): Layer => {
       languageOptions: { parser: htmlParser },
     },
   ];
+
+  return layer;
 };
 
 export default html;

@@ -7,7 +7,7 @@ export const reactNativeGroup: string[] = reactGroup;
 
 // `jsx-a11y-x` keys on lowercase DOM names, so it reads React Native markup as custom components and skips it.
 export const reactNative = (): Layer => {
-  return [
+  const layer: Layer = [
     ...reactCore(),
     {
       name: '@linteljs/react-native/accessibility',
@@ -23,6 +23,8 @@ export const reactNative = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default reactNative;

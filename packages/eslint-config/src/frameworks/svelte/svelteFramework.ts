@@ -28,7 +28,7 @@ const SVELTE_EXTENSION = '.svelte';
 
 // After `typescript()`, like `vue()`: `svelte-eslint-parser` is top-level and nests TypeScript beneath it.
 export const svelte = (): Layer => {
-  return [
+  const layer: Layer = [
     ...presetOf(sveltePlugin.configs['flat/recommended'], 'svelte/flat/recommended'),
 
     {
@@ -60,6 +60,8 @@ export const svelte = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default svelte;

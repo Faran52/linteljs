@@ -20,7 +20,7 @@ const ANGULAR_SONARJS_RULES: Linter.RulesRecord = { 'sonarjs/no-angular-bypass-s
 
 // Brings its own template parser, so it is the one target without `html()`.
 export const angular = (): Layer => {
-  return [
+  const layer: Layer = [
     ...presetOf(angularEslint.configs.tsRecommended, 'angular-eslint/tsRecommended', TS_FILES),
 
     {
@@ -46,6 +46,8 @@ export const angular = (): Layer => {
     // `templateRecommended` has no accessibility rule.
     ...presetOf(angularEslint.configs.templateAccessibility, 'angular-eslint/templateAccessibility', TEMPLATE_FILES),
   ];
+
+  return layer;
 };
 
 export default angular;

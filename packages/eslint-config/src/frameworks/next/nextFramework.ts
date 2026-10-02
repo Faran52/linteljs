@@ -14,7 +14,7 @@ export const nextGroup: string[] = [
 ];
 
 export const next = (): Layer => {
-  return [
+  const layer: Layer = [
     {
       name: '@linteljs/next',
       files: SCRIPT_FILES,
@@ -30,6 +30,8 @@ export const next = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default next;

@@ -18,7 +18,7 @@ const ROUTE_FILES = [
 ];
 
 export const nuxt = (): Layer => {
-  return [
+  const layer: Layer = [
     {
       name: '@linteljs/nuxt/route-files',
       files: ROUTE_FILES,
@@ -28,6 +28,8 @@ export const nuxt = (): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default nuxt;

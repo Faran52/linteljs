@@ -10,7 +10,7 @@ const TAILWIND_FILES = [...SCRIPT_AND_SFC_FILES, '**/*.astro'];
 
 // Without `entryPoint` every theme rule warns once per class string.
 export const tailwind = (entryPoint?: string): Layer => {
-  return [
+  const layer: Layer = [
     ...presetOf(betterTailwindcss.configs.recommended, 'better-tailwindcss/recommended', TAILWIND_FILES),
     {
       name: '@linteljs/tailwind',
@@ -22,6 +22,8 @@ export const tailwind = (entryPoint?: string): Layer => {
       },
     },
   ];
+
+  return layer;
 };
 
 export default tailwind;

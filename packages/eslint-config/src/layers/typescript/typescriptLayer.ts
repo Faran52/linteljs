@@ -4,7 +4,7 @@ import type { Layer, TypescriptOptions } from '../../types';
 
 // `projectService` types config files outside every tsconfig `include`.
 export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }: TypescriptOptions = {}): Layer => {
-  return [
+  const layer: Layer = [
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
 
@@ -82,6 +82,8 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
       },
     },
   ];
+
+  return layer;
 };
 
 export default typescript;
