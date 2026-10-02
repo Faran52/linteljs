@@ -23,26 +23,33 @@ import type { LintelRuleModule, RuleLanguage } from './types';
 const root = join(import.meta.dirname, '..');
 
 const filesIn = (ruleName: string): string[] => {
-  return readdirSync(join(rulesDir, ruleName), {
+  const ruleDir = join(rulesDir, ruleName);
+  const entries = readdirSync(ruleDir, {
     withFileTypes: true,
     recursive: true,
-  })
+  });
+
+  return entries
     .filter((entry) => {
       return entry.isFile();
     })
     .map((entry) => {
-      return relative(join(rulesDir, ruleName), join(entry.parentPath, entry.name));
+      const path = join(entry.parentPath, entry.name);
+
+      return relative(ruleDir, path);
     });
 };
 
 const requiredFiles = (ruleName: string): string[] => {
   const module = moduleNameOf(ruleName);
 
-  return [
+  const files = [
     `${module}.ts`,
     `${module}.test.ts`,
     'README.md',
   ];
+
+  return files;
 };
 
 const readJson = (path: string): Record<string, unknown> => {
@@ -52,7 +59,9 @@ const readJson = (path: string): Record<string, unknown> => {
     throw new TypeError(`${path} is not an object`);
   }
 
-  return { ...parsed };
+  const record = { ...parsed };
+
+  return record;
 };
 
 const enabledIn = (preset: Linter.Config[]): string[] => {
@@ -215,20 +224,21 @@ describe('rule metadata', () => {
 describe('configs', () => {
   const allPresets = PRESET_NAMES
     .map((name) => {
-      return [name, configs[`flat/${name}`]] as const;
+      const entry = [name, configs[`flat/${name}`]] as const;
+
+      return entry;
     });
 
   it('exposes both shapes of every preset and nothing else', () => {
     const configNames = Object.keys(configs)
       .toSorted(alphabetically);
 
-    const presetNames = [
-      ...PRESET_NAMES,
-      ...PRESET_NAMES
-        .map((name) => {
-          return `flat/${name}`;
-        }),
-    ].toSorted(alphabetically);
+    const flatNames = PRESET_NAMES
+      .map((name) => {
+        return `flat/${name}`;
+      });
+    const shipped = [...PRESET_NAMES, ...flatNames];
+    const presetNames = shipped.toSorted(alphabetically);
 
     expect(configNames).toEqual(presetNames);
 
@@ -337,11 +347,12 @@ describe('configs', () => {
         return preset;
       })
       .filter((config) => {
-        const languages = [...new Set(languagesOf(Object.keys(config.rules ?? {})))];
+        const ruleIds = Object.keys(config.rules ?? {});
+        const languages = new Set(languagesOf(ruleIds));
 
         return config.files
-          ? languages.length !== 1 || languages[0] !== 'typescript'
-          : languages.includes('typescript');
+          ? languages.size !== 1 || !languages.has('typescript')
+          : languages.has('typescript');
       })
       .map((config) => {
         return config.name;
@@ -394,7 +405,9 @@ describe('language scoping, resolved by eslint', () => {
       overrideConfig: configs['flat/recommended'],
     });
 
-    return ruleIdsIn(await eslint.calculateConfigForFile(filename))
+    const resolved: unknown = await eslint.calculateConfigForFile(filename);
+
+    return ruleIdsIn(resolved)
       .filter((id) => {
         return id.startsWith(`${PLUGIN_NAME}/`);
       })
@@ -412,10 +425,13 @@ describe('language scoping, resolved by eslint', () => {
       expect(enabled).not.toContain(id);
     }
 
-    expect(enabled).toHaveLength(recommendedNames.length - typescriptOnly
+    const recommendedTypescriptOnly = typescriptOnly
       .filter((id) => {
-        return recommendedNames.includes(id.slice(PLUGIN_NAME.length + 1));
-      }).length);
+        const ruleName = id.slice(PLUGIN_NAME.length + 1);
+
+        return recommendedNames.includes(ruleName);
+      });
+    expect(enabled).toHaveLength(recommendedNames.length - recommendedTypescriptOnly.length);
   });
 
   it.each([
@@ -433,7 +449,9 @@ describe('language scoping, resolved by eslint', () => {
 });
 
 const tableRows = (readme: string): string[] => {
-  return [...readme.matchAll(/^\| \[`@linteljs\/([a-z][a-z0-9-]*)`\]/gm)]
+  const matches = [...readme.matchAll(/^\| \[`@linteljs\/([a-z][a-z0-9-]*)`\]/gm)];
+
+  return matches
     .flatMap((match) => {
       return match[1] ?? [];
     });
@@ -455,8 +473,9 @@ describe('documentation', () => {
       });
     const doc = readFileSync(join(rulesDir, name, 'README.md'), 'utf8');
 
+    const missingNone = [/## Options\s+None\./.test(doc) ? '' : '## Options None.'];
     const undocumented = optionNames.length === 0
-      ? [/## Options\s+None\./.test(doc) ? '' : '## Options None.']
+      ? missingNone
       : optionNames
           .map((option) => {
             return doc.includes(`\`${option}\``) ? '' : option;
@@ -487,27 +506,32 @@ describe('documentation', () => {
   });
 
   it('lists every rule in the README table once, in rule id order', () => {
-    const actual = tableRows(readFileSync(join(root, 'README.md'), 'utf8'));
+    const readme = readFileSync(join(root, 'README.md'), 'utf8');
+    const actual = tableRows(readme);
     expect(actual).toEqual(ruleNames.toSorted(alphabetically));
   });
 
   it('names no preset outside the two the plugin ships, in any of its docs', () => {
     const presets: string[] = [...PRESET_NAMES];
+    const rootReadme = join(root, 'README.md');
     const linked = ruleNames
       .map((name) => {
         return join(rulesDir, name, 'README.md');
       })
-      .concat(join(root, 'README.md'))
+      .concat(rootReadme)
       .flatMap((path) => {
-        return [...readFileSync(path, 'utf8').matchAll(/\bflat\/([a-z][a-z-]*)/g)]
+        const text = readFileSync(path, 'utf8');
+        const matches = [...text.matchAll(/\bflat\/([a-z][a-z-]*)/g)];
+
+        return matches
           .flatMap((match) => {
             return match[1] ?? [];
           });
       });
 
-    const named = new Set(linked);
+    const named = [...new Set(linked)];
 
-    const unknownPresets = [...named]
+    const unknownPresets = named
       .filter((preset) => {
         return !presets.includes(preset);
       });

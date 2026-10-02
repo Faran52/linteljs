@@ -21,18 +21,20 @@ import { rules } from './rules/index.ts';
 
 import type { FixShape } from './types.ts';
 
+const rowOf = (sample: FixerSample) => {
+  const row = [sample.name, sample] as const;
+
+  return row;
+};
+
 const ruleNames = Object.keys(rules);
 const samples = parseableSamples()
-  .map((sample) => {
-    return [sample.name, sample] as const;
-  });
+  .map(rowOf);
 
 describe('the corpus', () => {
   const sfc = FIXER_SAMPLES
     .filter(isSfcSample)
-    .map((sample) => {
-      return [sample.name, sample] as const;
-    });
+    .map(rowOf);
 
   it('holds samples for every component parser', () => {
     const extensions = sfc
@@ -77,9 +79,7 @@ describe.each(ruleNames)('%s line endings', (name) => {
     .filter((sample) => {
       return sample.crlf === true;
     })
-    .map((sample) => {
-      return [sample.name, sample] as const;
-    });
+    .map(rowOf);
 
   it.each(windows)('keeps CRLF intact on %s', (_label, sample: FixerSample) => {
     const matches = /(?<!\r)\n/.test(fixWith(sample, name));
@@ -90,9 +90,7 @@ describe.each(ruleNames)('%s line endings', (name) => {
     .filter((sample) => {
       return sample.strayCrlf === true;
     })
-    .map((sample) => {
-      return [sample.name, sample] as const;
-    });
+    .map(rowOf);
 
   it.each(unix)('keeps a stray CRLF from spreading on %s', (_label, sample: FixerSample) => {
     const parts = fixWith(sample, name).split('\r\n');
@@ -105,9 +103,7 @@ describe.each(ruleNames)('%s comments', (name) => {
     .filter((sample) => {
       return sample.code.includes('/*') || sample.code.includes('//');
     })
-    .map((sample) => {
-      return [sample.name, sample] as const;
-    });
+    .map(rowOf);
 
   it.each(commented)('keeps every comment in %s', (_label, sample: FixerSample) => {
     const before = (sample.code.match(/\/\*|\/\//g) ?? []).length;
@@ -117,9 +113,10 @@ describe.each(ruleNames)('%s comments', (name) => {
   });
 
   it.each(commented)('keeps each comment whole in %s', (_label, sample: FixerSample) => {
+    const before = commentsIn(sample.code, sample.typescript, sample.filename);
     const after = commentsIn(fixWith(sample, name), sample.typescript, sample.filename);
 
-    expect(after).toEqual(expect.arrayContaining(commentsIn(sample.code, sample.typescript, sample.filename)));
+    expect(after).toEqual(expect.arrayContaining(before));
   });
 });
 
@@ -155,11 +152,15 @@ const lostIndents = (sample: FixerSample, fixed: string): string[] => {
 
   const moved = before
     .filter((line) => {
-      return isIndented(line) && survivors.has(line.trim()) && !keptOrDeeper(line);
+      const text = line.trim();
+
+      return isIndented(line) && survivors.has(text) && !keptOrDeeper(line);
     });
   const stranded = after
     .filter((line, index) => {
-      if (line.trim() === '' || isIndented(line) || texts.has(line.trim())) {
+      const text = line.trim();
+
+      if (text === '' || isIndented(line) || texts.has(text)) {
         return false;
       }
 
@@ -178,7 +179,9 @@ const lostIndents = (sample: FixerSample, fixed: string): string[] => {
       return openers[next] === undefined && before.includes(sibling) && isIndented(sibling);
     });
 
-  return [...moved, ...stranded];
+  const lost = [...moved, ...stranded];
+
+  return lost;
 };
 
 describe('the indentation check', () => {
@@ -188,12 +191,13 @@ describe('the indentation check', () => {
   };
 
   it('lets an inserted top-level statement through', () => {
-    expect(lostIndents(sample, `import { helper } from 'mod';\n\n${sample.code}`)).toEqual([]);
+    const lost = lostIndents(sample, `import { helper } from 'mod';\n\n${sample.code}`);
+    expect(lost).toEqual([]);
   });
 
   it('catches a line that lost its indent', () => {
-    expect(lostIndents(sample, 'function run() {\nconst value = 1;\n\n  return value;\n}\n'))
-      .toEqual(['  const value = 1;']);
+    const lost = lostIndents(sample, 'function run() {\nconst value = 1;\n\n  return value;\n}\n');
+    expect(lost).toEqual(['  const value = 1;']);
   });
 
   it('lets a surviving line move deeper', () => {
@@ -203,12 +207,13 @@ describe('the indentation check', () => {
   });
 
   it('catches a line split out at column 0 inside brackets', () => {
-    expect(lostIndents(sample, 'function run() {\n  const value =\n1;\n\n  return value;\n}\n')).toEqual(['1;']);
+    const lost = lostIndents(sample, 'function run() {\n  const value =\n1;\n\n  return value;\n}\n');
+    expect(lost).toEqual(['1;']);
   });
 
   it('catches a closer at column 0 under a bracket opened on an indented line', () => {
-    expect(lostIndents(sample, 'function run() {\n  const value = [\n    1,\n];\n\n  return value;\n}\n'))
-      .toEqual(['];']);
+    const lost = lostIndents(sample, 'function run() {\n  const value = [\n    1,\n];\n\n  return value;\n}\n');
+    expect(lost).toEqual(['];']);
   });
 
   it('catches a new statement at column 0 ahead of an indented sibling', () => {
@@ -218,8 +223,8 @@ describe('the indentation check', () => {
       filename: 'Script.svelte',
     };
 
-    expect(lostIndents(script, "<script lang=\"ts\">\nimport { x } from 'mod';\n  const state = 0;\n</script>\n"))
-      .toEqual(["import { x } from 'mod';"]);
+    const lost = lostIndents(script, "<script lang=\"ts\">\nimport { x } from 'mod';\n  const state = 0;\n</script>\n");
+    expect(lost).toEqual(["import { x } from 'mod';"]);
   });
 });
 
@@ -240,7 +245,9 @@ const namesIn = (shape: FixShape): string[] => {
     });
 };
 
-describe.each(namesIn('whitespace'))('%s tokens', (name) => {
+const whitespaceRules = namesIn('whitespace');
+
+describe.each(whitespaceRules)('%s tokens', (name) => {
   it.each(samples)('rewrites no code in %s', (_label, sample: FixerSample) => {
     const tokens = tokensIn(fixWith(sample, name), sample.typescript, sample.filename);
 
@@ -249,9 +256,12 @@ describe.each(namesIn('whitespace'))('%s tokens', (name) => {
   });
 });
 
-describe.each(namesIn('reorder'))('%s tokens', (name) => {
+const reorderRules = namesIn('reorder');
+
+describe.each(reorderRules)('%s tokens', (name) => {
   it.each(samples)('keeps every token in %s', (_label, sample: FixerSample) => {
-    const fixedTokens = tokensIn(fixWith(sample, name), sample.typescript, sample.filename)
+    const fixed = fixWith(sample, name);
+    const fixedTokens = tokensIn(fixed, sample.typescript, sample.filename)
       .sort(alphabetically);
 
     const originalTokens = tokensIn(sample.code, sample.typescript, sample.filename)
