@@ -533,6 +533,7 @@ describe('base: linteljs rules', () => {
   it.each([
     'src/lib/utils/sample.ts',
     'src/lib/utils/sample.js',
+    'src/components/Card.tsx',
     'src/components/Card.vue',
   ])('enables no framework rule on %s, JSX layout and sonarjs React and Vue rules included', async (file) => {
     const leaked = await frameworkRuleIdsFor(base(), file);
