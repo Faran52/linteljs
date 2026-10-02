@@ -51,7 +51,8 @@ const run = (extra: object = {}, pluginData: string = directory): string => {
 };
 
 beforeEach(() => {
-  directory = mkdtempSync(join(tmpdir(), 'linteljs-context-hook-'));
+  const prefix = join(tmpdir(), 'linteljs-context-hook-');
+  directory = mkdtempSync(prefix);
   transcript = join(directory, 'main.jsonl');
 });
 
@@ -117,7 +118,8 @@ describe('contextWarningHook.ts', () => {
   });
 
   it('keeps its marker in tmp outside a plugin', () => {
-    const session = `s12a-${String(Date.now())}`;
+    const stamp = String(Date.now());
+    const session = `s12a-${stamp}`;
     const marker = join(tmpdir(), `linteljs-context-${session}`);
     writeContext(188_000);
 

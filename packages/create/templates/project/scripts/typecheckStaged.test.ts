@@ -45,7 +45,8 @@ const TSCONFIG = [
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-typecheck-'));
+  const prefix = join(tmpdir(), 'linteljs-typecheck-');
+  cwd = await mkdtemp(prefix);
   await writeFile(join(cwd, 'tsconfig.json'), TSCONFIG, 'utf8');
 });
 
@@ -77,10 +78,11 @@ const run = (staged: string[]): RunResult => {
     },
   });
 
-  return {
+  const outcome: RunResult = {
     status: result.status,
     output: plain(`${result.stdout}${result.stderr}`),
   };
+  return outcome;
 };
 
 describe('a type-clean staged file', () => {

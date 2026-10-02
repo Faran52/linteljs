@@ -203,18 +203,18 @@ const CLEARED: CommandProbe[] = [
 
 describe('eslintFixWarningHook.ts', () => {
   it.each(WARNED)('warns for genuine eslint: $label', ({ command }) => {
-    const hookResult = runHook('eslintFixWarningHook.ts', commandPayload(command));
-    expect(hookResult).toMatch(UNFIXED);
+    const reply = runHook('eslintFixWarningHook.ts', commandPayload(command));
+    expect(reply).toMatch(UNFIXED);
   });
 
   it.each(UNREADABLE_COMMANDS)('cannot read $label, and warns', ({ command }) => {
-    const hookResult = runHook('eslintFixWarningHook.ts', commandPayload(command));
-    expect(hookResult).toMatch(UNREADABLE);
+    const reply = runHook('eslintFixWarningHook.ts', commandPayload(command));
+    expect(reply).toMatch(UNREADABLE);
   });
 
   it.each(CLEARED)('clears a fixed or unrelated command: $label', ({ command }) => {
-    const hookResult = runHook('eslintFixWarningHook.ts', commandPayload(command));
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('eslintFixWarningHook.ts', commandPayload(command));
+    expect(reply).toBeUndefined();
   });
 
   it.each([
@@ -223,53 +223,53 @@ describe('eslintFixWarningHook.ts', () => {
     ['npx eslint src; Write-Output done', UNFIXED],
     ['eslint src "unterminated', UNREADABLE],
   ])('reads PowerShell %s', (command, expected) => {
-    const hookResult = runHook('eslintFixWarningHook.ts', commandPayload(command, 'PowerShell'));
-    expect(hookResult).toMatch(expected);
+    const reply = runHook('eslintFixWarningHook.ts', commandPayload(command, 'PowerShell'));
+    expect(reply).toMatch(expected);
   });
 
   it.each(['eslint src --fix', "pnpm exec eslint --fix 'src'"])('clears PowerShell %s', (command) => {
-    const hookResult = runHook('eslintFixWarningHook.ts', commandPayload(command, 'PowerShell'));
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('eslintFixWarningHook.ts', commandPayload(command, 'PowerShell'));
+    expect(reply).toBeUndefined();
   });
 
   it.each<'Bash' | 'PowerShell'>(['Bash', 'PowerShell'])('reads Command Prompt reached from %s', (tool) => {
-    const hookResult = runHook('eslintFixWarningHook.ts', commandPayload('cmd /c eslint .', tool));
-    expect(hookResult).toMatch(UNFIXED);
-    const hookResult2 = runHook('eslintFixWarningHook.ts', commandPayload('cmd.exe /k "npx eslint ."', tool));
-    expect(hookResult2).toMatch(UNFIXED);
-    const hookResult3 = runHook('eslintFixWarningHook.ts', commandPayload('cmd /c "eslint src', tool));
-    expect(hookResult3).toMatch(UNREADABLE);
-    const hookResult4 = runHook('eslintFixWarningHook.ts', commandPayload('cmd /c "eslint --fix ."', tool));
-    expect(hookResult4).toBeUndefined();
+    const cmdReply = runHook('eslintFixWarningHook.ts', commandPayload('cmd /c eslint .', tool));
+    expect(cmdReply).toMatch(UNFIXED);
+    const cmdExeReply = runHook('eslintFixWarningHook.ts', commandPayload('cmd.exe /k "npx eslint ."', tool));
+    expect(cmdExeReply).toMatch(UNFIXED);
+    const unclosedQuoteReply = runHook('eslintFixWarningHook.ts', commandPayload('cmd /c "eslint src', tool));
+    expect(unclosedQuoteReply).toMatch(UNREADABLE);
+    const fixingReply = runHook('eslintFixWarningHook.ts', commandPayload('cmd /c "eslint --fix ."', tool));
+    expect(fixingReply).toBeUndefined();
   });
 
   it('stays silent on malformed JSON', () => {
-    const hookResult = runHook('eslintFixWarningHook.ts', '{');
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('eslintFixWarningHook.ts', '{');
+    expect(reply).toBeUndefined();
   });
 
   it('stays silent when the payload carries no command', () => {
-    const hookResult = runHook('eslintFixWarningHook.ts', { tool_input: {} });
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('eslintFixWarningHook.ts', { tool_input: {} });
+    expect(reply).toBeUndefined();
   });
 
   describe('on Copilot and Cursor', () => {
     it.each(['bash', 'powershell'])('warns after Copilot runs eslint without --fix in %s', (tool) => {
-      const hookResult = runHook('eslintFixWarningHook.ts', copilotPayload(tool, { command: 'npx eslint src' }));
-      expect(hookResult).toMatch(UNFIXED);
+      const reply = runHook('eslintFixWarningHook.ts', copilotPayload(tool, { command: 'npx eslint src' }));
+      expect(reply).toMatch(UNFIXED);
     });
 
     it('clears a Copilot run with --fix', () => {
-      const hookResult = runHook('eslintFixWarningHook.ts', copilotPayload('bash', { command: 'eslint src --fix' }));
+      const reply = runHook('eslintFixWarningHook.ts', copilotPayload('bash', { command: 'eslint src --fix' }));
 
-      expect(hookResult)
+      expect(reply)
         .toBeUndefined();
     });
 
     it('warns after Cursor runs eslint without --fix', () => {
-      const hookResult = runHook('eslintFixWarningHook.ts', cursorToolPayload('pnpm exec eslint src', 'postToolUse'));
+      const reply = runHook('eslintFixWarningHook.ts', cursorToolPayload('pnpm exec eslint src', 'postToolUse'));
 
-      expect(hookResult)
+      expect(reply)
         .toMatch(UNFIXED);
     });
 

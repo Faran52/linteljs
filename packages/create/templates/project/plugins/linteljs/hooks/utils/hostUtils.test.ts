@@ -43,7 +43,7 @@ describe('readCommand', () => {
     ['Bash', 'bash'],
     ['PowerShell', 'powershell'],
   ])('reads a Claude Code or Codex %s command in its own dialect', (tool, dialect) => {
-    const command2 = readCommand({
+    const command = readCommand({
       tool_name: tool,
       tool_input: { command: 'git status' },
     }, 'beforeShellExecution');
@@ -52,20 +52,20 @@ describe('readCommand', () => {
       command: 'git status',
       dialect,
     };
-    expect(command2).toEqual(expected);
+    expect(command).toEqual(expected);
   });
 
   it.each([
     ['bash', 'bash'],
     ['powershell', 'powershell'],
   ])('reads Copilot %s arguments sent as JSON text', (tool, dialect) => {
-    const command2 = readCommand(copilotPayload(tool, { command: 'git status' }), 'postToolUse');
+    const command = readCommand(copilotPayload(tool, { command: 'git status' }), 'postToolUse');
     const expected = {
       host: 'copilot',
       command: 'git status',
       dialect,
     };
-    expect(command2).toEqual(expected);
+    expect(command).toEqual(expected);
   });
 
   it('reads Copilot arguments sent as an object, as its SDK does', () => {
@@ -90,18 +90,18 @@ describe('readCommand', () => {
     ['darwin', 'bash'],
     ['win32', 'powershell'],
   ] as const)('reads Cursor\'s shell gate command on %s as %s', (platform, dialect) => {
-    const command2 = readCommand(cursorShellPayload('git status'), 'beforeShellExecution', platform);
+    const command = readCommand(cursorShellPayload('git status'), 'beforeShellExecution', platform);
     const expected = {
       host: 'cursor',
       command: 'git status',
       dialect,
     };
-    expect(command2).toEqual(expected);
+    expect(command).toEqual(expected);
   });
 
   it('reads Cursor\'s tool events from the nested input', () => {
-    expect(readCommand(cursorToolPayload('eslint src', 'postToolUse'), 'postToolUse', 'linux')?.command)
-      .toBe('eslint src');
+    const toolEvent = readCommand(cursorToolPayload('eslint src', 'postToolUse'), 'postToolUse', 'linux');
+    expect(toolEvent?.command).toBe('eslint src');
   });
 
   it.each([
@@ -114,10 +114,10 @@ describe('readCommand', () => {
   });
 
   it('reads nothing where there is no command', () => {
-    const command2 = readCommand({ tool_input: {} }, 'beforeShellExecution');
-    expect(command2).toBeUndefined();
-    const command3 = readCommand({ tool_input: { command: 7 } }, 'beforeShellExecution');
-    expect(command3).toBeUndefined();
+    const emptyInputCommand = readCommand({ tool_input: {} }, 'beforeShellExecution');
+    expect(emptyInputCommand).toBeUndefined();
+    const numericCommand = readCommand({ tool_input: { command: 7 } }, 'beforeShellExecution');
+    expect(numericCommand).toBeUndefined();
   });
 });
 

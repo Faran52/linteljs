@@ -48,7 +48,8 @@ const transcriptOf = (lines: string[], name = 'main.jsonl'): string => {
 };
 
 beforeEach(() => {
-  directory = mkdtempSync(join(tmpdir(), 'linteljs-context-'));
+  const prefix = join(tmpdir(), 'linteljs-context-');
+  directory = mkdtempSync(prefix);
 });
 
 afterEach(() => {
@@ -176,12 +177,12 @@ describe('mainContextOf', () => {
   it('falls back to the transcript without one', () => {
     const path = transcriptOf([assistant(1, 2, 3)]);
 
-    const mainContext = mainContextOf({ transcript_path: path, context_window: { total_input_tokens: null } });
-    expect(mainContext).toBe(6);
-    const mainContext2 = mainContextOf({ transcript_path: path });
-    expect(mainContext2).toBe(6);
-    const mainContext3 = mainContextOf({});
-    expect(mainContext3).toBe(0);
+    const nullWindowContext = mainContextOf({ transcript_path: path, context_window: { total_input_tokens: null } });
+    expect(nullWindowContext).toBe(6);
+    const noWindowContext = mainContextOf({ transcript_path: path });
+    expect(noWindowContext).toBe(6);
+    const emptyPayloadContext = mainContextOf({});
+    expect(emptyPayloadContext).toBe(0);
   });
 });
 
@@ -237,9 +238,9 @@ describe('subagentRowsOf', () => {
   });
 
   it('answers no rows without tasks', () => {
-    const subagentRows = subagentRowsOf({});
-    expect(subagentRows).toEqual([]);
-    const subagentRows2 = subagentRowsOf({ tasks: 'none' });
-    expect(subagentRows2).toEqual([]);
+    const noTasksRows = subagentRowsOf({});
+    expect(noTasksRows).toEqual([]);
+    const textTasksRows = subagentRowsOf({ tasks: 'none' });
+    expect(textTasksRows).toEqual([]);
   });
 });

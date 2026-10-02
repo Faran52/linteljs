@@ -27,26 +27,25 @@ describe('bannedPatternGuardHook.ts', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'linteljs-hook-assets-'));
+    const prefix = join(tmpdir(), 'linteljs-hook-assets-');
+    cwd = mkdtempSync(prefix);
     checkerLog = join(cwd, 'checker.log');
     mkdirSync(join(cwd, 'scripts'));
     mkdirSync(join(cwd, 'src'));
 
-    writeFileSync(
-      join(cwd, 'scripts/checkBannedPatterns.ts'),
-      [
-        "const fs = require('node:fs');",
-        `const log = ${JSON.stringify(checkerLog)};`,
-        'const file = process.argv[2];',
-        'fs.appendFileSync(log, `${JSON.stringify(file)}\\n`);',
-        "const text = fs.readFileSync(file, 'utf8');",
-        "const output = text.includes('escape')",
-        "  ? 'bad \"cast\"\\nline\\\\slash\\tend'",
-        "  : 'bad cast';",
-        "if (text.includes('fail')) { process.stderr.write(output); process.exitCode = 1; }",
-        '',
-      ].join('\n'),
-    );
+    const checker = [
+      "const fs = require('node:fs');",
+      `const log = ${JSON.stringify(checkerLog)};`,
+      'const file = process.argv[2];',
+      'fs.appendFileSync(log, `${JSON.stringify(file)}\\n`);',
+      "const text = fs.readFileSync(file, 'utf8');",
+      "const output = text.includes('escape')",
+      "  ? 'bad \"cast\"\\nline\\\\slash\\tend'",
+      "  : 'bad cast';",
+      "if (text.includes('fail')) { process.stderr.write(output); process.exitCode = 1; }",
+      '',
+    ].join('\n');
+    writeFileSync(join(cwd, 'scripts/checkBannedPatterns.ts'), checker);
 
     writeFileSync(join(cwd, 'src/app.ts'), 'fail\n');
     writeFileSync(join(cwd, 'src/app.md'), '# safe\n');
@@ -76,8 +75,8 @@ describe('bannedPatternGuardHook.ts', () => {
   };
 
   it('ignores malformed JSON', () => {
-    const hookResult = runHook('bannedPatternGuardHook.ts', '{');
-    expect(hookResult).toBeUndefined();
+    const reply = runHook('bannedPatternGuardHook.ts', '{');
+    expect(reply).toBeUndefined();
   });
 
   it('checks a Claude Write path relative to the payload cwd', () => {
@@ -116,13 +115,13 @@ describe('bannedPatternGuardHook.ts', () => {
   it('stays silent when no checker exists above the file at all', () => {
     rmSync(join(cwd, 'scripts/checkBannedPatterns.ts'));
 
-    const hookResult = runHook('bannedPatternGuardHook.ts', {
+    const reply = runHook('bannedPatternGuardHook.ts', {
       cwd,
       hook_event_name: 'PostToolUse',
       tool_name: 'Write',
       tool_input: { file_path: 'src/app.ts' },
     });
-    expect(hookResult).toBeUndefined();
+    expect(reply).toBeUndefined();
   });
 
   it('checks a direct tool response path relative to the payload cwd', () => {
@@ -213,17 +212,17 @@ describe('bannedPatternGuardHook.ts', () => {
   });
 
   it('ignores missing files and patches touching irrelevant extensions', () => {
-    const hookResult = runHook('bannedPatternGuardHook.ts', {
+    const missingFileReply = runHook('bannedPatternGuardHook.ts', {
       cwd,
       tool_input: { file_path: 'src/missing.ts' },
     });
-    expect(hookResult).toBeUndefined();
+    expect(missingFileReply).toBeUndefined();
 
-    const hookResult2 = runHook('bannedPatternGuardHook.ts', {
+    const markdownPatchReply = runHook('bannedPatternGuardHook.ts', {
       cwd,
       tool_input: '*** Update File: src/app.md',
     });
-    expect(hookResult2).toBeUndefined();
+    expect(markdownPatchReply).toBeUndefined();
 
     const actual = checkedPaths();
     expect(actual).toEqual([]);
@@ -239,14 +238,14 @@ describe('bannedPatternGuardHook.ts', () => {
   });
 
   it('answers nothing under Cursor', () => {
-    const hookResult = runHook('bannedPatternGuardHook.ts', {
+    const reply = runHook('bannedPatternGuardHook.ts', {
       cursor_version: '2.4.0',
       cwd,
       hook_event_name: 'postToolUse',
       tool_name: 'Write',
       tool_input: { file_path: 'src/app.ts' },
     });
-    expect(hookResult).toBeUndefined();
+    expect(reply).toBeUndefined();
 
     const actual = checkedPaths();
     expect(actual).toEqual([]);

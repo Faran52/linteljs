@@ -24,7 +24,8 @@ const CHECKER = join(TEMPLATES_ROOT, 'project/scripts/checkBannedPatterns.ts');
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-banned-'));
+  const prefix = join(tmpdir(), 'linteljs-banned-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -138,7 +139,7 @@ describe('single-file components', () => {
   };
 
   it('reads the script block of a .vue file', async () => {
-    const report = await checkFile('App.vue', [
+    const source = [
       '<script setup lang="ts">',
       'const value = input as never;',
       'const options: unknown = load();',
@@ -148,27 +149,29 @@ describe('single-file components', () => {
       '  <p>{{ value }}</p>',
       '</template>',
       '',
-    ].join('\n'));
+    ].join('\n');
+    const report = await checkFile('App.vue', source);
 
     expect(report).toContain('2: const value = input as never;');
     expect(report).toContain('3: const options: unknown = load();');
   });
 
   it('reads the script block of a .svelte file', async () => {
-    const report = await checkFile('Page.svelte', [
+    const source = [
       '<script lang="ts">',
       '  let value = input as never;',
       '</script>',
       '',
       '<p>{value}</p>',
       '',
-    ].join('\n'));
+    ].join('\n');
+    const report = await checkFile('Page.svelte', source);
 
     expect(report).toContain('2: let value = input as never;');
   });
 
   it('never reads the template or the styles as if they were TypeScript', async () => {
-    const actual = await checkFile('Docs.vue', [
+    const source = [
       '<script setup lang="ts">',
       "const heading = 'Banned shapes';",
       '</script>',
@@ -186,7 +189,8 @@ describe('single-file components', () => {
       '.a { color: red; }',
       '</style>',
       '',
-    ].join('\n'));
+    ].join('\n');
+    const actual = await checkFile('Docs.vue', source);
     expect(actual).toBe('');
   });
 });
@@ -221,10 +225,10 @@ describe('its arguments', () => {
   });
 
   it('checks a named file whatever directory it sits in', () => {
-    const actual = run(join('src', 'nested', 'node_modules', 'pkg', 'index.ts'));
-    expect(actual).toContain('[as never]');
-    const actual2 = run(join('src', 'clean.ts'));
-    expect(actual2).toBe('');
+    const nestedReport = run(join('src', 'nested', 'node_modules', 'pkg', 'index.ts'));
+    expect(nestedReport).toContain('[as never]');
+    const cleanReport = run(join('src', 'clean.ts'));
+    expect(cleanReport).toBe('');
   });
 
   it('passes a directory with nothing banned in it', async () => {

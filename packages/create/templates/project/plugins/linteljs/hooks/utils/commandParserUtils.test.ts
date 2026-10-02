@@ -192,8 +192,8 @@ describe('parseCommand', () => {
   });
 
   it('marks a command with a computed part as opaque, and leaves the rest readable', () => {
-    const actual = parseCommand('git (Write-Output log); git status', 'powershell');
-    const expected = [
+    const subexpressionParse = parseCommand('git (Write-Output log); git status', 'powershell');
+    const expectedSubexpression = [
       {
         tokens: ['Write-Output', 'log'],
         opaque: false,
@@ -207,10 +207,10 @@ describe('parseCommand', () => {
         opaque: false,
       },
     ];
-    expect(actual).toEqual(expected);
+    expect(subexpressionParse).toEqual(expectedSubexpression);
 
-    const actual2 = parseCommand('Start-Process -FilePath git -ArgumentList log', 'powershell');
-    const expected2 = [{
+    const startProcessParse = parseCommand('Start-Process -FilePath git -ArgumentList log', 'powershell');
+    const expectedStartProcess = [{
       tokens: [
         'git',
         '-ArgumentList',
@@ -218,7 +218,7 @@ describe('parseCommand', () => {
       ],
       opaque: true,
     }];
-    expect(actual2).toEqual(expected2);
+    expect(startProcessParse).toEqual(expectedStartProcess);
   });
 
   it.each([
@@ -248,16 +248,16 @@ describe('commandName', () => {
 
 describe('skipOptions', () => {
   it('skips flags and valued options, and stops after --', () => {
-    const actual = skipOptions([
+    const valuedSkip = skipOptions([
       '-C',
       'dir',
       '--bare',
       'log',
     ], 0, new Set(['-C']));
-    expect(actual).toBe(3);
+    expect(valuedSkip).toBe(3);
 
-    const actual2 = skipOptions(['--', '-x'], 0, new Set());
-    expect(actual2).toBe(1);
+    const terminatorSkip = skipOptions(['--', '-x'], 0, new Set());
+    expect(terminatorSkip).toBe(1);
   });
 
   it('cannot skip a valued option with no value', () => {
