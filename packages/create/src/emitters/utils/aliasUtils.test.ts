@@ -68,14 +68,28 @@ describe('buildAliases', () => {
   });
 
   it('pairs a project alias onto a directory, and leaves an exact one alone', () => {
+    const standard = buildAliases(answersFor({}));
     const aliases = buildAliases(answersFor({
       aliases: {
         '@engine/*': './src/engine/*',
         '@ui': './src/ui-kit',
         '@entry': './src/entry.ts',
         '@flat/*': './src/flat.ts',
+        '@glob': './src/glob/*',
       },
     }));
+    const added = Object.keys(aliases)
+      .filter((alias) => {
+        return !(alias in standard);
+      });
+
+    expect(added).toEqual([
+      '@engine/*',
+      '@engine',
+      '@entry',
+      '@flat/*',
+      '@glob',
+    ]);
 
     expect(aliases['@engine']).toBe('./src/engine');
     expect(aliases['@ui']).toBe('./src/ui-kit');

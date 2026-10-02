@@ -9,6 +9,7 @@ import {
 import { hasTests } from '@utils/answerUtils';
 
 import {
+  starterApplies,
   type StarterFile,
   type StarterTest,
   targetFor,
@@ -22,10 +23,6 @@ import {
 } from './constants';
 
 type Starter = StarterFile | StarterTest;
-
-const applies = (file: Starter, answers: Answers): boolean => {
-  return file.when === undefined || file.when(answers);
-};
 
 const rootOf = (id: TargetId, shared: true | TargetId | undefined): string => {
   if (shared === undefined) {
@@ -94,12 +91,12 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
   // A variant and its base exclude each other by their own `when`, held by `registry.test.ts`.
   const files = target.starterFiles
     .filter((file) => {
-      return applies(file, answers);
+      return starterApplies(file, answers);
     });
   // After the starter files, since one of them is what a starter test covers.
   const suites = tests
     .filter((test) => {
-      return applies(test, answers);
+      return starterApplies(test, answers);
     });
   const renames = renamesOf([...files, ...suites]);
   const clientBoundaries = new Set(target.clientBoundaries);

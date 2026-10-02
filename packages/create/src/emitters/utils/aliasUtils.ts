@@ -8,13 +8,13 @@ import {
   localesOf,
 } from '@utils/answerUtils';
 
-import { targetFor } from '@targets';
+import { starterApplies, targetFor } from '@targets';
 
 // Zod's schemas go there; otherwise read off the starter, so the alias names a directory the project has.
 const writesApis = (answers: Answers): boolean => {
   return hasLibrary(answers, 'zod') || targetFor(answers).starterFiles
     .some((file) => {
-      return file.target.startsWith('src/lib/apis/') && (file.when === undefined || file.when(answers));
+      return file.target.startsWith('src/lib/apis/') && starterApplies(file, answers);
     });
 };
 

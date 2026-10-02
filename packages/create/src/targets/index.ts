@@ -16,3 +16,4 @@ export type {
   TestPlatform,
   TsconfigPlugin,
 } from './types';
+export { starterApplies } from './utils/gateUtils';

@@ -9,6 +9,7 @@ import {
   hasForm,
   hasI18n,
   hasStore,
+  starterApplies,
 } from './gateUtils';
 
 import type { Answers } from '@config/types';
@@ -49,6 +50,29 @@ describe('the starter gates', () => {
       hasStore(answers),
       hasForm(answers),
     ]).toEqual([store, form]);
+  });
+});
+
+describe('starterApplies', () => {
+  it('writes a starter with no gate, and one whose gate holds', () => {
+    const answers = answersFor({ form: 'tanstack-form' });
+    const applies = [
+      starterApplies({ target: 'src/a.ts' }, answers),
+      starterApplies({
+        target: 'src/a.ts',
+        when: hasForm,
+      }, answers),
+      starterApplies({
+        target: 'src/a.ts',
+        when: hasStore,
+      }, answers),
+    ];
+
+    expect(applies).toEqual([
+      true,
+      true,
+      false,
+    ]);
   });
 });
 
