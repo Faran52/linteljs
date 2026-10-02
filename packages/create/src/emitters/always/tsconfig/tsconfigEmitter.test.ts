@@ -157,11 +157,11 @@ describe('buildTsconfig', () => {
     expect(text).not.toContain('noUnusedParameters');
   });
 
-  it('flips useDefineForClassFields and drops erasableSyntaxOnly for Angular', () => {
+  it('flips useDefineForClassFields and keeps erasableSyntaxOnly for Angular', () => {
     const { compilerOptions } = buildTsconfig(answersFor({ target: 'angular' }));
 
     expect(compilerOptions.useDefineForClassFields).toBe(false);
-    expect(compilerOptions).not.toHaveProperty('erasableSyntaxOnly');
+    expect(compilerOptions.erasableSyntaxOnly).toBe(true);
   });
 
   it.each<[string, AnswerOverrides, TypesSource]>([

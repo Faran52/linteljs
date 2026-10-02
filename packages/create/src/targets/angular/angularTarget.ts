@@ -59,7 +59,6 @@ export const angularTarget: TargetRecord = {
   tailwindTheme: './styles/theme.css',
   tsconfig: {
     useDefineForClassFields: false,
-    dropsErasableSyntaxOnly: true,
     dropsNoEmit: true,
   },
   // Vitest cannot read a decorator; the plugin defaults to `tsconfig.spec.json`.

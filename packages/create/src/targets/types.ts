@@ -106,8 +106,6 @@ export interface TsconfigDelta {
   jsxImportSource?: string;
   plugins?: TsconfigPlugin[];
   useDefineForClassFields?: boolean;
-  // Parameter properties are not erasable.
-  dropsErasableSyntaxOnly?: boolean;
   // `noEmit` makes ngtsc emit nothing.
   dropsNoEmit?: boolean;
   include?: string[];

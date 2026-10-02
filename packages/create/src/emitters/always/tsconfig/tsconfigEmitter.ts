@@ -35,7 +35,7 @@ export interface CompilerOptions {
   noFallthroughCasesInSwitch: boolean;
   allowUnreachableCode: boolean;
   allowUnusedLabels: boolean;
-  erasableSyntaxOnly?: boolean;
+  erasableSyntaxOnly: boolean;
   allowJs: boolean;
   checkJs: boolean;
   skipLibCheck: boolean;
@@ -131,8 +131,7 @@ const compilerOptionsFor = (answers: Answers): CompilerOptions => {
     // No `noPropertyAccessFromIndexSignature`: CSS modules are index signatures; it failed Next's starter 8 times.
     allowUnreachableCode: false,
     allowUnusedLabels: false,
-    // Parameter properties are not erasable, and Angular's DI is built on them.
-    ...(delta.dropsErasableSyntaxOnly === true ? {} : { erasableSyntaxOnly: true }),
+    erasableSyntaxOnly: true,
     allowJs: true,
     checkJs: false,
     skipLibCheck: true,

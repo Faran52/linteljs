@@ -154,6 +154,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- An Angular project's `tsconfig.json` sets `erasableSyntaxOnly` like every other target's. Its starter injects
+  with `inject()`, and `typescript()` already refuses the parameter properties the flag was dropped for.
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every
   git and install it spawns drops the repository variables git exports, so `git init` no longer reinitialises the
   caller's repository as bare and husky sets its hooks path on the project.
