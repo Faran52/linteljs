@@ -12,7 +12,7 @@ import tanstackRouter from './tanstackRouterLibrary';
 
 describe('tanstackRouter', () => {
   it('reports a loader declared ahead of the beforeLoad it depends on', async () => {
-    const code = [
+    const joinList = [
       "import { createFileRoute } from '@tanstack/react-router';",
       '',
       "export const Route = createFileRoute('/')({",
@@ -20,8 +20,10 @@ describe('tanstackRouter', () => {
       '  beforeLoad: () => 1,',
       '});',
       '',
-    ].join('\n');
-    const ruleIds = await ruleIdsFor([...react(), ...tanstackRouter()], code, 'src/routes/index.tsx');
+    ];
+    const code = joinList.join('\n');
+    const config = [...react(), ...tanstackRouter()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/routes/index.tsx');
 
     const anyMatch = ruleIds.some(startsWith('@tanstack/router/'));
     expect(anyMatch).toBe(true);
@@ -31,7 +33,8 @@ describe('tanstackRouter', () => {
     ['flat/recommended', 'tanstack-router/flat/recommended'],
   ])('names %s when @tanstack/eslint-plugin-router stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('@tanstack/eslint-plugin-router', key, async () => {
-      return (await import('./tanstackRouterLibrary')).tanstackRouter;
+      const tanstackRouterLibrary = await import('./tanstackRouterLibrary');
+      return tanstackRouterLibrary.tanstackRouter;
     });
 
     expect(layer).toThrow(`${label} is not published`);

@@ -78,7 +78,8 @@ describe('vitest', () => {
     ['recommended', 'vitest/recommended'],
   ])('names %s when @vitest/eslint-plugin stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('@vitest/eslint-plugin', key, async () => {
-      return (await import('./vitestLayer')).vitest;
+      const vitestLayer = await import('./vitestLayer');
+      return vitestLayer.vitest;
     });
 
     expect(layer).toThrow(`${label} is not published`);

@@ -29,10 +29,12 @@ describe('presetOf', () => {
   });
 
   it('scopes every entry with no glob of its own to the files given', () => {
-    const preset = presetOf([{ name: 'probe/one' }, {
+    const config = [{ name: 'probe/one' }, {
       name: 'probe/two',
       files: ['**/*.vue'],
-    }], 'probe', ['**/*.ts']);
+    }];
+    const files = ['**/*.ts'];
+    const preset = presetOf(config, 'probe', files);
 
     const expected = [{
       name: 'probe/one',
@@ -43,12 +45,14 @@ describe('presetOf', () => {
     }];
     expect(preset).toEqual(expected);
 
-    const preset2 = presetOf({ name: 'probe' }, 'probe', ['**/*.ts']);
-    const expected2 = [{
+    const presetOfConfig = { name: 'probe' } as const;
+    const presetOfFiles = ['**/*.ts'];
+    const singlePreset = presetOf(presetOfConfig, 'probe', presetOfFiles);
+    const expectedSingle = [{
       name: 'probe',
       files: ['**/*.ts'],
     }];
-    expect(preset2).toEqual(expected2);
+    expect(singlePreset).toEqual(expectedSingle);
   });
 
   it('throws when the plugin publishes no such preset', () => {
@@ -59,17 +63,20 @@ describe('presetOf', () => {
 
   it('throws on an eslintrc config, which flat config would reject far from here', () => {
     expect(() => {
-      return presetOf({
+      const config = {
         plugins: ['probe'],
         rules: {},
-      }, 'probe/legacy');
+      };
+      return presetOf(config, 'probe/legacy');
     }).toThrow(/probe\/legacy is an eslintrc config/);
   });
 });
 
 describe('sonarjsRules', () => {
   const rule = 'sonarjs/no-mutate-reactive-state-in-updated-hook';
-  const mutating = sonarjsRules('test/sonarjs', { [rule]: 'error' }, ['**/*.ts']);
+  const rules = { [rule]: 'error' } as const;
+  const files = ['**/*.ts'];
+  const mutating = sonarjsRules('test/sonarjs', rules, files);
   const code = "import { ref } from 'vue';\n\nconst count = ref(0);\n\n"
     + 'export default { updated() { count.value++; } };\n';
 
@@ -79,7 +86,8 @@ describe('sonarjsRules', () => {
   });
 
   it('registers the plugin object base registers, so the two compose', async () => {
-    const ruleIds = await ruleIdsFor([...base(), ...mutating], code, 'src/card.ts');
+    const config = [...base(), ...mutating];
+    const ruleIds = await ruleIdsFor(config, code, 'src/card.ts');
     expect(ruleIds).toContain(rule);
   });
 });

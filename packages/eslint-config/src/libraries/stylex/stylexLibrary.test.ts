@@ -31,7 +31,7 @@ const layer = [
 const IMPORT = "import * as stylex from '@stylexjs/stylex';";
 
 const moduleWith = (rules: string, preamble: string[] = []): string => {
-  return [
+  const joinList = [
     IMPORT,
     ...preamble,
     '',
@@ -41,27 +41,32 @@ const moduleWith = (rules: string, preamble: string[] = []): string => {
     '',
     'export const styles = { card: stylex.props(sheet.card) };',
     '',
-  ].join('\n');
+  ];
+  return joinList.join('\n');
 };
 
 const lintCard = async (code: string, fix: boolean): Promise<ESLint.LintResult | undefined> => {
-  const eslint = new ESLint({
+  const eslintOptions: ESLint.Options = {
     overrideConfigFile: true,
     overrideConfig: layer,
     fix,
     fixTypes: ['problem'],
-  });
-  const [result] = await eslint.lintText(code, { filePath: 'src/components/card/styles.ts' });
+  };
+  const eslint = new ESLint(eslintOptions);
+  const lintTextOptions = { filePath: 'src/components/card/styles.ts' } as const;
+  const [result] = await eslint.lintText(code, lintTextOptions);
 
   return result;
 };
 
 const fixed = async (code: string): Promise<string | undefined> => {
-  return (await lintCard(code, true))?.output;
+  const lintCardCode = await lintCard(code, true);
+  return lintCardCode?.output;
 };
 
 const lint = async (code: string): Promise<string[]> => {
-  return (await lintCard(code, false))?.messages
+  const lintCardCode = await lintCard(code, false);
+  return lintCardCode?.messages
     .map((message) => {
       return `${message.ruleId ?? ''}: ${message.message
         .split('\n')
@@ -129,14 +134,15 @@ describe('stylex', () => {
   });
 
   it('reports a style nothing reads', async () => {
-    const code = [
+    const joinList = [
       IMPORT,
       '',
       "const sheet = stylex.create({ card: { color: 'red' }, unused: { color: 'blue' } });",
       '',
       'export const styles = { card: stylex.props(sheet.card) };',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
     expect(ruleIds).toContain('@stylexjs/no-unused');
@@ -151,7 +157,7 @@ describe('stylex', () => {
   });
 
   it('reports className beside a spread of stylex.props', async () => {
-    const code = [
+    const joinList = [
       IMPORT,
       '',
       "const sheet = stylex.create({ card: { color: 'red' } });",
@@ -160,7 +166,8 @@ describe('stylex', () => {
       '  return <div {...stylex.props(sheet.card)} className="card">x</div>;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
     expect(ruleIds).toContain('@stylexjs/no-conflicting-props');
@@ -226,7 +233,8 @@ describe('stylex', () => {
   });
 
   it('reports an imported number in a numeric property rather than crashing on it', async () => {
-    const code = moduleWith('zIndex: LAYER', ["import { LAYER } from './layers';"]);
+    const preamble = ["import { LAYER } from './layers';"];
+    const code = moduleWith('zIndex: LAYER', preamble);
 
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/card/styles.ts');
     expect(ruleIds).toContain('@stylexjs/valid-styles');
@@ -254,22 +262,24 @@ describe('stylex', () => {
       'StyledCard.svelte',
     ],
   ])('reaches the script block of a %s component', async (_label, framework, file) => {
-    const actual = await ruleIdsForFile([
+    const config = [
       ...base(),
       ...framework(),
       ...stylex(),
-    ], join(SFC_FIXTURES, file));
+    ];
+    const actual = await ruleIdsForFile(config, join(SFC_FIXTURES, file));
     expect(actual).toContain('@stylexjs/valid-styles');
   });
 
   it('reaches the frontmatter of an astro page', async () => {
     const code = `---\n${moduleWith("background: 'var(--card)'")}---\n\n<div>x</div>\n`;
 
-    const ruleIds = await ruleIdsFor([
+    const config = [
       ...base(),
       ...stylex(),
       ...astro(),
-    ], code, 'src/pages/index.astro');
+    ];
+    const ruleIds = await ruleIdsFor(config, code, 'src/pages/index.astro');
     expect(ruleIds).toContain('@stylexjs/valid-styles');
   });
 });

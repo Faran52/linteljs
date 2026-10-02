@@ -30,12 +30,14 @@ const PROPERTIES_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/t
 
 describe('typescript', () => {
   it('reports a floating promise, which needs type information to see', async () => {
-    const actual = await ruleIdsForFile([...base(), ...typescript()], TYPED_FILE);
+    const config = [...base(), ...typescript()];
+    const actual = await ruleIdsForFile(config, TYPED_FILE);
     expect(actual).toContain('@typescript-eslint/no-floating-promises');
   });
 
   it('leaves one owner for unused code once the typed layer is composed', async () => {
-    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], UNUSED_FILE);
+    const config = [...base(), ...typescript()];
+    const ruleIds = await ruleIdsForFile(config, UNUSED_FILE);
 
     expect(ruleIds).toContain('unused-imports/no-unused-imports');
     expect(ruleIds).toContain('unused-imports/no-unused-vars');
@@ -46,7 +48,8 @@ describe('typescript', () => {
   });
 
   it('permits a require of a bundler asset while still reporting a require of a module', async () => {
-    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], REQUIRES_FILE);
+    const config = [...base(), ...typescript()];
+    const ruleIds = await ruleIdsForFile(config, REQUIRES_FILE);
     const reported = ruleIds
       .filter((ruleId) => {
         return ruleId === '@typescript-eslint/no-require-imports';
@@ -56,7 +59,8 @@ describe('typescript', () => {
   });
 
   it('prefers destructuring in an object declaration only, through the typed twin', async () => {
-    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], DESTRUCTURING_FILE);
+    const config = [...base(), ...typescript()];
+    const ruleIds = await ruleIdsForFile(config, DESTRUCTURING_FILE);
     const reported = ruleIds
       .filter((ruleId) => {
         return ruleId === '@typescript-eslint/prefer-destructuring';
@@ -67,7 +71,8 @@ describe('typescript', () => {
   });
 
   it('reports a parameter property and leaves a declared class property alone', async () => {
-    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], PROPERTIES_FILE);
+    const config = [...base(), ...typescript()];
+    const ruleIds = await ruleIdsForFile(config, PROPERTIES_FILE);
     const reported = ruleIds
       .filter((ruleId) => {
         return ruleId === '@typescript-eslint/parameter-properties';
@@ -118,10 +123,12 @@ describe('typescript', () => {
   });
 
   it('turns the type-aware rules off a plain .js file', async () => {
-    const ruleNames = await ruleNamesFor([...base(), ...typescript()], 'src/tool.js');
+    const config = [...base(), ...typescript()];
+    const ruleNames = await ruleNamesFor(config, 'src/tool.js');
     expect(ruleNames).toContain('@typescript-eslint/no-floating-promises');
 
-    const enabledRuleIds = await enabledRuleIdsFor([...base(), ...typescript()], 'src/tool.js');
+    const enabledRuleIdsForConfig = [...base(), ...typescript()];
+    const enabledRuleIds = await enabledRuleIdsFor(enabledRuleIdsForConfig, 'src/tool.js');
     expect(enabledRuleIds).not.toContain('@typescript-eslint/no-floating-promises');
   });
 
@@ -141,14 +148,17 @@ describe('typescript', () => {
   });
 
   it('configures prefer-alias on every typed extension, the SFCs included', async () => {
-    const layer = [...base(), ...typescript({ aliasExempt: ['src/routes.ts'] })];
+    const typescriptOptions = { aliasExempt: ['src/routes.ts'] };
+    const layer = [...base(), ...typescript(typescriptOptions)];
 
-    for (const file of [
+    const itList = [
       'src/a.ts',
       'src/a.tsx',
       'src/A.vue',
       'src/A.svelte',
-    ]) {
+    ];
+
+    for (const file of itList) {
       const entry = await ruleEntryFor(layer, file, '@linteljs/prefer-alias');
 
       const actual = {
@@ -167,7 +177,8 @@ describe('typescript', () => {
   });
 
   it('enables no framework rule on a TypeScript file', async () => {
-    const leaked = await frameworkRuleIdsFor([...base(), ...typescript()], 'src/lib/utils/sample.ts');
+    const config = [...base(), ...typescript()];
+    const leaked = await frameworkRuleIdsFor(config, 'src/lib/utils/sample.ts');
 
     expect(leaked).toStrictEqual([]);
   });

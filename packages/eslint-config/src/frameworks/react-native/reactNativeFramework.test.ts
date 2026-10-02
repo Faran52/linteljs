@@ -21,35 +21,42 @@ import react from '../react/reactFramework';
 import reactNative, { reactNativeGroup } from './reactNativeFramework';
 
 describe('reactNative', () => {
-  it('keeps the linteljs rules that have nothing to do with a DOM', async () => {
-    const code = 'export const Note = (props) => {\n  return <Text>{props.a}</Text>;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Note.tsx');
+  it.each([
+    [
+      'keeps the linteljs rules that have nothing to do with a DOM',
+      'export const Note = (props) => {\n  return <Text>{props.a}</Text>;\n};\n',
+      'src/Note.tsx',
+      '@linteljs/prefer-destructured-props',
+    ],
+    [
+      'reports a touchable with no accessible name',
+      'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n',
+      'src/Save.tsx',
+      '@linteljs/native-accessible-name',
+    ],
+    [
+      'reports an accessibility role React Native drops silently',
+      'export const Save = () => {\n  return <Text accessibilityRole="searchbox">a</Text>;\n};\n',
+      'src/Save.tsx',
+      '@linteljs/native-valid-accessibility-role',
+    ],
+  ])('%s', async (_title, code, file, rule) => {
+    const config = [...base(), ...reactNative()];
+    const ruleIds = await ruleIdsFor(config, code, file);
 
-    expect(ruleIds).toContain('@linteljs/prefer-destructured-props');
+    expect(ruleIds).toContain(rule);
   });
 
   it('drops the accessibility preset that react keeps', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
-    const web = await ruleIdsFor([...base(), ...react()], code, 'src/Logo.tsx');
-    const native = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Logo.tsx');
+    const config = [...base(), ...react()];
+    const web = await ruleIdsFor(config, code, 'src/Logo.tsx');
+    const ruleIdsForConfig = [...base(), ...reactNative()];
+    const native = await ruleIdsFor(ruleIdsForConfig, code, 'src/Logo.tsx');
 
     expect(web).toContain('jsx-a11y-x/alt-text');
     const anyMatch = native.some(startsWith('jsx-a11y-x/'));
     expect(anyMatch).toBe(false);
-  });
-
-  it('reports a touchable with no accessible name', async () => {
-    const code = 'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Save.tsx');
-
-    expect(ruleIds).toContain('@linteljs/native-accessible-name');
-  });
-
-  it('reports an accessibility role React Native drops silently', async () => {
-    const code = 'export const Save = () => {\n  return <Text accessibilityRole="searchbox">a</Text>;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Save.tsx');
-
-    expect(ruleIds).toContain('@linteljs/native-valid-accessibility-role');
   });
 
   it.each([
@@ -71,23 +78,27 @@ describe('reactNative', () => {
 
   it('leaves those rules out of the react layer', async () => {
     const code = 'export const Save = () => {\n  return <Pressable onPress={() => {}} />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Save.tsx');
+    const config = [...base(), ...react()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/Save.tsx');
 
     expect(ruleIds).not.toContain('@linteljs/native-accessible-name');
   });
 
   it('reaches no module that imports the web accessibility plugin', async () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const reads = ['reactNativeFramework.ts', '../utils/reactCoreUtils.ts']
+    const mapList = ['reactNativeFramework.ts', '../utils/reactCoreUtils.ts'];
+    const reads = mapList
       .map(async (name) => {
-        return await readFile(join(here, name), 'utf8');
+        const readFileJoin = await readFile(join(here, name), 'utf8');
+        return readFileJoin;
       });
 
     const sources = await Promise.all(reads);
 
     const specifiers = sources
       .flatMap((source) => {
-        return [...source.matchAll(/from '([^']+)'/gu)]
+        const mapList = [...source.matchAll(/from '([^']+)'/gu)];
+        return mapList
           .map(([, specifier]) => {
             return specifier;
           });

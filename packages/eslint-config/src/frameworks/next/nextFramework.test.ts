@@ -17,12 +17,13 @@ import react from '../react/reactFramework';
 import next, { nextGroup } from './nextFramework';
 
 const composed = (): ReturnType<typeof base> => {
-  return [
+  const layers = [
     ...base(),
     ...react(),
     ...next(),
     ...NEXT_PROJECT,
   ];
+  return layers;
 };
 
 describe('next', () => {
@@ -123,7 +124,8 @@ describe('next', () => {
     'next',
     'next/link',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: nextGroup }), specifier);
+    const baseOptions = { frameworkGroup: nextGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
     expect(actual).toBe(true);
   });
 

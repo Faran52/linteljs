@@ -27,16 +27,19 @@ const entryNameOf = (subject: string, suffix: string): string => {
 
 const subjects = Object.entries(GROUPS)
   .flatMap(([group, suffix]) => {
-    return readdirSync(join(srcDir, group), { withFileTypes: true })
+    const readdirSyncOptions = { withFileTypes: true } as const;
+    const readdirSyncJoin = readdirSync(join(srcDir, group), readdirSyncOptions);
+    return readdirSyncJoin
       .filter((entry) => {
         return entry.isDirectory() && entry.name !== 'utils';
       })
       .map((entry) => {
-        return {
+        const subject = {
           group,
           name: entry.name,
           entry: entryNameOf(entry.name, suffix),
         };
+        return subject;
       });
   });
 
@@ -46,7 +49,9 @@ const byName = (left: string, right: string): number => {
 
 describe.each(Object.keys(GROUPS))('%s', (group) => {
   it('holds no loose file', () => {
-    const groupFiles = readdirSync(join(srcDir, group), { withFileTypes: true })
+    const readdirSyncOptions = { withFileTypes: true } as const;
+    const readdirSyncJoin = readdirSync(join(srcDir, group), readdirSyncOptions);
+    const groupFiles = readdirSyncJoin
       .filter((entry) => {
         return !entry.isDirectory();
       })
@@ -66,16 +71,18 @@ describe.each(subjects)('$group/$name', ({
   it('holds its entry and suite, and nothing but a constants.ts and a utils directory beside them', () => {
     const files = readdirSync(join(srcDir, group, name));
 
-    expect(files).toEqual(expect.arrayContaining([`${entry}.ts`, `${entry}.test.ts`]));
+    const expected = [`${entry}.ts`, `${entry}.test.ts`];
+    expect(files).toEqual(expect.arrayContaining(expected));
 
     const strays = files
       .filter((file) => {
-        return ![
+        const includesList = [
           `${entry}.ts`,
           `${entry}.test.ts`,
           'constants.ts',
           'utils',
-        ].includes(file);
+        ];
+        return !includesList.includes(file);
       });
 
     expect(strays).toEqual([]);
@@ -83,7 +90,8 @@ describe.each(subjects)('$group/$name', ({
 });
 
 it('holds compose-config to its entry, its suite and its loaders', () => {
-  const composeFiles = readdirSync(join(srcDir, 'compose-config'))
+  const readdirSyncJoin = readdirSync(join(srcDir, 'compose-config'));
+  const composeFiles = readdirSyncJoin
     .toSorted(byName);
 
   const expected = [
@@ -93,11 +101,12 @@ it('holds compose-config to its entry, its suite and its loaders', () => {
   ];
   expect(composeFiles).toEqual(expected);
 
-  const composeUtils = readdirSync(join(srcDir, 'compose-config', 'utils'))
+  const readdirSyncJoinResult = readdirSync(join(srcDir, 'compose-config', 'utils'));
+  const composeUtils = readdirSyncJoinResult
     .toSorted(byName);
 
-  const expected2 = ['loaderUtils.test.ts', 'loaderUtils.ts'];
-  expect(composeUtils).toEqual(expected2);
+  const expectedUtils = ['loaderUtils.test.ts', 'loaderUtils.ts'];
+  expect(composeUtils).toEqual(expectedUtils);
 });
 
 describe('tsdown entries', () => {
@@ -112,7 +121,8 @@ describe('tsdown entries', () => {
         return path;
       })
       .filter((path) => {
-        return !existsSync(join(srcDir, '..', path));
+        const existsSyncJoin = existsSync(join(srcDir, '..', path));
+        return !existsSyncJoin;
       });
 
     expect(missing).toEqual([]);

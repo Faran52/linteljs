@@ -102,12 +102,14 @@ describe('vue', () => {
 
   it('lets a .ts file pass an imported component along', async () => {
     const file = join(SFC_FIXTURES, 'registerHome.ts');
-    const plain = await ruleIdsForFile([...base(), ...typescript()], file);
-    const composed = await ruleIdsForFile([
+    const config = [...base(), ...typescript()];
+    const plain = await ruleIdsForFile(config, file);
+    const ruleIdsForFileConfig = [
       ...base(),
       ...typescript(),
       ...vue(),
-    ], file);
+    ];
+    const composed = await ruleIdsForFile(ruleIdsForFileConfig, file);
 
     expect(plain).toContain('@typescript-eslint/no-unsafe-argument');
     expect(plain).toContain('@typescript-eslint/no-unsafe-assignment');
@@ -121,7 +123,8 @@ describe('vue', () => {
     'pinia',
     '@vue/test-utils',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: vueGroup }), specifier);
+    const baseOptions = { frameworkGroup: vueGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
     expect(actual).toBe(true);
   });
 
@@ -138,7 +141,8 @@ describe('vue', () => {
   it('reports reactive state mutated in the updated hook, a sonarjs Vue rule base leaves off', async () => {
     const script = "import { ref } from 'vue';\n\nconst count = ref(0);\n\n"
       + 'export default { updated() { count.value++; } };\n';
-    const ruleIds = await ruleIdsForSfc([...base(), ...vue()], `<script>\n${script}</script>\n`, 'Card.vue');
+    const config = [...base(), ...vue()];
+    const ruleIds = await ruleIdsForSfc(config, `<script>\n${script}</script>\n`, 'Card.vue');
 
     expect(ruleIds).toContain('sonarjs/no-mutate-reactive-state-in-updated-hook');
   });
@@ -148,8 +152,10 @@ describe('vue', () => {
       return `<template>\n  <main />\n</template>\n\n<script setup>\n${codeLines(lines - 5)}</script>\n`;
     };
 
-    const atLimit = await ruleIdsForSfc([...base(), ...vue()], component(350), 'Big.vue');
-    const overLimit = await ruleIdsForSfc([...base(), ...vue()], component(351), 'Big.vue');
+    const config = [...base(), ...vue()];
+    const atLimit = await ruleIdsForSfc(config, component(350), 'Big.vue');
+    const ruleIdsForSfcConfig = [...base(), ...vue()];
+    const overLimit = await ruleIdsForSfc(ruleIdsForSfcConfig, component(351), 'Big.vue');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');
@@ -161,8 +167,10 @@ describe('vue', () => {
       return `<script>\n${functionOf(lines)}</script>\n`;
     };
 
-    const atLimit = await ruleIdsForSfc([...base(), ...vue()], component(350), 'Big.vue');
-    const overLimit = await ruleIdsForSfc([...base(), ...vue()], component(351), 'Big.vue');
+    const config = [...base(), ...vue()];
+    const atLimit = await ruleIdsForSfc(config, component(350), 'Big.vue');
+    const ruleIdsForSfcConfig = [...base(), ...vue()];
+    const overLimit = await ruleIdsForSfc(ruleIdsForSfcConfig, component(351), 'Big.vue');
 
     expect(atLimit).not.toContain('max-lines-per-function');
     expect(overLimit).toContain('max-lines-per-function');
@@ -172,7 +180,8 @@ describe('vue', () => {
     ['flat/recommended', 'vue/flat/recommended'],
   ])('names %s when eslint-plugin-vue stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('eslint-plugin-vue', key, async () => {
-      return (await import('./vueFramework')).vue;
+      const vueFramework = await import('./vueFramework');
+      return vueFramework.vue;
     });
 
     expect(layer).toThrow(`${label} is not published`);
@@ -182,7 +191,8 @@ describe('vue', () => {
     ['flat/recommended', 'vuejs-accessibility/flat/recommended'],
   ])('names %s when eslint-plugin-vuejs-accessibility stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('eslint-plugin-vuejs-accessibility', key, async () => {
-      return (await import('./vueFramework')).vue;
+      const vueFramework = await import('./vueFramework');
+      return vueFramework.vue;
     });
 
     expect(layer).toThrow(`${label} is not published`);

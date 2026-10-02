@@ -12,15 +12,17 @@ import tanstackQuery from './tanstackQueryLibrary';
 
 describe('tanstackQuery', () => {
   it('reports a query key missing a dependency', async () => {
-    const code = [
+    const joinList = [
       "import { useQuery } from '@tanstack/react-query';",
       '',
       'export const useThing = (id) => {',
       '  return useQuery({ queryKey: [\'thing\'], queryFn: () => fetch(`/thing/${id}`) });',
       '};',
       '',
-    ].join('\n');
-    const ruleIds = await ruleIdsFor([...react(), ...tanstackQuery()], code, 'src/lib/hooks/useThing.ts');
+    ];
+    const code = joinList.join('\n');
+    const config = [...react(), ...tanstackQuery()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/lib/hooks/useThing.ts');
 
     const anyMatch = ruleIds.some(startsWith('@tanstack/query/'));
     expect(anyMatch).toBe(true);
@@ -30,7 +32,8 @@ describe('tanstackQuery', () => {
     ['flat/recommended', 'tanstack-query/flat/recommended'],
   ])('names %s when @tanstack/eslint-plugin-query stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('@tanstack/eslint-plugin-query', key, async () => {
-      return (await import('./tanstackQueryLibrary')).tanstackQuery;
+      const tanstackQueryLibrary = await import('./tanstackQueryLibrary');
+      return tanstackQueryLibrary.tanstackQuery;
     });
 
     expect(layer).toThrow(`${label} is not published`);

@@ -22,7 +22,8 @@ import solid, { solidGroup } from './solidFramework';
 describe('solid', () => {
   it('reports destructured props, which break reactivity in Solid', async () => {
     const code = 'export const Note = (props) => {\n  const { a } = props;\n\n  return <div>{a}</div>;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Note.tsx');
+    const config = [...base(), ...solid()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/pages/Note.tsx');
 
     const anyMatch = ruleIds.some(startsWith('solid/'));
     expect(anyMatch).toBe(true);
@@ -30,7 +31,8 @@ describe('solid', () => {
 
   it('reports an image with no alt text', async () => {
     const code = 'export const Logo = () => {\n  return <img src="/a.png" />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/Logo.tsx');
+    const config = [...base(), ...solid()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/Logo.tsx');
 
     expect(ruleIds).toContain('jsx-a11y-x/alt-text');
   });
@@ -41,14 +43,16 @@ describe('solid', () => {
     ['@stylistic/jsx-quotes', "<div class='x' />"],
   ])('reports %s', async (rule, element) => {
     const code = `export const Chip = () => {\n  return ${element};\n};\n`;
-    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/components/ui/Chip.tsx');
+    const config = [...base(), ...solid()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).toContain(rule);
   });
 
   it('reports a JSX prop named twice on one element', async () => {
     const code = 'export const Chip = () => {\n  return <span class="a" class="b" />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');
+    const config = [...base(), ...solid()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/pages/Chip.tsx');
 
     expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
   });
@@ -56,17 +60,19 @@ describe('solid', () => {
   it('stays quiet when a spread sits between two same-named props', async () => {
     const code = 'export const Chip = (props) => {\n'
       + '  return <span class="a" {...props} class="b" />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...solid()], code, 'src/pages/Chip.tsx');
+    const config = [...base(), ...solid()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/pages/Chip.tsx');
 
     expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
   });
 
   it('reports a number rendered through &&, which shows a 0', async () => {
-    const ruleIds = await ruleIdsForFile([
+    const config = [
       ...base(),
       ...typescript(),
       ...solid(),
-    ], LEAKED_RENDER_FIXTURE);
+    ];
+    const ruleIds = await ruleIdsForFile(config, LEAKED_RENDER_FIXTURE);
     const entry = await ruleEntryFor(solid(), 'src/Count.tsx', 'sonarjs/jsx-no-leaked-render');
 
     expect(ruleIds).toContain('sonarjs/jsx-no-leaked-render');
@@ -75,7 +81,8 @@ describe('solid', () => {
   });
 
   it('leaves the leaked render to the framework, so base alone stays quiet', async () => {
-    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], LEAKED_RENDER_FIXTURE);
+    const config = [...base(), ...typescript()];
+    const ruleIds = await ruleIdsForFile(config, LEAKED_RENDER_FIXTURE);
 
     expect(ruleIds).not.toContain('sonarjs/jsx-no-leaked-render');
   });
@@ -92,7 +99,8 @@ describe('solid', () => {
     'solid-js/web',
     '@solidjs/router',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: solidGroup }), specifier);
+    const baseOptions = { frameworkGroup: solidGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
     expect(actual).toBe(true);
   });
 
@@ -109,7 +117,8 @@ describe('solid', () => {
     ['flat/typescript', 'solid/flat/typescript'],
   ])('names %s when eslint-plugin-solid stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('eslint-plugin-solid', key, async () => {
-      return (await import('./solidFramework')).solid;
+      const solidFramework = await import('./solidFramework');
+      return solidFramework.solid;
     });
 
     expect(layer).toThrow(`${label} is not published`);
@@ -119,7 +128,8 @@ describe('solid', () => {
     ['recommended', 'jsx-a11y-x/recommended'],
   ])('names %s when eslint-plugin-jsx-a11y-x stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('eslint-plugin-jsx-a11y-x', key, async () => {
-      return (await import('./solidFramework')).solid;
+      const solidFramework = await import('./solidFramework');
+      return solidFramework.solid;
     });
 
     expect(layer).toThrow(`${label} is not published`);

@@ -19,10 +19,11 @@ const NAMING: NamingMap = {
 
 const FOLDER_NAMING: NamingMap = { 'src/**/': 'KEBAB_CASE' };
 
-const layer = base({
+const baseOptions = {
   naming: NAMING,
   folderNaming: FOLDER_NAMING,
-});
+} as const;
+const layer = base(baseOptions);
 
 const SOURCE = 'export const value = 1;\n';
 

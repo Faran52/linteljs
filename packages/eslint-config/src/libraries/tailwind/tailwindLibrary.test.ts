@@ -42,12 +42,13 @@ const ownBlockOf = (built: Layer): Layer[number] => {
 
 describe('tailwind', () => {
   it('reports a duplicate utility in a class string', async () => {
-    const code = [
+    const joinList = [
       'export const Card = () => {',
       '  return <div className="p-2 p-2">x</div>;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
 
     expect(ruleIds).toContain('better-tailwindcss/no-duplicate-classes');
@@ -55,8 +56,9 @@ describe('tailwind', () => {
 
   it('reports a duplicate utility in the template of an astro page', async () => {
     const page = '---\n---\n\n<div class="p-2 p-2">x</div>\n';
+    const baseOptions = { astro: true } as const;
     const astroLayer = [
-      ...base({ astro: true }),
+      ...base(baseOptions),
       ...tailwind(),
       ...CWD_SETTINGS,
       ...astro(),
@@ -67,12 +69,13 @@ describe('tailwind', () => {
   });
 
   it('reports classes out of the enforced order', async () => {
-    const code = [
+    const joinList = [
       'export const Card = () => {',
       '  return <div className="text-sm flex">x</div>;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
 
     expect(ruleIds).toContain('better-tailwindcss/enforce-consistent-class-order');
@@ -81,22 +84,26 @@ describe('tailwind', () => {
   it('carries the entry point through to the plugin when given one', () => {
     const expected = { 'better-tailwindcss': { entryPoint: './src/app/globals.css' } };
 
-    expect(ownBlockOf(tailwind('./src/app/globals.css')).settings).toEqual(
+    const ownBlockOfTailwind = ownBlockOf(tailwind('./src/app/globals.css'));
+
+    expect(ownBlockOfTailwind.settings).toEqual(
       expected,
     );
   });
 
   it('sets no entry point when none is given', () => {
-    expect(ownBlockOf(tailwind()).settings).toBeUndefined();
+    const ownBlockOfTailwind = ownBlockOf(tailwind());
+    expect(ownBlockOfTailwind.settings).toBeUndefined();
   });
 
   it('stays quiet on a clean class string', async () => {
-    const code = [
+    const joinList = [
       'export const Card = () => {',
       '  return <div className="flex p-2 text-sm">x</div>;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
 
     const anyMatch = ruleIds.some(startsWith('better-tailwindcss/'));
@@ -104,12 +111,13 @@ describe('tailwind', () => {
   });
 
   it('leaves a class the theme does not know alone', async () => {
-    const code = [
+    const joinList = [
       'export const Card = () => {',
       '  return <div className="flex brand-card">x</div>;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
     const ruleIds = await ruleIdsFor(layer, code, 'src/components/Card.tsx');
     expect(ruleIds).not.toContain('better-tailwindcss/no-unknown-classes');
@@ -119,7 +127,8 @@ describe('tailwind', () => {
     ['recommended', 'better-tailwindcss/recommended'],
   ])('names %s when eslint-plugin-better-tailwindcss stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('eslint-plugin-better-tailwindcss', key, async () => {
-      return (await import('./tailwindLibrary')).tailwind;
+      const tailwindLibrary = await import('./tailwindLibrary');
+      return tailwindLibrary.tailwind;
     });
 
     expect(layer).toThrow(`${label} is not published`);

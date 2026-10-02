@@ -32,7 +32,7 @@ interface FlatNamespaced {
 
 describe('reactCore', () => {
   it('reports a hook called inside a condition', async () => {
-    const code = [
+    const joinList = [
       "import { useState } from 'react';",
       '',
       'export const Widget = ({ on }) => {',
@@ -45,14 +45,15 @@ describe('reactCore', () => {
       '  return 0;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
     const ruleIds = await ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx');
     expect(ruleIds).toContain('react-hooks/rules-of-hooks');
   });
 
   it('reports an unsorted hook dependency array through the linteljs rule it adds', async () => {
-    const code = [
+    const joinList = [
       "import { useEffect } from 'react';",
       '',
       'export const Widget = ({ b, a }) => {',
@@ -63,42 +64,48 @@ describe('reactCore', () => {
       '  return null;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
     const ruleIds = await ruleIdsFor(reactCore(), code, 'src/components/ui/Widget.tsx');
     expect(ruleIds).toContain('@linteljs/sort-hook-dependencies');
   });
 
   it('reports a component reading its props member by member', async () => {
-    const code = [
+    const joinList = [
       'export const Widget = (props) => {',
       '  return <div>{props.title}</div>;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Widget.tsx');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Widget.tsx');
     expect(ruleIds).toContain('@linteljs/prefer-destructured-props');
   });
 
   it('stays quiet on a component that forwards its props whole', async () => {
-    const code = [
+    const joinList = [
       'export const Widget = (props) => {',
       '  return <input {...props} />;',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Widget.tsx');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Widget.tsx');
     expect(ruleIds).not.toContain('@linteljs/prefer-destructured-props');
   });
 
   it('reports through the eslint-react preset it composes', async () => {
-    const ruleIds = await ruleIdsForFile([
+    const config = [
       ...base(),
       ...typescript(),
       ...reactCore(),
-    ], JSX_FIXTURE);
+    ];
+    const ruleIds = await ruleIdsForFile(config, JSX_FIXTURE);
 
     expect(ruleIds).toContain('@eslint-react/no-array-index-key');
   });
@@ -108,7 +115,8 @@ describe('reactCore', () => {
     ['@stylistic/jsx-pascal-case', '<My_Box />'],
   ])('reports %s', async (rule, element) => {
     const code = `export const Chip = () => {\n  return ${element};\n};\n`;
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).toContain(rule);
   });
@@ -128,16 +136,16 @@ describe('reactCore', () => {
     const three = 'export const Widget = () => {\n  return <div id="a" lang="b" title="c" />;\n};\n';
     const multiline = 'export const Widget = () => {\n  return (\n    <div\n      id="a" lang="b"\n    />\n  );\n};\n';
 
-    const ruleIds = await ruleIdsFor(layer, two, widget);
-    expect(ruleIds).not.toContain('@stylistic/jsx-max-props-per-line');
-    const layerRuleIds = await ruleIdsFor(layer, three, widget);
-    expect(layerRuleIds).toContain('@stylistic/jsx-max-props-per-line');
-    const ruleIds2 = await ruleIdsFor(layer, multiline, widget);
-    expect(ruleIds2).toContain('@stylistic/jsx-max-props-per-line');
+    const twoPropsRuleIds = await ruleIdsFor(layer, two, widget);
+    expect(twoPropsRuleIds).not.toContain('@stylistic/jsx-max-props-per-line');
+    const threePropsRuleIds = await ruleIdsFor(layer, three, widget);
+    expect(threePropsRuleIds).toContain('@stylistic/jsx-max-props-per-line');
+    const multilineRuleIds = await ruleIdsFor(layer, multiline, widget);
+    expect(multilineRuleIds).toContain('@stylistic/jsx-max-props-per-line');
   });
 
   it('reports a state setter called with its own state, a sonarjs React rule base leaves off', async () => {
-    const code = [
+    const joinList = [
       "import { useState } from 'react';",
       '',
       'export const Chip = () => {',
@@ -149,15 +157,18 @@ describe('reactCore', () => {
       '  return <button onClick={close}>x</button>;',
       '};',
       '',
-    ].join('\n');
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+    ];
+    const code = joinList.join('\n');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).toContain('sonarjs/no-useless-react-setstate');
   });
 
   it('reports a JSX prop named twice on one element', async () => {
     const code = 'export const Chip = () => {\n  return <span className="a" className="b" />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).toContain('@linteljs/no-duplicate-jsx-props');
   });
@@ -165,7 +176,8 @@ describe('reactCore', () => {
   it('stays quiet when a spread sits between two same-named props', async () => {
     const code = 'export const Chip = (props) => {\n'
       + '  return <span className="default" {...props} className="override" />;\n};\n';
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).not.toContain('@linteljs/no-duplicate-jsx-props');
   });
@@ -177,13 +189,14 @@ describe('reactCore', () => {
     'react-native',
     '@react-navigation/native',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: reactGroup }), specifier);
+    const baseOptions = { frameworkGroup: reactGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
     expect(actual).toBe(true);
   });
 
   it('sorts react-dom straight after react, ahead of react/ and the react-* packages', async () => {
     const block = (specifiers: string[]): string => {
-      return [
+      const joinList = [
         ...specifiers
           .map((specifier, index) => {
             return `import { a${String(index)} } from '${specifier}';`;
@@ -191,25 +204,29 @@ describe('reactCore', () => {
         '',
         'export const value = 1;',
         '',
-      ].join('\n');
+      ];
+      return joinList.join('\n');
     };
 
-    const layer = base({ frameworkGroup: reactGroup });
+    const baseOptions = { frameworkGroup: reactGroup } as const;
+    const layer = base(baseOptions);
 
-    const ruleIds = await ruleIdsFor(layer, block([
+    const blockSpecifiers = [
       'react',
       'react-dom',
       'react/jsx-runtime',
       'react-aria',
-    ]), 'src/lib/a.ts');
+    ];
+    const ruleIds = await ruleIdsFor(layer, block(blockSpecifiers), 'src/lib/a.ts');
     expect(ruleIds).not.toContain('simple-import-sort/imports');
 
-    const layerRuleIds = await ruleIdsFor(layer, block([
+    const blockList = [
       'react',
       'react/jsx-runtime',
       'react-aria',
       'react-dom',
-    ]), 'src/lib/a.ts');
+    ];
+    const layerRuleIds = await ruleIdsFor(layer, block(blockList), 'src/lib/a.ts');
     expect(layerRuleIds).toContain('simple-import-sort/imports');
   });
 
@@ -217,7 +234,8 @@ describe('reactCore', () => {
     ['recommended-typescript', 'eslint-react/typescript'],
   ])('names %s when @eslint-react/eslint-plugin stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('@eslint-react/eslint-plugin', key, async () => {
-      return (await import('./reactCoreUtils')).reactCore;
+      const reactCoreUtils = await import('./reactCoreUtils');
+      return reactCoreUtils.reactCore;
     });
 
     expect(layer).toThrow(`${label} is not published`);
@@ -225,7 +243,7 @@ describe('reactCore', () => {
 
   it('names the hooks preset when its plugin stops publishing it', async () => {
     const layer = await layerWithout('eslint-plugin-react-hooks', (plugin: FlatNamespaced) => {
-      return {
+      const patchedPlugin = {
         ...plugin,
         configs: {
           ...plugin.configs,
@@ -235,8 +253,10 @@ describe('reactCore', () => {
           },
         },
       };
+      return patchedPlugin;
     }, async () => {
-      return (await import('./reactCoreUtils')).reactCore;
+      const reactCoreUtils = await import('./reactCoreUtils');
+      return reactCoreUtils.reactCore;
     });
 
     expect(layer).toThrow('react-hooks/flat/recommended is not published');
@@ -305,7 +325,8 @@ describe('reactCore', () => {
     ]],
   ])('reports %s', async (ruleId, lines) => {
     const code = `${lines.join('\n')}\n`;
-    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+    const config = [...base(), ...reactCore()];
+    const ruleIds = await ruleIdsFor(config, code, 'src/components/ui/Chip.tsx');
 
     expect(ruleIds).toContain(ruleId);
   });

@@ -57,14 +57,16 @@ describe('buildGroups', () => {
   it('orders the alias buckets down the dependency direction', () => {
     const groups = buildGroups(ALIASES, reactGroup);
 
-    const actual = indexOfPattern(groups, '^@config(?:/|$)');
-    expect(actual).toBeLessThan(indexOfPattern(groups, '^@lib(?:/|$)'));
-    const actual2 = indexOfPattern(groups, '^@lib(?:/|$)');
-    expect(actual2).toBeLessThan(indexOfPattern(groups, '^@hooks(?:/|$)'));
-    const actual3 = indexOfPattern(groups, '^@hooks(?:/|$)');
-    expect(actual3).toBeLessThan(indexOfPattern(groups, '^@ui(?:/|$)'));
-    const actual4 = indexOfPattern(groups, '^@ui(?:/|$)');
-    expect(actual4).toBeLessThan(indexOfPattern(groups, '^@mocks(?:/|$)'));
+    const configIndex = indexOfPattern(groups, '^@config(?:/|$)');
+    const libIndex = indexOfPattern(groups, '^@lib(?:/|$)');
+    const hooksIndex = indexOfPattern(groups, '^@hooks(?:/|$)');
+    const uiIndex = indexOfPattern(groups, '^@ui(?:/|$)');
+    const mocksIndex = indexOfPattern(groups, '^@mocks(?:/|$)');
+
+    expect(configIndex).toBeLessThan(libIndex);
+    expect(libIndex).toBeLessThan(hooksIndex);
+    expect(hooksIndex).toBeLessThan(uiIndex);
+    expect(uiIndex).toBeLessThan(mocksIndex);
   });
 
   it('emits no pattern for an alias the project does not declare', () => {
@@ -82,72 +84,77 @@ describe('buildGroups', () => {
   });
 
   it('gives an alias no bucket names its own group rather than losing it to node_modules', () => {
-    const groups = buildGroups({ '@/*': './src/*' });
+    const aliases = { '@/*': './src/*' } as const;
+    const groups = buildGroups(aliases);
 
     const actual = indexOfPattern(groups, '^@(?:/|$)');
     expect(actual).toBeGreaterThan(indexOfPattern(groups, String.raw`^@?\w`));
   });
 
   it('sorts the unnamed aliases so the group is stable between runs', () => {
-    const groups = buildGroups({
+    const aliases = {
       '@widgets/*': './src/widgets/*',
       '@assets/*': './src/assets/*',
-    });
+    } as const;
+    const groups = buildGroups(aliases);
 
     const expected = ['^@assets(?:/|$)', '^@widgets(?:/|$)'];
     expect(groups[indexOfPattern(groups, '^@assets(?:/|$)')]).toEqual(expected);
   });
 
   it('matches a bare alias as well as a deep one', () => {
-    const groups = buildGroups({
+    const aliases = {
       '@engine': './src/engine',
       '@utils/*': './src/utils/*',
-    });
+    } as const;
+    const groups = buildGroups(aliases);
     const engine = new RegExp(groups
       .flat()
       .find((pattern) => {
         return pattern.startsWith('^@engine');
       }) ?? '');
 
-    const actual = indexOfPattern(groups, '^@engine(?:/|$)');
-    expect(actual).toBeGreaterThan(-1);
-    const actual2 = engine.exec('@engine');
-    expect(actual2).not.toBeNull();
-    const actual3 = engine.exec('@engine/parse');
-    expect(actual3).not.toBeNull();
-    const actual4 = engine.exec('@engineering/toolkit');
-    expect(actual4).toBeNull();
+    const engineIndex = indexOfPattern(groups, '^@engine(?:/|$)');
+    expect(engineIndex).toBeGreaterThan(-1);
+    const bareMatch = engine.exec('@engine');
+    expect(bareMatch).not.toBeNull();
+    const subpathMatch = engine.exec('@engine/parse');
+    expect(subpathMatch).not.toBeNull();
+    const siblingMatch = engine.exec('@engineering/toolkit');
+    expect(siblingMatch).toBeNull();
   });
 
   it('matches a bare alias in a named bucket too', () => {
+    const aliases = { '@utils': './src/utils' } as const;
     const utils = new RegExp(
-      buildGroups({ '@utils': './src/utils' })
+      buildGroups(aliases)
         .flat()
         .find((pattern) => {
           return pattern.startsWith('^@utils');
         }) ?? '',
     );
 
-    const actual = utils.exec('@utils');
-    expect(actual).not.toBeNull();
-    const actual2 = utils.exec('@utils/format');
-    expect(actual2).not.toBeNull();
+    const bareMatch = utils.exec('@utils');
+    expect(bareMatch).not.toBeNull();
+    const subpathMatch = utils.exec('@utils/format');
+    expect(subpathMatch).not.toBeNull();
   });
 
   it('escapes an alias whose name is regex syntax', () => {
-    const patterns = buildGroups({
+    const aliases = {
       '$lib': './src/lib',
       '$lib/*': './src/lib/*',
-    }).flat();
+    } as const;
+    const patterns = buildGroups(aliases).flat();
 
     expect(patterns).toContain(String.raw`^\$lib(?:/|$)`);
     expect(patterns).not.toContain('^$lib(?:/|$)');
-    const actual = '$lib/store/user'.startsWith('$lib/');
-    expect(actual).toBe(true);
-    const actual2 = new RegExp(String.raw`^\$lib(?:/|$)`).exec('$lib/store/user');
-    expect(actual2).not.toBeNull();
-    const actual3 = new RegExp('^$lib(?:/|$)').exec('$lib/store/user');
-    expect(actual3).toBeNull();
+    const startsWithLib = '$lib/store/user'.startsWith('$lib/');
+    expect(startsWithLib).toBe(true);
+    const escapedMatch = new RegExp(String.raw`^\$lib(?:/|$)`).exec('$lib/store/user');
+    expect(escapedMatch).not.toBeNull();
+    const rawMatch = new RegExp('^$lib(?:/|$)').exec('$lib/store/user');
+    expect(rawMatch).toBeNull();
   });
 
   it('files every named alias in its bucket and nowhere else', () => {
@@ -170,9 +177,11 @@ describe('buildGroups', () => {
       '@components',
       '@mocks',
     ];
-    const aliases = Object.fromEntries([...named, '@widgets']
+    const mapList = [...named, '@widgets'];
+    const aliases = Object.fromEntries(mapList
       .map((name) => {
-        return [`${name}/*`, `./src/${name.slice(1)}/*`];
+        const aliasEntry = [`${name}/*`, `./src/${name.slice(1)}/*`] as const;
+        return aliasEntry;
       }));
 
     const pattern = (name: string): string => {
@@ -180,33 +189,39 @@ describe('buildGroups', () => {
     };
 
     const sliced = buildGroups(aliases).slice(2, -4);
+    const dataNames = [
+      '@config',
+      '@typings',
+      '@styles',
+    ];
+    const logicNames = [
+      '@lib',
+      '@store',
+      '@services',
+      '@providers',
+      '@apis',
+      '@utils',
+      '@i18n',
+    ];
+    const behaviorNames = [
+      '@hooks',
+      '@composables',
+      '@primitives',
+    ];
+    const viewNames = [
+      '@ui',
+      '@features',
+      '@components',
+    ];
+    const mocksNames = ['@mocks'];
+    const widgetsNames = ['@widgets'];
     const expected = [
-      [
-        '@config',
-        '@typings',
-        '@styles',
-      ].map(pattern),
-      [
-        '@lib',
-        '@store',
-        '@services',
-        '@providers',
-        '@apis',
-        '@utils',
-        '@i18n',
-      ].map(pattern),
-      [
-        '@hooks',
-        '@composables',
-        '@primitives',
-      ].map(pattern),
-      [
-        '@ui',
-        '@features',
-        '@components',
-      ].map(pattern),
-      ['@mocks'].map(pattern),
-      ['@widgets'].map(pattern),
+      dataNames.map(pattern),
+      logicNames.map(pattern),
+      behaviorNames.map(pattern),
+      viewNames.map(pattern),
+      mocksNames.map(pattern),
+      widgetsNames.map(pattern),
     ];
     expect(sliced).toEqual(expected);
   });
@@ -217,10 +232,11 @@ describe('buildGroups', () => {
   });
 
   it('matches an alias whose wildcard sits mid-key', () => {
-    const patterns = buildGroups({
+    const aliases = {
       '@features/*/api': './src/features/*/api',
       '@app/shared/*': './src/app/shared/*',
-    }).flat();
+    } as const;
+    const patterns = buildGroups(aliases).flat();
 
     expect(patterns).toContain('^@features(?:/|$)');
     expect(patterns).toContain('^@app/shared(?:/|$)');
@@ -237,13 +253,14 @@ describe('buildGroups', () => {
 
 describe('base: simple-import-sort', () => {
   it('reports a misordered import block', async () => {
-    const code = [
+    const joinList = [
       "import { helper } from './helper';",
       "import { readFile } from 'node:fs/promises';",
       '',
       'export const value = helper(readFile);',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
 
     const ruleIds = await ruleIdsFor(base(), code, 'src/lib/utils/sample.ts');
     expect(ruleIds).toContain('simple-import-sort/imports');

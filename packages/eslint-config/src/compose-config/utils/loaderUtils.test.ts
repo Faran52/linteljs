@@ -95,19 +95,20 @@ describe('FRAMEWORKS', () => {
 
 describe('LIBRARIES', () => {
   it('loads each library layer', async () => {
-    const actual = await LIBRARIES['tanstack-query']({});
-    expect(actual).toEqual(tanstackQuery());
-    const actual2 = await LIBRARIES['tanstack-router']({});
-    expect(actual2).toEqual(tanstackRouter());
-    const actual3 = await LIBRARIES.stylex({});
-    expect(actual3).toEqual(stylex());
+    const queryLayer = await LIBRARIES['tanstack-query']({});
+    expect(queryLayer).toEqual(tanstackQuery());
+    const routerLayer = await LIBRARIES['tanstack-router']({});
+    expect(routerLayer).toEqual(tanstackRouter());
+    const stylexLayer = await LIBRARIES.stylex({});
+    expect(stylexLayer).toEqual(stylex());
   });
 
   it('hands tailwind the entry point it was given, and none when it was given none', async () => {
-    const actual = await LIBRARIES.tailwind({ tailwindEntryPoint: 'src/styles/app.css' });
-    expect(actual).toEqual(tailwind('src/styles/app.css'));
+    const tailwindOptions = { tailwindEntryPoint: 'src/styles/app.css' } as const;
+    const withEntryPoint = await LIBRARIES.tailwind(tailwindOptions);
+    expect(withEntryPoint).toEqual(tailwind('src/styles/app.css'));
 
-    const actual2 = await LIBRARIES.tailwind({});
-    expect(actual2).toEqual(tailwind());
+    const withoutEntryPoint = await LIBRARIES.tailwind({});
+    expect(withoutEntryPoint).toEqual(tailwind());
   });
 });

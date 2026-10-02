@@ -63,12 +63,14 @@ describe('nuxt', () => {
     'nuxt/app',
     '#imports',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: nuxtGroup }), specifier);
+    const baseOptions = { frameworkGroup: nuxtGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
     expect(actual).toBe(true);
   });
 
   it('leaves ~/ out of the framework bucket', async () => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: nuxtGroup }), '~/utils');
+    const baseOptions = { frameworkGroup: nuxtGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), '~/utils');
     expect(actual).toBe(false);
   });
 

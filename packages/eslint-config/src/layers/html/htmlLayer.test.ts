@@ -26,18 +26,20 @@ describe('html', () => {
   });
 
   it('enables no html rule on a TypeScript file', async () => {
-    const enabled = await enabledRuleIdsFor([...base(), ...html()], 'src/lib/utils/sample.ts');
+    const config = [...base(), ...html()];
+    const enabled = await enabledRuleIdsFor(config, 'src/lib/utils/sample.ts');
 
     const filtered = enabled.filter(startsWith('@html-eslint/'));
     expect(filtered).toEqual([]);
   });
 
   it('survives composition with the type-aware layer', async () => {
-    const ruleIds = await ruleIdsFor([
+    const config = [
       ...base(),
       ...typescript(),
       ...html(),
-    ], NO_ALT, 'index.html');
+    ];
+    const ruleIds = await ruleIdsFor(config, NO_ALT, 'index.html');
     expect(ruleIds).toContain('@html-eslint/require-img-alt');
   });
 
@@ -45,7 +47,8 @@ describe('html', () => {
     'src/index.html',
     'src/lib/utils/sample.ts',
   ])('enables no framework rule on %s', async (file) => {
-    const leaked = await frameworkRuleIdsFor([...base(), ...html()], file);
+    const config = [...base(), ...html()];
+    const leaked = await frameworkRuleIdsFor(config, file);
 
     expect(leaked).toStrictEqual([]);
   });
@@ -62,7 +65,8 @@ describe('html', () => {
     ['flat/recommended', 'html-eslint/flat/recommended'],
   ])('names %s when @html-eslint/eslint-plugin stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('@html-eslint/eslint-plugin', key, async () => {
-      return (await import('./htmlLayer')).html;
+      const htmlLayer = await import('./htmlLayer');
+      return htmlLayer.html;
     });
 
     expect(layer).toThrow(`${label} is not published`);

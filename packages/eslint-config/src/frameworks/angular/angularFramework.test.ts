@@ -21,11 +21,13 @@ describe('angular', () => {
     const decorated = "@Component({ selector: 'app-mark' })\nexport class Mark {}\n";
     const bare = 'export class Bag {}\n';
 
-    const ruleIds = await ruleIdsFor([...base(), ...angular()], decorated, 'src/app/mark.ts');
-    expect(ruleIds).not.toContain('@typescript-eslint/no-extraneous-class');
+    const config = [...base(), ...angular()];
+    const decoratedRuleIds = await ruleIdsFor(config, decorated, 'src/app/mark.ts');
+    expect(decoratedRuleIds).not.toContain('@typescript-eslint/no-extraneous-class');
 
-    const ruleIds2 = await ruleIdsFor([...base(), ...angular()], bare, 'src/app/bag.ts');
-    expect(ruleIds2).toContain('@typescript-eslint/no-extraneous-class');
+    const ruleIdsForConfig = [...base(), ...angular()];
+    const bareRuleIds = await ruleIdsFor(ruleIdsForConfig, bare, 'src/app/bag.ts');
+    expect(bareRuleIds).toContain('@typescript-eslint/no-extraneous-class');
   });
 
   it('caps a component class file at 500 lines of code', async () => {
@@ -33,8 +35,10 @@ describe('angular', () => {
       return `@Component({ selector: 'app-big' })\nexport class Big {}\n${codeLines(lines - 2)}`;
     };
 
-    const atLimit = await ruleIdsFor([...base(), ...angular()], component(500), 'src/app/big.component.ts');
-    const overLimit = await ruleIdsFor([...base(), ...angular()], component(501), 'src/app/big.component.ts');
+    const config = [...base(), ...angular()];
+    const atLimit = await ruleIdsFor(config, component(500), 'src/app/big.component.ts');
+    const ruleIdsForConfig = [...base(), ...angular()];
+    const overLimit = await ruleIdsFor(ruleIdsForConfig, component(501), 'src/app/big.component.ts');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines');
@@ -48,8 +52,10 @@ describe('angular', () => {
       return `@Component({ selector: 'app-big' })\nexport class Big {\n${method}}\n`;
     };
 
-    const atLimit = await ruleIdsFor([...base(), ...angular()], component(350), 'src/app/big.component.ts');
-    const overLimit = await ruleIdsFor([...base(), ...angular()], component(351), 'src/app/big.component.ts');
+    const config = [...base(), ...angular()];
+    const atLimit = await ruleIdsFor(config, component(350), 'src/app/big.component.ts');
+    const ruleIdsForConfig = [...base(), ...angular()];
+    const overLimit = await ruleIdsFor(ruleIdsForConfig, component(351), 'src/app/big.component.ts');
 
     expect(atLimit).not.toContain(null);
     expect(atLimit).not.toContain('max-lines-per-function');
@@ -57,14 +63,15 @@ describe('angular', () => {
   });
 
   it('reports a bypassed sanitizer, a sonarjs Angular rule base leaves off', async () => {
-    const code = [
+    const joinList = [
       "import { DomSanitizer } from '@angular/platform-browser';",
       '',
       'export const trust = (sanitizer: DomSanitizer, html: string) => {',
       '  return sanitizer.bypassSecurityTrustHtml(html);',
       '};',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/trust.ts');
 
     expect(ruleIds).toContain('sonarjs/no-angular-bypass-sanitization');
@@ -88,7 +95,7 @@ describe('angular', () => {
   });
 
   it('reports a component class that breaks an angular-eslint convention', async () => {
-    const code = [
+    const joinList = [
       "import { Component } from '@angular/core';",
       '',
       "@Component({ selector: 'app-home', template: '' })",
@@ -96,7 +103,8 @@ describe('angular', () => {
       '  ngOnInit() {}',
       '}',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/home.component.ts');
 
     const anyMatch = ruleIds.some(startsWith('@angular-eslint/'));
@@ -104,11 +112,12 @@ describe('angular', () => {
   });
 
   it('reports on a template written inline in a component', async () => {
-    const code = [
+    const joinList = [
       "@Component({ selector: 'app-logo', template: '<img src=\"/a.png\">' })",
       'export class LogoComponent {}',
       '',
-    ].join('\n');
+    ];
+    const code = joinList.join('\n');
     const ruleIds = await ruleIdsFor(angular(), code, 'src/app/logo.component.ts');
 
     expect(ruleIds).toContain('@angular-eslint/template/alt-text');
@@ -119,7 +128,8 @@ describe('angular', () => {
     'rxjs',
     'rxjs/operators',
   ])('sorts %s into its own bucket ahead of the packages', async (specifier) => {
-    const actual = await sortsAheadOfPackages(base({ frameworkGroup: angularGroup }), specifier);
+    const baseOptions = { frameworkGroup: angularGroup } as const;
+    const actual = await sortsAheadOfPackages(base(baseOptions), specifier);
     expect(actual).toBe(true);
   });
 
@@ -139,7 +149,8 @@ describe('angular', () => {
     ['templateAccessibility', 'angular-eslint/templateAccessibility'],
   ])('names %s when angular-eslint stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('angular-eslint', key, async () => {
-      return (await import('./angularFramework')).angular;
+      const angularFramework = await import('./angularFramework');
+      return angularFramework.angular;
     });
 
     expect(layer).toThrow(`${label} is not published`);

@@ -20,7 +20,8 @@ import typescript from '../../layers/typescript/typescriptLayer';
 
 import astro from './astroFramework';
 
-const WITH_BASE = [...base({ astro: true }), ...astro()];
+const baseOptions = { astro: true } as const;
+const WITH_BASE = [...base(baseOptions), ...astro()];
 
 const PAGE = (body: string): string => {
   return `---\nconst title = 'Home';\n---\n\n<h1>{title}</h1>\n${body}\n`;
@@ -88,16 +89,18 @@ describe('astro', () => {
     'src/pages/index.astro/0_0.ts',
     'src/pages/index.astro/1_1.js',
   ])('leaves the virtual script %s untyped under typescript()', async (path) => {
-    const names = await ruleNamesFor([
+    const config = [
       ...base(),
       ...typescript(),
       ...astro(),
-    ], path);
-    const enabled = await enabledRuleIdsFor([
+    ];
+    const names = await ruleNamesFor(config, path);
+    const enabledRuleIdsForConfig = [
       ...base(),
       ...typescript(),
       ...astro(),
-    ], path);
+    ];
+    const enabled = await enabledRuleIdsFor(enabledRuleIdsForConfig, path);
 
     expect(names).toContain('@typescript-eslint/no-floating-promises');
     expect(enabled).not.toContain('@typescript-eslint/no-floating-promises');
@@ -198,7 +201,8 @@ describe('astro', () => {
     ['flat/jsx-a11y-recommended', 'astro/flat/jsx-a11y-recommended'],
   ])('names %s when the plugin stops publishing it', async (key, label) => {
     const layer = await layerWithoutConfig('eslint-plugin-astro', key, async () => {
-      return (await import('./astroFramework')).astro;
+      const astroFramework = await import('./astroFramework');
+      return astroFramework.astro;
     });
 
     expect(layer).toThrow(`${label} is not published`);
