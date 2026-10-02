@@ -97,11 +97,75 @@ typedRuleTester.run('prefer-alias', preferAlias, {
       filename: at('config/env.ts'),
     },
     {
+      // A sibling below the own directory, even inside another alias, stays relative.
+      code: "import { value } from './ui/button';",
+      filename: at('components/card.ts'),
+    },
+    {
+      // Neither a template nor a non-string literal is a specifier to read.
+      code: 'export const load = () => [import(`../config/env`), import(42)];',
+      filename: at('app/page.ts'),
+    },
+    {
+      code: "import { value } from '../config/env';",
+      filename: at('app/page.ts'),
+      options: [{
+        aliasExempt: ['src/app/**'],
+        enforceRelativeImports: true,
+      }],
+    },
+    {
+      // A `baseUrl` makes any bare specifier resolvable from it.
+      code: "import { value } from '../config/env';",
+      filename: at('app/page.ts'),
+      languageOptions: { parserOptions: { project: './tsconfig.base-url.json' } },
+    },
+    {
       code: 'export const other = 1;\nconst load = (path: string) => import(path);\nexport { load };',
       filename: at('app/page.ts'),
     },
   ],
   invalid: [
+    {
+      code: "import type { value } from '../config/env';\n"
+        + "export type { value as other } from '../config/theme';",
+      filename: at('app/page.ts'),
+      output: "import type { value } from '@config/env';\n"
+        + "export type { value as other } from '@config/theme';",
+      errors: [{ messageId: 'preferAlias' }, { messageId: 'preferAlias' }],
+    },
+    {
+      code: "import { value } from /* env */ '../config/env'; // config",
+      filename: at('app/page.ts'),
+      output: "import { value } from /* env */ '@config/env'; // config",
+      errors: [{ messageId: 'preferAlias' }],
+    },
+    {
+      code: "import { value } from '@config/env';\nimport { value as page } from '@app';\n"
+        + "import { value as card } from '../card';",
+      filename: at('components/ui/button.ts'),
+      output: "import { value } from '@config/env';\nimport { value as page } from '@app';\n"
+        + "import { value as card } from '@components/card';",
+      errors: [{ messageId: 'preferAlias' }],
+    },
+    {
+      code: 'export const load = async () => {\n  const { value } = await import("@config/env");\n\n'
+        + '  return value;\n};',
+      filename: at('app/nested/view.ts'),
+      options: [{
+        aliasExempt: ['src/app/**'],
+        enforceRelativeImports: true,
+      }],
+      output: 'export const load = async () => {\n  const { value } = await import("../../config/env");\n\n'
+        + '  return value;\n};',
+      errors: [{
+        messageId: 'exemptRelative',
+        data: {
+          specifier: '@config/env',
+          replacement: '../../config/env',
+        },
+      }],
+    },
     {
       code: "import { value } from '../config/env';",
       filename: at('app/page.ts'),

@@ -107,6 +107,24 @@ describe('aliasedProjectOf', () => {
     expect(project?.aliases).toEqual([UI, CONFIG]);
   });
 
+  it('skips an empty key, and pairs no exact key that has no substitution', () => {
+    const project = aliasedProjectOf({
+      paths: {
+        '': ['./src/config/*'],
+        '@root/*': ['./*'],
+        '@root': [],
+      },
+      pathsBasePath: '/p',
+    });
+
+    expect(project?.aliases).toEqual([{
+      prefix: '@root/',
+      directory: '/p',
+    }]);
+
+    expect(project?.pinned).toEqual(['', '@root']);
+  });
+
   it('reads nothing off a project with a baseUrl', () => {
     const project = aliasedProjectOf({
       paths: { '@config/*': ['./src/config/*'] },
@@ -169,6 +187,16 @@ describe('aliasMatching', () => {
     expect(alias).toBe(UI);
   });
 
+  it('matches every specifier through an empty prefix', () => {
+    const ANY: Alias = {
+      prefix: '',
+      directory: '/p/src',
+    };
+    const alias = aliasMatching([ANY], 'x');
+
+    expect(alias).toBe(ANY);
+  });
+
   it('matches nothing outside every prefix', () => {
     const alias = aliasMatching([CONFIG], 'react');
 
@@ -193,6 +221,20 @@ describe('throughAlias and pathOf', () => {
     expect(specifier).toBe('@ui');
     expect(path).toBe('/p/src/ui');
     expect(unpaired).toBe('@config/a');
+  });
+});
+
+describe('throughAlias', () => {
+  it('spells a path below a paired directory through its prefix', () => {
+    const specifier = throughAlias(UI, '/p/src/ui/button');
+
+    expect(specifier).toBe('@ui/button');
+  });
+
+  it('spells an unpaired directory as its bare prefix', () => {
+    const specifier = throughAlias(CONFIG, '/p/src/config');
+
+    expect(specifier).toBe('@config/');
   });
 });
 
@@ -248,6 +290,11 @@ describe('matchesGlob', () => {
     [
       'src/*.ts',
       'src/a.ts',
+      true,
+    ],
+    [
+      'src/*.ts',
+      'src/routes.ts',
       true,
     ],
     [

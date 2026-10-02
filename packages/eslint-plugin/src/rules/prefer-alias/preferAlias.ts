@@ -38,8 +38,9 @@ interface TypedServices {
   esTreeNodeToTSNodeMap: NodeMap;
 }
 
+// ESLint 6 to 10 default `parserServices` to `{}`.
 interface ServicesHost {
-  parserServices?: Partial<TypedServices>;
+  parserServices: Partial<TypedServices>;
 }
 
 interface Typed {
@@ -52,8 +53,8 @@ interface SourceHolder {
 }
 
 const typedOf = ({ parserServices }: ServicesHost): Typed | undefined => {
-  const program = parserServices?.program;
-  const map = parserServices?.esTreeNodeToTSNodeMap;
+  const program = parserServices.program;
+  const map = parserServices.esTreeNodeToTSNodeMap;
 
   return program && map
     ? {
@@ -112,7 +113,8 @@ export const preferAlias = createRule('prefer-alias', {
       aliases,
       pinned,
     } = project;
-    const { aliasExempt = [], enforceRelativeImports = false } = optionsOf<Options>(context);
+    // The schema default fills `enforceRelativeImports` whenever an options object exists.
+    const { aliasExempt = [], enforceRelativeImports } = optionsOf<Options>(context);
     const checker = typed.program.getTypeChecker();
 
     const report = (node: SourceNode, messageId: string, specifier: string, replacement: string): void => {

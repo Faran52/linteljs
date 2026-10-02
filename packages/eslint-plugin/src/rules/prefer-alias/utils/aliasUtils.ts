@@ -32,8 +32,8 @@ const aliasesOf = (paths: Record<string, string[]>, base: string): Alias[] => {
 
       const directory = posix.resolve(base, substitution.slice(0, -2));
       const exact = entries
-        .find(([key, [target = '']]) => {
-          return !key.includes('*') && posix.resolve(base, target) === directory;
+        .find(([key, [target]]) => {
+          return target !== undefined && !key.includes('*') && posix.resolve(base, target) === directory;
         });
 
       return [{
