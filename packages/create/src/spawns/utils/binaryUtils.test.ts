@@ -48,19 +48,21 @@ describe('resolvedBinary', () => {
   });
 
   it('skips an empty PATH entry rather than reading it as the working directory', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'linteljs-binary-'));
+    const prefix = join(tmpdir(), 'linteljs-binary-');
+    const dir = await mkdtemp(prefix);
 
     try {
       await writeFile(join(dir, 'tool'), '', 'utf8');
       await chmod(join(dir, 'tool'), 0o755);
 
       vi.stubEnv('PATH', dir);
-      const actual = resolvedBinary('tool');
-      expect(actual).toBe(join(dir, 'tool'));
+      const onPath = resolvedBinary('tool');
+      expect(onPath).toBe(join(dir, 'tool'));
 
       vi.stubEnv('PATH', delimiter);
-      const actual2 = resolvedBinary(relative(cwd(), join(dir, 'tool')));
-      expect(actual2).toBeUndefined();
+      const relativeTool = relative(cwd(), join(dir, 'tool'));
+      const fromEmptyEntry = resolvedBinary(relativeTool);
+      expect(fromEmptyEntry).toBeUndefined();
     }
     finally {
       await rm(dir, {

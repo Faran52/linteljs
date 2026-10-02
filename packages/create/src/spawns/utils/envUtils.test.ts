@@ -17,7 +17,8 @@ afterEach(() => {
 
 describe('repositoryFreeEnv', () => {
   it('drops every variable git itself names as locating a repository', () => {
-    const named = execFileSync(String(resolvedBinary('git')), ['rev-parse', '--local-env-vars'], { encoding: 'utf8' })
+    const git = String(resolvedBinary('git'));
+    const named = execFileSync(git, ['rev-parse', '--local-env-vars'], { encoding: 'utf8' })
       .trim()
       .split('\n');
 
@@ -25,7 +26,8 @@ describe('repositoryFreeEnv', () => {
       vi.stubEnv(name, '/elsewhere');
     }
 
-    const left = Object.keys(repositoryFreeEnv())
+    const freeEnv = repositoryFreeEnv();
+    const left = Object.keys(freeEnv)
       .filter((name) => {
         return named.includes(name);
       });

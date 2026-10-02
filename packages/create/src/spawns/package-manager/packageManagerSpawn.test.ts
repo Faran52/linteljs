@@ -12,7 +12,8 @@ import {
 import { packageManagerSpawn } from './packageManagerSpawn';
 
 vi.mock('node:child_process', () => {
-  return { spawnSync: vi.fn() };
+  const childProcess = { spawnSync: vi.fn() };
+  return childProcess;
 });
 
 const spawn = vi.mocked(spawnSync);

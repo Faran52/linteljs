@@ -21,7 +21,8 @@ import { gitSpawn } from './gitSpawn';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-git-'));
+  const prefix = join(tmpdir(), 'linteljs-git-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {
@@ -41,7 +42,8 @@ describe('gitSpawn', () => {
   });
 
   it('acts on the given directory when the caller exports another repository', async () => {
-    const outer = await mkdtemp(join(tmpdir(), 'linteljs-git-outer-'));
+    const outerPrefix = join(tmpdir(), 'linteljs-git-outer-');
+    const outer = await mkdtemp(outerPrefix);
 
     try {
       gitSpawn(['init', '--quiet'], { cwd: outer });

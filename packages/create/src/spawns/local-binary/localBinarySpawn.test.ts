@@ -21,7 +21,8 @@ import { localBinarySpawn } from './localBinarySpawn';
 let cwd = '';
 
 beforeEach(async () => {
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-local-'));
+  const prefix = join(tmpdir(), 'linteljs-local-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {

@@ -13,7 +13,8 @@ import {
 import { nodeSpawn } from './nodeSpawn';
 
 vi.mock('node:child_process', () => {
-  return { spawnSync: vi.fn() };
+  const childProcess = { spawnSync: vi.fn() };
+  return childProcess;
 });
 
 const spawn = vi.mocked(spawnSync);
@@ -32,9 +33,9 @@ describe('nodeSpawn', () => {
 
     const actual = nodeSpawn();
     expect(actual).toBe('26.9.0');
-    const expected = ['--version'];
-    const expected2 = { encoding: 'utf8' };
-    expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), expected, expected2);
+    const versionArgs = ['--version'];
+    const spawnOptions = { encoding: 'utf8' };
+    expect(spawn).toHaveBeenCalledWith(expect.stringMatching(/node$/u), versionArgs, spawnOptions);
   });
 
   it('answers nothing, and spawns nothing, where PATH carries no node', () => {
