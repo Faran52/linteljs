@@ -1,7 +1,6 @@
 import { View } from 'react-native';
 import Animated, {
   type CSSAnimationKeyframes,
-  type CSSAnimationProperties,
   cubicBezier,
   useReducedMotion,
 } from 'react-native-reanimated';
@@ -68,14 +67,14 @@ export const Mark = (): ReactNode => {
           drift,
           delay,
         }) => {
-          const animation: CSSAnimationProperties = still
+          const animation = still
             ? {}
             : {
                 animationName: cascade(drift),
                 animationDuration: '5s',
                 animationDelay: delay,
                 animationIterationCount: 'infinite',
-              };
+              } as const;
           const lineStyle = [
             layout.line,
             { width },

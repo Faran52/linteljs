@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Tabs } from 'expo-router';
 import Head from 'expo-router/head';
 
-import type { BottomTabNavigationOptions } from 'expo-router/tabs';
-
 import { NAME } from '@config/linteljs';
 import { PAGES } from '@config/routes';
 import { useStarterStyles } from '@styles/starter';
@@ -13,6 +11,8 @@ import { useStarterStyles } from '@styles/starter';
 import { initI18n, restoreLanguage } from '@i18n';
 
 import { LanguageSelect } from '@features/language-select/LanguageSelect';
+
+import type { BottomTabNavigationOptions } from 'expo-router/tabs';
 
 import '../global.css';
 
