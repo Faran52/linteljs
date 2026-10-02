@@ -77,7 +77,7 @@ describe('AppHeader', () => {
       await i18n.changeLanguage(last);
     });
 
-    const home = resources[last].common.home;
+    const { home } = resources[last].common;
 
     expect(localStorage.getItem(languageStorageKey)).toBe(last);
     expect(screen.getByRole('button', { name: home })).toBeTruthy();

@@ -155,10 +155,10 @@ describe('the surfaces axis', () => {
     ['chrome'],
     ['firefox'],
   ])('marks %s as the browser its devtools registration is written for', (browser) => {
-    const starterFiles = recordFor({
+    const { starterFiles } = recordFor({
       browser,
       surfaces: ['devtools-panel'],
-    }).starterFiles;
+    });
 
     expect(starterFiles).toContainEqual({
       target: 'src/devtools/index.ts',

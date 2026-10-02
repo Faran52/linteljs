@@ -82,7 +82,7 @@ describe('readAnswer', () => {
   });
 
   it('names the pattern a string fails, not a type', () => {
-    const pattern = ANSWERS.nodeVersion.pattern;
+    const { pattern } = ANSWERS.nodeVersion;
 
     expect(() => {
       return readAnswer(ANSWERS.nodeVersion, '26');

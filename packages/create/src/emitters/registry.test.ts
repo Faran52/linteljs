@@ -559,7 +559,7 @@ describe('the files a webextension surface owns', () => {
         return OWNED[surface];
       })
       .toSorted(byLocale);
-    const html = targetFor(answers).html;
+    const { html } = targetFor(answers);
 
     expect(writtenPaths).toEqual(expectedPaths);
     expect(html).toBe(surfaces.includes('popup') || surfaces.includes('devtools-panel'));

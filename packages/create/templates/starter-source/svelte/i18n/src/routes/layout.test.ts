@@ -33,7 +33,7 @@ describe('layout', () => {
   it('names the project and links every page, around what it routes', () => {
     render(Layout, { children: routed });
 
-    const title = document.title;
+    const { title } = document;
 
     expect(title).toBe(NAME);
     expect(screen.getByText('LintelJS Starter')).toBeTruthy();

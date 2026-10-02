@@ -42,6 +42,9 @@ when a version's change lives in a sibling it is described there instead:
   (`no-vue-class-component`, `no-vue-mixins`, `no-mutate-reactive-state-in-updated-hook`) to `vue()` and `nuxt()`,
   and `no-angular-bypass-sanitization` to `angular()`. An override of one of them in a `base`-only config now names
   a rule that is off.
+- **`base` prefers destructuring in a declaration.** `const width = box.width` is `const { width } = box`, and the
+  fix rewrites it. Arrays, assignments and renamed properties are left alone. `typescript()` swaps the core rule
+  for `@typescript-eslint/prefer-destructuring` on TypeScript files, with the same options.
 
 ### Added
 

@@ -23,6 +23,31 @@ export const typescript = ({ aliasExempt = [], enforceRelativeImports = false }:
       files: ['**/*.{js,jsx,mjs,cjs}', '**/*.html'],
     },
 
+    {
+      name: '@linteljs/typescript/prefer-destructuring',
+      files: ['**/*.{ts,tsx,mts,cts}'],
+      rules: {
+        'prefer-destructuring': 'off',
+        '@typescript-eslint/prefer-destructuring': [
+          'error',
+          {
+            VariableDeclarator: {
+              array: false,
+              object: true,
+            },
+            AssignmentExpression: {
+              array: false,
+              object: false,
+            },
+          },
+          {
+            enforceForRenamedProperties: false,
+            enforceForDeclarationWithTypeAnnotation: false,
+          },
+        ],
+      },
+    },
+
     // `strictTypeChecked` re-enables what `base` handed to `unused-imports`.
     {
       name: '@linteljs/typescript/unused-vars-handover',

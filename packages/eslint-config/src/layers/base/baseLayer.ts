@@ -234,6 +234,22 @@ export const base = (options: BaseOptions = {}): Layer => {
           },
         ],
 
+        // Declarations only: see "Destructuring in declarations only" in docs/DESIGN.md.
+        'prefer-destructuring': [
+          'error',
+          {
+            VariableDeclarator: {
+              array: false,
+              object: true,
+            },
+            AssignmentExpression: {
+              array: false,
+              object: false,
+            },
+          },
+          { enforceForRenamedProperties: false },
+        ],
+
         'sonarjs/cognitive-complexity': ['error', 15],
 
         // Counted as code: blank lines and comments are free.

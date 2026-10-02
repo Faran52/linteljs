@@ -650,10 +650,10 @@ describe('answers a target never asks for', () => {
   });
 
   it.each(['next', 'react-native'])('accepts react-hook-form on %s', (target) => {
-    const form = parseLinteljsConfig(config({
+    const { form } = parseLinteljsConfig(config({
       target,
       form: 'react-hook-form',
-    })).form;
+    }));
 
     expect(form).toBe('react-hook-form');
   });
@@ -673,19 +673,19 @@ describe('answers a target never asks for', () => {
   });
 
   it('accepts the same answers where the target asks for them', () => {
-    const form = parseLinteljsConfig(config({
+    const { form } = parseLinteljsConfig(config({
       target: 'astro',
       hostedFramework: 'react',
       form: 'react-hook-form',
-    })).form;
+    }));
 
     expect(form).toBe('react-hook-form');
 
-    const router = parseLinteljsConfig(config({
+    const { router } = parseLinteljsConfig(config({
       target: 'react',
       router: 'tanstack-router',
       store: 'redux-toolkit',
-    })).router;
+    }));
 
     expect(router).toBe('tanstack-router');
   });

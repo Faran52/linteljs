@@ -325,6 +325,13 @@ the ten sonarjs framework rules off; each framework turns its own back on (`JSX_
 an `.astro` template, which parses as JSX, keeps the layout set. The layer suites hold `base`, `typescript()`,
 `vitest()` and `html()` to no framework rule at all. Solid gets the JSX layout but not sonarjs's React rules.
 
+### Destructuring in declarations only
+
+`prefer-destructuring` reports `const width = box.width` and nothing else. On an assignment the fix needs
+`({ width } = box);`, a statement that has to start with a parenthesis and reads worse than what it replaces, so
+`AssignmentExpression` is off. Arrays are off on both: `const first = list[0]` names an index, which `[first]`
+hides. A renamed property (`const tall = box.height`) is not reported, since `{ height: tall }` is no shorter.
+
 ### Rules `base` leaves off, measured
 
 Each was tried against the workspace and the 670 starter files with `base` as it stands.

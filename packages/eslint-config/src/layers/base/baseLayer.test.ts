@@ -16,6 +16,7 @@ import {
   frameworkRuleIdsFor,
   functionOf,
   ownBlockNames,
+  ruleEntryFor,
   ruleIdsFor,
   ruleIdsForFile,
   ruleNamesFor,
@@ -395,6 +396,47 @@ describe('base: quality', () => {
 
     await expect(ruleIdsFor(base(), 'console.log(1);\n', 'src/scripts/tool.ts'))
       .resolves.toContain('no-console');
+  });
+
+  it('prefers destructuring in an object declaration only', async () => {
+    const code = [
+      'const source = { width: 1, height: 2 };',
+      'const pair = [1, 2];',
+      'export const width = source.width;',
+      'export const tall = source.height;',
+      'export const first = pair[0];',
+      'export let late = 0;',
+      'late = source.width;',
+      '',
+    ].join('\n');
+    const reported = (await ruleIdsFor(base(), code, 'src/tool.js'))
+      .filter((ruleId) => {
+        return ruleId === 'prefer-destructuring';
+      });
+
+    expect(reported).toHaveLength(1);
+  });
+
+  it('restates every prefer-destructuring option, and leaves the TypeScript twin to the typed layer', async () => {
+    const entry = await ruleEntryFor(base(), TS_FILE, 'prefer-destructuring');
+    const ruleNames = await ruleNamesFor(base(), TS_FILE);
+
+    expect(entry).toEqual([
+      2,
+      {
+        VariableDeclarator: {
+          array: false,
+          object: true,
+        },
+        AssignmentExpression: {
+          array: false,
+          object: false,
+        },
+      },
+      { enforceForRenamedProperties: false },
+    ]);
+
+    expect(ruleNames).not.toContain('@typescript-eslint/prefer-destructuring');
   });
 });
 

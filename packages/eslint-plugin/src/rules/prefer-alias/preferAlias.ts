@@ -53,7 +53,7 @@ interface SourceHolder {
 }
 
 const typedOf = ({ parserServices }: ServicesHost): Typed | undefined => {
-  const program = parserServices.program;
+  const { program } = parserServices;
   const map = parserServices.esTreeNodeToTSNodeMap;
 
   return program && map

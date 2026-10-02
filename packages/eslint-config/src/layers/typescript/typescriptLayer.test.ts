@@ -24,6 +24,8 @@ const UNUSED_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed
 
 const REQUIRES_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/requires.ts');
 
+const DESTRUCTURING_FILE = join(import.meta.dirname, '../../../__mocks__/fixtures/typed/destructuring.ts');
+
 describe('typescript', () => {
   it('reports a floating promise, which needs type information to see', async () => {
     await expect(ruleIdsForFile([...base(), ...typescript()], TYPED_FILE))
@@ -49,6 +51,43 @@ describe('typescript', () => {
       });
 
     expect(reported).toHaveLength(1);
+  });
+
+  it('prefers destructuring in an object declaration only, through the typed twin', async () => {
+    const ruleIds = await ruleIdsForFile([...base(), ...typescript()], DESTRUCTURING_FILE);
+    const reported = ruleIds
+      .filter((ruleId) => {
+        return ruleId === '@typescript-eslint/prefer-destructuring';
+      });
+
+    expect(reported).toHaveLength(1);
+    expect(ruleIds).not.toContain('prefer-destructuring');
+  });
+
+  it('restates every prefer-destructuring option on a TypeScript file', async () => {
+    const layer = [...base(), ...typescript()];
+    const entry = await ruleEntryFor(layer, 'src/a.ts', '@typescript-eslint/prefer-destructuring');
+    const enabled = await enabledRuleIdsFor(layer, 'src/a.ts');
+
+    expect(entry).toEqual([
+      2,
+      {
+        VariableDeclarator: {
+          array: false,
+          object: true,
+        },
+        AssignmentExpression: {
+          array: false,
+          object: false,
+        },
+      },
+      {
+        enforceForRenamedProperties: false,
+        enforceForDeclarationWithTypeAnnotation: false,
+      },
+    ]);
+
+    expect(enabled).not.toContain('prefer-destructuring');
   });
 
   it('turns the type-aware rules off a plain .js file', async () => {
@@ -107,6 +146,7 @@ describe('typescript', () => {
     expect(ownBlockNames(typescript())).toEqual([
       '@linteljs/typescript',
       '@linteljs/typescript/untyped',
+      '@linteljs/typescript/prefer-destructuring',
       '@linteljs/typescript/unused-vars-handover',
       '@linteljs/typescript/prefer-alias',
       '@linteljs/typescript/asset-requires',

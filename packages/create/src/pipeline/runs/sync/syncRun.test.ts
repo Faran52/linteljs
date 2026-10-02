@@ -342,7 +342,7 @@ describe('applySync', () => {
   it('makes an executable artifact executable on disk', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, [HUSKY_HOOK]);
 
-    const mode = (await stat(join(cwd, HUSKY_HOOK))).mode;
+    const { mode } = await stat(join(cwd, HUSKY_HOOK));
 
     expect(mode & 0o111).toBe(0o111);
   });

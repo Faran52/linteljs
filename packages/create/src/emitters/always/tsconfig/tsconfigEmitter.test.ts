@@ -133,10 +133,10 @@ describe('buildTsconfig', () => {
   });
 
   it('adds no include of its own for tailwind on a target that declares none', () => {
-    const include = buildTsconfig(answersFor({
+    const { include } = buildTsconfig(answersFor({
       target: 'react',
       styling: 'tailwind',
-    })).include;
+    }));
 
     expect(include).toEqual([
       '**/*.ts',
@@ -422,10 +422,10 @@ describe('buildTsconfig', () => {
     expect(styled).toContain('nativewind-env.d.ts');
     expect(buildTsconfig(answersFor({ target: 'react-native' })).include).not.toContain('nativewind-env.d.ts');
 
-    const include = buildTsconfig(answersFor({
+    const { include } = buildTsconfig(answersFor({
       target: 'react',
       styling: 'tailwind',
-    })).include;
+    }));
 
     expect(include).not.toContain('nativewind-env.d.ts');
   });
@@ -609,10 +609,10 @@ describe('a hosted framework brings its own JSX settings', () => {
   });
 
   it('adds none for a single-file-component framework, or for no framework at all', () => {
-    const compilerOptions = buildTsconfig(answersFor({
+    const { compilerOptions } = buildTsconfig(answersFor({
       target: 'webextension',
       hostedFramework: 'vue',
-    })).compilerOptions;
+    }));
 
     expect(compilerOptions).not.toHaveProperty('jsx');
 
