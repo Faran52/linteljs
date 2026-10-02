@@ -362,20 +362,23 @@ describe('what each target offers', () => {
     ],
     ...HOSTED_FRAMEWORKS
       .flatMap((hostedFramework): [string, Answers, string[], string[] | undefined][] => {
-        const rules = {
+        const rulesByFramework = {
           react: ['react-state.md', 'hooks-order.md'],
           vue: ['vue-reactivity.md'],
           svelte: ['svelte-reactivity.md'],
           solid: ['solid-reactivity.md'],
-        }[hostedFramework];
-        const conditions = {
+        };
+        const conditionsByFramework = {
           react: undefined,
           vue: undefined,
           svelte: ['browser'],
           solid: ['development', 'browser'],
-        }[hostedFramework];
+        };
+        const rules = rulesByFramework[hostedFramework];
+        const conditions = conditionsByFramework[hostedFramework];
+        const hosts = ['astro', 'webextension'] as const;
 
-        return (['astro', 'webextension'] as const)
+        return hosts
           .map((target): [string, Answers, string[], string[] | undefined] => {
             return [
               `${target} hosting ${hostedFramework}`,

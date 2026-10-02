@@ -17,7 +17,7 @@ const SHIPPED = [
 ].join('\n');
 
 const withBlocks = (skipped: string, banned: string): string => {
-  return [
+  const lines = [
     'const BASE_SKIPPED = [];',
     '',
     skipped,
@@ -25,7 +25,8 @@ const withBlocks = (skipped: string, banned: string): string => {
     banned,
     '',
     'export const run = () => {};',
-  ].join('\n');
+  ];
+  return lines.join('\n');
 };
 
 describe('mergeChecker', () => {

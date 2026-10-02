@@ -347,7 +347,8 @@ describe('the project the answers write', () => {
 
     const wildcard = Object.keys(aliases)
       .find((alias) => {
-        return alias.endsWith('/*') && specifier.startsWith(alias.slice(0, -1));
+        const aliasPrefix = alias.slice(0, -1);
+        return alias.endsWith('/*') && specifier.startsWith(aliasPrefix);
       });
 
     if (wildcard === undefined) {
@@ -414,9 +415,11 @@ describe('the project the answers write', () => {
 
       for (const [path, text] of scripts) {
         for (const specifier of specifiersIn(text)) {
+          const specifierPackage = packageOf(specifier);
+
           if (!NOT_A_PACKAGE.test(specifier)
             && aliasedPath(project.answers, specifier) === undefined
-            && !declared.has(packageOf(specifier))) {
+            && !declared.has(specifierPackage)) {
             undeclared.add(`${path} imports ${specifier}`);
           }
         }

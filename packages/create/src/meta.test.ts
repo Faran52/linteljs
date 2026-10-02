@@ -97,7 +97,8 @@ const SHAPES: RingShape[] = [
       typesafety: 'Emitter',
     },
     registry: () => {
-      return [...Object.keys(BUILD_EMITTERS), ...Object.keys(SEED_EMITTERS)];
+      const emitterKeys = [...Object.keys(BUILD_EMITTERS), ...Object.keys(SEED_EMITTERS)];
+      return emitterKeys;
     },
   },
   {
@@ -141,7 +142,7 @@ const subjectsIn = (ring: RingShape): Subject[] => {
           return !SHARED.has(name) && !(group === '' && name in ring.suffixes);
         })
         .map((name) => {
-          return {
+          const subject: Subject = {
             ring: ring.name,
             group,
             name,
@@ -149,6 +150,7 @@ const subjectsIn = (ring: RingShape): Subject[] => {
             entry: entryNameOf(name, suffix),
             registered: ring.registry !== undefined,
           };
+          return subject;
         });
     });
 };
@@ -270,7 +272,9 @@ describe.each(registeredRings)('$name registry', (ring) => {
   });
 });
 
-describe.each(RINGED.flatMap(subjectsIn))('$ring/$name', ({ path, entry }) => {
+const SUBJECTS = RINGED.flatMap(subjectsIn);
+
+describe.each(SUBJECTS)('$ring/$name', ({ path, entry }) => {
   it('holds one entry, named for the directory', () => {
     const entries = entriesIn(path);
     expect(entries).toContain(`${entry}.ts`);
@@ -349,9 +353,11 @@ it('keeps every module to two constants, so a third is a constants.ts', () => {
 
   const carrying = sourcesUnder(srcDir)
     .filter((path) => {
+      const fileName = basename(path);
+      const fromSrc = relative(srcDir, path);
       return !path.endsWith('.test.ts')
-        && !exempt.has(basename(path))
-        && !registries.has(relative(srcDir, path));
+        && !exempt.has(fileName)
+        && !registries.has(fromSrc);
     })
     .filter((path) => {
       const source = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.Latest, true);

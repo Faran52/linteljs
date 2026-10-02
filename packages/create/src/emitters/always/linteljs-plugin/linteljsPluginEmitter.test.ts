@@ -291,7 +291,8 @@ const parseSkill = (text: string): SkillDocument => {
 const skillDocument = async (): Promise<SkillDocument> => {
   const [skill] = linteljsPluginEmitter(DEFAULT_ANSWERS);
 
-  return parseSkill(skill === undefined ? '' : await shippedAssetsReader(skill.content));
+  const skillText = skill === undefined ? '' : await shippedAssetsReader(skill.content);
+  return parseSkill(skillText);
 };
 
 describe('SKILL.md', () => {

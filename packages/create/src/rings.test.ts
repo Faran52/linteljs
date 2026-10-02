@@ -35,14 +35,19 @@ const importsBySource = (): [string, string[]][] => {
     .map((path) => {
       const text = readFileSync(join(import.meta.dirname, path), 'utf8');
 
-      return [path, [...text.matchAll(/(?:from|import) '([^']+)';/gu)]
+      const matches = [...text.matchAll(/(?:from|import) '([^']+)';/gu)];
+      const specifiers = matches
         .map(([, specifier = '']) => {
           return specifier;
-        })];
+        });
+      const imports: [string, string[]] = [path, specifiers];
+      return imports;
     });
 };
 
-it.each(Object.entries(WORLDS))('keeps what reaches %s inside that ring', (name, world) => {
+const WORLD_ENTRIES = Object.entries(WORLDS);
+
+it.each(WORLD_ENTRIES)('keeps what reaches %s inside that ring', (name, world) => {
   const sources = importsBySource();
   const worldRings = Object.keys(WORLDS);
 
@@ -92,5 +97,6 @@ it('lists the directories under src/', () => {
   const ringDirectories = directoriesIn(import.meta.dirname)
     .toSorted(byName);
 
-  expect(ringDirectories).toStrictEqual([...RINGS].toSorted(byName));
+  const expected = [...RINGS].toSorted(byName);
+  expect(ringDirectories).toStrictEqual(expected);
 });
