@@ -62,8 +62,9 @@ export const orderedDiff = (beforeTokens: Token[], afterTokens: Token[]): string
 
 const missingFrom = <T>(before: T[], after: T[], keyOf: (item: T) => string, noun: string): string | undefined => {
   const produced = countBy(after, keyOf);
+  const consumed = countBy(before, keyOf);
 
-  for (const [key, count] of Object.entries(countBy(before, keyOf))) {
+  for (const [key, count] of Object.entries(consumed)) {
     const kept = produced[key] ?? 0;
 
     if (kept < count) {
@@ -75,7 +76,10 @@ const missingFrom = <T>(before: T[], after: T[], keyOf: (item: T) => string, nou
 };
 
 export const multisetDiff = (before: Token[], after: Token[]): string | undefined => {
-  return missingFrom(comparable(before), comparable(after), describeToken, 'token');
+  const input = comparable(before);
+  const output = comparable(after);
+
+  return missingFrom(input, output, describeToken, 'token');
 };
 
 // A block's leading `*` is delimiter, so `comment-delimiter` turning `//` lines into a block is not a loss.
@@ -100,7 +104,10 @@ const contentLinesOf = (comments: Token[]): string[] => {
 };
 
 export const commentDiff = (before: Token[], after: Token[]): string | undefined => {
-  return missingFrom(contentLinesOf(before), contentLinesOf(after), (line) => {
+  const input = contentLinesOf(before);
+  const output = contentLinesOf(after);
+
+  return missingFrom(input, output, (line) => {
     return JSON.stringify(line);
   }, 'comment line');
 };
@@ -156,7 +163,10 @@ const commentAnchors = ({ tokens, comments }: Parsed): string[] => {
 };
 
 export const commentMoveDiff = (before: Parsed, after: Parsed): string | undefined => {
-  return missingFrom(commentAnchors(before), commentAnchors(after), (key) => {
+  const input = commentAnchors(before);
+  const output = commentAnchors(after);
+
+  return missingFrom(input, output, (key) => {
     return key;
   }, 'comment');
 };

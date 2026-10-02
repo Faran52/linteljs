@@ -3,7 +3,7 @@ import { logError } from '../../../../../create/templates/project/scripts/utils/
 import type { Finding } from './reportShapeUtils.ts';
 
 export const show = (file: string, finding: Finding, snippet: string, label: string): void => {
-  logError([
+  const report = [
     `${finding.category}: ${file}`,
     `  rules: ${finding.rules.join(', ')}`,
     `  ${finding.detail}`,
@@ -14,5 +14,7 @@ export const show = (file: string, finding: Finding, snippet: string, label: str
       .map((line) => {
         return `    ${line}`;
       }),
-  ].join('\n'));
+  ].join('\n');
+
+  logError(report);
 };

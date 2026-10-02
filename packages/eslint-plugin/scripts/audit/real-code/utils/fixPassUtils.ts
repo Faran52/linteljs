@@ -34,15 +34,21 @@ interface AuditFinding extends Finding {
   line: number;
 }
 
+const TS_EXTENSIONS = new Set(['.ts', '.tsx']);
+
 const around = (source: string, line: number): string => {
+  const firstShown = Math.max(0, line - 3);
+
   return `${source
     .split('\n')
-    .slice(Math.max(0, line - 3), line + 2)
+    .slice(firstShown, line + 2)
     .join('\n')}\n`;
 };
 
 const flavourOf = (file: string): Flavour => {
-  return ['.ts', '.tsx'].includes(extname(file)) ? 'ts' : 'js';
+  const extension = extname(file);
+
+  return TS_EXTENSIONS.has(extension) ? 'ts' : 'js';
 };
 
 // A disable comment naming an unloaded rule arrives under that rule's id.
@@ -74,12 +80,14 @@ const audit = (
     .flatMap((report) => {
       const { ruleId } = report;
 
-      return ruleId?.startsWith('@linteljs/') === true
+      const ownReport = ruleId?.startsWith('@linteljs/') === true
         ? [{
             report,
             ruleId,
           }]
         : [];
+
+      return ownReport;
     });
   const shapes = shapesOf(ast);
 
@@ -95,12 +103,14 @@ const audit = (
     .flatMap(({ report }) => {
       const finding = judge(report, shapes, probed);
 
-      return finding === undefined
+      const located = finding === undefined
         ? []
         : [{
             ...finding,
             line: report.line,
           }];
+
+      return located;
     });
 };
 
@@ -170,7 +180,9 @@ const check = (context: AuditContext, config: Linter.Config[], file: string): vo
 };
 
 const tally = (findings: Located[], keyOf: (finding: Located) => string): string[] => {
-  return orderBy(Object.entries(countBy(findings, keyOf)), [1], ['desc'])
+  const tallies = Object.entries(countBy(findings, keyOf));
+
+  return orderBy(tallies, [1], ['desc'])
     .map(([key, count]) => {
       return `  ${String(count)}  ${key}`;
     });
@@ -190,7 +202,7 @@ export const runFixPass = (context: AuditContext): number => {
       return flavourOf(file) === 'ts';
     }).length;
 
-  log([
+  const plan = [
     `${String(files.length)} files (${String(typescript)} TypeScript, ${String(files.length - typescript)} `
     + 'JavaScript) under:',
     ...sources
@@ -199,7 +211,9 @@ export const runFixPass = (context: AuditContext): number => {
       }),
     `rules: ${activeRules.join(', ')}`,
     `audit: ${AUDIT_RULES.join(', ')}`,
-  ].join('\n'));
+  ].join('\n');
+
+  log(plan);
 
   const startedAt = Date.now();
 
@@ -232,7 +246,9 @@ export const runFixPass = (context: AuditContext): number => {
 
   const wallMs = Date.now() - startedAt;
 
-  for (const [flavour, label] of [['ts', 'TypeScript'], ['js', 'JavaScript']] as const) {
+  const flavours = [['ts', 'TypeScript'], ['js', 'JavaScript']] as const;
+
+  for (const [flavour, label] of flavours) {
     const bucket = counts[flavour];
     const hits = findings
       .filter((finding) => {
@@ -245,7 +261,7 @@ export const runFixPass = (context: AuditContext): number => {
       + `${String(bucket.unparsed)} the parser rejected`);
   }
 
-  log([
+  const corpusReports = [
     'reports across the corpus:',
     ...orderBy([...context.auditCounts], [1], ['desc'])
       .map(([ruleId, count]) => {
@@ -257,7 +273,9 @@ export const runFixPass = (context: AuditContext): number => {
       .map(([count, file]) => {
         return `  ${String(count).padStart(7)}  ${file}`;
       }),
-  ].join('\n'));
+  ].join('\n');
+
+  log(corpusReports);
 
   showTiming(context.timings, wallMs, (file) => {
     return dominantRule(context, file);
@@ -270,7 +288,7 @@ export const runFixPass = (context: AuditContext): number => {
     return 0;
   }
 
-  logError([
+  const summary = [
     `${String(findings.length)} findings`,
     ...tally(findings, (finding) => {
       return finding.category;
@@ -279,7 +297,9 @@ export const runFixPass = (context: AuditContext): number => {
     ...tally(findings, (finding) => {
       return finding.rules.join(', ');
     }),
-  ].join('\n'));
+  ].join('\n');
+
+  logError(summary);
 
   return findings.length;
 };

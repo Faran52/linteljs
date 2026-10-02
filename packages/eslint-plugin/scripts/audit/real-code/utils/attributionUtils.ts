@@ -76,11 +76,13 @@ const attributeTokens = (
           return breaks([rule]) !== undefined;
         });
 
-      return {
+      const tokenLoss = {
         category: 'token loss',
         rules: culprits.length > 0 ? culprits : subset,
         detail,
       };
+
+      return tokenLoss;
     }
   }
 
@@ -114,11 +116,13 @@ const attributeCommentMoves = (
       return moves([rule]) !== undefined;
     });
 
-  return {
+  const commentMove = {
     category: 'comment moved',
     rules: culprits.length > 0 ? culprits : subset,
     detail,
   };
+
+  return commentMove;
 };
 
 const inspect = (
@@ -141,17 +145,19 @@ const inspect = (
       detail = messageOf(error);
     }
 
-    return [{
+    const unparseable = [{
       category: 'unparseable',
       rules: names,
       detail,
     }];
+
+    return unparseable;
   }
 
   const comments = commentDiff(ast.comments, after.comments);
   const endings = endingsDiff(source, fixed);
 
-  return [
+  const findings = [
     fix(context, fixed, name, names) === fixed
       ? undefined
       : {
@@ -181,6 +187,8 @@ const inspect = (
     .filter((finding) => {
       return finding !== undefined;
     });
+
+  return findings;
 };
 
 export const evaluate = (
@@ -193,11 +201,13 @@ export const evaluate = (
   const ast = parsed ?? parseOrNull(source, name);
   const fixed = ast ? fix(context, source, name, names) : source;
 
-  return {
+  const evaluation = {
     changed: fixed !== source,
     findings: ast && fixed !== source ? inspect(context, source, ast, fixed, name, names) : [],
     fixed,
   };
+
+  return evaluation;
 };
 
 const lineOf = (text: string, offset: number): number => {
@@ -220,7 +230,9 @@ const changedLines = (source: string, fixed: string): [number, number] => {
     back += 1;
   }
 
-  return [lineOf(source, start), lineOf(source, source.length - back)];
+  const changed: [number, number] = [lineOf(source, start), lineOf(source, source.length - back)];
+
+  return changed;
 };
 
 // A two-line slice rarely parses on its own.
@@ -235,8 +247,11 @@ export const narrow = (
   const [first, last] = changedLines(source, fixed);
 
   const slice = (pad: number): string => {
+    const from = Math.max(0, first - pad);
+    const to = Math.min(lines.length, last + pad + 1);
+
     return `${lines
-      .slice(Math.max(0, first - pad), Math.min(lines.length, last + pad + 1))
+      .slice(from, to)
       .join('\n')}\n`;
   };
 
@@ -249,20 +264,22 @@ export const narrow = (
     16,
     32,
   ]) {
-    if (evaluate(context, slice(pad), name, finding.rules).findings
+    const padded = slice(pad);
+    const reproduces = evaluate(context, padded, name, finding.rules).findings
       .some((candidate) => {
         return candidate.category === finding.category;
-      })) {
-      return [slice(pad), 'minimal reproduction'];
+      });
+
+    if (reproduces) {
+      const reproduction: [string, string] = [padded, 'minimal reproduction'];
+
+      return reproduction;
     }
   }
 
-  return [
-    `${lines
-      .slice(Math.max(0, first - 3), Math.min(lines.length, last + 4))
-      .join('\n')}\n`,
-    'changed hunk, could not narrow',
-  ];
+  const hunk: [string, string] = [slice(3), 'changed hunk, could not narrow'];
+
+  return hunk;
 };
 
 export const attribute = (
@@ -303,13 +320,15 @@ export const dominantRule = (context: AuditContext, file: string): Dominant => {
     .reduce((worst, rule) => {
       const ms = timed([rule]) - baseline;
 
-      return ms > worst.ms
+      const slowest = ms > worst.ms
         ? {
             baseline,
             ms,
             rule,
           }
         : worst;
+
+      return slowest;
     }, {
       baseline,
       ms: -Infinity,

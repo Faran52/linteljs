@@ -47,7 +47,9 @@ if (sources.length === 0) {
 const sampled = (): string[] => {
   const found = sources
     .flatMap((dir) => {
-      return [...filesUnder(dir)];
+      const files = [...filesUnder(dir)];
+
+      return files;
     });
   const stride = Math.ceil(found.length / maxFiles);
 
