@@ -7,7 +7,8 @@
   import StatusPage from '@features/status-page/StatusPage.svelte';
 
   // Any other status is a crash, and invalidating runs what failed again.
-  const known = $derived([STATUSES.forbidden, STATUSES.notFound]
+  const knownStatuses = [STATUSES.forbidden, STATUSES.notFound];
+  const known = $derived(knownStatuses
     .find(({ code }) => {
       return code === page.status;
     }));

@@ -22,6 +22,7 @@
 >
   {#each languages as option (option.id)}
     <!-- Spread: a bare `value` compiles to a branch only a re-render reaches. -->
-    <option {...{ value: option.id, lang: option.id }}>{option.label}</option>
+    {@const optionAttributes = { value: option.id, lang: option.id }}
+    <option {...optionAttributes}>{option.label}</option>
   {/each}
 </select>

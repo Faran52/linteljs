@@ -12,7 +12,9 @@ import { STATUSES } from '@config/statuses';
 import ErrorPage from './+error.svelte';
 
 vi.mock('$app/navigation', () => {
-  return { invalidateAll: vi.fn() };
+  const navigation = { invalidateAll: vi.fn() };
+
+  return navigation;
 });
 
 // SvelteKit sets the status before it renders this page, and the suite stands in for it.

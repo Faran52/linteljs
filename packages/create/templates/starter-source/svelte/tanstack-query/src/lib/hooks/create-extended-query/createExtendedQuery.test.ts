@@ -23,7 +23,10 @@ const fetchMock = vi.fn();
 const answering = (body: Version, status = 200): void => {
   fetchMock
     .mockImplementation(() => {
-      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+      const json = JSON.stringify(body);
+      const response = new Response(json, { status });
+
+      return Promise.resolve(response);
     });
 };
 

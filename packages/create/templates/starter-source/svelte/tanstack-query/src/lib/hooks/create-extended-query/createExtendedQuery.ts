@@ -1,4 +1,4 @@
-import { createQuery } from '@tanstack/svelte-query';
+import { createQuery, type CreateQueryOptions } from '@tanstack/svelte-query';
 
 import {
   type ApiError,
@@ -24,7 +24,7 @@ export const createExtendedQuery = <TResponse>(
   } = options;
 
   const result = createQuery<TResponse, ApiError>(() => {
-    return {
+    const queryOptions: CreateQueryOptions<TResponse, ApiError> = {
       queryKey: [path, query],
       queryFn: ({ signal }) => {
         return request<TResponse>(path, {
@@ -35,6 +35,8 @@ export const createExtendedQuery = <TResponse>(
       enabled,
       staleTime,
     };
+
+    return queryOptions;
   });
 
   return result;

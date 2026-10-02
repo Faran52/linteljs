@@ -10,11 +10,13 @@ import Button from './Button.svelte';
 
 const label = (text: string): ReturnType<typeof createRawSnippet> => {
   return createRawSnippet(() => {
-    return {
+    const snippet = {
       render: () => {
         return `<span>${text}</span>`;
       },
     };
+
+    return snippet;
   });
 };
 

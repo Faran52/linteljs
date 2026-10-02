@@ -16,11 +16,13 @@ import Layout from './+layout.svelte';
 const last = languages.at(-1)?.id ?? 'en';
 
 const routed = createRawSnippet(() => {
-  return {
+  const snippet = {
     render: () => {
       return '<p>routed</p>';
     },
   };
+
+  return snippet;
 });
 
 describe('layout', () => {

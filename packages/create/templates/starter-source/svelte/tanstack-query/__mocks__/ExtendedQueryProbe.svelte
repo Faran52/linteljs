@@ -17,7 +17,9 @@
 
   // The probe is handed one path for its lifetime, so reading it once is the intent rather than a missed dependency.
   const result = untrack(() => {
-    return createExtendedQuery<Answered>(path, query === undefined ? {} : { query });
+    const options = query === undefined ? {} : { query };
+
+    return createExtendedQuery<Answered>(path, options);
   });
 </script>
 

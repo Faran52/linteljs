@@ -1,4 +1,8 @@
-import { createMutation, useQueryClient } from '@tanstack/svelte-query';
+import {
+  createMutation,
+  type CreateMutationOptions,
+  useQueryClient,
+} from '@tanstack/svelte-query';
 
 import { type ApiError, request } from '@utils/fetchExtendedUtils';
 
@@ -17,7 +21,7 @@ export const createExtendedMutation = <TResponse, TBody extends object>(
   const client = useQueryClient();
 
   return createMutation<TResponse, ApiError, TBody>(() => {
-    return {
+    const mutationOptions: CreateMutationOptions<TResponse, ApiError, TBody> = {
       mutationFn: (body: TBody) => {
         return request<TResponse>(path, {
           method,
@@ -33,5 +37,7 @@ export const createExtendedMutation = <TResponse, TBody extends object>(
         await Promise.all(invalidations);
       },
     };
+
+    return mutationOptions;
   });
 };

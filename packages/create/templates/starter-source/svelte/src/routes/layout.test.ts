@@ -7,11 +7,13 @@ import { NAME } from '@config/linteljs';
 import Layout from './+layout.svelte';
 
 const routed = createRawSnippet(() => {
-  return {
+  const snippet = {
     render: () => {
       return '<p>routed</p>';
     },
   };
+
+  return snippet;
 });
 
 describe('layout', () => {
