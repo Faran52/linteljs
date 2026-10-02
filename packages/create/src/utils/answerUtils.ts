@@ -31,12 +31,16 @@ export const hasSurface = (answers: Answers, surface: Surface): boolean => {
 export const localesOf = (answers: Answers): Language[] => {
   const chosen = answers.languages ?? [];
 
-  return chosen.length === 0
-    ? []
-    : ['en', ...chosen
-        .filter((language) => {
-          return language !== 'en';
-        })];
+  if (chosen.length === 0) {
+    return [];
+  }
+
+  const locales: Language[] = ['en', ...chosen
+    .filter((language) => {
+      return language !== 'en';
+    })];
+
+  return locales;
 };
 
 // `browser` first, so the primary one keeps writing `manifest.json`.
@@ -46,7 +50,9 @@ export const browsersOf = (answers: Answers): Browser[] => {
       return browser !== answers.browser;
     });
 
-  return [answers.browser, ...extra];
+  const browsers = [answers.browser, ...extra];
+
+  return browsers;
 };
 
 export const hasTests = (answers: Answers): boolean => {
