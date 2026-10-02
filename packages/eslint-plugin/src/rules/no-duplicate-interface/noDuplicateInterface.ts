@@ -5,6 +5,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 // The block holding the declaration, seen through an `export`: the Program, a `declare global`,
 // `declare module` or `namespace` body, or a function's block.
 const scopeOf = (declaration: RuleNode): RuleNode => {
@@ -30,7 +32,7 @@ export const noDuplicateInterface = createRule('no-duplicate-interface', {
   create: (context) => {
     const namesByScope = new Map<RuleNode, Set<string>>();
 
-    return {
+    const visitors: Rule.RuleListener = {
       // The name node, which ESTree types; the declaration it hangs off is not.
       'TSInterfaceDeclaration > Identifier.id': (node: RuleNode) => {
         const scope = scopeOf(mustFind(node.parent));
@@ -49,5 +51,7 @@ export const noDuplicateInterface = createRule('no-duplicate-interface', {
         namesByScope.set(scope, names);
       },
     };
+
+    return visitors;
   },
 });

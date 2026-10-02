@@ -9,6 +9,8 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 type CommentNode = ReturnType<SourceCode['getAllComments']>[number];
 
 interface LineEntry {
@@ -224,7 +226,7 @@ export const commentDelimiter = createRule('comment-delimiter', {
     const sourceCode = sourceCodeOf(context);
     const eol = lineTerminatorOf(sourceCode);
 
-    return {
+    const visitors: Rule.RuleListener = {
       Program: () => {
         let run: LineEntry[] = [];
 
@@ -256,5 +258,7 @@ export const commentDelimiter = createRule('comment-delimiter', {
         flush();
       },
     };
+
+    return visitors;
   },
 });

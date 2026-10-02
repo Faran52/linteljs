@@ -2,6 +2,8 @@ import { ancestorReaderOf } from '../../utils/compatUtils.ts';
 import { isAwaitedOrAsyncReturn } from '../../utils/promiseChainUtils.ts';
 import { createRule } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 export const preferTryCatch = createRule('prefer-try-catch', {
   meta: {
     type: 'suggestion',
@@ -19,7 +21,7 @@ export const preferTryCatch = createRule('prefer-try-catch', {
     schema: [],
   },
   create: (context) => {
-    return {
+    const visitors: Rule.RuleListener = {
       CallExpression: (node) => {
         const { callee } = node;
 
@@ -55,5 +57,7 @@ export const preferTryCatch = createRule('prefer-try-catch', {
         });
       },
     };
+
+    return visitors;
   },
 });

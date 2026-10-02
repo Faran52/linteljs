@@ -15,6 +15,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface Options {
   components: string[];
 }
@@ -48,7 +50,7 @@ export const nativeNoNestedTouchables = createRule('native-no-nested-touchables'
     const { components } = optionsOf<Options>(context);
     const touchables = components === undefined ? TOUCHABLE_COMPONENTS : [...TOUCHABLE_COMPONENTS, ...components];
 
-    return {
+    const visitors: Rule.RuleListener = {
       JSXElement: (node: RuleNode) => {
         const element = asElement(node);
         const accessible = findProp(elementAttributesOf(element), ['accessible']);
@@ -72,5 +74,7 @@ export const nativeNoNestedTouchables = createRule('native-no-nested-touchables'
         }
       },
     };
+
+    return visitors;
   },
 });

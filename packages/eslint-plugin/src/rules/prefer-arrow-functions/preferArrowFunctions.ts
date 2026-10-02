@@ -25,7 +25,7 @@ import {
   writeArrowFunction,
 } from './utils/writeUtils.ts';
 
-import type { Scope } from 'eslint';
+import type { Rule, Scope } from 'eslint';
 
 interface FunctionFrame {
   node: FunctionLike;
@@ -264,7 +264,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
       });
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       ':function': (node: FunctionLike) => {
         functionStack.push(buildFrame(node));
       },
@@ -366,5 +366,7 @@ export const preferArrowFunctions = createRule('prefer-arrow-functions', {
         reportFix(fn, 'preferExplicit', writeArrowFunction(sourceCode, fn, isTsx));
       },
     };
+
+    return visitors;
   },
 });

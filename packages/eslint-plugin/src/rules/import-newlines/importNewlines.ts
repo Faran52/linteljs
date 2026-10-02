@@ -13,6 +13,8 @@ import {
   optionsOf,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface ImportNewlinesOptions {
   maxItems: number;
 }
@@ -57,7 +59,7 @@ export const importNewlines = createRule('import-newlines', {
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
-    return {
+    const visitors: Rule.RuleListener = {
       ImportDeclaration: (node) => {
         // Only the braced list is laid out: a default or namespace import sits outside it and is never moved.
         const named = node.specifiers
@@ -97,5 +99,7 @@ export const importNewlines = createRule('import-newlines', {
         });
       },
     };
+
+    return visitors;
   },
 });

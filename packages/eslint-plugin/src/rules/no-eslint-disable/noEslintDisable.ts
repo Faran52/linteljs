@@ -5,6 +5,8 @@ import {
   type RuleContext,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface CommentText {
   type: string;
   value: string;
@@ -115,7 +117,7 @@ export const noEslintDisable = createRule('no-eslint-disable', {
   create: (context: RuleContext) => {
     const allowRules = new Set(optionsOf<NoEslintDisableOptions>(context).allowRules);
 
-    return {
+    const visitors: Rule.RuleListener = {
       Program: () => {
         for (const comment of sourceCodeOf(context).getAllComments()) {
           const tail = DIRECTIVE.exec(comment.value)?.[1];
@@ -140,5 +142,7 @@ export const noEslintDisable = createRule('no-eslint-disable', {
         }
       },
     };
+
+    return visitors;
   },
 });

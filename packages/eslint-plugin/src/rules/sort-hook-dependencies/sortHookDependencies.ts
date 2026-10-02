@@ -8,6 +8,8 @@ import {
   type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface SortHookDepsOptions {
   order: 'asc' | 'desc';
   hooks: string[];
@@ -68,7 +70,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
     // Widened so a callee with no name, such as `React.useEffect`, is simply not a member.
     const hooks = new Set<string | undefined>(options.hooks ?? DEFAULT_HOOKS);
 
-    return {
+    const visitors: Rule.RuleListener = {
       CallExpression: (node) => {
         const callee: TypedNode & Partial<NamedNode> = node.callee;
 
@@ -126,5 +128,7 @@ export const sortHookDependencies = createRule('sort-hook-dependencies', {
         });
       },
     };
+
+    return visitors;
   },
 });

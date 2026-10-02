@@ -10,6 +10,8 @@ import {
   type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface Identified {
   id?: NamedNode | null;
 }
@@ -72,7 +74,7 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
     // A scope reference's identifier is typed without `parent`, so reading it back would take a cast.
     const memberObjects = new Map<string, boolean>();
 
-    return {
+    const visitors: Rule.RuleListener = {
       'MemberExpression': (node: MemberExpressionNode) => {
         memberObjects.set(spanOf(node.object), !node.computed || node.property.type === 'Literal');
       },
@@ -118,5 +120,7 @@ export const preferDestructuredProps = createRule('prefer-destructured-props', {
         });
       },
     };
+
+    return visitors;
   },
 });

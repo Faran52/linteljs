@@ -9,6 +9,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 // The full text, so `xlink:href` never matches plain `href`.
 const nameOf = ({ name }: JsxAttribute): string => {
   return name.namespace ? `${elementNameOf(name.namespace)}:${elementNameOf(name)}` : elementNameOf(name);
@@ -29,7 +31,7 @@ export const noDuplicateJsxProps = createRule('no-duplicate-jsx-props', {
     schema: [],
   },
   create: (context) => {
-    return {
+    const visitors: Rule.RuleListener = {
       // An untyped selector's parameter must be a supertype of every visitor shape.
       JSXOpeningElement: (node: RuleNode) => {
         const seen = new Set<string>();
@@ -56,5 +58,7 @@ export const noDuplicateJsxProps = createRule('no-duplicate-jsx-props', {
         }
       },
     };
+
+    return visitors;
   },
 });

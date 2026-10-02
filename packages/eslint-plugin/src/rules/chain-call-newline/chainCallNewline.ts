@@ -18,7 +18,7 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
-import type { AST } from 'eslint';
+import type { AST, Rule } from 'eslint';
 
 interface ChainCallNewlineOptions {
   maxLineLength: number;
@@ -538,7 +538,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
       });
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       'CallExpression': (node) => {
         collect(node, node);
       },
@@ -557,5 +557,7 @@ export const chainCallNewline = createRule('chain-call-newline', {
         }
       },
     };
+
+    return visitors;
   },
 });

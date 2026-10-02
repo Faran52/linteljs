@@ -12,6 +12,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 // From react-native 0.87.1; a key outside this set is dropped silently.
 const STATE_KEYS = [
   'busy',
@@ -85,7 +87,7 @@ export const nativeValidAccessibilityState = createRule('native-valid-accessibil
       }
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       JSXOpeningElement: (node: RuleNode) => {
         const attribute = findProp(attributesOf(node), ['accessibilityState']);
 
@@ -109,5 +111,7 @@ export const nativeValidAccessibilityState = createRule('native-valid-accessibil
         }
       },
     };
+
+    return visitors;
   },
 });

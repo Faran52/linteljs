@@ -12,7 +12,7 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-import type { SourceCode } from 'eslint';
+import type { Rule, SourceCode } from 'eslint';
 
 type Slot = Parameters<SourceCode['getLastToken']>[0] | null;
 
@@ -59,7 +59,7 @@ export const arrayNewline = createRule('array-newline', {
       });
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       ArrayExpression: (node) => {
         check(node, node.elements);
       },
@@ -67,5 +67,7 @@ export const arrayNewline = createRule('array-newline', {
         check(node, node.elements);
       },
     };
+
+    return visitors;
   },
 });

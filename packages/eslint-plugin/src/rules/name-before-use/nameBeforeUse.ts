@@ -5,6 +5,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface NameBeforeUseOptions {
   ignoreEmptyLiterals: boolean;
   ignoreLiteralArguments: boolean;
@@ -198,7 +200,7 @@ export const nameBeforeUse = createRule('name-before-use', {
       }
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       ArrayExpression: reportLiteral,
       ObjectExpression: reportLiteral,
       CallExpression: reportNestedCall,
@@ -216,5 +218,7 @@ export const nameBeforeUse = createRule('name-before-use', {
         }
       },
     };
+
+    return visitors;
   },
 });

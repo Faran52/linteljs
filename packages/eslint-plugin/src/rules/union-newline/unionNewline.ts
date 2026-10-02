@@ -151,7 +151,7 @@ export const unionNewline = createRule('union-newline', {
       };
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       TSUnionType: (node: UnionTypeNode) => {
         const types = mustFind(node.types);
         const messageId = messageIdFor(node, types);
@@ -172,5 +172,7 @@ export const unionNewline = createRule('union-newline', {
         });
       },
     };
+
+    return visitors;
   },
 });

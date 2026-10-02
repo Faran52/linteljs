@@ -21,7 +21,7 @@ import {
 import { globalNamespaceTags } from './utils/elementUtils.ts';
 import { nameOf } from './utils/nameUtils.ts';
 
-import type { AST } from 'eslint';
+import type { AST, Rule } from 'eslint';
 
 // `TSQualifiedName` is absent from ESLint's ESTree types, so it is narrowed by a predicate.
 interface Qualified {
@@ -247,7 +247,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
       };
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       'Program:exit': () => {
         const groups = new Map<(Located & Ranged) | undefined, Reach[]>();
 
@@ -303,5 +303,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         note(node, mustFind(nameOf(node.property)), false, [rangeOf(node)]);
       },
     };
+
+    return visitors;
   },
 });

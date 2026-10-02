@@ -177,7 +177,7 @@ export const memberNewline = createRule('member-newline', {
       }
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       ObjectExpression: (node) => {
         check(node, node.properties, true, { blanksCount: false });
       },
@@ -194,5 +194,7 @@ export const memberNewline = createRule('member-newline', {
         check(node, mustFind(node.members), false);
       },
     };
+
+    return visitors;
   },
 });

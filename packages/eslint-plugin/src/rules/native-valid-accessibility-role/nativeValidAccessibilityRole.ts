@@ -5,6 +5,8 @@ import {
 } from '../../utils/jsxUtils.ts';
 import { createRule, type RuleNode } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 // Read off react-native 0.87.1's `ViewAccessibility.d.ts`: the published doc list was wrong.
 const ACCESSIBILITY_ROLES = [
   'adjustable',
@@ -137,7 +139,7 @@ export const nativeValidAccessibilityRole = createRule('native-valid-accessibili
     schema: [],
   },
   create: (context) => {
-    return {
+    const visitors: Rule.RuleListener = {
       JSXOpeningElement: (node: RuleNode) => {
         const attributes = attributesOf(node);
 
@@ -172,5 +174,7 @@ export const nativeValidAccessibilityRole = createRule('native-valid-accessibili
         }
       },
     };
+
+    return visitors;
   },
 });

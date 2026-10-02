@@ -8,6 +8,8 @@ import {
 } from '../../utils/layoutUtils.ts';
 import { createRule, mustFind } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 // Two or fewer stay as written, unless half-split.
 const MAX_INLINE = 2;
 
@@ -31,7 +33,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
     const indentsAt = indentReader(sourceCode);
     const eol = lineTerminatorOf(sourceCode);
 
-    return {
+    const visitors: Rule.RuleListener = {
       ExportNamedDeclaration: (node) => {
         const { specifiers } = node;
 
@@ -55,5 +57,7 @@ export const exportSpecifierNewline = createRule('export-specifier-newline', {
         });
       },
     };
+
+    return visitors;
   },
 });

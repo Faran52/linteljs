@@ -1,6 +1,8 @@
 import { scopeOf } from '../../utils/compatUtils.ts';
 import { createRule, resolveVariable } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 export const noImportNamespaceDestructure = createRule('no-import-namespace-destructure', {
   meta: {
     type: 'suggestion',
@@ -17,7 +19,7 @@ export const noImportNamespaceDestructure = createRule('no-import-namespace-dest
     schema: [],
   },
   create: (context) => {
-    return {
+    const visitors: Rule.RuleListener = {
       VariableDeclarator: (node) => {
         const { init } = node;
 
@@ -36,5 +38,7 @@ export const noImportNamespaceDestructure = createRule('no-import-namespace-dest
         }
       },
     };
+
+    return visitors;
   },
 });

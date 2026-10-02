@@ -16,6 +16,8 @@ import {
   type SourceCode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface ProgramNode {
   type: 'Program';
 }
@@ -234,7 +236,7 @@ export const interfaceOrder = createRule('interface-order', {
       });
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       // Intersecting the node union with a `body` shape distributes and needs a cast to undo.
       'Program:exit': (node) => {
         check(node.body);
@@ -244,5 +246,7 @@ export const interfaceOrder = createRule('interface-order', {
         check(node.body);
       },
     };
+
+    return visitors;
   },
 });

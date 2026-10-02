@@ -12,6 +12,8 @@ import {
   type TypedNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface Kinded {
   kind?: string;
 }
@@ -77,7 +79,7 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
       return scopeOf(context, node).variableScope.block.type === 'Program';
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       'CallExpression > MemberExpression.callee': (node: MemberExpressionNode) => {
         // Hands off to prefer-try-catch once the value is awaited or returned; without this both rules fire.
         const handedOff = !strict && (
@@ -103,5 +105,7 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
         }
       },
     };
+
+    return visitors;
   },
 });

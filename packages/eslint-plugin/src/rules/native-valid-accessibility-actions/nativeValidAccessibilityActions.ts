@@ -14,6 +14,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 // From react-native 0.87.1; any other name is read out verbatim.
 const STANDARD_ACTIONS = [
   'activate',
@@ -96,7 +98,7 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
       }
     };
 
-    return {
+    const visitors: Rule.RuleListener = {
       JSXOpeningElement: (node: RuleNode) => {
         const attributes = attributesOf(node);
         const actions = findProp(attributes, ['accessibilityActions']);
@@ -149,5 +151,7 @@ export const nativeValidAccessibilityActions = createRule('native-valid-accessib
         }
       },
     };
+
+    return visitors;
   },
 });

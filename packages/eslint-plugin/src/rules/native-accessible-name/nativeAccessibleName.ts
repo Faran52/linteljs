@@ -21,6 +21,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface Options {
   components: string[];
 }
@@ -64,7 +66,7 @@ export const nativeAccessibleName = createRule('native-accessible-name', {
     const { components } = optionsOf<Options>(context);
     const touchables = components === undefined ? TOUCHABLE_COMPONENTS : [...TOUCHABLE_COMPONENTS, ...components];
 
-    return {
+    const visitors: Rule.RuleListener = {
       JSXElement: (node: RuleNode) => {
         const element = asElement(node);
         const opening = openingOf(element);
@@ -111,5 +113,7 @@ export const nativeAccessibleName = createRule('native-accessible-name', {
         });
       },
     };
+
+    return visitors;
   },
 });

@@ -5,6 +5,8 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
+import type { Rule } from 'eslint';
+
 interface NoInlineObjectTypesOptions {
   allowIn: string[];
 }
@@ -79,7 +81,7 @@ export const noInlineObjectTypes = createRule('no-inline-object-types', {
   create: (context) => {
     const allowIn = new Set<string | undefined>(optionsOf<NoInlineObjectTypesOptions>(context).allowIn);
 
-    return {
+    const visitors: Rule.RuleListener = {
       // An untyped selector's parameter must be a supertype of every visitor shape.
       TSTypeLiteral: (node: RuleNode) => {
         // `string & {}` keeps a union of literals open, and there is nothing in it to name.
@@ -103,5 +105,7 @@ export const noInlineObjectTypes = createRule('no-inline-object-types', {
         });
       },
     };
+
+    return visitors;
   },
 });
