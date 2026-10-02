@@ -58,9 +58,11 @@ export const emitAstroConfig = (answers: Answers): string | null => {
   // Vite plugins: `@astrojs/tailwind` was for Tailwind 3, and StyleX has never shipped an Astro one.
   const vite = styling.call === undefined ? '' : `  vite: { plugins: [${styling.call}] },\n`;
 
+  const declarations = styling.declarations.length === 0 ? '' : `${styling.declarations.join('\n')}\n\n`;
+
   return `${imports}
 
-export default defineConfig({
+${declarations}export default defineConfig({
 ${integrations}${vite}});
 `;
 };

@@ -35,14 +35,14 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
       ];
     });
 
-  const styling = stylingPlugin(answers.styling);
+  const styling = stylingPlugin(answers.styling, true, "join(import.meta.dirname, 'src/styles/*')");
 
   return [
     "import { join } from 'node:path';",
     '',
     sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"], framework),
     '',
-    ...styling.declaration === undefined ? [] : [styling.declaration, ''],
+    ...styling.declarations.length === 0 ? [] : [...styling.declarations, ''],
     'export default defineNuxtConfig({',
     "  compatibilityDate: '2025-07-15',",
     "  srcDir: 'src/',",

@@ -51,7 +51,7 @@ export const emitViteConfig = (answers: Answers): string | null => {
     .join('');
 
   const inputs = rollupInputs(viteInputs);
-  const declarations = styling.declaration === undefined ? '' : `${styling.declaration}\n\n`;
+  const declarations = styling.declarations.length === 0 ? '' : `${styling.declarations.join('\n')}\n\n`;
 
   return `${imports}
 

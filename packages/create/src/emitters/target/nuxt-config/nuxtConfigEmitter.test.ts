@@ -75,6 +75,7 @@ import stylexVite from '@stylexjs/unplugin/vite';
 import { type VitePlugin } from 'unplugin';
 
 const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
+const stylexAliases = { '@styles/*': [join(import.meta.dirname, 'src/styles/*')] };
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -131,7 +132,7 @@ export default defineNuxtConfig({
     '@mocks/*': join(import.meta.dirname, '__mocks__/*'),
   },
   vite: {
-    plugins: [stylex({ useCSSLayers: { before: ['reset'] } })],
+    plugins: [stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } })],
   },
 });
 `;

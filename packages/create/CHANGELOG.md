@@ -296,6 +296,10 @@ when a version's change lives in a sibling it is described there instead:
   current tab under every styling.
 - React Router framework mode's `vite.config.ts` answers `/.well-known/` requests with a plain 404 in dev, so
   Chrome DevTools' probe no longer logs a `No route matches URL` error.
+- Every StyleX project passes its own `pnpm check` again: StyleX reads no tsconfig paths, so its plugin now gets
+  `aliases` for `@styles/*`, absolute from `import.meta.dirname` in the Vite, Vitest, Astro and Nuxt configs and
+  `/ROOT/` under a `rootDir` in Next's `.babelrc`. Since the `@styles` alias, its tests and build failed with
+  `Could not resolve the path to the imported file` at `@styles/tokens.stylex`.
 
 ## 1.5.3
 

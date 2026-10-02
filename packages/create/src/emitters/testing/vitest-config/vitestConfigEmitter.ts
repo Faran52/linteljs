@@ -153,7 +153,7 @@ const standaloneConfig = (block: string, vitestPlugin: PluginSpec | undefined, s
   const pluginImports = sortedImports([...vitestPlugin?.imports ?? [], ...stylex.imports]);
   const plugins = calls.length === 0 ? '' : `  plugins: [${calls.join(', ')}],\n`;
   const prelude = pluginImports === '' ? '' : `${pluginImports}\n`;
-  const declarations = stylex.declaration === undefined ? '' : `\n${stylex.declaration}\n`;
+  const declarations = stylex.declarations.length === 0 ? '' : `\n${stylex.declarations.join('\n')}\n`;
 
   return `${prelude}import { defineConfig } from 'vitest/config';
 ${declarations}

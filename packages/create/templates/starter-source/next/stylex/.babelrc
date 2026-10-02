@@ -2,9 +2,10 @@
   "presets": ["next/babel"],
   "plugins": [
     ["@stylexjs/babel-plugin", {
+      "aliases": { "@styles/*": ["/ROOT/src/styles/*"] },
       "runtimeInjection": false,
       "treeshakeCompensation": true,
-      "unstable_moduleResolution": { "type": "commonJS" }
+      "unstable_moduleResolution": { "type": "commonJS", "rootDir": "." }
     }]
   ]
 }

@@ -140,7 +140,11 @@ describe('emitAstroConfig', () => {
 
     expect(config).toContain("import stylex from '@stylexjs/unplugin/vite';");
     expect(config).not.toContain("from 'unplugin';");
-    expect(config).toContain("  vite: { plugins: [stylex({ useCSSLayers: { before: ['reset'] } })] },\n");
+    const aliases = "const stylexAliases = { '@styles/*': [`${import.meta.dirname}/src/styles/*`] };";
+    const plugins = "plugins: [stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } })]";
+
+    expect(config).toContain(`\n\n${aliases}\n\nexport default`);
+    expect(config).toContain(`  vite: { ${plugins} },\n`);
   });
 });
 

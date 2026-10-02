@@ -226,6 +226,19 @@ describe('starter files for a router', () => {
     expect(plain).toContain('</');
     expect(plain).not.toContain('virtual:stylex');
   });
+
+  // The babel plugin reads no tsconfig paths, so `@styles/tokens.stylex` resolves through these two alone.
+  it('aliases @styles for the next babel plugin against the project root', async () => {
+    const babelrc = artifactFor({
+      target: 'next',
+      styling: 'stylex',
+    }, '.babelrc');
+    const text = babelrc === undefined ? '' : await shippedAssetsReader(babelrc.content);
+    const flat = text.replaceAll(/\s+/gv, ' ');
+
+    expect(flat).toContain('"aliases": { "@styles/*": ["/ROOT/src/styles/*"] }');
+    expect(flat).toContain('"unstable_moduleResolution": { "type": "commonJS", "rootDir": "." }');
+  });
 });
 
 describe('the starter source', () => {

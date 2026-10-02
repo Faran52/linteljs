@@ -270,10 +270,11 @@ import { type VitePlugin } from 'unplugin';
 import { defineConfig } from 'vite';
 
 const stylex: (options: Partial<UserOptions>) => VitePlugin = stylexVite;
+const stylexAliases = { '@styles/*': [\`\${import.meta.dirname}/src/styles/*\`] };
 
 export default defineConfig({
   plugins: [
-    stylex({ useCSSLayers: { before: ['reset'] } }),
+    stylex({ aliases: stylexAliases, useCSSLayers: { before: ['reset'] } }),
     vue(),
   ],
   resolve: { tsconfigPaths: true },
