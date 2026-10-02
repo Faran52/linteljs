@@ -29,10 +29,14 @@ export interface CliOptions {
   version: boolean;
 }
 
+// An empty value is how a flag says none, and `''.split(',')` would answer `['']`.
 const list = (flag: string[]): string[] => {
   return flag
     .flatMap((value) => {
       return value.split(',');
+    })
+    .filter((item) => {
+      return item !== '';
     });
 };
 

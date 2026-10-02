@@ -87,6 +87,12 @@ describe('parseCliArgs', () => {
       .toEqual({ surfaces: ['popup', 'background'] });
   });
 
+  it('reads an empty list flag as none', () => {
+    const { answers } = parseCliArgs(['--libraries', '']);
+
+    expect(answers).toEqual({ libraries: [] });
+  });
+
   it('carries a single answer flag under its answer key, unsplit', () => {
     expect(parseCliArgs([
       '--target',
