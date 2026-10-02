@@ -30,14 +30,20 @@ Then `cd my-app` and run `check` (`pnpm check`, `npm run check`, and so on).
 It asks the questions below, then runs five stages, each skippable with `--skip <stage>`:
 
 1. **lint:** ESLint and Stylelint config.
-2. **package:** `package.json`, TypeScript config, `.gitignore`, and the manager's workspace config.
-3. **standard:** the agent plugin and hooks, commit checks, test setup, the starter source and its tests.
+2. **package:** `package.json`, TypeScript config, `.gitignore`, `linteljs.config.json`, and the manager's
+   config (`pnpm-workspace.yaml`, `.yarnrc.yml` or `bunfig.toml`).
+3. **standard:** the agent plugin and hooks, git hooks and commit checks, the CI workflow, test setup, the starter
+   source and its tests.
 4. **install:** the project's package manager.
 5. **fix:** ESLint and Stylelint with `--fix`.
 
 The generated `eslint.config.js` calls `composeConfig` from `@linteljs/eslint-config/compose-config`, which fixes
-the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typecheck, coverage at 100%, and the
-build.
+the layer order. `check` runs lint, the banned-pattern check, Stylelint, the typecheck, coverage at 100% (unless
+`--testing none`), and the build.
+
+The starter is linteljs's own, not a framework scaffolder's. Every target but the web extension gets a header with
+tabs, Home, About and Version pages, and 403, 404 and 500 pages. It follows the system colour scheme, ships the
+chosen languages, and passes its own `check` before you change a line.
 
 ## Questions and options
 
@@ -53,8 +59,8 @@ the target offers it. Passing any answer flag makes the run non-interactive, wit
 | UI framework | `--hosted` | `react`, `vue`, `svelte`, `solid` (webextension, astro) | none |
 | Testing | `--testing` | `vitest`, `none` | `vitest` |
 | Libraries | `--libraries` | `zod`, `es-toolkit`, `ts-pattern`, `t3-env` | `es-toolkit` |
-| Styling | `--styling` | `tailwind`, `stylex` (not angular or react-native) | none |
-| Form library | `--form` | `tanstack-form`, `react-hook-form` (React renderers) | none |
+| Styling | `--styling` | `tailwind`, `stylex` (StyleX not on angular or react-native) | none |
+| Form library | `--form` | `tanstack-form`, `react-hook-form` (React Hook Form on React renderers only) | none |
 | Router | `--router` | `react-router`, `react-router-framework`, `tanstack-router` (react) | none |
 | State store | `--store` | the stores the target offers | none |
 | Data fetching | `--data` | `tanstack-query`, `rtk-query` (with `redux-toolkit`) | none |
@@ -83,8 +89,8 @@ npx @linteljs/create my-app --target svelte --libraries zod,es-toolkit --testing
   --help, -h
 ```
 
-A non-interactive run needs a name, `--yes`, or an answer flag; with no name it takes the directory's. Ctrl+C
-writes nothing.
+Without a terminal, a run needs `--yes` or an answer flag; a name alone writes nothing and exits 1. With no name
+it takes the directory's. Ctrl+C writes nothing.
 
 ## Existing projects and updates
 
@@ -101,9 +107,11 @@ never guesses a framework.
 `package.json`, which it moves only when they are behind. It shows one table of the files to add, update or delete
 and the versions to upgrade, then asks once. `--yes` applies without asking; without a terminal and without
 `--yes` it writes nothing and exits 1. A dependency the project lacks is printed as an install command for its
-package manager, never written. `sync` never rewrites your other dependencies or `package.json` scripts,
-`.github/workflows/ci.yml`, the build configs, `linteljs.config.json`, your README, or an agent's instruction file
-after its first write. Removing an agent from the config removes only the exact paths linteljs wrote for it.
+package manager, never written. After its first write, `sync` never rewrites your other dependencies or
+`package.json` scripts, `.github/workflows/ci.yml`, `vite.config.ts`, `vitest.config.ts`, `astro.config.mjs`,
+`angular.json`, Expo's `app.json`, `linteljs.config.json`, your README, the starter source, or an agent's
+instruction file. Removing an agent from the config removes only the exact paths linteljs wrote for it, and
+dropping any other answer removes what it alone wrote.
 
 ## Agents
 

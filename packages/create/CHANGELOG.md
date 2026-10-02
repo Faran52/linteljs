@@ -16,105 +16,106 @@ when a version's change lives in a sibling it is described there instead:
   already exists rather than making `<name>/`; `--seed` plants the starter and seed files a new project gets.
 - **The package manager is no longer asked.** The manager that runs `create` is the project's, read from
   `npm_config_user_agent`, else a lockfile in the directory, else npm, and recorded with its exact version. One
-  below its floor is refused: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2.
+  below its floor is refused, never upgraded: pnpm 10.26, npm 9.6.5, Yarn 4, Bun 1.2. Yarn 1 is refused too.
 - **The recorded answers are `linteljs.config.json`, schema version 2.** A `lintel.config.json` is still read, and
   the next `create` or `sync` writes the new name and removes the old one. A v1 file is migrated on read: the form
   library, `tailwind` and `tanstack-query` move out of `libraries` into `form`, `styling` and `data`, and
   `store: true` becomes the target's first store.
 - **The generated `eslint.config.js` imports `composeConfig` from `@linteljs/eslint-config/compose-config`.**
   `sync` rewrites the file.
-- **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and three `*Hook.ts`
+- **The agent hooks are TypeScript run by `node`.** `plugins/linteljs/hooks/` holds `hooks.json` and the `*Hook.ts`
   scripts; the `.sh` hooks and `commandParser.js` are gone and `sync` removes them. Reinstall the plugin in Codex
   after a `sync` that changes `plugins/linteljs/`, since Codex runs a cached copy.
 - **`sync` changes only what linteljs owns, and asks once.** It shows one table of the files to add, update or
   delete and the `@linteljs/*` versions to upgrade, then asks; `--yes` applies without asking, and without a
-  terminal and without `--yes` it writes nothing and exits 1. `--force` is gone and is now an unknown flag, and
-  `sync` no longer prints a diff per file.
-- **`sync` moves only the `@linteljs/*` versions in `package.json`,** and only when they are behind. Any other
-  dependency the project lacks is printed as an install command, never written.
-- **`.github/workflows/ci.yml` is written only when a project is created,** or by `sync` when it is missing.
-- **`sync` keeps `ignoredBuiltDependencies` in `pnpm-workspace.yaml`.** Only `create` drops it.
+  terminal and without `--yes` it writes nothing and exits 1. `--force` is gone, and `sync` no longer prints a
+  diff per file.
+  - In `package.json` it moves only the `@linteljs/*` versions, and only when they are behind. Any other
+    dependency the project lacks is printed as an install command, never written.
+  - `.github/workflows/ci.yml` is written only when a project is created, or by `sync` when it is missing.
+  - It keeps `ignoredBuiltDependencies` in `pnpm-workspace.yaml`. Only `create` drops it.
 
 ### Added
 
-- Every target gains `@styles/*` and `@styles` onto `src/styles/`, so the shared StyleX modules and React Native's
-  starter read their tokens the same way on every target, Nuxt's `~` root included.
-- Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside `"@ui/*"`), so a
-  directory index imports as `@ui`; `@i18n/*` and `@i18n` join them when a locale is chosen. With
-  `react-router-framework`, `eslint.config.js` writes `aliasExempt: ['src/routes.ts']` and
-  `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
-  the aliases. `ComposeConfigOptions` mirrors both options.
 - Nuxt is a target.
-- React projects speak more languages: `--languages` takes any of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, off by
-  default, with English always shipped as the fallback. The starter adds i18next, a language select in the
-  header, `src/i18n/` with one `common.json` per language and a suite that holds every locale to the same keys.
-  The header, status pages, About, Version and Contact are translated in every router mode. The stored choice wins,
-  then the browser language, which is never stored; Arabic sets `dir="rtl"`. React Router framework mode renders
-  English on the server and switches after hydration.
-- Next projects take `--languages` too, through next-intl on the client: no plugin, no locale in the URL. The
-  header, status pages, About, Version and Contact are translated, the server renders English and the page
-  switches after hydration. The shared locales use the single-brace ICU placeholder, `{name}`, which React's
-  i18next now reads as well.
-- Vue and Nuxt projects take `--languages` through vue-i18n. The header, status pages, About, Version and, in
-  Vue, Contact are translated; a command inside a translation still renders as `<code>`, never as HTML. Nuxt
-  renders English on the server, with `lang="en"` and `dir="ltr"`, and switches after hydration.
-- SvelteKit projects take `--languages` through Paraglide JS, which compiles the shared `common.json` files into
-  typed message functions under `.svelte-kit/paraglide` at `prepare` and `typecheck`, and through its Vite plugin
-  for dev and build. `project.inlang/settings.json` loads the message-format plugin from `node_modules`. The
-  header, status pages, About, Version and Contact are translated, rendered in English on the server and switched
-  after hydration.
-- Solid projects take `--languages` through @solid-primitives/i18n, with a single-brace resolver for the shared
-  `common.json` files. The header tabs, language select, status page, About, Version and Contact are translated.
-- Angular projects take `--languages` with no library: a signal holds the language, and `t` reads the shared
-  `common.json` files through it, so a template follows a switch. `@angular/localize` builds once per locale and
-  cannot switch at runtime. The header tabs, language select, status page, About, Version and both Contact pages
-  are translated.
-- Astro projects take `--languages` with no library, with or without a hosted framework: pages render English at
-  build time, an inline script in the head sets `lang` and `dir` before the first paint, and a client script
-  renders the marked text in the chosen language. Astro's i18n routing gives each locale its own URL and cannot
-  switch at runtime. The header tabs, language select, About, Version and the 404 page are translated.
-- React Native projects take `--languages` through i18next and react-i18next, with the choice kept in
-  `@react-native-async-storage/async-storage` 2.2.0, the version Expo SDK 57 pins. The device language comes
-  from `Intl`, the first render is English so the static web export hydrates, and the header's button opens a
-  `Modal` listing every language. Arabic turns the web page right to left at once and a native app from its
-  next launch. The header tabs, language picker, status page, About, Version and the 404 screen are translated.
-- Webextension projects with a popup take `--languages` with no library: the popup reads the shared locales
-  through a single-brace resolver, keeps the choice in `localStorage` and shows a native select. `chrome.i18n`
-  follows the browser's UI language and cannot switch at runtime. An extension without a popup is not asked.
-- Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
-  `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
-  130K, red past 150K. A project's own status lines are kept on a sync.
-- Every starter but the extension ships a status page and catches a crash with its framework's own mechanism:
-  a 500 page with "Try again" on a crash, a 404 for a path nothing routes, and a 403 where a loader or a server can
-  refuse (React Router, Nuxt, SvelteKit). Astro renders at build, so it ships the 404 alone. One `StatusPage` per framework reads one table,
-  `src/config/statuses.ts`. The button now ships under every answer, since the 500 page retries with it.
-  The page centres a large code, one muted line and its actions under the header; its styles are the `.status`
-  classes in `base.css`, which every styling answer ships.
-- Every client boundary (React in each router mode, Next's `error.tsx`, Vue, Solid, Angular, React Native) shows
-  the 403 page, with no retry, for a `ForbiddenError`, the class `src/lib/utils/statusUtils.ts` ships
-  (`status-utils.ts` on Angular). The loader and server 403s on React Router, Nuxt and SvelteKit stay.
 - Every answer is a flag, and one makes the run non-interactive: `--target`, `--browser`, `--surfaces`, `--hosted`,
   `--store`, `--router`, `--testing`, `--type-safety`, `--libraries`, `--styling`, `--data`, `--form`, `--mocking`,
-  `--agents`, `--plugins`. `--version` prints the version.
-- New answers. `styling`: Tailwind (NativeWind 5 on React Native) or StyleX, linted by the `stylex` layer and built
-  through `@stylexjs/unplugin/vite`. `data`: TanStack Query, bound to the framework, or RTK Query beside Redux
-  Toolkit. `form`: TanStack Form, or React Hook Form where the target renders with React. `mocking`: MSW. `router`
-  on React (Vite): React Router or TanStack Router, both declared in code with no generated route tree, or React
-  Router's framework mode, with its own build, route modules and generated types. `libraries`
-  adds es-toolkit (the default), ts-pattern and t3-env beside Zod.
-- The state store is a choice: Zustand, Redux Toolkit or TanStack Store on React, Next and React Native; Pinia or
-  TanStack Store on Vue and Nuxt; TanStack Store on Svelte and Solid; NgRx Signals on Angular; Nano
-  Stores on Astro.
+  `--languages`, `--agents`, `--plugins`. An empty list, such as `--libraries ''`, answers none. `--version`
+  prints the version.
+- New answers:
+
+  | Answer | Choices |
+  | --- | --- |
+  | `styling` | Tailwind (NativeWind 5 on React Native), or StyleX outside Angular and React Native, linted by the `stylex` layer and built through `@stylexjs/unplugin/vite` |
+  | `data` | TanStack Query, bound to the framework, or RTK Query beside Redux Toolkit |
+  | `form` | TanStack Form, or React Hook Form where the target renders with React |
+  | `mocking` | MSW |
+  | `router` | on React (Vite): React Router or TanStack Router, both declared in code, or React Router's framework mode, with its own build, route modules and generated types |
+  | `store` | Zustand, Redux Toolkit or TanStack Store on React, Next and React Native; Pinia or TanStack Store on Vue and Nuxt; TanStack Store on Svelte and Solid; NgRx Signals on Angular; Nano Stores on Astro |
+  | `libraries` | es-toolkit (the default), ts-pattern and t3-env beside Zod |
+
+- **Languages.** `--languages` takes any of `en`, `ar`, `ja`, `ko`, `zh-CN`, `zh-TW`, off by default, with English
+  always shipped as the fallback. Every target reads one `common.json` per language from `src/i18n/`, which the
+  `@i18n` alias reaches, and a suite holds every locale to the same keys. The header gains a language picker, and
+  the header and every starter page are translated. The stored choice wins, then the browser
+  language, which is never stored; Arabic sets `dir="rtl"`. A server-rendered page renders English and switches
+  after hydration.
+
+  | Target | Through |
+  | --- | --- |
+  | React, every router mode | i18next |
+  | Next | next-intl on the client: no plugin, no locale in the URL |
+  | Vue, Nuxt | vue-i18n |
+  | SvelteKit | Paraglide JS, compiled at `prepare` and `typecheck` and by its Vite plugin |
+  | Solid | @solid-primitives/i18n |
+  | Angular | a signal, with no library; `@angular/localize` cannot switch at runtime |
+  | Astro | a client script, with no library; Astro's i18n routing cannot switch at runtime |
+  | React Native | i18next, with the choice kept in `@react-native-async-storage/async-storage`; Arabic turns a native app right to left from its next launch |
+  | Web extension popup | a resolver, with no library; `chrome.i18n` cannot switch at runtime. An extension without a popup is not asked |
+
+- **The starter.** Every target but the extension has a header with a "LintelJS Starter" label and tabs, Home,
+  About and Version pages; React, Next, Vue, Svelte and Solid add Contact with a form library. Angular renders it under every
+  answer, through Reactive Forms or TanStack Form's `injectForm`, and lazy-loads it. A Contact field shows its
+  error once it is left or a send is tried, and clears it as soon as the value passes. About lists every script
+  `check` chains, with what each runs and the manager's own prefix. The page title is the project's name.
+- **Status pages.** Every starter but the extension ships 403, 404 and 500 pages over one `StatusPage` per
+  framework, read from `src/config/statuses.ts`. A crash shows the 500 page with "Try again", through the
+  framework's own boundary, and a path nothing routes the 404. A `ForbiddenError`, the class
+  `src/lib/utils/statusUtils.ts` ships, shows the 403 with no retry, as does a loader or server refusal on React
+  Router, Nuxt and SvelteKit. Astro, rendered at build, writes its three pages over one `StatusLayout.astro`.
+- **The starter follows the system colour scheme.** Each colour token is `light-dark()` under
+  `color-scheme: light dark`, a `.light` or `.dark` class pins either, and Tailwind's `dark:` variant matches the
+  same condition. React Native reads the same token values through `useColorScheme`.
+- Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme. React Native's mark
+  animates like the web one, through Reanimated, and holds still under reduced motion.
+- **Aliases.** Each `/*` alias gains an exact key onto its directory (`"@ui": ["./src/components/ui"]` beside
+  `"@ui/*"`), so a directory index imports as `@ui`. Every target gains `@styles` onto `src/styles/`, which StyleX
+  is told about as well; `@apis` comes with `src/lib/apis/` and `@i18n` with a language. The route unit gets one
+  too, first in `paths`: `@pages` on React and Solid, `@views` on Vue and Nuxt, `@layouts` on Astro. With
+  `react-router-framework`, `eslint.config.js` sets `aliasExempt: ['src/routes.ts']` and
+  `enforceRelativeImports: true` for `@linteljs/prefer-alias`, since the route typegen reads that file without
+  the aliases.
 - `sync` removes what a deselected answer left behind, from the record in `plugins/linteljs/managed.json`.
 - Cursor and Copilot run the agent hooks: `.cursor/hooks.json` (merged with a project's own) and
   `.github/hooks/linteljs.json`, both removed by `sync` when the agent is dropped. The command guards read
   PowerShell as well as Bash, and `--no-verify` is denied on any git subcommand.
-- Generated projects get `scripts/utils/loggerUtils.ts`, and `lint:types` is `node scripts/checkBannedPatterns.ts
-  src`, which runs on every platform. The tsconfig sets `allowImportingTsExtensions` (Angular:
-  `rewriteRelativeImportExtensions`).
+- Claude Code projects watch their context: a hook warns once when a session passes 150K tokens, and
+  `.claude/settings.json` sets a `statusLine` and a `subagentStatusLine` that show `[CTX nK]`, green, amber past
+  130K, red past 150K. A project's own status lines are kept on a `sync`.
 - A generated project declares its manager in `packageManager`, `engines` and `devEngines.packageManager` with
-  `onFail: "error"`; Bun gets `engines.bun` only. Its Node floor is `>=22.18`, down from `>=26.8.1`, and the CLI's
-  own is `22.13.0`. CI runs the Node major that ran `create`.
+  `onFail: "error"`; Bun gets `engines.bun` only. CI runs the Node major that ran `create`.
+- New releases wait two days before they install, so a half-published version is not picked up the minute it
+  appears. `@linteljs/*` is exempt, so a linteljs release installs the day it ships.
+
+  | Manager | Setting |
+  | --- | --- |
+  | pnpm | `minimumReleaseAge: 2880` in `pnpm-workspace.yaml`; a project's own value is left alone |
+  | Bun | `install.minimumReleaseAge = 172800` in `bunfig.toml`, honoured from Bun 1.3.0 |
+  | Yarn | `npmMinimalAgeGate: 2880` in `.yarnrc.yml`, written only from Yarn 4.10.1, since an older Yarn 4 refuses it |
+
+- Generated projects get `scripts/utils/loggerUtils.ts`, and `lint:types` is
+  `node scripts/checkBannedPatterns.ts src`, which runs on every platform. The tsconfig sets
+  `allowImportingTsExtensions` (Angular: `rewriteRelativeImportExtensions`).
 - The package also provides a `create` binary, which `yarn create @linteljs` looks for.
 - The React Compiler runs natively through `@vitejs/plugin-react`'s `compiler` and `oxc-transform-react`, with no
   Babel pass; Expo's `app.json` sets `experiments.reactCompiler`. `eslint-plugin-react-compiler` is gone, since
@@ -122,192 +123,61 @@ when a version's change lives in a sibling it is described there instead:
 - The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.
-- React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and
-  declares `@react-native/metro-config`.
-- Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
-- Angular renders a Contact page under every answer: Reactive Forms, validated by the shared `validateContact`
-  (the Zod schema when `zod` is chosen), or TanStack Form's `injectForm` when `--form tanstack-form`. It brings
-  `button` and `text-input` components, a spec each, and ships their styles unconditionally.
-- Every web target ships the Mark as its favicon, an SVG in the primary colour of each scheme: `favicon.svg` in the
-  public directory (`static/` on SvelteKit), linked from the document head, and `src/app/icon.svg` on Next.
-  React Native's web build ships it in `public/` too, linked from `expo-router/head` in the root layout.
 
 ### Changed
 
-- **The emitted `.npmrc` no longer sets `legacy-peer-deps`**, and npm projects get none: npm resolves peers
-  itself and fails on a peer conflict rather than silently choosing. `vite` (outside yarn) and StyleX's
-  `@csstools/css-tokenizer` are no longer named for npm; `test-renderer` stays named.
-- **The starter source imports across aliased directories through the most specific alias** (`@ui`,
-  `@features/app-header/AppHeader`, `@config/linteljs`) and within one relatively, the shape
-  `@linteljs/prefer-alias` asks for, so a new project passes its own typed lint. React Router framework mode's
-  `src/routes.ts` stays relative. `@apis/*` is emitted whenever `src/lib/apis/` is written (Zod, a form or RTK
-  Query). The test setup imports the locales through `@i18n`.
-- **One shared starter file serves every target**: where a target writes a file under its own naming (Angular's
-  `status-utils.ts`), a shared file's relative import follows it, so Angular takes the shared utils suites rather
-  than copies of them.
-- **The starter source, hooks and scripts put each chained call on its own line**, the shape
-  `@linteljs/chain-call-newline` asks for, so a new project passes its own lint. Starter tests read a named value
-  rather than a chain.
-- The starter source, hooks and scripts put each item of a list of three or more on its own line, the shape
-  `@linteljs/array-newline` asks for, so a new project passes its own lint.
-- **A new project needs nothing from the fix stage**: every emitted file lands as `eslint --fix` and `stylelint --fix`
-  would leave it. Imports group by framework and by the project's own aliases, `eslint.config.js`,
-  `checkBannedPatterns.ts` and React Native's `vitest.config.ts` break a list of three or more, `index.html` and the
-  extension's `devtools.html` and `panel.html` take the html layer's layout, and a test setup fragment past
-  the target's base loads its modules through a top-level `await import`, so the joined `setupTests` keeps every
-  import at its head. The fix stage stays, to bring an existing project into line.
+- **A new project passes its own `check` with nothing from the fix stage.** Every emitted file lands as
+  `eslint --fix` and `stylelint --fix` would leave it, under the layers' layout rules: one call per line in a chain,
+  one item per line in a list of three or more, imports grouped by framework and by the project's own aliases, one
+  import per module with an inline `type`, and values named before use. The starter imports across directories
+  through the most specific alias and within one relatively, the shape `@linteljs/prefer-alias` asks for. Its file
+  names pass the target's own `naming` map. The fix stage stays, to bring an existing project into line.
 - The fix stage reports per tool: `eslint --fix: 3 files changed` or `eslint --fix: nothing to fix`, and the same for
   `stylelint --fix`, which said nothing unless it could not run.
-- An Angular project's `pnpm-workspace.yaml` loses its `peerDependencyRules` block and its `.yarnrc.yml` its
-  `logFilters`, since `@angular/build` 22.2 admits vitest 5. No target discards a peer warning any more; the two
-  the filter hid on Yarn, under TanStack Form and TanStack Query, are answered in `packageExtensions`.
-- A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only. The `crx({ manifest })` call and the
-  manifest it reads are unchanged.
-- The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on file
-  carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule files
-  drop their "shipped verbatim" note.
-- Every file in a starter `utils/` folder ends in `Utils`: `lib/utils/fetchExtendedUtils.ts`
-  (`fetch-extended-utils.ts` on Angular) and Astro's `lib/utils/currentPathUtils.ts`, with their tests. The emitted
-  structure rule states the suffix.
-- Outside `utils/`, a starter module is a subject directory holding one entry named for the subject and its folder:
-  `lib/store/counter/counterStore.ts`, `lib/providers/data/DataProvider.tsx` and `store/StoreProvider.tsx`,
-  `lib/apis/base/baseApi.ts`, `lib/apis/contact/contactApi.ts`, and the extension's `lib/mark/mark.ts`. Vue's
-  `installData` and `installStore` are `dataProvider` and `storeProvider` under `lib/providers/data/` and
-  `lib/providers/store/`. The emitted structure rule states the shape.
-- Under RTK Query, a React or Next project's `lib/apis/contact/` splits `contactApi.ts` into `contactEndpoints.ts`
-  (the injected endpoints, exported as `contactApi`) and `contactHooks.ts` (`useSubmitContact`), each with its own
-  test, and its `index.ts` re-exports both.
-- Next writes `StoreProvider.tsx`, `DataProvider.tsx` and `useContactForm.ts` from React's starters with a leading
-  `'use client';`, instead of shipping copies that differed only by it. The copies' comment on the directive goes.
-- Emitted floors moved to the newest releases at least two days old: `@eslint-react/eslint-plugin` `^5.22.1`,
-  `next` `^16.3.7`, the TanStack query packages `^5.104.0` (`svelte-query` `^6.3.0`), the TanStack stores `^0.11.2`
-  (`svelte-store` `^0.12.2`), `@reduxjs/toolkit` `^2.13.0`, `react-hook-form` `^7.89.0`. React Native's Expo pins,
-  `typescript` `~6.0.3`, `msw` `^2.15.0`, `oxc-transform-react` and `unplugin` stay where their peers hold them.
+- A generated project's Node floor is `>=22.18`, down from `>=26.8.1`: the first release that runs its TypeScript
+  scripts and hooks with plain `node`. The CLI's own is `22.13.0`.
+- Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
+  React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and declares
+  `@react-native/metro-config`. A web extension takes `@crxjs/vite-plugin` 3, which ships ESM only; the
+  `crx({ manifest })` call is unchanged. Angular's `pnpm-workspace.yaml` loses its `peerDependencyRules` block,
+  since `@angular/build` 22.2 admits vitest 5, and no target discards a peer warning any more.
+- The emitted agent instructions say each thing once: `CLAUDE.md`, `AGENTS.md`, Copilot's and Cursor's always-on
+  file carry the gate and the git rules, and the plugin `SKILL.md` only routes a change to its reference. The rule
+  files drop their "shipped verbatim" note.
+- The emitted structure rule describes the folders the answers write, and only those: a router's route table, a
+  store, the query wrappers, RTK Query's `lib/apis/` and the MSW handlers. A shared section covers every target:
+  files under 500 lines, one subject directory per module holding one entry named for it, helpers in a `utils/`
+  at the level of their readers with names ending in `Utils`, `constants.ts` as data only, and what `typings/`,
+  `lib/providers/`, `lib/services/` and `lib/apis/` hold. The emitted `naming` map holds every file under a
+  `utils/` folder to the suffix: `'**/utils/*.ts'` to `*Utils`, and `'src/**/utils/*.ts'` to `*-utils` on Angular.
+- The emitted type standard tells an agent that comments are minimal: a short why, or none, and none in tests.
 
 ### Fixed
 
-- The Astro starter writes a 403 and a 500 page beside its 404, as every other target does. The three are thin
-  pages over one `StatusLayout.astro`, which carries the i18n twin, so the pages need none of their own.
-- A starter's route unit has an alias, first in `paths` since it imports every layer below it: `@pages` on React
-  and Solid, `@views` on Vue and Nuxt, `@layouts` on Astro. The app header, the routers and Nuxt's pages import
-  through it instead of `../../../pages/routes`, and Astro's layout and pages take `@styles` and `@layouts`.
-- `src/config/linteljs.ts` wraps a `NAME` too long for 120 columns into joined literals, so a project with a long
-  name passes its own `max-len`.
 - `create` run from a git hook, an alias or a linked worktree's `rebase --exec` works on its own directory: every
-  git and install it spawns drops the repository variables git exports (`git rev-parse --local-env-vars`), so
-  `git init` no longer reinitialises the caller's repository as bare and husky sets its hooks path on the project.
-- A React Router framework project has a document title: `root.tsx` renders the project's name (D2).
-- A Nuxt project has a document title: `nuxt.config.ts` sets `app.head.title` to the project's name (D6).
-- A React Native project's web build has a document title: the root layout sets the project's name through
-  `expo-router/head` (D8).
-- React Native's tab bar no longer lists `+not-found` as a tab: the root layout hides the route with
-  `href: null`.
-- The header no longer overflows a 375px screen on a starter with a Contact tab: below 30rem the
-  "LintelJS Starter" label is hidden, in `AppHeader.css` and the StyleX header styles.
-- With languages on, the header wraps instead of overflowing a 375px screen in Japanese: the tabs and the
-  language select no longer fit on one line.
-- StyleX font sizes and weights reach buttons and inputs: the shared `font: inherit` reset sits in `@layer reset`,
-  which StyleX is told to put below its own layers.
-- An empty list flag, such as `--libraries ''`, answers none rather than failing as a value named `''`.
-- The language select renders in the app font rather than the browser's: the shared reset covers `select` beside
-  `button`, `input` and `textarea`.
-- A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev
-  runtime disables its stylesheet link before React hydrates, so the link now suppresses the warning.
-- A React Router framework project with a form library no longer serves a 404 at `/contact`: `src/routes.ts`
-  now registers the contact page the header links to, through a new `src/routes/contact.tsx` route module.
-- An answer that fails its pattern now says it must match the pattern, not that it must be a string.
-- The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
-- A generated `eslint.config.js` or `nuxt.config.ts` still parses when an ignore or alias path ends in a backslash or holds a newline.
-- A Contact page flags only a field the user has left, and clears its error as soon as the value passes. TanStack
-  Form (React, Next, Solid, Svelte, Vue, Angular) checks every change with the shared `validateContact` and shows
-  a field's result once it is blurred or a send is tried; Send stays open until a send is tried. React Hook Form
-  moves from `onBlur` to `onTouched`.
-- Angular lazy-loads the Contact route, so the form library and Zod leave the initial bundle: 739 kB to 245 kB
-  under TanStack Form and Zod, inside the 500 kB budget `ng build` warned about.
-- The web mark's gaps are even: 12 units under the beam and between each line, where the beam had 19, and the
-  group sits centred in its viewBox. Both stroke widths and the drift animation are unchanged.
-
-- The Astro starter's pages and components pass the lint an Astro project now runs on `.astro` files: imports
-  sorted, a `map` callback with a block body, and one prop per line on a multiline tag.
+  git and install it spawns drops the repository variables git exports, so `git init` no longer reinitialises the
+  caller's repository as bare and husky sets its hooks path on the project.
 - A file the standard installs but never overwrites, such as `CLAUDE.md`, `AGENTS.md` or the test setup, is left
   alone on every run.
-- The emitted type standard tells an agent that comments are minimal: a short why, or none, and none in tests.
-- The emitted structure rule describes the folders the answers write: a router's route table, a store, the query
-  wrappers, RTK Query's `lib/apis/` and the MSW handlers appear only for the answers that produce them. React Native's
-  rule keeps route suites out of `src/app/` and names `src/config/`, not `src/constants/`; Solid's no longer mentions
-  SolidStart; the web extension's names `src/popup/`.
-- The emitted structure rule gains a shared section for every target: files under 500 lines, one subject directory
-  per component, page or hook, helpers in a `utils/` at the level of their readers, `constants.ts` as data only, and
-  what `typings/`, `lib/providers/`, `lib/services/` and `lib/apis/` hold.
-- Copilot `applyTo` and Cursor `globs` expand brace groups, since both tools split the value on commas and
-  `src/**/*.{ts,tsx}` was read as two broken globs.
-- The starter source writes one import per module, with an inline `type` on each type-only name, which is what the
-  base layer's `import-x/no-duplicates` now asks for.
-- An Astro project gets `dev` and `preview` scripts, like every other target.
 - A Next project sets `agentRules: false`, so `next dev` no longer rewrites the `CLAUDE.md` and `AGENTS.md` the
   project owns.
-- Vue and the web extension popup mount on `#root`, the element their `index.html` carries; they mounted on `#app`
-  and rendered nothing.
-- The starter follows the system colour scheme. Each colour token is `light-dark()` under `color-scheme: light dark`,
-  a `.light` or `.dark` class pins either, and Tailwind's `dark:` variant matches the same condition. React Native
-  reads the same token values for light and dark through `useColorScheme`.
-- A Next or React Native project answering `tailwind` gets a `postcss.config.mjs` and an Angular one a
-  `.postcssrc.json`, so Tailwind runs. Without them the raw `@theme`, `@custom-variant` and `@utility` reached the
-  bundler, which warned on each request.
-- A React Native project answering `tailwind` pins `lightningcss` to 1.30.1, NativeWind 5's documented version,
-  through the manager's own override field; under 1.32 and 1.33 react-native-css failed the Android bundle. The
-  pin is scoped to `@expo/metro-config` and react-native-css, the copies react-native-css loads, so every other
-  package keeps its own; bun, which reads scoped overrides
-  only from 1.4, keeps it global.
-- Every starter header carries a "LintelJS Starter" label at its left, and React Native turns on the tab
-  navigator's header to show it.
-- The web extension popup drops its counter, which no store answer put there, and shows the gate hint every other
-  home page shows.
-- React Native's mark animates like the web one, through Reanimated, and holds still under reduced motion.
-- The starter pages name the commands the project runs. The gate on About lists every script `check` chains, with
-  what each runs and the manager's own prefix, read from the emitted `package.json` scripts: React Native showed
-  `vite build` for `expo export`, every non-Vite target `tsc --noEmit` or `vite build` for its own tools, and a
-  project without tests a test leg. Home's hint names the same `check`, and About's sync line is
-  `npx @linteljs/create sync`, as the README has it.
-- A pnpm project's `pnpm-workspace.yaml` sets `minimumReleaseAge: 2880` and exempts `@linteljs/*`, so a fresh
-  linteljs release installs the day it ships; a project's own `minimumReleaseAge` is left alone.
-- Bun and Yarn projects hold a release back two days as well, so a half-published version is not installed the
-  minute it appears: `bunfig.toml` sets `install.minimumReleaseAge = 172800` (seconds, honoured from bun 1.3.0)
-  and exempts `@linteljs/eslint-config` and `@linteljs/eslint-plugin`; `.yarnrc.yml` sets
-  `npmMinimalAgeGate: 2880` (minutes) with `npmPreapprovedPackages` `@linteljs/*`, written only when the Yarn
-  that ran `create` is 4.10.1 or later, since an older Yarn 4 refuses the setting.
-- On Yarn inside CI, the first install writes its lockfile. Yarn 4 turns immutable installs on under CI and refused
-  the lockfile a new project has to create.
-- On Yarn, husky and a target's own setup (`svelte-kit sync`) run from `postinstall`, since Yarn 2+ never runs
-  `prepare`.
+- Copilot `applyTo` and Cursor `globs` expand brace groups, since both tools split the value on commas and
+  `src/**/*.{ts,tsx}` was read as two broken globs.
+- On Yarn, the first install in CI writes its lockfile, which Yarn 4's immutable CI installs refused. Husky and a
+  target's own setup (`svelte-kit sync`) run from `postinstall`, since Yarn 2+ never runs `prepare`.
 - `stylelint-order` is an explicit dev dependency, since `stylelint-config-recess-order` peers on it.
-- A config whose single choice names an inherited property, such as `"target": "toString"`, is refused.
-- A recorded `resolveConditions` writes the `resolver` option as a block, within `max-len`.
-- A gate command longer than a line is recorded as joined literals, each within `max-len`, so a SvelteKit record
-  with the Paraglide compile in its `typecheck` passes its own lint.
-- The emitted `checkBannedPatterns.ts` accepts a type guard's own type, `(value: unknown) => value is T`, as a
-  parameter or an alias, so a parse helper that takes its guard as an argument passes the floor.
-- The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
+- An Astro project gets `dev` and `preview` scripts, like every other target.
 - An extension without the popup surface writes no `index.html`, `src/main.ts`, `src/popup/` or `src/lib/mark/`,
   since its manifest names no popup; one with no page at all gets no html layer.
-- The emitted `naming` map holds every file under a `utils/` folder to the `Utils` suffix: `'**/utils/*.ts'` to
-  `*Utils`, and `'src/**/utils/*.ts'` to `*-utils` on Angular.
-- The starter suites are linted against each target's own `naming` map before release, so a filename a generated
-  project's `check-file` rejects, such as `counterStore.test.tsx` on React, no longer ships.
-- The webextension structure rule lists `lib/mark/`, `style.css`, `devtools.html` and `panel.html` in its tree.
-- React Router framework mode with StyleX links StyleX's dev stylesheet from `root.tsx`, so `dev` is no longer
-  unstyled; StyleX's plugin injects it into an `index.html` that framework mode does not have.
-- Nuxt, SvelteKit and Astro with StyleX link StyleX's dev stylesheet from their own document (Nuxt's
-  `$development.app.head`, the root `+layout.svelte`, `Layout.astro`), so `dev` is no longer unstyled; the plugin
-  injects it through `transformIndexHtml`, which a server-rendered page never passes through. Builds were not affected.
-- Nuxt's header takes its classes from its `styles.ts`, as Vue's does, so it is styled under StyleX and marks the
-  current tab under every styling.
-- React Router framework mode's `vite.config.ts` answers `/.well-known/` requests with a plain 404 in dev, so
-  Chrome DevTools' probe no longer logs a `No route matches URL` error.
-- Every StyleX project passes its own `pnpm check` again: StyleX reads no tsconfig paths, so its plugin now gets
-  `aliases` for `@styles/*`, absolute from `import.meta.dirname` in the Vite, Vitest, Astro and Nuxt configs and
-  `/ROOT/` under a `rootDir` in Next's `.babelrc`. Since the `@styles` alias, its tests and build failed with
-  `Could not resolve the path to the imported file` at `@styles/tokens.stylex`.
+- Emitted files stay within `max-len` and still parse on unusual values: a long project name, a long gate command
+  and a recorded `resolveConditions` wrap, and an ignore or alias path ending in a backslash or holding a newline
+  no longer breaks `eslint.config.js` or `nuxt.config.ts`.
+- The emitted `checkBannedPatterns.ts` accepts a type guard's own type, `(value: unknown) => value is T`, as a
+  parameter or an alias, so a parse helper that takes its guard as an argument passes the floor.
+- A config whose single choice names an inherited property, such as `"target": "toString"`, is refused, and an
+  answer that fails its pattern says it must match the pattern, not that it must be a string.
+- The generated CI workflow pins `oven-sh/setup-bun` to a commit, as it already does `pnpm/action-setup`.
+- The README spells the `minimumReleaseAge` override the way pnpm's CLI takes it.
 
 ## 1.5.3
 
