@@ -52,27 +52,34 @@ describe('outermostCall', () => {
   it('climbs to the end of a fluent chain', () => {
     const parsed = sourceCodeFrom('fetch(url).then(parse).catch(handle);\n');
 
-    expect(outermostCall(parsed.lastNode('CallExpression')))
+    const actual = outermostCall(parsed.lastNode('CallExpression'));
+
+    expect(actual)
       .toBe(parsed.firstNode('CallExpression'));
   });
 
   it('normalises a callee member expression to its own call', () => {
     const parsed = sourceCodeFrom('promise.catch(handle);\n');
 
-    expect(outermostCall(parsed.firstNode('MemberExpression')))
+    const actual = outermostCall(parsed.firstNode('MemberExpression'));
+
+    expect(actual)
       .toBe(parsed.firstNode('CallExpression'));
   });
 
   it.each(STOPS_WHERE_IT_IS)('leaves %s where it is', (_label, code, type) => {
     const node = sourceCodeFrom(code).lastNode(type);
 
-    expect(outermostCall(node)).toBe(node);
+    const actual = outermostCall(node);
+    expect(actual).toBe(node);
   });
 
   it('answers with the chain wrapper when the chain is optional', () => {
     const parsed = sourceCodeFrom('api?.fetch(url).catch(handle);\n');
 
-    expect(outermostCall(parsed.firstNode('CallExpression')))
+    const actual = outermostCall(parsed.firstNode('CallExpression'));
+
+    expect(actual)
       .toBe(parsed.firstNode('ChainExpression'));
   });
 

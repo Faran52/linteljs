@@ -50,14 +50,17 @@ describe('globalNamespaceTags', () => {
   });
 
   it('answers the opening tag alone where the element is self-closing', () => {
-    expect(globalNamespaceTags(element({ openingElement: tag('React', 'Fragment') }), 'React')).toHaveLength(1);
+    const actual = globalNamespaceTags(element({ openingElement: tag('React', 'Fragment') }), 'React');
+    expect(actual).toHaveLength(1);
   });
 
   it('answers nothing for a tag reaching another namespace', () => {
-    expect(globalNamespaceTags(element({ openingElement: tag('Other', 'Thing') }), 'React')).toEqual([]);
+    const actual = globalNamespaceTags(element({ openingElement: tag('Other', 'Thing') }), 'React');
+    expect(actual).toEqual([]);
   });
 
   it('answers nothing for a node that is not an element', () => {
-    expect(globalNamespaceTags({ type: 'Literal' }, 'React')).toEqual([]);
+    const actual = globalNamespaceTags({ type: 'Literal' }, 'React');
+    expect(actual).toEqual([]);
   });
 });

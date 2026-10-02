@@ -102,21 +102,28 @@ describe('runFixPass', () => {
       sources: [dir],
     });
 
-    expect(runFixPass(context)).toBe(0);
-    expect(printed()).toContain('5 files (3 TypeScript, 2 JavaScript) under:');
+    const passResult = runFixPass(context);
+    expect(passResult).toBe(0);
+    const actual = printed();
+    expect(actual).toContain('5 files (3 TypeScript, 2 JavaScript) under:');
 
-    expect(printed()).toContain('TypeScript: 1 files linted, 1 changed by a fixer, 0 findings\n  skipped: 0 compiled, '
+    const actual2 = printed();
+
+    expect(actual2).toContain('TypeScript: 1 files linted, 1 changed by a fixer, 0 findings\n  skipped: 0 compiled, '
       + '0 minified or bundled, 0 oversized, 1 duplicates, 1 the parser rejected');
 
-    expect(printed()).toContain('JavaScript: 1 files linted, 0 changed by a fixer, 0 findings\n  skipped: 1 compiled');
-    expect(printed()).toContain('every fix parsed, converged');
+    const actual3 = printed();
+    expect(actual3).toContain('JavaScript: 1 files linted, 0 changed by a fixer, 0 findings\n  skipped: 1 compiled');
+    const actual4 = printed();
+    expect(actual4).toContain('every fix parsed, converged');
 
     const timedFiles = context.timings
       .map(({ file }) => {
         return file;
       });
 
-    expect(timedFiles).toStrictEqual([clean, script]);
+    const expected = [clean, script];
+    expect(timedFiles).toStrictEqual(expected);
   });
 
   it('reports every finding, names the culprit, and tallies them', () => {
@@ -157,13 +164,14 @@ describe('runFixPass', () => {
         return `${category} ${file} ${rules.join(',')}`;
       });
 
-    expect(summaries).toStrictEqual([
+    const expected = [
       `report shape ${reported} prefer-await-to-then`,
       `token loss ${swapped} union-newline`,
       `comment loss ${dropped} member-newline`,
       `comment moved ${dropped} member-newline`,
       `threw ${throws} union-newline,member-newline`,
-    ]);
+    ];
+    expect(summaries).toStrictEqual(expected);
 
     expect(output).toContain(`[ERROR] report shape: ${reported}\n  rules: prefer-await-to-then\n  report at 2:0 is `
       + 'not the shape the rule claims\n  reported at line 2:\n    // REPORT\n    const c = 1;');

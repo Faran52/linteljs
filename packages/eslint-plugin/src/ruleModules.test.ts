@@ -10,6 +10,7 @@ describe.each(ruleDirectories)('%s', (ruleName) => {
     const module = moduleNameOf(ruleName);
     const loaded: unknown = await import(`./rules/${ruleName}/${module}.ts`);
 
-    expect(loaded).toHaveProperty([module, 'create'], expect.any(Function));
+    const expected = [module, 'create'];
+    expect(loaded).toHaveProperty(expected, expect.any(Function));
   });
 });

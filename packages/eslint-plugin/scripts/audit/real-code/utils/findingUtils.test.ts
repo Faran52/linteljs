@@ -18,14 +18,18 @@ describe('show', () => {
       .join('\n')
       .split('\n');
 
-    expect(lines.slice(0, 4)).toStrictEqual([
+    const sliced = lines.slice(0, 4);
+    const expected = [
       '[ERROR] token loss: a.ts',
       '  rules: union-newline, member-newline',
       '  token 3 went missing',
       '  minimal reproduction:',
-    ]);
+    ];
+    expect(sliced).toStrictEqual(expected);
 
-    expect(lines.slice(4)).toHaveLength(40);
-    expect(lines.at(-1)).toBe('    line 39');
+    const sliced2 = lines.slice(4);
+    expect(sliced2).toHaveLength(40);
+    const actual = lines.at(-1);
+    expect(actual).toBe('    line 39');
   });
 });

@@ -88,7 +88,8 @@ describe('SAFE_DECLARATION_PARENTS', () => {
       'TSModuleBlock',
     ].toSorted(alphabetically);
 
-    expect([...SAFE_DECLARATION_PARENTS].toSorted(alphabetically)).toEqual(expected);
+    const sorted = [...SAFE_DECLARATION_PARENTS].toSorted(alphabetically);
+    expect(sorted).toEqual(expected);
   });
 });
 
@@ -127,7 +128,8 @@ describe('sitsInUnsafePosition', () => {
   ])('is $expected for $label', ({ code, expected }) => {
     const { sourceCode, fn } = parseFunction(code);
 
-    expect(sitsInUnsafePosition(sourceCode, fn)).toBe(expected);
+    const actual = sitsInUnsafePosition(sourceCode, fn);
+    expect(actual).toBe(expected);
   });
 
   it('is false for every other parent position an arrow may stand in', () => {
@@ -146,7 +148,8 @@ describe('sitsInUnsafePosition', () => {
     for (const code of positions) {
       const { sourceCode, fn } = parseFunction(code);
 
-      expect(sitsInUnsafePosition(sourceCode, fn)).toBe(false);
+      const actual = sitsInUnsafePosition(sourceCode, fn);
+      expect(actual).toBe(false);
     }
   });
 });
@@ -220,7 +223,8 @@ describe('isSafeToConvert', () => {
   }) => {
     const { sourceCode, fn } = parseFunction(code, options);
 
-    expect(isSafeToConvert(sourceCode, fn, new WeakSet())).toBe(expected);
+    const actual = isSafeToConvert(sourceCode, fn, new WeakSet());
+    expect(actual).toBe(expected);
   });
 
   it('is false when the function is recorded as reading this', () => {
@@ -229,6 +233,7 @@ describe('isSafeToConvert', () => {
 
     containsThis.add(fn);
 
-    expect(isSafeToConvert(sourceCode, fn, containsThis)).toBe(false);
+    const actual = isSafeToConvert(sourceCode, fn, containsThis);
+    expect(actual).toBe(false);
   });
 });

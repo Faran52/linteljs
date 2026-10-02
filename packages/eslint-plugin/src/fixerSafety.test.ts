@@ -40,7 +40,9 @@ describe('the corpus', () => {
         return sample.filename?.replace(/^.*\./, '');
       });
 
-    expect(new Set(extensions)).toEqual(new Set([
+    const actual = new Set(extensions);
+
+    expect(actual).toEqual(new Set([
       'astro',
       'svelte',
       'vue',
@@ -48,13 +50,15 @@ describe('the corpus', () => {
   });
 
   it.each(sfc)('parses %s', (_label, sample: FixerSample) => {
-    expect(parseErrorsIn(sample.code, sample.typescript, sample.filename)).toEqual([]);
+    const parseErrors = parseErrorsIn(sample.code, sample.typescript, sample.filename);
+    expect(parseErrors).toEqual([]);
   });
 });
 
 describe.each(ruleNames)('%s', (name) => {
   it.each(samples)('leaves %s parseable after --fix', (_label, sample: FixerSample) => {
-    expect(parseErrorsIn(fixWith(sample, name), sample.typescript, sample.filename)).toEqual([]);
+    const parseErrors = parseErrorsIn(fixWith(sample, name), sample.typescript, sample.filename);
+    expect(parseErrors).toEqual([]);
   });
 
   it.each(samples)('settles on %s', (_label, sample: FixerSample) => {
@@ -78,7 +82,8 @@ describe.each(ruleNames)('%s line endings', (name) => {
     });
 
   it.each(windows)('keeps CRLF intact on %s', (_label, sample: FixerSample) => {
-    expect(/(?<!\r)\n/.test(fixWith(sample, name))).toBe(false);
+    const matches = /(?<!\r)\n/.test(fixWith(sample, name));
+    expect(matches).toBe(false);
   });
 
   const unix = parseableSamples()
@@ -90,7 +95,8 @@ describe.each(ruleNames)('%s line endings', (name) => {
     });
 
   it.each(unix)('keeps a stray CRLF from spreading on %s', (_label, sample: FixerSample) => {
-    expect(fixWith(sample, name).split('\r\n')).toHaveLength(sample.code.split('\r\n').length);
+    const parts = fixWith(sample, name).split('\r\n');
+    expect(parts).toHaveLength(sample.code.split('\r\n').length);
   });
 });
 
@@ -219,7 +225,8 @@ describe('the indentation check', () => {
 
 describe.each(ruleNames)('%s indentation', (name) => {
   it.each(samples)('keeps every indent in %s', (_label, sample: FixerSample) => {
-    expect(lostIndents(sample, fixWith(sample, name))).toEqual([]);
+    const actual = lostIndents(sample, fixWith(sample, name));
+    expect(actual).toEqual([]);
   });
 });
 
@@ -235,7 +242,9 @@ const namesIn = (shape: FixShape): string[] => {
 
 describe.each(namesIn('whitespace'))('%s tokens', (name) => {
   it.each(samples)('rewrites no code in %s', (_label, sample: FixerSample) => {
-    expect(tokensIn(fixWith(sample, name), sample.typescript, sample.filename))
+    const tokens = tokensIn(fixWith(sample, name), sample.typescript, sample.filename);
+
+    expect(tokens)
       .toEqual(tokensIn(sample.code, sample.typescript, sample.filename));
   });
 });
@@ -263,17 +272,20 @@ const runtimeErrorAfter = (sample: FixerSample, fixed: string): string | undefin
 
 describe.each(ruleNames)('%s runtime', (name) => {
   it.each(runnable)('still runs %s', (_label, sample: FixerSample) => {
-    expect(runtimeErrorAfter(sample, fixWith(sample, name))).toBeUndefined();
+    const runtimeError = runtimeErrorAfter(sample, fixWith(sample, name));
+    expect(runtimeError).toBeUndefined();
   });
 });
 
 describe('the whole plugin at once', () => {
   it.each(samples)('leaves %s parseable', (_label, sample: FixerSample) => {
-    expect(parseErrorsIn(fixWith(sample), sample.typescript, sample.filename)).toEqual([]);
+    const parseErrors = parseErrorsIn(fixWith(sample), sample.typescript, sample.filename);
+    expect(parseErrors).toEqual([]);
   });
 
   it.each(runnable)('still runs %s', (_label, sample: FixerSample) => {
-    expect(runtimeErrorAfter(sample, fixWith(sample))).toBeUndefined();
+    const runtimeError = runtimeErrorAfter(sample, fixWith(sample));
+    expect(runtimeError).toBeUndefined();
   });
 
   it.each(samples)('settles on %s', (_label, sample: FixerSample) => {

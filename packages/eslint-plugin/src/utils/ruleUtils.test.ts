@@ -48,26 +48,30 @@ describe('isDirective', () => {
     });
 
     expect(directive).toBe(false);
-    expect(isDirective({ type: 'VariableDeclaration' })).toBe(false);
+    const actual = isDirective({ type: 'VariableDeclaration' });
+    expect(actual).toBe(false);
   });
 });
 
 describe('isIdentifierNamed', () => {
   it('answers for an identifier of that name only', () => {
-    expect(isIdentifierNamed({
+    const actual = isIdentifierNamed({
       type: 'Identifier',
       name: 'stylex',
-    }, 'stylex')).toBe(true);
+    }, 'stylex');
+    expect(actual).toBe(true);
 
-    expect(isIdentifierNamed({
+    const actual2 = isIdentifierNamed({
       type: 'Identifier',
       name: 'css',
-    }, 'stylex')).toBe(false);
+    }, 'stylex');
+    expect(actual2).toBe(false);
 
-    expect(isIdentifierNamed({
+    const actual3 = isIdentifierNamed({
       type: 'PrivateIdentifier',
       name: 'stylex',
-    }, 'stylex')).toBe(false);
+    }, 'stylex');
+    expect(actual3).toBe(false);
   });
 });
 
@@ -96,7 +100,9 @@ describe('mustFind', () => {
 
 describe('rangeOf', () => {
   it('hands back the range a parsed node carries', () => {
-    expect(rangeOf(parsed.firstNode('Identifier'))).toEqual([6, 11]);
+    const range = rangeOf(parsed.firstNode('Identifier'));
+    const expected = [6, 11];
+    expect(range).toEqual(expected);
   });
 
   it('names the plugin when a node carries none', () => {
@@ -127,11 +133,14 @@ describe('optionsOf', () => {
   };
 
   it('answers the first option a rule was configured with', () => {
-    expect(optionsFrom(['error', { max: 2 }])).toEqual({ max: 2 });
+    const options = optionsFrom(['error', { max: 2 }]);
+    const expected = { max: 2 };
+    expect(options).toEqual(expected);
   });
 
   it('answers an empty object where none was given', () => {
-    expect(optionsFrom('error')).toEqual({});
+    const options = optionsFrom('error');
+    expect(options).toEqual({});
   });
 });
 
@@ -140,8 +149,10 @@ describe('rebuildLosesComments', () => {
     const commented = sourceCodeFrom('const a = { /* kept */ b: 1 };\n');
     const bare = sourceCodeFrom('const a = { b: 1 };\n');
 
-    expect(rebuildLosesComments(commented.sourceCode, commented.firstNode('ObjectExpression'))).toBe(true);
-    expect(rebuildLosesComments(bare.sourceCode, bare.firstNode('ObjectExpression'))).toBe(false);
+    const actual = rebuildLosesComments(commented.sourceCode, commented.firstNode('ObjectExpression'));
+    expect(actual).toBe(true);
+    const actual2 = rebuildLosesComments(bare.sourceCode, bare.firstNode('ObjectExpression'));
+    expect(actual2).toBe(false);
   });
 });
 
@@ -166,19 +177,24 @@ describe('resolveVariable', () => {
   });
 
   it('answers null for a name no scope declares', () => {
-    expect(resolveVariable(scope, 'missing')).toBeNull();
+    const variable = resolveVariable(scope, 'missing');
+    expect(variable).toBeNull();
   });
 });
 
 describe('docsUrl', () => {
   it('builds the rule directory url from the rule id', () => {
-    expect(docsUrl('import-newlines'))
+    const actual = docsUrl('import-newlines');
+
+    expect(actual)
       .toBe('https://github.com/Faran52/linteljs/tree/main/packages/eslint-plugin/src/rules/import-newlines');
   });
 
   it('points at a tree url rather than a blob url', () => {
-    expect(docsUrl('prefer-arrow-functions')).toContain('/tree/main/');
-    expect(docsUrl('prefer-arrow-functions')).not.toContain('/blob/');
+    const actual = docsUrl('prefer-arrow-functions');
+    expect(actual).toContain('/tree/main/');
+    const actual2 = docsUrl('prefer-arrow-functions');
+    expect(actual2).not.toContain('/blob/');
   });
 });
 
@@ -219,7 +235,8 @@ describe('createRule', () => {
     const rule = createRule('example-rule', definition);
 
     expect(rule.meta.type).toBe('suggestion');
-    expect(rule.meta.messages).toEqual({ example: 'An example message.' });
+    const expected = { example: 'An example message.' };
+    expect(rule.meta.messages).toEqual(expected);
     expect(rule.meta.schema).toEqual([]);
   });
 

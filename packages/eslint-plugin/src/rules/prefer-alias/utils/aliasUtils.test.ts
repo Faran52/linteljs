@@ -54,11 +54,12 @@ describe('aliasedProjectOf', () => {
       pathsBasePath: '/p',
     });
 
-    expect(project).toEqual({
+    const expected = {
       base: '/p',
       aliases: [CONFIG],
       pinned: [],
-    });
+    };
+    expect(project).toEqual(expected);
   });
 
   it('pins the exact keys onto a file, not those naming an alias directory', () => {
@@ -71,7 +72,8 @@ describe('aliasedProjectOf', () => {
       pathsBasePath: '/p',
     });
 
-    expect(project?.pinned).toEqual(['@config/env']);
+    const expected = ['@config/env'];
+    expect(project?.pinned).toEqual(expected);
   });
 
   it('keeps only a trailing-star pattern onto a directory, by its first substitution', () => {
@@ -88,7 +90,8 @@ describe('aliasedProjectOf', () => {
       pathsBasePath: '/p',
     });
 
-    expect(project?.aliases).toEqual([CONFIG]);
+    const expected = [CONFIG];
+    expect(project?.aliases).toEqual(expected);
   });
 
   it('pairs a wildcard alias with the exact key onto its directory', () => {
@@ -104,7 +107,8 @@ describe('aliasedProjectOf', () => {
       pathsBasePath: '/p',
     });
 
-    expect(project?.aliases).toEqual([UI, CONFIG]);
+    const expected = [UI, CONFIG];
+    expect(project?.aliases).toEqual(expected);
   });
 
   it('skips an empty key, and pairs no exact key that has no substitution', () => {
@@ -117,12 +121,14 @@ describe('aliasedProjectOf', () => {
       pathsBasePath: '/p',
     });
 
-    expect(project?.aliases).toEqual([{
+    const expected = [{
       prefix: '@root/',
       directory: '/p',
-    }]);
+    }];
+    expect(project?.aliases).toEqual(expected);
 
-    expect(project?.pinned).toEqual(['', '@root']);
+    const expected2 = ['', '@root'];
+    expect(project?.pinned).toEqual(expected2);
   });
 
   it('reads nothing off a project with a baseUrl', () => {

@@ -19,6 +19,7 @@ describe('rules', () => {
   it.each(Object.entries(rules))('registers %s as the rule its own directory exports', async (name, rule) => {
     const loaded: unknown = await import(`./${name}/${moduleNameOf(name)}.ts`);
 
-    expect(loaded).toHaveProperty([moduleNameOf(name)], rule);
+    const expected = [moduleNameOf(name)];
+    expect(loaded).toHaveProperty(expected, rule);
   });
 });

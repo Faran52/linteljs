@@ -45,11 +45,13 @@ describe('evaluate', () => {
   it('reports nothing for a source that does not parse or a fix that changes nothing', () => {
     const context = auditContext();
 
-    expect(evaluate(context, 'type = ;\n', 'file.ts', ['union-newline'])).toStrictEqual({
+    const actual = evaluate(context, 'type = ;\n', 'file.ts', ['union-newline']);
+    const expected = {
       changed: false,
       findings: [],
       fixed: 'type = ;\n',
-    });
+    };
+    expect(actual).toStrictEqual(expected);
 
     expect(evaluate(context, UNION, 'file.ts', ['union-newline'], parse(UNION, 'file.ts')).changed).toBe(false);
   });
@@ -62,12 +64,14 @@ describe('evaluate', () => {
   });
 
   it('names the whitespace fixer that changed a token', () => {
+    const expected = [{
+      category: 'token loss',
+      rules: ['union-newline'],
+      detail: 'token 4 was Punctuator "|" and is now Punctuator "&"',
+    }];
+
     expect(evaluate(planted({ 'union-newline': swapsPipe }), UNION, 'file.ts', ['union-newline']).findings)
-      .toStrictEqual([{
-        category: 'token loss',
-        rules: ['union-newline'],
-        detail: 'token 4 was Punctuator "|" and is now Punctuator "&"',
-      }]);
+      .toStrictEqual(expected);
   });
 
   it('falls back to the fixers allowed to move members when no whitespace fixer is at fault', () => {
@@ -76,15 +80,17 @@ describe('evaluate', () => {
       'union-newline': textRule(String),
     });
 
-    expect(evaluate(context, UNION, 'file.ts', ['union-newline', 'interface-order']).findings).toStrictEqual([{
+    const expected = [{
       category: 'token loss',
       rules: ['interface-order'],
       detail: 'token Punctuator "|" appears 1 time(s) in the input and 0 in the output',
-    }]);
+    }];
+    expect(evaluate(context, UNION, 'file.ts', ['union-newline', 'interface-order']).findings).toStrictEqual(expected);
   });
 
   it('drops a token change no fixer promised to avoid', () => {
-    expect(categoriesOf(planted({ 'comment-delimiter': swapsPipe }), UNION, ['comment-delimiter'])).toStrictEqual([]);
+    const categories = categoriesOf(planted({ 'comment-delimiter': swapsPipe }), UNION, ['comment-delimiter']);
+    expect(categories).toStrictEqual([]);
   });
 
   it('names the whole subset when only the fixers together change a token', () => {
@@ -97,12 +103,14 @@ describe('evaluate', () => {
       }),
     });
 
+    const expected = [{
+      category: 'token loss',
+      rules: ['member-newline', 'union-newline'],
+      detail: 'token 1 was Identifier "x" and is now Identifier "y"',
+    }];
+
     expect(evaluate(context, 'let x = 1;\n', 'file.ts', ['union-newline', 'member-newline']).findings)
-      .toStrictEqual([{
-        category: 'token loss',
-        rules: ['member-newline', 'union-newline'],
-        detail: 'token 1 was Identifier "x" and is now Identifier "y"',
-      }]);
+      .toStrictEqual(expected);
   });
 
   it('reports output that does not parse with the parser message', () => {
@@ -112,11 +120,12 @@ describe('evaluate', () => {
       }),
     });
 
-    expect(evaluate(context, UNION, 'file.ts', ['union-newline']).findings).toStrictEqual([{
+    const expected = [{
       category: 'unparseable',
       rules: ['union-newline'],
       detail: '\';\' expected.',
-    }]);
+    }];
+    expect(evaluate(context, UNION, 'file.ts', ['union-newline']).findings).toStrictEqual(expected);
   });
 
   it('reports a fix that a second pass changes again', () => {
@@ -126,7 +135,9 @@ describe('evaluate', () => {
       }),
     });
 
-    expect(categoriesOf(context, UNION, ['union-newline'])).toStrictEqual(['non-convergent']);
+    const categories = categoriesOf(context, UNION, ['union-newline']);
+    const expected = ['non-convergent'];
+    expect(categories).toStrictEqual(expected);
   });
 
   it('reports a lost comment line, which has also left its anchor', () => {
@@ -149,12 +160,14 @@ describe('evaluate', () => {
     });
     const source = 'const a = 1; // about a\nconst b = 2;\n';
 
+    const expected = [{
+      category: 'comment moved',
+      rules: ['union-newline'],
+      detail: 'comment " about a" written after Identifier "a" appears 1 time(s) in the input and 0 in the output',
+    }];
+
     expect(evaluate(context, source, 'file.ts', ['union-newline', 'member-newline']).findings)
-      .toStrictEqual([{
-        category: 'comment moved',
-        rules: ['union-newline'],
-        detail: 'comment " about a" written after Identifier "a" appears 1 time(s) in the input and 0 in the output',
-      }]);
+      .toStrictEqual(expected);
   });
 
   it('asks no other fixer about a moved comment, and names the whole subset when only both move it', () => {
@@ -182,7 +195,8 @@ describe('evaluate', () => {
         return rules;
       });
 
-    expect(ruleSets).toStrictEqual([['member-newline', 'union-newline']]);
+    const expected = [['member-newline', 'union-newline']];
+    expect(ruleSets).toStrictEqual(expected);
   });
 
   it('reports a CRLF file gaining a bare line ending', () => {
@@ -192,8 +206,11 @@ describe('evaluate', () => {
       }),
     });
 
-    expect(categoriesOf(context, 'const a = 1;\r\nconst b = 2;\r\n', ['union-newline']))
-      .toStrictEqual(['line-ending change']);
+    const categories = categoriesOf(context, 'const a = 1;\r\nconst b = 2;\r\n', ['union-newline']);
+    const expected = ['line-ending change'];
+
+    expect(categories)
+      .toStrictEqual(expected);
   });
 
   it('lets an LF file with one stray CRLF line lose it', () => {
@@ -203,7 +220,9 @@ describe('evaluate', () => {
       }),
     });
 
-    expect(categoriesOf(context, 'const a = 1;\r\nconst b = 2;\nconst c = 3;\n', ['union-newline']))
+    const categories = categoriesOf(context, 'const a = 1;\r\nconst b = 2;\nconst c = 3;\n', ['union-newline']);
+
+    expect(categories)
       .toStrictEqual([]);
   });
 
@@ -214,8 +233,11 @@ describe('evaluate', () => {
       }),
     });
 
-    expect(categoriesOf(context, 'const a = 1;\r\nconst b = 2;\nconst c = 3;\n', ['union-newline']))
-      .toStrictEqual(['line-ending change']);
+    const categories = categoriesOf(context, 'const a = 1;\r\nconst b = 2;\nconst c = 3;\n', ['union-newline']);
+    const expected = ['line-ending change'];
+
+    expect(categories)
+      .toStrictEqual(expected);
   });
 });
 
@@ -241,7 +263,8 @@ describe('narrow', () => {
       rules: [],
     });
 
-    expect(narrowed).toStrictEqual([UNION, 'minimal reproduction']);
+    const expected = [UNION, 'minimal reproduction'];
+    expect(narrowed).toStrictEqual(expected);
   });
 
   it('answers the changed hunk when no slice reproduces it', () => {
@@ -279,7 +302,8 @@ describe('narrow', () => {
       rules: ['union-newline'],
     });
 
-    expect(narrowed).toStrictEqual(['\n', 'minimal reproduction']);
+    const expected = ['\n', 'minimal reproduction'];
+    expect(narrowed).toStrictEqual(expected);
   });
 });
 
@@ -290,8 +314,11 @@ describe('attribute', () => {
       'member-newline': textRule(String),
     });
 
-    expect(attribute(context, UNION, 'file.ts', ['union-newline', 'member-newline'], 'token loss'))
-      .toStrictEqual(['union-newline']);
+    const actual = attribute(context, UNION, 'file.ts', ['union-newline', 'member-newline'], 'token loss');
+    const expected = ['union-newline'];
+
+    expect(actual)
+      .toStrictEqual(expected);
   });
 });
 

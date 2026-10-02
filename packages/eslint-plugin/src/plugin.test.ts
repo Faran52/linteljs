@@ -123,6 +123,7 @@ describe.each(PRESET_NAMES)('preset "%s"', (name) => {
   });
 
   it('carries the plugin name as a bare string in the legacy shape', () => {
-    expect(configs[name].plugins).toEqual([PLUGIN_NAME]);
+    const expected = [PLUGIN_NAME];
+    expect(configs[name].plugins).toEqual(expected);
   });
 });

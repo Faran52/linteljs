@@ -57,19 +57,25 @@ describe('runOptionSweep', () => {
     }));
 
     expect(sweep).toBe(0);
-    expect(printed()).toContain('nothing to sweep');
+    const actual = printed();
+    expect(actual).toContain('nothing to sweep');
   });
 
   it('counts every configuration and passes a clean corpus', () => {
     const printed = captured();
     const context = auditContext({ files: [clean, compiled] });
 
-    expect(runOptionSweep(context)).toBe(0);
+    const optionSweepResult = runOptionSweep(context);
+    expect(optionSweepResult).toBe(0);
 
-    expect(printed()).toContain('2 files sampled, against 3 configurations read off meta.schema:');
-    expect(printed()).toContain('     1      1    0  union-newline { maxGenericMembers: 1 }');
-    expect(printed()).toContain('     1      0    0  union-newline { maxGenericMembers: 8 }');
-    expect(printed()).toContain('under every configuration');
+    const actual = printed();
+    expect(actual).toContain('2 files sampled, against 3 configurations read off meta.schema:');
+    const actual2 = printed();
+    expect(actual2).toContain('     1      1    0  union-newline { maxGenericMembers: 1 }');
+    const actual3 = printed();
+    expect(actual3).toContain('     1      0    0  union-newline { maxGenericMembers: 8 }');
+    const actual4 = printed();
+    expect(actual4).toContain('under every configuration');
     expect(context.options).toStrictEqual({});
   });
 
@@ -89,15 +95,22 @@ describe('runOptionSweep', () => {
       plantRules(context, { 'union-newline': defective }, options);
     }
 
-    expect(runOptionSweep(context)).toBe(4);
+    const optionSweepResult = runOptionSweep(context);
+    expect(optionSweepResult).toBe(4);
 
-    expect(printed()).toContain('[ERROR] under union-newline { maxGenericMembers: 1 }');
-    expect(printed()).toContain(`[ERROR] token loss: ${marked}`);
+    const actual = printed();
+    expect(actual).toContain('[ERROR] under union-newline { maxGenericMembers: 1 }');
+    const actual2 = printed();
+    expect(actual2).toContain(`[ERROR] token loss: ${marked}`);
 
-    expect(printed()).toContain(`[ERROR] threw: ${throws}\n  Error while loading rule '@linteljs/union-newline': `
+    const actual3 = printed();
+
+    expect(actual3).toContain(`[ERROR] threw: ${throws}\n  Error while loading rule '@linteljs/union-newline': `
       + 'rule crashed');
 
-    expect(printed()).toContain('[INFO] 250/250 files, 4 findings');
-    expect(printed()).toContain('[ERROR] 4 findings');
+    const actual4 = printed();
+    expect(actual4).toContain('[INFO] 250/250 files, 4 findings');
+    const actual5 = printed();
+    expect(actual5).toContain('[ERROR] 4 findings');
   });
 });

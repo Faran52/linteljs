@@ -17,14 +17,17 @@ const named = (type: string, name: string): TypedNode & NamedNode => {
 
 describe('nameOf', () => {
   it('reads the name an identifier carries', () => {
-    expect(nameOf(named('Identifier', 'ReactNode'))).toBe('ReactNode');
+    const name = nameOf(named('Identifier', 'ReactNode'));
+    expect(name).toBe('ReactNode');
   });
 
   it('reads the name a private identifier carries', () => {
-    expect(nameOf(named('PrivateIdentifier', 'hidden'))).toBe('hidden');
+    const name = nameOf(named('PrivateIdentifier', 'hidden'));
+    expect(name).toBe('hidden');
   });
 
   it('answers nothing for a node carrying no name', () => {
-    expect(nameOf({ type: 'Literal' })).toBeUndefined();
+    const name = nameOf({ type: 'Literal' });
+    expect(name).toBeUndefined();
   });
 });

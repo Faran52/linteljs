@@ -122,7 +122,8 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   it('declares a fix shape only where there is a fixer to shape', () => {
     const { fixShape } = meta.docs;
 
-    expect([...FIX_SHAPES, undefined]).toContain(fixShape);
+    const actual = [...FIX_SHAPES, undefined];
+    expect(actual).toContain(fixShape);
     expect(fixShape === undefined || meta.fixable !== undefined).toBe(true);
   });
 
@@ -144,11 +145,12 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   });
 
   it('declares a valid rule type', () => {
-    expect([
+    const actual = [
       'problem',
       'suggestion',
       'layout',
-    ]).toContain(meta.type);
+    ];
+    expect(actual).toContain(meta.type);
   });
 
   it('declares at least one message', () => {
@@ -166,7 +168,8 @@ describe.each(ruleCases)('rule "%s"', (name, rule) => {
   it('rejects unknown options in every object schema', () => {
     const { schema } = meta;
 
-    expect(Array.isArray(schema)).toBe(true);
+    const actual = Array.isArray(schema);
+    expect(actual).toBe(true);
 
     if (!Array.isArray(schema)) {
       throw new TypeError(`${name} declares a schema that is not an array`);
@@ -192,7 +195,7 @@ describe('rule metadata', () => {
   });
 
   it.each(ruleCases)('matches the recorded surface for "%s"', (name, rule) => {
-    expect({
+    const actual = {
       messages: rule.meta.messages,
       schema: rule.meta.schema,
       type: rule.meta.type,
@@ -204,7 +207,8 @@ describe('rule metadata', () => {
         requiresTypeChecking: rule.meta.docs.requiresTypeChecking ?? false,
         description: rule.meta.docs.description,
       },
-    }).toEqual(expected[name]);
+    };
+    expect(actual).toEqual(expected[name]);
   });
 });
 
@@ -229,7 +233,8 @@ describe('configs', () => {
     expect(configNames).toEqual(presetNames);
 
     for (const [, preset] of allPresets) {
-      expect(Array.isArray(preset)).toBe(true);
+      const actual = Array.isArray(preset);
+      expect(actual).toBe(true);
       expect(preset.length).toBeGreaterThan(0);
     }
   });
@@ -238,8 +243,10 @@ describe('configs', () => {
     for (const name of PRESET_NAMES) {
       const preset = configs[name];
 
-      expect(Array.isArray(preset)).toBe(false);
-      expect(preset.plugins).toEqual([PLUGIN_NAME]);
+      const actual = Array.isArray(preset);
+      expect(actual).toBe(false);
+      const expected = [PLUGIN_NAME];
+      expect(preset.plugins).toEqual(expected);
 
       const enabled = Object.keys(preset.rules).length + preset.overrides
         .reduce((total, override) => {
@@ -253,7 +260,8 @@ describe('configs', () => {
   it('puts the TypeScript-only rules behind an eslintrc override', () => {
     const [override] = configs.recommended.overrides;
 
-    expect(override?.files).toEqual([...TYPESCRIPT_FILES]);
+    const expected = [...TYPESCRIPT_FILES];
+    expect(override?.files).toEqual(expected);
     expect(Object.keys(override?.rules ?? {}).length).toBeGreaterThan(0);
   });
 
@@ -290,18 +298,22 @@ describe('configs', () => {
   });
 
   it('enables exactly the recommended rules in recommended', () => {
-    expect(enabledIn(configs['flat/recommended'])).toEqual(prefixed(recommendedNames));
+    const enabled = enabledIn(configs['flat/recommended']);
+    expect(enabled).toEqual(prefixed(recommendedNames));
   });
 
   it('carries every rule in all', () => {
-    expect(enabledIn(configs['flat/all'])).toEqual(prefixed(ruleNames));
+    const enabled = enabledIn(configs['flat/all']);
+    expect(enabled).toEqual(prefixed(ruleNames));
   });
 
   it('registers the plugin once per preset, on the unscoped block', () => {
     for (const [, preset] of allPresets) {
       const [base, ...rest] = preset;
 
-      expect(Object.keys(base?.plugins ?? {})).toEqual([PLUGIN_NAME]);
+      const actual = Object.keys(base?.plugins ?? {});
+      const expected = [PLUGIN_NAME];
+      expect(actual).toEqual(expected);
 
       for (const block of rest) {
         expect(block.plugins).toBeUndefined();
@@ -347,7 +359,9 @@ describe('configs', () => {
         return config.files ?? [];
       });
 
-    expect([...new Set(globs)]).toEqual([...TYPESCRIPT_FILES]);
+    const actual = [...new Set(globs)];
+    const expected = [...TYPESCRIPT_FILES];
+    expect(actual).toEqual(expected);
   });
 });
 
@@ -412,7 +426,8 @@ describe('language scoping, resolved by eslint', () => {
   ])(
     'turns every recommended rule on in %s',
     async (filename: string) => {
-      expect(await resolve(filename)).toEqual(prefixed(recommendedNames));
+      const actual = await resolve(filename);
+      expect(actual).toEqual(prefixed(recommendedNames));
     },
   );
 });
@@ -447,7 +462,8 @@ describe('documentation', () => {
             return doc.includes(`\`${option}\``) ? '' : option;
           });
 
-    expect(undocumented.filter(Boolean)).toEqual([]);
+    const filtered = undocumented.filter(Boolean);
+    expect(filtered).toEqual([]);
   });
 
   it.each(ruleCases)('restates "%s" metadata the way meta declares it', (name, rule) => {
@@ -471,7 +487,8 @@ describe('documentation', () => {
   });
 
   it('lists every rule in the README table once, in rule id order', () => {
-    expect(tableRows(readFileSync(join(root, 'README.md'), 'utf8'))).toEqual(ruleNames.toSorted(alphabetically));
+    const actual = tableRows(readFileSync(join(root, 'README.md'), 'utf8'));
+    expect(actual).toEqual(ruleNames.toSorted(alphabetically));
   });
 
   it('names no preset outside the two the plugin ships, in any of its docs', () => {
@@ -499,6 +516,7 @@ describe('documentation', () => {
   });
 
   it('keeps the README free of em-dashes', () => {
-    expect(readFileSync(join(root, 'README.md'), 'utf8')).not.toMatch(/[—–]/);
+    const file = readFileSync(join(root, 'README.md'), 'utf8');
+    expect(file).not.toMatch(/[—–]/);
   });
 });

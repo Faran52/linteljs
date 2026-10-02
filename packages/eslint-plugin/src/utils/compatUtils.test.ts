@@ -47,11 +47,13 @@ const legacy: CompatContext = {
 
 describe('sourceCodeOf', () => {
   it('reads the property where the major has one', () => {
-    expect(sourceCodeOf(modern)).toBe(sourceCode);
+    const modernSourceCode = sourceCodeOf(modern);
+    expect(modernSourceCode).toBe(sourceCode);
   });
 
   it('falls back to the method where it does not', () => {
-    expect(sourceCodeOf(legacy)).toBe(sourceCode);
+    const legacySourceCode = sourceCodeOf(legacy);
+    expect(legacySourceCode).toBe(sourceCode);
   });
 
   it('throws rather than reporting nothing when neither is there', () => {
@@ -63,18 +65,22 @@ describe('sourceCodeOf', () => {
 
 describe('physicalFilenameOf', () => {
   it('prefers the physical path over the reported one', () => {
-    expect(physicalFilenameOf(modern)).toBe('/repo/src/App.tsx');
-    expect(physicalFilenameOf(legacy)).toBe('/repo/src/App.tsx');
+    const physicalFilename = physicalFilenameOf(modern);
+    expect(physicalFilename).toBe('/repo/src/App.tsx');
+    const legacyPhysicalFilename = physicalFilenameOf(legacy);
+    expect(legacyPhysicalFilename).toBe('/repo/src/App.tsx');
   });
 
   it('falls back to the reported filename, in both spellings', () => {
-    expect(physicalFilenameOf({ filename: '/repo/src/a.ts' })).toBe('/repo/src/a.ts');
+    const physicalFilename = physicalFilenameOf({ filename: '/repo/src/a.ts' });
+    expect(physicalFilename).toBe('/repo/src/a.ts');
 
-    expect(physicalFilenameOf({
+    const physicalFilename2 = physicalFilenameOf({
       getFilename: () => {
         return '/repo/src/b.ts';
       },
-    })).toBe('/repo/src/b.ts');
+    });
+    expect(physicalFilename2).toBe('/repo/src/b.ts');
   });
 
   it('throws when the major offers no filename at all', () => {
@@ -86,18 +92,25 @@ describe('physicalFilenameOf', () => {
 
 describe('the scope readers', () => {
   it('answer from the node-taking readers on a modern major', () => {
-    expect(scopeOf(modern, node)).toBe(sourceCode.getScope(node));
-    expect(ancestorsOf(modern, node)).toEqual(sourceCode.getAncestors(node));
-    expect(declaredVariablesOf(modern, node)).toEqual(sourceCode.getDeclaredVariables(node));
+    const scope = scopeOf(modern, node);
+    expect(scope).toBe(sourceCode.getScope(node));
+    const ancestors = ancestorsOf(modern, node);
+    expect(ancestors).toEqual(sourceCode.getAncestors(node));
+    const declaredVariables = declaredVariablesOf(modern, node);
+    expect(declaredVariables).toEqual(sourceCode.getDeclaredVariables(node));
   });
 
   it('fall back to the context-level readers when the SourceCode has none', () => {
     const none: CompatSourceCode = {};
 
-    expect(scopeIn(none, legacy, node)).toBe(sourceCode.getScope(node));
-    expect(ancestorsIn(none, legacy, node)).toEqual(sourceCode.getAncestors(node));
+    const scope = scopeIn(none, legacy, node);
+    expect(scope).toBe(sourceCode.getScope(node));
+    const ancestors = ancestorsIn(none, legacy, node);
+    expect(ancestors).toEqual(sourceCode.getAncestors(node));
 
-    expect(declaredVariablesIn(none, legacy, node))
+    const declaredVariables = declaredVariablesIn(none, legacy, node);
+
+    expect(declaredVariables)
       .toEqual(sourceCode.getDeclaredVariables(node));
   });
 
@@ -120,10 +133,14 @@ describe('the scope readers', () => {
 
 describe('ancestorReaderOf', () => {
   it('hands the helpers one reader whichever major is underneath', () => {
-    expect(ancestorReaderOf(modern).getAncestors(node))
+    const ancestors = ancestorReaderOf(modern).getAncestors(node);
+
+    expect(ancestors)
       .toEqual(sourceCode.getAncestors(node));
 
-    expect(ancestorReaderOf(legacy).getAncestors(node))
+    const nodeAncestors = ancestorReaderOf(legacy).getAncestors(node);
+
+    expect(nodeAncestors)
       .toEqual(sourceCode.getAncestors(node));
   });
 });

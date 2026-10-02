@@ -103,7 +103,8 @@ describe('getFunctionId', () => {
       throw new Error('not a function');
     }
 
-    expect(getFunctionId(fn)).toBeNull();
+    const functionId = getFunctionId(fn);
+    expect(functionId).toBeNull();
   });
 });
 
@@ -203,12 +204,14 @@ describe('writeArrowConstant', () => {
   it('binds the arrow to the function\'s own name', () => {
     const { sourceCode, fn } = functionFrom('function greet() {\n  return 1;\n}');
 
-    expect(writeArrowConstant(sourceCode, fn, false)).toBe('const greet = () => {\n  return 1;\n}');
+    const actual = writeArrowConstant(sourceCode, fn, false);
+    expect(actual).toBe('const greet = () => {\n  return 1;\n}');
   });
 
   it('carries parameters and an async prefix through the same as writeArrowFunction', () => {
     const { sourceCode, fn } = functionFrom('async function load(url) {\n  return url;\n}');
 
-    expect(writeArrowConstant(sourceCode, fn, false)).toBe('const load = async (url) => {\n  return url;\n}');
+    const actual = writeArrowConstant(sourceCode, fn, false);
+    expect(actual).toBe('const load = async (url) => {\n  return url;\n}');
   });
 });

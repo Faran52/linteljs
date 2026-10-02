@@ -32,7 +32,8 @@ describe('attributesOf', () => {
       attributes: 'accessible',
     }],
   ])('declines %s', (_label, value) => {
-    expect(attributesOf(value)).toEqual([]);
+    const attributes = attributesOf(value);
+    expect(attributes).toEqual([]);
   });
 
   it('answers the list on a real opening element', () => {
@@ -42,7 +43,8 @@ describe('attributesOf', () => {
       attributes,
     };
 
-    expect(attributesOf(node)).toBe(attributes);
+    const nodeAttributes = attributesOf(node);
+    expect(nodeAttributes).toBe(attributes);
   });
 });
 
@@ -53,23 +55,27 @@ describe('asElement', () => {
       openingElement: { type: 'JSXOpeningElement' },
     };
 
-    expect(asElement(element)).toBe(element);
+    const actual = asElement(element);
+    expect(actual).toBe(element);
   });
 
   it('declines a node with no opening element', () => {
-    expect(asElement({ type: 'Identifier' })).toEqual({});
+    const actual = asElement({ type: 'Identifier' });
+    expect(actual).toEqual({});
   });
 });
 
 describe('openingOf', () => {
   it('reads an element with no opening element as an empty one', () => {
-    expect(openingOf({})).toEqual({});
+    const opening = openingOf({});
+    expect(opening).toEqual({});
   });
 });
 
 describe('elementNameOf', () => {
   it('answers an empty string for a missing name', () => {
-    expect(elementNameOf(undefined)).toBe('');
+    const elementName = elementNameOf(undefined);
+    expect(elementName).toBe('');
   });
 
   it('reads a plain identifier', () => {
@@ -117,21 +123,27 @@ describe('findProp', () => {
   } as const;
 
   it('skips a spread when looking for a named prop', () => {
-    expect(findProp([spread, accessible], ['accessible'])).toBe(accessible);
+    const prop = findProp([spread, accessible], ['accessible']);
+    expect(prop).toBe(accessible);
   });
 
   it('answers undefined when no name matches', () => {
-    expect(findProp([spread, accessible], ['accessibilityLabel'])).toBeUndefined();
-    expect(hasProp([spread, accessible], ['accessibilityLabel'])).toBe(false);
+    const prop = findProp([spread, accessible], ['accessibilityLabel']);
+    expect(prop).toBeUndefined();
+    const actual = hasProp([spread, accessible], ['accessibilityLabel']);
+    expect(actual).toBe(false);
   });
 
   it('never answers a spread, whatever the names asked for', () => {
-    expect(findProp([spread], [''])).toBeUndefined();
+    const prop = findProp([spread], ['']);
+    expect(prop).toBeUndefined();
   });
 
   it('sees a spread', () => {
-    expect(hasSpread([accessible])).toBe(false);
-    expect(hasSpread([accessible, spread])).toBe(true);
+    const actual = hasSpread([accessible]);
+    expect(actual).toBe(false);
+    const actual2 = hasSpread([accessible, spread]);
+    expect(actual2).toBe(true);
   });
 });
 
@@ -251,7 +263,8 @@ describe('keyNameOf', () => {
       },
     }],
   ])('names nothing for %s', (_label, property) => {
-    expect(keyNameOf(property)).toBeUndefined();
+    const keyName = keyNameOf(property);
+    expect(keyName).toBeUndefined();
   });
 
   it('reads an identifier key', () => {
@@ -345,15 +358,18 @@ describe('isHidden', () => {
 
 describe('the array accessors', () => {
   it('reads an element with no opening element as having no attributes', () => {
-    expect(elementAttributesOf({ type: 'JSXElement' })).toEqual([]);
+    const elementAttributes = elementAttributesOf({ type: 'JSXElement' });
+    expect(elementAttributes).toEqual([]);
   });
 
   it('reads an expression with no properties as having none', () => {
-    expect(propertiesOf({ type: 'Identifier' })).toEqual([]);
+    const properties = propertiesOf({ type: 'Identifier' });
+    expect(properties).toEqual([]);
   });
 
   it('reads an expression with no elements as having none', () => {
-    expect(elementsOf({ type: 'Identifier' })).toEqual([]);
+    const elements = elementsOf({ type: 'Identifier' });
+    expect(elements).toEqual([]);
   });
 });
 
@@ -377,7 +393,8 @@ describe('descendantElements', () => {
       children: [fragment],
     });
 
-    expect(descendants).toEqual([outer, inner]);
+    const expected = [outer, inner];
+    expect(descendants).toEqual(expected);
   });
 });
 
@@ -414,12 +431,13 @@ describe('descendantElements through an expression', () => {
         }),
     });
 
-    expect(descendants).toEqual([
+    const expected = [
       left,
       right,
       consequent,
       alternate,
-    ]);
+    ];
+    expect(descendants).toEqual(expected);
   });
 
   it('lists the elements inside a fragment an expression renders, not the fragment', () => {
@@ -440,19 +458,22 @@ describe('descendantElements through an expression', () => {
       }],
     });
 
-    expect(descendants).toEqual([inner]);
+    const expected = [inner];
+    expect(descendants).toEqual(expected);
   });
 });
 
 describe('isInteractive', () => {
   it('reads an element with neither a known name nor a handler as inert', () => {
-    expect(isInteractive({ type: 'JSXElement' }, ['Pressable'])).toBe(false);
+    const actual = isInteractive({ type: 'JSXElement' }, ['Pressable']);
+    expect(actual).toBe(false);
   });
 });
 
 describe('hasTextContent', () => {
   it('reads an element with no children as silent', () => {
-    expect(hasTextContent({ type: 'JSXElement' })).toBe(false);
+    const actual = hasTextContent({ type: 'JSXElement' });
+    expect(actual).toBe(false);
   });
 
   it('reads a text child carrying no text as silent', () => {
