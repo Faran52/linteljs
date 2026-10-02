@@ -16,11 +16,13 @@ export const router = createRouter({
         path,
         component,
       }) => {
-        return {
+        const route = {
           name: id,
           path,
           component,
         };
+
+        return route;
       }),
     // Last, and outside the route list, so the header never links it.
     {

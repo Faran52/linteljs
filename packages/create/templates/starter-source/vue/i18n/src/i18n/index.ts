@@ -25,10 +25,14 @@ const messages = Object.fromEntries(languages
   .map(({ id }) => {
     const bundle = Object.entries(resources[id].common)
       .map(([key, text]) => {
-        return [key, literal(text)];
+        const message: [string, string] = [key, literal(text)];
+
+        return message;
       });
 
-    return [id, Object.fromEntries(bundle)];
+    const localeMessages: [string, Record<string, string>] = [id, Object.fromEntries(bundle)];
+
+    return localeMessages;
   }));
 
 // CodeText splits each `<code>` itself, so no message is rendered as HTML.

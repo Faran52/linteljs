@@ -15,12 +15,17 @@ const Probe = defineComponent({
     const two = useCounter();
 
     return () => {
+      const oneCount = unref(one.count);
+      const twoCount = unref(two.count);
+      const oneLabel = `one ${String(oneCount)}`;
+      const twoLabel = `two ${String(twoCount)}`;
+
       return h('div', [
         h('button', {
           type: 'button',
           onClick: one.add,
-        }, `one ${String(unref(one.count))}`),
-        h('button', { type: 'button' }, `two ${String(unref(two.count))}`),
+        }, oneLabel),
+        h('button', { type: 'button' }, twoLabel),
       ]);
     };
   },

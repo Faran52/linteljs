@@ -49,15 +49,17 @@ describe('App', () => {
   });
 
   it('routes to the other pages', async () => {
-    const actual = (await open('/about'))
+    const about = await open('/about');
+    const aboutTitle = about
       .find('.page-title')
       .text();
-    expect(actual).toBe('About');
+    expect(aboutTitle).toBe('About');
 
-    const actual2 = (await open('/version'))
+    const version = await open('/version');
+    const versionTitle = version
       .find('.page-title')
       .text();
-    expect(actual2).toBe('Version');
+    expect(versionTitle).toBe('Version');
   });
 
   it('shows the 404 page, under the header, for a path no route matches', async () => {

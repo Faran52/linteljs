@@ -50,10 +50,12 @@ export const useExtendedMutation = <TResponse, TBody extends object>(
     },
   });
 
-  return {
+  const extendedMutation: ExtendedMutationResult<TResponse, TBody> = {
     send: mutateAsync,
     error,
     isPending,
     status,
   };
+
+  return extendedMutation;
 };
