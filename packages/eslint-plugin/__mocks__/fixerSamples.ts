@@ -392,6 +392,22 @@ export const FIXER_SAMPLES: FixerSample[] = [
     code: 'type Alpha = { first: string } /* keep */ | string;',
     typescript: true,
   },
+  // A comment on a later pipe declines the whole split, not just its own gap.
+  {
+    name: 'union with a comment before a later pipe',
+    code: 'type Alpha = { first: string } | second /* keep */ | third;',
+    typescript: true,
+  },
+  {
+    name: 'union opening with a leading pipe on its own line',
+    code: "type Alpha =\n  | { first: string } | string;\ntype Beta = Record<\n  | 'a' | 'b' | 'c' | 'd',\n  string>;",
+    typescript: true,
+  },
+  {
+    name: 'union with a multi-line member and a parenthesised nested union',
+    code: 'type Alpha = {\n  first: string;\n} | (| Second | Third) | /* keep */ string;\n',
+    typescript: true,
+  },
   // The one gap a member split rewrites wholesale.
   {
     name: 'interface with a comment before the brace',

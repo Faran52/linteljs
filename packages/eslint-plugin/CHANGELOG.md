@@ -107,6 +107,9 @@ when a version's change lives in a sibling it is described there instead:
   `React./* why */useState`, without a fix, where the fix dropped the comment.
 - `sort-hook-dependencies` swaps the names in place, keeping a trailing comma and an array laid out one name a
   line, where its fix rewrote the array onto one line without them.
+- `union-newline` reports a union with a comment before any of its pipes without a fix, where it split the
+  gaps ahead of the comment and left the rest on one line. A union opening with a `|` on its own line now gets
+  its continuation pipes under that one, not a step deeper.
 - A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
 
 ## 1.5.3

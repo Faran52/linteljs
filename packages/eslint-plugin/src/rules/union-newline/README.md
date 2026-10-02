@@ -86,7 +86,9 @@ interface Holder {
 ## What it declines to fix
 
 A comment written between a member and the pipe that follows it stops the split. The fix replaces
-that gap with a line break, so the comment would go with it. The rule reports and moves nothing.
+that gap with a line break, so the comment would go with it. The rule reports and moves nothing, not even
+the gaps elsewhere in the union, so it never leaves a union half split. A comment after a pipe stays where
+it is.
 
 ## Notes
 
@@ -95,4 +97,9 @@ glob and it never runs on a `.js` file.
 
 Continuation lines sit one indentation step in from the line the union starts on, with the step
 read off the file. Emitting them at column 0 put `| string` hard against the margin, which inside
-an interface body is visibly wrong.
+an interface body is visibly wrong. A union that opens with a `|` on its own line is the exception: its
+continuation pipes line up under that one.
+
+An object type inside an intersection, `({ first: string } & Base) | string`, does not count as an
+object member: the union is only split when a member is itself an object, function, constructor or
+mapped type.

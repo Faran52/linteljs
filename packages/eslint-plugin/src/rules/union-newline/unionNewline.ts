@@ -2,6 +2,7 @@ import { sourceCodeOf } from '../../utils/compatUtils.ts';
 import {
   adjacentPairs,
   gapIsBlank,
+  getIndent,
   indentReader,
   lineTerminatorOf,
   sameLine,
@@ -13,7 +14,7 @@ import {
   type RuleNode,
 } from '../../utils/ruleUtils.ts';
 
-import type { Rule } from 'eslint';
+import type { AST, Rule } from 'eslint';
 
 interface UnionNewlineOptions {
   maxGenericMembers: number;
@@ -107,34 +108,46 @@ export const unionNewline = createRule('union-newline', {
       return true;
     };
 
-    const buildUnionFix = (
-      node: RuleNode,
-      types: RuleNode[],
-    ): ((fixer: Rule.RuleFixer) => IterableIterator<Rule.Fix>) => {
-      // Column 0 puts `| string` against the margin, wrong inside an interface body.
-      const { inner } = indentsAt(node);
+    // A leading `|` that opens its line sets the column the other pipes line up under.
+    const continuationIndent = (node: RuleNode, first: RuleNode): string => {
+      const leading = mustFind(sourceCode.getTokenBefore(first));
+      const lineIndent = getIndent(sourceCode, leading);
 
-      return function* (fixer) {
-        for (const [previous, curr] of adjacentPairs(types)) {
-          if (sameLine(previous, curr)) {
-            const pipe = sourceCode
-              .getTokenBefore(curr, (token) => {
-                return token.value === '|';
-              });
-            const pipeToken = mustFind(pipe);
-            const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipeToken));
+      if (leading.value === '|' && leading.loc.start.column === lineIndent.length) {
+        return lineIndent;
+      }
 
-            // The pipe lookup skips comments, so a note written before it goes with the splice below.
-            if (!gapIsBlank(sourceCode, tokenBeforePipe.range[1], pipeToken.range[0])) {
-              return;
-            }
+      return indentsAt(node).inner;
+    };
 
-            yield fixer.replaceTextRange(
-              [tokenBeforePipe.range[1], pipeToken.range[0]],
-              `${eol}${inner}`,
-            );
+    const buildUnionFix = (node: RuleNode, types: RuleNode[]): Rule.ReportFixer | null => {
+      const gaps: AST.Range[] = [];
+
+      for (const [previous, curr] of adjacentPairs(types)) {
+        if (sameLine(previous, curr)) {
+          const pipeLookup = sourceCode
+            .getTokenBefore(curr, (token) => {
+              return token.value === '|';
+            });
+          const pipe = mustFind(pipeLookup);
+          const tokenBeforePipe = mustFind(sourceCode.getTokenBefore(pipe));
+
+          // The pipe lookup skips comments, so a note written before it would go with the splice: fix no gap.
+          if (!gapIsBlank(sourceCode, tokenBeforePipe.range[1], pipe.range[0])) {
+            return null;
           }
+
+          gaps.push([tokenBeforePipe.range[1], pipe.range[0]]);
         }
+      }
+
+      const indent = continuationIndent(node, mustFind(types[0]));
+
+      return (fixer) => {
+        return gaps
+          .map((gap) => {
+            return fixer.replaceTextRange(gap, `${eol}${indent}`);
+          });
       };
     };
 
