@@ -29,11 +29,12 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides): Answers => {
-  return {
+  const answers: Answers = {
     ...DEFAULT_ANSWERS,
     ...overrides,
     packageManager: 'yarn',
   };
+  return answers;
 };
 
 describe('emitYarnrc', () => {
@@ -79,14 +80,15 @@ describe('emitYarnrc', () => {
     expect(angular).toContain('  "@napi-rs/wasm-runtime@*":\n');
     expect(astro).toContain('  "@astrojs/language-server@*":\n');
     expect(astro).toContain('  "@napi-rs/wasm-runtime@*":\n');
-    const yarnrc = emitYarnrc(answersFor({ target: 'next' }));
-    expect(yarnrc).toContain('  "@next/eslint-plugin-next@*":\n');
-    const yarnrc2 = emitYarnrc(answersFor({}));
-    expect(yarnrc2).not.toContain('@napi-rs/wasm-runtime');
+    const next = emitYarnrc(answersFor({ target: 'next' }));
+    expect(next).toContain('  "@next/eslint-plugin-next@*":\n');
+    const plain = emitYarnrc(answersFor({}));
+    expect(plain).not.toContain('@napi-rs/wasm-runtime');
   });
 
   it('writes every extension under packageExtensions', () => {
-    const [, extensions = ''] = emitYarnrc(answersFor({ target: 'nuxt' })).split('packageExtensions:\n');
+    const nuxt = emitYarnrc(answersFor({ target: 'nuxt' }));
+    const [, extensions = ''] = nuxt.split('packageExtensions:\n');
 
     const topLevel = extensions
       .trimEnd()
@@ -112,38 +114,39 @@ describe('emitYarnrc', () => {
     expect(native).toContain('  "expo-linking@*":\n    peerDependencies:\n      expo: "*"\n');
     expect(native).not.toContain('react-native-css');
     expect(styled).toContain(css);
-    const yarnrc = emitYarnrc(answersFor({}));
-    expect(yarnrc).not.toContain('react-native-worklets');
-    const yarnrc2 = emitYarnrc(answersFor({}));
-    expect(yarnrc2).not.toContain('@expo/cli');
+    const plain = emitYarnrc(answersFor({}));
+    expect(plain).not.toContain('react-native-worklets');
+    expect(plain).not.toContain('@expo/cli');
   });
 
   it('walks the peers up that the router plugin and nuxt leave short', () => {
-    const yarnrc = emitYarnrc(answersFor({ router: 'tanstack-router' }));
+    const tanstack = emitYarnrc(answersFor({ router: 'tanstack-router' }));
 
-    expect(yarnrc).toContain(
+    expect(tanstack).toContain(
       '  "@tanstack/eslint-plugin-router@*":\n    peerDependencies:\n      typescript: "*"\n',
     );
 
-    const yarnrc2 = emitYarnrc(answersFor({ target: 'nuxt' }));
+    const nuxt = emitYarnrc(answersFor({ target: 'nuxt' }));
 
-    expect(yarnrc2).toContain(
+    expect(nuxt).toContain(
       '  "nuxt@*":\n    peerDependencies:\n      vite: "*"\n'
       + '  "@nuxt/devtools@*":\n    peerDependencies:\n      vue: "*"\n',
     );
 
-    const yarnrc3 = emitYarnrc(answersFor({ target: 'vue' }));
-    expect(yarnrc3).not.toContain('"nuxt@*"');
-    const yarnrc4 = emitYarnrc(answersFor({}));
-    expect(yarnrc4).not.toContain('eslint-plugin-router');
+    const vue = emitYarnrc(answersFor({ target: 'vue' }));
+    expect(vue).not.toContain('"nuxt@*"');
+    const plain = emitYarnrc(answersFor({}));
+    expect(plain).not.toContain('eslint-plugin-router');
   });
 
   it('discards no warning code on any target', () => {
-    for (const target of [
+    const targets = [
       'react',
       'angular',
       'react-native',
-    ] as const) {
+    ] as const;
+
+    for (const target of targets) {
       const output = emitYarnrc(answersFor({ target }));
 
       const actual = output.startsWith(`${HEAD}packageExtensions:\n`);
@@ -207,13 +210,14 @@ describe('emitYarnrc', () => {
 
 describe('yarnrcEmitter', () => {
   it('writes the yarnrc for berry and nothing for any other manager', () => {
-    const yarnrc = yarnrcEmitter(answersFor({}));
+    const berryArtifacts = yarnrcEmitter(answersFor({}));
+    const text = emitYarnrc(answersFor({}));
     const expected = [{
       stage: 'package',
       target: '.yarnrc.yml',
-      content: { text: emitYarnrc(answersFor({})) },
+      content: { text },
     }];
-    expect(yarnrc).toEqual(expected);
+    expect(berryArtifacts).toEqual(expected);
 
     const artifacts = yarnrcEmitter({
       ...DEFAULT_ANSWERS,

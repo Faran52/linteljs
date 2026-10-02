@@ -30,7 +30,9 @@ describe('copilotHooksEmitter', () => {
     expect(artifact?.target).toBe('.github/hooks/linteljs.json');
     expect(artifact?.preserve).toBeUndefined();
 
-    expect(JSON.parse(artifact === undefined ? '' : await shippedAssetsReader(artifact.content))).toEqual({
+    const hooksText = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+
+    expect(JSON.parse(hooksText)).toEqual({
       version: 1,
       hooks: {
         preToolUse: [
@@ -68,7 +70,8 @@ describe('copilotHooksEmitter', () => {
       });
 
     const shipped = new Set(pluginTargets);
-    const scripts = [...text.matchAll(/node ([^"\s]+)"/gu)]
+    const commandMatches = [...text.matchAll(/node ([^"\s]+)"/gu)];
+    const scripts = commandMatches
       .map((match) => {
         return match[1];
       });

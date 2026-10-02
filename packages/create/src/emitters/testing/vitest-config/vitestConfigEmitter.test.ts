@@ -38,7 +38,9 @@ const configFor = (overrides: AnswerOverrides = {}): string | null => {
     ...overrides,
   };
 
-  return emitVitestConfig(answers, setupTestsPath(answers));
+  const setupPath = setupTestsPath(answers);
+
+  return emitVitestConfig(answers, setupPath);
 };
 
 const MERGED = `import { defineConfig, mergeConfig } from 'vitest/config';
@@ -310,21 +312,21 @@ export default defineConfig({
   it('names the setup file the artifact list writes', () => {
     const config = configFor();
     expect(config).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
-    const config2 = configFor({ target: 'react-native' });
-    expect(config2).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
+    const nativeConfig = configFor({ target: 'react-native' });
+    expect(nativeConfig).toContain("setupFiles: ['./__mocks__/setupTests.tsx']");
   });
 
   it('covers the single-file component extension where the target has one', () => {
-    const config = configFor({ target: 'vue' });
-    expect(config).toContain(',vue}');
-    const config2 = configFor({ target: 'nuxt' });
-    expect(config2).toContain(',vue}');
-    const config3 = configFor({ target: 'react' });
-    expect(config3).not.toContain('vue');
+    const vueConfig = configFor({ target: 'vue' });
+    expect(vueConfig).toContain(',vue}');
+    const nuxtConfig = configFor({ target: 'nuxt' });
+    expect(nuxtConfig).toContain(',vue}');
+    const reactConfig = configFor({ target: 'react' });
+    expect(reactConfig).not.toContain('vue');
   });
 
   it('disables native web storage for every happy-dom target', () => {
-    for (const target of [
+    const happyDomTargets = [
       'react',
       'next',
       'vue',
@@ -332,13 +334,15 @@ export default defineConfig({
       'svelte',
       'solid',
       'webextension',
-    ] as const) {
+    ] as const;
+
+    for (const target of happyDomTargets) {
       const config = configFor({ target });
       expect(config).toContain("execArgv: ['--no-experimental-webstorage'],");
     }
 
-    const config = configFor({ target: 'react-native' });
-    expect(config).not.toContain('execArgv');
+    const nativeConfig = configFor({ target: 'react-native' });
+    expect(nativeConfig).not.toContain('execArgv');
   });
 
   it.each<[TargetId, string]>([
@@ -381,10 +385,10 @@ describe('the styling system', () => {
 
 describe('the router', () => {
   it('keeps the route table out of coverage', () => {
-    const config = configFor({ router: 'react-router' });
-    expect(config).toContain("'src/routes/**'");
-    const config2 = configFor({});
-    expect(config2).not.toContain('src/routes/**');
+    const routedConfig = configFor({ router: 'react-router' });
+    expect(routedConfig).toContain("'src/routes/**'");
+    const plainConfig = configFor({});
+    expect(plainConfig).not.toContain('src/routes/**');
   });
 
   it('excludes nothing for TanStack Router', () => {
@@ -397,14 +401,14 @@ describe('the router', () => {
 
 describe('vitestConfigEmitter', () => {
   it('hands the config to the project after the first write', () => {
-    const vitestConfig = vitestConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT);
+    const artifacts = vitestConfigEmitter(DEFAULT_ANSWERS, EMPTY_PROJECT);
     const expected = [{
       stage: 'standard',
       target: 'vitest.config.ts',
       content: { text: MERGED },
       preserve: true,
     }];
-    expect(vitestConfig).toEqual(expected);
+    expect(artifacts).toEqual(expected);
   });
 
   it('writes nothing when testing is declined', () => {
@@ -514,7 +518,8 @@ describe('the coverage surface', () => {
   ])('leaves out of coverage on %s only what it cannot execute', (_label, overrides, excluded) => {
     const [, block = ''] = /coverage: \{[\s\S]*?exclude: \[([^\]]*)\]/u.exec(configFor(overrides) ?? '') ?? [];
 
-    const entries = [...block.matchAll(/'([^']+)'/gu)]
+    const quoted = [...block.matchAll(/'([^']+)'/gu)];
+    const entries = quoted
       .map(([, entry]) => {
         return entry;
       });

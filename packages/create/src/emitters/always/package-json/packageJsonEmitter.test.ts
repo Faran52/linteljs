@@ -97,9 +97,8 @@ describe('patchPackageJson', () => {
   });
 
   it('drops prettier, which @stylistic supersedes', () => {
-    expect(patchPackageJson(SCAFFOLDED, answersFor({})).devDependencies).not.toHaveProperty(
-      'prettier',
-    );
+    const { devDependencies } = patchPackageJson(SCAFFOLDED, answersFor({}));
+    expect(devDependencies).not.toHaveProperty('prettier');
   });
 
   it('drops every package the standard supersedes from the tools a project declared', () => {
@@ -117,7 +116,8 @@ describe('patchPackageJson', () => {
     ];
     const declared = Object.fromEntries(superseded
       .map((name) => {
-        return [name, '^1.0.0'];
+        const entry: [string, string] = [name, '^1.0.0'];
+        return entry;
       }));
     const patched = patchPackageJson({ devDependencies: declared }, answersFor({}));
 
@@ -144,13 +144,13 @@ describe('patchPackageJson', () => {
     };
     expect(patched.engines).toEqual(expected);
 
-    const expected2 = {
+    const expectedDevEngines = {
       packageManager: {
         name: 'pnpm',
         onFail: 'error',
       },
     };
-    expect(patched.devEngines).toEqual(expected2);
+    expect(patched.devEngines).toEqual(expectedDevEngines);
   });
 
   it('writes no packageManager field for bun', () => {
@@ -167,23 +167,25 @@ describe('patchPackageJson', () => {
     };
     expect(patched.engines).toEqual(expected);
 
-    const expected2 = {
+    const expectedManager = {
       name: 'bun',
       onFail: 'error',
     };
-    expect(patched.devEngines?.['packageManager']).toEqual(expected2);
+    expect(patched.devEngines?.['packageManager']).toEqual(expectedManager);
   });
 
   it('names the entry only for the target whose runtime reads it', () => {
-    const patchedPackageJson = patchPackageJson({}, answersFor({ target: 'react-native' }));
-    expect(patchedPackageJson).toHaveProperty('main', 'expo-router/entry');
-    const patchedPackageJson2 = patchPackageJson({}, answersFor({}));
-    expect(patchedPackageJson2).not.toHaveProperty('main');
+    const expoPackage = patchPackageJson({}, answersFor({ target: 'react-native' }));
+    expect(expoPackage).toHaveProperty('main', 'expo-router/entry');
+    const defaultPackage = patchPackageJson({}, answersFor({}));
+    expect(defaultPackage).not.toHaveProperty('main');
   });
 
   it('marks every generated project private', () => {
-    expect(patchPackageJson({}, answersFor({})).private).toBe(true);
-    expect(patchPackageJson({ private: false }, answersFor({})).private).toBe(true);
+    const { private: freshPrivate } = patchPackageJson({}, answersFor({}));
+    const { private: overriddenPrivate } = patchPackageJson({ private: false }, answersFor({}));
+    expect(freshPrivate).toBe(true);
+    expect(overriddenPrivate).toBe(true);
   });
 
   it('names every approved build in trustedDependencies for bun and nothing for the other managers', () => {
@@ -320,8 +322,8 @@ describe('resyncPackageJson', () => {
 
     const expected = { react: '^99.0.0' };
     expect(synced.dependencies).toEqual(expected);
-    const expected2 = { '@linteljs/eslint-config': VERSIONS['@linteljs/eslint-config'] };
-    expect(synced.devDependencies).toEqual(expected2);
+    const expectedDevDependencies = { '@linteljs/eslint-config': VERSIONS['@linteljs/eslint-config'] };
+    expect(synced.devDependencies).toEqual(expectedDevDependencies);
     expect(synced.scripts).toBeUndefined();
   });
 

@@ -26,19 +26,20 @@ interface AnswerOverrides {
 }
 
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {
-  return {
+  const answers: Answers = {
     ...DEFAULT_ANSWERS,
     target: 'astro',
     ...overrides,
   };
+  return answers;
 };
 
 describe('emitAstroConfig', () => {
   it('writes nothing for a target that is not astro', () => {
-    const astroConfig = emitAstroConfig(answersFor({ target: 'react' }));
-    expect(astroConfig).toBeNull();
-    const astroConfig2 = emitAstroConfig(answersFor({ target: 'webextension' }));
-    expect(astroConfig2).toBeNull();
+    const reactConfig = emitAstroConfig(answersFor({ target: 'react' }));
+    expect(reactConfig).toBeNull();
+    const extensionConfig = emitAstroConfig(answersFor({ target: 'webextension' }));
+    expect(extensionConfig).toBeNull();
   });
 
   it('writes a bare config for a site that hosts nothing and takes no library', () => {
@@ -72,8 +73,9 @@ describe('emitAstroConfig', () => {
     ],
   ])('registers the %s integration', (hostedFramework, specifier, call) => {
     const output = emitAstroConfig(answersFor({ hostedFramework }));
+    const binding = call.slice(0, call.indexOf('('));
 
-    expect(output).toContain(`import ${call.slice(0, call.indexOf('('))} from '${specifier}';`);
+    expect(output).toContain(`import ${binding} from '${specifier}';`);
     expect(output).toContain(`integrations: [${call}],`);
   });
 
@@ -154,17 +156,19 @@ describe('emitAstroConfig', () => {
 
 describe('astroConfigEmitter', () => {
   it('hands the config to the project after the first write', () => {
-    const shapes = astroConfigEmitter(answersFor())
+    const artifacts = astroConfigEmitter(answersFor());
+    const shapes = artifacts
       .map(({
         stage,
         target,
         preserve,
       }) => {
-        return [
+        const shape = [
           stage,
           target,
           preserve,
         ];
+        return shape;
       });
 
     const expected = [[
