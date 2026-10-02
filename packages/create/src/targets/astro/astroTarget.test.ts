@@ -26,15 +26,19 @@ import { TRANSLATED } from './constants';
 import type { Answers, HostedFramework } from '@config/types';
 
 const answersFor = (overrides: Partial<Answers> = {}): Answers => {
-  return {
+  const answers: Answers = {
     ...DEFAULT_ANSWERS,
     target: 'astro',
     ...overrides,
   };
+
+  return answers;
 };
 
 const recordFor = (overrides: Partial<Answers> = {}) => {
-  return astroTarget(answersFor(overrides));
+  const answers = answersFor(overrides);
+
+  return astroTarget(answers);
 };
 
 describe('the astro record', () => {
@@ -200,6 +204,23 @@ describe('the hosted framework axis', () => {
   });
 });
 
+const BILINGUAL_PATHS = [
+  'src/config/statuses.ts',
+  'src/config/standard.ts',
+  ...TRANSLATED,
+];
+
+const I18N_ONLY_PATHS = [
+  'src/i18n/index.ts',
+  'src/i18n/index.test.ts',
+  'src/i18n/locales.test.ts',
+  'src/components/ui/code-text/CodeText.astro',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
+    }),
+];
+
 const GATES: GateRow[] = [
   ...mswGates(false),
   ...componentStyleGates('mark/Mark', 'button/Button', true),
@@ -208,26 +229,17 @@ const GATES: GateRow[] = [
   ['src/layouts/Layout.astro@i18n', [{ styling: [undefined, 'tailwind'], languages: ANSWERED }]],
   ['src/layouts/Layout.astro@stylex', [{ styling: ['stylex'], languages: [undefined] }]],
   ['src/layouts/Layout.astro@stylex-i18n', [{ styling: ['stylex'], languages: ANSWERED }]],
-  ...[
-    'src/config/statuses.ts',
-    'src/config/standard.ts',
-    ...TRANSLATED,
-  ]
+  ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
-      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+      const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+
+      return rows;
     }),
-  ...[
-    'src/i18n/index.ts',
-    'src/i18n/index.test.ts',
-    'src/i18n/locales.test.ts',
-    'src/components/ui/code-text/CodeText.astro',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, WITH_I18N];
+      const row: GateRow = [`${key}@i18n`, WITH_I18N];
+
+      return row;
     }),
   ['../components/ui/text-input/TextInput.css', WITH_FORM],
 ];

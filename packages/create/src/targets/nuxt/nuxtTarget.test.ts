@@ -39,38 +39,46 @@ describe('nuxtTarget', () => {
   });
 });
 
-const TRANSLATED_GATES: GateRow[] = [
-  ...[
-    'src/config/statuses.ts',
-    'src/config/standard.ts',
-    'src/error.test.ts',
-    'src/views/AboutView.vue',
-    'src/views/VersionView.vue',
-    'src/components/features/app-header/AppHeader.vue',
-    'src/components/features/app-header/AppHeader.test.ts',
-    'src/components/features/status-page/StatusPage.vue',
-    'src/components/features/status-page/StatusPage.test.ts',
-  ]
-    .flatMap((key): GateRow[] => {
-      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+const BILINGUAL_PATHS = [
+  'src/config/statuses.ts',
+  'src/config/standard.ts',
+  'src/error.test.ts',
+  'src/views/AboutView.vue',
+  'src/views/VersionView.vue',
+  'src/components/features/app-header/AppHeader.vue',
+  'src/components/features/app-header/AppHeader.test.ts',
+  'src/components/features/status-page/StatusPage.vue',
+  'src/components/features/status-page/StatusPage.test.ts',
+];
+
+const I18N_ONLY_PATHS = [
+  'src/components/features/language-select/LanguageSelect.vue',
+  'src/components/features/language-select/LanguageSelect.test.ts',
+  'src/components/ui/code-text/CodeText.vue',
+  'src/components/ui/code-text/CodeText.test.ts',
+  'src/i18n/index.ts',
+  'src/i18n/index.test.ts',
+  'src/i18n/locales.test.ts',
+  'src/plugins/i18n.ts',
+  'src/plugins/i18n.test.ts',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
     }),
-  ...[
-    'src/components/features/language-select/LanguageSelect.vue',
-    'src/components/features/language-select/LanguageSelect.test.ts',
-    'src/components/ui/code-text/CodeText.vue',
-    'src/components/ui/code-text/CodeText.test.ts',
-    'src/i18n/index.ts',
-    'src/i18n/index.test.ts',
-    'src/i18n/locales.test.ts',
-    'src/plugins/i18n.ts',
-    'src/plugins/i18n.test.ts',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+];
+
+const TRANSLATED_GATES: GateRow[] = [
+  ...BILINGUAL_PATHS
+    .flatMap((key): GateRow[] => {
+      const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+
+      return rows;
+    }),
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, WITH_I18N];
+      const row: GateRow = [`${key}@i18n`, WITH_I18N];
+
+      return row;
     }),
 ];
 

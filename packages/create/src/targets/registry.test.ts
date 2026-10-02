@@ -48,15 +48,21 @@ const recordFor = (target: TargetId): TargetRecord => {
 };
 
 const assetPathsOf = (target: TargetRecord): string[] => {
-  return [
-    ...(target.testSetup === undefined ? [] : [target.testSetup]),
-    ...target.stateRules
-      .map((rule) => {
-        return `fragments/claude-rules/${rule}`;
-      }),
+  const ruleAssets = target.stateRules
+    .map((rule) => {
+      return `fragments/claude-rules/${rule}`;
+    });
+  const paths = [
+    ...ruleAssets,
     `fragments/claude-rules/repo-structure.${target.id}.md`,
     `fragments/claude-rules/testing.${target.id}.md`,
   ];
+
+  if (target.testSetup !== undefined) {
+    paths.unshift(target.testSetup);
+  }
+
+  return paths;
 };
 
 const caseFor = (
@@ -65,32 +71,53 @@ const caseFor = (
   hostedFramework: HostedFramework | undefined,
   surface: Surface | undefined,
 ): [string, Answers] => {
-  const answers: Answers = {
-    ...base,
-    ...(browser === undefined ? {} : { browser }),
-    ...(hostedFramework === undefined ? {} : { hostedFramework }),
-    ...(surface === undefined ? {} : { surfaces: [surface] }),
-  };
-  const label = [
+  const answers: Answers = { ...base };
+
+  if (browser !== undefined) {
+    answers.browser = browser;
+  }
+
+  if (hostedFramework !== undefined) {
+    answers.hostedFramework = hostedFramework;
+  }
+
+  if (surface !== undefined) {
+    answers.surfaces = [surface];
+  }
+
+  const parts = [
     base.target,
     browser,
     hostedFramework,
     surface,
-  ]
+  ];
+  const label = parts
     .filter(Boolean)
     .join(' on ');
+  const axisCase: [string, Answers] = [label, answers];
 
-  return [label, answers];
+  return axisCase;
 };
 
 const axesOf = (base: Answers): Axes => {
   const { hostsBrowser, hostsFramework } = targetFor(base);
 
-  return {
-    browsers: hostsBrowser === true ? [...BROWSERS] : [undefined],
-    hosted: hostsFramework === true ? [undefined, ...HOSTED_FRAMEWORKS] : [undefined],
-    surfaces: hostsBrowser === true ? [undefined, ...SURFACES] : [undefined],
+  const axes: Axes = {
+    browsers: [undefined],
+    hosted: [undefined],
+    surfaces: [undefined],
   };
+
+  if (hostsBrowser === true) {
+    axes.browsers = [...BROWSERS];
+    axes.surfaces = [undefined, ...SURFACES];
+  }
+
+  if (hostsFramework === true) {
+    axes.hosted = [undefined, ...HOSTED_FRAMEWORKS];
+  }
+
+  return axes;
 };
 
 const axisCases = (): [string, Answers][] => {
@@ -119,6 +146,8 @@ const axisCases = (): [string, Answers][] => {
   return cases;
 };
 
+const AXIS_CASES = axisCases();
+
 describe('TARGETS', () => {
   it('holds one record per known target id, keyed by its own id', () => {
     for (const id of TARGET_IDS) {
@@ -130,10 +159,11 @@ describe('TARGETS', () => {
     const registered = Object.keys(TARGETS)
       .sort(byName);
 
-    expect(registered).toEqual([...TARGET_IDS].sort(byName));
+    const expected = TARGET_IDS.toSorted(byName);
+    expect(registered).toEqual(expected);
   });
 
-  it.each(axisCases())('names only shipped assets on %s', async (_label, answers) => {
+  it.each(AXIS_CASES)('names only shipped assets on %s', async (_label, answers) => {
     const paths = assetPathsOf(targetFor(answers));
 
     const missingChecks = paths
@@ -154,7 +184,7 @@ describe('TARGETS', () => {
     expect(filtered).toEqual([]);
   });
 
-  it.each(axisCases())('has every suite on %s cover a file the target writes', (_label, answers) => {
+  it.each(AXIS_CASES)('has every suite on %s cover a file the target writes', (_label, answers) => {
     const { starterFiles, starterTests } = targetFor(answers);
     const starterTargets = starterFiles
       .map(({ target }) => {
@@ -400,7 +430,7 @@ const LAYER_PLUGINS: Record<Framework, string[]> = {
 };
 
 describe('a framework layer and the plugins it loads', () => {
-  it.each(axisCases())('installs what the layers for %s import', (label, answers) => {
+  it.each(AXIS_CASES)('installs what the layers for %s import', (label, answers) => {
     const { framework } = targetFor(answers);
     const installed = Object.keys(buildDevDependencies(answers));
 
@@ -434,30 +464,38 @@ describe('the emitted naming map on a utils file', () => {
 
   const findingsOn = async (answers: Answers, path: string): Promise<string[]> => {
     const { naming, folderNaming } = targetFor(answers);
+    const config = await composeConfig({
+      naming,
+      folderNaming,
+    });
     const eslint = new ESLint({
       cwd: '/project',
       overrideConfigFile: true,
-      overrideConfig: await composeConfig({
-        naming,
-        folderNaming,
-      }),
+      overrideConfig: config,
     });
     const [result] = await eslint.lintText('export const value = 1;\n', { filePath: `/project/${path}` });
 
     return (result?.messages ?? [])
-      .flatMap(({ ruleId }) => {
-        return ruleId === 'check-file/filename-naming-convention' ? [ruleId] : [];
+      .map(({ ruleId }) => {
+        return ruleId;
+      })
+      .filter((ruleId): ruleId is string => {
+        return ruleId === 'check-file/filename-naming-convention';
       });
   };
 
   it.each(namingCases)('holds %s to the Utils suffix, in its own case', async (_label, answers) => {
     const suffixed = answers.target === 'angular' ? 'fetch-extended-utils' : 'fetchExtendedUtils';
     const bare = answers.target === 'angular' ? 'fetch-extended' : 'fetchExtended';
+    const suffixedFindings = await findingsOn(answers, `src/lib/utils/${suffixed}.ts`);
+    const suiteFindings = await findingsOn(answers, `src/lib/utils/${suffixed}.test.ts`);
+    const scriptFindings = await findingsOn(answers, 'scripts/utils/loggerUtils.ts');
+    const bareFindings = await findingsOn(answers, `src/lib/utils/${bare}.ts`);
     const findings = [
-      await findingsOn(answers, `src/lib/utils/${suffixed}.ts`),
-      await findingsOn(answers, `src/lib/utils/${suffixed}.test.ts`),
-      await findingsOn(answers, 'scripts/utils/loggerUtils.ts'),
-      await findingsOn(answers, `src/lib/utils/${bare}.ts`),
+      suffixedFindings,
+      suiteFindings,
+      scriptFindings,
+      bareFindings,
     ];
 
     const expected = [

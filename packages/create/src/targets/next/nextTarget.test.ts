@@ -71,44 +71,52 @@ const FORM_I18N: readonly Condition[] = [{
   languages: ANSWERED,
 }];
 
+const BILINGUAL_PATHS = [
+  'src/config/statuses.ts',
+  'src/config/standard.ts',
+  'src/app/layout.tsx',
+  'src/app/global-error.tsx',
+  'src/app/about/page.tsx',
+  'src/app/about/page.test.tsx',
+  'src/app/version/page.tsx',
+  'src/app/version/page.test.tsx',
+  'src/app/contact/page.test.tsx',
+  'src/app/not-found.test.tsx',
+  'src/app/error.test.tsx',
+  'src/components/features/status-page/StatusPage.tsx',
+  'src/components/features/status-page/StatusPage.test.tsx',
+  'src/components/features/app-header/AppHeader.tsx',
+  'src/components/features/app-header/AppHeader.test.tsx',
+];
+
+const I18N_ONLY_PATHS = [
+  'src/components/features/language-select/LanguageSelect.tsx',
+  'src/components/features/language-select/LanguageSelect.test.tsx',
+  'src/lib/providers/i18n/I18nProvider.tsx',
+  'src/lib/providers/i18n/I18nProvider.test.tsx',
+  'src/i18n/index.ts',
+  'src/i18n/index.test.ts',
+  'src/i18n/locales.test.ts',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
+    }),
+];
+
 const TRANSLATED_GATES: GateRow[] = [
-  ...[
-    'src/config/statuses.ts',
-    'src/config/standard.ts',
-    'src/app/layout.tsx',
-    'src/app/global-error.tsx',
-    'src/app/about/page.tsx',
-    'src/app/about/page.test.tsx',
-    'src/app/version/page.tsx',
-    'src/app/version/page.test.tsx',
-    'src/app/contact/page.test.tsx',
-    'src/app/not-found.test.tsx',
-    'src/app/error.test.tsx',
-    'src/components/features/status-page/StatusPage.tsx',
-    'src/components/features/status-page/StatusPage.test.tsx',
-    'src/components/features/app-header/AppHeader.tsx',
-    'src/components/features/app-header/AppHeader.test.tsx',
-  ]
+  ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
-      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+      const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+
+      return rows;
     }),
   ['src/app/contact/page.tsx', FORM_ENGLISH],
   ['src/app/contact/page.tsx@i18n', FORM_I18N],
-  ...[
-    'src/components/features/language-select/LanguageSelect.tsx',
-    'src/components/features/language-select/LanguageSelect.test.tsx',
-    'src/lib/providers/i18n/I18nProvider.tsx',
-    'src/lib/providers/i18n/I18nProvider.test.tsx',
-    'src/i18n/index.ts',
-    'src/i18n/index.test.ts',
-    'src/i18n/locales.test.ts',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, WITH_I18N];
+      const row: GateRow = [`${key}@i18n`, WITH_I18N];
+
+      return row;
     }),
 ];
 

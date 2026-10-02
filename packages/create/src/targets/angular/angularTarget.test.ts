@@ -72,48 +72,60 @@ describe('angularTarget', () => {
   });
 });
 
+const CONTACT_PATHS = ['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const;
+
+const BILINGUAL_PATHS = [
+  'src/config/statuses.ts',
+  'src/config/standard.ts',
+  ...TRANSLATED,
+  'src/app/contact/contact.spec.ts',
+  'src/components/features/status-page/status-page.spec.ts',
+];
+
+const I18N_ONLY_PATHS = [
+  'src/i18n/index.ts',
+  'src/i18n/index.spec.ts',
+  'src/i18n/locales.test.ts',
+  'src/components/ui/code-text/code-text.ts',
+  'src/components/ui/code-text/code-text.html',
+  'src/components/ui/code-text/code-text.spec.ts',
+  'src/components/features/app-header/app-header.spec.ts',
+  'src/app/about/about.spec.ts',
+  'src/app/version/version.spec.ts',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
+    }),
+];
+
 const GATES: GateRow[] = [
   ...mswGates(false),
   ['src/lib/services/extended-query/extended-query.ts@tanstack-query', TANSTACK_QUERY],
   ['src/lib/services/extended-mutation/extended-mutation.ts@tanstack-query', TANSTACK_QUERY],
   ['src/styles/theme.css@tailwind', TAILWIND],
   ['.postcssrc.json@tailwind', TAILWIND],
-  ...(['src/app/contact/contact.ts', 'src/app/contact/contact.html'] as const)
+  ...CONTACT_PATHS
     .flatMap((key): GateRow[] => {
-      return [
+      const rows: GateRow[] = [
         [key, [{ form: [undefined], languages: [undefined] }]],
         [`${key}@i18n`, [{ form: [undefined], languages: ANSWERED }]],
         [`${key}@tanstack-form`, [{ form: ['tanstack-form'], languages: [undefined] }]],
         [`${key}@tanstack-form-i18n`, [{ form: ['tanstack-form'], languages: ANSWERED }]],
       ];
+
+      return rows;
     }),
-  ...[
-    'src/config/statuses.ts',
-    'src/config/standard.ts',
-    ...TRANSLATED,
-    'src/app/contact/contact.spec.ts',
-    'src/components/features/status-page/status-page.spec.ts',
-  ]
+  ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
-      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+      const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+
+      return rows;
     }),
-  ...[
-    'src/i18n/index.ts',
-    'src/i18n/index.spec.ts',
-    'src/i18n/locales.test.ts',
-    'src/components/ui/code-text/code-text.ts',
-    'src/components/ui/code-text/code-text.html',
-    'src/components/ui/code-text/code-text.spec.ts',
-    'src/components/features/app-header/app-header.spec.ts',
-    'src/app/about/about.spec.ts',
-    'src/app/version/version.spec.ts',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, WITH_I18N];
+      const row: GateRow = [`${key}@i18n`, WITH_I18N];
+
+      return row;
     }),
   ['src/lib/apis/contact/schemas.ts', [{ libraries: [[]] }]],
   ['src/lib/apis/contact/schemas.ts@zod', [{ libraries: [['zod']] }]],

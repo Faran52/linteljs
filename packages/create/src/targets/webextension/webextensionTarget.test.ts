@@ -27,15 +27,19 @@ import type {
 } from '@config/types';
 
 const extensionAnswers = (overrides: Partial<Answers> = {}): Answers => {
-  return {
+  const answers: Answers = {
     ...DEFAULT_ANSWERS,
     target: 'webextension',
     ...overrides,
   };
+
+  return answers;
 };
 
 const recordFor = (overrides: Partial<Answers> = {}) => {
-  return webextensionTarget(extensionAnswers(overrides));
+  const answers = extensionAnswers(overrides);
+
+  return webextensionTarget(answers);
 };
 
 describe('the webextension record', () => {
@@ -131,13 +135,15 @@ describe('the surfaces axis', () => {
         return file.target;
       });
 
-    for (const page of [
+    const devtoolsPages = [
       'devtools.html',
       'src/devtools/index.ts',
       'panel.html',
       'src/panel/index.ts',
       'src/panel/renderPanel.ts',
-    ]) {
+    ];
+
+    for (const page of devtoolsPages) {
       expect(targets).toContain(page);
     }
 
@@ -202,7 +208,8 @@ describe('the surfaces axis', () => {
     ],
   ])('writes no popup, mark or popup page for %s', (_label, surfaces, html) => {
     const record = recordFor({ surfaces });
-    const written = [...record.starterFiles, ...record.starterTests]
+    const starters = [...record.starterFiles, ...record.starterTests];
+    const written = starters
       .map((file) => {
         return file.target;
       })
@@ -300,24 +307,32 @@ const TRANSLATED_POPUP: readonly Condition[] = [{
   languages: ANSWERED,
 }];
 
+const I18N_ONLY_PATHS = [
+  'src/i18n/index.ts',
+  'src/i18n/index.test.ts',
+  'src/i18n/locales.test.ts',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
+    }),
+];
+
+const POPUP_PATHS = ['src/popup/renderPopup.ts', 'src/popup/renderPopup.test.ts'];
+
 const GATES: GateRow[] = [
   ...mswGates(false),
   ['src/styles/theme.css@tailwind', TAILWIND],
-  ...['src/popup/renderPopup.ts', 'src/popup/renderPopup.test.ts']
+  ...POPUP_PATHS
     .flatMap((key): GateRow[] => {
-      return [[key, ENGLISH_POPUP], [`${key}@i18n`, TRANSLATED_POPUP]];
+      const rows: GateRow[] = [[key, ENGLISH_POPUP], [`${key}@i18n`, TRANSLATED_POPUP]];
+
+      return rows;
     }),
-  ...[
-    'src/i18n/index.ts',
-    'src/i18n/index.test.ts',
-    'src/i18n/locales.test.ts',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, TRANSLATED_POPUP];
+      const row: GateRow = [`${key}@i18n`, TRANSLATED_POPUP];
+
+      return row;
     }),
 ];
 

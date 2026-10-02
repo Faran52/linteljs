@@ -74,38 +74,46 @@ const FORM_I18N: readonly Condition[] = [{
   languages: ANSWERED,
 }];
 
+const BILINGUAL_PATHS = [
+  'src/config/statuses.ts',
+  'src/config/standard.ts',
+  'src/routes/about/+page.svelte',
+  'src/routes/version/+page.svelte',
+  'src/routes/layout.test.ts',
+  'src/routes/error.test.ts',
+  'src/components/features/app-header/AppHeader.svelte',
+  'src/components/features/status-page/StatusPage.svelte',
+  'src/components/features/status-page/StatusPage.test.ts',
+];
+
+const I18N_ONLY_PATHS = [
+  'src/components/features/language-select/LanguageSelect.svelte',
+  'src/components/features/language-select/LanguageSelect.test.ts',
+  'src/components/ui/code-text/CodeText.svelte',
+  'src/components/ui/code-text/CodeText.test.ts',
+  'src/i18n/index.ts',
+  'src/i18n/index.test.ts',
+  'src/i18n/locales.test.ts',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
+    }),
+];
+
 const TRANSLATED_GATES: GateRow[] = [
-  ...[
-    'src/config/statuses.ts',
-    'src/config/standard.ts',
-    'src/routes/about/+page.svelte',
-    'src/routes/version/+page.svelte',
-    'src/routes/layout.test.ts',
-    'src/routes/error.test.ts',
-    'src/components/features/app-header/AppHeader.svelte',
-    'src/components/features/status-page/StatusPage.svelte',
-    'src/components/features/status-page/StatusPage.test.ts',
-  ]
+  ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
-      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+      const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+
+      return rows;
     }),
   ['src/routes/contact/+page.svelte', FORM_ENGLISH],
   ['src/routes/contact/+page.svelte@i18n', FORM_I18N],
-  ...[
-    'src/components/features/language-select/LanguageSelect.svelte',
-    'src/components/features/language-select/LanguageSelect.test.ts',
-    'src/components/ui/code-text/CodeText.svelte',
-    'src/components/ui/code-text/CodeText.test.ts',
-    'src/i18n/index.ts',
-    'src/i18n/index.test.ts',
-    'src/i18n/locales.test.ts',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, WITH_I18N];
+      const row: GateRow = [`${key}@i18n`, WITH_I18N];
+
+      return row;
     }),
 ];
 

@@ -59,6 +59,30 @@ describe('reactNativeTarget', () => {
   });
 });
 
+const BILINGUAL_PATHS = [
+  'src/config/statuses.ts',
+  'src/config/standard.ts',
+  'src/app/about.tsx',
+  'src/app/version.tsx',
+  'src/app-about.test.tsx',
+  'src/app-version.test.tsx',
+  'src/app-not-found.test.tsx',
+  'src/components/features/status-page/StatusPage.tsx',
+  'src/components/features/status-page/StatusPage.test.tsx',
+];
+
+const I18N_ONLY_PATHS = [
+  'src/i18n/index.ts',
+  'src/i18n/index.test.ts',
+  'src/i18n/locales.test.ts',
+  'src/components/features/language-select/LanguageSelect.tsx',
+  'src/components/features/language-select/LanguageSelect.test.tsx',
+  ...LANGUAGES
+    .map((language) => {
+      return `src/i18n/locales/${language}/common.json`;
+    }),
+];
+
 const GATES: GateRow[] = [
   ...mswGates(false, false),
   ['__mocks__/renderScreen.tsx', [{ testing: ['vitest'] }]],
@@ -69,33 +93,17 @@ const GATES: GateRow[] = [
   ['src/app/_layout.tsx@i18n', [{ styling: [undefined, 'stylex'], languages: ANSWERED }]],
   ['src/app/_layout.tsx@tailwind', [{ styling: ['tailwind'], languages: [undefined] }]],
   ['src/app/_layout.tsx@tailwind-i18n', [{ styling: ['tailwind'], languages: ANSWERED }]],
-  ...[
-    'src/config/statuses.ts',
-    'src/config/standard.ts',
-    'src/app/about.tsx',
-    'src/app/version.tsx',
-    'src/app-about.test.tsx',
-    'src/app-version.test.tsx',
-    'src/app-not-found.test.tsx',
-    'src/components/features/status-page/StatusPage.tsx',
-    'src/components/features/status-page/StatusPage.test.tsx',
-  ]
+  ...BILINGUAL_PATHS
     .flatMap((key): GateRow[] => {
-      return [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+      const rows: GateRow[] = [[key, WITHOUT_I18N], [`${key}@i18n`, WITH_I18N]];
+
+      return rows;
     }),
-  ...[
-    'src/i18n/index.ts',
-    'src/i18n/index.test.ts',
-    'src/i18n/locales.test.ts',
-    'src/components/features/language-select/LanguageSelect.tsx',
-    'src/components/features/language-select/LanguageSelect.test.tsx',
-    ...LANGUAGES
-      .map((language) => {
-        return `src/i18n/locales/${language}/common.json`;
-      }),
-  ]
+  ...I18N_ONLY_PATHS
     .map((key): GateRow => {
-      return [`${key}@i18n`, WITH_I18N];
+      const row: GateRow = [`${key}@i18n`, WITH_I18N];
+
+      return row;
     }),
   ['src/hooks/use-extended-query/useExtendedQuery.ts@tanstack-query', TANSTACK_QUERY],
   ['src/hooks/use-extended-mutation/useExtendedMutation.ts@tanstack-query', TANSTACK_QUERY],
