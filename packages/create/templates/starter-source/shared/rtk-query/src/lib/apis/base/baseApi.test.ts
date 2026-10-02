@@ -19,20 +19,25 @@ const requested: string[] = [];
 const fetchMock = vi.fn((request: Request): Promise<Response> => {
   requested.push(new URL(request.url).pathname);
 
-  return Promise.resolve(new Response(JSON.stringify({ status: 'ok' }), {
+  const json = JSON.stringify({ status: 'ok' });
+  const response = new Response(json, {
     headers: { 'Content-Type': 'application/json' },
-  }));
+  });
+
+  return Promise.resolve(response);
 });
 
 const probeApi = baseApi.injectEndpoints({
   endpoints: (build) => {
-    return {
+    const endpoints = {
       probeVersion: build.query<Version, undefined>({
         query: () => {
           return '/version';
         },
       }),
     };
+
+    return endpoints;
   },
 });
 
@@ -59,8 +64,10 @@ describe('baseApi', () => {
   it('prefixes the origin the mocking layer answers on', async () => {
     const store = freshStore();
 
+    const versionQuery = probeApi.endpoints.probeVersion.initiate(undefined);
+
     await store
-      .dispatch(probeApi.endpoints.probeVersion.initiate(undefined))
+      .dispatch(versionQuery)
       .unwrap();
 
     const expected = ['/api/version'];

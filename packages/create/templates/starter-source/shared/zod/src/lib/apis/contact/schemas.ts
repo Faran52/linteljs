@@ -18,8 +18,13 @@ export const validateContact = (values: ContactValues): ContactErrors => {
     return {};
   }
 
-  return Object.fromEntries(parsed.error.issues
+  const entries = parsed.error.issues
     .map((issue) => {
-      return [String(issue.path[0]), issue.message];
-    }));
+      const field = String(issue.path[0]);
+      const entry: [string, string] = [field, issue.message];
+
+      return entry;
+    });
+
+  return Object.fromEntries(entries);
 };

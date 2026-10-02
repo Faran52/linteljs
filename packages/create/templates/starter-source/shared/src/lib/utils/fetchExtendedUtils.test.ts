@@ -21,7 +21,9 @@ interface ResponseBody {
 }
 
 const jsonResponse = (body: ResponseBody, status = 200): Response => {
-  return new Response(JSON.stringify(body), {
+  const json = JSON.stringify(body);
+
+  return new Response(json, {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -42,7 +44,9 @@ describe('request', () => {
   it('answers the parsed body of a request that succeeded', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ name: 'demo' }));
+        const response = jsonResponse({ name: 'demo' });
+
+        return Promise.resolve(response);
       });
 
     const actual = await request<Named>('/version');
@@ -54,7 +58,9 @@ describe('request', () => {
   it('repeats a key for an array rather than flattening it to one value', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ results: [] }));
+        const response = jsonResponse({ results: [] });
+
+        return Promise.resolve(response);
       });
 
     await request('/search', { query: { tag: ['a', 'b'], page: 2 } });
@@ -65,7 +71,9 @@ describe('request', () => {
   it('encodes a query, and writes no question mark without one', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ results: [] }));
+        const response = jsonResponse({ results: [] });
+
+        return Promise.resolve(response);
       });
 
     await request('/search', { query: { q: 'a b&c', page: 2 } });
@@ -78,7 +86,9 @@ describe('request', () => {
   it('sends a body as json, and sets the header only when there is one', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ status: 'ok' }));
+        const response = jsonResponse({ status: 'ok' });
+
+        return Promise.resolve(response);
       });
 
     await request('/contact', { method: 'POST', body: { email: 'a@b.co' } });
@@ -93,7 +103,9 @@ describe('request', () => {
   it('throws ApiError carrying the status a failed request came back with', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ message: 'nope' }, 422));
+        const response = jsonResponse({ message: 'nope' }, 422);
+
+        return Promise.resolve(response);
       });
 
     const promise = request('/contact', { method: 'POST' });
@@ -114,7 +126,9 @@ describe('request', () => {
   it('roots a path given without a leading slash, and drops an empty query', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ status: 'ok' }));
+        const response = jsonResponse({ status: 'ok' });
+
+        return Promise.resolve(response);
       });
 
     await request('version');
@@ -127,7 +141,9 @@ describe('request', () => {
   it('passes an abort signal through when one was given', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(jsonResponse({ status: 'ok' }));
+        const response = jsonResponse({ status: 'ok' });
+
+        return Promise.resolve(response);
       });
 
     const controller = new AbortController();
@@ -140,7 +156,9 @@ describe('request', () => {
   it('answers undefined for an empty body rather than failing to parse one', async () => {
     fetchMock
       .mockImplementation(() => {
-        return Promise.resolve(new Response(null, { status: 204 }));
+        const response = new Response(null, { status: 204 });
+
+        return Promise.resolve(response);
       });
 
     const actual = await request('/contact', { method: 'DELETE' });
