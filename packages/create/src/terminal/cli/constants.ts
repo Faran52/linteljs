@@ -31,7 +31,8 @@ Answers, for a run that asks nothing (unset ones take the defaults):
 ${answerUsage(FLAGGED_ANSWERS)}
 A list is comma-separated or the flag repeated.
 
-A non-interactive create needs a project name, or --yes to take the directory's.
+Without a terminal, create needs --yes or an answer flag; a name alone exits 1.
+With no name it takes the directory's.
 
 sync updates only what linteljs owns: its hooks, scripts and configs, and the
 @linteljs/* versions in package.json. It lists them and asks once; without a
