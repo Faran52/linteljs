@@ -105,6 +105,20 @@ const isInsideLiteral = (node: RuleNode): boolean => {
   return LITERAL_TYPES.has(parent.type);
 };
 
+// A literal that a chain of calls starts from is named with the chain, as in `[alpha, beta].join(' ')`.
+const chainEndOf = (node: RuleNode): RuleNode => {
+  const [child, member] = usingParentOf(node, isWrapper);
+
+  if (member.type !== 'MemberExpression' || !Object.is(member.object, child)) {
+    return node;
+  }
+
+  const call = mustFind(member.parent);
+  const isReceiver = call.type === 'CallExpression' && Object.is(call.callee, member);
+
+  return isReceiver ? chainEndOf(call) : node;
+};
+
 const isEmptyLiteral = (node: LiteralNode): boolean => {
   const members = node.type === 'ArrayExpression' ? node.elements : node.properties;
 
@@ -160,7 +174,7 @@ export const nameBeforeUse = createRule('name-before-use', {
     };
 
     const reportLiteral = (node: LiteralNode): void => {
-      if (isInsideLiteral(node) || standsNamed(node) || isIgnoredLiteral(node)) {
+      if (isInsideLiteral(node) || standsNamed(chainEndOf(node)) || isIgnoredLiteral(node)) {
         return;
       }
 

@@ -32,6 +32,13 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     'const items = [...(flag ? [alpha] : []), beta];',
     'const config = { rules: flag ? { alpha } : { beta } };',
 
+    // A literal a call chain starts from is named with the chain.
+    'const code = [alpha, beta].join(\'\\n\');',
+    'const text = [alpha, beta].filter(Boolean).join(\' \');',
+    'const code = ([alpha] as string[]).join(\'\\n\');',
+    'const keys = [alpha]?.map(read);',
+    'let text;\ntext = [alpha].join(\' \');',
+
     // Wrappers stand where they stand.
     'const items = [alpha] as const;',
     'const config = { alpha } satisfies Config;',
@@ -196,6 +203,27 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     },
     {
       code: 'run(...[alpha]);',
+      errors: [literalError],
+    },
+    {
+      code: 'const read = () => {\n  return [alpha].join(\' \');\n};',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = { data: [alpha].join(\' \') };',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = read([alpha].length);',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = lookup[[alpha]]();',
+      errors: [literalError],
+    },
+    {
+      code: 'run([alpha].join(\' \'));',
+      options: IGNORE_ARGUMENTS,
       errors: [literalError],
     },
     {

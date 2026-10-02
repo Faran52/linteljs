@@ -26,6 +26,9 @@ does, so `const rules = withVitest ? await loadVitest() : [];` is named. The tes
 are conditions and stay judged. `ignoreLiteralArguments` counts only a literal passed straight to a
 call, so `run(source ?? [alpha])` still reports.
 
+A literal that a chain of calls starts from stands where the chain does, so
+`const code = [alpha, bravo].join('\n');` is named, while `return [alpha, bravo].join(' ');` reports.
+
 ## Examples of incorrect code for this rule
 
 ```ts
@@ -48,6 +51,13 @@ expect(parse(text)).toBe(expected);
 ```ts
 // incorrect: an await as a ternary's test
 const label = (await isReady()) ? 'ready' : 'waiting';
+```
+
+```ts
+// incorrect: a call chain on a literal, returned
+const label = () => {
+  return [first, last].join(' ');
+};
 ```
 
 ```ts
@@ -88,6 +98,11 @@ expect(parsed).toBe(expected);
 // correct: the const names both branches and the right side
 const rules = withVitest ? await loadVitest() : [];
 const config = source ?? await loadConfig();
+```
+
+```ts
+// correct: the const names the call chain the literal starts
+const code = [header, body].join('\n');
 ```
 
 ```ts
