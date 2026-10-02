@@ -79,12 +79,26 @@ describe('buildScripts', () => {
     expect(english['prepare']).toBe('svelte-kit sync && husky');
   });
 
-  it('compiles nothing for a language on a target that has no i18n', () => {
+  it('compiles nothing for a language on a target whose i18n has no compiler', () => {
     const translated = buildScripts(answersFor({
       target: 'solid',
       languages: ['ja'],
     }));
     const english = buildScripts(answersFor({ target: 'solid' }));
+
+    expect(translated).toEqual(english);
+  });
+
+  it('compiles nothing for a language on a target with no i18n at all', () => {
+    const translated = buildScripts(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+      languages: ['ja'],
+    }));
+    const english = buildScripts(answersFor({
+      target: 'webextension',
+      surfaces: ['background'],
+    }));
 
     expect(translated).toEqual(english);
   });
