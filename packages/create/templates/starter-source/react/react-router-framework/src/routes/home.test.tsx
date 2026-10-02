@@ -17,6 +17,7 @@ describe('Home route', () => {
       </StoreProvider>,
     );
 
-    expect(screen.getByRole('heading', { name: NAME })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: NAME });
+    expect(element).toBeTruthy();
   });
 });

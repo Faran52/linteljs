@@ -10,7 +10,8 @@ describe('Mark', () => {
   it('renders as a single labelled image', async () => {
     await renderScreen(<Mark />);
 
-    expect(screen.getByLabelText('linteljs')).toBeTruthy();
+    const element = screen.getByLabelText('linteljs');
+    expect(element).toBeTruthy();
   });
 
   it('drifts its lines on a loop', async () => {

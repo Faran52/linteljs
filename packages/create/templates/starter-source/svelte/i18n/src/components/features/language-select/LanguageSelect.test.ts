@@ -43,7 +43,8 @@ describe('LanguageSelect', () => {
 
     expect(options).toEqual(labels);
     expect(tags).toEqual(ids);
-    expect(screen.getByRole('combobox', { name: 'Language' })).toBeTruthy();
+    const element = screen.getByRole('combobox', { name: 'Language' });
+    expect(element).toBeTruthy();
   });
 
   it('switches the language, and stores the choice', async () => {
@@ -55,7 +56,8 @@ describe('LanguageSelect', () => {
 
     expect(select.value).toBe(last);
     expect(select.className).toBe('tab');
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
 

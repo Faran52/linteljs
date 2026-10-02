@@ -13,6 +13,7 @@ describe('storeProvider', () => {
   it('installs on the app, leaving what it renders alone', () => {
     const app = mount(Probe, { global: { plugins: [storeProvider] } });
 
-    expect(app.text()).toBe('under the store');
+    const actual = app.text();
+    expect(actual).toBe('under the store');
   });
 });

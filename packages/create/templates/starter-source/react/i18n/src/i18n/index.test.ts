@@ -30,41 +30,49 @@ describe('i18n', () => {
   it('falls back to English for a browser language it does not offer', async () => {
     browserSpeaks(['fr-FR']);
 
-    await expect(detected()).resolves.toBe('en');
+    const actual = await detected();
+    expect(actual).toBe('en');
   });
 
   it('follows the browser, and stores nothing it detected', async () => {
     browserSpeaks([last]);
 
-    await expect(detected()).resolves.toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const actual = await detected();
+    expect(actual).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('puts a stored choice before the browser', async () => {
     browserSpeaks(['fr-FR']);
     localStorage.setItem(languageStorageKey, last);
 
-    await expect(detected()).resolves.toBe(last);
+    const actual = await detected();
+    expect(actual).toBe(last);
   });
 
   it('initialises once', () => {
-    expect(initI18n()).toBe(initI18n());
+    const actual = initI18n();
+    expect(actual).toBe(initI18n());
   });
 
   it('stores a choice and sets the document language and direction', async () => {
     initI18n();
     await chooseLanguage(last);
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {
     for (const { id, dir } of languages) {
-      expect(directionOf(id)).toBe(dir);
+      const direction = directionOf(id);
+      expect(direction).toBe(dir);
     }
 
-    expect(directionOf('xx')).toBe('ltr');
+    const direction = directionOf('xx');
+    expect(direction).toBe('ltr');
   });
 });

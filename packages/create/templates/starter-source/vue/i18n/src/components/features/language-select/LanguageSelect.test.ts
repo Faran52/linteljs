@@ -27,7 +27,8 @@ describe('LanguageSelect', () => {
       });
 
     expect(options).toEqual(labels);
-    expect(select.attributes('aria-label')).toBe('Language');
+    const actual = select.attributes('aria-label');
+    expect(actual).toBe('Language');
   });
 
   it('switches the language, and stores the choice', async () => {
@@ -43,7 +44,8 @@ describe('LanguageSelect', () => {
       .value;
 
     expect(chosen).toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
 });

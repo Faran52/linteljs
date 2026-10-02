@@ -15,7 +15,8 @@ describe('renderPopup', () => {
     const root = open();
 
     expect(root.querySelector('h1')?.textContent).toBe(NAME);
-    expect(root.querySelector('svg[role="img"]')).not.toBeNull();
+    const element = root.querySelector('svg[role="img"]');
+    expect(element).not.toBeNull();
   });
 
   it('points at the gate, as every home page does', () => {
@@ -26,6 +27,7 @@ describe('renderPopup', () => {
     const expected = `Run ${CHECK} for the full gate.`;
 
     expect(hint).toBe(expected);
-    expect(root.querySelector('button')).toBeNull();
+    const element = root.querySelector('button');
+    expect(element).toBeNull();
   });
 });

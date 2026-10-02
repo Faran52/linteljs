@@ -73,17 +73,19 @@ describe('contextWarningHook.ts', () => {
     writeContext(188_000);
     const again = run();
 
-    expect([
+    const actual = [
       first,
       second,
       under,
       again,
-    ]).toEqual([
+    ];
+    const expected = [
       WARNING,
       '',
       '',
       WARNING,
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('stays silent under the ceiling and leaves no marker', () => {
@@ -92,7 +94,8 @@ describe('contextWarningHook.ts', () => {
     const output = run();
 
     expect(output).toBe('');
-    expect(existsSync(join(directory, 'linteljs-context-s12a'))).toBe(false);
+    const exists = existsSync(join(directory, 'linteljs-context-s12a'));
+    expect(exists).toBe(false);
   });
 
   it('warns at exactly the ceiling', () => {
@@ -109,7 +112,8 @@ describe('contextWarningHook.ts', () => {
     const output = run({ agent_id: 'a1', agent_type: 'Explore' });
 
     expect(output).toBe('');
-    expect(existsSync(join(directory, 'linteljs-context-s12a'))).toBe(false);
+    const exists = existsSync(join(directory, 'linteljs-context-s12a'));
+    expect(exists).toBe(false);
   });
 
   it('keeps its marker in tmp outside a plugin', () => {
@@ -134,7 +138,8 @@ describe('contextWarningHook.ts', () => {
     const output = run({}, join(directory, 'data'));
 
     expect(output).toBe(WARNING);
-    expect(existsSync(join(directory, 'data', 'linteljs-context-s12a'))).toBe(true);
+    const exists = existsSync(join(directory, 'data', 'linteljs-context-s12a'));
+    expect(exists).toBe(true);
   });
 
   it('stays silent on a payload it cannot read', () => {

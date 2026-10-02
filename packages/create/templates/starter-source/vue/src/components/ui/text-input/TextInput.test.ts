@@ -20,12 +20,16 @@ describe('TextInput', () => {
       .attributes('for');
 
     expect(labelled).toBe('email');
-    expect(input.attributes('type')).toBe('email');
-    expect(input.attributes('aria-invalid')).toBe('false');
+    const actual = input.attributes('type');
+    expect(actual).toBe('email');
+    const actual2 = input.attributes('aria-invalid');
+    expect(actual2).toBe('false');
 
     await input.setValue('someone@example.com');
 
-    expect(field.emitted('change')).toEqual([['someone@example.com']]);
+    const actual3 = field.emitted('change');
+    const expected = [['someone@example.com']];
+    expect(actual3).toEqual(expected);
   });
 
   it('describes a multiline field by its error', async () => {
@@ -40,7 +44,8 @@ describe('TextInput', () => {
     });
     const area = field.get('textarea');
 
-    expect(area.attributes('aria-describedby')).toBe('message-error');
+    const actual = area.attributes('aria-describedby');
+    expect(actual).toBe('message-error');
     const message = field
       .get('#message-error')
       .text();
@@ -50,7 +55,11 @@ describe('TextInput', () => {
     await area.setValue('long enough now');
     await area.trigger('blur');
 
-    expect(field.emitted('change')).toEqual([['long enough now']]);
-    expect(field.emitted('blur')).toEqual([[]]);
+    const actual2 = field.emitted('change');
+    const expected = [['long enough now']];
+    expect(actual2).toEqual(expected);
+    const actual3 = field.emitted('blur');
+    const expected2 = [[]];
+    expect(actual3).toEqual(expected2);
   });
 });

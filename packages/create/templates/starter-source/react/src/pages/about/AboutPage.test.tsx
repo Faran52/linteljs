@@ -10,7 +10,8 @@ describe('AboutPage', () => {
     render(<AboutPage />);
 
     for (const { command } of GATE) {
-      expect(screen.getByText(command)).toBeTruthy();
+      const element = screen.getByText(command);
+      expect(element).toBeTruthy();
     }
   });
 
@@ -18,7 +19,8 @@ describe('AboutPage', () => {
     render(<AboutPage />);
 
     for (const { path } of STANDARD_PATHS) {
-      expect(screen.getByText(path)).toBeTruthy();
+      const element = screen.getByText(path);
+      expect(element).toBeTruthy();
     }
   });
 });

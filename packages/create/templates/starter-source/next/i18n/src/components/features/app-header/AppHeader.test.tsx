@@ -28,11 +28,14 @@ describe('AppHeader', () => {
   it('names the project and links every page the route list names', () => {
     render(<AppHeader name="my-app" />, { wrapper: I18nProvider });
 
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
-    expect(screen.getByText('my-app')).toBeTruthy();
+    const element = screen.getByText('LintelJS Starter');
+    expect(element).toBeTruthy();
+    const myAppElement = screen.getByText('my-app');
+    expect(myAppElement).toBeTruthy();
 
     for (const { label } of PAGES) {
-      expect(screen.getByRole('link', { name: label })).toBeTruthy();
+      const element = screen.getByRole('link', { name: label });
+      expect(element).toBeTruthy();
     }
   });
 
@@ -40,8 +43,10 @@ describe('AppHeader', () => {
     pathnameMock.mockReturnValue('/about');
     render(<AppHeader name="my-app" />, { wrapper: I18nProvider });
 
-    expect(screen.getByRole('link', { name: 'About' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBeNull();
+    const attribute = screen.getByRole('link', { name: 'About' }).getAttribute('aria-current');
+    expect(attribute).toBe('page');
+    const ariaCurrentAttribute = screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current');
+    expect(ariaCurrentAttribute).toBeNull();
   });
 
   it('switches the language, and stores the choice', () => {
@@ -53,8 +58,11 @@ describe('AppHeader', () => {
 
     const { common } = resources[last];
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
-    expect(screen.getByRole('link', { name: common.home })).toBeTruthy();
-    expect(screen.getByText(common.starterLabel)).toBeTruthy();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
+    const element = screen.getByRole('link', { name: common.home });
+    expect(element).toBeTruthy();
+    const element2 = screen.getByText(common.starterLabel);
+    expect(element2).toBeTruthy();
   });
 });

@@ -38,7 +38,8 @@ describe('loggerUtils', () => {
     logError('failed', new Error('boom'));
 
     expect(out).not.toHaveBeenCalled();
-    expect(error.mock.calls).toStrictEqual([['[ERROR] failed'], ['Error details: boom']]);
+    const expected = [['[ERROR] failed'], ['Error details: boom']];
+    expect(error.mock.calls).toStrictEqual(expected);
 
     vi.stubEnv('DEBUG', 'true');
     error.mockClear();

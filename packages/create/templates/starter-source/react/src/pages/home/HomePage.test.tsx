@@ -21,12 +21,14 @@ describe('HomePage', () => {
   it('carries the project name as its heading', () => {
     renderPage();
 
-    expect(screen.getByRole('heading', { name: 'my-app' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'my-app' });
+    expect(element).toBeTruthy();
   });
 
   it('names the one command that runs the whole gate', () => {
     renderPage();
 
-    expect(screen.getByText(CHECK)).toBeTruthy();
+    const element = screen.getByText(CHECK);
+    expect(element).toBeTruthy();
   });
 });

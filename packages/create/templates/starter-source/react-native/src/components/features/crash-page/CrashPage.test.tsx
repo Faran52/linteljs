@@ -21,7 +21,8 @@ describe('CrashPage', () => {
 
     await renderScreen(<CrashPage error={new Error('render failed')} retry={retry} />);
 
-    expect(screen.getByText('500')).toBeTruthy();
+    const element = screen.getByText('500');
+    expect(element).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button'));
 
@@ -31,7 +32,9 @@ describe('CrashPage', () => {
   it('shows the 403 page, with no retry, for a ForbiddenError', async () => {
     await renderScreen(<CrashPage error={new ForbiddenError()} retry={vi.fn<() => Promise<void>>()} />);
 
-    expect(screen.getByText('403')).toBeTruthy();
-    expect(screen.queryByText('Try again')).toBeNull();
+    const element = screen.getByText('403');
+    expect(element).toBeTruthy();
+    const tryAgainElement = screen.queryByText('Try again');
+    expect(tryAgainElement).toBeNull();
   });
 });

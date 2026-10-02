@@ -36,8 +36,10 @@ describe('LanguageSelect', () => {
 
     const trigger = screen.getByRole('button', { name: 'Language' });
 
-    expect(within(trigger).getByText('English')).toBeTruthy();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    const element = within(trigger).getByText('English');
+    expect(element).toBeTruthy();
+    const elements = screen.queryAllByRole('radio');
+    expect(elements).toHaveLength(0);
   });
 
   it('offers every language under its own name, the one in use checked', async () => {
@@ -49,10 +51,12 @@ describe('LanguageSelect', () => {
     expect(options).toHaveLength(languages.length);
 
     for (const { label } of languages) {
-      expect(screen.getByRole('radio', { name: label })).toBeTruthy();
+      const element = screen.getByRole('radio', { name: label });
+      expect(element).toBeTruthy();
     }
 
-    expect(within(checked).getByText('English')).toBeTruthy();
+    const element = within(checked).getByText('English');
+    expect(element).toBeTruthy();
   });
 
   it('switches the language, stores the choice and closes', async () => {
@@ -66,7 +70,8 @@ describe('LanguageSelect', () => {
     const stored = await AsyncStorage.getItem(languageStorageKey);
 
     expect(stored).toBe(last.id);
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    const elements = screen.queryAllByRole('radio');
+    expect(elements).toHaveLength(0);
   });
 
   it.each(['press', 'requestClose'])('closes on %s outside a language, choosing nothing', async (event) => {
@@ -76,6 +81,7 @@ describe('LanguageSelect', () => {
     const stored = await AsyncStorage.getItem(languageStorageKey);
 
     expect(stored).toBeNull();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    const elements = screen.queryAllByRole('radio');
+    expect(elements).toHaveLength(0);
   });
 });

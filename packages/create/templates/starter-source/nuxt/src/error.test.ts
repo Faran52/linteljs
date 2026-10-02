@@ -29,21 +29,25 @@ describe('the error page', () => {
       global,
     });
 
-    expect(page
+    const actual = page
       .find('h1')
-      .text()).toBe(String(code));
+      .text();
+    expect(actual).toBe(String(code));
 
-    expect(page
+    const actual2 = page
       .find('[role="alert"]')
-      .text()).toBe(message);
+      .text();
+    expect(actual2).toBe(message);
 
-    expect(page
+    const actual3 = page
       .find('app-header-stub')
-      .exists()).toBe(true);
+      .exists();
+    expect(actual3).toBe(true);
 
-    expect(page
+    const actual4 = page
       .find('button')
-      .exists()).toBe(false);
+      .exists();
+    expect(actual4).toBe(false);
   });
 
   it('shows the 500 page for a crash, and clears the error on retry', async () => {
@@ -52,9 +56,10 @@ describe('the error page', () => {
       global,
     });
 
-    expect(page
+    const actual = page
       .find('h1')
-      .text()).toBe('500');
+      .text();
+    expect(actual).toBe('500');
 
     await page
       .find('button')

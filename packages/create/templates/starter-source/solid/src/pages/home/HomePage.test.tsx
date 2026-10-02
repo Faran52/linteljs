@@ -14,6 +14,7 @@ describe('HomePage', () => {
       );
     });
 
-    expect(screen.getByRole('heading', { name: 'my-app' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'my-app' });
+    expect(element).toBeTruthy();
   });
 });

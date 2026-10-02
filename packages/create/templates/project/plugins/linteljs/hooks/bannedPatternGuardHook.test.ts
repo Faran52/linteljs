@@ -76,7 +76,8 @@ describe('bannedPatternGuardHook.ts', () => {
   };
 
   it('ignores malformed JSON', () => {
-    expect(runHook('bannedPatternGuardHook.ts', '{')).toBeUndefined();
+    const hookResult = runHook('bannedPatternGuardHook.ts', '{');
+    expect(hookResult).toBeUndefined();
   });
 
   it('checks a Claude Write path relative to the payload cwd', () => {
@@ -106,19 +107,22 @@ describe('bannedPatternGuardHook.ts', () => {
 
       expect(output).toContain('bad cast');
       expect(output).not.toContain('Cannot find module');
-      expect(checkedPaths()).toEqual([join(cwd, 'src/app.ts')]);
+      const actual = checkedPaths();
+      const expected = [join(cwd, 'src/app.ts')];
+      expect(actual).toEqual(expected);
     });
   });
 
   it('stays silent when no checker exists above the file at all', () => {
     rmSync(join(cwd, 'scripts/checkBannedPatterns.ts'));
 
-    expect(runHook('bannedPatternGuardHook.ts', {
+    const hookResult = runHook('bannedPatternGuardHook.ts', {
       cwd,
       hook_event_name: 'PostToolUse',
       tool_name: 'Write',
       tool_input: { file_path: 'src/app.ts' },
-    })).toBeUndefined();
+    });
+    expect(hookResult).toBeUndefined();
   });
 
   it('checks a direct tool response path relative to the payload cwd', () => {
@@ -146,10 +150,12 @@ describe('bannedPatternGuardHook.ts', () => {
 
     expect(output).toContain('bad cast');
 
-    expect(checkedPaths()).toEqual([
+    const actual = checkedPaths();
+    const expected = [
       join(cwd, 'src/first.ts'),
       join(cwd, 'src/second.ts'),
-    ]);
+    ];
+    expect(actual).toEqual(expected);
   });
 
   it('keeps compatibility with nested Codex apply_patch text', () => {
@@ -187,8 +193,11 @@ describe('bannedPatternGuardHook.ts', () => {
     });
 
     expect(output).toContain('now holds a banned pattern');
-    expect(checkedPaths()).toEqual([absolute]);
-    expect(existsSync(join(cwd, 'injected'))).toBe(false);
+    const actual = checkedPaths();
+    const expected = [absolute];
+    expect(actual).toEqual(expected);
+    const exists = existsSync(join(cwd, 'injected'));
+    expect(exists).toBe(false);
   });
 
   it('JSON-escapes multiline checker output', () => {
@@ -204,35 +213,42 @@ describe('bannedPatternGuardHook.ts', () => {
   });
 
   it('ignores missing files and patches touching irrelevant extensions', () => {
-    expect(runHook('bannedPatternGuardHook.ts', {
+    const hookResult = runHook('bannedPatternGuardHook.ts', {
       cwd,
       tool_input: { file_path: 'src/missing.ts' },
-    })).toBeUndefined();
+    });
+    expect(hookResult).toBeUndefined();
 
-    expect(runHook('bannedPatternGuardHook.ts', {
+    const hookResult2 = runHook('bannedPatternGuardHook.ts', {
       cwd,
       tool_input: '*** Update File: src/app.md',
-    })).toBeUndefined();
+    });
+    expect(hookResult2).toBeUndefined();
 
-    expect(checkedPaths()).toEqual([]);
+    const actual = checkedPaths();
+    expect(actual).toEqual([]);
   });
 
   it.each(['edit', 'create'])('checks the path Copilot\'s %s tool names, and reports it as added context', (tool) => {
     const output = runHook('bannedPatternGuardHook.ts', copilotPayload(tool, { path: 'src/app.ts' }, cwd));
 
     expect(output).toContain('bad cast');
-    expect(checkedPaths()).toEqual([join(cwd, 'src/app.ts')]);
+    const actual = checkedPaths();
+    const expected = [join(cwd, 'src/app.ts')];
+    expect(actual).toEqual(expected);
   });
 
   it('answers nothing under Cursor', () => {
-    expect(runHook('bannedPatternGuardHook.ts', {
+    const hookResult = runHook('bannedPatternGuardHook.ts', {
       cursor_version: '2.4.0',
       cwd,
       hook_event_name: 'postToolUse',
       tool_name: 'Write',
       tool_input: { file_path: 'src/app.ts' },
-    })).toBeUndefined();
+    });
+    expect(hookResult).toBeUndefined();
 
-    expect(checkedPaths()).toEqual([]);
+    const actual = checkedPaths();
+    expect(actual).toEqual([]);
   });
 });

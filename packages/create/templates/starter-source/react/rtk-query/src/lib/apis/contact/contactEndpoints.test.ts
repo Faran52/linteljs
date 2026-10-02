@@ -29,7 +29,8 @@ describe('contactApi', () => {
       message: 'Ten characters, at least.',
     });
 
-    expect(data).toEqual({ status: 200 });
+    const expected = { status: 200 };
+    expect(data).toEqual(expected);
   });
 
   it('answers a custom error for details the rules refuse', async () => {
@@ -38,9 +39,10 @@ describe('contactApi', () => {
       message: 'short',
     });
 
-    expect(error).toEqual({
+    const expected = {
       status: 'CUSTOM_ERROR',
       error: 'Contact details are not valid',
-    });
+    };
+    expect(error).toEqual(expected);
   });
 });

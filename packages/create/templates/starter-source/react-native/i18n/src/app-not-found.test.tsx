@@ -18,7 +18,9 @@ describe('the not-found screen', () => {
   it('answers a path no route matches with the 404 page', async () => {
     await renderScreen(<NotFoundScreen />);
 
-    expect(screen.getByText('404')).toBeTruthy();
-    expect(screen.getByText(resources.en.common[STATUSES.notFound.message])).toBeTruthy();
+    const element = screen.getByText('404');
+    expect(element).toBeTruthy();
+    const element2 = screen.getByText(resources.en.common[STATUSES.notFound.message]);
+    expect(element2).toBeTruthy();
   });
 });

@@ -11,7 +11,8 @@ describe('the version screen', () => {
     await renderScreen(<VersionScreen />);
 
     for (const { name } of STACK) {
-      expect(screen.getAllByText(name)).not.toHaveLength(0);
+      const elements = screen.getAllByText(name);
+      expect(elements).not.toHaveLength(0);
     }
   });
 
@@ -19,7 +20,8 @@ describe('the version screen', () => {
     await renderScreen(<VersionScreen />);
 
     for (const { label } of ANSWERS) {
-      expect(screen.getAllByText(label)).not.toHaveLength(0);
+      const elements = screen.getAllByText(label);
+      expect(elements).not.toHaveLength(0);
     }
   });
 });

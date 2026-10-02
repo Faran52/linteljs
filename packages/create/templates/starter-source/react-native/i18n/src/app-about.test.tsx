@@ -21,14 +21,16 @@ describe('the about screen', () => {
     await renderScreen(<AboutScreen />);
 
     for (const { command } of GATE) {
-      expect(screen.getByText(command)).toBeTruthy();
+      const element = screen.getByText(command);
+      expect(element).toBeTruthy();
     }
   });
 
   it('says where the standard lives', async () => {
     await renderScreen(<AboutScreen />);
 
-    expect(screen.getByText('eslint.config.js')).toBeTruthy();
+    const element = screen.getByText('eslint.config.js');
+    expect(element).toBeTruthy();
   });
 
   it('speaks the language chosen', async () => {
@@ -49,7 +51,8 @@ describe('the about screen', () => {
     ];
 
     for (const text of shown) {
-      expect(screen.getByText(text)).toBeTruthy();
+      const element = screen.getByText(text);
+      expect(element).toBeTruthy();
     }
   });
 });

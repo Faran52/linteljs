@@ -44,7 +44,8 @@ describe('ContactPage', () => {
     renderPage();
     fill('Email', 'not-an-address');
 
-    expect(await screen.findByText('Enter a valid email address.')).toBeTruthy();
+    const element = await screen.findByText('Enter a valid email address.');
+    expect(element).toBeTruthy();
   });
 
   it('flags only the field that was left', async () => {
@@ -75,7 +76,8 @@ describe('ContactPage', () => {
     fill('Email', 'someone@example.com');
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(await screen.findByText('Write at least ten characters.')).toBeTruthy();
+    const element = await screen.findByText('Write at least ten characters.');
+    expect(element).toBeTruthy();
   });
 
   it('sends once both fields are valid', async () => {
@@ -84,7 +86,8 @@ describe('ContactPage', () => {
     fill('Message', 'Ten characters, at least.');
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(await screen.findByRole('status')).toBeTruthy();
+    const element = await screen.findByRole('status');
+    expect(element).toBeTruthy();
   });
 
   it('speaks the language chosen', async () => {
@@ -98,6 +101,7 @@ describe('ContactPage', () => {
     const title = screen.getByRole('heading', { level: 1 }).textContent;
 
     expect(title).toBe(common.contact);
-    expect(screen.getByRole('button', { name: common.contactSend })).toBeTruthy();
+    const element = screen.getByRole('button', { name: common.contactSend });
+    expect(element).toBeTruthy();
   });
 });

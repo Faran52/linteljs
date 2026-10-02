@@ -72,11 +72,15 @@ describe('createExtendedQuery', () => {
     const result = runQuery('/version');
 
     await waitFor(() => {
-      expect(result.status()).toBe('success');
+      const actual = result.status();
+      expect(actual).toBe('success');
     });
 
-    expect(result.response()).toEqual({ status: 'ok' });
-    expect(result.isFetching()).toBe(false);
+    const actual = result.response();
+    const expected = { status: 'ok' };
+    expect(actual).toEqual(expected);
+    const actual2 = result.isFetching();
+    expect(actual2).toBe(false);
   });
 
   it('sends the query through to the adapter', async () => {
@@ -100,10 +104,13 @@ describe('createExtendedQuery', () => {
     const result = runQuery('/version');
 
     await waitFor(() => {
-      expect(result.status()).toBe('error');
+      const actual = result.status();
+      expect(actual).toBe('error');
     });
 
-    expect(result.error()).toMatchObject({ status: 500 });
+    const actual = result.error();
+    const expected = { status: 500 };
+    expect(actual).toMatchObject(expected);
   });
 
   it('refetches without handing back a promise nobody awaits', async () => {
@@ -112,7 +119,8 @@ describe('createExtendedQuery', () => {
     const result = runQuery('/version');
 
     await waitFor(() => {
-      expect(result.status()).toBe('success');
+      const actual = result.status();
+      expect(actual).toBe('success');
     });
 
     result.refetch();

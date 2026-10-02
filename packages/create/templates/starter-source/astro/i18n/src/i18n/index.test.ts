@@ -75,27 +75,32 @@ describe('i18n', () => {
   it('falls back to English for a browser language it does not offer', () => {
     browserSpeaks(['fr-FR']);
 
-    expect(boot()).toBe('en');
+    const actual = boot();
+    expect(actual).toBe('en');
   });
 
   it('follows the browser, and stores nothing it detected', () => {
     browserSpeaks(['fr-FR', last]);
 
-    expect(boot()).toBe(last);
+    const actual = boot();
+    expect(actual).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('reads a regional browser language as its own language', () => {
     browserSpeaks([`${base}-001`]);
 
-    expect(boot()).toBe(base);
+    const actual = boot();
+    expect(actual).toBe(base);
   });
 
   it('reads a longer browser tag as the longest one it offers', () => {
     browserSpeaks([`${last}-x-test`]);
 
-    expect(boot()).toBe(last);
+    const actual = boot();
+    expect(actual).toBe(last);
   });
 
   it('reads a full browser tag it offers before its base language, and boots right to left', () => {
@@ -110,11 +115,13 @@ describe('i18n', () => {
     browserSpeaks(['fr-FR']);
     localStorage.setItem(languageStorageKey, last);
 
-    expect(boot()).toBe(last);
+    const actual = boot();
+    expect(actual).toBe(last);
 
     localStorage.setItem(languageStorageKey, 'xx');
 
-    expect(boot()).toBe('en');
+    const actual2 = boot();
+    expect(actual2).toBe('en');
   });
 
   it('boots left to right into a fallback it does not offer', () => {
@@ -147,12 +154,14 @@ describe('i18n', () => {
     const title = marked('title')?.textContent;
     const picker = pickerOf();
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
     expect(title).toBe(resources[last].common.about);
     expect(picker.value).toBe(last);
-    expect(picker.getAttribute('aria-label')).toBe(resources[last].common.language);
+    const attribute = picker.getAttribute('aria-label');
+    expect(attribute).toBe(resources[last].common.language);
   });
 
   it('switches a page that has no select', () => {
@@ -168,7 +177,8 @@ describe('i18n', () => {
     chooseLanguage('xx');
 
     expect(document.documentElement.lang).toBe('en');
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('fills a value from the element, and renders a marked command as code', () => {
@@ -198,7 +208,8 @@ describe('i18n', () => {
     picker.value = 'en';
     picker.dispatchEvent(new Event('change'));
 
-    expect(localStorage.getItem(languageStorageKey)).toBe('en');
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe('en');
     expect(document.documentElement.lang).toBe('en');
   });
 
@@ -211,10 +222,12 @@ describe('i18n', () => {
 
   it('reads each language direction from the config, and left to right for any other', () => {
     for (const { id, dir } of languages) {
-      expect(directionOf(id)).toBe(dir);
+      const direction = directionOf(id);
+      expect(direction).toBe(dir);
     }
 
-    expect(directionOf('xx')).toBe('ltr');
+    const direction = directionOf('xx');
+    expect(direction).toBe('ltr');
   });
 
   it('renders English by default, and the language it is given', () => {
@@ -240,11 +253,12 @@ describe('i18n', () => {
   it('splits a message so its odd parts are code', () => {
     const parts = partsOf('Run <code>pnpm check</code> now');
 
-    expect(parts).toEqual([
+    const expected = [
       'Run ',
       'pnpm check',
       ' now',
-    ]);
+    ];
+    expect(parts).toEqual(expected);
   });
 
   it('translates a page id that is a key, and shows any other as the id', () => {

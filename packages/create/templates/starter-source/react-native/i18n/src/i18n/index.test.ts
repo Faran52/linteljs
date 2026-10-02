@@ -32,17 +32,23 @@ describe('i18n', () => {
   });
 
   it('matches the exact tag, then its base language, and nothing it does not offer', () => {
-    expect(matchLanguage(last)).toBe(last);
-    expect(matchLanguage(`${last}-XX`)).toBe(last);
-    expect(matchLanguage('en-GB')).toBe('en');
-    expect(matchLanguage('fr-FR')).toBeUndefined();
-    expect(matchLanguage(null)).toBeUndefined();
+    const actual = matchLanguage(last);
+    expect(actual).toBe(last);
+    const actual2 = matchLanguage(`${last}-XX`);
+    expect(actual2).toBe(last);
+    const actual3 = matchLanguage('en-GB');
+    expect(actual3).toBe('en');
+    const actual4 = matchLanguage('fr-FR');
+    expect(actual4).toBeUndefined();
+    const actual5 = matchLanguage(null);
+    expect(actual5).toBeUndefined();
   });
 
   it('falls back to English for a device language it does not offer', async () => {
     deviceSpeaks('fr-FR');
 
-    await expect(detectLanguage()).resolves.toBe('en');
+    const language = await detectLanguage();
+    expect(language).toBe('en');
   });
 
   it('follows the device, and stores nothing it detected', async () => {
@@ -59,14 +65,16 @@ describe('i18n', () => {
     deviceSpeaks('fr-FR');
     await AsyncStorage.setItem(languageStorageKey, last);
 
-    await expect(detectLanguage()).resolves.toBe(last);
+    const language = await detectLanguage();
+    expect(language).toBe(last);
   });
 
   it('initialises once, in English, so the first render matches the web export', () => {
     const init = vi.spyOn(i18next, 'init');
     const i18n = initI18n();
 
-    expect(initI18n()).toBe(i18n);
+    const actual = initI18n();
+    expect(actual).toBe(i18n);
     expect(init).not.toHaveBeenCalled();
     expect(i18n.options.lng).toBe('en');
   });
@@ -111,7 +119,8 @@ describe('i18n', () => {
     for (const { id, dir } of languages) {
       applyDirection(id);
 
-      expect(documentElement).toEqual({ lang: id, dir });
+      const expected = { lang: id, dir };
+      expect(documentElement).toEqual(expected);
     }
 
     expect(forceRTL).not.toHaveBeenCalled();
@@ -127,9 +136,11 @@ describe('i18n', () => {
 
   it('reads each language direction from the config, and left to right for any other', () => {
     for (const { id, dir } of languages) {
-      expect(directionOf(id)).toBe(dir);
+      const direction = directionOf(id);
+      expect(direction).toBe(dir);
     }
 
-    expect(directionOf('xx')).toBe('ltr');
+    const direction = directionOf('xx');
+    expect(direction).toBe('ltr');
   });
 });

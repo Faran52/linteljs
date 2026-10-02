@@ -79,7 +79,8 @@ describe('createExtendedMutation', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'send' }));
 
     await waitFor(() => {
-      expect(invalidate).toHaveBeenCalledWith({ queryKey: ['/version'] });
+      const expected = { queryKey: ['/version'] };
+      expect(invalidate).toHaveBeenCalledWith(expected);
     });
   });
 });

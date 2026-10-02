@@ -31,11 +31,14 @@ describe('useCounter', () => {
     const app = mount(Probe, { global: { plugins: [storeProvider] } });
     const [first, second] = app.findAll('button');
 
-    expect(first?.text()).toBe('one 0');
+    const actual = first?.text();
+    expect(actual).toBe('one 0');
 
     await first?.trigger('click');
 
-    expect(first?.text()).toBe('one 1');
-    expect(second?.text()).toBe('two 1');
+    const actual2 = first?.text();
+    expect(actual2).toBe('one 1');
+    const actual3 = second?.text();
+    expect(actual3).toBe('two 1');
   });
 });

@@ -24,14 +24,18 @@ describe('handlers', () => {
   it('answers the version endpoint', async () => {
     const response = await fetch('/api/version');
 
-    await expect(response.json() as Promise<VersionResponse>).resolves.toEqual({ status: 'ok' });
+    const actual = await response.json() as Promise<VersionResponse>;
+    const expected = { status: 'ok' };
+    expect(actual).toEqual(expected);
   });
 
   it('accepts contact details that pass validation', async () => {
     const response = await postContact({ email: 'someone@example.com', message: 'Ten characters at least.' });
 
     expect(response.status).toBe(202);
-    await expect(response.json() as Promise<ContactResponse>).resolves.toEqual({ status: 'accepted' });
+    const actual = await response.json() as Promise<ContactResponse>;
+    const expected = { status: 'accepted' };
+    expect(actual).toEqual(expected);
   });
 
   it('refuses contact details that do not, with the status a server would send', async () => {

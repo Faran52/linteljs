@@ -53,7 +53,8 @@ describe('the escape hatches it exists to block', () => {
     ['an eslint-disable directive', '// eslint-disable-next-line no-console\nconsole.log(1);\n'],
     ['a ts-expect-error directive', '// @ts-expect-error wrong on purpose\nconst value = 1;\n'],
   ])('reports %s', async (_label, source) => {
-    expect(await check(source)).not.toBe('');
+    const actual = await check(source);
+    expect(actual).not.toBe('');
   });
 });
 
@@ -72,11 +73,13 @@ describe('the carve-out the rule file grants', () => {
     ['a labelled tuple element', 'const emit = defineEmits<{\n  change: [value: string];\n}>();\n'],
     ['a named tuple type', 'type Pair = [first: string, second: number];\n'],
   ])('allows %s', async (_label, source) => {
-    expect(await check(source)).toBe('');
+    const actual = await check(source);
+    expect(actual).toBe('');
   });
 
   it('still blocks an unknown binding with no boundary behind it', async () => {
-    expect(await check('const loaded: unknown = other;\n')).toContain('[: unknown]');
+    const actual = await check('const loaded: unknown = other;\n');
+    expect(actual).toContain('[: unknown]');
   });
 
   it.each([
@@ -86,7 +89,8 @@ describe('the carve-out the rule file grants', () => {
     ['a parameter named for anything else', 'const f = (value: unknown): string => {\n  return String(value);\n};\n'],
     ['a caught value in a wider list', 'const f = (name: string, error: unknown): string => {\n  return name;\n};\n'],
   ])('still blocks %s', async (_label, source) => {
-    expect(await check(source)).toContain('[: unknown]');
+    const actual = await check(source);
+    expect(actual).toContain('[: unknown]');
   });
 });
 
@@ -111,11 +115,14 @@ describe('mentions rather than directives', () => {
       'const fixture = `\n// @ts-ignore\nconst value = 1;\n`;\n',
     ],
   ])('says nothing about %s', async (_label, source) => {
-    expect(await check(source)).toBe('');
+    const actual = await check(source);
+    expect(actual).toBe('');
   });
 
   it('still reports the same directive written as one', async () => {
-    expect(await check('// eslint-disable-next-line no-console\nconsole.log(1);\n'))
+    const actual = await check('// eslint-disable-next-line no-console\nconsole.log(1);\n');
+
+    expect(actual)
       .toContain('[eslint-disable]');
   });
 });
@@ -161,7 +168,7 @@ describe('single-file components', () => {
   });
 
   it('never reads the template or the styles as if they were TypeScript', async () => {
-    expect(await checkFile('Docs.vue', [
+    const actual = await checkFile('Docs.vue', [
       '<script setup lang="ts">',
       "const heading = 'Banned shapes';",
       '</script>',
@@ -179,7 +186,8 @@ describe('single-file components', () => {
       '.a { color: red; }',
       '</style>',
       '',
-    ].join('\n'))).toBe('');
+    ].join('\n'));
+    expect(actual).toBe('');
   });
 });
 
@@ -213,13 +221,16 @@ describe('its arguments', () => {
   });
 
   it('checks a named file whatever directory it sits in', () => {
-    expect(run(join('src', 'nested', 'node_modules', 'pkg', 'index.ts'))).toContain('[as never]');
-    expect(run(join('src', 'clean.ts'))).toBe('');
+    const actual = run(join('src', 'nested', 'node_modules', 'pkg', 'index.ts'));
+    expect(actual).toContain('[as never]');
+    const actual2 = run(join('src', 'clean.ts'));
+    expect(actual2).toBe('');
   });
 
   it('passes a directory with nothing banned in it', async () => {
     await rm(join(cwd, 'src/nested/deep.tsx'));
 
-    expect(run('src')).toBe('');
+    const actual = run('src');
+    expect(actual).toBe('');
   });
 });

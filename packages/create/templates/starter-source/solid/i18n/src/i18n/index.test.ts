@@ -32,50 +32,60 @@ describe('i18n', () => {
   });
 
   it('starts in English, whatever the browser speaks', () => {
-    expect(language()).toBe('en');
+    const actual = language();
+    expect(actual).toBe('en');
   });
 
   it('falls back to English for a browser language it does not offer', () => {
     browserSpeaks(['fr-FR']);
 
-    expect(detectLanguage()).toBe('en');
+    const language2 = detectLanguage();
+    expect(language2).toBe('en');
   });
 
   it('follows the browser, and stores nothing it detected', () => {
     browserSpeaks(['fr-FR', last]);
 
-    expect(detectLanguage()).toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const language2 = detectLanguage();
+    expect(language2).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('reads a regional browser language as its own language', () => {
     browserSpeaks([`${base}-001`]);
 
-    expect(detectLanguage()).toBe(base);
+    const language2 = detectLanguage();
+    expect(language2).toBe(base);
   });
 
   it('reads a longer browser tag as the longest one it offers', () => {
     browserSpeaks([`${last}-x-test`]);
 
-    expect(detectLanguage()).toBe(last);
+    const language2 = detectLanguage();
+    expect(language2).toBe(last);
   });
 
   it('puts a stored choice before the browser, and ignores one it does not offer', () => {
     browserSpeaks(['fr-FR']);
     localStorage.setItem(languageStorageKey, last);
 
-    expect(detectLanguage()).toBe(last);
+    const language2 = detectLanguage();
+    expect(language2).toBe(last);
 
     localStorage.setItem(languageStorageKey, 'xx');
 
-    expect(detectLanguage()).toBe('en');
+    const language3 = detectLanguage();
+    expect(language3).toBe('en');
   });
 
   it('stores a choice, and switches the text, language and direction', () => {
     chooseLanguage(last);
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
-    expect(language()).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
+    const actual = language();
+    expect(actual).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
@@ -83,8 +93,10 @@ describe('i18n', () => {
   it('ignores a choice it does not offer', () => {
     chooseLanguage('xx');
 
-    expect(language()).toBe('en');
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const actual = language();
+    expect(actual).toBe('en');
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('renders each message in the language applied', () => {
@@ -98,16 +110,20 @@ describe('i18n', () => {
   it('applies a language without storing it', () => {
     applyLanguage(last);
 
-    expect(language()).toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const actual = language();
+    expect(actual).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it('reads each language direction from the config, and left to right for any other', () => {
     for (const { id, dir } of languages) {
-      expect(directionOf(id)).toBe(dir);
+      const direction = directionOf(id);
+      expect(direction).toBe(dir);
     }
 
-    expect(directionOf('xx')).toBe('ltr');
+    const direction = directionOf('xx');
+    expect(direction).toBe('ltr');
   });
 
   it('fills a single-brace value, and keeps a marked command and an at sign as text', () => {
@@ -125,7 +141,9 @@ describe('i18n', () => {
   it('names a page by its id, and shows an id no locale names as itself', () => {
     applyLanguage(last);
 
-    expect(translateId('home')).toBe(resources[last].common.home);
-    expect(translateId('nowhere')).toBe('nowhere');
+    const translatedId = translateId('home');
+    expect(translatedId).toBe(resources[last].common.home);
+    const nowhereTranslatedId = translateId('nowhere');
+    expect(nowhereTranslatedId).toBe('nowhere');
   });
 });

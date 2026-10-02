@@ -11,13 +11,15 @@ describe('the about screen', () => {
     await renderScreen(<AboutScreen />);
 
     for (const { command } of GATE) {
-      expect(screen.getByText(command)).toBeTruthy();
+      const element = screen.getByText(command);
+      expect(element).toBeTruthy();
     }
   });
 
   it('says where the standard lives', async () => {
     await renderScreen(<AboutScreen />);
 
-    expect(screen.getByText('eslint.config.js')).toBeTruthy();
+    const element = screen.getByText('eslint.config.js');
+    expect(element).toBeTruthy();
   });
 });

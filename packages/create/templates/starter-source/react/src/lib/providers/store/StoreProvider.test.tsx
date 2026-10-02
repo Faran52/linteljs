@@ -10,6 +10,7 @@ describe('StoreProvider', () => {
       </StoreProvider>,
     );
 
-    expect(screen.getByText('under the store')).toBeTruthy();
+    const element = screen.getByText('under the store');
+    expect(element).toBeTruthy();
   });
 });

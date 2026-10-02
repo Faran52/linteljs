@@ -8,16 +8,19 @@ describe('about page', () => {
   it('lists every leg of the gate', () => {
     render(Page);
 
-    expect(screen.getByRole('heading', { name: 'About' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'About' });
+    expect(element).toBeTruthy();
 
     for (const { command } of GATE) {
-      expect(screen.getByText(command)).toBeTruthy();
+      const element = screen.getByText(command);
+      expect(element).toBeTruthy();
     }
   });
 
   it('says where the standard lives', () => {
     render(Page);
 
-    expect(screen.getByText('eslint.config.js')).toBeTruthy();
+    const element = screen.getByText('eslint.config.js');
+    expect(element).toBeTruthy();
   });
 });

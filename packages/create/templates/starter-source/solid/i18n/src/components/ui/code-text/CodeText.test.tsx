@@ -13,7 +13,8 @@ describe('CodeText', () => {
         return code.textContent;
       });
 
-    expect(codes).toEqual(['pnpm check', 'lint']);
+    const expected = ['pnpm check', 'lint'];
+    expect(codes).toEqual(expected);
     expect(container.textContent).toBe('pnpm check runs lint first');
   });
 
@@ -22,7 +23,8 @@ describe('CodeText', () => {
       return <CodeText text="<b>bold</b>" />;
     });
 
-    expect(container.querySelector('b')).toBeNull();
+    const element = container.querySelector('b');
+    expect(element).toBeNull();
     expect(container.textContent).toBe('<b>bold</b>');
   });
 });

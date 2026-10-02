@@ -35,10 +35,12 @@ describe('StatusPage', () => {
     const alert = screen.getByRole('alert');
     const home = screen.getByText('Go home');
 
-    expect(screen.getByText('500')).toBeTruthy();
+    const element = screen.getByText('500');
+    expect(element).toBeTruthy();
     expect(alert.props.children).toBe(resources.en.common[message]);
     expect(home.props.href).toBe('/');
-    expect(screen.queryByRole('button')).toBeNull();
+    const buttonElement = screen.queryByRole('button');
+    expect(buttonElement).toBeNull();
   });
 
   it('offers a retry when it is given one', async () => {

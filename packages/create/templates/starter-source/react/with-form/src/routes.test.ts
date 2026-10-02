@@ -6,11 +6,12 @@ describe('routes', () => {
       return entry.file;
     });
 
-    expect(files).toEqual([
+    const expected = [
       'routes/home.tsx',
       'routes/contact.tsx',
       'routes/about.tsx',
       'routes/version.tsx',
-    ]);
+    ];
+    expect(files).toEqual(expected);
   });
 });

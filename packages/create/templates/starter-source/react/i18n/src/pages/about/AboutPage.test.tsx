@@ -26,7 +26,8 @@ describe('AboutPage', () => {
     render(<AboutPage />);
 
     for (const { command } of GATE) {
-      expect(screen.getByText(command)).toBeTruthy();
+      const element = screen.getByText(command);
+      expect(element).toBeTruthy();
     }
   });
 
@@ -34,7 +35,8 @@ describe('AboutPage', () => {
     render(<AboutPage />);
 
     for (const { path } of STANDARD_PATHS) {
-      expect(screen.getByText(path)).toBeTruthy();
+      const element = screen.getByText(path);
+      expect(element).toBeTruthy();
     }
   });
 
@@ -49,6 +51,7 @@ describe('AboutPage', () => {
     const title = screen.getByRole('heading', { level: 1 }).textContent;
 
     expect(title).toBe(common.about);
-    expect(screen.getByText(common.standardEslint)).toBeTruthy();
+    const element = screen.getByText(common.standardEslint);
+    expect(element).toBeTruthy();
   });
 });

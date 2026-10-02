@@ -42,7 +42,8 @@ describe('ErrorBoundary', () => {
   it('shows the 500 page in place of a child that throws', () => {
     renderFlaky();
 
-    expect(screen.getByRole('heading', { name: '500' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: '500' });
+    expect(element).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe('Something went wrong');
   });
 
@@ -50,8 +51,10 @@ describe('ErrorBoundary', () => {
     failure.error = new ForbiddenError();
     renderFlaky();
 
-    expect(screen.getByRole('heading', { name: '403' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    const element = screen.getByRole('heading', { name: '403' });
+    expect(element).toBeTruthy();
+    const buttonElement = screen.queryByRole('button', { name: 'Try again' });
+    expect(buttonElement).toBeNull();
   });
 
   it('renders the child again on retry', () => {
@@ -59,6 +62,7 @@ describe('ErrorBoundary', () => {
     failure.armed = false;
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(screen.getByText('Rendered')).toBeTruthy();
+    const element = screen.getByText('Rendered');
+    expect(element).toBeTruthy();
   });
 });

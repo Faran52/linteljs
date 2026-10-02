@@ -13,10 +13,13 @@ describe('handlers', () => {
     const response = await fetch('/api/version');
 
     expect(response.ok).toBe(true);
-    await expect(response.json() as Promise<VersionResponse>).resolves.toEqual({ status: 'ok' });
+    const actual = await response.json() as Promise<VersionResponse>;
+    const expected = { status: 'ok' };
+    expect(actual).toEqual(expected);
   });
 
   it('refuses a path no handler answers, rather than reaching the network', async () => {
-    await expect(fetch('/api/nothing-here')).rejects.toThrow();
+    const promise = fetch('/api/nothing-here');
+    await expect(promise).rejects.toThrow();
   });
 });

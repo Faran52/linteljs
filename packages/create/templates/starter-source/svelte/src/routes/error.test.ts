@@ -28,15 +28,18 @@ describe('the error page', () => {
   }) => {
     open(code);
 
-    expect(screen.getByRole('heading', { name: String(code) })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: String(code) });
+    expect(element).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe(message);
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    const buttonElement = screen.queryByRole('button', { name: 'Try again' });
+    expect(buttonElement).toBeNull();
   });
 
   it('shows the 500 page for a crash, and runs the failed load again on retry', async () => {
     open(500);
 
-    expect(screen.getByRole('heading', { name: '500' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: '500' });
+    expect(element).toBeTruthy();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 

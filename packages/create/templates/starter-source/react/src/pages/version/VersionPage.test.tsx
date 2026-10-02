@@ -9,8 +9,10 @@ describe('VersionPage', () => {
     render(<VersionPage />);
 
     for (const { name, version } of STACK) {
-      expect(screen.getAllByText(name)).not.toHaveLength(0);
-      expect(screen.getAllByText(version)).not.toHaveLength(0);
+      const elements = screen.getAllByText(name);
+      expect(elements).not.toHaveLength(0);
+      const versionElements = screen.getAllByText(version);
+      expect(versionElements).not.toHaveLength(0);
     }
   });
 
@@ -18,7 +20,8 @@ describe('VersionPage', () => {
     render(<VersionPage />);
 
     for (const { label } of ANSWERS) {
-      expect(screen.getByText(label)).toBeTruthy();
+      const element = screen.getByText(label);
+      expect(element).toBeTruthy();
     }
   });
 });

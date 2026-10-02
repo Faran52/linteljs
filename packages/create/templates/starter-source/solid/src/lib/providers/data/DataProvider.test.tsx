@@ -12,6 +12,7 @@ describe('DataProvider', () => {
       );
     });
 
-    expect(screen.getByText('under the data layer')).toBeTruthy();
+    const element = screen.getByText('under the data layer');
+    expect(element).toBeTruthy();
   });
 });

@@ -23,14 +23,19 @@ describe('StatusPage', () => {
   it('announces the status under its code, with a way home and nothing to retry', () => {
     render(StatusPage, STATUSES.notFound);
 
-    expect(screen.getByRole('heading', { name: '404' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: '404' });
+    expect(element).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe('Page not found');
     const home = screen.getByRole('link', { name: 'Go home' });
 
-    expect(home.getAttribute('href')).toBe('/');
-    expect(home.hasAttribute('data-sveltekit-reload')).toBe(true);
-    expect(home.classList.contains('status-action-outline')).toBe(false);
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    const attribute = home.getAttribute('href');
+    expect(attribute).toBe('/');
+    const dataSveltekitReloadHasAttribute = home.hasAttribute('data-sveltekit-reload');
+    expect(dataSveltekitReloadHasAttribute).toBe(true);
+    const statusActionOutlineContains = home.classList.contains('status-action-outline');
+    expect(statusActionOutlineContains).toBe(false);
+    const buttonElement = screen.queryByRole('button', { name: 'Try again' });
+    expect(buttonElement).toBeNull();
   });
 
   it('offers a retry when it is given one', async () => {
@@ -47,8 +52,10 @@ describe('StatusPage', () => {
 
     const home = screen.getByRole('link', { name: 'Go home' });
 
-    expect(retried).toEqual(['retry']);
-    expect(home.classList.contains('status-action-outline')).toBe(true);
+    const expected = ['retry'];
+    expect(retried).toEqual(expected);
+    const statusActionOutlineContains = home.classList.contains('status-action-outline');
+    expect(statusActionOutlineContains).toBe(true);
   });
 
   it('speaks the language chosen', async () => {

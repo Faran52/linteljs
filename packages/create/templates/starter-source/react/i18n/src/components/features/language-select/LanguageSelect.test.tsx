@@ -47,7 +47,8 @@ describe('LanguageSelect', () => {
 
     const select = screen.getByRole<HTMLSelectElement>('combobox');
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(i18n.language).toBe(last);
     expect(select.value).toBe(last);
     expect(select.className).toBe('tab');

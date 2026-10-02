@@ -8,7 +8,8 @@ describe('the not-found route', () => {
   it('shows the 404 page', () => {
     render(<NotFound />, { wrapper: I18nProvider });
 
-    expect(screen.getByRole('heading', { name: '404' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: '404' });
+    expect(element).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe('Page not found');
   });
 });

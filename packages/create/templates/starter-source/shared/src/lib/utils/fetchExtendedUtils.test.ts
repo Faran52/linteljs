@@ -45,7 +45,9 @@ describe('request', () => {
         return Promise.resolve(jsonResponse({ name: 'demo' }));
       });
 
-    await expect(request<Named>('/version')).resolves.toEqual({ name: 'demo' });
+    const actual = await request<Named>('/version');
+    const expected = { name: 'demo' };
+    expect(actual).toEqual(expected);
     expect(fetchMock).toHaveBeenCalledWith('/api/version', expect.objectContaining({ method: 'GET' }));
   });
 
@@ -94,14 +96,19 @@ describe('request', () => {
         return Promise.resolve(jsonResponse({ message: 'nope' }, 422));
       });
 
-    await expect(request('/contact', { method: 'POST' })).rejects.toThrow(ApiError);
-    await expect(request('/contact', { method: 'POST' })).rejects.toMatchObject({ status: 422 });
+    const promise = request('/contact', { method: 'POST' });
+    await expect(promise).rejects.toThrow(ApiError);
+    const contactPromise = request('/contact', { method: 'POST' });
+    const expected = { status: 422 };
+    await expect(contactPromise).rejects.toMatchObject(expected);
   });
 
   it('throws with status 0 when the request never reached a server', async () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
-    await expect(request('/version')).rejects.toMatchObject({ status: 0 });
+    const promise = request('/version');
+    const expected = { status: 0 };
+    await expect(promise).rejects.toMatchObject(expected);
   });
 
   it('roots a path given without a leading slash, and drops an empty query', async () => {
@@ -136,6 +143,7 @@ describe('request', () => {
         return Promise.resolve(new Response(null, { status: 204 }));
       });
 
-    await expect(request('/contact', { method: 'DELETE' })).resolves.toBeUndefined();
+    const actual = await request('/contact', { method: 'DELETE' });
+    expect(actual).toBeUndefined();
   });
 });

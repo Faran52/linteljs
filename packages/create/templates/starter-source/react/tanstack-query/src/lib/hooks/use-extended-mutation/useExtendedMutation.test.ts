@@ -65,7 +65,9 @@ describe('useExtendedMutation', () => {
       return useExtendedMutation<Accepted, Message>('/contact');
     }, { wrapper: wrapperFor(freshClient()) });
 
-    await expect(result.current.send({ message: 'hello there' })).resolves.toEqual({ status: 'accepted' });
+    const actual = await result.current.send({ message: 'hello there' });
+    const expected = { status: 'accepted' };
+    expect(actual).toEqual(expected);
 
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
@@ -80,7 +82,9 @@ describe('useExtendedMutation', () => {
       return useExtendedMutation<Accepted, Message>('/contact');
     }, { wrapper: wrapperFor(freshClient()) });
 
-    await expect(result.current.send({ message: 'no' })).rejects.toMatchObject({ status: 422 });
+    const promise = result.current.send({ message: 'no' });
+    const expected = { status: 422 };
+    await expect(promise).rejects.toMatchObject(expected);
 
     await waitFor(() => {
       expect(result.current.status).toBe('error');
@@ -99,6 +103,7 @@ describe('useExtendedMutation', () => {
 
     await result.current.send({ message: 'hello there' });
 
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['/version'] });
+    const expected = { queryKey: ['/version'] };
+    expect(invalidate).toHaveBeenCalledWith(expected);
   });
 });

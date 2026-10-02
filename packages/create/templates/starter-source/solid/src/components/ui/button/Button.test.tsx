@@ -23,7 +23,8 @@ describe('Button', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Add one' }));
 
-    expect(pressed).toEqual(['add']);
+    const expected = ['add'];
+    expect(pressed).toEqual(expected);
   });
 
   it('submits a form when it is asked to', () => {
@@ -35,7 +36,8 @@ describe('Button', () => {
 
     fireEvent.click(button);
 
-    expect(button.getAttribute('type')).toBe('submit');
+    const attribute = button.getAttribute('type');
+    expect(attribute).toBe('submit');
   });
 
   it('is inert while disabled', () => {
@@ -43,6 +45,7 @@ describe('Button', () => {
       return <Button disabled>Send</Button>;
     });
 
-    expect(screen.getByRole('button', { name: 'Send' }).hasAttribute('disabled')).toBe(true);
+    const disabledHasAttribute = screen.getByRole('button', { name: 'Send' }).hasAttribute('disabled');
+    expect(disabledHasAttribute).toBe(true);
   });
 });

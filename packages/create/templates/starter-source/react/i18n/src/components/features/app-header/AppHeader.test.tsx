@@ -48,25 +48,33 @@ describe('AppHeader', () => {
   it('names the project and every page', () => {
     renderHeader();
 
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
-    expect(screen.getByText('my-app')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Home' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'About' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Version' })).toBeTruthy();
+    const element = screen.getByText('LintelJS Starter');
+    expect(element).toBeTruthy();
+    const myAppElement = screen.getByText('my-app');
+    expect(myAppElement).toBeTruthy();
+    const buttonElement = screen.getByRole('button', { name: 'Home' });
+    expect(buttonElement).toBeTruthy();
+    const element2 = screen.getByRole('button', { name: 'About' });
+    expect(element2).toBeTruthy();
+    const element3 = screen.getByRole('button', { name: 'Version' });
+    expect(element3).toBeTruthy();
   });
 
   it('marks the current page for a screen reader', () => {
     renderHeader();
 
-    expect(screen.getByRole('button', { name: 'Home' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('button', { name: 'About' }).getAttribute('aria-current')).toBeNull();
+    const attribute = screen.getByRole('button', { name: 'Home' }).getAttribute('aria-current');
+    expect(attribute).toBe('page');
+    const ariaCurrentAttribute = screen.getByRole('button', { name: 'About' }).getAttribute('aria-current');
+    expect(ariaCurrentAttribute).toBeNull();
   });
 
   it('answers with the page that was chosen', () => {
     renderHeader();
     fireEvent.click(screen.getByRole('button', { name: 'Version' }));
 
-    expect(chosen).toEqual(['version']);
+    const expected = ['version'];
+    expect(chosen).toEqual(expected);
   });
 
   it('switches the language, and stores the choice', async () => {
@@ -79,7 +87,9 @@ describe('AppHeader', () => {
 
     const { home } = resources[last].common;
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
-    expect(screen.getByRole('button', { name: home })).toBeTruthy();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
+    const element = screen.getByRole('button', { name: home });
+    expect(element).toBeTruthy();
   });
 });

@@ -57,7 +57,8 @@ describe('AppHeader', () => {
 
     expect(label).toBe('LintelJS Starter');
     expect(name).toBe('my-app');
-    expect(header.findAll('nav a')).toHaveLength(PAGES.length);
+    const found = header.findAll('nav a');
+    expect(found).toHaveLength(PAGES.length);
   });
 
   it('marks the page it is on', async () => {
@@ -69,8 +70,10 @@ describe('AppHeader', () => {
       });
 
     expect(marked).toHaveLength(1);
-    expect(marked[0]?.text()).toBe('About');
-    expect(marked[0]?.attributes('class')).toBe(styles.tab(true).class);
+    const actual = marked[0]?.text();
+    expect(actual).toBe('About');
+    const actual2 = marked[0]?.attributes('class');
+    expect(actual2).toBe(styles.tab(true).class);
   });
 
   it('offers every language, and speaks the one chosen', async () => {

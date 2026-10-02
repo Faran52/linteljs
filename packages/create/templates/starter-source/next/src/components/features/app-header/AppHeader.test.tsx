@@ -10,11 +10,14 @@ describe('AppHeader', () => {
   it('names the project and links every page the route list names', () => {
     render(<AppHeader name="my-app" />);
 
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
-    expect(screen.getByText('my-app')).toBeTruthy();
+    const element = screen.getByText('LintelJS Starter');
+    expect(element).toBeTruthy();
+    const myAppElement = screen.getByText('my-app');
+    expect(myAppElement).toBeTruthy();
 
     for (const { label } of PAGES) {
-      expect(screen.getByRole('link', { name: label })).toBeTruthy();
+      const element = screen.getByRole('link', { name: label });
+      expect(element).toBeTruthy();
     }
   });
 
@@ -22,7 +25,9 @@ describe('AppHeader', () => {
     pathnameMock.mockReturnValue('/about');
     render(<AppHeader name="my-app" />);
 
-    expect(screen.getByRole('link', { name: 'About' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBeNull();
+    const attribute = screen.getByRole('link', { name: 'About' }).getAttribute('aria-current');
+    expect(attribute).toBe('page');
+    const ariaCurrentAttribute = screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current');
+    expect(ariaCurrentAttribute).toBeNull();
   });
 });

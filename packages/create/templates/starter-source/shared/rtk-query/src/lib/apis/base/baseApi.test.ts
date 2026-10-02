@@ -63,11 +63,14 @@ describe('baseApi', () => {
       .dispatch(probeApi.endpoints.probeVersion.initiate(undefined))
       .unwrap();
 
-    expect(requested).toEqual(['/api/version']);
+    const expected = ['/api/version'];
+    expect(requested).toEqual(expected);
   });
 
   it('keeps every injected endpoint under the one reducer path', () => {
     expect(baseApi.reducerPath).toBe('api');
-    expect(Object.keys(freshStore().getState())).toEqual(['api']);
+    const actual = Object.keys(freshStore().getState());
+    const expected = ['api'];
+    expect(actual).toEqual(expected);
   });
 });

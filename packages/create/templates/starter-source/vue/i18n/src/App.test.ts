@@ -68,13 +68,15 @@ describe('App', () => {
   });
 
   it('routes to the other pages', async () => {
-    expect((await open('/about'))
+    const actual = (await open('/about'))
       .find('.page-title')
-      .text()).toBe('About');
+      .text();
+    expect(actual).toBe('About');
 
-    expect((await open('/version'))
+    const actual2 = (await open('/version'))
       .find('.page-title')
-      .text()).toBe('Version');
+      .text();
+    expect(actual2).toBe('Version');
   });
 
   it('switches every page from the header, and stores the choice', async () => {
@@ -102,19 +104,22 @@ describe('App', () => {
       });
 
     expect(headings).toEqual(expected);
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(document.documentElement.dir).toBe(directionOf(last));
   });
 
   it('shows the 404 page, under the header, for a path no route matches', async () => {
     const app = await open('/missing');
 
-    expect(app
+    const actual = app
       .find('h1')
-      .text()).toBe('404');
+      .text();
+    expect(actual).toBe('404');
 
-    expect(app
+    const actual2 = app
       .find('header')
-      .exists()).toBe(true);
+      .exists();
+    expect(actual2).toBe(true);
   });
 });

@@ -61,16 +61,18 @@ const press = async (values: ContactValues): Promise<string> => {
 
 describe('useSubmitContact', () => {
   it('answers 200 for details the rules accept', async () => {
-    expect(await press({
+    const actual = await press({
       email: 'someone@example.com',
       message: 'Ten characters, at least.',
-    })).toBe('sent 200');
+    });
+    expect(actual).toBe('sent 200');
   });
 
   it('refuses details the rules refuse', async () => {
-    expect(await press({
+    const actual = await press({
       email: 'not-an-address',
       message: 'short',
-    })).toBe('refused');
+    });
+    expect(actual).toBe('refused');
   });
 });

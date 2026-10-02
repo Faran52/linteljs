@@ -27,12 +27,15 @@ describe('TextInput', () => {
 
     const input = screen.getByLabelText('Email');
 
-    expect(input.getAttribute('type')).toBe('email');
-    expect(input.getAttribute('aria-invalid')).toBe('false');
+    const attribute = input.getAttribute('type');
+    expect(attribute).toBe('email');
+    const ariaInvalidAttribute = input.getAttribute('aria-invalid');
+    expect(ariaInvalidAttribute).toBe('false');
 
     fireEvent.input(input, { target: { value: 'someone@example.com' } });
 
-    expect(typed).toEqual(['someone@example.com']);
+    const expected = ['someone@example.com'];
+    expect(typed).toEqual(expected);
   });
 
   it('defaults to a plain text field', () => {
@@ -54,11 +57,13 @@ describe('TextInput', () => {
 
     const input = screen.getByLabelText('Name');
 
-    expect(input.getAttribute('type')).toBe('text');
+    const attribute = input.getAttribute('type');
+    expect(attribute).toBe('text');
 
     fireEvent.input(input, { target: { value: 'Ada' } });
 
-    expect(typed).toEqual(['Ada']);
+    const expected = ['Ada'];
+    expect(typed).toEqual(expected);
   });
 
   it('describes a multiline field by its error', () => {
@@ -85,13 +90,17 @@ describe('TextInput', () => {
 
     const area = screen.getByLabelText('Message');
 
-    expect(area.getAttribute('aria-describedby')).toBe('message-error');
-    expect(screen.getByText('Write at least ten characters.')).toBeTruthy();
+    const attribute = area.getAttribute('aria-describedby');
+    expect(attribute).toBe('message-error');
+    const element = screen.getByText('Write at least ten characters.');
+    expect(element).toBeTruthy();
 
     fireEvent.input(area, { target: { value: 'long enough now' } });
     fireEvent.blur(area);
 
-    expect(typed).toEqual(['long enough now']);
-    expect(blurred).toEqual(['message']);
+    const expected = ['long enough now'];
+    expect(typed).toEqual(expected);
+    const expected2 = ['message'];
+    expect(blurred).toEqual(expected2);
   });
 });

@@ -14,11 +14,14 @@ describe('AppHeader', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
-    expect(screen.getByText('my-app')).toBeTruthy();
+    const element = screen.getByText('LintelJS Starter');
+    expect(element).toBeTruthy();
+    const myAppElement = screen.getByText('my-app');
+    expect(myAppElement).toBeTruthy();
 
     for (const { label, path } of ROUTES) {
-      expect(screen.getByRole('link', { name: label }).getAttribute('href')).toBe(path);
+      const attribute = screen.getByRole('link', { name: label }).getAttribute('href');
+      expect(attribute).toBe(path);
     }
   });
 
@@ -29,7 +32,9 @@ describe('AppHeader', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'About' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBeNull();
+    const attribute = screen.getByRole('link', { name: 'About' }).getAttribute('aria-current');
+    expect(attribute).toBe('page');
+    const ariaCurrentAttribute = screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current');
+    expect(ariaCurrentAttribute).toBeNull();
   });
 });

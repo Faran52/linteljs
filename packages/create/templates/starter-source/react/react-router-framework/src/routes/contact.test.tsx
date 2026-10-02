@@ -15,6 +15,7 @@ describe('Contact route', () => {
       </StoreProvider>,
     );
 
-    expect(screen.getByRole('heading', { name: 'Contact' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'Contact' });
+    expect(element).toBeTruthy();
   });
 });

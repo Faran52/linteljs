@@ -9,7 +9,8 @@ describe('About route', () => {
     render(<About />);
 
     for (const { command } of GATE) {
-      expect(screen.getByText(command)).toBeTruthy();
+      const element = screen.getByText(command);
+      expect(element).toBeTruthy();
     }
   });
 });

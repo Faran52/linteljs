@@ -15,7 +15,9 @@ describe('useCounter', () => {
 
     result.one.add();
 
-    expect(result.one.count()).toBe(1);
-    expect(result.two.count()).toBe(1);
+    const actual = result.one.count();
+    expect(actual).toBe(1);
+    const actual2 = result.two.count();
+    expect(actual2).toBe(1);
   });
 });

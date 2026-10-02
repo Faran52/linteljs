@@ -76,7 +76,9 @@ describe('useExtendedMutation', () => {
 
     const mutation = await runMutation('/contact');
 
-    await expect(mutation.send({ message: 'hello there' })).resolves.toEqual({ status: 'accepted' });
+    const actual = await mutation.send({ message: 'hello there' });
+    const expected = { status: 'accepted' };
+    expect(actual).toEqual(expected);
 
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
@@ -89,7 +91,9 @@ describe('useExtendedMutation', () => {
 
     const mutation = await runMutation('/contact');
 
-    await expect(mutation.send({ message: 'no' })).rejects.toMatchObject({ status: 422 });
+    const promise = mutation.send({ message: 'no' });
+    const expected = { status: 422 };
+    await expect(promise).rejects.toMatchObject(expected);
   });
 
   it('drops the caches it was told to once the write succeeds', async () => {
@@ -101,6 +105,7 @@ describe('useExtendedMutation', () => {
 
     await mutation.send({ message: 'hello there' });
 
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['/version'] });
+    const expected = { queryKey: ['/version'] };
+    expect(invalidate).toHaveBeenCalledWith(expected);
   });
 });

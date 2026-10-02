@@ -28,8 +28,10 @@ describe('App', () => {
       return <App />;
     });
 
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'linteljs' })).toBeTruthy();
+    const element = screen.getByText('LintelJS Starter');
+    expect(element).toBeTruthy();
+    const imgElement = screen.getByRole('img', { name: 'linteljs' });
+    expect(imgElement).toBeTruthy();
   });
 
   it('swaps to every page the header names, leaving the address bar alone', () => {
@@ -40,10 +42,12 @@ describe('App', () => {
     for (const route of ROUTES.slice(1)) {
       fireEvent.click(screen.getByRole('button', { name: route.label }));
 
-      expect(screen.getByRole('heading', { name: route.label })).toBeTruthy();
+      const element = screen.getByRole('heading', { name: route.label });
+      expect(element).toBeTruthy();
     }
 
-    expect(screen.queryByRole('img', { name: 'linteljs' })).toBeNull();
+    const element = screen.queryByRole('img', { name: 'linteljs' });
+    expect(element).toBeNull();
   });
 
   it('gives the about and version pages their copy, every value filled', () => {
@@ -63,7 +67,8 @@ describe('App', () => {
     expect(about).toContain(`${CHECK} runs them in order, and is what CI runs.`);
     expect(about).toContain('The layers, imported from @linteljs/eslint-config');
     expect(version).toContain('What this project is running, and the answers it was generated from.');
-    expect(screen.getByRole('heading', { name: 'Stack' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'Stack' });
+    expect(element).toBeTruthy();
   });
 
   it('opens on the page it was given', () => {
@@ -71,6 +76,7 @@ describe('App', () => {
       return <App initialPage="version" />;
     });
 
-    expect(screen.getByRole('heading', { name: 'Version' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'Version' });
+    expect(element).toBeTruthy();
   });
 });

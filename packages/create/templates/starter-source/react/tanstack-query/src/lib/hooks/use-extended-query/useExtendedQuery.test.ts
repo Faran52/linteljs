@@ -65,7 +65,8 @@ describe('useExtendedQuery', () => {
       expect(result.current.status).toBe('success');
     });
 
-    expect(result.current.response).toEqual({ status: 'ok' });
+    const expected = { status: 'ok' };
+    expect(result.current.response).toEqual(expected);
   });
 
   it('sends the query through to the adapter', async () => {
@@ -99,7 +100,8 @@ describe('useExtendedQuery', () => {
       expect(result.current.status).toBe('error');
     });
 
-    expect(result.current.error).toMatchObject({ status: 500 });
+    const expected = { status: 500 };
+    expect(result.current.error).toMatchObject(expected);
   });
 
   it('refetches without handing back a promise nobody awaits', async () => {

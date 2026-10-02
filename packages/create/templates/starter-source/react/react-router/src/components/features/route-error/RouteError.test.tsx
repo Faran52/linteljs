@@ -51,8 +51,10 @@ describe('RouteError', () => {
   it('shows the 404 page for a path no route matches', async () => {
     renderAt('/missing');
 
-    expect(await screen.findByRole('heading', { name: '404' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    const element = await screen.findByRole('heading', { name: '404' });
+    expect(element).toBeTruthy();
+    const buttonElement = screen.queryByRole('button', { name: 'Try again' });
+    expect(buttonElement).toBeNull();
   });
 
   it('shows the 403 page for a route that refuses', async () => {
@@ -64,21 +66,25 @@ describe('RouteError', () => {
       data: null,
     } } });
 
-    expect(await screen.findByRole('heading', { name: '403' })).toBeTruthy();
+    const element = await screen.findByRole('heading', { name: '403' });
+    expect(element).toBeTruthy();
   });
 
   it('shows the 403 page, with no retry, for a route that throws a ForbiddenError', async () => {
     crash.error = new ForbiddenError();
     renderAt('/');
 
-    expect(await screen.findByRole('heading', { name: '403' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    const element = await screen.findByRole('heading', { name: '403' });
+    expect(element).toBeTruthy();
+    const buttonElement = screen.queryByRole('button', { name: 'Try again' });
+    expect(buttonElement).toBeNull();
   });
 
   it('shows the 500 page for a route that throws, and retries by navigating to the same place', async () => {
     renderAt('/');
 
-    expect(await screen.findByRole('heading', { name: '500' })).toBeTruthy();
+    const element = await screen.findByRole('heading', { name: '500' });
+    expect(element).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
@@ -86,6 +92,7 @@ describe('RouteError', () => {
     const navigate = vi.mocked(useNavigate)
       .getMockImplementation()?.();
 
-    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/' }), { replace: true });
+    const expected = { replace: true };
+    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/' }), expected);
   });
 });

@@ -43,7 +43,8 @@ describe('AppHeader', () => {
         return tab.textContent;
       });
 
-    expect(screen.getByText(common.starterLabel)).toBeTruthy();
+    const element = screen.getByText(common.starterLabel);
+    expect(element).toBeTruthy();
 
     expect(labels).toEqual(expect.arrayContaining([
       common.home,
@@ -76,9 +77,12 @@ describe('AppHeader', () => {
     fireEvent.click(other);
 
     expect(current.textContent).toBe(common.about);
-    expect(current.getAttribute('class')).toBe(styles.tab(true).class);
-    expect(other.getAttribute('class')).toBe(styles.tab(false).class);
-    expect(visited).toEqual(['version']);
+    const attribute = current.getAttribute('class');
+    expect(attribute).toBe(styles.tab(true).class);
+    const classAttribute = other.getAttribute('class');
+    expect(classAttribute).toBe(styles.tab(false).class);
+    const expected = ['version'];
+    expect(visited).toEqual(expected);
   });
 
   it('holds the language select, styled as a tab', () => {
@@ -86,6 +90,7 @@ describe('AppHeader', () => {
 
     const select = screen.getByRole('combobox', { name: 'Language' });
 
-    expect(select.getAttribute('class')).toBe(styles.tab(false).class);
+    const attribute = select.getAttribute('class');
+    expect(attribute).toBe(styles.tab(false).class);
   });
 });

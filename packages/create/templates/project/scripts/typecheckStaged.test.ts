@@ -116,7 +116,8 @@ describe('files it does not check', () => {
     });
 
     expect(result.status).toBe(0);
-    expect(existsSync(sentinel)).toBe(false);
+    const exists = existsSync(sentinel);
+    expect(exists).toBe(false);
   });
 
   it('passes through a project error that belongs to an unstaged file', async () => {

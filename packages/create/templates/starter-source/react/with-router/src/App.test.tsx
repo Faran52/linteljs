@@ -22,14 +22,16 @@ describe('App', () => {
   it('opens on the home page', async () => {
     render(wrapped(<App />));
 
-    expect(await screen.findByRole('img', { name: 'linteljs' })).toBeTruthy();
+    const element = await screen.findByRole('img', { name: 'linteljs' });
+    expect(element).toBeTruthy();
   });
 
   it('routes from the header, and the address bar follows', async () => {
     render(wrapped(<App />));
     fireEvent.click(await screen.findByRole('link', { name: 'About' }));
 
-    expect(await screen.findByRole('heading', { name: 'About' })).toBeTruthy();
+    const element = await screen.findByRole('heading', { name: 'About' });
+    expect(element).toBeTruthy();
     expect(window.location.pathname).toBe('/about');
   });
 
@@ -38,7 +40,9 @@ describe('App', () => {
     window.history.pushState({}, '', '/missing');
     window.dispatchEvent(new PopStateEvent('popstate'));
 
-    expect(await screen.findByRole('heading', { name: '404' })).toBeTruthy();
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
+    const element = await screen.findByRole('heading', { name: '404' });
+    expect(element).toBeTruthy();
+    const lintelJsStarterElement = screen.getByText('LintelJS Starter');
+    expect(lintelJsStarterElement).toBeTruthy();
   });
 });

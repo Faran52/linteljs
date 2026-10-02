@@ -8,21 +8,25 @@ describe('StatusPage', () => {
   it('announces the status under its code, with a way home and nothing to retry', () => {
     const page = mount(StatusPage, { props: STATUSES.notFound });
 
-    expect(page
+    const actual = page
       .find('h1')
-      .text()).toBe('404');
+      .text();
+    expect(actual).toBe('404');
 
-    expect(page
+    const actual2 = page
       .find('[role="alert"]')
-      .text()).toBe('Page not found');
+      .text();
+    expect(actual2).toBe('Page not found');
 
-    expect(page
+    const actual3 = page
       .find('a')
-      .attributes('href')).toBe('/');
+      .attributes('href');
+    expect(actual3).toBe('/');
 
-    expect(page
+    const actual4 = page
       .find('button')
-      .exists()).toBe(false);
+      .exists();
+    expect(actual4).toBe(false);
   });
 
   it('offers a retry when it is given one', async () => {

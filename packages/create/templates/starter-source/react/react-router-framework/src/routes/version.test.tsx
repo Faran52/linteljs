@@ -6,9 +6,10 @@ describe('Version route', () => {
   it('renders the version page', () => {
     render(<Version />);
 
-    expect(screen.getByRole('heading', {
+    const element = screen.getByRole('heading', {
       level: 1,
       name: 'Version',
-    })).toBeTruthy();
+    });
+    expect(element).toBeTruthy();
   });
 });

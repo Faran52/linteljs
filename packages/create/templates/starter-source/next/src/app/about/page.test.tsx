@@ -8,10 +8,12 @@ describe('the about route', () => {
   it('lists every leg of the gate', () => {
     render(<AboutPage />);
 
-    expect(screen.getByRole('heading', { name: 'About' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'About' });
+    expect(element).toBeTruthy();
 
     for (const { command } of GATE) {
-      expect(screen.getAllByText(command)).not.toHaveLength(0);
+      const elements = screen.getAllByText(command);
+      expect(elements).not.toHaveLength(0);
     }
   });
 });

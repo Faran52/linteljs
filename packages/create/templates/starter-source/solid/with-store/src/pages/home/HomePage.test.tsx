@@ -22,13 +22,15 @@ describe('HomePage', () => {
   it('carries the project name as its heading', () => {
     open();
 
-    expect(screen.getByRole('heading', { name: 'my-app' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'my-app' });
+    expect(element).toBeTruthy();
   });
 
   it('counts up when the button it holds is pressed', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Add one' }));
 
-    expect(screen.getByText('1')).toBeTruthy();
+    const element = screen.getByText('1');
+    expect(element).toBeTruthy();
   });
 });

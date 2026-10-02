@@ -11,6 +11,7 @@ describe('AppMark', () => {
       .exists();
 
     expect(drawn).toBe(true);
-    expect(mark.findAll('path')).toHaveLength(4);
+    const found = mark.findAll('path');
+    expect(found).toHaveLength(4);
   });
 });

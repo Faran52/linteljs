@@ -19,7 +19,8 @@ describe('locales', () => {
   it.each(languages)('$id has every English key and no other', ({ id }) => {
     const bundle: Bundle = resources[id].common;
 
-    expect(keysOf(bundle)).toEqual(keysOf(english));
+    const keys = keysOf(bundle);
+    expect(keys).toEqual(keysOf(english));
   });
 
   it.each(languages)('$id leaves no translation empty', ({ id }) => {
@@ -35,11 +36,12 @@ describe('locales', () => {
   it('looks a tag up by itself, then each shorter prefix', () => {
     const tags = lookupTags('zh-TW-x-hk');
 
-    expect(tags).toEqual([
+    const expected = [
       'zh-TW-x-hk',
       'zh-TW-x',
       'zh-TW',
       'zh',
-    ]);
+    ];
+    expect(tags).toEqual(expected);
   });
 });

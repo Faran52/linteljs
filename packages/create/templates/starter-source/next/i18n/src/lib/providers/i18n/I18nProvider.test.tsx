@@ -35,14 +35,16 @@ describe('I18nProvider', () => {
     localStorage.setItem(languageStorageKey, last);
     render(<I18nProvider><Home /></I18nProvider>);
 
-    expect(screen.getByText(resources[last].common.home)).toBeTruthy();
+    const element = screen.getByText(resources[last].common.home);
+    expect(element).toBeTruthy();
     expect(document.documentElement.lang).toBe(last);
 
     act(() => {
       chooseLanguage('en');
     });
 
-    expect(screen.getByText(resources.en.common.home)).toBeTruthy();
+    const element2 = screen.getByText(resources.en.common.home);
+    expect(element2).toBeTruthy();
     expect(document.documentElement.lang).toBe('en');
   });
 

@@ -103,7 +103,8 @@ describe('parseCommand', () => {
       [],
     ],
   ])('reads %s', (_label, source, expected) => {
-    expect(tokensOf(source)).toEqual(expected);
+    const tokens = tokensOf(source);
+    expect(tokens).toEqual(expected);
   });
 
   it.each([
@@ -115,12 +116,16 @@ describe('parseCommand', () => {
     ['a shell with no command after -c', 'bash -c'],
     ['shells nested past the depth limit', shellWrapped('echo safe', 20)],
   ])('cannot read %s', (_label, source) => {
-    expect(parseCommand(source, 'bash')).toBeUndefined();
+    const actual = parseCommand(source, 'bash');
+    expect(actual).toBeUndefined();
   });
 
   it('reads eight nested shells and no more', () => {
-    expect(tokensOf(shellWrapped('git log', 8))).toEqual([['git', 'log']]);
-    expect(parseCommand(shellWrapped('git log', 9), 'bash')).toBeUndefined();
+    const tokens = tokensOf(shellWrapped('git log', 8));
+    const expected = [['git', 'log']];
+    expect(tokens).toEqual(expected);
+    const actual = parseCommand(shellWrapped('git log', 9), 'bash');
+    expect(actual).toBeUndefined();
   });
 
   it.each([
@@ -182,11 +187,13 @@ describe('parseCommand', () => {
       [],
     ],
   ])('reads PowerShell %s', (_label, source, expected) => {
-    expect(tokensOf(source, 'powershell')).toEqual(expected);
+    const tokens = tokensOf(source, 'powershell');
+    expect(tokens).toEqual(expected);
   });
 
   it('marks a command with a computed part as opaque, and leaves the rest readable', () => {
-    expect(parseCommand('git (Write-Output log); git status', 'powershell')).toEqual([
+    const actual = parseCommand('git (Write-Output log); git status', 'powershell');
+    const expected = [
       {
         tokens: ['Write-Output', 'log'],
         opaque: false,
@@ -199,16 +206,19 @@ describe('parseCommand', () => {
         tokens: ['git', 'status'],
         opaque: false,
       },
-    ]);
+    ];
+    expect(actual).toEqual(expected);
 
-    expect(parseCommand('Start-Process -FilePath git -ArgumentList log', 'powershell')).toEqual([{
+    const actual2 = parseCommand('Start-Process -FilePath git -ArgumentList log', 'powershell');
+    const expected2 = [{
       tokens: [
         'git',
         '-ArgumentList',
         'log',
       ],
       opaque: true,
-    }]);
+    }];
+    expect(actual2).toEqual(expected2);
   });
 
   it.each([
@@ -219,7 +229,8 @@ describe('parseCommand', () => {
     ['an unopened group', 'git log }'],
     ['an encoded command', 'powershell -ec ZwBpAHQA'],
   ])('cannot read PowerShell with %s', (_label, source) => {
-    expect(parseCommand(source, 'powershell')).toBeUndefined();
+    const actual = parseCommand(source, 'powershell');
+    expect(actual).toBeUndefined();
   });
 });
 
@@ -230,23 +241,27 @@ describe('commandName', () => {
     ['node_modules/.bin/eslint.cmd', 'eslint'],
     ['GIT', 'git'],
   ])('reads %s as %s', (token, name) => {
-    expect(commandName(token)).toBe(name);
+    const actual = commandName(token);
+    expect(actual).toBe(name);
   });
 });
 
 describe('skipOptions', () => {
   it('skips flags and valued options, and stops after --', () => {
-    expect(skipOptions([
+    const actual = skipOptions([
       '-C',
       'dir',
       '--bare',
       'log',
-    ], 0, new Set(['-C']))).toBe(3);
+    ], 0, new Set(['-C']));
+    expect(actual).toBe(3);
 
-    expect(skipOptions(['--', '-x'], 0, new Set())).toBe(1);
+    const actual2 = skipOptions(['--', '-x'], 0, new Set());
+    expect(actual2).toBe(1);
   });
 
   it('cannot skip a valued option with no value', () => {
-    expect(skipOptions(['-C'], 0, new Set(['-C']))).toBeUndefined();
+    const actual = skipOptions(['-C'], 0, new Set(['-C']));
+    expect(actual).toBeUndefined();
   });
 });

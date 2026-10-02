@@ -10,8 +10,10 @@ describe('the home screen', () => {
   it('carries the project name and the mark', async () => {
     await renderScreen(<HomeScreen />);
 
-    expect(screen.getByText(NAME)).toBeTruthy();
-    expect(screen.getByLabelText('linteljs')).toBeTruthy();
+    const element = screen.getByText(NAME);
+    expect(element).toBeTruthy();
+    const linteljsElement = screen.getByLabelText('linteljs');
+    expect(linteljsElement).toBeTruthy();
   });
 
   it('names the one command that runs the whole gate', async () => {
@@ -19,6 +21,7 @@ describe('the home screen', () => {
 
     const hint = `Run ${CHECK} for the full gate.`;
 
-    expect(screen.getByText(hint)).toBeTruthy();
+    const element = screen.getByText(hint);
+    expect(element).toBeTruthy();
   });
 });

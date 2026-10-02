@@ -22,20 +22,24 @@ describe('App', () => {
   it('opens on the home page', () => {
     render(wrapped(<App />));
 
-    expect(screen.getByRole('img', { name: 'linteljs' })).toBeTruthy();
+    const element = screen.getByRole('img', { name: 'linteljs' });
+    expect(element).toBeTruthy();
   });
 
   it('swaps the page from the header, leaving the address bar alone', () => {
     render(wrapped(<App />));
     fireEvent.click(screen.getByRole('button', { name: 'About' }));
 
-    expect(screen.getByRole('heading', { name: 'About' })).toBeTruthy();
-    expect(screen.queryByRole('img', { name: 'linteljs' })).toBeNull();
+    const element = screen.getByRole('heading', { name: 'About' });
+    expect(element).toBeTruthy();
+    const imgElement = screen.queryByRole('img', { name: 'linteljs' });
+    expect(imgElement).toBeNull();
   });
 
   it('opens on the page it was given', () => {
     render(wrapped(<App initialPage="version" />));
 
-    expect(screen.getByRole('heading', { name: 'Version' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'Version' });
+    expect(element).toBeTruthy();
   });
 });

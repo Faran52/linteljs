@@ -13,17 +13,21 @@ describe('CodeText', () => {
         return code.text();
       });
 
-    expect(codes).toEqual(['a.json', 'sync']);
-    expect(text.text()).toBe('Recorded in a.json, which sync reads.');
+    const expected = ['a.json', 'sync'];
+    expect(codes).toEqual(expected);
+    const actual = text.text();
+    expect(actual).toBe('Recorded in a.json, which sync reads.');
   });
 
   it('leaves a line with nothing marked as text alone', () => {
     const text = mount(CodeText, { props: { text: '<b>plain</b>' } });
 
-    expect(text
+    const actual = text
       .find('code')
-      .exists()).toBe(false);
+      .exists();
+    expect(actual).toBe(false);
 
-    expect(text.text()).toBe('<b>plain</b>');
+    const actual2 = text.text();
+    expect(actual2).toBe('<b>plain</b>');
   });
 });

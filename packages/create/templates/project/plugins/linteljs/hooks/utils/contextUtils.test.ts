@@ -88,9 +88,12 @@ describe('contextOf', () => {
   it('answers zero for a missing file or one with no assistant entry', () => {
     const empty = transcriptOf([JSON.stringify({ type: 'user' })]);
 
-    expect(contextOf(join(directory, 'missing.jsonl'))).toBe(0);
-    expect(contextOf(empty)).toBe(0);
-    expect(contextOf(directory)).toBe(0);
+    const context = contextOf(join(directory, 'missing.jsonl'));
+    expect(context).toBe(0);
+    const emptyContext = contextOf(empty);
+    expect(emptyContext).toBe(0);
+    const directoryContext = contextOf(directory);
+    expect(directoryContext).toBe(0);
   });
 
   it('reads only the tail, so an entry further back is not seen', () => {
@@ -173,9 +176,12 @@ describe('mainContextOf', () => {
   it('falls back to the transcript without one', () => {
     const path = transcriptOf([assistant(1, 2, 3)]);
 
-    expect(mainContextOf({ transcript_path: path, context_window: { total_input_tokens: null } })).toBe(6);
-    expect(mainContextOf({ transcript_path: path })).toBe(6);
-    expect(mainContextOf({})).toBe(0);
+    const mainContext = mainContextOf({ transcript_path: path, context_window: { total_input_tokens: null } });
+    expect(mainContext).toBe(6);
+    const mainContext2 = mainContextOf({ transcript_path: path });
+    expect(mainContext2).toBe(6);
+    const mainContext3 = mainContextOf({});
+    expect(mainContext3).toBe(0);
   });
 });
 
@@ -205,7 +211,8 @@ describe('subagentRowsOf', () => {
       ],
     });
 
-    expect(rows).toEqual([{ id: 'a1', content: `${badgeOf(136_000)} Review` }]);
+    const expected = [{ id: 'a1', content: `${badgeOf(136_000)} Review` }];
+    expect(rows).toEqual(expected);
   });
 
   it('falls back to the reported token count, and to the description or no label', () => {
@@ -222,14 +229,17 @@ describe('subagentRowsOf', () => {
       ],
     });
 
-    expect(rows).toEqual([
+    const expected = [
       { id: 'a1', content: `${badgeOf(151_000)} Explore` },
       { id: 'a2', content: badgeOf(0) },
-    ]);
+    ];
+    expect(rows).toEqual(expected);
   });
 
   it('answers no rows without tasks', () => {
-    expect(subagentRowsOf({})).toEqual([]);
-    expect(subagentRowsOf({ tasks: 'none' })).toEqual([]);
+    const subagentRows = subagentRowsOf({});
+    expect(subagentRows).toEqual([]);
+    const subagentRows2 = subagentRowsOf({ tasks: 'none' });
+    expect(subagentRows2).toEqual([]);
   });
 });

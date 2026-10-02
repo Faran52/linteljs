@@ -23,8 +23,10 @@ describe('the version route', () => {
     render(<VersionPage />, { wrapper: I18nProvider });
 
     for (const { name, version } of STACK) {
-      expect(screen.getAllByText(name)).not.toHaveLength(0);
-      expect(screen.getAllByText(version)).not.toHaveLength(0);
+      const elements = screen.getAllByText(name);
+      expect(elements).not.toHaveLength(0);
+      const versionElements = screen.getAllByText(version);
+      expect(versionElements).not.toHaveLength(0);
     }
   });
 
@@ -32,14 +34,16 @@ describe('the version route', () => {
     render(<VersionPage />, { wrapper: I18nProvider });
 
     for (const { label } of ANSWERS) {
-      expect(screen.getByText(label)).toBeTruthy();
+      const element = screen.getByText(label);
+      expect(element).toBeTruthy();
     }
   });
 
   it('fills the file it was recorded in into its sentence, as code', () => {
     render(<VersionPage />, { wrapper: I18nProvider });
 
-    expect(screen.getByText('linteljs.config.json', { selector: 'p > code' })).toBeTruthy();
+    const element = screen.getByText('linteljs.config.json', { selector: 'p > code' });
+    expect(element).toBeTruthy();
   });
 
   it('speaks the language chosen', () => {
@@ -53,6 +57,7 @@ describe('the version route', () => {
     const title = screen.getByRole('heading', { level: 1 }).textContent;
 
     expect(title).toBe(common.version);
-    expect(screen.getByText(common.versionLede)).toBeTruthy();
+    const element = screen.getByText(common.versionLede);
+    expect(element).toBeTruthy();
   });
 });

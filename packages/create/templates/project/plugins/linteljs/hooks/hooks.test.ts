@@ -58,7 +58,8 @@ it('registers the four hooks, each run by node from the plugin root', () => {
 });
 
 it.each(['.claude-plugin/plugin.json', '.codex-plugin/plugin.json'])('leaves %s to discover hooks.json', (manifest) => {
-  expect(readFileSync(join(import.meta.dirname, '..', manifest), 'utf8')).not.toContain('"hooks"');
+  const file = readFileSync(join(import.meta.dirname, '..', manifest), 'utf8');
+  expect(file).not.toContain('"hooks"');
 });
 
 const CASES: [HookScript, object | string][] = [

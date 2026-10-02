@@ -51,18 +51,22 @@ describe('RouteError', () => {
     failure.error = new ForbiddenError();
     renderFlaky();
 
-    expect(await screen.findByRole('heading', { name: '403' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    const element = await screen.findByRole('heading', { name: '403' });
+    expect(element).toBeTruthy();
+    const buttonElement = screen.queryByRole('button', { name: 'Try again' });
+    expect(buttonElement).toBeNull();
   });
 
   it('shows the 500 page for a route that throws, and renders it again on retry', async () => {
     renderFlaky();
 
-    expect(await screen.findByRole('heading', { name: '500' })).toBeTruthy();
+    const element = await screen.findByRole('heading', { name: '500' });
+    expect(element).toBeTruthy();
 
     failure.armed = false;
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
 
-    expect(await screen.findByText('Rendered')).toBeTruthy();
+    const renderedElement = await screen.findByText('Rendered');
+    expect(renderedElement).toBeTruthy();
   });
 });

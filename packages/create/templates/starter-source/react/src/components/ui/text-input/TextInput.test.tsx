@@ -25,12 +25,15 @@ describe('TextInput', () => {
 
     const input = screen.getByLabelText('Email');
 
-    expect(input.getAttribute('type')).toBe('email');
-    expect(input.getAttribute('aria-invalid')).toBe('false');
+    const attribute = input.getAttribute('type');
+    expect(attribute).toBe('email');
+    const ariaInvalidAttribute = input.getAttribute('aria-invalid');
+    expect(ariaInvalidAttribute).toBe('false');
 
     fireEvent.change(input, { target: { value: 'someone@example.com' } });
 
-    expect(typed).toEqual(['someone@example.com']);
+    const expected = ['someone@example.com'];
+    expect(typed).toEqual(expected);
   });
 
   it('describes a multiline field by its error', () => {
@@ -51,11 +54,14 @@ describe('TextInput', () => {
 
     const area = screen.getByLabelText('Message');
 
-    expect(area.getAttribute('aria-describedby')).toBe('message-error');
-    expect(screen.getByText('Write at least ten characters.')).toBeTruthy();
+    const attribute = area.getAttribute('aria-describedby');
+    expect(attribute).toBe('message-error');
+    const element = screen.getByText('Write at least ten characters.');
+    expect(element).toBeTruthy();
 
     fireEvent.change(area, { target: { value: 'long enough now' } });
 
-    expect(typed).toEqual(['long enough now']);
+    const expected = ['long enough now'];
+    expect(typed).toEqual(expected);
   });
 });

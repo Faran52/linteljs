@@ -8,7 +8,8 @@ describe('version page', () => {
   it('renders every row it was born with', () => {
     render(Page);
 
-    expect(screen.getByRole('heading', { name: 'Version' })).toBeTruthy();
+    const element = screen.getByRole('heading', { name: 'Version' });
+    expect(element).toBeTruthy();
     expect(screen.getAllByRole('term').length).toBeGreaterThanOrEqual(STACK.length);
   });
 });

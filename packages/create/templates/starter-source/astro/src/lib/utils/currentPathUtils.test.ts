@@ -2,15 +2,19 @@ import { isCurrentPath } from './currentPathUtils';
 
 describe('isCurrentPath', () => {
   it('marks the page being looked at', () => {
-    expect(isCurrentPath('/about', '/about')).toBe(true);
-    expect(isCurrentPath('/about', '/version')).toBe(false);
+    const aboutIsCurrentPath = isCurrentPath('/about', '/about');
+    expect(aboutIsCurrentPath).toBe(true);
+    const aboutIsCurrentPath2 = isCurrentPath('/about', '/version');
+    expect(aboutIsCurrentPath2).toBe(false);
   });
 
   it('reads a trailing slash as the same page', () => {
-    expect(isCurrentPath('/about/', '/about')).toBe(true);
+    const aboutIsCurrentPath = isCurrentPath('/about/', '/about');
+    expect(aboutIsCurrentPath).toBe(true);
   });
 
   it('leaves the root alone', () => {
-    expect(isCurrentPath('/', '/')).toBe(true);
+    const actual = isCurrentPath('/', '/');
+    expect(actual).toBe(true);
   });
 });

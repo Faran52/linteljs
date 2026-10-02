@@ -78,10 +78,14 @@ describe('createExtendedMutation', () => {
 
     const mutation = runMutation('/contact');
 
-    expect(mutation.status()).toBe('idle');
-    expect(mutation.isPending()).toBe(false);
+    const actual = mutation.status();
+    expect(actual).toBe('idle');
+    const actual2 = mutation.isPending();
+    expect(actual2).toBe(false);
 
-    await expect(mutation.send({ message: 'hello there' })).resolves.toEqual({ status: 'accepted' });
+    const actual3 = await mutation.send({ message: 'hello there' });
+    const expected = { status: 'accepted' };
+    expect(actual3).toEqual(expected);
 
     expect(fetchMock).toHaveBeenCalledWith('/api/contact', expect.objectContaining({
       method: 'POST',
@@ -89,7 +93,8 @@ describe('createExtendedMutation', () => {
     }));
 
     await waitFor(() => {
-      expect(mutation.status()).toBe('success');
+      const actual = mutation.status();
+      expect(actual).toBe('success');
     });
   });
 
@@ -98,10 +103,14 @@ describe('createExtendedMutation', () => {
 
     const mutation = runMutation('/contact');
 
-    await expect(mutation.send({ message: 'no' })).rejects.toMatchObject({ status: 422 });
+    const promise = mutation.send({ message: 'no' });
+    const expected = { status: 422 };
+    await expect(promise).rejects.toMatchObject(expected);
 
     await waitFor(() => {
-      expect(mutation.error()).toMatchObject({ status: 422 });
+      const actual = mutation.error();
+      const expected = { status: 422 };
+      expect(actual).toMatchObject(expected);
     });
   });
 
@@ -115,7 +124,8 @@ describe('createExtendedMutation', () => {
     await mutation.send({ message: 'hello there' });
 
     await waitFor(() => {
-      expect(invalidate).toHaveBeenCalledWith({ queryKey: ['/version'] });
+      const expected = { queryKey: ['/version'] };
+      expect(invalidate).toHaveBeenCalledWith(expected);
     });
   });
 });

@@ -13,6 +13,7 @@ describe('dataProvider', () => {
   it('installs on the app, leaving what it renders alone', () => {
     const app = mount(Probe, { global: { plugins: [dataProvider] } });
 
-    expect(app.text()).toBe('under the data layer');
+    const actual = app.text();
+    expect(actual).toBe('under the data layer');
   });
 });

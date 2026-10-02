@@ -43,13 +43,15 @@ describe('ErrorBoundary', () => {
 
     await nextTick();
 
-    expect(boundary
+    const actual = boundary
       .find('h1')
-      .text()).toBe('500');
+      .text();
+    expect(actual).toBe('500');
 
-    expect(boundary
+    const actual2 = boundary
       .find('[role="alert"]')
-      .text()).toBe('Something went wrong');
+      .text();
+    expect(actual2).toBe('Something went wrong');
   });
 
   it('shows the 403 page, with no retry, for a child that throws a ForbiddenError', async () => {
@@ -58,13 +60,15 @@ describe('ErrorBoundary', () => {
 
     await nextTick();
 
-    expect(boundary
+    const actual = boundary
       .find('h1')
-      .text()).toBe('403');
+      .text();
+    expect(actual).toBe('403');
 
-    expect(boundary
+    const actual2 = boundary
       .find('button')
-      .exists()).toBe(false);
+      .exists();
+    expect(actual2).toBe(false);
   });
 
   it('renders the child again on retry', async () => {
@@ -77,6 +81,7 @@ describe('ErrorBoundary', () => {
       .find('button')
       .trigger('click');
 
-    expect(boundary.text()).toContain('Rendered');
+    const actual = boundary.text();
+    expect(actual).toContain('Rendered');
   });
 });

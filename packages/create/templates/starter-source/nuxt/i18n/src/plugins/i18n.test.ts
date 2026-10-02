@@ -80,7 +80,8 @@ describe('the i18n plugin', () => {
     ready();
 
     expect(i18n.global.locale.value).toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 
   it.each(languages)('keeps the head lang and dir on $id', ({ id, dir }) => {

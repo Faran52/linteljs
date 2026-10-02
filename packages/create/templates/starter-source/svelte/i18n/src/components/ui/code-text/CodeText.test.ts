@@ -11,14 +11,16 @@ describe('CodeText', () => {
         return code.textContent;
       });
 
-    expect(codes).toEqual(['a.json', 'sync']);
+    const expected = ['a.json', 'sync'];
+    expect(codes).toEqual(expected);
     expect(container.textContent).toBe('Recorded in a.json, which sync reads.');
   });
 
   it('leaves a line with nothing marked as text alone', () => {
     const { container } = render(CodeText, { text: '<b>plain</b>' });
 
-    expect(container.querySelector('code')).toBeNull();
+    const element = container.querySelector('code');
+    expect(element).toBeNull();
     expect(container.textContent).toBe('<b>plain</b>');
   });
 });

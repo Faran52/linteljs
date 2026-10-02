@@ -25,7 +25,8 @@ describe('contact page', () => {
     renderPage();
     await fill('Email', 'not-an-address');
 
-    expect(await screen.findByText('Enter a valid email address.')).toBeTruthy();
+    const element = await screen.findByText('Enter a valid email address.');
+    expect(element).toBeTruthy();
   });
 
   it('flags only the field that was left', async () => {
@@ -56,7 +57,8 @@ describe('contact page', () => {
     await fill('Email', 'someone@example.com');
     await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(await screen.findByText('Write at least ten characters.')).toBeTruthy();
+    const element = await screen.findByText('Write at least ten characters.');
+    expect(element).toBeTruthy();
   });
 
   it('sends once both fields are valid', async () => {
@@ -65,6 +67,7 @@ describe('contact page', () => {
     await fill('Message', 'Ten characters, at least.');
     await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-    expect(await screen.findByRole('status')).toBeTruthy();
+    const element = await screen.findByRole('status');
+    expect(element).toBeTruthy();
   });
 });

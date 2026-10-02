@@ -6,7 +6,8 @@ describe('Mark', () => {
   it('is an image with a name, since it carries meaning rather than decoration', () => {
     render(<Mark />);
 
-    expect(screen.getByRole('img', { name: 'linteljs' })).toBeTruthy();
+    const element = screen.getByRole('img', { name: 'linteljs' });
+    expect(element).toBeTruthy();
   });
 
   it('styles the lines and never the beam', () => {

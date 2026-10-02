@@ -38,7 +38,8 @@ describe('renderPopup', () => {
     const root = open();
 
     expect(root.querySelector('h1')?.textContent).toBe(NAME);
-    expect(root.querySelector('svg[role="img"]')).not.toBeNull();
+    const element = root.querySelector('svg[role="img"]');
+    expect(element).not.toBeNull();
     expect(root.className).toBe('hero');
   });
 
@@ -52,7 +53,8 @@ describe('renderPopup', () => {
 
     expect(hint).toBe(expected);
     expect(command).toBe(CHECK);
-    expect(root.querySelector('button')).toBeNull();
+    const element = root.querySelector('button');
+    expect(element).toBeNull();
   });
 
   it('offers every language, each named in itself', () => {
@@ -85,7 +87,8 @@ describe('renderPopup', () => {
     expect(picker.value).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(document.documentElement.dir).toBe(languages.at(-1)?.dir);
-    expect(picker.getAttribute('aria-label')).toBe(resources[last].common.language);
+    const attribute = picker.getAttribute('aria-label');
+    expect(attribute).toBe(resources[last].common.language);
   });
 
   it('stores a choice and renders the popup in it', () => {
@@ -100,7 +103,8 @@ describe('renderPopup', () => {
     const lede = root.querySelector('.lede')?.textContent;
     const hint = root.querySelector('.hint')?.textContent;
 
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
     expect(document.documentElement.lang).toBe(last);
     expect(root.querySelector('.hint code')?.textContent).toBe(CHECK);
     expect(lede === english).toBe(last === 'en');

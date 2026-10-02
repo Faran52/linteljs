@@ -36,17 +36,23 @@ describe('layout', () => {
     const { title } = document;
 
     expect(title).toBe(NAME);
-    expect(screen.getByText('LintelJS Starter')).toBeTruthy();
-    expect(screen.getByText(NAME)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'About' })).toBeTruthy();
-    expect(screen.getByText('routed')).toBeTruthy();
+    const element = screen.getByText('LintelJS Starter');
+    expect(element).toBeTruthy();
+    const nameElement = screen.getByText(NAME);
+    expect(nameElement).toBeTruthy();
+    const linkElement = screen.getByRole('link', { name: 'About' });
+    expect(linkElement).toBeTruthy();
+    const routedElement = screen.getByText('routed');
+    expect(routedElement).toBeTruthy();
   });
 
   it('marks the page it is on for a screen reader', () => {
     render(Layout, { children: routed });
 
-    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: 'About' }).getAttribute('aria-current')).toBeNull();
+    const attribute = screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current');
+    expect(attribute).toBe('page');
+    const ariaCurrentAttribute = screen.getByRole('link', { name: 'About' }).getAttribute('aria-current');
+    expect(ariaCurrentAttribute).toBeNull();
   });
 
   it('switches to a stored choice once mounted', async () => {
@@ -66,6 +72,7 @@ describe('layout', () => {
     const label = await screen.findByText(resources[last].common.starterLabel);
 
     expect(label).toBeTruthy();
-    expect(localStorage.getItem(languageStorageKey)).toBeNull();
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBeNull();
   });
 });

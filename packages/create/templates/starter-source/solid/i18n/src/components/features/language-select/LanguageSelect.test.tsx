@@ -61,7 +61,8 @@ describe('LanguageSelect', () => {
     fireEvent.change(select, { target: { value: last } });
 
     expect(select.value).toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const item = localStorage.getItem(languageStorageKey);
+    expect(item).toBe(last);
   });
 
   it('shows a language applied before it renders', () => {
@@ -83,7 +84,8 @@ describe('LanguageSelect', () => {
 
     const select = screen.getByRole('combobox');
 
-    expect(select.getAttribute('class')).toBe('tab');
+    const attribute = select.getAttribute('class');
+    expect(attribute).toBe('tab');
     expect(select.style.color).toBe('red');
   });
 });
