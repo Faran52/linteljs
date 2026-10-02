@@ -1,7 +1,7 @@
 import type { spawnSync } from 'node:child_process';
 
 export const spawnExit = (status: number, stdout = ''): ReturnType<typeof spawnSync> => {
-  return {
+  const result = {
     status,
     stdout,
     stderr: '',
@@ -9,4 +9,6 @@ export const spawnExit = (status: number, stdout = ''): ReturnType<typeof spawnS
     output: [],
     signal: null,
   };
+
+  return result;
 };

@@ -13,10 +13,12 @@ export const RULE
 export const UNSCOPED = 'No frontmatter here.\n';
 
 export const answersFor = (agents: Agent[]): Answers => {
-  return {
+  const answers = {
     ...DEFAULT_ANSWERS,
     agents,
   };
+
+  return answers;
 };
 
 export const targets = (artifacts: Artifact[]): string[] => {

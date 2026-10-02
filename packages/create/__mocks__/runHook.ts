@@ -49,40 +49,48 @@ export type ContextScript = 'contextWarningHook.ts' | 'mainStatusLine.ts' | 'sub
 const HOOKS_ROOT = join(TEMPLATES_ROOT, 'project/plugins/linteljs/hooks');
 
 export const commandPayload = (command: string, tool: 'Bash' | 'PowerShell' = 'Bash'): CommandHookPayload => {
-  return {
+  const payload: CommandHookPayload = {
     cwd: tmpdir(),
     hook_event_name: 'PreToolUse',
     tool_name: tool,
     tool_input: { command },
   };
+
+  return payload;
 };
 
 export const copilotPayload = (toolName: string, toolArgs: object, cwd = tmpdir()): CopilotPayload => {
-  return {
+  const payload: CopilotPayload = {
     cwd,
     timestamp: 1_704_614_400_000,
     toolName,
     toolArgs: JSON.stringify(toolArgs),
   };
+
+  return payload;
 };
 
 export const cursorShellPayload = (command: string): CursorShellPayload => {
-  return {
+  const payload: CursorShellPayload = {
     command,
     cursor_version: '2.4.0',
     cwd: tmpdir(),
     hook_event_name: 'beforeShellExecution',
   };
+
+  return payload;
 };
 
 export const cursorToolPayload = (command: string, event: 'postToolUse' | 'preToolUse'): CursorToolPayload => {
-  return {
+  const payload: CursorToolPayload = {
     cursor_version: '2.4.0',
     cwd: tmpdir(),
     hook_event_name: event,
     tool_name: 'Shell',
     tool_input: { command },
   };
+
+  return payload;
 };
 
 // Restated rather than imported, so a hook that detects its host wrongly fails here.
@@ -102,32 +110,38 @@ const CURSOR_ALLOW = '{"permission":"allow"}\n';
 
 const decisionOf = (name: HookScript, host: Host, text: string): object => {
   if (host === 'cursor') {
-    return name === 'gitSafetyGuardHook.ts'
+    const decision = name === 'gitSafetyGuardHook.ts'
       ? {
           permission: 'deny',
           user_message: text,
           agent_message: text,
         }
       : { additional_context: text };
+
+    return decision;
   }
 
   if (host === 'copilot') {
-    return name === 'gitSafetyGuardHook.ts'
+    const decision = name === 'gitSafetyGuardHook.ts'
       ? {
           permissionDecision: 'deny',
           permissionDecisionReason: text,
         }
       : { additionalContext: text };
+
+    return decision;
   }
 
   if (name === 'bannedPatternGuardHook.ts') {
-    return {
+    const block = {
       decision: 'block',
       reason: text,
     };
+
+    return block;
   }
 
-  return {
+  const decision = {
     hookSpecificOutput: name === 'gitSafetyGuardHook.ts'
       ? {
           hookEventName: 'PreToolUse',
@@ -139,6 +153,8 @@ const decisionOf = (name: HookScript, host: Host, text: string): object => {
           additionalContext: text,
         },
   };
+
+  return decision;
 };
 
 const textOf = (stdout: string): string => {
@@ -162,7 +178,9 @@ export const expectDecisionOutput = (name: HookScript, stdout: string, host: Hos
 
   const text = textOf(stdout);
 
-  expect(stdout).toBe(`${JSON.stringify(decisionOf(name, host, text))}\n`);
+  const decision = decisionOf(name, host, text);
+
+  expect(stdout).toBe(`${JSON.stringify(decision)}\n`);
 
   return text;
 };
@@ -204,5 +222,8 @@ export const spawnHook = (
 };
 
 export const runHook = (name: HookScript, input: object | string, projectDir?: string): string | undefined => {
-  return expectDecisionOutput(name, spawnHook(name, input, projectDir), hostOf(input));
+  const stdout = spawnHook(name, input, projectDir);
+  const host = hostOf(input);
+
+  return expectDecisionOutput(name, stdout, host);
 };

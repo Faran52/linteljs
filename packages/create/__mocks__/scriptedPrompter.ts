@@ -41,7 +41,7 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
     return answer;
   };
 
-  return {
+  const recorded: Recorded = {
     calls,
     labels,
     prompter: {
@@ -96,4 +96,6 @@ export const scripted = (answers: readonly (ScriptedAnswer | typeof CANCEL | und
       },
     },
   };
+
+  return recorded;
 };

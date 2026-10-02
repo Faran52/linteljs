@@ -70,7 +70,7 @@ export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
     form: ANSWERED,
   }];
 
-  return [
+  const gates: GateRow[] = [
     ...servesAWorker ? [['__mocks__/msw/browser.ts', msw] as const] : [],
     ['__mocks__/msw/node.ts', msw],
     ...contact
@@ -85,6 +85,8 @@ export const mswGates = (contact: boolean, servesAWorker = true): GateRow[] => {
           ['__mocks__/msw/handlers.test.ts', msw],
         ] as const,
   ];
+
+  return gates;
 };
 
 // RTK Query splits the module into endpoints and hooks, with its own barrel.
@@ -101,14 +103,16 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
         'contactHooks',
       ]
         .map((stem): GateRow => {
-          return [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
+          const row: GateRow = [`src/lib/apis/contact/${stem}.ts@rtk-query`, [{
             form: ANSWERED,
             data: ['rtk-query'],
           }]];
+
+          return row;
         })
     : [];
 
-  return [
+  const gates: GateRow[] = [
     ['src/lib/apis/contact/index.ts', hasRtkQuery
       ? [{
           form: ANSWERED,
@@ -122,10 +126,12 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
     }]],
     ...wrapped
       .map((data): GateRow => {
-        return [`src/lib/apis/contact/contactApi.ts@${data}`, [{
+        const row: GateRow = [`src/lib/apis/contact/contactApi.ts@${data}`, [{
           form: ANSWERED,
           data: [data],
         }]];
+
+        return row;
       }),
     ['src/lib/apis/contact/schemas.ts', [{
       form: ANSWERED,
@@ -136,6 +142,8 @@ export const contactGates = (dataLayers: readonly NonNullable<Answers['data']>[]
       libraries: [['zod']],
     }]],
   ];
+
+  return gates;
 };
 
 export const componentStyleGates = (mark: string, button: string, modules: boolean): GateRow[] => {
@@ -149,43 +157,55 @@ export const componentStyleGates = (mark: string, button: string, modules: boole
   const under = (ships: readonly Condition[], styling: NonNullable<Condition['styling']>): Condition[] => {
     return ships
       .map((condition) => {
-        return {
+        const styled = {
           ...condition,
           styling,
         };
+
+        return styled;
       });
   };
 
-  return [
+  const gates: GateRow[] = [
     ...components
       .map(([path, ships]): GateRow => {
-        return [`${path}.css`, under(ships, [undefined, 'tailwind'])];
+        const row: GateRow = [`${path}.css`, under(ships, [undefined, 'tailwind'])];
+
+        return row;
       }),
     ...modules
       ? [
           ...components
             .flatMap(([path, ships]): GateRow[] => {
-              const styles = `${path.slice(0, path.lastIndexOf('/'))}/styles.ts`;
-
-              return [
+              const directory = path.slice(0, path.lastIndexOf('/'));
+              const styles = `${directory}/styles.ts`;
+              const rows: GateRow[] = [
                 [styles, under(ships, [undefined, 'tailwind'])],
                 [`${styles}@stylex`, under(ships, ['stylex'])],
               ];
+
+              return rows;
             }),
           ['src/styles/tokens.stylex.ts@stylex', STYLEX] as const,
         ]
       : [],
   ];
+
+  return gates;
 };
 
 const answered = <K extends keyof Answers>(key: K, values: Answers[K][], unanswered = true): Partial<Answers>[] => {
-  return [
+  const sets: Partial<Answers>[] = [
     ...unanswered ? [{}] : [],
     ...values
       .map((value): Partial<Answers> => {
-        return { [key]: value };
+        const answer: Partial<Answers> = { [key]: value };
+
+        return answer;
       }),
   ];
+
+  return sets;
 };
 
 const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
@@ -200,24 +220,34 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
     routers = [],
     stores = [],
   } = builder(base);
+  const forms = valuesOf(ANSWERS.form.values);
+  const dataLayers = valuesOf(ANSWERS.data.values);
+  const stylings = valuesOf(ANSWERS.styling.values);
+  const mockings = valuesOf(ANSWERS.mocking.values);
+  const testings = valuesOf(ANSWERS.testing.values);
+  const hostedFrameworks = valuesOf(ANSWERS.hostedFramework.values);
+  const browsers = valuesOf(ANSWERS.browser.values);
+  const surfaceAnswers = valuesOf(ANSWERS.surfaces.values)
+    .map((surface) => {
+      const answer = [surface];
+
+      return answer;
+    });
   const axes: Partial<Answers>[][] = [
     answered('store', [...stores]),
-    answered('form', valuesOf(ANSWERS.form.values)),
-    answered('data', valuesOf(ANSWERS.data.values)),
+    answered('form', forms),
+    answered('data', dataLayers),
     answered('router', [...routers]),
-    answered('styling', valuesOf(ANSWERS.styling.values)),
-    answered('mocking', valuesOf(ANSWERS.mocking.values)),
+    answered('styling', stylings),
+    answered('mocking', mockings),
     answered('libraries', [[], ['zod']], false),
-    answered('testing', valuesOf(ANSWERS.testing.values), false),
+    answered('testing', testings, false),
     ...i18n === undefined ? [] : [answered('languages', [[...LANGUAGES]])],
-    ...hostsFramework === true ? [answered('hostedFramework', valuesOf(ANSWERS.hostedFramework.values))] : [],
+    ...hostsFramework === true ? [answered('hostedFramework', hostedFrameworks)] : [],
     ...hostsBrowser === true
       ? [
-          answered('browser', valuesOf(ANSWERS.browser.values), false),
-          answered('surfaces', [[], ...valuesOf(ANSWERS.surfaces.values)
-            .map((surface) => {
-              return [surface];
-            })]),
+          answered('browser', browsers, false),
+          answered('surfaces', [[], ...surfaceAnswers]),
         ]
       : [],
   ];
@@ -228,10 +258,12 @@ const answerSets = (builder: TargetBuilder, target: TargetId): Answers[] => {
         .flatMap((answers) => {
           return overrides
             .map((override): Answers => {
-              return {
+              const combined: Answers = {
                 ...answers,
                 ...override,
               };
+
+              return combined;
             });
         });
     }, [base]);
@@ -243,18 +275,26 @@ const keyOf = (path: string, variant: string | undefined): string => {
 
 const gatesOf = (record: TargetRecord): Map<string, Gate> => {
   const gates = new Map<string, Gate>();
+  const starterEntries = [...record.starterFiles, ...record.starterTests];
   const entries: [string, Gate | undefined][] = [
-    ...[...record.starterFiles, ...record.starterTests]
+    ...starterEntries
       .map(({
         target,
         variant,
         when,
       }): [string, Gate | undefined] => {
-        return [keyOf(target, variant), when];
+        const key = keyOf(target, variant);
+        const entry: [string, Gate | undefined] = [key, when];
+
+        return entry;
       }),
     ...(record.starterStyles ?? [])
       .map((style): [string, Gate | undefined] => {
-        return typeof style === 'string' ? [style, undefined] : [style.path, style.when];
+        const entry: [string, Gate | undefined] = typeof style === 'string'
+          ? [style, undefined]
+          : [style.path, style.when];
+
+        return entry;
       }),
   ];
 
@@ -274,10 +314,12 @@ const gatesOf = (record: TargetRecord): Map<string, Gate> => {
 };
 
 const writtenBy = (record: TargetRecord, answers: Answers): string[] => {
-  return [
+  const candidates = [
     ...record.starterFiles,
     ...answers.testing === 'none' ? [] : record.starterTests,
-  ]
+  ];
+
+  return candidates
     .filter((file) => {
       return file.when === undefined || file.when(answers);
     })
@@ -311,7 +353,9 @@ const describeAnswers = (answers: Answers): string => {
       return AXES.has(key) && value !== undefined;
     });
 
-  return JSON.stringify(Object.fromEntries(onAxes));
+  const axisAnswers = Object.fromEntries(onAxes);
+
+  return JSON.stringify(axisAnswers);
 };
 
 export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk => {
@@ -319,11 +363,13 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
     .map((answers) => {
       const record = builder(answers);
 
-      return {
+      const visited = {
         answers,
         record,
         gates: gatesOf(record),
       };
+
+      return visited;
     });
   const twice = new Set<string>();
 
@@ -339,14 +385,17 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
 
   const gatedPaths = walked
     .flatMap(({ gates }) => {
-      return [...gates.keys()];
+      const keys = [...gates.keys()];
+
+      return keys;
     });
 
-  return {
-    gated: [...new Set(gatedPaths)]
-      .toSorted((left, right) => {
-        return left.localeCompare(right);
-      }),
+  const gated = [...new Set(gatedPaths)]
+    .toSorted((left, right) => {
+      return left.localeCompare(right);
+    });
+  const walk: GateWalk = {
+    gated,
     twice: [...twice],
     mismatchOf: (key, conditions) => {
       for (const { answers, gates } of walked) {
@@ -360,6 +409,8 @@ export const walkGates = (builder: TargetBuilder, target: TargetId): GateWalk =>
       return undefined;
     },
   };
+
+  return walk;
 };
 
 export const pickedBy = (entries: (StarterFile | StarterTest)[], overrides: Partial<Answers> = {}): string[] => {

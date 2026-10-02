@@ -24,7 +24,9 @@ export const modulesIn = (path: string): string[] => {
       return entry.isFile();
     })
     .map((entry) => {
-      return relative(path, join(entry.parentPath, entry.name));
+      const file = join(entry.parentPath, entry.name);
+
+      return relative(path, file);
     });
 };
 
@@ -55,7 +57,9 @@ export const takenFromBarrel = (ringDir: string, ringName: string): Set<string> 
     'gu',
   );
 
-  for (const source of sourcesUnder(join(ringDir, '../..'))) {
+  const packageDir = join(ringDir, '../..');
+
+  for (const source of sourcesUnder(packageDir)) {
     if (source.startsWith(ringDir)) {
       continue;
     }
