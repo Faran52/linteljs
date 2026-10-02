@@ -15,6 +15,16 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       code: 'const view = <span\n  className="a"\n  id="b"\n  title="c"\n/>;',
       options: [],
     },
+
+    // Namespaces compare whole, and names compare by case.
+    'const view = <use xlink:href="#a" xml:href="#b" />;',
+    'const view = <span onClick={a} onclick={b} />;',
+
+    // A parent and its child are separate elements.
+    'const view = <div a={1}><span a={2} /></div>;',
+    'const view = <Foo.Bar a={1} b={2} />;',
+    'const view = <Foo<string> a={1} b={2} />;',
+    'const view = <span {...a} {...a} />;',
   ],
   invalid: [
     {
@@ -91,6 +101,42 @@ tsxRuleTester.run('no-duplicate-jsx-props', noDuplicateJsxProps, {
       errors: [{
         messageId: 'duplicateProp',
         data: { name: 'href' },
+      }],
+    },
+    {
+      code: 'const view = <div a={1}>\n  <span a={2} a={3} />\n</div>;',
+      errors: [{
+        messageId: 'duplicateProp',
+        data: { name: 'a' },
+        line: 2,
+        column: 15,
+        endLine: 2,
+        endColumn: 20,
+      }],
+    },
+    {
+      code: 'const view = <Foo.Bar a={1} /* again */ a={2} />;',
+      errors: [{
+        messageId: 'duplicateProp',
+        data: { name: 'a' },
+        column: 41,
+        endColumn: 46,
+      }],
+    },
+    {
+      code: 'const view = <Foo<string> a={1} a={2} />;',
+      errors: [{
+        messageId: 'duplicateProp',
+        data: { name: 'a' },
+      }],
+    },
+    {
+      code: 'const view = <span a="x" a {...props} />;',
+      errors: [{
+        messageId: 'duplicateProp',
+        data: { name: 'a' },
+        column: 26,
+        endColumn: 27,
       }],
     },
   ],
