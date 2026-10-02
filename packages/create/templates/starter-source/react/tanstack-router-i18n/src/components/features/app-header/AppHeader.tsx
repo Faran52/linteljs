@@ -16,10 +16,10 @@ export interface AppHeaderProps {
 
 // An element that navigates is an anchor; faking one with a button breaks middle-click.
 export const AppHeader: FC<AppHeaderProps> = ({ name }) => {
-  const activeProps: AnchorHTMLAttributes<HTMLAnchorElement> = {
+  const activeProps = {
     'aria-current': 'page',
     ...styles.tab(true),
-  };
+  } satisfies AnchorHTMLAttributes<HTMLAnchorElement>;
 
   const { t } = useTranslation();
 
