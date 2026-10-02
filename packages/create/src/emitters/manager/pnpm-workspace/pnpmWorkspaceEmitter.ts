@@ -48,16 +48,20 @@ export const resyncPnpmWorkspace = (existing: string, answers: Answers): string 
 
 // At birth the scaffolder's opt-out goes too; on `sync` it is the project's own.
 export const mergePnpmWorkspace = (existing: string | null, answers: Answers): string => {
-  return resyncPnpmWorkspace(withoutSuperseded(existing ?? ''), answers);
+  const workspace = withoutSuperseded(existing ?? '');
+
+  return resyncPnpmWorkspace(workspace, answers);
 };
 
 // Discarding it breaks an install that already wrote into it.
 export const pnpmWorkspaceEmitter = (answers: Answers): Artifact[] => {
-  return answers.packageManager === 'pnpm'
+  const artifacts: Artifact[] = answers.packageManager === 'pnpm'
     ? [merged('package', 'pnpm-workspace.yaml', (current) => {
         return mergePnpmWorkspace(current, answers);
       }, (current) => {
         return resyncPnpmWorkspace(current, answers);
       })]
     : [];
+
+  return artifacts;
 };

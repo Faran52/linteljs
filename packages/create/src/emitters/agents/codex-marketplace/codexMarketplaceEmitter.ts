@@ -101,9 +101,12 @@ export const codexMarketplaceEmitter = (answers: Answers): Artifact[] => {
     return [];
   }
 
-  return [
+  const marketplace = emitCodexMarketplace(answers.plugins);
+  const artifacts = [
     adapterArtifact('AGENTS.md', answers),
-    emitted('standard', '.agents/plugins/marketplace.json', emitCodexMarketplace(answers.plugins)),
+    emitted('standard', '.agents/plugins/marketplace.json', marketplace),
     copied('plugins/linteljs/.codex-plugin/plugin.json'),
   ];
+
+  return artifacts;
 };

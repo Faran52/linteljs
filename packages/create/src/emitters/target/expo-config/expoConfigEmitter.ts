@@ -40,5 +40,12 @@ export const emitExpoConfig = (name: string): string => {
 export const expoConfigEmitter: Emitter = (answers, _project, name): Artifact[] => {
   const { expoProject } = targetFor(answers);
 
-  return expoProject === true ? [emitted('standard', 'app.json', emitExpoConfig(name))] : [];
+  if (expoProject !== true) {
+    return [];
+  }
+
+  const config = emitExpoConfig(name);
+  const artifacts = [emitted('standard', 'app.json', config)];
+
+  return artifacts;
 };

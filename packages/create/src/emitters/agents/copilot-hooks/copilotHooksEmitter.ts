@@ -11,12 +11,14 @@ interface CopilotHook {
 
 // `command`: the line is the same in both shells. `cwd` is relative to the repository root.
 const hook = (name: string, matcher: string): CopilotHook => {
-  return {
+  const entry: CopilotHook = {
     type: 'command',
     matcher,
     command: `node plugins/linteljs/hooks/${name}Hook.ts`,
     cwd: '.',
   };
+
+  return entry;
 };
 
 const COPILOT_HOOKS = {
@@ -35,5 +37,8 @@ export const copilotHooksEmitter = (answers: Answers): Artifact[] => {
     return [];
   }
 
-  return [emitted('standard', '.github/hooks/linteljs.json', `${JSON.stringify(COPILOT_HOOKS, null, 2)}\n`)];
+  const hooks = `${JSON.stringify(COPILOT_HOOKS, null, 2)}\n`;
+  const artifacts = [emitted('standard', '.github/hooks/linteljs.json', hooks)];
+
+  return artifacts;
 };

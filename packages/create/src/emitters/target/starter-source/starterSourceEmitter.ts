@@ -35,7 +35,7 @@ const rootOf = (id: TargetId, shared: true | TargetId | undefined): string => {
 const sourceOf = (id: TargetId, file: Starter): string => {
   const asset = file.source ?? file.target;
 
-  return [
+  const sourcePath = [
     'starter-source',
     rootOf(id, file.shared),
     file.variant,
@@ -43,6 +43,8 @@ const sourceOf = (id: TargetId, file: Starter): string => {
   ]
     .filter(Boolean)
     .join('/');
+
+  return sourcePath;
 };
 
 const stem = (path: string): string => {
@@ -51,13 +53,17 @@ const stem = (path: string): string => {
 
 // Asset stem to written stem, for each file this project writes under another name than its asset's.
 const renamesOf = (files: Starter[]): Map<string, string> => {
-  return new Map(files
+  const renamedStems = files
     .map((file): [string, string] => {
-      return [stem(file.source ?? file.target), stem(file.target)];
+      const stems: [string, string] = [stem(file.source ?? file.target), stem(file.target)];
+
+      return stems;
     })
     .filter(([asset, written]) => {
       return asset !== written;
-    }));
+    });
+
+  return new Map(renamedStems);
 };
 
 // One shared asset serves every target: a relative import follows its neighbour to the name this target writes.
@@ -106,7 +112,7 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
     const rewritten = importsRewritten(file, renames);
     const isBoundary = clientBoundaries.has(file.target);
 
-    return {
+    const artifact: Artifact = {
       stage: 'standard',
       target: file.target,
       content: renames.size === 0 && !isBoundary
@@ -121,16 +127,22 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
           },
       seed: true,
     };
+
+    return artifact;
   };
 
-  return [
+  const artifacts = [
     ...files.map(artifactOf),
     ...suites
       .map((test) => {
-        return {
+        const suite: Artifact = {
           ...artifactOf(test),
           requires: [test.covers],
         };
+
+        return suite;
       }),
   ];
+
+  return artifacts;
 };

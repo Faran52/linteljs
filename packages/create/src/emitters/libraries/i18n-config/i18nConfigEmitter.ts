@@ -42,7 +42,7 @@ export const emitI18nConfig = (languages: Language[]): string => {
       return `  '${language}': { common: ${identifierOf(language)} },`;
     });
 
-  return [
+  const source = [
     ...imports,
     '',
     'export const fallbackLanguage = \'en\';',
@@ -61,6 +61,8 @@ export const emitI18nConfig = (languages: Language[]): string => {
     ...LOOKUP_TAGS,
     '',
   ].join('\n');
+
+  return source;
 };
 
 // The compiler's plugin is read from `node_modules`: the documented module is a CDN URL fetched on every compile.
@@ -84,15 +86,22 @@ export const i18nConfigEmitter = (answers: Answers): Artifact[] => {
   }
 
   const seeded = (path: string, content: string): Artifact => {
-    return {
+    const artifact: Artifact = {
       ...emitted('standard', path, content),
       seed: true,
     };
+
+    return artifact;
   };
 
   const config = seeded(I18N_CONFIG, emitI18nConfig(languages));
+  const artifacts = [config];
 
-  return targetFor(answers).i18n?.compiler === undefined
-    ? [config]
-    : [config, seeded(INLANG_SETTINGS, emitInlangSettings(languages))];
+  if (targetFor(answers).i18n?.compiler !== undefined) {
+    const settings = emitInlangSettings(languages);
+
+    artifacts.push(seeded(INLANG_SETTINGS, settings));
+  }
+
+  return artifacts;
 };

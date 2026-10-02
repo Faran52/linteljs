@@ -19,11 +19,13 @@ const listArgument = (values: string[]): string => {
       return `          '${value}',`;
     });
 
-  return [
+  const argument = [
     '        [',
     ...items,
     '        ],',
   ].join('\n');
+
+  return argument;
 };
 
 // One argument per line: the extension lists run past `max-len`.

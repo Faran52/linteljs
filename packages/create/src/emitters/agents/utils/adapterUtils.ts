@@ -20,8 +20,11 @@ export const emitAgentAdapter = (answers: Answers): string => {
 
 // Preserved: a project's own instructions outrank a re-run.
 export const adapterArtifact = (target: string, answers: Answers): Artifact => {
-  return {
-    ...emitted('standard', target, emitAgentAdapter(answers)),
+  const adapter = emitAgentAdapter(answers);
+  const artifact: Artifact = {
+    ...emitted('standard', target, adapter),
     preserve: true,
   };
+
+  return artifact;
 };

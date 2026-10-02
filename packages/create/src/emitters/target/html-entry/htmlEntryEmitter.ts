@@ -6,7 +6,7 @@ import { emitted } from '../../utils/artifactUtils';
 
 // `lang` set: an empty one tells a screen reader the language is unknown. Laid out as the html layer formats it.
 export const emitHtmlEntry = (name: string, entry: string, favicon: boolean): string => {
-  return [
+  const page = [
     '<!doctype html>',
     '<html lang="en">',
     '    <head>',
@@ -30,6 +30,8 @@ export const emitHtmlEntry = (name: string, entry: string, favicon: boolean): st
     '</html>',
     '',
   ].join('\n');
+
+  return page;
 };
 
 export const htmlEntryEmitter: Emitter = (answers, _project, name): Artifact[] => {
@@ -37,5 +39,12 @@ export const htmlEntryEmitter: Emitter = (answers, _project, name): Artifact[] =
   // A web extension's popup has no tab to put an icon on, and no public directory to serve one from.
   const favicon = publicDirectory !== undefined;
 
-  return htmlEntry === undefined ? [] : [emitted('standard', 'index.html', emitHtmlEntry(name, htmlEntry, favicon))];
+  if (htmlEntry === undefined) {
+    return [];
+  }
+
+  const page = emitHtmlEntry(name, htmlEntry, favicon);
+  const artifacts = [emitted('standard', 'index.html', page)];
+
+  return artifacts;
 };

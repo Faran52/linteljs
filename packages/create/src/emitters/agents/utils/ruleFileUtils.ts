@@ -10,13 +10,15 @@ const PATHS = /^---\npaths:\n((?: {2}- .+\n)+)---\n/u;
 const expanded = (glob: string): string[] => {
   const group = /\{([^{}]+)\}/u.exec(glob);
 
-  return group?.[1] === undefined
+  const globs: string[] = group?.[1] === undefined
     ? [glob]
     : group[1]
         .split(',')
         .flatMap((alternative) => {
           return expanded(`${glob.slice(0, group.index)}${alternative}${glob.slice(group.index + group[0].length)}`);
         });
+
+  return globs;
 };
 
 // Empty where the rule carries no `paths:` list.
@@ -54,15 +56,20 @@ export const ruleArtifacts = (
 ): Artifact[] => {
   return ruleSources(answers)
     .map(({ name, sources }) => {
-      return {
+      const artifact: Artifact = {
         stage: 'standard',
         target: `${directory}/${named(name, suffix)}`,
         content: {
           sources,
           transform: (source: string) => {
-            return `${frontmatter(source)}${withoutFrontmatter(forAnswers(answers, source))}`;
+            const header = frontmatter(source);
+            const body = withoutFrontmatter(forAnswers(answers, source));
+
+            return `${header}${body}`;
           },
         },
       };
+
+      return artifact;
     });
 };

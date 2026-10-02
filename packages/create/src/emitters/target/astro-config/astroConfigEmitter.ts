@@ -71,10 +71,14 @@ ${integrations}${vite}});
 export const astroConfigEmitter = (answers: Answers): Artifact[] => {
   const config = emitAstroConfig(answers);
 
-  return config === null
-    ? []
-    : [{
-        ...emitted('standard', 'astro.config.mjs', config),
-        preserve: true,
-      }];
+  if (config === null) {
+    return [];
+  }
+
+  const artifacts: Artifact[] = [{
+    ...emitted('standard', 'astro.config.mjs', config),
+    preserve: true,
+  }];
+
+  return artifacts;
 };

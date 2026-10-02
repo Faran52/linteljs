@@ -9,5 +9,7 @@ minimumReleaseAgeExcludes = ["@linteljs/eslint-config", "@linteljs/eslint-plugin
 `;
 
 export const bunfigEmitter = (answers: Answers): Artifact[] => {
-  return answers.packageManager === 'bun' ? [emitted('package', 'bunfig.toml', BUNFIG)] : [];
+  const artifacts: Artifact[] = answers.packageManager === 'bun' ? [emitted('package', 'bunfig.toml', BUNFIG)] : [];
+
+  return artifacts;
 };

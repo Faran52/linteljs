@@ -11,10 +11,12 @@ import { mergeClaudeSettings, type StatusLine } from './utils/mergeUtils';
 
 // A plugin cannot set `statusLine`, so both badges are wired here, from the plugin the project carries.
 const statusLineOf = (script: string): StatusLine => {
-  return {
+  const statusLine: StatusLine = {
     type: 'command',
     command: `node "\${CLAUDE_PROJECT_DIR}/plugins/linteljs/hooks/${script}"`,
   };
+
+  return statusLine;
 };
 
 export const emitClaudeSettings = (plugins: Plugin[]): string => {
@@ -76,15 +78,19 @@ export const claudeSettingsEmitter = (answers: Answers): Artifact[] => {
     return [];
   }
 
-  return [
+  const artifacts: Artifact[] = [
     adapterArtifact('CLAUDE.md', answers),
     {
       ...merged('standard', '.claude/settings.json', (current) => {
-        return mergeClaudeSettings(emitClaudeSettings(answers.plugins), current);
+        const settings = emitClaudeSettings(answers.plugins);
+
+        return mergeClaudeSettings(settings, current);
       }),
       removable: true,
     },
     copied('plugins/linteljs/.claude-plugin/plugin.json'),
     copied('plugins/linteljs/.claude-plugin/marketplace.json'),
   ];
+
+  return artifacts;
 };

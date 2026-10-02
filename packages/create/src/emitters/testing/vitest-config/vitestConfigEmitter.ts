@@ -183,7 +183,9 @@ export const emitVitestConfig = (answers: Answers, setup: string): string | null
   }
 
   if (target.vitePlugin !== undefined) {
-    return mergedConfig(testBlock(include, exclude, setup, '    ', target.testPool), target.testConditions);
+    const nestedBlock = testBlock(include, exclude, setup, '    ', target.testPool);
+
+    return mergedConfig(nestedBlock, target.testConditions);
   }
 
   const block = testBlock(include, exclude, setup, '  ', target.testPool);
@@ -207,10 +209,14 @@ ${block}
 export const vitestConfigEmitter = (answers: Answers, project: ProjectShape): Artifact[] => {
   const config = emitVitestConfig(answers, setupTestsPath(answers, project.setupTests));
 
-  return config === null
-    ? []
-    : [{
-        ...emitted('standard', 'vitest.config.ts', config),
-        preserve: true,
-      }];
+  if (config === null) {
+    return [];
+  }
+
+  const artifacts: Artifact[] = [{
+    ...emitted('standard', 'vitest.config.ts', config),
+    preserve: true,
+  }];
+
+  return artifacts;
 };

@@ -17,7 +17,9 @@ import {
 } from './constants';
 
 const specifiersIn = (text: string): (string | undefined)[] => {
-  return [...text.matchAll(IMPORT_SPECIFIER)]
+  const matches = [...text.matchAll(IMPORT_SPECIFIER)];
+
+  return matches
     .map(([, specifier]) => {
       return specifier;
     });
@@ -89,7 +91,9 @@ export const styleEntryEmitter = (answers: Answers, project: ProjectShape): Arti
 
   const suffix = stylex && target.stylexAtRule === true ? STYLEX_AT_RULE : undefined;
 
-  return [merged('standard', entry, (current) => {
+  const artifacts = [merged('standard', entry, (current) => {
     return mergeStyleEntry(current, imports, suffix);
   })];
+
+  return artifacts;
 };

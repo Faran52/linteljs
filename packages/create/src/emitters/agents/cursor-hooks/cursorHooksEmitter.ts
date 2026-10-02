@@ -29,10 +29,12 @@ const hooksOf = (entry: [string, unknown]): HookList => {
   const [event, list] = entry;
   const hooks = Array.isArray(list) ? list.filter(isJsonObject) : [];
 
-  return [event, hooks
+  const theirs: HookList = [event, hooks
     .filter((hook) => {
       return !isOurs(hook);
     })];
+
+  return theirs;
 };
 
 const theirHooks = (text: string | null): HookList[] => {
@@ -68,10 +70,12 @@ export const cursorHooksEmitter = (answers: Answers): Artifact[] => {
     return [];
   }
 
-  return [
+  const artifacts: Artifact[] = [
     {
       ...merged('standard', '.cursor/hooks.json', mergeCursorHooks),
       removable: true,
     },
   ];
+
+  return artifacts;
 };

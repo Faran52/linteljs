@@ -19,7 +19,8 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
   const { styleEntry, framework } = targetFor(answers);
   // Both spellings: Vite resolves by prefix, TypeScript by pattern.
   // Absolute: Nuxt reads the generated paths relative to `.nuxt/`.
-  const aliases = Object.entries(buildAliases(answers))
+  const aliasDirectories = buildAliases(answers);
+  const aliases = Object.entries(aliasDirectories)
     .flatMap(([alias, directory]) => {
       const prefix = alias.replace('/*', '');
       const root = directory
@@ -29,15 +30,17 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
       const wildcard = quote(`${prefix}/*`);
       const wildcardRoot = quote(`${root}/*`);
 
-      return [
+      const lines = [
         `    ${quote(prefix)}: join(import.meta.dirname, ${quote(root)}),`,
         `    ${wildcard}: join(import.meta.dirname, ${wildcardRoot}),`,
       ];
+
+      return lines;
     });
 
   const styling = stylingPlugin(answers.styling, true, "join(import.meta.dirname, 'src/styles/*')");
 
-  return [
+  const config = [
     "import { join } from 'node:path';",
     '',
     sortedImports([...styling.imports, "import { defineNuxtConfig } from 'nuxt/config';"], framework),
@@ -75,10 +78,19 @@ export const emitNuxtConfig = (answers: Answers, name: string): string => {
     '});',
     '',
   ].join('\n');
+
+  return config;
 };
 
 export const nuxtConfigEmitter: Emitter = (answers, _project, name): Artifact[] => {
   const { nuxtProject } = targetFor(answers);
 
-  return nuxtProject === true ? [emitted('package', 'nuxt.config.ts', emitNuxtConfig(answers, name))] : [];
+  if (nuxtProject !== true) {
+    return [];
+  }
+
+  const config = emitNuxtConfig(answers, name);
+  const artifacts = [emitted('package', 'nuxt.config.ts', config)];
+
+  return artifacts;
 };

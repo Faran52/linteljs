@@ -76,7 +76,12 @@ export const emitAngularConfig = (name: string, packageManager: string): string 
 export const angularConfigEmitter: Emitter = (answers, _project, name): Artifact[] => {
   const { angularProject } = targetFor(answers);
 
-  return angularProject === true
-    ? [emitted('standard', 'angular.json', emitAngularConfig(name, answers.packageManager))]
-    : [];
+  if (angularProject !== true) {
+    return [];
+  }
+
+  const config = emitAngularConfig(name, answers.packageManager);
+  const artifacts = [emitted('standard', 'angular.json', config)];
+
+  return artifacts;
 };

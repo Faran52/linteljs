@@ -51,12 +51,14 @@ export interface Manifest {
 }
 
 const backgroundFor = (browser: Browser): ServiceWorker | EventPage => {
-  return browser === 'firefox'
+  const background: ServiceWorker | EventPage = browser === 'firefox'
     ? { scripts: ['src/background/index.ts'] }
     : {
         service_worker: 'src/background/index.ts',
         type: 'module',
       };
+
+  return background;
 };
 
 // A project shipping to both stores emits this twice from one set of answers.
@@ -105,13 +107,15 @@ export const manifestEmitter = (answers: Answers, _project: ProjectShape, name: 
         return [];
       }
 
-      return [{
+      const artifacts: Artifact[] = [{
         ...emitted(
           'standard',
           browser === answers.browser ? 'manifest.json' : `manifest.${browser}.json`,
           manifest,
         ),
         seed: true,
-      } satisfies Artifact];
+      }];
+
+      return artifacts;
     });
 };

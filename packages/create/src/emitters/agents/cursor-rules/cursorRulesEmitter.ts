@@ -15,7 +15,7 @@ const titleOf = (source: string): string => {
 };
 
 export const cursorArtifacts = (answers: Answers): Artifact[] => {
-  return [
+  const artifacts: Artifact[] = [
     {
       ...emitted(
         'standard',
@@ -32,6 +32,8 @@ export const cursorArtifacts = (answers: Answers): Artifact[] => {
       return `---\ndescription: ${titleOf(source)}\n${scope}\n---\n\n`;
     }),
   ];
+
+  return artifacts;
 };
 
 export const cursorRulesEmitter = (answers: Answers): Artifact[] => {

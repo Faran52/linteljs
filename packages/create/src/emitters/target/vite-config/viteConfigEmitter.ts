@@ -68,10 +68,14 @@ ${inputs}  resolve: { tsconfigPaths: true },
 export const viteConfigEmitter = (answers: Answers): Artifact[] => {
   const config = emitViteConfig(answers);
 
-  return config === null
-    ? []
-    : [{
-        ...emitted('standard', 'vite.config.ts', config),
-        preserve: true,
-      }];
+  if (config === null) {
+    return [];
+  }
+
+  const artifacts: Artifact[] = [{
+    ...emitted('standard', 'vite.config.ts', config),
+    preserve: true,
+  }];
+
+  return artifacts;
 };

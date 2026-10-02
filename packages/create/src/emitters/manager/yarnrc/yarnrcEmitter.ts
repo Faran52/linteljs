@@ -14,7 +14,9 @@ import {
 } from './constants';
 
 export const emitYarnrc = (answers: Answers): string => {
-  const installed = [...Object.keys(buildDependencies(answers)), ...Object.keys(buildDevDependencies(answers))];
+  const dependencies = buildDependencies(answers);
+  const devDependencies = buildDevDependencies(answers);
+  const installed = [...Object.keys(dependencies), ...Object.keys(devDependencies)];
   // No extension looks up `undefined`, which `join` writes as nothing.
   const peerExtensions = installed
     .map((name) => {
@@ -30,7 +32,12 @@ export const emitYarnrc = (answers: Answers): string => {
 };
 
 export const yarnrcEmitter = (answers: Answers): Artifact[] => {
-  return answers.packageManager === 'yarn'
-    ? [emitted('package', '.yarnrc.yml', emitYarnrc(answers))]
-    : [];
+  if (answers.packageManager !== 'yarn') {
+    return [];
+  }
+
+  const yarnrc = emitYarnrc(answers);
+  const artifacts = [emitted('package', '.yarnrc.yml', yarnrc)];
+
+  return artifacts;
 };
