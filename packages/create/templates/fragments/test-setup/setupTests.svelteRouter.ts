@@ -4,7 +4,9 @@ export const ORIGIN = 'http://localhost';
 export const pageMock = { url: new URL(`${ORIGIN}/`) };
 
 vi.mock('$app/state', () => {
-  return { page: pageMock };
+  const appState = { page: pageMock };
+
+  return appState;
 });
 
 beforeEach(() => {

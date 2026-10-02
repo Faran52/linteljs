@@ -101,7 +101,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 const platform = (name: string, extensions: string[], include: string[]) => {
-  return {
+  const project = {
     plugins: [react(), reactNative()],
     resolve: {
       tsconfigPaths: true,
@@ -115,6 +115,8 @@ const platform = (name: string, extensions: string[], include: string[]) => {
       setupFiles: ['./${setup}'],
     },
   };
+
+  return project;
 };
 
 export default defineConfig({

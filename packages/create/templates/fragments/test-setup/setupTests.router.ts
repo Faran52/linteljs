@@ -11,15 +11,21 @@ const navigation = {
 
 // `Object.assign`, not a spread: `importOriginal()` answers `unknown` untyped, and this file also ships as `.js`.
 vi.mock('react-router', async (importOriginal) => {
-  return Object.assign({}, await importOriginal(), navigation);
+  const actual = await importOriginal();
+
+  return Object.assign({}, actual, navigation);
 });
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
-  return Object.assign({}, await importOriginal(), navigation);
+  const actual = await importOriginal();
+
+  return Object.assign({}, actual, navigation);
 });
 
 vi.mock('@tanstack/solid-router', async (importOriginal) => {
-  return Object.assign({}, await importOriginal(), navigation);
+  const actual = await importOriginal();
+
+  return Object.assign({}, actual, navigation);
 });
 
 beforeEach(() => {

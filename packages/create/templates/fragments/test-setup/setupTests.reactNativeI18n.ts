@@ -2,7 +2,7 @@
 vi.mock('@react-native-async-storage/async-storage', () => {
   const items = new Map<string, string>();
 
-  return {
+  const asyncStorage = {
     default: {
       getItem: (key: string): Promise<string | null> => {
         return Promise.resolve(items.get(key) ?? null);
@@ -19,6 +19,8 @@ vi.mock('@react-native-async-storage/async-storage', () => {
       },
     },
   };
+
+  return asyncStorage;
 });
 
 // Every suite renders translated text, so each starts with i18n running in English.
