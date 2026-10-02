@@ -37,7 +37,7 @@ export const isCoverageReport = (value: unknown): value is CoverageReport => {
 };
 
 export const entriesOf = (file: FileCoverage): string[] => {
-  return [
+  const entries = [
     ...Object.keys(file.statementMap)
       .map((id) => {
         return `s:${id}`;
@@ -54,6 +54,8 @@ export const entriesOf = (file: FileCoverage): string[] => {
           });
       }),
   ];
+
+  return entries;
 };
 
 export const isData = (file: FileCoverage): boolean => {
@@ -64,17 +66,23 @@ export const hitsOf = (file: FileCoverage): Set<string> => {
   const counts = [
     ...Object.entries(file.s)
       .map(([id, count]) => {
-        return [`s:${id}`, count] as const;
+        const hit = [`s:${id}`, count] as const;
+
+        return hit;
       }),
     ...Object.entries(file.f)
       .map(([id, count]) => {
-        return [`f:${id}`, count] as const;
+        const hit = [`f:${id}`, count] as const;
+
+        return hit;
       }),
     ...Object.entries(file.b)
       .flatMap(([id, arms]) => {
         return arms
           .map((count, arm) => {
-            return [`b:${id}:${String(arm)}`, count] as const;
+            const hit = [`b:${id}:${String(arm)}`, count] as const;
+
+            return hit;
           });
       }),
   ];
@@ -123,12 +131,14 @@ export const metricsOf = (file: FileCoverage, hits: Set<string>): string => {
     return percent(hitCount, ofKind.length);
   };
 
-  return [
+  const metrics = [
     `${ratio('s:')} stmts`,
     `${ratio('b:')} branches`,
     `${ratio('f:')} funcs`,
     `${percent(linesOf(file, hits).size, linesOf(file, all).size)} lines`,
-  ].join(' ');
+  ];
+
+  return metrics.join(' ');
 };
 
 export const gapOf = (file: FileCoverage, hits: Set<string>): string[] => {
@@ -186,7 +196,7 @@ export const describeGap = (file: FileCoverage, keys: string[]): string => {
       return file.fnMap[key.slice(2)]?.decl.start.line ?? 0;
     });
 
-  return [
+  const ranges = [
     ...rangesOf(lines),
     ...rangesOf(branches)
       .map((range) => {
@@ -196,7 +206,9 @@ export const describeGap = (file: FileCoverage, keys: string[]): string => {
       .map((range) => {
         return `fn ${range}`;
       }),
-  ].join(', ');
+  ];
+
+  return ranges.join(', ');
 };
 
 export const attribute = (gap: string[], others: Map<string, Set<string>>): Attribution => {
@@ -213,16 +225,19 @@ export const attribute = (gap: string[], others: Map<string, Set<string>>): Attr
     .toSorted((left, right) => {
       return left.localeCompare(right);
     });
+  const otherHits = [...others.values()];
   const uncovered = gap
     .filter((key) => {
-      return ![...others.values()]
+      return !otherHits
         .some((hits) => {
           return hits.has(key);
         });
     });
 
-  return {
+  const attribution = {
     coveredBy,
     uncovered,
   };
+
+  return attribution;
 };

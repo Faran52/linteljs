@@ -28,7 +28,8 @@ const isCoverageReport = (value: unknown): value is Record<string, FileCoverage>
   return typeof value === 'object' && value !== null;
 };
 
-const reports = mkdtempSync(join(tmpdir(), 'linteljs-ignores-'));
+const reportsPrefix = join(tmpdir(), 'linteljs-ignores-');
+const reports = mkdtempSync(reportsPrefix);
 
 const uncoveredIn = (file: string): number => {
   const packageDir = resolve(file.split('/src/')[0] ?? '.');
@@ -52,14 +53,17 @@ const uncoveredIn = (file: string): number => {
     // A failing suite still writes its report, and the count below is what decides.
   }
 
-  const data: unknown = JSON.parse(readFileSync(join(reports, 'coverage-final.json'), 'utf8'));
+  const reportJson = readFileSync(join(reports, 'coverage-final.json'), 'utf8');
+  const data: unknown = JSON.parse(reportJson);
   const metrics = isCoverageReport(data) ? data[resolve(file)] : undefined;
 
   if (metrics === undefined) {
     throw new Error(`no coverage recorded for ${file}`);
   }
 
-  return [...Object.values(metrics.s), ...Object.values(metrics.b).flat()]
+  const counts = [...Object.values(metrics.s), ...Object.values(metrics.b).flat()];
+
+  return counts
     .filter((count) => {
       return count === 0;
     }).length;

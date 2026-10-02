@@ -162,7 +162,9 @@ export const stampOf = (dir: string): string => {
       return entry.isFile();
     })
     .map((entry) => {
-      return relative(dir, join(entry.parentPath, entry.name));
+      const entryPath = join(entry.parentPath, entry.name);
+
+      return relative(dir, entryPath);
     })
     .toSorted((left, right) => {
       return left.localeCompare(right);
@@ -193,31 +195,43 @@ export const spawnIn = async (dir: string, args: string[]): Promise<Spawned> => 
   try {
     await execFileAsync('pnpm', args, options);
 
-    return {
+    const spawned: Spawned = {
       ok: true,
       output: '',
     };
+
+    return spawned;
   }
   catch (error) {
     if (!isSpawnError(error)) {
       throw error;
     }
 
-    return {
+    const spawned: Spawned = {
       ok: false,
       output: `${error.stdout}${error.stderr}`,
     };
+
+    return spawned;
   }
 };
 
 // Only a file copied whole from one template has a template to hand a fix back to.
 export const fixedCopies = (item: E2eCase, dir: string): Map<string, string> => {
-  const whole = writtenOf(starterSourceEmitter(item.answers))
+  const artifacts = starterSourceEmitter(item.answers);
+  const whole = writtenOf(artifacts)
     .flatMap(({ target, content }) => {
       const isWhole = 'sources' in content && content.sources.length === 1 && content.transform === undefined;
       const [source] = isWhole ? content.sources : [];
 
-      return source === undefined ? [] : [[source, readFileSync(join(dir, target), 'utf8')] as const];
+      if (source === undefined) {
+        return [];
+      }
+
+      const text = readFileSync(join(dir, target), 'utf8');
+      const copies = [[source, text] as const];
+
+      return copies;
     });
 
   return new Map(whole);
@@ -229,7 +243,9 @@ export const writeAgreed = (copies: Map<string, string>[]): string[] => {
 
   const entries = copies
     .flatMap((each) => {
-      return [...each];
+      const pairs = [...each];
+
+      return pairs;
     });
 
   for (const [source, text] of entries) {

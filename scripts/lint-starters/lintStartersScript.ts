@@ -173,6 +173,8 @@ const countOf = (outcome: Outcome): number => {
     .length;
 };
 
+const linted = countOf('linted');
+const unchanged = countOf('unchanged');
 const failed = countOf('failed');
 
 if (fixing) {
@@ -181,8 +183,8 @@ if (fixing) {
   log(`${String(written.length)} starter templates fixed:\n  ${written.join('\n  ')}`);
 }
 
-log(`${String(cases.length)} starter projects: ${String(countOf('linted'))} linted, `
-  + `${String(countOf('unchanged'))} unchanged since their last clean lint, ${String(failed)} failed`);
+log(`${String(cases.length)} starter projects: ${String(linted)} linted, `
+  + `${String(unchanged)} unchanged since their last clean lint, ${String(failed)} failed`);
 
 // A label that names no case would lint nothing and say nothing.
 const isShort = cases.length !== STARTER_CASES.length;

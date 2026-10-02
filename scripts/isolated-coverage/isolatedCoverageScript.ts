@@ -79,7 +79,8 @@ const tests = listTests(root)
   .toSorted((left, right) => {
     return left.localeCompare(right);
   });
-const reports = mkdtempSync(join(tmpdir(), REPORTS_PREFIX));
+const reportsPrefix = join(tmpdir(), REPORTS_PREFIX);
+const reports = mkdtempSync(reportsPrefix);
 const started = performance.now();
 const queue = new PQueue({ concurrency });
 
@@ -93,10 +94,11 @@ try {
     .map(async (test, index) => {
       return queue
         .add(async () => {
+          const reportsDirectory = join(reports, String(index));
           const report = await coverageRun(
             root,
             relative(root, test),
-            join(reports, String(index)),
+            reportsDirectory,
             thresholdKeys,
             timeoutSeconds * 1000,
           );
@@ -115,12 +117,16 @@ try {
             return;
           }
 
-          hitsByTest.set(test, new Map(Object.entries(report)
+          const hits = new Map(Object.entries(report)
             .map(([file, coverage]) => {
               maps.set(file, coverage);
 
-              return [file, hitsOf(coverage)];
-            })));
+              const fileHits = [file, hitsOf(coverage)] as const;
+
+              return fileHits;
+            }));
+
+          hitsByTest.set(test, hits);
         });
     });
 
@@ -152,31 +158,45 @@ const sourceOf = (test: string): string => {
 };
 
 const claimOf = (test: string): string => {
-  return join(dirname(test), `${basename(test).split('.')[0] ?? ''}${SOURCE_SUFFIX}`);
+  const directory = dirname(test);
+
+  return join(directory, `${basename(test).split('.')[0] ?? ''}${SOURCE_SUFFIX}`);
 };
 
 const noSource = tests
   .filter((test) => {
-    return !existsSync(sourceOf(test));
+    const source = sourceOf(test);
+
+    return !existsSync(source);
   });
 const documented = noSource
   .filter((test) => {
-    return DOCUMENTED_SUITES.includes(basename(test));
+    const name = basename(test);
+
+    return DOCUMENTED_SUITES.includes(name);
   });
 const orphaned = noSource
   .filter((test) => {
-    return !DOCUMENTED_SUITES.includes(basename(test));
+    const name = basename(test);
+
+    return !DOCUMENTED_SUITES.includes(name);
   });
 const outOfScope = tests
   .filter((test) => {
-    return existsSync(sourceOf(test)) && !maps.has(sourceOf(test));
+    const source = sourceOf(test);
+
+    return existsSync(source) && !maps.has(source);
   });
 const paired = new Map(tests
   .filter((test) => {
-    return maps.has(sourceOf(test));
+    const source = sourceOf(test);
+
+    return maps.has(source);
   })
   .map((test) => {
-    return [sourceOf(test), test];
+    const pair = [sourceOf(test), test] as const;
+
+    return pair;
   }));
 const claimants = Map.groupBy(tests, claimOf);
 const claimedTwice = [...claimants]
@@ -195,7 +215,9 @@ const explain = (file: string, coverage: FileCoverage, gap: string[], own?: stri
       return test !== own;
     })
     .map(([test, hits]) => {
-      return [labelOf(test), hits.get(file) ?? new Set<string>()];
+      const labelledHits = [labelOf(test), hits.get(file) ?? new Set<string>()] as const;
+
+      return labelledHits;
     }));
   const { coveredBy, uncovered } = attribute(gap, others);
   const shown = coveredBy.length > COVERED_BY_SHOWN
@@ -224,10 +246,12 @@ for (const [file, coverage] of [...maps]
   const path = relative(root, file);
 
   if (basename(file) === DATA_FILE && !isData(coverage)) {
-    impure.push(`${path}  ${describeGap(coverage, entriesOf(coverage)
+    const functionAndBranchKeys = entriesOf(coverage)
       .filter((key) => {
         return !key.startsWith('s:');
-      }))}`);
+      });
+
+    impure.push(`${path}  ${describeGap(coverage, functionAndBranchKeys)}`);
 
     continue;
   }
@@ -238,12 +262,17 @@ for (const [file, coverage] of [...maps]
       continue;
     }
 
-    if (isBarrel(readFileSync(file, 'utf8'))) {
+    const source = readFileSync(file, 'utf8');
+
+    if (isBarrel(source)) {
       barrels += 1;
       continue;
     }
 
-    untested.push([path, ...explain(file, coverage, entriesOf(coverage))].join('\n'));
+    const entries = entriesOf(coverage);
+    const entryLines = [path, ...explain(file, coverage, entries)];
+
+    untested.push(entryLines.join('\n'));
     continue;
   }
 
@@ -257,7 +286,9 @@ for (const [file, coverage] of [...maps]
   const gap = gapOf(coverage, own);
 
   if (gap.length > 0) {
-    short.push([`${path}  own ${metricsOf(coverage, own)}`, ...explain(file, coverage, gap, test)].join('\n'));
+    const entryLines = [`${path}  own ${metricsOf(coverage, own)}`, ...explain(file, coverage, gap, test)];
+
+    short.push(entryLines.join('\n'));
   }
 }
 
@@ -294,7 +325,7 @@ log(`${String(paired.size)} pairs, ${String(short.length)} short, ${String(untes
   + `${String(documented.length)} documented exceptions, ${String(outOfScope.length)} out of scope; `
   + `${String(tests.length)} runs at concurrency ${String(concurrency)} in ${String(seconds)}s`);
 
-if ([
+const problems = [
   short,
   untested,
   impure,
@@ -302,7 +333,9 @@ if ([
   orphaned,
   failed,
   timedOut,
-]
+];
+
+if (problems
   .some((found) => {
     return found.length > 0;
   })) {

@@ -90,7 +90,8 @@ export const coverageRun = async (
   }
 
   try {
-    const report: unknown = JSON.parse(await readFile(join(reportsDirectory, REPORT_FILE), 'utf8'));
+    const reportJson = await readFile(join(reportsDirectory, REPORT_FILE), 'utf8');
+    const report: unknown = JSON.parse(reportJson);
 
     return isCoverageReport(report) ? report : 'failed';
   }
