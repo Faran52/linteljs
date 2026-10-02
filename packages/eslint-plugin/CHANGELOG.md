@@ -10,110 +10,98 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Breaking
 
-- **Node `>=18.0.0`**, up from 12. The bundle targets `node18`; CI runs ESLint 6 and 7 on `node:18-alpine`.
-- **ESLint `>=6.0.0`**, up from 5.
-- **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. Its message id
+- **Node `>=18.0.0`**, up from 12, and **ESLint `>=6.0.0`**, up from 5.
+- **`newline-destructuring` is now `member-newline`.** Rename the id wherever it is configured. The message id
   `consistNewline` is now `membersOnNewline`, and the messages say "Members".
-- **One threshold for list layouts: three or more items go one per line, and two or fewer may not be
-  half-split.** `member-newline` keeps its `maxProperties` default of `2` and now holds every list it owns to it:
-  two or fewer members sit on one line or go fully one per line, and `const { alpha,\n  bravo }` is fixed to the
-  second. It never joins lines, so a split pair is no longer collapsed.
+- **`member-newline` covers object literals, interfaces and type literals too**, at one threshold: three or more
+  members go one per line, and two or fewer sit on one line or go fully one per line. A half-split pair such as
+  `const { alpha,\n  bravo }` is fixed to one per line, and a split pair is no longer joined. A rest element
+  counts like any other member, and a one-line object pattern holding a multi-line member goes one member per
+  line. The base layer of `@linteljs/eslint-config` turns `@stylistic/object-property-newline` off to match.
+- **`member-newline` loses `maxPropertiesWithRest` and `maxLineLength`**, and its `multilineMember` message.
+  The fix is whitespace only, so a comment inside a pattern no longer blocks it and a trailing comma is left
+  for `comma-dangle`. Remove both options from your config.
+- **`destructuring-property-newline` is removed.** `member-newline` now reports a half-split object pattern,
+  and `array-newline` an array pattern. Remove the id from your config.
 - **`export-specifier-newline` splits at three or more specifiers**, not two, so `export { alpha, bravo }` is
-  allowed. A half-split pair such as `export { alpha,\n  bravo }` is fixed to one per line, never joined. It
-  reports once per statement, with a new message, and its whitespace-only fix now runs past a comment inside the
-  braces instead of declining.
-- **`import-newlines` never joins lines and loses `maxLineLength`.** A split pair such as `import {\n  alpha,\n  bravo\n}`
-  stays split, a half-split pair is fixed to one per line, and a long import under the count is left alone, so
-  the `mustSplitLong` and `mustNotSplit` messages are gone. Only named imports count; a default or namespace import
-  is never moved, and a single named import is never reported, even at `maxItems: 0`. The fix is whitespace only
-  (`fixable: 'whitespace'`), so a comment inside the braces no longer blocks it and a trailing comma or a
-  redundant `as` is left as written. Remove `maxLineLength` from your config.
-- **`member-newline` takes object literals**, which `@stylistic/object-property-newline` split at two. The base
-  layer turns that rule off (see `@linteljs/eslint-config`).
-- **`member-newline` loses `maxPropertiesWithRest` and `maxLineLength`.** A rest element counts like any other
-  member, and with no collapse there is no line to measure. Its `multilineMember` message is gone: a list with a
-  object literal with a member spanning lines follows the same count, and an object pattern on one line
-  holding a multi-line member, `{ alpha = {\n  first\n}, bravo }`, goes one member per line. The fix is whitespace only (`fixable: 'whitespace'`), so a comment
-  inside a pattern no longer blocks it, and a trailing comma is left for `comma-dangle`. Remove both options from
-  your config.
-- **`destructuring-property-newline` is removed.** Every shape it reported now belongs to another rule:
-  `member-newline` reports a half-split object pattern, and `array-newline` (below) an array pattern.
-  Remove the id from your config.
-- **The category presets are gone.** `configs.layout`, `ordering`, `imports`, `functions` and `promises` (and their
-  `flat/` forms) are replaced by `configs.all` and `configs['flat/all']`, which carry every rule. Name the rules you
-  want, or take `all` and turn off what you do not. `configs.recommended` stays.
-- **`meta.docs.category` is replaced by `meta.docs.fixShape`**, and the exports `RULE_CATEGORIES` and `RuleCategory`
-  by `FIX_SHAPES` and `FixShape`: `whitespace` leaves the tokens identical, `reorder` only reorders them, absent
-  may rewrite code.
-- **`recommended` gains six rules**, so a project on it reports more on upgrade: `array-newline`,
-  `chain-call-newline`, `interface-order`, `no-duplicate-interface`, `no-eslint-disable` and
-  `no-inline-object-types` (below).
+  allowed. A half-split pair is fixed to one per line, never joined. It reports once per statement, with a new
+  message, and its fix runs past a comment inside the braces.
+- **`import-newlines` never joins lines and loses `maxLineLength`.** A split pair stays split, a half-split pair
+  is fixed to one per line, and a long import under the count is left alone, so the `mustSplitLong` and
+  `mustNotSplit` messages are gone. Only named imports count, and a single named import is never reported. The
+  fix is whitespace only, so a comment inside the braces no longer blocks it and a trailing comma or a redundant
+  `as` is left as written. Remove `maxLineLength` from your config.
+- **The category presets are gone.** `configs.layout`, `ordering`, `imports`, `functions` and `promises`, and
+  their `flat/` forms, give way to `configs.all` and `configs['flat/all']`, which carry every rule.
+  `configs.recommended` stays.
+- **`meta.docs.category` is replaced by `meta.docs.fixShape`**, and the exports `RULE_CATEGORIES` and
+  `RuleCategory` by `FIX_SHAPES` and `FixShape`. `whitespace` leaves the tokens identical, `reorder` only
+  reorders them, and an absent shape may rewrite code.
+- **`recommended` gains seven rules**, so a project on it reports more on upgrade: `array-newline`,
+  `chain-call-newline`, `interface-order`, `no-duplicate-interface`, `no-eslint-disable`,
+  `no-inline-object-types` and `prefer-alias`.
 
 ### Added
 
-- `name-before-use` reports an await, a call that takes a call, or an inline array or object literal anywhere but
-  the right side of a declaration or assignment, a bare statement or `export default`. `ignoreEmptyLiterals` and
+- `array-newline` puts each element of an array or array pattern with three or more on its own line. Two or
+  fewer may sit on one line, so `const [value, setValue] = useState(0)` stays as written. Fixable
+  (whitespace), in `recommended`.
+- `chain-call-newline` puts each call of a chain on its own line once the chain has two calls after its head,
+  or one call taking a callback with a block body. `expect(x).toBe(y)` and `Object.keys(x).map(fn)` stay on one
+  line. Fixable (whitespace), in `recommended`. `maxLineLength` (default `120`) caps the lines its fix writes.
+- `name-before-use` reports an await, a call that takes a call, or an inline array or object anywhere but the
+  right side of a declaration or assignment, a bare statement or `export default`. `ignoreEmptyLiterals` and
   `ignoreLiteralArguments` relax the literal half. Report-only, not in `recommended`.
-- `prefer-alias` imports across aliased directories through the tsconfig `paths` alias and within one
-  relatively. A parent-relative import into another aliased directory is fixed to the most specific alias, an
-  exact key onto a directory (`"@ui": ["./src/ui"]` beside `"@ui/*"`) included, and an alias import back into
-  the own directory is fixed to a relative one. Type-aware: without type information, or in a project that sets
-  `baseUrl`, it reports nothing. `aliasExempt` (globs) silences files, and `enforceRelativeImports` fixes every
-  alias import in them to a relative one. Fixable, in `recommended`. Rule docs gain `requiresTypeChecking`.
-- `array-newline` puts each element of an array or array pattern with three or more on its own line, with the
-  brackets on lines of their own. Two or fewer sit on one line or go fully one per line, so
-  `const [value, setValue] = useState(0)` stays as written and `[alpha,\n  bravo]` is fixed. The rule never
-  joins lines. Fixable (whitespace), in `recommended`.
-- `chain-call-newline` puts each call in a member chain on its own line once the chain has two calls after its
-  head, or one call taking a callback with a block body. The head keeps a namespace call, so
-  `Object.keys(x).map(fn)` and `expect(x).toBe(y)` stay on one line. Fixable (whitespace): breaks before each `.`
-  and moves the callback's lines a step right; reports without a fix past `maxLineLength` (default `120`) or
-  with a comment in the way.
-- `no-duplicate-interface` (TypeScript only) reports a second `interface` of the same name in one scope, which
-  TypeScript merges silently. The top level, each `declare global` and `declare module` block, each `namespace`
-  body and each function block are separate scopes, so augmentation stays allowed. Report-only.
-- `no-eslint-disable` reports `eslint-disable`, `eslint-disable-line` and `eslint-disable-next-line` directives.
-  Report-only. `allowRules` names rule ids a directive may carry; a bare directive is never allowed.
-- `no-inline-object-types` (TypeScript only) reports a type literal with members anywhere but directly under a type
-  alias. `allowIn` names generics whose arguments may stay inline, such as `Extract`.
-- `react-no-global-namespace` reports `React.X` resolved through `@types/react`'s global namespace, in a type, a value
-  or a JSX tag such as `<React.Fragment>`. Fixable: imports the name from `react`, merging into an existing import,
-  and in Svelte inside the `<script>` holding the reference. Outside `recommended`; the React layers enable it.
 - Five React Native accessibility rules: `native-accessible-name`, `native-no-nested-touchables`,
-  `native-valid-accessibility-actions`, `native-valid-accessibility-role` and `native-valid-accessibility-state`.
-  Outside `recommended`; the `react-native` layer of `@linteljs/eslint-config` enables them.
-- `interface-order` takes `{ trimBlankLines: boolean }`, default `true`: the fix empties whitespace-only lines inside
-  the declarations it moves. `false` moves the text byte for byte.
+  `native-valid-accessibility-actions`, `native-valid-accessibility-role` and
+  `native-valid-accessibility-state`. Report-only, not in `recommended`; the React Native layer of
+  `@linteljs/eslint-config` enables them.
+- `no-duplicate-interface` (TypeScript only) reports a second `interface` of the same name in one scope, which
+  TypeScript merges silently. Augmenting a global or a module stays allowed. Report-only, in `recommended`.
+- `no-eslint-disable` reports every directive that disables a rule: `eslint-disable`, `eslint-disable-line`,
+  `eslint-disable-next-line`, and inline configuration such as `/* eslint no-console: "off" */`.
+  `allowRules` names the rule ids a directive may carry; a bare directive is never allowed. Report-only, in
+  `recommended`.
+- `no-inline-object-types` (TypeScript only) reports a type literal with members anywhere but directly under a
+  type alias. `allowIn` names generics whose arguments may stay inline, such as `Extract`, matched by the last
+  segment of a qualified name. Report-only, in `recommended`.
+- `prefer-alias` (TypeScript only, type-aware) imports across aliased directories through the tsconfig `paths`
+  alias and within one relatively. Without type information, or in a project that sets `baseUrl`, it reports
+  nothing. `aliasExempt` silences files by glob, and `enforceRelativeImports` fixes every alias import in them
+  to a relative one. Fixable, in `recommended`.
+- `react-no-global-namespace` reports `React.X` reached through `@types/react`'s global namespace, in a type, a
+  value or a JSX tag, and in a Svelte `<script>`. Fixable: it imports the name from `react`. Not in
+  `recommended`; the React and React Native layers of `@linteljs/eslint-config` enable it.
+- `interface-order` takes `trimBlankLines`, default `true`: the fix empties whitespace-only lines inside the
+  declarations it moves. `false` moves the text byte for byte.
+- `meta.docs.requiresTypeChecking` marks a rule that needs type information.
+
+### Changed
+
+- A crash on a lookup the parse should guarantee names the lookup and asks for the parser in the issue.
 
 ### Fixed
 
-- `native-no-nested-touchables` sees a touchable behind `{show && <Pressable />}` or a ternary branch.
-- `native-valid-accessibility-actions` no longer asks for a name or label an entry's spread or computed key may
-  carry, and reports an object literal passed where the array goes.
-- `comment-delimiter` no longer merges a `//# sourceMappingURL=` or `//# sourceURL=` line into a JSDoc block.
-- `no-eslint-disable` reports an inline config comment that turns a rule off, such as
-  `/* eslint no-console: "off" */`, in any case, since ESLint 8 and older honour `"OFF"`.
-- `no-inline-object-types`: `allowIn` matches a qualified name such as `React.PropsWithChildren` by its last
-  segment.
-- `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.
+- Every fixer writes the file's majority line ending, so one stray CRLF line no longer turns an LF file's new
+  lines into CRLF.
+- `comment-delimiter` no longer merges a `//# sourceMappingURL=` or `//# sourceURL=` line into a JSDoc block,
+  and reports a run of `//` lines carrying a JSDoc tag without a fix, since a block would make the tag live.
 - `export-specifier-newline` keeps a trailing comma on the last specifier's line instead of pushing it to column 0.
-- `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later `case` of
-  its `switch`, both of which threw `ReferenceError`, and no longer asks for a block body in a StyleX dynamic style
-  inside `stylex.create()`, which the compiler refuses.
-- `prefer-await-to-then` no longer reports a chain in a block at the top level of a file, such as an `if` or a
+- `interface-order` checks each Svelte `<script>`, where it reported nothing, and its fix keeps the indentation.
+- `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later
+  `case` of its `switch`, both of which threw `ReferenceError`. It no longer asks for a block body in a StyleX
+  dynamic style inside `stylex.create()`, which the compiler refuses, and a fix inside a converted function's
+  body now lands in the same `--fix` run.
+- `prefer-await-to-then` no longer reports a chain in a block at the top level of a file, such as an `if` or
   `for` body, which no function encloses and so none could make async.
 - `prefer-try-catch` reports an awaited or async-returned chain behind a type wrapper, such as
-  `await (fetch(url).catch(handle) as Promise<Data>)` or `await fetch(url).catch(handle)!`, which it and
-  `prefer-await-to-then` both skipped. `prefer-await-to-then` now hands `return p.then(x) as Promise<T>` in an
-  async function off to it.
-- `react-no-global-namespace` reports a member or JSX tag with a comment inside it, such as
-  `React./* why */useState`, without a fix, where the fix dropped the comment.
+  `await (fetch(url).catch(handle) as Promise<Data>)`, which both promise rules skipped.
+  `prefer-await-to-then` hands `return p.then(x) as Promise<T>` in an async function off to it.
 - `sort-hook-dependencies` swaps the names in place, keeping a trailing comma and an array laid out one name a
-  line, where its fix rewrote the array onto one line without them.
-- `union-newline` reports a union with a comment before any of its pipes without a fix, where it split the
-  gaps ahead of the comment and left the rest on one line. A union opening with a `|` on its own line now gets
-  its continuation pipes under that one, not a step deeper.
-- A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
+  line, where its fix rewrote the array onto one line.
+- `union-newline` reports a union with a comment before any of its pipes without a fix, where it split the gaps
+  ahead of the comment and left the rest on one line. A union opening with a `|` on its own line gets its
+  continuation pipes under that one, not a step deeper.
 
 ## 1.5.3
 
