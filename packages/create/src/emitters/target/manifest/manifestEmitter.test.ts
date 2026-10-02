@@ -50,11 +50,13 @@ const parseManifest = (text: string): Manifest => {
 };
 
 const answersFor = (overrides: AnswerOverrides = {}): Answers => {
-  return {
+  const answers: Answers = {
     ...DEFAULT_ANSWERS,
     target: 'webextension',
     ...overrides,
   };
+
+  return answers;
 };
 
 const manifestFor = (overrides: AnswerOverrides = {}): Manifest => {
@@ -69,10 +71,10 @@ const manifestFor = (overrides: AnswerOverrides = {}): Manifest => {
 
 describe('emitManifest', () => {
   it('writes nothing for a target that is not an extension', () => {
-    const manifest = emitManifest(answersFor({ target: 'react' }), 'demo-app');
-    expect(manifest).toBeNull();
-    const manifest2 = emitManifest(answersFor({ target: 'astro' }), 'demo-app');
-    expect(manifest2).toBeNull();
+    const reactManifest = emitManifest(answersFor({ target: 'react' }), 'demo-app');
+    expect(reactManifest).toBeNull();
+    const astroManifest = emitManifest(answersFor({ target: 'astro' }), 'demo-app');
+    expect(astroManifest).toBeNull();
   });
 
   it('names the project and ships an empty permission surface', () => {
@@ -96,31 +98,31 @@ describe('emitManifest', () => {
   it('defaults to a popup and a background entry', () => {
     const manifest = manifestFor();
 
-    const expected = { default_popup: 'index.html' };
-    expect(manifest.action).toEqual(expected);
+    const popup = { default_popup: 'index.html' };
+    expect(manifest.action).toEqual(popup);
 
-    const expected2 = {
+    const serviceWorker = {
       service_worker: 'src/background/index.ts',
       type: 'module',
     };
-    expect(manifest.background).toEqual(expected2);
+    expect(manifest.background).toEqual(serviceWorker);
 
     expect(manifest.devtools_page).toBeUndefined();
   });
 
   it('spells the background entry the way the browser expects', () => {
-    const expected = {
+    const serviceWorker = {
       service_worker: 'src/background/index.ts',
       type: 'module',
     };
 
     expect(manifestFor({ browser: 'chrome' }).background)
-      .toEqual(expected);
+      .toEqual(serviceWorker);
 
-    const expected2 = { scripts: ['src/background/index.ts'] };
+    const eventPage = { scripts: ['src/background/index.ts'] };
 
     expect(manifestFor({ browser: 'firefox' }).background)
-      .toEqual(expected2);
+      .toEqual(eventPage);
   });
 
   it('carries gecko settings on firefox and not on chrome', () => {
@@ -166,10 +168,16 @@ describe('emitManifest', () => {
 
 describe('manifestEmitter', () => {
   const manifestsFor = (overrides: AnswerOverrides): Record<string, Manifest> => {
-    return Object.fromEntries(manifestEmitter(answersFor(overrides), EMPTY_PROJECT, 'demo-app')
+    const artifacts = manifestEmitter(answersFor(overrides), EMPTY_PROJECT, 'demo-app');
+    const entries = artifacts
       .map((artifact) => {
-        return [artifact.target, parseManifest('text' in artifact.content ? artifact.content.text : '')];
-      }));
+        const text = 'text' in artifact.content ? artifact.content.text : '';
+        const entry: [string, Manifest] = [artifact.target, parseManifest(text)];
+
+        return entry;
+      });
+
+    return Object.fromEntries(entries);
   };
 
   it('plants one manifest, named for the project, on a project being born', () => {
@@ -181,11 +189,13 @@ describe('manifestEmitter', () => {
         target,
         seed,
       }) => {
-        return [
+        const shape = [
           stage,
           target,
           seed,
         ];
+
+        return shape;
       });
 
     const expected = [[
@@ -224,10 +234,11 @@ describe('manifestEmitter', () => {
       browser,
       surfaces: ['background'],
     });
+    const none: NonNullable<Manifest['background']> = { scripts: [] };
     const background = manifestsFor({
       browser,
       surfaces: ['background'],
-    })['manifest.json']?.background ?? { scripts: [] };
+    })['manifest.json']?.background ?? none;
     const entry = 'service_worker' in background ? background.service_worker : background.scripts[0];
 
     const targets = starterSourceEmitter(answers)

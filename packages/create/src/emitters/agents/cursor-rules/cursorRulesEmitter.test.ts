@@ -22,16 +22,19 @@ describe('cursorRulesEmitter', () => {
     ]));
     expect(cursorRules).toEqual([]);
 
-    const actual = targets(cursorRulesEmitter(answersFor(['cursor'])));
+    const emitted = cursorRulesEmitter(answersFor(['cursor']));
+    const actual = targets(emitted);
+    const built = cursorArtifacts(answersFor(['cursor']));
+    const expected = targets(built);
 
-    expect(actual)
-      .toEqual(targets(cursorArtifacts(answersFor(['cursor']))));
+    expect(actual).toEqual(expected);
   });
 });
 
 describe('cursorArtifacts', () => {
   it('writes every rule under .cursor/rules with the mdc suffix', () => {
-    const written = targets(cursorArtifacts(answersFor(['cursor'])));
+    const artifacts = cursorArtifacts(answersFor(['cursor']));
+    const written = targets(artifacts);
 
     expect(written).toContain('.cursor/rules/linteljs.mdc');
     expect(written).toContain('.cursor/rules/repo-structure.mdc');
@@ -47,7 +50,9 @@ describe('cursorArtifacts', () => {
   });
 
   it('rewrites the shared paths list as globs and takes the description from the heading', () => {
-    const output = transformOf(cursorArtifacts(answersFor(['cursor'])), '.cursor/rules/repo-structure.mdc')(RULE, null);
+    const artifacts = cursorArtifacts(answersFor(['cursor']));
+    const transform = transformOf(artifacts, '.cursor/rules/repo-structure.mdc');
+    const output = transform(RULE, null);
 
     expect(output).toBe(
       '---\ndescription: Repository Structure\nglobs: src/**/*.ts,src/**/*.tsx,tsconfig.json\n'
@@ -57,7 +62,8 @@ describe('cursorArtifacts', () => {
   });
 
   it('always applies with no paths list, and falls back to a description when there is no heading', () => {
-    const transform = transformOf(cursorArtifacts(answersFor(['cursor'])), '.cursor/rules/type-standards.mdc');
+    const artifacts = cursorArtifacts(answersFor(['cursor']));
+    const transform = transformOf(artifacts, '.cursor/rules/type-standards.mdc');
 
     const transformed = transform(UNSCOPED, null);
 

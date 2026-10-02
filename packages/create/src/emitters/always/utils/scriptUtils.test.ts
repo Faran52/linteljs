@@ -22,8 +22,8 @@ describe('gateScripts', () => {
     ];
     expect(actual).toEqual(expected);
 
-    const actual2 = gateScripts(answersFor({ testing: 'none' }));
-    expect(actual2).not.toContain('test:coverage');
+    const withoutTesting = gateScripts(answersFor({ testing: 'none' }));
+    expect(withoutTesting).not.toContain('test:coverage');
   });
 });
 
@@ -36,16 +36,20 @@ describe('buildScripts', () => {
   });
 
   it('chains check through every gate the answers enable', () => {
-    expect(buildScripts(answersFor({})).check).toBe(
+    const { check: fullCheck } = buildScripts(answersFor({}));
+    const { check: untestedCheck } = buildScripts(answersFor({ testing: 'none' }));
+    const { check: npmCheck } = buildScripts(answersFor({ packageManager: 'npm' }));
+
+    expect(fullCheck).toBe(
       'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck'
       + ' && pnpm test:coverage && pnpm build',
     );
 
-    expect(buildScripts(answersFor({ testing: 'none' })).check).toBe(
+    expect(untestedCheck).toBe(
       'pnpm lint && pnpm lint:types && pnpm lint:css && pnpm typecheck && pnpm build',
     );
 
-    expect(buildScripts(answersFor({ packageManager: 'npm' })).check).toBe(
+    expect(npmCheck).toBe(
       'npm run lint && npm run lint:types && npm run lint:css && npm run typecheck'
       + ' && npm run test:coverage && npm run build',
     );
@@ -57,7 +61,8 @@ describe('buildScripts', () => {
     'vue',
     'svelte',
   ])('runs the banned patterns over src for %s', (target) => {
-    expect(buildScripts(answersFor({ target }))['lint:types']).toBe('node scripts/checkBannedPatterns.ts src');
+    const { 'lint:types': lintTypes } = buildScripts(answersFor({ target }));
+    expect(lintTypes).toBe('node scripts/checkBannedPatterns.ts src');
   });
 
   it('compiles the catalog before prepare and typecheck once a language is chosen', () => {
@@ -101,12 +106,12 @@ describe('buildScripts', () => {
     };
     expect(scripts).toMatchObject(expected);
 
-    const scripts2 = buildScripts(answersFor({ target: 'vue' }));
-    const expected2 = {
+    const vueScripts = buildScripts(answersFor({ target: 'vue' }));
+    const vueCss = {
       'lint:css': 'stylelint "src/**/*.{css,vue}" --allow-empty-input',
       'lint:css:fix': 'stylelint "src/**/*.{css,vue}" --fix --allow-empty-input',
     };
-    expect(scripts2).toMatchObject(expected2);
+    expect(vueScripts).toMatchObject(vueCss);
   });
 
   it.each<[TargetId, Record<string, string>]>([
@@ -215,7 +220,8 @@ describe('buildScripts', () => {
   });
 
   it('always wires husky through prepare', () => {
-    expect(buildScripts(answersFor({}))['prepare']).toBe('husky');
+    const { prepare } = buildScripts(answersFor({}));
+    expect(prepare).toBe('husky');
   });
 
   it('wires husky and the target step through postinstall on yarn, which runs no prepare', () => {

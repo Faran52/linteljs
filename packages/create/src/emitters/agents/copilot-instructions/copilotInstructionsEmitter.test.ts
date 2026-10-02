@@ -22,16 +22,19 @@ describe('copilotInstructionsEmitter', () => {
     ]));
     expect(copilotInstructions).toEqual([]);
 
-    const actual = targets(copilotInstructionsEmitter(answersFor(['copilot'])));
+    const emitted = copilotInstructionsEmitter(answersFor(['copilot']));
+    const actual = targets(emitted);
+    const built = copilotArtifacts(answersFor(['copilot']));
+    const expected = targets(built);
 
-    expect(actual)
-      .toEqual(targets(copilotArtifacts(answersFor(['copilot']))));
+    expect(actual).toEqual(expected);
   });
 });
 
 describe('copilotArtifacts', () => {
   it('writes the repository-wide file and one path-scoped rule per source', () => {
-    const written = targets(copilotArtifacts(answersFor(['copilot'])));
+    const artifacts = copilotArtifacts(answersFor(['copilot']));
+    const written = targets(artifacts);
 
     expect(written).toContain('.github/copilot-instructions.md');
     expect(written).toContain('.github/instructions/repo-structure.instructions.md');
@@ -39,10 +42,8 @@ describe('copilotArtifacts', () => {
   });
 
   it('rewrites the shared paths list as applyTo and drops the original frontmatter', () => {
-    const transform = transformOf(
-      copilotArtifacts(answersFor(['copilot'])),
-      '.github/instructions/repo-structure.instructions.md',
-    );
+    const artifacts = copilotArtifacts(answersFor(['copilot']));
+    const transform = transformOf(artifacts, '.github/instructions/repo-structure.instructions.md');
 
     const transformed = transform(RULE, null);
 
@@ -58,10 +59,8 @@ describe('copilotArtifacts', () => {
   });
 
   it('applies everywhere when the rule lists no paths', () => {
-    const transform = transformOf(
-      copilotArtifacts(answersFor(['copilot'])),
-      '.github/instructions/type-standards.instructions.md',
-    );
+    const artifacts = copilotArtifacts(answersFor(['copilot']));
+    const transform = transformOf(artifacts, '.github/instructions/type-standards.instructions.md');
 
     const transformed = transform(UNSCOPED, null);
     expect(transformed).toBe('---\napplyTo: "**"\n---\n\nNo frontmatter here.\n');
