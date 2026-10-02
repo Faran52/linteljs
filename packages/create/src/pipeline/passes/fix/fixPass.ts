@@ -58,7 +58,8 @@ const fixStyles = async (cwd: string, answers: Answers, report: (message: string
     return;
   }
 
-  const after = new Set(await globSnapshot(cwd, glob));
+  const afterFix = await globSnapshot(cwd, glob);
+  const after = new Set(afterFix);
 
   report(changedFiles(before
     .filter((entry) => {
@@ -94,7 +95,9 @@ export const fixPass = async (
     return;
   }
 
-  report(changedFiles(parseFixReport(result.stdout), 'eslint'));
+  const fixed = parseFixReport(result.stdout);
+
+  report(changedFiles(fixed, 'eslint'));
 
   await fixStyles(cwd, answers, report);
 };

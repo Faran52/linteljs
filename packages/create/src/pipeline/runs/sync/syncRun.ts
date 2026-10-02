@@ -42,15 +42,20 @@ export interface SyncResult {
 }
 
 const entryOf = (target: string, status: SyncStatus): SyncEntry => {
-  return {
+  const entry: SyncEntry = {
     target,
     status,
   };
+
+  return entry;
 };
 
 // Versions through 1.5.3 kept the answers in `lintel.config.json`.
 const obsoleteCandidates = async (cwd: string): Promise<readonly string[]> => {
-  return [...await managedPathsReader(cwd), LEGACY_CONFIG_PATH];
+  const managedPaths = await managedPathsReader(cwd);
+  const candidates = [...managedPaths, LEGACY_CONFIG_PATH];
+
+  return candidates;
 };
 
 // Over a file the project has, a merge with a `resync` keeps what the project owns.
@@ -63,7 +68,7 @@ const forSync = (artifact: Artifact): Artifact => {
 
   const { merge, resync = merge } = content;
 
-  return {
+  const resyncing: Artifact = {
     ...artifact,
     content: {
       merge: (current) => {
@@ -71,12 +76,15 @@ const forSync = (artifact: Artifact): Artifact => {
       },
     },
   };
+
+  return resyncing;
 };
 
 const syncArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
   const project = await projectShapeReader(cwd);
+  const projectName = basename(cwd);
 
-  return buildArtifacts(answers, project, basename(cwd))
+  return buildArtifacts(answers, project, projectName)
     .map(forSync);
 };
 
@@ -84,23 +92,33 @@ const syncArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artif
 const driftOf = async (cwd: string, answers: HostedAnswers): Promise<DependencyDrift> => {
   const manifest = await readIfPresent(join(cwd, 'package.json'));
 
-  return manifest === null
-    ? {
-        upgrades: [],
-        missing: {
-          dependencies: {},
-          devDependencies: {},
-        },
-      }
-    : dependencyDrift(parsePackageJson(manifest), answers);
+  if (manifest === null) {
+    const noDrift: DependencyDrift = {
+      upgrades: [],
+      missing: {
+        dependencies: {},
+        devDependencies: {},
+      },
+    };
+
+    return noDrift;
+  }
+
+  const packageJson = parsePackageJson(manifest);
+
+  return dependencyDrift(packageJson, answers);
 };
 
 // Exact paths, so dropping a deselected host's files reaches nothing the project put beside them.
 const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry[]> => {
   const entries: SyncEntry[] = [];
 
-  for (const target of await obsoleteCandidates(cwd)) {
-    if (!expected.has(target) && await entryExists(join(cwd, target))) {
+  const candidates = await obsoleteCandidates(cwd);
+
+  for (const target of candidates) {
+    const isObsolete = !expected.has(target) && await entryExists(join(cwd, target));
+
+    if (isObsolete) {
       entries.push(entryOf(target, 'obsolete'));
     }
   }
@@ -111,8 +129,9 @@ const obsoleteIn = async (cwd: string, expected: Set<string>): Promise<SyncEntry
 export const planSync = async (cwd: string, answers: HostedAnswers): Promise<SyncPlan> => {
   const entries: SyncEntry[] = [];
   const expected = new Set<string>();
+  const artifacts = await syncArtifacts(cwd, answers);
 
-  for (const artifact of await syncArtifacts(cwd, answers)) {
+  for (const artifact of artifacts) {
     expected.add(artifact.target);
 
     // This run's own bookkeeping, not a file to report.
@@ -139,16 +158,21 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
     entries.push(entryOf(artifact.target, current === shipped ? 'unchanged' : 'changed'));
   }
 
-  entries.push(...await obsoleteIn(cwd, expected));
+  const obsolete = await obsoleteIn(cwd, expected);
 
-  return {
-    ...await driftOf(cwd, answers),
+  entries.push(...obsolete);
+
+  const drift = await driftOf(cwd, answers);
+  const plan: SyncPlan = {
+    ...drift,
     entries,
     pending: entries
       .filter((entry) => {
         return entry.status !== 'unchanged';
       }),
   };
+
+  return plan;
 };
 
 // An empty `.claude/` reads as if the host were still configured.
@@ -189,8 +213,9 @@ export const applySync = async (
 
   // Read first: the loop below rewrites the record.
   const candidates = await obsoleteCandidates(cwd);
+  const artifacts = await syncArtifacts(cwd, answers);
 
-  for (const artifact of await syncArtifacts(cwd, answers)) {
+  for (const artifact of artifacts) {
     expected.add(artifact.target);
 
     // A partial sync that left it stale would forget what it may remove next time.
@@ -203,7 +228,9 @@ export const applySync = async (
       continue;
     }
 
-    if (await artifactWriter(cwd, artifact)) {
+    const isWritten = await artifactWriter(cwd, artifact);
+
+    if (isWritten) {
       written.push(artifact.target);
     }
   }
@@ -216,7 +243,9 @@ export const applySync = async (
     const path = await safeProjectPath(cwd, target);
 
     // Gone since the plan: nothing to remove or report, and its directory may be gone too.
-    if (!await entryExists(path)) {
+    const isPresent = await entryExists(path);
+
+    if (!isPresent) {
       continue;
     }
 
@@ -227,8 +256,10 @@ export const applySync = async (
 
   await pruneEmpty(cwd, removed);
 
-  return {
+  const result: SyncResult = {
     written,
     removed,
   };
+
+  return result;
 };

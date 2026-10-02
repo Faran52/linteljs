@@ -47,7 +47,9 @@ const writeArtifacts = async (
       continue;
     }
 
-    if (await artifactWriter(options.cwd, artifact, plantsSeeds(options))) {
+    const isWritten = await artifactWriter(options.cwd, artifact, plantsSeeds(options));
+
+    if (isWritten) {
       options.onWrite?.(artifact.target);
     }
   }
@@ -110,9 +112,11 @@ const STAGE_RUNNERS: Record<Stage, StageRunner> = {
 
 export const pipelineRun = async (options: PipelineOptions): Promise<void> => {
   // Seeded first, so `linteljs.config.json` precedes the `package.json` its answers imply.
+  const seeds = seedArtifacts(options.answers, options.name);
+  const project = await projectShapeReader(options.cwd);
   const artifacts = [
-    ...seedArtifacts(options.answers, options.name),
-    ...buildArtifacts(options.answers, await projectShapeReader(options.cwd), options.name),
+    ...seeds,
+    ...buildArtifacts(options.answers, project, options.name),
   ];
 
   for (const [index, stage] of STAGES.entries()) {
