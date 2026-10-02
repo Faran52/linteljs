@@ -10,6 +10,7 @@ import {
   BADGE_COLOURS,
   CONTEXT_CEILING_TOKENS,
   CONTEXT_WARN_TOKENS,
+  TOKENS_PER_K,
   TRANSCRIPT_TAIL_BYTES,
 } from '../constants.ts';
 
@@ -141,7 +142,7 @@ export const badgeOf = (tokens: number): string => {
     colour = BADGE_COLOURS.near;
   }
 
-  const thousands = Math.floor(tokens / 1000);
+  const thousands = Math.floor(tokens / TOKENS_PER_K);
 
   return `\u001B[38;5;${String(colour)}m[CTX ${String(thousands)}K]\u001B[0m`;
 };

@@ -10,6 +10,8 @@ import {
 
 import { starterApplies, targetFor } from '@targets';
 
+const WILDCARD = '/*';
+
 // Zod's schemas go there; otherwise read off the starter, so the alias names a directory the project has.
 const writesApis = (answers: Answers): boolean => {
   return hasLibrary(answers, 'zod') || targetFor(answers).starterFiles
@@ -49,8 +51,8 @@ export const buildAliases = (answers: Answers): AliasMap => {
   // Each `/*` key beside an exact one onto its directory, so a directory index imports as `@ui`.
   const withIndexes = kept
     .flatMap(([alias, directory]) => {
-      const pairs: [string, string][] = alias.endsWith('/*') && directory.endsWith('/*')
-        ? [[alias, directory], [alias.slice(0, -2), directory.slice(0, -2)]]
+      const pairs: [string, string][] = alias.endsWith(WILDCARD) && directory.endsWith(WILDCARD)
+        ? [[alias, directory], [alias.slice(0, -WILDCARD.length), directory.slice(0, -WILDCARD.length)]]
         : [[alias, directory]];
 
       return pairs;

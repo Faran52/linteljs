@@ -1,4 +1,8 @@
 // No field of a Node version nears a thousand; a range with an upper bound would need more.
+const MAJOR_WEIGHT = 1_000_000;
+
+const MINOR_WEIGHT = 1_000;
+
 export const rankOf = (version: string): number => {
   const [
     major = 0,
@@ -10,7 +14,7 @@ export const rankOf = (version: string): number => {
       return Number.parseInt(field, 10);
     });
 
-  return major * 1_000_000 + minor * 1_000 + patch;
+  return major * MAJOR_WEIGHT + minor * MINOR_WEIGHT + patch;
 };
 
 export const majorOf = (version: string): number => {

@@ -19,6 +19,7 @@ import {
   logWarn,
 } from '../../templates/project/scripts/utils/loggerUtils.ts';
 
+import { COLUMN_WIDTH, DEFAULT_CONCURRENCY } from './constants.ts';
 import {
   type Collected,
   NPM,
@@ -30,7 +31,7 @@ import { probes } from './utils/probesUtils.ts';
 import type { E2eCase } from '@pipeline/e2e/matrix/matrix';
 
 const MANAGERS: Collected[] = ['pnpm', 'npm'];
-const CONCURRENCY = Number(env['COLLECT_CONCURRENCY'] ?? 4);
+const CONCURRENCY = Number(env['COLLECT_CONCURRENCY'] ?? DEFAULT_CONCURRENCY);
 
 const collectOne = async (
   { label, answers }: E2eCase,
@@ -102,14 +103,15 @@ const report = (found: [string, Record<Collected, string[]>][]): void => {
     });
 
   log([
-    `  ${'target'.padEnd(28)}${'pnpm'.padEnd(46)}npm only`,
+    `  ${'target'.padEnd(COLUMN_WIDTH.target)}${'pnpm'.padEnd(COLUMN_WIDTH.pnpm)}npm only`,
     ...rows
       .map(({
         label,
         pnpm,
         extra,
       }) => {
-        return `  ${label.padEnd(28)}${(pnpm.join(', ') || '(none)').padEnd(46)}${extra.join(', ') || '-'}`;
+        return `  ${label.padEnd(COLUMN_WIDTH.target)}${(pnpm.join(', ') || '(none)').padEnd(COLUMN_WIDTH.pnpm)}`
+          + (extra.join(', ') || '-');
       }),
   ].join('\n'));
 

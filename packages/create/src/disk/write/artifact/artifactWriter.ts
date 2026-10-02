@@ -13,6 +13,8 @@ import { safeProjectPath } from '../../utils/pathUtils';
 
 import { projectFileWriter } from './utils/projectFileUtils';
 
+const EXECUTABLE_MODE = 0o755;
+
 export const artifactWriter = async (
   cwd: string,
   artifact: Artifact,
@@ -51,7 +53,7 @@ export const artifactWriter = async (
 
   if (artifact.executable === true) {
     // Husky and Claude Code invoke these directly, and npm does not preserve the mode bit for every consumer.
-    await chmod(path, 0o755);
+    await chmod(path, EXECUTABLE_MODE);
   }
 
   return true;

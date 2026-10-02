@@ -6,6 +6,7 @@ import { env, execPath } from 'node:process';
 
 import { parsePackageJson } from '../../../src/emitters';
 import { logWarn } from '../../../templates/project/scripts/utils/loggerUtils.ts';
+import { LISTING_PREVIEW_CHARS } from '../constants.ts';
 
 import type { E2eRegistry } from '@pipeline/e2e/registry/registry';
 
@@ -145,7 +146,7 @@ export const PASSES: Record<Collected, Pass> = {
           : [];
       }
       catch {
-        logWarn(`npm install-scripts ls answered no JSON:\n${listing.slice(0, 400)}`);
+        logWarn(`npm install-scripts ls answered no JSON:\n${listing.slice(0, LISTING_PREVIEW_CHARS)}`);
 
         return [];
       }

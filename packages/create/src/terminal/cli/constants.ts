@@ -105,3 +105,5 @@ export const SPINNER_FRAMES = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏';
 export const SPINNER_INTERVAL = 80;
 
 export const STAGE_WIDTH = widthOf(STAGES);
+
+export const MS_PER_SECOND = 1000;

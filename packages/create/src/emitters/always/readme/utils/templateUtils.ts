@@ -12,6 +12,8 @@ import type { Answers } from '@config/types';
 
 const SLOT_PATTERN = /\{\{[A-Z_]+\}\}/g;
 
+const SLOT_DELIMITER_LENGTH = '{{'.length;
+
 const testRows = (answers: Answers, run: string): string => {
   return hasTests(answers)
     ? `| test | \`${run} test\` |\n| coverage | \`${run} test:coverage\` |\n`
@@ -39,7 +41,7 @@ export const fillSlots = (
 ): string => {
   const filled = template
     .replace(SLOT_PATTERN, (slot) => {
-      return values[slot.slice(2, -2)] ?? slot;
+      return values[slot.slice(SLOT_DELIMITER_LENGTH, -SLOT_DELIMITER_LENGTH)] ?? slot;
     });
 
   const unfilled = filled.match(SLOT_PATTERN);

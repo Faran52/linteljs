@@ -12,6 +12,7 @@ import {
 
 import {
   ADD_PREFIX,
+  MS_PER_SECOND,
   SPINNER_FRAMES,
   SPINNER_INTERVAL,
   STAGE_LABELS,
@@ -46,7 +47,7 @@ export const say = (message: string): void => {
 export const stageLine = (stage: Stage, writes: number, notice: string, milliseconds?: number): string => {
   const files = writes === 1 ? 'file' : 'files';
   const wrote = writes > 0 ? `${String(writes)} ${files}` : notice;
-  const took = milliseconds === undefined ? '' : `${(milliseconds / 1000).toFixed(1)}s`;
+  const took = milliseconds === undefined ? '' : `${(milliseconds / MS_PER_SECOND).toFixed(1)}s`;
 
   const summary = [wrote, took]
     .filter((part) => {
@@ -111,7 +112,7 @@ const pipedReport = (options: CliOptions): StageReport => {
     },
     // Six spaces, so it sits under the label rather than under the counter.
     onStageDone: (_stage, milliseconds) => {
-      say(`      done in ${(milliseconds / 1000).toFixed(1)}s`);
+      say(`      done in ${(milliseconds / MS_PER_SECOND).toFixed(1)}s`);
     },
   };
 

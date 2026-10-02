@@ -1,3 +1,5 @@
+const ARRAY_CLOSE = '\n];';
+
 // Merged, so the shipped patterns update and the project's own blocks survive.
 
 // Anchored to a whole line: a comment or a longer name can hold the same text.
@@ -15,9 +17,9 @@ const blockOf = (source: string, name: string): string | null => {
   }
 
   const rest = source.slice(opening.index);
-  const closing = rest.indexOf('\n];');
+  const closing = rest.indexOf(ARRAY_CLOSE);
 
-  return closing === -1 ? null : rest.slice(0, closing + 3);
+  return closing === -1 ? null : rest.slice(0, closing + ARRAY_CLOSE.length);
 };
 
 const carriedOver = (shipped: string, current: string, name: string): string => {

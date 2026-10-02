@@ -8,11 +8,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { CONTEXT_CEILING_TOKENS } from './constants.ts';
+import { CONTEXT_CEILING_TOKENS, TOKENS_PER_K } from './constants.ts';
 import { contextOf } from './utils/contextUtils.ts';
 import { readPayload, readSession } from './utils/hostUtils.ts';
 
-const CEILING = `${String(CONTEXT_CEILING_TOKENS / 1000)}K`;
+const CEILING = `${String(CONTEXT_CEILING_TOKENS / TOKENS_PER_K)}K`;
 
 // The plugin data directory outlives an update; the workspace runs this outside a plugin, where tmp serves.
 const markerOf = (session: string): string => {
@@ -22,7 +22,7 @@ const markerOf = (session: string): string => {
 };
 
 const warningOf = (tokens: number): object => {
-  const thousands = Math.floor(tokens / 1000);
+  const thousands = Math.floor(tokens / TOKENS_PER_K);
   const size = `${String(thousands)}K`;
   const warning = {
     systemMessage: `Context passed ${CEILING} (${size}). Consider /compact or a fresh session.`,

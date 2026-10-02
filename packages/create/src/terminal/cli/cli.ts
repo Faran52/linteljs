@@ -57,6 +57,8 @@ interface HostedAsk {
   answers: HostedAnswers;
 }
 
+const EXIT_CANCELLED = 130;
+
 const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
   const configText = JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
@@ -264,7 +266,7 @@ export const main = async (argv: string[], prompter?: Prompter): Promise<number>
     if (error instanceof RunCancelled) {
       say(error.message);
 
-      return 130;
+      return EXIT_CANCELLED;
     }
 
     // One line, not a rethrow: an unhandled rejection over a half-written directory helps nobody.
