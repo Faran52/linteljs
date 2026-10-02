@@ -29,8 +29,8 @@ async function start() {
 }
 ```
 
-With `strict: true`, the exemptions below are dropped and the same code reports where it otherwise
-would not:
+With `strict: true`, every exemption below but the top level is dropped, and the same code reports
+where it otherwise would not:
 
 ```ts
 /* eslint @linteljs/prefer-await-to-then: ["error", { "strict": true }] */
@@ -52,6 +52,11 @@ async function load() {
 
 // correct: top level of a module, where a call has to start somewhere
 promise.then(parse);
+
+// correct: a block at the top level is still outside every function
+if (ready) {
+  promise.then(parse);
+}
 
 // correct: a constructor cannot be async
 class Loader {
@@ -96,9 +101,10 @@ refactor, not a fix.
 
 ## Notes
 
-Exempt at the default setting:
+Exempt at the default setting, and the first under `strict: true` too:
 
-- top level of a module, where a call has to start somewhere
+- top level of a module, where a call has to start somewhere, blocks included; a class static block
+  is a scope of its own and reports
 - anywhere under a `yield` or an `await`, which is already the shape being asked for
 - inside a constructor, which cannot be async
 - a value returned from an async function, so the caller's `await` settles it

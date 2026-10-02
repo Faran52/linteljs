@@ -72,8 +72,9 @@ export const preferAwaitToThen = createRule('prefer-await-to-then', {
         );
     };
 
+    // The function scope, so a block at the top level of the file counts as top level.
     const isTopLevelScoped = (node: RuleNode): boolean => {
-      return scopeOf(context, node).block.type === 'Program';
+      return scopeOf(context, node).variableScope.block.type === 'Program';
     };
 
     return {

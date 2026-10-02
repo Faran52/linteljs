@@ -1,4 +1,4 @@
-import { jsRuleTester } from '@mocks/ruleTesters';
+import { jsRuleTester, tsRuleTester } from '@mocks/ruleTesters';
 
 import { preferAwaitToThen } from './preferAwaitToThen.ts';
 
@@ -8,6 +8,16 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
     'promise.catch(handle);',
     'promise.finally(cleanup);',
     'load().then(parse).catch(handle);',
+    'if (ready) {\n  promise.then(parse);\n}',
+    'for (const item of items) {\n  item.load().catch(handle);\n}',
+    {
+      // Strict drops the hand-offs, not the top level: there is no function to make async.
+      code: 'if (ready) {\n  promise.then(parse);\n}',
+      options: [{ strict: true }],
+    },
+    'function run() {\n  return promise.then;\n}',
+    'function run() {\n  return promise.then.call(promise, parse);\n}',
+    'const load = async () => {\n  if (ready) {\n    return promise.then(parse);\n  }\n\n  return null;\n};',
 
     'async function load() {\n  return await promise.then(parse);\n}',
     'async function load() {\n  return await promise.catch(handle);\n}',
@@ -42,6 +52,31 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
     'class Holder {\n  #then = null;\n\n  run() {\n    return this.#then();\n  }\n}',
   ],
   invalid: [
+    {
+      code: 'function run() {\n  if (ready) {\n    promise.then(parse);\n  }\n}',
+      errors: [{ messageId: 'preferAwait' }],
+    },
+    {
+      // A static block runs once, but in its own scope, not the file's.
+      code: 'class Registry {\n  static {\n    promise.then(parse);\n  }\n}',
+      errors: [{ messageId: 'preferAwait' }],
+    },
+    {
+      code: 'class Service {\n  load = () => promise.finally(cleanup);\n}',
+      errors: [{ messageId: 'preferAwait' }],
+    },
+    {
+      code: 'const load = () => promise.then(parse);',
+      errors: [{ messageId: 'preferAwait' }],
+    },
+    {
+      code: 'function load() {\n  return promise?.then(parse);\n}',
+      errors: [{
+        messageId: 'preferAwait',
+        line: 2,
+        column: 19,
+      }],
+    },
     {
       code: `async function outer() {
   function inner() {
@@ -108,6 +143,20 @@ jsRuleTester.run('prefer-await-to-then', preferAwaitToThen, {
       code: 'async function load(items) {\n'
         + '  return await Promise.all(items.map((item) => item.load().then(parse)));\n}',
       options: [{ strict: true }],
+      errors: [{ messageId: 'preferAwait' }],
+    },
+  ],
+});
+
+tsRuleTester.run('prefer-await-to-then (typescript)', preferAwaitToThen, {
+  valid: ['(promise as Promise<number>).then(parse);'],
+  invalid: [
+    {
+      code: 'function load(): Promise<number> {\n  return (promise as Promise<number>).then(parse);\n}',
+      errors: [{ messageId: 'preferAwait' }],
+    },
+    {
+      code: 'function load(): Promise<number> {\n  return promise!.catch(handle);\n}',
       errors: [{ messageId: 'preferAwait' }],
     },
   ],

@@ -97,6 +97,8 @@ when a version's change lives in a sibling it is described there instead:
 - `prefer-arrow-functions` no longer converts a function reached through a hoisted caller or from a later `case` of
   its `switch`, both of which threw `ReferenceError`, and no longer asks for a block body in a StyleX dynamic style
   inside `stylex.create()`, which the compiler refuses.
+- `prefer-await-to-then` no longer reports a chain in a block at the top level of a file, such as an `if` or a
+  `for` body, which no function encloses and so none could make async.
 - A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
 
 ## 1.5.3
