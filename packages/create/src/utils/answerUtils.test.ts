@@ -32,10 +32,10 @@ describe('hasLibrary', () => {
       styling: 'tailwind',
     });
 
-    const answersHasLibrary = hasLibrary(answers, 'zod');
-    expect(answersHasLibrary).toBe(true);
-    const answersHasLibrary2 = hasLibrary(answers, 'ts-pattern');
-    expect(answersHasLibrary2).toBe(false);
+    const hasZod = hasLibrary(answers, 'zod');
+    expect(hasZod).toBe(true);
+    const hasTsPattern = hasLibrary(answers, 'ts-pattern');
+    expect(hasTsPattern).toBe(false);
   });
 });
 
@@ -44,11 +44,11 @@ describe('surfacesOf', () => {
     const chosen = answersFor({ surfaces: ['devtools-panel'] });
 
     const chosenSurfaces = surfacesOf(chosen);
-    const expected = ['devtools-panel'];
-    expect(chosenSurfaces).toEqual(expected);
-    const surfaces2 = surfacesOf(answersFor());
-    const expected2 = ['popup', 'background'];
-    expect(surfaces2).toEqual(expected2);
+    const expectedChosen = ['devtools-panel'];
+    expect(chosenSurfaces).toEqual(expectedChosen);
+    const defaultSurfaces = surfacesOf(answersFor());
+    const expectedDefault = ['popup', 'background'];
+    expect(defaultSurfaces).toEqual(expectedDefault);
   });
 });
 
@@ -56,10 +56,10 @@ describe('hasSurface', () => {
   it('reads the chosen surfaces', () => {
     const answers = answersFor({ surfaces: ['devtools-panel'] });
 
-    const answersHasSurface = hasSurface(answers, 'devtools-panel');
-    expect(answersHasSurface).toBe(true);
-    const answersHasSurface2 = hasSurface(answers, 'popup');
-    expect(answersHasSurface2).toBe(false);
+    const hasPanel = hasSurface(answers, 'devtools-panel');
+    expect(hasPanel).toBe(true);
+    const hasPopup = hasSurface(answers, 'popup');
+    expect(hasPopup).toBe(false);
   });
 });
 
@@ -71,20 +71,20 @@ describe('browsersOf', () => {
     });
 
     const bothBrowsers = browsersOf(both);
-    const expected = ['firefox', 'chrome'];
-    expect(bothBrowsers).toEqual(expected);
-    const browsers2 = browsersOf(answersFor());
-    const expected2 = ['chrome'];
-    expect(browsers2).toEqual(expected2);
+    const expectedBoth = ['firefox', 'chrome'];
+    expect(bothBrowsers).toEqual(expectedBoth);
+    const defaultBrowsers = browsersOf(answersFor());
+    const expectedDefault = ['chrome'];
+    expect(defaultBrowsers).toEqual(expectedDefault);
   });
 });
 
 describe('hasTests', () => {
   it('holds for every testing answer but none', () => {
-    const actual = hasTests(answersFor());
-    expect(actual).toBe(true);
-    const actual2 = hasTests(answersFor({ testing: 'none' }));
-    expect(actual2).toBe(false);
+    const testsByDefault = hasTests(answersFor());
+    expect(testsByDefault).toBe(true);
+    const testsWithNone = hasTests(answersFor({ testing: 'none' }));
+    expect(testsWithNone).toBe(false);
   });
 });
 
