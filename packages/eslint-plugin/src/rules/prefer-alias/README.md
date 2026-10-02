@@ -16,6 +16,15 @@ alias: the one whose directory is deepest. An alias import pointing back into th
 directory is fixed to a relative one, so a directory never imports itself through its alias. An import stays as
 written when the alias would resolve somewhere else, or when tsc does not resolve it at all.
 
+What the rule leaves relative, by design:
+
+- An import down into the file's own directory (`./x/...`), even when `x` is another alias's directory. A
+  `src/App.tsx` importing `./components/features/...` stays as written.
+- An import between two directories that only a catch-all alias holds, as Nuxt's `~/*` and `@/*` or Expo's `@/*`
+  onto `src/`: both sit in that one alias, so the import is within one aliased directory.
+- An import tsc does not resolve, as a `.vue` component in a program without vue-tsc. A `.astro` file is linted
+  without type information, so it is never checked.
+
 Only `prefix/*` patterns onto `directory/*` count, by their first substitution. An exact key onto the same
 directory, as `"@ui": ["./src/ui"]` beside `"@ui/*": ["./src/ui/*"]`, names its index: `../ui` is fixed to
 `@ui`. Any other exact key names one file, which tsc takes before any `prefix/*`: an import spelled as that key,
