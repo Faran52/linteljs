@@ -103,6 +103,8 @@ when a version's change lives in a sibling it is described there instead:
   `await (fetch(url).catch(handle) as Promise<Data>)` or `await fetch(url).catch(handle)!`, which it and
   `prefer-await-to-then` both skipped. `prefer-await-to-then` now hands `return p.then(x) as Promise<T>` in an
   async function off to it.
+- `react-no-global-namespace` reports a member or JSX tag with a comment inside it, such as
+  `React./* why */useState`, without a fix, where the fix dropped the comment.
 - A crash on a lookup the parse should guarantee now names the lookup and asks for the parser in the issue.
 
 ## 1.5.3

@@ -196,6 +196,50 @@ function build() {
       output: null,
       errors: [{ messageId: 'globalNamespace' }],
     },
+
+    {
+      code: 'let value: React/* why */.ReactNode;',
+      output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'let a: React./* why */ReactNode;\nlet b: React.ReactElement;',
+      output: "import { type ReactElement } from 'react';\n\nlet a: React./* why */ReactNode;\nlet b: ReactElement;",
+      errors: [{ messageId: 'globalNamespace' }, { messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'let value: React.ReactNode /* after */;',
+      output: "import { type ReactNode } from 'react';\n\nlet value: ReactNode /* after */;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    {
+      code: 'let probe: typeof React.useState;',
+      output: "import { type useState } from 'react';\n\nlet probe: typeof useState;",
+      errors: [{
+        messageId: 'globalNamespace',
+        data: { name: 'useState' },
+      }],
+    },
+
+    {
+      code: "import { useState as useLocal } from 'react';\nconst probe = React.useState;",
+      output: "import { useState, useState as useLocal } from 'react';\nconst probe = useState;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
+    {
+      code: 'function build() {\n  const useState = 1;\n  return React.useState;\n}\nReact.useEffect();',
+      output: "import { useEffect } from 'react';\n\n"
+        + 'function build() {\n  const useState = 1;\n  return React.useState;\n}\nuseEffect();',
+      errors: [{ messageId: 'globalNamespace' }, { messageId: 'globalNamespace' }],
+    },
+
+    {
+      code: 'export default React.memo(App);',
+      output: "import { memo } from 'react';\n\nexport default memo(App);",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
   ],
 });
 
@@ -206,8 +250,35 @@ tsxRuleTester.run('react-no-global-namespace: markup', reactNoGlobalNamespace, {
     'const el = <Other.Thing />;',
 
     'const el = <React.JSX.Foo />;',
+    'const el = <React:Foo />;',
   ],
   invalid: [
+    {
+      code: 'const el = <React/* why */.Fragment>text</React.Fragment>;',
+      output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'const el = <React.Fragment>text</React./* why */Fragment>;',
+      output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'const el = <React.Fragment>{/* keep */}text</React.Fragment>;',
+      output: "import { Fragment } from 'react';\n\nconst el = <Fragment>{/* keep */}text</Fragment>;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'const el = <React.Fragment><React.Fragment /></React.Fragment>;',
+      output: "import { Fragment } from 'react';\n\nconst el = <Fragment><Fragment /></Fragment>;",
+      errors: [{ messageId: 'globalNamespace' }, { messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'const el = <React.Fragment {...props} key="a">text</React.Fragment>;',
+      output: "import { Fragment } from 'react';\n\nconst el = <Fragment {...props} key=\"a\">text</Fragment>;",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+
     {
       code: 'const el = <React.Fragment />;',
       output: "import { Fragment } from 'react';\n\nconst el = <Fragment />;",
@@ -257,8 +328,29 @@ jsRuleTester.run('react-no-global-namespace: values', reactNoGlobalNamespace, {
     "const key = 'createElement';\nReact[key]('div');",
 
     'other.createElement();',
+    'obj.React.useState();',
+    'function build(React) {\n  return React.useState;\n}',
   ],
   invalid: [
+    {
+      code: 'React./* why */useState(0);',
+      output: null,
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'React?.useState(0);',
+      output: "import { useState } from 'react';\n\nuseState(0);",
+      errors: [{ messageId: 'globalNamespace' }],
+    },
+    {
+      code: 'React.Children.map(items, render);',
+      output: "import { Children } from 'react';\n\nChildren.map(items, render);",
+      errors: [{
+        messageId: 'globalNamespace',
+        data: { name: 'Children' },
+      }],
+    },
+
     {
       code: "React.createElement('div');",
       output: "import { createElement } from 'react';\n\ncreateElement('div');",

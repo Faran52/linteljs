@@ -83,6 +83,9 @@ access would quietly mean something else.
   what TypeScript refuses, so reading the name alone is not enough: a value reach needs a value
   specifier.
 
+A reach with a comment inside it, such as `React./* why */useState`, reports without a fix too: the
+rewrite would drop the comment.
+
 ## What it leaves alone
 
 A declaration file, and any file whose body carries a top-level `declare` and no import at all.

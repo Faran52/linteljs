@@ -51,7 +51,7 @@ interface Reach {
   targets: AST.Range[];
   anchor: (Located & Ranged) | undefined;
   imported: boolean;
-  collides: boolean;
+  fixable: boolean;
 }
 
 // In `import type { ... }` a `type` modifier on a specifier is a syntax error.
@@ -172,6 +172,13 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
 
       // Bound to something else already, so replacing the member access would quietly mean a different value.
       const collides = !imported && resolveVariable(scope, name) !== null;
+      // Only a comment puts a slash between `React` and a name, and the rewrite would drop it.
+      const holdsComment = targets
+        .some((target) => {
+          return source.text
+            .slice(...target)
+            .includes('/');
+        });
       const anchor = importAnchor(member);
 
       reaches.push({
@@ -181,7 +188,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         targets,
         anchor,
         imported,
-        collides,
+        fixable: !collides && !holdsComment,
       });
     };
 
@@ -245,7 +252,7 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
         const groups = new Map<(Located & Ranged) | undefined, Reach[]>();
 
         for (const reach of reaches) {
-          if (!reach.collides) {
+          if (reach.fixable) {
             groups.set(reach.anchor, [...groups.get(reach.anchor) ?? [], reach]);
           }
         }
@@ -254,13 +261,13 @@ export const reactNoGlobalNamespace = createRule('react-no-global-namespace', {
           member,
           name,
           anchor,
-          collides,
+          fixable,
         } of reaches) {
           context.report({
             node: member,
             messageId: 'globalNamespace',
             data: { name },
-            fix: collides || anchor === undefined
+            fix: !fixable || anchor === undefined
               ? null
               : rewriteAll(anchor, mustFind(groups.get(anchor))),
           });

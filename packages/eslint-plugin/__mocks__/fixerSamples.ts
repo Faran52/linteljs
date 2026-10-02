@@ -54,6 +54,20 @@ export const FIXER_SAMPLES: FixerSample[] = [
     filename: 'render.ts',
   },
   {
+    // Rewriting `React./* why */useState` to `useState` would drop the comment.
+    name: 'React global with a comment inside the member',
+    code: 'const state = React./* why */useState(0);\nconst node: React/* type */.ReactNode = null;\n'
+      + 'export { node, state };\n',
+    typescript: true,
+    filename: 'commented.ts',
+  },
+  {
+    name: 'React global as a JSX tag with a comment inside the name',
+    code: 'export const view = <React/* why */.Fragment>text</React.Fragment>;\n',
+    typescript: true,
+    filename: 'commented.tsx',
+  },
+  {
     // Importing into a declaration file makes it a module, and its globals stop being global.
     name: 'React global in a global declaration file',
     code: "declare module '*.svg' {\n  const Component: React.FC;\n  export default Component;\n}\n",
