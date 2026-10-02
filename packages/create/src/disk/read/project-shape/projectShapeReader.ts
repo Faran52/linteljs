@@ -26,8 +26,10 @@ export const projectShapeReader = async (cwd: string): Promise<ProjectShape> => 
     allPresent(cwd, STYLE_ENTRY_CANDIDATES),
   ]);
 
-  return {
+  const shape: ProjectShape = {
     setupTests,
     styleEntries,
   };
+
+  return shape;
 };

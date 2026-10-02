@@ -23,24 +23,31 @@ export const artifactWriter = async (
   }
 
   // Skipped rather than failed: the example is worth losing when a rearranged starter moved it.
-  if (artifact.requires !== undefined
-    && !(await Promise.all(artifact.requires
+  if (artifact.requires !== undefined) {
+    const present = await Promise.all(artifact.requires
       .map(async (path) => {
         return await exists(join(cwd, path));
-      }))).every(Boolean)) {
-    return false;
+      }));
+
+    if (!present.every(Boolean)) {
+      return false;
+    }
   }
 
   const path = await safeProjectPath(cwd, artifact.target);
 
-  if (artifact.preserve === true && await entryExists(path)) {
+  const isPreserved = artifact.preserve === true && await entryExists(path);
+
+  if (isPreserved) {
     return false;
   }
 
   // Read for every artifact: the copied checker still carries the project's own blocks.
   const current = await readIfPresent(path);
 
-  await projectFileWriter(cwd, artifact.target, await shippedAssetsReader(artifact.content, current));
+  const text = await shippedAssetsReader(artifact.content, current);
+
+  await projectFileWriter(cwd, artifact.target, text);
 
   if (artifact.executable === true) {
     // Husky and Claude Code invoke these directly, and npm does not preserve the mode bit for every consumer.

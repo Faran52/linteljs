@@ -35,7 +35,9 @@ export const safeProjectPath = async (cwd: string, target: string): Promise<stri
     parent = join(parent, segment);
 
     try {
-      if ((await lstat(parent)).isSymbolicLink()) {
+      const parentEntry = await lstat(parent);
+
+      if (parentEntry.isSymbolicLink()) {
         throw new Error(`Refusing to use ${target}: a parent directory is a symbolic link`);
       }
     }

@@ -94,7 +94,9 @@ export const rmdirIfEmpty = async (path: string): Promise<void> => {
 export const allPresent = async (cwd: string, candidates: string[]): Promise<string[]> => {
   const checked = candidates
     .map(async (candidate) => {
-      return await entryExists(join(cwd, candidate)) ? candidate : undefined;
+      const isPresent = await entryExists(join(cwd, candidate));
+
+      return isPresent ? candidate : undefined;
     });
 
   const found = await Promise.all(checked);

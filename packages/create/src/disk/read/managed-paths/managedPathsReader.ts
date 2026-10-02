@@ -18,7 +18,8 @@ const isManagedRecord = (value: unknown): value is ManagedRecord => {
 
 // Unreadable answers nothing, the safe direction: `sync` then removes nothing.
 export const managedPathsReader = async (cwd: string): Promise<string[]> => {
-  const record = parsedAs(await readIfPresent(join(cwd, MANAGED_PATH)), isManagedRecord);
+  const recordText = await readIfPresent(join(cwd, MANAGED_PATH));
+  const record = parsedAs(recordText, isManagedRecord);
 
   if (record === null || !Array.isArray(record.removable)) {
     return [];

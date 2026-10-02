@@ -9,10 +9,14 @@ import type { ArtifactContent } from '@emitters';
 const templatesRootFrom = (dir: string): string => {
   const parent = dirname(dir);
 
-  return existsSync(join(dir, 'templates')) || parent === dir ? join(dir, 'templates') : templatesRootFrom(parent);
+  const templates = join(dir, 'templates');
+
+  return existsSync(templates) || parent === dir ? templates : templatesRootFrom(parent);
 };
 
-export const TEMPLATES_ROOT = templatesRootFrom(dirname(fileURLToPath(import.meta.url)));
+const MODULE_DIRECTORY = dirname(fileURLToPath(import.meta.url));
+
+export const TEMPLATES_ROOT = templatesRootFrom(MODULE_DIRECTORY);
 
 // `pipeline` writes this text and `sync` compares against it, so the two never compose differently.
 export const shippedAssetsReader = async (
@@ -29,7 +33,9 @@ export const shippedAssetsReader = async (
 
   const reads = content.sources
     .map(async (source) => {
-      return (await readFile(join(TEMPLATES_ROOT, source))).toString('utf8');
+      const bytes = await readFile(join(TEMPLATES_ROOT, source));
+
+      return bytes.toString('utf8');
     });
 
   const parts = await Promise.all(reads);

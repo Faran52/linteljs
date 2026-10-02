@@ -13,9 +13,10 @@ import { entryExists, hasCode } from '../../utils/fsUtils';
 
 // The older name is read and never written; `sync` clears it.
 const configPath = async (cwd: string): Promise<string> => {
-  return await entryExists(join(cwd, CONFIG_PATH))
-    ? join(cwd, CONFIG_PATH)
-    : join(cwd, LEGACY_CONFIG_PATH);
+  const current = join(cwd, CONFIG_PATH);
+  const hasCurrent = await entryExists(current);
+
+  return hasCurrent ? current : join(cwd, LEGACY_CONFIG_PATH);
 };
 
 export const linteljsConfigReader = async (cwd: string): Promise<LinteljsConfig> => {
@@ -37,11 +38,15 @@ export const linteljsConfigReader = async (cwd: string): Promise<LinteljsConfig>
 
     try {
       // Asks the descriptor, catching a swap after the `lstat`.
-      if (!(await file.stat()).isFile()) {
+      const openedEntry = await file.stat();
+
+      if (!openedEntry.isFile()) {
         throw new Error('linteljs.config.json must be a regular file');
       }
 
-      text = (await file.readFile()).toString('utf8');
+      const bytes = await file.readFile();
+
+      text = bytes.toString('utf8');
     }
     finally {
       await file.close();
