@@ -7,7 +7,7 @@ Composable ESLint flat-config layers for TypeScript projects. Use `composeConfig
 layer order without hand-writing the stack.
 
 ```bash
-npm install --save-dev @linteljs/eslint-config eslint
+npm install --save-dev @linteljs/eslint-config eslint typescript
 ```
 
 ```js
@@ -55,7 +55,7 @@ Framework layers override shared layers. Vue and Svelte must come after TypeScri
 can nest the TypeScript parser correctly. Astro is last for the same reason: it sets its own top-level parser for
 `.astro` files, and any layer placed after it that carries a parser with no `files` glob would replace it.
 
-`next()` is the one framework layer that stacks: React comes first, then Next. Angular owns its template
+`next()` and `nuxt()` stack on another layer: React comes first, then Next, and Vue first, then Nuxt. Angular owns its template
 processing, so a generated Angular project does not add `html()`.
 
 ## Compose layers yourself
@@ -75,31 +75,31 @@ export default [
 ];
 ```
 
-Apply the same order yourself. The root export re-exports layers for convenience, but subpaths are the better
-choice for a project config.
+Apply the same order yourself. The root export re-exports every layer except `composeConfig`, but importing it
+loads every framework and library layer, so it needs every optional peer installed. Use the subpaths.
 
 ## Layers
 
 | Export | Subpath | Purpose | Optional peers to install |
 | --- | --- | --- | --- |
 | `composeConfig(options?)` | `/compose-config` | Loads requested layers and orders them. | Those of the layers it loads. |
-| `base(options?)` | `/base` | Shared style, imports, unused imports, naming, complexity, and Lintel rules. It works for JavaScript on its own. On top of the plugin's `recommended`, `base` extends its three TypeScript-only rules to `.vue` and `.svelte` files; the four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
-| `typescript(options?)` | `/typescript` | Strict type-aware rules and an untyped tail for JavaScript and HTML. | `aliasExempt`, `enforceRelativeImports`. |
+| `base(options?)` | `/base` | `@stylistic` layout, `import-x` module checks, import sorting, unused imports, file and folder naming, sonarjs, size caps, `prefer-destructuring`, and the plugin's `recommended`. It works for JavaScript on its own. It extends the plugin's five TypeScript-only rules to `.vue` and `.svelte` files. The four React rules outside `recommended` arrive with `react()`, and `no-duplicate-jsx-props` with `solid()` too. | None. Its plugins are dependencies of this package. |
+| `typescript(options?)` | `/typescript` | typescript-eslint's `strictTypeChecked`, `parameter-properties` (class properties only), its own `prefer-destructuring` in place of the core rule, and `@linteljs/prefer-alias`, which takes `aliasExempt` and `enforceRelativeImports`. JavaScript and HTML files get an untyped tail. | None beyond `typescript`. |
 | `vitest()` | `/vitest` | Vitest recommended rules for test files. | `@vitest/eslint-plugin` |
 | `html()` | `/html` | HTML rules with its own parser. | `@html-eslint/eslint-plugin`, `@html-eslint/parser` |
 | `astro()` | `/astro` | `.astro` template rules and accessibility, with its own parser. A file type, so it stacks with a framework layer rather than replacing one. | `eslint-plugin-astro`, `astro-eslint-parser` |
-| `react()` | `/react` | React, React Hooks, JSX accessibility, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |
-| `next()` | `/next` | Next configuration, composed after React. | `@next/eslint-plugin-next`, plus the peers of `react()`. |
-| `reactNative()` | `/react-native` | React and React Hooks as `react()` has them, with this plugin's React Native accessibility rules in place of the web ones. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks` |
+| `react()` | `/react` | `@eslint-react` with its stricter rules, React Hooks, JSX accessibility, the four `@eslint-react` DOM rules (`<button>` type, `<iframe>` sandbox, unsafe `target="_blank"`, `javascript:` URLs), sonarjs's React rules, and Lintel React rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y-x` |
+| `next()` | `/next` | Next's `core-web-vitals` rules, composed after `react()`, which brings the DOM rules. | `@next/eslint-plugin-next`, plus the peers of `react()`. |
+| `reactNative()` | `/react-native` | React and React Hooks as `react()` has them, with this plugin's five React Native accessibility rules in place of JSX accessibility and the four DOM rules. | `@eslint-react/eslint-plugin`, `eslint-plugin-react-hooks` |
 | `vue()` | `/vue` | Vue recommended rules and template accessibility, with TypeScript nested in the SFC parser. | `eslint-plugin-vue`, `vue-eslint-parser`, `eslint-plugin-vuejs-accessibility` |
 | `nuxt()` | `/nuxt` | The two conventions Nuxt's build imposes, composed after Vue. | Those of `vue()`. |
 | `svelte()` | `/svelte` | Svelte recommended rules with the same parser arrangement. Accessibility is the compiler's, reported by `svelte-check --fail-on-warnings`, not this layer's. | `eslint-plugin-svelte`, `svelte-eslint-parser` |
-| `solid()` | `/solid` | Solid TypeScript rules and JSX accessibility. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y-x` |
+| `solid()` | `/solid` | Solid TypeScript rules, JSX accessibility, and `sonarjs/jsx-no-leaked-render`, which needs `typescript()` beside it. | `eslint-plugin-solid`, `eslint-plugin-jsx-a11y-x` |
 | `angular()` | `/angular` | Angular TypeScript rules, plus template rules and template accessibility. | `angular-eslint` |
 | `tanstackQuery()` | `/tanstack-query` | TanStack Query recommended rules. | `@tanstack/eslint-plugin-query` |
 | `tanstackRouter()` | `/tanstack-router` | TanStack Router recommended rules. | `@tanstack/eslint-plugin-router` |
-| `tailwind()` | `/tailwind` | Tailwind class-order, duplicate, and conflict checks. | `eslint-plugin-better-tailwindcss` |
-| `stylex()` | `/stylex` | StyleX style validation, including a ban on the shorthands StyleX compiles to no CSS, plus multi-value shorthands, unused styles, legacy pseudo-class keys, `className` beside `stylex.props`, and tokens outside a `.stylex.ts` file. | `@stylexjs/eslint-plugin` |
+| `tailwind(entryPoint?)` | `/tailwind` | better-tailwindcss's `recommended`: class order, line wrapping, and duplicate, conflicting, deprecated and non-canonical classes. Scripts, SFCs and `.astro` files. | `eslint-plugin-better-tailwindcss` |
+| `stylex()` | `/stylex` | StyleX style validation, including a ban on the shorthands StyleX compiles to no CSS, plus multi-value shorthands, unused styles, legacy pseudo-class keys, `className` or `style` beside `stylex.props`, and tokens outside a `.stylex.ts` file. | `@stylexjs/eslint-plugin` |
 
 Framework and library plugins are optional peer dependencies. Install the peers for layers you enable; the
 column above names them per layer.
@@ -122,8 +122,8 @@ interface BaseOptions {
 }
 ```
 
-Pass aliases to the composer instead of adding them in a later block. The base layer uses them for both import
-resolution and import-sort groups. Set `resolver.project` when the relevant tsconfig is not the one the
+Pass aliases to the composer instead of adding them in a later block. The base layer reads them for the
+import-sort groups; resolution reads the tsconfig. Set `resolver.project` when the relevant tsconfig is not the one the
 resolver finds from the working directory, `resolver.conditionNames` to override the export-map conditions the
 resolver reads in, and `resolver.noWarnOnMultipleProjects` to silence the resolver's notice when `project` is a
 glob matching more than one tsconfig. Set `astro` to give the frontmatter and template of a `.astro` file every
@@ -133,6 +133,21 @@ rule a script gets; the composer sets it with its own `astro` switch, and a hand
 `base` also reads `.gitignore` from `process.cwd()` and turns what git ignores into what ESLint ignores. In a
 monorepo that means the `.gitignore` of whichever directory ESLint was started from, so a package-level run picks
 up that package's file and not the repository root's. Pass `ignores` for anything the root file covers.
+
+## Import order
+
+`simple-import-sort` groups imports in this order, one blank line between groups:
+
+1. Node built-ins (`node:*`, `fs`, `path`).
+2. The framework's own packages, from the framework layer.
+3. Other packages.
+4. Your aliases, in dependency order. Each bucket appears only when you declare one of its aliases:
+   `@config`, `@typings`, `@styles`; then `@lib`, `@store`, `@services`, `@providers`, `@apis`, `@utils`,
+   `@i18n`; then `@hooks`, `@composables`, `@primitives`; then `@ui`, `@features`, `@components`; then `@mocks`.
+5. Any other alias you declare, in one group.
+6. Parent imports, then sibling imports.
+7. `import type` lines.
+8. Stylesheets (`.css`, `.scss`).
 
 ## Why these layers exist
 

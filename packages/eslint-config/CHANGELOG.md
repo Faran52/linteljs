@@ -11,110 +11,102 @@ when a version's change lives in a sibling it is described there instead:
 ### Breaking
 
 - **`defineConfig` is now `composeConfig`, at `@linteljs/eslint-config/compose-config`.** The `./define-config`
-  subpath is gone and `DefineConfigOptions` is `ComposeConfigOptions`. Change the import; the options are the same.
-  It is a named export only: `import { composeConfig } from '@linteljs/eslint-config/compose-config'`, with no
-  default export beside it.
+  subpath is gone, `DefineConfigOptions` is `ComposeConfigOptions`, and there is no default export. Change the
+  import to `import { composeConfig } from '@linteljs/eslint-config/compose-config'`; the options are the same.
+- **`typescript` `>=5` is a required peer.**
 - **`react()` takes its accessibility rules from `eslint-plugin-jsx-a11y-x`**, a maintained fork, in place of
   `eslint-plugin-jsx-a11y`. Install the new peer and rename `jsx-a11y/*` overrides to `jsx-a11y-x/*`.
-- **`typescript` `>=5` is a required peer.**
-- **`base` reports more.** The plugin's `recommended` now carries `@linteljs/chain-call-newline`,
-  `@linteljs/no-duplicate-interface`, `@linteljs/no-eslint-disable` and `@linteljs/no-inline-object-types`, and
-  reaches `.vue` and `.svelte` files as well as scripts. `chain-call-newline` splits a chain of two calls, or one
-  call with a callback body, one call per line; its fix does it for you. `no-duplicate-interface` reports a
-  second `interface` of one name in a scope, which TypeScript merges silently; merge or rename it.
-  `@stylistic/jsx-max-props-per-line` allows two props on a one-line tag, and `es-toolkit/compat` is a restricted
-  import. `newline-destructuring` is `@linteljs/member-newline`, so rename any override of it.
-- **`base` lays out lists at three or more.** `@stylistic/object-property-newline`, which split an object literal
-  at two properties, is off; `@linteljs/member-newline` now owns object literals, object patterns, interfaces and
-  type literals, and `@linteljs/array-newline` arrays, all at three or more items, one per line. Two or fewer stay
-  as written unless half-split. `@stylistic/object-curly-newline` keeps only `consistent`, for a single member.
-- **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350 and
-  `max-lines` at 500, 350 for a `.tsx`, `.jsx`, `.vue` or `.svelte` file and 800 under a `utils/` directory.
-  `base({ astro: true })` holds `.astro` files to the same 350. Tests, `__mocks__/` and `e2e/` are exempt from both.
-- **An Astro project lints its `.astro` files as scripts.** `base` takes `astro: true`, which `composeConfig` passes
-  with its own `astro` switch, and gives the frontmatter and template of a `.astro` file every rule a script gets:
-  stylistic, sonarjs, import sorting and the Lintel rules. The Tailwind layer reaches `.astro` class attributes too.
-  `@stylistic/jsx-one-expression-per-line` stays off in `.astro`, where a line break in text renders as a space.
-- **`base` carries no framework rule.** `@stylistic`'s fourteen JSX layout rules, `jsx-max-props-per-line` among
-  them, move to `react()`, `react-native()`, `next()`, `solid()` and the `.astro` template. sonarjs's React rules
-  (`jsx-no-leaked-render`, `no-hook-setter-in-body`, `no-useless-react-setstate`, `no-uniq-key`,
-  `prefer-read-only-props`, `no-debounce-throttle-in-render`) move to the React frameworks, its Vue rules
-  (`no-vue-class-component`, `no-vue-mixins`, `no-mutate-reactive-state-in-updated-hook`) to `vue()` and `nuxt()`,
-  and `no-angular-bypass-sanitization` to `angular()`. An override of one of them in a `base`-only config now names
-  a rule that is off.
-- **`base` prefers destructuring in a declaration.** `const width = box.width` is `const { width } = box`, and the
-  fix rewrites it. Arrays, assignments and renamed properties are left alone. `typescript()` swaps the core rule
-  for `@typescript-eslint/prefer-destructuring` on TypeScript files, with the same options.
-- **`typescript()` reports a parameter property.** `constructor(private readonly value: number)` is a class
-  property declared in the body and assigned in the constructor, through `@typescript-eslint/parameter-properties`
-  with `prefer: 'class-property'`. There is no fix.
-- **`base` reports six more module defects through `import-x`.** A file importing itself (`no-self-import`), a
-  path with a segment it does not need (`no-useless-path-segments`, fixed; an explicit `/index` stays), an
-  absolute path (`no-absolute-path`, fixed), an exported `let` or `var` (`no-mutable-exports`), `module.exports`
-  or `exports.name` (`no-commonjs`) and an AMD `define` or `require` (`no-amd`). `no-commonjs` leaves `require` to
-  `@typescript-eslint/no-require-imports`, which keeps its asset allowance.
+- **`base` carries no framework rule.** `@stylistic`'s fourteen JSX layout rules move to `react()`,
+  `react-native()`, `next()`, `solid()` and the `.astro` template. There, `jsx-max-props-per-line` allows two
+  props on a one-line tag. sonarjs's React rules (`jsx-no-leaked-render`, `no-hook-setter-in-body`,
+  `no-useless-react-setstate`, `no-uniq-key`, `prefer-read-only-props`, `no-debounce-throttle-in-render`) move to
+  the React frameworks, its Vue rules (`no-vue-class-component`, `no-vue-mixins`,
+  `no-mutate-reactive-state-in-updated-hook`) to `vue()` and `nuxt()`, and `no-angular-bypass-sanitization` to
+  `angular()`. An override of one of them in a `base`-only config now names a rule that is off.
+- **`newline-destructuring` is `@linteljs/member-newline`.** Rename any override of it.
+- **`base` lays out lists at three or more.** `@linteljs/member-newline` owns object literals, object patterns,
+  interfaces and type literals, and `@linteljs/array-newline` arrays: three or more items go one per line, two or
+  fewer stay as written unless half split. `@stylistic/object-property-newline`, which split at two, is off, and
+  `@stylistic/object-curly-newline` keeps only `consistent`.
+- **`base` caps size**, in lines of code with blank lines and comments free: `max-lines-per-function` at 350, and
+  `max-lines` at 500, 350 for a `.tsx`, `.jsx`, `.vue` or `.svelte` file and 800 under a `utils/` directory. Tests,
+  `__mocks__/` and `e2e/` are exempt.
+- **`base` reports more.**
+  - The plugin's `recommended` adds `@linteljs/chain-call-newline`, `no-duplicate-interface`, `no-eslint-disable`
+    and `no-inline-object-types`, and reaches `.vue` and `.svelte` files as well as scripts.
+  - `prefer-destructuring` in a declaration: `const width = box.width` is fixed to `const { width } = box`. Arrays,
+    assignments and renamed properties are left alone.
+  - Six `import-x` rules: `no-self-import`, `no-useless-path-segments` (fixed; an explicit `/index` stays),
+    `no-absolute-path` (fixed), `no-mutable-exports`, `no-commonjs` and `no-amd`. `require` stays with
+    `@typescript-eslint/no-require-imports`, which keeps its asset allowance.
+  - `@stylistic/padding-line-between-statements`: a blank line before and after every function, block-like
+    statement and multi-line expression statement.
+  - `@stylistic/function-call-argument-newline` (`consistent`) and `function-paren-newline`
+    (`multiline-arguments`): `fn(a,\n  b)` goes to one argument per line, with the parens on their own lines.
+  - `@stylistic/semi-style` (`last`), `no-extra-semi`, `switch-colon-spacing`, `function-call-spacing` (`never`)
+    and `linebreak-style` (`unix`), and core `no-debugger` and `object-shorthand` (`always`, with `avoidQuotes`).
+  - `es-toolkit/compat` is a restricted import.
+- **`typescript()` reports more.** `@typescript-eslint/prefer-destructuring` replaces the core rule on TypeScript
+  files, with the same options. `@typescript-eslint/parameter-properties` (`prefer: 'class-property'`) reports
+  `constructor(private readonly value: number)`; declare the property in the class body. It has no fix.
 - **The React frameworks report more.** `react()`, `react-native()` and `next()` add `@eslint-react`'s
   `no-class-component`, `no-misused-capture-owner-stack`, `no-unstable-context-value`, `no-unstable-default-props`
-  and `jsx-no-useless-fragment`, and `react-hooks/void-use-memo`; `jsx-no-children-prop` and `use-state` go from
-  warning to error. `react()` and `next()` also report a `<button>` with no `type`, an `<iframe>` with no `sandbox`,
-  a `target="_blank"` link to another origin with no `rel="noreferrer noopener"`, and a `javascript:` URL at error.
-  React Native gets none of the DOM rules.
-- **`solid()` reports a leaked render.** `sonarjs/jsx-no-leaked-render` is on at error for Solid, so a number
-  rendered through `&&`, which shows a `0`, is reported. It needs type information, so it runs beside `typescript()`.
+  and `jsx-no-useless-fragment`, `react-hooks/void-use-memo`, `@stylistic/jsx-self-closing-comp` and
+  `jsx-pascal-case`, and `@linteljs/react-no-global-namespace`. `jsx-no-children-prop` and `use-state` go from
+  warning to error. `react()` and `next()` also report, at error, a `<button>` with no `type`, an `<iframe>` with no
+  `sandbox`, a `target="_blank"` link to another origin with no `rel="noreferrer noopener"`, and a `javascript:`
+  URL. `react-native()` does not add these four.
+- **`solid()` reports more:** `sonarjs/jsx-no-leaked-render`, so a number rendered through `&&`, which shows a `0`,
+  is reported. It needs type information, so it runs beside `typescript()`. `@stylistic/jsx-self-closing-comp` and
+  `jsx-pascal-case` are on too.
 
 ### Added
 
-- `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, the
-  SFCs typed through the nested parser, and takes `aliasExempt` and `enforceRelativeImports` for it, as does
-  `composeConfig`. `base()` restates the rule over the SFCs with the other TypeScript-only rules. The new
-  `TypescriptOptions` type is on the barrel.
-- New layers, each on its own subpath, on the barrel, and in `composeConfig`: `reactNative()` at `./react-native`
-  and `nuxt()` at `./nuxt` (`framework: 'react-native'` and `'nuxt'`), `tanstackRouter()` at `./tanstack-router`
-  and `stylex()` at `./stylex` (`libraries: ['tanstack-router']` and `['stylex']`), over the optional peers
-  `@tanstack/eslint-plugin-router` and `@stylexjs/eslint-plugin`. `nuxtGroup`, `reactNativeGroup` and `tailwind`
-  join the barrel too.
-- `reactNative()` runs the hooks and component rules React has, without the DOM accessibility ones, plus the five
-  `@linteljs/native-*` rules.
-- `stylex()` validates styles in scripts, `.vue`, `.svelte` and `.astro` files, bans the shorthands StyleX compiles
-  to no CSS (`background`, `border` and its side and logical forms, `animation`), and reports unused styles, legacy
-  pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens outside a `.stylex.ts` file.
-- The React layers enable `@linteljs/react-no-global-namespace`.
+- New layers, each on its own subpath, on the barrel, and in `composeConfig`:
+  - `reactNative()` at `./react-native` (`framework: 'react-native'`): the hooks and component rules React has,
+    without the DOM accessibility ones, plus the five `@linteljs/native-*` rules.
+  - `nuxt()` at `./nuxt` (`framework: 'nuxt'`).
+  - `tanstackRouter()` at `./tanstack-router` (`libraries: ['tanstack-router']`), over the optional peer
+    `@tanstack/eslint-plugin-router`.
+  - `stylex()` at `./stylex` (`libraries: ['stylex']`), over the optional peer `@stylexjs/eslint-plugin`. It
+    validates styles in scripts, `.vue`, `.svelte` and `.astro` files, bans the shorthands StyleX compiles to no
+    CSS (`background`, `border` and its side and logical forms, `animation`), and reports unused styles, legacy
+    pseudo-class keys, `className` or `style` beside a `stylex.props` spread, and tokens outside a `.stylex.ts`
+    file.
+- `nuxtGroup`, `reactNativeGroup`, `tailwind` and the `TypescriptOptions` type join the barrel.
+- `typescript()` turns on `@linteljs/prefer-alias` over `.ts`, `.tsx`, `.mts`, `.cts`, `.vue` and `.svelte`, and
+  takes `aliasExempt` and `enforceRelativeImports` for it, as does `composeConfig`.
+- Astro projects lint `.astro` files as scripts. `base({ astro: true })`, which `composeConfig` sets from its own
+  `astro` switch, gives the frontmatter and template every rule a script gets, including the 350-line component
+  cap. The Tailwind layer reaches `.astro` class attributes too. `@stylistic/jsx-one-expression-per-line` stays
+  off in `.astro`, where a line break in text renders as a space.
 - `resolver.noWarnOnMultipleProjects` passes through to the import resolver, for a workspace whose `project` is a
   glob.
-- `base` turns on `@stylistic/semi-style` (`last`), `no-extra-semi`, `switch-colon-spacing`,
-  `function-call-spacing` (`never`), `linebreak-style` (`unix`) and core `no-debugger`. The React layers and
-  `solid()` turn on `@stylistic/jsx-self-closing-comp` and `jsx-pascal-case` over JSX.
-- `base` lays out a call's arguments as one list: `@stylistic/function-call-argument-newline` (`consistent`) and
-  `function-paren-newline` (`multiline-arguments`) together move `fn(a,\n  b)` to one argument per line with the
-  parens on lines of their own.
-- `base` turns on `@stylistic/padding-line-between-statements`: a blank line before and after every function,
-  block-like statement and multi-line expression statement.
-- `base` turns on core `object-shorthand` (`always`, with `avoidQuotes`, so a quoted key keeps its long form).
+
+### Changed
+
 - `vitest/expect-expect` counts `expectTypeOf` and `assertType`, so a suite asserting only over types passes.
+- `typescript-eslint` moves to ^8.70.1 and `eslint-plugin-sonarjs` to ^4.2.1.
 
 ### Fixed
 
-- `simple-import-sort` files `@styles` with `@config` and `@typings`, rather than in the trailing group of aliases
-  no bucket names.
-- `simple-import-sort` files `@i18n` with `@lib`, `@utils` and the other library aliases, rather than in the
-  trailing group of aliases no bucket names.
-- `@stylistic/object-curly-newline` also covers type literals and interface bodies, so a one-line
-  `{ type: string; value: string }` fixes to one member per line with the braces on their own lines rather
-  than hanging on the first and last members.
-- `import-x/no-duplicates` merges with `prefer-inline`, so two imports of one module become one import with an inline
-  `type` on each type-only name. Its default fix put values inside `import type { … }`, which fails to compile.
-- One owner per rule name. `@eslint-react`'s nine copies of the `react-hooks` rules are off, so a React project no
-  longer reports every hook defect twice; `sonarjs/no-unused-vars`, `sonarjs/no-array-delete` and
-  `sonarjs/prefer-regexp-exec` are off behind `unused-imports` and `typescript-eslint`.
-- `astro` names typescript-eslint's parser for `.astro` frontmatter and `<script>` blocks rather than resolving it
-  from the working directory, which under pnpm or Yarn PnP fell back to espree and failed on every `interface`.
-- `svelte()` no longer parses a `.svelte.js` rune module with typescript-eslint, which failed outside every tsconfig.
+- Import sorting files `@styles` with `@config` and `@typings`, and `@i18n` with `@lib`, `@utils` and the other
+  library aliases, rather than in the trailing group of aliases no bucket names.
 - An alias whose `paths` key has its wildcard mid-key, such as `@features/*/api`, sorts into its alias bucket.
+- `import-x/no-duplicates` merges with `prefer-inline`, so two imports of one module become one import with an
+  inline `type` on each type-only name. Its default fix put values inside `import type { … }`, which fails to
+  compile.
+- One owner per rule. `@eslint-react`'s nine copies of the `react-hooks` rules are off, so a React project no
+  longer reports every hook defect twice. `sonarjs/no-unused-vars`, `sonarjs/no-array-delete` and
+  `sonarjs/prefer-regexp-exec` are off behind `unused-imports` and `typescript-eslint`.
+- `astro()` names typescript-eslint's parser for `.astro` frontmatter and `<script>` blocks rather than resolving
+  it from the working directory, which under pnpm or Yarn PnP fell back to espree and failed on every `interface`.
+- `svelte()` no longer parses a `.svelte.js` rune module with typescript-eslint, which failed outside every
+  tsconfig.
 - `sonarjs/code-eval` stands down under a `__mocks__/` at any depth, not only at the root.
-- `vuejs-accessibility/label-has-for` accepts a label bound by `for` alone, and Angular's
-  `@typescript-eslint/no-extraneous-class` allows a decorated class.
+- `vuejs-accessibility/label-has-for` accepts a label bound by `for` alone.
+- Angular's `@typescript-eslint/no-extraneous-class` allows a decorated class.
 - `vue/multi-word-component-names` is no longer restated over `vue/flat/recommended`.
-- `typescript-eslint` moves to ^8.70.1 and `eslint-plugin-sonarjs` to ^4.2.1.
 
 ## 1.5.3
 
