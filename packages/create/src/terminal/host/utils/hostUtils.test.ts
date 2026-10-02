@@ -14,49 +14,49 @@ import {
 
 describe('managerFromUserAgent', () => {
   it('reads the name and version off the first token', () => {
-    const actual = managerFromUserAgent('pnpm/12.5.1 npm/? node/? darwin arm64');
-    const expected = {
+    const pnpmManager = managerFromUserAgent('pnpm/12.5.1 npm/? node/? darwin arm64');
+    const expectedPnpm = {
       name: 'pnpm',
       version: '12.5.1',
     };
-    expect(actual).toEqual(expected);
+    expect(pnpmManager).toEqual(expectedPnpm);
 
-    const actual2 = managerFromUserAgent('npm/11.19.1 node/v26.9.0 darwin arm64 workspaces/false');
-    const expected2 = {
+    const npmManager = managerFromUserAgent('npm/11.19.1 node/v26.9.0 darwin arm64 workspaces/false');
+    const expectedNpm = {
       name: 'npm',
       version: '11.19.1',
     };
-    expect(actual2).toEqual(expected2);
+    expect(npmManager).toEqual(expectedNpm);
 
-    const actual3 = managerFromUserAgent('yarn/4.18.0 npm/? node/v26.9.0 darwin arm64');
-    const expected3 = {
+    const yarnManager = managerFromUserAgent('yarn/4.18.0 npm/? node/v26.9.0 darwin arm64');
+    const expectedYarn = {
       name: 'yarn',
       version: '4.18.0',
     };
-    expect(actual3).toEqual(expected3);
+    expect(yarnManager).toEqual(expectedYarn);
 
-    const actual4 = managerFromUserAgent('bun/1.3.14 npm/? node/v24.3.0 darwin arm64');
-    const expected4 = {
+    const bunManager = managerFromUserAgent('bun/1.3.14 npm/? node/v24.3.0 darwin arm64');
+    const expectedBun = {
       name: 'bun',
       version: '1.3.14',
     };
-    expect(actual4).toEqual(expected4);
+    expect(bunManager).toEqual(expectedBun);
   });
 
   it('answers nothing for an unset agent or a runtime that is not one of the four', () => {
-    const actual = managerFromUserAgent(undefined);
-    expect(actual).toBeUndefined();
-    const actual2 = managerFromUserAgent('');
-    expect(actual2).toBeUndefined();
-    const actual3 = managerFromUserAgent('deno/2.0 node/? darwin arm64');
-    expect(actual3).toBeUndefined();
+    const unsetAgentManager = managerFromUserAgent(undefined);
+    expect(unsetAgentManager).toBeUndefined();
+    const emptyAgentManager = managerFromUserAgent('');
+    expect(emptyAgentManager).toBeUndefined();
+    const denoManager = managerFromUserAgent('deno/2.0 node/? darwin arm64');
+    expect(denoManager).toBeUndefined();
   });
 
   it('answers nothing for an id that is not its own command, or a name every object inherits', () => {
-    const actual = managerFromUserAgent('yarn-classic/1.22.22 npm/? node/?');
-    expect(actual).toBeUndefined();
-    const actual2 = managerFromUserAgent('toString/1.0.0 npm/? node/?');
-    expect(actual2).toBeUndefined();
+    const yarnClassicManager = managerFromUserAgent('yarn-classic/1.22.22 npm/? node/?');
+    expect(yarnClassicManager).toBeUndefined();
+    const inheritedNameManager = managerFromUserAgent('toString/1.0.0 npm/? node/?');
+    expect(inheritedNameManager).toBeUndefined();
   });
 
   it('answers the name alone where the token carries no version', () => {
@@ -80,33 +80,33 @@ describe('managerFromUserAgent', () => {
 
 describe('acceptsManager', () => {
   it('accepts a version at the floor and refuses the one below it', () => {
-    const pnpmAcceptsManager = acceptsManager('pnpm', '12.5.1');
-    expect(pnpmAcceptsManager).toBe(true);
-    const pnpmAcceptsManager2 = acceptsManager('pnpm', '10.26.0');
-    expect(pnpmAcceptsManager2).toBe(true);
-    const pnpmAcceptsManager3 = acceptsManager('pnpm', '10.25.0');
-    expect(pnpmAcceptsManager3).toBe(false);
-    const npmAcceptsManager = acceptsManager('npm', '9.6.5');
-    expect(npmAcceptsManager).toBe(true);
-    const npmAcceptsManager2 = acceptsManager('npm', '9.6.4');
-    expect(npmAcceptsManager2).toBe(false);
-    const yarnAcceptsManager = acceptsManager('yarn', '4.18.0');
-    expect(yarnAcceptsManager).toBe(true);
-    const yarnAcceptsManager2 = acceptsManager('yarn', '2.4.3');
-    expect(yarnAcceptsManager2).toBe(false);
-    const bunAcceptsManager = acceptsManager('bun', '1.2.0');
-    expect(bunAcceptsManager).toBe(true);
-    const bunAcceptsManager2 = acceptsManager('bun', '1.1.0');
-    expect(bunAcceptsManager2).toBe(false);
+    const acceptsCurrentPnpm = acceptsManager('pnpm', '12.5.1');
+    expect(acceptsCurrentPnpm).toBe(true);
+    const acceptsPnpmFloor = acceptsManager('pnpm', '10.26.0');
+    expect(acceptsPnpmFloor).toBe(true);
+    const acceptsPnpmBelowFloor = acceptsManager('pnpm', '10.25.0');
+    expect(acceptsPnpmBelowFloor).toBe(false);
+    const acceptsNpmFloor = acceptsManager('npm', '9.6.5');
+    expect(acceptsNpmFloor).toBe(true);
+    const acceptsNpmBelowFloor = acceptsManager('npm', '9.6.4');
+    expect(acceptsNpmBelowFloor).toBe(false);
+    const acceptsCurrentYarn = acceptsManager('yarn', '4.18.0');
+    expect(acceptsCurrentYarn).toBe(true);
+    const acceptsYarnBelowFloor = acceptsManager('yarn', '2.4.3');
+    expect(acceptsYarnBelowFloor).toBe(false);
+    const acceptsBunFloor = acceptsManager('bun', '1.2.0');
+    expect(acceptsBunFloor).toBe(true);
+    const acceptsBunBelowFloor = acceptsManager('bun', '1.1.0');
+    expect(acceptsBunBelowFloor).toBe(false);
   });
 });
 
 describe('managerRefusal', () => {
   it('says nothing about a manager at or above its floor', () => {
-    const actual = managerRefusal('pnpm', '12.5.1');
-    expect(actual).toBeUndefined();
-    const actual2 = managerRefusal('yarn', '4.18.0');
-    expect(actual2).toBeUndefined();
+    const pnpmRefusal = managerRefusal('pnpm', '12.5.1');
+    expect(pnpmRefusal).toBeUndefined();
+    const yarnRefusal = managerRefusal('yarn', '4.18.0');
+    expect(yarnRefusal).toBeUndefined();
   });
 
   it('names both versions and the floor when the manager is too old', () => {
@@ -130,10 +130,10 @@ describe('unversionedRefusal', () => {
 
 describe('nodeRefusal', () => {
   it('says nothing on the floor this CLI runs on, or above it', () => {
-    const actual = nodeRefusal('22.13.0');
-    expect(actual).toBeUndefined();
-    const actual2 = nodeRefusal('26.9.0');
-    expect(actual2).toBeUndefined();
+    const floorRefusal = nodeRefusal('22.13.0');
+    expect(floorRefusal).toBeUndefined();
+    const currentRefusal = nodeRefusal('26.9.0');
+    expect(currentRefusal).toBeUndefined();
   });
 
   it('names both versions and where to get one', () => {
@@ -145,10 +145,10 @@ describe('nodeRefusal', () => {
   });
 
   it('compares the minor and the patch, not the major alone', () => {
-    const actual = nodeRefusal('22.0.0');
-    expect(actual).toBeDefined();
-    const actual2 = nodeRefusal('22.12.99');
-    expect(actual2).toBeDefined();
+    const majorOnlyRefusal = nodeRefusal('22.0.0');
+    expect(majorOnlyRefusal).toBeDefined();
+    const belowPatchRefusal = nodeRefusal('22.12.99');
+    expect(belowPatchRefusal).toBeDefined();
   });
 });
 
@@ -166,10 +166,10 @@ describe('yarn', () => {
   });
 
   it('refuses yarn 1 by name, and holds yarn to its floor', () => {
-    const actual = managerRefusal('yarn', '1.22.22');
-    expect(actual).toBe('Yarn 1 is not supported: install Yarn 4 and run this again.');
+    const yarnOneRefusal = managerRefusal('yarn', '1.22.22');
+    expect(yarnOneRefusal).toBe('Yarn 1 is not supported: install Yarn 4 and run this again.');
     expect(managerRefusal('yarn', '2.4.3') ?? '').toContain('needs yarn 4.0.0 or newer');
-    const actual2 = managerRefusal('yarn', '4.18.0');
-    expect(actual2).toBeUndefined();
+    const currentYarnRefusal = managerRefusal('yarn', '4.18.0');
+    expect(currentYarnRefusal).toBeUndefined();
   });
 });

@@ -40,7 +40,8 @@ let cwd = '';
 
 beforeEach(async () => {
   vi.stubEnv('npm_config_user_agent', 'pnpm/12.5.1 npm/? node/? darwin arm64');
-  cwd = await mkdtemp(join(tmpdir(), 'linteljs-host-'));
+  const prefix = join(tmpdir(), 'linteljs-host-');
+  cwd = await mkdtemp(prefix);
 });
 
 afterEach(async () => {

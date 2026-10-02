@@ -35,11 +35,12 @@ interface AskOutcome {
 }
 
 vi.mock('@inquirer/prompts', () => {
-  return {
+  const inquirerPrompts = {
     select: vi.fn(),
     checkbox: vi.fn(),
     input: vi.fn(),
   };
+  return inquirerPrompts;
 });
 
 const askWith = async (
@@ -48,10 +49,12 @@ const askWith = async (
 ): Promise<AskOutcome> => {
   const recorded = scripted(answers);
 
-  return {
-    result: await ask(recorded.prompter, input),
+  const result = await ask(recorded.prompter, input);
+  const outcome: AskOutcome = {
+    result,
     recorded,
   };
+  return outcome;
 };
 
 describe('ask', () => {
@@ -755,15 +758,15 @@ describe('the form library and router questions', () => {
       undefined,
     ]);
 
-    const expected = ['None', 'TanStack Form'];
-    expect(vue.recorded.labels['Form library']).toEqual(expected);
+    const vueForms = ['None', 'TanStack Form'];
+    expect(vue.recorded.labels['Form library']).toEqual(vueForms);
 
-    const expected2 = [
+    const reactForms = [
       'None',
       'TanStack Form',
       'React Hook Form',
     ];
-    expect(hostedReact.recorded.labels['Form library']).toEqual(expected2);
+    expect(hostedReact.recorded.labels['Form library']).toEqual(reactForms);
   });
 
   it.each(['next', 'react-native'])('offers react-hook-form on %s', async (target) => {
@@ -857,8 +860,8 @@ describe('confirm', () => {
     ];
     expect(actual).toEqual(expected);
 
-    const expected2 = ['Yes', 'No'];
-    expect(recorded.labels['Apply?']).toEqual(expected2);
+    const confirmLabels = ['Yes', 'No'];
+    expect(recorded.labels['Apply?']).toEqual(confirmLabels);
     const promise = confirm(recorded.prompter, 'Apply?');
     await expect(promise).rejects.toBeInstanceOf(RunCancelled);
   });
@@ -934,7 +937,7 @@ describe('inquirerPrompter', () => {
     const expected = ['zod'];
     expect(answer).toEqual(expected);
 
-    const expected2 = {
+    const libraryQuestion = {
       message: 'Libraries',
       required: false,
       pageSize: 2,
@@ -952,7 +955,7 @@ describe('inquirerPrompter', () => {
         },
       ],
     };
-    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toStrictEqual(expected2);
+    expect(vi.mocked(checkbox).mock.calls[0]?.[0]).toStrictEqual(libraryQuestion);
   });
 
   it('asks the name as an input, translating what its validation answers', async () => {
@@ -970,16 +973,17 @@ describe('inquirerPrompter', () => {
     const asked = vi.mocked(input).mock.calls[0]?.[0];
 
     expect(asked?.message).toBe('Project name');
-    const actual = asked?.validate?.('my-app');
-    expect(actual).toBe(true);
-    const actual2 = asked?.validate?.('My-App');
-    expect(actual2).toBe('must be a name');
+    const lowercaseVerdict = asked?.validate?.('my-app');
+    expect(lowercaseVerdict).toBe(true);
+    const capitalisedVerdict = asked?.validate?.('My-App');
+    expect(capitalisedVerdict).toBe('must be a name');
   });
 
   it('answers the cancel symbol when the question is exited', async () => {
-    vi.mocked(input).mockRejectedValue(Object.assign(new Error('User force closed the prompt'), {
+    const exitError = Object.assign(new Error('User force closed the prompt'), {
       name: 'ExitPromptError',
-    }));
+    });
+    vi.mocked(input).mockRejectedValue(exitError);
 
     const answer = await inquirerPrompter.text({
       message: 'Project name',

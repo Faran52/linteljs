@@ -63,10 +63,10 @@ describe('parseCliArgs', () => {
       'nonsense',
     ]);
 
-    const expected = ['standard'];
-    expect(options.skip).toEqual(expected);
-    const expected2 = ['nonsense'];
-    expect(options.unknownSkips).toEqual(expected2);
+    const expectedSkips = ['standard'];
+    expect(options.skip).toEqual(expectedSkips);
+    const expectedUnknown = ['nonsense'];
+    expect(options.unknownSkips).toEqual(expectedUnknown);
   });
 
   it('reports nothing unknown for a valid skip list', () => {
@@ -78,7 +78,7 @@ describe('parseCliArgs', () => {
   });
 
   it('collects an optional list flag given more than once, or comma-separated', () => {
-    const expected = { surfaces: ['popup', 'background'] };
+    const repeatedSurfaces = { surfaces: ['popup', 'background'] };
 
     expect(parseCliArgs([
       '--surfaces',
@@ -86,12 +86,12 @@ describe('parseCliArgs', () => {
       '--surfaces',
       'background',
     ]).answers)
-      .toEqual(expected);
+      .toEqual(repeatedSurfaces);
 
-    const expected2 = { surfaces: ['popup', 'background'] };
+    const commaSurfaces = { surfaces: ['popup', 'background'] };
 
     expect(parseCliArgs(['--surfaces', 'popup,background']).answers)
-      .toEqual(expected2);
+      .toEqual(commaSurfaces);
   });
 
   it('reads an empty list flag as none', () => {
@@ -117,10 +117,10 @@ describe('parseCliArgs', () => {
   });
 
   it('keeps extra positional arguments for main to reject', () => {
-    const expected = ['extra'];
-    expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(expected);
-    const expected2 = ['extra'];
-    expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(expected2);
+    const createExtras = ['extra'];
+    expect(parseCliArgs(['demo-app', 'extra']).unexpectedArguments).toEqual(createExtras);
+    const syncExtras = ['extra'];
+    expect(parseCliArgs(['sync', 'extra']).unexpectedArguments).toEqual(syncExtras);
   });
 });
 
@@ -162,7 +162,8 @@ describe('argumentError', () => {
       'Not a stage: lnt, fx.',
     ],
   ])('refuses %s', (_case, argv, message) => {
-    const messageStartsWith = argumentError(parseCliArgs(argv))?.startsWith(message);
+    const parsed = parseCliArgs(argv);
+    const messageStartsWith = argumentError(parsed)?.startsWith(message);
     expect(messageStartsWith).toBe(true);
   });
 

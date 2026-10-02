@@ -59,10 +59,11 @@ interface Run {
 vi.mock('./utils/argvUtils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./utils/argvUtils')>();
 
-  return {
+  const argvUtils = {
     ...actual,
     parseCliArgs: vi.fn(actual.parseCliArgs),
   };
+  return argvUtils;
 });
 
 const RULE = 'plugins/linteljs/skills/linteljs/references/type-standards.md';
@@ -73,7 +74,8 @@ let entered = '';
 beforeEach(async () => {
   vi.stubEnv('npm_config_user_agent', 'pnpm/12.5.1 npm/? node/? darwin arm64');
   entered = processCwd();
-  project = await mkdtemp(join(tmpdir(), 'linteljs-cli-'));
+  const prefix = join(tmpdir(), 'linteljs-cli-');
+  project = await mkdtemp(prefix);
   chdir(project);
 });
 
@@ -104,11 +106,12 @@ const runMain = async (argv: string[], recorded?: Recorded): Promise<Run> => {
   try {
     const code = await main(argv, recorded?.prompter);
 
-    return {
+    const run: Run = {
       code,
       printed: chunks.join(''),
       errors,
     };
+    return run;
   }
   finally {
     printing.mockRestore();
@@ -131,11 +134,13 @@ const plantScaffolder = async (): Promise<void> => {
 };
 
 const configAt = async (directory = project): Promise<ReturnType<typeof parseLinteljsConfig>> => {
-  return parseLinteljsConfig(await readFile(join(directory, CONFIG_PATH), 'utf8'));
+  const configText = await readFile(join(directory, CONFIG_PATH), 'utf8');
+  return parseLinteljsConfig(configText);
 };
 
 const nameAt = async (directory: string): Promise<string | undefined> => {
-  return parsePackageJson(await readFile(join(directory, 'package.json'), 'utf8')).name;
+  const manifestText = await readFile(join(directory, 'package.json'), 'utf8');
+  return parsePackageJson(manifestText).name;
 };
 
 const writeConfig = async (answers: Answers): Promise<void> => {
@@ -342,10 +347,10 @@ describe('main: create', () => {
     ]);
 
     expect(code).toBe(0);
-    const eslintConfigJsExists = await exists(join(project, 'demo-app', 'eslint.config.js'));
-    expect(eslintConfigJsExists).toBe(true);
-    const eslintConfigJsExists2 = await exists(join(project, 'eslint.config.js'));
-    expect(eslintConfigJsExists2).toBe(false);
+    const nestedConfigExists = await exists(join(project, 'demo-app', 'eslint.config.js'));
+    expect(nestedConfigExists).toBe(true);
+    const rootConfigExists = await exists(join(project, 'eslint.config.js'));
+    expect(rootConfigExists).toBe(false);
     const name = await nameAt(join(project, 'demo-app'));
     expect(name).toBe('demo-app');
   });
@@ -458,7 +463,8 @@ describe('main: sync', () => {
   it('prints the install command for a dependency the project lacks, and leaves package.json without it', async () => {
     await generated();
 
-    const manifest = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
+    const manifestText = await readFile(join(project, 'package.json'), 'utf8');
+    const manifest = parsePackageJson(manifestText);
     const devDependencies = { ...manifest.devDependencies };
 
     Reflect.deleteProperty(devDependencies, 'husky');
@@ -470,7 +476,8 @@ describe('main: sync', () => {
     await writeFile(join(project, 'package.json'), `${JSON.stringify(trimmed, null, 2)}\n`, 'utf8');
 
     const { code, printed } = await runMain(['sync', '--yes']);
-    const synced = parsePackageJson(await readFile(join(project, 'package.json'), 'utf8'));
+    const syncedText = await readFile(join(project, 'package.json'), 'utf8');
+    const synced = parsePackageJson(syncedText);
 
     expect(code).toBe(0);
     expect(printed).toMatch(/ {2}pnpm add -D "husky@[^"]+"\n/u);

@@ -47,14 +47,14 @@ describe('answerOptions', () => {
   it('declares a list answer repeatable and a single one not', () => {
     const options = answerOptions(FLAGGED);
 
-    const expected = {
+    const librariesFlag = {
       type: 'string',
       multiple: true,
     };
-    expect(options['libraries']).toEqual(expected);
+    expect(options['libraries']).toEqual(librariesFlag);
 
-    const expected2 = { type: 'string' };
-    expect(options['target']).toEqual(expected2);
+    const targetFlag = { type: 'string' };
+    expect(options['target']).toEqual(targetFlag);
   });
 });
 
@@ -75,10 +75,10 @@ describe('answerUsage', () => {
     expect(line).toMatch(/^ {2}--libraries <list> /u);
     const targetLine = lineFor('target');
     expect(targetLine).toMatch(/^ {2}--target <value> /u);
-    const actual = lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '));
-    expect(actual).toBe(true);
-    const actual2 = lineFor('router').endsWith(` (${ANSWERS.router.note})`);
-    expect(actual2).toBe(true);
+    const listsTargets = lineFor('target').endsWith(valuesOf(ANSWERS.target.values).join(', '));
+    expect(listsTargets).toBe(true);
+    const notesRouter = lineFor('router').endsWith(` (${ANSWERS.router.note})`);
+    expect(notesRouter).toBe(true);
   });
 
   it('does not scope --form to react, since only one of its values is', () => {

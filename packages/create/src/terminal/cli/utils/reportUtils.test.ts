@@ -103,10 +103,9 @@ describe('stageLine', () => {
 
 describe('stepsPlan', () => {
   it('numbers every stage in order', () => {
-    const actual = stepsPlan(OPTIONS);
-    expect(actual).toContain('  1. lint:');
-    const actual2 = stepsPlan(OPTIONS);
-    expect(actual2).toContain('  4. install');
+    const plan = stepsPlan(OPTIONS);
+    expect(plan).toContain('  1. lint:');
+    expect(plan).toContain('  4. install');
   });
 
   it('marks a skipped stage, and the fix that skipping lint takes with it', () => {
@@ -273,10 +272,11 @@ describe('stageReport on a terminal', () => {
       const char = SPINNER_FRAMES.charAt(2);
       expect(char).not.toBe(SPINNER_FRAMES.charAt(1));
 
-      expect(output).toBe([
+      const expected = [
         `\u001B[K  ${SPINNER_FRAMES.charAt(1)} standard\r`,
         `\u001B[K  ${SPINNER_FRAMES.charAt(2)} standard\r`,
-      ].join(''));
+      ].join('');
+      expect(output).toBe(expected);
     }
     finally {
       vi.useRealTimers();
