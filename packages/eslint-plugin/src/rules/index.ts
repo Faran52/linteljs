@@ -5,6 +5,7 @@ import { exportSpecifierNewline } from './export-specifier-newline/exportSpecifi
 import { importNewlines } from './import-newlines/importNewlines.ts';
 import { interfaceOrder } from './interface-order/interfaceOrder.ts';
 import { memberNewline } from './member-newline/memberNewline.ts';
+import { nameBeforeUse } from './name-before-use/nameBeforeUse.ts';
 import { nativeAccessibleName } from './native-accessible-name/nativeAccessibleName.ts';
 import { nativeNoNestedTouchables } from './native-no-nested-touchables/nativeNoNestedTouchables.ts';
 import {
@@ -38,6 +39,7 @@ export const rules = {
   'import-newlines': importNewlines,
   'interface-order': interfaceOrder,
   'member-newline': memberNewline,
+  'name-before-use': nameBeforeUse,
   'native-accessible-name': nativeAccessibleName,
   'native-no-nested-touchables': nativeNoNestedTouchables,
   'native-valid-accessibility-actions': nativeValidAccessibilityActions,

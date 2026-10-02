@@ -156,6 +156,38 @@
       "description": "Put each member of an object, object pattern, interface, or type literal with three or more on its own line."
     }
   },
+  "name-before-use": {
+    "messages": {
+      "nameAwait": "Name this await in a const first, then use the const here.",
+      "nameNestedCall": "Name this call in a const first, then use the const here.",
+      "nameLiteral": "Name this literal in a const first, then use the const here."
+    },
+    "schema": [
+      {
+        "type": "object",
+        "properties": {
+          "ignoreEmptyLiterals": {
+            "type": "boolean",
+            "default": false
+          },
+          "ignoreLiteralArguments": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "type": "suggestion",
+    "fixable": null,
+    "docs": {
+      "fixShape": null,
+      "language": "universal",
+      "recommended": false,
+      "requiresTypeChecking": false,
+      "description": "Name an await, a call that takes a call, or an inline array or object in a const before using it."
+    }
+  },
   "native-accessible-name": {
     "messages": {
       "interactiveNeedsName": "{{name}} can be operated but is announced with no name. Add an accessibilityLabel, or text inside it.",

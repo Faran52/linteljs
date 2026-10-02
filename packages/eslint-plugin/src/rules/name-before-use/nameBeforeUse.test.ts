@@ -1,0 +1,203 @@
+import { tsRuleTester, tsxRuleTester } from '@mocks/ruleTesters';
+
+import { nameBeforeUse } from './nameBeforeUse.ts';
+
+const awaitError = { messageId: 'nameAwait' };
+const callError = { messageId: 'nameNestedCall' };
+const literalError = { messageId: 'nameLiteral' };
+
+const IGNORE_EMPTY = [{ ignoreEmptyLiterals: true }];
+const IGNORE_ARGUMENTS = [{ ignoreLiteralArguments: true }];
+
+tsRuleTester.run('name-before-use', nameBeforeUse, {
+  valid: [
+    'const isUp = await settles(fetch(origin));\nif (isUp) {\n  run();\n}',
+    'let value;\nvalue = await load();',
+    'await run();',
+    'const lsArgs = [\'ls\', \'--all\'];\nrunPm(\'npm\', lsArgs, project);',
+    'console.log(format(value));',
+    'const total = sum(parse(text));',
+    'export default { name: \'alpha\' };',
+    'export default [alpha, beta];',
+    'const run = (items = []) => {\n  return items;\n};',
+    'const { alpha = {} } = source;',
+    'class Store {\n  items = [];\n  options = { size: 1 };\n}',
+
+    // Nested literals belong to the named outer one.
+    'const config = { plugins: [alpha], rules: { beta: [\'error\', { max: 1 }] } };',
+    'const matrix = [[1, 2], [3, 4]];',
+
+    // Wrappers stand where they stand.
+    'const items = [alpha] as const;',
+    'const config = { alpha } satisfies Config;',
+    'const value = <Config>{ alpha };',
+    'const node = find(parse(text))!;',
+    'const value = source?.read(parse(text));',
+    'const results = await Promise.all(items.map(load));',
+    'const value = await load(parse(text));',
+
+    // Plain values in any position.
+    'if (isReady) {\n  run();\n}',
+    'items.filter((item) => {\n  return item.isActive;\n});',
+    'run(alpha, beta.gamma, \'text\', 1);',
+    'expect(result).toBe(expected);',
+    'const value = load(alpha)(beta);',
+
+    {
+      code: 'run([]);\nconst value = flag ? {} : fallback;',
+      options: IGNORE_EMPTY,
+    },
+    {
+      code: 'run([alpha]);\nconst set = new Set([alpha]);\nexpect(value).toEqual({ alpha });\nrun([alpha] as const);',
+      options: IGNORE_ARGUMENTS,
+    },
+  ],
+  invalid: [
+    {
+      code: 'if (await settles(fetch(origin))) {\n  run();\n}',
+      errors: [awaitError],
+    },
+    {
+      code: 'runPm(\'npm\', [\'ls\', \'--all\'], project);',
+      errors: [
+        {
+          ...literalError,
+          line: 1,
+          column: 14,
+          endLine: 1,
+          endColumn: 29,
+        },
+      ],
+    },
+    {
+      code: 'const run = async () => {\n  return await load();\n};',
+      errors: [awaitError],
+    },
+    {
+      code: 'const value = (await load()).data;',
+      errors: [awaitError],
+    },
+    {
+      code: 'run(await load());',
+      errors: [awaitError],
+    },
+    {
+      code: 'for (const item of await load()) {\n  use(item);\n}',
+      errors: [awaitError],
+    },
+    {
+      code: 'const text = `${await load()}`;',
+      errors: [awaitError],
+    },
+    {
+      code: 'const value = { data: await load() };',
+      errors: [awaitError],
+    },
+    {
+      code: 'const value = flag ? await load() : fallback;',
+      errors: [awaitError],
+    },
+    {
+      code: 'expect(parse(text)).toBe(expected);',
+      errors: [callError],
+    },
+    {
+      code: 'if (isValid(parse(text))) {\n  run();\n}',
+      errors: [callError],
+    },
+    {
+      code: 'outer(inner(deepest()));',
+      errors: [callError],
+    },
+    {
+      code: 'run(new Wrapper(load()));',
+      errors: [callError],
+    },
+    {
+      code: 'run(format(new Date()));',
+      errors: [callError],
+    },
+    {
+      code: 'const read = () => format(parse(text));',
+      errors: [callError],
+    },
+    {
+      code: 'const total = 1 + sum(parse(text));',
+      errors: [callError],
+    },
+    {
+      code: 'const value = { [read(key())]: 1 };',
+      errors: [callError],
+    },
+    {
+      code: 'class Store {\n  [read(key())] = 1;\n}',
+      errors: [callError],
+    },
+    {
+      code: 'const read = () => {\n  return { alpha };\n};',
+      errors: [literalError],
+    },
+    {
+      code: 'const read = () => [alpha];',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = flag ? [alpha] : [];',
+      errors: [literalError, literalError],
+    },
+    {
+      code: 'const value = source ?? {};',
+      errors: [literalError],
+    },
+    {
+      code: 'for (const item of [alpha, beta]) {\n  use(item);\n}',
+      errors: [literalError],
+    },
+    {
+      code: 'const set = new Set([alpha, beta]);',
+      errors: [literalError],
+    },
+    {
+      code: 'expect(value).toEqual({ alpha: [1] });',
+      errors: [literalError],
+    },
+    {
+      code: 'const size = [alpha, beta].length;',
+      errors: [literalError],
+    },
+    {
+      code: 'const items = [...[alpha]];',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = { [[alpha]]: 1 };',
+      errors: [literalError],
+    },
+    {
+      code: 'run([alpha] as const);',
+      errors: [literalError],
+    },
+    {
+      code: 'run([], {});\nconst value = flag ? [alpha] : { alpha };',
+      options: IGNORE_EMPTY,
+      errors: [literalError, literalError],
+    },
+    {
+      code: 'const read = () => {\n  return [];\n};\nconst value = flag ? [alpha] : fallback;',
+      options: IGNORE_ARGUMENTS,
+      errors: [literalError, literalError],
+    },
+  ],
+});
+
+tsxRuleTester.run('name-before-use in JSX', nameBeforeUse, {
+  valid: [
+    'const style = { color: \'red\' };\nconst view = <Text style={style} />;',
+  ],
+  invalid: [
+    {
+      code: 'const view = <Text style={{ color: \'red\' }} />;',
+      errors: [literalError],
+    },
+  ],
+});

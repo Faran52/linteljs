@@ -23,7 +23,7 @@ coverage at 100%, and the build, and it passes on the first run. Generated proje
 | --- | --- |
 | [`@linteljs/create`](packages/create) | Start a project, or bring an existing one under the standard. Every package manager, option and flag is in its README. |
 | [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers, by hand or through `composeConfig`. |
-| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the 25 rules behind the config on their own. |
+| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the 26 rules behind the config on their own. |
 
 ## Existing projects
 

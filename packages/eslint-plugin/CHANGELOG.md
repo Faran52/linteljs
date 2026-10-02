@@ -51,6 +51,9 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Added
 
+- `name-before-use` reports an await, a call that takes a call, or an inline array or object literal anywhere but
+  the right side of a declaration or assignment, a bare statement or `export default`. `ignoreEmptyLiterals` and
+  `ignoreLiteralArguments` relax the literal half. Report-only, not in `recommended`.
 - `prefer-alias` imports across aliased directories through the tsconfig `paths` alias and within one
   relatively. A parent-relative import into another aliased directory is fixed to the most specific alias, an
   exact key onto a directory (`"@ui": ["./src/ui"]` beside `"@ui/*"`) included, and an alias import back into
