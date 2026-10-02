@@ -43,6 +43,10 @@ function run() {
     'for (const item of list) {\n  const { alpha } = item;\n  use(alpha);\n}',
 
     "import defaultExport, * as namespace from 'mod';\nconst { alpha } = defaultExport;",
+
+    // A declared global has a variable but no definition node.
+    '/* global sandbox */\nconst { alpha } = sandbox;',
+    "import * as namespace from 'mod';\ntry { run(); } catch (namespace) { const { alpha } = namespace; use(alpha); }",
   ],
   invalid: [
     {
@@ -133,6 +137,46 @@ function run() {
         { messageId: 'noDestructureNamespace' },
         { messageId: 'noDestructureNamespace' },
       ],
+    },
+    {
+      code: "import * as namespace from 'mod';\nlet { alpha } = namespace;\nvar { bravo } = namespace;",
+      errors: [
+        {
+          messageId: 'noDestructureNamespace',
+          line: 2,
+          column: 5,
+          endLine: 2,
+          endColumn: 26,
+        },
+        {
+          messageId: 'noDestructureNamespace',
+          line: 3,
+        },
+      ],
+    },
+    {
+      code: "import * as namespace from 'mod';\nexport const { alpha } = namespace, { bravo } = namespace;",
+      errors: [
+        { messageId: 'noDestructureNamespace' },
+        { messageId: 'noDestructureNamespace' },
+      ],
+    },
+    {
+      code: "import * as namespace from 'mod';\nconst { alpha: { bravo } } = (namespace);",
+      errors: [{ messageId: 'noDestructureNamespace' }],
+    },
+    {
+      code: "import * as namespace from 'mod';\nconst {} = namespace;",
+      errors: [{ messageId: 'noDestructureNamespace' }],
+    },
+    {
+      // Imports hoist, so a use above the statement still resolves to it.
+      code: "const { alpha } = namespace;\nimport * as namespace from 'mod';",
+      errors: [{ messageId: 'noDestructureNamespace' }],
+    },
+    {
+      code: "import * as namespace from 'mod';\nconst { /* one */ alpha } = /* the namespace */ namespace;",
+      errors: [{ messageId: 'noDestructureNamespace' }],
     },
   ],
 });
