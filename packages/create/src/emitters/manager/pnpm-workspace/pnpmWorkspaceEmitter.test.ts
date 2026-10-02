@@ -14,10 +14,10 @@ import { allowBuildsBlock, RELEASE_AGE_BLOCK } from './utils/emitUtils';
 
 describe('pnpmWorkspaceEmitter', () => {
   it('owns the workspace file only under pnpm', () => {
-    const pnpmWorkspace = pnpmWorkspaceEmitter(answersFor({ packageManager: 'pnpm' }));
-    expect(pnpmWorkspace).toHaveLength(1);
-    const pnpmWorkspace2 = pnpmWorkspaceEmitter(answersFor({ packageManager: 'npm' }));
-    expect(pnpmWorkspace2).toEqual([]);
+    const underPnpm = pnpmWorkspaceEmitter(answersFor({ packageManager: 'pnpm' }));
+    expect(underPnpm).toHaveLength(1);
+    const underNpm = pnpmWorkspaceEmitter(answersFor({ packageManager: 'npm' }));
+    expect(underNpm).toEqual([]);
   });
 
   it("drops create-next-app's build opt-out, which would fail the install, and keeps the rest of the file", () => {
@@ -33,62 +33,59 @@ describe('pnpmWorkspaceEmitter', () => {
 
 describe('mergePnpmWorkspace', () => {
   it('writes the emitted block alone when there is no existing file', () => {
-    const expected = `${allowBuildsBlock(answersFor({}))}\n${RELEASE_AGE_BLOCK}`;
+    const allowBuilds = allowBuildsBlock(answersFor({}));
+    const expected = `${allowBuilds}\n${RELEASE_AGE_BLOCK}`;
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(null, answersFor({}));
-    expect(mergedPnpmWorkspace).toBe(expected);
+    const merged = mergePnpmWorkspace(null, answersFor({}));
+    expect(merged).toBe(expected);
   });
 
   it('prepends the allowBuilds block to an existing file that has none', () => {
     const merged = mergePnpmWorkspace('onlyBuiltDependencies:\n  - foo\n', answersFor({}));
 
-    const expected = `${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`;
+    const allowBuilds = allowBuildsBlock(answersFor({}));
+    const expected = `${allowBuilds}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`;
 
     expect(merged).toBe(expected);
   });
 
-  it('drops the ignoredBuiltDependencies block a scaffolder wrote, list and all', () => {
-    const existing = 'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
+  it.each([
+    [
+      'drops the ignoredBuiltDependencies block a scaffolder wrote, list and all',
+      'ignoredBuiltDependencies:\n  - sharp\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n',
+    ],
+    [
+      'drops a superseded list across a blank line inside it',
+      'ignoredBuiltDependencies:\n  - sharp\n\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n',
+    ],
+    [
+      'drops a superseded key written as an inline list',
+      'ignoredBuiltDependencies: [sharp]\nonlyBuiltDependencies:\n  - foo\n',
+    ],
+    [
+      'closes the gap the blank lines opening a file would leave under the prepended block',
+      '\n\nonlyBuiltDependencies:\n  - foo\n',
+    ],
+  ])('%s', (_label, existing) => {
+    const merged = mergePnpmWorkspace(existing, answersFor({}));
+    const allowBuilds = allowBuildsBlock(answersFor({}));
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
-
-    expect(mergedPnpmWorkspace)
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
-  });
-
-  it('drops a superseded list across a blank line inside it', () => {
-    const existing = 'ignoredBuiltDependencies:\n  - sharp\n\n  - unrs-resolver\nonlyBuiltDependencies:\n  - foo\n';
-
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
-
-    expect(mergedPnpmWorkspace)
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
-  });
-
-  it('drops a superseded key written as an inline list', () => {
-    expect(mergePnpmWorkspace('ignoredBuiltDependencies: [sharp]\nonlyBuiltDependencies:\n  - foo\n', answersFor({})))
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
-  });
-
-  it('closes the gap the blank lines opening a file would leave under the prepended block', () => {
-    const mergedPnpmWorkspace = mergePnpmWorkspace('\n\nonlyBuiltDependencies:\n  - foo\n', answersFor({}));
-
-    expect(mergedPnpmWorkspace)
-      .toBe(`${allowBuildsBlock(answersFor({}))}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
+    expect(merged)
+      .toBe(`${allowBuilds}onlyBuiltDependencies:\n  - foo\n\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('keeps the document marker a file opens with', () => {
     const existing = "---\nallowBuilds:\n  'some-native': true\n";
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
-    expect(mergedPnpmWorkspace).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
+    const merged = mergePnpmWorkspace(existing, answersFor({}));
+    expect(merged).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('leaves a release-age policy the project set alone', () => {
     const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\n";
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
-    expect(mergedPnpmWorkspace).toBe(existing);
+    const merged = mergePnpmWorkspace(existing, answersFor({}));
+    expect(merged).toBe(existing);
   });
 
   it('adds the block to a file that only mentions it in a comment', () => {
@@ -100,8 +97,8 @@ describe('mergePnpmWorkspace', () => {
   it('leaves an existing allowBuilds block alone rather than reasserting over it', () => {
     const existing = "allowBuilds:\n  'sharp': true\n  'unrs-resolver': true\n  'custom-pkg': true\n";
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, answersFor({}));
-    expect(mergedPnpmWorkspace).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
+    const merged = mergePnpmWorkspace(existing, answersFor({}));
+    expect(merged).toBe(`${existing}\n${RELEASE_AGE_BLOCK}`);
   });
 
   it('keeps content that follows the dropped block, not just what precedes it', () => {
@@ -114,8 +111,8 @@ describe('mergePnpmWorkspace', () => {
 
 describe('the release age policy', () => {
   it('adds the policy to a file that only mentions it in a comment', () => {
-    const mergedPnpmWorkspace = mergePnpmWorkspace('# minimumReleaseAge: is added\n', answersFor({}));
-    expect(mergedPnpmWorkspace).toMatch(/^minimumReleaseAge:/mu);
+    const merged = mergePnpmWorkspace('# minimumReleaseAge: is added\n', answersFor({}));
+    expect(merged).toMatch(/^minimumReleaseAge:/mu);
   });
 });
 
@@ -136,13 +133,13 @@ describe('the NativeWind lightningcss pin', () => {
   it('leaves an overrides block the project wrote alone', () => {
     const existing = "allowBuilds:\n  'sharp': true\nminimumReleaseAge: 60\noverrides:\n  left-pad: 1.0.0\n";
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, nativewind);
-    expect(mergedPnpmWorkspace).toBe(existing);
+    const merged = mergePnpmWorkspace(existing, nativewind);
+    expect(merged).toBe(existing);
   });
 
   it('adds the override block to a file that only mentions it in a comment', () => {
-    const mergedPnpmWorkspace = mergePnpmWorkspace('# overrides: are added\n', nativewind);
-    expect(mergedPnpmWorkspace).toMatch(/^overrides:/mu);
+    const merged = mergePnpmWorkspace('# overrides: are added\n', nativewind);
+    expect(merged).toMatch(/^overrides:/mu);
   });
 
   it('parts the override block from a policy the project set by one blank line', () => {
@@ -150,8 +147,8 @@ describe('the NativeWind lightningcss pin', () => {
     const metro = "'@expo/metro-config>lightningcss': '1.30.1'";
     const css = "'react-native-css>lightningcss': '1.30.1'";
 
-    const mergedPnpmWorkspace = mergePnpmWorkspace(existing, nativewind);
-    expect(mergedPnpmWorkspace).toBe(`${existing}\noverrides:\n  ${metro}\n  ${css}\n`);
+    const merged = mergePnpmWorkspace(existing, nativewind);
+    expect(merged).toBe(`${existing}\noverrides:\n  ${metro}\n  ${css}\n`);
   });
 
   it('writes no override without NativeWind', () => {

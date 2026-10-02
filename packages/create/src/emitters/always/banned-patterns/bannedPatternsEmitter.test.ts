@@ -32,7 +32,8 @@ const transformOf = (answers: Answers): ((source: string, current: string | null
 
 describe('bannedPatternsEmitter', () => {
   it('writes the checker and nothing else', () => {
-    const targets = bannedPatternsEmitter(answersFor({}))
+    const artifacts = bannedPatternsEmitter(answersFor({}));
+    const targets = artifacts
       .map(({ target }) => {
         return target;
       });
@@ -44,7 +45,9 @@ describe('bannedPatternsEmitter', () => {
 
 describe('checkerArtifact', () => {
   it.each<TypeSafety>(['strict', 'relaxed'])('writes the %s floor into the shipped checker', (typeSafety) => {
-    const actual = transformOf(answersFor({ typeSafety }))(readFileSync(SHIPPED, 'utf8'), null);
+    const transform = transformOf(answersFor({ typeSafety }));
+    const shipped = readFileSync(SHIPPED, 'utf8');
+    const actual = transform(shipped, null);
 
     expect(actual)
       .toContain(`const TYPE_SAFETY: TypeSafety = '${typeSafety}';`);
@@ -52,7 +55,9 @@ describe('checkerArtifact', () => {
 
   it('throws when the type-safety anchor has drifted out of the shipped checker', () => {
     expect(() => {
-      return transformOf(answersFor({ typeSafety: 'relaxed' }))('// a checker with no anchor\n', null);
+      const transform = transformOf(answersFor({ typeSafety: 'relaxed' }));
+
+      return transform('// a checker with no anchor\n', null);
     }).toThrow("no longer contains the anchor: const TYPE_SAFETY: TypeSafety = 'strict';");
   });
 
@@ -62,7 +67,9 @@ describe('checkerArtifact', () => {
     ['vue', "[\n  '.ts',\n  '.tsx',\n  '.vue',\n]"],
     ['svelte', "[\n  '.ts',\n  '.tsx',\n  '.svelte',\n]"],
   ])('writes the extensions a directory is scanned for on %s', (target, extensions) => {
-    const actual = transformOf(answersFor({ target }))(readFileSync(SHIPPED, 'utf8'), null);
+    const transform = transformOf(answersFor({ target }));
+    const shipped = readFileSync(SHIPPED, 'utf8');
+    const actual = transform(shipped, null);
 
     expect(actual)
       .toContain(`const SCANNED_EXTENSIONS: string[] = ${extensions};`);
@@ -70,7 +77,9 @@ describe('checkerArtifact', () => {
 
   it('throws when the extension anchor has drifted out of the shipped checker', () => {
     expect(() => {
-      return transformOf(answersFor({}))("const TYPE_SAFETY: TypeSafety = 'strict';\n", null);
+      const transform = transformOf(answersFor({}));
+
+      return transform("const TYPE_SAFETY: TypeSafety = 'strict';\n", null);
     }).toThrow('no longer contains the anchor');
   });
 
@@ -78,14 +87,18 @@ describe('checkerArtifact', () => {
     const source = "const TYPE_SAFETY: TypeSafety = 'strict';\n"
       + "const SCANNED_EXTENSIONS: string[] = ['.ts', '.tsx'];\nconst PROJECT_SKIPPED: string[] = [];\n";
 
-    const actual = transformOf(answersFor({}))(source, null);
+    const transform = transformOf(answersFor({}));
+    const actual = transform(source, null);
     expect(actual).toBe(source);
   });
 });
 
 describe('the checker merge', () => {
   const shippedFor = (answers: Answers): string => {
-    return transformOf(answers)(readFileSync(SHIPPED, 'utf8'), null);
+    const transform = transformOf(answers);
+    const shipped = readFileSync(SHIPPED, 'utf8');
+
+    return transform(shipped, null);
   };
 
   const ENTRY = "  'src/lib/protocol/protocol.ts',";
@@ -93,11 +106,13 @@ describe('the checker merge', () => {
   const skippingWith = (answers: Answers, ...lines: string[]): string => {
     return shippedFor(answers)
       .replace('const PROJECT_SKIPPED: string[] = [];', () => {
-        return [
+        const block = [
           'const PROJECT_SKIPPED: string[] = [',
           ...lines,
           '];',
-        ].join('\n');
+        ];
+
+        return block.join('\n');
       });
   };
 

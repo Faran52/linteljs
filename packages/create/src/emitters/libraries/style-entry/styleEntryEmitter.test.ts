@@ -26,13 +26,15 @@ const contentOf = (artifact: Artifact | undefined): string => {
 };
 
 const entryPathOf = (target: TargetId, styleEntries: string[]): string | undefined => {
-  return styleEntryEmitter(answersFor({
+  const [artifact] = styleEntryEmitter(answersFor({
     target,
     styling: 'tailwind',
   }), {
     ...EMPTY_PROJECT,
     styleEntries,
-  })[0]?.target;
+  });
+
+  return artifact?.target;
 };
 
 describe('the entry path', () => {
@@ -51,7 +53,9 @@ describe('the entry path', () => {
   it('can discover every default a target declares', () => {
     const declared = valuesOf(ANSWERS.target.values)
       .map((target) => {
-        return targetFor(answersFor({ target })).styleEntry;
+        const { styleEntry } = targetFor(answersFor({ target }));
+
+        return styleEntry;
       });
 
     expect(declared.length).toBeGreaterThan(0);
@@ -71,14 +75,14 @@ describe('the entry path', () => {
 
 describe('mergeStyleEntry', () => {
   it('writes the import alone when there is no stylesheet yet', () => {
-    const mergedStyleEntry = mergeStyleEntry(null);
-    expect(mergedStyleEntry).toBe(`${TAILWIND_IMPORT}\n`);
+    const merged = mergeStyleEntry(null);
+    expect(merged).toBe(`${TAILWIND_IMPORT}\n`);
   });
 
   it('prepends the import to a stylesheet the scaffolder wrote', () => {
-    const mergedStyleEntry = mergeStyleEntry(':root {\n  color: red;\n}\n');
+    const merged = mergeStyleEntry(':root {\n  color: red;\n}\n');
 
-    expect(mergedStyleEntry).toBe(
+    expect(merged).toBe(
       `${TAILWIND_IMPORT}\n\n:root {\n  color: red;\n}\n`,
     );
   });
@@ -86,42 +90,42 @@ describe('mergeStyleEntry', () => {
   it('leaves a stylesheet that already imports tailwind untouched', () => {
     const current = `${TAILWIND_IMPORT}\n\n:root {\n  color: red;\n}\n`;
 
-    const mergedStyleEntry = mergeStyleEntry(current);
-    expect(mergedStyleEntry).toBe(current);
+    const merged = mergeStyleEntry(current);
+    expect(merged).toBe(current);
   });
 
   it('recognises the other quoting a project may have used', () => {
     const current = "@import 'tailwindcss';\n";
 
-    const mergedStyleEntry = mergeStyleEntry(current);
-    expect(mergedStyleEntry).toBe(current);
+    const merged = mergeStyleEntry(current);
+    expect(merged).toBe(current);
   });
 
   it('is idempotent', () => {
     const once = mergeStyleEntry('body { margin: 0; }\n');
 
-    const mergedStyleEntry = mergeStyleEntry(once);
-    expect(mergedStyleEntry).toBe(once);
+    const merged = mergeStyleEntry(once);
+    expect(merged).toBe(once);
   });
 
   it('adds a line that is not an @import', () => {
-    const mergedStyleEntry = mergeStyleEntry('a {}\n', ['@layer base;']);
-    expect(mergedStyleEntry).toContain('@layer base;');
+    const merged = mergeStyleEntry('a {}\n', ['@layer base;']);
+    expect(merged).toContain('@layer base;');
   });
 
   it('does not repeat an import spelled with two spaces', () => {
-    const mergedStyleEntry = mergeStyleEntry('@import  "./a.css";\n', ['@import  "./a.css";']);
-    expect(mergedStyleEntry).toBe('@import  "./a.css";\n');
+    const merged = mergeStyleEntry('@import  "./a.css";\n', ['@import  "./a.css";']);
+    expect(merged).toBe('@import  "./a.css";\n');
   });
 
   it('tells two specifiers apart by their last character', () => {
-    const mergedStyleEntry = mergeStyleEntry('@import "./tokens1";\n', ['@import "./tokens2";']);
-    expect(mergedStyleEntry).toContain('@import "./tokens2";');
+    const merged = mergeStyleEntry('@import "./tokens1";\n', ['@import "./tokens2";']);
+    expect(merged).toContain('@import "./tokens2";');
   });
 
   it('reads a dot in a specifier as a dot, not as any character', () => {
-    const mergedStyleEntry = mergeStyleEntry('@import "./aXcss";\n', ['@import "./a.css";']);
-    expect(mergedStyleEntry).toContain('@import "./a.css";');
+    const merged = mergeStyleEntry('@import "./aXcss";\n', ['@import "./a.css";']);
+    expect(merged).toContain('@import "./a.css";');
   });
 });
 
@@ -134,8 +138,8 @@ describe('an entry that already imports tailwind another way', () => {
     ['more than one space', '@import  "tailwindcss";\n'],
     ['a subpath', '@import "tailwindcss/preflight.css";\n'],
   ])('leaves %s alone', (_label, current) => {
-    const mergedStyleEntry = mergeStyleEntry(current);
-    expect(mergedStyleEntry).toBe(current);
+    const merged = mergeStyleEntry(current);
+    expect(merged).toBe(current);
   });
 });
 
@@ -143,15 +147,15 @@ describe('a target with its own import block', () => {
   const NATIVE = ['@import "tailwindcss/theme.css" layer(theme);', '@import "nativewind/theme";'];
 
   it('writes the block it was given', () => {
-    const mergedStyleEntry = mergeStyleEntry(null, NATIVE);
-    expect(mergedStyleEntry).toBe(`${NATIVE.join('\n')}\n`);
+    const merged = mergeStyleEntry(null, NATIVE);
+    expect(merged).toBe(`${NATIVE.join('\n')}\n`);
   });
 
   it('is idempotent on a subpath import', () => {
     const once = mergeStyleEntry('.a { color: red; }\n', NATIVE);
 
-    const mergedStyleEntry = mergeStyleEntry(once, NATIVE);
-    expect(mergedStyleEntry).toBe(once);
+    const merged = mergeStyleEntry(once, NATIVE);
+    expect(merged).toBe(once);
   });
 });
 
@@ -169,10 +173,12 @@ describe('the stylesheets a starter ships', () => {
   it('imports a gated stylesheet only under the answers that ship it', () => {
     const input = '@import "./components/ui/text-input/TextInput.css";';
 
-    const content = contentOf(styleEntryEmitter(answersFor({ form: 'tanstack-form' }), EMPTY_PROJECT)[0]);
-    expect(content).toContain(input);
-    const content2 = contentOf(styleEntryEmitter(answersFor({}), EMPTY_PROJECT)[0]);
-    expect(content2).not.toContain(input);
+    const [formArtifact] = styleEntryEmitter(answersFor({ form: 'tanstack-form' }), EMPTY_PROJECT);
+    const withForm = contentOf(formArtifact);
+    expect(withForm).toContain(input);
+    const [plainArtifact] = styleEntryEmitter(answersFor({}), EMPTY_PROJECT);
+    const withoutForm = contentOf(plainArtifact);
+    expect(withoutForm).not.toContain(input);
   });
 
   it('writes nothing for a target with neither a styling answer nor a starter stylesheet', () => {
@@ -183,24 +189,26 @@ describe('the stylesheets a starter ships', () => {
   it('adds only what is missing, so a second run changes nothing', () => {
     const first = mergeStyleEntry(null, ['@import "./a.css";', '@import "./b.css";']);
 
-    const mergedStyleEntry = mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";']);
-    expect(mergedStyleEntry).toBe(first);
+    const rerun = mergeStyleEntry(first, ['@import "./a.css";', '@import "./b.css";']);
+    expect(rerun).toBe(first);
 
-    const firstMergedStyleEntry = mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']);
+    const withNewImport = mergeStyleEntry(first, ['@import "./a.css";', '@import "./c.css";']);
 
-    expect(firstMergedStyleEntry)
+    expect(withNewImport)
       .toBe(`@import "./c.css";\n\n${first}`);
 
-    const aMergedStyleEntry = mergeStyleEntry('.a {}\n', ['@import "./c.css";', '@import "./d.css";']);
+    const intoPlainSheet = mergeStyleEntry('.a {}\n', ['@import "./c.css";', '@import "./d.css";']);
 
-    expect(aMergedStyleEntry)
+    expect(intoPlainSheet)
       .toBe('@import "./c.css";\n@import "./d.css";\n\n.a {}\n');
   });
 });
 
 describe('the tailwind answer', () => {
   it('imports tailwind ahead of the stylesheets and the theme after them', () => {
-    const lines = contentOf(styleEntryEmitter(answersFor({ styling: 'tailwind' }), EMPTY_PROJECT)[0])
+    const [artifact] = styleEntryEmitter(answersFor({ styling: 'tailwind' }), EMPTY_PROJECT);
+    const text = contentOf(artifact);
+    const lines = text
       .trimEnd()
       .split('\n');
 
@@ -210,59 +218,64 @@ describe('the tailwind answer', () => {
   });
 
   it('takes the block a target names in place of the bare import, and no theme where it names none', () => {
-    const text = contentOf(styleEntryEmitter(answersFor({
+    const [artifact] = styleEntryEmitter(answersFor({
       target: 'react-native',
       styling: 'tailwind',
-    }), EMPTY_PROJECT)[0]);
-
-    expect(text).toBe([
+    }), EMPTY_PROJECT);
+    const text = contentOf(artifact);
+    const block = [
       '@import "tailwindcss/theme.css" layer(theme);',
       '@import "tailwindcss/preflight.css" layer(base);',
       '@import "tailwindcss/utilities.css";',
       '@import "nativewind/theme";',
       '',
-    ].join('\n'));
+    ];
+    const expected = block.join('\n');
+
+    expect(text).toBe(expected);
   });
 });
 
 describe('the styling answer and the component stylesheets', () => {
   it('drops a component stylesheet under stylex and keeps the rest', () => {
-    const entryFor = (styling: Answers['styling']): string => {
-      return contentOf(styleEntryEmitter({
+    const entryFor = (overrides: Partial<Answers>): string => {
+      const [artifact] = styleEntryEmitter({
         ...answersFor({ target: 'react' }),
-        ...(styling === undefined ? {} : { styling }),
-      }, EMPTY_PROJECT)[0]);
+        ...overrides,
+      }, EMPTY_PROJECT);
+
+      return contentOf(artifact);
     };
 
-    const entry = entryFor(undefined);
+    const entry = entryFor({});
     expect(entry).toContain('app-header/AppHeader.css');
-    const stylexEntry = entryFor('stylex');
+    const stylexEntry = entryFor({ styling: 'stylex' });
     expect(stylexEntry).not.toContain('app-header/AppHeader.css');
-    const entry2 = entryFor('stylex');
-    expect(entry2).toContain('tokens.css');
-    const entry3 = entryFor('stylex');
-    expect(entry3).toContain('base.css');
+    expect(stylexEntry).toContain('tokens.css');
+    expect(stylexEntry).toContain('base.css');
   });
 
   it('appends the stylex at-rule last, and only once', () => {
     const first = mergeStyleEntry(':root {\n  color: red;\n}\n', [], STYLEX_AT_RULE);
 
     expect(first).toBe(':root {\n  color: red;\n}\n\n@stylex;\n');
-    const mergedStyleEntry = mergeStyleEntry(first, [], STYLEX_AT_RULE);
-    expect(mergedStyleEntry).toBe(first);
+    const rerun = mergeStyleEntry(first, [], STYLEX_AT_RULE);
+    expect(rerun).toBe(first);
 
-    const mergedStyleEntry2 = mergeStyleEntry(null, [TAILWIND_IMPORT], STYLEX_AT_RULE);
+    const withTailwind = mergeStyleEntry(null, [TAILWIND_IMPORT], STYLEX_AT_RULE);
 
-    expect(mergedStyleEntry2)
+    expect(withTailwind)
       .toBe(`${TAILWIND_IMPORT}\n\n@stylex;\n`);
   });
 
   it('carries the stylex at-rule only where stylex compiles through postcss', () => {
     const entryFor = (target: Answers['target']): string => {
-      return contentOf(styleEntryEmitter({
+      const [artifact] = styleEntryEmitter({
         ...answersFor({ target }),
         styling: 'stylex',
-      }, EMPTY_PROJECT)[0]);
+      }, EMPTY_PROJECT);
+
+      return contentOf(artifact);
     };
 
     const entry = entryFor('next');

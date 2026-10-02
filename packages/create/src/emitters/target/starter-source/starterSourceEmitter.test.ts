@@ -21,29 +21,48 @@ import { shippedAssetsReader } from '@disk';
 import { starterSourceEmitter } from './starterSourceEmitter';
 
 const targetsFor = (overrides: Partial<Answers> = {}): string[] => {
-  return starterSourceEmitter(answersFor(overrides))
+  const artifacts = starterSourceEmitter(answersFor(overrides));
+
+  return artifacts
     .map(({ target }) => {
       return target;
     });
 };
 
 const artifactFor = (overrides: Partial<Answers>, target: string): Artifact | undefined => {
-  return starterSourceEmitter(answersFor(overrides))
+  const artifacts = starterSourceEmitter(answersFor(overrides));
+
+  return artifacts
     .find((artifact) => {
       return artifact.target === target;
     });
 };
 
 const sourcesByTarget = (overrides: Partial<Answers>): Record<string, string> => {
-  return Object.fromEntries(starterSourceEmitter(answersFor(overrides))
+  const artifacts = starterSourceEmitter(answersFor(overrides));
+  const entries = artifacts
     .flatMap((artifact) => {
       return 'sources' in artifact.content
         ? artifact.content.sources
             .map((source) => {
-              return [artifact.target, source];
+              const entry: [string, string] = [artifact.target, source];
+
+              return entry;
             })
         : [];
-    }));
+    });
+
+  return Object.fromEntries(entries);
+};
+
+const textOf = async (overrides: Partial<Answers>, target: string): Promise<string> => {
+  const artifact = artifactFor(overrides, target);
+
+  if (artifact === undefined) {
+    return '';
+  }
+
+  return shippedAssetsReader(artifact.content);
 };
 
 describe('the asset a destination derives', () => {
@@ -103,8 +122,11 @@ describe('the asset a destination derives', () => {
   });
 });
 
-it.each(valuesOf(ANSWERS.target.values))('plants every %s starter only on a project being born', (target) => {
-  const unseeded = starterSourceEmitter(answersFor({ target }))
+const targetIds = valuesOf(ANSWERS.target.values);
+
+it.each(targetIds)('plants every %s starter only on a project being born', (target) => {
+  const artifacts = starterSourceEmitter(answersFor({ target }));
+  const unseeded = artifacts
     .filter(({ seed }) => {
       return seed !== true;
     });
@@ -113,9 +135,9 @@ it.each(valuesOf(ANSWERS.target.values))('plants every %s starter only on a proj
 });
 
 it('writes the angular entry with its rejection value typed', async () => {
-  const entry = artifactFor({ target: 'angular' }, 'src/main.ts');
+  const entry = await textOf({ target: 'angular' }, 'src/main.ts');
 
-  expect(entry === undefined ? '' : await shippedAssetsReader(entry.content)).toContain('(err: unknown) =>');
+  expect(entry).toContain('(err: unknown) =>');
 });
 
 describe('starter tests', () => {
@@ -150,10 +172,10 @@ describe('starter tests', () => {
     const requires = artifactFor({}, 'src/lib/store/counter/counterStore.test.ts')?.requires;
 
     expect(requires).toContain(store);
-    const targets = targetsFor({});
-    expect(targets).not.toContain(store);
-    const targets2 = targetsFor({ store: 'zustand' });
-    expect(targets2).toContain(store);
+    const bare = targetsFor({});
+    expect(bare).not.toContain(store);
+    const withZustand = targetsFor({ store: 'zustand' });
+    expect(withZustand).toContain(store);
   });
 
   it('covers both the svelte page and its root layout', () => {
@@ -164,7 +186,8 @@ describe('starter tests', () => {
   });
 
   it('writes none when testing is declined', () => {
-    const requiring = starterSourceEmitter(answersFor({ testing: 'none' }))
+    const artifacts = starterSourceEmitter(answersFor({ testing: 'none' }));
+    const requiring = artifacts
       .filter(({ requires }) => {
         return requires !== undefined;
       });
@@ -194,9 +217,9 @@ describe('starter files for a router', () => {
       false,
     ],
   ])('writes the %s app and nothing generated beside it', async (router, imported, table) => {
-    const app = artifactFor({ router }, 'src/App.tsx');
+    const app = await textOf({ router }, 'src/App.tsx');
 
-    expect(app === undefined ? '' : await shippedAssetsReader(app.content)).toContain(imported);
+    expect(app).toContain(imported);
     const included = targetsFor({ router }).includes('src/routes/router.tsx');
     expect(included).toBe(table);
     const targets = targetsFor({ router });
@@ -204,11 +227,10 @@ describe('starter files for a router', () => {
   });
 
   it('lets the stylex dev runtime disable its stylesheet link without a hydration mismatch', async () => {
-    const root = artifactFor({
+    const text = await textOf({
       router: 'react-router-framework',
       styling: 'stylex',
     }, 'src/root.tsx');
-    const text = root === undefined ? '' : await shippedAssetsReader(root.content);
     const link = /<link\s+rel="stylesheet"\s+href="\/virtual:stylex\.css"[^>]*>/v.exec(text)?.[0];
 
     expect(link).toContain('suppressHydrationWarning');
@@ -219,12 +241,10 @@ describe('starter files for a router', () => {
     ['astro', 'src/layouts/Layout.astro'],
   ])('links the stylex dev css from the %s document only under stylex', async (target, path) => {
     const read = async (overrides: Partial<Answers>): Promise<string> => {
-      const document = artifactFor({
+      return textOf({
         target,
         ...overrides,
       }, path);
-
-      return document === undefined ? '' : await shippedAssetsReader(document.content);
     };
 
     const stylex = await read({ styling: 'stylex' });
@@ -237,8 +257,7 @@ describe('starter files for a router', () => {
 
   // A `select` left out keeps the user agent's font, so the language picker renders in Arial.
   it('resets the font of every form control the starters render', async () => {
-    const base = artifactFor({}, 'src/styles/base.css');
-    const text = base === undefined ? '' : await shippedAssetsReader(base.content);
+    const text = await textOf({}, 'src/styles/base.css');
     const match = /@layer reset \{(?<rules>[^\}]*)\}/v.exec(text);
     const reset = match?.groups?.['rules'] ?? '';
     const flat = reset.replaceAll(/\s+/gv, ' ');
@@ -248,11 +267,10 @@ describe('starter files for a router', () => {
 
   // The babel plugin reads no tsconfig paths, so `@styles/tokens.stylex` resolves through these two alone.
   it('aliases @styles for the next babel plugin against the project root', async () => {
-    const babelrc = artifactFor({
+    const text = await textOf({
       target: 'next',
       styling: 'stylex',
     }, '.babelrc');
-    const text = babelrc === undefined ? '' : await shippedAssetsReader(babelrc.content);
     const flat = text.replaceAll(/\s+/gv, ' ');
 
     expect(flat).toContain('"aliases": { "@styles/*": ["/ROOT/src/styles/*"] }');
@@ -289,14 +307,14 @@ describe('the starter source', () => {
       'src/components/ui/text-input/TextInput.tsx',
     ]],
   ])('writes the %s page, its binding and its control only with a form', (target, files) => {
-    const targets = targetsFor({
+    const withForm = targetsFor({
       target,
       form: 'tanstack-form',
     });
 
-    expect(targets).toEqual(expect.arrayContaining(files));
-    const targets2 = targetsFor({ target });
-    expect(targets2).not.toContain(files[0]);
+    expect(withForm).toEqual(expect.arrayContaining(files));
+    const withoutForm = targetsFor({ target });
+    expect(withoutForm).not.toContain(files[0]);
   });
 
   it.each<[TargetId, string, string]>([
@@ -345,10 +363,10 @@ describe('the starter source', () => {
       })['src/lib/apis/contact/schemas.ts'];
     };
 
-    const schemas = schemasFor(['zod']);
-    expect(schemas).toBe('starter-source/shared/zod/src/lib/apis/contact/schemas.ts');
-    const schemas2 = schemasFor([]);
-    expect(schemas2).toBe('starter-source/shared/src/lib/apis/contact/schemas.ts');
+    const zodSchemas = schemasFor(['zod']);
+    expect(zodSchemas).toBe('starter-source/shared/zod/src/lib/apis/contact/schemas.ts');
+    const plainSchemas = schemasFor([]);
+    expect(plainSchemas).toBe('starter-source/shared/src/lib/apis/contact/schemas.ts');
   });
 
   it.each<[TargetId, string, string]>([
@@ -386,12 +404,12 @@ describe('the starter source', () => {
       })['src/lib/apis/contact/contactApi.ts'];
     };
 
-    const api = apiFor({});
-    expect(api).toBe(`starter-source/${root}/src/lib/apis/contact/contactApi.ts`);
+    const plainApi = apiFor({});
+    expect(plainApi).toBe(`starter-source/${root}/src/lib/apis/contact/contactApi.ts`);
 
-    const api2 = apiFor({ data: 'tanstack-query' });
+    const queryApi = apiFor({ data: 'tanstack-query' });
 
-    expect(api2)
+    expect(queryApi)
       .toBe(`starter-source/${queryRoot}/tanstack-query/src/lib/apis/contact/contactApi.ts`);
   });
 
@@ -431,8 +449,8 @@ describe('the starter source', () => {
     });
 
     expect(withoutSuite).not.toContain('__mocks__/WithData.svelte');
-    const targets = targetsFor({ target: 'svelte' });
-    expect(targets).not.toContain('__mocks__/WithData.svelte');
+    const withoutForm = targetsFor({ target: 'svelte' });
+    expect(withoutForm).not.toContain('__mocks__/WithData.svelte');
   });
 
   it('takes the solid barrel the answers ask for', () => {
@@ -443,12 +461,12 @@ describe('the starter source', () => {
       })['src/components/ui/index.ts'];
     };
 
-    const barrel = barrelFor({});
-    expect(barrel).toBe('starter-source/shared/src/components/ui/index.ts');
-    const barrel2 = barrelFor({ store: 'tanstack-store' });
-    expect(barrel2).toBe('starter-source/shared/src/components/ui/index.ts');
-    const barrel3 = barrelFor({ form: 'tanstack-form' });
-    expect(barrel3).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
+    const bareBarrel = barrelFor({});
+    expect(bareBarrel).toBe('starter-source/shared/src/components/ui/index.ts');
+    const storeBarrel = barrelFor({ store: 'tanstack-store' });
+    expect(storeBarrel).toBe('starter-source/shared/src/components/ui/index.ts');
+    const formBarrel = barrelFor({ form: 'tanstack-form' });
+    expect(formBarrel).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
   });
 
   describe('on next', () => {
@@ -461,81 +479,81 @@ describe('the starter source', () => {
     };
 
     it('takes react\'s store in the spelling the store answer asks for', () => {
-      const source = sourceOf({ store: 'zustand' }, 'src/lib/store/counter/counterStore.ts');
+      const zustandStore = sourceOf({ store: 'zustand' }, 'src/lib/store/counter/counterStore.ts');
 
-      expect(source)
+      expect(zustandStore)
         .toBe('starter-source/react/zustand/src/lib/store/counter/counterStore.ts');
 
-      const source2 = sourceOf({ store: 'tanstack-store' }, 'src/lib/store/counter/counterStore.ts');
+      const tanstackStore = sourceOf({ store: 'tanstack-store' }, 'src/lib/store/counter/counterStore.ts');
 
-      expect(source2)
+      expect(tanstackStore)
         .toBe('starter-source/react/tanstack-store/src/lib/store/counter/counterStore.ts');
 
-      const source3 = sourceOf({ store: 'redux-toolkit' }, 'src/lib/store/counter/counterStore.ts');
+      const reduxStore = sourceOf({ store: 'redux-toolkit' }, 'src/lib/store/counter/counterStore.ts');
 
-      expect(source3)
+      expect(reduxStore)
         .toBe('starter-source/react/redux-toolkit/src/lib/store/counter/counterStore.ts');
     });
 
     it('reads both client slots from the React tree', () => {
-      const source = sourceOf({}, 'src/lib/providers/store/StoreProvider.tsx');
+      const plainStoreProvider = sourceOf({}, 'src/lib/providers/store/StoreProvider.tsx');
 
-      expect(source)
+      expect(plainStoreProvider)
         .toBe('starter-source/react/src/lib/providers/store/StoreProvider.tsx');
 
-      const source2 = sourceOf({ store: 'redux-toolkit' }, 'src/lib/providers/store/StoreProvider.tsx');
+      const reduxStoreProvider = sourceOf({ store: 'redux-toolkit' }, 'src/lib/providers/store/StoreProvider.tsx');
 
-      expect(source2)
+      expect(reduxStoreProvider)
         .toBe('starter-source/react/redux-toolkit/src/lib/providers/store/StoreProvider.tsx');
 
-      const source3 = sourceOf({}, 'src/lib/providers/data/DataProvider.tsx');
+      const plainDataProvider = sourceOf({}, 'src/lib/providers/data/DataProvider.tsx');
 
-      expect(source3)
+      expect(plainDataProvider)
         .toBe('starter-source/react/src/lib/providers/data/DataProvider.tsx');
 
-      const source4 = sourceOf({ data: 'tanstack-query' }, 'src/lib/providers/data/DataProvider.tsx');
+      const queryDataProvider = sourceOf({ data: 'tanstack-query' }, 'src/lib/providers/data/DataProvider.tsx');
 
-      expect(source4)
+      expect(queryDataProvider)
         .toBe('starter-source/react/tanstack-query/src/lib/providers/data/DataProvider.tsx');
     });
 
     it('takes the shared barrel in the spelling the answers reach', () => {
       const barrel = 'src/components/ui/index.ts';
 
-      const source2 = sourceOf({}, barrel);
-      expect(source2).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
+      const formBarrel = sourceOf({}, barrel);
+      expect(formBarrel).toBe('starter-source/shared/with-form/src/components/ui/index.ts');
 
       expect(sourcesByTarget({ target: 'next' })[barrel])
         .toBe('starter-source/shared/src/components/ui/index.ts');
 
-      const source = sourcesByTarget({
+      const storeBarrel = sourcesByTarget({
         target: 'next',
         store: 'zustand',
       })[barrel];
 
-      expect(source).toBe('starter-source/shared/src/components/ui/index.ts');
+      expect(storeBarrel).toBe('starter-source/shared/src/components/ui/index.ts');
     });
 
     it('takes the home route the store answer asks for', () => {
-      const source = sourcesByTarget({
+      const storeHome = sourcesByTarget({
         target: 'next',
         store: 'zustand',
       })['src/app/page.tsx'];
 
-      expect(source).toBe('starter-source/next/with-store/src/app/page.tsx');
-      const source2 = sourceOf({}, 'src/app/page.tsx');
-      expect(source2).toBe('starter-source/next/src/app/page.tsx');
+      expect(storeHome).toBe('starter-source/next/with-store/src/app/page.tsx');
+      const plainHome = sourceOf({}, 'src/app/page.tsx');
+      expect(plainHome).toBe('starter-source/next/src/app/page.tsx');
     });
 
     it('takes the styling answer\'s own token spelling', () => {
-      const source = sourceOf({ styling: 'tailwind' }, 'src/styles/theme.css');
+      const tailwindTheme = sourceOf({ styling: 'tailwind' }, 'src/styles/theme.css');
 
-      expect(source)
+      expect(tailwindTheme)
         .toBe('starter-source/shared/tailwind/src/styles/theme.css');
 
-      const source2 = sourceOf({ styling: 'stylex' }, 'src/styles/tokens.stylex.ts');
+      const stylexTokens = sourceOf({ styling: 'stylex' }, 'src/styles/tokens.stylex.ts');
 
-      expect(source2)
+      expect(stylexTokens)
         .toBe('starter-source/shared/stylex/src/styles/tokens.stylex.ts');
     });
   });
@@ -546,8 +564,7 @@ describe('a shared file written under the target naming', () => {
     ['src/lib/utils/status-utils.spec.ts', "from './status-utils'"],
     ['src/lib/utils/fetch-extended-utils.test.ts', "from './fetch-extended-utils'"],
   ])('imports its renamed neighbour by the name the target writes: %s', async (target, imported) => {
-    const suite = artifactFor({ target: 'angular' }, target);
-    const text = suite === undefined ? '' : await shippedAssetsReader(suite.content);
+    const text = await textOf({ target: 'angular' }, target);
 
     expect(text).toContain(imported);
   });
@@ -561,12 +578,6 @@ describe('a shared file written under the target naming', () => {
 });
 
 describe('a client boundary', () => {
-  const textOf = async (overrides: Partial<Answers>, target: string): Promise<string> => {
-    const artifact = artifactFor(overrides, target);
-
-    return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
-  };
-
   it.each<[string, string, Partial<Answers>]>([
     [
       'src/app/contact/useContactForm.ts',

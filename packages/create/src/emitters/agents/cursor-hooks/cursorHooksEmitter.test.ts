@@ -73,8 +73,9 @@ describe('mergeCursorHooks', () => {
         stop: [],
       },
     });
+    const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(mergeCursorHooks(current))).toEqual({
+    expect(JSON.parse(merged)).toEqual({
       version: 1,
       hooks: OURS,
     });
@@ -87,7 +88,9 @@ describe('mergeCursorHooks', () => {
     ['no hooks key', '{"version":1}'],
     ['hooks that are no object', '{"hooks":[]}'],
   ])('reads %s as no hooks of the project\'s own', (_label, current) => {
-    expect(JSON.parse(mergeCursorHooks(current))).toEqual({
+    const merged = mergeCursorHooks(current);
+
+    expect(JSON.parse(merged)).toEqual({
       version: 1,
       hooks: OURS,
     });
@@ -99,8 +102,9 @@ describe('mergeCursorHooks', () => {
         stop: [{ prompt: 'check the diff' }, { command: 42 }],
       },
     });
+    const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(mergeCursorHooks(current))).toEqual({
+    expect(JSON.parse(merged)).toEqual({
       version: 1,
       hooks: {
         stop: [{ prompt: 'check the diff' }, { command: 42 }],
@@ -117,8 +121,9 @@ describe('mergeCursorHooks', () => {
         beforeReadFile: [THEIRS],
       },
     });
+    const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(mergeCursorHooks(current))).toEqual({
+    expect(JSON.parse(merged)).toEqual({
       version: 1,
       hooks: {
         afterFileEdit: [THEIRS],
@@ -135,7 +140,9 @@ describe('mergeCursorHooks', () => {
       });
 
     const shipped = new Set(pluginTargets);
-    const scripts = [...JSON.stringify(CURSOR_HOOKS).matchAll(/node ([^"\s]+)"/gu)]
+    const commands = JSON.stringify(CURSOR_HOOKS).matchAll(/node ([^"\s]+)"/gu);
+    const matches = [...commands];
+    const scripts = matches
       .map((match) => {
         return match[1];
       });
