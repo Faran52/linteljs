@@ -1,3 +1,4 @@
+export { linteljsConfigEmitter } from './always/linteljs-config/linteljsConfigEmitter';
 export { styleGlob } from './always/utils/scriptUtils';
 export {
   buildArtifacts,

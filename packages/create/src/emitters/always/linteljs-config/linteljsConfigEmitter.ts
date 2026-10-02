@@ -16,7 +16,7 @@ export const emitLinteljsConfig = (answers: Answers): string => {
   }, null, 2)}\n`;
 };
 
-// Never written by `sync`, so a reformatted config survives `sync`.
+// Written by `sync` only to migrate a 1.x project, so a reformatted config survives `sync`.
 // Seeded first, so a run that dies before `package.json` leaves the answers recorded.
 export const linteljsConfigEmitter = (answers: Answers): Artifact[] => {
   const config = emitLinteljsConfig(answers);

@@ -21,7 +21,7 @@ import {
 
 import { MANAGED_PATH } from '@config/constants';
 
-import { CONFIG_PATH } from '@answers';
+import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import { exists } from '@disk';
 import { parsePackageJson } from '@emitters';
 
@@ -343,6 +343,32 @@ describe('applySync', () => {
     expect(second.written).toEqual([]);
     const file = await readFile(join(cwd, setup), 'utf8');
     expect(file).toBe('// the project own setup\n');
+  });
+
+  it('writes a 1.x project\'s answers under the current name and then removes the old one', async () => {
+    await writeFile(join(cwd, LEGACY_CONFIG_PATH), '{}\n', 'utf8');
+
+    const { written, removed } = await applyPending(HOSTED_DEFAULTS);
+
+    expect(written).toContain(CONFIG_PATH);
+    expect(removed).toContain(LEGACY_CONFIG_PATH);
+
+    const configText = await readFile(join(cwd, CONFIG_PATH), 'utf8');
+    const config: unknown = JSON.parse(configText);
+
+    expect(config).toMatchObject(HOSTED_DEFAULTS);
+  });
+
+  it('keeps a 1.x config it is told to remove while the current name is unwritten', async () => {
+    const legacyPath = join(cwd, LEGACY_CONFIG_PATH);
+
+    await writeFile(legacyPath, '{}\n', 'utf8');
+
+    const { removed } = await applySync(cwd, HOSTED_DEFAULTS, [LEGACY_CONFIG_PATH]);
+
+    expect(removed).toEqual([]);
+    const legacyExists = await exists(legacyPath);
+    expect(legacyExists).toBe(true);
   });
 
   it('removes the obsolete files it is given and reports each one', async () => {

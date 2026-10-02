@@ -2,7 +2,7 @@ import { basename, join } from 'node:path';
 
 import { MANAGED_PATH } from '@config/constants';
 
-import { LEGACY_CONFIG_PATH } from '@answers';
+import { CONFIG_PATH, LEGACY_CONFIG_PATH } from '@answers';
 import {
   artifactWriter,
   entryExists,
@@ -19,6 +19,7 @@ import {
   buildArtifacts,
   type DependencyDrift,
   dependencyDrift,
+  linteljsConfigEmitter,
   parsePackageJson,
 } from '@emitters';
 
@@ -80,12 +81,26 @@ const forSync = (artifact: Artifact): Artifact => {
   return resyncing;
 };
 
+const hasCurrentConfig = async (cwd: string): Promise<boolean> => {
+  return await entryExists(join(cwd, CONFIG_PATH));
+};
+
+// A 1.x project's answers exist only under the old name, which `sync` removes.
+const migratedConfig = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
+  const hasLegacy = await entryExists(join(cwd, LEGACY_CONFIG_PATH));
+  const isMigrating = hasLegacy && !await hasCurrentConfig(cwd);
+
+  return isMigrating ? linteljsConfigEmitter(answers) : [];
+};
+
 const syncArtifacts = async (cwd: string, answers: HostedAnswers): Promise<Artifact[]> => {
   const project = await projectShapeReader(cwd);
   const projectName = basename(cwd);
-
-  return buildArtifacts(answers, project, projectName)
+  const migrated = await migratedConfig(cwd, answers);
+  const built = buildArtifacts(answers, project, projectName)
     .map(forSync);
+
+  return [...migrated, ...built];
 };
 
 // A package.json `sync` would write from nothing carries every dependency already.
@@ -237,6 +252,13 @@ export const applySync = async (
 
   for (const target of candidates) {
     if (expected.has(target) || !targets.includes(target)) {
+      continue;
+    }
+
+    // Until the current name is written, the old one holds the only copy of the answers.
+    const isOnlyConfig = target === LEGACY_CONFIG_PATH && !await hasCurrentConfig(cwd);
+
+    if (isOnlyConfig) {
       continue;
     }
 
