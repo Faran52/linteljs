@@ -36,6 +36,14 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     'const results = await Promise.all(items.map(load));',
     'const value = await load(parse(text));',
 
+    // A ternary's branches and a logical's right side stand where the whole expression does.
+    'const rules = withVitest === true ? await loadVitest() : [];',
+    'const value = flag ? [alpha] : { alpha };',
+    'const value = source ?? await load();',
+    'const value = isReady && format(parse(text));',
+    'let value;\nvalue = flag || [alpha];',
+    'flag ? await load() : await fallback();',
+
     // Plain values in any position.
     'if (isReady) {\n  run();\n}',
     'items.filter((item) => {\n  return item.isActive;\n});',
@@ -94,7 +102,19 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       errors: [awaitError],
     },
     {
-      code: 'const value = flag ? await load() : fallback;',
+      code: 'const value = (await load()) ? alpha : beta;',
+      errors: [awaitError],
+    },
+    {
+      code: 'if (flag ? await load() : beta) {\n  run();\n}',
+      errors: [awaitError],
+    },
+    {
+      code: 'run(flag ? await load() : beta);',
+      errors: [awaitError],
+    },
+    {
+      code: 'const value = (await load()) ?? fallback;',
       errors: [awaitError],
     },
     {
@@ -142,11 +162,15 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       errors: [literalError],
     },
     {
-      code: 'const value = flag ? [alpha] : [];',
+      code: 'run(flag ? [alpha] : []);',
       errors: [literalError, literalError],
     },
     {
-      code: 'const value = source ?? {};',
+      code: 'run(source ?? {});',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = [alpha] || fallback;',
       errors: [literalError],
     },
     {
@@ -178,14 +202,18 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       errors: [literalError],
     },
     {
-      code: 'run([], {});\nconst value = flag ? [alpha] : { alpha };',
+      code: 'run([], {});\nrun(flag ? [alpha] : { alpha });',
       options: IGNORE_EMPTY,
       errors: [literalError, literalError],
     },
     {
-      code: 'const read = () => {\n  return [];\n};\nconst value = flag ? [alpha] : fallback;',
+      code: 'const read = () => {\n  return [];\n};\nrun(flag ? [alpha] : fallback);\nrun(source ?? [alpha]);',
       options: IGNORE_ARGUMENTS,
-      errors: [literalError, literalError],
+      errors: [
+        literalError,
+        literalError,
+        literalError,
+      ],
     },
   ],
 });

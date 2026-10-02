@@ -22,6 +22,8 @@ type CallNode = Extract<RuleNode, CallMatch>;
 
 type LiteralNode = Extract<RuleNode, LiteralMatch>;
 
+type PassesPosition = (parent: RuleNode, child: RuleNode) => boolean;
+
 // Wrappers that pass a value through unused, so the value stands where the wrapper does.
 const TRANSPARENT_TYPES = new Set([
   'ChainExpression',
@@ -44,12 +46,30 @@ const NAMING_TYPES = new Set([
 
 const CALL_TYPES = new Set(['CallExpression', 'NewExpression']);
 
-// The first parent past the wrappers, with the node it holds.
-const usingParentOf = (node: RuleNode): [RuleNode, RuleNode] => {
+const isWrapper = (parent: RuleNode): boolean => {
+  return TRANSPARENT_TYPES.has(parent.type);
+};
+
+// A ternary's branches and the right side of `&&`, `||` and `??` stand where the whole expression does. The test
+// and the left side are conditions.
+const isBranch: PassesPosition = (parent, child) => {
+  if (parent.type === 'ConditionalExpression') {
+    return !Object.is(parent.test, child);
+  }
+
+  if (parent.type === 'LogicalExpression') {
+    return Object.is(parent.right, child);
+  }
+
+  return isWrapper(parent);
+};
+
+// The first parent that does not pass the position through, with the node it holds.
+const usingParentOf = (node: RuleNode, passesPosition: PassesPosition): [RuleNode, RuleNode] => {
   let child = node;
   let parent = mustFind(node.parent);
 
-  while (TRANSPARENT_TYPES.has(parent.type)) {
+  while (passesPosition(parent, child)) {
     child = parent;
     parent = mustFind(child.parent);
   }
@@ -58,7 +78,7 @@ const usingParentOf = (node: RuleNode): [RuleNode, RuleNode] => {
 };
 
 const standsNamed = (node: RuleNode): boolean => {
-  const [child, parent] = usingParentOf(node);
+  const [child, parent] = usingParentOf(node, isBranch);
 
   if (parent.type === 'PropertyDefinition') {
     return Object.is(parent.value, child);
@@ -69,7 +89,7 @@ const standsNamed = (node: RuleNode): boolean => {
 
 // A literal nested in a literal is part of the outer one's value, judged once there.
 const isInsideLiteral = (node: RuleNode): boolean => {
-  const [child, parent] = usingParentOf(node);
+  const [child, parent] = usingParentOf(node, isWrapper);
 
   if (parent.type === 'Property') {
     return Object.is(parent.value, child);
@@ -84,9 +104,9 @@ const isEmptyLiteral = (node: LiteralNode): boolean => {
   return members.length === 0;
 };
 
-// A literal is never a callee, so a call holding one holds it as an argument.
+// A literal is never a callee, so a call holding one holds it as an argument. Only one passed straight counts.
 const isCallArgument = (node: RuleNode): boolean => {
-  const [, parent] = usingParentOf(node);
+  const [, parent] = usingParentOf(node, isWrapper);
 
   return CALL_TYPES.has(parent.type);
 };

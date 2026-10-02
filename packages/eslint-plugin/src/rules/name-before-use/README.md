@@ -15,10 +15,15 @@ those three stand only where they get a name or stand alone:
 - `export default`;
 - the operand of an `await`, which is judged itself.
 
-Everywhere else (conditions, `for` headers, ternaries, call arguments, `expect`, `return`, an arrow's
-body, templates, spreads, operands, JSX attributes) it reports. A literal nested in a literal is part
+Everywhere else (conditions, `for` headers, a ternary's test, call arguments, `expect`, `return`, an
+arrow's body, templates, spreads, operands, JSX attributes) it reports. A literal nested in a literal is part
 of the outer one's value and is judged there. `as`, `satisfies`, `!`, an angle-bracket assertion and optional chaining pass the
 position through.
+
+A ternary's two branches and the right side of `&&`, `||` and `??` stand where the whole expression
+does, so `const rules = withVitest ? await loadVitest() : [];` is named. The test and the left side
+are conditions and stay judged. `ignoreLiteralArguments` counts only a literal passed straight to a
+call, so `run(source ?? [alpha])` still reports.
 
 ## Examples of incorrect code for this rule
 
@@ -37,6 +42,11 @@ runPm('npm', ['ls', '--all'], project);
 ```ts
 // incorrect: a call that takes a call, inside expect
 expect(parse(text)).toBe(expected);
+```
+
+```ts
+// incorrect: an await as a ternary's test
+const label = (await isReady()) ? 'ready' : 'waiting';
 ```
 
 ```ts
@@ -66,6 +76,12 @@ runPm('npm', lsArgs, project);
 const parsed = parse(text);
 
 expect(parsed).toBe(expected);
+```
+
+```ts
+// correct: the const names both branches and the right side
+const rules = withVitest ? await loadVitest() : [];
+const config = source ?? await loadConfig();
 ```
 
 ```ts
