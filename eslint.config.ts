@@ -163,6 +163,7 @@ const config = [
       'sonarjs/no-os-command-from-path': 'off',
     },
   },
+  // docs/DESIGN.md: `@linteljs/workspace/scripts`
   {
     name: '@linteljs/workspace/scripts-logger',
     files: ['packages/create/templates/project/scripts/utils/loggerUtils.ts'],

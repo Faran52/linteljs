@@ -15,7 +15,7 @@ npm run check
 The scaffolder writes a starter app with its tests, ESLint flat config, TypeScript settings, git hooks, and
 coding-agent rules and hooks, for React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through
 Expo, and Manifest V3 web extensions. `check` runs lint, the banned-pattern check, CSS lint, the typecheck,
-coverage at 100%, and the build, and it passes on the first run. Generated projects need Node 22.18 or newer.
+coverage at 100% when the project has tests, and the build, and it passes on the first run. Generated projects need Node 22.18 or newer.
 
 ## Packages
 
@@ -23,7 +23,7 @@ coverage at 100%, and the build, and it passes on the first run. Generated proje
 | --- | --- |
 | [`@linteljs/create`](packages/create) | Start a project, or bring an existing one under the standard. Every package manager, option and flag is in its README. |
 | [`@linteljs/eslint-config`](packages/eslint-config) | Compose ESLint flat-config layers, by hand or through `composeConfig`. |
-| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the 26 rules behind the config on their own. |
+| [`@linteljs/eslint-plugin`](packages/eslint-plugin) | Use the 26 rules on their own. `recommended` holds the ones the config builds on. |
 
 ## Existing projects
 

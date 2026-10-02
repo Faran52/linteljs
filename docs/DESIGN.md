@@ -237,8 +237,9 @@ Two or fewer sit on one line or go fully one per line, and a half-split list, br
 is fixed to the second. No rule joins lines. `@linteljs/member-newline` does it for an object literal, an object
 pattern, an interface and a type literal, `@linteljs/array-newline` for an array and an array pattern,
 `@linteljs/import-newlines` for an import and `@linteljs/export-specifier-newline` for an export list. One node,
-one owner, and one threshold for all of them. The one exception is on purpose: `union-newline` splits on what a
-union holds, not on how many members it has. Three rather than two keeps a pair on one line, `const [value, setValue] = useState(0)` among them, without an
+one owner, and one threshold for all of them. Two exceptions are on purpose: `union-newline` splits on what a
+union holds, not on how many members it has, and `@linteljs/chain-call-newline` splits a chain at two calls, or at
+one callback with a body, since a chain reads as steps. Three rather than two keeps a pair on one line, `const [value, setValue] = useState(0)` among them, without an
 exception for tuples.
 
 `@stylistic` 5.10.0 cannot say it, which is why the plugin owns objects and arrays. `object-property-newline` has no
@@ -310,12 +311,30 @@ module is a drawer of small helpers rather than one subject, which is why it get
 `composeConfig` passes through), because naming it unasked would make ESLint lint `.astro` files in a project that
 has no parser for them.
 
-The numbers govern this workspace too. Measured the way the rules count, in non-test source: the longest file is
-`create/src/targets/react/reactTarget.ts` at 483 lines, the longest `utils/` module
-`eslint-plugin/scripts/audit/false-negatives/utils/functionShapesUtils.ts` at 475, and the longest function
-`base` itself at 180. The workspace kept its own 200-line cap on `*Utils.ts` and a 500-line function cap before
+The numbers govern this workspace too. Measured on 2026-10-02 the way the rules count, in non-test source: the
+longest file is `create/src/targets/react/reactTarget.ts` at 461 lines, the longest `utils/` module
+`create/templates/project/plugins/linteljs/hooks/utils/commandParserUtils.ts` at 626, and the longest function
+`chain-call-newline`'s `create` at 286, with `base` itself at 278. The workspace kept its own 200-line cap on `*Utils.ts` and a 500-line function cap before
 the layer carried any; both are gone, since a workspace-only number would be a second standard the published one
 does not state.
+
+### Magic numbers in source only
+
+`base` turns on `@typescript-eslint/no-magic-numbers` for every script and SFC file, with core `no-magic-numbers`
+off, since the typescript-eslint copy also runs on plain JavaScript. Suites, `__mocks__/`, e2e, `*.config.*` and
+`constants.ts` are exempt: a case states its own numbers, a config file is a table of options, and `constants.ts`
+is where a number gets its name. `-1`, `0`, `1` and `2` are allowed. Measured over the workspace source, suites and
+config files out: the chosen options give 82 findings in 28 files; an empty `ignore` gives 664 in 120, and `[0, 1]`
+183 in 73; `detectObjects: true` gives 90, so a column-width table stays legal; including `constants.ts` gives 90,
+every one already a named entry. `1000` is not allowed, and is `MS_PER_SECOND` instead.
+
+### `name-before-use` reports and never fixes
+
+`@linteljs/name-before-use` asks for an `await`, a call that takes a call, or an inline array or object to be named
+in a `const` before it is used. It is report-only: the fix would have to invent the name, and an invented name reads
+worse than the inline code it replaces. `ignoreEmptyLiterals` and `ignoreLiteralArguments` relax it for `[]`, `{}`
+and a literal passed straight to a call. It is outside `recommended`, and turning it on in `base` is a separate
+decision. The plugin's own rules already follow it: `create` returns a named `visitors: Rule.RuleListener`.
 
 ### `base` carries no framework rule
 
@@ -1178,7 +1197,9 @@ never an orchestrator edit: the coupling `switch (target)` is banned for in the 
   manifest and the starter source.
 
 `sync` reads `linteljs.config.json` rather than writing it, so a project that reformatted its config keeps those
-bytes through `sync`. Two properties carry what would otherwise be branches in the pipeline: `seed: true`
+bytes through `sync`. The one exception is a 1.x project, whose answers sit in `lintel.config.json`. `sync` and
+`create --existing` both write `linteljs.config.json` first and remove the old file only after, because until the
+new name is on disk the old one is the only copy of the answers. Two properties carry what would otherwise be branches in the pipeline: `seed: true`
 is birth only (`create`, and `--existing --seed`), and `requires` names a path that has to exist, which skips a
 starter test whose file a rearranged starter moved. A `preserve` file that already exists is the project's on
 every run, born or not.
@@ -1342,11 +1363,10 @@ has a reason not on screen.
 A ring is named for what its members are, or for the world it reaches where the world is the membership test. A
 subject is a kebab-case directory holding one entry named for it, its suite, a `constants.ts` for a table it alone
 owns, and a `utils/` for helpers only it reads. The entry takes the singular of whatever names the kind: the ring
-where the ring has one (`targets/` gives `reactTarget`), the group where a group changes it (`disk/read/` gives
+where the ring has one (`targets/` gives `reactTarget`, `spawns/` gives `gitSpawn`), the group where a group changes it (`disk/read/` gives
 `projectShapeReader`, `pipeline/passes/` gives `fixPass`), and nothing where a ring has no one kind (`terminal/`
 holds `cli/cli.ts`). `disk/` splits into `read/` and `write/` so the group supplies `Reader` and `Writer`; `spawns/`
-is a plural of its members, every one of which runs a binary and waits. The rule is derived, not invented:
-`fixPass.ts` and `localBinary.ts` already carried the noun their ring gives them.
+is a plural of its members, every one of which runs a binary and waits.
 
 `src/meta.test.ts` carries a row per ring: the suffix its entries take, the registry that has to name the same
 subjects where there is one, and `files: true` for rings read by path rather than by subject. One table rather than
@@ -1404,7 +1424,7 @@ rules off by name, so a `safeParse` read as `{ issues }` against Zod 4, a props 
 component boundary or a promise dropped from a blur handler reached the end-to-end suite before anything saw it.
 
 Its scope is the template texts: `STARTER_CASES` in `packages/create/src/pipeline/e2e/starter-cover/` names 62 e2e
-cases that between them write every distinct text a starter template can become (778, per target and destination,
+cases that between them write every distinct text a starter template can become (781 on 2026-10-02, per target and destination,
 the joined test setup included), and `starterCover.test.ts` fails when a template, a transform or a new answer
 leaves a text no case writes, naming the labels that would reach it. What the emitters write themselves is left to
 the end-to-end matrix, which runs every pair. Each case is the pipeline's own output (`pipelineRun`, install and fix
@@ -1447,9 +1467,9 @@ against the catalog.
 
 ## The end-to-end matrix
 
-Every answer that changes emitted code is covered, in 214 cases rather than the whole product. `matrix.ts`
+Every answer that changes emitted code is covered, in 184 cases rather than the whole product. `matrix.ts`
 enumerates them; nothing is listed by hand. Per target, every legal combination of the varying axes is enumerated
-under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 174
+under pnpm, and a greedy cover keeps enough of them that every *pair* of answer values appears at least once: 144
 cases. The axes are `hostedFramework`, `browser`, `styling`, `form`, `router`, `store`, `data`, `mocking`,
 `languages`, `testing`, and each library on or off as an axis of its own. `agents`, `plugins` and `surfaces` are
 always their full value, and `typeSafety` is always `strict`: neither changes what is installed, and `relaxed` only
@@ -1558,7 +1578,7 @@ git switch -c v1.2.0 && git push -u origin v1.2.0
 - **The branch is the trigger, not a tag.** A tag can be pushed onto any commit, so it never says where a release
   came from; a branch trigger makes "which branches contain it" tautological.
 - **The tag is written after the publish.** A tag means all three are on npm, which is what lets it refuse a second
-  push to the same branch rather than running forty minutes of gates to die on a version conflict.
+  push to the same branch rather than running every gate to die on a version conflict.
 - **The branch deletes itself once the tag holds the commit.** The delete names `refs/heads/` in full, because with
   a tag of the same name `git push origin --delete v1.2.0` answers `dst refspec matches more than one` and removes
   neither, failing the run after all three packages are published.
@@ -1567,7 +1587,7 @@ git switch -c v1.2.0 && git push -u origin v1.2.0
 - **No `NPM_TOKEN`.** Each package has a trusted publisher on npmjs.com naming this repository, this workflow file
   and the `npm` environment, and pnpm exchanges the workflow's OIDC token for a short-lived one. Renaming
   `release.yml` breaks publishing until all three are re-registered.
-- **Publish order is plugin, then config, then CLI**, the dependency order reversed, so a consumer installing
+- **Publish order is plugin, then config, then CLI**, each after what it depends on, so a consumer installing
   mid-release always resolves a complete tree.
 - **A version bump touches five files.** The three `package.json`s, `packages/eslint-plugin/src/plugin.ts`, which
   hand-writes `meta.version` because ESLint reads it off the plugin object, and
@@ -1592,7 +1612,7 @@ unawaited promise, and an SFC pair. Linting them reports the defect each exists 
 `.svelte` pair cannot parse without the layers those tests compose.
 
 `templates/fragments/test-setup/setupTests.angular.ts`, `setupTests.reactNative.ts`, `setupTests.msw.ts`,
-`setupTests.i18n.ts`, `setupTests.vueI18n.ts` and `templates/starter-source/**` are shipped
+`setupTests.i18n.ts`, `setupTests.reactNativeI18n.ts`, `setupTests.vueI18n.ts` and `templates/starter-source/**` are shipped
 source, copied to disk and never imported here. Each imports the framework it is written for, none of which is
 installed here, so every import is unresolvable and every call through one untyped. The MSW setup differs only in
 what it reaches for: `./msw/node`, a path in the project it lands in and no path at all here; the i18n setup
@@ -1700,13 +1720,13 @@ upgrade: a breaking change for enforcement the project already has.
 Every script under `scripts/` and `packages/*/scripts/` reports through the logger a generated project receives,
 `packages/create/templates/project/scripts/utils/loggerUtils.ts`. So this block turns `no-console` *on* for every
 method, `warn` and `error` included, with options given since severity alone inherits the layer's `allow`, and
-`@linteljs/workspace/scripts-logger` turns it off for that logger alone. `base()` still stands the
+`@linteljs/workspace/scripts-logger` turns it off for that logger alone: with it on, the logger reports 6 findings. `base()` still stands the
 rule down under `scripts/` for a consumer, a published default that is not this repository's to narrow.
 `release/run-rules/runRulesRelease.ts` writes to `process.stdout` instead: it runs in a container holding only the
 plugin's own `dist/` and `scripts/`, with no logger above them.
 
-`sonarjs/no-os-command-from-path` joins it for the same directories. The audits and smokes run
-`execFileSync('pnpm', ...)`, and the rule wants an absolute path because a writeable `PATH` entry could shadow the
+`sonarjs/no-os-command-from-path` joins it for the same directories. Measured on 2026-10-02 with the rule on: one
+finding, `scripts/audit-ignores/auditIgnoresScript.ts` running `execFileSync('pnpm', ...)`, and the rule wants an absolute path because a writeable `PATH` entry could shadow the
 name. That is a real hazard for a program a user runs and not for one a maintainer invokes in this checkout, where
 resolving `pnpm` to an absolute path would consult the same `PATH`.
 
@@ -1718,7 +1738,7 @@ reached through a field (`parent.callee`, `parent.object`, `outer.parent.body`) 
 sonarjs reads the intersection and the union member as disjoint, so it calls `parent.callee === fn` impossible when
 that is the whole question the rule asks.
 
-Measured: with the rule forced on, it reports five comparisons across the three files the block names. They are
+Measured, last on 2026-10-02: with the rule forced on, it reports five comparisons across the three files the block names. They are
 not constant, which the plugin's 100% branch gate proves: each is taken both ways by a test. Treat the count as a
 reading to re-take, not to trust; if it reaches zero, the reports are right and the block is wrong. The files are
 named one by one, so another site has to be added on purpose.
@@ -1726,7 +1746,7 @@ named one by one, so another site has to be added on purpose.
 ### `@linteljs/workspace/rule-tester`
 
 `RuleTester.run()` registers its cases at module scope, and `sonarjs/no-empty-test-file` looks for a literal `it` or
-`test` call. It finds none and calls the file empty. Measured: wrapping `tsRuleTester.run(...)` in an explicit
+`test` call. It finds none and calls the file empty: forced on, it reports 25 of the 26 rule suites. Measured too: wrapping `tsRuleTester.run(...)` in an explicit
 `describe(...)` does not silence it either, so no shape of the file satisfies it. Scoped to the rule suites alone.
 
 ### `@linteljs/workspace/e2e-test`
@@ -1747,8 +1767,9 @@ file joins the gate the moment it is included.
 
 The end-to-end harness (`e2e/browser/`, `e2e/registry/`, `e2e/runner/`, `e2e/targets/`, `e2e/utils/` and the files
 at `e2e/`'s top level) is excluded: it spawns, publishes and needs the registry, so it runs only under `test:e2e`, and a helper there
-would land as a 0% file against a 100% threshold. `e2e/matrix/` is pure and runs in the default suite, so it is held
-to the gate. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
+would land as a 0% file against a 100% threshold. `e2e/matrix/` and `e2e/starter-cover/` are pure and run in the default suite, so they are
+held to the gate. Beyond each package's `src/`, the include names five `utils/` modules of the plugin's real-code
+audit, the pure half of a script that otherwise spawns, each with its own suite. Nothing else is excluded: `cli.ts` is not an entrypoint, since `bin/createLinteljs.ts` reads
 `process.argv` and sets `process.exitCode`, and `main` is a function from an argv array to an exit code that
 `cli.test.ts` calls directly.
 
