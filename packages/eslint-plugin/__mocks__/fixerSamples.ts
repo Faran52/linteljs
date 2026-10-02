@@ -903,6 +903,13 @@ export const FIXER_SAMPLES: FixerSample[] = [
     project: ALIASED_PROJECT,
   },
   {
+    name: 'functions in a namespace and a static block',
+    code: 'namespace Tools {\n  export function rest(first = 1, ...others: number[]): number[] {\n'
+      + '    return others;\n  }\n}\n\nclass Registry {\n  static {\n    function seed() {\n'
+      + '      return 1;\n    }\n\n    if (seed()) {\n      seed();\n    }\n  }\n}\n\nexport { Registry, Tools };\n',
+    typescript: true,
+  },
+  {
     name: 'type-only, commented and dynamic imports across aliased directories',
     code: "import type { value } from /* env */ '../config/env';\n\n"
       + 'export const load = async () => (await import("../lib/client")).value;\nexport type { value };\n',

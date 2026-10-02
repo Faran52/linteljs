@@ -12,6 +12,7 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
     'const greet = (name) => {\n  return name;\n};',
 
     'function* walk() {\n  yield 1;\n}',
+    'async function* stream() {\n  yield await 1;\n}',
     'const walker = {\n  * walk() {\n    yield 1;\n  }\n};',
 
     'function greet() {\n  return this.name;\n}',
@@ -143,6 +144,22 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
     {
       code: 'register(function () {\n  return 1;\n}, options);',
       output: 'register(() => {\n  return 1;\n}, options);',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      code: 'class Registry {\n  static {\n    function seed() {\n      return 1;\n    }\n\n    seed();\n  }\n}',
+      output: 'class Registry {\n  static {\n    const seed = () => {\n      return 1;\n    };\n\n    seed();\n  }\n}',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      // A comment in the parameter list has no place in the rebuilt head.
+      code: 'function greet(name /* the user */) {\n  return name;\n}',
+      output: null,
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      code: 'function greet() {\n  // the only one\n  return 1; /* trailing */\n}',
+      output: 'const greet = () => {\n  // the only one\n  return 1; /* trailing */\n};',
       errors: [{ messageId: 'preferArrow' }],
     },
     {
@@ -582,8 +599,27 @@ export function greet(value: number): number;
 export function greet(value: unknown): unknown {
   return value;
 }`,
+    'declare function ambient(value: string): string;',
   ],
   invalid: [
+    {
+      code: 'namespace Tools {\n'
+        + '  function seed<const T, U = string>(value: T, fallback?: U): T {\n'
+        + '    return value;\n  }\n}',
+      output: 'namespace Tools {\n'
+        + '  const seed = <const T, U = string>(value: T, fallback?: U): T => {\n'
+        + '    return value;\n  };\n}',
+      errors: [{ messageId: 'preferArrow' }],
+    },
+    {
+      code: 'namespace Tools {\n'
+        + '  export function rest(first: number = 1, ...others: number[]): number[] {\n'
+        + '    return others;\n  }\n}',
+      output: 'namespace Tools {\n'
+        + '  export const rest = (first: number = 1, ...others: number[]): number[] => {\n'
+        + '    return others;\n  };\n}',
+      errors: [{ messageId: 'preferArrow' }],
+    },
     {
       code: 'export const version = 1;\nfunction greet(name: string): string {\n  return name;\n}',
       output: 'export const version = 1;\nconst greet = (name: string): string => {\n  return name;\n};',
