@@ -473,6 +473,21 @@ describe('isInteractive', () => {
     const actual = isInteractive({ type: 'JSXElement' }, ['Pressable']);
     expect(actual).toBe(false);
   });
+
+  it('reads an element named as a known component as interactive', () => {
+    const element = {
+      type: 'JSXElement',
+      openingElement: {
+        name: {
+          type: 'JSXIdentifier',
+          name: 'Pressable',
+        },
+      },
+    };
+
+    const actual = isInteractive(element, ['Pressable']);
+    expect(actual).toBe(true);
+  });
 });
 
 describe('hasTextContent', () => {
