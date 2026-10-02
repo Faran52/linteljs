@@ -102,132 +102,173 @@ describe('linesInsideTokens', () => {
 });
 
 describe('getIndentStep', () => {
-  it('reads two spaces from a two-space file', () => {
-    expect(stepFor('function load() {\n  return 1;\n}\n')).toBe('  ');
-  });
-
-  it('reads four spaces from a four-space file', () => {
-    expect(stepFor('function load() {\n    return 1;\n}\n')).toBe('    ');
-  });
-
-  it('takes the narrowest indent, not the deepest', () => {
-    expect(stepFor('function load() {\n  if (ready) {\n    return 1;\n  }\n}\n')).toBe('  ');
-  });
-
-  it('reads a tab from a tab-indented file', () => {
-    expect(stepFor('function load() {\n\treturn 1;\n}\n')).toBe('\t');
-  });
-
-  it('prefers spaces when they outnumber tabs', () => {
-    expect(stepFor('function a() {\n  return 1;\n}\nfunction b() {\n  return 2;\n}\nfunction c() {\n\treturn 3;\n}\n'))
-      .toBe('  ');
-  });
-
-  it('prefers tabs when they are at least as common', () => {
-    expect(stepFor('function a() {\n\treturn 1;\n}\nfunction b() {\n  return 2;\n}\n')).toBe('\t');
-  });
-
-  it('falls back to two spaces when nothing is indented', () => {
-    expect(stepFor('const value = 1;\nconst other = 2;\n')).toBe('  ');
-  });
-
-  it('ignores block comment continuation lines', () => {
-    expect(stepFor('/**\n * A doc block.\n */\nfunction load() {\n    return 1;\n}\n')).toBe('    ');
-  });
-
-  it('falls back to two spaces when the narrowest indent is a single space', () => {
-    expect(stepFor('const value = [\n mis,\n aligned,\n];\n')).toBe('  ');
-  });
-
-  it('falls back to two spaces when the narrowest indent is implausibly wide', () => {
-    expect(stepFor('const value = [\n         deeplyAligned,\n];\n')).toBe('  ');
-  });
-
-  it('accepts the widest still-plausible indent', () => {
-    expect(stepFor('const value = [\n        eightWide,\n];\n')).toBe('        ');
-  });
-
-  it('picks the narrowest even when a wider indent comes first', () => {
-    expect(stepFor('function a() {\n    four();\n}\nfunction b() {\n  two();\n}\n')).toBe('  ');
-  });
-
-  it('picks the narrowest even when the wider indent is more common', () => {
-    expect(stepFor('function a() {\n    x();\n    y();\n    z();\n}\nfunction b() {\n  q();\n}\n')).toBe('  ');
-  });
-
-  it('reads a tab that is followed by spaces', () => {
-    expect(stepFor('function a() {\n\t  one();\n}\nfunction b() {\n\t  two();\n}\n')).toBe('\t');
-  });
-
-  it('reads spaces that are followed by a tab', () => {
-    expect(stepFor('function a() {\n  \tone();\n}\nfunction b() {\n  two();\n}\n')).toBe('  ');
-  });
-
-  it('ignores the body of a template literal', () => {
-    expect(stepFor('const query = `\n   SELECT *\n   FROM t\n`;\nfunction load() {\n    return 1;\n}\n'))
-      .toBe('    ');
-  });
-
-  it('ignores the line a template literal closes on', () => {
-    expect(stepFor('const run = () => {\n    const query = `\n        SELECT *\n  `;\n\n    return query;\n};\n'))
-      .toBe('    ');
-  });
-
-  it('counts every indented line, not just the first', () => {
-    expect(stepFor('function a() {\n\tone();\n}\nfunction b() {\n  two();\n}\nfunction c() {\n  three();\n}\n'))
-      .toBe('  ');
+  it.each([
+    [
+      'reads two spaces from a two-space file',
+      'function load() {\n  return 1;\n}\n',
+      '  ',
+    ],
+    [
+      'reads four spaces from a four-space file',
+      'function load() {\n    return 1;\n}\n',
+      '    ',
+    ],
+    [
+      'takes the narrowest indent, not the deepest',
+      'function load() {\n  if (ready) {\n    return 1;\n  }\n}\n',
+      '  ',
+    ],
+    [
+      'reads a tab from a tab-indented file',
+      'function load() {\n\treturn 1;\n}\n',
+      '\t',
+    ],
+    [
+      'prefers spaces when they outnumber tabs',
+      'function a() {\n  return 1;\n}\nfunction b() {\n  return 2;\n}\nfunction c() {\n\treturn 3;\n}\n',
+      '  ',
+    ],
+    [
+      'prefers tabs when they are at least as common',
+      'function a() {\n\treturn 1;\n}\nfunction b() {\n  return 2;\n}\n',
+      '\t',
+    ],
+    [
+      'falls back to two spaces when nothing is indented',
+      'const value = 1;\nconst other = 2;\n',
+      '  ',
+    ],
+    [
+      'ignores block comment continuation lines',
+      '/**\n * A doc block.\n */\nfunction load() {\n    return 1;\n}\n',
+      '    ',
+    ],
+    [
+      'falls back to two spaces when the narrowest indent is a single space',
+      'const value = [\n mis,\n aligned,\n];\n',
+      '  ',
+    ],
+    [
+      'falls back to two spaces when the narrowest indent is implausibly wide',
+      'const value = [\n         deeplyAligned,\n];\n',
+      '  ',
+    ],
+    [
+      'accepts the widest still-plausible indent',
+      'const value = [\n        eightWide,\n];\n',
+      '        ',
+    ],
+    [
+      'picks the narrowest even when a wider indent comes first',
+      'function a() {\n    four();\n}\nfunction b() {\n  two();\n}\n',
+      '  ',
+    ],
+    [
+      'picks the narrowest even when the wider indent is more common',
+      'function a() {\n    x();\n    y();\n    z();\n}\nfunction b() {\n  q();\n}\n',
+      '  ',
+    ],
+    [
+      'reads a tab that is followed by spaces',
+      'function a() {\n\t  one();\n}\nfunction b() {\n\t  two();\n}\n',
+      '\t',
+    ],
+    [
+      'reads spaces that are followed by a tab',
+      'function a() {\n  \tone();\n}\nfunction b() {\n  two();\n}\n',
+      '  ',
+    ],
+    [
+      'ignores the body of a template literal',
+      'const query = `\n   SELECT *\n   FROM t\n`;\nfunction load() {\n    return 1;\n}\n',
+      '    ',
+    ],
+    [
+      'ignores the line a template literal closes on',
+      'const run = () => {\n    const query = `\n        SELECT *\n  `;\n\n    return query;\n};\n',
+      '    ',
+    ],
+    [
+      'counts every indented line, not just the first',
+      'function a() {\n\tone();\n}\nfunction b() {\n  two();\n}\nfunction c() {\n  three();\n}\n',
+      '  ',
+    ],
+  ])('%s', (_title, code, expected) => {
+    const step = stepFor(code);
+    expect(step).toBe(expected);
   });
 });
 
 describe('lineTerminatorOf', () => {
-  it('reports LF for a unix file', () => {
-    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\nconst b = 2;\n').sourceCode)).toBe('\n');
-  });
-
-  it('reports CRLF for a windows file', () => {
-    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\r\nconst b = 2;\r\n').sourceCode)).toBe('\r\n');
-  });
-
-  it('reports CRLF when the endings tie', () => {
-    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\nconst b = 2;\r\n').sourceCode)).toBe('\r\n');
-  });
-
-  it('reports LF for an LF file with one stray CRLF line', () => {
-    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\r\nconst b = 2;\nconst c = 3;\n').sourceCode)).toBe('\n');
-  });
-
-  it('reports CRLF for a CRLF file with one stray LF line', () => {
-    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;\nconst b = 2;\r\nconst c = 3;\r\n').sourceCode)).toBe('\r\n');
-  });
-
-  it('reports LF for a single-line file', () => {
-    expect(lineTerminatorOf(sourceCodeFrom('const a = 1;').sourceCode)).toBe('\n');
+  it.each([
+    [
+      'reports LF for a unix file',
+      'const a = 1;\nconst b = 2;\n',
+      '\n',
+    ],
+    [
+      'reports CRLF for a windows file',
+      'const a = 1;\r\nconst b = 2;\r\n',
+      '\r\n',
+    ],
+    [
+      'reports CRLF when the endings tie',
+      'const a = 1;\nconst b = 2;\r\n',
+      '\r\n',
+    ],
+    [
+      'reports LF for an LF file with one stray CRLF line',
+      'const a = 1;\r\nconst b = 2;\nconst c = 3;\n',
+      '\n',
+    ],
+    [
+      'reports CRLF for a CRLF file with one stray LF line',
+      'const a = 1;\nconst b = 2;\r\nconst c = 3;\r\n',
+      '\r\n',
+    ],
+    [
+      'reports LF for a single-line file',
+      'const a = 1;',
+      '\n',
+    ],
+  ])('%s', (_title, code, expected) => {
+    const { sourceCode } = sourceCodeFrom(code);
+    const terminator = lineTerminatorOf(sourceCode);
+    expect(terminator).toBe(expected);
   });
 });
 
 describe('getIndent', () => {
-  it('reads the indentation of the line a node starts on', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('function load() {\n    return { alpha: 1 };\n}\n');
-
-    expect(getIndent(sourceCode, firstNode('ObjectExpression'))).toBe('    ');
-  });
-
-  it('reads the line, not the node column', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('function load() {\n  const { alpha } = source;\n}\n');
-
-    expect(getIndent(sourceCode, firstNode('ObjectPattern'))).toBe('  ');
-  });
-
-  it('returns an empty string at the left margin', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('const { alpha } = source;\n');
-
-    expect(getIndent(sourceCode, firstNode('ObjectPattern'))).toBe('');
-  });
-
-  it('reads a tab indent', () => {
-    const { sourceCode, firstNode } = sourceCodeFrom('function load() {\n\tconst { alpha } = source;\n}\n');
-
-    expect(getIndent(sourceCode, firstNode('ObjectPattern'))).toBe('\t');
+  it.each([
+    [
+      'reads the indentation of the line a node starts on',
+      'function load() {\n    return { alpha: 1 };\n}\n',
+      'ObjectExpression',
+      '    ',
+    ],
+    [
+      'reads the line, not the node column',
+      'function load() {\n  const { alpha } = source;\n}\n',
+      'ObjectPattern',
+      '  ',
+    ],
+    [
+      'returns an empty string at the left margin',
+      'const { alpha } = source;\n',
+      'ObjectPattern',
+      '',
+    ],
+    [
+      'reads a tab indent',
+      'function load() {\n\tconst { alpha } = source;\n}\n',
+      'ObjectPattern',
+      '\t',
+    ],
+  ])('%s', (_title, code, type, expected) => {
+    const { sourceCode, firstNode } = sourceCodeFrom(code);
+    const node = firstNode(type);
+    const indent = getIndent(sourceCode, node);
+    expect(indent).toBe(expected);
   });
 });
 
