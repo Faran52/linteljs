@@ -27,8 +27,9 @@ export class Contact {
       // Every change re-runs the rules; a field shows its result only once it is left.
       onChange: ({ value }) => {
         const found = validateContact(value);
+        const formErrors = Object.keys(found).length > 0 ? { fields: found } : undefined;
 
-        return Object.keys(found).length > 0 ? { fields: found } : undefined;
+        return formErrors;
       },
     },
     onSubmit: () => {
@@ -64,15 +65,19 @@ export class Contact {
   protected blur(name: keyof ContactValues): void {
     this.form
       .setFieldMeta(name, (prev) => {
-        return {
+        const blurred = {
           ...prev,
           isBlurred: true,
         };
+
+        return blurred;
       });
 
     // A field left unchanged has not met the rules yet. `validateField` answers errors or a promise of them;
     // wrapping settles which for the promise rules.
-    void Promise.resolve(this.form.validateField(name, 'change'));
+    const validation = this.form.validateField(name, 'change');
+
+    void Promise.resolve(validation);
   }
 
   protected send(event: Event): void {

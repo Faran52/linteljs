@@ -1,6 +1,10 @@
 import { inject } from '@angular/core';
 
-import { injectMutation, QueryClient } from '@tanstack/angular-query-experimental';
+import {
+  type CreateMutationOptions,
+  injectMutation,
+  QueryClient,
+} from '@tanstack/angular-query-experimental';
 
 import { type ApiError, request } from '@utils/fetchExtendedUtils';
 
@@ -20,7 +24,7 @@ export const injectExtendedMutation = <TResponse, TBody extends object>(
   const client = inject(QueryClient);
 
   return injectMutation<TResponse, ApiError, TBody>(() => {
-    return {
+    const mutationOptions: CreateMutationOptions<TResponse, ApiError, TBody> = {
       mutationFn: (body: TBody) => {
         return request<TResponse>(path, {
           method,
@@ -36,5 +40,7 @@ export const injectExtendedMutation = <TResponse, TBody extends object>(
         await Promise.all(invalidations);
       },
     };
+
+    return mutationOptions;
   });
 };

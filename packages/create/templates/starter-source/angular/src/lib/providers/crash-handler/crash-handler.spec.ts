@@ -13,8 +13,10 @@ describe('CrashHandler', () => {
 
     handler.handleError(error);
 
+    const crash = handler.crash();
+
     expect(logged).toHaveBeenCalledWith(error);
-    expect(handler.crash()).toBe('serverError');
+    expect(crash).toBe('serverError');
   });
 
   it('names a ForbiddenError apart from a crash', () => {
@@ -25,6 +27,8 @@ describe('CrashHandler', () => {
 
     handler.handleError(new ForbiddenError());
 
-    expect(handler.crash()).toBe('forbidden');
+    const crash = handler.crash();
+
+    expect(crash).toBe('forbidden');
   });
 });

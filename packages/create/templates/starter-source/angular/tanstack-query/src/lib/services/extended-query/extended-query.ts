@@ -1,4 +1,4 @@
-import { injectQuery } from '@tanstack/angular-query-experimental';
+import { type CreateQueryOptions, injectQuery } from '@tanstack/angular-query-experimental';
 
 import {
   type ApiError,
@@ -24,7 +24,7 @@ export const injectExtendedQuery = <TResponse>(
   } = options;
 
   return injectQuery<TResponse, ApiError>(() => {
-    return {
+    const queryOptions: CreateQueryOptions<TResponse, ApiError> = {
       queryKey: [path, query],
       queryFn: ({ signal }) => {
         return request<TResponse>(path, {
@@ -35,5 +35,7 @@ export const injectExtendedQuery = <TResponse>(
       enabled,
       staleTime,
     };
+
+    return queryOptions;
   });
 };

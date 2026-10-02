@@ -25,8 +25,9 @@ describe('CodeText', () => {
 
   it('keeps markup other than its marks as text', async () => {
     const root = await render('<b>bold</b>');
+    const bold = root.querySelector('b');
 
-    expect(root.querySelector('b')).toBeNull();
+    expect(bold).toBeNull();
     expect(root.textContent).toBe('<b>bold</b>');
   });
 });

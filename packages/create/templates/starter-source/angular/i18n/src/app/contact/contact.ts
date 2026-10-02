@@ -32,7 +32,13 @@ export class Contact {
 
   // Shown once a field is left: the form holds the values and what was touched, the rules stay shared.
   protected errorOf(name: keyof ContactValues): string | undefined {
-    return this.form.controls[name].touched ? validateContact(this.form.getRawValue())[name] : undefined;
+    if (!this.form.controls[name].touched) {
+      return undefined;
+    }
+
+    const found = validateContact(this.form.getRawValue());
+
+    return found[name];
   }
 
   protected set(name: keyof ContactValues, value: string): void {

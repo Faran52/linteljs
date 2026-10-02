@@ -34,8 +34,10 @@ describe('StatusPage', () => {
       .querySelector('a')
       ?.getAttribute('href');
 
+    const retryButton = root.querySelector('button');
+
     expect(home).toBe('/');
-    expect(root.querySelector('button')).toBeNull();
+    expect(retryButton).toBeNull();
   });
 
   it('offers a retry when it is given one', async () => {

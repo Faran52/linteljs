@@ -25,7 +25,9 @@ const fetchMock = vi.fn();
 const answering = (body: Accepted, status = 200): void => {
   fetchMock
     .mockImplementation(() => {
-      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+      const response = new Response(JSON.stringify(body), { status });
+
+      return Promise.resolve(response);
     });
 };
 
@@ -73,8 +75,9 @@ describe('injectExtendedMutation', () => {
     answering({ status: 'no' }, 422);
 
     const mutation = runMutation('/contact');
+    const attempt = mutation.mutateAsync({ message: 'no' });
 
-    await expect(mutation.mutateAsync({ message: 'no' })).rejects.toMatchObject({ status: 422 });
+    await expect(attempt).rejects.toMatchObject({ status: 422 });
   });
 
   it('drops the caches it was told to once the write succeeds', async () => {

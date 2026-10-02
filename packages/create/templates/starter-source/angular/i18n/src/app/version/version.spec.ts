@@ -8,7 +8,9 @@ import { Version } from './version';
 const last = languages.at(-1)?.id ?? 'en';
 
 const textsOf = (root: HTMLElement, selector: string): string[] => {
-  return [...root.querySelectorAll(selector)]
+  const elements = [...root.querySelectorAll(selector)];
+
+  return elements
     .map((element) => {
       return element.textContent.trim();
     });
@@ -29,10 +31,13 @@ describe('Version', () => {
     const root = harness.nativeElement as HTMLElement;
     const { common } = resources[last];
 
+    const sectionTitles = textsOf(root, '.section-title');
+    const noteCode = textsOf(root, '.note code');
+
     expect(root.querySelector('.page-title')?.textContent).toBe(common.version);
     expect(root.querySelector('.page-lede')?.textContent).toBe(common.versionLede);
-    expect(textsOf(root, '.section-title')).toEqual([common.versionStack, common.versionAnswers]);
-    expect(textsOf(root, '.note code')).toEqual(['linteljs.config.json', 'sync']);
+    expect(sectionTitles).toEqual([common.versionStack, common.versionAnswers]);
+    expect(noteCode).toEqual(['linteljs.config.json', 'sync']);
     expect(root.textContent).not.toMatch(/[{}<>]/u);
   });
 });

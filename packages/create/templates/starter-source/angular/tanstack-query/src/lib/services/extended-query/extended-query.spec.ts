@@ -21,17 +21,23 @@ const fetchMock = vi.fn();
 const answering = (body: Version, status = 200): void => {
   fetchMock
     .mockImplementation(() => {
-      return Promise.resolve(new Response(JSON.stringify(body), { status }));
+      const response = new Response(JSON.stringify(body), { status });
+
+      return Promise.resolve(response);
     });
 };
 
 const runQuery = (path: string, query?: Record<string, string[]>): ReturnType<typeof injectExtendedQuery<Version>> => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
   TestBed.configureTestingModule({
-    providers: [provideTanStackQuery(new QueryClient({ defaultOptions: { queries: { retry: false } } }))],
+    providers: [provideTanStackQuery(client)],
   });
 
   return TestBed.runInInjectionContext(() => {
-    return injectExtendedQuery<Version>(path, query === undefined ? {} : { query });
+    const options = query === undefined ? {} : { query };
+
+    return injectExtendedQuery<Version>(path, options);
   });
 };
 
@@ -58,10 +64,14 @@ describe('injectExtendedQuery', () => {
     const query = runQuery('/version');
 
     await vi.waitFor(() => {
-      expect(query.status()).toBe('success');
+      const status = query.status();
+
+      expect(status).toBe('success');
     });
 
-    expect(query.data()).toEqual({ status: 'ok' });
+    const data = query.data();
+
+    expect(data).toEqual({ status: 'ok' });
   });
 
   it('sends the query through to the adapter', async () => {
@@ -78,9 +88,13 @@ describe('injectExtendedQuery', () => {
     const query = runQuery('/version');
 
     await vi.waitFor(() => {
-      expect(query.status()).toBe('error');
+      const status = query.status();
+
+      expect(status).toBe('error');
     });
 
-    expect(query.error()).toMatchObject({ status: 500 });
+    const error = query.error();
+
+    expect(error).toMatchObject({ status: 500 });
   });
 });

@@ -135,8 +135,9 @@ describe('Contact', () => {
     const root = await submit(harness);
 
     const errors = root.querySelectorAll('.error');
+    const sentNotice = root.querySelector('[role="status"]');
 
     expect(errors).toHaveLength(2);
-    expect(root.querySelector('[role="status"]')).toBeNull();
+    expect(sentNotice).toBeNull();
   });
 });

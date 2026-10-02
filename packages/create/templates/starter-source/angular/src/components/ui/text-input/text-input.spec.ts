@@ -43,8 +43,10 @@ describe('TextInput', () => {
     field.dispatchEvent(new Event('input'));
     field.dispatchEvent(new Event('blur'));
 
+    const invalid = field.getAttribute('aria-invalid');
+
     expect(root.querySelector('label')?.htmlFor).toBe('email');
-    expect(field.getAttribute('aria-invalid')).toBe('false');
+    expect(invalid).toBe('false');
     expect(typed).toEqual(['next']);
     expect(left).toBe(1);
   });
@@ -77,7 +79,9 @@ describe('TextInput', () => {
     field.dispatchEvent(new Event('input'));
     field.dispatchEvent(new Event('blur'));
 
-    expect(field.getAttribute('aria-describedby')).toBe('email-error');
+    const describedBy = field.getAttribute('aria-describedby');
+
+    expect(describedBy).toBe('email-error');
     expect(root.querySelector('#email-error')?.textContent).toBe('Too short.');
     expect(typed).toEqual(['more']);
     expect(left).toBe(1);

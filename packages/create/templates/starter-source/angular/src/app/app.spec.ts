@@ -21,9 +21,11 @@ import { App } from './app';
 import { routes } from './app.routes';
 
 const open = async (path: string): Promise<HTMLElement> => {
+  const routing = provideRouter(routes, withComponentInputBinding());
+
   TestBed.configureTestingModule({
     imports: [App],
-    providers: [provideRouter(routes, withComponentInputBinding()), provideLocationMocks()],
+    providers: [routing, provideLocationMocks()],
   });
 
   const harness = TestBed.createComponent(App);
@@ -40,13 +42,17 @@ describe('App', () => {
 
     expect(root.querySelector('.starter-label')?.textContent).toBe('LintelJS Starter');
     expect(root.querySelector('.brand')?.textContent).toContain(NAME);
-    expect(root.querySelectorAll('nav .tab')).toHaveLength(PAGES.length);
+
+    const tabs = root.querySelectorAll('nav .tab');
+
+    expect(tabs).toHaveLength(PAGES.length);
   });
 
   it('opens on the home page, mark and all', async () => {
     const root = await open('/');
+    const mark = root.querySelector('.mark');
 
-    expect(root.querySelector('.mark')).not.toBeNull();
+    expect(mark).not.toBeNull();
     expect(root.querySelector('.title')?.textContent).toContain(NAME);
   });
 
@@ -70,8 +76,10 @@ describe('App', () => {
   it('shows the 404 page, under the header, for a path no route matches', async () => {
     const root = await open('/missing');
 
+    const starterLabel = root.querySelector('.starter-label');
+
     expect(root.querySelector('h1')?.textContent).toBe('404');
-    expect(root.querySelector('.starter-label')).not.toBeNull();
+    expect(starterLabel).not.toBeNull();
   });
 
   it('swaps the page for the 500 page on a crash, and brings it back on retry', async () => {
@@ -86,8 +94,10 @@ describe('App', () => {
 
     await settled.whenStable();
 
+    const crashedMark = root.querySelector('.mark');
+
     expect(root.querySelector('h1')?.textContent).toBe('500');
-    expect(root.querySelector('.mark')).toBeNull();
+    expect(crashedMark).toBeNull();
 
     root
       .querySelector('button')
@@ -95,7 +105,9 @@ describe('App', () => {
 
     await settled.whenStable();
 
-    expect(root.querySelector('.mark')).not.toBeNull();
+    const retriedMark = root.querySelector('.mark');
+
+    expect(retriedMark).not.toBeNull();
   });
 
   it('swaps the page for the 403 page, with no retry, on a ForbiddenError', async () => {
@@ -110,7 +122,9 @@ describe('App', () => {
 
     await settled.whenStable();
 
+    const retryButton = root.querySelector('button');
+
     expect(root.querySelector('h1')?.textContent).toBe('403');
-    expect(root.querySelector('button')).toBeNull();
+    expect(retryButton).toBeNull();
   });
 });

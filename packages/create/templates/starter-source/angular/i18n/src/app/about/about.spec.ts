@@ -11,7 +11,9 @@ import { About } from './about';
 const last = languages.at(-1)?.id ?? 'en';
 
 const textsOf = (root: HTMLElement, selector: string): string[] => {
-  return [...root.querySelectorAll(selector)]
+  const elements = [...root.querySelectorAll(selector)];
+
+  return elements
     .map((element) => {
       return element.textContent.trim();
     });
@@ -35,18 +37,21 @@ describe('About', () => {
       .map((entry) => {
         return common[entry.holds];
       });
+    const sectionTitles = textsOf(root, '.section-title');
+    const shownHolds = textsOf(root, 'dd');
+    const noteCommands = textsOf(root, '.note code');
 
     expect(root.querySelector('.page-title')?.textContent).toBe(common.about);
     expect(root.querySelector('.page-lede')?.textContent).toBe(common.aboutLede);
 
-    expect(textsOf(root, '.section-title')).toEqual([
+    expect(sectionTitles).toEqual([
       common.aboutGate,
       common.aboutStandard,
       common.aboutCurrent,
     ]);
 
-    expect(textsOf(root, 'dd')).toEqual(holds);
-    expect(textsOf(root, '.note code')).toEqual([CHECK, 'npx @linteljs/create sync']);
+    expect(shownHolds).toEqual(holds);
+    expect(noteCommands).toEqual([CHECK, 'npx @linteljs/create sync']);
     expect(root.textContent).not.toMatch(/[{}<>]/u);
   });
 });

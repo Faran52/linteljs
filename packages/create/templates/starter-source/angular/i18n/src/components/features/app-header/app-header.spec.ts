@@ -28,12 +28,14 @@ const open = async (): Promise<Opened> => {
   harness.componentRef.setInput('name', 'app');
   await harness.whenStable();
 
-  return {
+  const opened = {
     root: harness.nativeElement as HTMLElement,
     settle: async () => {
       await harness.whenStable();
     },
   };
+
+  return opened;
 };
 
 describe('AppHeader', () => {
@@ -77,20 +79,24 @@ describe('AppHeader', () => {
     const select = root.querySelector('select');
     const offered = [...root.querySelectorAll('option')]
       .map((option) => {
-        return {
+        const entry = {
           id: option.value,
           lang: option.lang,
           label: option.textContent.trim(),
         };
+
+        return entry;
       });
 
     const expected = languages
       .map((option) => {
-        return {
+        const entry = {
           id: option.id,
           lang: option.id,
           label: option.label,
         };
+
+        return entry;
       });
 
     expect(offered).toEqual(expected);
@@ -108,7 +114,10 @@ describe('AppHeader', () => {
     select.value = last;
     select.dispatchEvent(new Event('change'));
 
-    expect(language()).toBe(last);
-    expect(localStorage.getItem(languageStorageKey)).toBe(last);
+    const applied = language();
+    const stored = localStorage.getItem(languageStorageKey);
+
+    expect(applied).toBe(last);
+    expect(stored).toBe(last);
   });
 });
