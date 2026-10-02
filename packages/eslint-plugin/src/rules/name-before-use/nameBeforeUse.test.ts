@@ -39,6 +39,11 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
     'const keys = [alpha]?.map(read);',
     'let text;\ntext = [alpha].join(\' \');',
 
+    // A chain a literal starts inside a literal is judged with the outer one.
+    'const value = { data: [alpha].join(\' \') };',
+    'const lines = [[alpha].join(\' \'), beta];',
+    'const value = { data: flag ? [alpha].join(\' \') : beta };',
+
     // Wrappers stand where they stand.
     'const items = [alpha] as const;',
     'const config = { alpha } satisfies Config;',
@@ -224,7 +229,11 @@ tsRuleTester.run('name-before-use', nameBeforeUse, {
       errors: [literalError],
     },
     {
-      code: 'const value = { data: [alpha].join(\' \') };',
+      code: 'run({ data: [alpha].join(\' \') });',
+      errors: [literalError],
+    },
+    {
+      code: 'const value = { [[alpha].join(\' \')]: beta };',
       errors: [literalError],
     },
     {

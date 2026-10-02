@@ -28,7 +28,9 @@ are conditions and stay judged. `ignoreLiteralArguments` counts only a literal p
 call, so `run(source ?? [alpha])` still reports.
 
 A literal that a chain of calls starts from stands where the chain does, so
-`const code = [alpha, bravo].join('\n');` is named, while `return [alpha, bravo].join(' ');` reports.
+`const code = [alpha, bravo].join('\n');` is named, while `return [alpha, bravo].join(' ');` reports. A
+chain that stands in a literal is part of that literal, so in `{ code: [alpha, bravo].join('\n') }` the outer
+literal's position decides.
 
 ## Examples of incorrect code for this rule
 
@@ -111,6 +113,11 @@ const read = async (id) => {
 ```ts
 // correct: the const names the call chain the literal starts
 const code = [header, body].join('\n');
+```
+
+```ts
+// correct: a call chain in a literal is part of the named literal
+const sample = { name: 'join', code: [header, body].join('\n') };
 ```
 
 ```ts

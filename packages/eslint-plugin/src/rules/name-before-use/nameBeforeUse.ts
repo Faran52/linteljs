@@ -98,7 +98,7 @@ const isMember: PassesPosition = (parent, child) => {
   return parent.type === 'SpreadElement' || isBranch(parent, child);
 };
 
-// A literal nested in a literal is part of the outer one's value, judged once there.
+// A literal nested in a literal, or a chain it starts there, is part of the outer one's value, judged once there.
 const isInsideLiteral = (node: RuleNode): boolean => {
   const [child, parent] = usingParentOf(node, isMember);
 
@@ -178,13 +178,9 @@ export const nameBeforeUse = createRule('name-before-use', {
     };
 
     const reportLiteral = (node: LiteralNode): void => {
-      if (isInsideLiteral(node)) {
-        return;
-      }
-
       const chainEnd = chainEndOf(node);
 
-      if (standsNamed(chainEnd) || isIgnoredLiteral(node)) {
+      if (isInsideLiteral(chainEnd) || standsNamed(chainEnd) || isIgnoredLiteral(node)) {
         return;
       }
 
