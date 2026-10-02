@@ -1,8 +1,10 @@
 import {
   JSX_FIXTURE,
   ownBlockNames,
+  ruleEntryFor,
   ruleIdsFor,
   ruleIdsForFile,
+  ruleNamesFor,
   sortsAheadOfPackages,
 } from '@mocks/lintText';
 import { layerWithout, layerWithoutConfig } from '@mocks/presets';
@@ -14,8 +16,11 @@ import {
 
 import base from '../../layers/base/baseLayer';
 import typescript from '../../layers/typescript/typescriptLayer';
+import solid from '../solid/solidFramework';
 
 import { reactCore, reactGroup } from './reactCoreUtils';
+
+import type { Linter } from 'eslint';
 
 interface FlatConfigs {
   flat: object;
@@ -231,6 +236,106 @@ describe('reactCore', () => {
     });
 
     expect(layer).toThrow('react-hooks/flat/recommended is not published');
+  });
+
+  it.each([
+    ['@eslint-react/jsx-no-children-prop', [
+      'export const Chip = () => {',
+      '  return <div children="a" />;',
+      '};',
+    ]],
+    ['@eslint-react/jsx-no-useless-fragment', [
+      'export const Chip = () => {',
+      '  return <><span /></>;',
+      '};',
+    ]],
+    ['@eslint-react/no-class-component', [
+      "import { Component } from 'react';",
+      '',
+      'export class Chip extends Component {',
+      '  render() {',
+      '    return null;',
+      '  }',
+      '}',
+    ]],
+    ['@eslint-react/no-misused-capture-owner-stack', [
+      "import { captureOwnerStack } from 'react';",
+      '',
+      'export const stack = captureOwnerStack();',
+    ]],
+    ['@eslint-react/no-unstable-context-value', [
+      "import { createContext } from 'react';",
+      '',
+      'const ThemeContext = createContext({ dark: false });',
+      '',
+      'export const Chip = ({ dark }: Readonly<{ dark: boolean }>) => {',
+      '  const theme = { dark };',
+      '',
+      '  return <ThemeContext value={theme}><span /></ThemeContext>;',
+      '};',
+    ]],
+    ['@eslint-react/no-unstable-default-props', [
+      'export const Chip = ({ items = [] }: { items?: string[] }) => {',
+      '  return <span>{items.length}</span>;',
+      '};',
+    ]],
+    ['@eslint-react/use-state', [
+      "import { useState } from 'react';",
+      '',
+      'export const Chip = () => {',
+      '  const [open, change] = useState(false);',
+      '',
+      '  return <span onClick={() => change(!open)} />;',
+      '};',
+    ]],
+    ['react-hooks/void-use-memo', [
+      "import { useMemo } from 'react';",
+      '',
+      'export const Chip = ({ items }: { items: string[] }) => {',
+      '  useMemo(() => {',
+      '    items.sort();',
+      '  }, [items]);',
+      '',
+      '  return <span />;',
+      '};',
+    ]],
+  ])('reports %s', async (ruleId, lines) => {
+    const code = `${lines.join('\n')}\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...reactCore()], code, 'src/components/ui/Chip.tsx');
+
+    expect(ruleIds).toContain(ruleId);
+  });
+
+  const ADDED_RULES: [string, Linter.RuleEntry][] = [
+    ['@eslint-react/jsx-no-children-prop', [2]],
+    ['@eslint-react/jsx-no-useless-fragment', [2, {
+      allowEmptyFragment: false,
+      allowExpressions: true,
+    }]],
+    ['@eslint-react/no-class-component', [2]],
+    ['@eslint-react/no-misused-capture-owner-stack', [2]],
+    ['@eslint-react/no-unstable-context-value', [2]],
+    ['@eslint-react/no-unstable-default-props', [2, { safeDefaultProps: [] }]],
+    ['@eslint-react/use-state', [2, {
+      enforceAssignment: true,
+      enforceLazyInitialization: true,
+      enforceSetterName: true,
+    }]],
+    ['react-hooks/void-use-memo', [2]],
+  ];
+
+  it.each(ADDED_RULES)('sets %s with its options', async (ruleId, expected) => {
+    const entry = await ruleEntryFor(reactCore(), 'src/a.tsx', ruleId);
+
+    expect(entry).toEqual(expected);
+  });
+
+  it.each(ADDED_RULES)('leaves %s out of base and solid', async (ruleId) => {
+    const baseRuleNames = await ruleNamesFor(base(), 'src/a.tsx');
+    const solidRuleNames = await ruleNamesFor(solid(), 'src/a.tsx');
+
+    expect(baseRuleNames).not.toContain(ruleId);
+    expect(solidRuleNames).not.toContain(ruleId);
   });
 
   it('names every block it writes', () => {

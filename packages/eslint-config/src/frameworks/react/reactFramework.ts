@@ -12,6 +12,18 @@ export const react = (): Layer => {
   return [
     ...reactCore(),
     ...presetOf(jsxA11y.configs.recommended, 'jsx-a11y-x/recommended', SCRIPT_FILES),
+
+    // DOM only, so not in `reactCore()`, which React Native shares.
+    {
+      name: '@linteljs/react/dom',
+      files: SCRIPT_FILES,
+      rules: {
+        '@eslint-react/dom-no-missing-button-type': 'error',
+        '@eslint-react/dom-no-missing-iframe-sandbox': 'error',
+        '@eslint-react/dom-no-script-url': 'error',
+        '@eslint-react/dom-no-unsafe-target-blank': 'error',
+      },
+    },
   ];
 };
 

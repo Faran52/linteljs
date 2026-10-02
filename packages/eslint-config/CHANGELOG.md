@@ -53,6 +53,12 @@ when a version's change lives in a sibling it is described there instead:
   absolute path (`no-absolute-path`, fixed), an exported `let` or `var` (`no-mutable-exports`), `module.exports`
   or `exports.name` (`no-commonjs`) and an AMD `define` or `require` (`no-amd`). `no-commonjs` leaves `require` to
   `@typescript-eslint/no-require-imports`, which keeps its asset allowance.
+- **The React frameworks report more.** `react()`, `react-native()` and `next()` add `@eslint-react`'s
+  `no-class-component`, `no-misused-capture-owner-stack`, `no-unstable-context-value`, `no-unstable-default-props`
+  and `jsx-no-useless-fragment`, and `react-hooks/void-use-memo`; `jsx-no-children-prop` and `use-state` go from
+  warning to error. `react()` and `next()` also report a `<button>` with no `type`, an `<iframe>` with no `sandbox`,
+  a `target="_blank"` link to another origin with no `rel="noreferrer noopener"`, and a `javascript:` URL at error.
+  React Native gets none of the DOM rules.
 
 ### Added
 

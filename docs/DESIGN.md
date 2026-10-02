@@ -365,6 +365,16 @@ Each was tried against the workspace and the 670 starter files with `base` as it
   `@typescript-eslint/no-wrapper-object-types` in `strictTypeChecked` already reports, with `Function` left to
   `no-unsafe-function-type` and `{}` to `no-empty-object-type`. An empty list is no rule.
 
+### Rules the React core leaves off, measured
+
+- `@eslint-react/no-leaked-conditional-rendering`: it reports the same `count && <span />` as
+  `sonarjs/jsx-no-leaked-render`, which the React core and `solid()` carry, so one defect read twice.
+- `@eslint-react/no-unused-props`: it needs type information and throws on every `.tsx` when `composeConfig` runs
+  with `typescript` off, which it allows; the sonarjs typed rules skip instead. On the typed starters it reports
+  five, all the unread `error` prop of Next's `global-error.tsx`.
+- `@eslint-react/dom-no-unknown-property`: the reference turns it on only to allow Emotion's `css` prop, and no
+  target ships Emotion.
+
 ## Targets
 
 Ten: React, Next.js, Vue, Nuxt, Svelte, Solid, Angular, Astro, React Native through Expo, and a Manifest V3

@@ -67,6 +67,21 @@ export const reactCore = (): Layer => {
         '@linteljs/prefer-destructured-props': 'error',
         '@linteljs/react-no-global-namespace': 'error',
         '@linteljs/sort-hook-dependencies': 'error',
+        '@eslint-react/jsx-no-children-prop': 'error',
+        '@eslint-react/jsx-no-useless-fragment': ['error', {
+          allowEmptyFragment: false,
+          allowExpressions: true,
+        }],
+        '@eslint-react/no-class-component': 'error',
+        '@eslint-react/no-misused-capture-owner-stack': 'error',
+        '@eslint-react/no-unstable-context-value': 'error',
+        '@eslint-react/no-unstable-default-props': ['error', { safeDefaultProps: [] }],
+        '@eslint-react/use-state': ['error', {
+          enforceAssignment: true,
+          enforceLazyInitialization: true,
+          enforceSetterName: true,
+        }],
+        'react-hooks/void-use-memo': 'error',
       },
     },
   ];

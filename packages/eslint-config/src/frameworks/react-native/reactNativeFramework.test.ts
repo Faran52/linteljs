@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   ownBlockNames,
+  ruleEntryFor,
   ruleIdsFor,
+  ruleNamesFor,
   startsWith,
 } from '@mocks/lintText';
 import {
@@ -47,6 +49,22 @@ describe('reactNative', () => {
     const ruleIds = await ruleIdsFor([...base(), ...reactNative()], code, 'src/Save.tsx');
 
     expect(ruleIds).toContain('@linteljs/native-valid-accessibility-role');
+  });
+
+  it.each([
+    '@eslint-react/dom-no-missing-button-type',
+    '@eslint-react/dom-no-missing-iframe-sandbox',
+    '@eslint-react/dom-no-unsafe-target-blank',
+  ])('leaves %s, a DOM rule react adds, out', async (ruleId) => {
+    const ruleNames = await ruleNamesFor(reactNative(), 'src/Save.tsx');
+
+    expect(ruleNames).not.toContain(ruleId);
+  });
+
+  it('keeps dom-no-script-url at the preset severity react raises', async () => {
+    const entry = await ruleEntryFor(reactNative(), 'src/Save.tsx', '@eslint-react/dom-no-script-url');
+
+    expect(entry).toEqual([1]);
   });
 
   it('leaves those rules out of the react layer', async () => {

@@ -1,4 +1,8 @@
-import { ownBlockNames, ruleIdsFor } from '@mocks/lintText';
+import {
+  ownBlockNames,
+  ruleEntryFor,
+  ruleIdsFor,
+} from '@mocks/lintText';
 import { layerWithoutConfig } from '@mocks/presets';
 import {
   describe,
@@ -30,7 +34,22 @@ describe('react', () => {
       '@linteljs/react/hooks-one-owner',
       '@linteljs/react/sonarjs',
       '@linteljs/react',
+      '@linteljs/react/dom',
     ]);
+  });
+
+  it.each([
+    ['@eslint-react/dom-no-missing-button-type', '<button>x</button>'],
+    ['@eslint-react/dom-no-missing-iframe-sandbox', '<iframe src="/a" title="a" />'],
+    ['@eslint-react/dom-no-script-url', '<a href="javascript:void(0)">x</a>'],
+    ['@eslint-react/dom-no-unsafe-target-blank', '<a href="https://a.example" target="_blank">x</a>'],
+  ])('reports %s at error', async (ruleId, element) => {
+    const code = `export const Chip = () => {\n  return ${element};\n};\n`;
+    const ruleIds = await ruleIdsFor([...base(), ...react()], code, 'src/Chip.tsx');
+    const entry = await ruleEntryFor(react(), 'src/Chip.tsx', ruleId);
+
+    expect(ruleIds).toContain(ruleId);
+    expect(entry).toEqual([2]);
   });
 
   it.each([
