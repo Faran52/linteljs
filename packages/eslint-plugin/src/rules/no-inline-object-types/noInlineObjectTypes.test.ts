@@ -65,6 +65,15 @@ tsRuleTester.run('no-inline-object-types: allowIn', noInlineObjectTypes, {
       code: 'type Props = React.PropsWithChildren<{ a: string }>;\n',
       options: [{ allowIn: ['PropsWithChildren'] }],
     },
+    {
+      code: 'declare namespace a.b {\n  export type Wrapper<T> = T;\n}\n'
+        + 'export type Wrapped = a.b.Wrapper<{ c: string }>;\n',
+      options: [{ allowIn: ['Wrapper'] }],
+    },
+    {
+      code: "type Picked = Extract<unknown, { a: 'x' }>;\ntype Again = Extract<Picked, { b: 'y' }>;\n",
+      options: [{ allowIn: ['Extract'] }],
+    },
   ],
   invalid: [
     {
@@ -81,6 +90,12 @@ tsRuleTester.run('no-inline-object-types: allowIn', noInlineObjectTypes, {
       code: 'type Wrapped = Extract<unknown, { inner: { id: string } }>;\n',
       options: [{ allowIn: ['Extract'] }],
       errors: [{ messageId: 'nameTheType' }],
+    },
+    {
+      // The union is the argument, so its members are not.
+      code: "type Either = Extract<unknown, { a: 'x' } | { b: 'y' }>;\n",
+      options: [{ allowIn: ['Extract'] }],
+      errors: [{ messageId: 'nameTheType' }, { messageId: 'nameTheType' }],
     },
     {
       code: 'export const all: Array<{ target: string }> = [];\n',
@@ -231,6 +246,8 @@ tsRuleTester.run('no-inline-object-types: the rest of the grammar', noInlineObje
   valid: [
     'export type Answers = { target: string };\n',
     'export type Answers = ({ target: string });\n',
+    'export type Box<T> = { value: T };\n',
+    'export const read = (value: { /* nothing yet */ }): string => {\n  return String(value);\n};\n',
   ],
   invalid: [
     {
@@ -332,6 +349,16 @@ tsRuleTester.run('no-inline-object-types: the rest of the grammar', noInlineObje
     {
       code: 'export type Ctor = abstract new (value: { a: string }) => void;\n',
       errors: 1,
+    },
+    {
+      code: 'export const read = (\n  value: {\n    a: string;\n  },\n): string => value.a;\n',
+      errors: [{
+        messageId: 'nameTheType',
+        line: 2,
+        column: 10,
+        endLine: 4,
+        endColumn: 4,
+      }],
     },
   ],
 });
