@@ -32,6 +32,7 @@ import {
 } from '@config/constants';
 import {
   type Agent,
+  type Answers,
   type Artifact,
   type Data,
   type HostedAnswers,
@@ -73,7 +74,8 @@ interface ScannedArtifact {
 const TARGET_IDS = valuesOf(ANSWERS.target.values);
 
 const textFor = async (overrides: AnswerOverrides, target: string): Promise<string> => {
-  const artifact = buildArtifacts(hostedAnswersFor(overrides), EMPTY_PROJECT, 'demo-app')
+  const answers = hostedAnswersFor(overrides);
+  const artifact = buildArtifacts(answers, EMPTY_PROJECT, 'demo-app')
     .find((candidate) => {
       return candidate.target === target;
     });
@@ -93,7 +95,9 @@ describe('buildArtifacts', () => {
         return 'sources' in artifact.content
           ? artifact.content.sources
               .map((source) => {
-                return access(join(TEMPLATES_ROOT, source), constants.R_OK);
+                const sourcePath = join(TEMPLATES_ROOT, source);
+
+                return access(sourcePath, constants.R_OK);
               })
           : [];
       });
@@ -150,7 +154,8 @@ describe('buildArtifacts', () => {
       expect(targets).toEqual(expected);
     }
 
-    const accessChecks = [...new Set(sources)]
+    const uniqueSources = [...new Set(sources)];
+    const accessChecks = uniqueSources
       .map(async (source) => {
         await access(join(TEMPLATES_ROOT, source), constants.R_OK);
       });
@@ -244,22 +249,23 @@ describe('the project the answers write', () => {
   const projectsFor = (target: TargetId): Project[] => {
     return targetCases(target)
       .flatMap(({ answers: chosen }) => {
-        const translated = targetFor(chosen).i18n === undefined
-          ? []
-          : [{
-              ...chosen,
-              languages: [...LANGUAGES],
-            }];
-
-        return [
+        const variants: Answers[] = [
           chosen,
           {
             ...chosen,
-            mocking: 'msw' as const,
+            mocking: 'msw',
             libraries: [],
           },
-          ...translated,
         ];
+
+        if (targetFor(chosen).i18n !== undefined) {
+          variants.push({
+            ...chosen,
+            languages: [...LANGUAGES],
+          });
+        }
+
+        return variants;
       })
       .map((chosen) => {
         const answers = hostedAnswersFor(chosen);
@@ -283,7 +289,7 @@ describe('the project the answers write', () => {
             return path;
           });
 
-        return {
+        const project: Project = {
           answers,
           artifacts,
           written: new Set(writtenPaths),
@@ -296,23 +302,33 @@ describe('the project the answers write', () => {
             return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
           },
         };
+
+        return project;
       });
   };
 
   const scriptsOf = async (project: Project): Promise<[string, string][]> => {
-    const scriptReads = [...project.written]
+    const writtenPaths = [...project.written];
+    const scriptReads = writtenPaths
       .filter((path) => {
         return SCRIPT.test(path);
       })
       .map(async (path): Promise<[string, string]> => {
-        return [path, await project.textOf(path)];
+        const text = await project.textOf(path);
+        const script: [string, string] = [path, text];
+
+        return script;
       });
 
-    return await Promise.all(scriptReads);
+    const scripts = await Promise.all(scriptReads);
+
+    return scripts;
   };
 
   const specifiersIn = (text: string): string[] => {
-    return [...text.matchAll(SPECIFIER)]
+    const matches = [...text.matchAll(SPECIFIER)];
+
+    return matches
       .map(([, specifier = '']) => {
         return specifier;
       });
@@ -334,19 +350,28 @@ describe('the project the answers write', () => {
         return alias.endsWith('/*') && specifier.startsWith(alias.slice(0, -1));
       });
 
-    return wildcard === undefined
-      ? undefined
-      : normalize((aliases[wildcard] ?? '').replace('*', specifier.slice(wildcard.length - 1)));
+    if (wildcard === undefined) {
+      return undefined;
+    }
+
+    const aliasTarget = aliases[wildcard] ?? '';
+    const resolved = aliasTarget.replace('*', specifier.slice(wildcard.length - 1));
+
+    return normalize(resolved);
   };
 
   it.each(TARGET_IDS)('imports no file of its own that a %s project does not write', async (target) => {
     const unresolved = new Set<string>();
 
     for (const project of projectsFor(target)) {
-      for (const [path, text] of await scriptsOf(project)) {
+      const scripts = await scriptsOf(project);
+
+      for (const [path, text] of scripts) {
         for (const specifier of specifiersIn(text)) {
+          const stem = specifier.replace(/\.js$/u, '');
+          const relativePath = join(dirname(path), stem);
           const base = specifier.startsWith('.')
-            ? normalize(join(dirname(path), specifier.replace(/\.js$/u, '')))
+            ? normalize(relativePath)
             : aliasedPath(project.answers, specifier);
 
           if (base !== undefined && !base.startsWith(GENERATED) && !RESOLVED
@@ -364,7 +389,9 @@ describe('the project the answers write', () => {
   });
 
   const declaredIn = async (project: Project): Promise<Set<string>> => {
-    const declaredNames = [...(await project.textOf('package.json')).matchAll(/^ {4}"([^"]+)": "/gmu)]
+    const packageJson = await project.textOf('package.json');
+    const entries = [...packageJson.matchAll(/^ {4}"([^"]+)": "/gmu)];
+    const declaredNames = entries
       .map(([, name = '']) => {
         return name;
       });
@@ -383,8 +410,9 @@ describe('the project the answers write', () => {
 
     for (const project of projectsFor(target)) {
       const declared = await declaredIn(project);
+      const scripts = await scriptsOf(project);
 
-      for (const [path, text] of await scriptsOf(project)) {
+      for (const [path, text] of scripts) {
         for (const specifier of specifiersIn(text)) {
           if (!NOT_A_PACKAGE.test(specifier)
             && aliasedPath(project.answers, specifier) === undefined
@@ -406,10 +434,15 @@ describe('the project the answers write', () => {
       const { styleEntry } = targetFor(project.answers);
       const declared = await declaredIn(project);
 
-      for (const [, specifier = ''] of (await project.textOf(styleEntry)).matchAll(/@import "([^"]*)"/gu)) {
+      const styleText = await project.textOf(styleEntry);
+      const styleDir = dirname(styleEntry);
+
+      for (const [, specifier = ''] of styleText.matchAll(/@import "([^"]*)"/gu)) {
+        const importedPath = normalize(join(styleDir, specifier));
+        const importedPackage = packageOf(specifier);
         const found = specifier.startsWith('.')
-          ? project.written.has(normalize(join(dirname(styleEntry), specifier)))
-          : declared.has(packageOf(specifier));
+          ? project.written.has(importedPath)
+          : declared.has(importedPackage);
 
         if (!found) {
           missing.add(`${styleEntry} imports ${specifier}`);
@@ -449,9 +482,9 @@ describe('the project the answers write', () => {
           });
       });
 
-    const suites = new Set(requiring);
+    const suites = [...new Set(requiring)];
 
-    const unwritten = [...suites]
+    const unwritten = suites
       .filter((suite) => {
         return !projects
           .some(({ written }) => {
@@ -475,18 +508,23 @@ describe('the project the answers write', () => {
       });
 
     const sources = new Set(copiedSources);
-    const assets = (await readdir(join(TEMPLATES_ROOT, 'starter-source'), {
+    const starterSource = join(TEMPLATES_ROOT, 'starter-source');
+    const entries = await readdir(starterSource, {
       withFileTypes: true,
       recursive: true,
-    }))
+    });
+    const assets = entries
       .filter((entry) => {
         return entry.isFile();
       })
       .map((entry) => {
-        return relative(TEMPLATES_ROOT, join(entry.parentPath, entry.name));
+        const assetPath = join(entry.parentPath, entry.name);
+
+        return relative(TEMPLATES_ROOT, assetPath);
       });
 
-    const missingAssets = [...sources]
+    const uniqueSources = [...sources];
+    const missingAssets = uniqueSources
       .filter((source) => {
         return source.startsWith('starter-source/') && !assets.includes(source);
       });
@@ -535,13 +573,21 @@ describe('the files a webextension surface owns', () => {
 
   const combinations = SURFACES
     .reduce<Surface[][]>((subsets, surface) => {
-      return [...subsets, ...subsets
+      const withSurface = subsets
         .map((subset) => {
-          return [...subset, surface];
-        })];
+          const extended = [...subset, surface];
+
+          return extended;
+        });
+      const grown = [...subsets, ...withSurface];
+
+      return grown;
     }, [[]])
     .map((surfaces): [string, Surface[]] => {
-      return [surfaces.join(' + ') || 'no surface', surfaces];
+      const label = surfaces.join(' + ') || 'no surface';
+      const row: [string, Surface[]] = [label, surfaces];
+
+      return row;
     });
 
   it.each(combinations)('writes exactly what %s names', (_label, surfaces) => {
@@ -575,65 +621,87 @@ describe('the emitted checker against the emitted starter code', () => {
   const CHECKER = 'scripts/checkBannedPatterns.ts';
 
   const scannedFor = async (target: TargetId): Promise<ScannedArtifact[]> => {
-    const files = [
-      ...buildArtifacts(hostedAnswersFor({
-        target,
-        libraries: [],
-        data: 'tanstack-query',
-      }), EMPTY_PROJECT, 'demo-app')
-        .flatMap((artifact) => {
-          return 'text' in artifact.content || artifact.target === CHECKER
-            ? []
-            : [{
-                target: artifact.target,
-                read: async () => {
-                  return await shippedAssetsReader(artifact.content);
-                },
-              }];
-        }),
-      ...seedArtifacts(hostedAnswersFor({ target }), 'demo-app')
-        .flatMap((artifact) => {
-          return 'sources' in artifact.content
-            ? artifact.content.sources
-                .map((source) => {
-                  return {
-                    target: artifact.target,
-                    read: async () => {
-                      return await readFile(join(TEMPLATES_ROOT, source), 'utf8');
-                    },
-                  };
-                })
-            : [];
-        }),
-    ]
+    const builtAnswers = hostedAnswersFor({
+      target,
+      libraries: [],
+      data: 'tanstack-query',
+    });
+    const seededAnswers = hostedAnswersFor({ target });
+    const emitted = buildArtifacts(builtAnswers, EMPTY_PROJECT, 'demo-app')
+      .filter((artifact) => {
+        return !('text' in artifact.content) && artifact.target !== CHECKER;
+      })
+      .map((artifact) => {
+        const file = {
+          target: artifact.target,
+          read: async () => {
+            const text = await shippedAssetsReader(artifact.content);
+
+            return text;
+          },
+        };
+
+        return file;
+      });
+    const copied = seedArtifacts(seededAnswers, 'demo-app')
+      .flatMap((artifact) => {
+        return 'sources' in artifact.content
+          ? artifact.content.sources
+              .map((source) => {
+                const sourcePath = join(TEMPLATES_ROOT, source);
+                const file = {
+                  target: artifact.target,
+                  read: async () => {
+                    const text = await readFile(sourcePath, 'utf8');
+
+                    return text;
+                  },
+                };
+
+                return file;
+              })
+          : [];
+      });
+    const files = [...emitted, ...copied];
+    const typescriptFiles = files
       .filter(({ target: path }) => {
         return /\.[cm]?tsx?$/.test(path);
       });
 
-    const texts = files
+    const texts = typescriptFiles
       .map(async ({ target: path, read }) => {
-        return {
+        const text = await read();
+        const scanned: ScannedArtifact = {
           target: path,
-          text: await read(),
+          text,
         };
+
+        return scanned;
       });
 
-    return await Promise.all(texts);
+    const scanned = await Promise.all(texts);
+
+    return scanned;
   };
 
   it.each(TARGET_IDS)('passes on everything %s is generated with', async (target) => {
-    const cwd = await mkdtemp(join(tmpdir(), 'linteljs-floor-'));
+    const tempPrefix = join(tmpdir(), 'linteljs-floor-');
+    const cwd = await mkdtemp(tempPrefix);
 
     try {
       const checker = await textFor({ target }, CHECKER);
       const scanned = await scannedFor(target);
 
-      await mkdir(join(cwd, dirname(CHECKER)), { recursive: true });
+      const scriptsDir = join(cwd, dirname(CHECKER));
+
+      await mkdir(scriptsDir, { recursive: true });
       await writeFile(join(cwd, CHECKER), checker, 'utf8');
 
       for (const file of scanned) {
-        await mkdir(dirname(join(cwd, file.target)), { recursive: true });
-        await writeFile(join(cwd, file.target), file.text, 'utf8');
+        const filePath = join(cwd, file.target);
+
+        await mkdir(dirname(filePath), { recursive: true });
+        await writeFile(filePath, file.text, 'utf8');
       }
 
       const actual = [
@@ -674,14 +742,19 @@ describe('the emitted checker against the emitted starter code', () => {
 
 describe('the managed record', () => {
   const removableOf = async (overrides: AnswerOverrides): Promise<string[]> => {
-    const cwd = await mkdtemp(join(tmpdir(), 'linteljs-managed-'));
+    const tempPrefix = join(tmpdir(), 'linteljs-managed-');
+    const cwd = await mkdtemp(tempPrefix);
     const written = join(cwd, MANAGED_PATH);
 
     try {
-      await mkdir(dirname(written), { recursive: true });
-      await writeFile(written, await textFor(overrides, MANAGED_PATH), 'utf8');
+      const managedText = await textFor(overrides, MANAGED_PATH);
 
-      return await managedPathsReader(cwd);
+      await mkdir(dirname(written), { recursive: true });
+      await writeFile(written, managedText, 'utf8');
+
+      const removable = await managedPathsReader(cwd);
+
+      return removable;
     }
     finally {
       await rm(cwd, {
@@ -715,12 +788,13 @@ describe('the managed record', () => {
   ])('orders %s by locale rather than by code unit', async (_case, overrides) => {
     const removable = await removableOf(overrides);
 
-    const sortedRemovable = [...removable]
+    const localeOrder = removable
       .toSorted((left, right) => {
         return left.localeCompare(right, 'en');
       });
+    const codeUnitOrder = removable.toSorted(byCodeUnit);
 
-    expect(removable).toEqual(sortedRemovable);
-    expect(removable).not.toEqual([...removable].toSorted(byCodeUnit));
+    expect(removable).toEqual(localeOrder);
+    expect(removable).not.toEqual(codeUnitOrder);
   });
 });
