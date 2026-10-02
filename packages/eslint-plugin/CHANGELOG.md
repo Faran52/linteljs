@@ -50,7 +50,9 @@ when a version's change lives in a sibling it is described there instead:
   or one call taking a callback with a block body. `expect(x).toBe(y)` and `Object.keys(x).map(fn)` stay on one
   line. Fixable (whitespace), in `recommended`. `maxLineLength` (default `120`) caps the lines its fix writes.
 - `name-before-use` reports an await, a call that takes a call, or an inline array or object anywhere but the
-  right side of a declaration or assignment, a bare statement or `export default`. `ignoreEmptyLiterals` and
+  right side of a declaration or assignment, a bare statement or `export default`. A ternary's branches, the right
+  side of `&&`, `||` and `??`, and a call chain on a literal take the position of the whole expression, and a
+  `return` names the await it holds whole. `ignoreEmptyLiterals` and
   `ignoreLiteralArguments` relax the literal half. Report-only, not in `recommended`.
 - Five React Native accessibility rules: `native-accessible-name`, `native-no-nested-touchables`,
   `native-valid-accessibility-actions`, `native-valid-accessibility-role` and
