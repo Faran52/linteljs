@@ -203,6 +203,8 @@ when a version's change lives in a sibling it is described there instead:
   language select no longer fit on one line.
 - StyleX font sizes and weights reach buttons and inputs: the shared `font: inherit` reset sits in `@layer reset`,
   which StyleX is told to put below its own layers.
+- The language select renders in the app font rather than the browser's: the shared reset covers `select` beside
+  `button`, `input` and `textarea`.
 - A React Router framework project with StyleX no longer logs a hydration mismatch in dev: the StyleX dev
   runtime disables its stylesheet link before React hydrates, so the link now suppresses the warning.
 - A React Router framework project with a form library no longer serves a 404 at `/contact`: `src/routes.ts`

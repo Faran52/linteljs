@@ -25,6 +25,7 @@ body {
 @layer reset {
   button,
   input,
+  select,
   textarea {
     font: inherit;
   }

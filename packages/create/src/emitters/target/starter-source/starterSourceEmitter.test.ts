@@ -227,6 +227,17 @@ describe('starter files for a router', () => {
     expect(plain).not.toContain('virtual:stylex');
   });
 
+  // A `select` left out keeps the user agent's font, so the language picker renders in Arial.
+  it('resets the font of every form control the starters render', async () => {
+    const base = artifactFor({}, 'src/styles/base.css');
+    const text = base === undefined ? '' : await shippedAssetsReader(base.content);
+    const match = /@layer reset \{(?<rules>[^\}]*)\}/v.exec(text);
+    const reset = match?.groups?.['rules'] ?? '';
+    const flat = reset.replaceAll(/\s+/gv, ' ');
+
+    expect(flat).toContain('button, input, select, textarea { font: inherit;');
+  });
+
   // The babel plugin reads no tsconfig paths, so `@styles/tokens.stylex` resolves through these two alone.
   it('aliases @styles for the next babel plugin against the project root', async () => {
     const babelrc = artifactFor({
