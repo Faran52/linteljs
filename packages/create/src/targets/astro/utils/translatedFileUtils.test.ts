@@ -26,7 +26,7 @@ const ENGLISH_FILES = [
   'true:src/config/standard.ts',
   'src/pages/about.astro',
   'src/pages/version.astro',
-  'src/pages/404.astro',
+  'src/layouts/StatusLayout.astro',
   'src/components/features/app-header/AppHeader.astro',
 ];
 

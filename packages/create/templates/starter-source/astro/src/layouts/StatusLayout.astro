@@ -1,0 +1,20 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  code: number;
+  message: string;
+}
+
+const { code, message } = Astro.props;
+---
+
+<Layout title={message}>
+  <main class="status">
+    <h1 class="status-code">{code}</h1>
+    <p class="status-message" role="alert">{message}</p>
+    <div class="status-actions">
+      <a class="status-action" href="/">Go home</a>
+    </div>
+  </main>
+</Layout>

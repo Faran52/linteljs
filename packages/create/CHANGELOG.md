@@ -186,6 +186,8 @@ when a version's change lives in a sibling it is described there instead:
 
 ### Fixed
 
+- The Astro starter writes a 403 and a 500 page beside its 404, as every other target does. The three are thin
+  pages over one `StatusLayout.astro`, which carries the i18n twin, so the pages need none of their own.
 - A starter's route unit has an alias, first in `paths` since it imports every layer below it: `@pages` on React
   and Solid, `@views` on Vue and Nuxt, `@layouts` on Astro. The app header, the routers and Nuxt's pages import
   through it instead of `../../../pages/routes`, and Astro's layout and pages take `@styles` and `@layouts`.

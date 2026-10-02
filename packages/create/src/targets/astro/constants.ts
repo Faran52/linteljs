@@ -2,6 +2,10 @@ import type { I18nParts } from '../types';
 
 export const ALWAYS: readonly string[] = [
   'src/pages/index.astro',
+  // Each a thin page over the status layout, so no translated twin.
+  'src/pages/403.astro',
+  'src/pages/404.astro',
+  'src/pages/500.astro',
   'src/components/ui/mark/Mark.astro',
   'src/lib/utils/currentPathUtils.ts',
 ];
@@ -18,7 +22,7 @@ export const SHARED: readonly string[] = [
 export const TRANSLATED: readonly string[] = [
   'src/pages/about.astro',
   'src/pages/version.astro',
-  'src/pages/404.astro',
+  'src/layouts/StatusLayout.astro',
   'src/components/features/app-header/AppHeader.astro',
 ];
 

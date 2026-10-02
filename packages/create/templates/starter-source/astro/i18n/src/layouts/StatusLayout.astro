@@ -1,11 +1,14 @@
 ---
-import { STATUSES } from '@config/statuses';
+import { type MessageKey, t } from '@i18n';
 
-import { t } from '@i18n';
+import Layout from './Layout.astro';
 
-import Layout from '@layouts/Layout.astro';
+interface Props {
+  code: number;
+  message: MessageKey;
+}
 
-const { code, message } = STATUSES.notFound;
+const { code, message } = Astro.props;
 ---
 
 <Layout titleKey={message}>

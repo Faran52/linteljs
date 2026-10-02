@@ -255,3 +255,19 @@ describe('the favicon', () => {
     });
   });
 });
+
+describe('the status pages', () => {
+  it('writes a 403, a 404 and a 500 page under every answer set', () => {
+    const { starterFiles } = recordFor();
+    const pages = starterFiles
+      .filter((file) => {
+        return /^src\/pages\/\d{3}\.astro$/u.test(file.target);
+      });
+
+    expect(pages).toEqual([
+      { target: 'src/pages/403.astro' },
+      { target: 'src/pages/404.astro' },
+      { target: 'src/pages/500.astro' },
+    ]);
+  });
+});
