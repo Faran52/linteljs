@@ -31,6 +31,36 @@ export interface FixerSample {
   project?: string;
 }
 
+const EMPTY_SAMPLES: FixerSample[] = [
+  'empty.js',
+  'empty.ts',
+  'Empty.vue',
+  'Empty.svelte',
+  'empty.astro',
+]
+  .map((filename) => {
+    const sample: FixerSample = {
+      name: `an empty ${filename}`,
+      code: '',
+      typescript: filename.endsWith('.ts'),
+      filename,
+    };
+
+    return sample;
+  });
+
+const COMMENT_ONLY_SAMPLES: FixerSample[] = ['notes.js', 'notes.ts']
+  .map((filename) => {
+    const sample: FixerSample = {
+      name: `a comment-only ${filename}`,
+      code: '// one note\n/* and a block */\n',
+      typescript: filename.endsWith('.ts'),
+      filename,
+    };
+
+    return sample;
+  });
+
 export const FIXER_SAMPLES: FixerSample[] = [
   {
     // The shape it inserts before: a first statement that is not an import.
@@ -841,30 +871,8 @@ export const FIXER_SAMPLES: FixerSample[] = [
     typescript: true,
     filename: 'client.ts',
   },
-  ...[
-    'empty.js',
-    'empty.ts',
-    'Empty.vue',
-    'Empty.svelte',
-    'empty.astro',
-  ]
-    .map((filename) => {
-      return {
-        name: `an empty ${filename}`,
-        code: '',
-        typescript: filename.endsWith('.ts'),
-        filename,
-      };
-    }),
-  ...['notes.js', 'notes.ts']
-    .map((filename) => {
-      return {
-        name: `a comment-only ${filename}`,
-        code: '// one note\n/* and a block */\n',
-        typescript: filename.endsWith('.ts'),
-        filename,
-      };
-    }),
+  ...EMPTY_SAMPLES,
+  ...COMMENT_ONLY_SAMPLES,
   {
     name: 'a comment-only vue script',
     code: '<script setup lang="ts">\n// nothing yet\n</script>\n',
@@ -989,17 +997,19 @@ const languageOptionsFor = ({
   const sfc = sfcParserFor(filename);
 
   if (project !== undefined) {
-    return {
+    const typed = {
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.json',
         tsconfigRootDir: project,
       },
     };
+
+    return typed;
   }
 
   if (sfc !== undefined) {
-    return {
+    const component = {
       parser: sfc,
       parserOptions: {
         parser: tseslint.parser,
@@ -1007,18 +1017,24 @@ const languageOptionsFor = ({
         sourceType: 'module' as const,
       },
     };
+
+    return component;
   }
 
-  return typescript
+  const script = typescript
     ? { parser: tseslint.parser }
     : {
         ecmaVersion: 'latest' as const,
         sourceType: sourceTypeFor(filename),
       };
+
+  return script;
 };
 
 const filesFor = (filename?: string) => {
-  return filename ? { files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,vue,svelte,astro}'] } : {};
+  const scope = filename ? { files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,vue,svelte,astro}'] } : {};
+
+  return scope;
 };
 
 export const isSfcSample = (sample: FixerSample): boolean => {
@@ -1160,16 +1176,20 @@ export const fixWith = (sample: FixerSample, ruleName?: string): string => {
 
   const active = Object.fromEntries(selected);
   const enabled = Object.keys(active);
+  const ruleEntries = enabled
+    .map((name) => {
+      const entry: [string, 'error'] = [`@linteljs/${name}`, 'error'];
+
+      return entry;
+    });
+  const enabledRules = Object.fromEntries(ruleEntries);
 
   return linter.verifyAndFix(sample.code, [
     {
       ...filesFor(sample.filename),
       plugins: { '@linteljs': { rules: active } },
       languageOptions: languageOptionsFor(sample),
-      rules: Object.fromEntries(enabled
-        .map((name) => {
-          return [`@linteljs/${name}`, 'error' as const];
-        })),
+      rules: enabledRules,
     },
   ], sample.filename).output;
 };

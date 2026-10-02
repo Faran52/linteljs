@@ -9,7 +9,7 @@ export const captureFixer = (): Fixer => {
   const capture: Rule.RuleModule = {
     meta: { fixable: 'whitespace' },
     create: (context) => {
-      return {
+      const listener: Rule.RuleListener = {
         Identifier: (node) => {
           context.report({
             node,
@@ -22,6 +22,8 @@ export const captureFixer = (): Fixer => {
           });
         },
       };
+
+      return listener;
     },
   };
 

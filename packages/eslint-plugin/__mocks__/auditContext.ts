@@ -5,7 +5,7 @@ import type { AuditContext } from '../scripts/audit/real-code/types.ts';
 import type { OptionValue } from '../scripts/audit/utils/optionUtils.ts';
 
 export const auditContext = (overrides: Partial<AuditContext> = {}): AuditContext => {
-  return {
+  const context: AuditContext = {
     activeRules: ['union-newline'],
     auditCounts: new Map(),
     auditVolume: [],
@@ -40,13 +40,15 @@ export const auditContext = (overrides: Partial<AuditContext> = {}): AuditContex
     timings: [],
     ...overrides,
   };
+
+  return context;
 };
 
 export const textRule = (transform: (text: string) => string): Rule.RuleModule => {
-  return {
+  const rule: Rule.RuleModule = {
     meta: { fixable: 'code' },
     create: (context) => {
-      return {
+      const listener: Rule.RuleListener = {
         Program: (node) => {
           const text = context.sourceCode.getText();
           const fixed = transform(text);
@@ -62,8 +64,12 @@ export const textRule = (transform: (text: string) => string): Rule.RuleModule =
           }
         },
       };
+
+      return listener;
     },
   };
+
+  return rule;
 };
 
 const orderings = (names: string[]): string[][] => {
@@ -74,17 +80,24 @@ const orderings = (names: string[]): string[][] => {
           return other !== index;
         });
 
-      return [[name], ...orderings(rest)
+      const extended = orderings(rest)
         .map((tail) => {
-          return [name, ...tail];
-        })];
+          const ordering = [name, ...tail];
+
+          return ordering;
+        });
+      const fromName = [[name], ...extended];
+
+      return fromName;
     });
 };
 
 export const configOf = (modules: Record<string, Rule.RuleModule>): Linter.Config[] => {
   const ruleEntries = Object.keys(modules)
     .map((name): [string, Linter.RuleEntry] => {
-      return [`@linteljs/${name}`, 'error'];
+      const entry: [string, Linter.RuleEntry] = [`@linteljs/${name}`, 'error'];
+
+      return entry;
     });
 
   const shared = {
@@ -93,7 +106,7 @@ export const configOf = (modules: Record<string, Rule.RuleModule>): Linter.Confi
     rules: Object.fromEntries(ruleEntries),
   };
 
-  return [
+  const configs: Linter.Config[] = [
     {
       ...shared,
       files: ['**/*.ts', '**/*.tsx'],
@@ -105,6 +118,8 @@ export const configOf = (modules: Record<string, Rule.RuleModule>): Linter.Confi
       languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     },
   ];
+
+  return configs;
 };
 
 export const plantRules = (
@@ -112,7 +127,9 @@ export const plantRules = (
   modules: Record<string, Rule.RuleModule>,
   options: Record<string, Record<string, OptionValue>> = {},
 ): void => {
-  for (const names of orderings(Object.keys(modules))) {
+  const ruleNames = Object.keys(modules);
+
+  for (const names of orderings(ruleNames)) {
     const ordered = Object.entries(modules)
       .filter(([name]) => {
         return names.includes(name);
@@ -121,9 +138,9 @@ export const plantRules = (
         return names.indexOf(left) - names.indexOf(right);
       });
 
-    context.configCache.set(`${names.join(',')}|${JSON.stringify(options)}`, configOf(Object.fromEntries(
-      ordered,
-    )));
+    const orderedModules = Object.fromEntries(ordered);
+
+    context.configCache.set(`${names.join(',')}|${JSON.stringify(options)}`, configOf(orderedModules));
   }
 };
 

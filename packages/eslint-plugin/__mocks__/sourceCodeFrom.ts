@@ -21,11 +21,13 @@ export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => 
     create: (context) => {
       captured = context.sourceCode;
 
-      return {
+      const listener: Rule.RuleListener = {
         '*': (node: RuleNode) => {
           nodes.push(node);
         },
       };
+
+      return listener;
     },
   };
 
@@ -55,7 +57,7 @@ export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => 
     return found;
   };
 
-  return {
+  const parsed: ParsedSnippet = {
     sourceCode,
     firstNode: (type: string): RuleNode => {
       const found = nodes
@@ -66,10 +68,14 @@ export const sourceCodeFrom = (code: string, parser?: Parser): ParsedSnippet => 
       return of(found, type);
     },
     lastNode: (type: string): RuleNode => {
-      return of(nodes
+      const found = nodes
         .findLast((node) => {
           return node.type === type;
-        }), type);
+        });
+
+      return of(found, type);
     },
   };
+
+  return parsed;
 };
