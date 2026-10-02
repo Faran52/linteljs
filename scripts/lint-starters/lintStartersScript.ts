@@ -1,4 +1,5 @@
-// Every starter text, written into a real project, installed and linted with type information.
+// Every starter text, written into a real project, installed and linted with type information; StyleX's also
+// tested and built.
 import {
   existsSync,
   mkdirSync,
@@ -77,9 +78,14 @@ const fail = (label: string, step: string, output: string): Outcome => {
 };
 
 const copies: Map<string, string>[] = [];
+const prepareArgs = [
+  'run',
+  '--if-present',
+  'prepare',
+];
 
-// Install every time, so a changed tarball path reinstalls; `prepare` by hand, since a no-op install skips it
-// and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
+// Install every time, so a changed tarball path reinstalls; `prepare` by hand, even when unchanged, since a no-op
+// install skips it and regenerating deletes what it wrote (`.nuxt/`, `.svelte-kit/`, typegen, the compiled catalog).
 const lintCase = async (item: E2eCase): Promise<Outcome> => {
   const slug = slugOf(item.label);
   const dir = join(PROJECTS, slug);
@@ -91,7 +97,9 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
   const isUnchanged = !every && !fixing && readStamp(stampPath) === stamp;
 
   if (isUnchanged) {
-    return 'unchanged';
+    const reprepared = await spawnIn(dir, prepareArgs);
+
+    return reprepared.ok ? 'unchanged' : fail(item.label, 'prepare', reprepared.output);
   }
 
   const installArgs = ['install', '--no-frozen-lockfile'];
@@ -101,11 +109,6 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
     return fail(item.label, 'install', installed.output);
   }
 
-  const prepareArgs = [
-    'run',
-    '--if-present',
-    'prepare',
-  ];
   const prepared = await spawnIn(dir, prepareArgs);
 
   if (!prepared.ok) {
@@ -128,6 +131,21 @@ const lintCase = async (item: E2eCase): Promise<Outcome> => {
 
   if (!linted.ok) {
     return fail(item.label, 'lint', linted.output);
+  }
+
+  // StyleX resolves its theme imports only when it compiles, which lint never reaches.
+  if (item.answers.styling === 'stylex') {
+    const tested = await spawnIn(dir, ['run', 'test']);
+
+    if (!tested.ok) {
+      return fail(item.label, 'test', tested.output);
+    }
+
+    const built = await spawnIn(dir, ['run', 'build']);
+
+    if (!built.ok) {
+      return fail(item.label, 'build', built.output);
+    }
   }
 
   writeFileSync(stampPath, stamp, 'utf8');
