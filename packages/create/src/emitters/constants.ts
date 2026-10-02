@@ -112,12 +112,12 @@ export const VERSIONS: Record<string, string> = {
   'next': '^16.3.7',
   'next-intl': '^4.14.8',
   // At exactly what the SDK's own template pins, which `expo-doctor` checks. docs/DESIGN.md has why.
-  'expo': '~57.0.25',
+  'expo': '~57.0.26',
   'react-native': '0.86.3',
   // react-native's cli plugin peers its own release exactly and worklets peers `*`; declared, both resolve to it.
   '@react-native/metro-config': '0.86.3',
-  'expo-router': '~57.0.23',
-  'expo-constants': '~57.0.19',
+  'expo-router': '~57.0.24',
+  'expo-constants': '~57.0.20',
   'expo-linking': '~57.0.11',
   'expo-status-bar': '~57.0.1',
   'react-native-safe-area-context': '~5.7.0',

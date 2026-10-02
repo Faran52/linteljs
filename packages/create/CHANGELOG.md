@@ -122,7 +122,8 @@ when a version's change lives in a sibling it is described there instead:
 - The questionnaire is one line per question over `@inquirer/prompts`, shows every option, and skips the AI plugins
   question when no agent is chosen. A run on a terminal is one line per stage, spinning while it works; behind a
   pipe it prints a line per file and per stage as before.
-- React Native follows Expo SDK 57's own pins (react-native 0.86.3) and declares `@react-native/metro-config`.
+- React Native follows Expo SDK 57's own pins (expo 57.0.26, expo-router 57.0.24, react-native 0.86.3) and
+  declares `@react-native/metro-config`.
 - Dependencies move to current releases, and a project carries only the peer overrides still refused upstream.
 - Angular renders a Contact page under every answer: Reactive Forms, validated by the shared `validateContact`
   (the Zod schema when `zod` is chosen), or TanStack Form's `injectForm` when `--form tanstack-form`. It brings
