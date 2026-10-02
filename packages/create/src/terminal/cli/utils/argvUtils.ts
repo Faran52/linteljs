@@ -88,7 +88,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     skip.push('install', 'fix');
   }
 
-  return {
+  const options: CliOptions = {
     command,
     name: command === 'sync' ? '' : first,
     cwd: processCwd(),
@@ -103,6 +103,8 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     help: values.help,
     version: values.version,
   };
+
+  return options;
 };
 
 // A directory name was never chosen as a package name; adopting one is what `--existing` is for.

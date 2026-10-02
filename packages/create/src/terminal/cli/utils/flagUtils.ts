@@ -38,13 +38,15 @@ export const flaggedAnswers = (): FlaggedAnswer[] => {
     .flatMap((key): FlaggedAnswer[] => {
       const record: AnswerRecord = ANSWERS[key];
 
-      return isFlaggable(record)
+      const entries: FlaggedAnswer[] = isFlaggable(record)
         ? [{
             key,
             record,
             flag: record.flag,
           }]
         : [];
+
+      return entries;
     });
 };
 
@@ -55,10 +57,12 @@ const isMultiKind = (record: AnswerRecord): boolean => {
 export const answerOptions = (flagged: readonly FlaggedAnswer[]): Record<string, AnswerOption> => {
   const options = flagged
     .map(({ flag, record }): [string, AnswerOption] => {
-      return [flag, {
+      const option: [string, AnswerOption] = [flag, {
         type: 'string',
         ...(isMultiKind(record) ? { multiple: true } : {}),
       }];
+
+      return option;
     });
 
   return Object.fromEntries(options);

@@ -37,7 +37,9 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
 
   const lookups = LOCKFILES
     .map(async ([lockfile, name]) => {
-      return await entryExists(join(cwd, lockfile)) ? name : undefined;
+      const isPresent = await entryExists(join(cwd, lockfile));
+
+      return isPresent ? name : undefined;
     });
 
   const present = await Promise.all(lookups);
@@ -47,32 +49,38 @@ const detectedManager = async (cwd: string): Promise<DetectedManager> => {
       return name !== undefined;
     }) ?? 'npm';
 
-  return {
+  const detected: DetectedManager = {
     name: found,
     version: undefined,
   };
+
+  return detected;
 };
 
 export const hosted = (answers: Answers, host: Host): HostedAnswers => {
-  return {
+  const withHost: HostedAnswers = {
     ...answers,
     packageManager: host.packageManager,
     packageManagerVersion: host.packageManagerVersion,
     nodeVersion: host.nodeVersion,
   };
+
+  return withHost;
 };
 
 // The version fills only where the two agree on the manager.
 export const filled = (answers: Answers, host: Host): HostedAnswers => {
   const sameManager = answers.packageManager === host.packageManager;
 
-  return {
+  const completed: HostedAnswers = {
     ...answers,
     ...answers.packageManagerVersion === undefined && sameManager
       ? { packageManagerVersion: host.packageManagerVersion }
       : {},
     nodeVersion: answers.nodeVersion ?? host.nodeVersion,
   };
+
+  return completed;
 };
 
 // Answered rather than thrown, and asked before the questionnaire.
@@ -98,9 +106,11 @@ export const hostOf = async (cwd: string): Promise<Host | string> => {
       + `Install Node ${NODE_FLOOR} or newer and run this again.`;
   }
 
-  return nodeRefusal(nodeVersion) ?? {
+  const host: Host = {
     packageManager: manager.name,
     packageManagerVersion,
     nodeVersion,
   };
+
+  return nodeRefusal(nodeVersion) ?? host;
 };

@@ -117,11 +117,13 @@ export const inquirerPrompter: Prompter = {
       pageSize: Math.max(options.length, 1),
       choices: options
         .map((option) => {
-          return {
+          const choice = {
             value: option.value,
             name: option.label,
             ...(option.hint === undefined ? {} : { description: option.hint }),
           };
+
+          return choice;
         }),
     }));
   },
@@ -137,12 +139,14 @@ export const inquirerPrompter: Prompter = {
       pageSize: Math.max(options.length, 1),
       choices: options
         .map((option) => {
-          return {
+          const choice = {
             value: option.value,
             name: option.label,
             ...(option.hint === undefined ? {} : { description: option.hint }),
             checked: initialValues.includes(option.value),
           };
+
+          return choice;
         }),
     }));
   },
@@ -176,10 +180,12 @@ const askChoice = async <T extends string>(
 ): Promise<T> => {
   const options: PromptOption[] = choices
     .map((choice) => {
-      return {
+      const option: PromptOption = {
         value: choice,
         ...describe(choice),
       };
+
+      return option;
     });
 
   const answer = await prompter.select({
@@ -202,10 +208,12 @@ const askMulti = async <T extends string>(
 ): Promise<T[]> => {
   const options: PromptOption[] = choices
     .map((choice) => {
-      return {
+      const option: PromptOption = {
         value: choice,
         ...describe(choice),
       };
+
+      return option;
     });
 
   const answer = await prompter.multiselect({
@@ -296,10 +304,12 @@ const askAnswer = async (
 };
 
 const soFarAnswered = (answered: Partial<Record<AnswerKey, JsonValue>>): Answers => {
-  return {
+  const answers = {
     ...DEFAULT_ANSWERS,
     ...answered,
   } as Answers;
+
+  return answers;
 };
 
 // `targetFor` is recomputed per call, so `hostedFramework` reaches the builders by the time `form` reads it.
@@ -344,7 +354,7 @@ const writeIfPresent = (
 
 // Through `parseLinteljsConfig`, the flag gate, so nothing `refuseMisfit` refuses is offered and no cast is needed.
 export const confirm = async (prompter: Prompter, message: string): Promise<boolean> => {
-  const answer = unwrap(prompter, await prompter.select({
+  const picked = await prompter.select({
     message,
     initialValue: 'no',
     options: [
@@ -357,7 +367,8 @@ export const confirm = async (prompter: Prompter, message: string): Promise<bool
         label: 'No',
       },
     ],
-  }));
+  });
+  const answer = unwrap(prompter, picked);
 
   return answer === 'yes';
 };
@@ -367,7 +378,9 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
   const answered: Partial<Record<AnswerKey, JsonValue>> = {};
 
   for (const key of ANSWER_KEYS) {
-    writeIfPresent(answered, key, await askIfNeeded(prompter, answered, key));
+    const value = await askIfNeeded(prompter, answered, key);
+
+    writeIfPresent(answered, key, value);
   }
 
   const config = parseLinteljsConfig(JSON.stringify({
@@ -377,8 +390,10 @@ export const ask = async (prompter: Prompter, input: AskInput = {}): Promise<Ask
     ...answered,
   }));
 
-  return {
+  const asked: Asked = {
     name,
     answers: omit(config, ['$schema', 'schemaVersion']),
   };
+
+  return asked;
 };

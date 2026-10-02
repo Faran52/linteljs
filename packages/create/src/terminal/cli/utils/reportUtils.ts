@@ -64,13 +64,15 @@ export const nextSteps = (name: string, options: CliOptions, packageManager: Pac
     ? [`  ${packageManager} install`, `  ${run} lint:fix`]
     : [];
 
-  return [
+  const steps = [
     '',
     'Done. Next:',
     ...enter,
     ...install,
     `  ${run} check`,
   ].join('\n');
+
+  return steps;
 };
 
 // A skipped stage is easier to read here than to notice missing below.
@@ -83,18 +85,20 @@ export const stepsPlan = (options: CliOptions): string => {
       return `  ${String(index + 1)}. ${STAGE_LABELS[stage]}${skipped ? ' (skipped)' : ''}`;
     });
 
-  return [
+  const plan = [
     '',
     'Steps:',
     ...lines,
   ].join('\n');
+
+  return plan;
 };
 
 // Behind a pipe every event is its own line: what a CI log carries and the e2e suite reads.
 const pipedReport = (options: CliOptions): StageReport => {
   say(stepsPlan(options));
 
-  return {
+  const report: StageReport = {
     output: 'inherit',
     onStage: (stage, index, count) => {
       say(`[${String(index)}/${String(count)}] ${STAGE_LABELS[stage]}`);
@@ -110,6 +114,8 @@ const pipedReport = (options: CliOptions): StageReport => {
       say(`      done in ${(milliseconds / 1000).toFixed(1)}s`);
     },
   };
+
+  return report;
 };
 
 // `clear, text, carriage return`, so a failure printed by `main` lands over the spinner's line.
@@ -124,7 +130,7 @@ const liveReport = (): StageReport => {
     stdout.write(`\u001B[K  ${SPINNER_FRAMES.charAt(frame)} ${stageLine(line.stage, line.writes, line.notice)}\r`);
   };
 
-  return {
+  const report: StageReport = {
     output: 'capture',
     onStage: (stage) => {
       line = {
@@ -148,6 +154,8 @@ const liveReport = (): StageReport => {
       stdout.write(`\u001B[K  ✓ ${stageLine(stage, line.writes, line.notice, milliseconds)}\n`);
     },
   };
+
+  return report;
 };
 
 // A redirected run has a terminal on stdin without one on stdout.
@@ -159,7 +167,9 @@ export const stageReport = (options: CliOptions): StageReport => {
 export const syncTable = (plan: SyncPlan): string => {
   const files = plan.pending
     .map(({ target, status }) => {
-      return [SYNC_ACTIONS[status], target] as const;
+      const row = [SYNC_ACTIONS[status], target] as const;
+
+      return row;
     });
   const versions = plan.upgrades
     .map(({
@@ -167,7 +177,9 @@ export const syncTable = (plan: SyncPlan): string => {
       from,
       to,
     }) => {
-      return ['upgrade', `${name} ${from ?? 'none'} -> ${to}`] as const;
+      const row = ['upgrade', `${name} ${from ?? 'none'} -> ${to}`] as const;
+
+      return row;
     });
   const rows = [...files, ...versions];
   const width = Math.max(...rows

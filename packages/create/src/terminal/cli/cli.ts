@@ -58,12 +58,14 @@ interface HostedAsk {
 }
 
 const flaggedAnswers = (flags: AnswerFlags = {}): Answers => {
-  return parseLinteljsConfig(JSON.stringify({
+  const configText = JSON.stringify({
     $schema: CONFIG_SCHEMA_URL,
     schemaVersion: CURRENT_SCHEMA_VERSION,
     ...DEFAULT_ANSWERS,
     ...flags,
-  }));
+  });
+
+  return parseLinteljsConfig(configText);
 };
 
 // Only the questionnaire can supply a missing name.
@@ -74,29 +76,41 @@ const askedFrom = async (
   host: Host,
 ): Promise<HostedAsk> => {
   const named = (answers: Answers): HostedAsk => {
-    return {
+    const resolved: HostedAsk = {
       name: options.name,
       answers: hosted(answers, host),
     };
+
+    return resolved;
   };
 
   const fromConfig = (answers: Answers): HostedAsk => {
-    return {
+    const recorded: HostedAsk = {
       name: options.name,
       answers: filled(answers, host),
     };
+
+    return recorded;
   };
 
   if (options.command === 'sync') {
-    return fromConfig(await linteljsConfigReader(options.cwd));
+    const config = await linteljsConfigReader(options.cwd);
+
+    return fromConfig(config);
   }
 
-  if (options.existing && await entryExists(join(options.cwd, CONFIG_PATH))) {
-    return fromConfig(await linteljsConfigReader(options.cwd));
+  const hasConfig = options.existing && await entryExists(join(options.cwd, CONFIG_PATH));
+
+  if (hasConfig) {
+    const config = await linteljsConfigReader(options.cwd);
+
+    return fromConfig(config);
   }
 
   if (options.yes) {
-    return named(flaggedAnswers(options.answers));
+    const flagged = flaggedAnswers(options.answers);
+
+    return named(flagged);
   }
 
   // Measured: four of seven agents piped `/dev/null` and silently took the default target.
@@ -105,12 +119,14 @@ const askedFrom = async (
   }
 
   const known = options.existing ? basename(options.cwd) : options.name;
-  const asked = await ask(prompter, known === '' ? {} : { name: known });
-
-  return {
+  const prefilled = known === '' ? {} : { name: known };
+  const asked = await ask(prompter, prefilled);
+  const answered: HostedAsk = {
     name: asked.name,
     answers: hosted(asked.answers, host),
   };
+
+  return answered;
 };
 
 const runSync = async (
@@ -125,7 +141,9 @@ const runSync = async (
   if (install.length > 0) {
     const heading = 'linteljs needs packages this project does not have. sync leaves dependencies to you:';
 
-    say([heading, ...install].join('\n'));
+    const notice = [heading, ...install].join('\n');
+
+    say(notice);
   }
 
   if (plan.pending.length === 0) {
@@ -141,7 +159,9 @@ const runSync = async (
       return 1;
     }
 
-    if (!await confirm(prompter, 'Apply these changes?')) {
+    const approved = await confirm(prompter, 'Apply these changes?');
+
+    if (!approved) {
       say('Nothing was written.');
       return 0;
     }

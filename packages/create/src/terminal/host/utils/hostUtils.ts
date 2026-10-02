@@ -35,10 +35,12 @@ export const managerFromUserAgent = (userAgent: string | undefined): DetectedMan
     .slice(name.length + 1)
     .replace(/\/.*/su, '');
 
-  return {
+  const detected: DetectedManager = {
     name,
     version: /^\d+\.\d+\.\d+$/u.test(version) ? version : undefined,
   };
+
+  return detected;
 };
 
 export const acceptsManager = (pm: PackageManager, version: string): boolean => {
