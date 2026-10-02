@@ -18,6 +18,7 @@ import {
   CODE_EXTENSION,
   NOT_DOTTED,
   RELATIVE_SPECIFIER,
+  USE_CLIENT,
 } from './constants';
 
 type Starter = StarterFile | StarterTest;
@@ -101,18 +102,25 @@ export const starterSourceEmitter = (answers: Answers): Artifact[] => {
       return applies(test, answers);
     });
   const renames = renamesOf([...files, ...suites]);
+  const clientBoundaries = new Set(target.clientBoundaries);
 
   const artifactOf = (file: Starter): Artifact => {
     const sources = [sourceOf(target.id, file)];
+    const rewritten = importsRewritten(file, renames);
+    const isBoundary = clientBoundaries.has(file.target);
 
     return {
       stage: 'standard',
       target: file.target,
-      content: renames.size === 0
+      content: renames.size === 0 && !isBoundary
         ? { sources }
         : {
             sources,
-            transform: importsRewritten(file, renames),
+            transform: isBoundary
+              ? (source) => {
+                  return `${USE_CLIENT}${rewritten(source)}`;
+                }
+              : rewritten,
           },
       seed: true,
     };

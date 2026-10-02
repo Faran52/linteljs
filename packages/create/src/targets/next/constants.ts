@@ -44,6 +44,13 @@ export const FROM_REACT: readonly string[] = [
   'src/components/ui/mark/Mark.tsx',
 ];
 
+// React's assets, written as the client boundary under the server-component layout.
+export const CLIENT_BOUNDARIES: readonly string[] = [
+  'src/app/contact/useContactForm.ts',
+  'src/lib/providers/store/StoreProvider.tsx',
+  'src/lib/providers/data/DataProvider.tsx',
+];
+
 export { REACT_ACCESSORS as ACCESSORS } from '../react/constants';
 
 // next-intl, as Next's own i18n serves the Pages Router alone.

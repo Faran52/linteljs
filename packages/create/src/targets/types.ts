@@ -174,6 +174,8 @@ export interface TargetRecord {
   stylexAtRule?: boolean;
   // Copied regardless of the testing answer, since the manifest references it either way.
   starterFiles: StarterFile[];
+  // Written paths that open with `'use client';`.
+  clientBoundaries?: readonly string[];
   viteInputs?: Record<string, string>;
   // Required: the generated project gates at 100% on what those files are.
   starterTests: StarterTest[];

@@ -428,18 +428,18 @@ describe('the starter source', () => {
         .toBe('starter-source/react/redux-toolkit/src/lib/store/counter/counterStore.ts');
     });
 
-    it('keeps both client slots in its own tree', () => {
+    it('reads both client slots from the React tree', () => {
       expect(sourceOf({}, 'src/lib/providers/store/StoreProvider.tsx'))
-        .toBe('starter-source/next/src/lib/providers/store/StoreProvider.tsx');
+        .toBe('starter-source/react/src/lib/providers/store/StoreProvider.tsx');
 
       expect(sourceOf({ store: 'redux-toolkit' }, 'src/lib/providers/store/StoreProvider.tsx'))
-        .toBe('starter-source/next/redux-toolkit/src/lib/providers/store/StoreProvider.tsx');
+        .toBe('starter-source/react/redux-toolkit/src/lib/providers/store/StoreProvider.tsx');
 
       expect(sourceOf({}, 'src/lib/providers/data/DataProvider.tsx'))
-        .toBe('starter-source/next/src/lib/providers/data/DataProvider.tsx');
+        .toBe('starter-source/react/src/lib/providers/data/DataProvider.tsx');
 
       expect(sourceOf({ data: 'tanstack-query' }, 'src/lib/providers/data/DataProvider.tsx'))
-        .toBe('starter-source/next/tanstack-query/src/lib/providers/data/DataProvider.tsx');
+        .toBe('starter-source/react/tanstack-query/src/lib/providers/data/DataProvider.tsx');
     });
 
     it('takes the shared barrel in the spelling the answers reach', () => {
@@ -493,5 +493,58 @@ describe('a shared file written under the target naming', () => {
     const suite = artifactFor({ target: 'react' }, 'src/lib/utils/statusUtils.test.ts');
 
     expect(suite?.content).toEqual({ sources: ['starter-source/shared/src/lib/utils/statusUtils.test.ts'] });
+  });
+});
+
+describe('a client boundary', () => {
+  const textOf = async (overrides: Partial<Answers>, target: string): Promise<string> => {
+    const artifact = artifactFor(overrides, target);
+
+    return artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
+  };
+
+  it.each<[string, string, Partial<Answers>]>([
+    [
+      'src/app/contact/useContactForm.ts',
+      'src/pages/contact/useContactForm.ts',
+      { form: 'react-hook-form' },
+    ],
+    [
+      'src/app/contact/useContactForm.ts',
+      'src/pages/contact/useContactForm.ts',
+      { form: 'tanstack-form' },
+    ],
+    [
+      'src/lib/providers/store/StoreProvider.tsx',
+      'src/lib/providers/store/StoreProvider.tsx',
+      { store: 'zustand' },
+    ],
+    [
+      'src/lib/providers/store/StoreProvider.tsx',
+      'src/lib/providers/store/StoreProvider.tsx',
+      { store: 'redux-toolkit' },
+    ],
+    [
+      'src/lib/providers/data/DataProvider.tsx',
+      'src/lib/providers/data/DataProvider.tsx',
+      {},
+    ],
+    [
+      'src/lib/providers/data/DataProvider.tsx',
+      'src/lib/providers/data/DataProvider.tsx',
+      { data: 'tanstack-query' },
+    ],
+  ])('writes Next its %s as React writes %s, opened with the directive, under %o', async (next, react, overrides) => {
+    const written = await textOf({
+      target: 'next',
+      ...overrides,
+    }, next);
+    const shared = await textOf({
+      target: 'react',
+      ...overrides,
+    }, react);
+    const expected = `'use client';\n\n${shared}`;
+
+    expect(written).toBe(expected);
   });
 });

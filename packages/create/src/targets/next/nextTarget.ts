@@ -28,6 +28,7 @@ import { componentStyleModules, componentStyles } from '../utils/styleUtils';
 import {
   ACCESSORS,
   ALWAYS,
+  CLIENT_BOUNDARIES,
   FROM_REACT,
   NEXT_I18N,
   SHARED,
@@ -99,6 +100,7 @@ export const nextTarget: TargetRecord = {
   // The documents: what each renders is covered where it renders.
   coverageExclude: ['src/app/layout.tsx', 'src/app/global-error.tsx'],
   publicDirectory: 'public',
+  clientBoundaries: CLIENT_BOUNDARIES,
   starterFiles: [
     ...mockFiles(true),
     ...componentStyles(),
@@ -200,6 +202,8 @@ export const nextTarget: TargetRecord = {
             return answers.form === form;
           },
           variant: form,
+          shared: 'react',
+          source: 'src/pages/contact/useContactForm.ts',
         };
       }),
     ...([
@@ -250,12 +254,12 @@ export const nextTarget: TargetRecord = {
       variant: 'zod',
       shared: true,
     },
-    // Next's own: the directive on them makes them the client boundary.
     {
       target: 'src/lib/providers/store/StoreProvider.tsx',
       when: (answers) => {
         return answers.store !== 'redux-toolkit';
       },
+      shared: 'react',
     },
     {
       target: 'src/lib/providers/store/StoreProvider.tsx',
@@ -263,12 +267,14 @@ export const nextTarget: TargetRecord = {
         return answers.store === 'redux-toolkit';
       },
       variant: 'redux-toolkit',
+      shared: 'react',
     },
     {
       target: 'src/lib/providers/data/DataProvider.tsx',
       when: (answers) => {
         return answers.data !== 'tanstack-query';
       },
+      shared: 'react',
     },
     {
       target: 'src/lib/providers/data/DataProvider.tsx',
@@ -276,6 +282,7 @@ export const nextTarget: TargetRecord = {
         return answers.data === 'tanstack-query';
       },
       variant: 'tanstack-query',
+      shared: 'react',
     },
     ...(['zustand', 'tanstack-store'] as const)
       .map((store): StarterFile => {
