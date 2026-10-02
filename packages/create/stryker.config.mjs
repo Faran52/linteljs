@@ -12,8 +12,12 @@ const TEMP_DIR = fileURLToPath(new URL('../../.stryker-tmp', import.meta.url));
 
 mkdirSync(TEMP_DIR, { recursive: true });
 
-for (const sibling of ['eslint-config', 'eslint-plugin']) {
-  if (!existsSync(join(TEMP_DIR, sibling))) {
+const SIBLINGS = ['eslint-config', 'eslint-plugin'];
+
+for (const sibling of SIBLINGS) {
+  const isLinked = existsSync(join(TEMP_DIR, sibling));
+
+  if (!isLinked) {
     symlinkSync(`../packages/${sibling}`, join(TEMP_DIR, sibling));
   }
 }

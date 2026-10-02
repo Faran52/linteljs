@@ -32,7 +32,9 @@ describe('copilotHooksEmitter', () => {
 
     const hooksText = artifact === undefined ? '' : await shippedAssetsReader(artifact.content);
 
-    expect(JSON.parse(hooksText)).toEqual({
+    const parsed: unknown = JSON.parse(hooksText);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: {
         preToolUse: [

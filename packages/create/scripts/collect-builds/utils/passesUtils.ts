@@ -76,7 +76,9 @@ export const run = async (
 
   await once(child, 'close');
 
-  return [...out, ...err].join('');
+  return out
+    .concat(err)
+    .join('');
 };
 
 const isScriptListing = (value: unknown): value is ScriptListing => {

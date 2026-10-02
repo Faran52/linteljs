@@ -379,8 +379,8 @@ describe('what each target offers', () => {
         const hosts = ['astro', 'webextension'] as const;
 
         return hosts
-          .map((target): [string, Answers, string[], string[] | undefined] => {
-            return [
+          .map((target) => {
+            const row: [string, Answers, string[], string[] | undefined] = [
               `${target} hosting ${hostedFramework}`,
               {
                 ...DEFAULT_ANSWERS,
@@ -390,6 +390,8 @@ describe('what each target offers', () => {
               rules,
               conditions,
             ];
+
+            return row;
           });
       }),
   ])('holds %s to its own state rules and test conditions', (_label, answers, rules, conditions) => {

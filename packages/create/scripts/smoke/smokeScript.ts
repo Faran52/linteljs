@@ -55,8 +55,11 @@ for (const stage of STAGES) {
 assert.match(help, /@linteljs\/create sync/, '--help does not mention the sync command');
 
 // `templatesRootFrom` walks up from the flattened `dist/`, a depth only the packed layout has.
-assert.ok(existsSync(join(pkgDir, 'dist', 'index.mjs')), 'no dist/index.mjs in the tarball');
-assert.ok(existsSync(join(pkgDir, 'templates')), 'no templates/ beside dist/ for the walk-up to find');
+const hasDist = existsSync(join(pkgDir, 'dist', 'index.mjs'));
+const hasTemplates = existsSync(join(pkgDir, 'templates'));
+
+assert.ok(hasDist, 'no dist/index.mjs in the tarball');
+assert.ok(hasTemplates, 'no templates/ beside dist/ for the walk-up to find');
 
 log('comparing the shipped asset tree against the tarball');
 
@@ -74,7 +77,8 @@ const filesIn = (dir: string): string[] => {
     });
 };
 
-const packed = new Set(filesIn(join(pkgDir, 'templates')));
+const packedFiles = filesIn(join(pkgDir, 'templates'));
+const packed = new Set(packedFiles);
 const shipped = filesIn(join(root, 'templates'));
 const leaked = shipped
   .filter((name) => {

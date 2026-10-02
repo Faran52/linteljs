@@ -17,7 +17,10 @@ import {
 } from 'vitest';
 
 it('registers the four hooks, each run by node from the plugin root', () => {
-  expect(JSON.parse(readFileSync(join(import.meta.dirname, 'hooks.json'), 'utf8'))).toEqual({
+  const hooksText = readFileSync(join(import.meta.dirname, 'hooks.json'), 'utf8');
+  const hooks: unknown = JSON.parse(hooksText);
+
+  expect(hooks).toEqual({
     hooks: {
       PreToolUse: [
         {

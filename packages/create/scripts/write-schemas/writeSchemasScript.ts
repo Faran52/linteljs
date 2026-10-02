@@ -9,6 +9,8 @@ const ROOT = join(import.meta.dirname, '../../../..');
 const FILE = `linteljs.config.v${String(CURRENT_SCHEMA_VERSION)}.schema.json`;
 const schema = schemaFor(ANSWERS);
 
-for (const dir of ['schemas', 'packages/create/templates/schemas']) {
+const SCHEMA_DIRS = ['schemas', 'packages/create/templates/schemas'];
+
+for (const dir of SCHEMA_DIRS) {
   writeFileSync(join(ROOT, dir, FILE), schema);
 }

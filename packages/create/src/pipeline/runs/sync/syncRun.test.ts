@@ -400,7 +400,8 @@ describe('applySync', () => {
 
     await applyPending(hosted);
 
-    const managed: unknown = JSON.parse(await readFile(join(cwd, MANAGED_PATH), 'utf8'));
+    const managedText = await readFile(join(cwd, MANAGED_PATH), 'utf8');
+    const managed: unknown = JSON.parse(managedText);
 
     const hooksFiles = ['.cursor/hooks.json', '.github/hooks/linteljs.json'];
 
@@ -477,7 +478,10 @@ describe('applySync', () => {
   it('names a package.json it writes from nothing after the directory', async () => {
     await applySync(cwd, HOSTED_DEFAULTS, ['package.json']);
 
-    expect(JSON.parse(await readFile(join(cwd, 'package.json'), 'utf8'))).toHaveProperty('name', basename(cwd));
+    const manifestText = await readFile(join(cwd, 'package.json'), 'utf8');
+    const manifest: unknown = JSON.parse(manifestText);
+
+    expect(manifest).toHaveProperty('name', basename(cwd));
   });
 
   it('skips and does not report an obsolete file that vanished with its directory after it was planned', async () => {

@@ -604,7 +604,9 @@ describe('a version-one config', () => {
 
     expect(parsed.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     expect(parsed.$schema).toBe(CONFIG_SCHEMA_URL);
-    expect(JSON.parse(emitLinteljsConfig(parsed))).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION });
+    const emitted: unknown = JSON.parse(emitLinteljsConfig(parsed));
+
+    expect(emitted).toMatchObject({ schemaVersion: CURRENT_SCHEMA_VERSION });
   });
 
   it('leaves a config naming no form library alone', () => {
@@ -624,8 +626,9 @@ describe('a version-one config', () => {
   it('holds a version-one file to the version-one schema url', () => {
     expect(() => {
       const configText = JSON.stringify({
-        ...JSON.parse(versionOne()),
         $schema: CONFIG_SCHEMA_URL,
+        ...DEFAULT_ANSWERS,
+        schemaVersion: 1,
       });
       return parseLinteljsConfig(configText);
     }).toThrow(/\$schema must be .*v1\.schema\.json/);

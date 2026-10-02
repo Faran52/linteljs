@@ -103,8 +103,8 @@ const askedFrom = async (
   }
 
   // A 1.x project records its answers under the old name.
-  const hasConfig = options.existing && (await entryExists(join(options.cwd, CONFIG_PATH))
-    || await entryExists(join(options.cwd, LEGACY_CONFIG_PATH)));
+  const hasCurrent = options.existing && await entryExists(join(options.cwd, CONFIG_PATH));
+  const hasConfig = hasCurrent || (options.existing && await entryExists(join(options.cwd, LEGACY_CONFIG_PATH)));
 
   if (hasConfig) {
     const config = await linteljsConfigReader(options.cwd);

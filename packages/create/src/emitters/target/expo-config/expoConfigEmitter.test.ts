@@ -11,7 +11,9 @@ import { emitExpoConfig, expoConfigEmitter } from './expoConfigEmitter';
 
 describe('emitExpoConfig', () => {
   it('names the app, its slug and its scheme after the project', () => {
-    expect(JSON.parse(emitExpoConfig('Demo-App'))).toStrictEqual({
+    const parsed: unknown = JSON.parse(emitExpoConfig('Demo-App'));
+
+    expect(parsed).toStrictEqual({
       expo: {
         name: 'Demo-App',
         slug: 'Demo-App',

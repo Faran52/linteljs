@@ -95,14 +95,16 @@ const report = (found: [string, Record<Collected, string[]>][]): void => {
           return !pnpm.includes(name);
         });
 
-      return {
+      const row = {
         label,
         pnpm,
         extra,
       };
+
+      return row;
     });
 
-  log([
+  const table = [
     `  ${'target'.padEnd(COLUMN_WIDTH.target)}${'pnpm'.padEnd(COLUMN_WIDTH.pnpm)}npm only`,
     ...rows
       .map(({
@@ -113,34 +115,44 @@ const report = (found: [string, Record<Collected, string[]>][]): void => {
         return `  ${label.padEnd(COLUMN_WIDTH.target)}${(pnpm.join(', ') || '(none)').padEnd(COLUMN_WIDTH.pnpm)}`
           + (extra.join(', ') || '-');
       }),
-  ].join('\n'));
+  ].join('\n');
 
-  log(`Union, for allowBuilds:\n${sorted(found
+  log(table);
+
+  const union = sorted(found
     .flatMap(([, { pnpm, npm }]) => {
-      return [...pnpm, ...npm];
-    }))}`);
+      return pnpm.concat(npm);
+    }));
 
-  log(`Blocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${sorted(rows
+  log(`Union, for allowBuilds:\n${union}`);
+
+  const npmOnly = sorted(rows
     .flatMap(({ extra }) => {
       return extra;
-    }))}`);
+    }));
+
+  log(`Blocked by npm and not by pnpm, which is what NPM_ALLOWED_BUILDS holds:\n${npmOnly}`);
 };
 
 const main = async (): Promise<void> => {
   const { registry, stop } = await startRegistry();
-  const workspace = mkdtempSync(join(tmpdir(), 'linteljs-builds-'));
+  const workspacePrefix = join(tmpdir(), 'linteljs-builds-');
+  const workspace = mkdtempSync(workspacePrefix);
   const semaphore = new Semaphore(CONCURRENCY);
 
   try {
     // The CLI reads its manager from `npm_config_user_agent`.
     const agentLookups = MANAGERS
       .map(async (pm): Promise<[Collected, string]> => {
-        const version = (await run(pm, ['--version'], workspace, registry)).trim();
+        const versionOutput = await run(pm, ['--version'], workspace, registry);
+        const version = versionOutput.trim();
+        const agent: [Collected, string] = [pm, `${pm}/${version} npm/? node/? collect`];
 
-        return [pm, `${pm}/${version} npm/? node/? collect`];
+        return agent;
       });
 
-    const agents = new Map(await Promise.all(agentLookups));
+    const agentList = await Promise.all(agentLookups);
+    const agents = new Map(agentList);
 
     const collections = probes()
       .map(async (probe) => {
@@ -158,10 +170,12 @@ const main = async (): Promise<void> => {
 
         const [pnpm, npm] = await Promise.all(collected);
 
-        return [probe.label, {
+        const entry = [probe.label, {
           pnpm: pnpm ?? [],
           npm: npm ?? [],
         }] satisfies [string, Record<Collected, string[]>];
+
+        return entry;
       });
 
     const found = await Promise.all(collections);

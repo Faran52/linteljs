@@ -13,7 +13,9 @@ import type { HostedAnswers } from '@config/types';
 
 describe('emitAngularConfig', () => {
   it('writes the Angular CLI project file, keyed by the project name', () => {
-    expect(JSON.parse(emitAngularConfig('demo-app', 'pnpm'))).toStrictEqual({
+    const parsed: unknown = JSON.parse(emitAngularConfig('demo-app', 'pnpm'));
+
+    expect(parsed).toStrictEqual({
       $schema: './node_modules/@angular/cli/lib/config/schema.json',
       version: 1,
       cli: { packageManager: 'pnpm' },

@@ -33,7 +33,9 @@ describe('mergeCursorHooks', () => {
   it('writes the git guard on the shell gate and the eslint warning after a shell tool', () => {
     const merged = mergeCursorHooks(null);
 
-    expect(JSON.parse(merged)).toEqual({
+    const parsed: unknown = JSON.parse(merged);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: OURS,
     });
@@ -52,7 +54,9 @@ describe('mergeCursorHooks', () => {
     });
     const once = mergeCursorHooks(current);
 
-    expect(JSON.parse(once)).toEqual({
+    const parsed: unknown = JSON.parse(once);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: {
         afterFileEdit: [THEIRS],
@@ -75,7 +79,9 @@ describe('mergeCursorHooks', () => {
     });
     const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(merged)).toEqual({
+    const parsed: unknown = JSON.parse(merged);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: OURS,
     });
@@ -90,7 +96,9 @@ describe('mergeCursorHooks', () => {
   ])('reads %s as no hooks of the project\'s own', (_label, current) => {
     const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(merged)).toEqual({
+    const parsed: unknown = JSON.parse(merged);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: OURS,
     });
@@ -104,7 +112,9 @@ describe('mergeCursorHooks', () => {
     });
     const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(merged)).toEqual({
+    const parsed: unknown = JSON.parse(merged);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: {
         stop: [{ prompt: 'check the diff' }, { command: 42 }],
@@ -123,7 +133,9 @@ describe('mergeCursorHooks', () => {
     });
     const merged = mergeCursorHooks(current);
 
-    expect(JSON.parse(merged)).toEqual({
+    const parsed: unknown = JSON.parse(merged);
+
+    expect(parsed).toEqual({
       version: 1,
       hooks: {
         afterFileEdit: [THEIRS],

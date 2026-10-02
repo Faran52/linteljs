@@ -19,7 +19,7 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
     ...hosted,
   });
 
-  return {
+  const answers: Answers = {
     ...DEFAULT_ANSWERS,
     target,
     libraries: valuesOf(ANSWERS.libraries.values),
@@ -32,6 +32,8 @@ const maximal = (target: TargetId, hostedFramework: HostedFramework | undefined)
     ...(record.routers === undefined ? {} : { router: record.routers[0] }),
     ...(target === 'webextension' ? { surfaces: valuesOf(ANSWERS.surfaces.values) } : {}),
   };
+
+  return answers;
 };
 
 export const probes = (): E2eCase[] => {
@@ -46,10 +48,12 @@ export const probes = (): E2eCase[] => {
 
       return hosts
         .map((hostedFramework) => {
-          return {
+          const probe = {
             label: hostedFramework === undefined ? target : `${target} hosting ${hostedFramework}`,
             answers: maximal(target, hostedFramework),
           };
+
+          return probe;
         });
     });
 };

@@ -15,7 +15,9 @@ import { emitLinteljsConfig, linteljsConfigEmitter } from './linteljsConfigEmitt
 
 describe('emitLinteljsConfig', () => {
   it('writes the current envelope around every answer', () => {
-    expect(JSON.parse(emitLinteljsConfig(DEFAULT_ANSWERS))).toEqual({
+    const parsed: unknown = JSON.parse(emitLinteljsConfig(DEFAULT_ANSWERS));
+
+    expect(parsed).toEqual({
       $schema: CONFIG_SCHEMA_URL,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       ...DEFAULT_ANSWERS,
