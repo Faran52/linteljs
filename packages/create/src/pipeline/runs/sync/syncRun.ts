@@ -32,9 +32,16 @@ export interface SyncEntry {
   status: SyncStatus;
 }
 
+export type PendingStatus = Exclude<SyncStatus, 'unchanged'>;
+
+export interface PendingEntry {
+  target: string;
+  status: PendingStatus;
+}
+
 export interface SyncPlan extends DependencyDrift {
   entries: SyncEntry[];
-  pending: SyncEntry[];
+  pending: PendingEntry[];
 }
 
 export interface SyncResult {
@@ -184,8 +191,15 @@ export const planSync = async (cwd: string, answers: HostedAnswers): Promise<Syn
     ...drift,
     entries,
     pending: entries
-      .filter((entry) => {
-        return entry.status !== 'unchanged';
+      .flatMap(({ target, status }) => {
+        const kept: PendingEntry[] = status === 'unchanged'
+          ? []
+          : [{
+              target,
+              status,
+            }];
+
+        return kept;
       }),
   };
 

@@ -3,7 +3,7 @@ import { type ParseArgsOptionsConfig } from 'node:util';
 import { STAGES } from '@config/constants';
 import { type PackageManager, type Stage } from '@config/types';
 
-import { type SyncStatus } from '@pipeline';
+import { type PendingStatus } from '@pipeline';
 
 import {
   answerOptions,
@@ -41,11 +41,10 @@ terminal it needs --yes. A missing dependency is printed as a command, never wri
 
 export const SYNC_NEEDS_YES = 'Nothing was written: sync asks before it writes. Run it in a terminal, or pass --yes.';
 
-export const SYNC_ACTIONS: Record<SyncStatus, string> = {
+export const SYNC_ACTIONS: Record<PendingStatus, string> = {
   changed: 'update',
   missing: 'add',
   obsolete: 'delete',
-  unchanged: 'keep',
 };
 
 export const ADD_PREFIX: Record<PackageManager, string> = {
