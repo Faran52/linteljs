@@ -240,7 +240,7 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
       },
     ]
       .map(({ written, value }) => {
-        return {
+        const testCase = {
           code: `const view = <View accessibilityRole=${written} />;`,
           errors: [{
             messageId: 'invalidRole' as const,
@@ -250,6 +250,8 @@ tsxRuleTester.run('native-valid-accessibility-role', nativeValidAccessibilityRol
             },
           }],
         };
+
+        return testCase;
       }),
     {
       code: 'const view = <View role="adjustable" />;',

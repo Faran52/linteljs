@@ -19,8 +19,15 @@ import {
 
 import type { Rule } from 'eslint';
 import type { AuditContext } from '../types.ts';
+import type { Finding } from './reportShapeUtils.ts';
 
 const UNION = 'type A = "a" | "b";\n';
+
+const NO_FINDING: Finding = {
+  category: '',
+  detail: '',
+  rules: [],
+};
 
 const swapsPipe = textRule((text) => {
   return text.replace('|', '&');
@@ -53,7 +60,10 @@ describe('evaluate', () => {
     };
     expect(actual).toStrictEqual(expected);
 
-    expect(evaluate(context, UNION, 'file.ts', ['union-newline'], parse(UNION, 'file.ts')).changed).toBe(false);
+    const parsed = parse(UNION, 'file.ts');
+    const reparsed = evaluate(context, UNION, 'file.ts', ['union-newline'], parsed);
+
+    expect(reparsed.changed).toBe(false);
   });
 
   it('passes a clean fix', () => {
@@ -70,8 +80,10 @@ describe('evaluate', () => {
       detail: 'token 4 was Punctuator "|" and is now Punctuator "&"',
     }];
 
-    expect(evaluate(planted({ 'union-newline': swapsPipe }), UNION, 'file.ts', ['union-newline']).findings)
-      .toStrictEqual(expected);
+    const swapping = planted({ 'union-newline': swapsPipe });
+    const { findings } = evaluate(swapping, UNION, 'file.ts', ['union-newline']);
+
+    expect(findings).toStrictEqual(expected);
   });
 
   it('falls back to the fixers allowed to move members when no whitespace fixer is at fault', () => {
@@ -147,8 +159,9 @@ describe('evaluate', () => {
       }),
     });
 
-    expect(categoriesOf(context, `${UNION}// note\n`, ['union-newline']))
-      .toStrictEqual(['comment loss', 'comment moved']);
+    const categories = categoriesOf(context, `${UNION}// note\n`, ['union-newline']);
+
+    expect(categories).toStrictEqual(['comment loss', 'comment moved']);
   });
 
   it('names the whitespace fixer that moved a comment onto other code', () => {
@@ -187,10 +200,11 @@ describe('evaluate', () => {
 
     expect(categories).toStrictEqual([]);
 
-    const ruleSets = evaluate(planted({
+    const both = planted({
       'union-newline': widens,
       'member-newline': moves,
-    }), source, 'file.ts', ['union-newline', 'member-newline']).findings
+    });
+    const ruleSets = evaluate(both, source, 'file.ts', ['union-newline', 'member-newline']).findings
       .map(({ rules }) => {
         return rules;
       });
@@ -257,11 +271,7 @@ describe('narrow', () => {
 
     expect(finding).toBeDefined();
 
-    const narrowed = narrow(context, source, fixed, 'file.ts', finding ?? {
-      category: '',
-      detail: '',
-      rules: [],
-    });
+    const narrowed = narrow(context, source, fixed, 'file.ts', finding ?? NO_FINDING);
 
     const expected = [UNION, 'minimal reproduction'];
     expect(narrowed).toStrictEqual(expected);
@@ -279,14 +289,12 @@ describe('narrow', () => {
       UNION.trimEnd(),
     ].join('\n');
     const { fixed, findings: [finding] } = evaluate(context, source, 'file.ts', ['union-newline']);
-    const [hunk, label] = narrow(context, source, fixed, 'file.ts', finding ?? {
-      category: '',
-      detail: '',
-      rules: [],
-    });
+    const [hunk, label] = narrow(context, source, fixed, 'file.ts', finding ?? NO_FINDING);
 
     expect(label).toBe('changed hunk, could not narrow');
-    expect(hunk).toBe(`${[...lines.slice(-3), UNION.trimEnd()].join('\n')}\n`);
+    const tail = [...lines.slice(-3), UNION.trimEnd()].join('\n');
+
+    expect(hunk).toBe(`${tail}\n`);
   });
 
   it('starts the slice past the end of a source the fix only appended to', () => {
@@ -331,7 +339,9 @@ describe('dominantRule', () => {
   };
 
   const unionFile = (): string => {
-    const file = join(mkdtempSync(join(tmpdir(), 'attribution-')), 'a.ts');
+    const prefix = join(tmpdir(), 'attribution-');
+    const dir = mkdtempSync(prefix);
+    const file = join(dir, 'a.ts');
 
     writeFileSync(file, UNION);
 
@@ -370,6 +380,8 @@ describe('dominantRule', () => {
 
     context.activeRules = ['union-newline'];
 
-    expect(dominantRule(context, unionFile()).baseline).toBeLessThan(50);
+    const { baseline } = dominantRule(context, unionFile());
+
+    expect(baseline).toBeLessThan(50);
   });
 });

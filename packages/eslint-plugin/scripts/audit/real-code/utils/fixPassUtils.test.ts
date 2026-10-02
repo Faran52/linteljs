@@ -15,7 +15,8 @@ import { AUDIT_RULES } from './reportShapeUtils.ts';
 
 import type { Rule } from 'eslint';
 
-const dir = mkdtempSync(join(tmpdir(), 'fix-pass-'));
+const prefix = join(tmpdir(), 'fix-pass-');
+const dir = mkdtempSync(prefix);
 
 const write = (name: string, text: string): string => {
   const file = join(dir, name);
@@ -55,9 +56,9 @@ const dropsComment = textRule((text) => {
 });
 
 const reporter = (message: string): Rule.RuleModule => {
-  return {
+  const rule: Rule.RuleModule = {
     create: (context) => {
-      return {
+      const visitors: Rule.RuleListener = {
         Program: (node) => {
           if (context.sourceCode
             .getText()
@@ -69,8 +70,12 @@ const reporter = (message: string): Rule.RuleModule => {
           }
         },
       };
+
+      return visitors;
     },
   };
+
+  return rule;
 };
 
 const plantAudit = (context: ReturnType<typeof auditContext>): void => {

@@ -87,7 +87,9 @@ describe('parsedFix', () => {
   });
 
   it('answers the parsed output of a fix that changed the source', () => {
-    expect(parsedFix(auditContext(), LONG_UNION, 'file.ts', ['union-newline'])?.type).toBe('Program');
+    const parsed = parsedFix(auditContext(), LONG_UNION, 'file.ts', ['union-newline']);
+
+    expect(parsed?.type).toBe('Program');
   });
 });
 
@@ -104,7 +106,8 @@ describe('subsetOf', () => {
 });
 
 describe('load', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'fix-utils-'));
+  const prefix = join(tmpdir(), 'fix-utils-');
+  const dir = mkdtempSync(prefix);
 
   const write = (name: string, text: string): string => {
     const file = join(dir, name);

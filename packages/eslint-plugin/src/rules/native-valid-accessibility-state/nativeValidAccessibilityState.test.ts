@@ -95,10 +95,12 @@ tsxRuleTester.run('native-valid-accessibility-state', nativeValidAccessibilitySt
       '{[]}',
     ]
       .map((written) => {
-        return {
+        const testCase = {
           code: `const view = <View accessibilityState=${written} />;`,
           errors: [{ messageId: 'notAnObject' as const }],
         };
+
+        return testCase;
       }),
     ...[
       'null',
@@ -107,10 +109,12 @@ tsxRuleTester.run('native-valid-accessibility-state', nativeValidAccessibilitySt
       "'true'",
     ]
       .map((written) => {
-        return {
+        const testCase = {
           code: `const view = <View accessibilityState={{ checked: ${written} }} />;`,
           errors: [{ messageId: 'badCheckedValue' as const }],
         };
+
+        return testCase;
       }),
     ...[
       'busy',
@@ -119,13 +123,15 @@ tsxRuleTester.run('native-valid-accessibility-state', nativeValidAccessibilitySt
       'selected',
     ]
       .map((key) => {
-        return {
+        const testCase = {
           code: `const view = <View accessibilityState={{ ${key}: 'mixed' }} />;`,
           errors: [{
             messageId: 'badStateValue' as const,
             data: { key },
           }],
         };
+
+        return testCase;
       }),
     {
       code: 'const view = <View accessibilityState={{ busy: null }} />;',

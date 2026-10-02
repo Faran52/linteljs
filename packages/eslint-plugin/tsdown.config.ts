@@ -5,7 +5,7 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   // `index.js`, not `.cjs`: ESLint's config loader before 6.8 sends `.cjs` to its YAML branch and dies on line 2.
   outExtensions: ({ format }) => {
-    return format === 'cjs'
+    const extensions = format === 'cjs'
       ? {
           js: '.js',
           dts: '.d.ts',
@@ -14,6 +14,8 @@ export default defineConfig({
           js: '.mjs',
           dts: '.d.mts',
         };
+
+    return extensions;
   },
   dts: true,
   clean: true,

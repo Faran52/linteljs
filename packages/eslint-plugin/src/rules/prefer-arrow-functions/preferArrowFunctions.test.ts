@@ -105,11 +105,13 @@ jsRuleTester.run('prefer-arrow-functions', preferArrowFunctions, {
       '(width) => ({ width });',
     ]
       .map((code) => {
-        return {
+        const testCase = {
           code,
           output: code.replace('(width) => ({ width })', '(width) => { return { width } }'),
           errors: [{ messageId: 'preferExplicit' }],
         };
+
+        return testCase;
       }),
     {
       code: 'function component() {\n  function x(a) {\n    a.foo();\n  }\n\n  function x() {}\n\n  return x;\n}',

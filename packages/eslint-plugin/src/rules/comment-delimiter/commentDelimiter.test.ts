@@ -67,10 +67,12 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       'src/__tests__',
     ]
       .map((filename) => {
-        return {
+        const testCase = {
           code: '// alpha\n// bravo\n// charlie\nexport const value = 1;\n',
           filename,
         };
+
+        return testCase;
       }),
     '/** short */ const value = 1;',
     '/** short */ a',
@@ -97,11 +99,13 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       '// bravo // eslint-disable',
     ]
       .map((line) => {
-        return {
+        const testCase = {
           code: `// alpha\n${line}\n// charlie\nexport const value = 1;`,
           output: `/**\n * alpha\n * ${line.slice(3)}\n * charlie\n */\nexport const value = 1;`,
           errors: [{ messageId: 'useJsdoc' as const }],
         };
+
+        return testCase;
       }),
     ...[
       'src/contest.ts',
@@ -110,12 +114,14 @@ tsxRuleTester.run('comment-delimiter', commentDelimiter, {
       'src/__tests__x/sample.ts',
     ]
       .map((filename) => {
-        return {
+        const testCase = {
           code: '// alpha\n// bravo\n// charlie\nexport const value = 1;',
           filename,
           output: '/**\n * alpha\n * bravo\n * charlie\n */\nexport const value = 1;',
           errors: [{ messageId: 'useJsdoc' as const }],
         };
+
+        return testCase;
       }),
     {
       code: '/**\n First.\n * Second.\n */\nexport const value = 1;',

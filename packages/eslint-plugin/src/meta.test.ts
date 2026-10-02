@@ -53,7 +53,8 @@ const requiredFiles = (ruleName: string): string[] => {
 };
 
 const readJson = (path: string): Record<string, unknown> => {
-  const parsed: unknown = JSON.parse(readFileSync(join(root, path), 'utf8'));
+  const text = readFileSync(join(root, path), 'utf8');
+  const parsed: unknown = JSON.parse(text);
 
   if (typeof parsed !== 'object' || parsed === null) {
     throw new TypeError(`${path} is not an object`);

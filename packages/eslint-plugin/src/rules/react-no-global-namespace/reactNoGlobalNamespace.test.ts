@@ -38,10 +38,12 @@ function build() {
       'props.d.mts',
     ]
       .map((filename) => {
-        return {
+        const testCase = {
           code: 'interface Props { children: React.ReactNode }',
           filename,
         };
+
+        return testCase;
       }),
 
     {

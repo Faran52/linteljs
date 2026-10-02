@@ -47,13 +47,15 @@ tsxRuleTester.run('native-no-nested-touchables', nativeNoNestedTouchables, {
       '<Pressable /* save */ accessibilityLabel="Save" />',
     ]
       .map((child) => {
-        return {
+        const testCase = {
           code: `const view = <View accessible>${child}</View>;`,
           errors: [{
             messageId: 'nestedTouchable' as const,
             data: { name: 'Pressable' },
           }],
         };
+
+        return testCase;
       }),
     {
       code: 'const view = <View accessible><Pressable accessibilityLabel="Save" /></View>;',

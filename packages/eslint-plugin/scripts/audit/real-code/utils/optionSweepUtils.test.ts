@@ -15,7 +15,8 @@ import { runOptionSweep } from './optionSweepUtils.ts';
 
 import type { Rule } from 'eslint';
 
-const dir = mkdtempSync(join(tmpdir(), 'option-sweep-'));
+const prefix = join(tmpdir(), 'option-sweep-');
+const dir = mkdtempSync(prefix);
 
 const write = (name: string, text: string): string => {
   const file = join(dir, name);
