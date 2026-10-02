@@ -17,10 +17,12 @@ const open = async (path: string): Promise<ReturnType<typeof mount>> => {
     history: createMemoryHistory(),
     routes: PAGES
       .map((page) => {
-        return {
+        const route = {
           path: page.path,
           component: { template: '<div />' },
         };
+
+        return route;
       }),
   });
 

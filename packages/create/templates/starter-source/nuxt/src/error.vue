@@ -15,8 +15,9 @@ interface Props {
 const props = defineProps<Props>();
 
 // Any other status is a crash, and clearing it renders the route again.
+const knownStatuses = [STATUSES.forbidden, STATUSES.notFound];
 const known = computed(() => {
-  return [STATUSES.forbidden, STATUSES.notFound]
+  return knownStatuses
     .find(({ code }) => {
       return code === props.error.status;
     });

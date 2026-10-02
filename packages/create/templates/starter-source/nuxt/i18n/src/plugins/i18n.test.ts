@@ -23,14 +23,16 @@ const nuxt = vi.hoisted(() => {
   const setups: Setup[] = [];
   const heads: Head[] = [];
 
-  return {
+  const captured = {
     setups,
     heads,
   };
+
+  return captured;
 });
 
 vi.mock('nuxt/app', () => {
-  return {
+  const nuxtApp = {
     defineNuxtPlugin: (setup: Setup) => {
       nuxt.setups.push(setup);
     },
@@ -39,6 +41,8 @@ vi.mock('nuxt/app', () => {
       nuxt.heads.push(head);
     },
   };
+
+  return nuxtApp;
 });
 
 const last = languages.at(-1)?.id ?? 'en';

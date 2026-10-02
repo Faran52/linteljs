@@ -6,13 +6,17 @@ import ErrorPage from './error.vue';
 import { resources } from './i18n/config';
 
 vi.mock('nuxt/app', () => {
-  return { clearError: vi.fn() };
+  const nuxtApp = { clearError: vi.fn() };
+
+  return nuxtApp;
 });
 
 const global = { stubs: { AppHeader: true } };
 
 const errorOf = (status: number): Pick<NuxtError, 'status'> => {
-  return { status };
+  const error = { status };
+
+  return error;
 };
 
 describe('the error page', () => {
